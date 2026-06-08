@@ -49,6 +49,9 @@ import Mathlib.Algebra.Field.ZMod
 import Mathlib.FieldTheory.Perfect
 import Mathlib.Tactic.NormNum.GCD
 import Mathlib.Tactic.TFAE
+import Mathlib.RingTheory.AdjoinRoot
+import Mathlib.RingTheory.EuclideanDomain
+import Mathlib.Algebra.Polynomial.FieldDivision
 
 open Polynomial
 
@@ -446,6 +449,112 @@ end Examples
 
 end CurveModel
 
+/-! ## §5.2–§5.5 (Derived detector, REAL algebraic core): the Jacobian quotient.
+
+The `CurveModel` above encodes the derived detector numerically.  Here — for the
+univariate hypersurface `A = 𝔽_p[X]/(f)`, the plane-section / curve-as-fibre case
+the paper computes with — we replace the *model* by the **genuine** Jacobian
+quotient ring `A/J_f = 𝔽_p[X]/(f, f')`, a real Mathlib object, and prove:
+
+  * **Prop 5.1 / Cor 5.4 (Jacobian criterion):** `A/J_f = 0 ⇔ f̄ squarefree ⇔ smooth`;
+  * **Prop 5.3 / §5.5(C) (local length):** `τ_p = dim_{𝔽_p}(A/J_f) = deg gcd(f, f')`.
+
+By the two-term cotangent model of §5.2(B), `H¹(L_{X_p}) ≅ A/J_f` in dimension, so
+this is the honest realization of the derived detector — proved from Mathlib's
+ideal/Euclidean-domain/`AdjoinRoot` theory, with no model and no new axiom. -/
+
+namespace JacobianReal
+
+variable {p : ℕ} [Fact p.Prime]
+
+/-- **Jacobian ideal** `J_f = (f, f')` of the univariate hypersurface (the cut
+equation `f` together with its derivative giving the Jacobian). -/
+noncomputable def jacobianIdeal (f : (ZMod p)[X]) : Ideal (ZMod p)[X] :=
+  Ideal.span {f, derivative f}
+
+/-- **Jacobian / derived quotient** `A/J_f = 𝔽_p[X]/(f, f')` — the genuine ring
+whose `𝔽_p`-dimension is the local length and whose triviality is smoothness. -/
+abbrev JacobianQuotient (f : (ZMod p)[X]) : Type _ :=
+  (ZMod p)[X] ⧸ jacobianIdeal f
+
+/-- `J_f = (1)` iff the discriminant gate passes (`gcd(f, f') = 1`). -/
+theorem jacobianIdeal_eq_top_iff_coprime (f : (ZMod p)[X]) :
+    jacobianIdeal f = ⊤ ↔ IsCoprime f (derivative f) := by
+  rw [jacobianIdeal, ← Ideal.isCoprime_span_singleton_iff, Ideal.isCoprime_iff_sup_eq,
+    ← Ideal.span_union, Set.singleton_union]
+
+/-- **Corollary 5.4 (Jacobian criterion, ideal form).**
+    `J_f = (1) ⇔ f̄ squarefree ⇔ X_p smooth`. -/
+theorem jacobianIdeal_eq_top_iff_squarefree (f : (ZMod p)[X]) :
+    jacobianIdeal f = ⊤ ↔ Squarefree f := by
+  rw [jacobianIdeal_eq_top_iff_coprime, ← squarefree_iff_coprime_derivative]
+
+/-- **Prop 5.1 / Cor 5.4 (Jacobian criterion, derived-detector form).**
+    The real derived detector vanishes (`A/J_f = 0`) iff the fiber is smooth. -/
+theorem jacobianQuotient_subsingleton_iff (f : (ZMod p)[X]) :
+    Subsingleton (JacobianQuotient f) ↔ Squarefree f := by
+  rw [JacobianQuotient, Ideal.Quotient.subsingleton_iff, jacobianIdeal_eq_top_iff_squarefree]
+
+/-- Singular fiber ⇔ the derived detector is a nontrivial ring. -/
+theorem jacobianQuotient_nontrivial_iff (f : (ZMod p)[X]) :
+    Nontrivial (JacobianQuotient f) ↔ ¬ Squarefree f := by
+  rw [JacobianQuotient, Ideal.Quotient.nontrivial_iff, ne_eq, jacobianIdeal_eq_top_iff_squarefree]
+
+/-- The genuine derived detector agrees with the algebraic/discriminant gate of
+    Theorem 2.1 — `A/J_f = 0 ⇔ IsCoprime f f'`. -/
+theorem derived_eq_algebraic_gate (f : (ZMod p)[X]) :
+    Subsingleton (JacobianQuotient f) ↔ IsCoprime f (derivative f) := by
+  rw [jacobianQuotient_subsingleton_iff, squarefree_iff_coprime_derivative]
+
+/-- **Local length** `τ_p = dim_{𝔽_p}(A/J_f)` — the genuine `𝔽_p`-dimension of the
+Jacobian quotient (Prop 5.3 / §5.5(C), univariate case). -/
+noncomputable def localLength (f : (ZMod p)[X]) : ℕ :=
+  Module.finrank (ZMod p) (JacobianQuotient f)
+
+/-- **Prop 5.3 / §5.5(C) (local length = degree of the gcd).**  For `f ≠ 0`,
+    `dim_{𝔽_p}(A/J_f) = deg gcd(f, f')`. -/
+theorem localLength_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    localLength f = (EuclideanDomain.gcd f (derivative f)).natDegree := by
+  have hg : EuclideanDomain.gcd f (derivative f) ≠ 0 := fun h =>
+    hf (EuclideanDomain.gcd_eq_zero_iff.mp h).1
+  have hspan : jacobianIdeal f
+      = Ideal.span {EuclideanDomain.gcd f (derivative f)} := by
+    rw [jacobianIdeal, ← EuclideanDomain.span_gcd]
+  unfold localLength JacobianQuotient
+  rw [LinearEquiv.finrank_eq (Ideal.quotientEquivAlgOfEq (ZMod p) hspan).toLinearEquiv]
+  show Module.finrank (ZMod p) (AdjoinRoot (EuclideanDomain.gcd f (derivative f)))
+      = (EuclideanDomain.gcd f (derivative f)).natDegree
+  rw [PowerBasis.finrank (AdjoinRoot.powerBasis hg)]
+  rfl
+
+/-- **Cor 5.4 (local-length form).**  The local length vanishes iff smooth. -/
+theorem localLength_eq_zero_iff (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    localLength f = 0 ↔ Squarefree f := by
+  rw [localLength_eq_natDegree_gcd f hf, squarefree_iff_coprime_derivative,
+    ← EuclideanDomain.gcd_isUnit_iff]
+  have hg : EuclideanDomain.gcd f (derivative f) ≠ 0 := fun h =>
+    hf (EuclideanDomain.gcd_eq_zero_iff.mp h).1
+  constructor
+  · intro h
+    rw [Polynomial.isUnit_iff_degree_eq_zero, Polynomial.degree_eq_natDegree hg, h]
+    rfl
+  · exact fun h => Polynomial.natDegree_eq_zero_of_isUnit h
+
+/-! ### Numeric checks: real `𝔽_p`-dimension of `A/J_f` for sample polynomials. -/
+
+section Examples
+open Polynomial
+
+local instance : Fact (Nat.Prime 5) := ⟨by decide⟩
+
+/-- `f = X² - 1 = (X-1)(X+1)` over `𝔽₅` is squarefree iff `A/J_f = 0`. -/
+example : Squarefree (X ^ 2 - 1 : (ZMod 5)[X]) ↔
+    Subsingleton (JacobianQuotient (X ^ 2 - 1 : (ZMod 5)[X])) :=
+  (jacobianQuotient_subsingleton_iff _).symm
+end Examples
+
+end JacobianReal
+
 /-! ## Axiom audit — evidence of `sorryAx`-freeness. -/
 section AxiomAudit
 #print axioms squarefree_iff_coprime_derivative
@@ -470,6 +579,11 @@ section AxiomAudit
 #print axioms CurveModel.good_prime_box_curve
 #print axioms CurveModel.BaseChange.bump_stable
 #print axioms CurveModel.minimal_certificate
+#print axioms JacobianReal.jacobianIdeal_eq_top_iff_squarefree
+#print axioms JacobianReal.jacobianQuotient_subsingleton_iff
+#print axioms JacobianReal.derived_eq_algebraic_gate
+#print axioms JacobianReal.localLength_eq_natDegree_gcd
+#print axioms JacobianReal.localLength_eq_zero_iff
 end AxiomAudit
 
 end Spt2
