@@ -638,6 +638,59 @@ theorem formallyEtale_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
     exact Algebra.FormallyEtale.of_equiv
       (squarefreeStdEtaleEquiv f P rfl rfl).symm
 
+/-- **Object-level smoothness criterion (Cor 5.4, general `f ≠ 0`).**  Dropping the
+monic hypothesis: for any nonzero `f` over `𝔽_p`, `A = 𝔽_p[X]/(f)` is formally étale
+iff `f` is squarefree.  (Reduce to the monic associate `c⁻¹·f`, `c = leadingCoeff f`:
+the quotient ring and squarefreeness are invariant under the unit factor.) -/
+theorem formallyEtale_iff_squarefree_of_ne_zero (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    Algebra.FormallyEtale (ZMod p) (AdjoinRoot f) ↔ Squarefree f := by
+  have hunit : IsUnit (Polynomial.C (f.leadingCoeff)⁻¹ : (ZMod p)[X]) :=
+    Polynomial.isUnit_C.mpr (isUnit_iff_ne_zero.mpr
+      (inv_ne_zero (Polynomial.leadingCoeff_ne_zero.mpr hf)))
+  have hmonic : (Polynomial.C (f.leadingCoeff)⁻¹ * f).Monic := by
+    rw [mul_comm]; exact Polynomial.monic_mul_leadingCoeff_inv hf
+  have hspan : Ideal.span {f} = Ideal.span {Polynomial.C (f.leadingCoeff)⁻¹ * f} :=
+    (Ideal.span_singleton_mul_left_unit hunit f).symm
+  have hassoc : Associated f (Polynomial.C (f.leadingCoeff)⁻¹ * f) :=
+    Ideal.span_singleton_eq_span_singleton.mp hspan
+  let e : AdjoinRoot f ≃ₐ[ZMod p] AdjoinRoot (Polynomial.C (f.leadingCoeff)⁻¹ * f) :=
+    Ideal.quotientEquivAlgOfEq (ZMod p) hspan
+  rw [hassoc.squarefree_iff, ← formallyEtale_iff_squarefree _ hmonic]
+  constructor
+  · intro h; haveI := h; exact Algebra.FormallyEtale.of_equiv e
+  · intro h; haveI := h; exact Algebra.FormallyEtale.of_equiv e.symm
+
+/-- **Formally-unramified characterization.**  `A = 𝔽_p[X]/(f)` is formally
+unramified over `𝔽_p` iff `f` is squarefree (monic `f`). -/
+theorem formallyUnramified_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
+    Algebra.FormallyUnramified (ZMod p) (AdjoinRoot f) ↔ Squarefree f := by
+  have hf : f ≠ 0 := hm.ne_zero
+  haveI : Module.Finite (ZMod p) (AdjoinRoot f) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis hf).basis
+  constructor
+  · intro h
+    haveI := h
+    have hred : IsReduced (AdjoinRoot f) :=
+      Algebra.FormallyUnramified.isReduced_of_field (ZMod p) (AdjoinRoot f)
+    have hrad : (Ideal.span {f}).IsRadical := by
+      rw [Ideal.isRadical_iff_quotient_reduced]; exact hred
+    exact (isRadical_iff_squarefree_of_ne_zero hf).mp
+      (isRadical_iff_span_singleton.mpr hrad)
+  · intro hsf
+    haveI : Algebra.FormallyEtale (ZMod p) (AdjoinRoot f) :=
+      (formallyEtale_iff_squarefree f hm).mpr hsf
+    infer_instance
+
+/-- **Cotangent (Kähler) detector, object level.**  The module of Kähler
+differentials `Ω[A⁄𝔽_p]` vanishes iff `f` is squarefree.  For a hypersurface this
+`H⁰` of the cotangent complex is the genuine discriminating cotangent invariant
+(the derived `H¹` always vanishes, since `f` is a non-zero-divisor); so this is the
+honest object-level "derived/cotangent detector ⇔ smooth". -/
+theorem subsingleton_kaehler_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
+    Subsingleton (Ω[AdjoinRoot f ⁄ ZMod p]) ↔ Squarefree f :=
+  ⟨fun h => (formallyUnramified_iff_squarefree f hm).mp ⟨h⟩,
+   fun h => ((formallyUnramified_iff_squarefree f hm).mpr h).1⟩
+
 /-! ### Numeric checks: real `𝔽_p`-dimension of `A/J_f` for sample polynomials. -/
 
 section Examples
@@ -735,6 +788,9 @@ section AxiomAudit
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_squarefree
 #print axioms JacobianReal.formallyEtale_iff_squarefree
+#print axioms JacobianReal.formallyEtale_iff_squarefree_of_ne_zero
+#print axioms JacobianReal.formallyUnramified_iff_squarefree
+#print axioms JacobianReal.subsingleton_kaehler_iff_squarefree
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
