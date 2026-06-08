@@ -54,6 +54,7 @@ import Mathlib.RingTheory.EuclideanDomain
 import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.RingTheory.Etale.Field
 import Mathlib.RingTheory.Etale.StandardEtale
+import Mathlib.Algebra.MvPolynomial.PDeriv
 
 open Polynomial
 
@@ -607,6 +608,56 @@ end Examples
 
 end JacobianReal
 
+/-! ## §5.2 (multivariate) — the genuine Jacobian ideal `(f, ∂f/∂xᵢ)` and the
+standard-étale bivariate complete intersection.
+
+We define the **real multivariate Jacobian ideal** `J_f = (f, ∂f/∂x₀,…,∂f/∂x_{n-1})`
+in `MvPolynomial (Fin n) 𝔽_p` (using Mathlib's `pderiv`) and prove the criterion in
+its **gate form**: the derived/Jacobian quotient `A/J_f` is trivial iff `J_f` is the
+unit ideal (`1 ∈ (f, ∂f/∂xᵢ)`) — the operational smoothness gate of §5.2/§5.5.
+
+We also exhibit a genuine *multivariate* algebra whose REAL `H¹(L)` vanishes: the
+standard-étale bivariate complete intersection `𝔽_p[X,Y]/(f, Yg−1)`. -/
+
+namespace JacobianMv
+
+variable {p : ℕ} [Fact p.Prime] {n : ℕ}
+
+open MvPolynomial
+
+/-- **Multivariate Jacobian ideal** `J_f = (f, ∂f/∂x₀, …, ∂f/∂x_{n-1})`. -/
+noncomputable def jacobianIdeal (f : MvPolynomial (Fin n) (ZMod p)) :
+    Ideal (MvPolynomial (Fin n) (ZMod p)) :=
+  Ideal.span (insert f (Set.range fun i => pderiv i f))
+
+/-- **Jacobian / derived quotient** `A/J_f` for the multivariate hypersurface. -/
+abbrev JacobianQuotient (f : MvPolynomial (Fin n) (ZMod p)) : Type _ :=
+  MvPolynomial (Fin n) (ZMod p) ⧸ jacobianIdeal f
+
+/-- **Multivariate Jacobian criterion (gate form).**  The derived/Jacobian quotient
+`A/J_f` is trivial iff `J_f = (1)` — i.e. `1 ∈ (f, ∂f/∂x₀, …, ∂f/∂x_{n-1})`, the
+Jacobian-rank smoothness gate. -/
+theorem jacobianQuotient_subsingleton_iff (f : MvPolynomial (Fin n) (ZMod p)) :
+    Subsingleton (JacobianQuotient f) ↔ jacobianIdeal f = ⊤ :=
+  Ideal.Quotient.subsingleton_iff
+
+/-- The gate `J_f = (1)` is membership of `1` in the Jacobian ideal. -/
+theorem jacobianIdeal_eq_top_iff_one_mem (f : MvPolynomial (Fin n) (ZMod p)) :
+    jacobianIdeal f = ⊤ ↔ (1 : MvPolynomial (Fin n) (ZMod p)) ∈ jacobianIdeal f :=
+  Ideal.eq_top_iff_one _
+
+omit [Fact p.Prime] in
+/-- **Multivariate object-level derived detector (standard étale).**  The bivariate
+complete intersection `A = 𝔽_p[X,Y]/(f, Yg−1)` of a standard-étale pair is étale,
+so Mathlib's genuine first cotangent cohomology vanishes as an object:
+`H¹(L_{A/𝔽_p}) = 0`.  This is a real *multivariate* instance of Prop 5.1, with the
+silent derived detector coming from the unit Jacobian of the pair. -/
+theorem h1Cotangent_subsingleton_standardEtale (P : StandardEtalePair (ZMod p)) :
+    Subsingleton (Algebra.H1Cotangent (ZMod p) P.Ring) :=
+  inferInstance
+
+end JacobianMv
+
 /-! ## Axiom audit — evidence of `sorryAx`-freeness. -/
 section AxiomAudit
 #print axioms squarefree_iff_coprime_derivative
@@ -638,6 +689,9 @@ section AxiomAudit
 #print axioms JacobianReal.localLength_eq_zero_iff
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_squarefree
+#print axioms JacobianMv.jacobianQuotient_subsingleton_iff
+#print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
+#print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
 end AxiomAudit
 
 end Spt2
