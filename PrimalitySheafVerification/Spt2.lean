@@ -440,7 +440,7 @@ example : (⟨1, ⟨2⟩, [⟨3⟩, ⟨4⟩]⟩ : CurveFiber).bump = 9 := by dec
 example : (⟨1, ⟨2⟩, [⟨3⟩, ⟨4⟩]⟩ : CurveFiber).mot = 9 := by decide
 example : (⟨1, ⟨2⟩, [⟨3⟩, ⟨4⟩]⟩ : CurveFiber).der = 9 := by decide
 /-- A smooth fiber (no loops, no singular points): all detectors vanish. -/
-example : (⟨5, ⟨0⟩, []⟩ : CurveFiber).IsSmooth := by decide
+example : (⟨5, ⟨0⟩, []⟩ : CurveFiber).IsSmooth := ⟨rfl, rfl⟩
 example : (⟨5, ⟨0⟩, []⟩ : CurveFiber).bump = 0 := by decide
 end Examples
 
