@@ -55,6 +55,8 @@ import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.RingTheory.Etale.Field
 import Mathlib.RingTheory.Etale.StandardEtale
 import Mathlib.Algebra.MvPolynomial.PDeriv
+import Mathlib.RingTheory.Radical.Basic
+import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 
 open Polynomial
 
@@ -593,6 +595,49 @@ theorem h1Cotangent_subsingleton_of_squarefree
   exact (Algebra.H1Cotangent.mapEquiv (R := ZMod p) (S := AdjoinRoot f)
     (S' := P.Ring) e).toEquiv.subsingleton
 
+/-- The standard-étale `AlgEquiv` `𝔽_p[X]/(f) ≃ₐ P.Ring` for `g = 1`, packaged for
+reuse: given the standard-étale pair `(f, 1)` built from `f' · b + f · a = 1`. -/
+noncomputable def squarefreeStdEtaleEquiv (f : (ZMod p)[X])
+    (P : StandardEtalePair (ZMod p)) (hPf : P.f = f) (hPg : P.g = 1) :
+    AdjoinRoot f ≃ₐ[ZMod p] P.Ring := by
+  subst hPf
+  have hunit : Submonoid.powers (AdjoinRoot.mk P.f P.g) ≤
+      IsUnit.submonoid (AdjoinRoot P.f) := by
+    rw [Submonoid.powers_le]
+    show IsUnit (AdjoinRoot.mk P.f P.g)
+    rw [hPg, map_one]; exact isUnit_one
+  exact (((IsLocalization.atUnits (AdjoinRoot P.f)
+    (Submonoid.powers (AdjoinRoot.mk P.f P.g))
+    (S := Localization.Away (AdjoinRoot.mk P.f P.g)) hunit).restrictScalars
+    (ZMod p)).trans P.equivAwayAdjoinRoot.symm)
+
+/-- **Object-level smoothness criterion (Cor 5.4, biconditional).**  For monic `f`
+over `𝔽_p`, the algebra `A = 𝔽_p[X]/(f)` is *formally étale* over `𝔽_p` **iff** `f`
+is squarefree — Mathlib's genuine smoothness/étale notion equals the discriminant
+gate.  (`⇐` via the standard-étale package; `⇒` via étale ⇒ unramified ⇒ reduced
+⇒ radical ⇒ squarefree.) -/
+theorem formallyEtale_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
+    Algebra.FormallyEtale (ZMod p) (AdjoinRoot f) ↔ Squarefree f := by
+  have hf : f ≠ 0 := hm.ne_zero
+  haveI : Module.Finite (ZMod p) (AdjoinRoot f) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis hf).basis
+  constructor
+  · intro h
+    haveI := h
+    have hred : IsReduced (AdjoinRoot f) :=
+      Algebra.FormallyUnramified.isReduced_of_field (ZMod p) (AdjoinRoot f)
+    have hrad : (Ideal.span {f}).IsRadical := by
+      rw [Ideal.isRadical_iff_quotient_reduced]; exact hred
+    exact (isRadical_iff_squarefree_of_ne_zero hf).mp
+      (isRadical_iff_span_singleton.mpr hrad)
+  · intro hsf
+    obtain ⟨a, b, hab⟩ := (squarefree_iff_coprime_derivative f).mp hsf
+    let P : StandardEtalePair (ZMod p) :=
+      { f := f, monic_f := hm, g := 1, cond := ⟨b, a, 1, by linear_combination hab⟩ }
+    haveI : Algebra.FormallyEtale (ZMod p) P.Ring := inferInstance
+    exact Algebra.FormallyEtale.of_equiv
+      (squarefreeStdEtaleEquiv f P rfl rfl).symm
+
 /-! ### Numeric checks: real `𝔽_p`-dimension of `A/J_f` for sample polynomials. -/
 
 section Examples
@@ -689,6 +734,7 @@ section AxiomAudit
 #print axioms JacobianReal.localLength_eq_zero_iff
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_squarefree
+#print axioms JacobianReal.formallyEtale_iff_squarefree
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
