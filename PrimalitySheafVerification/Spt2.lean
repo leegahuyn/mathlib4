@@ -53,6 +53,7 @@ import Mathlib.RingTheory.AdjoinRoot
 import Mathlib.RingTheory.EuclideanDomain
 import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.RingTheory.Etale.Field
+import Mathlib.RingTheory.Etale.StandardEtale
 
 open Polynomial
 
@@ -564,6 +565,33 @@ theorem h1Cotangent_subsingleton_of_irreducible (f : (ZMod p)[X])
     (Algebra.FormallyEtale.iff_isSeparable (ZMod p) (AdjoinRoot f)).mpr inferInstance
   infer_instance
 
+open Polynomial in
+/-- **General squarefree case (Prop 5.1 / good-locus, object level).**  For a
+monic squarefree `f` over `𝔽_p`, the algebra `A = 𝔽_p[X]/(f)` — a finite product
+of separable field extensions — is *étale*, so Mathlib's genuine first cotangent
+cohomology vanishes: `H¹(L_{A/𝔽_p}) = 0`.  Proved via the **standard-étale**
+package `(f, g = 1)`: squarefreeness gives `f' · b + f · a = 1`, making
+`𝔽_p[X]/(f)` standard étale, hence étale, hence `H¹ = 0`. -/
+theorem h1Cotangent_subsingleton_of_squarefree
+    (f : (ZMod p)[X]) (hm : f.Monic) (hsf : Squarefree f) :
+    Subsingleton (Algebra.H1Cotangent (ZMod p) (AdjoinRoot f)) := by
+  obtain ⟨a, b, hab⟩ := (squarefree_iff_coprime_derivative f).mp hsf
+  let P : StandardEtalePair (ZMod p) :=
+    { f := f, monic_f := hm, g := 1, cond := ⟨b, a, 1, by linear_combination hab⟩ }
+  haveI : Algebra.FormallyEtale (ZMod p) P.Ring := inferInstance
+  have hunit : Submonoid.powers (AdjoinRoot.mk P.f P.g) ≤
+      IsUnit.submonoid (AdjoinRoot P.f) := by
+    rw [Submonoid.powers_le]
+    show IsUnit (AdjoinRoot.mk P.f P.g)
+    show IsUnit (AdjoinRoot.mk f (1 : (ZMod p)[X]))
+    rw [map_one]; exact isUnit_one
+  let e₂ : AdjoinRoot f ≃ₐ[ZMod p] Localization.Away (AdjoinRoot.mk P.f P.g) :=
+    (IsLocalization.atUnits (AdjoinRoot P.f) (Submonoid.powers (AdjoinRoot.mk P.f P.g))
+      (S := Localization.Away (AdjoinRoot.mk P.f P.g)) hunit).restrictScalars (ZMod p)
+  let e : AdjoinRoot f ≃ₐ[ZMod p] P.Ring := e₂.trans P.equivAwayAdjoinRoot.symm
+  exact (Algebra.H1Cotangent.mapEquiv (R := ZMod p) (S := AdjoinRoot f)
+    (S' := P.Ring) e).toEquiv.subsingleton
+
 /-! ### Numeric checks: real `𝔽_p`-dimension of `A/J_f` for sample polynomials. -/
 
 section Examples
@@ -609,6 +637,7 @@ section AxiomAudit
 #print axioms JacobianReal.localLength_eq_natDegree_gcd
 #print axioms JacobianReal.localLength_eq_zero_iff
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
+#print axioms JacobianReal.h1Cotangent_subsingleton_of_squarefree
 end AxiomAudit
 
 end Spt2
