@@ -52,6 +52,7 @@ import Mathlib.Tactic.TFAE
 import Mathlib.RingTheory.AdjoinRoot
 import Mathlib.RingTheory.EuclideanDomain
 import Mathlib.Algebra.Polynomial.FieldDivision
+import Mathlib.RingTheory.Etale.Field
 
 open Polynomial
 
@@ -540,6 +541,29 @@ theorem localLength_eq_zero_iff (f : (ZMod p)[X]) (hf : f ≠ 0) :
     rfl
   · exact fun h => Polynomial.natDegree_eq_zero_of_isUnit h
 
+/-! ### §5.1 Object-level derived detector via Mathlib's `Algebra.H1Cotangent`.
+
+We now connect the GENUINE first cotangent cohomology `H¹(L_{A/𝔽_p})` (Mathlib's
+`Algebra.H1Cotangent`, the object the paper denotes `H¹(L_{X_p})`) to smoothness,
+not merely its dimension.  For irreducible `f`, `A = 𝔽_p[X]/(f)` is a finite
+separable field extension of the perfect field `𝔽_p`, hence formally étale, hence
+its first cotangent cohomology vanishes as an object. -/
+
+/-- **Prop 5.1 (derived detector via `L`), OBJECT level.**  For irreducible `f`
+over `𝔽_p`, the genuine first cotangent cohomology of `A = 𝔽_p[X]/(f)` vanishes:
+`H¹(L_{A/𝔽_p}) = 0`.  This is the real derived detector being silent on a smooth
+(irreducible) fibre — proved via `squarefree ⇒ separable ⇒ étale ⇒ H¹ = 0`,
+using Mathlib's `Algebra.H1Cotangent`, with no model. -/
+theorem h1Cotangent_subsingleton_of_irreducible (f : (ZMod p)[X])
+    [Fact (Irreducible f)] :
+    Subsingleton (Algebra.H1Cotangent (ZMod p) (AdjoinRoot f)) := by
+  have hf : f ≠ 0 := (Fact.out : Irreducible f).ne_zero
+  haveI : Module.Finite (ZMod p) (AdjoinRoot f) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis hf).basis
+  haveI : Algebra.FormallyEtale (ZMod p) (AdjoinRoot f) :=
+    (Algebra.FormallyEtale.iff_isSeparable (ZMod p) (AdjoinRoot f)).mpr inferInstance
+  infer_instance
+
 /-! ### Numeric checks: real `𝔽_p`-dimension of `A/J_f` for sample polynomials. -/
 
 section Examples
@@ -584,6 +608,7 @@ section AxiomAudit
 #print axioms JacobianReal.derived_eq_algebraic_gate
 #print axioms JacobianReal.localLength_eq_natDegree_gcd
 #print axioms JacobianReal.localLength_eq_zero_iff
+#print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
 end AxiomAudit
 
 end Spt2
