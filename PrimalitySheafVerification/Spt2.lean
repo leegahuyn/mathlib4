@@ -965,6 +965,35 @@ theorem formallySmooth_of_grad_span_eq_top (f : MvPolynomial (Fin n) (ZMod p))
 
 end JacobianMv
 
+/-! ## §5.3 (Prop 5.5) — Base change for the cotangent complex / derived detector.
+
+The derived detector is `H¹(L) = 0`, equivalently formal smoothness.  Mathlib's
+genuine cotangent-complex base change (`Algebra.FormallySmooth` is stable under
+base change) gives Prop 5.5 as a real object-level theorem — not the numeric model
+`CurveModel.BaseChange`. -/
+
+namespace DerivedBaseChange
+
+open TensorProduct
+
+/-- **Prop 5.5 (base change for the cotangent complex), real.**  Formal smoothness
+— i.e. the derived detector `H¹(L) = 0` — is preserved by arbitrary base change
+`R → B`: if `A` is formally smooth over `R`, then `B ⊗[R] A` is formally smooth
+over `B`.  (Mathlib's genuine cotangent-complex base change.) -/
+theorem formallySmooth_baseChange (R A B : Type*) [CommRing R] [CommRing A] [CommRing B]
+    [Algebra R A] [Algebra R B] [Algebra.FormallySmooth R A] :
+    Algebra.FormallySmooth B (B ⊗[R] A) :=
+  inferInstance
+
+/-- Consequently the derived detector `H¹(L_{(B⊗A)/B}) = 0` is base-change stable. -/
+theorem h1Cotangent_subsingleton_baseChange (R A B : Type*)
+    [CommRing R] [CommRing A] [CommRing B]
+    [Algebra R A] [Algebra R B] [Algebra.FormallySmooth R A] :
+    Subsingleton (Algebra.H1Cotangent B (B ⊗[R] A)) :=
+  inferInstance
+
+end DerivedBaseChange
+
 /-! ## Axiom audit — evidence of `sorryAx`-freeness. -/
 section AxiomAudit
 #print axioms squarefree_iff_coprime_derivative
@@ -1006,6 +1035,8 @@ section AxiomAudit
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
 #print axioms JacobianMv.formallySmooth_of_grad_span_eq_top
+#print axioms DerivedBaseChange.formallySmooth_baseChange
+#print axioms DerivedBaseChange.h1Cotangent_subsingleton_baseChange
 end AxiomAudit
 
 end Spt2
