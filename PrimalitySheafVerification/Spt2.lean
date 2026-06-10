@@ -853,6 +853,25 @@ theorem h1Cotangent_subsingleton_standardEtale (P : StandardEtalePair (ZMod p)) 
     Subsingleton (Algebra.H1Cotangent (ZMod p) P.Ring) :=
   inferInstance
 
+/-! ### Multivariate deep direction `J_f = ⊤ ⇒ smooth` — scope note.
+
+The gate form above (`jacobianQuotient_subsingleton_iff`) and the standard-étale
+bivariate object `H¹ = 0` (`h1Cotangent_subsingleton_standardEtale`) are formalized.
+The full *deep* direction — "if the partials `∂f/∂xᵢ` generate the unit ideal then
+`A = 𝔽_p[x]/(f)` is formally smooth" — reduces, via
+`Algebra.FormallySmooth.iff_split_injection`, to building a retraction of the
+conormal map `I/I² → A ⊗ Ω[𝔽_p[x]]` from a partition of unity `Σ gᵢ ∂f/∂xᵢ = 1`
+(`l(1 ⊗ dxᵢ) = gᵢ · [f]`).  The argument is mathematically complete, but assembling
+it at the object level is blocked by a Mathlib API gap: `kerCotangentToTensor` is
+stated for the ideal `I = RingHom.ker (algebraMap 𝔽_p[x] A)`, whose
+`Ideal.Cotangent` is a module over `𝔽_p[x] / I`, whereas the partition coefficients
+and the tensor `A ⊗ Ω` live over `A = 𝔽_p[x]/(f)`.  These ideals are equal
+(`Ideal.mk_ker`) but not definitionally, and Mathlib currently provides no transport
+of `Ideal.Cotangent` along an ideal equality, so the `A`-linear retraction cannot be
+formed cleanly here.  Completing it is a self-contained follow-up (e.g. add
+`Ideal.cotangentEquivOfEq`, or restate `kerCotangentToTensor` for an arbitrary
+presenting ideal). -/
+
 end JacobianMv
 
 /-! ## Axiom audit — evidence of `sorryAx`-freeness. -/
