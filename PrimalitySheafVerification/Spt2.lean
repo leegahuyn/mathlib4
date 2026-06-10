@@ -874,28 +874,94 @@ theorem h1Cotangent_subsingleton_standardEtale (P : StandardEtalePair (ZMod p)) 
     Subsingleton (Algebra.H1Cotangent (ZMod p) P.Ring) :=
   inferInstance
 
-/-! ### Multivariate deep direction `J_f = ⊤ ⇒ smooth` — scope note.
-
-The gate form (`jacobianQuotient_subsingleton_iff`) and the standard-étale bivariate
-object `H¹ = 0` (`h1Cotangent_subsingleton_standardEtale`) are formalized.  The full
-*deep* direction — "if the partials `∂f/∂xᵢ` generate the unit ideal then
-`A = 𝔽_p[x]/(f)` is formally smooth" — has a complete proof strategy: a partition of
-unity `Σ gᵢ ∂f/∂xᵢ = 1` yields a retraction of the conormal map
-`I/I² → A ⊗ Ω[𝔽_p[x]]` (`l(1 ⊗ dxᵢ) = gᵢ · [f]`), whence
-`Algebra.FormallySmooth.iff_split_injection`.  Carrying it out at the object level
-needs two transports across the equality `RingHom.ker (algebraMap 𝔽_p[x] A) = (f)`:
-
-  1. of the cotangent space — provided above as `Ideal.cotangentEquivOfEq`; and
-  2. the scalar tower `IsScalarTower 𝔽_p[x] A (Ideal.Cotangent I)` for a *general*
-     ideal `I`, which Mathlib supplies only for the maximal-ideal / residue-field
-     case (the `CotangentSpace` instances in `RingTheory.Ideal.Cotangent`), not for
-     an arbitrary `I` (its `↥I` is not an `A`-module, so the generic
-     `Submodule.Quotient.isScalarTower` does not apply).
-
-Item 2 is the remaining Mathlib-core gap; once it (or a presentation-agnostic
-restatement of `kerCotangentToTensor`) lands, the retraction above closes the proof
-verbatim.  We provide the partial machinery (`Ideal.cotangentEquivOfEq`) and leave
-this as a self-contained follow-up rather than introduce an axiom. -/
+open MvPolynomial KaehlerDifferential TensorProduct in
+/-- **Multivariate Jacobian criterion — deep direction `J_f = ⊤ ⇒ smooth`.**
+If the images of the partials `∂f/∂x₀, …, ∂f/∂x_{n-1}` generate the unit ideal in
+`A = 𝔽_p[x]/(f)` (equivalently the Jacobian ideal `(f, ∂f/∂xᵢ) = ⊤`), then `A` is
+*formally smooth* over `𝔽_p`.  Proof: a partition of unity `Σ gᵢ·∂f/∂xᵢ = 1` gives
+an explicit retraction `l(1 ⊗ dxᵢ) = gᵢ · [f]` of the conormal map
+`I/I² → A ⊗ Ω[𝔽_p[x]]`, so it is split injective and
+`Algebra.FormallySmooth.iff_split_injection` yields smoothness.  The presentation
+mismatch between `Ideal.span {f}` and `RingHom.ker (algebraMap …)` is bridged by
+`Ideal.cotangentEquivOfEq`, and the cotangent scalar tower is supplied by
+`Module.IsTorsionBySet.isScalarTower`. -/
+theorem formallySmooth_of_grad_span_eq_top (f : MvPolynomial (Fin n) (ZMod p))
+    (hgrad : Ideal.span (Set.range fun i =>
+        Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f)) = ⊤) :
+    Algebra.FormallySmooth (ZMod p)
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}) := by
+  haveI : Algebra.FormallySmooth (ZMod p) (MvPolynomial (Fin n) (ZMod p)) := inferInstance
+  have hsurj : Function.Surjective (algebraMap (MvPolynomial (Fin n) (ZMod p))
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})) := by
+    rw [Ideal.Quotient.algebraMap_eq]; exact Ideal.Quotient.mk_surjective
+  have hker_eq : RingHom.ker (algebraMap (MvPolynomial (Fin n) (ZMod p))
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})) = Ideal.span {f} := by
+    rw [Ideal.Quotient.algebraMap_eq, Ideal.mk_ker]
+  have hf0 : Ideal.Quotient.mk (Ideal.span {f}) f = 0 :=
+    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton_self f)
+  have hfI : f ∈ Ideal.span {f} := Ideal.mem_span_singleton_self f
+  haveI : IsScalarTower (MvPolynomial (Fin n) (ZMod p))
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}) ((Ideal.span {f}).Cotangent) :=
+    Module.IsTorsionBySet.isScalarTower (Ideal.isTorsionBySet_cotangent (Ideal.span {f}))
+  have h1mem : (1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}) ∈
+      Ideal.span (Set.range fun i => Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f)) :=
+    hgrad ▸ Submodule.mem_top
+  obtain ⟨g, hg⟩ := (Submodule.mem_span_range_iff_exists_fun _).mp h1mem
+  set b := (KaehlerDifferential.mvPolynomialBasis (ZMod p) (Fin n)).baseChange
+    (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}) with hb
+  set l' := b.constr (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+    (fun i => g i • Ideal.toCotangent (Ideal.span {f}) ⟨f, hfI⟩) with hl'
+  have hrepr : ∀ i, b.repr ((1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+      ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) f) i
+      = Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f) := by
+    intro i
+    rw [hb, Module.Basis.baseChange_repr_tmul, KaehlerDifferential.mvPolynomialBasis_repr_apply,
+      ← Algebra.algebraMap_eq_smul_one, Ideal.Quotient.algebraMap_eq]
+  have hl1 : l' ((1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+        ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) f)
+      = Ideal.toCotangent (Ideal.span {f}) ⟨f, hfI⟩ := by
+    rw [hl']
+    conv_lhs => rw [← b.sum_repr ((1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+      ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) f)]
+    rw [map_sum]
+    simp only [map_smul, Module.Basis.constr_basis, hrepr, smul_smul]
+    rw [← Finset.sum_smul,
+      show (∑ i, Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f) * g i) = 1 from ?_, one_smul]
+    rw [← hg]; exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)
+  rw [Algebra.FormallySmooth.iff_split_injection hsurj]
+  refine ⟨(Ideal.cotangentEquivOfEq hker_eq.symm).toLinearMap ∘ₗ
+    LinearMap.restrictScalars (MvPolynomial (Fin n) (ZMod p)) l', ?_⟩
+  apply LinearMap.ext
+  intro c
+  obtain ⟨z, rfl⟩ := Ideal.toCotangent_surjective _ c
+  obtain ⟨zv, hzv⟩ := z
+  have hzvspan : zv ∈ Ideal.span {f} := hker_eq ▸ hzv
+  obtain ⟨q, rfl⟩ := Ideal.mem_span_singleton.mp hzvspan
+  have hmemspan : f * q ∈ Ideal.span {f} := hzvspan
+  have hDz : (1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+        ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) (f * q)
+      = (Ideal.Quotient.mk (Ideal.span {f}) q) •
+        ((1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+          ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) f) := by
+    rw [Derivation.leibniz, tmul_add,
+      show (1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+          ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] (f • D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) q)
+        = 0 from by
+      rw [← TensorProduct.smul_tmul, ← Algebra.algebraMap_eq_smul_one,
+        Ideal.Quotient.algebraMap_eq, hf0, TensorProduct.zero_tmul], zero_add,
+      ← TensorProduct.smul_tmul, ← Algebra.algebraMap_eq_smul_one,
+      Ideal.Quotient.algebraMap_eq, TensorProduct.smul_tmul', smul_eq_mul, mul_one]
+  have hzc : Ideal.toCotangent (Ideal.span {f}) ⟨f * q, hmemspan⟩
+      = (Ideal.Quotient.mk (Ideal.span {f}) q) • Ideal.toCotangent (Ideal.span {f}) ⟨f, hfI⟩ := by
+    have heq : (⟨f * q, hmemspan⟩ : Ideal.span {f}) = q • ⟨f, hfI⟩ := by
+      apply Subtype.ext; simp [mul_comm]
+    rw [heq, map_smul, ← Ideal.Quotient.algebraMap_eq, algebraMap_smul]
+  simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
+    KaehlerDifferential.kerCotangentToTensor_toCotangent, LinearMap.id_coe, id_eq]
+  show (Ideal.cotangentEquivOfEq hker_eq.symm) (l' ((1 : MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})
+      ⊗ₜ[MvPolynomial (Fin n) (ZMod p)] D (ZMod p) (MvPolynomial (Fin n) (ZMod p)) (f * q)))
+    = Ideal.toCotangent _ ⟨f * q, hzv⟩
+  rw [hDz, map_smul, hl1, ← hzc, Ideal.cotangentEquivOfEq_toCotangent]
 
 end JacobianMv
 
@@ -939,6 +1005,7 @@ section AxiomAudit
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
+#print axioms JacobianMv.formallySmooth_of_grad_span_eq_top
 end AxiomAudit
 
 end Spt2
