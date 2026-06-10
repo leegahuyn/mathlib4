@@ -60,6 +60,27 @@ import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 
 open Polynomial
 
+/-! ## Helper: transport of the cotangent space `I/I²` along an ideal equality.
+
+Mathlib's `Ideal.Cotangent` is attached to a *specific* ideal, and there is no
+built-in transport along an equality of ideals.  This causes a presentation
+mismatch when an ideal arises both as `RingHom.ker (algebraMap …)` and as an
+explicit `Ideal.span {f}`.  We add the (otherwise missing) transport equivalence,
+which is the key to the multivariate Jacobian criterion below. -/
+namespace Ideal
+
+variable {R : Type*} [CommRing R]
+
+/-- Transport of the cotangent space `I/I²` along an equality of ideals `I = J`. -/
+def cotangentEquivOfEq {I J : Ideal R} (h : I = J) : I.Cotangent ≃ₗ[R] J.Cotangent := by
+  subst h; exact LinearEquiv.refl R I.Cotangent
+
+@[simp] lemma cotangentEquivOfEq_toCotangent {I J : Ideal R} (h : I = J) (x : I) :
+    cotangentEquivOfEq h (I.toCotangent x) = J.toCotangent ⟨x.1, h ▸ x.2⟩ := by
+  subst h; rfl
+
+end Ideal
+
 namespace Spt2
 
 /-! ## §2.1 (Algebraic/Geometric detector) — Theorem 2.1 core.
@@ -855,22 +876,26 @@ theorem h1Cotangent_subsingleton_standardEtale (P : StandardEtalePair (ZMod p)) 
 
 /-! ### Multivariate deep direction `J_f = ⊤ ⇒ smooth` — scope note.
 
-The gate form above (`jacobianQuotient_subsingleton_iff`) and the standard-étale
-bivariate object `H¹ = 0` (`h1Cotangent_subsingleton_standardEtale`) are formalized.
-The full *deep* direction — "if the partials `∂f/∂xᵢ` generate the unit ideal then
-`A = 𝔽_p[x]/(f)` is formally smooth" — reduces, via
-`Algebra.FormallySmooth.iff_split_injection`, to building a retraction of the
-conormal map `I/I² → A ⊗ Ω[𝔽_p[x]]` from a partition of unity `Σ gᵢ ∂f/∂xᵢ = 1`
-(`l(1 ⊗ dxᵢ) = gᵢ · [f]`).  The argument is mathematically complete, but assembling
-it at the object level is blocked by a Mathlib API gap: `kerCotangentToTensor` is
-stated for the ideal `I = RingHom.ker (algebraMap 𝔽_p[x] A)`, whose
-`Ideal.Cotangent` is a module over `𝔽_p[x] / I`, whereas the partition coefficients
-and the tensor `A ⊗ Ω` live over `A = 𝔽_p[x]/(f)`.  These ideals are equal
-(`Ideal.mk_ker`) but not definitionally, and Mathlib currently provides no transport
-of `Ideal.Cotangent` along an ideal equality, so the `A`-linear retraction cannot be
-formed cleanly here.  Completing it is a self-contained follow-up (e.g. add
-`Ideal.cotangentEquivOfEq`, or restate `kerCotangentToTensor` for an arbitrary
-presenting ideal). -/
+The gate form (`jacobianQuotient_subsingleton_iff`) and the standard-étale bivariate
+object `H¹ = 0` (`h1Cotangent_subsingleton_standardEtale`) are formalized.  The full
+*deep* direction — "if the partials `∂f/∂xᵢ` generate the unit ideal then
+`A = 𝔽_p[x]/(f)` is formally smooth" — has a complete proof strategy: a partition of
+unity `Σ gᵢ ∂f/∂xᵢ = 1` yields a retraction of the conormal map
+`I/I² → A ⊗ Ω[𝔽_p[x]]` (`l(1 ⊗ dxᵢ) = gᵢ · [f]`), whence
+`Algebra.FormallySmooth.iff_split_injection`.  Carrying it out at the object level
+needs two transports across the equality `RingHom.ker (algebraMap 𝔽_p[x] A) = (f)`:
+
+  1. of the cotangent space — provided above as `Ideal.cotangentEquivOfEq`; and
+  2. the scalar tower `IsScalarTower 𝔽_p[x] A (Ideal.Cotangent I)` for a *general*
+     ideal `I`, which Mathlib supplies only for the maximal-ideal / residue-field
+     case (the `CotangentSpace` instances in `RingTheory.Ideal.Cotangent`), not for
+     an arbitrary `I` (its `↥I` is not an `A`-module, so the generic
+     `Submodule.Quotient.isScalarTower` does not apply).
+
+Item 2 is the remaining Mathlib-core gap; once it (or a presentation-agnostic
+restatement of `kerCotangentToTensor`) lands, the retraction above closes the proof
+verbatim.  We provide the partial machinery (`Ideal.cotangentEquivOfEq`) and leave
+this as a self-contained follow-up rather than introduce an axiom. -/
 
 end JacobianMv
 
@@ -910,6 +935,7 @@ section AxiomAudit
 #print axioms JacobianReal.formallyUnramified_iff_squarefree
 #print axioms JacobianReal.subsingleton_kaehler_iff_squarefree
 #print axioms JacobianReal.kaehlerEquivJacobianQuotient
+#print axioms Ideal.cotangentEquivOfEq
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
