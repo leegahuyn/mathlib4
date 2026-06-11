@@ -39,8 +39,11 @@
                                       ↦ thickness_stable_coprime                PROVED
     Thm 20, Cor(D(∆))  derived equalizer = cotangent test (CONDITIONAL)
                                       ↦ derived_equalizer_tfae                  PROVED (cond.)
+    Cor 2777 (group form)  |ker| = exp(IC) via the §I group iso
+                                      ↦ card_ker_eq_exp_IC                       PROVED
     Thm 1/18  X prime ⇔ ∃ global section
                                       ↦ overlap_glue_iff_lcm (gluing core only)  PARTIAL
+                                        certification_iff_of_complete  CONDITIONAL (skeleton)
 
   ⚠ CORRECTIONS found while formalizing:
     • §3.4(3) "Zero-Class Decision Rule" states T ∈ (M)∩(pᵏ) ⇔ gcd(M,pᵏ)∣T ⇔
