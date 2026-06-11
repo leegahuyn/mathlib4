@@ -445,10 +445,11 @@ theorem certification_iff_of_complete
 /-! ## §O — Functoriality / naturality of the obstruction (partial: M-tower + order).
 
 The paper states the primewise decomposition is "natural in M and in the
-factorization of N".  ⚠ FULL naturality of `Tor₁(ℤ/M, -)` as a natural isomorphism
-needs the Tor FUNCTOR, which is absent here by design (kernels are used as proxies);
-likewise the GROUP-level additivity `Tor(⊕Bᵢ) ≅ ⊕Tor(Bᵢ)` (Lemma B/11) is NOT
-formalized.  What IS unconditional and verified: -/
+factorization of N".  The BINARY group-level additivity (Lemma B/11) is now
+formalized via `kerTransport`/`ker_additivity_coprime` below.  ⚠ Still open: full
+naturality of `Tor₁(ℤ/M, -)` as a NATURAL transformation (needs the Tor FUNCTOR,
+absent here by design — kernels are proxies) and the n-fold `Tor(⊕ᵢBᵢ) ≅ ⊕ᵢTor(Bᵢ)`
+(needs iterating `ker_additivity_coprime` over the prime factorisation). -/
 
 /-- Functoriality of the obstruction in `M`: multiplication-by-`M` is a composition
 tower, `×(M₁·M₂) = ×M₁ ∘ ×M₂` on `ℤ/N`.  (So obstruction kernels are nested along
@@ -490,8 +491,8 @@ theorem gcd_mul_coprime {N₁ N₂ M : ℕ} (hN₁ : N₁ ≠ 0) (hN₂ : N₂ �
 
 /-- **Order-level additivity (Lemma B/11, binary shadow).** The order of the derived
 obstruction group is multiplicative over coprime CRT factors:
-`|ker(×M on ℤ/N₁N₂)| = |ker(×M on ℤ/N₁)|·|ker(×M on ℤ/N₂)|`.  (The full GROUP-level
-`Tor(⊕Bᵢ) ≅ ⊕Tor(Bᵢ)` needs the Tor functor / kernel transport, still open here.) -/
+`|ker(×M on ℤ/N₁N₂)| = |ker(×M on ℤ/N₁)|·|ker(×M on ℤ/N₂)|`.  (Upgraded to a genuine
+group isomorphism by `ker_additivity_coprime` below.) -/
 theorem card_ker_mul_coprime {N₁ N₂ : ℕ} [NeZero N₁] [NeZero N₂] (M : ℕ)
     (h : Nat.Coprime N₁ N₂) :
     Nat.card (AddMonoidHom.mulLeft (M : ZMod (N₁ * N₂))).ker
@@ -500,6 +501,54 @@ theorem card_ker_mul_coprime {N₁ N₂ : ℕ} [NeZero N₁] [NeZero N₂] (M : 
   haveI : NeZero (N₁ * N₂) := ⟨Nat.mul_ne_zero (NeZero.ne N₁) (NeZero.ne N₂)⟩
   rw [card_ker_mulLeft, card_ker_mulLeft, card_ker_mulLeft,
       gcd_mul_coprime (NeZero.ne N₁) (NeZero.ne N₂) h]
+
+/-- **Transport of the obstruction across an additive iso (naturality core).**
+If `e : A ≃+ B` intertwines two additive endomorphisms, `e ∘ f = g ∘ e`, then the
+obstruction kernels are isomorphic *as groups*, `ker f ≃+ ker g`.  This is the
+transport lemma that the GROUP-level Tor additivity (Lemma B/11) requires. -/
+def kerTransport {A B : Type*} [AddCommGroup A] [AddCommGroup B] (e : A ≃+ B)
+    (f : A →+ A) (g : B →+ B) (h : ∀ a, e (f a) = g (e a)) : f.ker ≃+ g.ker where
+  toFun x := ⟨e x.1, by
+    rw [AddMonoidHom.mem_ker, ← h x.1, AddMonoidHom.mem_ker.mp x.2, map_zero]⟩
+  invFun y := ⟨e.symm y.1, by
+    rw [AddMonoidHom.mem_ker]; apply e.injective
+    rw [h, e.apply_symm_apply, AddMonoidHom.mem_ker.mp y.2, map_zero]⟩
+  left_inv x := Subtype.ext (e.symm_apply_apply x.1)
+  right_inv y := Subtype.ext (e.apply_symm_apply y.1)
+  map_add' x y := Subtype.ext (map_add e x.1 y.1)
+
+/-- **Lemma B/11 at the GROUP level (binary, step 1).** Via the binary CRT ring iso,
+the obstruction group transports: `ker(×M on ℤ/N₁N₂) ≃+ ker(×M on ℤ/N₁ × ℤ/N₂)`. -/
+noncomputable def ker_crt_transport {N₁ N₂ : ℕ} (M : ℕ) (h : Nat.Coprime N₁ N₂) :
+    (AddMonoidHom.mulLeft (M : ZMod (N₁ * N₂))).ker ≃+
+      (AddMonoidHom.mulLeft (M : ZMod N₁ × ZMod N₂)).ker := by
+  refine kerTransport (ZMod.chineseRemainder h).toAddEquiv _ _ (fun a => ?_)
+  show (ZMod.chineseRemainder h) ((M : ZMod (N₁ * N₂)) * a)
+      = (M : ZMod N₁ × ZMod N₂) * (ZMod.chineseRemainder h) a
+  rw [map_mul, map_natCast]
+
+/-- **Lemma B/11 at the GROUP level (binary, step 2).** The obstruction on a product
+ring splits as the product of obstructions:
+`ker(×M on A × B) ≃+ ker(×M on A) × ker(×M on B)`. -/
+def ker_mulLeft_prod {A B : Type*} [Ring A] [Ring B] (M : ℕ) :
+    (AddMonoidHom.mulLeft (M : A × B)).ker ≃+
+      (AddMonoidHom.mulLeft (M : A)).ker × (AddMonoidHom.mulLeft (M : B)).ker := by
+  have hset : (AddMonoidHom.mulLeft (M : A × B)).ker
+      = (AddMonoidHom.mulLeft (M : A)).ker.prod (AddMonoidHom.mulLeft (M : B)).ker := by
+    ext ⟨a, b⟩
+    rw [AddMonoidHom.mem_ker, AddSubgroup.mem_prod, AddMonoidHom.mem_ker, AddMonoidHom.mem_ker]
+    show (M : A × B) * (a, b) = 0 ↔ (M : A) * a = 0 ∧ (M : B) * b = 0
+    rw [show ((M : A × B)) = ((M : A), (M : B)) from rfl, Prod.mk_mul_mk, Prod.mk_eq_zero]
+  rw [hset]
+  exact AddSubgroup.prodEquiv _ _
+
+/-- **Lemma B/11 at the GROUP level (binary).** Composing the two steps: the derived
+obstruction is additive over coprime CRT factors *as a group*,
+`ker(×M on ℤ/N₁N₂) ≃+ ker(×M on ℤ/N₁) × ker(×M on ℤ/N₂)`. -/
+noncomputable def ker_additivity_coprime {N₁ N₂ : ℕ} (M : ℕ) (h : Nat.Coprime N₁ N₂) :
+    (AddMonoidHom.mulLeft (M : ZMod (N₁ * N₂))).ker ≃+
+      (AddMonoidHom.mulLeft (M : ZMod N₁)).ker × (AddMonoidHom.mulLeft (M : ZMod N₂)).ker :=
+  (ker_crt_transport M h).trans (ker_mulLeft_prod M)
 
 /-! ## §P — Amalgam as sectionwise intersection (Group-2 fragment, NOT the full site).
 
@@ -560,6 +609,10 @@ section AxiomAudit
 #print axioms exp_IC_coprime_mul
 #print axioms gcd_mul_coprime
 #print axioms card_ker_mul_coprime
+#print axioms kerTransport
+#print axioms ker_crt_transport
+#print axioms ker_mulLeft_prod
+#print axioms ker_additivity_coprime
 #print axioms amalgam_mem_iff
 end AxiomAudit
 
