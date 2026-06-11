@@ -466,6 +466,41 @@ theorem exp_IC_coprime_mul {M N₁ N₂ : ℕ} (hN₁ : N₁ ≠ 0) (hN₂ : N�
     Real.exp (IC M (N₁ * N₂)) = Real.exp (IC M N₁) * Real.exp (IC M N₂) := by
   rw [IC_coprime_add hN₁ hN₂ h, Real.exp_add]
 
+/-- gcd is multiplicative over coprime moduli (per-prime, via disjoint supports):
+`gcd(N₁N₂, M) = gcd(N₁,M)·gcd(N₂,M)` when `gcd(N₁,N₂)=1`. -/
+theorem gcd_mul_coprime {N₁ N₂ M : ℕ} (hN₁ : N₁ ≠ 0) (hN₂ : N₂ ≠ 0) (h : Nat.Coprime N₁ N₂) :
+    Nat.gcd (N₁ * N₂) M = Nat.gcd N₁ M * Nat.gcd N₂ M := by
+  rcases eq_or_ne M 0 with rfl | hM
+  · simp
+  refine Nat.eq_of_factorization_eq (Nat.gcd_ne_zero_left (Nat.mul_ne_zero hN₁ hN₂))
+      (Nat.mul_ne_zero (Nat.gcd_ne_zero_left hN₁) (Nat.gcd_ne_zero_left hN₂)) (fun p => ?_)
+  rw [factorization_gcd_apply (Nat.mul_ne_zero hN₁ hN₂) hM,
+      Nat.factorization_mul (Nat.gcd_ne_zero_left hN₁) (Nat.gcd_ne_zero_left hN₂),
+      Finsupp.add_apply, factorization_gcd_apply hN₁ hM, factorization_gcd_apply hN₂ hM,
+      Nat.factorization_mul hN₁ hN₂, Finsupp.add_apply]
+  have hdisj : N₁.factorization p = 0 ∨ N₂.factorization p = 0 := by
+    by_contra hc
+    push_neg at hc
+    have m1 : p ∈ N₁.primeFactors := by
+      rw [← Nat.support_factorization]; exact Finsupp.mem_support_iff.mpr hc.1
+    have m2 : p ∈ N₂.primeFactors := by
+      rw [← Nat.support_factorization]; exact Finsupp.mem_support_iff.mpr hc.2
+    exact (Finset.disjoint_left.mp h.disjoint_primeFactors m1) m2
+  rcases hdisj with h0 | h0 <;> rw [h0] <;> simp
+
+/-- **Order-level additivity (Lemma B/11, binary shadow).** The order of the derived
+obstruction group is multiplicative over coprime CRT factors:
+`|ker(×M on ℤ/N₁N₂)| = |ker(×M on ℤ/N₁)|·|ker(×M on ℤ/N₂)|`.  (The full GROUP-level
+`Tor(⊕Bᵢ) ≅ ⊕Tor(Bᵢ)` needs the Tor functor / kernel transport, still open here.) -/
+theorem card_ker_mul_coprime {N₁ N₂ : ℕ} [NeZero N₁] [NeZero N₂] (M : ℕ)
+    (h : Nat.Coprime N₁ N₂) :
+    Nat.card (AddMonoidHom.mulLeft (M : ZMod (N₁ * N₂))).ker
+      = Nat.card (AddMonoidHom.mulLeft (M : ZMod N₁)).ker
+        * Nat.card (AddMonoidHom.mulLeft (M : ZMod N₂)).ker := by
+  haveI : NeZero (N₁ * N₂) := ⟨Nat.mul_ne_zero (NeZero.ne N₁) (NeZero.ne N₂)⟩
+  rw [card_ker_mulLeft, card_ker_mulLeft, card_ker_mulLeft,
+      gcd_mul_coprime (NeZero.ne N₁) (NeZero.ne N₂) h]
+
 /-! ## §P — Amalgam as sectionwise intersection (Group-2 fragment, NOT the full site).
 
 ⚠ The paper's Group 2 asks for the principal-open site on `Spec ℤ` with a Grothendieck
@@ -523,6 +558,8 @@ section AxiomAudit
 #print axioms certification_iff_of_complete
 #print axioms mulLeft_mul_comp
 #print axioms exp_IC_coprime_mul
+#print axioms gcd_mul_coprime
+#print axioms card_ker_mul_coprime
 #print axioms amalgam_mem_iff
 end AxiomAudit
 
