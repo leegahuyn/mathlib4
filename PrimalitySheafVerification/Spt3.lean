@@ -22,11 +22,19 @@
     Lem 6/12, Cor(2721)  Tor₁(ℤ/M,ℤ/pᵏ) ≅ ℤ/gcd, order = gcd
                                       ↦ card_ker_mulLeft, commonResidueFiber_card,
                                         obstructionFree_iff_card/coprime         PROVED
+    Thm 4.1, Lem 6/12 (§4.4) Tor as a GROUP iso  ker(×M on ℤ/N) ≅ ℤ/gcd
+                                      ↦ ker_mulLeft_addEquiv,
+                                        ker_trivial_of_coprime          PROVED (group level)
     Lem A/10/11, Thm 14, Rem 19  CRT split, primewise, |Tor| = ∏ qᵃ
                                       ↦ crt_iso, gcd_eq_prod_primeFactors        PROVED
+    Lem A/10 (§4.4)  n-fold CRT  ℤ/N ≅ Π_{q∣N} ℤ/q^{v_q(N)}
+                                      ↦ crt_pi_iso  (= ZMod.equivPi)            PROVED
     §3.4(7), Cor(2777), Lem 15/16  IC = ∑ min·log q, |Tor| = exp(IC), mono, add
                                       ↦ IC, card_Tor_eq_exp_IC, IC_mono,
                                         IC_coprime_add                           PROVED
+    Prop 17 (§4.6)  affine bit-cost bound  Cost ≤ C₁·IC/log2 + C₂
+                                      ↦ log2_mul_sum_min_le_IC, sum_min_le_IC_div_log2,
+                                        cost_affine_bound                        PROVED
     Prop 8/Cor 9  stability under CRT refinement
                                       ↦ thickness_stable_coprime                PROVED
     Thm 20, Cor(D(∆))  derived equalizer = cotangent test (CONDITIONAL)
@@ -59,8 +67,10 @@ import Mathlib.RingTheory.Ideal.Operations
 import Mathlib.RingTheory.Int.Basic
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Data.ZMod.QuotientGroup
+import Mathlib.Data.ZMod.QuotientRing
 import Mathlib.Data.Nat.Factorization.Basic
 import Mathlib.GroupTheory.Index
+import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Tactic.NormNum.GCD
 import Mathlib.Tactic.TFAE
@@ -277,6 +287,158 @@ theorem overlap_glue_iff_lcm (M N a b : ℤ) :
     (M ∣ (a - b) ∧ N ∣ (a - b)) ↔ lcm M N ∣ (a - b) :=
   lcm_dvd_iff.symm
 
+/-! ## §I — Tor as a GROUP isomorphism (Thm 4.1 / Lem 6,12, §4.4 "Complete Proofs").
+
+The core file proves only the *cardinality* `|ker(×M on ℤ/N)| = gcd(N,M)`
+(`card_ker_mulLeft`).  §4.4 of the paper is titled "Complete Proofs" and proves a
+genuine group isomorphism, so for literal fidelity we upgrade the equicardinality
+to an honest additive group isomorphism `ker(×M on ℤ/N) ≃+ ℤ/gcd(N,M)`.
+
+Argument: the kernel is an additive subgroup of the cyclic group `ℤ/N`, hence
+cyclic (`AddSubgroup.isAddCyclic`); `ℤ/gcd` is cyclic (`ZMod.instIsAddCyclic`); two
+finite cyclic groups of equal order are isomorphic (`addEquivOfAddCyclicCardEq`),
+and the orders agree by `card_ker_mulLeft`. -/
+
+/-- **Theorem 4.1 / Lemma 6,12 (GROUP isomorphism).** The derived obstruction is
+not merely equinumerous with `ℤ/gcd` — there is a genuine additive group
+isomorphism `ker(×M on ℤ/N) ≃+ ℤ/gcd(N,M)`. -/
+noncomputable def ker_mulLeft_addEquiv (N : ℕ) [NeZero N] (M : ℕ) :
+    (AddMonoidHom.mulLeft (M : ZMod N)).ker ≃+ ZMod (Nat.gcd N M) := by
+  haveI : NeZero (Nat.gcd N M) := ⟨Nat.gcd_ne_zero_left (NeZero.ne N)⟩
+  apply addEquivOfAddCyclicCardEq
+  rw [card_ker_mulLeft, Nat.card_eq_fintype_card, ZMod.card]
+
+/-- **Cor (obstruction-free, GROUP form).** No obstruction (`gcd N M = 1`) iff the
+derived group `ker(×M on ℤ/N)` is trivial, i.e. isomorphic to `0 = ℤ/1`. -/
+noncomputable def ker_trivial_of_coprime (N : ℕ) [NeZero N] (M : ℕ)
+    (h : Nat.gcd N M = 1) :
+    (AddMonoidHom.mulLeft (M : ZMod N)).ker ≃+ ZMod 1 := by
+  have e := ker_mulLeft_addEquiv N M
+  rwa [h] at e
+
+/-! ## §J — n-fold CRT decomposition of `ℤ/N` (Lemma A / 10). -/
+
+/-- **Lemma A / 10 (n-fold CRT).** The full primewise decomposition
+`ℤ/N ≃+* Π_{q ∣ N} ℤ/q^{v_q(N)}` — the ring-level statement behind the binary
+`crt_iso`, supplied by Mathlib's `ZMod.equivPi`.  Combined with §I this realises
+the paper's `Tor₁(ℤ/M, ℤ/N) ≅ ⊕_{q∣N} ℤ/q^{min}` at the group level. -/
+noncomputable def crt_pi_iso {N : ℕ} (hN : N ≠ 0) :
+    ZMod N ≃+* Π (q : N.primeFactors), ZMod (q ^ (N.factorization q)) :=
+  ZMod.equivPi N hN
+
+/-! ## §K — Affine bit-cost bound in IC (Proposition 17, §4.6). -/
+
+/-- For a prime `q`, `log 2 ≤ log q`, so the unweighted thickness count is
+dominated termwise by `IC`: `(log 2)·∑_{q∣N} min{v_q M, v_q N} ≤ IC(M;N)`. -/
+theorem log2_mul_sum_min_le_IC (M N : ℕ) :
+    Real.log 2 * (∑ q ∈ N.primeFactors,
+        (min (M.factorization q) (N.factorization q) : ℝ)) ≤ IC M N := by
+  rw [IC, Finset.mul_sum]
+  refine Finset.sum_le_sum (fun q hq => ?_)
+  have hqp : Nat.Prime q := (Nat.mem_primeFactors.mp hq).1
+  have hqpos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hqp.pos
+  have hlog : Real.log 2 ≤ Real.log q :=
+    (Real.log_le_log_iff (by norm_num) hqpos).mpr (by exact_mod_cast hqp.two_le)
+  have hmin : (0 : ℝ) ≤ (min (M.factorization q) (N.factorization q) : ℝ) := by positivity
+  rw [mul_comm ((min (M.factorization q) (N.factorization q) : ℝ)) (Real.log q)]
+  exact mul_le_mul_of_nonneg_right hlog hmin
+
+/-- Consequently `∑_{q∣N} min{v_q M, v_q N} ≤ IC(M;N) / log 2`. -/
+theorem sum_min_le_IC_div_log2 (M N : ℕ) :
+    (∑ q ∈ N.primeFactors,
+        (min (M.factorization q) (N.factorization q) : ℝ)) ≤ IC M N / Real.log 2 := by
+  rw [le_div_iff₀ (Real.log_pos (by norm_num)), mul_comm]
+  exact log2_mul_sum_min_le_IC M N
+
+/-- **Proposition 17 (affine bound in IC).** Any cost that is bounded per-prime by
+the local thicknesses (the S1–S3 unit-charge accounting of §4.6) satisfies an
+affine bound in `IC/log 2`:  `Cost ≤ C₁·IC(M;N)/log 2 + C₂`.  The constants are
+the cost-model parameters; the arithmetic content is `∑ min ≤ IC/log 2`. -/
+theorem cost_affine_bound {M N : ℕ} (cost C₁ C₂ : ℝ) (hC₁ : 0 ≤ C₁)
+    (hcost : cost ≤ C₁ * (∑ q ∈ N.primeFactors,
+        (min (M.factorization q) (N.factorization q) : ℝ)) + C₂) :
+    cost ≤ C₁ * (IC M N / Real.log 2) + C₂ := by
+  have h := mul_le_mul_of_nonneg_left (sum_min_le_IC_div_log2 M N) hC₁
+  linarith
+
+/-! ## §L — Worked examples at the GROUP level (Examples 1–3, §4.4.5). -/
+section GroupExamples
+/-- **Example 1 (§4.4.5).** `M = 24 = 2³·3`, `N = 1440 = 2⁵·3²·5`.
+`Tor ≅ ℤ/2³ ⊕ ℤ/3 ≅ ℤ/24` as an additive GROUP (not just `|Tor| = 24`). -/
+example : Nonempty ((AddMonoidHom.mulLeft ((24 : ℕ) : ZMod 1440)).ker ≃+ ZMod 24) := by
+  haveI : NeZero (1440 : ℕ) := ⟨by norm_num⟩
+  have e := ker_mulLeft_addEquiv 1440 24
+  rw [show Nat.gcd 1440 24 = 24 from by norm_num] at e
+  exact ⟨e⟩
+/-- The same modulus splits primewise by the n-fold CRT: `ℤ/1440 ≅ Π_q ℤ/q^{v_q}`. -/
+example : Nonempty (ZMod 1440 ≃+*
+    Π (q : (1440 : ℕ).primeFactors), ZMod (q ^ ((1440 : ℕ).factorization q))) :=
+  ⟨crt_pi_iso (by norm_num)⟩
+/-- **Example 2 (coprime).** `gcd(24,35) = 1`, so `Tor = 0`: `ker ≅ ℤ/1`. -/
+example : Nonempty ((AddMonoidHom.mulLeft ((35 : ℕ) : ZMod 24)).ker ≃+ ZMod 1) := by
+  haveI : NeZero (24 : ℕ) := ⟨by norm_num⟩
+  have e := ker_mulLeft_addEquiv 24 35
+  rw [show Nat.gcd 24 35 = 1 from by norm_num] at e
+  exact ⟨e⟩
+/-- **Example 3 (single prime power).** `N = 9, M = 12`: `ker(×12 on ℤ/9) ≅ ℤ/3`. -/
+example : Nonempty ((AddMonoidHom.mulLeft ((12 : ℕ) : ZMod 9)).ker ≃+ ZMod 3) := by
+  haveI : NeZero (9 : ℕ) := ⟨by norm_num⟩
+  have e := ker_mulLeft_addEquiv 9 12
+  rw [show Nat.gcd 9 12 = 3 from by norm_num] at e
+  exact ⟨e⟩
+end GroupExamples
+
+/-! ## §M — IC readout through the group isomorphism (Cor 2777, group form). -/
+
+/-- **Cor (group-level IC readout).** Routed through the group isomorphism
+`ker(×M on ℤ/N) ≃+ ℤ/gcd(N,M)` (§I), the *order of the derived obstruction group*
+equals `exp(IC(M;N))` — upgrading `card_Tor_eq_exp_IC` from the bare `gcd` to the
+actual group `ker`. -/
+theorem card_ker_eq_exp_IC (N : ℕ) [NeZero N] (M : ℕ) (hM : M ≠ 0) :
+    (Nat.card (AddMonoidHom.mulLeft (M : ZMod N)).ker : ℝ) = Real.exp (IC M N) := by
+  haveI : NeZero (Nat.gcd N M) := ⟨Nat.gcd_ne_zero_left (NeZero.ne N)⟩
+  rw [Nat.card_congr (ker_mulLeft_addEquiv N M).toEquiv, Nat.card_eq_fintype_card, ZMod.card,
+      Nat.gcd_comm, card_Tor_eq_exp_IC hM (NeZero.ne N)]
+
+/-- **Example 1, symbolic IC (§4.4.5).** `IC(24;1440) = 3·log 2 + log 3`, obtained
+robustly from `gcd(24,1440) = 24 = 2³·3` via `card_Tor_eq_exp_IC`. -/
+example : IC 24 1440 = 3 * Real.log 2 + Real.log 3 := by
+  have h := card_Tor_eq_exp_IC (M := 24) (N := 1440) (by norm_num) (by norm_num)
+  rw [show Nat.gcd 24 1440 = 24 from by norm_num] at h
+  have h24 : IC 24 1440 = Real.log 24 := by
+    rw [← Real.log_exp (IC 24 1440), ← h]; norm_num
+  rw [h24, show (24 : ℝ) = 2 ^ 3 * 3 from by norm_num,
+      Real.log_mul (by positivity) (by norm_num), Real.log_pow]
+  push_cast; ring
+
+/-! ## §N — Global certification (Theorem 1/18), CONDITIONAL skeleton.
+
+The core file (§H) formalizes only the gluing *mechanism* and deliberately does NOT
+certify "prime ⇔ global section", because the `(⇐)` completeness direction — that
+the four layers (in particular the EC/AKS regularity layer) exclude every composite
+— is a deep claim, NOT an elementary arithmetic fact, and the supporting machinery
+(AKS/ECPP primality, the sheaf/site model, p-adic-log/Baker bounds, étale/motivic
+detectors) is ABSENT from Mathlib.  Assuming the certification as a bare hypothesis
+on the conclusion would be circular.
+
+Here we record Theorem 18's logical ARCHITECTURE honestly: a global section is
+membership in all four layer-predicates; *soundness* of the EC layer yields the
+`(⇐)` direction automatically, while *completeness* is isolated as the single
+EXPLICIT hypothesis `Hcomplete` (the paper's EC/AKS content, NOT proved here).  This
+is the same conditional style as `derived_equalizer_tfae` (Thm 20).  ⚠ It does NOT
+prove primality certification; it makes precise WHERE the unproved content sits. -/
+
+/-- **Theorem 1 / 18 (CONDITIONAL).** With the four layers as predicates and the EC
+layer sound (`FEC X → X.Prime`), `X` is prime iff it carries a global section (lies
+in all four layers), GIVEN the completeness hypothesis `Hcomplete`.  Soundness is
+discharged here; completeness remains the paper's deep, unformalized input. -/
+theorem certification_iff_of_complete
+    (Fnum Fmod Fpadic FEC : ℕ → Prop) (X : ℕ)
+    (Hsound : FEC X → X.Prime)
+    (Hcomplete : X.Prime → Fnum X ∧ Fmod X ∧ Fpadic X ∧ FEC X) :
+    X.Prime ↔ (Fnum X ∧ Fmod X ∧ Fpadic X ∧ FEC X) :=
+  ⟨Hcomplete, fun ⟨_, _, _, hEC⟩ => Hsound hEC⟩
+
 /-! ## Examples (Examples 1–3 of §4.3) and the corrected discrepancy. -/
 
 section Examples
@@ -309,6 +471,14 @@ section AxiomAudit
 #print axioms thickness_stable_coprime
 #print axioms derived_equalizer_tfae
 #print axioms overlap_glue_iff_lcm
+#print axioms ker_mulLeft_addEquiv
+#print axioms ker_trivial_of_coprime
+#print axioms crt_pi_iso
+#print axioms log2_mul_sum_min_le_IC
+#print axioms sum_min_le_IC_div_log2
+#print axioms cost_affine_bound
+#print axioms card_ker_eq_exp_IC
+#print axioms certification_iff_of_complete
 end AxiomAudit
 
 end Spt3
