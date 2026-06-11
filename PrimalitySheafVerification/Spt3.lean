@@ -442,6 +442,45 @@ theorem certification_iff_of_complete
     X.Prime ↔ (Fnum X ∧ Fmod X ∧ Fpadic X ∧ FEC X) :=
   ⟨Hcomplete, fun ⟨_, _, _, hEC⟩ => Hsound hEC⟩
 
+/-! ## §O — Functoriality / naturality of the obstruction (partial: M-tower + order).
+
+The paper states the primewise decomposition is "natural in M and in the
+factorization of N".  ⚠ FULL naturality of `Tor₁(ℤ/M, -)` as a natural isomorphism
+needs the Tor FUNCTOR, which is absent here by design (kernels are used as proxies);
+likewise the GROUP-level additivity `Tor(⊕Bᵢ) ≅ ⊕Tor(Bᵢ)` (Lemma B/11) is NOT
+formalized.  What IS unconditional and verified: -/
+
+/-- Functoriality of the obstruction in `M`: multiplication-by-`M` is a composition
+tower, `×(M₁·M₂) = ×M₁ ∘ ×M₂` on `ℤ/N`.  (So obstruction kernels are nested along
+divisibility of `M`.) -/
+theorem mulLeft_mul_comp (N : ℕ) [NeZero N] (M₁ M₂ : ℕ) :
+    AddMonoidHom.mulLeft ((M₁ : ZMod N) * (M₂ : ZMod N))
+      = (AddMonoidHom.mulLeft (M₁ : ZMod N)).comp (AddMonoidHom.mulLeft (M₂ : ZMod N)) := by
+  ext x; exact mul_assoc (M₁ : ZMod N) (M₂ : ZMod N) x
+
+/-- Order-level additivity (the `|Tor|` shadow of Lemma B/11): the order of the
+derived obstruction is multiplicative over coprime CRT factors, i.e. `exp(IC)` is
+multiplicative — `|Tor|(N₁N₂) = |Tor|(N₁)·|Tor|(N₂)` for `gcd(N₁,N₂)=1`. -/
+theorem exp_IC_coprime_mul {M N₁ N₂ : ℕ} (hN₁ : N₁ ≠ 0) (hN₂ : N₂ ≠ 0)
+    (h : Nat.Coprime N₁ N₂) :
+    Real.exp (IC M (N₁ * N₂)) = Real.exp (IC M N₁) * Real.exp (IC M N₂) := by
+  rw [IC_coprime_add hN₁ hN₂ h, Real.exp_add]
+
+/-! ## §P — Amalgam as sectionwise intersection (Group-2 fragment, NOT the full site).
+
+⚠ The paper's Group 2 asks for the principal-open site on `Spec ℤ` with a Grothendieck
+topology and four layer SUBSHEAVES — a large `CategoryTheory.Sites` construction that
+is NOT done here.  What we record unconditionally is only the *sectionwise* algebra the
+proof uses: over a fixed open, the amalgam section set is the intersection of the four
+layer section sets, `Γ(U,F) = Γ(U,Fnum) ∩ Γ(U,Fmod) ∩ Γ(U,Fp) ∩ Γ(U,FEC)`. -/
+
+/-- Sectionwise amalgam: membership in the fiber-product section set is the
+conjunction of the four layer memberships. -/
+theorem amalgam_mem_iff (Fnum Fmod Fpadic FEC : Set ℕ) (X : ℕ) :
+    X ∈ Fnum ∩ Fmod ∩ Fpadic ∩ FEC
+      ↔ X ∈ Fnum ∧ X ∈ Fmod ∧ X ∈ Fpadic ∧ X ∈ FEC := by
+  simp only [Set.mem_inter_iff]; tauto
+
 /-! ## Examples (Examples 1–3 of §4.3) and the corrected discrepancy. -/
 
 section Examples
@@ -482,6 +521,9 @@ section AxiomAudit
 #print axioms cost_affine_bound
 #print axioms card_ker_eq_exp_IC
 #print axioms certification_iff_of_complete
+#print axioms mulLeft_mul_comp
+#print axioms exp_IC_coprime_mul
+#print axioms amalgam_mem_iff
 end AxiomAudit
 
 end Spt3
