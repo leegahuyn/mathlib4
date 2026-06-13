@@ -43,6 +43,7 @@ import Mathlib.Algebra.MvPolynomial.PDeriv
 import Mathlib.RingTheory.Radical.Basic
 import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 import Mathlib.RingTheory.Polynomial.Resultant.Basic
+import Mathlib.RingTheory.Spectrum.Prime.Topology
 import Mathlib.FieldTheory.IsAlgClosed.Basic
 import Mathlib.NumberTheory.Padics.Hensel
 import Mathlib.LinearAlgebra.Isomorphisms
@@ -2388,6 +2389,582 @@ theorem corollary_6_11 (C : CertifiedSPT2) :
       C.derived.derivedSilent ].TFAE :=
   C.master_equivalence
 
+/-! ## J'. Adapter from the small certificate semantics to the paper interface
+
+The original `PaperFullFormalization.ArithmeticCurve` interface contains large
+bridge fields such as `alg_iff_etaleSilent`, `alg_iff_motivicSilent`, and
+`alg_iff_derivedSilent`.  The following construction fills those bridge fields
+with actual Lean proofs derived from the smaller certificates above.  This does
+not create native etale cohomology or motives, but it removes a layer of
+monolithic assumptions: the paper interface is now generated from the explicit
+algebraic, normalization, etale, motivic, derived, gluing, and Jacobian
+certificates.
+-/
+
+private theorem jacobianFullRank_iff_smooth (C : CertifiedSPT2) :
+    C.ciJacobian.localFullRank <-> C.algebraic.smooth := by
+  exact C.ciJacobian.localFullRank_iff_jacobianUnit.trans
+    (C.algebraic.discriminant_iff_jacobianUnit.symm.trans
+      C.algebraic.discriminant_iff_smooth)
+
+private theorem localLength_zero_iff_fullRank (C : CertifiedSPT2) :
+    C.algebraic.localLength = 0 <-> C.ciJacobian.localFullRank := by
+  exact C.algebraic.localLength_zero_iff_jacobianUnit.trans
+    C.ciJacobian.localFullRank_iff_jacobianUnit.symm
+
+private theorem h1_decomposition_from_certificate (C : CertifiedSPT2) :
+    C.normalization.h1Curve =
+      C.normalization.h1SmoothOpen +
+        (C.normalization.b1 + C.normalization.deltaSum) := by
+  have hcurve := C.normalization.h1_curve_formula
+  have hopen := C.normalization.h1_open_formula
+  omega
+
+private theorem certified_good_to_zero (C : CertifiedSPT2)
+    (hgood : C.gluing.principalOpenGood) :
+    C.normalization.bump = 0 /\
+      C.motive.eulerJump = 0 /\
+      C.derived.derivedDimension = 0 /\
+      C.algebraic.localLength = 0 := by
+  have hdisc : C.algebraic.discriminantGate :=
+    C.gluing.good_iff_discriminant.mp hgood
+  have hsmooth : C.algebraic.smooth :=
+    C.algebraic.discriminant_iff_smooth.mp hdisc
+  have hbump : C.normalization.bump = 0 :=
+    C.normalization.smooth_iff_bump_zero.mp hsmooth
+  have hmzero : C.motive.eulerJump = 0 := by
+    rw [C.motive.eulerJump_eq_bump, hbump]
+  have hlen : C.algebraic.localLength = 0 :=
+    C.algebraic.localLength_zero_iff_smooth.mpr hsmooth
+  have hdim : C.derived.derivedDimension = 0 := by
+    rw [C.derived.derivedDimension_eq_localLength, hlen]
+  exact ⟨hbump, hmzero, hdim, hlen⟩
+
+private theorem certified_minimal_certificate (C : CertifiedSPT2)
+    (hgood : C.gluing.principalOpenGood) :
+    C.algebraic.smooth /\
+      C.geometricSmooth /\
+      C.etale.etaleSilent /\
+      C.motive.motivicSilent /\
+      C.derived.derivedSilent := by
+  have hdisc : C.algebraic.discriminantGate :=
+    C.gluing.good_iff_discriminant.mp hgood
+  have hsmooth : C.algebraic.smooth :=
+    C.algebraic.discriminant_iff_smooth.mp hdisc
+  have hgeom : C.geometricSmooth := C.algebraic_iff_geometric.mp hsmooth
+  have hbump : C.normalization.bump = 0 :=
+    C.normalization.smooth_iff_bump_zero.mp hsmooth
+  have het : C.etale.etaleSilent :=
+    C.etale.etaleSilent_iff_bump_zero.mpr hbump
+  have hmzero : C.motive.eulerJump = 0 := by
+    rw [C.motive.eulerJump_eq_bump, hbump]
+  have hmot : C.motive.motivicSilent :=
+    C.motive.motivicSilent_iff_eulerJump_zero.mpr hmzero
+  have hlen : C.algebraic.localLength = 0 :=
+    C.algebraic.localLength_zero_iff_smooth.mpr hsmooth
+  have hdim : C.derived.derivedDimension = 0 := by
+    rw [C.derived.derivedDimension_eq_localLength, hlen]
+  have hder : C.derived.derivedSilent :=
+    C.derived.derivedSilent_iff_dimension_zero.mpr hdim
+  exact ⟨hsmooth, hgeom, het, hmot, hder⟩
+
+/-- Convert the fine-grained `CertifiedSPT2` certificate into the paper-facing
+`ArithmeticCurve` interface, filling the large interface fields by proof rather
+than by direct assumption. -/
+noncomputable def toArithmeticCurve (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.ArithmeticCurve where
+  prime := p
+  goodPrime := C.gluing.principalOpenGood
+  discriminantOpen := C.algebraic.discriminantGate
+  henselGate := C.hensel.henselGate
+  jacobianFullRank := C.ciJacobian.localFullRank
+  algSmooth := C.algebraic.smooth
+  geomSmooth := C.geometricSmooth
+  etaleSilent := C.etale.etaleSilent
+  motivicSilent := C.motive.motivicSilent
+  derivedSilent := C.derived.derivedSilent
+  baseChangeStable :=
+    C.gluing.principalOpenGood ->
+      C.gluing.fiberBaseChangeStable /\ C.gluing.completionBaseChangeStable
+  sectionwiseComputable :=
+    C.gluing.principalOpenGood -> C.gluing.sectionwiseComputable
+  crtGlue :=
+    C.gluing.principalOpenGood -> C.gluing.crtGluing
+  transportStable :=
+    C.gluing.principalOpenGood -> C.gluing.transportStable
+  b1 := C.normalization.b1
+  deltaSum := C.normalization.deltaSum
+  H1X := C.normalization.h1Curve
+  H1U := C.normalization.h1SmoothOpen
+  bump := C.normalization.bump
+  eulerJump := C.motive.eulerJump
+  defectMotiveChi := C.motive.eulerJump
+  derivedDimension := C.derived.derivedDimension
+  localLength := C.algebraic.localLength
+  alg_iff_geom := C.algebraic_iff_geometric
+  alg_iff_etaleSilent := C.etale.etale_iff_smooth.symm
+  alg_iff_motivicSilent := C.motive.motivic_iff_smooth.symm
+  alg_iff_derivedSilent := C.derived.derivedSilent_iff_smooth.symm
+  good_iff_discriminant := C.gluing.good_iff_discriminant
+  hensel_iff_discriminant := C.hensel.hensel_iff_discriminant
+  jacobian_iff_alg := jacobianFullRank_iff_smooth C
+  good_to_alg := fun hgood =>
+    C.algebraic.discriminant_iff_smooth.mp
+      (C.gluing.good_iff_discriminant.mp hgood)
+  good_to_geom := fun hgood =>
+    C.algebraic_iff_geometric.mp
+      (C.algebraic.discriminant_iff_smooth.mp
+        (C.gluing.good_iff_discriminant.mp hgood))
+  good_to_etale := fun hgood =>
+    (certified_minimal_certificate C hgood).2.2.1
+  good_to_motivic := fun hgood =>
+    (certified_minimal_certificate C hgood).2.2.2.1
+  good_to_derived := fun hgood =>
+    (certified_minimal_certificate C hgood).2.2.2.2
+  good_to_zero := fun hgood => certified_good_to_zero C hgood
+  h1_decomposition := h1_decomposition_from_certificate C
+  bump_formula := C.normalization.bump_formula
+  defect_motive_formula := rfl
+  etale_motivic_equality := C.motive.eulerJump_eq_bump.symm
+  derived_dimension_formula := C.derived.derivedDimension_eq_localLength
+  derived_iff_jacobian :=
+    C.derived.derivedSilent_iff_smooth.trans
+      (jacobianFullRank_iff_smooth C).symm
+  localLength_zero_iff := localLength_zero_iff_fullRank C
+  base_change_identities := C.gluing.good_implies_baseChange
+  sectionwise_computation := C.gluing.good_implies_sectionwise
+  crt_gluing := C.gluing.good_implies_crt
+  transport_stability := C.gluing.good_implies_transport
+  minimal_certificate := fun hgood => certified_minimal_certificate C hgood
+
+/-- The paper-facing Master Equivalence obtained from a fine-grained certificate,
+with the large bridge fields filled by the adapter above. -/
+theorem toArithmeticCurve_theorem_6_1 (C : CertifiedSPT2) (p : Nat) :
+    [ (toArithmeticCurve C p).algSmooth,
+      (toArithmeticCurve C p).geomSmooth,
+      (toArithmeticCurve C p).etaleSilent,
+      (toArithmeticCurve C p).motivicSilent,
+      (toArithmeticCurve C p).derivedSilent ].TFAE :=
+  PaperFullFormalization.theorem_6_1 (toArithmeticCurve C p)
+
+/-- Paper Theorem 1.1 generated from the fine-grained certificate. -/
+theorem toArithmeticCurve_theorem_1_1 (C : CertifiedSPT2) (p : Nat) :
+    [ (toArithmeticCurve C p).algSmooth,
+      (toArithmeticCurve C p).geomSmooth,
+      (toArithmeticCurve C p).etaleSilent,
+      (toArithmeticCurve C p).motivicSilent,
+      (toArithmeticCurve C p).derivedSilent ].TFAE :=
+  PaperFullFormalization.theorem_1_1 (toArithmeticCurve C p)
+
+/-- Paper Corollary 1.4 generated from the fine-grained certificate. -/
+theorem toArithmeticCurve_corollary_1_4
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent := by
+  exact PaperFullFormalization.corollary_1_4 (toArithmeticCurve C p) hgood
+
+/-- Paper Corollary 1.5 generated from the fine-grained certificate. -/
+theorem toArithmeticCurve_corollary_1_5
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 /\
+      (toArithmeticCurve C p).derivedDimension = 0 /\
+      (toArithmeticCurve C p).localLength = 0 := by
+  exact PaperFullFormalization.corollary_1_5 (toArithmeticCurve C p) hgood
+
+/-- Paper Proposition 1.6 generated from the fine-grained certificate. -/
+theorem toArithmeticCurve_proposition_1_6
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent := by
+  exact PaperFullFormalization.proposition_1_6 (toArithmeticCurve C p) hgood
+
+/-- The paper-interface algebraic/geometric bridge generated from the small
+certificate. -/
+theorem toArithmeticCurve_alg_iff_geom (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).algSmooth <->
+      (toArithmeticCurve C p).geomSmooth := by
+  exact C.algebraic_iff_geometric
+
+/-- The paper-interface algebraic/etale bridge generated from the etale bump
+certificate and the normalization certificate. -/
+theorem toArithmeticCurve_alg_iff_etale (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).algSmooth <->
+      (toArithmeticCurve C p).etaleSilent := by
+  exact C.etale.etale_iff_smooth.symm
+
+/-- The paper-interface algebraic/motivic bridge generated from the motive
+certificate and the normalization certificate. -/
+theorem toArithmeticCurve_alg_iff_motivic (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).algSmooth <->
+      (toArithmeticCurve C p).motivicSilent := by
+  exact C.motive.motivic_iff_smooth.symm
+
+/-- The paper-interface algebraic/derived bridge generated from the derived
+dimension/local-length certificate. -/
+theorem toArithmeticCurve_alg_iff_derived (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).algSmooth <->
+      (toArithmeticCurve C p).derivedSilent := by
+  exact C.derived.derivedSilent_iff_smooth.symm
+
+/-- Good-prime detector silence for the generated paper interface. -/
+theorem toArithmeticCurve_good_prime_box (C : CertifiedSPT2) (p : Nat)
+    (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent := by
+  exact certified_minimal_certificate C hgood
+
+/-- Numeric good-prime box for the generated paper interface. -/
+theorem toArithmeticCurve_numeric_good_prime_box (C : CertifiedSPT2) (p : Nat)
+    (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 /\
+      (toArithmeticCurve C p).derivedDimension = 0 /\
+      (toArithmeticCurve C p).localLength = 0 := by
+  exact certified_good_to_zero C hgood
+
+/-- Etale bump equals motivic Euler jump in the generated paper interface,
+filled from `MotiveCore.eulerJump_eq_bump`. -/
+theorem toArithmeticCurve_etale_motivic_equality
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.EtaleBump (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) := by
+  exact C.motive.eulerJump_eq_bump.symm
+
+/-- Derived dimension equals algebraic local length in the generated paper
+interface. -/
+theorem toArithmeticCurve_derived_dimension_formula
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).derivedDimension =
+      (toArithmeticCurve C p).localLength := by
+  exact C.derived.derivedDimension_eq_localLength
+
+/-- Transport and base-change stability for the generated paper interface. -/
+theorem toArithmeticCurve_transport_stability
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).transportStable /\
+      (toArithmeticCurve C p).baseChangeStable := by
+  exact PaperFullFormalization.lemma_6_6 (toArithmeticCurve C p)
+
+/-! ## J''. Paper-statement wrappers for the coverage rows
+
+The following theorems turn the coverage-matrix rows into callable Lean facts
+for the generated paper interface `toArithmeticCurve C p`.
+-/
+
+theorem toArithmeticCurve_corollary_2_6
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent := by
+  exact PaperFullFormalization.corollary_2_6 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_proposition_2_7
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).baseChangeStable := by
+  exact PaperFullFormalization.proposition_2_7 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_corollary_2_11
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).crtGlue /\
+      (toArithmeticCurve C p).baseChangeStable := by
+  exact PaperFullFormalization.corollary_2_11 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_defectMotive_eq
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.DefectMotive (toArithmeticCurve C p) =
+      C.motive.eulerJump := by
+  rfl
+
+theorem toArithmeticCurve_motivicEulerJump_eq
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) =
+      C.motive.eulerJump := by
+  rfl
+
+theorem toArithmeticCurve_etaleBump_eq
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.EtaleBump (toArithmeticCurve C p) =
+      C.normalization.bump := by
+  rfl
+
+theorem paper_lemma_2_17_actual (M N a : Int) :
+    (M ∣ a /\ N ∣ a) <-> lcm M N ∣ a := by
+  exact PaperFullFormalization.lemma_2_17 M N a
+
+theorem paper_proposition_2_18_actual {a b : Nat} (h : Nat.Coprime a b) :
+    Nonempty (ZMod (a * b) ≃+* ZMod a × ZMod b) := by
+  exact PaperFullFormalization.proposition_2_18 h
+
+theorem toArithmeticCurve_lemma_3_2
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).H1X =
+      (toArithmeticCurve C p).H1U +
+        ((toArithmeticCurve C p).b1 + (toArithmeticCurve C p).deltaSum) := by
+  exact PaperFullFormalization.lemma_3_2 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_theorem_3_3
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).bump =
+      (toArithmeticCurve C p).eulerJump := by
+  exact PaperFullFormalization.theorem_3_3 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_corollary_3_4
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).bump = 0 := by
+  exact PaperFullFormalization.corollary_3_4 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_theorem_3_6
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).bump =
+        (toArithmeticCurve C p).b1 + (toArithmeticCurve C p).deltaSum /\
+      (toArithmeticCurve C p).bump =
+        (toArithmeticCurve C p).eulerJump := by
+  exact PaperFullFormalization.theorem_3_6 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_visiblePrimeOn
+    (C : CertifiedSPT2) (p : Nat) (V : PaperFullFormalization.PrincipalOpen) :
+    PaperFullFormalization.VisiblePrimeOn V (toArithmeticCurve C p) <->
+      C.gluing.principalOpenGood := by
+  rfl
+
+theorem toArithmeticCurve_proposition_3_10
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).sectionwiseComputable := by
+  exact PaperFullFormalization.proposition_3_10 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_lemma_3_12
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).crtGlue := by
+  exact PaperFullFormalization.lemma_3_12 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_3_13
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).henselGate <->
+      (toArithmeticCurve C p).discriminantOpen := by
+  exact PaperFullFormalization.proposition_1_3 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_detectors_alg
+    (C : CertifiedSPT2) (p : Nat) :
+    (PaperFullFormalization.detectors_on_fibers (toArithmeticCurve C p)).alg =
+      C.algebraic.smooth := by
+  rfl
+
+theorem toArithmeticCurve_theorem_3_16
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent := by
+  exact PaperFullFormalization.theorem_3_16 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_lemma_3_18
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 /\
+      (toArithmeticCurve C p).derivedDimension = 0 := by
+  exact PaperFullFormalization.lemma_3_18 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_proposition_3_23
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.DefectMotive (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) := by
+  exact PaperFullFormalization.proposition_3_23 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_3_24
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).H1X =
+      (toArithmeticCurve C p).H1U +
+        ((toArithmeticCurve C p).b1 + (toArithmeticCurve C p).deltaSum) := by
+  exact PaperFullFormalization.proposition_3_24 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_3_25
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).bump =
+      (toArithmeticCurve C p).b1 + (toArithmeticCurve C p).deltaSum := by
+  exact PaperFullFormalization.proposition_3_25 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_3_27
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.DefectMotive (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) := by
+  exact PaperFullFormalization.proposition_3_27 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_theorem_3_28
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.EtaleBump (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) := by
+  exact PaperFullFormalization.theorem_3_28 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_3_30
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 := by
+  exact PaperFullFormalization.proposition_3_30 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_proposition_5_1
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).derivedSilent <->
+      (toArithmeticCurve C p).algSmooth := by
+  exact PaperFullFormalization.proposition_5_1 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_5_3
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).derivedDimension =
+      (toArithmeticCurve C p).localLength := by
+  exact PaperFullFormalization.proposition_5_3 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_corollary_5_4
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).derivedSilent <->
+      (toArithmeticCurve C p).jacobianFullRank := by
+  exact PaperFullFormalization.corollary_5_4 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_5_5
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).baseChangeStable := by
+  exact PaperFullFormalization.proposition_5_5 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_5_8
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).derivedSilent := by
+  exact PaperFullFormalization.proposition_5_8 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_corollary_5_9
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).derivedSilent <->
+      (toArithmeticCurve C p).etaleSilent /\
+        (toArithmeticCurve C p).motivicSilent := by
+  exact PaperFullFormalization.corollary_5_9 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_definition_6_3_good_primes
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.GoodPrime (toArithmeticCurve C p) <->
+      PaperFullFormalization.DiscriminantOpen (toArithmeticCurve C p) := by
+  exact PaperFullFormalization.definition_6_3_good_primes (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_corollary_6_4
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent /\
+      (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 /\
+      (toArithmeticCurve C p).derivedDimension = 0 := by
+  exact PaperFullFormalization.corollary_6_4 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_lemma_6_6
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).transportStable /\
+      (toArithmeticCurve C p).baseChangeStable := by
+  exact PaperFullFormalization.lemma_6_6 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_theorem_6_9
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).bump =
+      (toArithmeticCurve C p).eulerJump := by
+  exact PaperFullFormalization.theorem_6_9 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_proposition_6_10
+    (C : CertifiedSPT2) (p : Nat) :
+    PaperFullFormalization.EtaleBump (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p) := by
+  exact PaperFullFormalization.proposition_6_10 (toArithmeticCurve C p)
+
+theorem toArithmeticCurve_corollary_6_11
+    (C : CertifiedSPT2) (p : Nat) :
+    [ (toArithmeticCurve C p).algSmooth,
+      (toArithmeticCurve C p).geomSmooth,
+      (toArithmeticCurve C p).etaleSilent,
+      (toArithmeticCurve C p).motivicSilent,
+      (toArithmeticCurve C p).derivedSilent ].TFAE :=
+  PaperFullFormalization.corollary_6_11 (toArithmeticCurve C p)
+
+/-! ## J'''. Certificate-level replacement status
+
+This instantiates the checklist structure from
+`AdditionalFormalization.ReplacementTargets`: each field is interpreted as the
+actual paper-interface statement produced by `toArithmeticCurve`, and then
+proved from the fine-grained certificate.
+-/
+
+def certificateReplacementStatus (C : CertifiedSPT2) (p : Nat) :
+    AdditionalFormalization.ReplacementTargets.PaperFieldReplacementStatus where
+  alg_iff_motivicSilent_replaced :=
+    (toArithmeticCurve C p).algSmooth <->
+      (toArithmeticCurve C p).motivicSilent
+  etale_motivic_equality_replaced :=
+    PaperFullFormalization.EtaleBump (toArithmeticCurve C p) =
+      PaperFullFormalization.MotivicEulerJump (toArithmeticCurve C p)
+  derived_dimension_formula_replaced :=
+    (toArithmeticCurve C p).derivedDimension =
+      (toArithmeticCurve C p).localLength
+  transport_stability_replaced :=
+    (toArithmeticCurve C p).transportStable /\
+      (toArithmeticCurve C p).baseChangeStable
+  all_ArithmeticCurve_bridge_fields_removed :=
+    ((toArithmeticCurve C p).algSmooth <->
+        (toArithmeticCurve C p).geomSmooth) /\
+      ((toArithmeticCurve C p).algSmooth <->
+        (toArithmeticCurve C p).etaleSilent) /\
+      ((toArithmeticCurve C p).algSmooth <->
+        (toArithmeticCurve C p).motivicSilent) /\
+      ((toArithmeticCurve C p).algSmooth <->
+        (toArithmeticCurve C p).derivedSilent)
+
+theorem certificateReplacementStatus_alg_iff_motivic
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).alg_iff_motivicSilent_replaced := by
+  exact toArithmeticCurve_alg_iff_motivic C p
+
+theorem certificateReplacementStatus_etale_motivic
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).etale_motivic_equality_replaced := by
+  exact toArithmeticCurve_etale_motivic_equality C p
+
+theorem certificateReplacementStatus_derived_dimension
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).derived_dimension_formula_replaced := by
+  exact toArithmeticCurve_derived_dimension_formula C p
+
+theorem certificateReplacementStatus_transport
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).transport_stability_replaced := by
+  exact toArithmeticCurve_transport_stability C p
+
+theorem certificateReplacementStatus_all_bridges
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).all_ArithmeticCurve_bridge_fields_removed := by
+  exact ⟨toArithmeticCurve_alg_iff_geom C p,
+    toArithmeticCurve_alg_iff_etale C p,
+    toArithmeticCurve_alg_iff_motivic C p,
+    toArithmeticCurve_alg_iff_derived C p⟩
+
+theorem certificateReplacementStatus_all
+    (C : CertifiedSPT2) (p : Nat) :
+    (certificateReplacementStatus C p).alg_iff_motivicSilent_replaced /\
+      (certificateReplacementStatus C p).etale_motivic_equality_replaced /\
+      (certificateReplacementStatus C p).derived_dimension_formula_replaced /\
+      (certificateReplacementStatus C p).transport_stability_replaced /\
+      (certificateReplacementStatus C p).all_ArithmeticCurve_bridge_fields_removed := by
+  exact ⟨certificateReplacementStatus_alg_iff_motivic C p,
+    certificateReplacementStatus_etale_motivic C p,
+    certificateReplacementStatus_derived_dimension C p,
+    certificateReplacementStatus_transport C p,
+    certificateReplacementStatus_all_bridges C p⟩
+
 end CertifiedSPT2
 
 /-! ## K. Axiom audit targets -/
@@ -2404,6 +2981,25 @@ section AxiomAudit
 #print axioms CertifiedSPT2.good_prime_box
 #print axioms CertifiedSPT2.stability_box
 #print axioms CertifiedSPT2.corollary_6_11
+#print axioms CertifiedSPT2.toArithmeticCurve
+#print axioms CertifiedSPT2.toArithmeticCurve_theorem_6_1
+#print axioms CertifiedSPT2.toArithmeticCurve_theorem_1_1
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_1_4
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_1_5
+#print axioms CertifiedSPT2.toArithmeticCurve_proposition_1_6
+#print axioms CertifiedSPT2.toArithmeticCurve_good_prime_box
+#print axioms CertifiedSPT2.toArithmeticCurve_numeric_good_prime_box
+#print axioms CertifiedSPT2.toArithmeticCurve_etale_motivic_equality
+#print axioms CertifiedSPT2.toArithmeticCurve_derived_dimension_formula
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_2_6
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_2_11
+#print axioms CertifiedSPT2.paper_lemma_2_17_actual
+#print axioms CertifiedSPT2.paper_proposition_2_18_actual
+#print axioms CertifiedSPT2.toArithmeticCurve_theorem_3_6
+#print axioms CertifiedSPT2.toArithmeticCurve_proposition_5_1
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_6_4
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_6_11
+#print axioms CertifiedSPT2.certificateReplacementStatus_all
 end AxiomAudit
 
 end BypassCertificate
@@ -2448,6 +3044,36 @@ namespace CompletionLayer
 
 variable {p : ℕ} [Fact p.Prime]
 
+/-! ## A0. Irreducible polynomials over `𝔽_p` are separable and squarefree.
+
+This fills one of the immediate Mathlib-level checklist items used implicitly
+throughout the paper: over the perfect field `ZMod p`, irreducible polynomials
+are separable; hence they are squarefree and coprime to their derivative.
+-/
+
+theorem irreducible_imp_squarefree
+    (f : (ZMod p)[X]) (hirr : Irreducible f) :
+    Squarefree f := by
+  exact hirr.squarefree
+
+theorem irreducible_imp_separable
+    (f : (ZMod p)[X]) (hirr : Irreducible f) :
+    f.Separable := by
+  exact PerfectField.separable_of_irreducible hirr
+
+theorem irreducible_imp_coprime_derivative
+    (f : (ZMod p)[X]) (hirr : Irreducible f) :
+    IsCoprime f (derivative f) := by
+  exact (squarefree_iff_coprime_derivative f).mp
+    (irreducible_imp_squarefree f hirr)
+
+theorem irreducible_separable_squarefree_coprime_chain
+    (f : (ZMod p)[X]) (hirr : Irreducible f) :
+    f.Separable ∧ Squarefree f ∧ IsCoprime f (derivative f) := by
+  exact ⟨irreducible_imp_separable f hirr,
+    irreducible_imp_squarefree f hirr,
+    irreducible_imp_coprime_derivative f hirr⟩
+
 /-! ## A. Theorem 2.1, condition (1): the resultant / discriminant gate.
 
 The existing layers prove the chain (2)⇔(3)⇔(4)⇔(5) of Theorem 2.1
@@ -2473,6 +3099,23 @@ theorem resultant_derivative_ne_zero_iff_squarefree
     (f : (ZMod p)[X]) (hf : f ≠ 0) :
     f.resultant (derivative f) ≠ 0 ↔ Squarefree f := by
   rw [ne_eq, resultant_derivative_eq_zero_iff_not_squarefree f hf, not_not]
+
+theorem irreducible_imp_resultant_derivative_ne_zero
+    (f : (ZMod p)[X]) (hf : f ≠ 0) (hirr : Irreducible f) :
+    f.resultant (derivative f) ≠ 0 := by
+  exact (resultant_derivative_ne_zero_iff_squarefree f hf).mpr
+    (irreducible_imp_squarefree f hirr)
+
+theorem irreducible_good_gate_chain
+    (f : (ZMod p)[X]) (hf : f ≠ 0) (hirr : Irreducible f) :
+    f.Separable ∧
+      Squarefree f ∧
+      IsCoprime f (derivative f) ∧
+      f.resultant (derivative f) ≠ 0 := by
+  exact ⟨irreducible_imp_separable f hirr,
+    irreducible_imp_squarefree f hirr,
+    irreducible_imp_coprime_derivative f hirr,
+    irreducible_imp_resultant_derivative_ne_zero f hf hirr⟩
 
 /-! ## B. Theorem 2.1, condition (4): the geometric critical point.
 
@@ -2670,6 +3313,9 @@ end Spt2
 /-! ## Axiom audit for the genuine completion layer. -/
 section AxiomAudit
 #print axioms Spt2.CompletionLayer.resultant_derivative_eq_zero_iff_not_squarefree
+#print axioms Spt2.CompletionLayer.irreducible_imp_separable
+#print axioms Spt2.CompletionLayer.irreducible_separable_squarefree_coprime_chain
+#print axioms Spt2.CompletionLayer.irreducible_good_gate_chain
 #print axioms Spt2.CompletionLayer.not_squarefree_iff_hasCriticalPoint
 #print axioms Spt2.CompletionLayer.theorem_2_1_full_TFAE
 #print axioms Spt2.CompletionLayer.Benchmark.jacobianIdeal_benchSurface_collapse
@@ -2677,6 +3323,91 @@ section AxiomAudit
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_tau_top
 #print axioms Spt2.CompletionLayer.algebraicCoreOf_TFAE
 end AxiomAudit
+
+/-! ## Principal-open basis layer (genuine `PrimeSpectrum` topology).
+
+The certificate layer contains predicates such as `principalOpenGood`,
+`sectionwiseComputable`, and `crtGluing`.  Full sheaf/equalizer gluing for the
+paper still needs scheme-level detector sheaves, but the topological and ideal
+theory of the principal-open basis itself is already native in Mathlib.  The
+following wrappers record that part as actual Lean theorems, not certificate
+fields: membership, top/bottom opens, intersection, power invariance, basis, and
+the ideal-generation criterion for a family of principal opens to cover `Spec R`.
+-/
+
+namespace Spt2
+namespace PrincipalOpenReal
+
+variable {R : Type*} [CommSemiring R]
+
+/-- Membership in a principal open `D(f)` is exactly nonmembership of `f` in the
+corresponding prime ideal. -/
+theorem mem_basicOpen_iff (f : R) (x : PrimeSpectrum R) :
+    x ∈ PrimeSpectrum.basicOpen f ↔ f ∉ x.asIdeal := by
+  exact PrimeSpectrum.mem_basicOpen f x
+
+/-- `D(1) = Spec R`. -/
+theorem basicOpen_top :
+    PrimeSpectrum.basicOpen (1 : R) = ⊤ := by
+  simpa using (PrimeSpectrum.basicOpen_one (R := R))
+
+/-- `D(0) = ∅`. -/
+theorem basicOpen_bottom :
+    PrimeSpectrum.basicOpen (0 : R) = ⊥ := by
+  simpa using (PrimeSpectrum.basicOpen_zero (R := R))
+
+/-- Principal opens are closed under finite intersections:
+`D(fg) = D(f) ∩ D(g)`. -/
+theorem basicOpen_inter (f g : R) :
+    PrimeSpectrum.basicOpen (f * g) =
+      PrimeSpectrum.basicOpen f ⊓ PrimeSpectrum.basicOpen g := by
+  simpa using (PrimeSpectrum.basicOpen_mul f g)
+
+/-- Passing from `f` to a positive power does not change the principal open. -/
+theorem basicOpen_power_same (f : R) {n : ℕ} (hn : 0 < n) :
+    PrimeSpectrum.basicOpen (f ^ n) = PrimeSpectrum.basicOpen f := by
+  simpa using (PrimeSpectrum.basicOpen_pow f n hn)
+
+/-- The principal opens form a basis of the Zariski topology on `Spec R`. -/
+theorem basicOpen_basis :
+    TopologicalSpace.Opens.IsBasis (Set.range (@PrimeSpectrum.basicOpen R _)) := by
+  simpa using (PrimeSpectrum.isBasis_basic_opens (R := R))
+
+/-- A family of principal opens covers `Spec R` exactly when its generators span
+the unit ideal.  This is the ideal-theoretic cover gate underlying CRT/open
+gluing arguments. -/
+theorem basicOpen_cover_top_iff {ι : Type*} (f : ι → R) :
+    (⨆ i : ι, PrimeSpectrum.basicOpen (f i)) = ⊤ ↔
+      Ideal.span (Set.range f) = ⊤ := by
+  simpa using (PrimeSpectrum.iSup_basicOpen_eq_top_iff (f := f))
+
+/-- Set-indexed form of the same principal-open cover criterion. -/
+theorem basicOpen_set_cover_top_iff (s : Set R) :
+    (⨆ i : s, PrimeSpectrum.basicOpen (i : R)) = ⊤ ↔
+      Ideal.span s = ⊤ := by
+  simpa using (PrimeSpectrum.iSup_basicOpen_eq_top_iff' (s := s))
+
+/-- Two principal opens cover `Spec R` exactly when the two corresponding
+elements generate the unit ideal. -/
+theorem basicOpen_pair_cover_top_iff (f g : R) :
+    PrimeSpectrum.basicOpen f ⊔ PrimeSpectrum.basicOpen g = ⊤ ↔
+      Ideal.span ({f, g} : Set R) = ⊤ := by
+  rw [sup_eq_iSup]
+  simpa [Bool.range_eq, Set.pair_comm f g] using
+    (PrimeSpectrum.iSup_basicOpen_eq_top_iff
+      (R := R) (f := fun b : Bool => if b then f else g))
+
+end PrincipalOpenReal
+end Spt2
+
+/-! ### Axiom audit for the native principal-open layer. -/
+section PrincipalOpenAxiomAudit
+#print axioms Spt2.PrincipalOpenReal.mem_basicOpen_iff
+#print axioms Spt2.PrincipalOpenReal.basicOpen_inter
+#print axioms Spt2.PrincipalOpenReal.basicOpen_basis
+#print axioms Spt2.PrincipalOpenReal.basicOpen_cover_top_iff
+#print axioms Spt2.PrincipalOpenReal.basicOpen_pair_cover_top_iff
+end PrincipalOpenAxiomAudit
 
 /- ============================================================ -/
 /- ==== Source layer: Spt2_GeometricWorkarounds.lean -/
@@ -2889,4 +3620,400 @@ section AxiomAudit
 #print axioms Spt2.GeometricWorkarounds.DualGraphReal.b1_eq_zero_iff_isForest
 end AxiomAudit
 
+/-!
+================================================================================
+  Final audit layer: native-completion checklist for the SPT2 paper
+
+  This section deliberately does not pretend that certificate fields are the same
+  thing as native Lean constructions of etale cohomology, motives, scheme-level
+  cotangent complexes, and singular-curve normalization.  It records the exact
+  remaining obligations that must be discharged before the paper can honestly be
+  called fully formalized in the strongest native sense.
+================================================================================
+-/
+
+namespace Spt2
+namespace FullFormalizationAudit
+
+inductive FormalizationStatus where
+  | nativeMathlibTheorem
+  | certifiedInterface
+  | replacementTarget
+  deriving DecidableEq, Repr
+
+structure ChecklistItem where
+  paperRefs : List String
+  item : String
+  currentStatus : FormalizationStatus
+  currentEncoding : String
+  nativeCompletionRequired : String
+  deriving Repr
+
+def completedNativeCore : List ChecklistItem :=
+  [ { paperRefs := ["Theorem 2.1 algebraic core", "Lemma 2.17", "Proposition 2.18"],
+      item := "Univariate squarefree/discriminant gate, CRT kernel-intersection, and algebraic Jacobian quotient gates",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.squarefree_iff_coprime_derivative, Spt2.kernel_mem_iff_lcm, Spt2.JacobianReal, Spt2.CompletionLayer",
+      nativeCompletionRequired := "None for this algebraic core, modulo version-specific Mathlib checking" },
+    { paperRefs := ["Proposition 1.3", "Proposition 2.9", "Proposition 3.13"],
+      item := "p-adic simple-root Hensel lifting gate",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.GeometricWorkarounds.HenselReal",
+      nativeCompletionRequired := "Connect family-specific discriminants to the concrete p-adic hypotheses chart by chart" },
+    { paperRefs := ["Lemma 3.2", "Proposition 3.25"],
+      item := "Finite-dimensional short-exact-sequence dimension count",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.GeometricWorkarounds.NormalizationReal.ses_finrank",
+      nativeCompletionRequired := "Instantiate the vector spaces as actual etale/LHS cohomology of the curve normalization sequence" },
+    { paperRefs := ["Theorem 3.6", "Theorem 6.9"],
+      item := "Dual-graph first Betti number as Euler characteristic",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.GeometricWorkarounds.DualGraphReal",
+      nativeCompletionRequired := "Construct the dual graph functorially from an actual singular curve and its normalization" },
+    { paperRefs := ["Definition 3.9", "Proposition 3.10", "Lemma 3.12", "Lemma 6.6"],
+      item := "Principal-open basis and ideal-theoretic cover criterion on Spec R",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.PrincipalOpenReal",
+      nativeCompletionRequired := "Upgrade from basis/cover topology to actual detector sheaves and equalizer gluing on that basis" } ]
+
+def certificateLevelProofFill : List ChecklistItem :=
+  [ { paperRefs := ["Theorem 1.1", "Theorem 6.1", "Corollary 6.11"],
+      item := "Generate the paper-facing Master Equivalence from the fine-grained CertifiedSPT2 certificate",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_theorem_6_1",
+      nativeCompletionRequired := "Replace the fine-grained etale/motivic/derived certificates by native objects" },
+    { paperRefs := ["Theorem 1.1", "Theorem 6.1"],
+      item := "Generate alg iff geom bridge from the algebraic/geometric certificate",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_alg_iff_geom",
+      nativeCompletionRequired := "Prove algebraic/geometric smoothness equivalence for actual arithmetic curve fibers" },
+    { paperRefs := ["Theorem 1.1", "Theorem 6.1"],
+      item := "Generate alg iff etale bridge from etale bump plus normalization certificates",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_alg_iff_etale",
+      nativeCompletionRequired := "Construct actual etale cohomology and prove bump-zero iff smoothness" },
+    { paperRefs := ["Theorem 1.1", "Theorem 6.1"],
+      item := "Generate alg iff motivic bridge from motive plus normalization certificates",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_alg_iff_motivic",
+      nativeCompletionRequired := "Construct actual defect motive, Euler jump, and realization compatibility" },
+    { paperRefs := ["Theorem 1.1", "Proposition 5.1", "Theorem 6.1"],
+      item := "Generate alg iff derived bridge from derived-dimension/local-length certificates",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_alg_iff_derived",
+      nativeCompletionRequired := "Construct actual scheme cotangent complex and prove H1-vanishing iff smoothness" },
+    { paperRefs := ["Corollary 1.4", "Corollary 6.4"],
+      item := "Generate good-prime detector silence from fine-grained certificates",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_good_prime_box",
+      nativeCompletionRequired := "Replace the good-prime certificate predicates by native discriminant-open theorems" },
+    { paperRefs := ["Corollary 1.5", "Lemma 3.18"],
+      item := "Generate numeric good-prime vanishing for bump, Euler jump, derived dimension, and local length",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_numeric_good_prime_box",
+      nativeCompletionRequired := "Replace numeric certificate fields by actual dimensions/Euler characteristics/lengths" },
+    { paperRefs := ["Theorem 2.4", "Theorem 3.28", "Proposition 6.10"],
+      item := "Generate etale bump equals motivic Euler jump from MotiveCore.eulerJump_eq_bump",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_etale_motivic_equality",
+      nativeCompletionRequired := "Prove equality from actual etale realization of the motive localization triangle" },
+    { paperRefs := ["Proposition 5.3", "Corollary 5.4"],
+      item := "Generate derived dimension equals local length from the derived certificate",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_derived_dimension_formula",
+      nativeCompletionRequired := "Prove the hypersurface cotangent-complex two-term model natively" } ]
+
+def remainingNativeObligations : List ChecklistItem :=
+  [ { paperRefs := ["Definition 2.13", "Definition 3.1", "Definition 3.21"],
+      item := "Etale bump bumpp = dim H1(Xp; Lambda) - dim H1(Up; Lambda)",
+      currentStatus := FormalizationStatus.replacementTarget,
+      currentEncoding := "EtaleBumpPackage and numeric fields in ArithmeticCurve/CurveFiber",
+      nativeCompletionRequired := "Define etale cohomology groups for the relevant curves and prove finite-dimensionality and the bump formula" },
+    { paperRefs := ["Definition 2.12", "Definition 3.20", "Proposition 3.23", "Proposition 3.27"],
+      item := "Defect motive, compactly supported motives, localization triangle, and realization compatibility",
+      currentStatus := FormalizationStatus.replacementTarget,
+      currentEncoding := "MotivePackage and motivic fields in ArithmeticCurve",
+      nativeCompletionRequired := "Develop or import a Voevodsky/DM-style motive category, compact-support functor, cones, Euler characteristics, and realization functor" },
+    { paperRefs := ["Theorem 2.4", "Theorem 2.14", "Theorem 3.28", "Proposition 6.10"],
+      item := "Etale-motivic equality on curves",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "ArithmeticCurve.etale_motivic_equality, EtaleMotivicEqualityPackage",
+      nativeCompletionRequired := "Prove the equality from actual etale cohomology and actual motivic realization/localization objects" },
+    { paperRefs := ["Proposition 3.24", "Proposition 3.25", "Theorem 3.6"],
+      item := "Normalization exact sequence and delta-invariant sum for singular curves",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "NormalizationPackage, NormalizationExactSequencePackage, CurveFiber.deltaSum",
+      nativeCompletionRequired := "Construct normalization of arithmetic curve fibers, singular skyscraper sheaves, delta lengths, and the associated exact sequence" },
+    { paperRefs := ["Proposition 5.1", "Proposition 5.3", "Corollary 5.4", "Proposition 5.5"],
+      item := "Scheme-level cotangent complex and derived detector H1(L_Xp)",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "DerivedDetectorPackage, DerivedCore, JacobianReal/Multivariate local algebra substitutes",
+      nativeCompletionRequired := "Define the cotangent complex for schemes/ringed spaces, prove the hypersurface two-term model, base change, and H1-vanishing criterion" },
+    { paperRefs := ["Definition 3.9", "Proposition 3.10", "Lemma 3.12", "Lemma 6.6"],
+      item := "Principal-open sheaf/equalizer gluing and transport stability for all detectors",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "PrincipalOpenSheafGluingPackage plus ArithmeticCurve sectionwise/transport fields",
+      nativeCompletionRequired := "Replace sectionwiseComputable, crtGlue, and transportStable fields by sheaf-level theorems on the principal-open basis" },
+    { paperRefs := ["Theorem 1.1", "Theorem 6.1", "Corollary 6.11"],
+      item := "Final five-detector Master Equivalence for actual arithmetic curve fibers",
+      currentStatus := FormalizationStatus.certifiedInterface,
+      currentEncoding := "PaperFullFormalization.ArithmeticCurve and BypassCertificate.CertifiedSPT2",
+      nativeCompletionRequired := "The certificate adapter proves the bridge fields from smaller certificates; full native completion still requires replacing those certificates by actual etale, motivic, derived, and normalization objects" } ]
+
+def canClaimCompleteNativeFormalization : Prop :=
+  remainingNativeObligations = []
+
+theorem cannotClaimCompleteNativeFormalization :
+    ¬ canClaimCompleteNativeFormalization := by
+  simp [canClaimCompleteNativeFormalization, remainingNativeObligations]
+
+theorem interfaceFormalizationHasVisibleObligations :
+    remainingNativeObligations.length = 7 := by
+  rfl
+
+theorem completedNativeCore_count :
+    completedNativeCore.length = 5 := by
+  rfl
+
+theorem certificateLevelProofFill_count :
+    certificateLevelProofFill.length = 9 := by
+  rfl
+
+def pastedCoverageWrapperNames : List String :=
+  [ "CertifiedSPT2.toArithmeticCurve_theorem_1_1",
+    "CertifiedSPT2.toArithmeticCurve_corollary_1_4",
+    "CertifiedSPT2.toArithmeticCurve_corollary_1_5",
+    "CertifiedSPT2.toArithmeticCurve_proposition_1_6",
+    "CertifiedSPT2.toArithmeticCurve_corollary_2_6",
+    "CertifiedSPT2.toArithmeticCurve_proposition_2_7",
+    "CertifiedSPT2.toArithmeticCurve_corollary_2_11",
+    "CertifiedSPT2.toArithmeticCurve_defectMotive_eq",
+    "CertifiedSPT2.toArithmeticCurve_motivicEulerJump_eq",
+    "CertifiedSPT2.toArithmeticCurve_etaleBump_eq",
+    "CertifiedSPT2.paper_lemma_2_17_actual",
+    "CertifiedSPT2.paper_proposition_2_18_actual",
+    "CertifiedSPT2.toArithmeticCurve_lemma_3_2",
+    "CertifiedSPT2.toArithmeticCurve_theorem_3_3",
+    "CertifiedSPT2.toArithmeticCurve_corollary_3_4",
+    "CertifiedSPT2.toArithmeticCurve_theorem_3_6",
+    "CertifiedSPT2.toArithmeticCurve_visiblePrimeOn",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_10",
+    "CertifiedSPT2.toArithmeticCurve_lemma_3_12",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_13",
+    "CertifiedSPT2.toArithmeticCurve_detectors_alg",
+    "CertifiedSPT2.toArithmeticCurve_theorem_3_16",
+    "CertifiedSPT2.toArithmeticCurve_lemma_3_18",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_23",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_24",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_25",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_27",
+    "CertifiedSPT2.toArithmeticCurve_theorem_3_28",
+    "CertifiedSPT2.toArithmeticCurve_proposition_3_30",
+    "CertifiedSPT2.toArithmeticCurve_proposition_5_1",
+    "CertifiedSPT2.toArithmeticCurve_proposition_5_3",
+    "CertifiedSPT2.toArithmeticCurve_corollary_5_4",
+    "CertifiedSPT2.toArithmeticCurve_proposition_5_5",
+    "CertifiedSPT2.toArithmeticCurve_proposition_5_8",
+    "CertifiedSPT2.toArithmeticCurve_corollary_5_9",
+    "CertifiedSPT2.toArithmeticCurve_definition_6_3_good_primes",
+    "CertifiedSPT2.toArithmeticCurve_corollary_6_4",
+    "CertifiedSPT2.toArithmeticCurve_lemma_6_6",
+    "CertifiedSPT2.toArithmeticCurve_theorem_6_9",
+    "CertifiedSPT2.toArithmeticCurve_proposition_6_10",
+    "CertifiedSPT2.toArithmeticCurve_corollary_6_11" ]
+
+theorem pastedCoverageWrapperNames_count :
+    pastedCoverageWrapperNames.length = 41 := by
+  rfl
+
+structure PaperStatementCoverage where
+  paperRef : String
+  paperStatement : String
+  leanEncoding : String
+  status : FormalizationStatus
+  note : String
+  deriving Repr
+
+def paperCoverage : List PaperStatementCoverage :=
+  [ { paperRef := "Theorem 1.1",
+      paperStatement := "Master Equivalence, curve case",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_1_1; Spt2.BypassCertificate.CertifiedSPT2.master_equivalence",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Equivalence is proved from explicit bridge/certificate fields, not yet from native etale/motivic/derived objects" },
+    { paperRef := "Proposition 1.3",
+      paperStatement := "Hensel gate iff discriminant gate on the good locus",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_1_3; Spt2.GeometricWorkarounds.HenselReal.hensel_gate",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Hensel lifting is native; family-specific discriminant-to-Hensel identification is still an interface field" },
+    { paperRef := "Corollary 1.4",
+      paperStatement := "Good-prime box: all detectors are silent",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_1_4; Spt2.BypassCertificate.CertifiedSPT2.good_prime_box",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Depends on the same detector bridge certificates as the Master Equivalence" },
+    { paperRef := "Corollary 1.5",
+      paperStatement := "Numeric good-prime box",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_1_5",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Uses numeric fields bump, eulerJump, derivedDimension, and localLength" },
+    { paperRef := "Proposition 1.6",
+      paperStatement := "Minimal certificate on a principal open",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_1_6; Spt2.CurveModel.minimal_certificate",
+      status := FormalizationStatus.certifiedInterface,
+      note := "The certificate is explicit and visible, but not yet eliminated" },
+    { paperRef := "Theorem 2.1",
+      paperStatement := "Base-change identities and detector equivalence",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_2_1; Spt2.CompletionLayer.theorem_2_1_full_TFAE",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Algebraic TFAE is native; full curve detector equivalence still depends on bridge fields" },
+    { paperRef := "Corollary 2.2",
+      paperStatement := "Principal-open control of smoothness",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_2_2",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Encoded through good_to_alg rather than a native smooth morphism theorem for the family" },
+    { paperRef := "Theorem 2.4 / 2.14",
+      paperStatement := "Etale-motivic equality on curves",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_2_4; Spt2.PaperFullFormalization.theorem_3_28",
+      status := FormalizationStatus.certifiedInterface,
+      note := "This is one of the main remaining native obligations" },
+    { paperRef := "Corollary 2.6 / 2.15",
+      paperStatement := "Good-prime vanishing for etale, motivic, and derived detectors",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_2_6",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Vanishes by good_to_etale/good_to_motivic/good_to_derived fields" },
+    { paperRef := "Proposition 2.7 / 3.11 / 3.31",
+      paperStatement := "Base-change stability for jumps and detectors",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_2_7; Spt2.PaperFullFormalization.proposition_3_11",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Represented by baseChangeStable/base_change_identities" },
+    { paperRef := "Corollary 2.11",
+      paperStatement := "CRT gluing and stability",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_2_11; Spt2.crt_iso",
+      status := FormalizationStatus.certifiedInterface,
+      note := "CRT algebra is native; sheaf-level detector gluing is still a field" },
+    { paperRef := "Definition 2.12 / 3.20 / 6.8",
+      paperStatement := "Defect motive and motivic Euler jump",
+      leanEncoding := "Spt2.PaperFullFormalization.DefectMotive; Spt2.PaperFullFormalization.MotivicEulerJump; ReplacementTargets.MotivePackage",
+      status := FormalizationStatus.replacementTarget,
+      note := "Native motive category and realization functor are not present" },
+    { paperRef := "Definition 2.13 / 3.1 / 3.21",
+      paperStatement := "Etale bump on curves",
+      leanEncoding := "Spt2.PaperFullFormalization.EtaleBump; ReplacementTargets.EtaleBumpPackage",
+      status := FormalizationStatus.replacementTarget,
+      note := "Actual etale cohomology groups are not constructed" },
+    { paperRef := "Lemma 2.17",
+      paperStatement := "Kernel-intersection identity",
+      leanEncoding := "Spt2.kernel_mem_iff_lcm; Spt2.kernel_ideal_inter; Spt2.PaperFullFormalization.lemma_2_17",
+      status := FormalizationStatus.nativeMathlibTheorem,
+      note := "This arithmetic overlap identity is native" },
+    { paperRef := "Proposition 2.18",
+      paperStatement := "CRT gluing",
+      leanEncoding := "Spt2.crt_iso; Spt2.PaperFullFormalization.proposition_2_18",
+      status := FormalizationStatus.nativeMathlibTheorem,
+      note := "Ring-level CRT is native; detector sheaf gluing remains separate" },
+    { paperRef := "Lemma 3.2 / Proposition 3.25",
+      paperStatement := "LHS decomposition via normalization",
+      leanEncoding := "Spt2.PaperFullFormalization.lemma_3_2; Spt2.GeometricWorkarounds.NormalizationReal.h1_decomposition",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Linear algebra dimension count is native; actual curve normalization sequence is not" },
+    { paperRef := "Theorem 3.3 / 3.28 / 6.9 / Proposition 6.10",
+      paperStatement := "Bump equals motivic Euler jump on curves",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_3_3; theorem_6_9; proposition_6_10",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Equality is a field/curve-model numeric identity, not a native realization theorem" },
+    { paperRef := "Corollary 3.4 / 3.7 / 3.30",
+      paperStatement := "Good primes have no bump and no Euler jump",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_3_4; proposition_3_30",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Good-prime vanishing follows from good_to_zero" },
+    { paperRef := "Theorem 3.6",
+      paperStatement := "Normalization, dual graph, delta formula, and bump equals Euler jump",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_3_6; Spt2.GeometricWorkarounds.DualGraphReal",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Finite graph b1 is native; normalization/delta construction is not" },
+    { paperRef := "Definition 3.9",
+      paperStatement := "Visible primes and sectionwise conventions",
+      leanEncoding := "Spt2.PaperFullFormalization.VisiblePrimeOn; Spt2.PrincipalOpenReal.mem_basicOpen_iff",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Principal-open membership is native; the visible-prime convention remains predicate-level" },
+    { paperRef := "Proposition 3.10",
+      paperStatement := "Sectionwise computation on the principal-open basis",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_3_10; Spt2.PrincipalOpenReal.basicOpen_basis",
+      status := FormalizationStatus.certifiedInterface,
+      note := "The basis theorem is native; detector sectionwise computation is still represented by sectionwiseComputable" },
+    { paperRef := "Lemma 3.12",
+      paperStatement := "CRT gluing / equalizer",
+      leanEncoding := "Spt2.PaperFullFormalization.lemma_3_12; ReplacementTargets.PrincipalOpenSheafGluingPackage; Spt2.PrincipalOpenReal.basicOpen_cover_top_iff",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Ring/topological cover criterion is native; detector sheaf equalizer layer remains a native obligation" },
+    { paperRef := "Proposition 3.13",
+      paperStatement := "Hensel gate equals discriminant gate on U",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_1_3; Spt2.GeometricWorkarounds.HenselReal",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Native Hensel theorem plus an explicit discriminant bridge" },
+    { paperRef := "Definition 3.15",
+      paperStatement := "Detectors on fibers",
+      leanEncoding := "Spt2.PaperFullFormalization.detectors_on_fibers; Spt2.CurveModel.FiveDetectors",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Detector values are packaged, with some native algebraic components" },
+    { paperRef := "Theorem 3.16 / Corollary 3.17 / Lemma 3.18",
+      paperStatement := "Good-prime vanishing and zero-data memo",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_3_16; lemma_3_18",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Follows from minimal_certificate and good_to_zero" },
+    { paperRef := "Proposition 3.23 / 3.27",
+      paperStatement := "Localization triangle, Euler additivity, and realization compatibility",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_3_23; proposition_3_27; ReplacementTargets.MotivePackage",
+      status := FormalizationStatus.replacementTarget,
+      note := "Requires native motive and realization infrastructure" },
+    { paperRef := "Proposition 3.24",
+      paperStatement := "Normalization exact sequence and structure of Q",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_3_24; ReplacementTargets.NormalizationExactSequencePackage",
+      status := FormalizationStatus.replacementTarget,
+      note := "Requires native singular-curve normalization and skyscraper sheaves" },
+    { paperRef := "Proposition 5.1",
+      paperStatement := "Singularity test via the cotangent complex",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_1; ReplacementTargets.DerivedDetectorPackage",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Scheme-level cotangent complex is not natively built" },
+    { paperRef := "Proposition 5.3",
+      paperStatement := "Two-term hypersurface cotangent model",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_3; Spt2.JacobianReal",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Local algebra substitute exists; full scheme cotangent model remains a target" },
+    { paperRef := "Corollary 5.4",
+      paperStatement := "Jacobian criterion from the derived detector",
+      leanEncoding := "Spt2.PaperFullFormalization.corollary_5_4",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Uses derived_iff_jacobian field" },
+    { paperRef := "Proposition 5.5",
+      paperStatement := "Base change for the cotangent complex",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_5; Spt2.DerivedBaseChange",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Formal smoothness base change is native in an algebraic form; scheme cotangent base change is not" },
+    { paperRef := "Proposition 5.8 / Corollary 5.9",
+      paperStatement := "Derived detector vanishes on the good locus and agrees with other detectors",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_8; corollary_5_9",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Agreement derives from explicit detector bridge fields" },
+    { paperRef := "Theorem 6.1 / Corollary 6.11",
+      paperStatement := "Final Master Equivalence and specialization to curves",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_6_1; corollary_6_11",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Same native gap as Theorem 1.1" },
+    { paperRef := "Definition 6.3 / Corollary 6.4",
+      paperStatement := "Good primes and good-prime checklist",
+      leanEncoding := "Spt2.PaperFullFormalization.definition_6_3_good_primes; corollary_6_4",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Good-prime predicate is explicit; maximal discriminant-open geometry remains to be proved natively" },
+    { paperRef := "Lemma 6.6",
+      paperStatement := "Transport and stability under open restriction and base change",
+      leanEncoding := "Spt2.PaperFullFormalization.lemma_6_6",
+      status := FormalizationStatus.certifiedInterface,
+      note := "Represented by transportStable and baseChangeStable fields" } ]
+
+theorem paperCoverage_nonempty : paperCoverage.length > 0 := by
+  decide
+
+end FullFormalizationAudit
+end Spt2
 
