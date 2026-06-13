@@ -1605,9 +1605,8 @@ theorem discriminantGate_imp_h1CotangentSilent
 
 /-- Badness is non-squarefreeness. -/
 theorem badDiscriminantGate_iff_not_squarefree (f : (ZMod p)[X]) :
-    BadDiscriminantGate f ↔ ¬ UnivariateSmoothGate f := by
-  unfold BadDiscriminantGate
-  rw [discriminantGate_iff_squarefree]
+    BadDiscriminantGate f ↔ ¬ UnivariateSmoothGate f :=
+  not_congr (discriminantGate_iff_squarefree f)
 
 /-- A visible affine singular/critical residue point over the base field. -/
 def HasFpCriticalPoint (f : (ZMod p)[X]) : Prop :=
@@ -1694,8 +1693,8 @@ length. -/
 theorem discriminantGate_iff_localLength_eq_zero
     (f : (ZMod p)[X]) (hf : f ≠ 0) :
     DiscriminantGate f ↔ JacobianReal.localLength f = 0 := by
-  rw [discriminantGate_iff_squarefree,
-    ← JacobianReal.localLength_eq_zero_iff f hf]
+  unfold DiscriminantGate
+  rw [JacobianReal.localLength_eq_zero_iff f hf, squarefree_iff_coprime_derivative]
 
 /-- For nonzero `f`, the bad gate is exactly positive/nonzero local length. -/
 theorem badDiscriminantGate_iff_localLength_ne_zero
@@ -2030,13 +2029,13 @@ structure BenchmarkLengthPackage where
   finite_iff_isolated :
     Length ≠ ⊤ ↔ ¬ (p ∣ pn ∧ p ∣ A)
   agrees_with_piecewise_tau :
-    Length = Spt2.tau p ⟨pn, A, hpn, hA⟩
+    Length = Spt2.tau p (Spt2.Model.mk pn A hpn hA)
 
 /-- Target for sheaf/equalizer gluing on principal opens. -/
 structure PrincipalOpenSheafGluingPackage where
   Section : Type
   D : Int -> Type
-  restrict : ∀ {a b : Int}, Section -> Section
+  restrict : ∀ {_a _b : Int}, Section -> Section
   equalizerCondition : Prop
   crtCoverGluing : ∀ a b : Nat, Nat.Coprime a b -> Prop
   detectorPredicateSheaf : Prop
@@ -2280,19 +2279,19 @@ structure BenchmarkCore where
   finite_iff_isolated :
     actualOriginLength ≠ ⊤ ↔ ¬ (p ∣ pn ∧ p ∣ A)
   tauModel_eq_Spt2_tau :
-    tauModel = Spt2.tau p ⟨pn, A, hpn, hA⟩
+    tauModel = Spt2.tau p (Spt2.Model.mk pn A hpn hA)
   actualLength_eq_tauModel :
     actualOriginLength = tauModel
 
 namespace BenchmarkCore
 
 theorem actualLength_eq_Spt2_tau (B : BenchmarkCore) :
-    B.actualOriginLength = Spt2.tau B.p ⟨B.pn, B.A, B.hpn, B.hA⟩ := by
+    B.actualOriginLength = Spt2.tau B.p (Spt2.Model.mk B.pn B.A B.hpn B.hA) := by
   exact B.actualLength_eq_tauModel.trans B.tauModel_eq_Spt2_tau
 
 theorem actualLength_finite_iff_tau_finite (B : BenchmarkCore) :
     B.actualOriginLength ≠ ⊤ ↔
-      Spt2.tau B.p ⟨B.pn, B.A, B.hpn, B.hA⟩ ≠ ⊤ := by
+      Spt2.tau B.p (Spt2.Model.mk B.pn B.A B.hpn B.hA) ≠ ⊤ := by
   rw [B.actualLength_eq_Spt2_tau]
 
 end BenchmarkCore
@@ -2497,7 +2496,7 @@ theorem not_squarefree_iff_hasCriticalPoint
     (f : (ZMod p)[X]) :
     ¬ Squarefree f ↔ HasCriticalPoint K f := by
   rw [squarefree_iff_coprime_derivative,
-    Polynomial.isCoprime_iff_aeval_ne_zero_of_isAlgClosed K f (derivative f)]
+    Polynomial.isCoprime_iff_aeval_ne_zero_of_isAlgClosed (k := ZMod p) K f (derivative f)]
   simp only [not_forall, not_or, not_not]
   rfl
 
@@ -2560,7 +2559,7 @@ theorem pderiv_zero_benchSurface (pn A : ℕ) (hpn : p ∣ pn) :
   have hX1 : pderiv (0 : Fin 2) (X 1 : MvPolynomial (Fin 2) (ZMod p)) = 0 := by
     rw [pderiv_X]; simp
   simp only [benchSurface, map_add, pderiv_pow, pderiv_X_self, hX1,
-    mul_one, mul_zero, hcast, zero_mul, add_zero, zero_add]
+    mul_one, mul_zero, hcast, zero_mul, add_zero]
 
 /-- In residue characteristic dividing `A`, the `y`-partial vanishes identically. -/
 theorem pderiv_one_benchSurface (pn A : ℕ) (hA : p ∣ A) :
@@ -2571,7 +2570,7 @@ theorem pderiv_one_benchSurface (pn A : ℕ) (hA : p ∣ A) :
   have hX0 : pderiv (1 : Fin 2) (X 0 : MvPolynomial (Fin 2) (ZMod p)) = 0 := by
     rw [pderiv_X]; simp
   simp only [benchSurface, map_add, pderiv_pow, pderiv_X_self, hX0,
-    mul_one, mul_zero, hcast, zero_mul, add_zero, zero_add]
+    mul_one, mul_zero, hcast, zero_mul, add_zero]
 
 /-- **Jacobian-ideal collapse (non-isolated regime).**  When `p ∣ pn` and
 `p ∣ A`, the genuine bivariate Jacobian ideal of the benchmark equals the
@@ -2584,15 +2583,22 @@ theorem jacobianIdeal_benchSurface_collapse
     intro i; fin_cases i
     · exact pderiv_zero_benchSurface pn A hpn
     · exact pderiv_one_benchSurface pn A hA
+  have hrange : (Set.range fun i => pderiv i (benchSurface (p := p) pn A))
+      = ({0} : Set (MvPolynomial (Fin 2) (ZMod p))) := by
+    ext x
+    simp only [Set.mem_range, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨i, rfl⟩; exact h0 i
+    · rintro rfl; exact ⟨0, h0 0⟩
   unfold JacobianMv.jacobianIdeal
+  rw [hrange]
   apply le_antisymm
   · rw [Ideal.span_le]
     rintro x hx
-    rcases Set.mem_insert_iff.mp hx with rfl | hr
+    rcases Set.mem_insert_iff.mp hx with rfl | hx0
     · exact Ideal.mem_span_singleton_self _
-    · obtain ⟨i, rfl⟩ := hr
-      rw [SetLike.mem_coe, h0 i]
-      exact Ideal.zero_mem _
+    · rw [Set.mem_singleton_iff] at hx0; subst hx0
+      exact (Ideal.span {benchSurface (p := p) pn A}).zero_mem
   · rw [Ideal.span_le, Set.singleton_subset_iff]
     exact Ideal.subset_span (Set.mem_insert _ _)
 
@@ -2621,6 +2627,7 @@ theorem benchSurface_jacobianQuotient_nontrivial
 /-- **Consistency with the corrected ℕ∞ model.**  The same regime that makes the
 genuine Jacobian quotient non-isolated is exactly the regime in which the
 piecewise `Spt2.tau` takes the corrected value `⊤`. -/
+omit [Fact p.Prime] in
 theorem benchSurface_tau_top
     (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
     Spt2.tau p ⟨pn, A, hpn, hA⟩ = ⊤ :=
@@ -2812,7 +2819,7 @@ theorem h1_decomposition (g b1 deltaSum : ℕ) :
 `Σδ = 0`) the decomposition reduces to `dim H¹(X_p) = 2g(X̃_p)` (Rem 3.8 / 2.10). -/
 theorem h1_decomposition_smooth (g : ℕ) :
     Module.finrank k ((Fin (2 * g) → k) × (Fin (0 + 0) → k)) = 2 * g := by
-  simpa using h1_decomposition (k := k) g 0 0
+  rw [h1_decomposition]
 
 end NormalizationReal
 
@@ -2873,7 +2880,8 @@ def FiniteGraph.toDualGraph (Γ : FiniteGraph) : Spt2.CurveModel.DualGraph :=
 so the curve detector reads `0` exactly as required by the good-prime box. -/
 theorem tree_b1_zero (n : ℕ) :
     (FiniteGraph.b1 ⟨n + 1, n, 1, by omega, by omega⟩) = 0 := by
-  unfold FiniteGraph.b1; omega
+  show n + 1 - (n + 1) = 0
+  omega
 
 end DualGraphReal
 

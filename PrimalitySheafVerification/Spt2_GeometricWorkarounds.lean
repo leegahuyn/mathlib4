@@ -134,7 +134,7 @@ theorem h1_decomposition (g b1 deltaSum : ℕ) :
 `Σδ = 0`) the decomposition reduces to `dim H¹(X_p) = 2g(X̃_p)` (Rem 3.8 / 2.10). -/
 theorem h1_decomposition_smooth (g : ℕ) :
     Module.finrank k ((Fin (2 * g) → k) × (Fin (0 + 0) → k)) = 2 * g := by
-  simpa using h1_decomposition (k := k) g 0 0
+  rw [h1_decomposition]
 
 end NormalizationReal
 
@@ -195,7 +195,8 @@ def FiniteGraph.toDualGraph (Γ : FiniteGraph) : Spt2.CurveModel.DualGraph :=
 so the curve detector reads `0` exactly as required by the good-prime box. -/
 theorem tree_b1_zero (n : ℕ) :
     (FiniteGraph.b1 ⟨n + 1, n, 1, by omega, by omega⟩) = 0 := by
-  unfold FiniteGraph.b1; omega
+  show n + 1 - (n + 1) = 0
+  omega
 
 end DualGraphReal
 

@@ -118,9 +118,8 @@ theorem discriminantGate_imp_h1CotangentSilent
 
 /-- Badness is non-squarefreeness. -/
 theorem badDiscriminantGate_iff_not_squarefree (f : (ZMod p)[X]) :
-    BadDiscriminantGate f ↔ ¬ UnivariateSmoothGate f := by
-  unfold BadDiscriminantGate
-  rw [discriminantGate_iff_squarefree]
+    BadDiscriminantGate f ↔ ¬ UnivariateSmoothGate f :=
+  not_congr (discriminantGate_iff_squarefree f)
 
 /-- A visible affine singular/critical residue point over the base field. -/
 def HasFpCriticalPoint (f : (ZMod p)[X]) : Prop :=
@@ -207,8 +206,8 @@ length. -/
 theorem discriminantGate_iff_localLength_eq_zero
     (f : (ZMod p)[X]) (hf : f ≠ 0) :
     DiscriminantGate f ↔ JacobianReal.localLength f = 0 := by
-  rw [discriminantGate_iff_squarefree,
-    ← JacobianReal.localLength_eq_zero_iff f hf]
+  unfold DiscriminantGate
+  rw [JacobianReal.localLength_eq_zero_iff f hf, squarefree_iff_coprime_derivative]
 
 /-- For nonzero `f`, the bad gate is exactly positive/nonzero local length. -/
 theorem badDiscriminantGate_iff_localLength_ne_zero
@@ -543,13 +542,13 @@ structure BenchmarkLengthPackage where
   finite_iff_isolated :
     Length ≠ ⊤ ↔ ¬ (p ∣ pn ∧ p ∣ A)
   agrees_with_piecewise_tau :
-    Length = Spt2.tau p ⟨pn, A, hpn, hA⟩
+    Length = Spt2.tau p (Spt2.Model.mk pn A hpn hA)
 
 /-- Target for sheaf/equalizer gluing on principal opens. -/
 structure PrincipalOpenSheafGluingPackage where
   Section : Type
   D : Int -> Type
-  restrict : ∀ {a b : Int}, Section -> Section
+  restrict : ∀ {_a _b : Int}, Section -> Section
   equalizerCondition : Prop
   crtCoverGluing : ∀ a b : Nat, Nat.Coprime a b -> Prop
   detectorPredicateSheaf : Prop

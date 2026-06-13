@@ -221,19 +221,19 @@ structure BenchmarkCore where
   finite_iff_isolated :
     actualOriginLength ≠ ⊤ ↔ ¬ (p ∣ pn ∧ p ∣ A)
   tauModel_eq_Spt2_tau :
-    tauModel = Spt2.tau p ⟨pn, A, hpn, hA⟩
+    tauModel = Spt2.tau p (Spt2.Model.mk pn A hpn hA)
   actualLength_eq_tauModel :
     actualOriginLength = tauModel
 
 namespace BenchmarkCore
 
 theorem actualLength_eq_Spt2_tau (B : BenchmarkCore) :
-    B.actualOriginLength = Spt2.tau B.p ⟨B.pn, B.A, B.hpn, B.hA⟩ := by
+    B.actualOriginLength = Spt2.tau B.p (Spt2.Model.mk B.pn B.A B.hpn B.hA) := by
   exact B.actualLength_eq_tauModel.trans B.tauModel_eq_Spt2_tau
 
 theorem actualLength_finite_iff_tau_finite (B : BenchmarkCore) :
     B.actualOriginLength ≠ ⊤ ↔
-      Spt2.tau B.p ⟨B.pn, B.A, B.hpn, B.hA⟩ ≠ ⊤ := by
+      Spt2.tau B.p (Spt2.Model.mk B.pn B.A B.hpn B.hA) ≠ ⊤ := by
   rw [B.actualLength_eq_Spt2_tau]
 
 end BenchmarkCore
