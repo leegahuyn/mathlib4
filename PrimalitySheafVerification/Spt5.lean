@@ -487,6 +487,7 @@ import Mathlib.Algebra.Category.Ring.Basic
 import Mathlib.CategoryTheory.Category.Preorder
 import Mathlib.LinearAlgebra.Dimension.Constructions
 import Mathlib.LinearAlgebra.Dimension.Finite
+import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 
 open scoped BigOperators
 
@@ -1918,8 +1919,32 @@ open MvPolynomial
 
 abbrev P (k : Type*) [CommSemiring k] := MvPolynomial (Fin 2) k
 
+abbrev P1 (k : Type*) [CommSemiring k] := MvPolynomial (Fin 1) k
+
+abbrev PolyP1 (k : Type*) [CommSemiring k] := Polynomial (P1 k)
+
 noncomputable def x (k : Type*) [CommSemiring k] : P k := X 0
 noncomputable def y (k : Type*) [CommSemiring k] : P k := X 1
+
+noncomputable def x1 (k : Type*) [CommSemiring k] : P1 k := X 0
+
+noncomputable def monomialIdeal (k : Type*) [Field k] (a b : ℕ) : Ideal (P k) :=
+  Ideal.span ({x k ^ a, y k ^ b} : Set (P k))
+
+noncomputable abbrev monomialQuotient (k : Type*) [Field k] (a b : ℕ) :=
+  P k ⧸ monomialIdeal k a b
+
+noncomputable def oneVarIdeal (k : Type*) [Field k] (b : ℕ) : Ideal (P1 k) :=
+  Ideal.span ({x1 k ^ b} : Set (P1 k))
+
+noncomputable abbrev rawNilpotentQuotient1 (k : Type*) [Field k] (b : ℕ) :=
+  P1 k ⧸ oneVarIdeal k b
+
+noncomputable def XIdeal (k : Type*) [Field k] (a : ℕ) : Ideal (PolyP1 k) :=
+  Ideal.span ({Polynomial.X ^ a} : Set (PolyP1 k))
+
+noncomputable def coeffIdeal (k : Type*) [Field k] (b : ℕ) : Ideal (PolyP1 k) :=
+  Ideal.map Polynomial.C (oneVarIdeal k b)
 
 /-- The diagonal plane-curve equation `f = x^m + y^A` in two variables. -/
 noncomputable def f (k : Type*) [CommSemiring k] (M : Model) : P k :=
@@ -1946,6 +1971,274 @@ theorem finrank_quotient_X_pow (k : Type*) [Field k] (n : ℕ) :
   have hmonic : (Polynomial.X ^ n : Polynomial k).Monic := Polynomial.monic_X_pow n
   rw [(AdjoinRoot.powerBasis' hmonic).finrank,
       AdjoinRoot.powerBasis'_dim, Polynomial.natDegree_X_pow]
+
+/-- The one-variable nilpotent quotient model `k[X]/(X^b)`. -/
+noncomputable abbrev nilpotentQuotient1 (k : Type*) [Field k] (b : ℕ) :=
+  AdjoinRoot (Polynomial.X ^ b : Polynomial k)
+
+/-- The iterated nilpotent quotient model `(k[X]/(X^b))[Y]/(Y^a)`, the sequential model for
+    the two-variable monomial quotient. -/
+noncomputable abbrev nilpotentQuotient2 (k : Type*) [Field k] (a b : ℕ) :=
+  AdjoinRoot (Polynomial.X ^ a : Polynomial (nilpotentQuotient1 k b))
+
+/-- If `b > 0`, the quotient `k[X]/(X^b)` is nontrivial.  This supplies the rank condition needed
+    to compute the second `AdjoinRoot` rank over the first quotient ring. -/
+theorem nilpotentQuotient1_nontrivial (k : Type*) [Field k] {b : ℕ} (hb : 0 < b) :
+    Nontrivial (nilpotentQuotient1 k b) := by
+  refine ⟨⟨0, 1, ?_⟩⟩
+  intro h
+  have h1 :
+      (AdjoinRoot.mk (Polynomial.X ^ b : Polynomial k)) (1 : Polynomial k) ≠ 0 := by
+    apply AdjoinRoot.mk_ne_zero_of_natDegree_lt (Polynomial.monic_X_pow b)
+    · simp
+    · rw [Polynomial.natDegree_X_pow]
+      simpa [Polynomial.natDegree_one] using hb
+  exact h1 h.symm
+
+/-- **Sequential two-variable monomial quotient dimension.**  The iterated quotient
+    `(k[X]/X^b)[Y]/Y^a` has `k`-dimension `a*b`, for positive `a,b`.
+
+    This is the dimension computation that the original quotient
+    `k[x,y]/(x^a,y^b)` should reduce to after constructing the standard quotient-equivalence.
+    The equivalence to the raw `MvPolynomial` quotient is a separate bridge theorem. -/
+theorem finrank_iterated_X_pow_quotient (k : Type*) [Field k] {a b : ℕ}
+    (hb : 0 < b) :
+    Module.finrank k (nilpotentQuotient2 k a b) = a * b := by
+  letI : Nontrivial (nilpotentQuotient1 k b) := nilpotentQuotient1_nontrivial k hb
+  have hmonic_b : (Polynomial.X ^ b : Polynomial k).Monic := Polynomial.monic_X_pow b
+  letI : Module.Free k (nilpotentQuotient1 k b) :=
+    Module.Free.of_basis (AdjoinRoot.powerBasis' hmonic_b).basis
+  have hbfin : Module.finrank k (nilpotentQuotient1 k b) = b :=
+    finrank_quotient_X_pow k b
+  have hmonic_a :
+      (Polynomial.X ^ a : Polynomial (nilpotentQuotient1 k b)).Monic :=
+    Polynomial.monic_X_pow a
+  letI : Module.Free (nilpotentQuotient1 k b) (nilpotentQuotient2 k a b) :=
+    Module.Free.of_basis (AdjoinRoot.powerBasis' hmonic_a).basis
+  have hafin :
+      Module.finrank (nilpotentQuotient1 k b) (nilpotentQuotient2 k a b) = a := by
+    rw [(AdjoinRoot.powerBasis' hmonic_a).finrank,
+        AdjoinRoot.powerBasis'_dim, Polynomial.natDegree_X_pow]
+  have hmul :=
+    Module.finrank_mul_finrank k (nilpotentQuotient1 k b) (nilpotentQuotient2 k a b)
+  rw [hbfin, hafin] at hmul
+  simpa [Nat.mul_comm] using hmul.symm
+
+noncomputable def finOnePolyEquiv (k : Type*) [Field k] :
+    P1 k ≃ₐ[k] Polynomial k :=
+  (MvPolynomial.renameEquiv k (Equiv.equivPUnit (Fin 1) : Fin 1 ≃ PUnit.{1})).trans
+    (MvPolynomial.pUnitAlgEquiv k)
+
+theorem finOnePolyEquiv_x1 (k : Type*) [Field k] :
+    finOnePolyEquiv k (x1 k) = Polynomial.X := by
+  simp [finOnePolyEquiv, x1]
+
+noncomputable def rawNilpotentQuotient1Equiv (k : Type*) [Field k] (b : ℕ) :
+    rawNilpotentQuotient1 k b ≃ₐ[k] nilpotentQuotient1 k b :=
+  Ideal.quotientEquivAlg
+    (oneVarIdeal k b)
+    (Ideal.span ({Polynomial.X ^ b} : Set (Polynomial k)))
+    (finOnePolyEquiv k)
+    (by
+      rw [oneVarIdeal, Ideal.map_span]
+      simp [finOnePolyEquiv, x1])
+
+theorem rawNilpotentQuotient1_nontrivial (k : Type*) [Field k] {b : ℕ} (hb : 0 < b) :
+    Nontrivial (rawNilpotentQuotient1 k b) := by
+  have hN : Nontrivial (nilpotentQuotient1 k b) :=
+    nilpotentQuotient1_nontrivial k hb
+  refine ⟨⟨0, (rawNilpotentQuotient1Equiv k b).symm 1, ?_⟩⟩
+  intro h
+  have h01 := congrArg (rawNilpotentQuotient1Equiv k b) h
+  simp at h01
+
+theorem finrank_rawNilpotentQuotient1 (k : Type*) [Field k] (b : ℕ) :
+    Module.finrank k (rawNilpotentQuotient1 k b) = b := by
+  calc
+    Module.finrank k (rawNilpotentQuotient1 k b)
+        = Module.finrank k (nilpotentQuotient1 k b) :=
+          (rawNilpotentQuotient1Equiv k b).toLinearEquiv.finrank_eq
+    _ = b := finrank_quotient_X_pow k b
+
+noncomputable def finSuccTwoEquiv (k : Type*) [Field k] :
+    P k ≃ₐ[k] PolyP1 k :=
+  MvPolynomial.finSuccEquiv k 1
+
+theorem finSuccTwoEquiv_x (k : Type*) [Field k] :
+    finSuccTwoEquiv k (x k) = Polynomial.X := by
+  rw [finSuccTwoEquiv, x, MvPolynomial.finSuccEquiv_X_zero]
+
+theorem finSuccTwoEquiv_y (k : Type*) [Field k] :
+    finSuccTwoEquiv k (y k) = Polynomial.C (x1 k) := by
+  rw [finSuccTwoEquiv, y, x1, show (1 : Fin 2) = Fin.succ (0 : Fin 1) by rfl,
+    MvPolynomial.finSuccEquiv_X_succ]
+
+theorem finSuccTwoEquiv_monomialIdeal (k : Type*) [Field k] (a b : ℕ) :
+    Ideal.map (finSuccTwoEquiv k) (monomialIdeal k a b) =
+      XIdeal k a ⊔ coeffIdeal k b := by
+  have hx : finSuccTwoEquiv k (x k ^ a) = Polynomial.X ^ a := by
+    rw [map_pow, finSuccTwoEquiv_x]
+  have hy : finSuccTwoEquiv k (y k ^ b) = Polynomial.C (x1 k ^ b) := by
+    rw [map_pow, finSuccTwoEquiv_y, Polynomial.C_pow]
+  rw [monomialIdeal, XIdeal, coeffIdeal, oneVarIdeal, Ideal.map_span, Ideal.map_span]
+  rw [show ((fun a => (finSuccTwoEquiv k) a) '' {x k ^ a, y k ^ b}) =
+      ({Polynomial.X ^ a, Polynomial.C (x1 k ^ b)} : Set (PolyP1 k)) by
+    ext z
+    simp [hx, hy, eq_comm]]
+  rw [← Ideal.span_union]
+  congr
+  ext z
+  simp
+
+noncomputable def polynomialQuotientAlgEquiv
+    (k R : Type*) [CommSemiring k] [CommRing R] [Algebra k R] (I : Ideal R) :
+    Polynomial (R ⧸ I) ≃ₐ[k] Polynomial R ⧸ Ideal.map Polynomial.C I :=
+{ (Ideal.polynomialQuotientEquivQuotientPolynomial I) with
+  commutes' := by
+    intro r
+    change I.polynomialQuotientEquivQuotientPolynomial
+        (Polynomial.C ((algebraMap k (R ⧸ I)) r)) =
+      (Ideal.Quotient.mk (Ideal.map Polynomial.C I)) ((algebraMap k (Polynomial R)) r)
+    rw [← Ideal.Quotient.mk_algebraMap k I r]
+    rw [← Polynomial.map_C]
+    rw [Ideal.polynomialQuotientEquivQuotientPolynomial_map_mk]
+    rfl }
+
+theorem polynomialQuotientAlgEquiv_XIdeal (k : Type*) [Field k] (a b : ℕ) :
+    Ideal.map (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b))
+        (Ideal.span ({Polynomial.X ^ a} :
+          Set (Polynomial (rawNilpotentQuotient1 k b)))) =
+      Ideal.map (Ideal.Quotient.mkₐ k (coeffIdeal k b)) (XIdeal k a) := by
+  have hX :
+      (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b)) (Polynomial.X ^ a) =
+        (Ideal.Quotient.mk (coeffIdeal k b) Polynomial.X) ^ a := by
+    change (Ideal.polynomialQuotientEquivQuotientPolynomial (oneVarIdeal k b))
+        (Polynomial.X ^ a) =
+      (Ideal.Quotient.mk (Ideal.map Polynomial.C (oneVarIdeal k b)) Polynomial.X) ^ a
+    rw [map_pow]
+    rw [← Ideal.polynomialQuotientEquivQuotientPolynomial_map_mk (oneVarIdeal k b)
+      Polynomial.X]
+    rw [Polynomial.map_X]
+  rw [XIdeal, Ideal.map_span, Ideal.map_span]
+  congr 1
+  ext z
+  constructor
+  · intro hz
+    rcases hz with ⟨w, hw, rfl⟩
+    rw [Set.mem_singleton_iff] at hw
+    subst w
+    rw [hX]
+    exact ⟨Polynomial.X ^ a, Set.mem_singleton _, by rfl⟩
+  · intro hz
+    rcases hz with ⟨w, hw, rfl⟩
+    rw [Set.mem_singleton_iff] at hw
+    subst w
+    exact ⟨Polynomial.X ^ a, Set.mem_singleton _, by simpa [hX]⟩
+
+/-- The raw two-variable monomial quotient is the iterated nilpotent quotient over the raw
+    one-variable quotient.  This is the missing bridge from `MvPolynomial (Fin 2)` to the
+    sequential quotient model. -/
+noncomputable def monomialQuotientEquivIter (k : Type*) [Field k] (a b : ℕ) :
+    monomialQuotient k a b ≃ₐ[k]
+      AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b)) :=
+  let J := XIdeal k a
+  let K := coeffIdeal k b
+  letI : CommRing (rawNilpotentQuotient1 k b) := inferInstance
+  letI : Algebra k (rawNilpotentQuotient1 k b) := inferInstance
+  letI : CommRing (PolyP1 k ⧸ K) := inferInstance
+  letI : Algebra k (PolyP1 k ⧸ K) := inferInstance
+  let eRaw : monomialQuotient k a b ≃ₐ[k] (PolyP1 k ⧸ (J ⊔ K)) :=
+    Ideal.quotientEquivAlg
+      (monomialIdeal k a b)
+      (J ⊔ K)
+      (finSuccTwoEquiv k)
+      (by simpa [J, K] using (finSuccTwoEquiv_monomialIdeal k a b).symm)
+  let eComm : (PolyP1 k ⧸ (J ⊔ K)) ≃ₐ[k] (PolyP1 k ⧸ (K ⊔ J)) :=
+    Ideal.quotientEquivAlgOfEq k (sup_comm J K)
+  let eDQ : (PolyP1 k ⧸ (K ⊔ J)) ≃ₐ[k]
+      ((PolyP1 k ⧸ K) ⧸ Ideal.map (Ideal.Quotient.mkₐ k K) J) :=
+    (DoubleQuot.quotQuotEquivQuotSupₐ k K J).symm
+  let ePoly :
+      (Polynomial (rawNilpotentQuotient1 k b) ⧸
+          Ideal.span ({Polynomial.X ^ a} :
+            Set (Polynomial (rawNilpotentQuotient1 k b)))) ≃ₐ[k]
+        ((PolyP1 k ⧸ K) ⧸ Ideal.map (Ideal.Quotient.mkₐ k K) J) :=
+    Ideal.quotientEquivAlg
+      (Ideal.span ({Polynomial.X ^ a} :
+        Set (Polynomial (rawNilpotentQuotient1 k b))))
+      (Ideal.map (Ideal.Quotient.mkₐ k K) J)
+      (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b))
+      (by simpa [J, K] using (polynomialQuotientAlgEquiv_XIdeal k a b).symm)
+  eRaw.trans (eComm.trans (eDQ.trans ePoly.symm))
+
+theorem finite_monomialQuotient (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+    Module.Finite k (monomialQuotient k a b) := by
+  letI : Nontrivial (rawNilpotentQuotient1 k b) := rawNilpotentQuotient1_nontrivial k hb
+  have hmonic_b : (Polynomial.X ^ b : Polynomial k).Monic := Polynomial.monic_X_pow b
+  letI : Module.Finite k (nilpotentQuotient1 k b) :=
+    (AdjoinRoot.powerBasis' hmonic_b).finite
+  letI : Module.Finite k (rawNilpotentQuotient1 k b) :=
+    Module.Finite.equiv (rawNilpotentQuotient1Equiv k b).symm.toLinearEquiv
+  have hmonic_a :
+      (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b)).Monic :=
+    Polynomial.monic_X_pow a
+  letI : Module.Finite (rawNilpotentQuotient1 k b)
+      (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b))) :=
+    (AdjoinRoot.powerBasis' hmonic_a).finite
+  letI : Module.Finite k
+      (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b))) :=
+    Module.Finite.trans (rawNilpotentQuotient1 k b)
+      (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b)))
+  exact Module.Finite.equiv (monomialQuotientEquivIter k a b).symm.toLinearEquiv
+
+/-- **Raw two-variable monomial quotient dimension.**  For positive `b`, the genuine quotient
+    `k[x,y]/(x^a,y^b)` has `k`-dimension `a*b`. -/
+theorem finrank_monomialQuotient (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+    Module.finrank k (monomialQuotient k a b) = a * b := by
+  letI : Nontrivial (rawNilpotentQuotient1 k b) := rawNilpotentQuotient1_nontrivial k hb
+  have hmonic_a :
+      (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b)).Monic :=
+    Polynomial.monic_X_pow a
+  letI : Module.Free (rawNilpotentQuotient1 k b)
+      (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b))) :=
+    Module.Free.of_basis (AdjoinRoot.powerBasis' hmonic_a).basis
+  have hafin :
+      Module.finrank (rawNilpotentQuotient1 k b)
+        (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b))) = a := by
+    rw [(AdjoinRoot.powerBasis' hmonic_a).finrank,
+        AdjoinRoot.powerBasis'_dim, Polynomial.natDegree_X_pow]
+  have hbfin : Module.finrank k (rawNilpotentQuotient1 k b) = b :=
+    finrank_rawNilpotentQuotient1 k b
+  have hmul :=
+    Module.finrank_mul_finrank k (rawNilpotentQuotient1 k b)
+      (AdjoinRoot (Polynomial.X ^ a : Polynomial (rawNilpotentQuotient1 k b)))
+  rw [hbfin, hafin] at hmul
+  have heq := (monomialQuotientEquivIter k a b).toLinearEquiv.finrank_eq
+  rw [heq]
+  simpa [Nat.mul_comm] using hmul.symm
+
+theorem length_monomialQuotient (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+    Module.length k (monomialQuotient k a b) = ((a * b : ℕ) : ℕ∞) := by
+  letI : Module.Finite k (monomialQuotient k a b) := finite_monomialQuotient k hb
+  rw [Module.length_eq_finrank, finrank_monomialQuotient k hb]
+
+theorem length_eq_of_ideal_eq_monomial (k : Type*) [Field k] (M : Model)
+    {a b : ℕ} (hb : 0 < b)
+    (hI : ideal k M = monomialIdeal k a b) :
+    length k M = ((a * b : ℕ) : ℕ∞) := by
+  let e : algebra k M ≃ₐ[k] monomialQuotient k a b :=
+    Ideal.quotientEquivAlgOfEq k hI
+  letI : Module.Finite k (monomialQuotient k a b) := finite_monomialQuotient k hb
+  letI : Module.Finite k (algebra k M) :=
+    Module.Finite.equiv e.symm.toLinearEquiv
+  rw [length, Module.length_eq_finrank]
+  have hfin :
+      Module.finrank k (algebra k M) = a * b := by
+    calc
+      Module.finrank k (algebra k M)
+          = Module.finrank k (monomialQuotient k a b) := e.toLinearEquiv.finrank_eq
+      _ = a * b := finrank_monomialQuotient k hb
+  exact congrArg (fun n : ℕ => ((n : ℕ) : ℕ∞)) hfin
 
 /-- The genuine Tjurina algebra has zero length exactly when the Tjurina ideal is the unit ideal. -/
 theorem length_eq_zero_iff_ideal_eq_top (k : Type*) [Field k] (M : Model) :
@@ -2076,11 +2369,316 @@ theorem finite_case_monomial_bounds (k : Type*) [Field k] {p : ℕ} [CharP k p]
   · intro hm _
     exact ⟨x_pred_mem_ideal_of_not_dvd k M hm, y_pow_mem_ideal_of_not_dvd_pn k M hm⟩
 
+/-- In the coprime finite case, the genuine Tjurina ideal is exactly the monomial ideal
+    `(x^(m-1), y^(A-1))`.  This is stronger than the earlier membership bounds and is the
+    algebraic input needed before the quotient-dimension computation. -/
+theorem ideal_eq_span_coprime (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model)
+    (hm : ¬ p ∣ M.pn) (hA : ¬ p ∣ M.A) :
+    ideal k M =
+      Ideal.span ({x k ^ (M.pn - 1), y k ^ (M.A - 1)} : Set (P k)) := by
+  apply le_antisymm
+  · rw [ideal, Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl | rfl
+    · have hf :
+          f k M = x k * x k ^ (M.pn - 1) + y k * y k ^ (M.A - 1) := by
+        rw [f, x_mul_pred k M, y_mul_pred k M]
+      rw [hf]
+      exact Ideal.add_mem _
+        (Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp)))
+        (Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp)))
+    · rw [pderiv_x]
+      exact Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp))
+    · rw [pderiv_y]
+      exact Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp))
+  · rw [Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl
+    · exact x_pred_mem_ideal_of_not_dvd k M hm
+    · exact y_pred_mem_ideal_of_not_dvd k M hA
+
+/-- If `p ∣ m` and `p ∤ A`, the genuine Tjurina ideal is exactly `(x^m, y^(A-1))`. -/
+theorem ideal_eq_span_div_pn (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model)
+    (hm : p ∣ M.pn) (hA : ¬ p ∣ M.A) :
+    ideal k M =
+      Ideal.span ({x k ^ M.pn, y k ^ (M.A - 1)} : Set (P k)) := by
+  apply le_antisymm
+  · rw [ideal, Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl | rfl
+    · have hf : f k M = x k ^ M.pn + y k * y k ^ (M.A - 1) := by
+        rw [f, y_mul_pred k M]
+      rw [hf]
+      exact Ideal.add_mem _
+        (Ideal.subset_span (by simp))
+        (Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp)))
+    · rw [pderiv_x_eq_zero_of_dvd k M hm]
+      exact Ideal.zero_mem _
+    · rw [pderiv_y]
+      exact Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp))
+  · rw [Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl
+    · exact x_pow_mem_ideal_of_not_dvd_A k M hA
+    · exact y_pred_mem_ideal_of_not_dvd k M hA
+
+/-- If `p ∤ m` and `p ∣ A`, the genuine Tjurina ideal is exactly `(x^(m-1), y^A)`. -/
+theorem ideal_eq_span_div_A (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model)
+    (hm : ¬ p ∣ M.pn) (hA : p ∣ M.A) :
+    ideal k M =
+      Ideal.span ({x k ^ (M.pn - 1), y k ^ M.A} : Set (P k)) := by
+  apply le_antisymm
+  · rw [ideal, Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl | rfl
+    · have hf : f k M = x k * x k ^ (M.pn - 1) + y k ^ M.A := by
+        rw [f, x_mul_pred k M]
+      rw [hf]
+      exact Ideal.add_mem _
+        (Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp)))
+        (Ideal.subset_span (by simp))
+    · rw [pderiv_x]
+      exact Ideal.mul_mem_left _ _ (Ideal.subset_span (by simp))
+    · rw [pderiv_y_eq_zero_of_dvd k M hA]
+      exact Ideal.zero_mem _
+  · rw [Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl
+    · exact x_pred_mem_ideal_of_not_dvd k M hm
+    · exact y_pow_mem_ideal_of_not_dvd_pn k M hm
+
+/-- The three finite Tjurina cases are not merely bounded by monomial ideals: the genuine
+    `(f,f_x,f_y)` ideal is equal to the corresponding monomial ideal in each case. -/
+theorem finite_case_ideal_equalities (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model) :
+    (¬ p ∣ M.pn → ¬ p ∣ M.A →
+        ideal k M =
+          Ideal.span ({x k ^ (M.pn - 1), y k ^ (M.A - 1)} : Set (P k))) ∧
+    (p ∣ M.pn → ¬ p ∣ M.A →
+        ideal k M =
+          Ideal.span ({x k ^ M.pn, y k ^ (M.A - 1)} : Set (P k))) ∧
+    (¬ p ∣ M.pn → p ∣ M.A →
+        ideal k M =
+          Ideal.span ({x k ^ (M.pn - 1), y k ^ M.A} : Set (P k))) := by
+  exact ⟨ideal_eq_span_coprime k M, ideal_eq_span_div_pn k M, ideal_eq_span_div_A k M⟩
+
+theorem length_eq_tau_coprime (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : ¬ p ∣ M.pn) (hA : ¬ p ∣ M.A) :
+    length k M = tau p M := by
+  have hb : 0 < M.A - 1 :=
+    Nat.sub_pos_of_lt (lt_of_lt_of_le (by norm_num) M.hA)
+  rw [tau_coprime p M hm hA]
+  exact length_eq_of_ideal_eq_monomial k M hb (ideal_eq_span_coprime k M hm hA)
+
+theorem length_eq_tau_div_pn (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : p ∣ M.pn) (hA : ¬ p ∣ M.A) :
+    length k M = tau p M := by
+  have hb : 0 < M.A - 1 :=
+    Nat.sub_pos_of_lt (lt_of_lt_of_le (by norm_num) M.hA)
+  rw [tau_div_pn p M hm hA]
+  exact length_eq_of_ideal_eq_monomial k M hb (ideal_eq_span_div_pn k M hm hA)
+
+theorem length_eq_tau_div_A (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : ¬ p ∣ M.pn) (hA : p ∣ M.A) :
+    length k M = tau p M := by
+  have hb : 0 < M.A := lt_of_lt_of_le (by norm_num) M.hA
+  rw [tau_div_A p M hm hA]
+  exact length_eq_of_ideal_eq_monomial k M hb (ideal_eq_span_div_A k M hm hA)
+
+/-- The quotient-dimension goal is fully discharged on the three isolated finite Tjurina cases. -/
+theorem quotientDimensionGoal_finite_cases
+    (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model) :
+    (¬ p ∣ M.pn → ¬ p ∣ M.A → length k M = tau p M) ∧
+    (p ∣ M.pn → ¬ p ∣ M.A → length k M = tau p M) ∧
+    (¬ p ∣ M.pn → p ∣ M.A → length k M = tau p M) :=
+  ⟨length_eq_tau_coprime k M, length_eq_tau_div_pn k M, length_eq_tau_div_A k M⟩
+
 /-- In the non-isolated case both partial derivatives vanish as actual `MvPolynomial.pderiv`s. -/
 theorem both_partials_zero_of_dvd_both (k : Type*) [Field k] {p : ℕ} [CharP k p]
     (M : Model) (hm : p ∣ M.pn) (hA : p ∣ M.A) :
     pderiv (0 : Fin 2) (f k M) = 0 ∧ pderiv (1 : Fin 2) (f k M) = 0 :=
   ⟨pderiv_x_eq_zero_of_dvd k M hm, pderiv_y_eq_zero_of_dvd k M hA⟩
+
+/-- In the non-isolated case `p ∣ m` and `p ∣ A`, the genuine Tjurina ideal collapses to the
+    principal hypersurface ideal `(f)`: both partial derivatives are zero in characteristic `p`. -/
+theorem ideal_eq_span_f_of_dvd_both (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : p ∣ M.pn) (hA : p ∣ M.A) :
+    ideal k M = Ideal.span ({f k M} : Set (P k)) := by
+  apply le_antisymm
+  · rw [ideal, Ideal.span_le]
+    rintro g hg
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hg
+    rcases hg with rfl | rfl | rfl
+    · exact Ideal.subset_span (by simp)
+    · rw [pderiv_x_eq_zero_of_dvd k M hm]
+      exact Ideal.zero_mem _
+    · rw [pderiv_y_eq_zero_of_dvd k M hA]
+      exact Ideal.zero_mem _
+  · rw [Ideal.span_le]
+    intro g hg
+    simpa [Set.mem_singleton_iff.mp hg] using f_mem_ideal k M
+
+/-- The monomials `X^n` are linearly independent in `k[X]`.  This is the
+    rank-theoretic input for the non-isolated Tjurina case: polynomial rings over
+    fields have infinite `k`-length without appealing to a bundled hypothesis. -/
+theorem polynomial_X_pow_linearIndependent (k : Type*) [Field k] :
+    LinearIndependent k (fun n : Nat => (Polynomial.X ^ n : Polynomial k)) := by
+  rw [linearIndependent_iff']
+  intro s g hsum i hi
+  have hc := congrArg (fun p : Polynomial k => p.coeff i) hsum
+  simp [Polynomial.coeff_X_pow] at hc
+  exact hc hi
+
+/-- The polynomial ring `k[X]` has infinite composition length as a `k`-module. -/
+theorem polynomial_length_eq_top (k : Type*) [Field k] :
+    Module.length k (Polynomial k) = (⊤ : ℕ∞) := by
+  rw [Module.length_eq_rank, Cardinal.toENat_eq_top]
+  have hli := polynomial_X_pow_linearIndependent k
+  have h := hli.cardinal_lift_le_rank
+  simpa [Cardinal.mk_nat, Cardinal.lift_aleph0, Cardinal.lift_id] using h
+
+/-- If `q` is monic of positive degree, constants inject into `AdjoinRoot q`. -/
+theorem adjoinRoot_C_injective_of_monic_pos
+    {R : Type*} [CommRing R] {q : Polynomial R} (hq : q.Monic)
+    (hdeg : 0 < q.natDegree) :
+    Function.Injective (fun r : R => AdjoinRoot.mk q (Polynomial.C r)) := by
+  intro r s h
+  by_contra hrs
+  have hsub_ne : r - s ≠ 0 := sub_ne_zero.mpr hrs
+  have hC_ne : (Polynomial.C (r - s) : Polynomial R) ≠ 0 := by
+    simpa using (Polynomial.C_ne_zero.mpr hsub_ne)
+  have hlt : (Polynomial.C (r - s) : Polynomial R).natDegree < q.natDegree := by
+    simpa using hdeg
+  have hmk_ne := AdjoinRoot.mk_ne_zero_of_natDegree_lt hq hC_ne hlt
+  apply hmk_ne
+  have hsub_img : AdjoinRoot.mk q (Polynomial.C r - Polynomial.C s) = 0 := by
+    rw [map_sub]
+    exact sub_eq_zero.mpr h
+  simpa [Polynomial.C_sub] using hsub_img
+
+/-- The coefficient-ring inclusion into an `AdjoinRoot`, viewed as a `k`-linear map. -/
+noncomputable def adjoinRootOfLinear (k R : Type*) [Field k] [CommRing R] [Algebra k R]
+    (q : Polynomial R) : R →ₗ[k] AdjoinRoot q where
+  toFun r := AdjoinRoot.of q r
+  map_add' r s := by simp
+  map_smul' c r := by
+    change AdjoinRoot.of q (c • r) = c • AdjoinRoot.of q r
+    simp [Algebra.smul_def, IsScalarTower.algebraMap_eq k R (AdjoinRoot q),
+      AdjoinRoot.algebraMap_eq]
+
+theorem adjoinRootOfLinear_ker_eq_bot (k R : Type*) [Field k] [CommRing R] [Algebra k R]
+    {q : Polynomial R} (hq : q.Monic) (hdeg : 0 < q.natDegree) :
+    LinearMap.ker (adjoinRootOfLinear k R q) = ⊥ := by
+  rw [LinearMap.ker_eq_bot]
+  have hinj := adjoinRoot_C_injective_of_monic_pos (R := R) hq hdeg
+  intro r s h
+  exact hinj h
+
+/-- A monic positive-degree `AdjoinRoot` has infinite `k`-length whenever its coefficient
+    ring contains a countably infinite `k`-linearly independent family. -/
+theorem length_adjoinRoot_monic_pos_eq_top_of_linearIndependent
+    (k R : Type*) [Field k] [CommRing R] [Algebra k R]
+    {q : Polynomial R} (hq : q.Monic) (hdeg : 0 < q.natDegree)
+    {v : Nat → R} (hli : LinearIndependent k v) :
+    Module.length k (AdjoinRoot q) = (⊤ : ℕ∞) := by
+  rw [Module.length_eq_rank, Cardinal.toENat_eq_top]
+  have hli' := hli.map' (adjoinRootOfLinear k R q)
+    (adjoinRootOfLinear_ker_eq_bot k R hq hdeg)
+  have h := hli'.cardinal_lift_le_rank
+  simpa [Function.comp_def, Cardinal.mk_nat, Cardinal.lift_aleph0, Cardinal.lift_id] using h
+
+/-- Specialized version over `k[X]`. -/
+theorem length_adjoinRoot_monic_pos_eq_top (k : Type*) [Field k]
+    {q : Polynomial (Polynomial k)} (hq : q.Monic) (hdeg : 0 < q.natDegree) :
+    Module.length k (AdjoinRoot q) = (⊤ : ℕ∞) :=
+  length_adjoinRoot_monic_pos_eq_top_of_linearIndependent k (Polynomial k) hq hdeg
+    (polynomial_X_pow_linearIndependent k)
+
+/-- The powers of the unique variable in `MvPolynomial (Fin 1) k` are linearly independent. -/
+theorem x1_pow_linearIndependent (k : Type*) [Field k] :
+    LinearIndependent k (fun n : Nat => x1 k ^ n) := by
+  have hli := polynomial_X_pow_linearIndependent k
+  have hker : LinearMap.ker (finOnePolyEquiv k).symm.toLinearMap = ⊥ := by
+    rw [LinearMap.ker_eq_bot]
+    exact (finOnePolyEquiv k).symm.injective
+  have hmap := hli.map' (finOnePolyEquiv k).symm.toLinearMap hker
+  have hx : (finOnePolyEquiv k).symm Polynomial.X = x1 k := by
+    apply (finOnePolyEquiv k).injective
+    simp [finOnePolyEquiv_x1]
+  simpa [Function.comp_def, hx] using hmap
+
+/-- The same diagonal equation, after identifying `k[x,y]` with `(k[y])[x]`. -/
+noncomputable def fAsPolynomial (k : Type*) [Field k] (M : Model) : PolyP1 k :=
+  Polynomial.X ^ M.pn + Polynomial.C (x1 k ^ M.A)
+
+theorem finSuccTwoEquiv_f (k : Type*) [Field k] (M : Model) :
+    finSuccTwoEquiv k (f k M) = fAsPolynomial k M := by
+  rw [fAsPolynomial, f, map_add, map_pow, map_pow, finSuccTwoEquiv_x, finSuccTwoEquiv_y,
+    Polynomial.C_pow]
+
+theorem fAsPolynomial_monic (k : Type*) [Field k] (M : Model) :
+    (fAsPolynomial k M).Monic := by
+  rw [fAsPolynomial]
+  apply (Polynomial.monic_X_pow M.pn).add_of_left
+  rw [Polynomial.degree_X_pow]
+  exact lt_of_le_of_lt Polynomial.degree_C_le
+    (by
+      have hpos : 0 < M.pn := lt_of_lt_of_le (by norm_num) M.hpn
+      simpa using WithBot.coe_pos.mpr hpos)
+
+theorem fAsPolynomial_natDegree (k : Type*) [Field k] (M : Model) :
+    (fAsPolynomial k M).natDegree = M.pn := by
+  rw [fAsPolynomial, Polynomial.natDegree_add_eq_left_of_natDegree_lt]
+  · rw [Polynomial.natDegree_X_pow]
+  · rw [Polynomial.natDegree_X_pow, Polynomial.natDegree_C]
+    exact lt_of_lt_of_le (by norm_num) M.hpn
+
+/-- Standard quotient bridge:
+    `k[x,y]/(x^m+y^A) ≃ (k[y])[X]/(X^m + y^A) = AdjoinRoot (X^m + C(y^A))`. -/
+noncomputable def spanFQuotientEquivAdjoin (k : Type*) [Field k] (M : Model) :
+    (P k ⧸ Ideal.span ({f k M} : Set (P k))) ≃ₐ[k]
+      AdjoinRoot (fAsPolynomial k M) :=
+  Ideal.quotientEquivAlg
+    (Ideal.span ({f k M} : Set (P k)))
+    (Ideal.span ({fAsPolynomial k M} : Set (PolyP1 k)))
+    (finSuccTwoEquiv k)
+    (by
+      rw [Ideal.map_span]
+      congr 1
+      ext z
+      simp [finSuccTwoEquiv_f])
+
+/-- The principal hypersurface quotient in the non-isolated case has infinite `k`-length. -/
+theorem length_span_f_quotient_eq_top (k : Type*) [Field k] (M : Model) :
+    Module.length k (P k ⧸ Ideal.span ({f k M} : Set (P k))) = (⊤ : ℕ∞) := by
+  have hdeg : 0 < (fAsPolynomial k M).natDegree := by
+    rw [fAsPolynomial_natDegree]
+    exact lt_of_lt_of_le (by norm_num) M.hpn
+  exact (spanFQuotientEquivAdjoin k M).toLinearEquiv.length_eq.trans
+    (length_adjoinRoot_monic_pos_eq_top_of_linearIndependent k (P1 k)
+      (q := fAsPolynomial k M) (fAsPolynomial_monic k M) hdeg
+      (x1_pow_linearIndependent k))
+
+/-- In the non-isolated case `p ∣ m` and `p ∣ A`, the genuine Tjurina algebra has
+    infinite length, matching the `⊤` branch of the numerical formula. -/
+theorem length_eq_top_of_dvd_both (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : p ∣ M.pn) (hA : p ∣ M.A) :
+    length k M = (⊤ : ℕ∞) := by
+  rw [length]
+  let e :=
+    (Ideal.quotientEquivAlgOfEq k (ideal_eq_span_f_of_dvd_both k M hm hA)).toLinearEquiv
+  exact e.length_eq.trans (length_span_f_quotient_eq_top k M)
+
+theorem length_eq_tau_dvd_both (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : p ∣ M.pn) (hA : p ∣ M.A) :
+    length k M = tau p M := by
+  rw [tau_both p M hm hA]
+  exact length_eq_top_of_dvd_both k M hm hA
 
 /-- The finite/infinite split of the numerical `tau` is exactly the statement that at least one
     derivative coefficient survives in characteristic `p`.  This connects the four-case formula to
@@ -2107,6 +2705,19 @@ theorem tau_ne_top_iff_some_derivative_coefficient_survives
     `tau = length(k[x,y]/(f,f_x,f_y))` for every field of characteristic `p`. -/
 def quotientDimensionGoal : Prop :=
   ∀ (k : Type*) [Field k] (p : ℕ) [CharP k p] (M : Model), length k M = tau p M
+
+/-- **Full unconditional quotient-dimension theorem.**  The genuine Tjurina length
+    `length(k[x,y]/(f,f_x,f_y))` equals the four-case numerical formula `tau`, including
+    the non-isolated `⊤` case. -/
+theorem quotientDimensionGoal_unconditional : quotientDimensionGoal := by
+  intro k _ p _ M
+  by_cases hm : p ∣ M.pn
+  · by_cases hA : p ∣ M.A
+    · exact length_eq_tau_dvd_both k M hm hA
+    · exact length_eq_tau_div_pn k M hm hA
+  · by_cases hA : p ∣ M.A
+    · exact length_eq_tau_div_A k M hm hA
+    · exact length_eq_tau_coprime k M hm hA
 
 end Tjurina
 
@@ -5427,6 +6038,72 @@ theorem B6_tjurina_finrank_quotient_X_pow (k : Type*) [Field k] (n : ℕ) :
     Module.finrank k (AdjoinRoot (Polynomial.X ^ n : Polynomial k)) = n :=
   Tjurina.finrank_quotient_X_pow k n
 
+/-- B6/Tier-1 UNCONDITIONAL sequential two-variable monomial quotient dimension.
+    This proves the finite vector-space calculation for the iterated nilpotent model
+    `(k[X]/(X^b))[Y]/(Y^a)`, with no Tjurina-data field and no kernel computation. -/
+theorem B6_tjurina_finrank_iterated_X_pow_quotient
+    (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+    Module.finrank k (Tjurina.nilpotentQuotient2 k a b) = a * b :=
+  Tjurina.finrank_iterated_X_pow_quotient k hb
+
+/-- B6/Tier-1 UNCONDITIONAL raw two-variable monomial quotient dimension:
+    the actual `MvPolynomial (Fin 2)` quotient `k[x,y]/(x^a,y^b)` has dimension `a*b`. -/
+theorem B6_tjurina_finrank_raw_monomial_quotient
+    (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+    Module.finrank k (Tjurina.monomialQuotient k a b) = a * b :=
+  Tjurina.finrank_monomialQuotient k hb
+
+/-- B6/Tier-1 UNCONDITIONAL finite Tjurina length discharge: in the three isolated cases,
+    the genuine Tjurina algebra length equals the four-case numerical `tau`. -/
+theorem B6_tjurina_quotientDimensionGoal_finite_cases
+    (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model) :
+    (¬ p ∣ M.pn → ¬ p ∣ M.A → Tjurina.length k M = tau p M) ∧
+    (p ∣ M.pn → ¬ p ∣ M.A → Tjurina.length k M = tau p M) ∧
+    (¬ p ∣ M.pn → p ∣ M.A → Tjurina.length k M = tau p M) :=
+  Tjurina.quotientDimensionGoal_finite_cases k M
+
+/-- B6/Tier-1 UNCONDITIONAL non-isolated Tjurina length discharge: if both partial
+    coefficients vanish in characteristic `p`, the principal hypersurface quotient has infinite
+    `k`-length, matching the `⊤` branch of `tau`. -/
+theorem B6_tjurina_nonisolated_length_top
+    (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model)
+    (hm : p ∣ M.pn) (hA : p ∣ M.A) :
+    Tjurina.length k M = (⊤ : ℕ∞) :=
+  Tjurina.length_eq_top_of_dvd_both k M hm hA
+
+/-- B6/Tier-1 UNCONDITIONAL full quotient-dimension theorem: all four Tjurina cases,
+    including the non-isolated `⊤` case, are proved from the actual quotient algebra. -/
+theorem B6_tjurina_quotientDimensionGoal_unconditional :
+    Tjurina.quotientDimensionGoal :=
+  Tjurina.quotientDimensionGoal_unconditional
+
+/-- B6/Tier-1 UNCONDITIONAL Tjurina ideal equalities: in all three finite cases the genuine
+    Tjurina ideal `(f,f_x,f_y)` is exactly the corresponding monomial ideal. -/
+theorem B6_tjurina_finite_case_ideal_equalities
+    (k : Type*) [Field k] {p : ℕ} [CharP k p] (M : Model) :
+    (¬ p ∣ M.pn → ¬ p ∣ M.A →
+        Tjurina.ideal k M =
+          Ideal.span ({Tjurina.x k ^ (M.pn - 1), Tjurina.y k ^ (M.A - 1)} :
+            Set (Tjurina.P k))) ∧
+    (p ∣ M.pn → ¬ p ∣ M.A →
+        Tjurina.ideal k M =
+          Ideal.span ({Tjurina.x k ^ M.pn, Tjurina.y k ^ (M.A - 1)} :
+            Set (Tjurina.P k))) ∧
+    (¬ p ∣ M.pn → p ∣ M.A →
+        Tjurina.ideal k M =
+          Ideal.span ({Tjurina.x k ^ (M.pn - 1), Tjurina.y k ^ M.A} :
+            Set (Tjurina.P k))) :=
+  Tjurina.finite_case_ideal_equalities k M
+
+/-- B6/Tier-1 UNCONDITIONAL non-isolated Tjurina ideal reduction: if both exponents are
+    divisible by the characteristic, then both partial derivatives vanish and the Tjurina ideal
+    is exactly the principal hypersurface ideal `(f)`. -/
+theorem B6_tjurina_ideal_eq_span_f_of_dvd_both
+    (k : Type*) [Field k] {p : ℕ} [CharP k p]
+    (M : Model) (hm : p ∣ M.pn) (hA : p ∣ M.A) :
+    Tjurina.ideal k M = Ideal.span ({Tjurina.f k M} : Set (Tjurina.P k)) :=
+  Tjurina.ideal_eq_span_f_of_dvd_both k M hm hA
+
 /-- Tier-1 UNCONDITIONAL bridge from the four-case `tau` formula to the actual derivative
     coefficients: `tau` is finite exactly when at least one partial-derivative coefficient survives
     in characteristic `p`. -/
@@ -7197,6 +7874,12 @@ elab "#assert_all_local_safe_axioms" : command => do
 #print axioms card_Tor_eq_exp_IC
 #print axioms tau_ne_top_iff
 #print axioms Tjurina.finrank_quotient_X_pow
+#print axioms Tjurina.nilpotentQuotient1_nontrivial
+#print axioms Tjurina.finrank_iterated_X_pow_quotient
+#print axioms Tjurina.monomialQuotientEquivIter
+#print axioms Tjurina.finrank_monomialQuotient
+#print axioms Tjurina.length_monomialQuotient
+#print axioms Tjurina.length_eq_of_ideal_eq_monomial
 #print axioms Tjurina.pderiv_x
 #print axioms Tjurina.pderiv_y
 #print axioms Tjurina.length_eq_zero_iff_ideal_eq_top
@@ -7207,7 +7890,27 @@ elab "#assert_all_local_safe_axioms" : command => do
 #print axioms Tjurina.x_pow_mem_ideal_of_not_dvd_A
 #print axioms Tjurina.y_pow_mem_ideal_of_not_dvd_pn
 #print axioms Tjurina.finite_case_monomial_bounds
+#print axioms Tjurina.ideal_eq_span_coprime
+#print axioms Tjurina.ideal_eq_span_div_pn
+#print axioms Tjurina.ideal_eq_span_div_A
+#print axioms Tjurina.finite_case_ideal_equalities
+#print axioms Tjurina.length_eq_tau_coprime
+#print axioms Tjurina.length_eq_tau_div_pn
+#print axioms Tjurina.length_eq_tau_div_A
+#print axioms Tjurina.quotientDimensionGoal_finite_cases
 #print axioms Tjurina.both_partials_zero_of_dvd_both
+#print axioms Tjurina.ideal_eq_span_f_of_dvd_both
+#print axioms Tjurina.polynomial_X_pow_linearIndependent
+#print axioms Tjurina.polynomial_length_eq_top
+#print axioms Tjurina.adjoinRoot_C_injective_of_monic_pos
+#print axioms Tjurina.x1_pow_linearIndependent
+#print axioms Tjurina.fAsPolynomial_monic
+#print axioms Tjurina.fAsPolynomial_natDegree
+#print axioms Tjurina.spanFQuotientEquivAdjoin
+#print axioms Tjurina.length_span_f_quotient_eq_top
+#print axioms Tjurina.length_eq_top_of_dvd_both
+#print axioms Tjurina.length_eq_tau_dvd_both
+#print axioms Tjurina.quotientDimensionGoal_unconditional
 #print axioms Tjurina.tau_ne_top_iff_some_derivative_coefficient_survives
 #print axioms derived_equalizer_tfae
 #print axioms claim91_not_sufficient
@@ -7422,6 +8125,13 @@ elab "#assert_all_local_safe_axioms" : command => do
 #print axioms PartBBundleDischarge.B6_jacobian_quotient_bump_zero_iff
 #print axioms PartBBundleDischarge.B6_cotangent_bump_zero_iff_jacobian_quotient_bump_zero
 #print axioms PartBBundleDischarge.B6_tjurina_finrank_quotient_X_pow
+#print axioms PartBBundleDischarge.B6_tjurina_finrank_iterated_X_pow_quotient
+#print axioms PartBBundleDischarge.B6_tjurina_finrank_raw_monomial_quotient
+#print axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_finite_cases
+#print axioms PartBBundleDischarge.B6_tjurina_nonisolated_length_top
+#print axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_unconditional
+#print axioms PartBBundleDischarge.B6_tjurina_finite_case_ideal_equalities
+#print axioms PartBBundleDischarge.B6_tjurina_ideal_eq_span_f_of_dvd_both
 #print axioms PartBBundleDischarge.B6_tau_ne_top_iff_some_derivative_coefficient_survives
 #print axioms PartBBundleDischarge.B6_section8_smooth_residue_root_certificate
 #print axioms PartBBundleDischarge.B6_section8_unique_padic_lift_of_smooth_residue_root
@@ -7625,6 +8335,13 @@ elab "#assert_all_local_safe_axioms" : command => do
 #assert_only_safe_axioms PartBBundleDischarge.B6_jacobian_quotient_bump_zero_iff
 #assert_only_safe_axioms PartBBundleDischarge.B6_cotangent_bump_zero_iff_jacobian_quotient_bump_zero
 #assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_finrank_quotient_X_pow
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_finrank_iterated_X_pow_quotient
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_finrank_raw_monomial_quotient
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_finite_cases
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_nonisolated_length_top
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_unconditional
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_finite_case_ideal_equalities
+#assert_only_safe_axioms PartBBundleDischarge.B6_tjurina_ideal_eq_span_f_of_dvd_both
 #assert_only_safe_axioms PartBBundleDischarge.B6_tau_ne_top_iff_some_derivative_coefficient_survives
 #assert_only_safe_axioms PartBBundleDischarge.B6_section8_smooth_residue_root_certificate
 #assert_only_safe_axioms PartBBundleDischarge.B6_section8_unique_padic_lift_of_smooth_residue_root
@@ -7655,6 +8372,12 @@ elab "#assert_all_local_safe_axioms" : command => do
 #assert_only_safe_axioms benchmark_table
 #assert_only_safe_axioms tauOf_eq_tau
 #assert_only_safe_axioms Tjurina.finrank_quotient_X_pow
+#assert_only_safe_axioms Tjurina.nilpotentQuotient1_nontrivial
+#assert_only_safe_axioms Tjurina.finrank_iterated_X_pow_quotient
+#assert_only_safe_axioms Tjurina.monomialQuotientEquivIter
+#assert_only_safe_axioms Tjurina.finrank_monomialQuotient
+#assert_only_safe_axioms Tjurina.length_monomialQuotient
+#assert_only_safe_axioms Tjurina.length_eq_of_ideal_eq_monomial
 #assert_only_safe_axioms Tjurina.pderiv_x
 #assert_only_safe_axioms Tjurina.pderiv_y
 #assert_only_safe_axioms Tjurina.length_eq_zero_iff_ideal_eq_top
@@ -7665,7 +8388,27 @@ elab "#assert_all_local_safe_axioms" : command => do
 #assert_only_safe_axioms Tjurina.x_pow_mem_ideal_of_not_dvd_A
 #assert_only_safe_axioms Tjurina.y_pow_mem_ideal_of_not_dvd_pn
 #assert_only_safe_axioms Tjurina.finite_case_monomial_bounds
+#assert_only_safe_axioms Tjurina.ideal_eq_span_coprime
+#assert_only_safe_axioms Tjurina.ideal_eq_span_div_pn
+#assert_only_safe_axioms Tjurina.ideal_eq_span_div_A
+#assert_only_safe_axioms Tjurina.finite_case_ideal_equalities
+#assert_only_safe_axioms Tjurina.length_eq_tau_coprime
+#assert_only_safe_axioms Tjurina.length_eq_tau_div_pn
+#assert_only_safe_axioms Tjurina.length_eq_tau_div_A
+#assert_only_safe_axioms Tjurina.quotientDimensionGoal_finite_cases
 #assert_only_safe_axioms Tjurina.both_partials_zero_of_dvd_both
+#assert_only_safe_axioms Tjurina.ideal_eq_span_f_of_dvd_both
+#assert_only_safe_axioms Tjurina.polynomial_X_pow_linearIndependent
+#assert_only_safe_axioms Tjurina.polynomial_length_eq_top
+#assert_only_safe_axioms Tjurina.adjoinRoot_C_injective_of_monic_pos
+#assert_only_safe_axioms Tjurina.x1_pow_linearIndependent
+#assert_only_safe_axioms Tjurina.fAsPolynomial_monic
+#assert_only_safe_axioms Tjurina.fAsPolynomial_natDegree
+#assert_only_safe_axioms Tjurina.spanFQuotientEquivAdjoin
+#assert_only_safe_axioms Tjurina.length_span_f_quotient_eq_top
+#assert_only_safe_axioms Tjurina.length_eq_top_of_dvd_both
+#assert_only_safe_axioms Tjurina.length_eq_tau_dvd_both
+#assert_only_safe_axioms Tjurina.quotientDimensionGoal_unconditional
 #assert_only_safe_axioms Tjurina.tau_ne_top_iff_some_derivative_coefficient_survives
 -- Category IV.3: NumberTheory.Padics.* + Normed.Group.Ultra + SpecificLimits imports
 #assert_only_safe_axioms padicLog
