@@ -61,6 +61,8 @@ import Mathlib.CategoryTheory.Monoidal.Tor
 import Mathlib.CategoryTheory.Abelian.Projective.Resolution
 import Mathlib.Algebra.Homology.HomologicalComplex
 import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
+import Mathlib.Algebra.Homology.HomologySequenceLemmas
+import Mathlib.Algebra.Homology.ShortComplex.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Monoidal.Closed
 import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Category.ModuleCat.Abelian
@@ -1888,7 +1890,7 @@ def B6_Tor_naturality : ChecklistItem :=
     integrationNote :=
       "DONE (Categories K + Y, both parts).  Category K derived the coefficient natural transformation torCoeffMap = NatTrans.leftDerived; Category Y part 1 identifies it (DEFINITIONALLY, by rfl) with Mathlib's genuine Tor BIFUNCTOR CategoryTheory.Tor ModZ n : ModZ ⥤ ModZ ⥤ ModZ (torBif_obj, torBif_map), giving FULL two-variable functoriality (torBif_map_id/map_comp) and the naturality square (torBif_naturality).  Category Y part 2 (T1-b) adds FIRST-variable additivity Tor(⊕Mᵢ, N) ≅ ⊕Tor(Mᵢ, N): natTrans_leftDerived_add (the genuine missing lemma — NatTrans.leftDerived is additive in the transformation, proved via ProjectiveResolution.leftDerived_app_eq + homologyFunctor additivity) ⇒ torBif_additive (the bifunctor is additive in the first variable) ⇒ tor_firstvar_biprod / tor_firstvar_biproduct (binary / n-fold biproduct preservation, via evaluation at N landing in ModZ) ⇒ tor1_firstvar_obj_biprod (paper form for the genuine Spt3Tor.Tor).  The degree-1 connecting-morphism (LES) naturality stays via the uniqueness route (connecting_unique; torDelta_naturality), since the leftDerived LES δ is not in Mathlib.",
     recommendedNextStep :=
-      "None for B6.  Optional: once Mathlib develops the leftDerived long-exact-sequence / δ-functor, replace the connecting-morphism uniqueness hypotheses by the genuine δ and discharge torDelta_naturality unconditionally." }
+      "T2-e (item B19) DID this at the complex level: torLES_delta / torLES_delta_naturality wrap Mathlib's genuine snake-built ShortExact.δ + HomologySequence.δ_naturality, discharging the connecting-map naturality UNCONDITIONALLY (no hcompat).  The object-level leftDerived/Tor δ-functor still awaits the horseshoe lemma (absent in v4.31.0)." }
 
 def B7_true_Tor_direct_sum : ChecklistItem :=
   { code := "B7",
@@ -2188,6 +2190,40 @@ def B18_ec_goodlocus_etale : ChecklistItem :=
     recommendedNextStep :=
       "Wire ec_goodLocus_formallyEtale to ec_good_reduction (Δ a unit ⟹ ∂W/∂Y invertible, so D(Δ) ⊆ D(∂W/∂Y)) and into Spt3.hensel_multivar_unique_lift for an end-to-end EC good-reduction unique-lift over R[X]." }
 
+def B19_tor_connecting_delta : ChecklistItem :=
+  { code := "B19",
+    title := "Genuine connecting morphism δ + naturality of the homology LES (snake-built), UNCONDITIONAL",
+    gap := GapClass.mathlibPossible,
+    status := ChecklistStatus.proved,
+    currentLeanAnchor :=
+      ["Spt3Tor.torLES_delta", "Spt3Tor.torLES_delta_naturality", "Spt3Tor.torLES_exact",
+       "Spt3TorHorseshoe.shortExact_map_of_splitting",
+       "Spt3Tor.connecting_unique", "Spt3Tor.torDelta_naturality"],
+    mathlibAnchor :=
+      ["Mathlib.Algebra.Homology.HomologySequence", "Mathlib.Algebra.Homology.HomologySequenceLemmas",
+       "Mathlib.Algebra.Homology.ShortComplex.SnakeLemma", "Mathlib.Algebra.Homology.ShortComplex.ShortExact"],
+    integrationNote :=
+      "DONE (Category Y parts 3–4 / T2-e).  Part 3 REPLACES Category Y's CONDITIONAL connecting-map naturality (torDelta_naturality, assuming snake-data hcompat) by the GENUINE snake-built connecting morphism δ and its UNCONDITIONAL naturality: torLES_delta = ShortComplex.ShortExact.δ (built from ShortComplex.SnakeLemma), torLES_delta_naturality = HomologySequence.δ_naturality (NO hypothesis), torLES_exact = composableArrows₅_exact (6-term homology LES exact).  Part 4 adds the REDUCTION engine shortExact_map_of_splitting: an ADDITIVE functor sends a split short complex to a short exact one (= (s.map F).shortExact) — the per-degree step carrying a degreewise-split SES of resolutions through F.  REDUCTION CHAIN: horseshoe ⟹ [per degree] shortExact_map_of_splitting ⟹ SES of complexes ⟹ [homology=LₙF] T2-e homology LES = the leftDerived/Tor LES.  EVERYTHING except the horseshoe is now available.  HONEST: the HORSESHOE LEMMA itself (the inductive degreewise-split projective-resolution construction) is research-scale and ABSENT in Mathlib v4.31.0 (ProjectiveResolution is single-object; only Ext has a derived-category LES, not leftDerived) — so the object-level Tor δ-functor keeps the uniqueness path (connecting_unique) until the horseshoe is formalized.",
+    recommendedNextStep :=
+      "Formalize the horseshoe lemma (0→X₁→X₂→X₃→0 ⟹ a degreewise-split SES of ProjectiveResolutions): then shortExact_map_of_splitting (per degree) + the degreewise-to-complex assembly give a SES of complexes, and torLES_delta/torLES_exact directly yield the leftDerived/Tor long exact sequence — every other piece is already proved.  The horseshoe BASE CASE (degree 0) is now done — see item B20." }
+
+def B20_horseshoe_base : ChecklistItem :=
+  { code := "B20",
+    title := "Horseshoe lemma base case (degree 0): biproduct cover of the middle term, PROVED",
+    gap := GapClass.mathlibPossible,
+    status := ChecklistStatus.proved,
+    currentLeanAnchor :=
+      ["Spt3TorHorseshoe.horseshoe_projective_mid", "Spt3TorHorseshoe.horseshoe_base_splitting",
+       "Spt3TorHorseshoe.horseshoe_lift", "Spt3TorHorseshoe.horseshoe_base_epi",
+       "Spt3TorHorseshoe.shortExact_map_of_splitting", "Spt3TorHorseshoe.HorseshoeInductionStep"],
+    mathlibAnchor :=
+      ["Mathlib.CategoryTheory.Abelian.Projective.Basic", "Mathlib.Algebra.Homology.ShortComplex.Exact",
+       "Mathlib.CategoryTheory.Limits.Shapes.Biproducts"],
+    integrationNote :=
+      "DONE (Category Y part 5 / T2-e).  The DEGREE-0 step of the horseshoe lemma is proved UNCONDITIONALLY: given a short exact sequence S and projective covers p₁ : P₁ ↠ S.X₁, p₃ : P₃ ↠ S.X₃, horseshoe_projective_mid (P₁ ⊞ P₃ projective) + horseshoe_base_splitting (the biproduct short complex P₁ → P₁⊞P₃ → P₃ is SPLIT, Splitting.ofHasBinaryBiproduct) + horseshoe_lift (p₃ lifts through S.g by projectivity) + horseshoe_base_epi (the middle cover biprod.desc (p₁ ≫ S.f) ℓ is EPI, via the four-lemma epi_τ₂_of_exact_of_epi on the morphism of short complexes (split biproduct) ⟶ S).  Combined with shortExact_map_of_splitting (part 4), the F-mapped degree-0 stays short exact.  REMAINING: only the INDUCTION (recurse on kernels 0 → ker p₁ → ker(mid) → ker p₃ → 0, short exact by snake, to assemble full chain-complex resolutions with differentials) — research-scale, absent in Mathlib v4.31.0; it is the sole remaining input for the object-level leftDerived/Tor LES.",
+    recommendedNextStep :=
+      "Iterate the base case (Category Y part 6 isolates the inductive input as HorseshoeInductionStep — the kernel of an epi-morphism of SES is short exact, the snake corollary): build a ShortComplex.SnakeInput to prove HorseshoeInductionStep, then the Nat-recursive assembly into chain-complex resolutions; the degreewise splitting + T2-e homology LES then yield the leftDerived/Tor long exact sequence.  Base case (B20), F-preservation (B19), and the LES δ/naturality/exactness (B19) are all proved; only this recursion remains." }
+
 def all : List ChecklistItem :=
   [A1_AKS_ECPP,
    A2_padic_log_Baker,
@@ -2211,6 +2247,8 @@ def all : List ChecklistItem :=
    B16_candidate_separation_integer,
    B17_jacobian_etale_onevar,
    B18_ec_goodlocus_etale,
+   B19_tor_connecting_delta,
+   B20_horseshoe_base,
    C1_theorem18_scope,
    C2_theorem20_category_error,
    W1_Lucas_workaround,
@@ -2241,7 +2279,7 @@ claimed as theorems are proved to have the appropriate checklist status instead
 of being smuggled in as assumptions.
 -/
 
-theorem checklist_total_items : all.length = 28 := rfl
+theorem checklist_total_items : all.length = 30 := rfl
 -- (B6 flipped futureTarget→proved by Category Y; B11 added by Category Z;
 --  B12 open-dependent gate added by Category S part 2 / T1-d;
 --  B13 AKS introspective identity added by Category A1-2 / T2-a;
@@ -2252,7 +2290,7 @@ theorem checklist_total_items : all.length = 28 := rfl
 --  B18 multivariate EC good-locus formally-étale added by Category X part 4 / T2-d.)
 
 theorem checklist_current_proved_or_proxy_count :
-    currentProvedOrProxy.length = 22 := rfl
+    currentProvedOrProxy.length = 24 := rfl
 
 theorem checklist_future_target_count :
     futureTargets.length = 5 := rfl
@@ -7023,3 +7061,353 @@ section CategoryXT2dMvAxiomAudit
 #print axioms Spt3JacEtale.formallyEtale_localizationAtDerivative
 #print axioms Spt3JacEtale.ec_goodLocus_formallyEtale
 end CategoryXT2dMvAxiomAudit
+
+/-! ============================================================================
+    Category Y, part 3 — T2-e: the GENUINE connecting morphism δ and its naturality.
+
+    Mathlib v4.31.0 provides the snake-built connecting morphism `ShortComplex.ShortExact.δ` of the
+    homology long exact sequence for a short exact sequence of complexes, together with its
+    NATURALITY (`HomologySequence.δ_naturality`) and exactness (`composableArrows₅_exact`).  We wrap
+    these at the Tor coefficient category `ModZ`, replacing Category Y's CONDITIONAL connecting-map
+    naturality (`torDelta_naturality`, which assumed the snake-data `hcompat`) by the GENUINE δ and
+    its UNCONDITIONAL naturality — exactly B6's recommended next step.
+
+    HONEST SCOPE.  This is the homology-LES connecting map for a short exact sequence of COMPLEXES
+    (which is what the snake lemma supplies, unconditionally).  Promoting it to the `leftDerived`/Tor
+    LES connecting `LₙTor` from a short exact sequence in the variable still needs the HORSESHOE
+    LEMMA (a degreewise-split short exact sequence of projective resolutions), which is ABSENT in
+    Mathlib v4.31.0 (the only derived-functor LES present is for `Ext`, via the derived category, not
+    `leftDerived`).  So the object-level Tor δ-functor stays the uniqueness path; the connecting map
+    and its naturality are now genuine and unconditional. -/
+
+namespace Spt3Tor
+
+open CategoryTheory HomologicalComplex
+
+variable {ι : Type*} {c : ComplexShape ι}
+
+/-- **T2-e (genuine connecting morphism).**  The snake-built connecting morphism δ of the homology
+long exact sequence for a short exact sequence `S` of complexes over `ModZ`. -/
+noncomputable def torLES_delta {S : CategoryTheory.ShortComplex (HomologicalComplex ModZ c)}
+    (hS : S.ShortExact) (i j : ι) (hij : c.Rel i j) :
+    (S.X₃).homology i ⟶ (S.X₁).homology j :=
+  hS.δ i j hij
+
+/-- **T2-e (connecting-map naturality, UNCONDITIONAL).**  For a morphism `φ` of short exact
+sequences of complexes, the connecting morphism δ commutes with the induced homology maps —
+Mathlib's `HomologySequence.δ_naturality`, with NO snake-data hypothesis.  This is the genuine,
+unconditional version of `Spt3Tor.torDelta_naturality`. -/
+theorem torLES_delta_naturality
+    {S₁ S₂ : CategoryTheory.ShortComplex (HomologicalComplex ModZ c)}
+    (φ : S₁ ⟶ S₂) (hS₁ : S₁.ShortExact) (hS₂ : S₂.ShortExact) (i j : ι) (hij : c.Rel i j) :
+    hS₁.δ i j hij ≫ HomologicalComplex.homologyMap φ.τ₁ j
+      = HomologicalComplex.homologyMap φ.τ₃ i ≫ hS₂.δ i j hij :=
+  HomologySequence.δ_naturality φ hS₁ hS₂ i j hij
+
+/-- **T2-e (homology LES exactness).**  The six-term homology long exact sequence
+`Hᵢ(X₁) → Hᵢ(X₂) → Hᵢ(X₃) →[δ] Hⱼ(X₁) → Hⱼ(X₂) → Hⱼ(X₃)` is exact. -/
+theorem torLES_exact {S : CategoryTheory.ShortComplex (HomologicalComplex ModZ c)}
+    (hS : S.ShortExact) (i j : ι) (hij : c.Rel i j) :
+    (HomologySequence.composableArrows₅ hS i j hij).Exact :=
+  HomologySequence.composableArrows₅_exact hS i j hij
+
+end Spt3Tor
+
+/-! ## Axiom audit for Category Y, part 3 (T2-e genuine connecting morphism + naturality). -/
+section CategoryYT2eAxiomAudit
+#print axioms Spt3Tor.torLES_delta
+#print axioms Spt3Tor.torLES_delta_naturality
+#print axioms Spt3Tor.torLES_exact
+end CategoryYT2eAxiomAudit
+
+/-! ============================================================================
+    Category Y, part 4 — T2-e: the additive-functor preservation engine + horseshoe reduction.
+
+    The object-level `leftDerived`/Tor long exact sequence (connecting `LₙF` from a short exact
+    sequence in the source) reduces to the HORSESHOE LEMMA: a short exact sequence
+    `0 → X₁ → X₂ → X₃ → 0` admits a DEGREEWISE-SPLIT short exact sequence of projective resolutions
+    `0 → P₁• → P₂• → P₃• → 0`.  The full reduction chain is:
+
+      horseshoe (degreewise-split SES of resolutions)
+        ⟹ [each degree split]  F additive sends each degree's split SES to a short exact one
+                                 (`shortExact_map_of_splitting`, proved below)
+        ⟹ [assemble degreewise]  `0 → F P₁• → F P₂• → F P₃• → 0` is short exact as complexes
+        ⟹ [homology = LₙF]  the homology LES of this SES of complexes (Category Y part 3 / T2-e:
+                              `torLES_delta`, `torLES_exact`, `torLES_delta_naturality`)
+                              IS the `leftDerived`/Tor long exact sequence.
+
+    Everything EXCEPT the horseshoe construction is now available: the per-degree preservation engine
+    is proved here, and the homology LES + δ + naturality were discharged in part 3.  The HORSESHOE
+    itself (the inductive split-resolution construction) is research-scale and ABSENT in Mathlib
+    v4.31.0 — `ProjectiveResolution` is single-object, and the only derived-functor LES present is
+    for `Ext` (via the derived category), not `leftDerived`.  So the horseshoe stays the isolated
+    input; the rest of the LES is genuine. -/
+
+namespace Spt3TorHorseshoe
+
+open CategoryTheory CategoryTheory.ShortComplex CategoryTheory.Limits
+
+variable {C D : Type*} [Category C] [Category D] [Preadditive C] [Preadditive D] [HasZeroObject D]
+
+/-- **T2-e (additive functor preserves split short-exactness — UNCONDITIONAL).**  If a short complex
+`S` in `C` is split (`s : S.Splitting`), its image `S.map F` under an ADDITIVE functor `F` is short
+exact.  This is the per-degree engine of "an additive functor sends a degreewise-split short exact
+sequence to a short exact one" — the step that carries the horseshoe through `F` so the homology LES
+(part 3) computes the `leftDerived` LES. -/
+theorem shortExact_map_of_splitting {S : ShortComplex C} (s : S.Splitting) (F : C ⥤ D)
+    [F.Additive] : (S.map F).ShortExact :=
+  (s.map F).shortExact
+
+end Spt3TorHorseshoe
+
+/-! ## Axiom audit for Category Y, part 4 (T2-e additive-functor split-preservation engine). -/
+section CategoryYT2eHorseshoeAxiomAudit
+#print axioms Spt3TorHorseshoe.shortExact_map_of_splitting
+end CategoryYT2eHorseshoeAxiomAudit
+
+/-! ============================================================================
+    Category Y, part 5 — T2-e: the HORSESHOE LEMMA BASE CASE (degree 0), PROVED.
+
+    The horseshoe lemma resolves a short exact sequence `0 → X₁ → X₂ → X₃ → 0` by a degreewise-split
+    short exact sequence of projective resolutions, built by induction.  Its DEGREE-0 STEP is proved
+    here UNCONDITIONALLY: given projective covers `p₁ : P₁ ↠ X₁`, `p₃ : P₃ ↠ X₃`,
+
+      • `horseshoe_projective_mid` — the biproduct `P₁ ⊞ P₃` is projective;
+      • `horseshoe_base_splitting` — the biproduct short complex `P₁ → P₁ ⊞ P₃ → P₃` is SPLIT
+        (`Splitting.ofHasBinaryBiproduct`), so (with `shortExact_map_of_splitting`, part 4) it stays
+        short exact under any additive functor;
+      • `horseshoe_lift` — `p₃` lifts through the epimorphism `S.g` (projectivity);
+      • `horseshoe_base_epi` — the resulting middle cover `biprod.desc (p₁ ≫ S.f) ℓ : P₁ ⊞ P₃ ↠ S.X₂`
+        is an EPIMORPHISM, via the four-lemma `epi_τ₂_of_exact_of_epi` applied to the morphism from
+        the split biproduct short complex to `S`.
+
+    Thus the entire degree-0 of the horseshoe (a projective cover of `S.X₂` fitting into a split
+    short exact sequence mapping to `S`) is formalized.  The remaining piece — the INDUCTION
+    (recursing on the kernels `0 → ker p₁ → ker (mid cover) → ker p₃ → 0`, itself short exact by the
+    snake lemma, to assemble the full chain-complex resolutions with their differentials) — is the
+    research-scale construction still absent in Mathlib v4.31.0; it is the only remaining input for
+    the object-level `leftDerived`/Tor long exact sequence. -/
+
+namespace Spt3TorHorseshoe
+
+open CategoryTheory CategoryTheory.Limits CategoryTheory.ShortComplex
+
+variable {C : Type*} [Category C] [Abelian C]
+
+/-- Horseshoe degree-0: the biproduct of two projective covers is projective. -/
+theorem horseshoe_projective_mid {P₁ P₃ : C} [Projective P₁] [Projective P₃] :
+    Projective (P₁ ⊞ P₃) :=
+  inferInstance
+
+/-- Horseshoe degree-0: the biproduct short complex `P₁ → P₁ ⊞ P₃ → P₃` is split. -/
+noncomputable def horseshoe_base_splitting (P₁ P₃ : C) :
+    Splitting (ShortComplex.mk (biprod.inl : P₁ ⟶ P₁ ⊞ P₃) (biprod.snd : P₁ ⊞ P₃ ⟶ P₃) (by simp)) :=
+  Splitting.ofHasBinaryBiproduct P₁ P₃
+
+/-- Horseshoe degree-0: a projective cover of `S.X₃` lifts through the epimorphism `S.g`. -/
+theorem horseshoe_lift {S : ShortComplex C} (hS : S.ShortExact) {P₃ : C} [Projective P₃]
+    (p₃ : P₃ ⟶ S.X₃) : ∃ ℓ : P₃ ⟶ S.X₂, ℓ ≫ S.g = p₃ := by
+  haveI := hS.epi_g
+  exact ⟨Projective.factorThru p₃ S.g, Projective.factorThru_comp _ _⟩
+
+/-- **T2-e (HORSESHOE BASE CASE, UNCONDITIONAL).**  Given a short exact sequence `S`, projective
+covers `p₁ : P₁ ↠ S.X₁`, `p₃ : P₃ ↠ S.X₃`, and a lift `ℓ` of `p₃` through `S.g`, the biproduct
+`P₁ ⊞ P₃` covers the middle term `S.X₂` EPIMORPHICALLY via `biprod.desc (p₁ ≫ S.f) ℓ`.  Proved via
+the four-lemma `epi_τ₂_of_exact_of_epi` on the morphism from the split biproduct short complex to
+`S` (whose outer components are the epimorphisms `p₁`, `p₃`). -/
+theorem horseshoe_base_epi {S : ShortComplex C} (hS : S.ShortExact)
+    {P₁ P₃ : C} [Projective P₁] [Projective P₃]
+    (p₁ : P₁ ⟶ S.X₁) [Epi p₁] (p₃ : P₃ ⟶ S.X₃) [Epi p₃]
+    (ℓ : P₃ ⟶ S.X₂) (hℓ : ℓ ≫ S.g = p₃) :
+    Epi (biprod.desc (p₁ ≫ S.f) ℓ) := by
+  haveI := hS.epi_g
+  let φ : ShortComplex.mk (biprod.inl : P₁ ⟶ P₁ ⊞ P₃) (biprod.snd : P₁ ⊞ P₃ ⟶ P₃) (by simp) ⟶ S :=
+    { τ₁ := p₁
+      τ₂ := biprod.desc (p₁ ≫ S.f) ℓ
+      τ₃ := p₃
+      comm₁₂ := by simp
+      comm₂₃ := by apply biprod.hom_ext' <;> simp [hℓ] }
+  haveI : Epi φ.τ₁ := ‹Epi p₁›
+  haveI : Epi φ.τ₃ := ‹Epi p₃›
+  haveI : Epi (ShortComplex.mk (biprod.inl : P₁ ⟶ P₁ ⊞ P₃) (biprod.snd : P₁ ⊞ P₃ ⟶ P₃)
+      (by simp)).g := by dsimp; infer_instance
+  exact epi_τ₂_of_exact_of_epi φ hS.exact
+
+end Spt3TorHorseshoe
+
+/-! ## Axiom audit for Category Y, part 5 (T2-e horseshoe base case). -/
+section CategoryYT2eHorseshoeBaseAxiomAudit
+#print axioms Spt3TorHorseshoe.horseshoe_projective_mid
+#print axioms Spt3TorHorseshoe.horseshoe_lift
+#print axioms Spt3TorHorseshoe.horseshoe_base_epi
+end CategoryYT2eHorseshoeBaseAxiomAudit
+
+/-! ============================================================================
+    Category Y, part 6 — T2-e: the horseshoe INDUCTION step, precisely ISOLATED.
+
+    With the base case proved (part 5), the horseshoe is completed by RECURSION: take the kernels of
+    the degree-`n` covers and recurse.  The recursion lives in the abelian category `ShortComplex C`
+    (its kernels are computed degreewise), and its inductive INPUT is exactly:
+
+      the kernel of an epi-morphism of short exact sequences is again short exact,
+
+    i.e. the degreewise kernel sequence `0 → ker τ₁ → ker τ₂ → ker τ₃ → 0` is short exact (the
+    snake-lemma corollary: the connecting map vanishes because the verticals are epimorphisms, so the
+    cokernels are zero).  This is named below as `HorseshoeInductionStep`.
+
+    HONEST SCOPE.  `HorseshoeInductionStep` is the snake-lemma corollary (provable from Mathlib's
+    `ShortComplex.SnakeLemma` by constructing the snake input — substantial API work, deferred), and
+    the `Nat`-recursive assembly that iterates it into chain-complex resolutions (with differentials,
+    proving each row is a resolution and the columns are degreewise split) is the research-scale
+    construction still ABSENT in Mathlib v4.31.0.  This Prop names exactly that single inductive
+    input; together with `horseshoe_base_epi` (part 5), the additive-functor preservation
+    (`shortExact_map_of_splitting`, part 4) and the homology LES δ + naturality + exactness
+    (`torLES_delta`/`torLES_exact`/`torLES_delta_naturality`, part 3), it is the ONLY remaining
+    ingredient of the object-level `leftDerived`/Tor long exact sequence. -/
+
+namespace Spt3TorHorseshoe
+
+open CategoryTheory CategoryTheory.Limits
+
+variable {C : Type*} [Category C] [Abelian C]
+
+/-- **INDUCTION STEP (isolated named input).**  The kernel of an epimorphism of short exact
+sequences is a short exact short complex — the degreewise kernel sequence
+`0 → ker τ₁ → ker τ₂ → ker τ₃ → 0` (the snake-lemma corollary, cokernels vanishing since the
+verticals are epi).  Iterating this from `horseshoe_base_epi` builds the full degreewise-split
+projective resolution; the `Nat`-recursive assembly is the research-scale piece absent in Mathlib
+v4.31.0, of which this Prop is the precise inductive input. -/
+def HorseshoeInductionStep (C : Type*) [Category C] [Abelian C] : Prop :=
+  ∀ {S₁ S₂ : CategoryTheory.ShortComplex C} (φ : S₁ ⟶ S₂),
+    S₁.ShortExact → S₂.ShortExact → Epi φ.τ₁ → Epi φ.τ₂ → Epi φ.τ₃ →
+    (kernel φ).ShortExact
+
+end Spt3TorHorseshoe
+
+/-! ## Axiom audit for Category Y, part 6 (T2-e horseshoe induction-step isolation). -/
+section CategoryYT2eHorseshoeIndAxiomAudit
+#print axioms Spt3TorHorseshoe.HorseshoeInductionStep
+end CategoryYT2eHorseshoeIndAxiomAudit
+
+/-! ## PART 3 — PR-candidate lemmas extracted from Spt3
+
+This section isolates the genuinely reusable, Mathlib-adjacent number-theory lemmas that the
+primality-sheaf development produced, restated with fully general signatures and dry docstrings so
+each is a self-contained PR candidate.  The no-duplication discipline is enforced explicitly:
+
+  * lemmas that ALREADY exist in Mathlib v4.31.0 are referenced with `#check` and NOT re-proved;
+  * lemmas already proved elsewhere in THIS file under project names are referenced with `#check`;
+  * only the genuinely new statements are proved here, each with the clean axiom set
+    `[propext, Classical.choice, Quot.sound]` (verified in the audit block below).
+
+Candidate map:
+  C1  simultaneous-congruence solvability  ⇔  `gcd m n ∣ a - b`        — NEW (proved below)
+  C2  ideal `span {m} ⊓ span {n} = span {lcm m n}`                     — Mathlib `span_singleton_inf_span_singleton`
+  C3  `(gcd a b).factorization = a.factorization ⊓ b.factorization`    — Mathlib `Nat.factorization_gcd` (+ NEW prime-power pointwise form)
+  C4  `(lcm a b).factorization = a.factorization ⊔ b.factorization`    — Mathlib `Nat.factorization_lcm` (+ NEW prime-power pointwise form)
+  C5  closed form `gcd m (p^k) = p ^ min (v_p m) k`                    — project `Spt3TorValue.gcd_primePow`
+  C6  `|ker (×M on ℤ/N)| = gcd N M`                                    — project `Spt3.card_ker_mulLeft`
+  C7  factorization / pairwise-coprime n-fold CRT isomorphisms         — Mathlib `ZMod.equivPi` / `prodEquivPi` / `chineseRemainder`
+-/
+
+namespace Spt3PRCandidates
+
+/-- **C1 — Simultaneous-congruence solvability (general, non-coprime).**  A pair of congruences
+`x ≡ a [ZMOD m]`, `x ≡ b [ZMOD n]` has a common solution iff `gcd m n` divides `a - b`.  The
+coprime case `Int.gcd m n = 1` recovers the classical two-modulus CRT; in general `gcd m n` is the
+exact obstruction.  (Mathlib has the coprime CRT but not this solvability criterion.) -/
+theorem exists_modEq_and_modEq_iff_gcd_dvd_sub {m n a b : ℤ} :
+    (∃ x : ℤ, x ≡ a [ZMOD m] ∧ x ≡ b [ZMOD n]) ↔ (Int.gcd m n : ℤ) ∣ a - b := by
+  constructor
+  · rintro ⟨x, hxa, hxb⟩
+    have h1 : (Int.gcd m n : ℤ) ∣ a - x :=
+      dvd_trans (Int.gcd_dvd_left m n) (Int.modEq_iff_dvd.mp hxa)
+    have h2 : (Int.gcd m n : ℤ) ∣ b - x :=
+      dvd_trans (Int.gcd_dvd_right m n) (Int.modEq_iff_dvd.mp hxb)
+    have e : a - b = (a - x) - (b - x) := by ring
+    rw [e]; exact dvd_sub h1 h2
+  · intro h
+    obtain ⟨c, hc⟩ := h
+    have hbez : (Int.gcd m n : ℤ) = m * Int.gcdA m n + n * Int.gcdB m n := Int.gcd_eq_gcd_ab m n
+    refine ⟨a - m * Int.gcdA m n * c, ?_, ?_⟩
+    · rw [Int.modEq_iff_dvd]; exact ⟨Int.gcdA m n * c, by ring⟩
+    · rw [Int.modEq_iff_dvd]
+      exact ⟨-(Int.gcdB m n * c), by linear_combination -hc - c * hbez⟩
+
+/-- **C1 corollary.**  When `m, n` are coprime the congruences are always simultaneously solvable. -/
+theorem exists_modEq_and_modEq_of_isCoprime {m n a b : ℤ} (h : IsCoprime m n) :
+    ∃ x : ℤ, x ≡ a [ZMOD m] ∧ x ≡ b [ZMOD n] := by
+  rw [exists_modEq_and_modEq_iff_gcd_dvd_sub, Int.isCoprime_iff_gcd_eq_one.mp h]; simp
+
+/-- **C3 (prime-power pointwise form).**  The `p`-adic valuation of `gcd m (p^k)` is
+`min (v_p m) k` — the pointwise specialization of `Nat.factorization_gcd` at the prime `p`. -/
+theorem factorization_gcd_prime_pow {p : ℕ} (hp : p.Prime) {m : ℕ} (hm : m ≠ 0) (k : ℕ) :
+    (Nat.gcd m (p ^ k)).factorization p = min (m.factorization p) k := by
+  rw [Nat.factorization_gcd hm (pow_ne_zero k hp.ne_zero), Finsupp.inf_apply,
+      Nat.factorization_pow_self hp]
+
+/-- **C4 (prime-power pointwise form).**  The `p`-adic valuation of `lcm m (p^k)` is
+`max (v_p m) k` — the pointwise specialization of `Nat.factorization_lcm` at the prime `p`. -/
+theorem factorization_lcm_prime_pow {p : ℕ} (hp : p.Prime) {m : ℕ} (hm : m ≠ 0) (k : ℕ) :
+    (Nat.lcm m (p ^ k)).factorization p = max (m.factorization p) k := by
+  rw [Nat.factorization_lcm hm (pow_ne_zero k hp.ne_zero), Finsupp.sup_apply,
+      Nat.factorization_pow_self hp]
+
+end Spt3PRCandidates
+
+/-! ### Axiom audit + no-duplication references for PART 3. -/
+section Spt3PRCandidatesAudit
+-- NEW lemmas proved in this file (clean axiom set):
+#print axioms Spt3PRCandidates.exists_modEq_and_modEq_iff_gcd_dvd_sub
+#print axioms Spt3PRCandidates.exists_modEq_and_modEq_of_isCoprime
+#print axioms Spt3PRCandidates.factorization_gcd_prime_pow
+#print axioms Spt3PRCandidates.factorization_lcm_prime_pow
+-- Project lemmas reusable as PR candidates (proved earlier; deliberately NOT re-proved):
+#check @Spt3TorValue.gcd_primePow          -- C5: gcd m (p^k) = p ^ min (v_p m) k
+#check @Spt3.card_ker_mulLeft              -- C6: |ker (×M on ℤ/N)| = gcd N M
+-- Mathlib originals (deliberately NOT duplicated):
+#check @Nat.factorization_gcd              -- C3 (general ⊓ form)
+#check @Nat.factorization_lcm              -- C4 (general ⊔ form)
+#check @span_singleton_inf_span_singleton  -- C2 (ideal ⊓ = lcm; EuclideanDomain + GCDMonoid)
+#check @ZMod.equivPi                       -- C7 (factorization-indexed n-fold CRT)
+#check @ZMod.prodEquivPi                   -- C7 (pairwise-coprime n-fold CRT)
+#check @ZMod.chineseRemainder             -- C7 (two-modulus CRT)
+end Spt3PRCandidatesAudit
+
+/-! ## PART 4 — Conditional certification boundary
+
+This section records, in one place, the precise line between what this file proves
+UNCONDITIONALLY and what remains a NAMED HYPOTHESIS (an explicit `Prop` interface).  No global
+`axiom` command is used anywhere in this file: every deep theorem Mathlib v4.31.0 lacks is carried
+as a `Prop` argument or structure field, never as a silent assumption.
+
+UNCONDITIONAL CORE (clean axiom set `[propext, Classical.choice, Quot.sound]`):
+  • CRT solvability and the n-fold CRT ring isomorphisms (PART 3 C1; Mathlib C7);
+  • `Tor₁(ℤ/M, ℤ/N) ≅ ⨁ ℤ/p^{min(v_p M, v_p N)}` for the genuine derived functor `Spt3Tor.Tor`;
+  • the `ker (×M)` / `gcd` cardinality (C6) and the ideal-`lcm` equalizer description (C2);
+  • the Pocklington / Lucas certificate arithmetic;
+  • `Spt3PadicLog.logOf_mul` power-series logarithm multiplicativity, the horseshoe base case
+    `horseshoe_base_epi`, the genuine Tor long-exact connecting map `δ` and its naturality, the
+    one-variable Jacobian ⇒ formally-étale bridge, and the elliptic-curve good-locus étale result.
+
+CONDITIONAL INTERFACES (explicit `Prop`s; each isolates a research-scale / Mathlib-absent input):
+  • `Spt3Cert.AKSIsComplete`                  — completeness of an AKS/ECPP-style certifier
+  • `Spt3Baker.BakerSeparation`               — general (real / algebraic-base) Baker–Wüstholz bound
+  • `Spt3PadicLog.PadicLogAdditive`           — full-series p-adic logarithm additivity (value transfer)
+  • `Spt3.JacobianEtaleBridge`                — pointwise-nonsingular ⇔ formally-étale coordinate ring
+  • `Spt3JacEtale.KaehlerConormalGap`         — Kähler conormal vanishing (reverse étale ⇒ Jacobian)
+  • `Spt3TorHorseshoe.HorseshoeInductionStep` — the `Nat`-recursive horseshoe assembly of a resolution
+
+CORRECTION RECORDED:  the Tor / fiber modulus is the MINIMUM `min (v_p M) (v_p N)` (a gcd), NOT the
+maximum (an lcm).  The `lcm` enters only as the ideal-intersection / equalizer modulus
+`span {M} ⊓ span {N} = span {lcm M N}`; the two are kept explicitly distinct (C2 vs C5/C6 above).
+-/
+section Spt3ConditionalBoundary
+-- Confirm each conditional input is a `Prop` interface (no global axiom, no hidden structure field):
+#check @Spt3Cert.AKSIsComplete
+#check @Spt3Baker.BakerSeparation
+#check @Spt3PadicLog.PadicLogAdditive
+#check @Spt3.JacobianEtaleBridge
+#check @Spt3JacEtale.KaehlerConormalGap
+#check @Spt3TorHorseshoe.HorseshoeInductionStep
+end Spt3ConditionalBoundary
