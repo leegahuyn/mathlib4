@@ -16,6 +16,40 @@
     Thm 9.3(i)⇔(ii), Prop 6.2 smooth/Jacobian converse and full equivalence
                        ↦ smooth_to_unique_lift_of_hensel_hypotheses          CONDITIONAL
                        ↦ c4_smooth_jacobian_hensel_classification            AUDITED
+    Thm 9.3(i)⇔(ii) GOOD-LOCUS equivalence (FIFTH CORRECTION; false reverse refuted):
+                       p∤Δ ⟺ f̄ separable ⟺ all residual roots simple (squarefree)
+                       ↦ GoodLocus.modPolynomial_good_locus_tfae /
+                         GoodLocus.not_dvd_disc_iff_separable /
+                         GoodLocus.unique_lift_not_imply_unit_derivative      PROVED (uncond.)
+    Prop 2 / Tier-A A2 Weierstrass discriminant gate at polynomial level:
+                       p∤Δ(E) ⟺ (x³+ax+b mod p) squarefree (= separable, residual nonsingular)
+                       ↦ WeierstrassGate.cubic_good_locus_tfae /
+                         WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable /
+                         WeierstrassGate.shortWeierstrass_Δ                   PROVED (uncond.)
+    §2.1/2.2 / Tier-A A3 concrete four-layer gates: numLayer/modLayer/discLayer/ecLayer
+                       concrete; Γ(U,F)=⋂Γ(U,F_layer) certified; Hensel/EC layers = A2 gate
+                       ↦ PrimalityShadow.{primeCertGate, sections_primeCertGate,
+                         discLayer_iff_separable, ecLayer_iff_discLayer}        PROVED (uncond.)
+    §5.1 Rem 6.5/10.5 / Tier-A A4 AB-linearization closed directly mod pᵏ (functional eqn bypassed):
+                       ∑ⱼ aⱼ log(1+uⱼ) ≡ ∑ⱼ aⱼ uⱼ (mod pᵏ); radius bounds from padicVal_phi
+                       ↦ PadicLog.{CongMod, sum_smul_logOnePlus_congMod,
+                         norm_intCast_le_of_le_padicValInt, ab_linearization_phi_congMod}  PROVED (uncond.)
+    §6 / Tier-A A5 δ-invariant + dual-graph b₁(Γ) as definitions (cohomology link = Tier C):
+                       δ = length_R(S/R); b₁ = E−V+C; δ=0 ⟺ R→S surjective (smooth criterion)
+                       ↦ CurveInvariants.{deltaInvariant, deltaInvariant_eq_zero_iff,
+                         firstBettiNumber, graphFirstBetti, betti_excess_eq}    PROVED (uncond. defs)
+    §5.1 / Tier-B B1 p-adic log functional equation, FORMAL (uncond.) + analytic transfer (isolated):
+                       logOf(f·g)=logOf f+logOf g, logOf(fⁿ)=n•logOf f in ℚ_[p]⟦X⟧
+                       ↦ PadicLogFormal.{logOf_mul, logOf_pow, term_eq_coeff_log}  PROVED (uncond.)
+                       ↦ PadicLogFormal.{PadicLogAdditive, logOnePlus_pow_of_additive}  CONDITIONAL
+    §7.3 Prop 10.6 / Tier-B B2 flasque Γ-exactness (uncond.) + acyclicity isolation (Hⁱ=0 i>0):
+                       Γ sends flasque SES → surjection; flasque SES ⟹ flasque quotient
+                       ↦ Tier3Actual.{flasque_sections_epi, flasque_global_sections_surjective,
+                         flasque_quotient_isFlasque}  PROVED (uncond.); IsGammaAcyclic isolates rest
+    §7.2 / Tier-B B3 Čech = derived (deg ≤1) + Ȟ¹ ≅ sheaf-Ext¹: explicit Čech cohomology +
+                       grounding (sheaf-Ext¹ vs module-Ext¹=0); SS comparison isolated
+                       ↦ CechComparison.{cechH0 (≅ℤ/lcm), cechH1 (≅ℤ/gcd),
+                         paper_ext_one_is_sheaf_ext}  PROVED (uncond.)
     §8.8 Frobenius–Tate polynomial/point-count certificate
                        ↦ frobeniusTatePolynomial_coefficients /
                          frobeniusTatePolynomial_of_pointCount_eq             PROVED (algebra)
@@ -171,6 +205,19 @@ import Mathlib.RingTheory.Ideal.Quotient.Operations
 import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.Algebra.Polynomial.FieldDivision
 import Mathlib.FieldTheory.Finite.Basic
+import Mathlib.FieldTheory.Separable
+import Mathlib.FieldTheory.Perfect
+import Mathlib.RingTheory.Polynomial.Resultant.Basic
+import Mathlib.AlgebraicGeometry.EllipticCurve.Weierstrass
+import Mathlib.Tactic.ComputeDegree
+import Mathlib.Data.Nat.Prime.Int
+import Mathlib.RingTheory.Length
+import Mathlib.RingTheory.Conductor
+import Mathlib.Combinatorics.SimpleGraph.Finite
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Mathlib.SetTheory.Cardinal.Finite
+import Mathlib.RingTheory.PowerSeries.Log
+import Mathlib.RingTheory.PowerSeries.Inverse
 import Mathlib.Tactic.Tauto
 import Mathlib.Algebra.Module.Projective
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -369,6 +416,58 @@ theorem ellAdicCohomology_nonempty (X : AlgebraicGeometry.Scheme) (ℓ : ℕ)
     Nonempty (X.EllAdicCohomology ℓ n) :=
   inferInstance
 
+/-! ### B2 — flasque Γ-exactness (genuine, from Mathlib) and the acyclicity isolation.
+
+The original Tier-3 audit recorded flasque acyclicity as future work, but the *key* property —
+that the global-sections functor `Γ` sends a flasque short exact sequence to a surjection — IS
+available in Mathlib (`IsFlasque.epi_of_shortExact`), together with the flasque-resolution step
+(`of_shortExact_of_isFlasque₁₂`).  We expose both unconditionally.  The remaining ingredient for
+`Hⁱ = 0 (i>0)` is the dimension-shifting argument over the `Ext` long exact sequence (Mathlib has
+the LES `Ext.covariant_sequence_exact` and `Ext.eq_zero_of_injective`, but not flasque/injective
+sheaf resolutions); it is isolated as `IsGammaAcyclic`.  The `H¹ ≅ ⊕Λ` *value* is the unconditional
+module computation `detector_directSum_linearEquiv` (the Čech / `Additions.*` route). -/
+
+/-- **B2 core (genuine).**  `Γ` sends a flasque short exact sequence of `AddCommGrpCat`-sheaves to a
+surjection on every open: for `0 → 𝓕 → 𝓖 → 𝓗 → 0` with `𝓕` flasque, `𝓖(U) → 𝓗(U)` is epi.
+This is the key Γ-exactness behind flasque acyclicity. -/
+theorem flasque_sections_epi {X : TopCat} {U : Opens X}
+    {S : ShortComplex (TopCat.Sheaf AddCommGrpCat X)} (hS : S.ShortExact)
+    [TopCat.Sheaf.IsFlasque S.X₁] : Epi (S.g.1.app (op U)) :=
+  TopCat.Sheaf.IsFlasque.epi_of_shortExact hS
+
+/-- **B2 (global sections surjective).**  The global-sections (`U = ⊤`) form of `flasque_sections_epi`:
+`Γ(X, 𝓖) → Γ(X, 𝓗)` is surjective. -/
+theorem flasque_global_sections_surjective {X : TopCat}
+    {S : ShortComplex (TopCat.Sheaf AddCommGrpCat X)} (hS : S.ShortExact)
+    [TopCat.Sheaf.IsFlasque S.X₁] :
+    Function.Surjective (S.g.1.app (op (⊤ : Opens X))) :=
+  (AddCommGrpCat.epi_iff_surjective _).mp (TopCat.Sheaf.IsFlasque.epi_of_shortExact hS)
+
+/-- **B2 (flasque resolution step).**  In a flasque SES the quotient is flasque, so flasque
+resolutions exist (the inductive input for dimension shifting). -/
+theorem flasque_quotient_isFlasque {X : TopCat}
+    {S : ShortComplex (TopCat.Sheaf AddCommGrpCat X)} (hS : S.ShortExact)
+    [TopCat.Sheaf.IsFlasque S.X₁] [TopCat.Sheaf.IsFlasque S.X₂] :
+    TopCat.Sheaf.IsFlasque S.X₃ :=
+  TopCat.Sheaf.IsFlasque.of_shortExact_of_isFlasque₁₂ hS
+
+/-- **Γ-acyclicity** of a sheaf: all higher sheaf cohomology (`= Ext` from the constant sheaf)
+vanishes.  This is the precise statement isolated as the residual Tier-B step "flasque ⇒ acyclic"
+(the dimension shifting over the `Ext` LES). -/
+def IsGammaAcyclic {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (F : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})] : Prop :=
+  ∀ n : ℕ, Subsingleton (CategoryTheory.Sheaf.H F (n + 1))
+
+/-- A Γ-acyclic sheaf has trivial `H¹` (the Prop 10.6 vanishing once acyclicity is supplied). -/
+theorem IsGammaAcyclic.h1_subsingleton {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {F : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    (h : IsGammaAcyclic F) : Subsingleton (CategoryTheory.Sheaf.H F 1) :=
+  h 0
+
 end Tier3Actual
 
 /-! ## D1. Certified finite-field prime scan (§8.6).
@@ -565,6 +664,418 @@ theorem mem_scanPrimesUpTo_iff (F : Polynomial ℤ) (B p : ℕ) :
   rw [Nat.lt_succ_iff]
 
 end PrimeScan
+
+/-! ## A1 / Thm 9.3(i)⇔(ii) — the good-locus equivalence (FIFTH CORRECTION).
+
+The paper's Theorem 9.3(ii) asserts, as an *unconditional reverse*, that a unique
+`p`-adic lift forces full Jacobian rank (a unit derivative / simple residual root).
+That reverse is **false**.  Counterexample: `F = X²` over `ℤ₂` at `a = 0`.  The only
+root of `X²` in the open unit ball is `0` (`ℤ₂` is a domain, so `z² = 0 ⇒ z = 0`), so
+the lift is unique; yet `F'(0) = 0`, so `‖F'(0)‖ = 0 ≠ 1` — the Jacobian is not a unit
+(`GoodLocus.unique_lift_not_imply_unit_derivative`).
+
+The honest content of (i)⇔(ii) is the **good-locus equivalence** on `U = D(Δ)`:
+
+      p ∤ Δ   ⟺   f̄ = F mod p ∈ 𝔽ₚ[X] is separable   ⟺   every residual root is simple,
+
+where `Δ` is the discriminant of the monic integer polynomial `F`.  The forward
+"simple residual root ⇒ unique lift" half is already closed *unconditionally* by
+`hensel_gate` / `PrimeScan.simpleRoot_has_uniquePadicLift`.  This section supplies the
+missing `p ∤ Δ ⟺ separable ⟺ all residual roots simple` ring, completing (i)⇔(ii)
+**without** the false unconditional reverse.
+
+`Δ` is realised two ways, both faithful to Mathlib:
+* `GoodLocus.disc F := F.resultant F' (deg F) (deg F − 1)` — base-change-stable, the
+  primary `Δ` for the mod-`p` reduction (`= ± F.discr`, see `disc_eq`);
+* `Polynomial.discr` directly, at the residue-field level
+  (`separable_iff_discr_ne_zero`) and integrally (`not_dvd_discr_iff_separable`).
+
+This is the fifth paper correction surfaced by formalization, after the four §M items
+(min↔max thickness, the Mayer–Vietoris sign, the lcm↔gcd overlap, the module-Ext
+degree).  Unlike the conditional `goodPrime_synchronization`, the equivalence here is
+entirely unconditional: Mathlib has `Polynomial.Separable`, `separable_def`,
+`PerfectField.separable_iff_squarefree`, the resultant/discriminant theory, and the
+root-multiplicity calculus. -/
+
+namespace GoodLocus
+
+open Polynomial
+
+/-! ### Field-level core: separable ⟺ coprime ⟺ resultant unit ⟺ Δ ≠ 0. -/
+
+section Field
+
+variable {K : Type*} [Field K]
+
+/-- Separability is coprimality with the derivative (Mathlib's `separable_def`). -/
+theorem separable_iff_isCoprime_derivative (f : K[X]) :
+    f.Separable ↔ IsCoprime f (derivative f) := Polynomial.separable_def f
+
+/-- Over a perfect field (e.g. any finite `𝔽ₚ`), separable ⟺ squarefree: this is the
+algebraic encoding of "no repeated factor", i.e. every root (in the algebraic closure)
+is simple. -/
+theorem separable_iff_squarefree_of_perfectField [PerfectField K] (f : K[X]) :
+    f.Separable ↔ Squarefree f := PerfectField.separable_iff_squarefree
+
+/-- For monic `f`, separability ⟺ the resultant `Res(f, f')` is a unit. -/
+theorem separable_iff_isUnit_resultant {f : K[X]} (hf : f.Monic) :
+    f.Separable ↔ IsUnit (f.resultant (derivative f)) := by
+  rw [Polynomial.separable_def, ← Polynomial.isUnit_resultant_iff_isCoprime hf]
+
+/-- Padding identity: for monic `f`, the discriminant-shaped resultant
+`Res(f, f', deg f, deg f − 1)` equals the default resultant `Res(f, f')`.  (The extra
+formal rows contribute only powers of the leading coefficient `= 1`.) -/
+theorem resultant_explicit_eq_default {f : K[X]} (hf : f.Monic) :
+    f.resultant (derivative f) f.natDegree (f.natDegree - 1) = f.resultant (derivative f) := by
+  set d := (derivative f).natDegree with hd
+  have hle : d ≤ f.natDegree - 1 := natDegree_derivative_le f
+  obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le hle
+  rw [hk, Polynomial.resultant_add_right_deg (f := f) (g := derivative f)
+        (m := f.natDegree) (n := d) (k := k) (le_rfl), hf.coeff_natDegree, one_pow, one_mul]
+
+/-- For monic `f` over a field, separability ⟺ the discriminant-shaped resultant is
+nonzero. -/
+theorem separable_iff_resultant_explicit_ne_zero {f : K[X]} (hf : f.Monic) :
+    f.Separable ↔ f.resultant (derivative f) f.natDegree (f.natDegree - 1) ≠ 0 := by
+  rw [Polynomial.separable_def, ← Polynomial.isUnit_resultant_iff_isCoprime hf,
+      isUnit_iff_ne_zero, resultant_explicit_eq_default hf]
+
+/-- **`p ∤ Δ` face, field level.**  For monic `f` of positive degree over a field,
+separability ⟺ `Polynomial.discr f ≠ 0`. -/
+theorem separable_iff_discr_ne_zero {f : K[X]} (hf : f.Monic) (hdeg : 0 < f.natDegree) :
+    f.Separable ↔ f.discr ≠ 0 := by
+  have hdpos : 0 < f.degree := Polynomial.natDegree_pos_iff_degree_pos.mp hdeg
+  have hr := Polynomial.resultant_deriv hdpos
+  rw [hf.leadingCoeff, mul_one] at hr
+  rw [separable_iff_resultant_explicit_ne_zero hf, hr, mul_ne_zero_iff]
+  exact ⟨fun h => h.2, fun h => ⟨pow_ne_zero _ (neg_ne_zero.mpr one_ne_zero), h⟩⟩
+
+/-! ### Pointwise residual simple-root face: rootMultiplicity = 1 ⟺ simple. -/
+
+/-- A residual point `a` is a *simple* root of `f` (multiplicity one) iff `f` vanishes
+at `a` while `f'` does not — exactly the predicate the prime scanner uses. -/
+theorem rootMultiplicity_eq_one_iff_simple {f : K[X]} (hf : f ≠ 0) (a : K) :
+    f.rootMultiplicity a = 1 ↔ f.IsRoot a ∧ ¬ (derivative f).IsRoot a := by
+  have h1 : 0 < f.rootMultiplicity a ↔ f.IsRoot a := rootMultiplicity_pos hf
+  have h2 : 1 < f.rootMultiplicity a ↔ (f.IsRoot a ∧ (derivative f).IsRoot a) :=
+    one_lt_rootMultiplicity_iff_isRoot hf
+  constructor
+  · intro h
+    have hpos : 0 < f.rootMultiplicity a := by omega
+    exact ⟨h1.mp hpos, fun hd => absurd (h2.mpr ⟨h1.mp hpos, hd⟩) (by omega)⟩
+  · rintro ⟨hr, hnd⟩
+    have hpos := h1.mpr hr
+    have hnot2 : ¬ 1 < f.rootMultiplicity a := fun hc => hnd (h2.mp hc).2
+    omega
+
+/-- Separable ⟹ every root is simple (multiplicity exactly one). -/
+theorem rootMultiplicity_eq_one_of_separable {f : K[X]} (hsep : f.Separable) {a : K}
+    (ha : f.IsRoot a) : f.rootMultiplicity a = 1 := by
+  have hf := hsep.ne_zero
+  have hle := rootMultiplicity_le_one_of_separable hsep a
+  have hpos := (rootMultiplicity_pos hf).mpr ha
+  omega
+
+/-- Separable ⟹ no root is shared with the derivative (every root simple). -/
+theorem not_isRoot_derivative_of_separable {f : K[X]} (hsep : f.Separable) {a : K}
+    (ha : f.IsRoot a) : ¬ (derivative f).IsRoot a :=
+  ((rootMultiplicity_eq_one_iff_simple hsep.ne_zero a).mp
+    (rootMultiplicity_eq_one_of_separable hsep ha)).2
+
+/-- Literal "all roots in `K` are simple" face: when `f` splits over `K`, separability
+is exactly the absence of repeated roots. -/
+theorem separable_iff_roots_nodup_of_splits {f : K[X]} (hf : f ≠ 0) (h : f.Splits) :
+    f.Separable ↔ f.roots.Nodup := (nodup_roots_iff_of_splits hf h).symm
+
+/-- **Good-locus TFAE over a field** (monic, positive degree): the five faces of
+Thm 9.3(i)⇔(ii) that are unconditionally equivalent over any field. -/
+theorem good_locus_field_tfae {f : K[X]} (hf : f.Monic) (hdeg : 0 < f.natDegree) :
+    [ f.Separable
+    , IsCoprime f (derivative f)
+    , IsUnit (f.resultant (derivative f))
+    , f.resultant (derivative f) f.natDegree (f.natDegree - 1) ≠ 0
+    , f.discr ≠ 0 ].TFAE := by
+  tfae_have 1 ↔ 2 := separable_iff_isCoprime_derivative f
+  tfae_have 1 ↔ 3 := separable_iff_isUnit_resultant hf
+  tfae_have 1 ↔ 4 := separable_iff_resultant_explicit_ne_zero hf
+  tfae_have 1 ↔ 5 := separable_iff_discr_ne_zero hf hdeg
+  tfae_finish
+
+end Field
+
+/-! ### Integer level: the discriminant `Δ`, its mod-`p` base change, and `p ∤ Δ`. -/
+
+/-- The discriminant of the monic integer polynomial `F`, realised as the
+base-change-stable resultant `Res(F, F', deg F, deg F − 1)`.  Equals `± F.discr`
+(`disc_eq`). -/
+noncomputable def disc (F : Polynomial ℤ) : ℤ :=
+  F.resultant (derivative F) F.natDegree (F.natDegree - 1)
+
+/-- `disc F = ± F.discr` for monic `F` of positive degree. -/
+theorem disc_eq {F : Polynomial ℤ} (hF : F.Monic) (hdeg : 0 < F.natDegree) :
+    disc F = (-1) ^ (F.natDegree * (F.natDegree - 1) / 2) * F.discr := by
+  have hdpos : 0 < F.degree := Polynomial.natDegree_pos_iff_degree_pos.mp hdeg
+  have hr := Polynomial.resultant_deriv hdpos
+  rw [hF.leadingCoeff, mul_one] at hr
+  exact hr
+
+/-- **Base change of `Δ`.**  The reduction of `disc F` modulo `p` is the same
+discriminant-shaped resultant of the residue polynomial `F mod p`. -/
+theorem intCast_disc_eq (F : Polynomial ℤ) (p : ℕ) [Fact p.Prime] :
+    ((disc F : ℤ) : ZMod p)
+      = (PrimeScan.modPolynomial p F).resultant (derivative (PrimeScan.modPolynomial p F))
+          F.natDegree (F.natDegree - 1) := by
+  unfold disc PrimeScan.modPolynomial
+  rw [Polynomial.derivative_map, Polynomial.resultant_map_map]
+  rfl
+
+/-- **A1 / Thm 9.3(i)⇔(ii), integer good-locus gate (unconditional).**  For monic
+`F : ℤ[X]`, `p ∤ Δ` iff the residue polynomial `F mod p` is separable. -/
+theorem not_dvd_disc_iff_separable {F : Polynomial ℤ} (hF : F.Monic) (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ disc F ↔ (PrimeScan.modPolynomial p F).Separable := by
+  have hfmonic : (PrimeScan.modPolynomial p F).Monic := by
+    rw [PrimeScan.modPolynomial]; exact hF.map _
+  have hnd : (PrimeScan.modPolynomial p F).natDegree = F.natDegree := by
+    rw [PrimeScan.modPolynomial]; exact hF.natDegree_map _
+  rw [← CharP.intCast_eq_zero_iff (ZMod p) p, intCast_disc_eq,
+      separable_iff_resultant_explicit_ne_zero hfmonic, hnd]
+
+/-- The same gate stated with `Polynomial.discr` directly: `p ∤ discr F` iff
+`F mod p` is separable.  (`disc F` and `F.discr` differ by the unit `± 1`.) -/
+theorem not_dvd_discr_iff_separable {F : Polynomial ℤ} (hF : F.Monic) (hdeg : 0 < F.natDegree)
+    (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ F.discr ↔ (PrimeScan.modPolynomial p F).Separable := by
+  rw [← not_dvd_disc_iff_separable hF p, disc_eq hF hdeg]
+  refine not_congr ?_
+  rcases Nat.even_or_odd (F.natDegree * (F.natDegree - 1) / 2) with he | ho
+  · rw [he.neg_one_pow, one_mul]
+  · rw [ho.neg_one_pow, neg_one_mul, dvd_neg]
+
+/-! ### Residue-field equivalence over `𝔽ₚ`, and the bridge to the prime scanner. -/
+
+/-- **A1 / Thm 9.3(i)⇔(ii), the full good-locus TFAE over `𝔽ₚ`** (monic `F`,
+positive degree): `p ∤ Δ`, separability of `F mod p`, squarefreeness (every residual
+root simple), coprimality with the derivative, and `discr (F mod p) ≠ 0` are all
+equivalent. -/
+theorem modPolynomial_good_locus_tfae {F : Polynomial ℤ} (hF : F.Monic) (hdeg : 0 < F.natDegree)
+    (p : ℕ) [Fact p.Prime] :
+    [ ¬ (p : ℤ) ∣ disc F
+    , (PrimeScan.modPolynomial p F).Separable
+    , Squarefree (PrimeScan.modPolynomial p F)
+    , IsCoprime (PrimeScan.modPolynomial p F) (derivative (PrimeScan.modPolynomial p F))
+    , (PrimeScan.modPolynomial p F).discr ≠ 0 ].TFAE := by
+  have hfm : (PrimeScan.modPolynomial p F).Monic := by
+    rw [PrimeScan.modPolynomial]; exact hF.map _
+  have hfd : 0 < (PrimeScan.modPolynomial p F).natDegree := by
+    have hnd : (PrimeScan.modPolynomial p F).natDegree = F.natDegree := by
+      rw [PrimeScan.modPolynomial]; exact hF.natDegree_map _
+    omega
+  tfae_have 1 ↔ 2 := not_dvd_disc_iff_separable hF p
+  tfae_have 2 ↔ 3 := separable_iff_squarefree_of_perfectField _
+  tfae_have 2 ↔ 4 := separable_iff_isCoprime_derivative _
+  tfae_have 2 ↔ 5 := separable_iff_discr_ne_zero hfm hfd
+  tfae_finish
+
+/-- Membership in the scanner's simple-root set is exactly "the residue point is a
+simple root" (multiplicity one). -/
+theorem mem_simpleRoots_iff_rootMultiplicity_eq_one (p : ℕ) [Fact p.Prime] (F : Polynomial ℤ)
+    (a : ZMod p) (hf : PrimeScan.modPolynomial p F ≠ 0) :
+    a ∈ PrimeScan.simpleRoots p F ↔ (PrimeScan.modPolynomial p F).rootMultiplicity a = 1 := by
+  rw [PrimeScan.mem_simpleRoots_iff, rootMultiplicity_eq_one_iff_simple hf]
+  rfl
+
+/-- If `F mod p` is separable (good locus `p ∤ Δ`), then every residual root is a
+simple root accepted by the scanner. -/
+theorem isRoot_mem_simpleRoots_of_separable (p : ℕ) [Fact p.Prime] (F : Polynomial ℤ)
+    (a : ZMod p) (hsep : (PrimeScan.modPolynomial p F).Separable)
+    (ha : (PrimeScan.modPolynomial p F).IsRoot a) : a ∈ PrimeScan.simpleRoots p F := by
+  rw [mem_simpleRoots_iff_rootMultiplicity_eq_one p F a hsep.ne_zero]
+  exact rootMultiplicity_eq_one_of_separable hsep ha
+
+/-- **Good locus ⇒ unique residual lifts (the genuine (i)⇒(ii) good direction).**
+If `F mod p` is separable, then every residual root has a unique `p`-adic Hensel lift
+in its residue ball.  Composes the new separability bridge with the unconditional
+`hensel_gate`. -/
+theorem uniquePadicLift_of_separable_isRoot (p : ℕ) [Fact p.Prime] (F : Polynomial ℤ)
+    (a : ZMod p) (hsep : (PrimeScan.modPolynomial p F).Separable)
+    (ha : (PrimeScan.modPolynomial p F).IsRoot a) :
+    ∃! z : ℤ_[p],
+      (PrimeScan.padicPolynomial p F).eval z = 0 ∧
+        ‖z - PrimeScan.padicRepresentative p a‖ < 1 :=
+  PrimeScan.simpleRoot_has_uniquePadicLift p F a
+    (isRoot_mem_simpleRoots_of_separable p F a hsep ha)
+
+/-- **Corrected Thm 9.3(i)⇔(ii) gate (unconditional).**  The honest content of the
+discriminant/Hensel gate on `U = D(Δ)`: good reduction `p ∤ Δ` is equivalent to
+separability of the residue polynomial — *not* to any unconditional
+"unique lift ⇒ Jacobian rank" reverse, which fails (see
+`unique_lift_not_imply_unit_derivative`).  This replaces the conditional
+`smooth ↔ gcd = 1` face of `goodPrime_synchronization` by a proved equivalence. -/
+theorem goodPrime_gate {F : Polynomial ℤ} (hF : F.Monic) (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ disc F ↔ (PrimeScan.modPolynomial p F).Separable :=
+  not_dvd_disc_iff_separable hF p
+
+/-! ### The FIFTH CORRECTION: the paper's unconditional reverse is false. -/
+
+/-- **FIFTH CORRECTION (counterexample to the paper's unconditional reverse).**
+Theorem 9.3(ii) as literally stated claims "a unique `p`-adic lift in the residue ball
+⇒ the Jacobian/derivative is a unit".  This reverse is **false**.  Witness: `F = X²`
+over `ℤ₂` at `a = 0`.  The only root of `X²` in the open unit ball is `0` (`ℤ₂` is a
+domain, so `z² = 0 ⇒ z = 0`), so the lift is unique; yet `F'(0) = 0`, hence
+`‖F'(0)‖ = 0 ≠ 1`. -/
+theorem unique_lift_not_imply_unit_derivative :
+    ∃ (p : ℕ) (_ : Fact p.Prime) (F : Polynomial ℤ_[p]) (a : ℤ_[p]),
+      (∃! z : ℤ_[p], F.eval z = 0 ∧ ‖z - a‖ < 1) ∧ ‖F.derivative.eval a‖ ≠ 1 := by
+  refine ⟨2, ⟨Nat.prime_two⟩, X ^ 2, 0, ?_, ?_⟩
+  · refine ⟨0, ⟨by simp, by simp⟩, ?_⟩
+    rintro z ⟨hz, _⟩
+    simpa using pow_eq_zero_iff (two_ne_zero) |>.mp (by simpa using hz)
+  · simp
+
+end GoodLocus
+
+/-! ## A2 / Prop 2 — Weierstrass discriminant gate at the polynomial level.
+
+For the short Weierstrass curve `E : y² = x³ + a x + b`, the good-reduction condition
+`p ∤ Δ(E)` is the residual-fiber nonsingularity condition, which at the level of the
+defining cubic is *separability* (= squarefreeness) of `x³ + a x + b mod p`:
+
+      p ∤ Δ(E)   ⟺   (x³ + a x + b mod p) is squarefree   ⟺   it is separable.
+
+This is closed entirely at the residual-polynomial level (Tier A) on top of the A1
+`GoodLocus` machinery — no scheme-theoretic smoothness is invoked.  The bridge to
+`WeierstrassCurve.Δ` is the polynomial identity `Δ(⟨0,0,0,a,b⟩) = -16(4a³+27b²)`
+(`shortWeierstrass_Δ`), and `discr(x³+ax+b) = -4a³-27b²` (`cubicPoly_discr`).  Promotion
+to a scheme-level `Affine.Nonsingular` statement is optional (Tier B) and not done here. -/
+
+namespace WeierstrassGate
+
+open Polynomial
+
+/-! ### The depressed cubic `X³ + aX + b` (= RHS of `y² = x³ + ax + b`). -/
+
+section Ring
+
+variable {R : Type*} [CommRing R]
+
+/-- The depressed cubic `x³ + a x + b` cutting out the affine curve `y² = x³ + a x + b`. -/
+noncomputable def cubicPoly (a b : R) : R[X] := X ^ 3 + C a * X + C b
+
+theorem cubicPoly_monic (a b : R) : (cubicPoly a b).Monic := by
+  unfold cubicPoly; monicity!
+
+theorem cubicPoly_natDegree [Nontrivial R] (a b : R) : (cubicPoly a b).natDegree = 3 := by
+  unfold cubicPoly; compute_degree!
+
+theorem cubicPoly_degree [Nontrivial R] (a b : R) : (cubicPoly a b).degree = 3 := by
+  unfold cubicPoly; compute_degree!
+
+theorem cubicPoly_coeff (a b : R) :
+    (cubicPoly a b).coeff 0 = b ∧ (cubicPoly a b).coeff 1 = a ∧
+      (cubicPoly a b).coeff 2 = 0 ∧ (cubicPoly a b).coeff 3 = 1 := by
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp [cubicPoly, coeff_X_pow]
+
+/-- The polynomial discriminant of the depressed cubic: `discr(x³+ax+b) = -4a³ - 27b²`. -/
+theorem cubicPoly_discr [Nontrivial R] (a b : R) :
+    (cubicPoly a b).discr = -4 * a ^ 3 - 27 * b ^ 2 := by
+  obtain ⟨c0, c1, c2, c3⟩ := cubicPoly_coeff a b
+  rw [Polynomial.discr_of_degree_eq_three (cubicPoly_degree a b), c0, c1, c2, c3]; ring
+
+theorem cubicPoly_map {S : Type*} [CommRing S] (φ : R →+* S) (a b : R) :
+    (cubicPoly a b).map φ = cubicPoly (φ a) (φ b) := by
+  simp [cubicPoly]
+
+/-- The short Weierstrass curve `y² = x³ + a x + b` (i.e. `a₁ = a₂ = a₃ = 0`). -/
+def shortWeierstrass (a b : R) : WeierstrassCurve R := ⟨0, 0, 0, a, b⟩
+
+/-- The Weierstrass discriminant of the short form: `Δ = -16(4a³ + 27b²)`. -/
+theorem shortWeierstrass_Δ (a b : R) :
+    (shortWeierstrass a b).Δ = -16 * (4 * a ^ 3 + 27 * b ^ 2) := by
+  simp only [shortWeierstrass, WeierstrassCurve.Δ, WeierstrassCurve.b₂, WeierstrassCurve.b₄,
+    WeierstrassCurve.b₆, WeierstrassCurve.b₈]
+  ring
+
+/-- `Δ(E) = 16 · discr(x³+ax+b)`: the Weierstrass discriminant is the cubic
+discriminant up to the unit `16` (a unit away from characteristic `2`). -/
+theorem shortWeierstrass_Δ_eq_cubic_discr [Nontrivial R] (a b : R) :
+    (shortWeierstrass a b).Δ = 16 * (cubicPoly a b).discr := by
+  rw [shortWeierstrass_Δ, cubicPoly_discr]; ring
+
+end Ring
+
+/-! ### Separability / squarefree gate over a field (residual fiber nonsingular). -/
+
+section Field
+
+variable {K : Type*} [Field K]
+
+/-- **Residual nonsingularity at the cubic level.**  `x³ + a x + b` is separable iff its
+discriminant `-(4a³+27b²)` is nonzero, i.e. `4a³ + 27b² ≠ 0`. -/
+theorem cubicPoly_separable_iff (a b : K) :
+    (cubicPoly a b).Separable ↔ 4 * a ^ 3 + 27 * b ^ 2 ≠ 0 := by
+  have hdeg : 0 < (cubicPoly a b).natDegree := by rw [cubicPoly_natDegree]; norm_num
+  rw [GoodLocus.separable_iff_discr_ne_zero (cubicPoly_monic a b) hdeg, cubicPoly_discr,
+      show (-4 * a ^ 3 - 27 * b ^ 2 : K) = -(4 * a ^ 3 + 27 * b ^ 2) from by ring, neg_ne_zero]
+
+/-- Over a perfect field, "all residual roots simple" = squarefree: `x³+ax+b` is
+squarefree iff `4a³ + 27b² ≠ 0`. -/
+theorem cubicPoly_squarefree_iff [PerfectField K] (a b : K) :
+    Squarefree (cubicPoly a b) ↔ 4 * a ^ 3 + 27 * b ^ 2 ≠ 0 := by
+  rw [← GoodLocus.separable_iff_squarefree_of_perfectField, cubicPoly_separable_iff]
+
+end Field
+
+/-! ### Integer / mod-`p` gate, and the Weierstrass `Δ` form. -/
+
+/-- **A2 (cubic form, all primes).**  `p ∤ (4a³+27b²)` iff the residual cubic
+`x³ + a x + b mod p` is separable. -/
+theorem not_dvd_cubic_disc_iff_separable {a b : ℤ} (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ (4 * a ^ 3 + 27 * b ^ 2) ↔
+      (cubicPoly (a : ZMod p) (b : ZMod p)).Separable := by
+  rw [cubicPoly_separable_iff,
+      show (4 * (a : ZMod p) ^ 3 + 27 * (b : ZMod p) ^ 2)
+        = ((4 * a ^ 3 + 27 * b ^ 2 : ℤ) : ZMod p) from by push_cast; ring,
+      Ne, CharP.intCast_eq_zero_iff (ZMod p) p]
+
+/-- **A2 (cubic form, squarefree).**  `p ∤ (4a³+27b²)` iff `x³ + a x + b mod p` is
+squarefree (= every residual root simple). -/
+theorem not_dvd_cubic_disc_iff_squarefree {a b : ℤ} (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ (4 * a ^ 3 + 27 * b ^ 2) ↔
+      Squarefree (cubicPoly (a : ZMod p) (b : ZMod p)) := by
+  rw [not_dvd_cubic_disc_iff_separable, cubicPoly_separable_iff, ← cubicPoly_squarefree_iff]
+
+/-- **A2 headline TFAE.**  Good reduction `p ∤ (4a³+27b²)`, separability, and
+squarefreeness of the residual cubic are equivalent. -/
+theorem cubic_good_locus_tfae {a b : ℤ} (p : ℕ) [Fact p.Prime] :
+    [ ¬ (p : ℤ) ∣ (4 * a ^ 3 + 27 * b ^ 2)
+    , (cubicPoly (a : ZMod p) (b : ZMod p)).Separable
+    , Squarefree (cubicPoly (a : ZMod p) (b : ZMod p)) ].TFAE := by
+  tfae_have 1 ↔ 2 := not_dvd_cubic_disc_iff_separable p
+  tfae_have 1 ↔ 3 := not_dvd_cubic_disc_iff_squarefree p
+  tfae_finish
+
+/-- **A2 Weierstrass `Δ` form (`p ≠ 2`).**  `p ∤ Δ(E)` iff the residual cubic is
+separable (= nonsingular fiber).  Away from characteristic `2` the unit factor `16`
+in `Δ = -16(4a³+27b²)` is invisible. -/
+theorem not_dvd_shortWeierstrass_Δ_iff_separable {a b : ℤ} (p : ℕ) [Fact p.Prime] (hp2 : p ≠ 2) :
+    ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ ↔
+      (cubicPoly (a : ZMod p) (b : ZMod p)).Separable := by
+  have hp := (Fact.out : p.Prime)
+  have hpZ : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
+  have h16 : ¬ (p : ℤ) ∣ 16 := by
+    rw [show (16 : ℤ) = ((16 : ℕ) : ℤ) from by norm_num, Int.natCast_dvd_natCast]
+    intro h
+    exact hp2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).mp
+      (hp.dvd_of_dvd_pow (show p ∣ 2 ^ 4 from by simpa using h)))
+  rw [← not_dvd_cubic_disc_iff_separable, shortWeierstrass_Δ]
+  refine not_congr ⟨fun h => ?_, fun h => ?_⟩
+  · rw [neg_mul, dvd_neg] at h
+    rcases hpZ.dvd_mul.mp h with h1 | h2
+    · exact absurd h1 h16
+    · exact h2
+  · rw [neg_mul, dvd_neg]; exact h.mul_left 16
+
+end WeierstrassGate
 
 /-! ## A2. Analytic prediction density from derangements. -/
 
@@ -1079,8 +1590,9 @@ noncomputable def torReadout60 :
     (AddMonoidHom.mulLeft ((2 ^ 2 * 3 * 5 : ℕ) : ZMod 60)).ker
       ≃+ ZMod 4 × ZMod 3 × ZMod 5 := by
   haveI : NeZero (60 : ℕ) := ⟨by decide⟩
-  simpa using
-    ((torEquivZModGcd 60 (2 ^ 2 * 3 * 5)).trans zmod60AddEquiv)
+  have e := torEquivZModGcd 60 (2 ^ 2 * 3 * 5)
+  rw [show Nat.gcd 60 (2 ^ 2 * 3 * 5) = 60 from by decide] at e
+  simpa using e.trans zmod60AddEquiv
 
 /-- Section 2.2 profile parameters. This record contains definitions/data only;
 it deliberately stores no mathematical implication as a field. -/
@@ -1284,8 +1796,10 @@ formalizable, and certified here unconditionally:
   (The stub's `n+T ≥ k → ∀ j<n, k ≤ vₚ(φ_j)` is false — the minimum over `j < n` is `T` at `j = 0`,
   not `n+T`; the exact per-`j` valuation `= T+j` is the honest content.)
 
-The remaining analytic bridge (`|log(1+u)|_p ≤ p^{-k}` for `u ∈ pᵏℤ_p`, and `log(1+u) ≡ u (mod pᵏ)`)
-is left as a Tier-3 interface: it requires a development of `Padic.log`, absent from Mathlib. -/
+The analytic per-factor bridge (`|log(1+u)|_p ≤ p^{-k}` for `u ∈ pᵏℤ_p`, and
+`log(1+u) ≡ u (mod pᵏ)`) is developed in §D.2 (`PadicLog`), and §A4 closes the mod-`pᵏ`
+AB-linearization skeleton `∑ⱼ aⱼ log(1+uⱼ) ≡ ∑ⱼ aⱼ uⱼ (mod pᵏ)` from it (no functional
+equation).  The full infinite-precision bridge (`Padic.log` additivity) stays deferred to B1. -/
 
 /-- **Exact shifted-binomial polynomial identity** in `ℤ[X]`: `Xᵐ = ∑_{i ≤ m} C(m,i)(X-1)ⁱ`,
     from writing `X = (X-1) + 1` and applying the binomial theorem.  (No analysis.) -/
@@ -1487,6 +2001,76 @@ theorem primalityLayer_comm (Fnum Fmod Fpadic FEC : ℕ → Prop) (n : ℕ) :
     primalityLayer Fnum Fmod Fpadic FEC n ↔ primalityLayer Fmod Fnum FEC Fpadic n := by
   simp only [primalityLayer]; tauto
 
+/-! ### A3 — concrete instantiation of the four layers.
+
+The layers above are stated for *arbitrary* predicates, so the `sections_*` lemmas hold
+verbatim once we pin the genuine gates.  We instantiate the four §2.1/2.2 layers with the
+real gates built in §A0–§A2 (so `Γ(U,F) = ⋂ Γ(U,F_layer)` becomes a statement about the
+actual primality filters, at essentially no cost):
+
+* numeric `numLayer n := 1 < n`              — the size / archimedean filter;
+* modular `modLayer M n := n.Coprime M`       — the CRT / sieve filter;
+* Hensel  `discLayer a b n := ¬ n ∣ (4a³+27b²)` — residual-cubic separability (A2), i.e.
+  the unique-`p`-adic-lift good locus of the §A1 Hensel gate;
+* EC      `ecLayer a b n := ¬ n ∣ Δ(y²=x³+ax+b)` — good reduction of the curve (A2).
+
+The Hensel and EC layers are tied to the §A2 separability gate by the coherence lemmas
+`discLayer_iff_separable` and `ecLayer_iff_discLayer`. -/
+
+/-- Numeric/size layer: the candidate is a nontrivial integer. -/
+def numLayer (n : ℕ) : Prop := 1 < n
+
+/-- Modular/sieve layer: the candidate is coprime to a fixed modulus `M`. -/
+def modLayer (M : ℕ) (n : ℕ) : Prop := n.Coprime M
+
+/-- Hensel/discriminant layer: the candidate prime does not divide the cubic discriminant
+`4a³ + 27b²` (= the residual cubic `x³+ax+b` is separable, the §A2 unique-lift good locus). -/
+def discLayer (a b : ℤ) (n : ℕ) : Prop := ¬ (n : ℤ) ∣ (4 * a ^ 3 + 27 * b ^ 2)
+
+/-- Elliptic-curve layer: good reduction `n ∤ Δ(E)` for `E : y² = x³ + a x + b`. -/
+def ecLayer (a b : ℤ) (n : ℕ) : Prop := ¬ (n : ℤ) ∣ (WeierstrassGate.shortWeierstrass a b).Δ
+
+/-- The concrete primality gate: the fiber product of the four genuine layers. -/
+def primeCertGate (a b : ℤ) (M : ℕ) : ℕ → Prop :=
+  primalityLayer numLayer (modLayer M) (discLayer a b) (ecLayer a b)
+
+/-- **A3 — concrete `Γ(U,F) = ⋂ Γ(U,F_layer)`.**  Global sections of the concrete gate
+equal the intersection of the four concrete layers' sections, over any open `U`.  This is
+the §2.2 fiber-product identity instantiated at the genuine gates. -/
+theorem sections_primeCertGate (a b : ℤ) (M : ℕ) (U : Set ℕ) :
+    sections (primeCertGate a b M) U
+      = sections numLayer U ∩ sections (modLayer M) U
+          ∩ sections (discLayer a b) U ∩ sections (ecLayer a b) U :=
+  sections_primalityLayer numLayer (modLayer M) (discLayer a b) (ecLayer a b) U
+
+/-- **A3 — sectionwise = intersection (pointwise) for the concrete gate.** -/
+theorem primeCertGate_sectionwise (a b : ℤ) (M : ℕ) (n : ℕ) :
+    primeCertGate a b M n
+      ↔ n ∈ {m | numLayer m} ∩ {m | modLayer M m}
+            ∩ {m | discLayer a b m} ∩ {m | ecLayer a b m} :=
+  layers_sectionwise numLayer (modLayer M) (discLayer a b) (ecLayer a b) n
+
+/-- The concrete fiber product as a subtype equivalence with the intersection. -/
+def primeCertGate_equiv (a b : ℤ) (M : ℕ) :
+    {n // primeCertGate a b M n}
+      ≃ {n // n ∈ {m | numLayer m} ∩ {m | modLayer M m}
+                ∩ {m | discLayer a b m} ∩ {m | ecLayer a b m}} :=
+  primalityLayer_equiv numLayer (modLayer M) (discLayer a b) (ecLayer a b)
+
+/-- **A3 ↔ A2 coherence.**  For a prime candidate `n`, the discriminant layer is exactly
+residual-cubic separability: `discLayer a b n ↔ (x³+ax+b mod n) separable`. -/
+theorem discLayer_iff_separable (a b : ℤ) (n : ℕ) [Fact n.Prime] :
+    discLayer a b n ↔ (WeierstrassGate.cubicPoly (a : ZMod n) (b : ZMod n)).Separable :=
+  WeierstrassGate.not_dvd_cubic_disc_iff_separable n
+
+/-- **A3 ↔ A2 coherence.**  Away from characteristic `2`, the elliptic-curve layer and the
+Hensel/discriminant layer coincide on prime candidates (both are residual separability). -/
+theorem ecLayer_iff_discLayer (a b : ℤ) (n : ℕ) [Fact n.Prime] (hn2 : n ≠ 2) :
+    ecLayer a b n ↔ discLayer a b n := by
+  unfold ecLayer discLayer
+  rw [WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable n hn2,
+      WeierstrassGate.not_dvd_cubic_disc_iff_separable n]
+
 end PrimalityShadow
 
 /-! ## §F — Conditional good-prime synchronization (Thm 9.3, Thm 6.1, Cor 6.3).
@@ -1550,6 +2134,81 @@ theorem curve_normalization_package (g b1 deltaSum dimH1Xp dimH1Up bump : ℕ)
   refine ⟨by omega, ?_⟩
   intro hb1 hd
   exact ⟨by omega, by omega⟩
+
+/-! ### §F″ — A5: δ-invariants and the dual-graph first Betti number (definitions).
+
+`curve_betti_identity` takes `b₁(Γ)` and `Σδ` as numeric *inputs*.  §A5 pins them down as genuine
+definitions; only their identification with actual étale cohomology (`dim H¹ = 2g + b₁ + Σδ`) is
+left to Tier C.
+
+* `deltaInvariant R S` — the `R`-length of the normalization quotient `S ⧸ R` (`S` = integral
+  closure / normalization), i.e. `dim_k(𝒪̃/𝒪)`; `deltaInvariant_eq_zero_iff` is the smooth/normal
+  criterion `δ = 0 ⟺ (R → S) surjective`.  `deltaInvariantConductor` is the conductor variant.
+* `firstBettiNumber E V C := E − V + C` — the cycle rank of the dual graph from combinatorial data;
+  `graphFirstBetti` reads it off a `SimpleGraph` via `Nat.card`. -/
+
+namespace CurveInvariants
+
+/-! #### δ-invariant. -/
+
+/-- **δ-invariant.**  The `R`-length of the normalization quotient `S ⧸ R` (`S` = integral closure
+/ normalization of `R`), the local invariant `dim_k(𝒪̃/𝒪)` of a curve singularity. -/
+noncomputable def deltaInvariant (R S : Type*) [CommRing R] [CommRing S] [Algebra R S] : ℕ∞ :=
+  Module.length R (S ⧸ LinearMap.range (Algebra.linearMap R S))
+
+/-- **Smooth/normal criterion.**  The δ-invariant vanishes iff the structure map `R → S` is
+surjective (`R` already equals its normalization — no singular contribution). -/
+theorem deltaInvariant_eq_zero_iff (R S : Type*) [CommRing R] [CommRing S] [Algebra R S] :
+    deltaInvariant R S = 0 ↔ Function.Surjective (algebraMap R S) := by
+  rw [deltaInvariant, Module.length_eq_zero_iff, Submodule.Quotient.subsingleton_iff,
+      LinearMap.range_eq_top, Algebra.coe_linearMap]
+
+/-- A trivial extension contributes no δ. -/
+theorem deltaInvariant_self (R : Type*) [CommRing R] : deltaInvariant R R = 0 :=
+  (deltaInvariant_eq_zero_iff R R).2 (fun x => ⟨x, by simp⟩)
+
+/-- **δ via the conductor** of `R<x>` (the alternative form): `length_R (S ⧸ 𝔠)`. -/
+noncomputable def deltaInvariantConductor (R : Type*) {S : Type*} [CommRing R] [CommRing S]
+    [Algebra R S] (x : S) : ℕ∞ :=
+  Module.length R (S ⧸ (conductor R x).restrictScalars R)
+
+/-! #### Dual-graph first Betti number. -/
+
+/-- **First Betti number (cycle rank)** of a graph from its combinatorial data: `E − V + C`. -/
+def firstBettiNumber (edges vertices components : ℕ) : ℤ :=
+  (edges : ℤ) - vertices + components
+
+/-- A tree (connected, `E = V − 1`) has `b₁ = 0`. -/
+theorem firstBettiNumber_tree (V : ℕ) (hV : 1 ≤ V) : firstBettiNumber (V - 1) V 1 = 0 := by
+  simp only [firstBettiNumber]; omega
+
+/-- For genuine graph data (`V ≤ E + C`) the first Betti number is nonnegative. -/
+theorem firstBettiNumber_nonneg_of_le (edges vertices components : ℕ)
+    (h : vertices ≤ edges + components) : 0 ≤ firstBettiNumber edges vertices components := by
+  simp only [firstBettiNumber]; omega
+
+/-- **First Betti number of a (dual) simple graph**, read off via `Nat.card`:
+`|E| − |V| + |components|`. -/
+noncomputable def graphFirstBetti {V : Type*} (G : SimpleGraph V) : ℤ :=
+  firstBettiNumber (Nat.card G.edgeSet) (Nat.card V) (Nat.card G.ConnectedComponent)
+
+/-! #### Connection to the curve Euler-characteristic identity (the Tier-C boundary). -/
+
+/-- **Curve Euler-characteristic excess (ℤ form) with the combinatorial `b₁`.**  Given the
+normalization inputs, `dim H¹(Xp) − dim H¹(Up) = b₁(Γ) + Σδ`.  The identification of the
+dimensions with actual cohomology stays Tier C. -/
+theorem betti_excess_eq (g E V C : ℕ) (deltaSum dimH1Xp dimH1Up : ℤ)
+    (Hnorm : dimH1Xp = 2 * g + firstBettiNumber E V C + deltaSum) (Hsm : dimH1Up = 2 * g) :
+    dimH1Xp - dimH1Up = firstBettiNumber E V C + deltaSum := by rw [Hnorm, Hsm]; ring
+
+/-- **Smooth fibre silences the excess.**  A tree dual graph (`E = V−1`) with no δ gives
+`dim H¹(Xp) = dim H¹(Up)`. -/
+theorem betti_excess_smooth (g V : ℕ) (hV : 1 ≤ V) (dimH1Xp dimH1Up : ℤ)
+    (Hnorm : dimH1Xp = 2 * g + firstBettiNumber (V - 1) V 1 + 0) (Hsm : dimH1Up = 2 * g) :
+    dimH1Xp - dimH1Up = 0 := by
+  rw [Hnorm, Hsm, firstBettiNumber_tree V hV]; ring
+
+end CurveInvariants
 
 /-! ## §G — gcd–lcm short exact (Mayer–Vietoris) sequence.
 
@@ -2045,7 +2704,7 @@ theorem aug_quasiIsoAt_zero (N : ℕ) (hN : N ≠ 0) : QuasiIsoAt (aug N) 0 := b
   rw [quasiIsoAt_iff_isIso_homologyMap]
   have hpe : HomologicalComplex.pOpcycles (cx N) 0 ≫ (opcyclesIso N hN).hom
       = (FreeResolution.res N).g := by
-    simpa [opcyclesIso] using IsColimit.comp_coconePointUniqueUpToIso_hom
+    exact IsColimit.comp_coconePointUniqueUpToIso_hom
       ((cx N).opcyclesIsCokernel (j := 0) (i := 1) (by simp))
       (FreeResolution.res_shortExact N hN).gIsCokernel WalkingParallelPair.one
   have heq : HomologicalComplex.opcyclesMap (aug N) 0 =
@@ -2346,6 +3005,55 @@ theorem int_module_ext_one_eq_zero (A : ModuleCat ℤ)
 
 end Tier3
 
+/-! ## B3 — Čech = derived cohomology in degree ≤ 1, and `Ȟ¹ ≅ sheaf-Ext¹` (§7.2).
+
+The arithmetic Čech faces are already certified by §G (`Additions.*`): the explicit 2-cover Čech
+complex has `Ȟ⁰ = ker δ⁰ ≅ ℤ/lcm` (`range_iota_eq_ker_proj`) and `Ȟ¹ = coker δ⁰ ≅ ℤ/gcd`
+(`coker_Phi_equiv`).  Here we (i) package those as named Čech cohomology objects, and (ii) supply the
+honest §7.2 grounding: the paper's `Ȟ¹ ≅ Ext¹(ℤ_S, A)` is **sheaf**-cohomology `Ext` (`= Sheaf.H A 1`,
+`sheafCohomology_eq_ext`) and **not** module-`Ext¹(ℤ,A)`, which vanishes identically
+(`Tier3.int_module_ext_one_eq_zero`).  The full degree-≤1 comparison `Ȟ⁰ ≅ H⁰`, `Ȟ¹ ↪ H¹` (the edge
+maps of the Čech-to-derived spectral sequence) is the residual step Mathlib does not yet package;
+it is recorded by `status_cech_derived_comparison`. -/
+
+namespace CechComparison
+
+open CategoryTheory
+
+universe u v w w'
+
+/-- **Čech `Ȟ⁰` of the 2-cover** (equalizer / global sections): `ker δ⁰ ≅ ℤ/lcm(M,N)`.  This is the
+explicit `H⁰` face, the sheaf-gluing kernel `(M) ∩ (N) = (lcm)`. -/
+noncomputable def cechH0 (M N : ℕ) [NeZero M] [NeZero N] :
+    ZMod (Nat.lcm M N) ≃+ (Additions.proj M N).ker := by
+  haveI : NeZero (Nat.lcm M N) := ⟨Nat.lcm_ne_zero (NeZero.ne M) (NeZero.ne N)⟩
+  rw [← Additions.range_iota_eq_ker_proj]
+  exact AddEquiv.ofInjective (Additions.iota M N) (Additions.iota_injective M N)
+
+/-- **Čech `Ȟ¹` of the 2-cover** (gluing obstruction): `coker δ⁰ ≅ ℤ/gcd(M,N)`.  This is the explicit
+`H¹` face, the failure fibre. -/
+noncomputable def cechH1 (M N : ℕ) [NeZero M] [NeZero N] :
+    ((ZMod M × ZMod N) ⧸ (Additions.Phi M N).range) ≃+ ZMod (Nat.gcd M N) :=
+  Additions.coker_Phi_equiv M N
+
+/-- **B3 / §7.2 grounding (honest basis for "the paper's `Ext¹` is sheaf-`Ext`").**  Sheaf cohomology
+`H¹` *is* sheaf-`Ext¹` from the constant sheaf (`sheafCohomology_eq_ext`), whereas module-`Ext¹(ℤ,A)`
+vanishes identically (`int_module_ext_one_eq_zero`).  Hence the nonzero invariant the paper writes as
+`Ȟ¹ ≅ Ext¹(ℤ_S, A)` must be the sheaf-`Ext` (= `H¹(S, A)`), not module-`Ext`. -/
+theorem paper_ext_one_is_sheaf_ext
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (F : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    (A : ModuleCat ℤ) :
+    CategoryTheory.Sheaf.H F 1
+        = CategoryTheory.Abelian.Ext
+            ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) F 1
+      ∧ (∀ e : CategoryTheory.Abelian.Ext (ModuleCat.of ℤ ℤ) A 1, e = 0) :=
+  ⟨Tier3Actual.sheafCohomology_eq_ext F 1, fun e => Tier3.int_module_ext_one_eq_zero A e⟩
+
+end CechComparison
+
 /-! ## §L′ — Audit of field-projection theorems and genuine replacements.
 
 The following status constants are intentionally ordinary Lean data, not new
@@ -2395,8 +3103,60 @@ geometric hypotheses and a converse lifting criterion. -/
 def status_uniqueLift_to_jacobian_smooth : FormalizationStatus := .futureWork
 
 /-- Consequently the full equivalence in Thm 9.3(i)⇔(ii) / Prop 6.2 remains a
-conditional theorem schema, not an unconditional result of this file. -/
+conditional theorem schema, not an unconditional result of this file.  (The honest,
+*separability* good-locus content of (i)⇔(ii) is, however, fully unconditional — see
+`status_goodLocus_equivalence`.) -/
 def status_full_smooth_jacobian_gate_equivalence : FormalizationStatus := .conditional
+
+/-- **A1 / fifth correction.**  The honest good-locus content of Thm 9.3(i)⇔(ii) —
+`p ∤ Δ ⟺ F mod p separable ⟺ every residual root simple` — is fully unconditional
+(`GoodLocus.modPolynomial_good_locus_tfae`, `GoodLocus.not_dvd_disc_iff_separable`,
+`GoodLocus.uniquePadicLift_of_separable_isRoot`). -/
+def status_goodLocus_equivalence : FormalizationStatus := .unconditional
+
+/-- **A1 / fifth correction.**  The paper's *unconditional reverse* of Thm 9.3(ii)
+("unique `p`-adic lift ⇒ full Jacobian rank") is FALSE; the refuting counterexample
+`X²` over `ℤ₂` is formalized (`GoodLocus.unique_lift_not_imply_unit_derivative`). -/
+def status_uniqueLift_reverse_refuted : FormalizationStatus := .unconditional
+
+/-- **A2 / Prop 2.**  The Weierstrass discriminant gate at the residual-polynomial level —
+`p ∤ Δ(E) ⟺ (x³+ax+b mod p) squarefree` (= residual fiber nonsingular) — is fully
+unconditional (`WeierstrassGate.cubic_good_locus_tfae`,
+`WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable`).  Scheme-level
+`Affine.Nonsingular` promotion is deliberately left as optional Tier B. -/
+def status_weierstrass_discriminant_gate : FormalizationStatus := .unconditional
+
+/-- **A3.**  The four §2.1/2.2 layers (`numLayer`, `modLayer`, `discLayer`, `ecLayer`) are
+now concrete genuine gates, and the fiber-product identity `Γ(U,F) = ⋂ Γ(U,F_layer)` is
+certified for them (`PrimalityShadow.sections_primeCertGate`), with the Hensel/EC layers
+tied to the §A2 separability gate (`discLayer_iff_separable`, `ecLayer_iff_discLayer`). -/
+def status_concrete_layer_gates : FormalizationStatus := .unconditional
+
+/-- **A4.**  The AB-linearization bridge is closed directly mod `pᵏ` — `∑ⱼ aⱼ log(1+uⱼ) ≡
+∑ⱼ aⱼ uⱼ (mod pᵏ)` via factorwise `log(1+u) ≡ u` and additivity, with radius bounds from the
+§5.1 valuation profile (`PadicLog.ab_linearization_phi_congMod`, `sum_smul_logOnePlus_congMod`,
+`norm_intCast_le_of_le_padicValInt`).  The full infinite-precision bridge (the `p`-adic-log
+functional equation) is deferred to B1. -/
+def status_AB_linearization_modPk : FormalizationStatus := .unconditional
+
+/-- **A5.**  The δ-invariant (`CurveInvariants.deltaInvariant` = `Module.length` of the
+normalization quotient, with the smooth criterion `deltaInvariant_eq_zero_iff`) and the dual-graph
+first Betti number (`firstBettiNumber`/`graphFirstBetti`) are pinned down as genuine definitions.
+The identification of the curve dimensions with actual cohomology stays Tier C
+(`CurveInvariants.betti_excess_eq` records the boundary). -/
+def status_curve_invariants_defs : FormalizationStatus := .unconditional
+
+/-- **B1 (formal).**  The p-adic log functional equation is proved *formally* in `ℚ_[p]⟦X⟧`,
+unconditionally: `PadicLogFormal.logOf_mul` (`logOf(f·g)=logOf f+logOf g`) and
+`PadicLogFormal.logOf_pow` (`logOf(fⁿ)=n•logOf f`), via the logarithmic-derivative argument. -/
+def status_padicLog_formal_functional_equation : FormalizationStatus := .unconditional
+
+/-- **B1 (analytic transfer).**  Transporting the formal functional equation to the convergent
+`ℚ_[p]` value (continuity of the power-series evaluation) is isolated as
+`PadicLogFormal.PadicLogAdditive`; the analytic power law is derived from it
+(`logOnePlus_pow_of_additive`).  This analytic transfer is the residual Tier-B step (its mod-`pᵏ`
+version is the unconditional §A4). -/
+def status_padicLog_analytic_transfer : FormalizationStatus := .conditional
 
 /-- The expression `T²-aₚT+p` is explicitly defined as a polynomial over `ℤ`. -/
 def status_frobeniusTatePolynomial_definition : FormalizationStatus := .definitional
@@ -2488,8 +3248,17 @@ def status_curve_detector_numeric_shadow : FormalizationStatus := .unconditional
 
 /-- The missing Mathlib theorem for C.1 is the geometric one: closed-point
 skyscraper sheaves on `Spec ℤ` are flasque/acyclic, hence higher cohomology
-vanishes.  This is future work, not a structure-field theorem. -/
+vanishes.  This is future work, not a structure-field theorem.  (The *key* Γ-exactness input —
+`Γ` sends a flasque SES to a surjection — is now genuine and unconditional; see
+`status_flasque_gamma_exactness`.  Only the dimension-shifting over the `Ext` LES remains.) -/
 def status_specZ_skyscraper_flasque_acyclicity : FormalizationStatus := .futureWork
+
+/-- **B2.**  The flasque Γ-exactness — `Γ` sends a flasque short exact sequence to a surjection
+(`Tier3Actual.flasque_sections_epi` / `flasque_global_sections_surjective`) and a flasque SES has
+flasque quotient (`flasque_quotient_isFlasque`) — is genuine and unconditional (exposed from
+Mathlib).  This is the key input the original audit missed; `IsGammaAcyclic` isolates the residual
+dimension-shifting step. -/
+def status_flasque_gamma_exactness : FormalizationStatus := .unconditional
 
 /-- The current `SheafCohomologyData` record is an interface for the missing
 Zariski sheaf-cohomology calculation on `Spec ℤ`. -/
@@ -2562,6 +3331,17 @@ def status_Tier3_int_module_ext_vanishing : FormalizationStatus := .unconditiona
 constant sheaf, so the `H¹ = Ext¹` identification is genuine and definitional
 once the site's sheafification and Ext instances are available. -/
 def status_sheafExt_H1_identification : FormalizationStatus := .unconditional
+
+/-- **B3.**  The explicit 2-cover Čech cohomology is packaged as named objects
+(`CechComparison.cechH0 ≅ ℤ/lcm`, `cechH1 ≅ ℤ/gcd`), and the §7.2 grounding
+(`paper_ext_one_is_sheaf_ext`: sheaf-`H¹` = sheaf-`Ext¹`, while module-`Ext¹(ℤ,A)=0`) is genuine and
+unconditional. -/
+def status_cech_explicit_cohomology : FormalizationStatus := .unconditional
+
+/-- **B3 residue.**  The full degree-≤1 Čech-to-derived comparison `Ȟ⁰ ≅ H⁰`, `Ȟ¹ ↪ H¹` (the edge
+maps / five-term low-degree exact sequence of the Čech-to-derived spectral sequence) is not yet
+packaged in Mathlib and remains future work. -/
+def status_cech_derived_comparison : FormalizationStatus := .futureWork
 
 /-- The audit table itself proves that the old field-projection theorems are not
 classified as representative unconditional results. -/
@@ -2728,12 +3508,81 @@ theorem d1_prime_scan_classification :
     FormalizationStatus.isRepresentative status_primeScan_hensel_lift = true := by
   decide
 
+/-- **A1 / fifth-correction audit.**  The good-locus equivalence
+`p ∤ Δ ⟺ separable ⟺ all residual roots simple` is a genuine unconditional result; the
+paper's unconditional reverse is *refuted*, not assumed; and the still-missing literal
+scheme-smoothness/Jacobian-rank reverse stays honestly flagged future work. -/
+theorem a1_good_locus_classification :
+    status_goodLocus_equivalence = .unconditional ∧
+    status_uniqueLift_reverse_refuted = .unconditional ∧
+    status_uniqueLift_to_jacobian_smooth = .futureWork ∧
+    status_full_smooth_jacobian_gate_equivalence = .conditional ∧
+    FormalizationStatus.isRepresentative status_goodLocus_equivalence = true ∧
+    FormalizationStatus.isRepresentative status_uniqueLift_reverse_refuted = true := by
+  decide
+
+/-- **A2 / Prop 2 audit.**  The Weierstrass discriminant gate at the residual-polynomial
+level is a genuine unconditional result and a representative theorem. -/
+theorem a2_weierstrass_gate_classification :
+    status_weierstrass_discriminant_gate = .unconditional ∧
+    FormalizationStatus.isRepresentative status_weierstrass_discriminant_gate = true := by
+  decide
+
+/-- **A3 audit.**  The concrete four-layer instantiation and its fiber-product certification
+are a genuine unconditional, representative result. -/
+theorem a3_concrete_layers_classification :
+    status_concrete_layer_gates = .unconditional ∧
+    FormalizationStatus.isRepresentative status_concrete_layer_gates = true := by
+  decide
+
+/-- **A4 audit.**  The mod-`pᵏ` AB-linearization skeleton is a genuine unconditional,
+representative result; the full functional-equation bridge stays future work (B1). -/
+theorem a4_ab_linearization_classification :
+    status_AB_linearization_modPk = .unconditional ∧
+    FormalizationStatus.isRepresentative status_AB_linearization_modPk = true := by
+  decide
+
+/-- **A5 audit.**  The δ-invariant and dual-graph `b₁` definitions are genuine unconditional,
+representative results; the cohomology identification stays Tier C. -/
+theorem a5_curve_invariants_classification :
+    status_curve_invariants_defs = .unconditional ∧
+    FormalizationStatus.isRepresentative status_curve_invariants_defs = true := by
+  decide
+
+/-- **B1 audit.**  The formal functional equation is unconditional and representative; the analytic
+transfer to convergent `ℚ_[p]` values is the isolated, conditional Tier-B residue. -/
+theorem b1_padicLog_functional_equation_classification :
+    status_padicLog_formal_functional_equation = .unconditional ∧
+    status_padicLog_analytic_transfer = .conditional ∧
+    FormalizationStatus.isRepresentative status_padicLog_formal_functional_equation = true ∧
+    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false := by
+  decide
+
+/-- **B2 audit.**  The flasque Γ-exactness is now genuine and unconditional; the dimension-shifting
+acyclicity (`flasque ⇒ Hⁱ = 0, i>0`) remains the isolated future-work residue. -/
+theorem b2_flasque_classification :
+    status_flasque_gamma_exactness = .unconditional ∧
+    status_skyscraperSheaf_isFlasque = .unconditional ∧
+    status_specZ_skyscraper_flasque_acyclicity = .futureWork ∧
+    FormalizationStatus.isRepresentative status_flasque_gamma_exactness = true := by
+  decide
+
+/-- **B3 audit.**  The explicit Čech cohomology and the §7.2 sheaf-`Ext` grounding are genuine and
+unconditional; the degree-≤1 Čech-to-derived spectral-sequence comparison remains isolated. -/
+theorem b3_cech_classification :
+    status_cech_explicit_cohomology = .unconditional ∧
+    status_sheafExt_H1_identification = .unconditional ∧
+    status_cech_derived_comparison = .futureWork ∧
+    FormalizationStatus.isRepresentative status_cech_explicit_cohomology = true := by
+  decide
+
 /-! ## §M — Summary of paper corrections surfaced by formalization.
 
-Formalizing the algebraic/arithmetic skeleton mechanically detects four errors in the paper; three
-of them stem from the *same* `lcm ↔ gcd` confusion (intersection vs obstruction/cokernel), which the
-single short exact sequence `0 → ℤ/lcm → ℤ/M × ℤ/N → ℤ/gcd → 0` (§G, `Additions.range_iota_eq_ker_proj`
-+ `iota_injective` + `proj_surjective`) resolves at once:
+Formalizing the algebraic/arithmetic skeleton mechanically detects five errors in the paper; three
+of the first four stem from the *same* `lcm ↔ gcd` confusion (intersection vs obstruction/cokernel),
+which the single short exact sequence `0 → ℤ/lcm → ℤ/M × ℤ/N → ℤ/gcd → 0` (§G,
+`Additions.range_iota_eq_ker_proj` + `iota_injective` + `proj_surjective`) resolves at once; the
+fifth is the false unconditional reverse of the Hensel/Jacobian gate, fixed in §A1:
 
   1. (§3.1/4.2/6/9/10, App C) Local intersection thickness `εₚ = min{vₚM, k}` is WRONG: the
      intersection is `(lcm)`, of thickness `max`; `min` is the valuation of the `gcd` (= Tor).
@@ -2746,8 +3595,15 @@ single short exact sequence `0 → ℤ/lcm → ℤ/M × ℤ/N → ℤ/gcd → 0`
   4. (§3.1 bookkeeping) The overlap object `A(U ∩ V) = ℤ/lcm` with `δ⁰ = a − b mod lcm`: the global
      kernel (intersection) face is `ℤ/lcm`, the cokernel (gluing-obstruction) face is `ℤ/gcd`.
      ↦ the two ends of the §G SES separate the faces exactly.
+  5. (Thm 9.3(ii)) The *unconditional reverse* "unique `p`-adic lift ⇒ full Jacobian rank" is FALSE
+     (witness `X²` over `ℤ₂` at `0`: the only root in the unit ball is `0`, yet `F'(0) = 0`).  The
+     honest content of (i)⇔(ii) is the good-locus equivalence
+     `p ∤ Δ ⟺ f̄ separable ⟺ all residual roots simple`.
+     ↦ §A1 (`GoodLocus.unique_lift_not_imply_unit_derivative`,
+       `GoodLocus.modPolynomial_good_locus_tfae`, `GoodLocus.not_dvd_disc_iff_separable`).
 
-Corrections 1, 2, 4 are the one `lcm ↔ gcd` confusion; the §G exact sequence settles all three. -/
+Corrections 1, 2, 4 are the one `lcm ↔ gcd` confusion; the §G exact sequence settles all three.
+Correction 5 is the separability good-locus replacement of the false Jacobian reverse (§A1). -/
 
 /-! ## Examples. -/
 
@@ -2919,7 +3775,293 @@ noncomputable def logOnePlusIntegral (u : ℤ_[p]) {k : ℕ} (hk : 1 ≤ k)
     (logOnePlusIntegral u hk hu : ℚ_[p]) = logOnePlusInt u :=
   rfl
 
+/-! ### A4 — AB-linearization bridge directly mod `pᵏ` (functional equation bypassed).
+
+The paper uses everything mod `pᵏ`.  Combining the per-factor congruence
+`log(1+u) ≡ u (mod pᵏ)` (`norm_logOnePlus_sub_le_radius`) with additivity certifies the
+mod-`pᵏ` skeleton of the AB-linearization
+
+    ∑ⱼ aⱼ · log(1+uⱼ)  ≡  ∑ⱼ aⱼ · uⱼ   (mod pᵏ)
+
+**without** the `p`-adic-log functional equation `log(XY) = log X + log Y` (that full,
+infinite-precision bridge is deferred to B1).  Under the (deferred) functional equation the
+left side is `log X − log Y`, and the right side is the explicit `∑ⱼ aⱼ φⱼ(A)`.  The radius
+hypotheses `‖uⱼ‖ ≤ p⁻ᵏ` are discharged for the §5.1 profile `φⱼ(1+pᵀ)` by the already-proven
+valuation results `padicVal_phi` / `Hk_basic_profile` via the bridge
+`k ≤ vₚ(z) → ‖(z:ℚ_p)‖ ≤ p⁻ᵏ` (`norm_intCast_le_of_le_padicValInt`). -/
+
+/-- Congruence modulo `pᵏ` on `ℚ_p`: `‖x − y‖ ≤ p⁻ᵏ`.  This is the mod-`pᵏ` relation the
+paper uses throughout the AB-linearization. -/
+def CongMod (k : ℕ) (x y : ℚ_[p]) : Prop := ‖x - y‖ ≤ (p : ℝ)⁻¹ ^ k
+
+theorem congMod_refl (k : ℕ) (x : ℚ_[p]) : CongMod k x x := by
+  simp only [CongMod, sub_self, norm_zero]; positivity
+
+theorem congMod_symm {k : ℕ} {x y : ℚ_[p]} (h : CongMod k x y) : CongMod k y x := by
+  rw [CongMod, ← neg_sub, norm_neg]; exact h
+
+theorem congMod_trans {k : ℕ} {x y z : ℚ_[p]} (hxy : CongMod k x y) (hyz : CongMod k y z) :
+    CongMod k x z := by
+  have hsum : x - z = (x - y) + (y - z) := by ring
+  rw [CongMod, hsum]
+  exact (Padic.nonarchimedean _ _).trans (max_le hxy hyz)
+
+/-- The mod-`pᵏ` congruence is additive. -/
+theorem congMod_add {k : ℕ} {x x' y y' : ℚ_[p]} (hx : CongMod k x x') (hy : CongMod k y y') :
+    CongMod k (x + y) (x' + y') := by
+  have hsum : (x + y) - (x' + y') = (x - x') + (y - y') := by ring
+  rw [CongMod, hsum]
+  exact (Padic.nonarchimedean _ _).trans (max_le hx hy)
+
+/-- Scaling by a `p`-adic integer (norm `≤ 1`) preserves the mod-`pᵏ` congruence. -/
+theorem congMod_mul_of_norm_le_one {k : ℕ} (c : ℚ_[p]) (hc : ‖c‖ ≤ 1) {x y : ℚ_[p]}
+    (h : CongMod k x y) : CongMod k (c * x) (c * y) := by
+  have hsub : c * x - c * y = c * (x - y) := by ring
+  rw [CongMod, hsub, norm_mul]
+  calc ‖c‖ * ‖x - y‖ ≤ 1 * ‖x - y‖ := by gcongr
+    _ = ‖x - y‖ := one_mul _
+    _ ≤ (p : ℝ)⁻¹ ^ k := h
+
+/-- Scaling by an integer coefficient preserves the mod-`pᵏ` congruence (`‖(a:ℚ_p)‖ ≤ 1`). -/
+theorem congMod_intCast_mul {k : ℕ} (a : ℤ) {x y : ℚ_[p]} (h : CongMod k x y) :
+    CongMod k ((a : ℚ_[p]) * x) ((a : ℚ_[p]) * y) :=
+  congMod_mul_of_norm_le_one (a : ℚ_[p]) (Padic.norm_int_le_one a) h
+
+/-- The mod-`pᵏ` congruence is preserved under finite sums. -/
+theorem congMod_sum {k : ℕ} {ι : Type*} (s : Finset ι) (f g : ι → ℚ_[p]) :
+    (∀ i ∈ s, CongMod k (f i) (g i)) → CongMod k (∑ i ∈ s, f i) (∑ i ∈ s, g i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => intro _; simpa using congMod_refl k (0 : ℚ_[p])
+  | @insert a s ha ih =>
+    intro h
+    rw [Finset.sum_insert ha, Finset.sum_insert ha]
+    exact congMod_add (h a (Finset.mem_insert_self a s))
+      (ih (fun i hi => h i (Finset.mem_insert_of_mem hi)))
+
+/-- **Per-factor congruence.**  `log(1+u) ≡ u (mod pᵏ)` for `u` in the radius-`pᵏ` ball.
+(Re-packaging of `norm_logOnePlus_sub_le_radius` as a congruence.) -/
+theorem logOnePlus_congMod {k : ℕ} (hk : 1 ≤ k) {u : ℚ_[p]} (hu : ‖u‖ ≤ (p : ℝ)⁻¹ ^ k) :
+    CongMod k (logOnePlus u) u :=
+  norm_logOnePlus_sub_le_radius hk hu
+
+/-- **Sum bridge (no functional equation).**  `∑ⱼ log(1+uⱼ) ≡ ∑ⱼ uⱼ (mod pᵏ)`. -/
+theorem sum_logOnePlus_congMod {k : ℕ} (hk : 1 ≤ k) {ι : Type*} (s : Finset ι) (u : ι → ℚ_[p])
+    (hu : ∀ i ∈ s, ‖u i‖ ≤ (p : ℝ)⁻¹ ^ k) :
+    CongMod k (∑ i ∈ s, logOnePlus (u i)) (∑ i ∈ s, u i) :=
+  congMod_sum s _ _ (fun i hi => logOnePlus_congMod hk (hu i hi))
+
+/-- **AB-linearization mod `pᵏ` (integer coefficients).**
+`∑ⱼ aⱼ · log(1+uⱼ) ≡ ∑ⱼ aⱼ · uⱼ (mod pᵏ)` — the honest mod-`pᵏ` skeleton, obtained by
+applying `log(1+u) ≡ u` factorwise and summing. -/
+theorem sum_smul_logOnePlus_congMod {k : ℕ} (hk : 1 ≤ k) {ι : Type*} (s : Finset ι)
+    (a : ι → ℤ) (u : ι → ℚ_[p]) (hu : ∀ i ∈ s, ‖u i‖ ≤ (p : ℝ)⁻¹ ^ k) :
+    CongMod k (∑ i ∈ s, (a i : ℚ_[p]) * logOnePlus (u i)) (∑ i ∈ s, (a i : ℚ_[p]) * u i) :=
+  congMod_sum s _ _ (fun i hi => congMod_intCast_mul (a i) (logOnePlus_congMod hk (hu i hi)))
+
+/-- **Valuation → norm bridge.**  If `pᵏ ∣ z` in the sense `k ≤ vₚ(z)`, then `‖(z:ℚ_p)‖ ≤ p⁻ᵏ`.
+This discharges the radius hypotheses of the AB-linearization from integer valuations. -/
+theorem norm_intCast_le_of_le_padicValInt {z : ℤ} {k : ℕ} (h : k ≤ padicValInt p z) :
+    ‖(z : ℚ_[p])‖ ≤ (p : ℝ)⁻¹ ^ k := by
+  rcases eq_or_ne z 0 with rfl | hz
+  · simp only [Int.cast_zero, norm_zero]; positivity
+  · have hdvdN : p ^ k ∣ z.natAbs :=
+      (pow_dvd_pow p h).trans (by rw [padicValInt]; exact pow_padicValNat_dvd)
+    have hdvdZ : (p : ℤ) ^ k ∣ z := by
+      have hcast : ((p ^ k : ℕ) : ℤ) ∣ (z.natAbs : ℤ) := Int.natCast_dvd_natCast.mpr hdvdN
+      rw [Int.dvd_natAbs] at hcast
+      simpa using hcast
+    have hmem : (z : ℤ_[p]) ∈ (Ideal.span {(p : ℤ_[p]) ^ k} : Ideal ℤ_[p]) := by
+      rw [Ideal.mem_span_singleton]
+      simpa using (Int.castRingHom ℤ_[p]).map_dvd hdvdZ
+    simpa using (norm_coe_le_radius_iff_mem_span_pow (z : ℤ_[p]) k).2 hmem
+
+/-- **A4 headline — AB-linearization mod `pᵏ` at the §5.1 profile.**  Under the profile
+hypotheses (`p` odd, `1 ≤ T`, `k ≤ n+T`), the mod-`pᵏ` AB-linearization holds for the explicit
+coefficient profile `φⱼ(1+pᵀ) = C(pⁿ,pʲ)((1+pᵀ)^{pʲ}-1)`:
+`∑_{j≤n} aⱼ · log(1+φⱼ) ≡ ∑_{j≤n} aⱼ · φⱼ (mod pᵏ)`.  The radius bounds come from
+`padicVal_phi : vₚ(φⱼ) = n+T ≥ k`. -/
+theorem ab_linearization_phi_congMod (n T k : ℕ) (hodd : Odd p) (hk : 1 ≤ k) (hT : 1 ≤ T)
+    (hprofile : k ≤ n + T) (a : ℕ → ℤ) :
+    CongMod k
+      (∑ j ∈ Finset.range (n + 1),
+        (a j : ℚ_[p]) * logOnePlus ((phi p n j (1 + (p : ℤ) ^ T) : ℤ) : ℚ_[p]))
+      (∑ j ∈ Finset.range (n + 1),
+        (a j : ℚ_[p]) * ((phi p n j (1 + (p : ℤ) ^ T) : ℤ) : ℚ_[p])) := by
+  refine sum_smul_logOnePlus_congMod hk _ a _ (fun j hj => ?_)
+  rw [Finset.mem_range, Nat.lt_succ_iff] at hj
+  refine norm_intCast_le_of_le_padicValInt ?_
+  rw [padicVal_phi p n j T Fact.out hodd hT hj]
+  exact hprofile
+
 end PadicLog
+
+/-! ## B1 — p-adic log functional equation (formal power series + analytic-transfer isolation).
+
+Mathlib provides `PowerSeries.log`/`logOf` but neither the functional equation `logOf(f·g) =
+logOf f + logOf g` nor an analytic `Padic.log`.  Following the recommended route, the functional
+equation is proved **formally** in `ℚ_[p]⟦X⟧` by the logarithmic-derivative / coefficientwise
+argument (no real-analysis derivative, hence valid `p`-adically), **unconditionally**:
+
+* `PadicLogFormal.logOf_mul` : `logOf (f·g) = logOf f + logOf g`  (`constantCoeff = 1`);
+* `PadicLogFormal.logOf_pow` : `logOf (fⁿ) = n • logOf f`  (the `log(Aᵖⁿ) = pⁿ log A` shape).
+
+`term_eq_coeff_log` identifies the analytic series `PadicLog.logOnePlus` with the evaluation of
+`PowerSeries.log` at the point.  The only remaining step — that this evaluation is a continuous
+ring homomorphism transferring the formal identity to the convergent `ℚ_[p]` value — is isolated
+as `PadicLogFormal.PadicLogAdditive`; the analytic power law `logOnePlus_pow_of_additive` is then
+derived from it.  (The mod-`pᵏ` version of this transfer is already unconditional in §A4.) -/
+
+namespace PadicLogFormal
+
+open PowerSeries
+
+/-! ### Formal functional equation in `A⟦X⟧` (any additively-torsion-free `ℚ`-algebra). -/
+
+section Formal
+
+variable {A : Type*} [CommRing A] [Algebra ℚ A]
+
+/-- `(1 + X) · (d/dX) log(1+X) = 1`. -/
+theorem one_add_X_mul_deriv_log : (1 + X : A⟦X⟧) * d⁄dX A (log A) = 1 := by
+  rw [deriv_log, add_mul, one_mul]
+  ext n
+  rw [map_add]
+  cases n with
+  | zero => simp
+  | succ m =>
+    rw [coeff_succ_X_mul, coeff_mk, coeff_mk, coeff_one, if_neg (Nat.succ_ne_zero m), ← map_add,
+      show ((-1 : ℚ) ^ (m + 1) + (-1) ^ m) = 0 by ring, map_zero]
+
+omit [Algebra ℚ A] in
+/-- `f - 1` is substitutable when `f` has constant term `1`. -/
+theorem hasSubst_sub_one {f : A⟦X⟧} (hf : constantCoeff f = 1) : HasSubst (f - 1) :=
+  HasSubst.of_constantCoeff_zero' (by rw [map_sub, hf, map_one, sub_self])
+
+/-- Logarithmic-derivative identity `f · (d/dX)(logOf f) = (d/dX) f`. -/
+theorem mul_deriv_logOf {f : A⟦X⟧} (hf : constantCoeff f = 1) :
+    f * d⁄dX A (logOf f) = d⁄dX A f := by
+  have hsub : HasSubst (f - 1) := hasSubst_sub_one hf
+  rw [logOf_eq, derivative_subst (hg := hsub)]
+  have hd1 : d⁄dX A (f - 1 : A⟦X⟧) = d⁄dX A f := by rw [map_sub]; simp
+  rw [hd1, ← mul_assoc]
+  have e1 : (1 + X : A⟦X⟧).subst (f - 1) = f := by
+    rw [← coe_substAlgHom hsub, map_add, map_one, substAlgHom_X hsub]; ring
+  have key : f * (d⁄dX A (log A)).subst (f - 1) = 1 := by
+    calc f * (d⁄dX A (log A)).subst (f - 1)
+        = (1 + X : A⟦X⟧).subst (f - 1) * (d⁄dX A (log A)).subst (f - 1) := by rw [e1]
+      _ = ((1 + X : A⟦X⟧) * d⁄dX A (log A)).subst (f - 1) := by
+            rw [← coe_substAlgHom hsub, map_mul]
+      _ = (1 : A⟦X⟧).subst (f - 1) := by rw [one_add_X_mul_deriv_log]
+      _ = 1 := by rw [← coe_substAlgHom hsub, map_one]
+  rw [key, one_mul]
+
+/-- **Formal functional equation:** `logOf (f·g) = logOf f + logOf g`. -/
+theorem logOf_mul [IsAddTorsionFree A] {f g : A⟦X⟧}
+    (hf : constantCoeff f = 1) (hg : constantCoeff g = 1) :
+    logOf (f * g) = logOf f + logOf g := by
+  have hfg : constantCoeff (f * g) = 1 := by rw [map_mul, hf, hg, one_mul]
+  refine derivative.ext ?_ ?_
+  · have hunit : IsUnit (f * g) := isUnit_iff_constantCoeff.mpr (hfg ▸ isUnit_one)
+    apply hunit.mul_right_injective
+    show f * g * d⁄dX A (logOf (f * g)) = f * g * d⁄dX A (logOf f + logOf g)
+    rw [mul_deriv_logOf hfg, map_add, mul_add,
+        (by ring : f * g * d⁄dX A (logOf f) = g * (f * d⁄dX A (logOf f))),
+        (by ring : f * g * d⁄dX A (logOf g) = f * (g * d⁄dX A (logOf g))),
+        mul_deriv_logOf hf, mul_deriv_logOf hg, Derivation.leibniz]
+    simp only [smul_eq_mul]; ring
+  · rw [map_add, constantCoeff_logOf hf, constantCoeff_logOf hg, constantCoeff_logOf hfg, add_zero]
+
+/-- `logOf 1 = 0`. -/
+theorem logOf_one [IsAddTorsionFree A] : logOf (1 : A⟦X⟧) = 0 := by
+  have h := logOf_mul (A := A) (f := 1) (g := 1) (by simp) (by simp)
+  rw [mul_one] at h
+  have h2 : logOf (1 : A⟦X⟧) + 0 = logOf (1 : A⟦X⟧) + logOf (1 : A⟦X⟧) := by rw [add_zero]; exact h
+  exact (add_left_cancel h2).symm
+
+/-- **Formal power law:** `logOf (fⁿ) = n • logOf f` (the `log(Aᵖⁿ) = pⁿ log A` shape). -/
+theorem logOf_pow [IsAddTorsionFree A] {f : A⟦X⟧} (hf : constantCoeff f = 1) (n : ℕ) :
+    logOf (f ^ n) = n • logOf f := by
+  induction n with
+  | zero => rw [pow_zero, logOf_one, zero_smul]
+  | succ m ih =>
+    have hpow : constantCoeff (f ^ m) = 1 := by rw [map_pow, hf, one_pow]
+    rw [pow_succ, logOf_mul hpow hf, ih, succ_nsmul]
+
+end Formal
+
+/-! ### Specialization to `ℚ_[p]` and the coefficient bridge to the analytic log. -/
+
+variable {p : ℕ} [Fact p.Prime]
+
+/-- The formal functional equation over `ℚ_[p]⟦X⟧`. -/
+theorem logOf_mul_qp {f g : ℚ_[p]⟦X⟧} (hf : constantCoeff f = 1) (hg : constantCoeff g = 1) :
+    logOf (f * g) = logOf f + logOf g := logOf_mul hf hg
+
+/-- The formal power law over `ℚ_[p]⟦X⟧`. -/
+theorem logOf_pow_qp {f : ℚ_[p]⟦X⟧} (hf : constantCoeff f = 1) (n : ℕ) :
+    logOf (f ^ n) = n • logOf f := logOf_pow hf n
+
+/-- **Coefficient bridge.**  `PadicLog.term u n = (coeff (n+1) (log ℚ_[p])) · u^(n+1)`: the analytic
+`logOnePlus` is the term-by-term evaluation of the formal `log(1+X)` at `u`. -/
+theorem term_eq_coeff_log (u : ℚ_[p]) (n : ℕ) :
+    PadicLog.term u n = (PowerSeries.coeff (n + 1) (PowerSeries.log ℚ_[p])) * u ^ (n + 1) := by
+  rw [PadicLog.term, PowerSeries.coeff_log, if_neg (Nat.succ_ne_zero n),
+      map_div₀, map_pow, map_neg, map_one, map_natCast]
+  have hsign : ((-1 : ℚ_[p])) ^ (n + 1 + 1) = (-1) ^ n := by rw [pow_succ, pow_succ]; ring
+  rw [hsign]
+  push_cast
+  ring
+
+/-! ### Analytic transfer (the isolated Tier-B core) and its consequences. -/
+
+/-- `‖(1+u)ᵐ − 1‖ < 1` for `‖u‖ < 1`: iterating stays in the convergence ball. -/
+theorem norm_one_add_pow_sub_one_lt {u : ℚ_[p]} (hu : ‖u‖ < 1) (m : ℕ) :
+    ‖(1 + u) ^ m - 1‖ < 1 := by
+  have h1u : ‖(1 + u : ℚ_[p])‖ ≤ 1 := by
+    refine (Padic.nonarchimedean 1 u).trans ?_
+    rw [norm_one]; exact max_le le_rfl hu.le
+  induction m with
+  | zero => simp
+  | succ k ih =>
+    have hpk : ‖(1 + u) ^ k‖ ≤ 1 := by rw [norm_pow]; exact pow_le_one₀ (norm_nonneg _) h1u
+    have hstep : (1 + u) ^ (k + 1) - 1 = ((1 + u) ^ k - 1) + u * (1 + u) ^ k := by ring
+    rw [hstep]
+    refine (Padic.nonarchimedean _ _).trans_lt (max_lt ih ?_)
+    rw [norm_mul]
+    calc ‖u‖ * ‖(1 + u) ^ k‖ ≤ ‖u‖ * 1 := by gcongr
+      _ = ‖u‖ := mul_one _
+      _ < 1 := hu
+
+/-- `logOnePlus 0 = 0`. -/
+theorem logOnePlus_zero : PadicLog.logOnePlus (0 : ℚ_[p]) = 0 := by
+  have hterm : ∀ n, PadicLog.term (0 : ℚ_[p]) n = 0 := fun n => by
+    rw [PadicLog.term]; simp [zero_pow (Nat.succ_ne_zero n)]
+  rw [show (PadicLog.logOnePlus (0 : ℚ_[p])) = ∑' n, PadicLog.term (0 : ℚ_[p]) n from rfl]
+  simp only [hterm, tsum_zero]
+
+/-- **Analytic transfer (isolated Tier-B core).**  The analytic functional equation
+`logOnePlus((1+u)(1+v) − 1) = logOnePlus u + logOnePlus v`: exactly the formal `logOf_mul`
+transported to the convergent `ℚ_[p]` value by a continuous evaluation.  The formal identity above
+is unconditional; this analytic transfer is the residual Tier-B step (its mod-`pᵏ` version is the
+unconditional §A4). -/
+def PadicLogAdditive (p : ℕ) [Fact p.Prime] : Prop :=
+  ∀ u v : ℚ_[p], ‖u‖ < 1 → ‖v‖ < 1 →
+    PadicLog.logOnePlus (u + v + u * v) = PadicLog.logOnePlus u + PadicLog.logOnePlus v
+
+/-- **Analytic power law from additivity** (`log(Aᵖⁿ) = pⁿ log A`): under the analytic functional
+equation, `logOnePlus ((1+u)ⁿ − 1) = n • logOnePlus u`. -/
+theorem logOnePlus_pow_of_additive (h : PadicLogAdditive p) {u : ℚ_[p]} (hu : ‖u‖ < 1) (n : ℕ) :
+    PadicLog.logOnePlus ((1 + u) ^ n - 1) = n • PadicLog.logOnePlus u := by
+  induction n with
+  | zero => rw [pow_zero, sub_self, logOnePlus_zero, zero_smul]
+  | succ m ih =>
+    set w := (1 + u) ^ m - 1 with hw
+    have hwm : ‖w‖ < 1 := by rw [hw]; exact norm_one_add_pow_sub_one_lt hu m
+    have hpow1 : (1 + u) ^ (m + 1) - 1 = w + u + w * u := by rw [hw]; ring
+    rw [hpow1, h w u hwm hu, ih, succ_nsmul]
+
+end PadicLogFormal
 
 /-- D.2 is unconditional apart from its explicit mathematical domain
 hypotheses (`‖u‖ < 1`, or `u ∈ p^k Z_p` with `k ≥ 1`). -/
@@ -3017,6 +4159,64 @@ noncomputable example :
         (ModuleCat.of ℤ (ZMod 9)) ≅ ModuleCat.of ℤ (ZMod (Nat.gcd 6 9)) := by
   haveI : NeZero (6 : ℕ) := ⟨by decide⟩
   exact ProjRes.torFullIso 9 6 (by decide)
+/-- A1 good-locus gate (abstract): for monic `F` of positive degree, the unconditional
+equivalence `p ∤ Δ ⟺ (F mod p) separable`. -/
+example {F : Polynomial ℤ} (hF : F.Monic) (p : ℕ) [Fact p.Prime] :
+    ¬ (p : ℤ) ∣ GoodLocus.disc F ↔ (PrimeScan.modPolynomial p F).Separable :=
+  GoodLocus.not_dvd_disc_iff_separable hF p
+/-- A1 fifth correction: the paper's unconditional reverse of Thm 9.3(ii) is refuted
+by the concrete witness `X²` over `ℤ₂`. -/
+example : ∃ (p : ℕ) (_ : Fact p.Prime) (F : Polynomial ℤ_[p]) (a : ℤ_[p]),
+    (∃! z : ℤ_[p], F.eval z = 0 ∧ ‖z - a‖ < 1) ∧ ‖F.derivative.eval a‖ ≠ 1 :=
+  GoodLocus.unique_lift_not_imply_unit_derivative
+/-- A2: the Weierstrass discriminant of `y² = x³ + a x + b` is `Δ = -16(4a³+27b²)`. -/
+example (a b : ℤ) : (WeierstrassGate.shortWeierstrass a b).Δ = -16 * (4 * a ^ 3 + 27 * b ^ 2) :=
+  WeierstrassGate.shortWeierstrass_Δ a b
+/-- A2: away from char 2, good reduction `p ∤ Δ(E)` ⟺ the residual cubic is separable. -/
+example {a b : ℤ} (p : ℕ) [Fact p.Prime] (hp2 : p ≠ 2) :
+    ¬ (p : ℤ) ∣ (WeierstrassGate.shortWeierstrass a b).Δ ↔
+      (WeierstrassGate.cubicPoly (a : ZMod p) (b : ZMod p)).Separable :=
+  WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable p hp2
+/-- A3: the concrete four-layer gate's sections decompose as the intersection of the
+layers' sections (`Γ(U,F) = ⋂ Γ(U,F_layer)`). -/
+example (a b : ℤ) (M : ℕ) (U : Set ℕ) :
+    PrimalityShadow.sections (PrimalityShadow.primeCertGate a b M) U
+      = PrimalityShadow.sections PrimalityShadow.numLayer U
+          ∩ PrimalityShadow.sections (PrimalityShadow.modLayer M) U
+          ∩ PrimalityShadow.sections (PrimalityShadow.discLayer a b) U
+          ∩ PrimalityShadow.sections (PrimalityShadow.ecLayer a b) U :=
+  PrimalityShadow.sections_primeCertGate a b M U
+/-- A3 ↔ A2: on a prime candidate the discriminant layer is residual-cubic separability. -/
+example (a b : ℤ) (n : ℕ) [Fact n.Prime] :
+    PrimalityShadow.discLayer a b n ↔
+      (WeierstrassGate.cubicPoly (a : ZMod n) (b : ZMod n)).Separable :=
+  PrimalityShadow.discLayer_iff_separable a b n
+/-- A4: the AB-linearization holds mod `pᵏ` at the §5.1 profile (functional equation bypassed). -/
+example (p : ℕ) [Fact p.Prime] (n T k : ℕ) (hodd : Odd p) (hk : 1 ≤ k) (hT : 1 ≤ T)
+    (hprofile : k ≤ n + T) (a : ℕ → ℤ) :
+    PadicLog.CongMod k
+      (∑ j ∈ Finset.range (n + 1),
+        (a j : ℚ_[p]) * PadicLog.logOnePlus ((phi p n j (1 + (p : ℤ) ^ T) : ℤ) : ℚ_[p]))
+      (∑ j ∈ Finset.range (n + 1),
+        (a j : ℚ_[p]) * ((phi p n j (1 + (p : ℤ) ^ T) : ℤ) : ℚ_[p])) :=
+  PadicLog.ab_linearization_phi_congMod n T k hodd hk hT hprofile a
+/-- A5: the δ-invariant vanishes exactly when `R → S` is surjective (smooth/normal fibre). -/
+example (R S : Type) [CommRing R] [CommRing S] [Algebra R S] :
+    CurveInvariants.deltaInvariant R S = 0 ↔ Function.Surjective (algebraMap R S) :=
+  CurveInvariants.deltaInvariant_eq_zero_iff R S
+/-- A5: a tree dual graph has first Betti number `0`. -/
+example : CurveInvariants.firstBettiNumber 4 5 1 = 0 :=
+  CurveInvariants.firstBettiNumber_tree 5 (by norm_num)
+/-- B1: the formal p-adic log functional equation `logOf(f·g) = logOf f + logOf g`. -/
+example (p : ℕ) [Fact p.Prime] (f g : (PowerSeries ℚ_[p]))
+    (hf : PowerSeries.constantCoeff f = 1) (hg : PowerSeries.constantCoeff g = 1) :
+    PowerSeries.logOf (f * g) = PowerSeries.logOf f + PowerSeries.logOf g :=
+  PadicLogFormal.logOf_mul_qp hf hg
+/-- B1: the formal power law `logOf(fⁿ) = n • logOf f` (`log(Aᵖⁿ) = pⁿ log A`). -/
+example (p : ℕ) [Fact p.Prime] (f : (PowerSeries ℚ_[p]))
+    (hf : PowerSeries.constantCoeff f = 1) (n : ℕ) :
+    PowerSeries.logOf (f ^ n) = n • PowerSeries.logOf f :=
+  PadicLogFormal.logOf_pow_qp hf n
 end Examples
 
 /-! ## Axiom audit. -/
@@ -3036,6 +4236,15 @@ section AxiomAudit
 #print axioms Tier3Actual.sheafCohomologyExtEquiv
 #print axioms Tier3Actual.sheafCohomology_eq_ext
 #print axioms Tier3Actual.ellAdicCohomology_nonempty
+#print axioms Tier3Actual.flasque_sections_epi
+#print axioms Tier3Actual.flasque_global_sections_surjective
+#print axioms Tier3Actual.flasque_quotient_isFlasque
+#print axioms Tier3Actual.IsGammaAcyclic.h1_subsingleton
+#print axioms b2_flasque_classification
+#print axioms CechComparison.cechH0
+#print axioms CechComparison.cechH1
+#print axioms CechComparison.paper_ext_one_is_sheaf_ext
+#print axioms b3_cech_classification
 #print axioms PrimeScan.mem_simpleRoots_iff
 #print axioms PrimeScan.simpleRootCount_pos_iff
 #print axioms PrimeScan.hasSimpleRoot_eq_true_iff
@@ -3045,6 +4254,81 @@ section AxiomAudit
 #print axioms PrimeScan.simpleRoot_has_uniquePadicLift
 #print axioms PrimeScan.scanPrime_eq_true_iff
 #print axioms PrimeScan.mem_scanPrimesUpTo_iff
+#print axioms GoodLocus.separable_iff_isCoprime_derivative
+#print axioms GoodLocus.separable_iff_squarefree_of_perfectField
+#print axioms GoodLocus.separable_iff_isUnit_resultant
+#print axioms GoodLocus.resultant_explicit_eq_default
+#print axioms GoodLocus.separable_iff_resultant_explicit_ne_zero
+#print axioms GoodLocus.separable_iff_discr_ne_zero
+#print axioms GoodLocus.rootMultiplicity_eq_one_iff_simple
+#print axioms GoodLocus.rootMultiplicity_eq_one_of_separable
+#print axioms GoodLocus.not_isRoot_derivative_of_separable
+#print axioms GoodLocus.separable_iff_roots_nodup_of_splits
+#print axioms GoodLocus.good_locus_field_tfae
+#print axioms GoodLocus.disc_eq
+#print axioms GoodLocus.intCast_disc_eq
+#print axioms GoodLocus.not_dvd_disc_iff_separable
+#print axioms GoodLocus.not_dvd_discr_iff_separable
+#print axioms GoodLocus.modPolynomial_good_locus_tfae
+#print axioms GoodLocus.mem_simpleRoots_iff_rootMultiplicity_eq_one
+#print axioms GoodLocus.isRoot_mem_simpleRoots_of_separable
+#print axioms GoodLocus.uniquePadicLift_of_separable_isRoot
+#print axioms GoodLocus.goodPrime_gate
+#print axioms GoodLocus.unique_lift_not_imply_unit_derivative
+#print axioms a1_good_locus_classification
+#print axioms WeierstrassGate.cubicPoly_monic
+#print axioms WeierstrassGate.cubicPoly_natDegree
+#print axioms WeierstrassGate.cubicPoly_degree
+#print axioms WeierstrassGate.cubicPoly_discr
+#print axioms WeierstrassGate.cubicPoly_map
+#print axioms WeierstrassGate.cubicPoly_separable_iff
+#print axioms WeierstrassGate.cubicPoly_squarefree_iff
+#print axioms WeierstrassGate.not_dvd_cubic_disc_iff_separable
+#print axioms WeierstrassGate.not_dvd_cubic_disc_iff_squarefree
+#print axioms WeierstrassGate.cubic_good_locus_tfae
+#print axioms WeierstrassGate.shortWeierstrass_Δ
+#print axioms WeierstrassGate.shortWeierstrass_Δ_eq_cubic_discr
+#print axioms WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable
+#print axioms a2_weierstrass_gate_classification
+#print axioms PrimalityShadow.sections_primeCertGate
+#print axioms PrimalityShadow.primeCertGate_sectionwise
+#print axioms PrimalityShadow.primeCertGate_equiv
+#print axioms PrimalityShadow.discLayer_iff_separable
+#print axioms PrimalityShadow.ecLayer_iff_discLayer
+#print axioms a3_concrete_layers_classification
+#print axioms PadicLog.congMod_trans
+#print axioms PadicLog.congMod_add
+#print axioms PadicLog.congMod_mul_of_norm_le_one
+#print axioms PadicLog.congMod_intCast_mul
+#print axioms PadicLog.congMod_sum
+#print axioms PadicLog.logOnePlus_congMod
+#print axioms PadicLog.sum_logOnePlus_congMod
+#print axioms PadicLog.sum_smul_logOnePlus_congMod
+#print axioms PadicLog.norm_intCast_le_of_le_padicValInt
+#print axioms PadicLog.ab_linearization_phi_congMod
+#print axioms a4_ab_linearization_classification
+#print axioms CurveInvariants.deltaInvariant
+#print axioms CurveInvariants.deltaInvariant_eq_zero_iff
+#print axioms CurveInvariants.deltaInvariant_self
+#print axioms CurveInvariants.deltaInvariantConductor
+#print axioms CurveInvariants.firstBettiNumber_tree
+#print axioms CurveInvariants.firstBettiNumber_nonneg_of_le
+#print axioms CurveInvariants.graphFirstBetti
+#print axioms CurveInvariants.betti_excess_eq
+#print axioms CurveInvariants.betti_excess_smooth
+#print axioms a5_curve_invariants_classification
+#print axioms PadicLogFormal.one_add_X_mul_deriv_log
+#print axioms PadicLogFormal.mul_deriv_logOf
+#print axioms PadicLogFormal.logOf_mul
+#print axioms PadicLogFormal.logOf_one
+#print axioms PadicLogFormal.logOf_pow
+#print axioms PadicLogFormal.logOf_mul_qp
+#print axioms PadicLogFormal.logOf_pow_qp
+#print axioms PadicLogFormal.term_eq_coeff_log
+#print axioms PadicLogFormal.norm_one_add_pow_sub_one_lt
+#print axioms PadicLogFormal.logOnePlus_zero
+#print axioms PadicLogFormal.logOnePlus_pow_of_additive
+#print axioms b1_padicLog_functional_equation_classification
 #print axioms card_derangements_direct
 #print axioms derangementPerms_card
 #print axioms fixedPointPerms_card
