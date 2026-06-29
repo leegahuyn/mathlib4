@@ -342,6 +342,30 @@ theorem kerMulLeft_explicitCyclicityAvailable_of_isAddCyclic (N M : ℕ) [NeZero
     KerMulLeftExplicitCyclicityAvailable N M :=
   ⟨⟨inferInstance⟩⟩
 
+/-! ### D2 (Gap H) — the cyclicity obligation, DISCHARGED unconditionally.
+
+    The file deliberately kept kernel-cyclicity as an explicit obligation because
+    older Mathlib lacked "a subgroup of a cyclic group is cyclic" as an instance.
+    Current Mathlib provides `AddSubgroup.isAddCyclic`, so the obligation is now a
+    THEOREM: `ker(·M : ZMod N → ZMod N)` is an additive subgroup of the cyclic
+    group `ZMod N`, hence cyclic. -/
+
+/-- **D2 cyclicity (UNCONDITIONAL).** -/
+theorem kerMulLeft_isAddCyclic (N M : ℕ) [NeZero N] :
+    IsAddCyclic (AddMonoidHom.mulLeft (M : ZMod N)).ker :=
+  inferInstance
+
+/-- The D2 cyclicity availability marker is now a THEOREM, not a hypothesis. -/
+theorem kerMulLeft_explicitCyclicityAvailable_proved (N M : ℕ) [NeZero N] :
+    KerMulLeftExplicitCyclicityAvailable N M :=
+  ⟨⟨kerMulLeft_isAddCyclic N M⟩⟩
+
+/-- **The genuine D2 isomorphism `ker(·M) ≃+ ℤ/gcd(N,M)`, now UNCONDITIONAL** — the
+explicit `[IsAddCyclic]` argument is discharged by `kerMulLeft_isAddCyclic`. -/
+noncomputable def kerMulLeft_addEquiv_unconditional (N M : ℕ) [NeZero N] :
+    (AddMonoidHom.mulLeft (M : ZMod N)).ker ≃+ ZMod (Nat.gcd N M) :=
+  kerMulLeft_addEquiv N M
+
 /-- Standard-generator certificate form of the restored D2 isomorphism. -/
 noncomputable def kerMulLeft_addEquiv_of_standardGeneratorCertificate {N M : ℕ}
     [NeZero N] (C : KerMulLeftStandardGeneratorCertificate N M) :
@@ -2068,6 +2092,204 @@ theorem b2_current_core_modal_minimality_impossible
     ¬ ECOnlyFailureWitness E :=
   no_EC_only_failure_witness E
 
+/-! ### Lemma 6.1 / 7.3 (Gap I) — genuine modality independence via PARTIAL filters.
+
+    The current four core gates are COMPLETE primality tests, so they collapse to
+    primality (above) and modality-level minimality is false for them.  The paper's
+    minimality is realizable once the layers are PARTIAL filters (trial division to
+    a bound, a fixed-base Fermat test, …): then each is genuinely weaker than
+    primality, witnessed by an explicit composite "false positive".  This is the
+    honest, unconditional core of Lemma 7.3 (no layer alone decides primality). -/
+
+/-- Partial numeric/logarithmic filter: trial division up to a bound `b`
+(passes any composite whose least prime factor exceeds `b`). -/
+def Fnum_partial (b X : ℕ) : Prop := ∀ d ∈ Finset.Icc 2 b, ¬ d ∣ X
+
+/-- Partial modular filter: the base-`a` Fermat test (passes base-`a` pseudoprimes). -/
+def Fmod_partial (a X : ℕ) : Prop := (a : ZMod X) ^ (X - 1) = 1
+
+instance (b X : ℕ) : Decidable (Fnum_partial b X) := by unfold Fnum_partial; infer_instance
+instance (a X : ℕ) : Decidable (Fmod_partial a X) := by unfold Fmod_partial; infer_instance
+
+/-- **Numeric partial filter is NOT complete:** `49 = 7²` passes trial division by
+every `d ≤ 5` yet is composite. -/
+theorem fnum_partial_false_positive : ¬ Nat.Prime 49 ∧ Fnum_partial 5 49 := by decide
+
+set_option maxRecDepth 4000 in
+/-- **Modular partial filter is NOT complete:** `341 = 11·31` is a base-2 Fermat
+pseudoprime (`2³⁴⁰ ≡ 1 mod 341`) yet is composite. -/
+theorem fmod_partial_false_positive : ¬ Nat.Prime 341 ∧ Fmod_partial 2 341 := by
+  refine ⟨by decide, ?_⟩
+  show (2 : ZMod 341) ^ 340 = 1
+  decide
+
+/-- **Genuine modality independence (UNCONDITIONAL).**  Unlike the *complete* core
+gates (which collapse to primality), the PARTIAL filters each admit a composite
+witness, so no single partial layer is a primality test — the realizable form of
+the paper's non-redundancy/minimality. -/
+theorem partial_filters_not_primality :
+    (∃ X, ¬ Nat.Prime X ∧ Fnum_partial 5 X) ∧
+    (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X) :=
+  ⟨⟨49, fnum_partial_false_positive⟩, ⟨341, fmod_partial_false_positive⟩⟩
+
+/-! #### Lemma 6.1 — PAIRWISE modality independence (UNCONDITIONAL).
+
+    No partial layer implies another: every ordered pair is separated by an
+    explicit composite.  (The *complete* core gates collapse to primality; the
+    partial layers genuinely do not.) -/
+
+/-- **Numeric ⊄ modular:** `49 = 7²` passes trial-division-by-5 but fails base-2
+Fermat (`2⁴⁸ ≢ 1 mod 49`). -/
+theorem fnum_not_imp_fmod :
+    ∃ X, ¬ Nat.Prime X ∧ Fnum_partial 5 X ∧ ¬ Fmod_partial 2 X :=
+  ⟨49, by decide⟩
+
+set_option maxRecDepth 8000 in
+/-- **Modular ⊄ numeric:** `561 = 3·11·17` (Carmichael) passes base-2 Fermat but
+has a factor `≤ 7`, failing trial-division-by-7. -/
+theorem fmod_not_imp_fnum :
+    ∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fnum_partial 7 X :=
+  ⟨561, by decide⟩
+
+set_option maxRecDepth 8000 in
+/-- **Base-2 ⊄ base-3:** `341 = 11·31` passes base-2 Fermat but fails base-3. -/
+theorem fmod2_not_imp_fmod3 :
+    ∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fmod_partial 3 X :=
+  ⟨341, by decide⟩
+
+set_option maxRecDepth 8000 in
+/-- **Base-3 ⊄ base-2:** `91 = 7·13` passes base-3 Fermat but fails base-2. -/
+theorem fmod3_not_imp_fmod2 :
+    ∃ X, ¬ Nat.Prime X ∧ Fmod_partial 3 X ∧ ¬ Fmod_partial 2 X :=
+  ⟨91, by decide⟩
+
+/-- **Lemma 6.1 (PAIRWISE modality independence, UNCONDITIONAL).**  As partial
+filters, no layer implies another — each ordered pair is separated by an explicit
+composite witness.  This is the genuine, realizable form of the paper's
+non-redundancy claim. -/
+theorem partial_filters_pairwise_independent :
+    (∃ X, ¬ Nat.Prime X ∧ Fnum_partial 5 X ∧ ¬ Fmod_partial 2 X) ∧
+    (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fnum_partial 7 X) ∧
+    (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fmod_partial 3 X) ∧
+    (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 3 X ∧ ¬ Fmod_partial 2 X) :=
+  ⟨fnum_not_imp_fmod, fmod_not_imp_fnum, fmod2_not_imp_fmod3, fmod3_not_imp_fmod2⟩
+
+/-! #### ITEM 4 (fidelity) — partial-filter independence at the SECTION level.
+
+    The pointwise `Decidable` witnesses above are promoted to the section / set
+    level: the "section" of a partial filter is the set of candidates passing it.
+    No partial layer's section is contained in another's, and the partial numeric
+    filter has an INFINITE family of composite passers (not just the witness `49`). -/
+
+/-- The section set of composites passing the partial numeric filter. -/
+def partialNumSet (b : ℕ) : Set ℕ := {X | ¬ X.Prime ∧ Fnum_partial b X}
+
+/-- The section set of composites passing the partial base-`a` modular filter. -/
+def partialModSet (a : ℕ) : Set ℕ := {X | ¬ X.Prime ∧ Fmod_partial a X}
+
+/-- **Section-level non-containment (numeric ⊄ modular).**  `49 ∈ partialNumSet 5`
+but `49 ∉ partialModSet 2`. -/
+theorem partialNum_not_subset_partialMod :
+    ¬ partialNumSet 5 ⊆ partialModSet 2 := by
+  intro h
+  have h49 : (49 : ℕ) ∈ partialNumSet 5 := ⟨by decide, by decide⟩
+  have hmem := h h49
+  have hfmod : Fmod_partial 2 49 := hmem.2
+  have hcontra : ¬ Fmod_partial 2 49 := by decide
+  exact hcontra hfmod
+
+set_option maxRecDepth 8000 in
+/-- **Section-level non-containment (modular ⊄ numeric).**  `561` (Carmichael) is
+in `partialModSet 2` but not in `partialNumSet 7` (`3 ∣ 561`). -/
+theorem partialMod_not_subset_partialNum :
+    ¬ partialModSet 2 ⊆ partialNumSet 7 := by
+  intro h
+  have h561 : (561 : ℕ) ∈ partialModSet 2 := by
+    refine ⟨by decide, ?_⟩
+    show (2 : ZMod 561) ^ 560 = 1
+    decide
+  have hmem := h h561
+  have hnum : Fnum_partial 7 561 := hmem.2
+  have hcontra : ¬ Fnum_partial 7 561 := by unfold Fnum_partial; decide
+  exact hcontra hnum
+
+/-- `p²` passes trial division up to `b` when `p` is a prime `> b`. -/
+theorem prime_sq_passes_fnum {b p : ℕ} (hp : p.Prime) (hpb : b < p) :
+    Fnum_partial b (p ^ 2) := by
+  intro d hd hdvd
+  rw [Finset.mem_Icc] at hd
+  obtain ⟨h2, hdb⟩ := hd
+  rcases (Nat.dvd_prime_pow hp).mp hdvd with ⟨i, hi, rfl⟩
+  interval_cases i
+  · norm_num at h2
+  · simp only [pow_one] at hdb; omega
+  · have hp2 : 2 ≤ p := hp.two_le; nlinarith [hdb, hpb, hp2]
+
+/-- `p²` is composite for any prime `p`. -/
+theorem prime_sq_not_prime {p : ℕ} (hp : p.Prime) : ¬ (p ^ 2).Prime := by
+  intro hX
+  have hp2 : 2 ≤ p := hp.two_le
+  have hdvd : p ∣ p ^ 2 := dvd_pow_self p (by norm_num)
+  rcases hX.eq_one_or_self_of_dvd p hdvd with h | h
+  · omega
+  · nlinarith [hp2]
+
+/-- **ITEM 4 — the partial numeric filter has an INFINITE family of composite
+passers:** the squares of primes `> b` are all composite and all pass trial
+division by `b`.  Section-level incompleteness is thus an infinite phenomenon,
+not a single accident. -/
+theorem fnum_partial_infinite_composites (b : ℕ) : (partialNumSet b).Infinite := by
+  have hdom : {p : ℕ | p.Prime ∧ b < p}.Infinite := by
+    have hset : {p : ℕ | p.Prime ∧ b < p} = {p | p.Prime} \ {n | n ≤ b} := by
+      ext p
+      simp only [Set.mem_setOf_eq, Set.mem_sdiff]
+      constructor
+      · rintro ⟨hp, hb⟩; exact ⟨hp, by omega⟩
+      · rintro ⟨hp, hb⟩; exact ⟨hp, by omega⟩
+    rw [hset]
+    exact Nat.infinite_setOf_prime.sdiff (Set.finite_le_nat b)
+  have hinj : Set.InjOn (fun p : ℕ => p ^ 2) {p : ℕ | p.Prime ∧ b < p} := by
+    intro a _ c _ h
+    have hh : a ^ 2 = c ^ 2 := h
+    nlinarith [hh, sq_nonneg (a - c), sq_nonneg (c - a), Nat.le_total a c]
+  have himg : ((fun p : ℕ => p ^ 2) '' {p : ℕ | p.Prime ∧ b < p}).Infinite :=
+    (Set.infinite_image_iff hinj).mpr hdom
+  apply himg.mono
+  rintro X ⟨p, ⟨hp, hpb⟩, rfl⟩
+  exact ⟨prime_sq_not_prime hp, prime_sq_passes_fnum hp hpb⟩
+
+/-! #### ITEM 3 (headline) — Theorem 6.2 minimality is FALSE as stated. -/
+
+/-- **HEADLINE CORRECTION (Thm 6.2 minimality).**  For the COMPLETE core gates,
+modality-level minimality is FALSE — they collapse to primality, so no EC-only
+composite witness exists (`no_EC_only_failure_witness`).  The universal/terminal
+half is unconditionally true (`theorem6_2_sheaf_objectwise_terminal`); minimality
+re-holds ONLY in the partial-filter sense (`partial_filters_pairwise_independent`).
+The certification therefore reports the paper's minimality claim as *wrong as
+stated* (a correction), not merely "conditional on missing Mathlib". -/
+theorem headline_thm6_2_minimality_correction (E : WeierstrassCurve ℤ) :
+    (¬ ECOnlyFailureWitness E) ∧
+    ((∃ X, ¬ Nat.Prime X ∧ Fnum_partial 5 X ∧ ¬ Fmod_partial 2 X) ∧
+     (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fnum_partial 7 X) ∧
+     (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 2 X ∧ ¬ Fmod_partial 3 X) ∧
+     (∃ X, ¬ Nat.Prime X ∧ Fmod_partial 3 X ∧ ¬ Fmod_partial 2 X)) :=
+  ⟨no_EC_only_failure_witness E, partial_filters_pairwise_independent⟩
+
+section AxiomAuditGapI
+#print axioms fnum_partial_false_positive
+#print axioms fmod_partial_false_positive
+#print axioms partial_filters_not_primality
+#print axioms fnum_not_imp_fmod
+#print axioms fmod_not_imp_fnum
+#print axioms fmod2_not_imp_fmod3
+#print axioms fmod3_not_imp_fmod2
+#print axioms partial_filters_pairwise_independent
+#print axioms partialNum_not_subset_partialMod
+#print axioms partialMod_not_subset_partialNum
+#print axioms fnum_partial_infinite_composites
+#print axioms headline_thm6_2_minimality_correction
+end AxiomAuditGapI
+
 /-! ## §5  VisiblePrimesProfile — with real semantics and soundness -/
 
 structure VisiblePrimesProfile where
@@ -2208,6 +2430,152 @@ theorem ec_hasse {q : ℕ} [NeZero q]
     (hHasse : SatisfiesHasse E) :
     frobeniusTrace E * frobeniusTrace E ≤ (4 : ℤ) * (q : ℤ) :=
   hHasse
+
+/-! ### §6 (Gap D) — bridge to Mathlib's GENUINE elliptic-curve group law.
+
+    Mathlib *does* provide the elliptic-curve group law on
+    `WeierstrassCurve.Affine.Point` over a field.  We convert the short model to a
+    Mathlib `WeierstrassCurve`, identify `Option (AffinePoint E)` with the genuine
+    `Point` type (`pointEquiv`, `WithZero = Option`), and TRANSPORT the group law.
+    This discharges the previously-hypothesised `ECFiniteFibreModelFor`
+    `instAddCommGroup`/`zero_is_infinity` fields (see `ECFiniteFibreModelFor.ofEllipticModel`). -/
+
+/-- The short model `y² = x³ + Ax + B` as a Mathlib `WeierstrassCurve`
+(`a₁ = a₂ = a₃ = 0`, `a₄ = A`, `a₆ = B`). -/
+def toWeierstrass (E : ShortWeierstrassModel R) : WeierstrassCurve R where
+  a₁ := 0
+  a₂ := 0
+  a₃ := 0
+  a₄ := E.A
+  a₆ := E.B
+
+/-- The Mathlib affine equation of the converted curve is exactly `y² = x³ + Ax + B`. -/
+theorem toWeierstrass_equation_iff (E : ShortWeierstrassModel R) (x y : R) :
+    E.toWeierstrass.toAffine.Equation x y ↔ y ^ 2 = x ^ 3 + E.A * x + E.B := by
+  rw [WeierstrassCurve.Affine.equation_iff]
+  simp only [toWeierstrass, WeierstrassCurve.toAffine, zero_mul, add_zero]
+
+/-- Affine points of the short model are exactly the affine solutions of the
+Mathlib Weierstrass equation. -/
+def affineEquiv (E : ShortWeierstrassModel R) :
+    AffinePoint E ≃ {xy : R × R // E.toWeierstrass.toAffine.Equation xy.1 xy.2} where
+  toFun P := ⟨(P.x, P.y), (toWeierstrass_equation_iff E P.x P.y).mpr P.equation⟩
+  invFun P := ⟨P.1.1, P.1.2, (toWeierstrass_equation_iff E P.1.1 P.1.2).mp P.2⟩
+  left_inv := by rintro ⟨x, y, h⟩; rfl
+  right_inv := by rintro ⟨⟨x, y⟩, h⟩; rfl
+
+section EllipticGroupLaw
+
+variable {q : ℕ} [hq : Fact q.Prime]
+include hq
+
+/-- `IsElliptic` for the converted curve from the good-reduction hypothesis
+`Δ ≠ 0` over the field `ZMod q`. -/
+theorem toWeierstrass_isElliptic (E : ShortWeierstrassModel (ZMod q))
+    (hΔ : E.toWeierstrass.Δ ≠ 0) : E.toWeierstrass.IsElliptic := by
+  rw [WeierstrassCurve.isElliptic_iff]
+  exact IsUnit.mk0 _ hΔ
+
+/-- **Point identification.**  `Option (AffinePoint E) ≃ Point` of the genuine
+Mathlib elliptic curve, via `pointEquiv` (`WithZero = Option`) and `affineEquiv`. -/
+noncomputable def projectivePointEquivPoint (E : ShortWeierstrassModel (ZMod q))
+    [E.toWeierstrass.IsElliptic] :
+    ProjectivePoint E ≃ E.toWeierstrass.toAffine.Point :=
+  (affineEquiv E).optionCongr.trans E.toWeierstrass.toAffine.pointEquiv.symm
+
+/-- **The genuine EC group law, transported.**  Mathlib's
+`WeierstrassCurve.Affine.Point.instAddCommGroup` pulled back to
+`Option (AffinePoint E)` — the `instAddCommGroup` of `ECFiniteFibreModelFor`,
+now DERIVED instead of assumed. -/
+@[reducible] noncomputable def modelAddCommGroup (E : ShortWeierstrassModel (ZMod q))
+    [E.toWeierstrass.IsElliptic] :
+    AddCommGroup (ProjectivePoint E) :=
+  Equiv.addCommGroup (projectivePointEquivPoint E)
+
+/-- **The identity is the point at infinity (`0 = none`)** — the
+`zero_is_infinity` field of `ECFiniteFibreModelFor`, now a theorem. -/
+theorem modelAddCommGroup_zero (E : ShortWeierstrassModel (ZMod q))
+    [E.toWeierstrass.IsElliptic] :
+    letI : AddCommGroup (ProjectivePoint E) := modelAddCommGroup E
+    (0 : ProjectivePoint E) = none :=
+  rfl
+
+end EllipticGroupLaw
+
+/-! ### §4.4 (Gap E) — elementary UNCONDITIONAL point-count bounds (weak Hasse).
+
+    Hasse's bound `|#E − (q+1)| ≤ 2√q` is a deep theorem (Frobenius eigenvalues /
+    Tate module) genuinely absent from Mathlib and stays as the named hypothesis
+    `SatisfiesHasse`.  The elementary bounds below — each `x ∈ F_q` admits at most
+    two `y` with `y² = f(x)`, plus the point at infinity — are UNCONDITIONAL:
+    `1 ≤ #E(F_q) ≤ 2q+1`, hence `a_q² ≤ q²`.  This is a true, if weaker, Hasse-type
+    bound; it is the honest unconditional companion to the assumed `SatisfiesHasse`. -/
+
+/-- **At most two `y` for each `x` (UNCONDITIONAL).**  In a field, `y² = c` has at
+most two solutions (the roots of `Y² − c`). -/
+theorem sq_fiber_card_le_two {q : ℕ} [Fact q.Prime] (c : ZMod q) :
+    Fintype.card {y : ZMod q // y ^ 2 = c} ≤ 2 := by
+  classical
+  have hmem : ∀ y : ZMod q, y ^ 2 = c ↔ y ∈ Polynomial.nthRoots 2 c := by
+    intro y; rw [Polynomial.mem_nthRoots (by norm_num)]
+  have hequiv : {y : ZMod q // y ^ 2 = c} ≃ {y : ZMod q // y ∈ Polynomial.nthRoots 2 c} :=
+    Equiv.subtypeEquivRight hmem
+  rw [Fintype.card_congr hequiv]
+  calc Fintype.card {y : ZMod q // y ∈ Polynomial.nthRoots 2 c}
+      = (Polynomial.nthRoots 2 c).toFinset.card := by
+        rw [Fintype.card_subtype]; congr 1; ext y; simp [Multiset.mem_toFinset]
+    _ ≤ Multiset.card (Polynomial.nthRoots 2 c) := Multiset.toFinset_card_le _
+    _ ≤ 2 := Polynomial.card_nthRoots 2 c
+
+/-- `AffinePoint E` is the disjoint union over `x` of the `y`-fibres. -/
+def affineSigmaEquiv {q : ℕ} (E : ShortWeierstrassModel (ZMod q)) :
+    AffinePoint E ≃ Σ x : ZMod q, {y : ZMod q // y ^ 2 = x ^ 3 + E.A * x + E.B} where
+  toFun P := ⟨P.x, P.y, P.equation⟩
+  invFun := fun p => ⟨p.1, p.2.1, p.2.2⟩
+  left_inv := by rintro ⟨x, y, h⟩; rfl
+  right_inv := by rintro ⟨x, y, h⟩; rfl
+
+/-- **Elementary unconditional bound `#affine ≤ 2q`.** -/
+theorem affine_card_le {q : ℕ} [Fact q.Prime] (E : ShortWeierstrassModel (ZMod q)) :
+    Fintype.card (AffinePoint E) ≤ 2 * q := by
+  classical
+  rw [Fintype.card_congr (affineSigmaEquiv E), Fintype.card_sigma]
+  calc ∑ x : ZMod q, Fintype.card {y : ZMod q // y ^ 2 = x ^ 3 + E.A * x + E.B}
+      ≤ ∑ _x : ZMod q, 2 := Finset.sum_le_sum (fun x _ => sq_fiber_card_le_two _)
+    _ = Fintype.card (ZMod q) * 2 := by rw [Finset.sum_const, Finset.card_univ]; ring
+    _ = 2 * q := by rw [ZMod.card]; ring
+
+/-- **Weak Hasse, upper bound (UNCONDITIONAL):** `#E(F_q) ≤ 2q + 1`. -/
+theorem pointCount_le {q : ℕ} [Fact q.Prime] (E : ShortWeierstrassModel (ZMod q)) :
+    pointCount E ≤ 2 * q + 1 := by
+  haveI : NeZero q := ⟨(Fact.out : q.Prime).pos.ne'⟩
+  unfold pointCount ProjectivePoint
+  rw [Fintype.card_option]
+  exact Nat.add_le_add_right (affine_card_le E) 1
+
+/-- **Lower bound (UNCONDITIONAL):** `1 ≤ #E(F_q)` (the point at infinity). -/
+theorem pointCount_pos {q : ℕ} [Fact q.Prime] (E : ShortWeierstrassModel (ZMod q)) :
+    0 < pointCount E := by
+  haveI : NeZero q := ⟨(Fact.out : q.Prime).pos.ne'⟩
+  unfold pointCount ProjectivePoint
+  rw [Fintype.card_option]
+  exact Nat.succ_pos _
+
+/-- The honest UNCONDITIONAL weak-Hasse predicate, the elementary companion to the
+deep, assumed `SatisfiesHasse`. -/
+def SatisfiesWeakHasse {q : ℕ} [NeZero q] (E : ShortWeierstrassModel (ZMod q)) : Prop :=
+  frobeniusTrace E * frobeniusTrace E ≤ (q : ℤ) ^ 2
+
+/-- **Weak Hasse (UNCONDITIONAL):** `a_q² ≤ q²` — proved from the elementary
+point-count bounds, with NO √q / Frobenius input. -/
+theorem weak_hasse {q : ℕ} [Fact q.Prime] (E : ShortWeierstrassModel (ZMod q)) :
+    SatisfiesWeakHasse E := by
+  haveI : NeZero q := ⟨(Fact.out : q.Prime).pos.ne'⟩
+  unfold SatisfiesWeakHasse frobeniusTrace
+  have h1 : (1 : ℤ) ≤ (pointCount E : ℤ) := by exact_mod_cast pointCount_pos E
+  have h2 : (pointCount E : ℤ) ≤ 2 * (q : ℤ) + 1 := by exact_mod_cast pointCount_le E
+  have hq : (0 : ℤ) ≤ (q : ℤ) := Int.natCast_nonneg q
+  nlinarith [h1, h2, hq]
 
 end ShortWeierstrassModel
 
@@ -2531,6 +2899,105 @@ theorem card_eq_count
 
 end ECFiniteFibreModelFor
 
+/-- **Gap D — the genuine elliptic-curve finite-fibre model (DISCHARGES the
+hypothesis).**  Given good reduction realised by the model's nonsingularity
+(`Δ ≠ 0` over `ZMod q`, the well-definedness condition for the group law), the
+`ECFiniteFibreModelFor` is CONSTRUCTED rather than assumed: its `instAddCommGroup`
+is Mathlib's genuine `WeierstrassCurve.Affine.Point` group law transported along
+`Option (AffinePoint) ≃ Point`, and its identity is the point at infinity.  After
+this, `groupOrder_smul_P` / `cofactor_smul_P` are scalar conditions in a *genuine*
+elliptic-curve group. -/
+noncomputable def ECFiniteFibreModelFor.ofEllipticModel {E : WeierstrassCurve ℤ}
+    (C : ECPointCountCertificate E)
+    (hΔ : C.model.toWeierstrass.Δ ≠ 0) :
+    ECFiniteFibreModelFor E C := by
+  haveI : Fact C.q.Prime := ⟨C.hq⟩
+  haveI : C.model.toWeierstrass.IsElliptic :=
+    ShortWeierstrassModel.toWeierstrass_isElliptic C.model hΔ
+  exact
+    { instAddCommGroup := ShortWeierstrassModel.modelAddCommGroup C.model
+      zero_is_infinity := ShortWeierstrassModel.modelAddCommGroup_zero C.model }
+
+/-- Availability of a genuine EC finite-fibre model is now a THEOREM (given the
+model's nonsingularity), not a hypothesis. -/
+theorem ECFiniteFibreModelFor.available_of_elliptic {E : WeierstrassCurve ℤ}
+    (C : ECPointCountCertificate E) (hΔ : C.model.toWeierstrass.Δ ≠ 0) :
+    Nonempty (ECFiniteFibreModelFor E C) :=
+  ⟨ECFiniteFibreModelFor.ofEllipticModel C hΔ⟩
+
+/-! ### Gap D / ITEM 2 — link the certificate's `model` to E's actual reduction.
+
+    `ECPointCountCertificate.model` is otherwise a FREE short model unrelated to
+    `E`, and `ofEllipticModel`'s nonsingularity hypothesis `C.model.Δ ≠ 0` is not
+    connected to `good : goodReductionAt E q` — a HIDDEN assumption.  We close the
+    loop `good reduction → reduced Δ ≠ 0 → IsElliptic → genuine group law`, and add
+    an EXPLICIT link field (a `VariableChange` presenting the model as `E`'s
+    reduction).  Then `C.model.Δ ≠ 0` — hence the finite group model — is a THEOREM
+    of `good` + the link, not a free hypothesis. -/
+
+/-- **`E`'s actual reduction mod `q`** — the genuine base change of `E` to `ZMod q`. -/
+def reductionMod (E : WeierstrassCurve ℤ) (q : ℕ) : WeierstrassCurve (ZMod q) :=
+  E.map (Int.castRingHom (ZMod q))
+
+/-- The reduced discriminant is the reduction of the discriminant. -/
+theorem reductionMod_Δ (E : WeierstrassCurve ℤ) (q : ℕ) :
+    (reductionMod E q).Δ = ((E.Δ : ZMod q)) := by
+  rw [reductionMod, WeierstrassCurve.map_Δ]; simp
+
+/-- **good reduction ⇒ the reduced discriminant is nonzero** (the reduction is
+nonsingular).  No char ≠ 2,3 hypothesis needed. -/
+theorem reductionMod_Δ_ne_zero {E : WeierstrassCurve ℤ} {q : ℕ}
+    (good : goodReductionAt E q) : (reductionMod E q).Δ ≠ 0 := by
+  rw [reductionMod_Δ, Ne, ZMod.intCast_zmod_eq_zero_iff_dvd]; exact good
+
+/-- **good reduction ⇒ `E.reductionMod q` is a genuine elliptic curve.**  Over the
+field `ZMod q`, nonzero discriminant is a unit. -/
+theorem reductionMod_isElliptic {E : WeierstrassCurve ℤ} {q : ℕ} [Fact q.Prime]
+    (good : goodReductionAt E q) : (reductionMod E q).IsElliptic := by
+  rw [WeierstrassCurve.isElliptic_iff]; exact IsUnit.mk0 _ (reductionMod_Δ_ne_zero good)
+
+/-- The genuine Mathlib group law applies to `E`'s actual reduction (uncondi­tionally
+over the field `ZMod q` by Mathlib's affine group law); good reduction additionally
+makes it a *genuine* elliptic curve (`reductionMod_isElliptic`). -/
+theorem reductionMod_point_addCommGroup {E : WeierstrassCurve ℤ} {q : ℕ} [Fact q.Prime] :
+    Nonempty (AddCommGroup (reductionMod E q).toAffine.Point) :=
+  ⟨inferInstance⟩
+
+/-- **The explicit model–reduction link** (closes the hidden assumption): the
+certificate's short model is a presentation of `E`'s reduction via a variable
+change — concrete data the prover supplies, not a silent assumption. -/
+structure ECReducedModelLink {E : WeierstrassCurve ℤ} (C : ECPointCountCertificate E) where
+  varChange : WeierstrassCurve.VariableChange (ZMod C.q)
+  model_eq : C.model.toWeierstrass = varChange • (reductionMod E C.q)
+
+/-- **From the link, the model's discriminant is nonzero — a THEOREM, not a free
+hypothesis.**  The variable change scales `Δ` by the unit `u⁻¹^12`, so the model
+inherits nonsingularity from `E`'s good reduction. -/
+theorem ECReducedModelLink.model_Δ_ne_zero {E : WeierstrassCurve ℤ}
+    {C : ECPointCountCertificate E} (L : ECReducedModelLink C) :
+    C.model.toWeierstrass.Δ ≠ 0 := by
+  haveI : Fact C.q.Prime := ⟨C.hq⟩
+  rw [L.model_eq, WeierstrassCurve.variableChange_Δ]
+  exact mul_ne_zero (pow_ne_zero _ (Units.ne_zero _)) (reductionMod_Δ_ne_zero C.good)
+
+/-- **The link discharges the EC finite-fibre model WITHOUT a free `Δ ≠ 0`
+hypothesis:** good reduction (carried by `C.good`) + the explicit model link ⇒ the
+genuine elliptic-curve group model exists.  This restores the *applicability* of
+the Gap-D group law to `E`'s actual reduction. -/
+theorem ECReducedModelLink.available_finite_model {E : WeierstrassCurve ℤ}
+    {C : ECPointCountCertificate E} (L : ECReducedModelLink C) :
+    Nonempty (ECFiniteFibreModelFor E C) :=
+  ECFiniteFibreModelFor.available_of_elliptic C L.model_Δ_ne_zero
+
+section AxiomAuditItem2
+#print axioms reductionMod_Δ
+#print axioms reductionMod_Δ_ne_zero
+#print axioms reductionMod_isElliptic
+#print axioms reductionMod_point_addCommGroup
+#print axioms ECReducedModelLink.model_Δ_ne_zero
+#print axioms ECReducedModelLink.available_finite_model
+end AxiomAuditItem2
+
 /-- A regularity certificate together with an explicit finite group model for
 the EC fibre. -/
 structure ECRegularityCertificateWithModel
@@ -2580,6 +3047,82 @@ theorem ECStepCertificate.cofactor_smul_ne_zero
     letI : AddCommGroup C.regular.model.Point := C.regular.model.instAddCommGroup
     C.regular.cert.cofactor • C.P ≠ 0 :=
   C.cofactor_smul_P
+
+/-! ### §6 (Gap E) — the UNCONDITIONAL group-theoretic core of the GK step.
+
+    Hasse's bound and the full Goldwasser–Kilian propagation are deep theorems
+    absent from Mathlib (`ShortWeierstrassModel.SatisfiesHasse` and
+    `GoldwasserKilianPropagationTheorem` stay as HONEST named hypotheses — they
+    cannot be bypassed, as the user notes).  But the INDIVIDUAL step's scalar
+    conditions need NO Hasse: in the genuine elliptic-curve group (Gap D), the
+    conditions `[N]P = O`, `[N/ℓ]P ≠ O` force `ℓ ∣ addOrderOf P` (hence `ℓ ∣ #G`)
+    by pure finite-group order arithmetic.  The paper's primality conclusion
+    itself has a genuine, Hasse-free proof through the Lucas backbone
+    (`prime_of_lucasCertificate`); the EC/ECPP layer is an enrichment. -/
+
+/-- **The logical core of Goldwasser–Kilian (UNCONDITIONAL).**  If the large
+prime `ℓ` divides a positive group order `m`, `m ≤ B` (the Hasse bound), and the
+GK bound `B < ℓ` holds, we get a contradiction.  Once Hasse supplies
+`m = #E(F_p) ≤ B` and Gap E supplies `ℓ ∣ m`, this elementary `ℕ` step closes the
+propagation.  Pure arithmetic — no Hasse, no Frobenius. -/
+theorem gk_magnitude_contradiction {m B ℓ : ℕ}
+    (hm : 0 < m) (hdvd : ℓ ∣ m) (hmB : m ≤ B) (hℓB : B < ℓ) : False := by
+  have : ℓ ≤ m := Nat.le_of_dvd hm hdvd
+  omega
+
+/-- Packaged: under the GK bound `B < ℓ` and `ℓ ∣ m` with `m > 0`, the group order
+exceeds the Hasse bound `B` — impossible once Hasse holds. -/
+theorem gk_bound_lt_card {m B ℓ : ℕ} (hm : 0 < m) (hdvd : ℓ ∣ m) (hℓB : B < ℓ) :
+    B < m :=
+  lt_of_lt_of_le hℓB (Nat.le_of_dvd hm hdvd)
+
+/-- **Unconditional GK order lemma (no Hasse).**  `n • P = 0`, `c • P ≠ 0`,
+`n = c·ℓ`, `ℓ` prime ⟹ `ℓ ∣ addOrderOf P`: the large prime divides the order of
+the certified point.  Pure order arithmetic. -/
+theorem largePrime_dvd_addOrderOf {G : Type*} [AddGroup G] {P : G} {n c ℓ : ℕ}
+    (hℓ : ℓ.Prime) (hn : n = c * ℓ) (h1 : n • P = 0) (h2 : c • P ≠ 0) :
+    ℓ ∣ addOrderOf P := by
+  have hd_dvd_n : addOrderOf P ∣ n := addOrderOf_dvd_iff_nsmul_eq_zero.mpr h1
+  have hd_ndvd_c : ¬ addOrderOf P ∣ c :=
+    fun h => h2 (addOrderOf_dvd_iff_nsmul_eq_zero.mp h)
+  by_contra hℓ_ndvd
+  have hcop : (addOrderOf P).Coprime ℓ := ((hℓ.coprime_iff_not_dvd).mpr hℓ_ndvd).symm
+  exact hd_ndvd_c (hcop.dvd_of_dvd_mul_right (hn ▸ hd_dvd_n))
+
+/-- **Lagrange form (no Hasse).**  Under the GK scalar conditions, the large
+prime divides the group order `#G` — the exact divisibility Hasse later turns
+into primality, but which is itself unconditional. -/
+theorem largePrime_dvd_card_of_step {G : Type*} [AddGroup G] [Fintype G] {P : G}
+    {n c ℓ : ℕ} (hℓ : ℓ.Prime) (hn : n = c * ℓ) (h1 : n • P = 0) (h2 : c • P ≠ 0) :
+    ℓ ∣ Fintype.card G :=
+  (largePrime_dvd_addOrderOf hℓ hn h1 h2).trans addOrderOf_dvd_card
+
+/-- The scalar condition `[n]P = O` is genuinely checkable: it is exactly
+`ord(P) ∣ n` in the genuine group. -/
+theorem smul_eq_zero_iff_addOrderOf_dvd {G : Type*} [AddGroup G] (P : G) (n : ℕ) :
+    n • P = 0 ↔ addOrderOf P ∣ n :=
+  addOrderOf_dvd_iff_nsmul_eq_zero.symm
+
+/-- **The GK step's point-order divisibility, in the GENUINE EC group (Gap D),
+UNCONDITIONALLY.**  The certified large prime divides the order of the certified
+point `P` — verified by group arithmetic alone, NO Hasse.  (The remaining step,
+`ℓ ∣ #E(F_q)` together with the Hasse magnitude bound implying `X` prime, is the
+content of `GoldwasserKilianPropagationTheorem`.) -/
+theorem ECStepCertificate.largePrime_dvd_addOrderOf_P
+    {E : WeierstrassCurve ℤ} {X : ℕ} (C : ECStepCertificate E X)
+    (hℓ : C.regular.cert.largePrime.Prime) :
+    letI : AddCommGroup C.regular.model.Point := C.regular.model.instAddCommGroup
+    C.regular.cert.largePrime ∣ addOrderOf C.P := by
+  letI : AddCommGroup C.regular.model.Point := C.regular.model.instAddCommGroup
+  exact largePrime_dvd_addOrderOf hℓ C.regular.cert.groupOrder_eq_cofactor_mul
+    C.groupOrder_smul_P C.cofactor_smul_P_ne_zero
+
+/-- **Unconditional primality backbone (NO Hasse, NO GK).**  The paper's
+primality conclusion has a genuine proof path through the Lucas certificate,
+fully proved by `lucas_primality` (`LucasCertificate.sound`); the EC/ECPP layer
+is an enrichment, not on the critical path to the primality theorem. -/
+theorem prime_of_lucasCertificate {X : ℕ} (c : LucasCertificate X) : X.Prime :=
+  c.sound
 
 /-- The external large theorem missing from Mathlib: a GK step propagates
 primality from the large factor to the candidate.  It is a theorem interface,
@@ -2929,8 +3472,31 @@ section AxiomAuditB
 #print axioms ECFiniteFibreModelFor.card_eq
 #print axioms ECRegularityCertificateWithModel.group_card_eq_order
 #print axioms GKLargePrimeBound
+-- §6 Gap-D genuine elliptic-curve group law (discharges ECFiniteFibreModelFor)
+#print axioms ShortWeierstrassModel.toWeierstrass_equation_iff
+#print axioms ShortWeierstrassModel.affineEquiv
+#print axioms ShortWeierstrassModel.toWeierstrass_isElliptic
+#print axioms ShortWeierstrassModel.projectivePointEquivPoint
+#print axioms ShortWeierstrassModel.modelAddCommGroup
+#print axioms ShortWeierstrassModel.modelAddCommGroup_zero
+#print axioms ECFiniteFibreModelFor.ofEllipticModel
+#print axioms ECFiniteFibreModelFor.available_of_elliptic
 #print axioms ECStepCertificate.groupOrder_smul_eq_zero
 #print axioms ECStepCertificate.cofactor_smul_ne_zero
+-- §6 Gap-E unconditional GK group-core (no Hasse) + Lucas backbone
+#print axioms largePrime_dvd_addOrderOf
+#print axioms largePrime_dvd_card_of_step
+#print axioms smul_eq_zero_iff_addOrderOf_dvd
+#print axioms ECStepCertificate.largePrime_dvd_addOrderOf_P
+#print axioms prime_of_lucasCertificate
+-- §4.4 Gap-E magnitude engine + elementary weak-Hasse (unconditional)
+#print axioms gk_magnitude_contradiction
+#print axioms gk_bound_lt_card
+#print axioms ShortWeierstrassModel.sq_fiber_card_le_two
+#print axioms ShortWeierstrassModel.affine_card_le
+#print axioms ShortWeierstrassModel.pointCount_le
+#print axioms ShortWeierstrassModel.pointCount_pos
+#print axioms ShortWeierstrassModel.weak_hasse
 #print axioms GoldwasserKilianPropagationTheorem
 #print axioms ECStepCertificate.sound_of_GK
 #print axioms ECPPChain.sound
@@ -4515,6 +5081,242 @@ localization exactness/unit calculation for the true stalk.
 def LocalizedFailureStalkThicknessAvailable {p M k : ℕ} (hp : p.Prime) : Prop :=
   Nonempty (LocalizedFailureStalkThicknessCertificate (p := p) (M := M) (k := k) hp)
 
+/-! ### F1 (Gap F) — BUG FIX: intersection ↔ lcm ↔ max  vs  sum ↔ gcd ↔ min.
+
+    `LocalizedFailureStalkThicknessCertificate.intersection_eq_thickness` equates
+    the INTERSECTION `(M)·ℤ_P ⊓ (pᵏ)·ℤ_P` with the thickness ideal
+    `(p^localThickness) = (p^min(v_p M, k))`.  But the intersection is the **lcm**
+    ideal (`(p^max(v_p M, k))`, see `equalizer_ideal_inter` for the ℤ-level
+    `⊓ = lcm`), so the original certificate is UN-FILLABLE when `v_p(M) ≠ k`
+    (`max ≠ min`).  PART A's L2 note already records `gcd→min, lcm→max`; this
+    block applies that correction to the localized stalk.
+
+    The consistent statement — the common-residue-fibre / `gcd` / `min` /
+    thickness side (matching `FailureStalkModel = ZMod (gcd …)`) — uses the
+    **sum** `⊔`, and is proved UNCONDITIONALLY: `Ideal.map` commutes with `⊔` for
+    any ring hom, and `span{M} ⊔ span{pᵏ} = span{gcd} = span{p^min}` in the PID
+    `ℤ`.  No DVR / localization-flatness needed. -/
+
+/-- Sum of two principal ideals in the Bézout domain `ℤ` is the gcd ideal. -/
+theorem span_pair_sup (x y : ℤ) :
+    Ideal.span {x} ⊔ Ideal.span {y} = Ideal.span {gcd x y} := by
+  rw [_root_.span_gcd, Ideal.span_insert]
+
+/-- The `ℤ`-gcd of `M` and `pᵏ` is `p^localThickness` (the `min` exponent). -/
+theorem int_gcd_eq_pPow {p : ℕ} (hp : p.Prime) {M : ℕ} (hM : M ≠ 0) (k : ℕ) :
+    gcd (M : ℤ) ((p : ℤ) ^ k) = (p : ℤ) ^ localThickness M p k := by
+  have h1 : ((p : ℤ) ^ k) = ((p ^ k : ℕ) : ℤ) := by push_cast; ring
+  rw [h1, ← Int.coe_gcd, Int.gcd_natCast_natCast, gcd_eq_prime_pow_localThickness hp hM k]
+  push_cast; ring
+
+/-- **The corrected `ℤ`-level thickness identity (UNCONDITIONAL).**
+`(M) ⊔ (pᵏ) = (p^localThickness)` — the gcd / `min` / common-residue-fibre side
+(contrast `equalizer_ideal_inter`: `(M) ⊓ (pᵏ) = (lcm) = (p^max)`). -/
+theorem span_sup_eq_thickness {p : ℕ} (hp : p.Prime) {M : ℕ} (hM : M ≠ 0) (k : ℕ) :
+    Ideal.span {(M : ℤ)} ⊔ Ideal.span {((p : ℤ) ^ k)} =
+      Ideal.span {((p : ℤ) ^ localThickness M p k)} := by
+  rw [span_pair_sup, int_gcd_eq_pPow hp hM k]
+
+/-- The localized **sum** stalk ideal `(M)·ℤ_P ⊔ (pᵏ)·ℤ_P` — the corrected,
+fillable counterpart of `FailureStalkLocalizedIdeal` (which is the `⊓`/lcm side). -/
+abbrev FailureStalkLocalizedSumIdeal (P : PrimeSpectrum ℤ) (M p k : ℕ) :
+    Ideal (ZLocalAt P) :=
+  localizedPrincipalIdeal P (M : ℤ) ⊔ localizedPrincipalIdeal P ((p : ℤ) ^ k)
+
+/-- **The corrected localized stalk identity (UNCONDITIONAL).**
+`(M)·ℤ_P ⊔ (pᵏ)·ℤ_P = (p^localThickness)·ℤ_P`.  Localization (`Ideal.map`)
+commutes with `⊔` for any ring hom, reducing to `span_sup_eq_thickness`. -/
+theorem failure_stalk_sum_eq_thickness (P : PrimeSpectrum ℤ) {p : ℕ} (hp : p.Prime)
+    {M : ℕ} (hM : M ≠ 0) (k : ℕ) :
+    FailureStalkLocalizedSumIdeal P M p k =
+      localizedPrincipalIdeal P ((p : ℤ) ^ localThickness M p k) := by
+  unfold FailureStalkLocalizedSumIdeal localizedPrincipalIdeal
+  rw [← Ideal.map_sup, span_sup_eq_thickness hp hM k]
+
+/-- **The corrected stalk certificate** (sum / gcd / thickness), with its field
+provable rather than assumed. -/
+structure LocalizedFailureStalkSumThicknessCertificate (P : PrimeSpectrum ℤ)
+    {p M k : ℕ} (hp : p.Prime) (hM : M ≠ 0) : Prop where
+  sum_eq_thickness :
+    FailureStalkLocalizedSumIdeal P M p k =
+      localizedPrincipalIdeal P ((p : ℤ) ^ localThickness M p k)
+
+/-- **The corrected certificate is UNCONDITIONALLY available** — a theorem, not a
+hypothesis: the genuine localization computation discharges it.  (Contrast the
+original `LocalizedFailureStalkThicknessAvailable`, whose intersection-based
+field is un-fillable for `v_p(M) ≠ k`.) -/
+theorem localizedFailureStalkSumThickness_available (P : PrimeSpectrum ℤ)
+    {p M k : ℕ} (hp : p.Prime) (hM : M ≠ 0) :
+    Nonempty (LocalizedFailureStalkSumThicknessCertificate P (k := k) hp hM) :=
+  ⟨⟨failure_stalk_sum_eq_thickness P hp hM k⟩⟩
+
+/-! ### F1 (Gap F) / ITEM 1 — the OLD `intersection_eq_thickness` is UN-FILLABLE.
+
+    We enshrine the bug as a theorem rather than leaving a vacuously-satisfiable
+    hypothesis in the certificate.  `ℤ_(p)` is a DVR with uniformizer `p`, so
+    `(p²)·ℤ_(p) ⊊ (p¹)·ℤ_(p)` strictly.  Hence for `M = p, k = 2` the claimed
+    `(M)·ℤ_P ⊓ (pᵏ)·ℤ_P = (p^min)·ℤ_P` is FALSE (the intersection is the `lcm`/`max`
+    ideal `(p²)`, the thickness the `gcd`/`min` ideal `(p¹)`).  Any theorem resting
+    on `LocalizedFailureStalkThicknessCertificate` is therefore vacuous; the honest,
+    fillable replacement is `LocalizedFailureStalkSumThicknessCertificate` (sum). -/
+
+/-- **`p` is not divisible by `p²` in `ℤ_(p)`** (the uniformizer has valuation 1):
+`algebraMap p ∈ (p)·ℤ_P` but `∉ (p²)·ℤ_P`. -/
+theorem algebraMap_p_not_mem_localized_p2 {p : ℕ} (hp : p.Prime) :
+    (algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) (p : ℤ)) ∉
+      localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp) ((p : ℤ) ^ 2) := by
+  intro hmem
+  rw [localizedPrincipalIdeal, Ideal.map_span, Set.image_singleton,
+    Ideal.mem_span_singleton] at hmem
+  obtain ⟨c, hc⟩ := hmem
+  obtain ⟨⟨a, s⟩, hs⟩ :=
+    IsLocalization.surj (Spt1SheafFull.pointOfPrime hp).asIdeal.primeCompl c
+  have hp0 : (p : ℤ) ≠ 0 := by exact_mod_cast hp.pos.ne'
+  set f := algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) with hf
+  have hkey : f ((p : ℤ) * (s : ℤ)) = f (((p : ℤ) ^ 2) * a) := by
+    rw [map_mul, map_mul, hc, mul_assoc, hs]
+  have hinj : Function.Injective f :=
+    IsLocalization.injective (ZLocalAt (Spt1SheafFull.pointOfPrime hp))
+      (Ideal.primeCompl_le_nonZeroDivisors (Spt1SheafFull.pointOfPrime hp).asIdeal)
+  have heqZ : (p : ℤ) * (s : ℤ) = ((p : ℤ) ^ 2) * a := hinj hkey
+  have hcancel : (s : ℤ) = (p : ℤ) * a := by
+    have h2 : (p : ℤ) * (s : ℤ) = (p : ℤ) * ((p : ℤ) * a) := by rw [heqZ]; ring
+    exact mul_left_cancel₀ hp0 h2
+  exact s.2 (Ideal.mem_span_singleton.mpr ⟨a, hcancel⟩)
+
+/-- `localThickness p p 2 = 1` — the buggy thickness exponent at `M = p, k = 2`. -/
+theorem localThickness_p_p_two {p : ℕ} (hp : p.Prime) : localThickness p p 2 = 1 := by
+  unfold localThickness
+  rw [hp.factorization_self]; decide
+
+/-- **The OLD intersection↔thickness equality is FALSE at `M = p, k = 2`.**
+The localized intersection `(p)·ℤ_P ⊓ (p²)·ℤ_P` is the `lcm`/`max` ideal `(p²)·ℤ_P`,
+strictly smaller than the thickness `(p^min(1,2))·ℤ_P = (p)·ℤ_P`. -/
+theorem failureStalk_inter_ne_thickness_p_2 {p : ℕ} (hp : p.Prime) :
+    FailureStalkLocalizedIdeal (Spt1SheafFull.pointOfPrime hp) p p 2
+      ≠ FailureStalkLocalizedThicknessIdeal hp p 2 := by
+  intro heq
+  have hmemR : algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) (p : ℤ) ∈
+      FailureStalkLocalizedThicknessIdeal hp p 2 := by
+    show algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) (p : ℤ) ∈
+      localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp)
+        ((p : ℤ) ^ localThickness p p 2)
+    rw [localThickness_p_p_two hp, pow_one, localizedPrincipalIdeal, Ideal.map_span,
+        Set.image_singleton]
+    exact Ideal.mem_span_singleton_self _
+  rw [← heq] at hmemR
+  have h2 : algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) (p : ℤ) ∈
+      localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp) ((p : ℤ) ^ 2) :=
+    (Ideal.mem_inf.mp hmemR).2
+  exact algebraMap_p_not_mem_localized_p2 hp h2
+
+/-- **The original certificate is UN-FILLABLE** (`M = p, k = 2`): no
+`LocalizedFailureStalkThicknessCertificate` can exist, because its sole field is
+the false intersection↔thickness equality.  (Use the SUM certificate instead.) -/
+theorem localizedFailureStalkThickness_unfillable {p : ℕ} (hp : p.Prime) :
+    ¬ Nonempty (LocalizedFailureStalkThicknessCertificate (p := p) (M := p) (k := 2) hp) := by
+  rintro ⟨C⟩
+  exact failureStalk_inter_ne_thickness_p_2 hp C.intersection_eq_thickness
+
+/-! #### Kernel / fibre DUALITY (⊓/lcm/max vs ⊔/gcd/min) at the prime-power level. -/
+
+/-- **Kernel side (⊓ / lcm / max).**  The equalizer-kernel ideal of two prime
+powers has exponent `max`. -/
+theorem kernel_pPow_inter {p : ℕ} (j k : ℕ) :
+    Ideal.span {(p : ℤ) ^ j} ⊓ Ideal.span {(p : ℤ) ^ k}
+      = Ideal.span {(p : ℤ) ^ max j k} := by
+  ext a
+  simp only [Ideal.mem_inf, Ideal.mem_span_singleton]
+  constructor
+  · rintro ⟨h1, h2⟩
+    rcases le_total j k with hjk | hjk
+    · rw [max_eq_right hjk]; exact h2
+    · rw [max_eq_left hjk]; exact h1
+  · intro h
+    exact ⟨dvd_trans (pow_dvd_pow _ (le_max_left j k)) h,
+           dvd_trans (pow_dvd_pow _ (le_max_right j k)) h⟩
+
+/-- **Fibre side (⊔ / gcd / min).**  The common-residue-fibre ideal of two prime
+powers has exponent `min` — the corrected thickness side. -/
+theorem fibre_pPow_sup {p : ℕ} (j k : ℕ) :
+    Ideal.span {(p : ℤ) ^ j} ⊔ Ideal.span {(p : ℤ) ^ k}
+      = Ideal.span {(p : ℤ) ^ min j k} := by
+  have hsup : Ideal.span {(p : ℤ) ^ j} ⊔ Ideal.span {(p : ℤ) ^ k}
+      = Ideal.span {gcd ((p : ℤ) ^ j) ((p : ℤ) ^ k)} := by
+    rw [_root_.span_gcd, Ideal.span_insert]
+  rw [hsup, Ideal.span_singleton_eq_span_singleton]
+  rcases le_total j k with hjk | hjk
+  · rw [min_eq_left hjk]
+    exact associated_of_dvd_dvd (gcd_dvd_left _ _) (dvd_gcd dvd_rfl (pow_dvd_pow _ hjk))
+  · rw [min_eq_right hjk]
+    exact associated_of_dvd_dvd (gcd_dvd_right _ _) (dvd_gcd (pow_dvd_pow _ hjk) dvd_rfl)
+
+/-- **The duality is genuine:** kernel exponent `max` and fibre exponent `min`
+DIFFER exactly when `j ≠ k` — the precise content of the original bug. -/
+theorem kernel_ne_fibre_of_ne {p : ℕ} (hp : p.Prime) {j k : ℕ} (hjk : j ≠ k) :
+    Ideal.span {(p : ℤ) ^ max j k} ≠ Ideal.span {(p : ℤ) ^ min j k} := by
+  intro heq
+  rw [Ideal.span_singleton_eq_span_singleton] at heq
+  have hp1 : ¬ IsUnit (p : ℤ) := (Nat.prime_iff_prime_int.mp hp).not_unit
+  have hmin : min j k < max j k := min_lt_max.mpr hjk
+  have hp0 : (p : ℤ) ≠ 0 := by exact_mod_cast hp.pos.ne'
+  obtain ⟨u, hu⟩ := heq.symm
+  have hsplit : (p : ℤ) ^ max j k
+      = (p : ℤ) ^ min j k * (p : ℤ) ^ (max j k - min j k) := by
+    rw [← pow_add]; congr 1; omega
+  rw [hsplit] at hu
+  have hpow : (p : ℤ) ^ min j k * (u : ℤ)
+      = (p : ℤ) ^ min j k * (p : ℤ) ^ (max j k - min j k) := by rw [hu]
+  have hcancel : (u : ℤ) = (p : ℤ) ^ (max j k - min j k) :=
+    mul_left_cancel₀ (pow_ne_zero _ hp0) hpow
+  have huu : IsUnit ((p : ℤ) ^ (max j k - min j k)) := hcancel ▸ u.isUnit
+  rw [isUnit_pow_iff (by omega)] at huu
+  exact hp1 huu
+
+/-- **The DVR strict inclusion** `(p²)·ℤ_(p) ⊊ (p¹)·ℤ_(p)` (kernel ⊊ fibre at
+`j=1,k=2`): the precise reason the intersection cannot equal the thickness. -/
+theorem localized_pPow_strictMono {p : ℕ} (hp : p.Prime) :
+    localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp) ((p : ℤ) ^ 2)
+      < localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp) ((p : ℤ) ^ 1) := by
+  rw [lt_iff_le_and_ne]
+  refine ⟨?_, ?_⟩
+  · apply Ideal.map_mono
+    rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, Ideal.mem_span_singleton]
+    exact ⟨(p : ℤ), by ring⟩
+  · intro heq
+    have hmem : algebraMap ℤ (ZLocalAt (Spt1SheafFull.pointOfPrime hp)) (p : ℤ) ∈
+        localizedPrincipalIdeal (Spt1SheafFull.pointOfPrime hp) ((p : ℤ) ^ 1) := by
+      rw [localizedPrincipalIdeal, Ideal.map_span, Set.image_singleton, pow_one]
+      exact Ideal.mem_span_singleton_self _
+    rw [← heq] at hmem
+    exact algebraMap_p_not_mem_localized_p2 hp hmem
+
+/-- **HEADLINE CORRECTION (Gap F).**  The paper's stalk computation conflates the
+equalizer kernel `(M)·ℤ_P ⊓ (pᵏ)·ℤ_P` (= lcm, exponent `max`) with the thickness
+`(p^min)·ℤ_P`.  That identity is FALSE (here at `M=p,k=2`); the TRUE statement is
+the common-residue-fibre identity with the SUM `⊔` (= gcd = `min`),
+`failure_stalk_sum_eq_thickness`.  Reported as a correction, not "conditional". -/
+theorem headline_F_intersection_thickness_correction {p : ℕ} (hp : p.Prime) :
+    FailureStalkLocalizedIdeal (Spt1SheafFull.pointOfPrime hp) p p 2
+      ≠ FailureStalkLocalizedThicknessIdeal hp p 2 :=
+  failureStalk_inter_ne_thickness_p_2 hp
+
+section AxiomAuditGapF
+#print axioms span_pair_sup
+#print axioms int_gcd_eq_pPow
+#print axioms span_sup_eq_thickness
+#print axioms failure_stalk_sum_eq_thickness
+#print axioms localizedFailureStalkSumThickness_available
+#print axioms algebraMap_p_not_mem_localized_p2
+#print axioms failureStalk_inter_ne_thickness_p_2
+#print axioms localizedFailureStalkThickness_unfillable
+#print axioms kernel_pPow_inter
+#print axioms fibre_pPow_sup
+#print axioms kernel_ne_fibre_of_ne
+#print axioms localized_pPow_strictMono
+#print axioms headline_F_intersection_thickness_correction
+end AxiomAuditGapF
+
 /-- Corollary 2.12, model form: away from the support (`gcd = 1`) the failure
 stalk is the zero object, expressed as subsingletonness. -/
 theorem cor2_12_failure_vanishes_on_open_complement (M p k : ℕ)
@@ -4664,6 +5466,24 @@ def specPadicBaseChange (p : ℕ) [Fact p.Prime] :
   underlyingMap := specZPadicIntToSpecZ p
   map_eq_comap := rfl
   continuous_underlying := continuous_specZPadicIntToSpecZ p
+
+/-! ### F2 (Gap G) — affine `Spec(ℤ_p)` base change: the UNCONDITIONAL part. -/
+
+/-- **The affine `Spec(ℤ_p) → Spec(ℤ)` base change is genuinely available** — a
+theorem, not a hypothesis (strategy (a): the affine/algebraic level needs no `Spf`). -/
+theorem specPadicBaseChange_available (p : ℕ) [Fact p.Prime] :
+    Nonempty (SpecPadicBaseChange p) :=
+  ⟨specPadicBaseChange p⟩
+
+/-- **The base-change ring map `ℤ → ℤ_p` is injective (faithful, UNCONDITIONAL).**
+So the affine completion does not collapse the obstruction data; together with the
+arithmetic invariants (`gcd_eq_prime_pow_localThickness`, `equalizer_ideal_inter`,
+the Gap-F localized-stalk identities) this is the affine form of the paper's
+"stability under completion".  The genuine formal-scheme `Spf` part remains the
+documented long-term interface `SpfPadicBaseChangeInterface` (no silent axiom). -/
+theorem zToZPadicInt_injective (p : ℕ) [Fact p.Prime] :
+    Function.Injective (zToZPadicInt p) :=
+  (zToZPadicInt p).injective_int
 
 /--
 Formal `Spf(ℤ_p)` base change is intentionally exposed as an interface:
@@ -5518,6 +6338,46 @@ noncomputable def torOne_crt_directSum_addEquiv_of_localCyclicity {M N : ℕ}
   torOne_crt_directSum_addEquiv_of_isAddCyclic
     (M := M) (N := N) C hN hM hlocal
 
+/-! ### D3 (Gap H) — local cyclicity DISCHARGED ⇒ Theorem 4.20 group iso UNCONDITIONAL. -/
+
+/-- **D3 local cyclicity availability is now a THEOREM.**  Every prime-power
+component kernel is cyclic (subgroup of the cyclic `ZMod (qᵛ)`). -/
+theorem localPrimePowerKernelCyclicityAvailable_proved (M N : ℕ) :
+    LocalPrimePowerKernelCyclicityAvailable M N := by
+  intro q
+  haveI : NeZero ((q : ℕ) ^ N.factorization (q : ℕ)) :=
+    ⟨pow_ne_zero _ (Nat.prime_of_mem_primeFactors q.2).ne_zero⟩
+  exact kerMulLeft_isAddCyclic _ M
+
+/-- **Theorem 4.20, group form, UNCONDITIONAL.**  `ker(·M : ZMod N)` decomposes as
+the primewise direct sum — no cyclicity hypothesis. -/
+noncomputable def kerMulLeft_crt_directSum_addEquiv_unconditional {N M : ℕ}
+    (hN : N ≠ 0) (hM : M ≠ 0) :
+    (AddMonoidHom.mulLeft (M : ZMod N)).ker ≃+ primewiseTorDirectSum M N :=
+  kerMulLeft_crt_directSum_addEquiv_of_localCyclicity hN hM
+    (localPrimePowerKernelCyclicityAvailable_proved M N)
+
+/-- **Theorem 4.20 for the GENUINE derived `Tor`, UNCONDITIONAL** (Gap C's genuine
+`tor1_obj_iso` + Gap H's cyclicity): `Tor₁(ℤ/M, ℤ/N) ≃+ ⊕_q (primewise factors)`,
+with NO `TorKernelComparison` and NO cyclicity hypothesis. -/
+noncomputable def torOne_crt_directSum_addEquiv_unconditional {M N : ℕ}
+    [NeZero M] [NeZero N] (hN : N ≠ 0) (hM : M ≠ 0) :
+    ((Tor (zmodObj M) 1).obj (zmodObj N)) ≃+ primewiseTorDirectSum M N :=
+  torOne_crt_directSum_addEquiv_of_localCyclicity (torKernelComparison_genuine M N) hN hM
+    (localPrimePowerKernelCyclicityAvailable_proved M N)
+
+section AxiomAuditGapH
+#print axioms kerMulLeft_isAddCyclic
+#print axioms kerMulLeft_explicitCyclicityAvailable_proved
+#print axioms kerMulLeft_addEquiv_unconditional
+#print axioms localPrimePowerKernelCyclicityAvailable_proved
+#print axioms kerMulLeft_crt_directSum_addEquiv_unconditional
+#print axioms torOne_crt_directSum_addEquiv_unconditional
+-- §F2 Gap-G affine base change (unconditional part)
+#print axioms specPadicBaseChange_available
+#print axioms zToZPadicInt_injective
+end AxiomAuditGapH
+
 section AxiomAuditGapC
 -- §4C Gap-C genuine derived-functor Tor (discharges `TorKernelComparison`)
 #print axioms ker_mulLeft_addEquiv
@@ -5536,6 +6396,28 @@ section AxiomAuditGapC
 end AxiomAuditGapC
 
 end Spt1DerivedTor
+
+/-! ### ITEM 6 — `obstructionFree ⟺ genuine Tor₁ vanishing`.
+
+    The missing bridge: `obstructionFree` (defined via gcd / the kernel surrogate)
+    is here tied DIRECTLY to subsingletonness of the genuine derived-functor object
+    `Tor₁(ℤ/M, ℤ/pᵏ)`, through the genuine object iso `tor1_obj_iso`. -/
+
+/-- **Obstruction-freeness ⟺ the genuine derived `Tor₁` object is trivial.**
+Composes `obstructionFree_iff_subsingleton_fiber` with the genuine object iso
+`Tor₁(ℤ/M, ℤ/pᵏ) ≅ ℤ/gcd(M,pᵏ)` (`tor1_obj_iso`). -/
+theorem obstructionFree_iff_genuine_torOne_subsingleton
+    (M p k : ℕ) [NeZero M] [NeZero (p ^ k)] :
+    obstructionFree M p k ↔
+      Subsingleton ((Spt1DerivedTor.Tor (Spt1DerivedTor.zmodObj M) 1).obj
+        (Spt1DerivedTor.zmodObj (p ^ k))) := by
+  rw [obstructionFree_iff_subsingleton_fiber]
+  exact (Equiv.subsingleton_congr
+    (Spt1DerivedTor.tor1_obj_iso M (p ^ k)).toLinearEquiv.toEquiv).symm
+
+section AxiomAuditItem6
+#print axioms obstructionFree_iff_genuine_torOne_subsingleton
+end AxiomAuditItem6
 
 /-- Theorem 4.1, actual derived-functor hook: `Tor` is the left-derived tensor functor. -/
 theorem thm4_1_actualTor_is_leftDerived (N : Spt1DerivedTor.ModZ) (n : ℕ) :
@@ -6518,7 +7400,13 @@ theorem padicLog1p_congr_self_of_pow {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
 /-- The DEEP analytic input, isolated as a named `Prop` (exactly as the file
 treats `MtALogInput` / the `PadicLogAPI` interface): additivity of the p-adic
 logarithm on the convergence disk.  Summability — the convergence prerequisite —
-is proved UNCONDITIONALLY above (`padicLogSeries_summable`). -/
+is proved UNCONDITIONALLY above (`padicLogSeries_summable`).
+
+**ITEM 5 (OPTIONAL — not used by the paper).**  Equation (4) works mod `pᵏ`, and
+`eq4_padic_congr` discharges it UNCONDITIONALLY (no `PadicLogAdditive`,
+`PadicLogAPI`, or `MtALogInput`).  This `Prop` is therefore NOT load-bearing — it
+is kept only as the honest name for the genuinely deep exact-additivity statement
+(see `eq4_padic_congr_discharges_without_additivity`). -/
 def PadicLogAdditive : Prop :=
   ∀ x y : ℚ_[p], ‖x‖ < 1 → ‖y‖ < 1 →
     padicLog1p (padicStar x y) = padicLog1p x + padicLog1p y
@@ -6665,6 +7553,16 @@ theorem eq4_padic_congr {M A m n k : ℕ} (a : ℕ → ℤ)
       ≤ (p : ℝ) ^ (-(k : ℤ)) :=
   padic_congr_of_boundOrZero hk (Hk_imp_uexp_val a hHk)
 
+/-- **ITEM 5 — Equation (4) is discharged WITHOUT exact additivity.**  Re-export of
+`eq4_padic_congr` recording explicitly that the genuine `ℚ_[p]`-logarithm congruence
+needs NO `PadicLogAdditive` / `PadicLogAPI` / `MtALogInput` hypothesis: the mod-`pᵏ`
+bound is unconditional.  Hence `PadicLogAdditive` is OPTIONAL scaffolding. -/
+theorem eq4_padic_congr_discharges_without_additivity {M A m n k : ℕ} (a : ℕ → ℤ)
+    (hk : 1 ≤ k) (hHk : Hk p M A m n k (Yexp A p n)) :
+    ‖padicLog1p ((uexp M A m p n a : ℚ_[p])) - ((uexp M A m p n a : ℚ_[p]))‖
+      ≤ (p : ℝ) ^ (-(k : ℤ)) :=
+  eq4_padic_congr a hk hHk
+
 end PadicLog
 
 section AxiomAuditE
@@ -6702,6 +7600,7 @@ section AxiomAuditE
 #print axioms PadicLog.cast_norm_le_pow
 #print axioms PadicLog.padic_congr_of_boundOrZero
 #print axioms PadicLog.eq4_padic_congr
+#print axioms PadicLog.eq4_padic_congr_discharges_without_additivity
 -- mod-pᵏ multiplicativity (UNCONDITIONAL — the paper's actual need)
 #print axioms PadicLog.padicStar_norm_le
 #print axioms PadicLog.starPow_norm_le
@@ -7614,6 +8513,91 @@ def obstructionIndexAfterDropping (_drop : DroppedLayer) (M p k : ℕ) : ℕ :=
 /-- Prop 7.9, monotonicity: after deleting any one detector predicate, the
 common-fibre obstruction index is not smaller. -/
 theorem prop7_9_obstruction_not_decrease_after_dropping
+    (drop : DroppedLayer) (M p k : ℕ) :
+    Nat.gcd M (p ^ k) ≤ obstructionIndexAfterDropping drop M p k := by
+  exact le_rfl
+
+/-- Prop 7.9, sharp form: deleting a predicate leaves the common-fibre
+obstruction index equal to the original one. -/
+theorem prop7_9_obstruction_eq_after_dropping
+    (drop : DroppedLayer) (M p k : ℕ) :
+    obstructionIndexAfterDropping drop M p k = Nat.gcd M (p ^ k) :=
+  rfl
+
+/-- The failure stalk model is unchanged by deleting one detector predicate. -/
+abbrev FailureStalkAfterDropping (drop : DroppedLayer) (M p k : ℕ) : Type :=
+  ZMod (obstructionIndexAfterDropping drop M p k)
+
+/-- Prop 7.9, fibre form: deletion does not change the common failure fibre. -/
+noncomputable def prop7_9_failure_fibre_equiv_after_dropping
+    (drop : DroppedLayer) (M p k : ℕ) :
+    FailureStalkAfterDropping drop M p k ≃+ Spt1.FailureStalkModel M p k :=
+  AddEquiv.refl _
+
+section AxiomAuditE2
+#print axioms lemma6_1_pairwise_independence
+#print axioms thm6_2_terminal_amalgam
+#print axioms Γ_all_to_num
+#print axioms Γ_all_to_mod
+#print axioms Γ_all_to_padic
+#print axioms Γ_all_to_EC
+#print axioms PrincipalOpenCech.D
+#print axioms PrincipalOpenCech.D_mem_principalOpens
+#print axioms PrincipalOpenCech.TopPrincipalCover
+#print axioms PrincipalOpenCech.TopPrincipalCover.mem_principalOpens
+#print axioms PrincipalOpenCech.TopPrincipalCover.toCechCover
+#print axioms PrincipalOpenCech.ΓGate
+#print axioms PrincipalOpenCech.PrincipalGateLocalSections
+#print axioms PrincipalOpenCech.pointwiseLocalFamily
+#print axioms PrincipalOpenCech.PrincipalGateCompatible
+#print axioms PrincipalOpenCech.PrincipalGateGluesTo
+#print axioms PrincipalOpenCech.gluePrincipalGateSections
+#print axioms PrincipalOpenCech.gluePrincipalGateSections_spec
+#print axioms PrincipalOpenCech.principalOpen_item7_gateLocalData
+#print axioms PrincipalOpenCech.FDataLocalSections
+#print axioms PrincipalOpenCech.restrictGlobalFDataToPrincipal
+#print axioms PrincipalOpenCech.FDataCompatible
+#print axioms PrincipalOpenCech.FDataGluesTo
+#print axioms PrincipalOpenCech.restrictGlobalFDataToPrincipal_glues
+#print axioms PrincipalOpenCech.FDataResidueIntLocalFamily
+#print axioms PrincipalOpenCech.FDataGluesTo_forces_equalizerClass
+#print axioms PrincipalOpenCech.FDataPadicCechObstruction
+#print axioms PrincipalOpenCech.FDataPadicCechObstruction.padicBound
+#print axioms PrincipalOpenCech.FDataPadicCechObstruction.no_global_glue
+#print axioms PrincipalOpenCech.ProperPrimeFDataObstruction
+#print axioms PrincipalOpenCech.item7_F_data_principalOpen_topCover
+#print axioms PrincipalOpenCech.Γ_all_base
+#print axioms PrincipalOpenCech.FLocalSections
+#print axioms PrincipalOpenCech.FCompatible
+#print axioms PrincipalOpenCech.FGluesTo
+#print axioms PrincipalOpenCech.item7_F_principalOpen_topCover
+#print axioms FourLayerSectionCone
+#print axioms terminalLiftData
+#print axioms terminalLiftData_proj_num
+#print axioms terminalLiftData_proj_mod
+#print axioms terminalLiftData_proj_padic
+#print axioms terminalLiftData_proj_EC
+#print axioms terminalLiftData_unique
+#print axioms theorem6_2_sheaf_objectwise_terminal
+#print axioms globalSectionsData_sound_primality
+#print axioms SmallPrimeExcludedByUnitGate
+#print axioms exists_proper_prime_factor_of_not_prime
+#print axioms EqualizerPadicSoundnessProfile
+#print axioms EqualizerPadicSoundnessProfile.no_global_section_of_unit_survivor
+#print axioms globalSectionsData_sound_primality_via_equalizer_padic
+#print axioms theorem1_fourLayer_sound_via_equalizer_padic
+#print axioms globalSectionsData_complete_primality
+#print axioms globalSectionsData_nonempty_iff_prime_with_parameters
+#print axioms lemma6_1_7_3_same_fibre_nonredundancy
+#print axioms lemma7_3_same_fibre_no_four_way_collapse
+#print axioms obstructionIndexAfterDropping
+#print axioms prop7_9_obstruction_not_decrease_after_dropping
+#print axioms prop7_9_obstruction_eq_after_dropping
+#print axioms prop7_9_failure_fibre_equiv_after_dropping
+end AxiomAuditE2
+
+end Spt1SheafFull
+se_after_dropping
     (drop : DroppedLayer) (M p k : ℕ) :
     Nat.gcd M (p ^ k) ≤ obstructionIndexAfterDropping drop M p k := by
   exact le_rfl
