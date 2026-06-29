@@ -35,8 +35,11 @@ import Mathlib.FieldTheory.Perfect
 import Mathlib.Tactic.NormNum.GCD
 import Mathlib.Tactic.TFAE
 import Mathlib.RingTheory.AdjoinRoot
+import Mathlib.RingTheory.Length
+import Mathlib.RingTheory.HopkinsLevitzki
 import Mathlib.RingTheory.EuclideanDomain
 import Mathlib.Algebra.Polynomial.FieldDivision
+import Mathlib.Algebra.Polynomial.Bivariate
 import Mathlib.RingTheory.Etale.Field
 import Mathlib.RingTheory.Etale.StandardEtale
 import Mathlib.Algebra.MvPolynomial.PDeriv
@@ -92,7 +95,8 @@ import Mathlib.LinearAlgebra.Dimension.Constructions
   We encode `tau` with `⊤` in that case and prove `tau_ne_top_iff`.
 
   SCOPE OF THE MASTER EQUIVALENCE.  The étale bump (Def 2.13/3.1), motivic Euler
-  jump / defect motive (Def 2.12), and derived detector `H¹(L_{X_p})` (§5.1) cannot
+  jump / defect motive (Def 2.12), and the paper's derived/T¹ detector (§5.1)
+  cannot
   be *constructed* here (Mathlib has no étale cohomology, Voevodsky motives, or
   scheme cotangent complex).  Rather than hide them as global `axiom`s, §6 below
   states the Master Equivalence (Thm 1.1/6.1) as a CONDITIONAL theorem whose four
@@ -131,6 +135,55 @@ def cotangentEquivOfEq {I J : Ideal R} (h : I = J) : I.Cotangent ≃ₗ[R] J.Cot
 end Ideal
 
 namespace Spt2
+
+namespace ModuleLength
+
+/-- Over a field, a non-finite module has infinite Jordan-Holder length. -/
+theorem eq_top_of_not_module_finite
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
+    (h : ¬ Module.Finite K M) :
+    Module.length K M = ⊤ := by
+  by_contra htop
+  have hfl : IsFiniteLength K M := Module.length_ne_top_iff.mp htop
+  have hfin : Module.Finite K M :=
+    ((IsArtinianRing.tfae (R := K) (M := M)).out 3 0).mp hfl
+  exact h hfin
+
+/-- Conversely, over a field, infinite length rules out finite-dimensionality. -/
+theorem not_module_finite_of_eq_top
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
+    (h : Module.length K M = ⊤) :
+    ¬ Module.Finite K M := by
+  intro hfin
+  haveI : Module.Finite K M := hfin
+  have hne : Module.length K M ≠ ⊤ := by
+    rw [Module.length_eq_finrank K M]
+    exact ENat.coe_ne_top _
+  exact hne h
+
+/-- The polynomial ring over a field has infinite module length over the field. -/
+theorem polynomial_length_eq_top (K : Type*) [Field K] :
+    Module.length K K[X] = ⊤ :=
+  eq_top_of_not_module_finite (Polynomial.not_finite (R := K))
+
+/-- If `R` is already not finite over a field `K`, then adjoining a root of a
+positive-degree polynomial over `R` is still not finite over `K`: the base
+`R -> AdjoinRoot g` injects. -/
+theorem adjoinRoot_not_module_finite_of_base
+    {K R : Type*} [Field K] [CommRing R] [IsDomain R] [Algebra K R]
+    (hR : ¬ Module.Finite K R) {g : R[X]} (hdeg : g.degree ≠ 0) :
+    ¬ Module.Finite K (AdjoinRoot g) := by
+  intro hS
+  haveI : IsScalarTower K R (AdjoinRoot g) := inferInstance
+  have hinj : Function.Injective (algebraMap R (AdjoinRoot g)) := by
+    simpa [AdjoinRoot.algebraMap_eq] using
+      (AdjoinRoot.of.injective_of_degree_ne_zero (f := g) hdeg)
+  let l : R →ₗ[K] AdjoinRoot g :=
+    (IsScalarTower.toAlgHom K R (AdjoinRoot g)).toLinearMap
+  have hl : Function.Injective l := hinj
+  exact hR (Module.Finite.of_injective l hl)
+
+end ModuleLength
 
 /-! ## §2.1 (Algebraic/Geometric detector) — Theorem 2.1 core.
 
@@ -265,7 +318,7 @@ The hypotheses (paper references):
   * `Hsing` : `smooth ↔ (b1 = 0 ∧ deltaSum = 0)`  smooth ⟺ no singularity (Cor 2.6/3.4)
 
 Here `smooth` is (Alg/Geom), `bump` is the étale bump (Ét), `mot` the motivic Euler
-jump (Mot), `der = dim H¹(L_{X_p})` the derived detector (Der), and `b1, deltaSum`
+jump (Mot), `der = dim T¹` the paper's derived/Tjurina detector (Der), and `b1, deltaSum`
 the dual-graph Betti number and `Σδ_x`. -/
 
 /-- **Theorem 1.1 / 6.1 (Master Equivalence, conditional).**  Under the four
@@ -357,7 +410,8 @@ structure CurveFiber where
   /-- **EulerJump / motivic Euler jump (Def 2.12):**
       `mot_p = χ(X_p) − χ(U_p) = χ(Def_p)`. -/
   mot : ℕ
-  /-- **Derived detector (§5.1):** `der_p = dim H¹(L_{X_p})`. -/
+  /-- **Derived/T¹ detector (§5.1):** the paper's numerical deformation detector,
+      not Mathlib's homological `Algebra.H1Cotangent`. -/
   der : ℕ
   /-- Explicit bridge identifying `mot` with `b₁(Γ_p) + Σδ_x` on curves. -/
   mot_spec : mot = graph.b1 + (sing.map LocalDelta.delta).sum
@@ -587,19 +641,24 @@ end Examples
 
 end CurveModel
 
-/-! ## §5.2–§5.5 (Derived detector, REAL algebraic core): the Jacobian quotient.
+/-! ## §5.2–§5.5 (Derived detector, REAL algebraic core): the T¹/Jacobian quotient.
 
 The `CurveModel` above encodes the derived detector numerically.  Here — for the
 univariate hypersurface `A = 𝔽_p[X]/(f)`, the plane-section / curve-as-fibre case
-the paper computes with — we replace the *model* by the **genuine** Jacobian
-quotient ring `A/J_f = 𝔽_p[X]/(f, f')`, a real Mathlib object, and prove:
+the paper computes with — we replace the *model* by the **genuine** Tjurina /
+first deformation cohomology object
+`T¹ = D¹ = A/J_f = 𝔽_p[X]/(f, f')`, a real Mathlib object, and prove:
 
   * **Prop 5.1 / Cor 5.4 (Jacobian criterion):** `A/J_f = 0 ⇔ f̄ squarefree ⇔ smooth`;
   * **Prop 5.3 / §5.5(C) (local length):** `τ_p = dim_{𝔽_p}(A/J_f) = deg gcd(f, f')`.
 
-By the two-term cotangent model of §5.2(B), `H¹(L_{X_p}) ≅ A/J_f` in dimension, so
-this is the honest realization of the derived detector — proved from Mathlib's
-ideal/Euclidean-domain/`AdjoinRoot` theory, with no model and no new axiom. -/
+Mathematically this is the **cohomological deformation detector** `T¹`.  It is
+not the same object as Mathlib's `Algebra.H1Cotangent`, which is implemented as
+the first homology/kernel of the naive cotangent complex.  In the univariate
+Artinian hypersurface case their dimensions coincide; below this coincidence is
+proved by an explicit kernel-of-multiplication model.  For plane curves they must
+be kept separate: the homology kernel may vanish in a domain while the Tjurina
+quotient can be nonzero. -/
 
 namespace JacobianReal
 
@@ -645,9 +704,42 @@ theorem derived_eq_algebraic_gate (f : (ZMod p)[X]) :
   rw [jacobianQuotient_subsingleton_iff, squarefree_iff_coprime_derivative]
 
 /-- **Local length** `τ_p = dim_{𝔽_p}(A/J_f)` — the genuine `𝔽_p`-dimension of the
-Jacobian quotient (Prop 5.3 / §5.5(C), univariate case). -/
+Tjurina/Jacobian quotient (Prop 5.3 / §5.5(C), univariate case).  This is the
+paper's `H¹(L_{X_p})` detector after correcting the notation to the
+André--Quillen cohomology/deformation object `T¹ = D¹`, not Mathlib's
+`Algebra.H1Cotangent` homology object. -/
 noncomputable def localLength (f : (ZMod p)[X]) : ℕ :=
   Module.finrank (ZMod p) (JacobianQuotient f)
+
+/-- The preferred length-valued Tjurina detector.  Unlike `finrank`, this
+remembers the value `⊤` for non-finite deformation spaces. -/
+noncomputable def localLengthENat (f : (ZMod p)[X]) : ℕ∞ :=
+  Module.length (ZMod p) (JacobianQuotient f)
+
+/-- In the nonzero univariate case the Tjurina quotient is finite over `𝔽_p`. -/
+theorem jacobianQuotient_module_finite (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    Module.Finite (ZMod p) (JacobianQuotient f) := by
+  have hg : EuclideanDomain.gcd f (derivative f) ≠ 0 := fun h =>
+    hf (EuclideanDomain.gcd_eq_zero_iff.mp h).1
+  have hspan : jacobianIdeal f
+      = Ideal.span {EuclideanDomain.gcd f (derivative f)} := by
+    rw [jacobianIdeal, ← EuclideanDomain.span_gcd]
+  haveI : Module.Finite (ZMod p)
+      (AdjoinRoot (EuclideanDomain.gcd f (derivative f))) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis hg).basis
+  let e : JacobianQuotient f ≃ₗ[ZMod p]
+      AdjoinRoot (EuclideanDomain.gcd f (derivative f)) :=
+    (Ideal.quotientEquivAlgOfEq (ZMod p) hspan).toLinearEquiv
+  exact Module.Finite.of_injective e.toLinearMap e.injective
+
+/-- The legacy `finrank` value agrees with the length-valued detector whenever
+the univariate quotient is finite. -/
+theorem localLengthENat_eq_localLength (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    localLengthENat f = (localLength f : ℕ∞) := by
+  haveI : Module.Finite (ZMod p) (JacobianQuotient f) :=
+    jacobianQuotient_module_finite f hf
+  unfold localLengthENat localLength
+  simpa using (Module.length_eq_finrank (ZMod p) (JacobianQuotient f))
 
 /-- **Prop 5.3 / §5.5(C) (local length = degree of the gcd).**  For `f ≠ 0`,
     `dim_{𝔽_p}(A/J_f) = deg gcd(f, f')`. -/
@@ -665,6 +757,13 @@ theorem localLength_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
   rw [PowerBasis.finrank (AdjoinRoot.powerBasis hg)]
   rfl
 
+/-- Length-valued form of Prop. 5.3: the Tjurina length is the finite
+`ℕ∞`-coercion of `deg gcd(f, f')` in the univariate case. -/
+theorem localLengthENat_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    localLengthENat f =
+      ((EuclideanDomain.gcd f (derivative f)).natDegree : ℕ∞) := by
+  rw [localLengthENat_eq_localLength f hf, localLength_eq_natDegree_gcd f hf]
+
 /-- **Cor 5.4 (local-length form).**  The local length vanishes iff smooth. -/
 theorem localLength_eq_zero_iff (f : (ZMod p)[X]) (hf : f ≠ 0) :
     localLength f = 0 ↔ Squarefree f := by
@@ -678,19 +777,151 @@ theorem localLength_eq_zero_iff (f : (ZMod p)[X]) (hf : f ≠ 0) :
     rfl
   · exact fun h => Polynomial.natDegree_eq_zero_of_isUnit h
 
-/-! ### §5.1 Object-level derived detector via Mathlib's `Algebra.H1Cotangent`.
+/-- Length-valued smoothness criterion. -/
+theorem localLengthENat_eq_zero_iff (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    localLengthENat f = 0 ↔ Squarefree f := by
+  rw [localLengthENat_eq_localLength f hf]
+  simpa using (localLength_eq_zero_iff f hf)
 
-We now connect the GENUINE first cotangent cohomology `H¹(L_{A/𝔽_p})` (Mathlib's
-`Algebra.H1Cotangent`, the object the paper denotes `H¹(L_{X_p})`) to smoothness,
-not merely its dimension.  For irreducible `f`, `A = 𝔽_p[X]/(f)` is a finite
-separable field extension of the perfect field `𝔽_p`, hence formally étale, hence
-its first cotangent cohomology vanishes as an object. -/
+/-! ### T¹/Tjurina naming and the univariate homology-kernel coincidence.
 
-/-- **Prop 5.1 (derived detector via `L`), OBJECT level.**  For irreducible `f`
-over `𝔽_p`, the genuine first cotangent cohomology of `A = 𝔽_p[X]/(f)` vanishes:
-`H¹(L_{A/𝔽_p}) = 0`.  This is the real derived detector being silent on a smooth
-(irreducible) fibre — proved via `squarefree ⇒ separable ⇒ étale ⇒ H¹ = 0`,
-using Mathlib's `Algebra.H1Cotangent`, with no model. -/
+The paper's notation `H¹(L_{X_p})` is interpreted here as `T¹ = D¹`, i.e. the
+cokernel/Jacobian quotient `A/J_f`.  Mathlib's `Algebra.H1Cotangent` is a
+homology kernel.  For `A = k[X]/(f)` the kernel model is the annihilator of
+`f'` in `A`; finite-dimensional rank-nullity identifies its dimension with the
+Tjurina dimension. -/
+
+/-- The univariate Tjurina quotient, named separately from Mathlib
+`Algebra.H1Cotangent`. -/
+abbrev TjurinaQuotient (f : (ZMod p)[X]) : Type _ :=
+  JacobianQuotient f
+
+/-- The Tjurina number `τ = dim_k T¹`. -/
+noncomputable def tjurinaDimension (f : (ZMod p)[X]) : ℕ :=
+  localLength f
+
+/-- The Tjurina length `τ ∈ ℕ∞`, modeled as `Module.length` of `T¹`. -/
+noncomputable def tjurinaLength (f : (ZMod p)[X]) : ℕ∞ :=
+  localLengthENat f
+
+@[simp] theorem tjurinaDimension_eq_localLength (f : (ZMod p)[X]) :
+    tjurinaDimension f = localLength f := rfl
+
+@[simp] theorem tjurinaLength_eq_localLengthENat (f : (ZMod p)[X]) :
+    tjurinaLength f = localLengthENat f := rfl
+
+theorem tjurinaQuotient_subsingleton_iff (f : (ZMod p)[X]) :
+    Subsingleton (TjurinaQuotient f) ↔ Squarefree f :=
+  jacobianQuotient_subsingleton_iff f
+
+theorem tjurinaDimension_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    tjurinaDimension f = (EuclideanDomain.gcd f (derivative f)).natDegree :=
+  localLength_eq_natDegree_gcd f hf
+
+theorem tjurinaLength_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    tjurinaLength f =
+      ((EuclideanDomain.gcd f (derivative f)).natDegree : ℕ∞) :=
+  localLengthENat_eq_natDegree_gcd f hf
+
+/-- Multiplication by `f'` on `A = 𝔽_p[X]/(f)`.  The kernel is the concrete
+univariate model for Mathlib's homological `H₁(L)`: `ann_A(f')`. -/
+noncomputable def derivativeMulLinear (f : (ZMod p)[X]) :
+    ((ZMod p)[X] ⧸ Ideal.span {f}) →ₗ[ZMod p] ((ZMod p)[X] ⧸ Ideal.span {f}) where
+  toFun x := x * Ideal.Quotient.mk (Ideal.span {f}) (derivative f)
+  map_add' x y := by
+    simp [add_mul]
+  map_smul' c x := by
+    change (c • x) * Ideal.Quotient.mk (Ideal.span {f}) (derivative f)
+      = c • (x * Ideal.Quotient.mk (Ideal.span {f}) (derivative f))
+    exact Algebra.smul_mul_assoc c x (Ideal.Quotient.mk (Ideal.span {f}) (derivative f))
+
+/-- The principal one-variable AQ-homology kernel model `ann_A(f')`. -/
+abbrev PrincipalAQH1Model (f : (ZMod p)[X]) : Type _ :=
+  LinearMap.ker (derivativeMulLinear f)
+
+theorem derivativeMulLinear_range_eq_span (f : (ZMod p)[X]) :
+    LinearMap.range (derivativeMulLinear f)
+      = (Ideal.span {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)} :
+          Ideal ((ZMod p)[X] ⧸ Ideal.span {f})).restrictScalars (ZMod p) := by
+  ext x
+  constructor
+  · rintro ⟨y, rfl⟩
+    change y * Ideal.Quotient.mk (Ideal.span {f}) (derivative f) ∈
+      (Ideal.span {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)} :
+        Ideal ((ZMod p)[X] ⧸ Ideal.span {f})).restrictScalars (ZMod p)
+    exact Ideal.mem_span_singleton'.mpr ⟨y, rfl⟩
+  · intro hx
+    obtain ⟨y, hy⟩ := Ideal.mem_span_singleton'.mp hx
+    refine ⟨y, ?_⟩
+    change y * Ideal.Quotient.mk (Ideal.span {f}) (derivative f) = x
+    exact hy
+
+theorem finrank_ker_eq_finrank_quot_range
+    {K V : Type*} [Field K] [AddCommGroup V] [Module K V] [FiniteDimensional K V]
+    (T : V →ₗ[K] V) :
+    Module.finrank K (LinearMap.ker T) =
+      Module.finrank K (V ⧸ LinearMap.range T) := by
+  have h₁ := LinearMap.finrank_range_add_finrank_ker T
+  have h₂ := (LinearMap.range T).finrank_quotient_add_finrank
+  omega
+
+/-- Third-isomorphism identification
+`(𝔽_p[X]/(f))/(f') ≃ 𝔽_p[X]/(f, f')`. -/
+noncomputable def quotientByDerivativeEquivJacobianQuotient (f : (ZMod p)[X]) :
+    (((ZMod p)[X] ⧸ Ideal.span {f}) ⧸
+        Ideal.span {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)})
+      ≃ₐ[ZMod p] JacobianQuotient f := by
+  let I : Ideal (ZMod p)[X] := Ideal.span {f}
+  let J : Ideal (ZMod p)[X] := Ideal.span {derivative f}
+  have hmap : (Ideal.span {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)} :
+      Ideal ((ZMod p)[X] ⧸ Ideal.span {f})) =
+      J.map (Ideal.Quotient.mk I) := by
+    subst I
+    subst J
+    rw [Ideal.map_span]
+    simp
+  have hsup : I ⊔ J = jacobianIdeal f := by
+    subst I
+    subst J
+    rw [jacobianIdeal, Ideal.span_insert]
+  exact (Ideal.quotientEquivAlgOfEq (ZMod p) hmap).trans
+    ((DoubleQuot.quotQuotEquivQuotSupₐ (ZMod p) I J).trans
+      (Ideal.quotientEquivAlgOfEq (ZMod p) hsup))
+
+/-- In the univariate Artinian case, the homological kernel model
+`ann_A(f')` and the Tjurina quotient `A/(f')` have the same dimension. -/
+theorem principalAQH1Model_finrank_eq_tjurinaDimension
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    Module.finrank (ZMod p) (PrincipalAQH1Model f) = tjurinaDimension f := by
+  haveI : Module.Finite (ZMod p) ((ZMod p)[X] ⧸ Ideal.span {f}) :=
+    Module.Finite.of_basis (AdjoinRoot.powerBasis hf).basis
+  change Module.finrank (ZMod p) (LinearMap.ker (derivativeMulLinear f)) =
+      Module.finrank (ZMod p) (JacobianQuotient f)
+  rw [finrank_ker_eq_finrank_quot_range (derivativeMulLinear f)]
+  rw [LinearEquiv.finrank_eq
+    ((LinearMap.range (derivativeMulLinear f)).quotEquivOfEq _
+      (derivativeMulLinear_range_eq_span f))]
+  exact LinearEquiv.finrank_eq (quotientByDerivativeEquivJacobianQuotient f).toLinearEquiv
+
+theorem principalAQH1Model_finrank_eq_natDegree_gcd
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    Module.finrank (ZMod p) (PrincipalAQH1Model f) =
+      (EuclideanDomain.gcd f (derivative f)).natDegree := by
+  rw [principalAQH1Model_finrank_eq_tjurinaDimension f hf,
+    tjurinaDimension_eq_natDegree_gcd f hf]
+
+/-! ### §5.1 Object-level Mathlib AQ homology via `Algebra.H1Cotangent`.
+
+Mathlib's `Algebra.H1Cotangent` is the first homology of the naive cotangent
+complex, implemented as the kernel of the conormal/cotangent-complex map.  This
+is not the paper's Tjurina quotient detector.  It is nevertheless the right
+object for the smoothness half of Prop. 5.1: on formally étale/smooth fibers this
+homology object vanishes. -/
+
+/-- **Prop 5.1, homology version.**  For irreducible `f` over `𝔽_p`, Mathlib's
+genuine first AQ homology of `A = 𝔽_p[X]/(f)` vanishes:
+`H₁(L_{A/𝔽_p}) = 0`.  This is the Mathlib cotangent-complex object being silent on
+a smooth (irreducible) fibre — proved via `squarefree ⇒ separable ⇒ étale ⇒ H₁=0`. -/
 theorem h1Cotangent_subsingleton_of_irreducible (f : (ZMod p)[X])
     [Fact (Irreducible f)] :
     Subsingleton (Algebra.H1Cotangent (ZMod p) (AdjoinRoot f)) := by
@@ -704,10 +935,10 @@ theorem h1Cotangent_subsingleton_of_irreducible (f : (ZMod p)[X])
 open Polynomial in
 /-- **General squarefree case (Prop 5.1 / good-locus, object level).**  For a
 monic squarefree `f` over `𝔽_p`, the algebra `A = 𝔽_p[X]/(f)` — a finite product
-of separable field extensions — is *étale*, so Mathlib's genuine first cotangent
-cohomology vanishes: `H¹(L_{A/𝔽_p}) = 0`.  Proved via the **standard-étale**
+of separable field extensions — is *étale*, so Mathlib's genuine first AQ
+homology vanishes: `H₁(L_{A/𝔽_p}) = 0`.  Proved via the **standard-étale**
 package `(f, g = 1)`: squarefreeness gives `f' · b + f · a = 1`, making
-`𝔽_p[X]/(f)` standard étale, hence étale, hence `H¹ = 0`. -/
+`𝔽_p[X]/(f)` standard étale, hence étale, hence `H₁ = 0`. -/
 theorem h1Cotangent_subsingleton_of_squarefree
     (f : (ZMod p)[X]) (hm : f.Monic) (hsf : Squarefree f) :
     Subsingleton (Algebra.H1Cotangent (ZMod p) (AdjoinRoot f)) := by
@@ -815,10 +1046,9 @@ theorem formallyUnramified_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
     infer_instance
 
 /-- **Cotangent (Kähler) detector, object level.**  The module of Kähler
-differentials `Ω[A⁄𝔽_p]` vanishes iff `f` is squarefree.  For a hypersurface this
-`H⁰` of the cotangent complex is the genuine discriminating cotangent invariant
-(the derived `H¹` always vanishes, since `f` is a non-zero-divisor); so this is the
-honest object-level "derived/cotangent detector ⇔ smooth". -/
+differentials `Ω[A⁄𝔽_p]` vanishes iff `f` is squarefree.  This is a genuine
+Mathlib cotangent-complex invariant for the smoothness direction, kept separate
+from the paper's T¹/Tjurina quotient detector. -/
 theorem subsingleton_kaehler_iff_squarefree (f : (ZMod p)[X]) (hm : f.Monic) :
     Subsingleton (Ω[AdjoinRoot f ⁄ ZMod p]) ↔ Squarefree f :=
   ⟨fun h => (formallyUnramified_iff_squarefree f hm).mp ⟨h⟩,
@@ -828,8 +1058,8 @@ open TensorProduct KaehlerDifferential in
 /-- **Prop 5.3 / §5.2(B) (two-term model), OBJECT-level isomorphism.**
 The Kähler differentials of `A = 𝔽_p[X]/(f)` are *isomorphic* (not merely
 equidimensional) to the Jacobian quotient:
-`Ω[A⁄𝔽_p] ≅ A ⧸ (f')`.  This is the honest two-term/cotangent computation of the
-derived detector: `H⁰(L_{A/𝔽_p}) = Ω ≅ A/J_f`.  Proved from the conormal
+`Ω[A⁄𝔽_p] ≅ A ⧸ (f')`.  This is the honest two-term/cotangent computation behind
+the same univariate Jacobian quotient used for the T¹ detector.  Proved from the conormal
 right-exact sequence `B ⊗ Ω[𝔽_p[X]] ↠ Ω[A] → 0` with kernel generated by `1 ⊗ df`,
 identified with `(f')` under `Ω[𝔽_p[X]] ≅ 𝔽_p[X]`.  (Stated for the raw quotient
 `𝔽_p[X]/(f)`, which is `AdjoinRoot f` definitionally, to use native instances.) -/
@@ -914,6 +1144,11 @@ noncomputable def kaehlerEquivJacobianQuotient (f : (ZMod p)[X]) :
     rw [hker, Submodule.map_span, Set.image_singleton]
     simp only [LinearEquiv.coe_coe]
     rw [htau]
+    change Submodule.span ((ZMod p)[X] ⧸ Ideal.span {f})
+        {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)}
+      = (Ideal.span {Ideal.Quotient.mk (Ideal.span {f}) (derivative f)} :
+          Ideal ((ZMod p)[X] ⧸ Ideal.span {f}))
+    rfl
   exact ((LinearMap.quotKerEquivOfSurjective _
     (KaehlerDifferential.mapBaseChange_surjective (ZMod p) (ZMod p)[X]
       ((ZMod p)[X] ⧸ Ideal.span {f}) hsurj)).symm).trans
@@ -942,10 +1177,11 @@ standard-étale bivariate complete intersection.
 
 We define the **real multivariate Jacobian ideal** `J_f = (f, ∂f/∂x₀,…,∂f/∂x_{n-1})`
 in `MvPolynomial (Fin n) 𝔽_p` (using Mathlib's `pderiv`) and prove the criterion in
-its **gate form**: the derived/Jacobian quotient `A/J_f` is trivial iff `J_f` is the
+its **gate form**: the T¹/Jacobian quotient `A/J_f` is trivial iff `J_f` is the
 unit ideal (`1 ∈ (f, ∂f/∂xᵢ)`) — the operational smoothness gate of §5.2/§5.5.
 
-We also exhibit a genuine *multivariate* algebra whose REAL `H¹(L)` vanishes: the
+We also exhibit a genuine *multivariate* algebra whose Mathlib AQ homology
+`H₁(L)` vanishes: the
 standard-étale bivariate complete intersection `𝔽_p[X,Y]/(f, Yg−1)`. -/
 
 namespace JacobianMv
@@ -975,12 +1211,89 @@ theorem jacobianIdeal_eq_top_iff_one_mem (f : MvPolynomial (Fin n) (ZMod p)) :
     jacobianIdeal f = ⊤ ↔ (1 : MvPolynomial (Fin n) (ZMod p)) ∈ jacobianIdeal f :=
   Ideal.eq_top_iff_one _
 
-omit [Fact p.Prime] in
-/-- **Multivariate object-level derived detector (standard étale).**  The bivariate
+/-- **Plane-curve Tjurina (Jacobian) ideal — explicit `(f, ∂ₓf, ∂ᵧf)` form.**
+For a plane curve `f ∈ 𝔽_p[x,y] = MvPolynomial (Fin 2) 𝔽_p` the multivariate
+Jacobian ideal unfolds to the concrete Tjurina ideal `(f, ∂f/∂x, ∂f/∂y)`, with
+`∂ₓ = pderiv 0` and `∂ᵧ = pderiv 1`.  This is the **T¹ / deformation (Tjurina)
+side** detector.  It is deliberately *not* identified with `Algebra.H1Cotangent`
+(`= ker` of the cotangent complex, `Extension.H1Cotangent := LinearMap.ker
+P.cotangentComplex`): for a reduced plane curve `H1Cotangent` can vanish while the
+Tjurina quotient `A/J_f` does not.  The paper's notation is therefore formalized
+as T¹ via `JacobianReal.localLength`; the homological kernel is tracked
+separately, with a dimension coincidence only in the univariate Artinian case. -/
+theorem jacobianIdeal_two (f : MvPolynomial (Fin 2) (ZMod p)) :
+    jacobianIdeal f = Ideal.span {f, pderiv 0 f, pderiv 1 f} := by
+  show Ideal.span (insert f (Set.range fun i => pderiv i f))
+      = Ideal.span {f, pderiv 0 f, pderiv 1 f}
+  have hset : (insert f (Set.range fun i => pderiv i f) :
+      Set (MvPolynomial (Fin 2) (ZMod p))) = {f, pderiv 0 f, pderiv 1 f} := by
+    ext g
+    simp only [Set.mem_insert_iff, Set.mem_range, Set.mem_singleton_iff]
+    constructor
+    · rintro (rfl | ⟨i, rfl⟩)
+      · exact Or.inl rfl
+      · fin_cases i
+        · exact Or.inr (Or.inl rfl)
+        · exact Or.inr (Or.inr rfl)
+    · rintro (rfl | rfl | rfl)
+      · exact Or.inl rfl
+      · exact Or.inr ⟨0, rfl⟩
+      · exact Or.inr ⟨1, rfl⟩
+  rw [hset]
+
+/-! ### Plane curves: homological kernel versus T¹.
+
+For one equation in a domain, the homological conormal kernel is an annihilator
+of the gradient.  If at least one partial derivative is nonzero, that annihilator
+vanishes.  This is the formal reason the Mathlib `H₁(L)` object must not be
+identified with the Tjurina quotient `A/(∂ₓf,∂ᵧf)` for irreducible plane curves:
+the former can be zero in a domain while the latter records singularities. -/
+
+/-- Multiplication by a two-component gradient, whose kernel is
+`ann_A(gₓ, gᵧ)`.  This abstracts the homological `H₁(L)` presentation for a
+one-equation plane curve. -/
+noncomputable def planeGradientAnnihilatorMap
+    (A : Type*) [CommRing A] (gx gy : A) : A →ₗ[A] A × A where
+  toFun a := (a * gx, a * gy)
+  map_add' a b := by
+    ext <;> simp [add_mul]
+  map_smul' r a := by
+    ext <;> simp [mul_assoc]
+
+/-- The abstract plane-curve homology-kernel model `ann_A(gₓ,gᵧ)`. -/
+abbrev PlaneAQH1KernelModel (A : Type*) [CommRing A] (gx gy : A) : Type _ :=
+  LinearMap.ker (planeGradientAnnihilatorMap A gx gy)
+
+/-- If the plane-curve coordinate ring is a domain and the gradient is not
+identically zero, the homological kernel model vanishes.  This is the
+object-level separation from the Tjurina quotient side. -/
+theorem planeAQH1KernelModel_subsingleton_of_isDomain
+    (A : Type*) [CommRing A] [IsDomain A] {gx gy : A}
+    (hgrad : gx ≠ 0 ∨ gy ≠ 0) :
+    Subsingleton (PlaneAQH1KernelModel A gx gy) := by
+  refine ⟨fun u v => ?_⟩
+  apply Subtype.ext
+  have hzero : ∀ w : PlaneAQH1KernelModel A gx gy, (w : A) = 0 := by
+    intro w
+    have hw := LinearMap.mem_ker.mp w.2
+    have hwpair : ((w : A) * gx, (w : A) * gy) = (0, 0) := by
+      change ((w : A) * gx, (w : A) * gy) = (0 : A × A) at hw
+      exact hw
+    rcases hgrad with hgx | hgy
+    · have hx : (w : A) * gx = 0 := by
+        exact congr_arg Prod.fst hwpair
+      exact (mul_eq_zero.mp hx).resolve_right hgx
+    · have hy : (w : A) * gy = 0 := by
+        exact congr_arg Prod.snd hwpair
+      exact (mul_eq_zero.mp hy).resolve_right hgy
+  rw [hzero u, hzero v]
+
+omit [Fact (Nat.Prime p)] in
+/-- **Multivariate object-level Mathlib homology detector (standard étale).**  The bivariate
 complete intersection `A = 𝔽_p[X,Y]/(f, Yg−1)` of a standard-étale pair is étale,
-so Mathlib's genuine first cotangent cohomology vanishes as an object:
-`H¹(L_{A/𝔽_p}) = 0`.  This is a real *multivariate* instance of Prop 5.1, with the
-silent derived detector coming from the unit Jacobian of the pair. -/
+so Mathlib's genuine first AQ homology vanishes as an object:
+`H₁(L_{A/𝔽_p}) = 0`.  This is a real *multivariate* instance of the homology side
+of Prop 5.1, with silence coming from the unit Jacobian of the pair. -/
 theorem h1Cotangent_subsingleton_standardEtale (P : StandardEtalePair (ZMod p)) :
     Subsingleton (Algebra.H1Cotangent (ZMod p) P.Ring) :=
   inferInstance
@@ -1076,9 +1389,10 @@ theorem formallySmooth_of_grad_span_eq_top (f : MvPolynomial (Fin n) (ZMod p))
 
 end JacobianMv
 
-/-! ## §5.3 (Prop 5.5) — Base change for the cotangent complex / derived detector.
+/-! ## §5.3 (Prop 5.5) — Base change for the cotangent complex / AQ homology.
 
-The derived detector is `H¹(L) = 0`, equivalently formal smoothness.  Mathlib's
+Mathlib's homological detector is `H₁(L) = 0`, equivalently formal smoothness in
+the smooth direction used here.  Mathlib's
 genuine cotangent-complex base change (`Algebra.FormallySmooth` is stable under
 base change) gives Prop 5.5 as a real object-level theorem — not the numeric model
 `CurveModel.BaseChange`. -/
@@ -1088,7 +1402,7 @@ namespace DerivedBaseChange
 open TensorProduct
 
 /-- **Prop 5.5 (base change for the cotangent complex), real.**  Formal smoothness
-— i.e. the derived detector `H¹(L) = 0` — is preserved by arbitrary base change
+— hence Mathlib AQ homology silence `H₁(L) = 0` — is preserved by arbitrary base change
 `R → B`: if `A` is formally smooth over `R`, then `B ⊗[R] A` is formally smooth
 over `B`.  (Mathlib's genuine cotangent-complex base change.) -/
 theorem formallySmooth_baseChange (R A B : Type*) [CommRing R] [CommRing A] [CommRing B]
@@ -1096,7 +1410,7 @@ theorem formallySmooth_baseChange (R A B : Type*) [CommRing R] [CommRing A] [Com
     Algebra.FormallySmooth B (B ⊗[R] A) :=
   inferInstance
 
-/-- Consequently the derived detector `H¹(L_{(B⊗A)/B}) = 0` is base-change stable. -/
+/-- Consequently Mathlib's AQ homology detector `H₁(L_{(B⊗A)/B}) = 0` is base-change stable. -/
 theorem h1Cotangent_subsingleton_baseChange (R A B : Type*)
     [CommRing R] [CommRing A] [CommRing B]
     [Algebra R A] [Algebra R B] [Algebra.FormallySmooth R A] :
@@ -1454,8 +1768,16 @@ section AxiomAudit
 #print axioms JacobianReal.jacobianIdeal_eq_top_iff_squarefree
 #print axioms JacobianReal.jacobianQuotient_subsingleton_iff
 #print axioms JacobianReal.derived_eq_algebraic_gate
+#print axioms Spt2.ModuleLength.eq_top_of_not_module_finite
+#print axioms JacobianReal.localLengthENat_eq_localLength
+#print axioms JacobianReal.localLengthENat_eq_natDegree_gcd
+#print axioms JacobianReal.localLengthENat_eq_zero_iff
 #print axioms JacobianReal.localLength_eq_natDegree_gcd
 #print axioms JacobianReal.localLength_eq_zero_iff
+#print axioms JacobianReal.tjurinaLength_eq_natDegree_gcd
+#print axioms JacobianReal.tjurinaDimension_eq_natDegree_gcd
+#print axioms JacobianReal.principalAQH1Model_finrank_eq_tjurinaDimension
+#print axioms JacobianReal.principalAQH1Model_finrank_eq_natDegree_gcd
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_squarefree
 #print axioms JacobianReal.formallyEtale_iff_squarefree
@@ -1466,6 +1788,7 @@ section AxiomAudit
 #print axioms Ideal.cotangentEquivOfEq
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
+#print axioms JacobianMv.planeAQH1KernelModel_subsingleton_of_isDomain
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
 #print axioms JacobianMv.formallySmooth_of_grad_span_eq_top
 #print axioms DerivedBaseChange.formallySmooth_baseChange
@@ -1596,7 +1919,7 @@ theorem kaehlerSilent_iff_discriminantGate
   rw [JacobianReal.subsingleton_kaehler_iff_squarefree f hm,
     squarefree_iff_coprime_derivative]
 
-/-- Monic squarefree/good fibers have silent first cotangent cohomology. -/
+/-- Monic squarefree/good fibers have silent first AQ homology. -/
 theorem discriminantGate_imp_h1CotangentSilent
     (f : (ZMod p)[X]) (hm : f.Monic) (hgate : DiscriminantGate f) :
     H1CotangentSilent f := by
@@ -1679,9 +2002,9 @@ quotient `Fp[X]/(f,f')`. -/
 theorem badDiscriminantGate_iff_jacobianQuotient_nontrivial
     (f : (ZMod p)[X]) :
     BadDiscriminantGate f ↔ Nontrivial (JacobianReal.JacobianQuotient f) := by
-  unfold BadDiscriminantGate
-  rw [JacobianReal.jacobianQuotient_nontrivial_iff,
-    discriminantGate_iff_squarefree]
+  unfold BadDiscriminantGate DiscriminantGate
+  rw [JacobianReal.jacobianQuotient_nontrivial_iff]
+  exact (not_congr (squarefree_iff_coprime_derivative f)).symm
 
 /-- Good discriminant gate is exactly triviality of the genuine Jacobian quotient. -/
 theorem discriminantGate_iff_jacobianQuotient_subsingleton
@@ -1695,8 +2018,9 @@ length. -/
 theorem discriminantGate_iff_localLength_eq_zero
     (f : (ZMod p)[X]) (hf : f ≠ 0) :
     DiscriminantGate f ↔ JacobianReal.localLength f = 0 := by
-  rw [discriminantGate_iff_squarefree,
-    ← JacobianReal.localLength_eq_zero_iff f hf]
+  unfold DiscriminantGate
+  rw [JacobianReal.localLength_eq_zero_iff f hf]
+  exact (squarefree_iff_coprime_derivative f).symm
 
 /-- For nonzero `f`, the bad gate is exactly positive/nonzero local length. -/
 theorem badDiscriminantGate_iff_localLength_ne_zero
@@ -1768,7 +2092,7 @@ theorem gradientFullRankGate_imp_formallySmooth
   unfold GradientFullRankGate GradientIdealInQuotient at h
   exact JacobianMv.formallySmooth_of_grad_span_eq_top f h
 
-/-- Formal smoothness makes the first cotangent cohomology silent after this
+/-- Formal smoothness makes the first AQ homology silent after this
 multivariate Jacobian gate. -/
 theorem gradientFullRankGate_imp_h1CotangentSilent
     (f : MvPolynomial (Fin n) (ZMod p))
@@ -1992,17 +2316,27 @@ structure EtaleMotivicEqualityPackage where
   eulerJump_formula : eulerJump = b1 + deltaSum
   etale_eq_motivic : bump = eulerJump
 
-/-- Target for the scheme-level cotangent-complex detector. -/
+/-- Target for the scheme-level cotangent-complex detector.
+
+This target deliberately separates the two objects corrected in this file:
+Mathlib's homological `H₁(L)` should be represented by `H1CotangentComplex`,
+whereas the paper's numerical detector should be represented by a T¹/Tjurina
+quotient package whose dimension is `localLength`. -/
 structure DerivedDetectorPackage where
   Fiber : Type
   CotangentComplex : Type
+  /-- Mathlib-style AQ homology object, i.e. the kernel side of the cotangent complex. -/
   H1CotangentComplex : Type
+  /-- Paper-style deformation cohomology/Tjurina object `T¹ = D¹ = A/J_f`. -/
+  T1TjurinaQuotient : Type
   Smooth : Prop
   TorAmplitudeInZero : Prop
   H1Vanishes : Prop
+  T1Vanishes : Prop
   smooth_iff_torAmplitude_zero : Smooth ↔ TorAmplitudeInZero
   torAmplitude_zero_iff_h1_vanishes_for_curves : TorAmplitudeInZero ↔ H1Vanishes
-  derived_detector_iff_smooth : H1Vanishes ↔ Smooth
+  t1_vanishes_iff_smooth : T1Vanishes ↔ Smooth
+  homological_h1_vanishes_on_smooth : Smooth → H1Vanishes
 
 /-- Target for complete-intersection Jacobian rank via minors/Fitting ideals. -/
 structure CIJacobianPackage where
@@ -2020,7 +2354,9 @@ structure CIJacobianPackage where
 /-- Target for replacing the piecewise benchmark `tau` by an actual localized
 Jacobian quotient length of `x^(pn) + y^A`. -/
 structure BenchmarkLengthPackage where
-  p pn A : Nat
+  p : Nat
+  pn : Nat
+  A : Nat
   hpn : 2 <= pn
   hA : 2 <= A
   PolynomialXY : Type
@@ -2037,7 +2373,7 @@ structure BenchmarkLengthPackage where
 structure PrincipalOpenSheafGluingPackage where
   Section : Type
   D : Int -> Type
-  restrict : ∀ {a b : Int}, Section -> Section
+  restrict : ∀ {_a _b : Int}, Section -> Section
   equalizerCondition : Prop
   crtCoverGluing : ∀ a b : Nat, Nat.Coprime a b -> Prop
   detectorPredicateSheaf : Prop
@@ -2234,7 +2570,12 @@ theorem motivic_iff_smooth {smooth : Prop} {N : NormalizationCore smooth}
 
 end MotiveCore
 
-/-! ## G. Derived detector / cotangent-complex certificate -/
+/-! ## G. Derived/T¹ detector certificate.
+
+`DerivedCore` keeps the paper-facing numerical detector.  Its
+`derivedDimension` is the T¹/Tjurina dimension and `localLength` is the Mathlib
+Jacobian quotient dimension, not the dimension of Mathlib's homological
+`Algebra.H1Cotangent` except in the univariate coincidence proved above. -/
 
 structure DerivedCore (smooth : Prop) (localLength : Nat) where
   derivedSilent : Prop
@@ -2242,6 +2583,7 @@ structure DerivedCore (smooth : Prop) (localLength : Nat) where
   cotangentComplexConstructed : Prop
   torAmplitudeInZero : Prop
   hypersurfaceTwoTermModel : Prop
+  /-- Paper detector dimension equals the Tjurina/Jacobian local length. -/
   derivedDimension_eq_localLength : derivedDimension = localLength
   derivedSilent_iff_dimension_zero : derivedSilent ↔ derivedDimension = 0
   localLength_zero_iff_smooth : localLength = 0 ↔ smooth
@@ -2272,11 +2614,13 @@ structure CIJacobianCore (A : AlgebraicCore) where
 /-! ## I. Benchmark certificate for `x^(pn) + y^A` -/
 
 structure BenchmarkCore where
-  p pn A : Nat
+  p : Nat
+  pn : Nat
+  A : Nat
   hpn : 2 <= pn
   hA : 2 <= A
-  actualOriginLength : WithTop Nat
-  tauModel : WithTop Nat
+  actualOriginLength : ℕ∞
+  tauModel : ℕ∞
   jacobianIdealLocalized : Prop
   finite_iff_isolated :
     actualOriginLength ≠ ⊤ ↔ ¬ (p ∣ pn ∧ p ∣ A)
@@ -3140,7 +3484,7 @@ theorem not_squarefree_iff_hasCriticalPoint
     (f : (ZMod p)[X]) :
     ¬ Squarefree f ↔ HasCriticalPoint K f := by
   rw [squarefree_iff_coprime_derivative,
-    Polynomial.isCoprime_iff_aeval_ne_zero_of_isAlgClosed K f (derivative f)]
+    Polynomial.isCoprime_iff_aeval_ne_zero_of_isAlgClosed (k := ZMod p) K f (derivative f)]
   simp only [not_forall, not_or, not_not]
   rfl
 
@@ -3203,7 +3547,7 @@ theorem pderiv_zero_benchSurface (pn A : ℕ) (hpn : p ∣ pn) :
   have hX1 : pderiv (0 : Fin 2) (X 1 : MvPolynomial (Fin 2) (ZMod p)) = 0 := by
     rw [pderiv_X]; simp
   simp only [benchSurface, map_add, pderiv_pow, pderiv_X_self, hX1,
-    mul_one, mul_zero, hcast, zero_mul, add_zero, zero_add]
+    mul_one, mul_zero, hcast, zero_mul, add_zero]
 
 /-- In residue characteristic dividing `A`, the `y`-partial vanishes identically. -/
 theorem pderiv_one_benchSurface (pn A : ℕ) (hA : p ∣ A) :
@@ -3214,7 +3558,7 @@ theorem pderiv_one_benchSurface (pn A : ℕ) (hA : p ∣ A) :
   have hX0 : pderiv (1 : Fin 2) (X 0 : MvPolynomial (Fin 2) (ZMod p)) = 0 := by
     rw [pderiv_X]; simp
   simp only [benchSurface, map_add, pderiv_pow, pderiv_X_self, hX0,
-    mul_one, mul_zero, hcast, zero_mul, add_zero, zero_add]
+    mul_one, mul_zero, hcast, zero_mul, add_zero]
 
 /-- **Jacobian-ideal collapse (non-isolated regime).**  When `p ∣ pn` and
 `p ∣ A`, the genuine bivariate Jacobian ideal of the benchmark equals the
@@ -3234,7 +3578,9 @@ theorem jacobianIdeal_benchSurface_collapse
     rcases Set.mem_insert_iff.mp hx with rfl | hr
     · exact Ideal.mem_span_singleton_self _
     · obtain ⟨i, rfl⟩ := hr
-      rw [SetLike.mem_coe, h0 i]
+      change pderiv i (benchSurface (p := p) pn A) ∈
+        Ideal.span {benchSurface (p := p) pn A}
+      rw [h0 i]
       exact Ideal.zero_mem _
   · rw [Ideal.span_le, Set.singleton_subset_iff]
     exact Ideal.subset_span (Set.mem_insert _ _)
@@ -3261,6 +3607,133 @@ theorem benchSurface_jacobianQuotient_nontrivial
     jacobianIdeal_benchSurface_collapse pn A hp hpA, Ideal.span_singleton_eq_top]
   exact benchSurface_not_isUnit pn A hpn hA
 
+/-- The same benchmark curve, written as a one-variable polynomial in `y` over
+`k[x]`.  This is the `AdjoinRoot` model for the hypersurface ring
+`k[x,y]/(x^pn + y^A)`. -/
+abbrev BenchBase : Type := (ZMod p)[X]
+
+/-- `y^A + x^pn` as an element of `(𝔽_p[x])[y]`. -/
+noncomputable def benchAdjoinPolynomial (pn A : ℕ) :
+    (BenchBase (p := p))[X] :=
+  Polynomial.X ^ A + Polynomial.C ((Polynomial.X : BenchBase (p := p)) ^ pn)
+
+/-- The hypersurface ring `𝔽_p[x,y]/(x^pn + y^A)`, modeled as
+`AdjoinRoot (y^A + x^pn)` over `𝔽_p[x]`. -/
+abbrev BenchHypersurfaceRing (pn A : ℕ) : Type :=
+  AdjoinRoot (benchAdjoinPolynomial (p := p) pn A)
+
+/-- The `k[x][y]` and `MvPolynomial (Fin 2) k` presentations carry the benchmark
+polynomial to the same equation. -/
+theorem equivMvPolynomial_benchAdjoinPolynomial (pn A : ℕ) :
+    Polynomial.Bivariate.equivMvPolynomial (ZMod p)
+      (benchAdjoinPolynomial (p := p) pn A)
+      = benchSurface (p := p) pn A := by
+  simp [benchAdjoinPolynomial, benchSurface, add_comm]
+
+/-- Quotient equivalence between the `AdjoinRoot` hypersurface model and the
+bivariate principal quotient by the benchmark equation. -/
+noncomputable def benchHypersurfaceAlgEquiv (pn A : ℕ) :
+    BenchHypersurfaceRing (p := p) pn A ≃ₐ[ZMod p]
+      (MvPolynomial (Fin 2) (ZMod p) ⧸
+        Ideal.span {benchSurface (p := p) pn A}) := by
+  let e := Polynomial.Bivariate.equivMvPolynomial (ZMod p)
+  have hmap :
+      (Ideal.span {benchSurface (p := p) pn A} :
+          Ideal (MvPolynomial (Fin 2) (ZMod p))) =
+        (Ideal.span {benchAdjoinPolynomial (p := p) pn A}).map
+          (e : (BenchBase (p := p))[X] →+* MvPolynomial (Fin 2) (ZMod p)) := by
+    rw [Ideal.map_span, Set.image_singleton]
+    change Ideal.span {benchSurface (p := p) pn A} =
+      Ideal.span {Polynomial.Bivariate.equivMvPolynomial (ZMod p)
+        (benchAdjoinPolynomial (p := p) pn A)}
+    rw [equivMvPolynomial_benchAdjoinPolynomial (p := p) pn A]
+  exact Ideal.quotientEquivAlg
+    (I := Ideal.span {benchAdjoinPolynomial (p := p) pn A})
+    (J := Ideal.span {benchSurface (p := p) pn A})
+    e hmap
+
+/-- The `AdjoinRoot` hypersurface ring is not finite-dimensional over `𝔽_p`.
+Indeed `𝔽_p[x]` injects into it. -/
+theorem benchHypersurface_not_module_finite (pn A : ℕ) (hA : 2 ≤ A) :
+    ¬ Module.Finite (ZMod p) (BenchHypersurfaceRing (p := p) pn A) := by
+  exact ModuleLength.adjoinRoot_not_module_finite_of_base
+    (K := ZMod p) (R := BenchBase (p := p))
+    (Polynomial.not_finite (R := ZMod p))
+    (by
+      have hpos : 0 < A := by omega
+      have hdeg :
+          (benchAdjoinPolynomial (p := p) pn A).degree = (A : WithBot ℕ) := by
+        simpa [benchAdjoinPolynomial] using
+          (Polynomial.degree_X_pow_add_C
+            (R := BenchBase (p := p)) (n := A) hpos
+            ((Polynomial.X : BenchBase (p := p)) ^ pn))
+      have hA0 : (A : WithBot ℕ) ≠ 0 := by
+        exact_mod_cast (by omega : A ≠ 0)
+      simpa [hdeg] using hA0)
+
+/-- Length-valued version of the preceding theorem: the hypersurface ring has
+`𝔽_p`-length `⊤`. -/
+theorem benchHypersurface_length_eq_top (pn A : ℕ) (hA : 2 ≤ A) :
+    Module.length (ZMod p) (BenchHypersurfaceRing (p := p) pn A) = ⊤ :=
+  ModuleLength.eq_top_of_not_module_finite
+    (benchHypersurface_not_module_finite (p := p) pn A hA)
+
+/-- Transport of the infinite length to the bivariate principal quotient
+`𝔽_p[x,y]/(x^pn + y^A)`. -/
+theorem benchSurface_hypersurfaceQuotient_length_eq_top
+    (pn A : ℕ) (hA : 2 ≤ A) :
+    Module.length (ZMod p)
+      (MvPolynomial (Fin 2) (ZMod p) ⧸
+        Ideal.span {benchSurface (p := p) pn A}) = ⊤ := by
+  rw [← (benchHypersurfaceAlgEquiv (p := p) pn A).toLinearEquiv.length_eq]
+  exact benchHypersurface_length_eq_top (p := p) pn A hA
+
+/-- Consequently, the bivariate principal quotient is not finite-dimensional
+over `𝔽_p`. -/
+theorem benchSurface_hypersurfaceQuotient_not_module_finite
+    (pn A : ℕ) (hA : 2 ≤ A) :
+    ¬ Module.Finite (ZMod p)
+      (MvPolynomial (Fin 2) (ZMod p) ⧸
+        Ideal.span {benchSurface (p := p) pn A}) :=
+  ModuleLength.not_module_finite_of_eq_top
+    (benchSurface_hypersurfaceQuotient_length_eq_top (p := p) pn A hA)
+
+/-- **Local Tjurina length in the both-divisible characteristic-`p` regime.**
+When both partials vanish, the Jacobian ideal collapses to `(f)`, so the
+Tjurina quotient is the whole hypersurface ring and has length `⊤`. -/
+theorem benchSurface_jacobianQuotient_length_eq_top
+    (pn A : ℕ) (_hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    Module.length (ZMod p)
+      (JacobianMv.JacobianQuotient (benchSurface (p := p) pn A)) = ⊤ := by
+  let e : JacobianMv.JacobianQuotient (benchSurface (p := p) pn A) ≃ₗ[ZMod p]
+      (MvPolynomial (Fin 2) (ZMod p) ⧸
+        Ideal.span {benchSurface (p := p) pn A}) :=
+    (Ideal.quotientEquivAlgOfEq (ZMod p)
+      (jacobianIdeal_benchSurface_collapse pn A hp hpA)).toLinearEquiv
+  rw [e.length_eq]
+  exact benchSurface_hypersurfaceQuotient_length_eq_top (p := p) pn A hA
+
+/-- The corrected `τ = ⊤` statement is not merely nontriviality: the genuine
+Tjurina/Jacobian quotient is not finite-dimensional over `𝔽_p`. -/
+theorem benchSurface_jacobianQuotient_not_module_finite
+    (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    ¬ Module.Finite (ZMod p)
+      (JacobianMv.JacobianQuotient (benchSurface (p := p) pn A)) :=
+  ModuleLength.not_module_finite_of_eq_top
+    (benchSurface_jacobianQuotient_length_eq_top
+      (p := p) pn A hpn hA hp hpA)
+
+/-- This records why the old `finrank`-only encoding cannot represent the
+infinite case: Mathlib returns `0` for `finrank` of a non-finite vector space. -/
+theorem benchSurface_jacobianQuotient_finrank_eq_zero_of_infinite
+    (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    Module.finrank (ZMod p)
+      (JacobianMv.JacobianQuotient (benchSurface (p := p) pn A)) = 0 :=
+  Module.finrank_of_not_finite
+    (benchSurface_jacobianQuotient_not_module_finite
+      (p := p) pn A hpn hA hp hpA)
+
+omit [Fact (Nat.Prime p)] in
 /-- **Consistency with the corrected ℕ∞ model.**  The same regime that makes the
 genuine Jacobian quotient non-isolated is exactly the regime in which the
 piecewise `Spt2.tau` takes the corrected value `⊤`. -/
@@ -3268,6 +3741,18 @@ theorem benchSurface_tau_top
     (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
     Spt2.tau p ⟨pn, A, hpn, hA⟩ = ⊤ :=
   Spt2.tau_both p ⟨pn, A, hpn, hA⟩ hp hpA
+
+/-- The actual length-valued Tjurina quotient theorem matches the corrected
+benchmark model `Spt2.tau`.  This replaces the informal `pn*A` value in the
+both-divisible case by the genuine `Module.length = ⊤` calculation. -/
+theorem benchSurface_jacobianQuotient_length_eq_tau
+    (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    Module.length (ZMod p)
+      (JacobianMv.JacobianQuotient (benchSurface (p := p) pn A)) =
+        Spt2.tau p ⟨pn, A, hpn, hA⟩ := by
+  rw [benchSurface_jacobianQuotient_length_eq_top
+      (p := p) pn A hpn hA hp hpA,
+    benchSurface_tau_top pn A hpn hA hp hpA]
 
 end Benchmark
 
@@ -3320,6 +3805,10 @@ section AxiomAudit
 #print axioms Spt2.CompletionLayer.theorem_2_1_full_TFAE
 #print axioms Spt2.CompletionLayer.Benchmark.jacobianIdeal_benchSurface_collapse
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_nontrivial
+#print axioms Spt2.CompletionLayer.Benchmark.benchHypersurface_length_eq_top
+#print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_length_eq_top
+#print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_not_module_finite
+#print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_length_eq_tau
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_tau_top
 #print axioms Spt2.CompletionLayer.algebraicCoreOf_TFAE
 end AxiomAudit
@@ -3349,12 +3838,12 @@ theorem mem_basicOpen_iff (f : R) (x : PrimeSpectrum R) :
 /-- `D(1) = Spec R`. -/
 theorem basicOpen_top :
     PrimeSpectrum.basicOpen (1 : R) = ⊤ := by
-  simpa using (PrimeSpectrum.basicOpen_one (R := R))
+  simp
 
 /-- `D(0) = ∅`. -/
 theorem basicOpen_bottom :
     PrimeSpectrum.basicOpen (0 : R) = ⊥ := by
-  simpa using (PrimeSpectrum.basicOpen_zero (R := R))
+  simp
 
 /-- Principal opens are closed under finite intersections:
 `D(fg) = D(f) ∩ D(g)`. -/
@@ -3542,7 +4031,7 @@ theorem h1_decomposition (g b1 deltaSum : ℕ) :
 `Σδ = 0`) the decomposition reduces to `dim H¹(X_p) = 2g(X̃_p)` (Rem 3.8 / 2.10). -/
 theorem h1_decomposition_smooth (g : ℕ) :
     Module.finrank k ((Fin (2 * g) → k) × (Fin (0 + 0) → k)) = 2 * g := by
-  simpa using h1_decomposition (k := k) g 0 0
+  simp
 
 end NormalizationReal
 
@@ -3603,7 +4092,9 @@ def FiniteGraph.toDualGraph (Γ : FiniteGraph) : Spt2.CurveModel.DualGraph :=
 so the curve detector reads `0` exactly as required by the good-prime box. -/
 theorem tree_b1_zero (n : ℕ) :
     (FiniteGraph.b1 ⟨n + 1, n, 1, by omega, by omega⟩) = 0 := by
-  unfold FiniteGraph.b1; omega
+  unfold FiniteGraph.b1
+  change n + 1 - (n + 1) = 0
+  rw [Nat.sub_self]
 
 end DualGraphReal
 
