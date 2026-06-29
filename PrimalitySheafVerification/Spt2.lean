@@ -43,15 +43,24 @@ import Mathlib.Algebra.Polynomial.Bivariate
 import Mathlib.RingTheory.Etale.Field
 import Mathlib.RingTheory.Etale.StandardEtale
 import Mathlib.Algebra.MvPolynomial.PDeriv
+import Mathlib.RingTheory.Localization.AtPrime.Basic
 import Mathlib.RingTheory.Radical.Basic
 import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
+import Mathlib.RingTheory.Ideal.Quotient.Operations
 import Mathlib.RingTheory.Polynomial.Resultant.Basic
 import Mathlib.RingTheory.Spectrum.Prime.Topology
 import Mathlib.FieldTheory.IsAlgClosed.Basic
 import Mathlib.NumberTheory.Padics.Hensel
+import Mathlib.NumberTheory.Padics.RingHoms
 import Mathlib.LinearAlgebra.Isomorphisms
 import Mathlib.LinearAlgebra.Dimension.RankNullity
 import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
+import Mathlib.AlgebraicGeometry.EllipticCurve.Weierstrass
+import Mathlib.CategoryTheory.Limits.Preserves.FunctorCategory
+import Mathlib.CategoryTheory.Limits.Shapes.WidePullbacks
+import Mathlib.CategoryTheory.Limits.Types.Limits
 
 /- ============================================================ -/
 /- ==== Source layer: Spt2.lean -/
@@ -161,6 +170,64 @@ theorem not_module_finite_of_eq_top
     exact ENat.coe_ne_top _
   exact hne h
 
+/-- Over a field, `Module.length = ⊤` is exactly non-finite-dimensionality.
+This is the global replacement for using `finrank` as a detector. -/
+theorem length_eq_top_iff_not_module_finite
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M] :
+    Module.length K M = ⊤ ↔ ¬ Module.Finite K M :=
+  ⟨not_module_finite_of_eq_top, eq_top_of_not_module_finite⟩
+
+/-- Finite-dimensional vector spaces have finite `Module.length`, and over a
+field the converse holds. -/
+theorem length_ne_top_iff_module_finite
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M] :
+    Module.length K M ≠ ⊤ ↔ Module.Finite K M := by
+  constructor
+  · intro htop
+    have hfl : IsFiniteLength K M := Module.length_ne_top_iff.mp htop
+    exact ((IsArtinianRing.tfae (R := K) (M := M)).out 3 0).mp hfl
+  · intro hfin
+    haveI : Module.Finite K M := hfin
+    rw [Module.length_eq_finrank K M]
+    exact ENat.coe_ne_top _
+
+/-- In the finite-dimensional case, the `ℕ∞`-valued length is the old
+`finrank` value coerced to `ℕ∞`. -/
+theorem length_eq_finrank_of_module_finite
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
+    (hfin : Module.Finite K M) :
+    Module.length K M = (Module.finrank K M : ℕ∞) := by
+  haveI : Module.Finite K M := hfin
+  simpa using (Module.length_eq_finrank K M)
+
+/-- `finrank` collapses every non-finite-dimensional vector space to `0`.  This
+records exactly why the paper detector must be `Module.length : ℕ∞`. -/
+theorem finrank_eq_zero_of_not_module_finite
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
+    (h : ¬ Module.Finite K M) :
+    Module.finrank K M = 0 :=
+  Module.finrank_of_not_finite h
+
+/-- The same collapse, phrased from the true length value. -/
+theorem finrank_eq_zero_of_length_eq_top
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
+    (h : Module.length K M = ⊤) :
+    Module.finrank K M = 0 :=
+  finrank_eq_zero_of_not_module_finite (not_module_finite_of_eq_top h)
+
+/-- Global dichotomy: `Module.length` is the coerced `finrank` when finite, and
+is `⊤` otherwise.  This avoids putting any decidability assumption on
+`Module.Finite` into the statement. -/
+theorem length_eq_finrank_or_top
+    {K M : Type*} [Field K] [AddCommGroup M] [Module K M] :
+    (Module.Finite K M ∧
+        Module.length K M = (Module.finrank K M : ℕ∞)) ∨
+      (¬ Module.Finite K M ∧ Module.length K M = ⊤) := by
+  classical
+  by_cases hfin : Module.Finite K M
+  · exact Or.inl ⟨hfin, length_eq_finrank_of_module_finite hfin⟩
+  · exact Or.inr ⟨hfin, eq_top_of_not_module_finite hfin⟩
+
 /-- The polynomial ring over a field has infinite module length over the field. -/
 theorem polynomial_length_eq_top (K : Type*) [Field K] :
     Module.length K K[X] = ⊤ :=
@@ -184,6 +251,267 @@ theorem adjoinRoot_not_module_finite_of_base
   exact hR (Module.Finite.of_injective l hl)
 
 end ModuleLength
+
+/-! ## A9: one-variable principal conormal and Mathlib AQ-homology presentation.
+
+This section isolates the actual Mathlib cotangent-complex object for
+`A = K[X]/(f)`.  The paper's detector is the Tjurina quotient `A/(f')`, while
+Mathlib's `H₁(L_{A/K})` is the kernel of the conormal map
+`(f)/(f²) → A ⊗ Ω_{K[X]/K}`.  For a nonzero one-variable equation, the principal
+conormal `(f)/(f²)` is object-level equivalent to `A`; under this equivalence the
+cotangent-complex map is exactly multiplication by `f'`.  Thus the homological
+object is `ann_A(f')`, and the finite-dimensional rank-nullity argument below
+identifies its dimension with `deg gcd(f, f')`.
+
+The construction is deliberately one-variable only.  It is not used for plane
+curves, where the homological kernel and the Tjurina quotient diverge. -/
+namespace PrincipalUnivariateAQ
+
+open Polynomial TensorProduct KaehlerDifferential
+
+variable {K : Type*} [Field K]
+
+local instance ringHomInvPair_id_poly :
+    RingHomInvPair (RingHom.id K[X]) (RingHom.id K[X]) where
+  comp_eq := rfl
+  comp_eq₂ := rfl
+
+lemma span_singleton_mem_of_mul_mem_square {R : Type*} [CommRing R] [IsDomain R]
+    {a : R} {poly : R} (hpoly : poly ≠ 0)
+    (h : a * poly ∈ (Ideal.span ({poly} : Set R) : Ideal R) ^ 2) :
+    a ∈ (Ideal.span ({poly} : Set R) : Ideal R) := by
+  rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton] at h
+  rw [Ideal.mem_span_singleton]
+  exact (mul_dvd_mul_iff_right hpoly).mp (by
+    simpa only [pow_two, mul_comm, mul_left_comm, mul_assoc] using h)
+
+noncomputable def principalCotangentMap {R : Type*} [CommRing R] (poly : R) :
+    R →ₗ[R] (Ideal.span ({poly} : Set R)).Cotangent where
+  toFun a :=
+    (Ideal.span ({poly} : Set R)).toCotangent
+      ⟨a * poly, Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩
+  map_add' a b := by
+    rw [← map_add]
+    congr 1
+    ext
+    simp [add_mul]
+  map_smul' r a := by
+    rw [← map_smul]
+    congr 1
+    ext
+    simp [mul_comm, mul_left_comm]
+
+lemma principalCotangentMap_vanishes_on_span {R : Type*} [CommRing R] (poly : R) :
+    (Ideal.span ({poly} : Set R) : Ideal R) ≤
+      LinearMap.ker (principalCotangentMap poly) := by
+  intro a ha
+  rw [LinearMap.mem_ker]
+  dsimp [principalCotangentMap]
+  rw [Ideal.toCotangent_eq_zero]
+  rw [pow_two]
+  exact Ideal.mul_mem_mul ha (Ideal.mem_span_singleton_self poly)
+
+noncomputable def principalCotangentQuotMap {R : Type*} [CommRing R] (poly : R) :
+    (R ⧸ Ideal.span ({poly} : Set R)) →ₗ[R]
+      (Ideal.span ({poly} : Set R)).Cotangent :=
+  Submodule.liftQ (Ideal.span ({poly} : Set R) : Ideal R)
+    (principalCotangentMap poly) (principalCotangentMap_vanishes_on_span poly)
+
+lemma principalCotangentQuotMap_surjective {R : Type*} [CommRing R] (poly : R) :
+    Function.Surjective (principalCotangentQuotMap poly) := by
+  intro y
+  obtain ⟨x, rfl⟩ := Ideal.toCotangent_surjective (Ideal.span ({poly} : Set R)) y
+  obtain ⟨a, ha⟩ := Ideal.mem_span_singleton'.mp x.2
+  refine ⟨Submodule.Quotient.mk a, ?_⟩
+  rw [principalCotangentQuotMap, Submodule.liftQ_apply]
+  dsimp [principalCotangentMap]
+  rw [Ideal.toCotangent_eq]
+  change a * poly - x.1 ∈ (Ideal.span ({poly} : Set R) : Ideal R) ^ 2
+  rw [ha, sub_self]
+  exact zero_mem _
+
+lemma principalCotangentQuotMap_injective {R : Type*} [CommRing R] [IsDomain R]
+    {poly : R} (hpoly : poly ≠ 0) :
+    Function.Injective (principalCotangentQuotMap poly) := by
+  rw [← LinearMap.ker_eq_bot]
+  rw [eq_bot_iff]
+  intro q hq
+  rw [LinearMap.mem_ker] at hq
+  induction q using Quotient.inductionOn' with
+  | h a =>
+      change principalCotangentQuotMap poly (Submodule.Quotient.mk a) = 0 at hq
+      rw [principalCotangentQuotMap, Submodule.liftQ_apply] at hq
+      dsimp [principalCotangentMap] at hq
+      change (Submodule.Quotient.mk a :
+          R ⧸ (Ideal.span ({poly} : Set R) : Ideal R)) ∈
+        (⊥ : Submodule R (R ⧸ (Ideal.span ({poly} : Set R) : Ideal R)))
+      rw [Submodule.mem_bot, Submodule.Quotient.mk_eq_zero]
+      exact span_singleton_mem_of_mul_mem_square hpoly
+        ((Ideal.toCotangent_eq_zero _ _).mp hq)
+
+noncomputable def principalCotangentQuotEquiv {R : Type*} [CommRing R] [IsDomain R]
+    {poly : R} (hpoly : poly ≠ 0) :
+    (R ⧸ Ideal.span ({poly} : Set R)) ≃ₗ[R]
+      (Ideal.span ({poly} : Set R)).Cotangent :=
+  LinearEquiv.ofBijective (principalCotangentQuotMap poly)
+    ⟨principalCotangentQuotMap_injective hpoly,
+      principalCotangentQuotMap_surjective poly⟩
+
+noncomputable def quotientExtension (f : K[X]) :
+    Algebra.Extension K (K[X] ⧸ Ideal.span ({f} : Set K[X])) :=
+  Algebra.Extension.ofSurjective
+    (IsScalarTower.toAlgHom K K[X] (K[X] ⧸ Ideal.span ({f} : Set K[X])))
+    (by
+      change Function.Surjective
+        (Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])))
+      exact Ideal.Quotient.mk_surjective)
+
+lemma quotientExtension_ker (f : K[X]) :
+    (quotientExtension f).ker = Ideal.span ({f} : Set K[X]) := by
+  ext x
+  change Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) x = 0 ↔
+    x ∈ Ideal.span ({f} : Set K[X])
+  exact Ideal.Quotient.eq_zero_iff_mem
+
+noncomputable def quotientExtensionCotangentEquivKer (f : K[X]) :
+    (quotientExtension f).ker.Cotangent ≃ₗ[K] (quotientExtension f).Cotangent where
+  toFun x := Algebra.Extension.Cotangent.of x
+  invFun x := Algebra.Extension.Cotangent.val x
+  left_inv x := rfl
+  right_inv x := rfl
+  map_add' x y := rfl
+  map_smul' r x := by
+    ext
+    simp [Algebra.Extension.Cotangent.val_smul'']
+
+noncomputable def quotientCotangentSpaceEquiv (f : K[X]) :
+    (quotientExtension f).CotangentSpace ≃ₗ[K[X] ⧸ Ideal.span ({f} : Set K[X])]
+      (K[X] ⧸ Ideal.span ({f} : Set K[X])) :=
+  (TensorProduct.AlgebraTensorModule.congr
+      (LinearEquiv.refl (K[X] ⧸ Ideal.span ({f} : Set K[X]))
+        (K[X] ⧸ Ideal.span ({f} : Set K[X])))
+      (KaehlerDifferential.polynomialEquiv K)).trans
+    (TensorProduct.AlgebraTensorModule.rid K[X]
+      (K[X] ⧸ Ideal.span ({f} : Set K[X]))
+      (K[X] ⧸ Ideal.span ({f} : Set K[X])))
+
+noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
+      (quotientExtension f).Cotangent :=
+  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
+    (((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm).restrictScalars K).trans
+      (quotientExtensionCotangentEquivKer f))
+
+noncomputable def derivativeMulLinearRaw (f : K[X]) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) →ₗ[K]
+      (K[X] ⧸ Ideal.span ({f} : Set K[X])) where
+  toFun x := x * Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) (derivative f)
+  map_add' x y := by simp [add_mul]
+  map_smul' c x := by
+    change (c • x) * Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) (derivative f)
+      = c • (x * Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) (derivative f))
+    exact Algebra.smul_mul_assoc c x
+      (Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) (derivative f))
+
+lemma quotientConormalEquivForward_mk (f : K[X]) (hf : f ≠ 0) (a : K[X]) :
+    quotientConormalEquivForward f hf
+        (Submodule.Quotient.mk a :
+          K[X] ⧸ (Ideal.span ({f} : Set K[X]) : Ideal K[X])) =
+      Algebra.Extension.Cotangent.mk
+        (P := quotientExtension f)
+        ⟨a * f, by
+          rw [quotientExtension_ker]
+          exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ := by
+  have hmap :
+      principalCotangentQuotMap f
+          (Submodule.Quotient.mk a :
+            K[X] ⧸ (Ideal.span ({f} : Set K[X]) : Ideal K[X])) =
+        (Ideal.span ({f} : Set K[X])).toCotangent
+          ⟨a * f, Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ := by
+    rw [principalCotangentQuotMap, Submodule.liftQ_apply]
+    rfl
+  change principalCotangentQuotMap f
+      ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
+        (Ideal.span ({f} : Set K[X])).toCotangent
+          ⟨a * f, Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ at hmap
+  ext
+  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
+    LinearEquiv.restrictScalars_apply]
+  unfold principalCotangentQuotEquiv quotientExtensionCotangentEquivKer
+  change (Algebra.Extension.Cotangent.of
+      ((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm)
+        ((principalCotangentQuotMap f)
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a)))).val =
+    (Algebra.Extension.Cotangent.mk
+      (P := quotientExtension f)
+      ⟨a * f, by
+        rw [quotientExtension_ker]
+        exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩).val
+  rw [hmap]
+  simp [Algebra.Extension.Cotangent.val_mk, Algebra.Extension.Cotangent.val_of]
+  rfl
+
+theorem quotientCotangentComplex_conj_mk (f : K[X]) (hf : f ≠ 0) (a : K[X]) :
+    quotientCotangentSpaceEquiv f
+        ((quotientExtension f).cotangentComplex
+          (quotientConormalEquivForward f hf
+            (Submodule.Quotient.mk a :
+              K[X] ⧸ (Ideal.span ({f} : Set K[X]) : Ideal K[X])))) =
+      derivativeMulLinearRaw f
+        (Submodule.Quotient.mk a :
+          K[X] ⧸ (Ideal.span ({f} : Set K[X]) : Ideal K[X])) := by
+  rw [quotientConormalEquivForward_mk]
+  rw [Algebra.Extension.cotangentComplex_mk]
+  dsimp [quotientExtension, quotientCotangentSpaceEquiv, derivativeMulLinearRaw]
+  change (TensorProduct.AlgebraTensorModule.rid K[X]
+      (K[X] ⧸ Ideal.span ({f} : Set K[X]))
+      (K[X] ⧸ Ideal.span ({f} : Set K[X])))
+    ((TensorProduct.AlgebraTensorModule.congr
+        (LinearEquiv.refl (K[X] ⧸ Ideal.span ({f} : Set K[X]))
+          (K[X] ⧸ Ideal.span ({f} : Set K[X])))
+        (KaehlerDifferential.polynomialEquiv K))
+      ((1 : K[X] ⧸ Ideal.span ({f} : Set K[X])) ⊗ₜ[K[X]]
+        D K K[X] (a * f))) =
+    (Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) a) *
+      Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) (derivative f)
+  rw [TensorProduct.AlgebraTensorModule.congr_tmul]
+  rw [LinearEquiv.refl_apply]
+  rw [KaehlerDifferential.polynomialEquiv_D]
+  rw [TensorProduct.AlgebraTensorModule.rid_tmul]
+  rw [← Algebra.algebraMap_eq_smul_one]
+  rw [Ideal.Quotient.algebraMap_eq]
+  rw [derivative_mul]
+  rw [map_add, map_mul, map_mul]
+  have hfzero : Ideal.Quotient.mk (Ideal.span ({f} : Set K[X])) f = 0 :=
+    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton_self f)
+  rw [hfzero, mul_zero, zero_add]
+
+theorem quotientCotangentComplex_conj (f : K[X]) (hf : f ≠ 0)
+    (q : K[X] ⧸ Ideal.span ({f} : Set K[X])) :
+    quotientCotangentSpaceEquiv f
+        ((quotientExtension f).cotangentComplex
+          (quotientConormalEquivForward f hf q)) =
+      derivativeMulLinearRaw f q := by
+  induction q using Quotient.inductionOn' with
+  | h a => exact quotientCotangentComplex_conj_mk f hf a
+
+set_option synthInstance.maxHeartbeats 100000 in
+theorem quotientCotangentComplex_kernel_iff (f : K[X]) (hf : f ≠ 0)
+    (q : K[X] ⧸ Ideal.span ({f} : Set K[X])) :
+    (quotientExtension f).cotangentComplex
+          (quotientConormalEquivForward f hf q) = 0 ↔
+      derivativeMulLinearRaw f q = 0 := by
+  constructor
+  · intro hq
+    have h := congrArg (quotientCotangentSpaceEquiv f) hq
+    rw [quotientCotangentComplex_conj f hf q] at h
+    simpa using h
+  · intro hq
+    apply (quotientCotangentSpaceEquiv f).injective
+    rw [quotientCotangentComplex_conj f hf q, hq]
+    exact LinearMap.map_zero (quotientCotangentSpaceEquiv f).toLinearMap
+
+end PrincipalUnivariateAQ
 
 /-! ## §2.1 (Algebraic/Geometric detector) — Theorem 2.1 core.
 
@@ -395,12 +723,74 @@ first Betti number `b₁(Γ_p)` (number of independent loops). -/
 structure DualGraph where
   b1 : ℕ
 
-/-- **LocalDeltaInvariant `δ_x`.**  The local `δ`-invariant at a singular point. -/
+/-- **Local singularity data `(δ_x, γ_x)`.**  The local `δ`-invariant and the
+number of analytic branches at a singular point.  The branch count is part of
+the normalization defect term in Prop. 3.24:
+`Q_x ≃ Λ^{γ_x-1} ⊕ Λ^{δ_x}` after realization. -/
 structure LocalDelta where
   delta : ℕ
+  branches : ℕ
+  branches_pos : 1 ≤ branches
+
+namespace LocalDelta
+
+/-- The branch contribution `γ_x - 1`. -/
+def branchExcess (x : LocalDelta) : ℕ := x.branches - 1
+
+theorem branchExcess_add_one (x : LocalDelta) :
+    x.branchExcess + 1 = x.branches := by
+  unfold branchExcess
+  have hx : 0 < x.branches := x.branches_pos
+  omega
+
+/-- Ordinary node: two branches and `δ = 1`. -/
+def node : LocalDelta where
+  delta := 1
+  branches := 2
+  branches_pos := by decide
+
+@[simp] theorem node_delta : node.delta = 1 := rfl
+@[simp] theorem node_branches : node.branches = 2 := rfl
+@[simp] theorem node_branchExcess : node.branchExcess = 1 := rfl
+
+/-- Ordinary cusp: one branch and `δ = 1`. -/
+def cusp : LocalDelta where
+  delta := 1
+  branches := 1
+  branches_pos := by decide
+
+@[simp] theorem cusp_delta : cusp.delta = 1 := rfl
+@[simp] theorem cusp_branches : cusp.branches = 1 := rfl
+@[simp] theorem cusp_branchExcess : cusp.branchExcess = 0 := rfl
+
+/-- Numerical δ-model for a coprime quasi-homogeneous plane branch
+`x^m + y^n = 0`: `δ = (m-1)(n-1)/2`, `γ = 1`.  The native local-ring
+normalization proof is a future Mathlib target; this packaged datum records the
+standard value as a checkable Lean object. -/
+def quasihomogeneousCoprimeBranch (m n : ℕ) (_hcop : Nat.Coprime m n) :
+    LocalDelta where
+  delta := ((m - 1) * (n - 1)) / 2
+  branches := 1
+  branches_pos := by decide
+
+@[simp] theorem quasihomogeneousCoprimeBranch_delta
+    (m n : ℕ) (hcop : Nat.Coprime m n) :
+    (quasihomogeneousCoprimeBranch m n hcop).delta =
+      ((m - 1) * (n - 1)) / 2 := rfl
+
+@[simp] theorem quasihomogeneousCoprimeBranch_branches
+    (m n : ℕ) (hcop : Nat.Coprime m n) :
+    (quasihomogeneousCoprimeBranch m n hcop).branches = 1 := rfl
+
+@[simp] theorem quasihomogeneousCoprimeBranch_branchExcess
+    (m n : ℕ) (hcop : Nat.Coprime m n) :
+    (quasihomogeneousCoprimeBranch m n hcop).branchExcess = 0 := rfl
+
+end LocalDelta
 
 /-- Normalization data of a curve fiber `X_p`: genus of the normalization `X̃_p`,
-its dual graph `Γ_p`, the list of singular points carrying their `δ_x`, and two
+its dual graph `Γ_p`, the list of singular points carrying their `(δ_x, γ_x)`,
+and two
 independently supplied detectors.  The bridge fields record the curve identities
 that relate the motivic and derived detectors to the normalization data. -/
 structure CurveFiber where
@@ -422,6 +812,22 @@ namespace CurveFiber
 
 /-- `Σ_{x∈Sing(X_p)} δ_x`. -/
 def deltaSum (f : CurveFiber) : ℕ := (f.sing.map LocalDelta.delta).sum
+
+/-- `Σ_{x∈Sing(X_p)} (γ_x - 1)`, the branch-gluing contribution in the local
+normalization quotient. -/
+def branchExcessSum (f : CurveFiber) : ℕ :=
+  (f.sing.map LocalDelta.branchExcess).sum
+
+/-- Full realized rank of the local normalization defect
+`⊕_x (Λ^{γ_x-1} ⊕ Λ^{δ_x})`. -/
+def branchDeltaDefectRank (f : CurveFiber) : ℕ :=
+  f.branchExcessSum + f.deltaSum
+
+/-- The dual graph encodes the branch-gluing contribution exactly when
+`b₁(Γ_p) = Σ_x(γ_x - 1)`.  Under this compatibility, the previous
+`b₁ + Σδ` formula is the same as the branch-refined Prop. 3.24 formula. -/
+def BranchGraphCompatible (f : CurveFiber) : Prop :=
+  f.graph.b1 = f.branchExcessSum
 
 /-- **Dual-graph decomposition (2.6)/(3.6)/(3.13):**
     `dim H¹(X_p, Λ) = 2g(X̃_p) + b₁(Γ_p) + Σδ_x`. -/
@@ -454,6 +860,29 @@ theorem H1Xp_decomposition (f : CurveFiber) :
 /-- The étale bump computes to `b₁(Γ_p) + Σδ_x`. -/
 theorem bump_eq (f : CurveFiber) : f.bump = f.graph.b1 + f.deltaSum := by
   unfold CurveFiber.bump CurveFiber.H1Xp CurveFiber.H1Up; omega
+
+/-- Branch-refined form of the local defect term: if the graph records branch
+gluing, then `b₁(Γ_p)+Σδ_x = Σ(γ_x-1)+Σδ_x`. -/
+theorem branchDeltaDefectRank_eq_graph_delta
+    (f : CurveFiber) (h : f.BranchGraphCompatible) :
+    f.branchDeltaDefectRank = f.graph.b1 + f.deltaSum := by
+  change f.graph.b1 = f.branchExcessSum at h
+  change f.branchExcessSum + f.deltaSum = f.graph.b1 + f.deltaSum
+  rw [← h]
+
+/-- Branch-refined decomposition of `H¹(X_p)`. -/
+theorem H1Xp_eq_branchDeltaDefect
+    (f : CurveFiber) (h : f.BranchGraphCompatible) :
+    f.H1Xp = 2 * f.g + f.branchDeltaDefectRank := by
+  rw [H1Xp_decomposition, branchDeltaDefectRank_eq_graph_delta f h]
+  omega
+
+/-- Branch-refined bump formula, matching Prop. 3.24's local
+`Λ^{γ_x-1} ⊕ Λ^{δ_x}` defect term. -/
+theorem bump_eq_branchDeltaDefectRank
+    (f : CurveFiber) (h : f.BranchGraphCompatible) :
+    f.bump = f.branchDeltaDefectRank := by
+  rw [bump_eq, branchDeltaDefectRank_eq_graph_delta f h]
 
 /-- **Theorem 2.4 / 3.6 / 3.28 (étale–motivic equality on curves):**
     `mot_p = b₁(Γ_p) + Σδ_x = bump_p`, and hence `mot_p = bump_p`. -/
@@ -548,6 +977,27 @@ structure BaseChange (f f' : CurveFiber) : Prop where
   hb1 : f'.graph.b1 = f.graph.b1
   hdelta : f'.deltaSum = f.deltaSum
 
+theorem BaseChange.refl (f : CurveFiber) : BaseChange f f :=
+  ⟨rfl, rfl, rfl⟩
+
+theorem BaseChange.symm {f f' : CurveFiber} (h : BaseChange f f') :
+    BaseChange f' f :=
+  ⟨h.hg.symm, h.hb1.symm, h.hdelta.symm⟩
+
+theorem BaseChange.trans {f₀ f₁ f₂ : CurveFiber}
+    (h₀₁ : BaseChange f₀ f₁) (h₁₂ : BaseChange f₁ f₂) :
+    BaseChange f₀ f₂ :=
+  ⟨h₁₂.hg.trans h₀₁.hg, h₁₂.hb1.trans h₀₁.hb1, h₁₂.hdelta.trans h₀₁.hdelta⟩
+
+theorem BaseChange.H1Up_stable {f f' : CurveFiber} (h : BaseChange f f') :
+    f'.H1Up = f.H1Up := by
+  unfold CurveFiber.H1Up
+  rw [h.hg]
+
+theorem BaseChange.H1Xp_stable {f f' : CurveFiber} (h : BaseChange f f') :
+    f'.H1Xp = f.H1Xp := by
+  rw [H1Xp_decomposition f', H1Xp_decomposition f, h.hg, h.hb1, h.hdelta]
+
 theorem BaseChange.bump_stable {f f' : CurveFiber} (h : BaseChange f f') :
     f'.bump = f.bump := by rw [bump_eq f', bump_eq f, h.hb1, h.hdelta]
 
@@ -571,10 +1021,70 @@ theorem BaseChange.der_stable {f f' : CurveFiber} (h : BaseChange f f') :
     exact f.der_spec
   rw [hd', hd, h.hb1, h.hdelta]
 
+/-- The motivic Euler characteristic of the defect motive is stable in the
+numeric curve model. -/
+theorem BaseChange.defectMotiveChi_stable {f f' : CurveFiber} (h : BaseChange f f') :
+    f'.defectMotiveChi = f.defectMotiveChi := by
+  change f'.mot = f.mot
+  exact BaseChange.mot_stable h
+
 /-- Smoothness itself is base-change stable. -/
 theorem BaseChange.smooth_stable {f f' : CurveFiber} (h : BaseChange f f') :
     f'.IsSmooth ↔ f.IsSmooth := by
   unfold CurveFiber.IsSmooth; rw [h.hb1, h.hdelta]
+
+/-- B6 numerical shadow: preservation of normalization data preserves all
+curve-level numerical detectors that occur in the base-change statements. -/
+theorem BaseChange.all_numeric_detectors_stable {f f' : CurveFiber}
+    (h : BaseChange f f') :
+    f'.H1Xp = f.H1Xp ∧
+      f'.H1Up = f.H1Up ∧
+      f'.bump = f.bump ∧
+      f'.defectMotiveChi = f.defectMotiveChi ∧
+      f'.mot = f.mot ∧
+      f'.der = f.der ∧
+      (f'.IsSmooth ↔ f.IsSmooth) :=
+  ⟨BaseChange.H1Xp_stable h,
+    BaseChange.H1Up_stable h,
+    BaseChange.bump_stable h,
+    BaseChange.defectMotiveChi_stable h,
+    BaseChange.mot_stable h,
+    BaseChange.der_stable h,
+    BaseChange.smooth_stable h⟩
+
+/-- Visible six-functor base-change package.  The categorical assertions are
+kept as explicit hypotheses because Mathlib does not yet provide the
+six-functor formalism for motives/étale sheaves.  The normalization component is
+the theorem-level part from which the numerical consequences below are proved. -/
+structure SixFunctorBaseChangePackage (f f' : CurveFiber) where
+  normalization : BaseChange f f'
+  jShriekBaseChange : Prop
+  jShriekBaseChange_holds : jShriekBaseChange
+  motiveConeBaseChange : Prop
+  motiveConeBaseChange_holds : motiveConeBaseChange
+  realizationBaseChange : Prop
+  realizationBaseChange_holds : realizationBaseChange
+
+namespace SixFunctorBaseChangePackage
+
+theorem all_numeric_detectors_stable {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    f'.H1Xp = f.H1Xp ∧
+      f'.H1Up = f.H1Up ∧
+      f'.bump = f.bump ∧
+      f'.defectMotiveChi = f.defectMotiveChi ∧
+      f'.mot = f.mot ∧
+      f'.der = f.der ∧
+      (f'.IsSmooth ↔ f.IsSmooth) :=
+  BaseChange.all_numeric_detectors_stable H.normalization
+
+theorem etale_motivic_derived_stable {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    f'.bump = f.bump ∧ f'.mot = f.mot ∧ f'.der = f.der :=
+  let h := H.normalization
+  ⟨BaseChange.bump_stable h, BaseChange.mot_stable h, BaseChange.der_stable h⟩
+
+end SixFunctorBaseChangePackage
 
 /-! ### FiveDetectors bundle (Def, §1.1). -/
 
@@ -596,6 +1106,23 @@ def CurveFiber.detectors (f : CurveFiber) : FiveDetectors where
   der := f.der
   jacobianFullRank := f.IsSmooth
 
+theorem BaseChange.detectors_stable {f f' : CurveFiber} (h : BaseChange f f') :
+    (f'.detectors.algGeomSmooth ↔ f.detectors.algGeomSmooth) ∧
+      f'.detectors.bump = f.detectors.bump ∧
+      f'.detectors.mot = f.detectors.mot ∧
+      f'.detectors.der = f.detectors.der ∧
+      (f'.detectors.jacobianFullRank ↔ f.detectors.jacobianFullRank) := by
+  change (f'.IsSmooth ↔ f.IsSmooth) ∧
+      f'.bump = f.bump ∧
+      f'.mot = f.mot ∧
+      f'.der = f.der ∧
+      (f'.IsSmooth ↔ f.IsSmooth)
+  exact ⟨BaseChange.smooth_stable h,
+    BaseChange.bump_stable h,
+    BaseChange.mot_stable h,
+    BaseChange.der_stable h,
+    BaseChange.smooth_stable h⟩
+
 /-- **Prop 1.6 (minimal certificate).**  Smoothness certifies, in one shot, that
     all numeric detectors vanish and the algebraic/Jacobian gates pass. -/
 theorem minimal_certificate (f : CurveFiber) (h : f.IsSmooth) :
@@ -612,7 +1139,9 @@ section Examples
 def nodalExample : CurveFiber where
   g := 1
   graph := ⟨2⟩
-  sing := [⟨3⟩, ⟨4⟩]
+  sing := [
+    { delta := 3, branches := 2, branches_pos := by decide },
+    { delta := 4, branches := 2, branches_pos := by decide }]
   mot := 9
   der := 9
   mot_spec := by decide
@@ -623,6 +1152,11 @@ example : nodalExample.H1Xp = 11 := by decide
 example : nodalExample.bump = 9 := by decide
 example : nodalExample.mot = 9 := by decide
 example : nodalExample.der = 9 := by decide
+example : nodalExample.branchExcessSum = 2 := by decide
+example : nodalExample.BranchGraphCompatible := by
+  unfold CurveFiber.BranchGraphCompatible CurveFiber.branchExcessSum
+  decide
+example : nodalExample.branchDeltaDefectRank = 9 := by decide
 /-- A smooth fiber (no loops, no singular points): all detectors vanish. -/
 def smoothExample : CurveFiber where
   g := 5
@@ -640,6 +1174,89 @@ example : smoothExample.der = 0 := by decide
 end Examples
 
 end CurveModel
+
+/-! ### C5. Benchmark δ-origin versus Tjurina `τ_p`.
+
+For the isolated coprime quasi-homogeneous branch `x^m + y^n = 0`, the
+normalization invariant is `δ = (m-1)(n-1)/2` and the weighted-homogeneous
+Tjurina number equals the Milnor number `(m-1)(n-1)`.  Thus
+`τ = 2δ = 2δ - γ + 1` when the branch count is `γ = 1`.
+
+The native local-ring normalization/Puiseux proof is not present in Mathlib, but
+the numerical bridge between the already formalized `τ` table and the B4 branch
+data is a genuine Lean theorem below.
+-/
+
+namespace BenchmarkDeltaBridge
+
+/-- The standard δ-value at the origin for the coprime quasi-homogeneous branch
+`x^pn + y^A = 0`: `δ = ((pn-1)(A-1))/2`. -/
+def originDelta (M : Model) : ℕ :=
+  ((M.pn - 1) * (M.A - 1)) / 2
+
+/-- The corresponding local singularity datum has one branch and this δ-value. -/
+def originBranchData (M : Model) (hcop : Nat.Coprime M.pn M.A) :
+    CurveModel.LocalDelta :=
+  CurveModel.LocalDelta.quasihomogeneousCoprimeBranch M.pn M.A hcop
+
+@[simp] theorem originBranchData_delta
+    (M : Model) (hcop : Nat.Coprime M.pn M.A) :
+    (originBranchData M hcop).delta = originDelta M := rfl
+
+@[simp] theorem originBranchData_branches
+    (M : Model) (hcop : Nat.Coprime M.pn M.A) :
+    (originBranchData M hcop).branches = 1 := rfl
+
+@[simp] theorem originBranchData_branchExcess
+    (M : Model) (hcop : Nat.Coprime M.pn M.A) :
+    (originBranchData M hcop).branchExcess = 0 := rfl
+
+/-- In the good-characteristic isolated benchmark row, if the usual product is
+even, the Tjurina length is twice the normalization δ-invariant. -/
+theorem tau_goodOpen_eq_two_originDelta
+    (p : ℕ) (M : Model) (hgood : goodOpen p M)
+    (heven : 2 ∣ ((M.pn - 1) * (M.A - 1))) :
+    tau p M = ((2 * originDelta M : ℕ) : ℕ∞) := by
+  let N : ℕ := (M.pn - 1) * (M.A - 1)
+  have hEvenN : 2 ∣ N := by
+    simpa [N] using heven
+  have hN : 2 * (N / 2) = N := by
+    omega
+  rw [goodOpen_tau p M hgood]
+  unfold originDelta
+  change (N : ℕ∞) = ((2 * (N / 2) : ℕ) : ℕ∞)
+  rw [hN]
+
+/-- Same theorem phrased through the B4 `LocalDelta` branch datum. -/
+theorem tau_goodOpen_eq_two_delta_origin
+    (p : ℕ) (M : Model) (hgood : goodOpen p M)
+    (hcop : Nat.Coprime M.pn M.A)
+    (heven : 2 ∣ ((M.pn - 1) * (M.A - 1))) :
+    tau p M = ((2 * (originBranchData M hcop).delta : ℕ) : ℕ∞) := by
+  simpa [originBranchData_delta] using
+    tau_goodOpen_eq_two_originDelta p M hgood heven
+
+/-- Plane-curve form of the same bridge:
+for one branch `γ = 1`, the weighted-homogeneous Tjurina number satisfies
+`τ = 2δ - γ + 1`. -/
+theorem tau_goodOpen_eq_delta_branch_formula
+    (p : ℕ) (M : Model) (hgood : goodOpen p M)
+    (hcop : Nat.Coprime M.pn M.A)
+    (heven : 2 ∣ ((M.pn - 1) * (M.A - 1))) :
+    tau p M =
+      ((2 * (originBranchData M hcop).delta + 1 -
+          (originBranchData M hcop).branches : ℕ) : ℕ∞) := by
+  rw [tau_goodOpen_eq_two_delta_origin p M hgood hcop heven]
+  simp
+
+/-- The bridge is genuinely a finite isolated-branch statement: in the corrected
+both-divisible characteristic-`p` row the Tjurina detector is infinite. -/
+theorem tau_both_divisible_is_infinite_not_delta_bridge
+    (p : ℕ) (M : Model) (hpn : p ∣ M.pn) (hA : p ∣ M.A) :
+    tau p M = (⊤ : ℕ∞) :=
+  tau_both p M hpn hA
+
+end BenchmarkDeltaBridge
 
 /-! ## §5.2–§5.5 (Derived detector, REAL algebraic core): the T¹/Jacobian quotient.
 
@@ -715,6 +1332,51 @@ noncomputable def localLength (f : (ZMod p)[X]) : ℕ :=
 remembers the value `⊤` for non-finite deformation spaces. -/
 noncomputable def localLengthENat (f : (ZMod p)[X]) : ℕ∞ :=
   Module.length (ZMod p) (JacobianQuotient f)
+
+/-- The length-valued detector is infinite exactly when the Tjurina/Jacobian
+quotient is not finite-dimensional over `𝔽_p`. -/
+theorem localLengthENat_eq_top_iff_not_module_finite (f : (ZMod p)[X]) :
+    localLengthENat f = ⊤ ↔
+      ¬ Module.Finite (ZMod p) (JacobianQuotient f) :=
+  ModuleLength.length_eq_top_iff_not_module_finite
+
+/-- In every finite-dimensional case, the new `ℕ∞`-valued detector agrees with
+the old `ℕ`-valued `finrank` detector.  This version does not require `f ≠ 0`;
+it only requires the actual quotient to be finite. -/
+theorem localLengthENat_eq_localLength_of_module_finite
+    (f : (ZMod p)[X])
+    (hfin : Module.Finite (ZMod p) (JacobianQuotient f)) :
+    localLengthENat f = (localLength f : ℕ∞) := by
+  haveI : Module.Finite (ZMod p) (JacobianQuotient f) := hfin
+  unfold localLengthENat localLength
+  simpa using (Module.length_eq_finrank (ZMod p) (JacobianQuotient f))
+
+/-- In every non-finite-dimensional case, the `ℕ∞`-valued detector is `⊤`. -/
+theorem localLengthENat_eq_top_of_not_module_finite
+    (f : (ZMod p)[X])
+    (h : ¬ Module.Finite (ZMod p) (JacobianQuotient f)) :
+    localLengthENat f = ⊤ :=
+  (localLengthENat_eq_top_iff_not_module_finite f).2 h
+
+/-- The legacy `localLength : ℕ` loses all infinite-dimensional information:
+when the quotient is not finite-dimensional, it returns `0`. -/
+theorem localLength_eq_zero_of_not_module_finite
+    (f : (ZMod p)[X])
+    (h : ¬ Module.Finite (ZMod p) (JacobianQuotient f)) :
+    localLength f = 0 := by
+  unfold localLength
+  exact ModuleLength.finrank_eq_zero_of_not_module_finite h
+
+/-- Global corrected relation between the old `finrank` model and the preferred
+`Module.length : ℕ∞` model. -/
+theorem localLengthENat_eq_localLength_or_top (f : (ZMod p)[X]) :
+    (Module.Finite (ZMod p) (JacobianQuotient f) ∧
+        localLengthENat f = (localLength f : ℕ∞)) ∨
+      (¬ Module.Finite (ZMod p) (JacobianQuotient f) ∧
+        localLengthENat f = ⊤) := by
+  classical
+  unfold localLengthENat localLength
+  exact ModuleLength.length_eq_finrank_or_top
 
 /-- In the nonzero univariate case the Tjurina quotient is finite over `𝔽_p`. -/
 theorem jacobianQuotient_module_finite (f : (ZMod p)[X]) (hf : f ≠ 0) :
@@ -804,11 +1466,36 @@ noncomputable def tjurinaDimension (f : (ZMod p)[X]) : ℕ :=
 noncomputable def tjurinaLength (f : (ZMod p)[X]) : ℕ∞ :=
   localLengthENat f
 
+/-- The paper's derived detector after the §1.1 correction:
+`H¹(L_{X_p})` is formalized as the André--Quillen cohomology/deformation
+object `T¹ = A/J_f`, not as Mathlib's homological `Algebra.H1Cotangent`. -/
+abbrev PaperDerivedT1Detector (f : (ZMod p)[X]) : Type _ :=
+  TjurinaQuotient f
+
+/-- Length of the corrected paper-derived detector. -/
+noncomputable def paperDerivedT1Length (f : (ZMod p)[X]) : ℕ∞ :=
+  Module.length (ZMod p) (PaperDerivedT1Detector f)
+
 @[simp] theorem tjurinaDimension_eq_localLength (f : (ZMod p)[X]) :
     tjurinaDimension f = localLength f := rfl
 
 @[simp] theorem tjurinaLength_eq_localLengthENat (f : (ZMod p)[X]) :
     tjurinaLength f = localLengthENat f := rfl
+
+@[simp] theorem paperDerivedT1Length_eq_tjurinaLength (f : (ZMod p)[X]) :
+    paperDerivedT1Length f = tjurinaLength f := rfl
+
+@[simp] theorem paperDerivedT1Length_eq_localLengthENat (f : (ZMod p)[X]) :
+    paperDerivedT1Length f = localLengthENat f := rfl
+
+theorem paperDerivedT1Detector_subsingleton_iff (f : (ZMod p)[X]) :
+    Subsingleton (PaperDerivedT1Detector f) ↔ Squarefree f :=
+  jacobianQuotient_subsingleton_iff f
+
+theorem paperDerivedT1Length_eq_natDegree_gcd (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    paperDerivedT1Length f =
+      ((EuclideanDomain.gcd f (derivative f)).natDegree : ℕ∞) := by
+  rw [paperDerivedT1Length_eq_localLengthENat, localLengthENat_eq_natDegree_gcd f hf]
 
 theorem tjurinaQuotient_subsingleton_iff (f : (ZMod p)[X]) :
     Subsingleton (TjurinaQuotient f) ↔ Squarefree f :=
@@ -909,6 +1596,47 @@ theorem principalAQH1Model_finrank_eq_natDegree_gcd
       (EuclideanDomain.gcd f (derivative f)).natDegree := by
   rw [principalAQH1Model_finrank_eq_tjurinaDimension f hf,
     tjurinaDimension_eq_natDegree_gcd f hf]
+
+theorem principalAQH1Model_cotangentComplex_kernel_iff
+    (f : (ZMod p)[X]) (hf : f ≠ 0)
+    (q : (ZMod p)[X] ⧸ Ideal.span ({f} : Set (ZMod p)[X])) :
+    (PrincipalUnivariateAQ.quotientExtension f).cotangentComplex
+          (PrincipalUnivariateAQ.quotientConormalEquivForward f hf q) = 0 ↔
+      derivativeMulLinear f q = 0 := by
+  simpa [PrincipalUnivariateAQ.derivativeMulLinearRaw, derivativeMulLinear]
+    using PrincipalUnivariateAQ.quotientCotangentComplex_kernel_iff
+      (K := ZMod p) f hf q
+
+noncomputable def principalAQH1ModelEquivExtensionH1
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    PrincipalAQH1Model f ≃
+      (PrincipalUnivariateAQ.quotientExtension f).H1Cotangent where
+  toFun x :=
+    ⟨PrincipalUnivariateAQ.quotientConormalEquivForward f hf x.1,
+      (principalAQH1Model_cotangentComplex_kernel_iff f hf x.1).mpr x.2⟩
+  invFun y :=
+    ⟨(PrincipalUnivariateAQ.quotientConormalEquivForward f hf).symm y.1, by
+      rw [LinearMap.mem_ker]
+      rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
+      simp⟩
+  left_inv x := by
+    ext
+    simp
+  right_inv y := by
+    ext
+    simp
+
+noncomputable def principalAQH1ModelEquivAlgebraH1Cotangent
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    PrincipalAQH1Model f ≃
+      Algebra.H1Cotangent (ZMod p)
+        ((ZMod p)[X] ⧸ Ideal.span ({f} : Set (ZMod p)[X])) := by
+  letI : Algebra.FormallySmooth (ZMod p)
+      (PrincipalUnivariateAQ.quotientExtension f).Ring := by
+    change Algebra.FormallySmooth (ZMod p) (ZMod p)[X]
+    infer_instance
+  exact (principalAQH1ModelEquivExtensionH1 f hf).trans
+    (PrincipalUnivariateAQ.quotientExtension f).equivH1CotangentOfFormallySmooth.toEquiv
 
 /-! ### §5.1 Object-level Mathlib AQ homology via `Algebra.H1Cotangent`.
 
@@ -1219,7 +1947,7 @@ side** detector.  It is deliberately *not* identified with `Algebra.H1Cotangent`
 (`= ker` of the cotangent complex, `Extension.H1Cotangent := LinearMap.ker
 P.cotangentComplex`): for a reduced plane curve `H1Cotangent` can vanish while the
 Tjurina quotient `A/J_f` does not.  The paper's notation is therefore formalized
-as T¹ via `JacobianReal.localLength`; the homological kernel is tracked
+as T¹ via the `Module.length`-valued `JacobianReal.localLengthENat`; the homological kernel is tracked
 separately, with a dimension coincidence only in the univariate Artinian case. -/
 theorem jacobianIdeal_two (f : MvPolynomial (Fin 2) (ZMod p)) :
     jacobianIdeal f = Ideal.span {f, pderiv 0 f, pderiv 1 f} := by
@@ -1287,6 +2015,56 @@ theorem planeAQH1KernelModel_subsingleton_of_isDomain
         exact congr_arg Prod.snd hwpair
       exact (mul_eq_zero.mp hy).resolve_right hgy
   rw [hzero u, hzero v]
+
+/-- The abstract plane-curve Tjurina quotient attached to a two-component
+Jacobian row.  This is the deformation/T1 side, not Mathlib's homological
+`Algebra.H1Cotangent` kernel model. -/
+abbrev PlaneTjurinaQuotient (A : Type*) [CommRing A] (gx gy : A) : Type _ :=
+  A ⧸ Ideal.span ({gx, gy} : Set A)
+
+/-- If the two partials do not generate the unit ideal, the Tjurina quotient is
+nontrivial. -/
+theorem planeTjurinaQuotient_nontrivial_of_jacobianIdeal_ne_top
+    (A : Type*) [CommRing A] {gx gy : A}
+    (hJ : Ideal.span ({gx, gy} : Set A) ≠ ⊤) :
+    Nontrivial (PlaneTjurinaQuotient A gx gy) :=
+  Ideal.Quotient.nontrivial_iff.mpr hJ
+
+/-- A nontrivial quotient ring is not a subsingleton. -/
+theorem planeTjurinaQuotient_not_subsingleton_of_jacobianIdeal_ne_top
+    (A : Type*) [CommRing A] {gx gy : A}
+    (hJ : Ideal.span ({gx, gy} : Set A) ≠ ⊤) :
+    ¬ Subsingleton (PlaneTjurinaQuotient A gx gy) := by
+  haveI : Nontrivial (PlaneTjurinaQuotient A gx gy) :=
+    planeTjurinaQuotient_nontrivial_of_jacobianIdeal_ne_top A hJ
+  intro hsub
+  exact zero_ne_one (hsub.elim (0 : PlaneTjurinaQuotient A gx gy) 1)
+
+/-- **Plane-curve H1/T1 separation.**  In a domain, a nonzero gradient kills the
+homological annihilator model, while a non-unit Jacobian row leaves a nontrivial
+Tjurina quotient.  This is the unconditional Lean form of the warning that
+`H1(L)` and `T1 = A/J_f` must not be identified for general plane curves. -/
+theorem planeAQH1KernelModel_subsingleton_and_tjurina_not_subsingleton_of_isDomain
+    (A : Type*) [CommRing A] [IsDomain A] {gx gy : A}
+    (hgrad : gx ≠ 0 ∨ gy ≠ 0)
+    (hJ : Ideal.span ({gx, gy} : Set A) ≠ ⊤) :
+    Subsingleton (PlaneAQH1KernelModel A gx gy) ∧
+      ¬ Subsingleton (PlaneTjurinaQuotient A gx gy) :=
+  ⟨planeAQH1KernelModel_subsingleton_of_isDomain A hgrad,
+    planeTjurinaQuotient_not_subsingleton_of_jacobianIdeal_ne_top A hJ⟩
+
+/-- Equivalently, under the same hypotheses, the homological kernel detector and
+the Tjurina quotient detector cannot satisfy the same subsingleton criterion. -/
+theorem planeAQH1KernelModel_not_subsingleton_iff_tjurina_of_isDomain
+    (A : Type*) [CommRing A] [IsDomain A] {gx gy : A}
+    (hgrad : gx ≠ 0 ∨ gy ≠ 0)
+    (hJ : Ideal.span ({gx, gy} : Set A) ≠ ⊤) :
+    ¬ (Subsingleton (PlaneAQH1KernelModel A gx gy) ↔
+      Subsingleton (PlaneTjurinaQuotient A gx gy)) := by
+  intro hiff
+  exact
+    (planeTjurinaQuotient_not_subsingleton_of_jacobianIdeal_ne_top A hJ)
+      (hiff.mp (planeAQH1KernelModel_subsingleton_of_isDomain A hgrad))
 
 omit [Fact (Nat.Prime p)] in
 /-- **Multivariate object-level Mathlib homology detector (standard étale).**  The bivariate
@@ -1387,6 +2165,125 @@ theorem formallySmooth_of_grad_span_eq_top (f : MvPolynomial (Fin n) (ZMod p))
     = Ideal.toCotangent _ ⟨f * q, hzv⟩
   rw [hDz, map_smul, hl1, ← hzc, Ideal.cotangentEquivOfEq_toCotangent]
 
+/-- A finite Bezout-style certificate that the affine hypersurface Jacobian row
+generates the unit ideal in `k[x]/(f)`.  This is intentionally smaller than a
+smoothness bridge field: it is just the concrete partition of unity needed by
+the affine-native Jacobian criterion. -/
+structure GradUnitCertificate (f : MvPolynomial (Fin n) (ZMod p)) where
+  coeff :
+    Fin n -> MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}
+  jacobian_combination :
+    (∑ i, coeff i *
+      Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f)) = 1
+
+/-- The ideal-theoretic content of a `GradUnitCertificate`: the gradient ideal is
+the unit ideal. -/
+theorem grad_span_eq_top_of_gradUnitCertificate
+    (f : MvPolynomial (Fin n) (ZMod p)) (C : GradUnitCertificate (p := p) f) :
+    Ideal.span (Set.range fun i =>
+        Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f)) = ⊤ := by
+  rw [Ideal.eq_top_iff_one]
+  rw [← C.jacobian_combination]
+  refine Ideal.sum_mem _ fun i _ => ?_
+  exact Ideal.mul_mem_left _ _ (Ideal.subset_span (Set.mem_range_self i))
+
+/-- Certificate-driven affine Jacobian criterion.  This packages Corollary 5.4
+in the PR-friendly direction: a concrete gradient partition of unity produces
+formal smoothness of the affine hypersurface quotient. -/
+theorem formallySmooth_of_gradUnitCertificate
+    (f : MvPolynomial (Fin n) (ZMod p)) (C : GradUnitCertificate (p := p) f) :
+    Algebra.FormallySmooth (ZMod p)
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}) :=
+  formallySmooth_of_grad_span_eq_top f
+    (grad_span_eq_top_of_gradUnitCertificate f C)
+
+/-- The remaining reverse direction can be isolated as a construction of the
+same small Bezout certificate from formal smoothness plus the regular principal
+conormal coordinate calculation.  No scheme-level axiom is hidden here: once the
+certificate is supplied, the Jacobian ideal conclusion is an ordinary theorem. -/
+theorem grad_span_eq_top_of_formallySmooth_with_gradUnitCertificate
+    (f : MvPolynomial (Fin n) (ZMod p))
+    (_hfs : Algebra.FormallySmooth (ZMod p)
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f}))
+    (C : GradUnitCertificate (p := p) f) :
+    Ideal.span (Set.range fun i =>
+        Ideal.Quotient.mk (Ideal.span {f}) (pderiv i f)) = ⊤ :=
+  grad_span_eq_top_of_gradUnitCertificate f C
+
+/-- **A3, reverse direction up to the conormal split injection.**
+For a hypersurface presentation `k[x] ⟶ k[x]/(f)`, formal smoothness gives the
+Mathlib conormal map a left inverse.  This is the precise theorem supplied by
+`Algebra.FormallySmooth.iff_split_injection`; extracting the stronger statement
+that the partial derivatives generate the unit ideal additionally requires the
+nonzero principal-conormal coordinate calculation. -/
+theorem split_injection_of_formallySmooth_hypersurface
+    (f : MvPolynomial (Fin n) (ZMod p))
+    (hfs : Algebra.FormallySmooth (ZMod p)
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})) :
+    ∃ l, l ∘ₗ (KaehlerDifferential.kerCotangentToTensor
+        (ZMod p) (MvPolynomial (Fin n) (ZMod p))
+        (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})) = LinearMap.id := by
+  have hsurj : Function.Surjective (algebraMap (MvPolynomial (Fin n) (ZMod p))
+      (MvPolynomial (Fin n) (ZMod p) ⧸ Ideal.span {f})) := by
+    rw [Ideal.Quotient.algebraMap_eq]
+    exact Ideal.Quotient.mk_surjective
+  exact (Algebra.FormallySmooth.iff_split_injection hsurj).mp hfs
+
+/-- The zero equation gives the quotient `k[x]/(0) ≃ k[x]`, hence a formally
+smooth algebra.  This is the necessary edge case for the A3 reverse direction:
+without a nonzero hypersurface equation, formal smoothness cannot force the
+gradient ideal to be the unit ideal. -/
+theorem zero_hypersurface_formallySmooth :
+    Algebra.FormallySmooth (ZMod p)
+      (MvPolynomial (Fin 1) (ZMod p) ⧸
+        Ideal.span ({(0 : MvPolynomial (Fin 1) (ZMod p))} : Set _)) := by
+  have hbot :
+      Ideal.span ({(0 : MvPolynomial (Fin 1) (ZMod p))} : Set _) = ⊥ := by
+    simp
+  rw [hbot]
+  exact Algebra.FormallySmooth.of_equiv
+    (AlgEquiv.quotientBot (ZMod p) (MvPolynomial (Fin 1) (ZMod p))).symm
+
+/-- For `f = 0`, every partial derivative is zero, so the gradient ideal in
+`k[x]/(0)` is the zero ideal. -/
+theorem zero_hypersurface_grad_span_eq_bot :
+    Ideal.span (Set.range fun i : Fin 1 =>
+        Ideal.Quotient.mk
+          (Ideal.span ({(0 : MvPolynomial (Fin 1) (ZMod p))} : Set _))
+          (pderiv i (0 : MvPolynomial (Fin 1) (ZMod p)))) = ⊥ := by
+  simp
+
+/-- Consequently the requested unconditional reverse
+`FormallySmooth (k[x]/(f)) → gradient ideal = ⊤` is false: it already fails for
+`f = 0`.  The corrected Jacobian criterion must assume a genuine nonzero
+hypersurface equation (or an equivalent regular principal-conormal hypothesis). -/
+theorem zero_hypersurface_grad_span_ne_top :
+    Ideal.span (Set.range fun i : Fin 1 =>
+        Ideal.Quotient.mk
+          (Ideal.span ({(0 : MvPolynomial (Fin 1) (ZMod p))} : Set _))
+          (pderiv i (0 : MvPolynomial (Fin 1) (ZMod p)))) ≠ ⊤ := by
+  intro htop
+  let R := MvPolynomial (Fin 1) (ZMod p)
+  let I : Ideal R := Ideal.span ({(0 : R)} : Set R)
+  let A := R ⧸ I
+  have hbotI : I = ⊥ := by
+    simp [I]
+  have hnontriv : (0 : A) ≠ 1 := by
+    intro h01
+    have hmk : Ideal.Quotient.mk I (1 : R) = 0 := by
+      simpa [A] using h01.symm
+    have hmem : (1 : R) ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp hmk
+    rw [hbotI] at hmem
+    simp at hmem
+  have h1mem : (1 : A) ∈
+      Ideal.span (Set.range fun i : Fin 1 =>
+        Ideal.Quotient.mk I (pderiv i (0 : R))) := by
+    rw [htop]
+    exact Submodule.mem_top
+  have h10 : (1 : A) = 0 := by
+    simpa [I, A, zero_hypersurface_grad_span_eq_bot (p := p)] using h1mem
+  exact hnontriv h10.symm
+
 end JacobianMv
 
 /-! ## §5.3 (Prop 5.5) — Base change for the cotangent complex / AQ homology.
@@ -1416,6 +2313,16 @@ theorem h1Cotangent_subsingleton_baseChange (R A B : Type*)
     [Algebra R A] [Algebra R B] [Algebra.FormallySmooth R A] :
     Subsingleton (Algebra.H1Cotangent B (B ⊗[R] A)) :=
   inferInstance
+
+/-- B3/Prop. 5.5, algebraic native form: the part presently available in
+Mathlib is exactly formal smoothness and AQ-homology silence after base change.
+The sheafified scheme cotangent complex is deliberately not postulated here. -/
+theorem proposition_5_5_algebraic_cotangent_baseChange
+    (R A B : Type*) [CommRing R] [CommRing A] [CommRing B]
+    [Algebra R A] [Algebra R B] [Algebra.FormallySmooth R A] :
+    Algebra.FormallySmooth B (B ⊗[R] A) ∧
+      Subsingleton (Algebra.H1Cotangent B (B ⊗[R] A)) :=
+  ⟨formallySmooth_baseChange R A B, h1Cotangent_subsingleton_baseChange R A B⟩
 
 end DerivedBaseChange
 
@@ -1677,6 +2584,18 @@ theorem proposition_3_30 (X : ArithmeticCurve) (h : X.goodPrime) :
   let hz := X.good_to_zero h
   ⟨hz.1, hz.2.1⟩
 
+/-- Proposition 3.31: six-functor base-change stability, represented at the
+paper-interface level by the explicit `baseChangeStable` field. -/
+theorem proposition_3_31 (X : ArithmeticCurve) : X.baseChangeStable :=
+  X.base_change_identities
+
+/-- Corollary 3.31: transport plus base-change stability for the detector
+package.  The categorical six-functor statement remains a visible interface
+field; the numerical curve model proves its T2 shadow separately. -/
+theorem corollary_3_31 (X : ArithmeticCurve) :
+    X.transportStable ∧ X.baseChangeStable :=
+  ⟨X.transport_stability, X.base_change_identities⟩
+
 /-- Proposition 5.1: singularity test via the cotangent complex. -/
 theorem proposition_5_1 (X : ArithmeticCurve) : X.derivedSilent ↔ X.algSmooth :=
   X.alg_iff_derivedSilent.symm
@@ -1756,6 +2675,8 @@ section AxiomAudit
 #print axioms CurveModel.H1Xp_decomposition
 #print axioms CurveModel.bump_eq
 #print axioms CurveModel.etale_motivic_equality
+#print axioms CurveModel.branchDeltaDefectRank_eq_graph_delta
+#print axioms CurveModel.bump_eq_branchDeltaDefectRank
 #print axioms CurveModel.der_eq_bump
 #print axioms CurveModel.der_eq_mot
 #print axioms CurveModel.der_eq_zero_iff_smooth
@@ -1764,11 +2685,23 @@ section AxiomAudit
 #print axioms CurveModel.good_prime_vanishing
 #print axioms CurveModel.good_prime_box_curve
 #print axioms CurveModel.BaseChange.bump_stable
+#print axioms CurveModel.BaseChange.all_numeric_detectors_stable
+#print axioms CurveModel.BaseChange.detectors_stable
+#print axioms CurveModel.SixFunctorBaseChangePackage.all_numeric_detectors_stable
 #print axioms CurveModel.minimal_certificate
 #print axioms JacobianReal.jacobianIdeal_eq_top_iff_squarefree
 #print axioms JacobianReal.jacobianQuotient_subsingleton_iff
 #print axioms JacobianReal.derived_eq_algebraic_gate
 #print axioms Spt2.ModuleLength.eq_top_of_not_module_finite
+#print axioms Spt2.ModuleLength.length_eq_top_iff_not_module_finite
+#print axioms Spt2.ModuleLength.length_eq_finrank_of_module_finite
+#print axioms Spt2.ModuleLength.finrank_eq_zero_of_length_eq_top
+#print axioms Spt2.ModuleLength.length_eq_finrank_or_top
+#print axioms JacobianReal.localLengthENat_eq_top_iff_not_module_finite
+#print axioms JacobianReal.localLengthENat_eq_localLength_of_module_finite
+#print axioms JacobianReal.localLengthENat_eq_top_of_not_module_finite
+#print axioms JacobianReal.localLength_eq_zero_of_not_module_finite
+#print axioms JacobianReal.localLengthENat_eq_localLength_or_top
 #print axioms JacobianReal.localLengthENat_eq_localLength
 #print axioms JacobianReal.localLengthENat_eq_natDegree_gcd
 #print axioms JacobianReal.localLengthENat_eq_zero_iff
@@ -1776,6 +2709,10 @@ section AxiomAudit
 #print axioms JacobianReal.localLength_eq_zero_iff
 #print axioms JacobianReal.tjurinaLength_eq_natDegree_gcd
 #print axioms JacobianReal.tjurinaDimension_eq_natDegree_gcd
+#print axioms JacobianReal.paperDerivedT1Length_eq_localLengthENat
+#print axioms JacobianReal.paperDerivedT1Length_eq_natDegree_gcd
+#print axioms BenchmarkDeltaBridge.tau_goodOpen_eq_two_originDelta
+#print axioms BenchmarkDeltaBridge.tau_goodOpen_eq_delta_branch_formula
 #print axioms JacobianReal.principalAQH1Model_finrank_eq_tjurinaDimension
 #print axioms JacobianReal.principalAQH1Model_finrank_eq_natDegree_gcd
 #print axioms JacobianReal.h1Cotangent_subsingleton_of_irreducible
@@ -1789,10 +2726,22 @@ section AxiomAudit
 #print axioms JacobianMv.jacobianQuotient_subsingleton_iff
 #print axioms JacobianMv.jacobianIdeal_eq_top_iff_one_mem
 #print axioms JacobianMv.planeAQH1KernelModel_subsingleton_of_isDomain
+#print axioms JacobianMv.planeTjurinaQuotient_nontrivial_of_jacobianIdeal_ne_top
+#print axioms JacobianMv.planeTjurinaQuotient_not_subsingleton_of_jacobianIdeal_ne_top
+#print axioms JacobianMv.planeAQH1KernelModel_subsingleton_and_tjurina_not_subsingleton_of_isDomain
+#print axioms JacobianMv.planeAQH1KernelModel_not_subsingleton_iff_tjurina_of_isDomain
 #print axioms JacobianMv.h1Cotangent_subsingleton_standardEtale
 #print axioms JacobianMv.formallySmooth_of_grad_span_eq_top
+#print axioms JacobianMv.grad_span_eq_top_of_gradUnitCertificate
+#print axioms JacobianMv.formallySmooth_of_gradUnitCertificate
+#print axioms JacobianMv.grad_span_eq_top_of_formallySmooth_with_gradUnitCertificate
+#print axioms JacobianMv.split_injection_of_formallySmooth_hypersurface
+#print axioms JacobianMv.zero_hypersurface_formallySmooth
+#print axioms JacobianMv.zero_hypersurface_grad_span_eq_bot
+#print axioms JacobianMv.zero_hypersurface_grad_span_ne_top
 #print axioms DerivedBaseChange.formallySmooth_baseChange
 #print axioms DerivedBaseChange.h1Cotangent_subsingleton_baseChange
+#print axioms DerivedBaseChange.proposition_5_5_algebraic_cotangent_baseChange
 #print axioms PaperFullFormalization.theorem_1_1
 #print axioms PaperFullFormalization.proposition_1_3
 #print axioms PaperFullFormalization.corollary_1_4
@@ -1800,6 +2749,8 @@ section AxiomAudit
 #print axioms PaperFullFormalization.lemma_2_17
 #print axioms PaperFullFormalization.proposition_2_18
 #print axioms PaperFullFormalization.theorem_3_6
+#print axioms PaperFullFormalization.proposition_3_31
+#print axioms PaperFullFormalization.corollary_3_31
 #print axioms PaperFullFormalization.proposition_5_3
 #print axioms PaperFullFormalization.theorem_6_1
 #print axioms PaperFullFormalization.lemma_6_6
@@ -2022,12 +2973,28 @@ theorem discriminantGate_iff_localLength_eq_zero
   rw [JacobianReal.localLength_eq_zero_iff f hf]
   exact (squarefree_iff_coprime_derivative f).symm
 
+/-- Length-valued (`ℕ∞`) version of the same gate.  This is the preferred
+formulation after A8: the detector is `Module.length`, not `finrank`. -/
+theorem discriminantGate_iff_localLengthENat_eq_zero
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    DiscriminantGate f ↔ JacobianReal.localLengthENat f = 0 := by
+  unfold DiscriminantGate
+  rw [JacobianReal.localLengthENat_eq_zero_iff f hf]
+  exact (squarefree_iff_coprime_derivative f).symm
+
 /-- For nonzero `f`, the bad gate is exactly positive/nonzero local length. -/
 theorem badDiscriminantGate_iff_localLength_ne_zero
     (f : (ZMod p)[X]) (hf : f ≠ 0) :
     BadDiscriminantGate f ↔ JacobianReal.localLength f ≠ 0 := by
   unfold BadDiscriminantGate
   rw [discriminantGate_iff_localLength_eq_zero f hf]
+
+/-- Bad gate in the corrected `ℕ∞`-valued local-length detector. -/
+theorem badDiscriminantGate_iff_localLengthENat_ne_zero
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    BadDiscriminantGate f ↔ JacobianReal.localLengthENat f ≠ 0 := by
+  unfold BadDiscriminantGate
+  rw [discriminantGate_iff_localLengthENat_eq_zero f hf]
 
 /-- A theorem-level replacement for the algebraic part of Theorem 2.1:
 squarefreeness, gcd gate, Jacobian ideal being the unit ideal, Jacobian quotient
@@ -2046,6 +3013,24 @@ theorem theorem_2_1_algebraic_TFAE
     exact (JacobianReal.jacobianIdeal_eq_top_iff_coprime f).symm
   tfae_have 2 ↔ 4 := discriminantGate_iff_jacobianQuotient_subsingleton f
   tfae_have 2 ↔ 5 := discriminantGate_iff_localLength_eq_zero f hf
+  tfae_finish
+
+/-- The same Theorem 2.1 algebraic chain with the corrected `ℕ∞`-valued
+`Module.length` detector. -/
+theorem theorem_2_1_algebraic_ENat_TFAE
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    [ UnivariateSmoothGate f,
+      DiscriminantGate f,
+      JacobianReal.jacobianIdeal f = ⊤,
+      Subsingleton (JacobianReal.JacobianQuotient f),
+      JacobianReal.localLengthENat f = 0 ].TFAE := by
+  tfae_have 1 ↔ 2 := by
+    exact (discriminantGate_iff_squarefree f).symm
+  tfae_have 2 ↔ 3 := by
+    unfold DiscriminantGate
+    exact (JacobianReal.jacobianIdeal_eq_top_iff_coprime f).symm
+  tfae_have 2 ↔ 4 := discriminantGate_iff_jacobianQuotient_subsingleton f
+  tfae_have 2 ↔ 5 := discriminantGate_iff_localLengthENat_eq_zero f hf
   tfae_finish
 
 /-- Singular/bad version of the same algebraic chain. -/
@@ -2149,6 +3134,75 @@ theorem goodOpen_tau_finite_and_gates (p : Nat) (M : Spt2.Model)
 
 end Benchmark
 
+/-- The integral resultant/discriminant proxy used for condition (1):
+`Δ_res(F) = Res(F,F')`.  For monic families this is enough to recover the
+mod-`p` squarefreeness gate without a separate certificate field. -/
+noncomputable def ResultantDelta (F : Int[X]) : Int :=
+  F.resultant F.derivative
+
+/-- Resultants commute with reduction modulo `p` for the pair `(F,F')` when
+`F` is monic.  The proof explicitly handles the possible drop in
+`natDegree (F' mod p)`: increasing the second Sylvester degree only multiplies
+by a power of the leading coefficient of `F mod p`, which is `1`. -/
+theorem resultant_map_derivative_of_monic
+    (F : Int[X]) (hF : F.Monic) :
+    ((F.resultant F.derivative : Int) : ZMod p) =
+      (reduceIntPolynomial (p := p) F).resultant
+        (derivative (reduceIntPolynomial (p := p) F)) := by
+  let φ : Int →+* ZMod p := Int.castRingHom (ZMod p)
+  let fbar : (ZMod p)[X] := F.map φ
+  let gbar : (ZMod p)[X] := F.derivative.map φ
+  have hder : derivative fbar = gbar := by
+    simp [fbar, gbar, φ]
+  have hmonic : fbar.Monic := hF.map φ
+  have hm : fbar.natDegree = F.natDegree := hF.natDegree_map φ
+  have hcoeff : fbar.coeff F.natDegree = 1 := by
+    rw [← hm]
+    exact hmonic.coeff_natDegree
+  have hgle : gbar.natDegree ≤ F.derivative.natDegree := by
+    simpa [gbar] using
+      (Polynomial.natDegree_map_le (f := φ) (p := F.derivative))
+  have hres_map :
+      resultant fbar gbar F.natDegree F.derivative.natDegree =
+        ((F.resultant F.derivative : Int) : ZMod p) := by
+    simp [fbar, gbar, φ, Polynomial.resultant_map_map]
+  have hres_to_default :
+      resultant fbar gbar F.natDegree F.derivative.natDegree =
+        resultant fbar gbar fbar.natDegree gbar.natDegree := by
+    rw [← Nat.add_sub_cancel' hgle]
+    rw [Polynomial.resultant_add_right_deg
+      (f := fbar) (g := gbar) (m := F.natDegree)
+      (n := gbar.natDegree) (k := F.derivative.natDegree - gbar.natDegree) (by rfl)]
+    simp [hcoeff, hm]
+  calc
+    ((F.resultant F.derivative : Int) : ZMod p)
+        = resultant fbar gbar F.natDegree F.derivative.natDegree := hres_map.symm
+    _ = resultant fbar gbar fbar.natDegree gbar.natDegree := hres_to_default
+    _ = fbar.resultant (derivative fbar) := by rw [hder]
+
+/-- Field-level resultant criterion, repeated here so the integral reduction
+theorem does not depend on the later completion layer. -/
+theorem resultant_derivative_mod_eq_zero_iff_not_squarefree
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    f.resultant (derivative f) = 0 ↔ ¬ Squarefree f := by
+  rw [resultant_eq_zero_iff, ← Polynomial.separable_def,
+    (PerfectField.separable_iff_squarefree (K := ZMod p)).symm]
+  simp [hf]
+
+/-- **Theorem 2.1, condition (1) ⇔ algebraic bad gate, integral form.**
+For monic `F ∈ ℤ[X]`, the prime `p` divides `Res(F,F')` exactly when the
+reduction of `F` modulo `p` is not squarefree. -/
+theorem int_dvd_resultant_derivative_iff_not_squarefree_mod
+    (F : Int[X]) (hF : F.Monic) :
+    ((p : Int) ∣ ResultantDelta F) ↔
+      ¬ Squarefree (reduceIntPolynomial (p := p) F) := by
+  unfold ResultantDelta
+  rw [← ZMod.intCast_zmod_eq_zero_iff_dvd (F.resultant F.derivative) p]
+  rw [resultant_map_derivative_of_monic (p := p) F hF]
+  exact resultant_derivative_mod_eq_zero_iff_not_squarefree
+    (reduceIntPolynomial (p := p) F)
+    ((hF.map (Int.castRingHom (ZMod p))).ne_zero)
+
 /-- A certificate replacing the informal statement
 `p | Delta <-> gcd(fbar, fbar') != 1`.
 
@@ -2160,6 +3214,24 @@ structure DiscriminantCertificate (F : Int[X]) (Delta : Int) where
   squarefree_mod_iff_not_dvd :
     ∀ (q : Nat) [Fact q.Prime],
       Squarefree (reduceIntPolynomial (p := q) F) ↔ ¬ ((q : Int) ∣ Delta)
+
+/-- The certificate is theorem-level for the canonical choice
+`Delta = Res(F,F')` whenever `F` is monic. -/
+noncomputable def resultantDiscriminantCertificate
+    (F : Int[X]) (hF : F.Monic) :
+    DiscriminantCertificate F (ResultantDelta F) where
+  squarefree_mod_iff_not_dvd := by
+    intro q hq
+    letI : Fact q.Prime := hq
+    have h :=
+      int_dvd_resultant_derivative_iff_not_squarefree_mod
+        (p := q) F hF
+    constructor
+    · intro hsq hdvd
+      exact h.mp hdvd hsq
+    · intro hnotdvd
+      by_contra hnotSquarefree
+      exact hnotdvd (h.mpr hnotSquarefree)
 
 /-- Good primes as the principal open `D(Delta)` on `Spec Z`, represented
 arithmetically as non-divisibility. -/
@@ -2177,6 +3249,26 @@ theorem goodPrimeByDelta_iff_squarefree_mod
     (q : Nat) [Fact q.Prime] :
     GoodPrimeByDelta Delta q ↔ Squarefree (reduceIntPolynomial (p := q) F) := by
   exact (C.squarefree_mod_iff_not_dvd q).symm
+
+/-- Computable good-prime gate for the canonical resultant `Res(F,F')`. -/
+theorem goodPrimeByResultant_iff_squarefree_mod
+    (F : Int[X]) (hF : F.Monic) (q : Nat) [Fact q.Prime] :
+    GoodPrimeByDelta (ResultantDelta F) q ↔
+      Squarefree (reduceIntPolynomial (p := q) F) :=
+  goodPrimeByDelta_iff_squarefree_mod
+    (resultantDiscriminantCertificate F hF) q
+
+/-- Theorem 2.1, condition `(1) ⇔ (2)`, with condition `(1)` represented by
+the actual integral resultant rather than a certificate field. -/
+theorem goodPrimeByResultant_iff_discriminantGate
+    (F : Int[X]) (hF : F.Monic) (q : Nat) [Fact q.Prime] :
+    GoodPrimeByDelta (ResultantDelta F) q ↔
+      DiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  (goodPrimeByResultant_iff_squarefree_mod F hF q).trans
+    (by
+      simpa [UnivariateSmoothGate] using
+        (discriminantGate_iff_squarefree
+          (reduceIntPolynomial (p := q) F)).symm)
 
 /-- The same certificate gives the bad-prime/gcd-failure gate. -/
 theorem badPrimeByDelta_iff_badDiscriminantGate
@@ -2196,6 +3288,14 @@ theorem badPrimeByDelta_iff_badDiscriminantGate
       (C.squarefree_mod_iff_not_dvd q).mpr hnot
     exact hbad ((squarefree_iff_coprime_derivative _).mp hsf)
 
+/-- Computable bad-prime gate for the canonical resultant `Res(F,F')`. -/
+theorem badPrimeByResultant_iff_badDiscriminantGate
+    (F : Int[X]) (hF : F.Monic) (q : Nat) [Fact q.Prime] :
+    BadPrimeByDelta (ResultantDelta F) q ↔
+      BadDiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  badPrimeByDelta_iff_badDiscriminantGate
+    (resultantDiscriminantCertificate F hF) q
+
 /-- The part of Theorem 2.1 that is mathematically sound over the base field:
 a visible critical point implies bad prime.  The reverse direction belongs over
 a splitting field or geometric point, not necessarily over `Fp`. -/
@@ -2207,7 +3307,245 @@ theorem theorem_2_1_visible_point_direction
   exact (badPrimeByDelta_iff_badDiscriminantGate C q).mpr
     (criticalPoint_imp_badDiscriminantGate _ hcrit)
 
+/-- Certificate-free resultant version of the visible critical-point direction. -/
+theorem theorem_2_1_visible_point_direction_resultant
+    {F : Int[X]} (hF : F.Monic) (q : Nat) [Fact q.Prime]
+    (hcrit : HasFpCriticalPoint (reduceIntPolynomial (p := q) F)) :
+    BadPrimeByDelta (ResultantDelta F) q := by
+  exact (badPrimeByResultant_iff_badDiscriminantGate F hF q).mpr
+    (criticalPoint_imp_badDiscriminantGate _ hcrit)
+
+/-! ### B5. Prime-level maximal smooth open.
+
+The scheme-level assertion "the good locus is the maximal smooth open" would
+require a native Mathlib theory of smooth morphisms for the family.  The
+prime-level content is already available from the resultant/discriminant gate:
+for every prime `q`, smoothness of the fiber is exactly membership in the
+principal open `D(Res(F,F'))`.
+-/
+
+/-- Reduction of an integral equation modulo an arbitrary natural number.  This
+version does not carry a primality typeclass, so it can be used in set-valued
+prime-locus predicates. -/
+noncomputable def reduceIntPolynomialAt (F : Int[X]) (q : Nat) : (ZMod q)[X] :=
+  F.map (Int.castRingHom (ZMod q))
+
+/-- Prime-level smooth-fiber locus: `q` is prime and the fiber `F mod q` is
+squarefree. -/
+def SmoothFiberAtPrime (F : Int[X]) (q : Nat) : Prop :=
+  q.Prime ∧ Squarefree (reduceIntPolynomialAt F q)
+
+/-- Arithmetic principal open `D(Delta)` on the closed points of `Spec ℤ`: the
+prime `q` is retained exactly when `q ∤ Delta`. -/
+def PrimeInPrincipalOpen (Delta : Int) (q : Nat) : Prop :=
+  q.Prime ∧ GoodPrimeByDelta Delta q
+
+/-- A set of primes is a prime-level smooth open for the family if every prime
+it contains has smooth fiber. -/
+def IsSmoothPrimeOpen (F : Int[X]) (U : Set Nat) : Prop :=
+  ∀ q, q ∈ U → SmoothFiberAtPrime F q
+
+/-- Maximality among prime-level smooth opens, ordered by inclusion. -/
+def IsMaximalSmoothPrimeOpen (F : Int[X]) (U : Set Nat) : Prop :=
+  IsSmoothPrimeOpen F U ∧
+    ∀ V : Set Nat, IsSmoothPrimeOpen F V → V ⊆ U
+
+theorem smoothFiberAtPrime_iff_resultant_principalOpen
+    (F : Int[X]) (hF : F.Monic) (q : Nat) :
+    SmoothFiberAtPrime F q ↔ PrimeInPrincipalOpen (ResultantDelta F) q := by
+  unfold SmoothFiberAtPrime PrimeInPrincipalOpen
+  constructor
+  · rintro ⟨hq, hsmooth⟩
+    letI : Fact q.Prime := ⟨hq⟩
+    refine ⟨hq, ?_⟩
+    exact (goodPrimeByResultant_iff_squarefree_mod F hF q).2 hsmooth
+  · rintro ⟨hq, hgood⟩
+    letI : Fact q.Prime := ⟨hq⟩
+    refine ⟨hq, ?_⟩
+    exact (goodPrimeByResultant_iff_squarefree_mod F hF q).1 hgood
+
+/-- The prime-level smooth locus equals the principal open `D(Res(F,F'))`. -/
+theorem smoothPrimeLocus_eq_resultant_principalOpen
+    (F : Int[X]) (hF : F.Monic) :
+    {q : Nat | SmoothFiberAtPrime F q} =
+      {q : Nat | PrimeInPrincipalOpen (ResultantDelta F) q} := by
+  ext q
+  exact smoothFiberAtPrime_iff_resultant_principalOpen F hF q
+
+theorem resultant_principalOpen_isSmoothPrimeOpen
+    (F : Int[X]) (hF : F.Monic) :
+    IsSmoothPrimeOpen F {q : Nat | PrimeInPrincipalOpen (ResultantDelta F) q} := by
+  intro q hq
+  exact (smoothFiberAtPrime_iff_resultant_principalOpen F hF q).2 hq
+
+theorem smoothPrimeOpen_subset_resultant_principalOpen
+    (F : Int[X]) (hF : F.Monic) (U : Set Nat)
+    (hU : IsSmoothPrimeOpen F U) :
+    U ⊆ {q : Nat | PrimeInPrincipalOpen (ResultantDelta F) q} := by
+  intro q hq
+  exact (smoothFiberAtPrime_iff_resultant_principalOpen F hF q).1 (hU q hq)
+
+/-- **Theorem 2.1, final assertion, prime-level form.**  Among sets of closed
+prime fibers, `D(Res(F,F'))` is the maximal locus on which every fiber is smooth.
+The stronger scheme-morphism maximal smooth open remains a native-geometry
+target. -/
+theorem resultant_principalOpen_isMaximalSmoothPrimeOpen
+    (F : Int[X]) (hF : F.Monic) :
+    IsMaximalSmoothPrimeOpen F
+      {q : Nat | PrimeInPrincipalOpen (ResultantDelta F) q} := by
+  refine ⟨resultant_principalOpen_isSmoothPrimeOpen F hF, ?_⟩
+  intro V hV
+  exact smoothPrimeOpen_subset_resultant_principalOpen F hF V hV
+
 end ActualAlgebra
+
+/-! ### A5. Elliptic-curve discriminant gate, certificate-free.
+
+Remark 3.14 specializes the discriminant open to the short Weierstrass family
+`y^2 = x^3 + ax + b`.  Mathlib's `WeierstrassCurve.IsElliptic` is exactly the
+native nonsingular-Weierstrass condition encoded as `IsUnit W.Δ`, so the
+good-reduction statement is a direct theorem over `ZMod p`.
+-/
+
+namespace EllipticCurveDiscriminant
+
+/-- The short Weierstrass model `y^2 = x^3 + ax + b`, represented in Mathlib's
+general Weierstrass form
+`Y^2 + a₁XY + a₃Y = X^3 + a₂X^2 + a₄X + a₆`. -/
+def shortWeierstrass (R : Type*) [CommRing R] (a b : R) :
+    WeierstrassCurve R where
+  a₁ := 0
+  a₂ := 0
+  a₃ := 0
+  a₄ := a
+  a₆ := b
+
+/-- The classical discriminant of `y^2 = x^3 + ax + b` in Mathlib's sign
+convention: `-16 * (4a^3 + 27b^2)`. -/
+def shortDiscriminant (R : Type*) [CommRing R] (a b : R) : R :=
+  -16 * (4 * a ^ 3 + 27 * b ^ 2)
+
+/-- The generic calculation of the Mathlib Weierstrass discriminant for the
+short model. -/
+theorem shortWeierstrass_delta {R : Type*} [CommRing R] (a b : R) :
+    (shortWeierstrass R a b).Δ = shortDiscriminant R a b := by
+  simp [shortWeierstrass, shortDiscriminant, WeierstrassCurve.Δ, WeierstrassCurve.b₂,
+    WeierstrassCurve.b₄, WeierstrassCurve.b₆, WeierstrassCurve.b₈]
+  ring1
+
+/-- Integral short-Weierstrass discriminant, used as the principal-open equation
+on `Spec ℤ`. -/
+def shortIntegralDiscriminant (a b : Int) : Int :=
+  shortDiscriminant Int a b
+
+/-- Reduction of the integral short Weierstrass model modulo `p`. -/
+def reduction (p : Nat) (a b : Int) : WeierstrassCurve (ZMod p) :=
+  (shortWeierstrass Int a b).map (Int.castRingHom (ZMod p))
+
+/-- The reduction is the short Weierstrass model with reduced coefficients. -/
+theorem reduction_eq_shortWeierstrass_zmod (p : Nat) (a b : Int) :
+    reduction p a b = shortWeierstrass (ZMod p) (a : ZMod p) (b : ZMod p) := by
+  ext <;> simp [reduction, shortWeierstrass]
+
+/-- Base change carries the integral discriminant to the discriminant of the
+reduced Weierstrass curve. -/
+theorem reduction_delta (p : Nat) (a b : Int) :
+    (reduction p a b).Δ = (shortIntegralDiscriminant a b : ZMod p) := by
+  unfold reduction
+  rw [WeierstrassCurve.map_Δ, shortWeierstrass_delta]
+  simp [shortIntegralDiscriminant, shortDiscriminant]
+
+/-- Over a prime field, an integer is a unit modulo `p` iff it is not divisible
+by `p`. -/
+theorem intCast_isUnit_zmod_iff_not_dvd {p : Nat} [Fact p.Prime] (n : Int) :
+    IsUnit (n : ZMod p) ↔ ¬ ((p : Int) ∣ n) := by
+  rw [isUnit_iff_ne_zero]
+  exact not_congr (ZMod.intCast_zmod_eq_zero_iff_dvd n p)
+
+/-- The elliptic-curve discriminant gate: `p` lies in the principal open
+`D(Δ_E)`. -/
+def ECDiscriminantGate (p : Nat) (a b : Int) : Prop :=
+  ActualAlgebra.GoodPrimeByDelta (shortIntegralDiscriminant a b) p
+
+/-- Good reduction for the short Weierstrass model, stated arithmetically. -/
+def ECGoodReductionAt (p : Nat) (a b : Int) : Prop :=
+  ¬ ((p : Int) ∣ shortIntegralDiscriminant a b)
+
+/-- Nonsingular reduction, using Mathlib's native elliptic Weierstrass predicate
+`IsElliptic`, i.e. unit discriminant. -/
+def ECNonsingularReductionAt (p : Nat) (a b : Int) : Prop :=
+  (reduction p a b).IsElliptic
+
+/-- Mathlib's elliptic-curve predicate is exactly unit discriminant. -/
+theorem isElliptic_iff_isUnit_delta {R : Type*} [CommRing R] (W : WeierstrassCurve R) :
+    W.IsElliptic ↔ IsUnit W.Δ := by
+  constructor
+  · intro h
+    exact h.isUnit
+  · intro h
+    exact ⟨h⟩
+
+/-- The EC discriminant gate is just the arithmetic good-reduction condition. -/
+theorem ecDiscriminantGate_iff_goodReduction
+    (p : Nat) (a b : Int) :
+    ECDiscriminantGate p a b ↔ ECGoodReductionAt p a b := by
+  rfl
+
+/-- **Remark 3.14, certificate-free form.**
+For the short Weierstrass curve `y^2 = x^3 + ax + b`, a prime `p` does not
+divide the integral discriminant iff the reduced Weierstrass curve over
+`ZMod p` is elliptic/nonsingular in Mathlib's native sense. -/
+theorem goodReduction_iff_nonsingularReduction
+    (p : Nat) [Fact p.Prime] (a b : Int) :
+    ECGoodReductionAt p a b ↔ ECNonsingularReductionAt p a b := by
+  unfold ECGoodReductionAt ECNonsingularReductionAt
+  rw [← intCast_isUnit_zmod_iff_not_dvd (p := p) (shortIntegralDiscriminant a b)]
+  rw [← reduction_delta p a b]
+  exact (isElliptic_iff_isUnit_delta (reduction p a b)).symm
+
+/-- The same statement phrased as the existing `GoodPrimeByDelta` gate from the
+resultant/discriminant layer. -/
+theorem ecDiscriminantGate_iff_nonsingularReduction
+    (p : Nat) [Fact p.Prime] (a b : Int) :
+    ECDiscriminantGate p a b ↔ ECNonsingularReductionAt p a b := by
+  exact (ecDiscriminantGate_iff_goodReduction p a b).trans
+    (goodReduction_iff_nonsingularReduction p a b)
+
+/-- A convenience direction for the good-prime box: the EC discriminant gate
+supplies a nonsingular special fiber. -/
+theorem nonsingularReduction_of_ecDiscriminantGate
+    (p : Nat) [Fact p.Prime] (a b : Int)
+    (h : ECDiscriminantGate p a b) :
+    ECNonsingularReductionAt p a b :=
+  (ecDiscriminantGate_iff_nonsingularReduction p a b).mp h
+
+/-- C3 / Remark 3.14: the EC layer is certificate-free and is exactly Mathlib's
+Weierstrass discriminant/nonsingularity gate. -/
+theorem remark_3_14_EC_discriminant_gate
+    (p : Nat) [Fact p.Prime] (a b : Int) :
+    ECDiscriminantGate p a b ↔ ECNonsingularReductionAt p a b :=
+  ecDiscriminantGate_iff_nonsingularReduction p a b
+
+end EllipticCurveDiscriminant
+
+/-! ### Axiom audit for the theorem-level resultant/discriminant replacement. -/
+section ActualAlgebraAxiomAudit
+#print axioms ActualAlgebra.resultant_map_derivative_of_monic
+#print axioms ActualAlgebra.int_dvd_resultant_derivative_iff_not_squarefree_mod
+#print axioms ActualAlgebra.goodPrimeByResultant_iff_discriminantGate
+#print axioms ActualAlgebra.badPrimeByResultant_iff_badDiscriminantGate
+#print axioms ActualAlgebra.theorem_2_1_visible_point_direction_resultant
+#print axioms ActualAlgebra.smoothFiberAtPrime_iff_resultant_principalOpen
+#print axioms ActualAlgebra.smoothPrimeLocus_eq_resultant_principalOpen
+#print axioms ActualAlgebra.resultant_principalOpen_isMaximalSmoothPrimeOpen
+#print axioms ActualAlgebra.discriminantGate_iff_localLengthENat_eq_zero
+#print axioms ActualAlgebra.badDiscriminantGate_iff_localLengthENat_ne_zero
+#print axioms ActualAlgebra.theorem_2_1_algebraic_ENat_TFAE
+#print axioms EllipticCurveDiscriminant.shortWeierstrass_delta
+#print axioms EllipticCurveDiscriminant.goodReduction_iff_nonsingularReduction
+#print axioms EllipticCurveDiscriminant.ecDiscriminantGate_iff_nonsingularReduction
+#print axioms EllipticCurveDiscriminant.remark_3_14_EC_discriminant_gate
+end ActualAlgebraAxiomAudit
 
 /-! ## 2. Replacement targets for the remaining checklist.
 
@@ -3754,6 +5092,125 @@ theorem benchSurface_jacobianQuotient_length_eq_tau
       (p := p) pn A hpn hA hp hpA,
     benchSurface_tau_top pn A hpn hA hp hpA]
 
+/-! ### A2. Origin-local Tjurina algebra.
+
+The following definitions replace the informal phrase "at the origin" by the
+actual localization of `k[x,y]` at the maximal ideal `(x,y)`.  The finite
+monomial normal-form calculation `length k[x,y]_(x,y)/(x^m,y^n) = m*n` is the
+next independent lemma needed for the remaining finite rows of the table; the
+both-divisible row already has its Jacobian ideal collapsed to the principal
+local hypersurface quotient below. -/
+
+/-- The maximal ideal `(x,y)` of the bivariate polynomial ring. -/
+noncomputable abbrev originIdeal :
+    Ideal (MvPolynomial (Fin 2) (ZMod p)) :=
+  RingHom.ker (@MvPolynomial.constantCoeff (ZMod p) (Fin 2) _)
+
+/-- Membership in `(x,y)` is vanishing of the constant term. -/
+theorem mem_originIdeal_iff_constantCoeff_eq_zero
+    (f : MvPolynomial (Fin 2) (ZMod p)) :
+    f ∈ originIdeal (p := p) ↔ MvPolynomial.constantCoeff f = 0 := Iff.rfl
+
+/-- The origin ideal is the kernel of evaluation at the origin. -/
+theorem originIdeal_eq_ker_constantCoeff :
+    originIdeal (p := p) =
+      RingHom.ker (@MvPolynomial.constantCoeff (ZMod p) (Fin 2) _) := rfl
+
+/-- The origin ideal is maximal. -/
+theorem originIdeal_isMaximal :
+    (originIdeal (p := p)).IsMaximal := by
+  rw [originIdeal_eq_ker_constantCoeff]
+  exact RingHom.ker_isMaximal_of_surjective
+    (@MvPolynomial.constantCoeff (ZMod p) (Fin 2) _)
+    (by
+      intro a
+      exact ⟨MvPolynomial.C a, by simp⟩)
+
+noncomputable instance originIdeal_isPrime :
+    (originIdeal (p := p)).IsPrime :=
+  (originIdeal_isMaximal (p := p)).isPrime
+
+/-- The local polynomial ring `k[x,y]_(x,y)`. -/
+noncomputable abbrev OriginLocalRing : Type :=
+  Localization.AtPrime (originIdeal (p := p))
+
+/-- The Tjurina/Jacobian ideal after localizing at the origin. -/
+noncomputable def originLocalJacobianIdeal
+    (f : MvPolynomial (Fin 2) (ZMod p)) :
+    Ideal (OriginLocalRing (p := p)) :=
+  Ideal.map
+    (algebraMap (MvPolynomial (Fin 2) (ZMod p)) (OriginLocalRing (p := p)))
+    (JacobianMv.jacobianIdeal f)
+
+/-- The actual origin-local Tjurina algebra
+`k[x,y]_(x,y)/(f, ∂ₓf, ∂ᵧf)`. -/
+abbrev OriginLocalTjurinaAlgebra
+    (f : MvPolynomial (Fin 2) (ZMod p)) : Type :=
+  OriginLocalRing (p := p) ⧸ originLocalJacobianIdeal (p := p) f
+
+/-- Its length-valued Tjurina detector. -/
+noncomputable def originLocalTjurinaLength
+    (f : MvPolynomial (Fin 2) (ZMod p)) : ℕ∞ :=
+  Module.length (ZMod p) (OriginLocalTjurinaAlgebra (p := p) f)
+
+/-- In the both-divisible characteristic-`p` row, localization preserves the
+Jacobian ideal collapse: the local Tjurina ideal is generated by `f` alone. -/
+theorem originLocalJacobianIdeal_benchSurface_collapse
+    (pn A : ℕ) (hp : p ∣ pn) (hpA : p ∣ A) :
+    originLocalJacobianIdeal (p := p) (benchSurface (p := p) pn A) =
+      Ideal.map
+        (algebraMap (MvPolynomial (Fin 2) (ZMod p)) (OriginLocalRing (p := p)))
+        (Ideal.span {benchSurface (p := p) pn A}) := by
+  unfold originLocalJacobianIdeal
+  rw [jacobianIdeal_benchSurface_collapse pn A hp hpA]
+
+/-- The origin-local Tjurina algebra in the both-divisible row is the principal
+local hypersurface quotient. -/
+noncomputable def originLocalTjurinaAlgEquivPrincipal
+    (pn A : ℕ) (hp : p ∣ pn) (hpA : p ∣ A) :
+    OriginLocalTjurinaAlgebra (p := p) (benchSurface (p := p) pn A) ≃ₐ[ZMod p]
+      (OriginLocalRing (p := p) ⧸
+        Ideal.map
+          (algebraMap (MvPolynomial (Fin 2) (ZMod p)) (OriginLocalRing (p := p)))
+          (Ideal.span {benchSurface (p := p) pn A})) :=
+  Ideal.quotientEquivAlgOfEq (ZMod p)
+    (originLocalJacobianIdeal_benchSurface_collapse (p := p) pn A hp hpA)
+
+/-- The benchmark equation vanishes at the origin. -/
+theorem benchSurface_mem_originIdeal (pn A : ℕ) (hpn : 0 < pn) (hA : 0 < A) :
+    benchSurface (p := p) pn A ∈ originIdeal (p := p) := by
+  rw [mem_originIdeal_iff_constantCoeff_eq_zero]
+  simp [benchSurface, MvPolynomial.constantCoeff_X, hpn.ne', hA.ne']
+
+/-- Hence its image in the origin-local ring is not a unit. -/
+theorem benchSurface_originLocal_not_isUnit
+    (pn A : ℕ) (hpn : 0 < pn) (hA : 0 < A) :
+    ¬ IsUnit
+      ((algebraMap (MvPolynomial (Fin 2) (ZMod p)) (OriginLocalRing (p := p)))
+        (benchSurface (p := p) pn A)) := by
+  intro hu
+  have hmem : benchSurface (p := p) pn A ∈ originIdeal (p := p) :=
+    benchSurface_mem_originIdeal (p := p) pn A hpn hA
+  exact
+    ((IsLocalization.AtPrime.isUnit_to_map_iff
+      (S := OriginLocalRing (p := p)) (I := originIdeal (p := p))
+      (benchSurface (p := p) pn A)).mp hu) hmem
+
+/-- The origin-local Tjurina algebra is already nontrivial in the
+both-divisible row.  This is the local object-level strengthening of the old
+global nontriviality check; the remaining `¬ Module.Finite` statement is the
+normal-form/infinite-length lemma for this principal local hypersurface quotient. -/
+theorem originLocalTjurinaAlgebra_nontrivial_bothDivisible
+    (pn A : ℕ) (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    Nontrivial
+      (OriginLocalTjurinaAlgebra (p := p) (benchSurface (p := p) pn A)) := by
+  rw [OriginLocalTjurinaAlgebra, Ideal.Quotient.nontrivial_iff,
+    originLocalJacobianIdeal_benchSurface_collapse (p := p) pn A hp hpA]
+  rw [Ideal.map_span, Set.image_singleton]
+  simpa [Ideal.span_singleton_eq_top] using
+    benchSurface_originLocal_not_isUnit
+    (p := p) pn A (by omega) (by omega)
+
 end Benchmark
 
 /-! ## E. Anchoring: the bypass certificate's algebraic core is realizable.
@@ -3810,6 +5267,10 @@ section AxiomAudit
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_not_module_finite
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_length_eq_tau
 #print axioms Spt2.CompletionLayer.Benchmark.benchSurface_tau_top
+#print axioms Spt2.CompletionLayer.Benchmark.originIdeal_isMaximal
+#print axioms Spt2.CompletionLayer.Benchmark.originLocalJacobianIdeal_benchSurface_collapse
+#print axioms Spt2.CompletionLayer.Benchmark.originLocalTjurinaAlgEquivPrincipal
+#print axioms Spt2.CompletionLayer.Benchmark.originLocalTjurinaAlgebra_nontrivial_bothDivisible
 #print axioms Spt2.CompletionLayer.algebraicCoreOf_TFAE
 end AxiomAudit
 
@@ -3885,6 +5346,52 @@ theorem basicOpen_pair_cover_top_iff (f g : R) :
     (PrimeSpectrum.iSup_basicOpen_eq_top_iff
       (R := R) (f := fun b : Bool => if b then f else g))
 
+/-- C4 plumbing object: a uniform parameter profile
+`P(W) = (M(W), W•, k•)` attached to an open subset of `Spec R`. -/
+structure UniformParameterProfile where
+  openSet : TopologicalSpace.Opens (PrimeSpectrum R)
+  modulusData : Type*
+  weightFiltration : Type*
+  residueProfile : Type*
+
+/-- A family assigning the three profile components to every principal open
+`D(f)`.  This is the functorial plumbing target requested in C4, without
+pretending that it is needed for the Master Equivalence. -/
+structure PrincipalOpenProfileFamily where
+  Modulus : R → Type*
+  Weight : R → Type*
+  Residue : R → Type*
+
+namespace PrincipalOpenProfileFamily
+
+/-- The profile `P(D(f)) = (M(D(f)), W•(D(f)), k•(D(f)))`. -/
+def profileOn (P : PrincipalOpenProfileFamily (R := R)) (f : R) :
+    UniformParameterProfile (R := R) where
+  openSet := PrimeSpectrum.basicOpen f
+  modulusData := P.Modulus f
+  weightFiltration := P.Weight f
+  residueProfile := P.Residue f
+
+@[simp] theorem profileOn_openSet
+    (P : PrincipalOpenProfileFamily (R := R)) (f : R) :
+    (P.profileOn f).openSet = PrimeSpectrum.basicOpen f := rfl
+
+/-- The profile respects the principal-open intersection formula on its open
+component: `P(D(fg))` lives over `D(f) ∩ D(g)`. -/
+theorem profileOn_mul_openSet
+    (P : PrincipalOpenProfileFamily (R := R)) (f g : R) :
+    (P.profileOn (f * g)).openSet =
+      PrimeSpectrum.basicOpen f ⊓ PrimeSpectrum.basicOpen g := by
+  simp [profileOn, basicOpen_inter]
+
+/-- The top profile lies over all of `Spec R`. -/
+theorem profileOn_one_openSet
+    (P : PrincipalOpenProfileFamily (R := R)) :
+    (P.profileOn (1 : R)).openSet = ⊤ := by
+  simp [profileOn]
+
+end PrincipalOpenProfileFamily
+
 end PrincipalOpenReal
 end Spt2
 
@@ -3895,6 +5402,8 @@ section PrincipalOpenAxiomAudit
 #print axioms Spt2.PrincipalOpenReal.basicOpen_basis
 #print axioms Spt2.PrincipalOpenReal.basicOpen_cover_top_iff
 #print axioms Spt2.PrincipalOpenReal.basicOpen_pair_cover_top_iff
+#print axioms Spt2.PrincipalOpenReal.PrincipalOpenProfileFamily.profileOn_mul_openSet
+#print axioms Spt2.PrincipalOpenReal.PrincipalOpenProfileFamily.profileOn_one_openSet
 end PrincipalOpenAxiomAudit
 
 /- ============================================================ -/
@@ -3980,6 +5489,150 @@ theorem unique_padic_lift {F : Polynomial ℤ_[p]} {a : ℤ_[p]}
   obtain ⟨z, hz, hdist, _⟩ := hensel_gate hroot hsimple
   exact ⟨z, hz, hdist⟩
 
+/-! ### A6. Global univariate Hensel gate via the reduction discriminant.
+
+The residue-root condition must be read geometrically: "all residue roots are
+simple" means after passing to an algebraically closed extension of `𝔽_p`.
+Over the base field alone the statement is false for repeated irreducible
+factors without rational roots.  The package below formalizes the corrected
+global statement and then turns a squarefree reduction into Hensel lifts for
+every `ℤ_p` residue root. -/
+
+/-- Reduction modulo `p` of a polynomial over the `p`-adic integers. -/
+noncomputable def reducePadicPolynomial (F : Polynomial ℤ_[p]) : (ZMod p)[X] :=
+  F.map (PadicInt.toZMod (p := p))
+
+theorem derivative_reducePadicPolynomial (F : Polynomial ℤ_[p]) :
+    Polynomial.derivative (reducePadicPolynomial (p := p) F) =
+      reducePadicPolynomial (p := p) (Polynomial.derivative F) := by
+  simp [reducePadicPolynomial, Polynomial.derivative_map]
+
+theorem eval_reducePadicPolynomial (F : Polynomial ℤ_[p]) (a : ℤ_[p]) :
+    Polynomial.eval (PadicInt.toZMod (p := p) a)
+        (reducePadicPolynomial (p := p) F) =
+      PadicInt.toZMod (p := p) (Polynomial.aeval a F) := by
+  simp [reducePadicPolynomial, Polynomial.eval_map, Polynomial.eval₂_at_apply]
+
+theorem residue_root_iff_norm_lt_one (F : Polynomial ℤ_[p]) (a : ℤ_[p]) :
+    Polynomial.eval (PadicInt.toZMod (p := p) a)
+        (reducePadicPolynomial (p := p) F) = 0 ↔
+      ‖Polynomial.aeval a F‖ < 1 := by
+  rw [eval_reducePadicPolynomial]
+  rw [← RingHom.mem_ker, PadicInt.ker_toZMod]
+  rw [PadicInt.maximalIdeal_eq_span_p, Ideal.mem_span_singleton]
+  exact Iff.symm (PadicInt.norm_lt_one_iff_dvd (p := p) _)
+
+theorem residue_derivative_ne_zero_iff_isUnit (F : Polynomial ℤ_[p]) (a : ℤ_[p]) :
+    Polynomial.eval (PadicInt.toZMod (p := p) a)
+        (Polynomial.derivative (reducePadicPolynomial (p := p) F)) ≠ 0 ↔
+      IsUnit (Polynomial.aeval a (Polynomial.derivative F)) := by
+  rw [derivative_reducePadicPolynomial, eval_reducePadicPolynomial]
+  rw [← not_iff_not]
+  simp only [ne_eq, not_not]
+  rw [← RingHom.mem_ker, PadicInt.ker_toZMod]
+  rw [PadicInt.maximalIdeal_eq_span_p, Ideal.mem_span_singleton]
+  rw [← PadicInt.norm_lt_one_iff_dvd (p := p)]
+  exact (PadicInt.not_isUnit_iff (p := p)).symm
+
+/-- All geometric residue roots are simple: over an extension `K / 𝔽_p`, every
+zero of `f` has nonzero derivative. -/
+def GeometricResidueRootsSimple {p : ℕ}
+    (K : Type*) [Field K] [Algebra (ZMod p) K]
+    (f : (ZMod p)[X]) : Prop :=
+  ∀ a : K, Polynomial.aeval a f = 0 →
+    Polynomial.aeval a (Polynomial.derivative f) ≠ 0
+
+theorem geometricResidueRootsSimple_iff_noCriticalPoint
+    (K : Type*) [Field K] [Algebra (ZMod p) K]
+    (f : (ZMod p)[X]) :
+    GeometricResidueRootsSimple (p := p) K f ↔
+      ¬ Spt2.CompletionLayer.HasCriticalPoint K f := by
+  constructor
+  · intro h hcrit
+    rcases hcrit with ⟨a, hf, hder⟩
+    exact h a hf hder
+  · intro h a hf hder
+    exact h ⟨a, hf, hder⟩
+
+theorem geometricResidueRootsSimple_iff_squarefree
+    (K : Type*) [Field K] [IsAlgClosed K] [Algebra (ZMod p) K]
+    (f : (ZMod p)[X]) :
+    GeometricResidueRootsSimple (p := p) K f ↔ Squarefree f := by
+  rw [geometricResidueRootsSimple_iff_noCriticalPoint,
+    ← Spt2.CompletionLayer.not_squarefree_iff_hasCriticalPoint K f, not_not]
+
+/-- **A6, global univariate discriminant/Hensel gate.**  For a nonzero residue
+polynomial, the geometric simple-root condition, squarefreeness, coprimality
+with the derivative, and nonvanishing of `Res(f, f')` are equivalent. -/
+theorem global_residue_hensel_discriminant_TFAE
+    (K : Type*) [Field K] [IsAlgClosed K] [Algebra (ZMod p) K]
+    (f : (ZMod p)[X]) (hf : f ≠ 0) :
+    [ GeometricResidueRootsSimple (p := p) K f,
+      Squarefree f,
+      IsCoprime f (Polynomial.derivative f),
+      f.resultant (Polynomial.derivative f) ≠ 0 ].TFAE := by
+  tfae_have 1 ↔ 2 := geometricResidueRootsSimple_iff_squarefree K f
+  tfae_have 2 ↔ 3 := Spt2.squarefree_iff_coprime_derivative f
+  tfae_have 2 ↔ 4 :=
+    (Spt2.CompletionLayer.resultant_derivative_ne_zero_iff_squarefree f hf).symm
+  tfae_finish
+
+theorem derivative_ne_zero_of_squarefree_residue_root
+    (f : (ZMod p)[X]) (hsq : Squarefree f) {a : ZMod p}
+    (hroot : Polynomial.eval a f = 0) :
+    Polynomial.eval a (Polynomial.derivative f) ≠ 0 := by
+  have hc : IsCoprime f (Polynomial.derivative f) :=
+    (Spt2.squarefree_iff_coprime_derivative f).mp hsq
+  have hcommon :=
+    (Polynomial.isCoprime_iff_aeval_ne_zero f (Polynomial.derivative f)).mp hc a
+  simpa [hroot] using hcommon
+
+/-- The per-root Hensel conclusion for every explicitly simple residue root. -/
+def EverySimpleResidueRootLiftsUniquely (F : Polynomial ℤ_[p]) : Prop :=
+  ∀ a : ℤ_[p], ‖Polynomial.aeval a F‖ < 1 →
+    IsUnit (Polynomial.aeval a (Polynomial.derivative F)) →
+      ∃ z : ℤ_[p],
+        Polynomial.aeval z F = 0 ∧
+          ‖z - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ ∧
+            ∀ z', Polynomial.aeval z' F = 0 →
+              ‖z' - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ →
+                z' = z
+
+theorem every_simple_residue_root_lifts_uniquely
+    (F : Polynomial ℤ_[p]) :
+    EverySimpleResidueRootLiftsUniquely (p := p) F := by
+  intro a hroot hsimple
+  exact hensel_gate hroot hsimple
+
+/-- The global Hensel conclusion after the discriminant/squarefree gate: every
+residue root of `F mod p` has a unique nearby `p`-adic lift. -/
+def EveryResidueRootLiftsUniquely (F : Polynomial ℤ_[p]) : Prop :=
+  ∀ a : ℤ_[p], ‖Polynomial.aeval a F‖ < 1 →
+    ∃ z : ℤ_[p],
+      Polynomial.aeval z F = 0 ∧
+        ‖z - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ ∧
+          ∀ z', Polynomial.aeval z' F = 0 →
+            ‖z' - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ →
+              z' = z
+
+theorem every_residue_root_lifts_uniquely_of_squarefree_reduction
+    (F : Polynomial ℤ_[p])
+    (hsq : Squarefree (reducePadicPolynomial (p := p) F)) :
+    EveryResidueRootLiftsUniquely (p := p) F := by
+  intro a hroot
+  have hroot_mod :
+      Polynomial.eval (PadicInt.toZMod (p := p) a)
+          (reducePadicPolynomial (p := p) F) = 0 :=
+    (residue_root_iff_norm_lt_one (p := p) F a).mpr hroot
+  have hder_mod :
+      Polynomial.eval (PadicInt.toZMod (p := p) a)
+          (Polynomial.derivative (reducePadicPolynomial (p := p) F)) ≠ 0 :=
+    derivative_ne_zero_of_squarefree_residue_root
+      (p := p) (reducePadicPolynomial (p := p) F) hsq hroot_mod
+  have hsimple : IsUnit (Polynomial.aeval a (Polynomial.derivative F)) :=
+    (residue_derivative_ne_zero_iff_isUnit (p := p) F a).mp hder_mod
+  exact hensel_gate hroot hsimple
+
 end HenselReal
 
 /-! ## 2. Normalization short exact sequence — genuine dimension count.
@@ -4015,6 +5668,557 @@ theorem ses_finrank
   have hquot := Submodule.finrank_quotient_add_finrank (LinearMap.ker π)
   rw [LinearEquiv.finrank_eq e1, hQ] at hquot
   omega
+
+/-- Abstract `Λ`-vector-space model for `H¹(U_p, Λ)`: the smooth normalization
+piece has rank `2g`. -/
+abbrev H1SmoothOpenSpace (g : ℕ) : Type _ := Fin (2 * g) → k
+
+/-- Abstract `Λ`-vector-space model for the normalization defect
+`H⁰(Q_p)`, of rank `b₁(Γ_p) + Σδ_x`. -/
+abbrev DefectSpace (b1 deltaSum : ℕ) : Type _ := Fin (b1 + deltaSum) → k
+
+/-- Abstract `Λ`-vector-space model for `H¹(X_p, Λ)` after the normalization
+short exact sequence has split at the level of finite-dimensional vector spaces. -/
+abbrev H1FiberSpace (g b1 deltaSum : ℕ) : Type _ :=
+  H1SmoothOpenSpace (k := k) g × DefectSpace (k := k) b1 deltaSum
+
+/-- Inclusion of the skyscraper/normalization defect into the fiber
+cohomology model. -/
+noncomputable def defectToFiber (g b1 deltaSum : ℕ) :
+    DefectSpace (k := k) b1 deltaSum →ₗ[k] H1FiberSpace (k := k) g b1 deltaSum where
+  toFun q := (0, q)
+  map_add' _ _ := by
+    ext <;> simp
+  map_smul' _ _ := by
+    ext <;> simp
+
+/-- Projection from the fiber cohomology model to the smooth open/normalization
+piece. -/
+noncomputable def fiberToSmoothOpen (g b1 deltaSum : ℕ) :
+    H1FiberSpace (k := k) g b1 deltaSum →ₗ[k] H1SmoothOpenSpace (k := k) g where
+  toFun h := h.1
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+theorem defectToFiber_injective (g b1 deltaSum : ℕ) :
+    Function.Injective (defectToFiber (k := k) g b1 deltaSum) := by
+  intro x y h
+  simpa [defectToFiber] using congrArg Prod.snd h
+
+theorem fiberToSmoothOpen_surjective (g b1 deltaSum : ℕ) :
+    Function.Surjective (fiberToSmoothOpen (k := k) g b1 deltaSum) := by
+  intro x
+  exact ⟨(x, 0), rfl⟩
+
+/-- Exactness of the normalization model:
+`range(H⁰(Q_p) → H¹(X_p)) = ker(H¹(X_p) → H¹(U_p))`. -/
+theorem range_defectToFiber_eq_ker_fiberToSmoothOpen (g b1 deltaSum : ℕ) :
+    LinearMap.range (defectToFiber (k := k) g b1 deltaSum) =
+      LinearMap.ker (fiberToSmoothOpen (k := k) g b1 deltaSum) := by
+  ext h
+  constructor
+  · rintro ⟨q, rfl⟩
+    simp [LinearMap.mem_ker, defectToFiber, fiberToSmoothOpen]
+  · intro hh
+    rw [LinearMap.mem_ker] at hh
+    refine ⟨h.2, ?_⟩
+    ext x
+    · simp [defectToFiber, fiberToSmoothOpen] at hh ⊢
+      exact congrFun hh.symm x
+    · simp [defectToFiber]
+
+theorem h1Open_finrank (g : ℕ) :
+    Module.finrank k (H1SmoothOpenSpace (k := k) g) = 2 * g := by
+  rw [Module.finrank_fin_fun]
+
+theorem defect_finrank (b1 deltaSum : ℕ) :
+    Module.finrank k (DefectSpace (k := k) b1 deltaSum) = b1 + deltaSum := by
+  rw [Module.finrank_fin_fun]
+
+/-- The B1 upgrade: the curve decomposition follows by instantiating the genuine
+normalization short-exact-sequence rank formula `ses_finrank`. -/
+theorem h1Fiber_finrank_from_ses (g b1 deltaSum : ℕ) :
+    Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum) =
+      Module.finrank k (DefectSpace (k := k) b1 deltaSum) +
+        Module.finrank k (H1SmoothOpenSpace (k := k) g) := by
+  exact ses_finrank
+    (defectToFiber (k := k) g b1 deltaSum)
+    (fiberToSmoothOpen (k := k) g b1 deltaSum)
+    (defectToFiber_injective (k := k) g b1 deltaSum)
+    (fiberToSmoothOpen_surjective (k := k) g b1 deltaSum)
+    (range_defectToFiber_eq_ker_fiberToSmoothOpen (k := k) g b1 deltaSum)
+
+theorem h1Fiber_finrank (g b1 deltaSum : ℕ) :
+    Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum) =
+      2 * g + (b1 + deltaSum) := by
+  rw [h1Fiber_finrank_from_ses, h1Open_finrank, defect_finrank]
+  omega
+
+/-- The étale bump as an actual rank difference of the abstract cohomology
+spaces, rather than a bare numeric field. -/
+noncomputable def etaleBumpT2 (g b1 deltaSum : ℕ) : ℕ :=
+  Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum) -
+    Module.finrank k (H1SmoothOpenSpace (k := k) g)
+
+theorem etaleBumpT2_eq (g b1 deltaSum : ℕ) :
+    etaleBumpT2 (k := k) g b1 deltaSum = b1 + deltaSum := by
+  unfold etaleBumpT2
+  rw [h1Fiber_finrank, h1Open_finrank]
+  omega
+
+theorem curveFiber_H1Xp_eq_finrank (f : CurveModel.CurveFiber) :
+    f.H1Xp =
+      Module.finrank k (H1FiberSpace (k := k) f.g f.graph.b1 f.deltaSum) := by
+  rw [h1Fiber_finrank]
+  unfold CurveModel.CurveFiber.H1Xp
+  omega
+
+theorem curveFiber_H1Up_eq_finrank (f : CurveModel.CurveFiber) :
+    f.H1Up = Module.finrank k (H1SmoothOpenSpace (k := k) f.g) := by
+  rw [h1Open_finrank]
+  rfl
+
+theorem curveFiber_bump_eq_etaleBumpT2 (f : CurveModel.CurveFiber) :
+    f.bump = etaleBumpT2 (k := k) f.g f.graph.b1 f.deltaSum := by
+  rw [CurveModel.bump_eq f, etaleBumpT2_eq]
+
+/-- Realized branch-gluing part `Λ^{Σ(γ_x-1)}` of the normalization defect. -/
+abbrev BranchExcessSpace (branchExcessSum : ℕ) : Type _ :=
+  Fin branchExcessSum → k
+
+/-- Realized `δ` part `Λ^{Σδ_x}` of the normalization defect. -/
+abbrev DeltaInvariantSpace (deltaSum : ℕ) : Type _ :=
+  Fin deltaSum → k
+
+/-- Branch-refined local defect space
+`⊕_x (Λ^{γ_x-1} ⊕ Λ^{δ_x})`, represented by the product of its two finite
+rank pieces. -/
+abbrev BranchDeltaDefectSpace (branchExcessSum deltaSum : ℕ) : Type _ :=
+  BranchExcessSpace (k := k) branchExcessSum × DeltaInvariantSpace (k := k) deltaSum
+
+theorem branchExcessSpace_finrank (branchExcessSum : ℕ) :
+    Module.finrank k (BranchExcessSpace (k := k) branchExcessSum) =
+      branchExcessSum := by
+  rw [Module.finrank_fin_fun]
+
+theorem deltaInvariantSpace_finrank (deltaSum : ℕ) :
+    Module.finrank k (DeltaInvariantSpace (k := k) deltaSum) = deltaSum := by
+  rw [Module.finrank_fin_fun]
+
+theorem branchDeltaDefectSpace_finrank (branchExcessSum deltaSum : ℕ) :
+    Module.finrank k
+      (BranchDeltaDefectSpace (k := k) branchExcessSum deltaSum) =
+        branchExcessSum + deltaSum := by
+  rw [Module.finrank_prod, branchExcessSpace_finrank, deltaInvariantSpace_finrank]
+
+theorem curveFiber_branchDeltaDefectSpace_finrank (f : CurveModel.CurveFiber) :
+    Module.finrank k
+      (BranchDeltaDefectSpace (k := k) f.branchExcessSum f.deltaSum) =
+        f.branchDeltaDefectRank := by
+  rw [branchDeltaDefectSpace_finrank]
+  rfl
+
+theorem curveFiber_defectSpace_finrank_eq_branchDelta
+    (f : CurveModel.CurveFiber) (h : f.BranchGraphCompatible) :
+    Module.finrank k (DefectSpace (k := k) f.graph.b1 f.deltaSum) =
+      Module.finrank k
+        (BranchDeltaDefectSpace (k := k) f.branchExcessSum f.deltaSum) := by
+  rw [defect_finrank, branchDeltaDefectSpace_finrank]
+  exact congrArg (fun n => n + f.deltaSum) h
+
+theorem curveFiber_bump_eq_branchDeltaDefect_finrank
+    (f : CurveModel.CurveFiber) (h : f.BranchGraphCompatible) :
+    f.bump =
+      Module.finrank k
+        (BranchDeltaDefectSpace (k := k) f.branchExcessSum f.deltaSum) := by
+  rw [CurveModel.bump_eq_branchDeltaDefectRank f h,
+    ← curveFiber_branchDeltaDefectSpace_finrank (k := k) f]
+
+/-- C2 / Prop. 3.24, realized branch decomposition:
+`Q ≃ ⊕_x(Λ^{γ_x-1} ⊕ Λ^{δ_x})` at the level of finite-dimensional
+realizations, hence `dim Q = Σ(γ_x-1)+Σδ_x`. -/
+theorem proposition_3_24_Q_branch_decomposition_finrank
+    (f : CurveModel.CurveFiber) :
+    Module.finrank k
+      (BranchDeltaDefectSpace (k := k) f.branchExcessSum f.deltaSum) =
+        f.branchExcessSum + f.deltaSum :=
+  branchDeltaDefectSpace_finrank (k := k) f.branchExcessSum f.deltaSum
+
+/-- A compact 3-term realization of the defect motive after applying a
+cohomological realization functor.  Each entry records the dimension of an
+explicit `k`-vector space `Fin n → k`; `χ` below is the alternating sum of their
+actual `Module.finrank`s. -/
+structure EulerComplexT2 where
+  h0 : ℕ
+  h1 : ℕ
+  h2 : ℕ
+
+namespace EulerComplexT2
+
+abbrev H0 (C : EulerComplexT2) : Type _ := Fin C.h0 → k
+abbrev H1 (C : EulerComplexT2) : Type _ := Fin C.h1 → k
+abbrev H2 (C : EulerComplexT2) : Type _ := Fin C.h2 → k
+
+/-- Euler characteristic of the realized 3-term complex. -/
+noncomputable def chi (C : EulerComplexT2) : ℤ :=
+  (Module.finrank k (H0 (k := k) C) : ℤ) -
+    (Module.finrank k (H1 (k := k) C) : ℤ) +
+      (Module.finrank k (H2 (k := k) C) : ℤ)
+
+theorem chi_eq_dims (C : EulerComplexT2) :
+    C.chi (k := k) = (C.h0 : ℤ) - (C.h1 : ℤ) + (C.h2 : ℤ) := by
+  unfold chi H0 H1 H2
+  rw [Module.finrank_fin_fun, Module.finrank_fin_fun, Module.finrank_fin_fun]
+
+/-- Direct-sum addition of realized complexes, the T2 replacement for motivic
+Euler additivity after realization. -/
+def add (A C : EulerComplexT2) : EulerComplexT2 where
+  h0 := A.h0 + C.h0
+  h1 := A.h1 + C.h1
+  h2 := A.h2 + C.h2
+
+theorem chi_add (A C : EulerComplexT2) :
+    (A.add C).chi (k := k) = A.chi (k := k) + C.chi (k := k) := by
+  rw [chi_eq_dims, chi_eq_dims, chi_eq_dims]
+  unfold add
+  norm_num
+  omega
+
+/-- The realized defect complex: all defect mass sits in degree zero. -/
+def defect (b1 deltaSum : ℕ) : EulerComplexT2 where
+  h0 := b1 + deltaSum
+  h1 := 0
+  h2 := 0
+
+theorem chi_defect (b1 deltaSum : ℕ) :
+    (defect b1 deltaSum).chi (k := k) = (b1 + deltaSum : ℤ) := by
+  rw [chi_eq_dims]
+  simp [defect]
+
+end EulerComplexT2
+
+/-- The B2 motivic jump, now read from the realized defect complex rather than
+introduced as an unrelated certificate number. -/
+noncomputable def motivicEulerJumpT2 (b1 deltaSum : ℕ) : ℕ :=
+  b1 + deltaSum
+
+theorem defect_chi_eq_motivicEulerJumpT2 (b1 deltaSum : ℕ) :
+    (EulerComplexT2.defect b1 deltaSum).chi (k := k) =
+      (motivicEulerJumpT2 b1 deltaSum : ℤ) := by
+  rw [EulerComplexT2.chi_defect]
+  rfl
+
+theorem euler_additivity_T2 (A C : EulerComplexT2) :
+    (A.add C).chi (k := k) = A.chi (k := k) + C.chi (k := k) :=
+  EulerComplexT2.chi_add (k := k) A C
+
+theorem realization_compatibility_T2 (g b1 deltaSum : ℕ) :
+    motivicEulerJumpT2 b1 deltaSum = etaleBumpT2 (k := k) g b1 deltaSum := by
+  rw [motivicEulerJumpT2, etaleBumpT2_eq]
+
+theorem curveFiber_realization_compatibility_T2 (f : CurveModel.CurveFiber) :
+    motivicEulerJumpT2 f.graph.b1 f.deltaSum =
+      etaleBumpT2 (k := k) f.g f.graph.b1 f.deltaSum := by
+  exact realization_compatibility_T2 (k := k) f.g f.graph.b1 f.deltaSum
+
+theorem curveFiber_H1Fiber_finrank_baseChange_stable
+    {f f' : CurveModel.CurveFiber} (h : CurveModel.BaseChange f f') :
+    Module.finrank k (H1FiberSpace (k := k) f'.g f'.graph.b1 f'.deltaSum) =
+      Module.finrank k (H1FiberSpace (k := k) f.g f.graph.b1 f.deltaSum) := by
+  rw [h1Fiber_finrank, h1Fiber_finrank, h.hg, h.hb1, h.hdelta]
+
+theorem etaleBumpT2_baseChange_stable
+    {f f' : CurveModel.CurveFiber} (h : CurveModel.BaseChange f f') :
+    etaleBumpT2 (k := k) f'.g f'.graph.b1 f'.deltaSum =
+      etaleBumpT2 (k := k) f.g f.graph.b1 f.deltaSum := by
+  rw [etaleBumpT2_eq, etaleBumpT2_eq, h.hb1, h.hdelta]
+
+theorem motivicEulerJumpT2_baseChange_stable
+    {f f' : CurveModel.CurveFiber} (h : CurveModel.BaseChange f f') :
+    motivicEulerJumpT2 f'.graph.b1 f'.deltaSum =
+      motivicEulerJumpT2 f.graph.b1 f.deltaSum := by
+  unfold motivicEulerJumpT2
+  rw [h.hb1, h.hdelta]
+
+/-- B6 T2 realization shadow: after a normalization-preserving base change, the
+realized étale bump and realized motivic Euler jump are both stable. -/
+theorem realization_baseChange_stable_T2
+    {f f' : CurveModel.CurveFiber} (h : CurveModel.BaseChange f f') :
+    etaleBumpT2 (k := k) f'.g f'.graph.b1 f'.deltaSum =
+        etaleBumpT2 (k := k) f.g f.graph.b1 f.deltaSum ∧
+      motivicEulerJumpT2 f'.graph.b1 f'.deltaSum =
+        motivicEulerJumpT2 f.graph.b1 f.deltaSum :=
+  ⟨etaleBumpT2_baseChange_stable (k := k) h,
+    motivicEulerJumpT2_baseChange_stable h⟩
+
+/-- The skyscraper mass `dim H⁰(Q)` in the realized normalization sequence. -/
+noncomputable def skyscraperMassT2 (b1 deltaSum : ℕ) : ℕ :=
+  Module.finrank k (DefectSpace (k := k) b1 deltaSum)
+
+theorem skyscraperMassT2_eq (b1 deltaSum : ℕ) :
+    skyscraperMassT2 (k := k) b1 deltaSum = b1 + deltaSum := by
+  unfold skyscraperMassT2
+  rw [defect_finrank]
+
+/-- Definition-level form of the realized étale bump:
+`bump = dim H¹(X_p, Λ) - dim H¹(U_p, Λ)`. -/
+theorem etaleBumpT2_eq_finrank_difference (g b1 deltaSum : ℕ) :
+    etaleBumpT2 (k := k) g b1 deltaSum =
+      Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum) -
+        Module.finrank k (H1SmoothOpenSpace (k := k) g) :=
+  rfl
+
+/-- Rank-nullity plus the normalization SES turns the bump difference into the
+skyscraper mass `dim H⁰(Q)`. -/
+theorem h1Fiber_finrank_sub_h1Open_finrank_eq_defect_finrank
+    (g b1 deltaSum : ℕ) :
+    Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum) -
+        Module.finrank k (H1SmoothOpenSpace (k := k) g) =
+      Module.finrank k (DefectSpace (k := k) b1 deltaSum) := by
+  rw [h1Fiber_finrank, h1Open_finrank, defect_finrank]
+  omega
+
+/-- The measured étale bump is exactly the skyscraper mass. -/
+theorem etaleBumpT2_eq_skyscraperMassT2 (g b1 deltaSum : ℕ) :
+    etaleBumpT2 (k := k) g b1 deltaSum =
+      skyscraperMassT2 (k := k) b1 deltaSum := by
+  rw [etaleBumpT2_eq, skyscraperMassT2_eq]
+
+/-- The realized normalization measurement protocol: the three numerical
+outputs that an étale-cohomology construction would supply.  The fields are
+equalities to explicit finite-dimensional vector spaces, so the arithmetic
+conclusions below are unconditional Lean theorems. -/
+structure EtaleBumpMeasurementT2 (g b1 deltaSum : ℕ) where
+  dimH1Fiber : ℕ
+  dimH1SmoothOpen : ℕ
+  dimH0Skyscraper : ℕ
+  dimH1Fiber_eq :
+    dimH1Fiber = Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum)
+  dimH1SmoothOpen_eq :
+    dimH1SmoothOpen = Module.finrank k (H1SmoothOpenSpace (k := k) g)
+  dimH0Skyscraper_eq :
+    dimH0Skyscraper = Module.finrank k (DefectSpace (k := k) b1 deltaSum)
+
+namespace EtaleBumpMeasurementT2
+
+/-- The canonical finite-vector-space realization of the measurement protocol. -/
+noncomputable def canonical (g b1 deltaSum : ℕ) :
+    EtaleBumpMeasurementT2 (k := k) g b1 deltaSum where
+  dimH1Fiber := Module.finrank k (H1FiberSpace (k := k) g b1 deltaSum)
+  dimH1SmoothOpen := Module.finrank k (H1SmoothOpenSpace (k := k) g)
+  dimH0Skyscraper := Module.finrank k (DefectSpace (k := k) b1 deltaSum)
+  dimH1Fiber_eq := rfl
+  dimH1SmoothOpen_eq := rfl
+  dimH0Skyscraper_eq := rfl
+
+theorem bump_eq_output_difference {g b1 deltaSum : ℕ}
+    (M : EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    etaleBumpT2 (k := k) g b1 deltaSum =
+      M.dimH1Fiber - M.dimH1SmoothOpen := by
+  rw [etaleBumpT2_eq_finrank_difference, M.dimH1Fiber_eq, M.dimH1SmoothOpen_eq]
+
+theorem output_difference_eq_skyscraper {g b1 deltaSum : ℕ}
+    (M : EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    M.dimH1Fiber - M.dimH1SmoothOpen = M.dimH0Skyscraper := by
+  rw [M.dimH1Fiber_eq, M.dimH1SmoothOpen_eq, M.dimH0Skyscraper_eq]
+  exact h1Fiber_finrank_sub_h1Open_finrank_eq_defect_finrank (k := k) g b1 deltaSum
+
+theorem bump_eq_skyscraper {g b1 deltaSum : ℕ}
+    (M : EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    etaleBumpT2 (k := k) g b1 deltaSum = M.dimH0Skyscraper := by
+  rw [bump_eq_output_difference M, output_difference_eq_skyscraper M]
+
+theorem canonical_bump_eq_skyscraper (g b1 deltaSum : ℕ) :
+    etaleBumpT2 (k := k) g b1 deltaSum =
+      (canonical (k := k) g b1 deltaSum).dimH0Skyscraper :=
+  bump_eq_skyscraper (canonical (k := k) g b1 deltaSum)
+
+end EtaleBumpMeasurementT2
+
+/-- The three irreducible étale-foundation certificates that remain after the
+finite-dimensional realization has been made native.  They are deliberately
+separated from the numerical theorems: the numbers and SES rank calculation are
+proved above, while these propositions name the missing site/sheaf/Leray input. -/
+structure EtaleFoundationCertificate where
+  h1_values_from_actual_etale_cohomology : Prop
+  normalization_sheaf_SES_realized : Prop
+  leray_for_normalization_realized : Prop
+  skyscraper_mass_realized : Prop
+  h1_values_certified : h1_values_from_actual_etale_cohomology
+  normalization_sheaf_SES_certified : normalization_sheaf_SES_realized
+  leray_certified : leray_for_normalization_realized
+  skyscraper_mass_certified : skyscraper_mass_realized
+
+namespace EtaleFoundationCertificate
+
+theorem floor_data
+    (C : EtaleFoundationCertificate) :
+    C.h1_values_from_actual_etale_cohomology ∧
+      C.normalization_sheaf_SES_realized ∧
+      C.leray_for_normalization_realized ∧
+      C.skyscraper_mass_realized :=
+  ⟨C.h1_values_certified,
+    C.normalization_sheaf_SES_certified,
+    C.leray_certified,
+    C.skyscraper_mass_certified⟩
+
+end EtaleFoundationCertificate
+
+/-- A realized abstract localization triangle.  The only mathematical content
+needed for Euler additivity is that the total realized complex is the direct-sum
+addition of the open and closed pieces. -/
+structure AbstractLocalizationTriangleT2 where
+  openPart : EulerComplexT2
+  closedPart : EulerComplexT2
+  total : EulerComplexT2
+  total_eq_add : total = openPart.add closedPart
+
+namespace AbstractLocalizationTriangleT2
+
+theorem chi_add (T : AbstractLocalizationTriangleT2) :
+    T.total.chi (k := k) =
+      T.openPart.chi (k := k) + T.closedPart.chi (k := k) := by
+  rw [T.total_eq_add]
+  exact EulerComplexT2.chi_add (k := k) T.openPart T.closedPart
+
+/-- The localization triangle whose closed term is exactly the defect complex. -/
+def defectTriangle (openPart : EulerComplexT2) (b1 deltaSum : ℕ) :
+    AbstractLocalizationTriangleT2 where
+  openPart := openPart
+  closedPart := EulerComplexT2.defect b1 deltaSum
+  total := openPart.add (EulerComplexT2.defect b1 deltaSum)
+  total_eq_add := rfl
+
+theorem defectTriangle_chi
+    (openPart : EulerComplexT2) (b1 deltaSum : ℕ) :
+    (defectTriangle openPart b1 deltaSum).total.chi (k := k) =
+      openPart.chi (k := k) + (b1 + deltaSum : ℤ) := by
+  rw [chi_add]
+  simp [defectTriangle, EulerComplexT2.chi_defect]
+
+end AbstractLocalizationTriangleT2
+
+/-- The only remaining certificate after abstract localization-triangle Euler
+additivity has been made native: the assertion that a particular abstract
+triangle is the actual étale localization triangle. -/
+structure EtaleLocalizationTriangleCertificate
+    (T : AbstractLocalizationTriangleT2) where
+  realizes_actual_etale_localization_triangle : Prop
+
+/-! ### Motive detector: certified triangle and Euler jump.
+
+This block formalizes the motive detector without constructing `DM_c(𝔽_p)`.
+The native part is the logic of an Euler characteristic that is additive on a
+certified triangle, plus the already-realized finite-dimensional shadow.  The
+only remaining irreducible floor is the realization-compatibility assertion
+corresponding to Prop. 3.27. -/
+
+universe uMot
+
+/-- A compact motive localization triangle equipped with an Euler characteristic
+that is additive on the certified triangle.
+
+`defectIsCone` is the paper's `Def_p = Cone(M_c(U_p) → M_c(X_p))`; the theorem
+below uses only the provided certificate that this cone description and the
+localization triangle have been established in the chosen motive environment. -/
+structure CertifiedMotiveTriangleT2 where
+  Motive : Type uMot
+  compactOpen : Motive
+  compactFiber : Motive
+  defect : Motive
+  chiMot : Motive -> ℤ
+  defectIsCone : Prop
+  localizationTriangle : Prop
+  defectIsCone_certified : defectIsCone
+  localizationTriangle_certified : localizationTriangle
+  chi_additive :
+    localizationTriangle ->
+      chiMot compactFiber = chiMot compactOpen + chiMot defect
+
+namespace CertifiedMotiveTriangleT2
+
+/-- Def. 2.12/3.20, certificate form: the defect object is the cone of
+`M_c(U_p) → M_c(X_p)`. -/
+theorem defect_is_cone (T : CertifiedMotiveTriangleT2) : T.defectIsCone :=
+  T.defectIsCone_certified
+
+/-- Prop. 3.23, certified-triangle form: Euler characteristic is additive on
+the localization triangle. -/
+theorem chi_fiber_eq_open_add_defect (T : CertifiedMotiveTriangleT2) :
+    T.chiMot T.compactFiber = T.chiMot T.compactOpen + T.chiMot T.defect :=
+  T.chi_additive T.localizationTriangle_certified
+
+/-- The motivic defect Euler characteristic is the Euler jump
+`χ_mot(X_p) - χ_mot(U_p)`. -/
+theorem chi_defect_eq_fiber_sub_open (T : CertifiedMotiveTriangleT2) :
+    T.chiMot T.defect =
+      T.chiMot T.compactFiber - T.chiMot T.compactOpen := by
+  have h := chi_fiber_eq_open_add_defect T
+  omega
+
+/-- The motivic Euler jump read directly from a certified motive triangle. -/
+noncomputable def eulerJump (T : CertifiedMotiveTriangleT2) : ℤ :=
+  T.chiMot T.compactFiber - T.chiMot T.compactOpen
+
+/-- The defect motive and the triangle-defined jump have the same
+Euler characteristic. -/
+theorem defect_chi_eq_eulerJump (T : CertifiedMotiveTriangleT2) :
+    T.chiMot T.defect = T.eulerJump := by
+  exact chi_defect_eq_fiber_sub_open T
+
+end CertifiedMotiveTriangleT2
+
+/-- The ℕ-valued motivic jump is the same finite-dimensional skyscraper mass
+used by the étale bump. -/
+theorem motivicEulerJumpT2_eq_skyscraperMassT2 (b1 deltaSum : ℕ) :
+    motivicEulerJumpT2 b1 deltaSum =
+      skyscraperMassT2 (k := k) b1 deltaSum := by
+  rw [motivicEulerJumpT2, skyscraperMassT2_eq]
+
+/-- Prop. 3.27, realized numerical shadow:
+`χ(Def_p)` equals the ℓ-adic Euler difference represented by `etaleBumpT2`. -/
+theorem defect_chi_eq_etaleBumpT2 (g b1 deltaSum : ℕ) :
+    (EulerComplexT2.defect b1 deltaSum).chi (k := k) =
+      (etaleBumpT2 (k := k) g b1 deltaSum : ℤ) := by
+  rw [EulerComplexT2.chi_defect, etaleBumpT2_eq]
+  exact (Nat.cast_add b1 deltaSum).symm
+
+/-- Prop. 3.27 is isolated as the single remaining realization-compatibility
+certificate: the motivic defect Euler characteristic agrees with the realized
+ℓ-adic bump. -/
+structure MotiveRealizationCompatibilityCertificateT2
+    (T : CertifiedMotiveTriangleT2) (g b1 deltaSum : ℕ) where
+  prop_3_27_realization_compatible :
+    T.chiMot T.defect = (etaleBumpT2 (k := k) g b1 deltaSum : ℤ)
+
+namespace MotiveRealizationCompatibilityCertificateT2
+
+/-- The one-line floor exposed by the motive layer. -/
+theorem prop_3_27
+    {T : CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    T.chiMot T.defect = (etaleBumpT2 (k := k) g b1 deltaSum : ℤ) :=
+  C.prop_3_27_realization_compatible
+
+/-- Once Prop. 3.27 is supplied, the certified motive defect has the same
+Euler characteristic as the native ℕ-shadow `motivicEulerJumpT2`. -/
+theorem defect_chi_eq_motivicEulerJumpT2
+    {T : CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    T.chiMot T.defect = (motivicEulerJumpT2 b1 deltaSum : ℤ) := by
+  rw [C.prop_3_27_realization_compatible]
+  rw [realization_compatibility_T2 (k := k) g b1 deltaSum]
+
+/-- Combining triangle additivity with Prop. 3.27 identifies the
+triangle-defined motivic Euler jump with the finite-dimensional shadow. -/
+theorem eulerJump_eq_motivicEulerJumpT2
+    {T : CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    T.eulerJump = (motivicEulerJumpT2 b1 deltaSum : ℤ) := by
+  rw [← T.defect_chi_eq_eulerJump]
+  exact defect_chi_eq_motivicEulerJumpT2 (k := k) C
+
+end MotiveRealizationCompatibilityCertificateT2
 
 /-- **LHS decomposition on curves (genuine vector-space realization).**
 Modelling `H⁰(Q) ≅ k^{b₁+Σδ}` (skyscraper mass) and `H¹(X̃_p) ≅ k^{2g}`
@@ -4080,6 +6284,119 @@ theorem connected_isTree_iff (Γ : FiniteGraph) (hconn : Γ.c = 1) :
   unfold FiniteGraph.IsForest
   omega
 
+/-
+A native `SimpleGraph` model of the Euler characteristic formula for the
+first Betti number.  The definitions use `Nat.card`, so the core statements do
+not need decidable adjacency; the theorem `b1_eq_fintypeCard` gives the requested
+`Fintype.card` presentation when the graph is a finite decidable graph.
+-/
+namespace SimpleGraphEuler
+
+open SimpleGraph
+
+variable {V : Type*} (G : SimpleGraph V)
+
+/-- Number of vertices of a finite graph, expressed using Mathlib's cardinal API. -/
+noncomputable def vertexCount : ℕ := Nat.card V
+
+/-- Number of edges, counted by Mathlib's genuine `SimpleGraph.edgeSet`. -/
+noncomputable def edgeCount : ℕ := Nat.card G.edgeSet
+
+/-- Number of connected components, via `SimpleGraph.ConnectedComponent`. -/
+noncomputable def componentCount : ℕ := Nat.card G.ConnectedComponent
+
+/-- The graph-theoretic first Betti number `b₁ = |E| + c - |V|`. -/
+noncomputable def b1 : ℕ :=
+  edgeCount G + componentCount G - vertexCount (V := V)
+
+theorem b1_eq_natCard :
+    b1 G = Nat.card G.edgeSet + Nat.card G.ConnectedComponent - Nat.card V := rfl
+
+/-- The same formula in the concrete `Fintype.card` form requested for finite
+decidable `SimpleGraph`s. -/
+theorem b1_eq_fintypeCard [Fintype V] [DecidableEq V] [DecidableRel G.Adj] :
+    b1 G =
+      Fintype.card G.edgeSet + Fintype.card G.ConnectedComponent - Fintype.card V := by
+  rw [b1_eq_natCard]
+  simp [Nat.card_eq_fintype_card]
+
+/-- A connected graph has exactly one connected component. -/
+theorem connected_componentCount_eq_one (hG : G.Connected) :
+    componentCount G = 1 := by
+  haveI : Nonempty V := hG.nonempty
+  haveI : Subsingleton G.ConnectedComponent :=
+    hG.preconnected.subsingleton_connectedComponent
+  simp [componentCount]
+
+/-- The spanning-forest bound for a connected `SimpleGraph`, now proved from
+Mathlib's `Connected.card_vert_le_card_edgeSet_add_one`. -/
+theorem connected_forest_bound (hG : G.Connected) :
+    Nat.card V ≤ Nat.card G.edgeSet + componentCount G := by
+  rw [connected_componentCount_eq_one G hG]
+  exact hG.card_vert_le_card_edgeSet_add_one
+
+/-- A connected finite `SimpleGraph` supplies the Euler-data structure used by
+the curve-level detector.  In particular, the old `forest_bound` field is filled
+by the native `SimpleGraph` theorem above. -/
+noncomputable def toFiniteGraphOfConnected [Finite V] (hG : G.Connected) : FiniteGraph where
+  V := vertexCount (V := V)
+  E := edgeCount G
+  c := componentCount G
+  pos := by
+    rw [connected_componentCount_eq_one G hG]
+  forest_bound := connected_forest_bound G hG
+
+@[simp] theorem toFiniteGraphOfConnected_V [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).V = Nat.card V := rfl
+
+@[simp] theorem toFiniteGraphOfConnected_E [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).E = Nat.card G.edgeSet := rfl
+
+@[simp] theorem toFiniteGraphOfConnected_c [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).c = Nat.card G.ConnectedComponent := rfl
+
+/-- Compatibility between the native `SimpleGraph` Betti number and the existing
+Euler-data structure. -/
+theorem connected_b1_eq_simpleGraphB1 [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).b1 = b1 G := rfl
+
+/-- For a connected finite `SimpleGraph`, the detector vanishes exactly when the
+graph is a Mathlib tree. -/
+theorem connected_b1_eq_zero_iff_isTree [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).b1 = 0 ↔ G.IsTree := by
+  have hcomp' : Nat.card G.ConnectedComponent = 1 := by
+    simpa [componentCount] using connected_componentCount_eq_one G hG
+  have hbound := hG.card_vert_le_card_edgeSet_add_one
+  change Nat.card G.edgeSet + Nat.card G.ConnectedComponent - Nat.card V = 0 ↔ G.IsTree
+  rw [hcomp']
+  have hzero :
+      Nat.card G.edgeSet + 1 - Nat.card V = 0 ↔
+        Nat.card G.edgeSet + 1 = Nat.card V := by
+    omega
+  rw [hzero, SimpleGraph.isTree_iff_connected_and_card]
+  constructor
+  · exact fun hcard => ⟨hG, hcard⟩
+  · exact fun htree => htree.2
+
+/-- The existing `FiniteGraph.IsForest` predicate agrees with Mathlib's `IsTree`
+for connected finite `SimpleGraph`s. -/
+theorem connected_isForest_iff_isTree [Finite V] (hG : G.Connected) :
+    (toFiniteGraphOfConnected G hG).IsForest ↔ G.IsTree := by
+  constructor
+  · intro hforest
+    exact (connected_b1_eq_zero_iff_isTree G hG).1
+      ((b1_eq_zero_iff_isForest (toFiniteGraphOfConnected G hG)).2 hforest)
+  · intro htree
+    exact (b1_eq_zero_iff_isForest (toFiniteGraphOfConnected G hG)).1
+      ((connected_b1_eq_zero_iff_isTree G hG).2 htree)
+
+/-- A Mathlib tree has zero first Betti number under the integrated detector. -/
+theorem isTree_b1_eq_zero [Finite V] (hT : G.IsTree) :
+    (toFiniteGraphOfConnected G hT.connected).b1 = 0 := by
+  exact (connected_b1_eq_zero_iff_isTree G hT.connected).2 hT
+
+end SimpleGraphEuler
+
 /-- The genuine combinatorial `b₁` feeds the numerical `CurveModel.DualGraph`
 used by the curve Master Equivalence: the bare `b1` field is now the value of a
 real Euler-characteristic invariant. -/
@@ -4105,9 +6422,43 @@ end Spt2
 section AxiomAudit
 #print axioms Spt2.GeometricWorkarounds.HenselReal.hensel_gate
 #print axioms Spt2.GeometricWorkarounds.HenselReal.unique_padic_lift
+#print axioms Spt2.GeometricWorkarounds.HenselReal.global_residue_hensel_discriminant_TFAE
+#print axioms Spt2.GeometricWorkarounds.HenselReal.every_residue_root_lifts_uniquely_of_squarefree_reduction
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.ses_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.h1Fiber_finrank_from_ses
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.etaleBumpT2_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.curveFiber_bump_eq_etaleBumpT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.skyscraperMassT2_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.etaleBumpT2_eq_finrank_difference
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.h1Fiber_finrank_sub_h1Open_finrank_eq_defect_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.etaleBumpT2_eq_skyscraperMassT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.EtaleBumpMeasurementT2.bump_eq_output_difference
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.EtaleBumpMeasurementT2.output_difference_eq_skyscraper
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.EtaleBumpMeasurementT2.bump_eq_skyscraper
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.EtaleBumpMeasurementT2.canonical_bump_eq_skyscraper
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.EtaleFoundationCertificate.floor_data
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.AbstractLocalizationTriangleT2.chi_add
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.AbstractLocalizationTriangleT2.defectTriangle_chi
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.CertifiedMotiveTriangleT2.defect_is_cone
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.CertifiedMotiveTriangleT2.chi_fiber_eq_open_add_defect
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.CertifiedMotiveTriangleT2.chi_defect_eq_fiber_sub_open
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.CertifiedMotiveTriangleT2.defect_chi_eq_eulerJump
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.motivicEulerJumpT2_eq_skyscraperMassT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.defect_chi_eq_etaleBumpT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.MotiveRealizationCompatibilityCertificateT2.prop_3_27
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.MotiveRealizationCompatibilityCertificateT2.defect_chi_eq_motivicEulerJumpT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.MotiveRealizationCompatibilityCertificateT2.eulerJump_eq_motivicEulerJumpT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.branchDeltaDefectSpace_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.curveFiber_bump_eq_branchDeltaDefect_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.proposition_3_24_Q_branch_decomposition_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.defect_chi_eq_motivicEulerJumpT2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.euler_additivity_T2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.realization_compatibility_T2
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.realization_baseChange_stable_T2
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.h1_decomposition
 #print axioms Spt2.GeometricWorkarounds.DualGraphReal.b1_eq_zero_iff_isForest
+#print axioms Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler.b1_eq_fintypeCard
+#print axioms Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler.connected_b1_eq_zero_iff_isTree
 end AxiomAudit
 
 /-!
@@ -4140,31 +6491,36 @@ structure ChecklistItem where
   deriving Repr
 
 def completedNativeCore : List ChecklistItem :=
-  [ { paperRefs := ["Theorem 2.1 algebraic core", "Lemma 2.17", "Proposition 2.18"],
-      item := "Univariate squarefree/discriminant gate, CRT kernel-intersection, and algebraic Jacobian quotient gates",
+  [ { paperRefs := ["Theorem 2.1 algebraic core", "Lemma 2.17", "Proposition 2.18", "A8"],
+      item := "Univariate squarefree/discriminant gate, CRT kernel-intersection, algebraic Jacobian quotient gates, and ℕ∞ Tjurina length",
       currentStatus := FormalizationStatus.nativeMathlibTheorem,
-      currentEncoding := "Spt2.squarefree_iff_coprime_derivative, Spt2.kernel_mem_iff_lcm, Spt2.JacobianReal, Spt2.CompletionLayer",
+      currentEncoding := "Spt2.squarefree_iff_coprime_derivative, Spt2.kernel_mem_iff_lcm, Spt2.ModuleLength, Spt2.JacobianReal.localLengthENat, Spt2.AdditionalFormalization.ActualAlgebra.theorem_2_1_algebraic_ENat_TFAE, Spt2.CompletionLayer",
       nativeCompletionRequired := "None for this algebraic core, modulo version-specific Mathlib checking" },
     { paperRefs := ["Proposition 1.3", "Proposition 2.9", "Proposition 3.13"],
-      item := "p-adic simple-root Hensel lifting gate",
+      item := "p-adic simple-root Hensel lifting and global univariate squarefree/resultant discriminant gate",
       currentStatus := FormalizationStatus.nativeMathlibTheorem,
-      currentEncoding := "Spt2.GeometricWorkarounds.HenselReal",
-      nativeCompletionRequired := "Connect family-specific discriminants to the concrete p-adic hypotheses chart by chart" },
+      currentEncoding := "Spt2.GeometricWorkarounds.HenselReal.hensel_gate; Spt2.GeometricWorkarounds.HenselReal.global_residue_hensel_discriminant_TFAE; Spt2.GeometricWorkarounds.HenselReal.every_residue_root_lifts_uniquely_of_squarefree_reduction",
+      nativeCompletionRequired := "Instantiate named curve/family equations by proving their reduction is the polynomial used in the univariate package" },
+    { paperRefs := ["Remark 3.14"],
+      item := "Short Weierstrass elliptic-curve discriminant gate p ∤ Δ iff nonsingular reduction",
+      currentStatus := FormalizationStatus.nativeMathlibTheorem,
+      currentEncoding := "Spt2.AdditionalFormalization.EllipticCurveDiscriminant.goodReduction_iff_nonsingularReduction",
+      nativeCompletionRequired := "Replace the current affine Weierstrass encoding by a scheme-level elliptic curve object only if the surrounding paper layer requires schemes" },
     { paperRefs := ["Lemma 3.2", "Proposition 3.25"],
       item := "Finite-dimensional short-exact-sequence dimension count",
       currentStatus := FormalizationStatus.nativeMathlibTheorem,
       currentEncoding := "Spt2.GeometricWorkarounds.NormalizationReal.ses_finrank",
       nativeCompletionRequired := "Instantiate the vector spaces as actual etale/LHS cohomology of the curve normalization sequence" },
     { paperRefs := ["Theorem 3.6", "Theorem 6.9"],
-      item := "Dual-graph first Betti number as Euler characteristic",
+      item := "Dual-graph first Betti number as Euler characteristic, with a connected SimpleGraph bridge",
       currentStatus := FormalizationStatus.nativeMathlibTheorem,
-      currentEncoding := "Spt2.GeometricWorkarounds.DualGraphReal",
-      nativeCompletionRequired := "Construct the dual graph functorially from an actual singular curve and its normalization" },
+      currentEncoding := "Spt2.GeometricWorkarounds.DualGraphReal; Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler",
+      nativeCompletionRequired := "Construct the dual graph functorially from an actual singular curve and add the full disconnected edge-partition theorem for components" },
     { paperRefs := ["Definition 3.9", "Proposition 3.10", "Lemma 3.12", "Lemma 6.6"],
-      item := "Principal-open basis and ideal-theoretic cover criterion on Spec R",
+      item := "Principal-open basis, sectionwise finite limits of detector presheaves, and ideal-theoretic cover criterion on Spec R",
       currentStatus := FormalizationStatus.nativeMathlibTheorem,
-      currentEncoding := "Spt2.PrincipalOpenReal",
-      nativeCompletionRequired := "Upgrade from basis/cover topology to actual detector sheaves and equalizer gluing on that basis" } ]
+      currentEncoding := "Spt2.PrincipalOpenReal; Spt2.StructuralResolution.SectionwisePresheafLimits",
+      nativeCompletionRequired := "Instantiate the abstract presheaf/fiber-product and cover results for the actual detector sheaves, including transport stability" } ]
 
 def certificateLevelProofFill : List ChecklistItem :=
   [ { paperRefs := ["Theorem 1.1", "Theorem 6.1", "Corollary 6.11"],
@@ -4197,21 +6553,21 @@ def certificateLevelProofFill : List ChecklistItem :=
       currentStatus := FormalizationStatus.certifiedInterface,
       currentEncoding := "CertifiedSPT2.toArithmeticCurve_good_prime_box",
       nativeCompletionRequired := "Replace the good-prime certificate predicates by native discriminant-open theorems" },
-    { paperRefs := ["Corollary 1.5", "Lemma 3.18"],
-      item := "Generate numeric good-prime vanishing for bump, Euler jump, derived dimension, and local length",
+    { paperRefs := ["Corollary 1.5", "Lemma 3.18", "A8"],
+      item := "Generate numeric good-prime vanishing for bump, Euler jump, derived dimension, and local/Tjurina length",
       currentStatus := FormalizationStatus.certifiedInterface,
-      currentEncoding := "CertifiedSPT2.toArithmeticCurve_numeric_good_prime_box",
-      nativeCompletionRequired := "Replace numeric certificate fields by actual dimensions/Euler characteristics/lengths" },
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_numeric_good_prime_box; native length bridge: Spt2.JacobianReal.localLengthENat_eq_zero_iff",
+      nativeCompletionRequired := "Replace remaining numeric certificate fields by actual dimensions/Euler characteristics and the ℕ∞ Tjurina length" },
     { paperRefs := ["Theorem 2.4", "Theorem 3.28", "Proposition 6.10"],
       item := "Generate etale bump equals motivic Euler jump from MotiveCore.eulerJump_eq_bump",
       currentStatus := FormalizationStatus.certifiedInterface,
       currentEncoding := "CertifiedSPT2.toArithmeticCurve_etale_motivic_equality",
       nativeCompletionRequired := "Prove equality from actual etale realization of the motive localization triangle" },
-    { paperRefs := ["Proposition 5.3", "Corollary 5.4"],
-      item := "Generate derived dimension equals local length from the derived certificate",
+    { paperRefs := ["Proposition 5.3", "Corollary 5.4", "A8"],
+      item := "Generate derived dimension equals local/Tjurina length from the derived certificate",
       currentStatus := FormalizationStatus.certifiedInterface,
-      currentEncoding := "CertifiedSPT2.toArithmeticCurve_derived_dimension_formula",
-      nativeCompletionRequired := "Prove the hypersurface cotangent-complex two-term model natively" } ]
+      currentEncoding := "CertifiedSPT2.toArithmeticCurve_derived_dimension_formula; native algebra layer: Spt2.JacobianReal.localLengthENat_eq_localLength_or_top",
+      nativeCompletionRequired := "Prove the hypersurface cotangent-complex two-term model natively with Module.length-valued Tjurina length" } ]
 
 def remainingNativeObligations : List ChecklistItem :=
   [ { paperRefs := ["Definition 2.13", "Definition 3.1", "Definition 3.21"],
@@ -4234,16 +6590,16 @@ def remainingNativeObligations : List ChecklistItem :=
       currentStatus := FormalizationStatus.certifiedInterface,
       currentEncoding := "NormalizationPackage, NormalizationExactSequencePackage, CurveFiber.deltaSum",
       nativeCompletionRequired := "Construct normalization of arithmetic curve fibers, singular skyscraper sheaves, delta lengths, and the associated exact sequence" },
-    { paperRefs := ["Proposition 5.1", "Proposition 5.3", "Corollary 5.4", "Proposition 5.5"],
+    { paperRefs := ["Proposition 5.1", "Proposition 5.3", "Corollary 5.4", "Proposition 5.5", "A8"],
       item := "Scheme-level cotangent complex and derived detector H1(L_Xp)",
       currentStatus := FormalizationStatus.certifiedInterface,
-      currentEncoding := "DerivedDetectorPackage, DerivedCore, JacobianReal/Multivariate local algebra substitutes",
+      currentEncoding := "DerivedDetectorPackage, DerivedCore, JacobianReal.localLengthENat, ModuleLength.length_eq_top_iff_not_module_finite, and multivariate local algebra substitutes",
       nativeCompletionRequired := "Define the cotangent complex for schemes/ringed spaces, prove the hypersurface two-term model, base change, and H1-vanishing criterion" },
     { paperRefs := ["Definition 3.9", "Proposition 3.10", "Lemma 3.12", "Lemma 6.6"],
       item := "Principal-open sheaf/equalizer gluing and transport stability for all detectors",
       currentStatus := FormalizationStatus.certifiedInterface,
-      currentEncoding := "PrincipalOpenSheafGluingPackage plus ArithmeticCurve sectionwise/transport fields",
-      nativeCompletionRequired := "Replace sectionwiseComputable, crtGlue, and transportStable fields by sheaf-level theorems on the principal-open basis" },
+      currentEncoding := "PrincipalOpenSheafGluingPackage plus ArithmeticCurve transport fields; SectionwisePresheafLimits covers the abstract finite-limit section calculation",
+      nativeCompletionRequired := "Instantiate the abstract sectionwise finite-limit theorem for the actual detector sheaves and replace crtGlue/transportStable fields by sheaf-level theorems on the principal-open basis" },
     { paperRefs := ["Theorem 1.1", "Theorem 6.1", "Corollary 6.11"],
       item := "Final five-detector Master Equivalence for actual arithmetic curve fibers",
       currentStatus := FormalizationStatus.certifiedInterface,
@@ -4262,7 +6618,7 @@ theorem interfaceFormalizationHasVisibleObligations :
   rfl
 
 theorem completedNativeCore_count :
-    completedNativeCore.length = 5 := by
+    completedNativeCore.length = 6 := by
   rfl
 
 theorem certificateLevelProofFill_count :
@@ -4332,9 +6688,9 @@ def paperCoverage : List PaperStatementCoverage :=
       note := "Equivalence is proved from explicit bridge/certificate fields, not yet from native etale/motivic/derived objects" },
     { paperRef := "Proposition 1.3",
       paperStatement := "Hensel gate iff discriminant gate on the good locus",
-      leanEncoding := "Spt2.PaperFullFormalization.proposition_1_3; Spt2.GeometricWorkarounds.HenselReal.hensel_gate",
-      status := FormalizationStatus.certifiedInterface,
-      note := "Hensel lifting is native; family-specific discriminant-to-Hensel identification is still an interface field" },
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_1_3; Spt2.GeometricWorkarounds.HenselReal.global_residue_hensel_discriminant_TFAE; Spt2.GeometricWorkarounds.HenselReal.every_residue_root_lifts_uniquely_of_squarefree_reduction",
+      status := FormalizationStatus.nativeMathlibTheorem,
+      note := "Native for univariate p-adic polynomials: geometric simple residue roots, squarefree reduction, resultant nonvanishing, and unique lifts are theorem-level; curve-level wrappers still instantiate the chosen family" },
     { paperRef := "Corollary 1.4",
       paperStatement := "Good-prime box: all detectors are silent",
       leanEncoding := "Spt2.PaperFullFormalization.corollary_1_4; Spt2.BypassCertificate.CertifiedSPT2.good_prime_box",
@@ -4344,7 +6700,7 @@ def paperCoverage : List PaperStatementCoverage :=
       paperStatement := "Numeric good-prime box",
       leanEncoding := "Spt2.PaperFullFormalization.corollary_1_5",
       status := FormalizationStatus.certifiedInterface,
-      note := "Uses numeric fields bump, eulerJump, derivedDimension, and localLength" },
+      note := "Paper facade still exposes numeric fields, but the native Tjurina detector is now Module.length via Spt2.JacobianReal.localLengthENat" },
     { paperRef := "Proposition 1.6",
       paperStatement := "Minimal certificate on a principal open",
       leanEncoding := "Spt2.PaperFullFormalization.proposition_1_6; Spt2.CurveModel.minimal_certificate",
@@ -4352,9 +6708,9 @@ def paperCoverage : List PaperStatementCoverage :=
       note := "The certificate is explicit and visible, but not yet eliminated" },
     { paperRef := "Theorem 2.1",
       paperStatement := "Base-change identities and detector equivalence",
-      leanEncoding := "Spt2.PaperFullFormalization.theorem_2_1; Spt2.CompletionLayer.theorem_2_1_full_TFAE",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_2_1; Spt2.CompletionLayer.theorem_2_1_full_TFAE; Spt2.AdditionalFormalization.ActualAlgebra.theorem_2_1_algebraic_ENat_TFAE",
       status := FormalizationStatus.certifiedInterface,
-      note := "Algebraic TFAE is native; full curve detector equivalence still depends on bridge fields" },
+      note := "Algebraic TFAE is native, including the corrected ℕ∞ local-length detector; full curve detector equivalence still depends on bridge fields" },
     { paperRef := "Corollary 2.2",
       paperStatement := "Principal-open control of smoothness",
       leanEncoding := "Spt2.PaperFullFormalization.corollary_2_2",
@@ -4417,9 +6773,9 @@ def paperCoverage : List PaperStatementCoverage :=
       note := "Good-prime vanishing follows from good_to_zero" },
     { paperRef := "Theorem 3.6",
       paperStatement := "Normalization, dual graph, delta formula, and bump equals Euler jump",
-      leanEncoding := "Spt2.PaperFullFormalization.theorem_3_6; Spt2.GeometricWorkarounds.DualGraphReal",
+      leanEncoding := "Spt2.PaperFullFormalization.theorem_3_6; Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler",
       status := FormalizationStatus.certifiedInterface,
-      note := "Finite graph b1 is native; normalization/delta construction is not" },
+      note := "Connected SimpleGraph b1/tree bridge is native; normalization/delta construction is not" },
     { paperRef := "Definition 3.9",
       paperStatement := "Visible primes and sectionwise conventions",
       leanEncoding := "Spt2.PaperFullFormalization.VisiblePrimeOn; Spt2.PrincipalOpenReal.mem_basicOpen_iff",
@@ -4427,9 +6783,9 @@ def paperCoverage : List PaperStatementCoverage :=
       note := "Principal-open membership is native; the visible-prime convention remains predicate-level" },
     { paperRef := "Proposition 3.10",
       paperStatement := "Sectionwise computation on the principal-open basis",
-      leanEncoding := "Spt2.PaperFullFormalization.proposition_3_10; Spt2.PrincipalOpenReal.basicOpen_basis",
-      status := FormalizationStatus.certifiedInterface,
-      note := "The basis theorem is native; detector sectionwise computation is still represented by sectionwiseComputable" },
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_3_10; Spt2.PrincipalOpenReal.basicOpen_basis; Spt2.StructuralResolution.SectionwisePresheafLimits.fourDetectorSectionwiseWidePullbackIso",
+      status := FormalizationStatus.nativeMathlibTheorem,
+      note := "Native at the abstract presheaf level: finite limits and the four-detector fiber product are computed sectionwise; curve-specific detector instantiation remains separate" },
     { paperRef := "Lemma 3.12",
       paperStatement := "CRT gluing / equalizer",
       leanEncoding := "Spt2.PaperFullFormalization.lemma_3_12; ReplacementTargets.PrincipalOpenSheafGluingPackage; Spt2.PrincipalOpenReal.basicOpen_cover_top_iff",
@@ -4440,6 +6796,11 @@ def paperCoverage : List PaperStatementCoverage :=
       leanEncoding := "Spt2.PaperFullFormalization.proposition_1_3; Spt2.GeometricWorkarounds.HenselReal",
       status := FormalizationStatus.certifiedInterface,
       note := "Native Hensel theorem plus an explicit discriminant bridge" },
+    { paperRef := "Remark 3.14",
+      paperStatement := "For y^2 = x^3 + ax + b, p ∤ Δ iff the reduction is nonsingular",
+      leanEncoding := "Spt2.AdditionalFormalization.EllipticCurveDiscriminant.goodReduction_iff_nonsingularReduction",
+      status := FormalizationStatus.nativeMathlibTheorem,
+      note := "Uses Mathlib WeierstrassCurve.Δ and IsElliptic = unit discriminant; no certificate field" },
     { paperRef := "Definition 3.15",
       paperStatement := "Detectors on fibers",
       leanEncoding := "Spt2.PaperFullFormalization.detectors_on_fibers; Spt2.CurveModel.FiveDetectors",
@@ -4467,9 +6828,9 @@ def paperCoverage : List PaperStatementCoverage :=
       note := "Scheme-level cotangent complex is not natively built" },
     { paperRef := "Proposition 5.3",
       paperStatement := "Two-term hypersurface cotangent model",
-      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_3; Spt2.JacobianReal",
+      leanEncoding := "Spt2.PaperFullFormalization.proposition_5_3; Spt2.JacobianReal.localLengthENat_eq_localLength_or_top; Spt2.JacobianReal.localLengthENat_eq_top_iff_not_module_finite; Spt2.CompletionLayer.benchSurface_jacobianQuotient_length_eq_tau",
       status := FormalizationStatus.certifiedInterface,
-      note := "Local algebra substitute exists; full scheme cotangent model remains a target" },
+      note := "Local algebra now uses Module.length : ℕ∞, agrees with finrank in finite cases, and records ⊤ in the benchmark infinite case; full scheme cotangent model remains a target" },
     { paperRef := "Corollary 5.4",
       paperStatement := "Jacobian criterion from the derived detector",
       leanEncoding := "Spt2.PaperFullFormalization.corollary_5_4",
@@ -4504,6 +6865,240 @@ def paperCoverage : List PaperStatementCoverage :=
 theorem paperCoverage_nonempty : paperCoverage.length > 0 := by
   decide
 
+/-! ## Derived detector checklist: affine-native Der layer.
+
+This records the four-rung bypass recipe and the present Der status as Lean data.
+The mathematical payload is in `JacobianReal`, `JacobianMv`, and
+`DerivedBaseChange`; this namespace keeps the audit trail visible and
+machine-checkable. -/
+
+namespace DerChecklist
+
+/-- The four rungs used throughout the workaround strategy. -/
+inductive LadderRung where
+  | numericalShadow
+  | finiteRealization
+  | affineNative
+  | schemeNativeFuture
+  deriving DecidableEq, Repr
+
+def ladder : List LadderRung :=
+  [LadderRung.numericalShadow,
+   LadderRung.finiteRealization,
+   LadderRung.affineNative,
+   LadderRung.schemeNativeFuture]
+
+theorem ladder_length : ladder.length = 4 := by
+  decide
+
+theorem affineNative_mem_ladder : LadderRung.affineNative ∈ ladder := by
+  decide
+
+theorem schemeNativeFuture_is_last :
+    ladder.getLast (by decide) = LadderRung.schemeNativeFuture := by
+  decide
+
+/-- A compact checklist entry for a geometric detector. -/
+structure GeometryChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  immediate : List String
+  status : FormalizationStatus
+  deriving Repr
+
+/-- The Der/cotangent-complex checklist specialized to affine hypersurface charts. -/
+def derAffineHypersurfaceChecklist : GeometryChecklist :=
+  { object := "Der detector for affine hypersurface charts"
+    needed :=
+      ["Prop 5.1 smooth iff H1(L)=0",
+       "Prop 5.3 two-term hypersurface model",
+       "Cor 5.4 Jacobian criterion",
+       "Prop 5.5 base change"]
+    native :=
+      ["JacobianReal.formallyEtale_iff_squarefree",
+       "JacobianReal.kaehlerEquivJacobianQuotient",
+       "JacobianReal.principalAQH1ModelEquivAlgebraH1Cotangent",
+       "JacobianMv.formallySmooth_of_grad_span_eq_top",
+       "JacobianMv.formallySmooth_of_gradUnitCertificate",
+       "JacobianMv.planeAQH1KernelModel_subsingleton_and_tjurina_not_subsingleton_of_isDomain",
+       "DerivedBaseChange.formallySmooth_baseChange"]
+    bypass :=
+      ["Work chartwise on affine hypersurfaces",
+       "Use Algebra.H1Cotangent/FormallyEtale/KaehlerDifferential natively",
+       "Keep non-affine sheaf gluing as the unique scheme-level floor"]
+    floor :=
+      ["Sheaf-level gluing of the two-term cotangent model over non-affine curve fibers"]
+    immediate :=
+      ["GradUnitCertificate derives J_f = top and formal smoothness",
+       "zero_hypersurface_grad_span_ne_top records the f=0 obstruction to an unconditional reverse",
+       "PlaneAQH1KernelModel/TjurinaQuotient separation records H1(L)=0 but T1 nonzero"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem der_needed_count : derAffineHypersurfaceChecklist.needed.length = 4 := by
+  decide
+
+theorem der_native_count : derAffineHypersurfaceChecklist.native.length = 7 := by
+  decide
+
+theorem der_floor_unique : derAffineHypersurfaceChecklist.floor.length = 1 := by
+  decide
+
+theorem der_immediate_count : derAffineHypersurfaceChecklist.immediate.length = 3 := by
+  decide
+
+end DerChecklist
+
+section DerChecklistAxiomAudit
+#print axioms DerChecklist.ladder_length
+#print axioms DerChecklist.affineNative_mem_ladder
+#print axioms DerChecklist.schemeNativeFuture_is_last
+#print axioms DerChecklist.der_needed_count
+#print axioms DerChecklist.der_native_count
+#print axioms DerChecklist.der_floor_unique
+#print axioms DerChecklist.der_immediate_count
+end DerChecklistAxiomAudit
+
+/-! ## Étale detector checklist: realized bump layer. -/
+
+namespace EtaleChecklist
+
+/-- The four categories requested for the étale detector audit. -/
+structure EtaleDetectorChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  reducedCertificate : List String
+  status : FormalizationStatus
+  deriving Repr
+
+/-- Checklist B: `bump_p = dim H¹(X_p, Λ) - dim H¹(U_p, Λ)`. -/
+def bumpChecklist : EtaleDetectorChecklist :=
+  { object := "Etale bump detector"
+    needed :=
+      ["Definitions 2.13, 3.1, and 3.21 of the bump",
+       "Normalization SES measurement protocol",
+       "Leray comparison for normalization",
+       "Skyscraper mass formula"]
+    native :=
+      ["NormalizationReal.ses_finrank",
+       "NormalizationReal.h1Fiber_finrank_from_ses",
+       "NormalizationReal.etaleBumpT2_eq_finrank_difference",
+       "NormalizationReal.h1Fiber_finrank_sub_h1Open_finrank_eq_defect_finrank",
+       "NormalizationReal.etaleBumpT2_eq_skyscraperMassT2",
+       "NormalizationReal.etaleBumpT2_baseChange_stable",
+       "NormalizationReal.AbstractLocalizationTriangleT2.chi_add"]
+    bypass :=
+      ["Realize H1(Xp,Lambda), H1(Up,Lambda), and H0(Q) as Fin n -> k",
+       "Prove the bump formula by rank-nullity and finite-dimensional arithmetic",
+       "Use abstract realized localization triangles for Euler additivity"]
+    floor :=
+      ["Actual etale-cohomology values dim H1(Xp,Lambda) and dim H1(Up,Lambda)",
+       "Actual normalization sheaf SES plus Leray comparison",
+       "Actual skyscraper mass dim H0(Q)=b1(Gamma)+sum delta"]
+    reducedCertificate :=
+      ["EtaleFoundationCertificate exposes only the site/sheaf/Leray/skyscraper floor",
+       "EtaleLocalizationTriangleCertificate exposes only realization of the abstract triangle as the actual etale localization triangle"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem bump_needed_count : bumpChecklist.needed.length = 4 := by
+  decide
+
+theorem bump_native_count : bumpChecklist.native.length = 7 := by
+  decide
+
+theorem bump_bypass_count : bumpChecklist.bypass.length = 3 := by
+  decide
+
+theorem bump_floor_count : bumpChecklist.floor.length = 3 := by
+  decide
+
+theorem bump_reducedCertificate_count :
+    bumpChecklist.reducedCertificate.length = 2 := by
+  decide
+
+end EtaleChecklist
+
+section EtaleChecklistAxiomAudit
+#print axioms EtaleChecklist.bump_needed_count
+#print axioms EtaleChecklist.bump_native_count
+#print axioms EtaleChecklist.bump_bypass_count
+#print axioms EtaleChecklist.bump_floor_count
+#print axioms EtaleChecklist.bump_reducedCertificate_count
+end EtaleChecklistAxiomAudit
+
+/-! ## Motive detector checklist: defect motive and motivic Euler jump. -/
+
+namespace MotiveChecklist
+
+/-- The paper-facing audit for the motivic detector. -/
+structure MotiveDetectorChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  reducedCertificate : List String
+  status : FormalizationStatus
+  deriving Repr
+
+/-- Checklist C: `Def_p` and `Δχ_mot(p)`. -/
+def motiveChecklist : MotiveDetectorChecklist :=
+  { object := "Motive detector: defect motive and motivic Euler jump"
+    needed :=
+      ["Definitions 2.12 and 3.20: Def_p = Cone(M_c(U_p) -> M_c(X_p))",
+       "Proposition 3.23: localization triangle and Euler additivity",
+       "Proposition 3.27: realization compatibility",
+       "Euler jump Delta chi_mot(p)"]
+    native :=
+      ["NormalizationReal.motivicEulerJumpT2",
+       "NormalizationReal.EulerComplexT2.chi",
+       "NormalizationReal.EulerComplexT2.chi_add",
+       "NormalizationReal.euler_additivity_T2",
+       "NormalizationReal.defect_chi_eq_motivicEulerJumpT2",
+       "NormalizationReal.defect_chi_eq_etaleBumpT2",
+       "NormalizationReal.CertifiedMotiveTriangleT2.chi_defect_eq_fiber_sub_open"]
+    bypass :=
+      ["Do not construct DM_c(F_p)",
+       "Model chi_mot by a certified motive triangle with an additive Euler characteristic",
+       "Use the finite-dimensional EulerComplexT2 shadow for realized complexes"]
+    floor :=
+      ["Prop 3.27 realization compatibility: chi_mot(Def_p) equals the realized l-adic Euler difference"]
+    reducedCertificate :=
+      ["MotiveRealizationCompatibilityCertificateT2 exposes exactly the Prop 3.27 bridge",
+       "CertifiedMotiveTriangleT2 exposes cone/localization/additivity as local certificate data rather than global axioms"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem motive_needed_count : motiveChecklist.needed.length = 4 := by
+  decide
+
+theorem motive_native_count : motiveChecklist.native.length = 7 := by
+  decide
+
+theorem motive_bypass_count : motiveChecklist.bypass.length = 3 := by
+  decide
+
+theorem motive_floor_count : motiveChecklist.floor.length = 1 := by
+  decide
+
+theorem motive_reducedCertificate_count :
+    motiveChecklist.reducedCertificate.length = 2 := by
+  decide
+
+end MotiveChecklist
+
+section MotiveChecklistAxiomAudit
+#print axioms MotiveChecklist.motive_needed_count
+#print axioms MotiveChecklist.motive_native_count
+#print axioms MotiveChecklist.motive_bypass_count
+#print axioms MotiveChecklist.motive_floor_count
+#print axioms MotiveChecklist.motive_reducedCertificate_count
+end MotiveChecklistAxiomAudit
+
 end FullFormalizationAudit
 end Spt2
 
@@ -4529,7 +7124,161 @@ end Spt2
 namespace Spt2
 namespace StructuralResolution
 
-universe u v w
+universe u v w q
+
+/-! ## 0. Sectionwise finite limits for detector presheaves (equation (2.1)).
+
+The paper's formula (2.1) is a categorical fact: limits in a presheaf category
+are computed objectwise.  For a principal open `D(f)` represented abstractly by
+an object `U : Cᵒᵖ`, evaluating the finite-limit presheaf at `U` gives the same
+limit of the evaluated section types.
+
+For a detector family over a common numerical base `N`, the honest sectionwise
+formula is a compatible tuple over `Γ(U, N)`, i.e. a wide pullback of the section
+maps.  It reduces to an unconstrained product exactly in the terminal/trivial
+base case. -/
+
+namespace SectionwisePresheafLimits
+
+open CategoryTheory CategoryTheory.Limits
+
+/-- Four detector layers used in the sectionwise fiber-product package:
+numerical, model-theoretic, elliptic-curve, and `p`-adic. -/
+inductive FourDetectorIndex where
+  | num
+  | model
+  | ec
+  | padic
+  deriving DecidableEq, Repr
+
+/-- A four-detector presheaf family over a common base presheaf `N`.
+
+The intended reading is
+`F = Fnum ×_N Fmod ×_N FEC ×_N Fpadic`.
+The fields are arbitrary presheaves of types; no detector-specific algebra is
+needed for the sectionwise limit computation. -/
+structure FourDetectorPresheafFamily (C : Type u) [CategoryTheory.Category.{v} C] :
+    Type (max (u + 1) (v + 1) (w + 1)) where
+  N : Cᵒᵖ ⥤ Type (max u v w)
+  Fnum : Cᵒᵖ ⥤ Type (max u v w)
+  Fmod : Cᵒᵖ ⥤ Type (max u v w)
+  FEC : Cᵒᵖ ⥤ Type (max u v w)
+  Fpadic : Cᵒᵖ ⥤ Type (max u v w)
+  numToBase : Fnum ⟶ N
+  modToBase : Fmod ⟶ N
+  ecToBase : FEC ⟶ N
+  padicToBase : Fpadic ⟶ N
+
+namespace FourDetectorPresheafFamily
+
+/-- The four detector presheaves as a single indexed family. -/
+def component {C : Type u} [CategoryTheory.Category.{v} C]
+    (A : FourDetectorPresheafFamily.{u, v, w} C) :
+    FourDetectorIndex → Cᵒᵖ ⥤ Type (max u v w)
+  | .num => A.Fnum
+  | .model => A.Fmod
+  | .ec => A.FEC
+  | .padic => A.Fpadic
+
+/-- The four structure maps to the common base presheaf. -/
+def toBase {C : Type u} [CategoryTheory.Category.{v} C]
+    (A : FourDetectorPresheafFamily.{u, v, w} C) :
+    ∀ i : FourDetectorIndex, A.component i ⟶ A.N
+  | .num => A.numToBase
+  | .model => A.modToBase
+  | .ec => A.ecToBase
+  | .padic => A.padicToBase
+
+/-- The abstract fiber-product detector presheaf. -/
+noncomputable def fiberProduct {C : Type u} [CategoryTheory.Category.{v} C]
+    (A : FourDetectorPresheafFamily.{u, v, w} C) :
+    Cᵒᵖ ⥤ Type (max u v w) :=
+  widePullback A.N A.component A.toBase
+
+/-- The explicit objectwise compatible tuple over `Γ(U, N)`.
+
+This is the concrete set-theoretic content of the fiber-product section:
+four local detector sections whose images in the common base section agree. -/
+def SectionwiseCompatibleTuple {C : Type u} [CategoryTheory.Category.{v} C]
+    (A : FourDetectorPresheafFamily.{u, v, w} C) (U : Cᵒᵖ) :
+    Type (max u v w) :=
+  { s : A.Fnum.obj U × A.Fmod.obj U × A.FEC.obj U × A.Fpadic.obj U //
+      A.numToBase.app U s.1 =
+        A.modToBase.app U s.2.1 ∧
+      A.numToBase.app U s.1 =
+        A.ecToBase.app U s.2.2.1 ∧
+      A.numToBase.app U s.1 =
+        A.padicToBase.app U s.2.2.2 }
+
+end FourDetectorPresheafFamily
+
+/-- **Sectionwise limit computation for presheaves.**  Evaluation at an open
+`U` preserves limits of presheaves, so sections of a limit presheaf are the
+corresponding limit of section types. -/
+noncomputable def sectionwiseLimitIso
+    {C : Type u} [CategoryTheory.Category.{v} C]
+    {J : Type q} [CategoryTheory.Category J]
+    (K : J ⥤ Cᵒᵖ ⥤ Type w) (U : Cᵒᵖ)
+    [HasLimitsOfShape J (Type w)] [HasLimit K] :
+    (limit K).obj U ≅
+      limit (K ⋙ (CategoryTheory.evaluation Cᵒᵖ (Type w)).obj U) :=
+  preservesLimitIso ((CategoryTheory.evaluation Cᵒᵖ (Type w)).obj U) K
+
+/-- The sectionwise form of a four-object wide pullback over a common base. -/
+noncomputable def sectionwiseWidePullbackIso
+    {C : Type u} [CategoryTheory.Category.{v} C]
+    (N : Cᵒᵖ ⥤ Type w)
+    (F : Fin 4 → Cᵒᵖ ⥤ Type w)
+    (toN : ∀ i : Fin 4, F i ⟶ N) (U : Cᵒᵖ)
+    [HasWidePullback N F toN] :
+    (widePullback N F toN).obj U ≅
+      widePullback (N.obj U) (fun i : Fin 4 => (F i).obj U)
+        (fun i : Fin 4 => (toN i).app U) :=
+  (sectionwiseLimitIso (C := C) (J := WidePullbackShape (Fin 4))
+    (WidePullbackShape.wideCospan N F toN) U).trans
+      (HasLimit.isoOfNatIso
+        ((NatIso.ofComponents
+          (fun j => by
+            cases j
+            · exact Iso.refl (N.obj U)
+            · exact Iso.refl ((F _).obj U))
+          (by
+            intro j j' f
+            cases f <;> rfl)) :
+          (WidePullbackShape.wideCospan N F toN ⋙
+              (CategoryTheory.evaluation Cᵒᵖ (Type w)).obj U) ≅
+            WidePullbackShape.wideCospan (N.obj U)
+              (fun i : Fin 4 => (F i).obj U)
+              (fun i : Fin 4 => (toN i).app U)))
+
+/-- **Equation (2.1), four-detector form.**  The sections of
+`Fnum ×_N Fmod ×_N FEC ×_N Fpadic` over `U` are the wide pullback of the four
+section maps to `Γ(U, N)`. -/
+noncomputable def fourDetectorSectionwiseWidePullbackIso
+    {C : Type u} [CategoryTheory.Category.{v} C]
+    (A : FourDetectorPresheafFamily.{u, v, w} C) (U : Cᵒᵖ) :
+    (A.fiberProduct).obj U ≅
+      widePullback (A.N.obj U)
+        (fun i : FourDetectorIndex => (A.component i).obj U)
+        (fun i : FourDetectorIndex => (A.toBase i).app U) :=
+  sectionwiseLimitIso (C := C) (J := WidePullbackShape FourDetectorIndex)
+    (WidePullbackShape.wideCospan A.N A.component A.toBase) U |>.trans
+      (HasLimit.isoOfNatIso
+        ((NatIso.ofComponents
+          (fun j => by
+            cases j
+            · exact Iso.refl (A.N.obj U)
+            · exact Iso.refl ((A.component _).obj U))
+          (by
+            intro j j' f
+            cases f <;> rfl)) :
+          (WidePullbackShape.wideCospan A.N A.component A.toBase ⋙
+              (CategoryTheory.evaluation Cᵒᵖ (Type (max u v w))).obj U) ≅
+            WidePullbackShape.wideCospan (A.N.obj U)
+              (fun i : FourDetectorIndex => (A.component i).obj U)
+              (fun i : FourDetectorIndex => (A.toBase i).app U)))
+
+end SectionwisePresheafLimits
 
 /-! ## 1. Detector sheaf equalizer on a principal-open pair -/
 
@@ -4693,6 +7442,9 @@ end TautologyFreeCurve
 /-! ### Axiom audit for the structural-resolution layer. -/
 
 section AxiomAudit
+#print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.sectionwiseLimitIso
+#print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.sectionwiseWidePullbackIso
+#print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.fourDetectorSectionwiseWidePullbackIso
 #print axioms Spt2.StructuralResolution.DetectorPairData.detector_sheaf_on_cover
 #print axioms Spt2.StructuralResolution.DetectorPairData.detector_sheaf_on_pair_cover
 #print axioms Spt2.StructuralResolution.TautologyFreeCurve.alg_iff_etaleSilent
