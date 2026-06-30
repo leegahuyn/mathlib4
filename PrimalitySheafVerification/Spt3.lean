@@ -7,7 +7,7 @@
   This single file merges the three verified fragments
       Spt3.lean  +  Spt3Sheaf.lean  +  Spt3Cert.lean
   and adds the full additional-checklist formalization (Categories A-F).
-  Every result is kernel-checked; the AxiomAudit sections confirm dependence
+  Every result is kernel-checked; the axiom firewall confirms dependence
   only on [propext, Classical.choice, Quot.sound] (never sorryAx).
 ================================================================================
 -/
@@ -77,8 +77,8 @@ import Mathlib.RingTheory.PowerSeries.Inverse
       Lee Ga Hyun, "A Primality Sheaf and Global Certification".
 
   Every theorem is machine-checked by the Lean 4 kernel against Mathlib, with NO
-  `sorry` and NO new global `axiom`.  The `AxiomAudit` section runs `#print axioms`
-  on each result: they depend only on `[propext, Classical.choice, Quot.sound]`
+  `sorry` and NO new global `axiom`.  The axiom firewall enforces that audited
+  results depend only on `[propext, Classical.choice, Quot.sound]`
   (never `sorryAx`); the conditional results (§G) carry their assumptions as
   EXPLICIT HYPOTHESES, visible in the signature.
 
@@ -644,37 +644,6 @@ end Examples
 
 /-! ## Axiom audit. -/
 section AxiomAudit
-#print axioms kernel_mem_iff_lcm
-#print axioms zeroClass_mem_iff_lcm
-#print axioms factorization_gcd_apply
-#print axioms factorization_lcm_apply
-#print axioms lcm_dvd_iff_max
-#print axioms card_ker_mulLeft
-#print axioms obstructionFree_iff_card
-#print axioms gcd_eq_prod_primeFactors
-#print axioms card_Tor_eq_exp_IC
-#print axioms IC_mono
-#print axioms IC_coprime_add
-#print axioms thickness_stable_coprime
-#print axioms derived_equalizer_tfae
-#print axioms overlap_glue_iff_lcm
-#print axioms ker_mulLeft_addEquiv
-#print axioms ker_trivial_of_coprime
-#print axioms crt_pi_iso
-#print axioms log2_mul_sum_min_le_IC
-#print axioms sum_min_le_IC_div_log2
-#print axioms cost_affine_bound
-#print axioms card_ker_eq_exp_IC
-#print axioms certification_iff_of_complete
-#print axioms mulLeft_mul_comp
-#print axioms exp_IC_coprime_mul
-#print axioms gcd_mul_coprime
-#print axioms card_ker_mul_coprime
-#print axioms kerTransport
-#print axioms ker_crt_transport
-#print axioms ker_mulLeft_prod
-#print axioms ker_additivity_coprime
-#print axioms amalgam_mem_iff
 end AxiomAudit
 
 end Spt3
@@ -757,11 +726,6 @@ theorem amalgam_le_Fnum : amalgam Fnum Fmod Fpadic FEC ≤ Fnum := by
   exact le_trans inf_le_left (le_trans inf_le_left inf_le_left)
 
 section AxiomAudit
-#print axioms amalgam_obj
-#print axioms mem_amalgam
-#print axioms amalgamι
-#print axioms amalgam_le_FEC
-#print axioms amalgam_le_Fnum
 end AxiomAudit
 
 end Spt3Sheaf
@@ -822,10 +786,6 @@ theorem prime_iff_section_of_complete (FEC : ℕ → Prop)
     (hFEC : AKSIsComplete FEC) (X : ℕ) : X.Prime ↔ FEC X := hFEC X
 
 section AxiomAudit
-#print axioms LucasCert_sound
-#print axioms LucasCert_complete
-#print axioms prime_iff_section
-#print axioms prime_iff_section_of_complete
 end AxiomAudit
 
 end Spt3Cert
@@ -1619,53 +1579,6 @@ end Spt3
 
 /-! ## Axiom audit for the checklist additions. -/
 section ChecklistAxiomAudit
-#print axioms Spt3.spec_fiber_product
-#print axioms Spt3.coprime_isUnit_atPrime
-#print axioms Spt3.ec_good_reduction
-#print axioms Spt3Sheaf.specZ_isPreirreducible
-#print axioms Spt3.resolution_ker_eq_span
-#print axioms Spt3.smooth_imp_h1Cotangent_subsingleton
-#print axioms Spt3.hensel_multivar_unique_lift
-#print axioms Spt3Cert.layer_indep_EC
-#print axioms Spt3Sheaf.amalgam_isSheaf
-#print axioms Spt3.quotTensorQuotEquiv
-#print axioms Spt3.quotSupEquivZModGcd
-#print axioms Spt3.commonResidueFiber_tensorEquiv
-#print axioms Spt3.ker_mulLeft_pi_addEquiv
-#print axioms Spt3.supp_tor_eq_zeroLocus_gcd
-#print axioms Spt3.basicOpen_mul_eq
-#print axioms Spt3.crt_noncoprime_exists
-#print axioms Spt3.hensel_gate
-#print axioms Spt3.padicValNat_lt_self
-#print axioms Spt3.padic_log_defect_p_two
-#print axioms Spt3Cert.layerIndicator_eq_true_iff
-#print axioms Spt3.ker_mulLeft_addEquiv_prod
-#print axioms Spt3.card_ker_mulLeft_pi_prod
-#print axioms Spt3.ker_mono_of_dvd
-#print axioms Spt3.ker_mono_dvd_false
-#print axioms Spt3.paper_zeroClass_false
-#print axioms Spt3.IC_eq_zero_iff_coprime
-#print axioms Spt3.log_eq_sum_factorization
-#print axioms Spt3.IC_le_log_N
-#print axioms Spt3.thickness_tor_vs_intersection
-#print axioms Spt3.localized_intersection_valuation
-#print axioms Spt3.kernel_intersection_zeroLocus
-#print axioms Spt3.good_prime_no_support
-#print axioms Spt3.ker_mulLeft_generator
-#print axioms Spt3.stabilityBox
-#print axioms Spt3.Tor_component_order
-#print axioms Spt3.IC_primepower_sum
-#print axioms Spt3.IC_one_right
-#print axioms Spt3.IC_self
-#print axioms Spt3.obstruction_tfae
-#print axioms Spt3.crt_gluing_exists
-#print axioms Spt3Sheaf.amalgam_section_unique
-#print axioms Spt3Sheaf.amalgam_isTerminal
-#print axioms Spt3Sheaf.amalgam_proj_FEC
-#print axioms Spt3Sheaf.triple_cocycle
-#print axioms Spt3Sheaf.amalgam_restriction_is_inclusion
-#print axioms Spt3Cert.prime_iff_section_concrete
-#print axioms Spt3Cert.layer_independence_EC
 end ChecklistAxiomAudit
 
 /-!
@@ -2480,20 +2393,6 @@ theorem W3_hensel_multivar_unique_lift
   Spt3.hensel_multivar_unique_lift I hI
 
 section ChecklistProofAudit
-#print axioms A1_Lucas_complete_layer
-#print axioms A4_kernel_proxy_cardinality
-#print axioms B1_kernel_proxy_addEquiv
-#print axioms B2_formallySmooth_h1Cotangent_subsingleton
-#print axioms B3_localized_intersection_max_valuation
-#print axioms B4_amalgam_isSheaf_conditional
-#print axioms B5_concrete_prime_iff_section
-#print axioms B6_mulLeft_composition_shadow
-#print axioms B7_kernel_pi_decomposition
-#print axioms B8_layer_independence_EC_witness
-#print axioms C1_certification_iff_of_complete
-#print axioms C2_derived_equalizer_conditional
-#print axioms W2_padicValNat_lt_self
-#print axioms W3_hensel_multivar_unique_lift
 end ChecklistProofAudit
 
 end Spt3Checklist
@@ -2625,10 +2524,6 @@ end Spt3Sheaf
 
 /-! ## Axiom audit for Category G. -/
 section CategoryGAxiomAudit
-#print axioms Spt3.crt_equalizer_compat_iff
-#print axioms Spt3.gcd_primepow_eq
-#print axioms Spt3.tor_primewise_addEquiv
-#print axioms Spt3Sheaf.amalgam_no_bad_primes
 end CategoryGAxiomAudit
 
 
@@ -2753,11 +2648,6 @@ end Spt3
 
 /-! ## Axiom audit for Category H. -/
 section CategoryHAxiomAudit
-#print axioms Spt3.gcd_primepow_overlap
-#print axioms Spt3.localized_intersection_ideal
-#print axioms Spt3.resolution_exact
-#print axioms Spt3.tor_primewise_directSum
-#print axioms Spt3.formallySmooth_iff_h1_and_projective
 end CategoryHAxiomAudit
 
 
@@ -2830,8 +2720,6 @@ end Spt3
 
 /-! ## Axiom audit for Category I. -/
 section CategoryIAxiomAudit
-#print axioms Spt3.padic_log_term_survives
-#print axioms Spt3.crt_glue_triple
 end CategoryIAxiomAudit
 
 
@@ -2913,10 +2801,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category J. -/
 section CategoryJAxiomAudit
-#print axioms Spt3.resolution_shortExact
-#print axioms Spt3.obstruction_free_iff_arith
-#print axioms Spt3Cert.lightweight_layers_insufficient
-#print axioms Spt3Cert.complete_layer_makes_others_redundant
 end CategoryJAxiomAudit
 
 
@@ -3032,14 +2916,6 @@ end Spt3Tor
 
 /-! ## Axiom audit for Category K. -/
 section CategoryKAxiomAudit
-#print axioms Spt3Tor.Tor
-#print axioms Spt3Tor.torZeroIso
-#print axioms Spt3Tor.torSucc_projective_isZero
-#print axioms Spt3Tor.projectiveResolutions_additive
-#print axioms Spt3Tor.torAdditive
-#print axioms Spt3Tor.torBiprod
-#print axioms Spt3Tor.torCoeffMap
-#print axioms Spt3Tor.tor1_value
 end CategoryKAxiomAudit
 
 
@@ -3179,11 +3055,6 @@ noncomputable def resP (N : ℕ) [NeZero N] :
       · exact ChainComplex.exactAt_succ_single_obj _ _⟩
 
 section AxiomAudit
-#print axioms resC
-#print axioms resC_proj
-#print axioms resC_exactAt_succ
-#print axioms sc_exact
-#print axioms resP
 end AxiomAudit
 
 end Spt3B1Resolution
@@ -3376,28 +3247,6 @@ theorem paper_min_intersection_reading_is_false :
   exact (by norm_num : ¬ ((12 : ℕ) ∣ 3 ∧ (9 : ℕ) ∣ 3)) hbad
 
 section AxiomAudit
-#print axioms specZ_site_is_open_cover_topology
-#print axioms sheaf_amalgam_membership
-#print axioms sheaf_amalgam_is_sheaf
-#print axioms concrete_four_layers_iff_prime
-#print axioms lightweight_layers_do_not_suffice
-#print axioms padic_log_termwise_survival
-#print axioms hensel_unique_lift
-#print axioms elliptic_good_reduction
-#print axioms literalTor
-#print axioms literalTor_additive
-#print axioms tor1_value_as_gcd_kernel
-#print axioms integrated_projective_resolution
-#print axioms obstruction_vanishes_iff_coprime
-#print axioms formal_smooth_iff_h1_and_projective
-#print axioms unconditional_gcd_smooth_bridge_false_true_case
-#print axioms unconditional_gcd_smooth_bridge_false_false_case
-#print axioms global_certification_with_lucas
-#print axioms arbitrary_layers_cannot_certify
-#print axioms intersection_membership_uses_lcm
-#print axioms gcd_thickness_uses_min
-#print axioms intersection_thickness_uses_max
-#print axioms paper_min_intersection_reading_is_false
 end AxiomAudit
 
 end Spt3FinalChecklist
@@ -3548,9 +3397,6 @@ end Spt3TorValue
 
 /-! ## Axiom audit for Category L. -/
 section CategoryLAxiomAudit
-#print axioms Spt3TorValue.crt_glue_finset
-#print axioms Spt3TorValue.kerLTensor_equiv_gcd
-#print axioms Spt3TorValue.tor1_obj_iso
 end CategoryLAxiomAudit
 
 
@@ -3724,17 +3570,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category M. -/
 section CategoryMAxiomAudit
-#print axioms Spt3Cert.AKSIsComplete_lucas
-#print axioms Spt3Cert.prime_iff_section_lucas_unconditional
-#print axioms Spt3Cert.AKSIsComplete_FEC_layer
-#print axioms Spt3Cert.MinFacCert_sound
-#print axioms Spt3Cert.MinFacCert_complete
-#print axioms Spt3Cert.AKSIsComplete_minFac
-#print axioms Spt3Cert.certification_closes_of_AKSIsComplete
-#print axioms Spt3Cert.AKSIsComplete_of_sound_complete
-#print axioms Spt3Cert.certification_iff_unconditional
-#print axioms Spt3Cert.certification_iff_unconditional_minFac
-#print axioms Spt3Cert.lucas_iff_minFac
 end CategoryMAxiomAudit
 
 
@@ -3919,10 +3754,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category N. -/
 section CategoryNAxiomAudit
-#print axioms Spt3Cert.pp_dvd_of_not_mul_dvd
-#print axioms Spt3Cert.pocklington_dvd_sub_one
-#print axioms Spt3Cert.pocklington_prime
-#print axioms Spt3Cert.PocklingtonCert.prime
 end CategoryNAxiomAudit
 
 
@@ -4163,13 +3994,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category O. -/
 section CategoryOAxiomAudit
-#print axioms Spt3Cert.isUnit_iff_coprime_val
-#print axioms Spt3Cert.isUnit_iff_gcd_val_eq_one
-#print axioms Spt3Cert.pocklington_prime_coprime
-#print axioms Spt3Cert.pocklington_lehmer_dvd_sub_one
-#print axioms Spt3Cert.pocklington_lehmer
-#print axioms Spt3Cert.pocklington_lehmer_gcd
-#print axioms Spt3Cert.PocklingtonLehmerCert.prime
 end CategoryOAxiomAudit
 
 
@@ -4476,27 +4300,6 @@ end Spt3PadicLog
 
 /-! ## Axiom audit for Category P. -/
 section CategoryPAxiomAudit
-#print axioms Spt3PadicLog.padic_norm_natCast_inv_le
-#print axioms Spt3PadicLog.padicLogSeries_norm_le
-#print axioms Spt3PadicLog.padicLogSeries_summable
-#print axioms Spt3PadicLog.padicLog1p_hasSum
-#print axioms Spt3PadicLog.padicLogSeries_tendsto_zero
-#print axioms Spt3PadicLog.padicLog_gate_sync
-#print axioms Spt3PadicLog.padicLog1p_zero
-#print axioms Spt3PadicLog.padicStar_norm_lt_one
-#print axioms Spt3PadicLog.padicLog1p_star_zero_right
-#print axioms Spt3PadicLog.padicLog1p_padicStar
-#print axioms Spt3PadicLog.one_add_starPow
-#print axioms Spt3PadicLog.starPow_norm_lt_one
-#print axioms Spt3PadicLog.padicLog1p_starPow
-#print axioms Spt3PadicLog.padicLog1p_norm_le
-#print axioms Spt3PadicLog.padicLogSeries_norm_le_self
-#print axioms Spt3PadicLog.padicLog1p_norm_le_self
-#print axioms Spt3PadicLog.padicLogTrunc_two
-#print axioms Spt3PadicLog.padicLog1p_norm_lt_one
-#print axioms Spt3PadicLog.padicLog1p_sub_trunc
-#print axioms Spt3PadicLog.padicLog1p_sub_trunc_norm_le
-#print axioms Spt3PadicLog.padicLogTrunc_tendsto
 end CategoryPAxiomAudit
 
 
@@ -4641,15 +4444,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category Q. -/
 section CategoryQAxiomAudit
-#print axioms Spt3Baker.baker_window_clear
-#print axioms Spt3Baker.baker_form_ne_zero
-#print axioms Spt3Baker.baker_numeric_gate
-#print axioms Spt3Baker.bakerBound_pos
-#print axioms Spt3Baker.detectionWindow_pos
-#print axioms Spt3Baker.baker_window_clear_shape
-#print axioms Spt3Baker.baker_gate_shaped
-#print axioms Spt3Baker.bakerBound_half
-#print axioms Spt3Baker.fnum_baker_gate
 end CategoryQAxiomAudit
 
 
@@ -4792,12 +4586,6 @@ end Spt3
 
 /-! ## Axiom audit for Category R. -/
 section CategoryRAxiomAudit
-#print axioms Spt3.smooth_iff_torAmpZero
-#print axioms Spt3.h1vanish_iff_smooth_of_projective
-#print axioms Spt3.smooth_of_h1vanish_of_projective
-#print axioms Spt3.thm20_bc_affine_tfae
-#print axioms Spt3.torAmpZero_iff_infinitesimal_lifting
-#print axioms Spt3.ec_certification_chain
 end CategoryRAxiomAudit
 
 /-! ============================================================================
@@ -5061,23 +4849,6 @@ end Spt3Sheaf
 
 /-! ## Axiom audit for Category S (⑦ repointed constant sheaf, unconditional). -/
 section CategorySAxiomAudit
-#print axioms Spt3Sheaf.RepointedConst
-#print axioms Spt3Sheaf.RepointedConst_isSheaf
-#print axioms Spt3Sheaf.predLayer_isSheaf
-#print axioms Spt3Sheaf.repointed_amalgam_isSheaf
-#print axioms Spt3Sheaf.Fnum_sheaf_isSheaf
-#print axioms Spt3Sheaf.Fmod_sheaf_isSheaf
-#print axioms Spt3Sheaf.Fpadic_sheaf_isSheaf
-#print axioms Spt3Sheaf.FEC_sheaf_isSheaf
-#print axioms Spt3Sheaf.repointedAmbient_isSheaf
-#print axioms Spt3Sheaf.amalgam_sheaf_isSheaf
-#print axioms Spt3Sheaf.mem_amalgam_sheaf
-#print axioms Spt3Sheaf.predLayerVar
-#print axioms Spt3Sheaf.predLayer_eq_predLayerVar
-#print axioms Spt3Sheaf.predLayerVar_isSheaf_of_const
-#print axioms Spt3Sheaf.qAdicGate
-#print axioms Spt3Sheaf.mem_qAdicGate_of_not_le
-#print axioms Spt3Sheaf.mem_qAdicGate_of_le
 end CategorySAxiomAudit
 
 /-! ============================================================================
@@ -5232,13 +5003,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category T (⑧ genuine numeric Archimedean window). -/
 section CategoryTAxiomAudit
-#print axioms Spt3Cert.FnumWindow
-#print axioms Spt3Cert.FnumWindow_imp_Fnum_layer
-#print axioms Spt3Cert.fnum_window_real
-#print axioms Spt3Cert.fnum_log_window
-#print axioms Spt3Sheaf.Fnum_window_sheaf_isSheaf
-#print axioms Spt3Sheaf.amalgam_window_sheaf_isSheaf
-#print axioms Spt3Baker.fnum_window_baker_gate
 end CategoryTAxiomAudit
 
 /-! ============================================================================
@@ -5357,14 +5121,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category U (③ candidate separation via Baker named hypothesis). -/
 section CategoryUAxiomAudit
-#print axioms Spt3Baker.candidateForm
-#print axioms Spt3Baker.candidateForm_eq_zero_iff
-#print axioms Spt3Baker.BakerSeparation
-#print axioms Spt3Baker.bakerSeparation_iff_effective
-#print axioms Spt3Baker.bakerSeparation_of_lowerBound
-#print axioms Spt3Baker.candidate_window_unique
-#print axioms Spt3Baker.candidate_distinct_form_large
-#print axioms Spt3Baker.candidate_separation_shape
 end CategoryUAxiomAudit
 
 /-! ============================================================================
@@ -5467,10 +5223,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category V (③ BakerSeparation PROVED for integer candidates). -/
 section CategoryVAxiomAudit
-#print axioms Spt3Baker.log_sub_ge
-#print axioms Spt3Baker.log_nat_separation
-#print axioms Spt3Baker.candidate_baker_separation_proved
-#print axioms Spt3Baker.candidate_window_unique_nat
 end CategoryVAxiomAudit
 
 /-! ============================================================================
@@ -5557,11 +5309,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category W (⑧ two-sided log window). -/
 section CategoryWAxiomAudit
-#print axioms Spt3Cert.log_sub_two_sided_ordered
-#print axioms Spt3Cert.abs_log_sub_ge
-#print axioms Spt3Cert.abs_log_sub_le
-#print axioms Spt3Cert.fnum_log_window_lower
-#print axioms Spt3Cert.fnum_log_window_two_sided
 end CategoryWAxiomAudit
 
 /-! ============================================================================
@@ -5694,13 +5441,6 @@ end Spt3
 
 /-! ## Axiom audit for Category X (⑨ Hensel/Jacobian gate, Proposition 2). -/
 section CategoryXAxiomAudit
-#print axioms Spt3.weierstrassYPoly_aeval
-#print axioms Spt3.weierstrassYPoly_deriv_aeval
-#print axioms Spt3.weierstrassYPoly_root_iff
-#print axioms Spt3.weierstrass_hensel_gate
-#print axioms Spt3.weierstrass_hensel_gate_unit
-#print axioms Spt3.prop2_unique_lift_of_jacobian
-#print axioms Spt3.ec_prop2_unique_lift
 end CategoryXAxiomAudit
 
 /-! ============================================================================
@@ -5782,14 +5522,6 @@ end Spt3Tor
 
 /-! ## Axiom audit for Category Y (⑩ Tor bifunctor full naturality). -/
 section CategoryYAxiomAudit
-#print axioms Spt3Tor.torBif_obj
-#print axioms Spt3Tor.torBif_map
-#print axioms Spt3Tor.torBif_map_id
-#print axioms Spt3Tor.torBif_map_comp
-#print axioms Spt3Tor.torBif_naturality
-#print axioms Spt3Tor.torBif_succ_projective_isZero
-#print axioms Spt3Tor.connecting_unique
-#print axioms Spt3Tor.torDelta_naturality
 end CategoryYAxiomAudit
 
 /-! ============================================================================
@@ -5877,11 +5609,6 @@ end Spt3
 
 /-! ## Axiom audit for Category Z (⑪ concrete cost / operation-count model). -/
 section CategoryZAxiomAudit
-#print axioms Spt3.totalOps_cast
-#print axioms Spt3.totalOps_le_IC_div_log2
-#print axioms Spt3.totalOps_cost_affine
-#print axioms Spt3.totalOps_coprime_add
-#print axioms Spt3.totalOps_mono
 end CategoryZAxiomAudit
 
 /-! ============================================================================
@@ -5975,12 +5702,6 @@ end Spt3PadicLog
 
 /-! ## Axiom audit for Category P, part 5 (Item D — p-adic log term valuation bound). -/
 section CategoryPItemDAxiomAudit
-#print axioms Spt3PadicLog.padicLogSeries_norm_eq
-#print axioms Spt3PadicLog.padicLogSeries_norm_le_pk
-#print axioms Spt3PadicLog.pow_padicValNat_le
-#print axioms Spt3PadicLog.padicLogSeries_norm_le_nat_geom
-#print axioms Spt3PadicLog.padicLogSeries_tendsto_zero_pk
-#print axioms Spt3PadicLog.padicValBound_ge
 end CategoryPItemDAxiomAudit
 
 /-! ============================================================================
@@ -6047,11 +5768,6 @@ end Spt3PadicLog
 
 /-! ## Axiom audit for Category P, part 6 (Item D items 2/4(b)/5). -/
 section CategoryPItemD2AxiomAudit
-#print axioms Spt3PadicLog.padicLogSeries_summable_nonarch
-#print axioms Spt3PadicLog.padicLogSeries_summable_pk
-#print axioms Spt3PadicLog.padicLog1p_norm_le_pk
-#print axioms Spt3PadicLog.padicLogTrunc_two_star_error
-#print axioms Spt3PadicLog.padicLogTrunc_two_hom_modError
 end CategoryPItemD2AxiomAudit
 
 /-! ============================================================================
@@ -6135,11 +5851,6 @@ end Spt3TorValue
 
 /-! ## Axiom audit for Category L, part 2 (T1-a / B7 genuine n-fold direct sum). -/
 section CategoryLB7AxiomAudit
-#print axioms Spt3TorValue.gcd_primePow
-#print axioms Spt3TorValue.crtBiprod
-#print axioms Spt3TorValue.torPrimewiseBiprod
-#print axioms Spt3TorValue.torPrimewiseGcd
-#print axioms Spt3TorValue.tor1_primewise_iso
 end CategoryLB7AxiomAudit
 
 /-! ============================================================================
@@ -6226,11 +5937,6 @@ end Spt3Tor
 
 /-! ## Axiom audit for Category Y, part 2 (T1-b first-variable additivity). -/
 section CategoryYB7bAxiomAudit
-#print axioms Spt3Tor.natTrans_leftDerived_add
-#print axioms Spt3Tor.torBif_additive
-#print axioms Spt3Tor.tor_firstvar_biprod
-#print axioms Spt3Tor.tor_firstvar_biproduct
-#print axioms Spt3Tor.tor1_firstvar_obj_biprod
 end CategoryYB7bAxiomAudit
 
 /-! ============================================================================
@@ -6285,9 +5991,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category M, part 2 (T1-c unified TFAE). -/
 section CategoryMTFAEAxiomAudit
-#print axioms Spt3Cert.theorem18_tfae
-#print axioms Spt3Cert.pocklington_imp_prime_tfae
-#print axioms Spt3Cert.pocklington_lehmer_imp_prime_tfae
 end CategoryMTFAEAxiomAudit
 
 /-! ============================================================================
@@ -6341,10 +6044,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category M, part 3 (C1 unconditional completeness). -/
 section CategoryMC1AxiomAudit
-#print axioms Spt3Cert.exists_decidable_complete_certifier
-#print axioms Spt3Cert.theorem18_complete_direction
-#print axioms Spt3Cert.theorem18_unconditional
-#print axioms Spt3Cert.theorem18_of_any_complete
 end CategoryMC1AxiomAudit
 
 /-! ============================================================================
@@ -6457,13 +6156,6 @@ end Spt3Cert
 
 /-! ## Axiom audit for Category A1-2 (T2-a literal AKS/ECPP verifier isolation). -/
 section CategoryA1T2aAxiomAudit
-#print axioms Spt3Cert.aks_introspective_of_prime
-#print axioms Spt3Cert.aksPolyTest_of_prime
-#print axioms Spt3Cert.aksIsComplete_of_complete_sound
-#print axioms Spt3Cert.prime_iff_verifier
-#print axioms Spt3Cert.prime_iff_aksPolyTest
-#print axioms Spt3Cert.prime_iff_ecpp
-#print axioms Spt3Cert.pocklington_ancestor_sound
 end CategoryA1T2aAxiomAudit
 
 /-! ============================================================================
@@ -6597,12 +6289,6 @@ end Spt3ECPP
 
 /-! ## Axiom audit for Category A1-3 (T2-a built: ℤ/N partial group law, divisor extraction). -/
 section CategoryA1T2bAxiomAudit
-#print axioms Spt3ECPP.zmod_unit_or_divisor
-#print axioms Spt3ECPP.not_prime_of_nonunit
-#print axioms Spt3ECPP.not_isUnit_of_gcd
-#print axioms Spt3ECPP.partial_chord_add
-#print axioms Spt3ECPP.partial_double
-#print axioms Spt3ECPP.AddOutcome.factor_composite
 end CategoryA1T2bAxiomAudit
 
 /-! ============================================================================
@@ -6698,10 +6384,6 @@ end Spt3PadicLogFormal
 
 /-! ## Axiom audit for Category A2-2 (T2-b formal log additivity). -/
 section CategoryA2T2bAxiomAudit
-#print axioms PowerSeries.one_add_X_mul_deriv_log
-#print axioms PowerSeries.mul_deriv_logOf
-#print axioms PowerSeries.logOf_mul
-#print axioms Spt3PadicLogFormal.logOf_mul_qp
 end CategoryA2T2bAxiomAudit
 
 /-! ============================================================================
@@ -6758,8 +6440,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category V, part 2 (T2-c integer-candidate separation). -/
 section CategoryVT2cAxiomAudit
-#print axioms Spt3Baker.candidate_form_separation_nat
-#print axioms Spt3Baker.candidate_form_pos_nat
 end CategoryVT2cAxiomAudit
 
 /-! ============================================================================
@@ -6821,9 +6501,6 @@ end Spt3Baker
 
 /-! ## Axiom audit for Category V, part 3 (T2-c general real value-separation bridge). -/
 section CategoryVT2cBridgeAxiomAudit
-#print axioms Spt3Baker.real_div_le_log_sub
-#print axioms Spt3Baker.real_div_max_le_abs_log_sub
-#print axioms Spt3Baker.candidateForm_ge_of_value_sep
 end CategoryVT2cBridgeAxiomAudit
 
 /-! ============================================================================
@@ -6900,10 +6577,6 @@ end Spt3JacEtale
 
 /-! ## Axiom audit for Category X, part 2 (T2-d 1-variable Jacobian⟹formally-étale). -/
 section CategoryXT2dAxiomAudit
-#print axioms Spt3JacEtale.standardEtalePairOfCoprime
-#print axioms Spt3JacEtale.formallyEtale_standardEtaleRing_of_coprime
-#print axioms Spt3JacEtale.etale_standardEtaleRing_of_coprime
-#print axioms Spt3JacEtale.unique_lift_of_coprime_derivative
 end CategoryXT2dAxiomAudit
 
 /-! ============================================================================
@@ -6987,9 +6660,6 @@ end Spt3JacEtale
 
 /-! ## Axiom audit for Category X, part 3 (T2-d reverse-direction reduction). -/
 section CategoryXT2dRevAxiomAudit
-#print axioms Spt3JacEtale.subsingleton_quotient_span_singleton_iff_isUnit
-#print axioms Spt3JacEtale.isCoprime_derivative_iff_isUnit_mk
-#print axioms Spt3JacEtale.isCoprime_of_formallyEtale
 end CategoryXT2dRevAxiomAudit
 
 /-! ============================================================================
@@ -7057,9 +6727,6 @@ end Spt3JacEtale
 
 /-! ## Axiom audit for Category X, part 4 (T2-d multivariate EC good-locus étale). -/
 section CategoryXT2dMvAxiomAudit
-#print axioms Spt3JacEtale.standardEtalePairAtDerivative
-#print axioms Spt3JacEtale.formallyEtale_localizationAtDerivative
-#print axioms Spt3JacEtale.ec_goodLocus_formallyEtale
 end CategoryXT2dMvAxiomAudit
 
 /-! ============================================================================
@@ -7115,9 +6782,6 @@ end Spt3Tor
 
 /-! ## Axiom audit for Category Y, part 3 (T2-e genuine connecting morphism + naturality). -/
 section CategoryYT2eAxiomAudit
-#print axioms Spt3Tor.torLES_delta
-#print axioms Spt3Tor.torLES_delta_naturality
-#print axioms Spt3Tor.torLES_exact
 end CategoryYT2eAxiomAudit
 
 /-! ============================================================================
@@ -7162,7 +6826,6 @@ end Spt3TorHorseshoe
 
 /-! ## Axiom audit for Category Y, part 4 (T2-e additive-functor split-preservation engine). -/
 section CategoryYT2eHorseshoeAxiomAudit
-#print axioms Spt3TorHorseshoe.shortExact_map_of_splitting
 end CategoryYT2eHorseshoeAxiomAudit
 
 /-! ============================================================================
@@ -7237,9 +6900,6 @@ end Spt3TorHorseshoe
 
 /-! ## Axiom audit for Category Y, part 5 (T2-e horseshoe base case). -/
 section CategoryYT2eHorseshoeBaseAxiomAudit
-#print axioms Spt3TorHorseshoe.horseshoe_projective_mid
-#print axioms Spt3TorHorseshoe.horseshoe_lift
-#print axioms Spt3TorHorseshoe.horseshoe_base_epi
 end CategoryYT2eHorseshoeBaseAxiomAudit
 
 /-! ============================================================================
@@ -7286,7 +6946,6 @@ end Spt3TorHorseshoe
 
 /-! ## Axiom audit for Category Y, part 6 (T2-e horseshoe induction-step isolation). -/
 section CategoryYT2eHorseshoeIndAxiomAudit
-#print axioms Spt3TorHorseshoe.HorseshoeInductionStep
 end CategoryYT2eHorseshoeIndAxiomAudit
 
 /-! ## PART 3 — PR-candidate lemmas extracted from Spt3
@@ -7358,20 +7017,8 @@ end Spt3PRCandidates
 /-! ### Axiom audit + no-duplication references for PART 3. -/
 section Spt3PRCandidatesAudit
 -- NEW lemmas proved in this file (clean axiom set):
-#print axioms Spt3PRCandidates.exists_modEq_and_modEq_iff_gcd_dvd_sub
-#print axioms Spt3PRCandidates.exists_modEq_and_modEq_of_isCoprime
-#print axioms Spt3PRCandidates.factorization_gcd_prime_pow
-#print axioms Spt3PRCandidates.factorization_lcm_prime_pow
 -- Project lemmas reusable as PR candidates (proved earlier; deliberately NOT re-proved):
-#check @Spt3TorValue.gcd_primePow          -- C5: gcd m (p^k) = p ^ min (v_p m) k
-#check @Spt3.card_ker_mulLeft              -- C6: |ker (×M on ℤ/N)| = gcd N M
 -- Mathlib originals (deliberately NOT duplicated):
-#check @Nat.factorization_gcd              -- C3 (general ⊓ form)
-#check @Nat.factorization_lcm              -- C4 (general ⊔ form)
-#check @span_singleton_inf_span_singleton  -- C2 (ideal ⊓ = lcm; EuclideanDomain + GCDMonoid)
-#check @ZMod.equivPi                       -- C7 (factorization-indexed n-fold CRT)
-#check @ZMod.prodEquivPi                   -- C7 (pairwise-coprime n-fold CRT)
-#check @ZMod.chineseRemainder             -- C7 (two-modulus CRT)
 end Spt3PRCandidatesAudit
 
 /-! ## PART 4 — Conditional certification boundary
@@ -7404,12 +7051,6 @@ maximum (an lcm).  The `lcm` enters only as the ideal-intersection / equalizer m
 -/
 section Spt3ConditionalBoundary
 -- Confirm each conditional input is a `Prop` interface (no global axiom, no hidden structure field):
-#check @Spt3Cert.AKSIsComplete
-#check @Spt3Baker.BakerSeparation
-#check @Spt3PadicLog.PadicLogAdditive
-#check @Spt3.JacobianEtaleBridge
-#check @Spt3JacEtale.KaehlerConormalGap
-#check @Spt3TorHorseshoe.HorseshoeInductionStep
 end Spt3ConditionalBoundary
 
 /-! ## PART B (Spt4+) — extended PR-candidate lemmas (CRT/obstruction/coprime families).
@@ -7573,21 +7214,15 @@ theorem crtObstruction_surjective [NeZero m] [NeZero n] :
 end ObstructionMap
 
 /-! ### PART B no-duplication references. -/
-#check @span_singleton_inf_span_singleton   -- C2 (inf = lcm; Mathlib)
-#check @span_gcd                            -- B4 base (span {gcd} = span {x,y}; Mathlib)
-#check @ZMod.isUnit_iff_coprime             -- B9 base (Mathlib)
-#check @Int.modEq_and_modEq_iff_modEq_lcm   -- subsumes B1a/B1b (Mathlib; adversarial-review finding)
-#check @Spt3.card_ker_mulLeft               -- C6 (project; restated by B9a)
-#check @Spt3.gcd_eq_prod_primeFactors       -- B7 (project; multiplicative gcd decomposition)
 
 end Spt3PRCandidates
 /-! END EXTRACTABLE PR-CANDIDATE BLOCK -/
 
 /-! ## PART A — compile-time axiom firewall (reused from the SPT5 development).
 
-`#print axioms` only *prints*.  The two `elab` commands below make the audit *enforced*: each
+Printing axiom dependencies only *prints*.  The two `elab` commands below make the audit *enforced*: each
 FAILS the build unless the audited declaration(s) depend solely on `{propext, Classical.choice,
-Quot.sound}`.  They use the same `collectAxioms` engine as `#print axioms`, so any `sorryAx` (from
+Quot.sound}`.  They use Lean's `collectAxioms` engine, so any `sorryAx` (from
 `sorry`), `Lean.ofReduceBool` (from `native_decide`), or an import-introduced axiom turns into a
 HARD compile error. -/
 open Lean Elab Command in
@@ -7621,8 +7256,7 @@ elab "#assert_all_local_safe_axioms" : command => do
   unless bad.isEmpty do
     throwError m!"SPT3 WHOLE-FILE AXIOM FIREWALL FAILED: {bad.size} declaration(s) use forbidden \
       axioms: {bad}"
-  logInfo m!"SPT3 certification: all {cnt} local declarations depend only on \
-    [propext, Classical.choice, Quot.sound]."
+  pure ()
 
 /-! ## PART D — Certification boundary (structured trust record). -/
 namespace Spt3CertificationBoundary
@@ -7821,4 +7455,10 @@ section Spt3AxiomFirewall
 #assert_only_safe_axioms Spt3FutureWork.futureWork_count
 #assert_only_safe_axioms Spt3FutureWork.futureWork_all_have_proved_neighbors
 end Spt3AxiomFirewall
+
+/-! ## PART A (cont.) — WHOLE-FILE axiom firewall (certification-grade closing gate).
+This walks every local declaration in the file; the build FAILS if any depends on an axiom outside
+`{propext, Classical.choice, Quot.sound}`.  It is the mechanical witness for
+`Spt3CertificationBoundary.spt3Boundary.noHiddenAxioms`. -/
+#assert_all_local_safe_axioms
 
