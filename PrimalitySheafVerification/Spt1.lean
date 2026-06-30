@@ -18,12 +18,21 @@
         (sheaf form, plus each layer alone), agreement-on-the-base,
         VisiblePrimesProfile semantics, genuine Lucas/Pocklington certificate.
 
-  This reviewed version removes the certificate wrappers and the former
-  identity-map / terminal-fibre shortcuts flagged by the audit note.
+  Status tags used below:
+    [PROVED]     Lean theorem proved from Mathlib/local facts.
+    [CERTIFIED]  Lean theorem proved from an explicit certificate/interface.
+    [INTERFACE]  Named external API or theorem interface, not constructed here.
+    [CORRECTED]  Paper statement corrected by the formalization.
 
-  Every non-axiom result is machine-checked; `#print axioms` blocks confirm
-  dependence only on `[propext, Classical.choice, Quot.sound]`.
-================================================================================
+  Audit map:
+    Lemma 2.6 equalizer = lcm                         [PROVED]
+    Theorem 4.1 Tor-gcd / prime-power kernels          [PROVED]
+    Finite rational p-adic truncation layer            [PROVED]
+    Genuine analytic p-adic log interfaces             [CERTIFIED]/[INTERFACE]
+    Principal-open `TopCat.subsheafToTypes` gluing      [CERTIFIED]
+      by `Spt1SheafFull.PrincipalOpenCech.PrincipalOpenGluingCertificate`
+    Formal `Spf(ℤ_p)` base-change                     [INTERFACE]
+================================================================================ 
 -/
 import Mathlib
 
@@ -7478,31 +7487,68 @@ abbrev PrincipalGateGluesTo {ι : Type} [DecidableEq ι]
     (s : PrincipalGateLocalSections C g) (G : ΓGate g ⊤) : Prop :=
   ∀ i hi x hx, G.1 ⟨x, trivial⟩ = (s i hi).1 ⟨x, hx⟩
 
-/-- The glued global section of the actual detector subsheaf. -/
-noncomputable axiom gluePrincipalGateSections {ι : Type} [DecidableEq ι]
+/--
+Certificate for the actual principal-open gluing bridge from generic Cech
+families to sections of `TopCat.subsheafToTypes (gateLocalData g)`.
+
+The generic finite-cover Cech equalizer theorem is proved in
+`Spt1CechGeometry`.  This certificate records the remaining sheaf-model bridge
+as an explicit input instead of hiding it as a global axiom.
+-/
+structure PrincipalOpenGluingCertificate : Type 1 where
+  gluePrincipalGateSections :
+    ∀ {ι : Type} [DecidableEq ι]
+      (C : TopPrincipalCover ι)
+      (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
+      (s : PrincipalGateLocalSections C g),
+      PrincipalGateCompatible C g s → ΓGate g ⊤
+  gluePrincipalGateSections_spec :
+    ∀ {ι : Type} [DecidableEq ι]
+      (C : TopPrincipalCover ι)
+      (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
+      (s : PrincipalGateLocalSections C g)
+      (h : PrincipalGateCompatible C g s),
+      PrincipalGateGluesTo C g s (gluePrincipalGateSections C g s h)
+  principalOpen_item7_gateLocalData :
+    ∀ {ι : Type} [DecidableEq ι]
+      (C : TopPrincipalCover ι)
+      (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
+      (s : PrincipalGateLocalSections C g),
+      PrincipalGateCompatible C g s ↔
+        ∃! G : ΓGate g ⊤, PrincipalGateGluesTo C g s G
+
+/-- The glued global section supplied by an explicit principal-open certificate. -/
+noncomputable def gluePrincipalGateSections_from_gluingCertificate
+    (Cert : PrincipalOpenGluingCertificate) {ι : Type} [DecidableEq ι]
     (C : TopPrincipalCover ι)
     (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
     (s : PrincipalGateLocalSections C g)
-    (h : PrincipalGateCompatible C g s) : ΓGate g ⊤
+    (h : PrincipalGateCompatible C g s) : ΓGate g ⊤ :=
+  Cert.gluePrincipalGateSections C g s h
 
-/-- The glued section restricts to the prescribed principal-open sections. -/
-axiom gluePrincipalGateSections_spec {ι : Type} [DecidableEq ι]
+/-- The certificate-supplied glued section restricts to the prescribed sections. -/
+theorem gluePrincipalGateSections_spec_from_gluingCertificate
+    (Cert : PrincipalOpenGluingCertificate) {ι : Type} [DecidableEq ι]
     (C : TopPrincipalCover ι)
     (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
     (s : PrincipalGateLocalSections C g)
     (h : PrincipalGateCompatible C g s) :
-    PrincipalGateGluesTo C g s (gluePrincipalGateSections C g s h)
+    PrincipalGateGluesTo C g s
+      (gluePrincipalGateSections_from_gluingCertificate Cert C g s h) :=
+  Cert.gluePrincipalGateSections_spec C g s h
 
 /--
-E2, actual principal-open Cech equalizer/gluing for any detector sheaf of the
-form `TopCat.subsheafToTypes (gateLocalData g)`.
+Certified E2 bridge for actual principal-open Cech equalizer/gluing for any
+detector sheaf of the form `TopCat.subsheafToTypes (gateLocalData g)`.
 -/
-axiom principalOpen_item7_gateLocalData {ι : Type} [DecidableEq ι]
+theorem principalOpen_item7_gateLocalData_certified
+    (Cert : PrincipalOpenGluingCertificate) {ι : Type} [DecidableEq ι]
     (C : TopPrincipalCover ι)
     (g : (p : PrimeSpectrum ℤ) → fibre p → Prop)
     (s : PrincipalGateLocalSections C g) :
     PrincipalGateCompatible C g s ↔
-      ∃! G : ΓGate g ⊤, PrincipalGateGluesTo C g s G
+      ∃! G : ΓGate g ⊤, PrincipalGateGluesTo C g s G :=
+  Cert.principalOpen_item7_gateLocalData C g s
 
 /-- Principal-open local sections of the actual intrinsic fourfold sheaf `F_data`. -/
 abbrev FDataLocalSections {ι : Type} [DecidableEq ι]
@@ -7648,15 +7694,18 @@ abbrev ProperPrimeFDataObstruction
 
 /--
 E2, paper Item 7 `(b) ↔ (c)` instantiated on the actual sheaf `F_data` and an
-actual finite cover of `⊤` by principal opens `D(f_i)`.
+actual finite cover of `⊤` by principal opens `D(f_i)`, from an explicit
+principal-open gluing certificate.
 -/
-theorem item7_F_data_principalOpen_topCover {ι : Type} [DecidableEq ι]
+theorem item7_F_data_principalOpen_topCover_from_gluingCertificate
+    (Cert : PrincipalOpenGluingCertificate) {ι : Type} [DecidableEq ι]
     (C : TopPrincipalCover ι) (E : WeierstrassCurve ℤ)
     (X M0 q k Δ : ℕ) (s : FDataLocalSections C E X M0 q k Δ) :
     FDataCompatible C E X M0 q k Δ s ↔
       ∃! G : Γ_all_data E X M0 q k Δ ⊤,
         FDataGluesTo C E X M0 q k Δ s G :=
-  principalOpen_item7_gateLocalData C (gateAllData E X M0 q k Δ) s
+  principalOpen_item7_gateLocalData_certified Cert C
+    (gateAllData E X M0 q k Δ) s
 
 /-- Sections of the original base-gate fourfold sheaf `F` on an open. -/
 abbrev Γ_all_base (E : WeierstrassCurve ℤ) (X : ℕ) (U : Opens SpecZ) : Type :=
@@ -7681,14 +7730,16 @@ abbrev FGluesTo {ι : Type} [DecidableEq ι]
 
 /--
 E2, paper Item 7 `(b) ↔ (c)` instantiated on the actual original fourfold
-sheaf `F` and an actual finite principal-open cover of `⊤`.
+sheaf `F` and an actual finite principal-open cover of `⊤`, from an explicit
+principal-open gluing certificate.
 -/
-theorem item7_F_principalOpen_topCover {ι : Type} [DecidableEq ι]
+theorem item7_F_principalOpen_topCover_from_gluingCertificate
+    (Cert : PrincipalOpenGluingCertificate) {ι : Type} [DecidableEq ι]
     (C : TopPrincipalCover ι) (E : WeierstrassCurve ℤ) (X : ℕ)
     (s : FLocalSections C E X) :
     FCompatible C E X s ↔
       ∃! G : Γ_all_base E X ⊤, FGluesTo C E X s G :=
-  principalOpen_item7_gateLocalData C
+  principalOpen_item7_gateLocalData_certified Cert C
     (fun p d => gateAll E X p ∧ d = baseDatum) s
 
 end PrincipalOpenCech
