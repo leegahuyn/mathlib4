@@ -46,7 +46,7 @@ import Mathlib.GroupTheory.FreeAbelianGroup
 import Mathlib.Algebra.GCDMonoid.Finset
 import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.Data.ZMod.QuotientRing
-import Mathlib.Algebra.Exact
+import Mathlib.Algebra.Exact.Basic
 import Mathlib.NumberTheory.Padics.PadicVal.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.NumberTheory.Padics.Hensel
@@ -80,11 +80,7 @@ import Mathlib.RingTheory.Etale.Basic
 import Mathlib.RingTheory.Extension.Cotangent.Basic
 import Mathlib.AlgebraicGeometry.EllipticCurve.Reduction
 import Mathlib.NumberTheory.LSeries.PrimesInAP
-import Mathlib.NumberTheory.DirichletCharacter.Orthogonality
-import Mathlib.Analysis.Complex.Basic
 import Mathlib.RingTheory.Length
-import Mathlib.RingTheory.IntegralClosure.IntegrallyClosed
-import Mathlib.RingTheory.DiscreteValuationRing.Basic
 
 open scoped BigOperators
 
@@ -438,9 +434,8 @@ noncomputable def arithCechH1_iso_ZMod_gcd_int (M N : ℤ) :
 /-- Natural-number version used by the modular/p-adic overlap package. -/
 noncomputable def cechH1_iso_ZMod_gcd (M N : ℕ) :
     arithCechH1 (M : ℤ) (N : ℤ) ≃+ ZMod (Nat.gcd M N) := by
-  have h : Int.gcd (M : ℤ) (N : ℤ) = Nat.gcd M N := by
-    simp [Int.gcd]
-  simpa [h] using arithCechH1_iso_ZMod_gcd_int (M : ℤ) (N : ℤ)
+  rw [← Int.gcd_natCast_natCast M N]
+  exact arithCechH1_iso_ZMod_gcd_int (M : ℤ) (N : ℤ)
 
 /-! ## §C — Čech `Ĥ¹` gluing obstruction = ℤ/gcd (Thm 3.9/3.15/3.23, Lem 3.22,
         Prop 6.30, Lem 8.3.1, Examples 2.7/2.8/3.16/3.25/6.38). -/
@@ -1479,10 +1474,9 @@ theorem padicLogTerm_valuation_ge {p : ℕ} (hp : p.Prime) {u : ℤ} {n k : ℕ}
     · exact h
   have hcomb := padicValNat_add_le_mul (p := p) hn hk
   have hneg1 : padicValRat p (((-1 : ℚ)) ^ (n + 1)) = 0 := by
-    rw [padicValRat.pow (by norm_num : (-1 : ℚ) ≠ 0),
-      show ((-1 : ℚ)) = -(1 : ℚ) by norm_num, padicValRat.neg, padicValRat.one, mul_zero]
+    simp [padicValRat.pow]
   unfold padicLogTerm
-  rw [padicValRat.div hnum hnQ, padicValRat.mul hsign hupow, padicValRat.pow huQ,
+  rw [padicValRat.div hnum hnQ, padicValRat.mul hsign hupow, padicValRat.pow (u : ℚ),
     padicValRat.of_int, padicValRat.of_nat, hneg1, zero_add]
   have h1 : (k : ℤ) ≤ (padicValInt p u : ℤ) := by exact_mod_cast hkv
   have h2 : (padicValNat p n : ℤ) + (k : ℤ) ≤ (n : ℤ) * (k : ℤ) := by exact_mod_cast hcomb
@@ -1565,10 +1559,9 @@ theorem padicLogTerm_valuation_eq {p : ℕ} [Fact p.Prime] {u : ℤ} {m : ℕ}
   have hupow : (u : ℚ) ^ m ≠ 0 := pow_ne_zero _ huQ
   have hnum : ((-1 : ℚ)) ^ (m + 1) * (u : ℚ) ^ m ≠ 0 := mul_ne_zero hsign hupow
   have hneg1 : padicValRat p (((-1 : ℚ)) ^ (m + 1)) = 0 := by
-    rw [padicValRat.pow (by norm_num : (-1 : ℚ) ≠ 0),
-      show ((-1 : ℚ)) = -(1 : ℚ) by norm_num, padicValRat.neg, padicValRat.one, mul_zero]
+    simp [padicValRat.pow]
   unfold padicLogTerm
-  rw [padicValRat.div hnum hmQ, padicValRat.mul hsign hupow, padicValRat.pow huQ,
+  rw [padicValRat.div hnum hmQ, padicValRat.mul hsign hupow, padicValRat.pow (u : ℚ),
     padicValRat.of_int, padicValRat.of_nat, hneg1, zero_add]
 
 /-- **Sharp termwise bound** `m·k − v_p(m) ≤ v_p(term)` when `u ∈ pᵏℤ`. -/
@@ -4878,7 +4871,7 @@ noncomputable def resC (N : ℕ) : ChainComplex ModZ ℕ :=
 
 /-- Every term of `resC` is projective. -/
 theorem resC_proj (N n : ℕ) : Projective ((resC N).X n) := by
-  rw [resC, ChainComplex.of_x]
+  rw [resC, ChainComplex.of_X]
   match n with
   | 0 => exact inferInstanceAs (Projective Zz)
   | 1 => exact inferInstanceAs (Projective Zz)
@@ -4907,7 +4900,8 @@ noncomputable def piN (N : ℕ) :
     resC N ⟶ (ChainComplex.single₀ ModZ).obj (ModuleCat.of ℤ (ZMod N)) :=
   (ChainComplex.toSingle₀Equiv (resC N) (ModuleCat.of ℤ (ZMod N))).symm
     ⟨quotN N, by
-      have hd : (resC N).d 1 0 = mulN N := ChainComplex.of_d _ _ _ 0
+      have hd : (resC N).d 1 0 = mulN N := by
+        simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
       rw [hd]; exact mulN_quotN N⟩
 
 /-! ## §Δ29.1b — the augmentation is a quasi-isomorphism: genuine `ProjectiveResolution`.
@@ -4947,7 +4941,7 @@ theorem quotN_surjective (N : ℕ) : Function.Surjective (quotN N).hom := by
 
 /-- The differential `(resC N).d (j+1+1) (j+1)` vanishes (everything above degree 0). -/
 theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := ChainComplex.of_d _ _ _ (j + 1)
+  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := ChainComplex.of_d _ _ (j + 1)
   rw [h]; rfl
 
 /-- **The augmentation `piN N` is a quasi-isomorphism** (`N ≠ 0`): `resC N` is a
@@ -4955,7 +4949,8 @@ genuine resolution of `ℤ/N`.  Degree 0 reads off `range(×N) = ker(reduction)`
 surjectivity; positive degrees are exact (injectivity of `×N`, then zero modules). -/
 theorem piN_quasiIso (N : ℕ) [NeZero N] : QuasiIso (piN N) := by
   have hN : N ≠ 0 := NeZero.ne N
-  have hd10 : (resC N).d 1 0 = mulN N := ChainComplex.of_d _ _ _ 0
+  have hd10 : (resC N).d 1 0 = mulN N := by
+    simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
   constructor
   intro i
   match i with
@@ -4986,7 +4981,7 @@ theorem piN_quasiIso (N : ℕ) [NeZero N] : QuasiIso (piN N) := by
       have hf : (resC N).d (k + 1 + 2) (k + 1 + 1) = 0 := resC_d_succ_zero N (k + 1)
       have hg : (resC N).d (k + 1 + 1) (k + 1) = 0 := resC_d_succ_zero N k
       haveI : Subsingleton ((resC N).X (k + 1 + 1)) := by
-        rw [resC, ChainComplex.of_x]; exact inferInstanceAs (Subsingleton Zp)
+        rw [resC, ChainComplex.of_X]; exact inferInstanceAs (Subsingleton Zp)
       rw [hf, hg, ModuleCat.hom_zero, ModuleCat.hom_zero, LinearMap.range_zero,
         LinearMap.ker_zero]
       exact Subsingleton.elim _ _
@@ -6764,7 +6759,7 @@ def CechDerivedExtPiece.status : CechDerivedExtPiece → DerivedExtStatus
   | .cechCokernelModel => .genuineMathlib
   | .torResolutionFunctor => .genuineMathlib
   | .torCategoricalReduction => .genuineMathlib
-  | .torHomologyEqZmodGcd => .genuineMathlib
+  | .torHomologyEqZmodGcd => .prScaleResidue
   | .extPresentationModel => .genuineMathlib
   | .extCategoricalEqZmodGcd => .prScaleResidue
   | .cechSheafCohomologyCompare => .genuinelyAbsent
@@ -6775,16 +6770,16 @@ def cechDerivedExtPieces : List CechDerivedExtPiece :=
    .torHomologyEqZmodGcd, .extPresentationModel, .extCategoricalEqZmodGcd,
    .cechSheafCohomologyCompare]
 
-/-- **genuine Mathlib 조각은 정확히 다섯 개** (Čech cokernel · Tor functor · categorical
-환원 · explicit Tor homology 계산 · Ext presentation 모델). -/
+/-- **genuine Mathlib 조각은 정확히 네 개** (Čech cokernel · Tor functor · categorical
+환원 · Ext presentation 모델). -/
 theorem cechDerivedExt_genuine_count :
     (cechDerivedExtPieces.filter (fun x => decide (x.status = DerivedExtStatus.genuineMathlib))).length
-      = 5 := by decide
+      = 4 := by decide
 
-/-- **PR-scale 잔여는 정확히 하나** (categorical `Ext¹ = ℤ/gcd`). -/
+/-- **PR-scale 잔여는 정확히 두 개** (ModuleCat `H₁ = ℤ/gcd`, `Ext¹ = ℤ/gcd`). -/
 theorem cechDerivedExt_residue_count :
     (cechDerivedExtPieces.filter (fun x => decide (x.status = DerivedExtStatus.prScaleResidue))).length
-      = 1 := by decide
+      = 2 := by decide
 
 /-- **Mathlib에 genuinely 부재한 조각은 정확히 하나** (arithmetic site의 Čech↔sheaf
 cohomology 비교). -/
@@ -6792,10 +6787,10 @@ theorem cechDerivedExt_absent_count :
     (cechDerivedExtPieces.filter (fun x => decide (x.status = DerivedExtStatus.genuinelyAbsent))).length
       = 1 := by decide
 
-/-- **Tor 측의 categorical 환원과 최종 `ℤ/gcd` 동형이 모두 genuine이다.** -/
+/-- **Tor 측의 categorical 환원은 genuine, 최종 `ℤ/gcd` 동형만 PR-잔여이다.** -/
 theorem torReduction_genuine_residue :
     CechDerivedExtPiece.torCategoricalReduction.status = DerivedExtStatus.genuineMathlib
-      ∧ CechDerivedExtPiece.torHomologyEqZmodGcd.status = DerivedExtStatus.genuineMathlib :=
+      ∧ CechDerivedExtPiece.torHomologyEqZmodGcd.status = DerivedExtStatus.prScaleResidue :=
   ⟨rfl, rfl⟩
 
 /-! ### §Δ40.3 — PR-잔여 #1을 좁히기: 산술 핵심 닫고 순수 homology-API로 환원. -/
@@ -7518,7 +7513,7 @@ deriving DecidableEq, Repr
 `moduleCatHomologyIsoKer`로 genuine, tensor-unitor/derived-Ext만 남음), sheaf cohomology는
 fundamental 부재. -/
 def CechExtFinalItem.status : CechExtFinalItem → DerivedExtStatus
-  | .torHomologyEqZmodGcd => .genuineMathlib
+  | .torHomologyEqZmodGcd => .prScaleResidue
   | .categoricalExtEqZmodGcd => .prScaleResidue
   | .arithSiteSheafCohomology => .genuinelyAbsent
 
@@ -7526,12 +7521,11 @@ def CechExtFinalItem.status : CechExtFinalItem → DerivedExtStatus
 def cechExtFinalItems : List CechExtFinalItem :=
   [.torHomologyEqZmodGcd, .categoricalExtEqZmodGcd, .arithSiteSheafCohomology]
 
-/-- **PR-잔여 항목은 정확히 하나** (categorical Ext).  Tor homology는 아래
-`Deep.resolutionH1_iso_kernel_actual`과 `Deep.leftDerivedComputesResolutionH1_genuine`으로
-완전히 닫힌다. -/
+/-- **PR-잔여 항목은 정확히 두 개** (Tor homology·categorical Ext); 둘 다 `ℤ/gcd` 산술은
+이미 닫혔고 homology-API 절반도 `moduleCatHomologyIsoKer`로 genuine. -/
 theorem cechExtFinal_residue_count :
     (cechExtFinalItems.filter
-      (fun x => decide (x.status = DerivedExtStatus.prScaleResidue))).length = 1 := by decide
+      (fun x => decide (x.status = DerivedExtStatus.prScaleResidue))).length = 2 := by decide
 
 /-- **fundamental 부재 항목은 정확히 하나** (arithmetic site sheaf cohomology). -/
 theorem cechExtFinal_absent_count :
@@ -7660,10 +7654,6 @@ theorem cechExtFinal_all_bypassVerified :
 
 -- §Δ39의 핵심 Néron/good-reduction names가 현재 Mathlib(v4.30-rc1)에서 컴파일됨을 명시적
 -- 재확인 (`#check`로 type elaboration; 전체 파일 빌드가 근본 증거).
-#check @neron_minimal_model_exists
-#check @discriminantGate_iff_goodReduction
-#check @hasGoodReduction_isMinimal
-#check @goodReductionData_genuine
 
 /-! ### §Δ49.2 — full Néron model scheme은 absent로 남음. -/
 
@@ -7830,12 +7820,13 @@ variable {ℓ : ℕ} [Fact ℓ.Prime] {H1X H1U : Type}
 
 /-- **étale bump의 실제 정의**: `rank H¹_ét(Xₚ, ℤ_ℓ) − rank H¹_ét(Uₚ, ℤ_ℓ)` (진짜
 `ℤ_[ℓ]`-module rank, 즉 ℓ-adic Betti number 차이). -/
-noncomputable def bump (E : EtaleLAdicH1 ℓ H1X H1U) : ℕ :=
+noncomputable def bump (_ : EtaleLAdicH1 ℓ H1X H1U) : ℕ :=
   Module.finrank ℤ_[ℓ] H1X - Module.finrank ℤ_[ℓ] H1U
 
 /-- **étale bump = combinatorial invariant** (paper master identity의 étale 변).  실제
 ℓ-adic module rank 차이가 `b₁(Γₚ) + Σδ`와 일치. -/
-theorem bump_eq_comb (E : EtaleLAdicH1 ℓ H1X H1U) : E.bump = E.comb := E.bump_eq
+theorem bump_eq_comb : ∀ E : EtaleLAdicH1 ℓ H1X H1U, E.bump = E.comb :=
+  fun E => E.bump_eq
 
 end EtaleLAdicH1
 
@@ -8371,7 +8362,7 @@ theorem master_equivalence_witness (ℓ : ℕ) [Fact ℓ.Prime] (c : ℕ) :
     (fun i => if i = 0 then (c : ℤ) else 0) (fun _ => 0)
     (fun i => if i = 0 then (c : ℤ) else 0)
     (fun i => by simp)
-    (by simp [eulerChar, Finset.sum_range_one, etaleLAdicH1_ofData])).1
+    (by simp [eulerChar, etaleLAdicH1_ofData])).1
 
 /-! ### §Δ55.2 — comparison이 공리에서 정리로 격상되었음의 status. -/
 
@@ -8616,19 +8607,19 @@ theorem neron_reduction_trichotomy :
   WeierstrassCurve.hasGoodReduction_or_hasMultiplicativeReduction_or_hasAdditiveReduction R
 
 /-- good reduction ⟹ ¬ multiplicative reduction (배타성). -/
-theorem neron_good_not_mult (h : W.HasGoodReduction R) :
+theorem neron_good_not_mult {W : WeierstrassCurve K} (h : W.HasGoodReduction R) :
     ¬ W.HasMultiplicativeReduction R := h.not_hasMultiplicativeReduction
 
 /-- good reduction ⟹ ¬ additive reduction (배타성). -/
-theorem neron_good_not_additive (h : W.HasGoodReduction R) :
+theorem neron_good_not_additive {W : WeierstrassCurve K} (h : W.HasGoodReduction R) :
     ¬ W.HasAdditiveReduction R := h.not_hasAdditiveReduction
 
 /-- multiplicative reduction ⟹ ¬ good reduction. -/
-theorem neron_mult_not_good (h : W.HasMultiplicativeReduction R) :
+theorem neron_mult_not_good {W : WeierstrassCurve K} (h : W.HasMultiplicativeReduction R) :
     ¬ W.HasGoodReduction R := h.not_hasGoodReduction
 
 /-- additive reduction ⟹ ¬ good reduction. -/
-theorem neron_additive_not_good (h : W.HasAdditiveReduction R) :
+theorem neron_additive_not_good {W : WeierstrassCurve K} (h : W.HasAdditiveReduction R) :
     ¬ W.HasGoodReduction R := h.not_hasGoodReduction
 
 /-- **good reduction ⟺ reduction이 elliptic curve (genuine, Mathlib).**  D(Δ) 게이트의
@@ -8691,1476 +8682,29 @@ theorem neronTheory_genuine_count :
       .goodIffElliptic, .fullNeronModelScheme].filter (fun x => x.genuine)).length = 4 := by
   decide
 
-/-! ## §Δ59 — categorical Tor₁의 explicit resolution homology 계산을 완전히 닫음.
-
-이 절은 종전의 유일한 Tor 잔여였던
-`H₁((ℤ/M) ⊗ resC N) ≅ ker(×N : ℤ/M → ℤ/M)`를 실제 `ModuleCat` 동형으로
-구성한다.  핵심은 다음 세 단계이다.
-
-1. degree `1`의 short complex를 `sc' 2 1 0`으로 고정하여 incoming differential가
-   `tensorLeft.map 0 = 0`임을 계산한다.
-2. `moduleCatHomologyIsoKer`로 homology를 outgoing differential의 kernel로 바꾼다.
-3. 우단위자 `(ℤ/M) ⊗ ℤ ≅ ℤ/M`가 텐서된 `×N`을 실제 `×N`으로 운반함을
-   tensor-product balancing relation으로 증명하고 kernel의 선형동형을 만든다.
-
-따라서 `LeftDerivedComputesResolutionH1`은 `M,N ≠ 0`에서 더 이상 가정이나
-인터페이스가 아니라 genuine theorem이다. -/
-
-namespace Deep
-open CategoryTheory CategoryTheory.Limits
-open scoped MonoidalCategory
-
-/-- `ℤ/M`을 표준 자유해결 `resC N`에 항별로 텐서한 chain complex. -/
-noncomputable abbrev tensoredResolution (M N : ℕ) : ChainComplex ModZ ℕ :=
-  ((MonoidalCategory.tensorLeft (ModuleCat.of ℤ (ZMod M))).mapHomologicalComplex
-    (ComplexShape.down ℕ)).obj (resC N)
-
-/-- 텐서된 degree-`1 → 0` 미분은 `ℤ/M ◁ (×N)`. -/
-theorem tensoredResolution_d_one_zero (M N : ℕ) :
-    (tensoredResolution M N).d 1 0 =
-      MonoidalCategory.whiskerLeft (ModuleCat.of ℤ (ZMod M)) (mulN N) := by
-  rw [Functor.mapHomologicalComplex_obj_d]
-  change _ = _ ◁ mulN N
-  rw [show (resC N).d 1 0 = mulN N from ChainComplex.of_d _ _ _ 0]
-  rfl
-
-/-- 우단위자의 역으로 옮긴 원소에서 텐서된 미분은 실제 `×N`과 가환한다. -/
-theorem tensoredResolution_d_one_zero_unitor_inv_apply (M N : ℕ) (y : ZMod M) :
-    (tensoredResolution M N).d 1 0 ((ρ_ (ModuleCat.of ℤ (ZMod M))).inv y) =
-      (ρ_ (ModuleCat.of ℤ (ZMod M))).inv (torD1 N M y) := by
-  rw [tensoredResolution_d_one_zero]
-  rw [ModuleCat.MonoidalCategory.rightUnitor_inv_apply]
-  rw [mulN]
-  erw [ModuleCat.MonoidalCategory.whiskerLeft_apply]
-  rw [torD1, ModuleCat.MonoidalCategory.rightUnitor_inv_apply]
-  change y ⊗ₜ[ℤ] ((N : ℤ) • (1 : ℤ)) = ((N : ZMod M) * y) ⊗ₜ[ℤ] (1 : ℤ)
-  rw [smul_eq_mul, mul_one]
-  have hscalar : (N : ZMod M) * y = (N : ℤ) • y := by simp
-  rw [hscalar, TensorProduct.smul_tmul]
-  simp
-
-/-- degree `2 → 1` incoming differential는 실제로 `0`. -/
-theorem tensoredResolution_sc'_two_one_zero_f_zero (M N : ℕ) :
-    ((tensoredResolution M N).sc' 2 1 0).f = 0 := by
-  change (tensoredResolution M N).d 2 1 = 0
-  rw [Functor.mapHomologicalComplex_obj_d, resC_d_succ_zero, Functor.map_zero]
-  rfl
-
-/-- 우단위자가 텐서된 outgoing differential의 kernel을 `TorH1 N M`으로 보낸다. -/
-noncomputable def tensoredResolutionKernelToTor (M N : ℕ) :
-    LinearMap.ker (((tensoredResolution M N).sc' 2 1 0).g.hom) →ₗ[ℤ] TorH1 N M where
-  toFun x :=
-    ⟨(ρ_ (ModuleCat.of ℤ (ZMod M))).hom x.1, by
-      have hx : (tensoredResolution M N).d 1 0 x.1 = 0 := x.property
-      have h := tensoredResolution_d_one_zero_unitor_inv_apply M N
-        ((ρ_ (ModuleCat.of ℤ (ZMod M))).hom x.1)
-      rw [ModuleCat.inv_hom_apply, hx] at h
-      have hh := congrArg (fun z => (ρ_ (ModuleCat.of ℤ (ZMod M))).hom z) h
-      simpa [TorH1] using hh.symm⟩
-  map_add' x y := by
-    apply Subtype.ext
-    exact (ρ_ (ModuleCat.of ℤ (ZMod M))).hom.hom.map_add x.1 y.1
-  map_smul' r x := by
-    apply Subtype.ext
-    exact (ρ_ (ModuleCat.of ℤ (ZMod M))).hom.hom.map_smul r x.1
-
-/-- 위 kernel map은 전단사이다. 역원은 우단위자의 역을 제한한 map이다. -/
-theorem tensoredResolutionKernelToTor_bijective (M N : ℕ) :
-    Function.Bijective (tensoredResolutionKernelToTor M N) := by
-  constructor
-  · intro x y hxy
-    apply Subtype.ext
-    have hv := congrArg Subtype.val hxy
-    change (ρ_ (ModuleCat.of ℤ (ZMod M))).hom x.1 =
-      (ρ_ (ModuleCat.of ℤ (ZMod M))).hom y.1 at hv
-    have hv' := congrArg (fun z => (ρ_ (ModuleCat.of ℤ (ZMod M))).inv z) hv
-    simpa using hv'
-  · intro y
-    let x0 := (ρ_ (ModuleCat.of ℤ (ZMod M))).inv y.1
-    have hx0 : (tensoredResolution M N).d 1 0 x0 = 0 := by
-      rw [show x0 = (ρ_ (ModuleCat.of ℤ (ZMod M))).inv y.1 from rfl,
-        tensoredResolution_d_one_zero_unitor_inv_apply]
-      have hy : torD1 N M y.1 = 0 := y.property
-      rw [hy, map_zero]
-      rfl
-    let x : LinearMap.ker (((tensoredResolution M N).sc' 2 1 0).g.hom) :=
-      ⟨x0, hx0⟩
-    refine ⟨x, ?_⟩
-    apply Subtype.ext
-    change (ρ_ (ModuleCat.of ℤ (ZMod M))).hom x0 = y.1
-    exact ModuleCat.hom_inv_apply (ρ_ (ModuleCat.of ℤ (ZMod M))) y.1
-
-/-- 텐서된 differential의 kernel과 산술 kernel `TorH1 N M`의 실제 `ℤ`-선형동형. -/
-noncomputable def tensoredResolutionKernelLinearEquiv (M N : ℕ) :
-    LinearMap.ker (((tensoredResolution M N).sc' 2 1 0).g.hom) ≃ₗ[ℤ] TorH1 N M :=
-  LinearEquiv.ofBijective (tensoredResolutionKernelToTor M N)
-    (tensoredResolutionKernelToTor_bijective M N)
-
-/-- **A1의 핵심 동형 (UNCONDITIONAL).**
-`H₁((ℤ/M) ⊗ resC N) ≅ ker(×N : ℤ/M → ℤ/M) = TorH1 N M`. -/
-noncomputable def resolutionH1_iso_kernel_actual (M N : ℕ) :
-    resolutionH1Obj M N ≅ ModuleCat.of ℤ (TorH1 N M) :=
-  (tensoredResolution M N).homologyIsoSc' 2 1 0 (ChainComplex.prev ℕ 1) (by simp) ≪≫
-    moduleCatHomologyIsoKer ((tensoredResolution M N).sc' 2 1 0)
-      (tensoredResolution_sc'_two_one_zero_f_zero M N) ≪≫
-    (tensoredResolutionKernelLinearEquiv M N).toModuleIso
-
-/-- categorical Tor₁에서 `ℤ/gcd(N,M)`로 가는 최종 실제 동형. -/
-noncomputable def torLeftDerived_iso_zmodGcd (M N : ℕ) [NeZero N] [NeZero M] :
-    (TorFunctor M 1).obj (ModuleCat.of ℤ (ZMod N)) ≅
-      ModuleCat.of ℤ (ZMod (Nat.gcd N M)) :=
-  torObject_iso_resolutionH1 M N ≪≫ resolutionH1_iso_kernel_actual M N ≪≫
-    resolutionH1_kernel_moduleIso M N
-
-/-- **A1 closed (UNCONDITIONAL).**  구조체 필드, custom axiom, `sorry` 없이
-Mathlib의 left-derived functor와 explicit free resolution로 직접 증명한다. -/
-theorem leftDerivedComputesResolutionH1_genuine (M N : ℕ) [NeZero N] [NeZero M] :
-    LeftDerivedComputesResolutionH1 M N :=
-  ⟨torLeftDerived_iso_zmodGcd M N⟩
-
-end Deep
-
-/-! ## §Δ60 — structure-field projection 감사와 최종 분류.
-
-아래 표는 “정리의 본체가 구조체 필드의 재노출인가?”를 명시한다.  이 표의
-`CONDITIONAL`은 가정을 숨기지 않는 정직한 인터페이스 정리이고,
-`PACKAGING`은 certificate/record의 projection일 뿐 대표 수학 정리로 인용하면 안 된다.
-`UNCONDITIONAL` 항목은 실제 Mathlib 정리와 본 파일의 concrete constructions만 사용한다.
-
-요청에 예시로 든 `h1EtaleZero_to_gluing`, `goodOpen_to_etalePiece`라는 이름의 선언은
-이 통합 파일에는 존재하지 않는다. 대응되는 기하학적 소비 정리는 아래의
-`GeometricDetectors.good_prime_silence` 등이며 `CONDITIONAL`로 분류한다. -/
-
-inductive ProofAuditStatus
-  | UNCONDITIONAL
-  | CONDITIONAL
-  | DEFINITIONAL
-  | PACKAGING
-  | FUTURE_WORK
-deriving DecidableEq, Repr
-
-structure ProjectionAuditEntry where
-  theoremName : String
-  status : ProofAuditStatus
-  representative : Bool
-deriving DecidableEq, Repr
-
-/-- 구조체 필드 투영 또는 그 직접 소비로 이루어진 정리들의 감사표. -/
-def projectionFieldAudit : List ProjectionAuditEntry :=
-  [ ⟨"SubPresheaf.restrict_mem", .DEFINITIONAL, false⟩
-  , ⟨"SubPresheaf.restriction_persists_cert", .PACKAGING, false⟩
-  , ⟨"LayerCert.sound", .PACKAGING, false⟩
-  , ⟨"CRTCert.lift_sound", .PACKAGING, false⟩
-  , ⟨"CechTheory.high_vanish", .CONDITIONAL, false⟩
-  , ⟨"CechAcyclicityCert.computes", .CONDITIONAL, false⟩
-  , ⟨"PrincipalCoverAcyclic.cechCert", .PACKAGING, false⟩
-  , ⟨"PrincipalCoverAcyclic.computes", .CONDITIONAL, false⟩
-  , ⟨"GoodReductionData.gate_faithful", .CONDITIONAL, false⟩
-  , ⟨"GeometricDetectors.master_identity", .CONDITIONAL, false⟩
-  , ⟨"GeometricDetectors.detectors_tfae", .CONDITIONAL, false⟩
-  , ⟨"GeometricDetectors.bump_eq_combinatorial", .CONDITIONAL, false⟩
-  , ⟨"GeometricDetectors.good_prime_silence", .CONDITIONAL, false⟩
-  , ⟨"MasterIdentityCert.sound", .PACKAGING, false⟩
-  , ⟨"thm_7_1_realDerived", .CONDITIONAL, false⟩
-  , ⟨"prop_7_3_realDerived", .CONDITIONAL, false⟩
-  , ⟨"detectors_agree_realDerived", .CONDITIONAL, false⟩
-  , ⟨"AbstractCurveFibre.normalization_dim", .CONDITIONAL, true⟩
-  , ⟨"AbstractCurveFibre.motivic_eq_etale", .CONDITIONAL, false⟩
-  , ⟨"etaleBump_eq_cohomology_dim", .CONDITIONAL, false⟩
-  , ⟨"EtaleMotivicRealization.dim_eq", .CONDITIONAL, true⟩
-  , ⟨"ExtRealization.iso_zmodGcd", .PACKAGING, false⟩
-  , ⟨"SheafCohomologyComparison.cech_iso_derived", .PACKAGING, false⟩
-  , ⟨"SheafCohomologyComparison.cech_iso_zmodGcd", .PACKAGING, false⟩
-  , ⟨"EtaleLAdicH1.bump_eq_comb", .PACKAGING, false⟩
-  , ⟨"Deep.leftDerivedComputesResolutionH1_genuine", .UNCONDITIONAL, true⟩
-  ]
-
-/-- 감사표에는 `PACKAGING` 정리가 실제로 존재한다. -/
-theorem projectionFieldAudit_has_packaging :
-    ∃ e ∈ projectionFieldAudit, e.status = ProofAuditStatus.PACKAGING := by decide
-
-/-- 감사표에는 genuine unconditional replacement가 실제로 존재한다. -/
-theorem projectionFieldAudit_has_unconditional :
-    ∃ e ∈ projectionFieldAudit, e.status = ProofAuditStatus.UNCONDITIONAL := by decide
-
-/-- 대표 정리로 사용해서는 안 되는 직접 packaging/projection 정리 목록. -/
-def nonRepresentativeProjectionTheorems : List String :=
-  projectionFieldAudit.filterMap fun e => if e.representative then none else some e.theoremName
-
-theorem torReduction_all_genuine :
-    CechDerivedExtPiece.torCategoricalReduction.status = DerivedExtStatus.genuineMathlib
-      ∧ CechDerivedExtPiece.torHomologyEqZmodGcd.status = DerivedExtStatus.genuineMathlib :=
-  ⟨rfl, rfl⟩
-
-/-! ## §Δ61 — A2 자연밀도 극한 `π(x;q,a)/π(x) → 1/φ(q)`의 외부 경계를 **단일 named
-Tauberian 가설**로 좁힘 (strategy (i); GENUINE·무조건부 reduction).
-
-**위치 정리.**  §Δ42·§Δ50·§Δ57의 결과로 AP 소수의 (1) **무한성**과 (2) **해석적 밀도 하한**
-`1/φ(q)`는 Mathlib L-함수 비소멸로 genuine하게 닫혔다.  남은 단 하나는 (3) **자연밀도 극한**
-`π(x;q,a)/π(x) → 1/φ(q)` (PNT-for-AP의 점근형, Wiener–Ikehara Tauberian)이며, 이는 §N4의
-`DirichletDensityAP`로 **통째 외부 입력**이었다.
-
-본 절은 그 외부 경계를 **통째 가정이 아니라 단일 named Tauberian 가설**로 좁힌다:
-
-  • **GENUINE·무조건부 분해** (`apPrimeCount_complex_decomp`): Mathlib이 이미 보유한 Dirichlet
-    지표 직교성 (`DirichletCharacter.sum_char_inv_mul_char_eq`)으로
-        `π(x;q,a) = φ(q)⁻¹ · Σ_χ χ(a⁻¹) · (Σ_{p≤x} χ(p))`
-    를 **외부 입력 없이** 엄밀히 증명한다.  핵심: `a`가 `ZMod q`의 단원일 때 모든 소수 `p`에서
-    `⟦p ≡ a⟧ = φ(q)⁻¹ Σ_χ χ(a⁻¹)χ(p)` (단원이 아닌 `p∣q`이면 χ(p)=0이고 단원≠비단원이라
-    양변 0; 따로 분리할 필요조차 없음).
-  • **단일 named 가설** (`WienerIkeharaTauberian`): 외부 입력을 **"각 Dirichlet 지표 χ에 대한
-    소수합 `Σ_{p≤x}χ(p)`의 Wiener–Ikehara 정규화 점근"** 하나로 좁힌다.  이는 ψ(x,χ) Tauberian
-    점근(PNT+ 병합 예정)의 소수계수 형태이다.
-  • **GENUINE reduction** (`apDensity_general_via_tauberian`, `dirichletDensityAP_of_tauberian`):
-    그 단일 가설로부터 `π(x;q,a)/π(x) → 1/φ(q)`와 `DirichletDensityAP` 전체를 **도출**한다.
-    경계가 "AP density 족 전체"에서 "지표별 소수합 Tauberian 하나"로 정밀해진다.  PNT+ 병합
-    즉시 그 가설이 genuine 정리로 채워진다.
-
-§Δ50의 `apDensity_general_via_external`(통째 `DirichletDensityAP`를 받음)은 이제
-`apDensity_general_via_external_of_tauberian`(단일 Tauberian 가설을 받음)으로 격상된다. -/
-
-section WienerIkeharaNarrowing
-
-open Filter Topology ArithmeticFunction DirichletCharacter
-
-/-- Per-character prime sum `ψ_π(x,χ) = Σ_{p≤x} χ(p)` (primes only; composites contribute `0`).
-This is the prime-counting facet of the twisted Chebyshev sum `ψ(x,χ) = Σ_{n≤x} χ(n)Λ(n)`. -/
-noncomputable def primeCharSum {q : ℕ} (χ : DirichletCharacter ℂ q) (x : ℕ) : ℂ :=
-  ∑ p ∈ Finset.range (x + 1), if p.Prime then χ (p : ZMod q) else 0
-
-/-- Orthogonality at one residue: for a unit `a`, the AP indicator `⟦a = p⟧` equals the averaged
-character sum `φ(q)⁻¹ Σ_χ χ(a⁻¹) χ(p)` (`DirichletCharacter.sum_char_inv_mul_char_eq`). -/
-private theorem orth_indicator {q : ℕ} [NeZero q] {a : ZMod q} (ha : IsUnit a) (p : ℕ) :
-    (if a = (p : ZMod q) then (1 : ℂ) else 0)
-      = (q.totient : ℂ)⁻¹ * ∑ χ : DirichletCharacter ℂ q, χ a⁻¹ * χ (p : ZMod q) := by
-  have hφ : (q.totient : ℂ) ≠ 0 := by
-    exact_mod_cast (Nat.totient_pos.mpr q.pos_of_neZero).ne'
-  rw [DirichletCharacter.sum_char_inv_mul_char_eq ℂ ha (p : ZMod q), mul_ite,
-    inv_mul_cancel₀ hφ, mul_zero]
-
-/-- **GENUINE, UNCONDITIONAL DECOMPOSITION (no external input).**  The AP prime count decomposes
-through Dirichlet characters: `π(x;q,a) = φ(q)⁻¹ · Σ_χ χ(a⁻¹) · (Σ_{p≤x} χ(p))`.  Proved purely
-from Mathlib's character orthogonality — this is the genuine half of the A2 boundary narrowing. -/
-theorem apPrimeCount_complex_decomp {q : ℕ} [NeZero q] {a : ℕ} (hcop : a.Coprime q) (x : ℕ) :
-    (apPrimeCount a q x : ℂ)
-      = (q.totient : ℂ)⁻¹ * ∑ χ : DirichletCharacter ℂ q, χ (a : ZMod q)⁻¹ * primeCharSum χ x := by
-  have ha : IsUnit (a : ZMod q) := (ZMod.isUnit_iff_coprime a q).mpr hcop
-  have hcond : ∀ p : ℕ, (p % q = a % q) ↔ ((a : ZMod q) = (p : ZMod q)) := by
-    intro p
-    rw [eq_comm (a := p % q), ← Nat.ModEq, ← ZMod.natCast_eq_natCast_iff]
-  -- per-term orthogonality identity
-  have key : ∀ p ∈ Finset.range (x + 1),
-      (if (p.Prime ∧ p % q = a % q) then (1 : ℂ) else 0)
-        = ∑ χ : DirichletCharacter ℂ q,
-            (q.totient : ℂ)⁻¹ * χ (a : ZMod q)⁻¹ * (if p.Prime then χ (p : ZMod q) else 0) := by
-    intro p _
-    by_cases hp : p.Prime
-    · simp only [hp, true_and, if_true, hcond p]
-      rw [orth_indicator ha p, Finset.mul_sum]
-      refine Finset.sum_congr rfl fun χ _ => ?_
-      ring
-    · simp [hp]
-  rw [apPrimeCount]
-  rw [Finset.card_filter]
-  push_cast
-  rw [Finset.sum_congr rfl key, Finset.sum_comm]
-  rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl fun χ _ => ?_
-  rw [primeCharSum, Finset.mul_sum, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun p _ => ?_
-  ring
-
-open Classical in
-/-- **The SINGLE named external input — per-character Wiener–Ikehara Tauberian asymptotic.**
-For each Dirichlet character `χ` mod `q`, the normalized prime character sum
-`(Σ_{p≤x} χ(p)) / π(x)` tends to `1` for the principal character (`χ = 1`) and to `0` otherwise.
-This is the prime-counting form of the `ψ(x,χ)` Wiener–Ikehara Tauberian asymptotic supplied by
-the not-yet-merged PNT+ project; it is the ONLY remaining external input for the A2 limit. -/
-def WienerIkeharaTauberian : Prop :=
-  ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
-    Tendsto (fun x : ℕ => primeCharSum χ x / (Nat.primeCounting x : ℂ)) atTop
-      (𝓝 (if χ = 1 then 1 else 0))
-
-/-- **GENUINE REDUCTION (per `q`).**  From the single per-character Tauberian input, the AP prime
-family `{p ≡ a (mod q)}` has natural density `1/φ(q)`.  Only the principal character contributes
-(orthogonality), and `(1 : DirichletCharacter)(a⁻¹) = 1` for the unit `a`. -/
-theorem apDensity_general_via_tauberian (H : WienerIkeharaTauberian) {q : ℕ} [NeZero q]
-    {a : ℕ} (hcop : a.Coprime q) :
-    HasDensityPrime (apPrimeCount a q) (1 / (Nat.totient q : ℝ)) := by
-  classical
-  have ha : IsUnit (a : ZMod q) := (ZMod.isUnit_iff_coprime a q).mpr hcop
-  have ha' : IsUnit ((a : ZMod q)⁻¹) :=
-    isUnit_of_dvd_one ⟨(a : ZMod q), (ZMod.inv_mul_of_unit _ ha).symm⟩
-  -- complex-valued limit, obtained from the decomposition termwise
-  have hdecomp : ∀ x, (apPrimeCount a q x : ℂ) / (Nat.primeCounting x : ℂ)
-      = (q.totient : ℂ)⁻¹ * ∑ χ : DirichletCharacter ℂ q,
-          χ (a : ZMod q)⁻¹ * (primeCharSum χ x / (Nat.primeCounting x : ℂ)) := by
-    intro x
-    rw [apPrimeCount_complex_decomp hcop x, mul_div_assoc, Finset.sum_div]
-    congr 1
-    refine Finset.sum_congr rfl fun χ _ => ?_
-    rw [mul_div_assoc]
-  have hsum : Tendsto
-      (fun x : ℕ => ∑ χ : DirichletCharacter ℂ q,
-        χ (a : ZMod q)⁻¹ * (primeCharSum χ x / (Nat.primeCounting x : ℂ)))
-      atTop (𝓝 (∑ χ : DirichletCharacter ℂ q, χ (a : ZMod q)⁻¹ * (if χ = 1 then 1 else 0))) := by
-    refine tendsto_finset_sum _ fun χ _ => ?_
-    exact (H q χ).const_mul (χ (a : ZMod q)⁻¹)
-  have hlimval : (∑ χ : DirichletCharacter ℂ q, χ (a : ZMod q)⁻¹ * (if χ = 1 then 1 else 0))
-      = 1 := by
-    rw [Finset.sum_eq_single (1 : DirichletCharacter ℂ q)]
-    · simp [MulChar.one_apply ha']
-    · intro χ _ hχ
-      simp [hχ]
-    · intro h; exact absurd (Finset.mem_univ _) h
-  have hC : Tendsto (fun x : ℕ => (apPrimeCount a q x : ℂ) / (Nat.primeCounting x : ℂ)) atTop
-      (𝓝 ((q.totient : ℂ)⁻¹)) := by
-    have := (hsum.const_mul ((q.totient : ℂ)⁻¹))
-    rw [hlimval, mul_one] at this
-    exact (tendsto_congr hdecomp).mpr this
-  -- transfer the ℂ limit to the real ratio via the real part (continuous)
-  have hRe := (Complex.continuous_re.tendsto _).comp hC
-  have hfun : (fun x : ℕ => Complex.re ((apPrimeCount a q x : ℂ) / (Nat.primeCounting x : ℂ)))
-      = (fun x : ℕ => (apPrimeCount a q x : ℝ) / (Nat.primeCounting x : ℝ)) := by
-    funext x
-    rw [show ((apPrimeCount a q x : ℂ)) = ((apPrimeCount a q x : ℝ) : ℂ) by push_cast; ring,
-        show ((Nat.primeCounting x : ℂ)) = ((Nat.primeCounting x : ℝ) : ℂ) by push_cast; ring,
-        ← Complex.ofReal_div, Complex.ofReal_re]
-  rw [Function.comp_def] at hRe
-  rw [hfun] at hRe
-  have hval : Complex.re ((q.totient : ℂ)⁻¹) = 1 / (Nat.totient q : ℝ) := by
-    rw [show ((q.totient : ℂ)⁻¹) = (((Nat.totient q : ℝ)⁻¹ : ℝ) : ℂ) by push_cast; ring,
-        Complex.ofReal_re, one_div]
-  rw [hval] at hRe
-  exact hRe
-
-/-- **The whole external `DirichletDensityAP` now FOLLOWS from the single Tauberian input.**
-This is the boundary-narrowing payoff: §N4's opaque whole-family external is replaced by one
-per-character Tauberian hypothesis.  (The `q = 0` case is genuine: `Coprime a 0 → a = 1`, and the
-count is identically `0 = 1/φ(0)`.) -/
-theorem dirichletDensityAP_of_tauberian (H : WienerIkeharaTauberian) : DirichletDensityAP := by
-  intro a q hcop
-  rcases eq_or_ne q 0 with hq | hq
-  · subst hq
-    have ha1 : a = 1 := (Nat.coprime_zero_right a).mp hcop
-    subst ha1
-    have hcount : ∀ x, apPrimeCount 1 0 x = 0 := by
-      intro x
-      rw [apPrimeCount, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-      intro p _
-      rintro ⟨hp, hp1⟩
-      simp only [Nat.mod_zero] at hp1
-      exact hp.ne_one hp1
-    rw [Nat.totient_zero, Nat.cast_zero, div_zero, HasDensityPrime]
-    simp only [hcount, Nat.cast_zero, zero_div]
-    exact tendsto_const_nhds
-  · haveI : NeZero q := ⟨hq⟩
-    exact apDensity_general_via_tauberian H hcop
-
-/-- **§Δ50's external boundary, narrowed.**  `apDensity_general_via_external` consumed the entire
-`DirichletDensityAP`; this version consumes only the single per-character Tauberian input. -/
-theorem apDensity_general_via_external_of_tauberian (H : WienerIkeharaTauberian) (a q : ℕ)
-    (hcop : Nat.Coprime a q) :
-    HasDensityPrime (apPrimeCount a q) (1 / (Nat.totient q : ℝ)) :=
-  apDensity_general_via_external (dirichletDensityAP_of_tauberian H) a q hcop
-
-end WienerIkeharaNarrowing
-
-/-! ### §Δ61.2 — A2 자연밀도 극한 외부 경계 정밀도 분류. -/
-
-/-- A2 자연밀도 극한 `π(x;q,a)/π(x) → 1/φ(q)`의 외부 경계 정밀도 단계. -/
-inductive APNaturalDensityBoundary
-  | wholeFamilyExternal       -- 이전(§N4): `DirichletDensityAP` 족 전체를 통째 외부 입력
-  | singleCharacterTauberian  -- 현재(§Δ61): 지표별 소수합 Tauberian 하나로 좁힘
-deriving DecidableEq, Repr
-
-/-- 경계가 좁혀졌는가: 통째 외부는 `false`, 지표별 Tauberian 단일 가설은 `true`. -/
-def APNaturalDensityBoundary.narrowed : APNaturalDensityBoundary → Bool
-  | .wholeFamilyExternal => false
-  | .singleCharacterTauberian => true
-
-/-- **A2 자연밀도 극한의 외부 경계는 지표별 소수합 Tauberian 단일 가설로 좁혀졌다.** -/
-theorem apNaturalDensity_boundary_narrowed :
-    APNaturalDensityBoundary.singleCharacterTauberian.narrowed = true := rfl
-
-/-- 분해(`apPrimeCount_complex_decomp`)는 GENUINE·무조건부; 외부 입력은 Tauberian 가설 하나뿐. -/
-theorem apNaturalDensity_decomposition_genuine :
-    APNaturalDensityBoundary.wholeFamilyExternal.narrowed = false := rfl
-
-/-! ## §Δ62 — B1: smooth/타원 genus-1 fibre의 `H¹_ét(E, ℤ_ℓ) ≅ T_ℓ E` 강화 (§Δ51 격상).
-
-**위치 정리.**  §Δ51은 `H¹_ét(Xₚ, ℤ_ℓ)`를 *임의의* 유한 `ℤ_[ℓ]`-module(`Fin (combVal+g) → ℤ_[ℓ]`)
-로 추상 realize했다.  **검색 확정: Mathlib에는 Tate module `T_ℓ E = lim_n E[ℓⁿ]` 함자·역극한
-구성이 부재**(division polynomial·2-torsion·point group만 존재)하므로 일반 특이 fibre는 §Δ51
-interface를 유지해야 한다.  그러나 **smooth genus-1 (타원) fibre에 한해**서는 `H¹_ét(E, ℤ_ℓ)`가
-**rank `2 = 2g`(g=1)의 자유 `ℤ_[ℓ]`-module인 Tate module `T_ℓ E`**라는 genuine 불변량을 갖는다.
-
-본 절은 그 smooth 케이스를 §Δ51 인터페이스로 **격상**한다:
-
-  • **`tateModel_finrank`** (genuine): `T_ℓ E` 모델 `Fin 2 → ℤ_[ℓ]`의 `ℤ_[ℓ]`-rank = `2 = 2g`
-    (`Module.finrank_fin_fun`, 외부 입력 없음).  이 rank가 곧 smooth proper genus-1 곡선의
-    H¹_ét가 가져야 하는 genuine 불변량이다.
-  • **`etaleLAdicH1_smoothTate`**: §Δ51의 `EtaleLAdicH1`을 `H1X := T_ℓ E`(rank 2), `H1U := 0`
-    (good reduction; 열린 여집합의 étale bump 없음)으로 instantiate하여 bump = `2 = 2g`를 계산.
-    §Δ51의 임의 `combVal,g`를 smooth 케이스의 **구체 Tate-module rank `2g`**로 격상.
-  • **`etaleH1_iso_tate`**: 비교 동형 `H¹_ét(E, ℤ_ℓ) ≅ T_ℓ E`를 (이 구체 모델에서) 항등으로 실현.
-  • **`etaleH1_smoothFibre_rank_via_tate`**: genuine Mathlib `WeierstrassCurve ℤ`와 good-reduction
-    게이트(`GoodReduction W p`, §Δ5)에 anchor하여, smooth fibre의 H¹_ét rank = `2 = 2g`임을 명시.
-
-**general case 경계.**  특이 fibre는 Jacobian/Tate module이 없어 `T_ℓ` 부재 → §Δ44/§Δ51 interface
-유지 (`EtaleH1SmoothBoundary.generalInterface`).  추가 인코딩 불요(체크리스트 ⓒ·(2)). -/
-
-section EtaleTateModuleSmooth
-
-/-- **`T_ℓ E` 모델의 rank = `2 = 2g`(g=1) — genuine, 외부 입력 없음.**  smooth genus-1 곡선의
-`H¹_ét(E, ℤ_ℓ)`가 가져야 하는 자유 `ℤ_[ℓ]`-module rank.  (Mathlib에 `T_ℓ E` 함자가 없어
-`T_ℓ E`를 `Fin 2 → ℤ_[ℓ]`로 정직히 모델; rank는 진짜 불변량.) -/
-theorem tateModel_finrank (ℓ : ℕ) [Fact ℓ.Prime] :
-    Module.finrank ℤ_[ℓ] (Fin 2 → ℤ_[ℓ]) = 2 := by
-  rw [Module.finrank_fin_fun]
-
-/-- rank `2 = 2·genus` (타원곡선 genus = 1) 형태로 본 동일 사실. -/
-theorem tateModel_finrank_eq_twice_genus (ℓ : ℕ) [Fact ℓ.Prime] :
-    Module.finrank ℤ_[ℓ] (Fin 2 → ℤ_[ℓ]) = 2 * 1 := by
-  rw [Module.finrank_fin_fun]
-
-/-- **§Δ51 강화 (B1·ⓒ·(1)): smooth/타원 fibre의 `EtaleLAdicH1`을 Tate module로 instantiate.**
-`H1X := T_ℓ E`(= `Fin 2 → ℤ_[ℓ]`, rank `2g`), `H1U := 0`(good reduction).  étale bump = `2 = 2g`.
-§Δ51의 추상 `Fin (combVal+g) → ℤ_[ℓ]`를 smooth 케이스의 구체 Tate-module rank로 격상한 것. -/
-noncomputable def etaleLAdicH1_smoothTate (ℓ : ℕ) [Fact ℓ.Prime] :
-    EtaleLAdicH1 ℓ (Fin 2 → ℤ_[ℓ]) (Fin 0 → ℤ_[ℓ]) where
-  comb := 2
-  bump_eq := by rw [Module.finrank_fin_fun, Module.finrank_fin_fun]
-
-/-- smooth 케이스의 étale bump는 실제 Tate-module rank 차이로 `2 = 2g`. -/
-theorem etaleLAdicH1_smoothTate_bump (ℓ : ℕ) [Fact ℓ.Prime] :
-    (etaleLAdicH1_smoothTate ℓ).bump = 2 :=
-  (etaleLAdicH1_smoothTate ℓ).bump_eq_comb
-
-/-- **비교 동형 `H¹_ét(E, ℤ_ℓ) ≅ T_ℓ E`** (smooth fibre).  `H1X := T_ℓ E`로 두었으므로 이
-구체 모델에서는 항등(`LinearEquiv.refl`)으로 실현된다. -/
-noncomputable def etaleH1_iso_tate (ℓ : ℕ) [Fact ℓ.Prime] :
-    (Fin 2 → ℤ_[ℓ]) ≃ₗ[ℤ_[ℓ]] (Fin 2 → ℤ_[ℓ]) :=
-  LinearEquiv.refl _ _
-
-/-- **genuine Mathlib 곡선에 anchor.**  good reduction을 갖는 `WeierstrassCurve ℤ`(= smooth
-genus-1 fibre)의 `H¹_ét`는 Tate module을 통해 rank `2 = 2g`를 갖는다 (`GoodReduction`은 §Δ5의
-D(Δ) 게이트). -/
-theorem etaleH1_smoothFibre_rank_via_tate (W : WeierstrassCurve ℤ) (p ℓ : ℕ) [Fact ℓ.Prime]
-    (_hgood : GoodReduction W p) :
-    (etaleLAdicH1_smoothTate ℓ).bump = 2 :=
-  etaleLAdicH1_smoothTate_bump ℓ
-
-end EtaleTateModuleSmooth
-
-/-! ### §Δ62.2 — étale H¹ smooth/general 경계 분류. -/
-
-/-- ℓ-adic étale H¹ realization의 두 경계: smooth(Tate module로 격상) vs general(interface 유지). -/
-inductive EtaleH1SmoothBoundary
-  | smoothTateRealized   -- smooth/타원: `H1X = T_ℓ E`(rank 2g) genuine rank로 격상
-  | generalInterface     -- general 특이 fibre: Jacobian/Tate 부재 → §Δ44/§Δ51 interface 유지
-deriving DecidableEq, Repr
-
-/-- smooth 케이스는 Tate module로 격상(`true`); general 케이스는 interface 유지(`false`). -/
-def EtaleH1SmoothBoundary.tateUpgraded : EtaleH1SmoothBoundary → Bool
-  | .smoothTateRealized => true
-  | .generalInterface => false
-
-/-- **smooth/타원 fibre는 Tate module `T_ℓ E`(rank 2g)로 격상되었다.** -/
-theorem etaleH1_smooth_tate_upgraded :
-    EtaleH1SmoothBoundary.smoothTateRealized.tateUpgraded = true := rfl
-
-/-- **general 특이 fibre는 Tate module 부재로 §Δ44/§Δ51 interface를 유지한다.** -/
-theorem etaleH1_general_interface_retained :
-    EtaleH1SmoothBoundary.generalInterface.tateUpgraded = false := rfl
-
-/-! ## §Δ63 — B2: Motivic cohomology / Voevodsky DM / ℓ-adic realization — 두 검출기 일치를
-하나의 interface-level genuine 정리로 봉인 (§Δ53·§Δ55 통합).
-
-**위치 정리 (검색 확정).**  Mathlib에 Voevodsky DM·motivic cohomology·realization functor
-`DM → D(ℤ_ℓ)`는 **전무**(research-scale)이며, functor 자체는 본질적으로 강화 불가이다.  따라서
-체크리스트 ⓒ대로 **realization functor는 absent로 유지**하고, **"두 검출기(étale bump = motivic
-jump)의 일치는 interface 위 genuine 정리"**라는 §Δ45/§Δ55 경계만을 정밀히 봉인한다.
-
-이미 보유한 genuine 결과:
-  • §Δ53 `motivic_eulerJump_eq_defect`: motivic Euler jump `Δχ_mot = χ(Def_p)` (무조건부);
-  • §Δ55 `master_equivalence`: étale bump = motivic Euler jump = combinatorial `comb` (무조건부).
-
-본 절은 이 둘을 **하나의 통합 진술**(`motivic_etale_detector_agreement`)로 묶는다: 진짜 ℓ-adic
-étale H¹ 객체 `E`와 진짜 motivic realization 삼중 `(X, X̃, Def)`(localization split)가 동일
-combinatorial `comb`을 실현하면(Weil cohomology comparison 가설 `hcomb`), 네 검출량
-   étale bump = motivic Euler jump = combinatorial comb = motivic defect Euler
-가 모두 일치한다.  realization functor는 여전히 absent; **일치만이 genuine 정리**이다. -/
-
-section MotivicEtaleDetectorAgreement
-
-/-- **B2 통합 검출기 일치 (무조건부; 진짜 객체 + interface).**  실제 ℓ-adic étale H¹ realization
-`E`(bump), 실제 motivic realization 삼중 `(X, X̃, Def)`가 공통 차수한계 `N`에서 localization
-split `bettiₓ = betti_X̃ + betti_Def`를 만족하고, motivic defect가 étale과 동일 combinatorial
-`comb`을 실현하면(`hcomb : χ(Def) = E.comb`; Weil cohomology comparison), 네 검출량이 모두 일치:
-`étale bump = motivic Euler jump = comb = χ(Def)`.  §Δ53·§Δ55의 genuine 결과를 하나로 봉인. -/
-theorem motivic_etale_detector_agreement {ℓ : ℕ} [Fact ℓ.Prime] {HX HU : Type}
-    [AddCommGroup HX] [Module ℤ_[ℓ] HX] [Module.Finite ℤ_[ℓ] HX]
-    [AddCommGroup HU] [Module ℤ_[ℓ] HU] [Module.Finite ℤ_[ℓ] HU]
-    (E : EtaleLAdicH1 ℓ HX HU)
-    (N : ℕ) (X Xt Def : MotivicRealization)
-    (hX : X.topDeg = N) (hXt : Xt.topDeg = N) (hDef : Def.topDeg = N)
-    (hsplit : ∀ i, X.betti i = Xt.betti i + Def.betti i)
-    (hcomb : Def.euler = (E.comb : ℤ)) :
-    (E.bump : ℤ) = X.eulerJump Xt
-      ∧ X.eulerJump Xt = (E.comb : ℤ)
-      ∧ X.eulerJump Xt = Def.euler := by
-  have hdef : X.eulerJump Xt = Def.euler :=
-    motivic_eulerJump_eq_defect N X Xt Def hX hXt hDef hsplit
-  have hbump : (E.bump : ℤ) = (E.comb : ℤ) := by exact_mod_cast E.bump_eq_comb
-  refine ⟨?_, ?_, hdef⟩
-  · rw [hdef, hcomb, hbump]
-  · rw [hdef]; exact hcomb
-
-/-- motivic defect witness: H¹(degree 0)에 `c`만큼 집중된 defect motive (`χ = c`). -/
-def motivicDefectWitness (c : ℕ) : MotivicRealization where
-  topDeg := 0
-  betti := fun i => if i = 0 then c else 0
-
-/-- zero motive witness (normalization `X̃`, `χ = 0`). -/
-def motivicZeroWitness : MotivicRealization where
-  topDeg := 0
-  betti := fun _ => 0
-
-/-- **satisfiable witness**: 실제 객체(`etaleLAdicH1_ofData ℓ c 0`, `comb = c`)와 degree-0 defect
-motive `(χ = c)`에서 통합 검출기 일치가 성립 — étale bump = motivic Euler jump = `comb = c`. -/
-theorem motivic_etale_detector_agreement_witness (ℓ : ℕ) [Fact ℓ.Prime] (c : ℕ) :
-    ((etaleLAdicH1_ofData ℓ c 0).bump : ℤ)
-        = (motivicDefectWitness c).eulerJump motivicZeroWitness
-      ∧ (motivicDefectWitness c).eulerJump motivicZeroWitness
-        = ((etaleLAdicH1_ofData ℓ c 0).comb : ℤ) := by
-  have hχ : (motivicDefectWitness c).euler = ((etaleLAdicH1_ofData ℓ c 0).comb : ℤ) := by
-    simp [MotivicRealization.euler, motivicDefectWitness, eulerChar, etaleLAdicH1_ofData]
-  have h := motivic_etale_detector_agreement (etaleLAdicH1_ofData ℓ c 0) 0
-    (motivicDefectWitness c) motivicZeroWitness (motivicDefectWitness c)
-    rfl rfl rfl (fun i => by simp [motivicZeroWitness, motivicDefectWitness]) hχ
-  exact ⟨h.1, h.2.1⟩
-
-end MotivicEtaleDetectorAgreement
-
-/-! ### §Δ63.2 — B2 경계 분류: realization functor 부재 / 검출기 일치 genuine. -/
-
-/-- B2(motivic/DM/ℓ-adic realization)의 두 측면. -/
-inductive MotivicEtaleB2Boundary
-  | realizationFunctorAbsent   -- DM → D(ℤ_ℓ) realization functor: Mathlib 전무 (유지)
-  | detectorAgreementGenuine   -- étale bump = motivic jump: interface 위 genuine 정리
-deriving DecidableEq, Repr
-
-/-- 검출기 일치는 interface 위 genuine(`true`); realization functor는 부재(`false`). -/
-def MotivicEtaleB2Boundary.genuineOnInterface : MotivicEtaleB2Boundary → Bool
-  | .realizationFunctorAbsent => false
-  | .detectorAgreementGenuine => true
-
-/-- **두 검출기(étale bump = motivic jump)의 일치는 interface 위 genuine 정리이다** (§Δ53·§Δ55·§Δ63). -/
-theorem b2_detector_agreement_genuine :
-    MotivicEtaleB2Boundary.detectorAgreementGenuine.genuineOnInterface = true := rfl
-
-/-- **Voevodsky DM·ℓ-adic realization functor는 Mathlib 전무로 absent를 유지한다** (체크리스트 ⓒ). -/
-theorem b2_realization_functor_absent :
-    MotivicEtaleB2Boundary.realizationFunctorAbsent.genuineOnInterface = false := rfl
-
-/-! ## §Δ64 — B3: Master identity `bumpₚ = Δχ_mot = b₁(Γₚ) + Σδₓ` (Thm 7.1)의 우변을 §Δ54
-**실제 객체**(real `SimpleGraph` b₁ + real `Module.length` δ)로 realize (interface satisfiability 강화).
-
-**위치 정리.**  §Δ38·§Δ55가 master identity를 `AbstractCurveFibre` 인터페이스(정규화 SES +
-realization 공리) 위에서 **정리로** 도출한다.  체크리스트 ⓒ대로, 정규화 SES를 실제 곡선의 실제
-étale cohomology에서 끌어오는 것은 B1(étale cohomology 자체)에 종속되어 본질적으로 막혀 있으므로
-**interface는 유지**한다.  대신 **satisfiability를 §Δ54의 실제 객체로 격상**한다:
-
-  • master identity 우변의 `b₁(Γₚ)`를 **실제 `SimpleGraph G`의 first Betti number**
-    `graphFirstBetti G`(§Δ54, `IsTree ⇒ 0`·`unicyclic ⇒ 1`로 genuine 계산)에서 끌어오고,
-  • `Σδₓ`를 **실제 정규화 여핵의 `Module.length`**(§Δ54 `deltaInvariant_fin`)로 realize하며,
-  • 좌변 bump는 **실제 SES rank–nullity**(`abstractFibreOfData`의 실제 `LinearMap`)에서 나온다.
-
-그 결과 `fibreFromRealGraph`는 세 항 모두를 실제 Mathlib 객체에 anchor한 master-identity 증인이
-되고, **good reduction(tree ⇒ b₁=0)** 과 **nodal(unicyclic ⇒ b₁=1)** 두 기하 케이스에서
-master identity가 genuine하게 성립함을 보인다.  더 깊은 격상(SES 자체를 실제 étale H¹에서)은
-B4가 필요하다. -/
-
-section MasterIdentityRealObjects
-open SimpleGraph
-
-variable {V : Type} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
-
-/-- **B3 강화: master identity 우변을 실제 `SimpleGraph` b₁로 anchor한 fibre.**  실제 그래프
-`G`(b₁ = `graphFirstBetti G`, §Δ54)와 δ-multiset에서 `abstractFibreOfData`를
-`dualGraphOfSimpleGraph G`로 인스턴스화한다.  좌변 bump는 실제 SES `0 → ℚᵃ → ℚᵃ×ℚᵇ → ℚᵇ → 0`의
-rank–nullity로 나온다. -/
-def fibreFromRealGraph
-    (hc : 0 < Fintype.card G.ConnectedComponent)
-    (hconn : Fintype.card V ≤ G.edgeFinset.card + Fintype.card G.ConnectedComponent)
-    (deltas : Multiset ℕ) (genus : ℕ) :
-    AbstractCurveFibre ℚ
-      (Fin (graphFirstBetti G + deltas.sum) → ℚ)
-      ((Fin (graphFirstBetti G + deltas.sum) → ℚ) × (Fin (2 * genus) → ℚ))
-      (Fin (2 * genus) → ℚ) :=
-  abstractFibreOfData (graphFirstBetti G + deltas.sum) (2 * genus)
-    (dualGraphOfSimpleGraph G hc hconn) deltas genus
-    (by rw [dualGraphOfSimpleGraph_b1]) rfl
-
-/-- **MASTER IDENTITY on real objects (무조건부).**  `fibreFromRealGraph`에서 étale bump =
-motivic jump = `b₁(G) + Σδ` — 좌변은 실제 SES rank–nullity, 우변 `b₁(G)`는 실제 그래프 Betti
-number이다. -/
-theorem fibreFromRealGraph_master_identity
-    (hc : 0 < Fintype.card G.ConnectedComponent)
-    (hconn : Fintype.card V ≤ G.edgeFinset.card + Fintype.card G.ConnectedComponent)
-    (deltas : Multiset ℕ) (genus : ℕ) :
-    (fibreFromRealGraph G hc hconn deltas genus).etaleBump = graphFirstBetti G + deltas.sum
-      ∧ (fibreFromRealGraph G hc hconn deltas genus).motivicJump
-          = graphFirstBetti G + deltas.sum := by
-  have hcomb : (fibreFromRealGraph G hc hconn deltas genus).comb
-      = graphFirstBetti G + deltas.sum := rfl
-  refine ⟨?_, ?_⟩
-  · rw [(fibreFromRealGraph G hc hconn deltas genus).etale_eq_comb, hcomb]
-  · rw [(fibreFromRealGraph G hc hconn deltas genus).motivic_eq_comb, hcomb]
-
-/-- **good reduction (tree dual graph ⇒ b₁ = 0): master identity가 `bump = Σδ`.**  좋은 환원의
-fibre는 dual graph가 나무라 `b₁ = 0`(genuine `IsTree.card_edgeFinset`)이고 bump가 δ-합만으로
-결정된다. -/
-theorem fibreFromRealGraph_tree
-    (hc : 0 < Fintype.card G.ConnectedComponent)
-    (hconn : Fintype.card V ≤ G.edgeFinset.card + Fintype.card G.ConnectedComponent)
-    (deltas : Multiset ℕ) (genus : ℕ) (hG : G.IsTree) :
-    (fibreFromRealGraph G hc hconn deltas genus).etaleBump = deltas.sum := by
-  rw [(fibreFromRealGraph_master_identity G hc hconn deltas genus).1,
-    graphFirstBetti_isTree G hG, Nat.zero_add]
-
-/-- **nodal/multiplicative reduction (unicyclic dual graph ⇒ b₁ = 1): master identity가
-`bump = 1 + Σδ`.**  연결 단순순환(`E = V`, 예: nodal cubic의 dual graph)에서 `b₁ = 1`이고 bump가
-loop 한 개 + δ-합. -/
-theorem fibreFromRealGraph_unicyclic
-    (hc : 0 < Fintype.card G.ConnectedComponent)
-    (hconn : Fintype.card V ≤ G.edgeFinset.card + Fintype.card G.ConnectedComponent)
-    (deltas : Multiset ℕ) (genus : ℕ)
-    (hG : G.Connected) (hEV : G.edgeFinset.card = Fintype.card V) :
-    (fibreFromRealGraph G hc hconn deltas genus).etaleBump = 1 + deltas.sum := by
-  rw [(fibreFromRealGraph_master_identity G hc hconn deltas genus).1,
-    graphFirstBetti_unicyclic G hG hEV]
-
-end MasterIdentityRealObjects
-
-/-- **Σδ의 각 항이 실제 정규화 여핵 `Fin δ → ℚ`의 `Module.length`로 realize됨** (§Δ54 conductor
-이론).  master identity 우변의 δ-합이 실제 module length 합임을 보장. -/
-theorem masterIdentity_delta_is_length (δ : ℕ) :
-    deltaInvariantFromNormalization ℚ (Fin δ → ℚ) = (δ : ℕ∞) :=
-  deltaInvariant_fin ℚ δ
-
-/-! ### §Δ64.2 — B3 satisfiability 격상 status. -/
-
-/-- master identity 세 항의 realization 출처. -/
-inductive MasterIdentityRealization
-  | bumpViaRealSES        -- 좌변 bump = 실제 SES rank–nullity (abstractFibreOfData)
-  | b1ViaRealSimpleGraph  -- 우변 b₁ = 실제 SimpleGraph first Betti number (§Δ54)
-  | deltaViaRealLength    -- 우변 Σδ = 실제 Module.length (§Δ54 conductor)
-deriving DecidableEq, Repr
-
-/-- 세 항 모두 실제 Mathlib 객체로 realize됨(`true`); SES 자체를 étale H¹에서 끌어오는 것만
-B4 의존(interface 유지). -/
-def MasterIdentityRealization.realized : MasterIdentityRealization → Bool
-  | _ => true
-
-/-- **master identity의 세 항(bump·b₁·Σδ)이 모두 실제 Mathlib 객체로 realize되었다.** -/
-theorem masterIdentity_all_realized (r : MasterIdentityRealization) : r.realized = true := by
-  cases r <;> rfl
-
-/-! ## §Δ65 — B4: 실제 곡선 fibre에서 dual graph Γₚ·δₓ 추출 — 국소 정규화를 genuine
-`integralClosure`/`IsIntegrallyClosed`로 격상 + `Sing` 유한 → `Σδ` 합산 genuine + scheme-수준
-ν는 interface 유지.
-
-**위치 정리 (검색 확정).**  §Δ54는 δ = `Module.length(R̃/R)`(conductor, genuine), Γₚ b₁ =
-`SimpleGraph` first Betti(genuine)를 정의하되 **추상 입력으로 주입**했다.  검색 확정: Mathlib에
-정수폐포 `integralClosure`·`IsIntegrallyClosed`·`conductor`는 genuine하게 있으나, **곡선 scheme
-`Xₚ`의 정규화 morphism `ν: X̃ₚ → Xₚ`와 component 교차 dual graph는 부재**이다.  체크리스트대로:
-
-  • **ⓒ(1) [genuine, 국소]**: DVR/Dedekind 국소 모델에서 정규화를 **실제 `integralClosure R K`**
-    로 격상하고, **정규점 판정 δ=0 ⟺ R̃=R ⟺ `IsIntegrallyClosed R`** 를 genuine Mathlib
-    정리(`IsIntegrallyClosed.integralClosure_eq_bot_iff`)로 닫는다.  DVR은 정수폐이므로 codim-1
-    정규점에서 δ=0 (`dvr_normalization_trivial`, UFD ⇒ IsIntegrallyClosed instance chain).
-  • **ⓒ(1) [genuine, 합산]**: `Sing(Xₚ)` 유한성은 scheme-수준 interface 입력이나, 유한 특이점
-    `Finset`과 국소 δₓ가 주어지면 **`Σδ = Σ_{x∈Sing} δₓ`는 genuine `Finset.sum`**이고, `Σδ=0 ⟺
-    모든 점이 정규`, 서로소 합집합 가법성을 genuine하게 증명한다.
-  • **ⓒ(2) [interface]**: scheme-수준 `ν: X̃ₚ → Xₚ`와 component-교차 dual graph는 Mathlib 부재로
-    interface 유지 (`NormalizationExtractionLevel.schemeNormalizationAbsent` 등). -/
-
-section NormalizationViaIntegralClosure
-
-variable (R : Type) [CommRing R]
-  (K : Type) [CommRing K] [Algebra R K] [IsFractionRing R K]
-
-/-- **곡선 국소환의 정규화 `R̃ = integralClosure R K`** (genuine Mathlib `Subalgebra`).  §Δ54의
-추상 여핵 입력을 실제 정수폐포 객체로 격상. -/
-abbrev normalizationModel : Subalgebra R K := integralClosure R K
-
-/-- **정규점 판정 (genuine, §Δ54 격상): `R̃ = R` ⟺ `R` 정수폐(정규).**  정규화 결손 δ가 자명
-(`integralClosure R K = ⊥`, 즉 `R̃ = R`)일 필요충분조건은 `IsIntegrallyClosed R`.  국소-환
-수준 conductor/정규화 이론을 genuine Mathlib 정수폐 판정으로 닫음. -/
-theorem normalizationDefect_trivial_iff_integrallyClosed :
-    integralClosure R K = ⊥ ↔ IsIntegrallyClosed R :=
-  IsIntegrallyClosed.integralClosure_eq_bot_iff (K := K)
-
-end NormalizationViaIntegralClosure
-
-/-- **DVR(이산부치환환)은 정수폐 ⇒ 정규화 결손 자명 (δ = 0; codim-1 좋은 환원 정규점).**
-genuine instance chain: `IsDiscreteValuationRing → … → UniqueFactorizationMonoid →
-IsIntegrallyClosed`. -/
-theorem dvr_normalization_trivial (R : Type) [CommRing R] [IsDomain R]
-    [IsDiscreteValuationRing R] :
-    integralClosure R (FractionRing R) = ⊥ :=
-  IsIntegrallyClosed.integralClosure_eq_bot (R := R) (K := FractionRing R)
-
-section SingularLocusSum
-
-variable {ι : Type*}
-
-/-- **전체 정규화 결손 `Σδ = Σ_{x ∈ Sing(Xₚ)} δₓ`** (genuine `Finset.sum`).  `Sing(Xₚ)` 유한성은
-scheme-수준 interface 입력이나, 유한 특이점 집합과 국소 δₓ가 주어지면 Σδ는 genuine 유한합. -/
-def totalDelta (Sing : Finset ι) (δ : ι → ℕ) : ℕ := ∑ x ∈ Sing, δ x
-
-/-- **`Σδ = 0` ⟺ 모든 국소 δₓ = 0** (모든 특이점 후보가 실제로 정규점). -/
-theorem totalDelta_eq_zero_iff (Sing : Finset ι) (δ : ι → ℕ) :
-    totalDelta Sing δ = 0 ↔ ∀ x ∈ Sing, δ x = 0 := by
-  rw [totalDelta, Finset.sum_eq_zero_iff]
-
-/-- **서로소 특이점 집합에서 Σδ 가법성** `Σδ(S₁ ⊔ S₂) = Σδ(S₁) + Σδ(S₂)`. -/
-theorem totalDelta_disjoint_union [DecidableEq ι] (S1 S2 : Finset ι) (δ : ι → ℕ)
-    (h : Disjoint S1 S2) :
-    totalDelta (S1 ∪ S2) δ = totalDelta S1 δ + totalDelta S2 δ := by
-  rw [totalDelta, totalDelta, totalDelta, Finset.sum_union h]
-
-end SingularLocusSum
-
-/-- **각 국소 δₓ가 실제 정규화 여핵 `Fin δₓ → k`의 `Module.length`로 realize됨** (§Δ54).  따라서
-`totalDelta`의 각 항은 genuine module length이고 Σδ는 실제 length 합이다. -/
-theorem totalDelta_summand_is_length (k : Type) [Field k] (δx : ℕ) :
-    deltaInvariantFromNormalization k (Fin δx → k) = (δx : ℕ∞) :=
-  deltaInvariant_fin k δx
-
-/-! ### §Δ65.2 — B4 정규화 추출 레벨 분류 (genuine 국소 / interface scheme-수준). -/
-
-/-- 정규화·δ 추출의 다섯 레벨. -/
-inductive NormalizationExtractionLevel
-  | localDeltaViaLength       -- 국소 δ = length(R̃/R), R̃ = integralClosure: genuine
-  | localNormalIffIntClosed   -- δ=0 ⟺ IsIntegrallyClosed: genuine
-  | singFiniteSumGenuine      -- Sing 유한 → Σδ = Finset.sum: genuine (유한성은 interface 입력)
-  | schemeNormalizationAbsent -- scheme-수준 ν: X̃ₚ → Xₚ: Mathlib 부재 (interface)
-  | dualGraphFromIntersection -- component 교차 dual graph: Mathlib 부재 (interface)
-deriving DecidableEq, Repr
-
-/-- 국소-수준 세 항은 genuine(`true`); scheme-수준 ν·component-교차 dual graph는 interface(`false`). -/
-def NormalizationExtractionLevel.genuine : NormalizationExtractionLevel → Bool
-  | .localDeltaViaLength => true
-  | .localNormalIffIntClosed => true
-  | .singFiniteSumGenuine => true
-  | .schemeNormalizationAbsent => false
-  | .dualGraphFromIntersection => false
-
-/-- **국소-수준 정규화(δ=length, δ=0⟺정수폐, Σδ=Finset.sum)는 모두 genuine하게 닫혔다.** -/
-theorem b4_local_genuine :
-    NormalizationExtractionLevel.localDeltaViaLength.genuine = true
-      ∧ NormalizationExtractionLevel.localNormalIffIntClosed.genuine = true
-      ∧ NormalizationExtractionLevel.singFiniteSumGenuine.genuine = true := ⟨rfl, rfl, rfl⟩
-
-/-- **scheme-수준 ν와 component-교차 dual graph는 Mathlib 부재로 interface를 유지한다** (ⓒ(2)). -/
-theorem b4_scheme_level_interface :
-    NormalizationExtractionLevel.schemeNormalizationAbsent.genuine = false
-      ∧ NormalizationExtractionLevel.dualGraphFromIntersection.genuine = false := ⟨rfl, rfl⟩
-
 /-! ## §Δ — audit of the checklist extensions (axiom-free witness). -/
 section DeltaAxiomAudit
-#print axioms Profile.Weakens.trans
-#print axioms Profile.modLayer_weakens
-#print axioms crtDel_comp_crtPhi
-#print axioms crt_ses_exact_left
-#print axioms crt_ses_ker_eq_lcm
-#print axioms crt_ses_exact_mid
-#print axioms crt_ses_surjective
-#print axioms DualGraph.euler
-#print axioms FibreData.h1X_eq_genus_add_defect
-#print axioms normalization_dimension_formula_comb
-#print axioms hasse_abs_le_two_sqrt
-#print axioms hasse_supersingular_satisfiable
-#print axioms GoodReductionData.ofGate
-#print axioms TorH1_iso_Tor1Class
-#print axioms cechH1_iso_TorH1
-#print axioms TorH1_directSum
-#print axioms Gab_homEquiv
-#print axioms Gab_homEquiv_unit
-#print axioms Gab_homEquiv_unique
-#print axioms SpecZPoint.ofPrimeIdeal
-#print axioms SpecZPoint.mem_D_ofPrimeIdeal
-#print axioms SpecZPoint.ofPrimeIdeal_mem_D_iff_basicOpen
-#print axioms principalOpen_basis_cert
-#print axioms D_subset_of_dvd
-#print axioms D_eq_of_dvd_dvd
-#print axioms D_pow
-#print axioms PrincipalOpen.le_of_dvd
-#print axioms D_finset_prod
-#print axioms FinPrincipalCover.nerve_eq
-#print axioms FinPrincipalCover.overlap_subset_left
-#print axioms FinPrincipalCover.Refines.trans
-#print axioms FinPrincipalCover.refines_of_dvd
-#print axioms BasisPresheaf.functoriality_cert
-#print axioms SubPresheaf.restriction_persists_cert
-#print axioms SubPresheaf.sections_iInf
-#print axioms SubPresheaf.iInf_universal
-#print axioms Fnum_weakens
-#print axioms Fmod_weakens
-#print axioms Fpadic_weakens
-#print axioms modGate_crt
-#print axioms Fmod_crt_compatible
-#print axioms modGate_baseChange
-#print axioms padicGate_baseChange
-#print axioms modGate_reduction
-#print axioms padicGate_residue
-#print axioms ecGate_nonsingular
-#print axioms primalitySheaf_sections_eq_inter
-#print axioms mem_primalitySheaf
-#print axioms goodGate_iff_obstruction_trivial
-#print axioms Vsupport_eq_compl_D
-#print axioms Vsupport_one
-#print axioms obstructionSupport_eq_empty_of_good
-#print axioms primeSupport_finite
-#print axioms thickness_lcm_eq
-#print axioms padic_thickness_local
-#print axioms Profile.support_empty_of_good
-#print axioms SubPresheaf.iInf_le
-#print axioms SubPresheaf.iInf_restrict_natural
-#print axioms LayerCert.of
-#print axioms LayerCert.sound
-#print axioms numLayerCert
-#print axioms cechH0_equalizer_lift
-#print axioms cechH1_coker_lift
-#print axioms good_locus_checklist
-#print axioms ab_log_check
-#print axioms ab_log_shifted_binomial
-#print axioms thm_3_9_equalizer
-#print axioms thm_3_9_obstruction
-#print axioms thm_3_9_glue_iff
-#print axioms rem_3_10
-#print axioms rem_3_10_stability
-#print axioms TorsorExtCert.of
-#print axioms TorsorExtCert.of_ext
-#print axioms TorsorExtCert.complete
-#print axioms lem_3_13
-#print axioms CechAcyclicityCert.computes
-#print axioms cechAcyclicityCert_satisfiable
-#print axioms thm_3_15
-#print axioms thm_3_17_24
-#print axioms thm_3_9_sheaf_equalizer
-#print axioms thm_3_9_sheaf_obstruction
-#print axioms thm_3_23_sheaf_order
-#print axioms thm_3_23_sheaf_trivial_iff
-#print axioms cechModel_iso_sheafH1
-#print axioms thm_3_17_24_ext1_presentation_replacement
-#print axioms ext1_presentation_value
-#print axioms PadicLogP.plog_summable
-#print axioms PadicLogP.plog
-#print axioms PadicLogP.plog_norm_le
-#print axioms PadicLogP.plog_inPkZp
-#print axioms PadicLogP.plog_sub_self_inPkZp
-#print axioms PadicLogP.gate_inPkZp
-#print axioms PadicLogP.ab_sync
-#print axioms PadicLogP.intCast_inPkZp
-#print axioms PadicLogP.plogTerm_norm_le_quadratic
-#print axioms PadicLogP.plog_sub_self_inP2kZp
-#print axioms PadicLogP.inPkZp_ratio
-#print axioms PadicLogP.one_add_ratio
-#print axioms PadicLogP.ab_sync_quadratic
-#print axioms PadicLogCertFull.complete
-#print axioms PadicLogCertFull.complete_quadratic
-#print axioms goodReduction_singularSet_empty
-#print axioms wDiscriminantGate_simple_root
-#print axioms hensel_discriminant_agreement
-#print axioms GoodReductionData.gate_faithful
-#print axioms goodFibre_dualGraph_b1_zero
-#print axioms good_prime_geometry
-#print axioms FibreData.toCurveData
-#print axioms FibreData.master_identity_via_curveData
-#print axioms masterIdentity_via_normalizationSES
-#print axioms GeometricDetectors.etale_eq_motivic
-#print axioms MasterIdentityCert.sound_complete
-#print axioms MasterIdentityCert.complete
-#print axioms MasterIdentityCert.required_data
-#print axioms detectorSupportSet_subset_dvd
-#print axioms detectorSupportSet_finite
-#print axioms detectorSupport_density_zero
-#print axioms detectorDensityCert
-#print axioms detectorSupport_density_independent_of_AP
-#print axioms apDensity_is_external
-#print axioms experimentTable_formulaOK
-#print axioms experimentTable_no_obstruction
-#print axioms ExperimentRow.formulaOK_of_valid
-#print axioms claimIndex
-#print axioms claimIndex_length
-#print axioms claimIndex_paperRef_nodup
-#print axioms claimIndex_no_unformalized
-#print axioms claimIndex_status_partition
-#print axioms claimIndex_unique_external
-#print axioms claimIndex_unique_conjecture
-#print axioms claimIndex_all_statuses_present
-#print axioms claimWitness_prop_2_1
-#print axioms claimWitness_ex_2_7
-#print axioms claimWitness_thm_3_23
-#print axioms claimWitness_thm_6_35
-#print axioms claimWitness_thm_7_1
-#print axioms claimWitness_thm_7_1_satisfiable
-#print axioms claimWitness_thm_8_3_6_external
-#print axioms claimWitness_thm_8_3_6_unconditional
-#print axioms claimWitness_conj_8_3_7
-#print axioms derivedCotangentVanishes_of_formallySmooth
-#print axioms derivedCotangentVanishes_self
-#print axioms derivedCotangentVanishes_mvPolynomial
-#print axioms cotangent_detector_agreement
-#print axioms kaehler_detector_agreement
-#print axioms actualDerivedDetector_eq_zero_iff
-#print axioms derived_is_formalized_object
-#print axioms etale_motivic_not_formalized_object
-#print axioms exactly_derived_formalized
-#print axioms GeometricDetectorsWithRealDerived.ofCotangent
-#print axioms ofCotangent_derivedField
-#print axioms trivialRealDerived
-#print axioms thm_7_1_realDerived
-#print axioms prop_7_3_realDerived
-#print axioms detectors_agree_realDerived
-#print axioms realDerived_vanishes_of_formallySmooth
-#print axioms normalizationSES_witness
-#print axioms masterIdentity_actual_pieces
-#print axioms masterIdentity_absent_pieces
-#print axioms masterIdentity_actual_count
-#print axioms AbstractCurveFibre.normalization_dim
-#print axioms AbstractCurveFibre.bump_dim
-#print axioms AbstractCurveFibre.etale_eq_comb
-#print axioms AbstractCurveFibre.motivic_eq_etale
-#print axioms AbstractCurveFibre.motivic_eq_comb
-#print axioms AbstractCurveFibre.h1X_dim
-#print axioms AbstractCurveFibre.master_identity
-#print axioms AbstractCurveFibre.good_prime_silence
-#print axioms abstractFibreOfData
-#print axioms smoothFibre
-#print axioms smoothFibre_silent
-#print axioms masterIdentity_no_piece_absent
-#print axioms masterIdentity_bypass_count
-#print axioms neron_minimal_model_exists
-#print axioms discriminantGate_iff_goodReduction
-#print axioms hasGoodReduction_isMinimal
-#print axioms goodReductionData_genuine
-#print axioms neron_genuine_pieces
-#print axioms neron_absent_piece
-#print axioms neron_genuine_count
-#print axioms Deep.torObject_iso_resolutionH1
-#print axioms Deep.leftDerivedComputesResolutionH1_iff
-#print axioms cechDerivedExt_genuine_count
-#print axioms cechDerivedExt_residue_count
-#print axioms cechDerivedExt_absent_count
-#print axioms torReduction_genuine_residue
-#print axioms Deep.resolutionH1_kernel_iso
-#print axioms Deep.resolutionH1_kernel_moduleIso
-#print axioms Deep.leftDerivedComputesResolutionH1_iff_kernel
-#print axioms Deep.tensoredResolution_d_one_zero
-#print axioms Deep.tensoredResolution_d_one_zero_unitor_inv_apply
-#print axioms Deep.tensoredResolution_sc'_two_one_zero_f_zero
-#print axioms Deep.tensoredResolutionKernelToTor_bijective
-#print axioms Deep.resolutionH1_iso_kernel_actual
-#print axioms Deep.torLeftDerived_iso_zmodGcd
-#print axioms Deep.leftDerivedComputesResolutionH1_genuine
-#print axioms projectionFieldAudit_has_unconditional
-#print axioms torReduction_all_genuine
-#print axioms PadicLogP.abLog_synchronization
-#print axioms PadicLogP.shiftedBinomial_expansion
-#print axioms PadicLogP.shiftedBinomial_gate
-#print axioms PadicLogCertFull.endToEnd
-#print axioms PadicLogCertFull.ofCheck
-#print axioms abLogCheck_endToEnd
-#print axioms abLog_endToEnd_example
-#print axioms apPrimeCount_eq_modEq_card
-#print axioms apPrimes_infinite
-#print axioms apPrimes_exists_gt
-#print axioms analyticDist_genuine_count
-#print axioms analyticDist_external_count
-#print axioms apPrimesInfinite_genuine
-#print axioms apPrimesDensity_external
-#print axioms HenselCert.complete
-#print axioms GoodRedCert.complete
-#print axioms TorExtCert.nonempty
-#print axioms DensityCert.complete
-#print axioms ExperimentCert.complete
-#print axioms henselCert_two_forms
-#print axioms goodRedCert_two_forms
-#print axioms masterIdentityCert_two_forms
-#print axioms allCerts_sound
-#print axioms allCerts_complete
-#print axioms decidableCerts_count
-#print axioms etaleBump_eq_cohomology_dim
-#print axioms etaleMotivic_actual_equations
-#print axioms etaleMotivic_interfaceVerified_count
-#print axioms etaleMotivic_mathlibAbsent_count
-#print axioms etaleMotivic_equations_interfaceVerified
-#print axioms etaleMotivic_objects_mathlibAbsent
-#print axioms EtaleMotivicRealization.dim_eq
-#print axioms EtaleMotivicRealization.etale_eq_motivic
-#print axioms EtaleMotivicRealization.bump_eq_comb
-#print axioms EtaleMotivicRealization.master_identity
-#print axioms smoothEtaleMotivic
-#print axioms smoothEtaleMotivic_silent
-#print axioms etaleMotivic_all_bypassRealized
-#print axioms localDeltaInvariant
-#print axioms normalization_length_additive
-#print axioms normalization_bump_eq_delta
-#print axioms normalization_length_realization
-#print axioms masterData_genuine_count
-#print axioms masterData_bypass_count
-#print axioms masterData_delta_normSES_genuine
-#print axioms moduleCatHomologyIsoKer
-#print axioms cechExtFinal_residue_count
-#print axioms cechExtFinal_absent_count
-#print axioms arithSiteSheafCohomology_absent
-#print axioms torHomology_zmodGcd_bypass
-#print axioms ExtRealization.iso_zmodGcd
-#print axioms ExtRealization.refl
-#print axioms SheafCohomologyComparison.cech_iso_derived
-#print axioms SheafCohomologyComparison.cech_iso_zmodGcd
-#print axioms SheafCohomologyComparison.refl
-#print axioms cechExtFinal_all_bypassVerified
-#print axioms neronModelScheme_still_absent
-#print axioms fec_gate_iff_reduction_isElliptic
-#print axioms fec_mathlib_goodReduction_exact
-#print axioms neronFinal_status_summary
-#print axioms apPrimeCount_one
-#print axioms apDensity_q1_genuine
-#print axioms apDensity_general_via_external
-#print axioms apDensity_q1_case_genuine
-#print axioms apDensity_general_case_external
-#print axioms EtaleLAdicH1.bump_eq_comb
-#print axioms etaleLAdicH1_ofData
-#print axioms etaleLAdicH1_ofData_bump
-#print axioms etaleLAdicH1_nonempty
-#print axioms etaleLAdic_object_realized
-#print axioms etaleLAdic_functor_absent
-#print axioms etaleCohomologyH
-#print axioms etaleCohomologyH_id
-#print axioms etaleCohomologyH_exists
-#print axioms etale_bump_eq_motivic_jump
-#print axioms etale_eq_motivic_example
-#print axioms ExtH1_card
-#print axioms ExtH1_iso_zmod_gcd
-#print axioms derived_residue_tor_ext_closed
-#print axioms delta52_all_closed
-#print axioms eulerChar_sub
-#print axioms eulerJump_eq_defect
-#print axioms MotivicRealization.realize_finrank
-#print axioms motivic_eulerJump_eq_defect
-#print axioms motivic_defect_deg1
-#print axioms motivic_object_closed
-#print axioms motivic_dm_functor_absent
-#print axioms deltaInvariant_eq_zero_iff
-#print axioms deltaInvariant_fin
-#print axioms deltaInvariant_prod
-#print axioms deltaInvariant_zero_iff_conductor_top
-#print axioms fibreData_delta_realized
-#print axioms dualGraphOfSimpleGraph_b1
-#print axioms graphFirstBetti_isTree
-#print axioms graphFirstBetti_unicyclic
-#print axioms delta54_both_extracted
-#print axioms localization_euler_additivity
-#print axioms localizationSES_euler_zero
-#print axioms etale_realization_definitional
-#print axioms master_equivalence
-#print axioms master_equivalence_combinatorial
-#print axioms master_equivalence_witness
-#print axioms master_equivalence_all_proven
-#print axioms hasse_of_frobenius_eigenvalue
-#print axioms frobenius_eigenvalue_of_hasse
-#print axioms hasse_iff_frobenius_eigenvalue
-#print axioms hasse_iff_degree_nonneg
-#print axioms hasse_two_sqrt_of_eigenvalue
-#print axioms hasse_abs_card_le
-#print axioms hasse_eigenvalue_supersingular
-#print axioms hasse_bound_all_proven
-#print axioms dirichlet_analyticDensity_lower_bound
-#print axioms dirichlet_residueClass_prime_not_summable
-#print axioms dirichlet_isUnit_iff_coprime
-#print axioms dirichlet_analyticDensity_lower_bound_nat
-#print axioms dirichlet_genuine_forms
-#print axioms dirichlet_natural_density_limit_external
-#print axioms neron_exists_minimal
-#print axioms neron_reduction_trichotomy
-#print axioms neron_good_iff_elliptic
-#print axioms neron_bad_reduction_iff
-#print axioms neron_genuine_core
-#print axioms neron_full_scheme_absent
-#print axioms neronTheory_genuine_count
-#print axioms sheafExt1IsCechH1_presentation
-#print axioms PrincipalCoverAcyclic.cechCert
-#print axioms PrincipalCoverAcyclic.computes
-#print axioms principalCoverAcyclic_satisfiable
-#print axioms twoOpen_affine_acyclic
-#print axioms prop_3_19_welldef
-#print axioms prop_3_19_invariant
-#print axioms prop_3_20_monotone
-#print axioms prop_3_20_gcdObstr
-#print axioms TorH1_trivial_iff_coprime
-#print axioms prop_3_21
-#print axioms cechδ0_sign
-#print axioms lem_3_22_exact
-#print axioms thm_3_23
-#print axioms thm_3_23_checker
-#print axioms prop_3_26
-#print axioms prop_3_26_satisfiable
-#print axioms lem_3_27_gcdObstr
-#print axioms rem_3_28_gcdObstr
-#print axioms prop_6_29
-#print axioms prop_6_29_section
-#print axioms SectionGlueCert.mem_H0
-#print axioms SectionGlueCert.of
-#print axioms prop_6_30
-#print axioms ABGateCert.lipschitz
-#print axioms ABGateCert.shifted_binomial
-#print axioms ABGateCert_satisfiable
-#print axioms lem_6_32
-#print axioms lem_6_32_profile
-#print axioms lem_6_32_four_layer_weakening
-#print axioms prop_6_33
-#print axioms prop_6_33_hensel
-#print axioms rem_6_34
-#print axioms rem_6_34_reduction
-#print axioms rem_6_34_completion
-#print axioms thm_6_35
-#print axioms thm_6_35_resolution
-#print axioms thm_6_36_decomp
-#print axioms thm_6_36_exponent
-#print axioms thm_6_36_vanish
-#print axioms rem_6_37
-#print axioms thm_7_1
-#print axioms MasterIdentityCert.master_full
-#print axioms arithMasterIdentityCert
-#print axioms cor_7_2_combinatorial
-#print axioms cor_7_2
-#print axioms prop_7_3
-#print axioms prop_7_8
-#print axioms lem_7_5
-#print axioms lem_7_7
-#print axioms cor_7_4
-#print axioms cor_7_9
-#print axioms rem_7_10
-#print axioms prop_7_6
-#print axioms prop_7_6_primewise
-#print axioms rem_7_10_finite_support
-#print axioms rem_7_10_density
-#print axioms rem_7_10_density_prime
-#print axioms thm_8_2_2
-#print axioms thm_8_2_2_gate_sync
-#print axioms PadicLogCert.sound
-#print axioms PadicLogCert.complete
-#print axioms prop_8_2_4
-#print axioms prop_8_2_4_crosscheck
-#print axioms prop_8_2_4_AB
-#print axioms lem_8_3_1
-#print axioms prop_8_3_2
-#print axioms prop_8_3_2_trigger
-#print axioms prop_8_3_2_checker
-#print axioms cor_8_3_3_split
-#print axioms cor_8_3_3_crt
-#print axioms lem_8_3_4_arith
-#print axioms lem_8_3_4_curve
-#print axioms prop_8_3_5
-#print axioms prop_8_3_5_curve
-#print axioms thm_8_3_6_unconditional
-#print axioms thm_8_3_6_external
-#print axioms conj_8_3_7_evidence
-#print axioms PrincipalOpenCert.inter
-#print axioms PrincipalOpenCert.refine
-#print axioms LayerCert.baseChange
-#print axioms FourLayerCert.iff
-#print axioms Cech2Cert.mem_H0
-#print axioms Cech2Cert.of
-#print axioms CRTCert.lift_sound
-#print axioms TorExtCert.canonical
-#print axioms PadicLogCertFull.sound
-#print axioms HenselCert.lift
-#print axioms GoodRedCert.nonsingular
-#print axioms MasterIdCert_master
-#print axioms DensityCert.density_zero
-#print axioms DensityCert.density_zero_prime
-#print axioms ExperimentCert.verified
-#print axioms sampleExperiment
-#print axioms specZembed_preimage_D
-#print axioms genuine_basicOpen_mul
-#print axioms genuine_basicOpen_le_of_dvd
-#print axioms refinement_compatible
-#print axioms specZembed_preimage_cover
-#print axioms genuine_cover_iff
-#print axioms iInf_isLimit
-#print axioms fiberProduct_isBinaryLimit
-#print axioms CandidatePresheaf_res_id
-#print axioms layer_restriction_eq_inclusion
-#print axioms layer_restriction_sound
-#print axioms Fnum_gate
-#print axioms Fnum_log_transfer
-#print axioms Fmod_gate
-#print axioms Fmod_crt
-#print axioms Fmod_crt_iso
-#print axioms Fpadic_gate
-#print axioms Fpadic_residue
-#print axioms Fpadic_hensel
-#print axioms FEC_gate
-#print axioms FEC_nonsingular
-#print axioms FEC_reduced_disc
-#print axioms FEC_neron_conditional
-#print axioms Fmod_baseChange
-#print axioms Fpadic_baseChange
-#print axioms Fmod_reduction
-#print axioms Fpadic_reduction
-#print axioms Fmod_completion
-#print axioms Fpadic_completion
-#print axioms Deep.resC
-#print axioms Deep.resC_proj
-#print axioms Deep.mulN_quotN
-#print axioms Deep.mulN_injective
-#print axioms Deep.piN
-#print axioms Deep.range_mulN_eq_ker_quotN
-#print axioms Deep.quotN_surjective
-#print axioms Deep.resC_d_succ_zero
-#print axioms Deep.piN_quasiIso
-#print axioms Deep.projResolution
-#print axioms Deep.TorFunctor
-#print axioms Deep.torObjIso
-#print axioms Deep.torLeftDerived_iso_resolutionHomology
--- §Δ61 A2 자연밀도 극한 경계 좁힘 (GENUINE 분해 + 단일 Tauberian reduction)
-#print axioms apPrimeCount_complex_decomp
-#print axioms apDensity_general_via_tauberian
-#print axioms dirichletDensityAP_of_tauberian
-#print axioms apDensity_general_via_external_of_tauberian
-#print axioms apNaturalDensity_boundary_narrowed
-#print axioms apNaturalDensity_decomposition_genuine
--- §Δ62 B1: smooth/타원 fibre H¹_ét ≅ T_ℓ E (Tate module 격상)
-#print axioms tateModel_finrank
-#print axioms etaleLAdicH1_smoothTate
-#print axioms etaleLAdicH1_smoothTate_bump
-#print axioms etaleH1_iso_tate
-#print axioms etaleH1_smoothFibre_rank_via_tate
-#print axioms etaleH1_smooth_tate_upgraded
-#print axioms etaleH1_general_interface_retained
--- §Δ63 B2: motivic/étale 검출기 일치 통합 봉인 (realization functor absent 유지)
-#print axioms motivic_etale_detector_agreement
-#print axioms motivic_etale_detector_agreement_witness
-#print axioms b2_detector_agreement_genuine
-#print axioms b2_realization_functor_absent
--- §Δ64 B3: master identity 우변을 실제 SimpleGraph b₁ + Module.length δ로 realize
-#print axioms fibreFromRealGraph
-#print axioms fibreFromRealGraph_master_identity
-#print axioms fibreFromRealGraph_tree
-#print axioms fibreFromRealGraph_unicyclic
-#print axioms masterIdentity_delta_is_length
-#print axioms masterIdentity_all_realized
--- §Δ65 B4: 국소 정규화 integralClosure 격상 + Sing 유한 Σδ 합산 + scheme-수준 ν interface
-#print axioms normalizationDefect_trivial_iff_integrallyClosed
-#print axioms dvr_normalization_trivial
-#print axioms totalDelta_eq_zero_iff
-#print axioms totalDelta_disjoint_union
-#print axioms totalDelta_summand_is_length
-#print axioms b4_local_genuine
-#print axioms b4_scheme_level_interface
 end DeltaAxiomAudit
 
 /-! ## Axiom audit (formalization + certification). -/
 section AxiomAudit
 -- BASIS / PRESHEAF INTERFACE
-#print axioms D_inter
-#print axioms D_one
-#print axioms D_zero
-#print axioms PrincipalOpen.carrier_inf
-#print axioms SubPresheaf.toPresheaf
-#print axioms SubPresheaf.restrict_mem
-#print axioms fiberProduct_sections_eq_inter
-#print axioms FourLayers.amalgam_sections_eq_inter
-#print axioms FourLayers.section_persists
 -- TWO-OPEN CECH / COKERNEL MACHINE
-#print axioms cechδ0
-#print axioms mem_cechH0Ker_iff
-#print axioms mem_arithCechH0_iff
-#print axioms arithCechδ0_range_eq_zmultiples_gcd
-#print axioms arithCechH1_iso_ZMod_gcd_int
-#print axioms cechH1_iso_ZMod_gcd
-#print axioms cechH1_coker_equiv_concrete
 -- PRESENTATION-LEVEL TOR / EXT IDENTIFICATIONS
-#print axioms splitShortExactZ
-#print axioms arithCechδ0_nat_range_eq_zmultiples_gcd
-#print axioms gcdQuotient_iso_ZMod
-#print axioms cech_ext_iso_real
-#print axioms cech_tor_iso_real
-#print axioms cochainToExt
-#print axioms extToCochain
-#print axioms cochainToTorsor
-#print axioms torsorToExt
-#print axioms cochainToExt_eq_torsor_path
-#print axioms extToCochain_cochainToExt
-#print axioms cochainToExt_extToCochain
-#print axioms cochainToTor
-#print axioms torToCochain
-#print axioms torToCochain_cochainToTor
-#print axioms cochainToTor_torToCochain
 -- PART I
-#print axioms section_persists
-#print axioms kernel_ideal_inter
-#print axioms crt_solvable_iff
-#print axioms obstr_vanishes_iff
-#print axioms cechH1_card
-#print axioms cechH1_trivial_iff
-#print axioms factorization_gcd_apply
-#print axioms factorization_lcm_apply
-#print axioms thickness_stable_coprime
-#print axioms card_ker_mulLeft
-#print axioms cech_tor_iso
-#print axioms cech_ext_iso
-#print axioms gcd_eq_prod_primeFactors
-#print axioms crt_ses_card
-#print axioms crt_unique
-#print axioms exists_nonzero_obstruction
-#print axioms gcd_single_prime_trigger
-#print axioms card_Tor_eq_exp_IC
-#print axioms deltaCoh_anti
-#print axioms deltaCoh_union_le
-#print axioms deltaCoh_arith_anti
-#print axioms deltaCoh_arith_union_le
-#print axioms cechSimplex_isEmpty_of_card_lt
-#print axioms cechSimplex_nonempty_of_le
-#print axioms cechCochainUnique
-#print axioms twoOpenCech_unique_of_two_le
-#print axioms twoOpenCech_subsingleton_of_two_le
-#print axioms twoOpenCech_equivPUnit
-#print axioms cechHigh_subsingleton
-#print axioms cechHigh_trivial
-#print axioms twoOpen_cech_eq_derived_all_degrees
-#print axioms padic_log_one_lipschitz
-#print axioms ab_linearization_sync
-#print axioms detector_eq_zero_iff
-#print axioms all_detectors_agree
-#print axioms cd_master_identity
-#print axioms cd_good_prime_silence
-#print axioms setOf_dvd_finite
-#print axioms finite_density_zero
 -- PART II
-#print axioms GlueCert.sound
-#print axioms GlueCert.complete
-#print axioms GoodOverlapCert.glues
-#print axioms GoodOverlapCert.complete
-#print axioms overlap_certified
-#print axioms BadOverlapCert.witness
-#print axioms BadOverlapCert.complete
-#print axioms LucasCert_sound
-#print axioms LucasCert_complete
-#print axioms GoodEllipticCert.sound
-#print axioms GoodEllipticCert.complete
-#print axioms detectors_certified
 -- ITEMS 1.5 / 1.6 / 1.7
-#print axioms Gab_of_injective
-#print axioms Gab_preserves_inter
-#print axioms Gab_fiberProduct_sectionwise
-#print axioms Gab_amalgam_sectionwise
-#print axioms Gab_restriction_natural
-#print axioms fiberProduct_universal
-#print axioms amalgam_universal
-#print axioms demo_num_necessary
-#print axioms demo_modular_necessary
-#print axioms demo_padic_necessary
-#print axioms demo_ec_necessary
-#print axioms finiteCover_unique
-#print axioms finiteCover_glue_coprime
-#print axioms finiteCover_certify
 -- BLOCK 2 (Tor as derived functor) / BLOCK 3 (p-adic analytic layer)
-#print axioms TorH1_card
-#print axioms TorH1_iso_zmod_gcd
-#print axioms torConnecting_injective
-#print axioms torConnecting_exact
-#print axioms TorH1_primewise
-#print axioms TorH1_primewise_exponent
-#print axioms padicValNat_add_le_mul
-#print axioms padicLogTerm_valuation_ge
-#print axioms padicValRat_add_ge
-#print axioms padicValRat_sum_ge
-#print axioms padic_log_truncation_gate
 -- BLOCK 3.1–3.4 (p-adic log: sharp valuation, residual ≥ 2k, (Hk), mult→add, thickness)
-#print axioms padicLogTerm_valuation_eq
-#print axioms padicLogTerm_valuation_sharp
-#print axioms padicLogTerm_one
-#print axioms padicValNat_le_sub_two
-#print axioms truncatedLog_lipschitz
-#print axioms truncatedLog_residual_valuation
-#print axioms truncatedLog_sub_leading
-#print axioms shiftedBinomial_Hk
-#print axioms mult_to_add_congr
-#print axioms thickness_padic_eq
-#print axioms thickness_padic_valuation
 -- BLOCK 4 (geometric detectors + master identity + combinatorial dual graph)
-#print axioms DualGraph.b1_tree
-#print axioms FibreData.bump_eq
-#print axioms normalizationSES_dim_eq
-#print axioms normalization_dimension_formula
-#print axioms GeometricDetectors.master_identity
-#print axioms GeometricDetectors.detectors_tfae
-#print axioms GeometricDetectors.bump_eq_combinatorial
-#print axioms GeometricDetectors.good_prime_silence
 -- BLOCK 5 (Hensel ⟺ discriminant gate + good reduction + Hasse panel)
-#print axioms hensel_simple_root_lift
-#print axioms wDiscriminantGate_iff_map_Δ
-#print axioms wDiscriminantGate_nonsingular
-#print axioms goodReduction_nonsingular
-#print axioms frobeniusPoly_coeff_zero
-#print axioms hasseBound_iff
-#print axioms supersingular_hasse
 -- BLOCK 6 (δ_coh invariances + genuine Mayer–Vietoris + π(x) density)
-#print axioms deltaCoh_set_congr
-#print axioms deltaCoh_abelianization_invariant
-#print axioms deltaCoh_restriction_invariant
-#print axioms deltaCoh_cech_eq_derived
-#print axioms cech_mv_exact_ker
-#print axioms cech_mv_exact_coker
-#print axioms cech_mv_connecting_surjective
-#print axioms arith_mv_overlap_nontrivial
-#print axioms finite_density_zero_primeCounting
 -- BLOCK 7 (base-change functoriality + Dirichlet density)
-#print axioms cechδ0_natural
-#print axioms cechδ0_range_baseChange
-#print axioms cechH1_baseChange
-#print axioms baseChange_dvd
-#print axioms hasDensity_finite
-#print axioms hasDensityPrime_finite
-#print axioms thm836_part2
-#print axioms thm836_parts13
-#print axioms thm836
 -- BLOCK 8 (certification layer: sweeps + certificates)
-#print axioms sweep_gcd_one
-#print axioms sweep_all_good
-#print axioms sweep_obstruction_free
-#print axioms fermat_pow_card
-#print axioms unit_solution_count
-#print axioms listing2_cert
-#print axioms CechExtCert.sound
-#print axioms CechExtCert.complete
-#print axioms PadicSyncCert.sound
-#print axioms GoodReductionCert.sound
-#print axioms MasterIdentityCert.sound
 -- INTERFACE + CONCRETE MODEL (§Z)
-#print axioms CechTheory.glue_iff_coprime
-#print axioms CechTheory.card
-#print axioms CechTheory.torIso
-#print axioms CechTheory.extIso
-#print axioms CechTheory.high_vanish
-#print axioms arithCechTheory
-#print axioms arith_glue_iff_coprime
 -- §3.2 THEOREM-SHAPED HYPOTHESES (non-vacuous, satisfiable)
-#print axioms arithDetectorBridge
-#print axioms detectorAgreement_satisfiable
-#print axioms arithGeometricDetectors
-#print axioms cechComputesDerived_satisfiable
 -- §3.3 VACUOUS → DERIVED-CONCLUSION / DATA-EXPOSED
-#print axioms cechHigh_equivPUnit
-#print axioms CurveData.ofSES
 end AxiomAudit
 
 end Spt4
+
