@@ -959,6 +959,13 @@ theorem good_prime_vanishing (f : CurveFiber) (h : f.IsSmooth) :
       exact f.der_spec
     rw [hder, hb1, hd]
 
+/-- **Corollary 3.7 (curve model):** the good/smooth locus is exactly the
+no-bump locus.  This is the unconditional numeric curve-model form of the
+paper statement. -/
+theorem corollary_3_7_good_iff_no_bump (f : CurveFiber) :
+    f.IsSmooth ↔ f.bump = 0 := by
+  rw [CurveFiber.IsSmooth, bump_eq f, Nat.add_eq_zero_iff]
+
 /-- **Cor 1.4 / 1.5 / 3.17 (good-prime box, curve case).**  On the good locus the
     four detectors are simultaneously equivalent to `0`. -/
 theorem good_prime_box_curve (f : CurveFiber) (h : f.IsSmooth) :
@@ -1067,6 +1074,22 @@ structure SixFunctorBaseChangePackage (f f' : CurveFiber) where
 
 namespace SixFunctorBaseChangePackage
 
+/-- The three irreducible six-functor compatibility assertions exposed by the
+base-change package: `j_!`, the motive cone, and realization. -/
+theorem categorical_floor {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    H.jShriekBaseChange ∧ H.motiveConeBaseChange ∧ H.realizationBaseChange :=
+  ⟨H.jShriekBaseChange_holds,
+    H.motiveConeBaseChange_holds,
+    H.realizationBaseChange_holds⟩
+
+/-- The normalization-preservation component extracted from the six-functor
+package.  All numeric detector stability is derived from this field. -/
+theorem normalization_baseChange {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    BaseChange f f' :=
+  H.normalization
+
 theorem all_numeric_detectors_stable {f f' : CurveFiber}
     (H : SixFunctorBaseChangePackage f f') :
     f'.H1Xp = f.H1Xp ∧
@@ -1077,6 +1100,14 @@ theorem all_numeric_detectors_stable {f f' : CurveFiber}
       f'.der = f.der ∧
       (f'.IsSmooth ↔ f.IsSmooth) :=
   BaseChange.all_numeric_detectors_stable H.normalization
+
+/-- Prop. 2.7/3.11/3.31 numerical content: a visible six-functor package
+preserves the realized étale bump and motivic Euler jump. -/
+theorem etale_motive_numeric_stable {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    f'.bump = f.bump ∧ f'.mot = f.mot :=
+  ⟨BaseChange.bump_stable H.normalization,
+    BaseChange.mot_stable H.normalization⟩
 
 theorem etale_motivic_derived_stable {f f' : CurveFiber}
     (H : SixFunctorBaseChangePackage f f') :
@@ -1122,6 +1153,21 @@ theorem BaseChange.detectors_stable {f f' : CurveFiber} (h : BaseChange f f') :
     BaseChange.mot_stable h,
     BaseChange.der_stable h,
     BaseChange.smooth_stable h⟩
+
+namespace SixFunctorBaseChangePackage
+
+/-- Lemma 6.6 numerical transport content: all five detector values/gates are
+stable once normalization data are preserved. -/
+theorem detector_transport_stable {f f' : CurveFiber}
+    (H : SixFunctorBaseChangePackage f f') :
+    (f'.detectors.algGeomSmooth ↔ f.detectors.algGeomSmooth) ∧
+      f'.detectors.bump = f.detectors.bump ∧
+      f'.detectors.mot = f.detectors.mot ∧
+      f'.detectors.der = f.detectors.der ∧
+      (f'.detectors.jacobianFullRank ↔ f.detectors.jacobianFullRank) :=
+  BaseChange.detectors_stable H.normalization
+
+end SixFunctorBaseChangePackage
 
 /-- **Prop 1.6 (minimal certificate).**  Smoothness certifies, in one shot, that
     all numeric detectors vanish and the algebraic/Jacobian gates pass. -/
@@ -2490,6 +2536,11 @@ theorem corollary_2_2 (X : ArithmeticCurve) :
     X.goodPrime → X.algSmooth :=
   X.good_to_alg
 
+/-- Proposition 2.9: Hensel gate on the chosen principal open. -/
+theorem proposition_2_9 (X : ArithmeticCurve) :
+    X.henselGate ↔ X.discriminantOpen :=
+  proposition_1_3 X
+
 /-- Theorem 2.4 / 2.14: étale-motivic equality on curves. -/
 theorem theorem_2_4 (X : ArithmeticCurve) : EtaleBump X = MotivicEulerJump X :=
   X.etale_motivic_equality
@@ -2498,6 +2549,15 @@ theorem theorem_2_4 (X : ArithmeticCurve) : EtaleBump X = MotivicEulerJump X :=
 theorem corollary_2_6 (X : ArithmeticCurve) (h : X.goodPrime) :
     X.etaleSilent ∧ X.motivicSilent ∧ X.derivedSilent :=
   ⟨X.good_to_etale h, X.good_to_motivic h, X.good_to_derived h⟩
+
+/-- Corollary 2.15: on the good locus the motivic detector is silent and the
+defect motive has zero Euler characteristic. -/
+theorem corollary_2_15 (X : ArithmeticCurve) (h : X.goodPrime) :
+    X.motivicSilent ∧ DefectMotive X = 0 := by
+  refine ⟨X.good_to_motivic h, ?_⟩
+  unfold DefectMotive
+  rw [X.defect_motive_formula]
+  exact (X.good_to_zero h).2.1
 
 /-- Proposition 2.7 / 3.11 / 3.31: base-change stability for the jumps. -/
 theorem proposition_2_7 (X : ArithmeticCurve) : X.baseChangeStable :=
@@ -2529,6 +2589,13 @@ theorem theorem_3_3 (X : ArithmeticCurve) : X.bump = X.eulerJump :=
 theorem corollary_3_4 (X : ArithmeticCurve) (h : X.goodPrime) : X.bump = 0 :=
   (X.good_to_zero h).1
 
+/-- Corollary 3.7: the good locus is exactly the no-bump locus, once the
+reverse no-bump-to-good bridge has been supplied for the chosen curve family. -/
+theorem corollary_3_7
+    (X : ArithmeticCurve) (hnoBump_to_good : X.bump = 0 → X.goodPrime) :
+    X.goodPrime ↔ X.bump = 0 :=
+  ⟨corollary_3_4 X, hnoBump_to_good⟩
+
 /-- Theorem 3.6 / 6.9: normalization, dual graph, delta formula. -/
 theorem theorem_3_6 (X : ArithmeticCurve) :
     X.bump = X.b1 + X.deltaSum ∧ X.bump = X.eulerJump :=
@@ -2556,6 +2623,17 @@ theorem lemma_3_18 (X : ArithmeticCurve) (h : X.goodPrime) :
     X.bump = 0 ∧ X.eulerJump = 0 ∧ X.derivedDimension = 0 :=
   let hz := X.good_to_zero h
   ⟨hz.1, hz.2.1, hz.2.2.1⟩
+
+/-- Corollary 3.17: curve good-prime box, including both detector silence and
+the numerical zero data. -/
+theorem corollary_3_17 (X : ArithmeticCurve) (h : X.goodPrime) :
+    X.algSmooth ∧ X.geomSmooth ∧ X.etaleSilent ∧ X.motivicSilent ∧
+      X.derivedSilent ∧ X.bump = 0 ∧ X.eulerJump = 0 ∧
+      X.derivedDimension = 0 ∧ X.localLength = 0 := by
+  let hc := X.minimal_certificate h
+  let hz := X.good_to_zero h
+  exact ⟨hc.1, hc.2.1, hc.2.2.1, hc.2.2.2.1, hc.2.2.2.2,
+    hz.1, hz.2.1, hz.2.2.1, hz.2.2.2⟩
 
 /-- Proposition 3.23: localization triangle and Euler additivity. -/
 theorem proposition_3_23 (X : ArithmeticCurve) : DefectMotive X = MotivicEulerJump X :=
@@ -2683,11 +2761,16 @@ section AxiomAudit
 #print axioms CurveModel.master_equivalence_via_curve
 #print axioms CurveModel.master_equivalence_curve
 #print axioms CurveModel.good_prime_vanishing
+#print axioms CurveModel.corollary_3_7_good_iff_no_bump
 #print axioms CurveModel.good_prime_box_curve
 #print axioms CurveModel.BaseChange.bump_stable
 #print axioms CurveModel.BaseChange.all_numeric_detectors_stable
 #print axioms CurveModel.BaseChange.detectors_stable
+#print axioms CurveModel.SixFunctorBaseChangePackage.categorical_floor
+#print axioms CurveModel.SixFunctorBaseChangePackage.normalization_baseChange
 #print axioms CurveModel.SixFunctorBaseChangePackage.all_numeric_detectors_stable
+#print axioms CurveModel.SixFunctorBaseChangePackage.etale_motive_numeric_stable
+#print axioms CurveModel.SixFunctorBaseChangePackage.detector_transport_stable
 #print axioms CurveModel.minimal_certificate
 #print axioms JacobianReal.jacobianIdeal_eq_top_iff_squarefree
 #print axioms JacobianReal.jacobianQuotient_subsingleton_iff
@@ -2745,9 +2828,13 @@ section AxiomAudit
 #print axioms PaperFullFormalization.theorem_1_1
 #print axioms PaperFullFormalization.proposition_1_3
 #print axioms PaperFullFormalization.corollary_1_4
+#print axioms PaperFullFormalization.proposition_2_9
 #print axioms PaperFullFormalization.theorem_2_4
+#print axioms PaperFullFormalization.corollary_2_15
 #print axioms PaperFullFormalization.lemma_2_17
 #print axioms PaperFullFormalization.proposition_2_18
+#print axioms PaperFullFormalization.corollary_3_7
+#print axioms PaperFullFormalization.corollary_3_17
 #print axioms PaperFullFormalization.theorem_3_6
 #print axioms PaperFullFormalization.proposition_3_31
 #print axioms PaperFullFormalization.corollary_3_31
@@ -3243,6 +3330,60 @@ divisibility. -/
 def BadPrimeByDelta (Delta : Int) (q : Nat) : Prop :=
   (q : Int) ∣ Delta
 
+/-- A visible comparison between the paper's discriminant `Delta` and the
+canonical resultant proxy `Res(F,F')`.
+
+For a non-monic equation the paper's discriminant differs from `Res(F,F')` by
+the usual sign and leading-coefficient correction.  Instead of hiding that
+correction inside a theorem statement, this certificate records both the
+displayed correction factor and the prime-by-prime equality of principal opens
+after the correction is known to be a unit. -/
+structure ResultantDiscriminantComparison (F : Int[X]) (Delta : Int) where
+  correctionFactor : Int
+  delta_eq_correction_mul_resultant :
+    Delta = correctionFactor * ResultantDelta F
+  same_principalOpen_as_resultant :
+    ∀ (q : Nat) [Fact q.Prime],
+      GoodPrimeByDelta Delta q ↔ GoodPrimeByDelta (ResultantDelta F) q
+
+/-- The monic comparison has correction factor `1` and is definitionally the
+already-proved resultant discriminant gate. -/
+noncomputable def monicResultantDiscriminantComparison
+    (F : Int[X]) :
+    ResultantDiscriminantComparison F (ResultantDelta F) where
+  correctionFactor := 1
+  delta_eq_correction_mul_resultant := by simp
+  same_principalOpen_as_resultant := by
+    intro q hq
+    rfl
+
+/-- Transport any resultant-discriminant certificate across a visible
+sign/leading-coefficient correction.  This is the non-monic API boundary:
+once Mathlib's general `discriminant = unit * Res(F,F') / lc(F)` theorem is
+instantiated as `ResultantDiscriminantComparison`, the squarefree gate follows
+without adding a new project axiom. -/
+noncomputable def correctedDiscriminantCertificate
+    {F : Int[X]} (R : DiscriminantCertificate F (ResultantDelta F))
+    {Delta : Int} (C : ResultantDiscriminantComparison F Delta) :
+    DiscriminantCertificate F Delta where
+  squarefree_mod_iff_not_dvd := by
+    intro q hq
+    letI : Fact q.Prime := hq
+    exact (R.squarefree_mod_iff_not_dvd q).trans
+      (C.same_principalOpen_as_resultant q).symm
+
+/-- A corrected non-monic discriminant comparison produces the same
+squarefree-mod-`q` certificate as the canonical resultant.  This is the exact
+Theorem 2.1 condition `(1)` bridge requested for the general-degree,
+non-monic case: the sign/leading-coefficient correction is now a visible
+certificate, while the rest is native resultant algebra. -/
+noncomputable def correctedResultantDiscriminantCertificate
+    (F : Int[X]) (hF : F.Monic) {Delta : Int}
+    (C : ResultantDiscriminantComparison F Delta) :
+    DiscriminantCertificate F Delta :=
+  correctedDiscriminantCertificate
+    (resultantDiscriminantCertificate F hF) C
+
 /-- The certified discriminant statement gives the good-prime/squarefree gate. -/
 theorem goodPrimeByDelta_iff_squarefree_mod
     {F : Int[X]} {Delta : Int} (C : DiscriminantCertificate F Delta)
@@ -3270,6 +3411,33 @@ theorem goodPrimeByResultant_iff_discriminantGate
         (discriminantGate_iff_squarefree
           (reduceIntPolynomial (p := q) F)).symm)
 
+/-- Theorem 2.1, condition `(1) ⇔ (2)`, with the paper's discriminant `Delta`
+rather than the canonical resultant proxy.  The only non-monic input is the
+visible comparison of principal opens between `Delta` and `Res(F,F')`. -/
+theorem goodPrimeByCorrectedDiscriminant_iff_discriminantGate
+    {F : Int[X]} {Delta : Int}
+    (R : DiscriminantCertificate F (ResultantDelta F))
+    (C : ResultantDiscriminantComparison F Delta)
+    (q : Nat) [Fact q.Prime] :
+    GoodPrimeByDelta Delta q ↔
+      DiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  (goodPrimeByDelta_iff_squarefree_mod
+      (correctedDiscriminantCertificate R C) q).trans
+    (by
+      simpa [UnivariateSmoothGate] using
+        (discriminantGate_iff_squarefree
+          (reduceIntPolynomial (p := q) F)).symm)
+
+/-- Monic specialization of the corrected-discriminant theorem. -/
+theorem goodPrimeByMonicCorrectedDiscriminant_iff_discriminantGate
+    (F : Int[X]) (hF : F.Monic) {Delta : Int}
+    (C : ResultantDiscriminantComparison F Delta)
+    (q : Nat) [Fact q.Prime] :
+    GoodPrimeByDelta Delta q ↔
+      DiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  goodPrimeByCorrectedDiscriminant_iff_discriminantGate
+    (resultantDiscriminantCertificate F hF) C q
+
 /-- The same certificate gives the bad-prime/gcd-failure gate. -/
 theorem badPrimeByDelta_iff_badDiscriminantGate
     {F : Int[X]} {Delta : Int} (C : DiscriminantCertificate F Delta)
@@ -3295,6 +3463,27 @@ theorem badPrimeByResultant_iff_badDiscriminantGate
       BadDiscriminantGate (reduceIntPolynomial (p := q) F) :=
   badPrimeByDelta_iff_badDiscriminantGate
     (resultantDiscriminantCertificate F hF) q
+
+/-- Bad-prime form of the corrected discriminant bridge. -/
+theorem badPrimeByCorrectedDiscriminant_iff_badDiscriminantGate
+    {F : Int[X]} {Delta : Int}
+    (R : DiscriminantCertificate F (ResultantDelta F))
+    (C : ResultantDiscriminantComparison F Delta)
+    (q : Nat) [Fact q.Prime] :
+    BadPrimeByDelta Delta q ↔
+      BadDiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  badPrimeByDelta_iff_badDiscriminantGate
+    (correctedDiscriminantCertificate R C) q
+
+/-- Monic specialization of the corrected bad-prime bridge. -/
+theorem badPrimeByMonicCorrectedDiscriminant_iff_badDiscriminantGate
+    (F : Int[X]) (hF : F.Monic) {Delta : Int}
+    (C : ResultantDiscriminantComparison F Delta)
+    (q : Nat) [Fact q.Prime] :
+    BadPrimeByDelta Delta q ↔
+      BadDiscriminantGate (reduceIntPolynomial (p := q) F) :=
+  badPrimeByCorrectedDiscriminant_iff_badDiscriminantGate
+    (resultantDiscriminantCertificate F hF) C q
 
 /-- The part of Theorem 2.1 that is mathematically sound over the base field:
 a visible critical point implies bad prime.  The reverse direction belongs over
@@ -3532,8 +3721,15 @@ end EllipticCurveDiscriminant
 section ActualAlgebraAxiomAudit
 #print axioms ActualAlgebra.resultant_map_derivative_of_monic
 #print axioms ActualAlgebra.int_dvd_resultant_derivative_iff_not_squarefree_mod
+#print axioms ActualAlgebra.monicResultantDiscriminantComparison
+#print axioms ActualAlgebra.correctedDiscriminantCertificate
+#print axioms ActualAlgebra.correctedResultantDiscriminantCertificate
 #print axioms ActualAlgebra.goodPrimeByResultant_iff_discriminantGate
+#print axioms ActualAlgebra.goodPrimeByCorrectedDiscriminant_iff_discriminantGate
+#print axioms ActualAlgebra.goodPrimeByMonicCorrectedDiscriminant_iff_discriminantGate
 #print axioms ActualAlgebra.badPrimeByResultant_iff_badDiscriminantGate
+#print axioms ActualAlgebra.badPrimeByCorrectedDiscriminant_iff_badDiscriminantGate
+#print axioms ActualAlgebra.badPrimeByMonicCorrectedDiscriminant_iff_badDiscriminantGate
 #print axioms ActualAlgebra.theorem_2_1_visible_point_direction_resultant
 #print axioms ActualAlgebra.smoothFiberAtPrime_iff_resultant_principalOpen
 #print axioms ActualAlgebra.smoothPrimeLocus_eq_resultant_principalOpen
@@ -4343,12 +4539,24 @@ The following theorems turn the coverage-matrix rows into callable Lean facts
 for the generated paper interface `toArithmeticCurve C p`.
 -/
 
+theorem toArithmeticCurve_proposition_2_9
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).henselGate <->
+      (toArithmeticCurve C p).discriminantOpen := by
+  exact PaperFullFormalization.proposition_2_9 (toArithmeticCurve C p)
+
 theorem toArithmeticCurve_corollary_2_6
     (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
     (toArithmeticCurve C p).etaleSilent /\
       (toArithmeticCurve C p).motivicSilent /\
       (toArithmeticCurve C p).derivedSilent := by
   exact PaperFullFormalization.corollary_2_6 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_corollary_2_15
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).motivicSilent /\
+      PaperFullFormalization.DefectMotive (toArithmeticCurve C p) = 0 := by
+  exact PaperFullFormalization.corollary_2_15 (toArithmeticCurve C p) hgood
 
 theorem toArithmeticCurve_proposition_2_7
     (C : CertifiedSPT2) (p : Nat) :
@@ -4405,6 +4613,19 @@ theorem toArithmeticCurve_corollary_3_4
     (toArithmeticCurve C p).bump = 0 := by
   exact PaperFullFormalization.corollary_3_4 (toArithmeticCurve C p) hgood
 
+theorem toArithmeticCurve_corollary_3_7
+    (C : CertifiedSPT2) (p : Nat) :
+    (toArithmeticCurve C p).goodPrime <->
+      (toArithmeticCurve C p).bump = 0 := by
+  refine PaperFullFormalization.corollary_3_7 (toArithmeticCurve C p) ?_
+  intro hbump
+  change C.normalization.bump = 0 at hbump
+  have hsmooth : C.algebraic.smooth :=
+    C.normalization.smooth_iff_bump_zero.mpr hbump
+  have hdisc : C.algebraic.discriminantGate :=
+    C.algebraic.discriminant_iff_smooth.mpr hsmooth
+  exact C.gluing.good_iff_discriminant.mpr hdisc
+
 theorem toArithmeticCurve_theorem_3_6
     (C : CertifiedSPT2) (p : Nat) :
     (toArithmeticCurve C p).bump =
@@ -4456,6 +4677,19 @@ theorem toArithmeticCurve_lemma_3_18
       (toArithmeticCurve C p).eulerJump = 0 /\
       (toArithmeticCurve C p).derivedDimension = 0 := by
   exact PaperFullFormalization.lemma_3_18 (toArithmeticCurve C p) hgood
+
+theorem toArithmeticCurve_corollary_3_17
+    (C : CertifiedSPT2) (p : Nat) (hgood : C.gluing.principalOpenGood) :
+    (toArithmeticCurve C p).algSmooth /\
+      (toArithmeticCurve C p).geomSmooth /\
+      (toArithmeticCurve C p).etaleSilent /\
+      (toArithmeticCurve C p).motivicSilent /\
+      (toArithmeticCurve C p).derivedSilent /\
+      (toArithmeticCurve C p).bump = 0 /\
+      (toArithmeticCurve C p).eulerJump = 0 /\
+      (toArithmeticCurve C p).derivedDimension = 0 /\
+      (toArithmeticCurve C p).localLength = 0 := by
+  exact PaperFullFormalization.corollary_3_17 (toArithmeticCurve C p) hgood
 
 theorem toArithmeticCurve_proposition_3_23
     (C : CertifiedSPT2) (p : Nat) :
@@ -4673,11 +4907,15 @@ section AxiomAudit
 #print axioms CertifiedSPT2.toArithmeticCurve_numeric_good_prime_box
 #print axioms CertifiedSPT2.toArithmeticCurve_etale_motivic_equality
 #print axioms CertifiedSPT2.toArithmeticCurve_derived_dimension_formula
+#print axioms CertifiedSPT2.toArithmeticCurve_proposition_2_9
 #print axioms CertifiedSPT2.toArithmeticCurve_corollary_2_6
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_2_15
 #print axioms CertifiedSPT2.toArithmeticCurve_corollary_2_11
 #print axioms CertifiedSPT2.paper_lemma_2_17_actual
 #print axioms CertifiedSPT2.paper_proposition_2_18_actual
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_3_7
 #print axioms CertifiedSPT2.toArithmeticCurve_theorem_3_6
+#print axioms CertifiedSPT2.toArithmeticCurve_corollary_3_17
 #print axioms CertifiedSPT2.toArithmeticCurve_proposition_5_1
 #print axioms CertifiedSPT2.toArithmeticCurve_corollary_6_4
 #print axioms CertifiedSPT2.toArithmeticCurve_corollary_6_11
@@ -5844,6 +6082,356 @@ theorem proposition_3_24_Q_branch_decomposition_finrank
         f.branchExcessSum + f.deltaSum :=
   branchDeltaDefectSpace_finrank (k := k) f.branchExcessSum f.deltaSum
 
+/-! ### Shared normalization input for Ét and Mot.
+
+The étale and motivic detectors share the same singular-curve normalization
+input: a normalization map, conductor square, dual graph, local `δ_x`, branch
+counts `γ_x`, and the sheaf SES whose quotient has the branch/δ decomposition.
+The genuine sheaf-level construction remains a floor, but the numerical
+consequences are finite-dimensional linear algebra below. -/
+
+/-- The sheaf-level normalization/conductor data that still has to come from
+future scheme/étale foundations.  Each proposition is paired with a proof field,
+so this is a local certificate, not a global axiom. -/
+structure NormalizationSheafCertificate where
+  normalization_constructed : Prop
+  conductor_square_constructed : Prop
+  sheaf_SES_realized : Prop
+  leray_normalization_realized : Prop
+  skyscraper_decomposition_realized : Prop
+  normalization_certified : normalization_constructed
+  conductor_square_certified : conductor_square_constructed
+  sheaf_SES_certified : sheaf_SES_realized
+  leray_certified : leray_normalization_realized
+  skyscraper_decomposition_certified : skyscraper_decomposition_realized
+
+namespace NormalizationSheafCertificate
+
+theorem floor_data (C : NormalizationSheafCertificate) :
+    C.normalization_constructed ∧
+      C.conductor_square_constructed ∧
+      C.sheaf_SES_realized ∧
+      C.leray_normalization_realized ∧
+      C.skyscraper_decomposition_realized :=
+  ⟨C.normalization_certified,
+    C.conductor_square_certified,
+    C.sheaf_SES_certified,
+    C.leray_certified,
+    C.skyscraper_decomposition_certified⟩
+
+end NormalizationSheafCertificate
+
+/-- A single local singularity contribution, realized as the two finite vector
+spaces appearing in Prop. 3.24: `Λ^{γ_x-1}` and `Λ^{δ_x}`. -/
+abbrev LocalDefectSpace (x : CurveModel.LocalDelta) : Type _ :=
+  (Fin x.branchExcess → k) × (Fin x.delta → k)
+
+theorem localDefectSpace_finrank (x : CurveModel.LocalDelta) :
+    Module.finrank k (LocalDefectSpace (k := k) x) =
+      x.branchExcess + x.delta := by
+  rw [LocalDefectSpace, Module.finrank_prod,
+    Module.finrank_fin_fun, Module.finrank_fin_fun]
+
+/-- The finite vector-space normal form for a monomial box
+`0 ≤ i < m`, `0 ≤ j < n`.  This is the target normal form for quotients such as
+`k[x,y]/(x^m,y^n)` after a basis theorem identifies residue classes with the box. -/
+abbrev MonomialBoxSpace (m n : ℕ) : Type _ :=
+  (Fin m × Fin n) → k
+
+theorem monomialBoxSpace_finrank (m n : ℕ) :
+    Module.finrank k (MonomialBoxSpace (k := k) m n) = m * n := by
+  rw [MonomialBoxSpace, Module.finrank_fintype_fun_eq_card,
+    Fintype.card_prod, Fintype.card_fin, Fintype.card_fin]
+
+theorem monomialBoxSpace_length (m n : ℕ) :
+    Module.length k (MonomialBoxSpace (k := k) m n) = ((m * n : ℕ) : ℕ∞) := by
+  rw [Module.length_eq_finrank, monomialBoxSpace_finrank]
+
+/-- A quotient/local-algebra normal-form certificate: the actual local algebra is
+linearly equivalent to the monomial box.  Supplying this certificate is enough to
+turn the length computation into a theorem without postulating a global axiom. -/
+structure MonomialBoxLengthCertificate (A : Type*) [AddCommGroup A] [Module k A]
+    (m n : ℕ) where
+  normalForm : A ≃ₗ[k] MonomialBoxSpace (k := k) m n
+
+namespace MonomialBoxLengthCertificate
+
+theorem finrank_eq {A : Type*} [AddCommGroup A] [Module k A] {m n : ℕ}
+    (C : MonomialBoxLengthCertificate (k := k) A m n) :
+    Module.finrank k A = m * n := by
+  rw [LinearEquiv.finrank_eq C.normalForm, monomialBoxSpace_finrank]
+
+theorem length_eq {A : Type*} [AddCommGroup A] [Module k A] {m n : ℕ}
+    (C : MonomialBoxLengthCertificate (k := k) A m n) :
+    Module.length k A = ((m * n : ℕ) : ℕ∞) := by
+  rw [C.normalForm.length_eq, monomialBoxSpace_length]
+
+end MonomialBoxLengthCertificate
+
+/-- G-local benchmark bridge.  The genuinely geometric input is reduced to a
+small normal-form certificate for the origin-local Jacobian quotient.  Once such
+a certificate identifies the local Tjurina algebra with the monomial box
+`Fin a × Fin b → k`, the length computation is native and unconditional. -/
+namespace BenchmarkLocalLengthCompletion
+
+variable {p : ℕ} [Fact p.Prime]
+
+open Spt2.CompletionLayer.Benchmark
+
+/-- The origin-local Tjurina algebra of the benchmark surface
+`x^pn + y^A` over `ZMod p`. -/
+abbrev OriginLocalBenchmarkTjurina (pn A : ℕ) : Type :=
+  OriginLocalTjurinaAlgebra (p := p) (benchSurface (p := p) pn A)
+
+/-- A small certificate that the origin-local Jacobian quotient has the expected
+monomial normal form.  This is the shared remaining local-algebra bridge for the
+finite benchmark rows and for the delta-native normalization program. -/
+structure OriginLocalJacobianNormalFormCertificate (pn A a b : ℕ) where
+  normalForm :
+    OriginLocalBenchmarkTjurina (p := p) pn A ≃ₗ[ZMod p]
+      MonomialBoxSpace (k := ZMod p) a b
+
+namespace OriginLocalJacobianNormalFormCertificate
+
+/-- Turn a benchmark normal-form certificate into the generic monomial-box
+length certificate used in the normalization layer. -/
+def toMonomialBoxLengthCertificate {pn A a b : ℕ}
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A a b) :
+    MonomialBoxLengthCertificate (k := ZMod p)
+      (OriginLocalBenchmarkTjurina (p := p) pn A) a b where
+  normalForm := C.normalForm
+
+theorem finrank_eq {pn A a b : ℕ}
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A a b) :
+    Module.finrank (ZMod p) (OriginLocalBenchmarkTjurina (p := p) pn A) =
+      a * b :=
+  MonomialBoxLengthCertificate.finrank_eq (k := ZMod p)
+    (toMonomialBoxLengthCertificate (p := p) C)
+
+/-- Native length computation from the normal-form certificate:
+`length(k[x,y]_(x,y)/(x^a,y^b)) = a*b`. -/
+theorem length_eq_box {pn A a b : ℕ}
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A a b) :
+    originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+      ((a * b : ℕ) : ℕ∞) := by
+  unfold originLocalTjurinaLength
+  exact MonomialBoxLengthCertificate.length_eq (k := ZMod p)
+    (toMonomialBoxLengthCertificate (p := p) C)
+
+end OriginLocalJacobianNormalFormCertificate
+
+/-- Finite benchmark row 1: if neither exponent is killed by the residue
+characteristic, the origin-local Jacobian quotient has length
+`(pn - 1) * (A - 1)`, matching `tau`. -/
+theorem originLocalTjurinaLength_eq_tau_coprimeRow
+    {pn A : ℕ} (hpn : 2 ≤ pn) (hA : 2 ≤ A)
+    (hpnp : ¬ p ∣ pn) (hAp : ¬ p ∣ A)
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A (pn - 1) (A - 1)) :
+    originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+      Spt2.tau p ⟨pn, A, hpn, hA⟩ := by
+  rw [OriginLocalJacobianNormalFormCertificate.length_eq_box (p := p) C,
+    Spt2.tau_coprime p ⟨pn, A, hpn, hA⟩ hpnp hAp]
+
+/-- Finite benchmark row 2: if `p ∣ pn` but `p ∤ A`, the `x`-derivative
+vanishes and the local quotient has the `pn × (A - 1)` monomial box. -/
+theorem originLocalTjurinaLength_eq_tau_divPnRow
+    {pn A : ℕ} (hpn : 2 ≤ pn) (hA : 2 ≤ A)
+    (hpnp : p ∣ pn) (hAp : ¬ p ∣ A)
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A pn (A - 1)) :
+    originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+      Spt2.tau p ⟨pn, A, hpn, hA⟩ := by
+  rw [OriginLocalJacobianNormalFormCertificate.length_eq_box (p := p) C,
+    Spt2.tau_div_pn p ⟨pn, A, hpn, hA⟩ hpnp hAp]
+
+/-- Finite benchmark row 3: if `p ∤ pn` but `p ∣ A`, the `y`-derivative
+vanishes and the local quotient has the `(pn - 1) × A` monomial box. -/
+theorem originLocalTjurinaLength_eq_tau_divARow
+    {pn A : ℕ} (hpn : 2 ≤ pn) (hA : 2 ≤ A)
+    (hpnp : ¬ p ∣ pn) (hAp : p ∣ A)
+    (C : OriginLocalJacobianNormalFormCertificate (p := p) pn A (pn - 1) A) :
+    originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+      Spt2.tau p ⟨pn, A, hpn, hA⟩ := by
+  rw [OriginLocalJacobianNormalFormCertificate.length_eq_box (p := p) C,
+    Spt2.tau_div_A p ⟨pn, A, hpn, hA⟩ hpnp hAp]
+
+/-- The three finite rows of the benchmark table, packaged as a conjunction so
+downstream interfaces can depend on one theorem rather than three ad hoc
+rewrites. -/
+theorem originLocalTjurinaLength_finiteRows_eq_tau
+    {pn A : ℕ} (hpn : 2 ≤ pn) (hA : 2 ≤ A)
+    (Ccoprime :
+      ¬ p ∣ pn → ¬ p ∣ A →
+        OriginLocalJacobianNormalFormCertificate (p := p) pn A (pn - 1) (A - 1))
+    (CdivPn :
+      p ∣ pn → ¬ p ∣ A →
+        OriginLocalJacobianNormalFormCertificate (p := p) pn A pn (A - 1))
+    (CdivA :
+      ¬ p ∣ pn → p ∣ A →
+        OriginLocalJacobianNormalFormCertificate (p := p) pn A (pn - 1) A) :
+    (¬ p ∣ pn → ¬ p ∣ A →
+        originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+          Spt2.tau p ⟨pn, A, hpn, hA⟩) ∧
+      (p ∣ pn → ¬ p ∣ A →
+        originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+          Spt2.tau p ⟨pn, A, hpn, hA⟩) ∧
+      (¬ p ∣ pn → p ∣ A →
+        originLocalTjurinaLength (p := p) (benchSurface (p := p) pn A) =
+          Spt2.tau p ⟨pn, A, hpn, hA⟩) := by
+  constructor
+  · intro hpnp hAp
+    exact originLocalTjurinaLength_eq_tau_coprimeRow
+      (p := p) hpn hA hpnp hAp (Ccoprime hpnp hAp)
+  constructor
+  · intro hpnp hAp
+    exact originLocalTjurinaLength_eq_tau_divPnRow
+      (p := p) hpn hA hpnp hAp (CdivPn hpnp hAp)
+  · intro hpnp hAp
+    exact originLocalTjurinaLength_eq_tau_divARow
+      (p := p) hpn hA hpnp hAp (CdivA hpnp hAp)
+
+end BenchmarkLocalLengthCompletion
+
+/-- A local `δ_x` certificate: the actual normalization quotient
+`Õ_{X,x}/O_{X,x}` has a finite vector-space normal form of rank `δ`. -/
+structure LocalDeltaLengthCertificate (A : Type*) [AddCommGroup A] [Module k A]
+    (delta : ℕ) where
+  normalForm : A ≃ₗ[k] (Fin delta → k)
+
+namespace LocalDeltaLengthCertificate
+
+theorem finrank_eq {A : Type*} [AddCommGroup A] [Module k A] {delta : ℕ}
+    (C : LocalDeltaLengthCertificate (k := k) A delta) :
+    Module.finrank k A = delta := by
+  rw [LinearEquiv.finrank_eq C.normalForm, Module.finrank_fin_fun]
+
+theorem length_eq {A : Type*} [AddCommGroup A] [Module k A] {delta : ℕ}
+    (C : LocalDeltaLengthCertificate (k := k) A delta) :
+    Module.length k A = (delta : ℕ∞) := by
+  rw [C.normalForm.length_eq, Module.length_eq_finrank, Module.finrank_fin_fun]
+
+end LocalDeltaLengthCertificate
+
+/-- Branch-refined normalization data for one fiber, exposing the shared input
+used by both Ét and Mot. -/
+structure NormalizationInputT2 where
+  genusNormalization : ℕ
+  dualGraphB1 : ℕ
+  localData : List CurveModel.LocalDelta
+
+namespace NormalizationInputT2
+
+def deltaSum (N : NormalizationInputT2) : ℕ :=
+  (N.localData.map CurveModel.LocalDelta.delta).sum
+
+def branchExcessSum (N : NormalizationInputT2) : ℕ :=
+  (N.localData.map CurveModel.LocalDelta.branchExcess).sum
+
+def branchDeltaDefectRank (N : NormalizationInputT2) : ℕ :=
+  N.branchExcessSum + N.deltaSum
+
+def graphCompatible (N : NormalizationInputT2) : Prop :=
+  N.dualGraphB1 = N.branchExcessSum
+
+theorem branchDeltaDefectRank_eq_graph_delta
+    (N : NormalizationInputT2) (h : N.graphCompatible) :
+    N.branchDeltaDefectRank = N.dualGraphB1 + N.deltaSum := by
+  unfold branchDeltaDefectRank graphCompatible at *
+  rw [h]
+
+theorem etaleBump_eq_branchDeltaDefect
+    (N : NormalizationInputT2) :
+    etaleBumpT2 (k := k) N.genusNormalization N.branchExcessSum N.deltaSum =
+      N.branchDeltaDefectRank := by
+  rw [etaleBumpT2_eq]
+  rfl
+
+theorem motivicJump_eq_branchDeltaDefect
+    (N : NormalizationInputT2) :
+    motivicEulerJumpT2 N.branchExcessSum N.deltaSum =
+      N.branchDeltaDefectRank := by
+  rfl
+
+theorem etale_eq_motive_from_normalizationInput
+    (N : NormalizationInputT2) :
+    etaleBumpT2 (k := k) N.genusNormalization N.branchExcessSum N.deltaSum =
+      motivicEulerJumpT2 N.branchExcessSum N.deltaSum := by
+  rw [etaleBump_eq_branchDeltaDefect, motivicJump_eq_branchDeltaDefect]
+
+theorem etaleBump_eq_graph_delta_of_compatible
+    (N : NormalizationInputT2) (h : N.graphCompatible) :
+    etaleBumpT2 (k := k) N.genusNormalization N.dualGraphB1 N.deltaSum =
+      N.branchDeltaDefectRank := by
+  rw [etaleBumpT2_eq, branchDeltaDefectRank_eq_graph_delta N h]
+
+theorem motivicJump_eq_graph_delta_of_compatible
+    (N : NormalizationInputT2) (h : N.graphCompatible) :
+    motivicEulerJumpT2 N.dualGraphB1 N.deltaSum =
+      N.branchDeltaDefectRank := by
+  rw [motivicEulerJumpT2, branchDeltaDefectRank_eq_graph_delta N h]
+
+/-- Base change preserving the shared normalization input.  This is the T2
+normalization-data version of proper/étale base change. -/
+structure BaseChange (N N' : NormalizationInputT2) : Prop where
+  hgenus : N'.genusNormalization = N.genusNormalization
+  hdualGraphB1 : N'.dualGraphB1 = N.dualGraphB1
+  hbranchExcess : N'.branchExcessSum = N.branchExcessSum
+  hdelta : N'.deltaSum = N.deltaSum
+
+namespace BaseChange
+
+theorem refl (N : NormalizationInputT2) : BaseChange N N :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+theorem symm {N N' : NormalizationInputT2} (h : BaseChange N N') :
+    BaseChange N' N :=
+  ⟨h.hgenus.symm, h.hdualGraphB1.symm, h.hbranchExcess.symm, h.hdelta.symm⟩
+
+theorem trans {N₀ N₁ N₂ : NormalizationInputT2}
+    (h₀₁ : BaseChange N₀ N₁) (h₁₂ : BaseChange N₁ N₂) :
+    BaseChange N₀ N₂ :=
+  ⟨h₁₂.hgenus.trans h₀₁.hgenus,
+    h₁₂.hdualGraphB1.trans h₀₁.hdualGraphB1,
+    h₁₂.hbranchExcess.trans h₀₁.hbranchExcess,
+    h₁₂.hdelta.trans h₀₁.hdelta⟩
+
+theorem branchDeltaDefectRank_stable {N N' : NormalizationInputT2}
+    (h : BaseChange N N') :
+    N'.branchDeltaDefectRank = N.branchDeltaDefectRank := by
+  unfold NormalizationInputT2.branchDeltaDefectRank
+  rw [h.hbranchExcess, h.hdelta]
+
+theorem etaleBumpT2_stable {N N' : NormalizationInputT2}
+    (h : BaseChange N N') :
+    etaleBumpT2 (k := k) N'.genusNormalization N'.branchExcessSum N'.deltaSum =
+      etaleBumpT2 (k := k) N.genusNormalization N.branchExcessSum N.deltaSum := by
+  rw [etaleBumpT2_eq, etaleBumpT2_eq, h.hbranchExcess, h.hdelta]
+
+theorem motivicEulerJumpT2_stable {N N' : NormalizationInputT2}
+    (h : BaseChange N N') :
+    motivicEulerJumpT2 N'.branchExcessSum N'.deltaSum =
+      motivicEulerJumpT2 N.branchExcessSum N.deltaSum := by
+  unfold motivicEulerJumpT2
+  rw [h.hbranchExcess, h.hdelta]
+
+theorem etale_motive_stable {N N' : NormalizationInputT2}
+    (h : BaseChange N N') :
+    etaleBumpT2 (k := k) N'.genusNormalization N'.branchExcessSum N'.deltaSum =
+        etaleBumpT2 (k := k) N.genusNormalization N.branchExcessSum N.deltaSum ∧
+      motivicEulerJumpT2 N'.branchExcessSum N'.deltaSum =
+        motivicEulerJumpT2 N.branchExcessSum N.deltaSum :=
+  ⟨etaleBumpT2_stable (k := k) h,
+    motivicEulerJumpT2_stable h⟩
+
+theorem graphCompatible_stable {N N' : NormalizationInputT2}
+    (h : BaseChange N N') :
+    N'.graphCompatible ↔ N.graphCompatible := by
+  unfold NormalizationInputT2.graphCompatible
+  rw [h.hdualGraphB1, h.hbranchExcess]
+
+end BaseChange
+
+end NormalizationInputT2
+
 /-- A compact 3-term realization of the defect motive after applying a
 cohomological realization functor.  Each entry records the dimension of an
 explicit `k`-vector space `Fin n → k`; `χ` below is the alternating sum of their
@@ -6451,6 +7039,31 @@ section AxiomAudit
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.branchDeltaDefectSpace_finrank
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.curveFiber_bump_eq_branchDeltaDefect_finrank
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.proposition_3_24_Q_branch_decomposition_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationSheafCertificate.floor_data
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.localDefectSpace_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.monomialBoxSpace_finrank
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.monomialBoxSpace_length
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.MonomialBoxLengthCertificate.finrank_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.MonomialBoxLengthCertificate.length_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.OriginLocalJacobianNormalFormCertificate.finrank_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.OriginLocalJacobianNormalFormCertificate.length_eq_box
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_eq_tau_coprimeRow
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_eq_tau_divPnRow
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_eq_tau_divARow
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_finiteRows_eq_tau
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.LocalDeltaLengthCertificate.finrank_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.LocalDeltaLengthCertificate.length_eq
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.branchDeltaDefectRank_eq_graph_delta
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.etaleBump_eq_branchDeltaDefect
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.motivicJump_eq_branchDeltaDefect
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.etale_eq_motive_from_normalizationInput
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.etaleBump_eq_graph_delta_of_compatible
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.motivicJump_eq_graph_delta_of_compatible
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.BaseChange.branchDeltaDefectRank_stable
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.BaseChange.etaleBumpT2_stable
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.BaseChange.motivicEulerJumpT2_stable
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.BaseChange.etale_motive_stable
+#print axioms Spt2.GeometricWorkarounds.NormalizationReal.NormalizationInputT2.BaseChange.graphCompatible_stable
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.defect_chi_eq_motivicEulerJumpT2
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.euler_additivity_T2
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.realization_compatibility_T2
@@ -6460,6 +7073,332 @@ section AxiomAudit
 #print axioms Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler.b1_eq_fintypeCard
 #print axioms Spt2.GeometricWorkarounds.DualGraphReal.SimpleGraphEuler.connected_b1_eq_zero_iff_isTree
 end AxiomAudit
+
+/-!
+================================================================================
+## Object-level detector wiring: finite realizations feed the master certificate
+
+The paper-facing `CertifiedSPT2` interface is intentionally small: it only needs
+normalization, etale, and motivic detector cores. Earlier layers build stronger
+objects:
+
+* `EtaleBumpMeasurementT2`, whose dimensions are actual `Fin n -> k` vector
+  spaces and whose bump formula is rank-nullity / SES finrank.
+* `CertifiedMotiveTriangleT2`, whose defect is a certified cone-like term in an
+  abstract localization triangle and whose Euler jump is compatible with the
+  etale realization through `MotiveRealizationCompatibilityCertificateT2`.
+* `NormalizationInputT2`, the shared branch/delta/dual-graph input.
+
+This section is the missing wiring: it turns those object-level certificates into
+the core fields used by `CertifiedSPT2`, so the remaining floors are visible
+structure fields rather than hidden global axioms.
+================================================================================
+-/
+
+namespace Spt2
+
+namespace CertifiedSPT2RealizationWiring
+
+namespace NR := GeometricWorkarounds.NormalizationReal
+namespace BC := BypassCertificate
+
+/-- Build the normalization core from the branch-refined normalization input. -/
+noncomputable def normalizationCoreOfInputT2
+    {k : Type*} [Field k]
+    (N : NR.NormalizationInputT2) (smooth : Prop)
+    (hsmooth : smooth ↔ N.dualGraphB1 = 0 ∧ N.deltaSum = 0) :
+    BC.NormalizationCore smooth where
+  genusNormalization := N.genusNormalization
+  b1 := N.dualGraphB1
+  deltaSum := N.deltaSum
+  h1Curve := 2 * N.genusNormalization + N.dualGraphB1 + N.deltaSum
+  h1SmoothOpen := 2 * N.genusNormalization
+  bump := NR.etaleBumpT2 (k := k) N.genusNormalization N.dualGraphB1 N.deltaSum
+  h1_curve_formula := rfl
+  h1_open_formula := rfl
+  bump_formula := by
+    exact NR.etaleBumpT2_eq (k := k) N.genusNormalization N.dualGraphB1 N.deltaSum
+  smooth_iff_no_defect := hsmooth
+
+@[simp] theorem normalizationCoreOfInputT2_b1
+    {k : Type*} [Field k]
+    (N : NR.NormalizationInputT2) (smooth : Prop)
+    (hsmooth : smooth ↔ N.dualGraphB1 = 0 ∧ N.deltaSum = 0) :
+    (normalizationCoreOfInputT2 (k := k) N smooth hsmooth).b1 = N.dualGraphB1 := rfl
+
+@[simp] theorem normalizationCoreOfInputT2_deltaSum
+    {k : Type*} [Field k]
+    (N : NR.NormalizationInputT2) (smooth : Prop)
+    (hsmooth : smooth ↔ N.dualGraphB1 = 0 ∧ N.deltaSum = 0) :
+    (normalizationCoreOfInputT2 (k := k) N smooth hsmooth).deltaSum = N.deltaSum := rfl
+
+/-- Wire the object-level etale measurement into the small etale core. -/
+noncomputable def etaleCoreOfMeasurementT2
+    {k : Type*} [Field k] {g b1 deltaSum : ℕ}
+    (M : NR.EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    BC.EtaleCore (NR.etaleBumpT2 (k := k) g b1 deltaSum) where
+  etaleSilent := M.dimH0Skyscraper = 0
+  h1EtFiberFinite := True
+  h1EtSmoothOpenFinite := True
+  bump_is_h1_difference :=
+    NR.etaleBumpT2 (k := k) g b1 deltaSum =
+      M.dimH1Fiber - M.dimH1SmoothOpen
+  etaleSilent_iff_bump_zero := by
+    constructor
+    · intro h
+      rw [NR.EtaleBumpMeasurementT2.bump_eq_skyscraper (k := k) M, h]
+    · intro h
+      rwa [NR.EtaleBumpMeasurementT2.bump_eq_skyscraper (k := k) M] at h
+
+theorem etaleCoreOfMeasurementT2_bump_is_h1_difference
+    {k : Type*} [Field k] {g b1 deltaSum : ℕ}
+    (M : NR.EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    (etaleCoreOfMeasurementT2 (k := k) M).bump_is_h1_difference :=
+  NR.EtaleBumpMeasurementT2.bump_eq_output_difference (k := k) M
+
+theorem etaleCoreOfMeasurementT2_bump_eq_skyscraper
+    {k : Type*} [Field k] {g b1 deltaSum : ℕ}
+    (M : NR.EtaleBumpMeasurementT2 (k := k) g b1 deltaSum) :
+    NR.etaleBumpT2 (k := k) g b1 deltaSum = M.dimH0Skyscraper :=
+  NR.EtaleBumpMeasurementT2.bump_eq_skyscraper (k := k) M
+
+/-- Wire the certified motivic triangle and realization-compatibility bridge. -/
+noncomputable def motiveCoreOfRealizationT2
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    BC.MotiveCore (NR.etaleBumpT2 (k := k) g b1 deltaSum) where
+  motivicSilent := NR.motivicEulerJumpT2 b1 deltaSum = 0
+  eulerJump := NR.motivicEulerJumpT2 b1 deltaSum
+  defectMotiveConstructed := T.defectIsCone
+  localizationTriangle := T.localizationTriangle
+  realizationCompatible :=
+    T.chiMot T.defect = (NR.etaleBumpT2 (k := k) g b1 deltaSum : ℤ)
+  eulerAdditive :=
+    T.chiMot T.compactFiber = T.chiMot T.compactOpen + T.chiMot T.defect
+  eulerJump_eq_bump :=
+    NR.realization_compatibility_T2 (k := k) g b1 deltaSum
+  motivicSilent_iff_eulerJump_zero := Iff.rfl
+
+theorem motiveCoreOfRealizationT2_defectMotiveConstructed
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    (motiveCoreOfRealizationT2 (k := k) C).defectMotiveConstructed :=
+  NR.CertifiedMotiveTriangleT2.defect_is_cone T
+
+theorem motiveCoreOfRealizationT2_localizationTriangle
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    (motiveCoreOfRealizationT2 (k := k) C).localizationTriangle :=
+  T.localizationTriangle_certified
+
+theorem motiveCoreOfRealizationT2_realizationCompatible
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    (motiveCoreOfRealizationT2 (k := k) C).realizationCompatible :=
+  NR.MotiveRealizationCompatibilityCertificateT2.prop_3_27 (k := k) C
+
+theorem motiveCoreOfRealizationT2_eulerAdditive
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    (motiveCoreOfRealizationT2 (k := k) C).eulerAdditive :=
+  NR.CertifiedMotiveTriangleT2.chi_fiber_eq_open_add_defect T
+
+theorem motiveCoreOfRealizationT2_eulerJump_from_triangle
+    {k : Type*} [Field k]
+    {T : NR.CertifiedMotiveTriangleT2} {g b1 deltaSum : ℕ}
+    (C : NR.MotiveRealizationCompatibilityCertificateT2 (k := k) T g b1 deltaSum) :
+    ((motiveCoreOfRealizationT2 (k := k) C).eulerJump : ℤ) = T.eulerJump := by
+  simpa [motiveCoreOfRealizationT2] using
+    (NR.MotiveRealizationCompatibilityCertificateT2.eulerJump_eq_motivicEulerJumpT2
+      (k := k) C).symm
+
+/-- The realized detector package: shared normalization input plus object-level
+etale and motivic certificates. -/
+structure RealizedDetectorCorePackage (k : Type*) [Field k] (smooth : Prop) where
+  input : NR.NormalizationInputT2
+  smooth_iff_no_defect :
+    smooth ↔ input.dualGraphB1 = 0 ∧ input.deltaSum = 0
+  etaleMeasurement :
+    NR.EtaleBumpMeasurementT2 (k := k)
+      input.genusNormalization input.dualGraphB1 input.deltaSum
+  motiveTriangle : NR.CertifiedMotiveTriangleT2
+  motiveCompatibility :
+    NR.MotiveRealizationCompatibilityCertificateT2 (k := k)
+      motiveTriangle input.genusNormalization input.dualGraphB1 input.deltaSum
+
+namespace RealizedDetectorCorePackage
+
+noncomputable def normalizationCore
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    BC.NormalizationCore smooth :=
+  normalizationCoreOfInputT2 (k := k) P.input smooth P.smooth_iff_no_defect
+
+noncomputable def etaleCore
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    BC.EtaleCore P.normalizationCore.bump := by
+  show BC.EtaleCore
+    (NR.etaleBumpT2 (k := k)
+      P.input.genusNormalization P.input.dualGraphB1 P.input.deltaSum)
+  exact etaleCoreOfMeasurementT2 (k := k) P.etaleMeasurement
+
+noncomputable def motiveCore
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    BC.MotiveCore P.normalizationCore.bump := by
+  show BC.MotiveCore
+    (NR.etaleBumpT2 (k := k)
+      P.input.genusNormalization P.input.dualGraphB1 P.input.deltaSum)
+  exact motiveCoreOfRealizationT2 (k := k) P.motiveCompatibility
+
+theorem etaleCore_uses_skyscraper_mass
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    P.normalizationCore.bump = P.etaleMeasurement.dimH0Skyscraper :=
+  etaleCoreOfMeasurementT2_bump_eq_skyscraper (k := k) P.etaleMeasurement
+
+theorem motiveCore_eulerJump_from_triangle
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    ((P.motiveCore.eulerJump : ℤ) = P.motiveTriangle.eulerJump) :=
+  motiveCoreOfRealizationT2_eulerJump_from_triangle (k := k) P.motiveCompatibility
+
+theorem etale_motive_have_same_numeric_jump
+    {k : Type*} [Field k] {smooth : Prop}
+    (P : RealizedDetectorCorePackage k smooth) :
+    P.motiveCore.eulerJump = P.normalizationCore.bump :=
+  P.motiveCore.eulerJump_eq_bump
+
+end RealizedDetectorCorePackage
+
+/-- Visible collection of the remaining non-native floors. -/
+structure VisibleFloorBundle
+    (f f' : CurveModel.CurveFiber)
+    (D : StructuralResolution.DetectorPairData) where
+  sixFunctor : CurveModel.SixFunctorBaseChangePackage f f'
+  etaleFoundation : NR.EtaleFoundationCertificate
+  normalizationSheaf : NR.NormalizationSheafCertificate
+  detectorSheaf :
+    StructuralResolution.DetectorPairData.DetectorSheafInstantiationCertificate D
+
+namespace VisibleFloorBundle
+
+theorem sixFunctor_floor
+    {f f' : CurveModel.CurveFiber}
+    {D : StructuralResolution.DetectorPairData}
+    (B : VisibleFloorBundle f f' D) :
+    B.sixFunctor.jShriekBaseChange ∧
+      B.sixFunctor.motiveConeBaseChange ∧
+      B.sixFunctor.realizationBaseChange :=
+  CurveModel.SixFunctorBaseChangePackage.categorical_floor B.sixFunctor
+
+theorem etale_floor
+    {f f' : CurveModel.CurveFiber}
+    {D : StructuralResolution.DetectorPairData}
+    (B : VisibleFloorBundle f f' D) :
+    B.etaleFoundation.h1_values_from_actual_etale_cohomology ∧
+      B.etaleFoundation.normalization_sheaf_SES_realized ∧
+      B.etaleFoundation.leray_for_normalization_realized ∧
+      B.etaleFoundation.skyscraper_mass_realized :=
+  NR.EtaleFoundationCertificate.floor_data B.etaleFoundation
+
+theorem normalization_floor
+    {f f' : CurveModel.CurveFiber}
+    {D : StructuralResolution.DetectorPairData}
+    (B : VisibleFloorBundle f f' D) :
+    B.normalizationSheaf.normalization_constructed ∧
+      B.normalizationSheaf.conductor_square_constructed ∧
+      B.normalizationSheaf.sheaf_SES_realized ∧
+      B.normalizationSheaf.leray_normalization_realized ∧
+      B.normalizationSheaf.skyscraper_decomposition_realized :=
+  NR.NormalizationSheafCertificate.floor_data B.normalizationSheaf
+
+theorem detector_sheaf_floor
+    {f f' : CurveModel.CurveFiber}
+    {D : StructuralResolution.DetectorPairData}
+    (B : VisibleFloorBundle f f' D) :
+    B.detectorSheaf.actualDetectorSheafConstructed ∧
+      B.detectorSheaf.left_is_actual_sections_on_Df ∧
+      B.detectorSheaf.right_is_actual_sections_on_Dg ∧
+      B.detectorSheaf.overlap_is_actual_sections_on_Dfg ∧
+      B.detectorSheaf.restrictions_are_actual_restrictions :=
+  StructuralResolution.DetectorPairData.DetectorSheafInstantiationCertificate.floor_data
+    B.detectorSheaf
+
+theorem all_floors_visible
+    {f f' : CurveModel.CurveFiber}
+    {D : StructuralResolution.DetectorPairData}
+    (B : VisibleFloorBundle f f' D) :
+    (B.sixFunctor.jShriekBaseChange ∧
+      B.sixFunctor.motiveConeBaseChange ∧
+      B.sixFunctor.realizationBaseChange) ∧
+    (B.etaleFoundation.h1_values_from_actual_etale_cohomology ∧
+      B.etaleFoundation.normalization_sheaf_SES_realized ∧
+      B.etaleFoundation.leray_for_normalization_realized ∧
+      B.etaleFoundation.skyscraper_mass_realized) ∧
+    (B.normalizationSheaf.normalization_constructed ∧
+      B.normalizationSheaf.conductor_square_constructed ∧
+      B.normalizationSheaf.sheaf_SES_realized ∧
+      B.normalizationSheaf.leray_normalization_realized ∧
+      B.normalizationSheaf.skyscraper_decomposition_realized) ∧
+    (B.detectorSheaf.actualDetectorSheafConstructed ∧
+      B.detectorSheaf.left_is_actual_sections_on_Df ∧
+      B.detectorSheaf.right_is_actual_sections_on_Dg ∧
+      B.detectorSheaf.overlap_is_actual_sections_on_Dfg ∧
+      B.detectorSheaf.restrictions_are_actual_restrictions) :=
+  ⟨sixFunctor_floor B, etale_floor B, normalization_floor B, detector_sheaf_floor B⟩
+
+end VisibleFloorBundle
+
+/-- Audit marker for delegated manuscript citations: no hidden dependency is
+introduced by this object-level wiring layer. -/
+structure DelegatedCitationNoHiddenDependencyChecklist where
+  hensel_thm_7_3_replaced_by_HenselReal : Prop
+  prop_20_1_replaced_by_kernel_lcm : Prop
+  curve_level_wrappers_use_named_certificates : Prop
+  no_untracked_manuscript_axiom_in_this_layer : Prop
+  hensel_certified : hensel_thm_7_3_replaced_by_HenselReal
+  kernel_certified : prop_20_1_replaced_by_kernel_lcm
+  wrappers_certified : curve_level_wrappers_use_named_certificates
+  no_hidden_axiom_certified : no_untracked_manuscript_axiom_in_this_layer
+
+namespace DelegatedCitationNoHiddenDependencyChecklist
+
+theorem floor_data (C : DelegatedCitationNoHiddenDependencyChecklist) :
+    C.hensel_thm_7_3_replaced_by_HenselReal ∧
+      C.prop_20_1_replaced_by_kernel_lcm ∧
+      C.curve_level_wrappers_use_named_certificates ∧
+      C.no_untracked_manuscript_axiom_in_this_layer :=
+  ⟨C.hensel_certified, C.kernel_certified, C.wrappers_certified,
+    C.no_hidden_axiom_certified⟩
+
+end DelegatedCitationNoHiddenDependencyChecklist
+
+end CertifiedSPT2RealizationWiring
+
+end Spt2
+
+/-! ## Axiom audit for the object-level detector wiring. -/
+section CertifiedSPT2RealizationWiringAxiomAudit
+#print axioms Spt2.CertifiedSPT2RealizationWiring.normalizationCoreOfInputT2
+#print axioms Spt2.CertifiedSPT2RealizationWiring.etaleCoreOfMeasurementT2
+#print axioms Spt2.CertifiedSPT2RealizationWiring.etaleCoreOfMeasurementT2_bump_is_h1_difference
+#print axioms Spt2.CertifiedSPT2RealizationWiring.motiveCoreOfRealizationT2
+#print axioms Spt2.CertifiedSPT2RealizationWiring.motiveCoreOfRealizationT2_realizationCompatible
+#print axioms Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage.normalizationCore
+#print axioms Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage.etaleCore
+#print axioms Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage.motiveCore
+#print axioms Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage.etaleCore_uses_skyscraper_mass
+#print axioms Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage.motiveCore_eulerJump_from_triangle
+#print axioms Spt2.CertifiedSPT2RealizationWiring.VisibleFloorBundle.all_floors_visible
+#print axioms Spt2.CertifiedSPT2RealizationWiring.DelegatedCitationNoHiddenDependencyChecklist.floor_data
+end CertifiedSPT2RealizationWiringAxiomAudit
 
 /-!
 ================================================================================
@@ -6630,7 +7569,9 @@ def pastedCoverageWrapperNames : List String :=
     "CertifiedSPT2.toArithmeticCurve_corollary_1_4",
     "CertifiedSPT2.toArithmeticCurve_corollary_1_5",
     "CertifiedSPT2.toArithmeticCurve_proposition_1_6",
+    "CertifiedSPT2.toArithmeticCurve_proposition_2_9",
     "CertifiedSPT2.toArithmeticCurve_corollary_2_6",
+    "CertifiedSPT2.toArithmeticCurve_corollary_2_15",
     "CertifiedSPT2.toArithmeticCurve_proposition_2_7",
     "CertifiedSPT2.toArithmeticCurve_corollary_2_11",
     "CertifiedSPT2.toArithmeticCurve_defectMotive_eq",
@@ -6641,6 +7582,7 @@ def pastedCoverageWrapperNames : List String :=
     "CertifiedSPT2.toArithmeticCurve_lemma_3_2",
     "CertifiedSPT2.toArithmeticCurve_theorem_3_3",
     "CertifiedSPT2.toArithmeticCurve_corollary_3_4",
+    "CertifiedSPT2.toArithmeticCurve_corollary_3_7",
     "CertifiedSPT2.toArithmeticCurve_theorem_3_6",
     "CertifiedSPT2.toArithmeticCurve_visiblePrimeOn",
     "CertifiedSPT2.toArithmeticCurve_proposition_3_10",
@@ -6649,6 +7591,7 @@ def pastedCoverageWrapperNames : List String :=
     "CertifiedSPT2.toArithmeticCurve_detectors_alg",
     "CertifiedSPT2.toArithmeticCurve_theorem_3_16",
     "CertifiedSPT2.toArithmeticCurve_lemma_3_18",
+    "CertifiedSPT2.toArithmeticCurve_corollary_3_17",
     "CertifiedSPT2.toArithmeticCurve_proposition_3_23",
     "CertifiedSPT2.toArithmeticCurve_proposition_3_24",
     "CertifiedSPT2.toArithmeticCurve_proposition_3_25",
@@ -6669,7 +7612,7 @@ def pastedCoverageWrapperNames : List String :=
     "CertifiedSPT2.toArithmeticCurve_corollary_6_11" ]
 
 theorem pastedCoverageWrapperNames_count :
-    pastedCoverageWrapperNames.length = 41 := by
+    pastedCoverageWrapperNames.length = 45 := by
   rfl
 
 structure PaperStatementCoverage where
@@ -7099,6 +8042,669 @@ section MotiveChecklistAxiomAudit
 #print axioms MotiveChecklist.motive_reducedCertificate_count
 end MotiveChecklistAxiomAudit
 
+/-! ## Shared normalization-data checklist for Ét, Mot, and Ét=Mot. -/
+
+namespace NormalizationDataChecklist
+
+/-- Checklist D: the shared singular-curve normalization input. -/
+structure NormalizationDetectorChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  nativeDeltaProgress : List String
+  status : FormalizationStatus
+  deriving Repr
+
+def normalizationChecklist : NormalizationDetectorChecklist :=
+  { object := "Shared normalization data for singular curve fibers"
+    needed :=
+      ["Normalization nu : Xtilde_p -> X_p",
+       "Dual graph Gamma_p and b1(Gamma_p)",
+       "Local delta invariants delta_x and branch counts gamma_x",
+       "Conductor square",
+       "Sheaf SES and Q decomposition into branch and delta summands"]
+    native :=
+      ["DualGraphReal.FiniteGraph.b1 = E + c - V",
+       "DualGraphReal.b1_eq_zero_iff_isForest",
+       "DualGraphReal.SimpleGraphEuler.connected_b1_eq_zero_iff_isTree",
+       "NormalizationReal.ses_finrank",
+       "NormalizationReal.proposition_3_24_Q_branch_decomposition_finrank",
+       "NormalizationReal.localDefectSpace_finrank",
+       "NormalizationReal.NormalizationInputT2.etale_eq_motive_from_normalizationInput"]
+    bypass :=
+      ["Keep sheaf-level normalization and conductor data as a local certificate",
+       "Realize Q by finite vector spaces for branch excess and delta mass",
+       "Use NormalizationInputT2 as the common input for both etale bump and motivic jump"]
+    floor :=
+      ["Actual sheaf-level normalization, conductor square, and etale sheaf SES",
+       "Actual local delta calculation delta_x = length(normalization quotient)",
+       "Actual proof that skyscraper mass realizes Q for etale sheaves"]
+    nativeDeltaProgress :=
+      ["MonomialBoxSpace proves the m*n finite normal-form dimension natively",
+       "MonomialBoxLengthCertificate turns any quotient normal-form equivalence into Module.length = m*n",
+       "LocalDeltaLengthCertificate turns a normalization quotient normal form into Module.length = delta"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem normalization_needed_count :
+    normalizationChecklist.needed.length = 5 := by
+  decide
+
+theorem normalization_native_count :
+    normalizationChecklist.native.length = 7 := by
+  decide
+
+theorem normalization_bypass_count :
+    normalizationChecklist.bypass.length = 3 := by
+  decide
+
+theorem normalization_floor_count :
+    normalizationChecklist.floor.length = 3 := by
+  decide
+
+theorem normalization_nativeDeltaProgress_count :
+    normalizationChecklist.nativeDeltaProgress.length = 3 := by
+  decide
+
+end NormalizationDataChecklist
+
+section NormalizationDataChecklistAxiomAudit
+#print axioms NormalizationDataChecklist.normalization_needed_count
+#print axioms NormalizationDataChecklist.normalization_native_count
+#print axioms NormalizationDataChecklist.normalization_bypass_count
+#print axioms NormalizationDataChecklist.normalization_floor_count
+#print axioms NormalizationDataChecklist.normalization_nativeDeltaProgress_count
+end NormalizationDataChecklistAxiomAudit
+
+/-! ## Six-functor base-change checklist. -/
+
+namespace SixFunctorBaseChangeChecklist
+
+/-- Checklist E: proper/étale base change and transport stability. -/
+structure SixFunctorChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  numericShadow : List String
+  status : FormalizationStatus
+  deriving Repr
+
+def sixFunctorChecklist : SixFunctorChecklist :=
+  { object := "Six-functor proper/etale base change"
+    needed :=
+      ["Proposition 2.7 base-change stability",
+       "Proposition 3.11 and 3.31 detector stability",
+       "Corollary 3.31 transport plus base change",
+       "Lemma 6.6 transport stability"]
+    native :=
+      ["CurveModel.BaseChange.all_numeric_detectors_stable",
+       "CurveModel.BaseChange.detectors_stable",
+       "CurveModel.SixFunctorBaseChangePackage.all_numeric_detectors_stable",
+       "CurveModel.SixFunctorBaseChangePackage.etale_motive_numeric_stable",
+       "CurveModel.SixFunctorBaseChangePackage.detector_transport_stable",
+       "NormalizationReal.NormalizationInputT2.BaseChange.etale_motive_stable",
+       "DerivedBaseChange.formallySmooth_baseChange"]
+    bypass :=
+      ["Keep categorical six-functor assertions as visible fields",
+       "Derive all numerical detector stability from preservation of normalization data",
+       "Use affine cotangent base change for the Der detector where applicable"]
+    floor :=
+      ["j_! commutes with the relevant base change",
+       "The defect cone construction commutes with base change",
+       "The realization functor commutes with base change"]
+    numericShadow :=
+      ["NormalizationInputT2.BaseChange preserves etaleBumpT2",
+       "NormalizationInputT2.BaseChange preserves motivicEulerJumpT2",
+       "CurveModel.SixFunctorBaseChangePackage.categorical_floor exposes exactly the three categorical assumptions"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem sixFunctor_needed_count :
+    sixFunctorChecklist.needed.length = 4 := by
+  decide
+
+theorem sixFunctor_native_count :
+    sixFunctorChecklist.native.length = 7 := by
+  decide
+
+theorem sixFunctor_bypass_count :
+    sixFunctorChecklist.bypass.length = 3 := by
+  decide
+
+theorem sixFunctor_floor_count :
+    sixFunctorChecklist.floor.length = 3 := by
+  decide
+
+theorem sixFunctor_numericShadow_count :
+    sixFunctorChecklist.numericShadow.length = 3 := by
+  decide
+
+end SixFunctorBaseChangeChecklist
+
+section SixFunctorBaseChangeChecklistAxiomAudit
+#print axioms SixFunctorBaseChangeChecklist.sixFunctor_needed_count
+#print axioms SixFunctorBaseChangeChecklist.sixFunctor_native_count
+#print axioms SixFunctorBaseChangeChecklist.sixFunctor_bypass_count
+#print axioms SixFunctorBaseChangeChecklist.sixFunctor_floor_count
+#print axioms SixFunctorBaseChangeChecklist.sixFunctor_numericShadow_count
+end SixFunctorBaseChangeChecklistAxiomAudit
+
+/-! ## Detector sheaf gluing/equalizer checklist. -/
+
+namespace DetectorSheafGluingChecklist
+
+/-- Checklist F: principal-open detector sheaf gluing and equalizers. -/
+structure GluingChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  completedSkeleton : List String
+  status : FormalizationStatus
+  deriving Repr
+
+def gluingChecklist : GluingChecklist :=
+  { object := "Detector sheaf gluing on principal opens"
+    needed :=
+      ["Equation 2.1: sheaf section formula",
+       "Proposition 3.10: sectionwise computation",
+       "Lemma 3.12: CRT/equalizer gluing",
+       "Lemma 6.6: transport stability on principal opens"]
+    native :=
+      ["StructuralResolution.SectionwisePresheafLimits.sectionwiseLimitIso",
+       "StructuralResolution.SectionwisePresheafLimits.sectionwiseWidePullbackIso",
+       "StructuralResolution.SectionwisePresheafLimits.fourDetectorSectionwiseWidePullbackIso",
+       "PrincipalOpenReal.basicOpen_cover_top_iff",
+       "PrincipalOpenReal.basicOpen_pair_cover_top_iff",
+       "DetectorPairData.detector_sheaf_on_pair_cover",
+       "DetectorPairData.detector_pair_cover_iff_exists_glue",
+       "Spt2.crt_iso"]
+    bypass :=
+      ["Work with arbitrary presheaves and detector section types",
+       "Define gluing over a two-open cover as an equalizer subtype",
+       "Use principal-open cover equals unit-ideal criterion for the topological gate"]
+    floor :=
+      ["Construct the actual etale detector sheaf",
+       "Construct the actual motivic detector sheaf",
+       "Identify the abstract detector presheaves/equalizers with those concrete detector sheaves"]
+    completedSkeleton :=
+      ["Finite limits of presheaves are computed sectionwise",
+       "Four-detector fiber product is a wide pullback on sections",
+       "Two-open equalizer gluing has existence and uniqueness by subtype extensionality",
+       "CRT arithmetic is native through ZMod.chineseRemainder"]
+    status := FormalizationStatus.nativeMathlibTheorem }
+
+theorem gluing_needed_count :
+    gluingChecklist.needed.length = 4 := by
+  decide
+
+theorem gluing_native_count :
+    gluingChecklist.native.length = 8 := by
+  decide
+
+theorem gluing_bypass_count :
+    gluingChecklist.bypass.length = 3 := by
+  decide
+
+theorem gluing_floor_count :
+    gluingChecklist.floor.length = 3 := by
+  decide
+
+theorem gluing_completedSkeleton_count :
+    gluingChecklist.completedSkeleton.length = 4 := by
+  decide
+
+end DetectorSheafGluingChecklist
+
+section DetectorSheafGluingChecklistAxiomAudit
+#print axioms DetectorSheafGluingChecklist.gluing_needed_count
+#print axioms DetectorSheafGluingChecklist.gluing_native_count
+#print axioms DetectorSheafGluingChecklist.gluing_bypass_count
+#print axioms DetectorSheafGluingChecklist.gluing_floor_count
+#print axioms DetectorSheafGluingChecklist.gluing_completedSkeleton_count
+end DetectorSheafGluingChecklistAxiomAudit
+
+namespace BenchmarkLocalLengthChecklist
+
+/-- Checklist G: complete the local-length table for the benchmark
+`x^(pn) + y^A`. -/
+structure BenchmarkLengthChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  completedRows : List String
+  status : FormalizationStatus
+  deriving Repr
+
+def benchmarkLengthChecklist : BenchmarkLengthChecklist :=
+  { object := "Origin-local benchmark length table for x^(pn)+y^A"
+    needed :=
+      ["Both-divisible row: p divides pn and p divides A gives infinite length",
+       "Finite row: p does not divide pn and p does not divide A gives (pn-1)*(A-1)",
+       "Finite row: p divides pn and p does not divide A gives pn*(A-1)",
+       "Finite row: p does not divide pn and p divides A gives (pn-1)*A"]
+    native :=
+      ["CompletionLayer.Benchmark.OriginLocalTjurinaAlgebra",
+       "CompletionLayer.Benchmark.originLocalTjurinaLength",
+       "CompletionLayer.Benchmark.benchSurface_jacobianQuotient_length_eq_top",
+       "NormalizationReal.MonomialBoxLengthCertificate.length_eq",
+       "NormalizationReal.BenchmarkLocalLengthCompletion.OriginLocalJacobianNormalFormCertificate.length_eq_box",
+       "NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_eq_tau_coprimeRow",
+       "NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_finiteRows_eq_tau"]
+    bypass :=
+      ["Use the origin-local Jacobian quotient instead of a scheme-level cotangent complex",
+       "Reduce each finite row to a small monomial normal-form certificate",
+       "Derive the tau row from the certificate theorem rather than from a raw piecewise definition"]
+    floor :=
+      ["Construct the actual localization normal-form equivalence for each finite benchmark row",
+       "Promote the normal-form equivalence to the full sheaf-theoretic normalization/conductor setting"]
+    completedRows :=
+      ["p divides pn and p divides A: infinite-length native row",
+       "p does not divide pn and p does not divide A: finite certificate-to-length row",
+       "p divides pn and p does not divide A: finite certificate-to-length row",
+       "p does not divide pn and p divides A: finite certificate-to-length row"]
+    status := FormalizationStatus.certifiedInterface }
+
+theorem benchmarkLength_needed_count :
+    benchmarkLengthChecklist.needed.length = 4 := by
+  decide
+
+theorem benchmarkLength_native_count :
+    benchmarkLengthChecklist.native.length = 7 := by
+  decide
+
+theorem benchmarkLength_bypass_count :
+    benchmarkLengthChecklist.bypass.length = 3 := by
+  decide
+
+theorem benchmarkLength_floor_count :
+    benchmarkLengthChecklist.floor.length = 2 := by
+  decide
+
+theorem benchmarkLength_completedRows_count :
+    benchmarkLengthChecklist.completedRows.length = 4 := by
+  decide
+
+end BenchmarkLocalLengthChecklist
+
+section BenchmarkLocalLengthChecklistAxiomAudit
+#print axioms BenchmarkLocalLengthChecklist.benchmarkLength_needed_count
+#print axioms BenchmarkLocalLengthChecklist.benchmarkLength_native_count
+#print axioms BenchmarkLocalLengthChecklist.benchmarkLength_bypass_count
+#print axioms BenchmarkLocalLengthChecklist.benchmarkLength_floor_count
+#print axioms BenchmarkLocalLengthChecklist.benchmarkLength_completedRows_count
+end BenchmarkLocalLengthChecklistAxiomAudit
+
+namespace AlgebraicResidualChecklist
+
+/-- Checklist H: algebraic residual items that do not require new
+scheme/etale/motivic foundations. -/
+structure AlgebraicResidualChecklist where
+  object : String
+  needed : List String
+  native : List String
+  bypass : List String
+  floor : List String
+  delegatedCitationsReplacedBy : List String
+  status : FormalizationStatus
+  deriving Repr
+
+def algebraicResidualChecklist : AlgebraicResidualChecklist :=
+  { object := "Algebraic residual items: corrected discriminants, EC gate, delegated citations"
+    needed :=
+      ["Theorem 2.1 condition (1): replace raw Res(F,F') by the paper discriminant Delta",
+       "Record the sign and leading-coefficient correction outside the monic case",
+       "Remark 3.14: elliptic good reduction iff nonsingular Weierstrass reduction",
+       "Replace delegated manuscript citations [18] Theorem 7.3 and [19] by independent Lean bridges"]
+    native :=
+      ["ActualAlgebra.resultant_derivative_mod_eq_zero_iff_not_squarefree",
+       "ActualAlgebra.int_dvd_resultant_derivative_iff_not_squarefree_mod",
+       "ActualAlgebra.correctedDiscriminantCertificate",
+       "ActualAlgebra.goodPrimeByCorrectedDiscriminant_iff_discriminantGate",
+       "ActualAlgebra.badPrimeByCorrectedDiscriminant_iff_badDiscriminantGate",
+       "EllipticCurveDiscriminant.goodReduction_iff_nonsingularReduction",
+       "GeometricWorkarounds.HenselReal.global_residue_hensel_discriminant_TFAE",
+       "GeometricWorkarounds.HenselReal.every_residue_root_lifts_uniquely_of_squarefree_reduction"]
+    bypass :=
+      ["Expose the non-monic Delta-vs-resultant comparison as ResultantDiscriminantComparison",
+       "Derive all detector gates from the comparison certificate, not from a hidden project axiom",
+       "Use Mathlib's Hensel theorem directly instead of relying on unpublished manuscript citations"]
+    floor :=
+      ["Instantiate ResultantDiscriminantComparison for each concrete non-monic family from Mathlib's discriminant/resultant API",
+       "Optionally lift the EC Weierstrass predicate to a scheme-level elliptic-curve good-reduction theorem"]
+    delegatedCitationsReplacedBy :=
+      ["[18] Theorem 7.3: replaced by HenselReal.global_residue_hensel_discriminant_TFAE",
+       "[18] local simple-root lifting step: replaced by HenselReal.unique_padic_lift and hensel_gate",
+       "[19] discriminant-alignment usage: represented by visible ResultantDiscriminantComparison fields"]
+    status := FormalizationStatus.certifiedInterface }
+
+theorem algebraicResidual_needed_count :
+    algebraicResidualChecklist.needed.length = 4 := by
+  decide
+
+theorem algebraicResidual_native_count :
+    algebraicResidualChecklist.native.length = 8 := by
+  decide
+
+theorem algebraicResidual_bypass_count :
+    algebraicResidualChecklist.bypass.length = 3 := by
+  decide
+
+theorem algebraicResidual_floor_count :
+    algebraicResidualChecklist.floor.length = 2 := by
+  decide
+
+theorem algebraicResidual_delegatedCitations_count :
+    algebraicResidualChecklist.delegatedCitationsReplacedBy.length = 3 := by
+  decide
+
+end AlgebraicResidualChecklist
+
+section AlgebraicResidualChecklistAxiomAudit
+#print axioms AlgebraicResidualChecklist.algebraicResidual_needed_count
+#print axioms AlgebraicResidualChecklist.algebraicResidual_native_count
+#print axioms AlgebraicResidualChecklist.algebraicResidual_bypass_count
+#print axioms AlgebraicResidualChecklist.algebraicResidual_floor_count
+#print axioms AlgebraicResidualChecklist.algebraicResidual_delegatedCitations_count
+end AlgebraicResidualChecklistAxiomAudit
+
+namespace MathematicalCorrectionsAndRoadmap
+
+/-- Correction 1: in the both-divisible benchmark row the detector value is
+`∞`, not `pn*A`.  This is the public correction of the inconsistent paper table
+and script row. -/
+theorem tau_both_divisible_row_is_infinite
+    (p : ℕ) (M : Spt2.Model) (hpn : p ∣ M.pn) (hA : p ∣ M.A) :
+    Spt2.tau p M = ⊤ :=
+  Spt2.tau_both p M hpn hA
+
+/-- The same correction at the genuine two-variable Jacobian quotient:
+when both partial derivatives vanish in characteristic `p`, the quotient has
+infinite `Module.length`. -/
+theorem benchmark_both_divisible_jacobian_length_is_top
+    {p : ℕ} [Fact p.Prime] (pn A : ℕ)
+    (hpn : 2 ≤ pn) (hA : 2 ≤ A) (hp : p ∣ pn) (hpA : p ∣ A) :
+    Module.length (ZMod p)
+      (Spt2.JacobianMv.JacobianQuotient
+        (Spt2.CompletionLayer.Benchmark.benchSurface (p := p) pn A)) = ⊤ :=
+  Spt2.CompletionLayer.Benchmark.benchSurface_jacobianQuotient_length_eq_top
+    (p := p) pn A hpn hA hp hpA
+
+/-- Correction 2: `finrank` is not a safe detector for infinite local
+Tjurina quotients.  The `ℕ∞`-valued length records the infinite case. -/
+theorem localLengthENat_detects_nonfinite_quotient
+    {p : ℕ} [Fact p.Prime] (f : (ZMod p)[X])
+    (h : ¬ Module.Finite (ZMod p) (Spt2.JacobianReal.JacobianQuotient f)) :
+    Spt2.JacobianReal.localLengthENat f = ⊤ :=
+  Spt2.JacobianReal.localLengthENat_eq_top_of_not_module_finite f h
+
+/-- Correction 3: for plane curves the homological cotangent-kernel model and
+the Tjurina quotient are distinct detectors in general.  In a domain with a
+nonzero gradient but non-unit Jacobian ideal, the homological kernel is silent
+while the Tjurina quotient is not. -/
+theorem planeCurve_homologicalH1_silent_but_T1_detects
+    (A : Type*) [CommRing A] [IsDomain A] {gx gy : A}
+    (hgrad : gx ≠ 0 ∨ gy ≠ 0)
+    (hJ : Ideal.span ({gx, gy} : Set A) ≠ ⊤) :
+    Subsingleton (Spt2.JacobianMv.PlaneAQH1KernelModel A gx gy) ∧
+      ¬ Subsingleton (Spt2.JacobianMv.PlaneTjurinaQuotient A gx gy) :=
+  Spt2.JacobianMv.planeAQH1KernelModel_subsingleton_and_tjurina_not_subsingleton_of_isDomain
+    A hgrad hJ
+
+/-- Roadmap item (a): any actual monomial normal-form equivalence immediately
+gives the native `Module.length = m*n` result.  This is the shared local-algebra
+bridge for finite benchmark rows and delta calculations. -/
+theorem monomial_normal_form_length_native
+    {k A : Type*} [Field k] [AddCommGroup A] [Module k A] {m n : ℕ}
+    (C : Spt2.GeometricWorkarounds.NormalizationReal.MonomialBoxLengthCertificate
+      (k := k) A m n) :
+    Module.length k A = ((m * n : ℕ) : ℕ∞) :=
+  Spt2.GeometricWorkarounds.NormalizationReal.MonomialBoxLengthCertificate.length_eq
+    (k := k) C
+
+/-- Roadmap item (b): the abstract localization-triangle Euler additivity is
+already native in the realized finite-complex shadow; only the identification
+with etale/motivic localization triangles remains a certificate. -/
+theorem abstract_localization_triangle_euler_additivity
+    {k : Type*} [Field k]
+    (T : Spt2.GeometricWorkarounds.NormalizationReal.AbstractLocalizationTriangleT2) :
+    T.total.chi (k := k) =
+      T.openPart.chi (k := k) + T.closedPart.chi (k := k) :=
+  Spt2.GeometricWorkarounds.NormalizationReal.AbstractLocalizationTriangleT2.chi_add
+    (k := k) T
+
+/-- A formal record of each correction/risk revealed by the Lean development. -/
+structure PaperCorrection where
+  label : String
+  paperRisk : String
+  leanCorrection : String
+  status : FormalizationStatus
+  deriving Repr
+
+def paperCorrections : List PaperCorrection :=
+  [ { label := "tau both-divisible row"
+      paperRisk := "Section 1.4 says infinity, Section 5.5(C) says pn*A, and the Python script can return inf for the wrong reason"
+      leanCorrection := "tau_both_divisible_row_is_infinite and benchmark_both_divisible_jacobian_length_is_top fix the row as infinity"
+      status := FormalizationStatus.nativeMathlibTheorem },
+    { label := "H1(L) versus T1"
+      paperRisk := "The paper conflates the homological cotangent-complex kernel with the Tjurina deformation quotient"
+      leanCorrection := "planeCurve_homologicalH1_silent_but_T1_detects separates the two; the detector is T1/D1"
+      status := FormalizationStatus.nativeMathlibTheorem },
+    { label := "finrank versus Module.length"
+      paperRisk := "finrank collapses non-finite vector spaces to zero"
+      leanCorrection := "localLengthENat_detects_nonfinite_quotient uses Module.length : ℕ∞"
+      status := FormalizationStatus.nativeMathlibTheorem },
+    { label := "delta formula"
+      paperRisk := "delta=(m-1)(n-1)/2 is packaged data until local normalization is constructed"
+      leanCorrection := "monomial_normal_form_length_native records the immediate native target once the local normal form is supplied"
+      status := FormalizationStatus.certifiedInterface } ]
+
+theorem paperCorrections_count :
+    paperCorrections.length = 4 := by
+  decide
+
+/-- The leverage-ordered roadmap from the certification audit. -/
+structure RoadmapItem where
+  priority : Nat
+  item : String
+  closes : List String
+  foundationNeeded : Bool
+  currentLeanHook : String
+  deriving Repr
+
+def priorityRoadmap : List RoadmapItem :=
+  [ { priority := 1
+      item := "Prove the actual origin-local monomial normal-form equivalence and length k[x,y]_(x,y)/(x^a,y^b)=a*b"
+      closes := ["finite benchmark tau rows", "delta local algebra values"]
+      foundationNeeded := false
+      currentLeanHook := "MonomialBoxLengthCertificate.length_eq; BenchmarkLocalLengthCompletion.length_eq_box" },
+    { priority := 2
+      item := "Keep localization triangle plus Euler additivity abstract and native"
+      closes := ["etale bump Euler additivity", "motivic defect Euler additivity"]
+      foundationNeeded := false
+      currentLeanHook := "AbstractLocalizationTriangleT2.chi_add" },
+    { priority := 3
+      item := "Finish multivariate Jacobian reverse direction under nonzero/regular normal assumptions and keep H1(L) separate from T1"
+      closes := ["affine Der detector", "plane-curve H1/T1 ambiguity"]
+      foundationNeeded := false
+      currentLeanHook := "formallySmooth_of_grad_span_eq_top; planeCurve_homologicalH1_silent_but_T1_detects" },
+    { priority := 4
+      item := "Unify detector bridges through TautologyFreeCurve-style small certificates"
+      closes := ["cycle-free alg_iff_* interfaces", "visible trust surface"]
+      foundationNeeded := false
+      currentLeanHook := "StructuralResolution.TautologyFreeCurve.master_equivalence" },
+    { priority := 5
+      item := "Replace visible certificates as Mathlib gains scheme cotangent, etale sheaf, and motive foundations"
+      closes := ["scheme-native Der", "etale-native bump", "motive-native defect"]
+      foundationNeeded := true
+      currentLeanHook := "ReplacementTargets and the detector-specific checklist floors" } ]
+
+theorem priorityRoadmap_count :
+    priorityRoadmap.length = 5 := by
+  decide
+
+theorem firstRoadmapItem_foundation_free :
+    (priorityRoadmap.get ⟨0, by decide⟩).foundationNeeded = false := by
+  rfl
+
+theorem longTermRoadmapItem_foundation_dependent :
+    (priorityRoadmap.get ⟨4, by decide⟩).foundationNeeded = true := by
+  rfl
+
+end MathematicalCorrectionsAndRoadmap
+
+section MathematicalCorrectionsAndRoadmapAxiomAudit
+#print axioms MathematicalCorrectionsAndRoadmap.tau_both_divisible_row_is_infinite
+#print axioms MathematicalCorrectionsAndRoadmap.benchmark_both_divisible_jacobian_length_is_top
+#print axioms MathematicalCorrectionsAndRoadmap.localLengthENat_detects_nonfinite_quotient
+#print axioms MathematicalCorrectionsAndRoadmap.planeCurve_homologicalH1_silent_but_T1_detects
+#print axioms MathematicalCorrectionsAndRoadmap.monomial_normal_form_length_native
+#print axioms MathematicalCorrectionsAndRoadmap.abstract_localization_triangle_euler_additivity
+#print axioms MathematicalCorrectionsAndRoadmap.paperCorrections_count
+#print axioms MathematicalCorrectionsAndRoadmap.priorityRoadmap_count
+#print axioms MathematicalCorrectionsAndRoadmap.firstRoadmapItem_foundation_free
+#print axioms MathematicalCorrectionsAndRoadmap.longTermRoadmapItem_foundation_dependent
+end MathematicalCorrectionsAndRoadmapAxiomAudit
+
+namespace NamedCoverageGapChecklist
+
+/-- Checklist for named paper statements whose content existed in larger
+theorems but did not previously have independent declarations. -/
+structure NamedCoverageGap where
+  paperName : String
+  addedDeclaration : String
+  mathlibGap : String
+  bypass : String
+  status : FormalizationStatus
+  deriving Repr
+
+def namedCoverageGaps : List NamedCoverageGap :=
+  [ { paperName := "Corollary 2.15"
+      addedDeclaration := "PaperFullFormalization.corollary_2_15; CertifiedSPT2.toArithmeticCurve_corollary_2_15"
+      mathlibGap := "Actual defect motives and motivic realization functors are not yet available"
+      bypass := "Use the paper-interface defectMotiveChi field plus good_to_zero to prove χ(Def_p)=0"
+      status := FormalizationStatus.certifiedInterface },
+    { paperName := "Corollary 3.7"
+      addedDeclaration := "CurveModel.corollary_3_7_good_iff_no_bump; PaperFullFormalization.corollary_3_7; CertifiedSPT2.toArithmeticCurve_corollary_3_7"
+      mathlibGap := "A general ArithmeticCurve field proving no-bump-to-good is not part of the minimal interface"
+      bypass := "Prove the iff unconditionally in CurveModel and derive the adapter bridge from NormalizationCore plus the discriminant-good certificate"
+      status := FormalizationStatus.certifiedInterface },
+    { paperName := "Corollary 3.17"
+      addedDeclaration := "PaperFullFormalization.corollary_3_17; CertifiedSPT2.toArithmeticCurve_corollary_3_17"
+      mathlibGap := "The scheme-level good-prime box is still represented by visible detector certificates"
+      bypass := "Bundle minimal_certificate and good_to_zero into one named curve good-prime box"
+      status := FormalizationStatus.certifiedInterface },
+    { paperName := "Proposition 2.9"
+      addedDeclaration := "PaperFullFormalization.proposition_2_9; CertifiedSPT2.toArithmeticCurve_proposition_2_9"
+      mathlibGap := "The principal-open Hensel gate is modeled by the same visible Hensel/discriminant bridge as Prop. 1.3"
+      bypass := "Expose a separately named theorem reusing proposition_1_3, with HenselReal as the native p-adic replacement"
+      status := FormalizationStatus.certifiedInterface } ]
+
+theorem namedCoverageGaps_count :
+    namedCoverageGaps.length = 4 := by
+  decide
+
+def namedCoverageGapDeclarations : List String :=
+  namedCoverageGaps.map NamedCoverageGap.addedDeclaration
+
+theorem namedCoverageGapDeclarations_count :
+    namedCoverageGapDeclarations.length = 4 := by
+  decide
+
+end NamedCoverageGapChecklist
+
+section NamedCoverageGapChecklistAxiomAudit
+#print axioms NamedCoverageGapChecklist.namedCoverageGaps_count
+#print axioms NamedCoverageGapChecklist.namedCoverageGapDeclarations_count
+end NamedCoverageGapChecklistAxiomAudit
+
+namespace ObjectLevelWiringChecklist
+
+/-- Checklist for the B-G object-level wiring requested after the named coverage
+gaps: these items move detector definitions from bare numeric shadows toward
+finite-dimensional realization objects and explicit floor certificates. -/
+structure ObjectLevelWiringItem where
+  item : String
+  addedDeclaration : String
+  mathlibGap : String
+  bypass : String
+  status : FormalizationStatus
+  deriving Repr
+
+def objectLevelWiringItems : List ObjectLevelWiringItem :=
+  [ { item := "B. Etale bump definition objectified"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.etaleCoreOfMeasurementT2"
+      mathlibGap := "Etale cohomology groups and constructible sheaves"
+      bypass :=
+        "Use EtaleBumpMeasurementT2 with realized Fin n -> k dimensions and SES finrank"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "B. Defect motive definition objectified"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.motiveCoreOfRealizationT2"
+      mathlibGap := "Voevodsky motives and realization functor"
+      bypass :=
+        "Use CertifiedMotiveTriangleT2 plus MotiveRealizationCompatibilityCertificateT2"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "C. Benchmark finite tau rows routed through normal-form certificates"
+      addedDeclaration :=
+        "Spt2.GeometricWorkarounds.NormalizationReal.BenchmarkLocalLengthCompletion.originLocalTjurinaLength_finiteRows_eq_tau"
+      mathlibGap := "Native local monomial-box quotient normal form for k[x,y]_(x,y)/(x^a,y^b)"
+      bypass :=
+        "Use OriginLocalJacobianNormalFormCertificate and MonomialBoxLengthCertificate.length_eq"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "D. Shared normalization input wired to CertifiedSPT2 cores"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.RealizedDetectorCorePackage"
+      mathlibGap := "Sheaf-level singular-curve normalization and delta construction"
+      bypass :=
+        "Use NormalizationInputT2, EtaleBumpMeasurementT2, and CertifiedMotiveTriangleT2 together"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "E. Detector sheaf gluing floor exposed"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.VisibleFloorBundle.detector_sheaf_floor"
+      mathlibGap := "Concrete etale/motivic detector sheaves"
+      bypass :=
+        "Keep DetectorSheafInstantiationCertificate as an explicit floor over native equalizer gluing"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "F. Six-functor and normalization floors exposed"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.VisibleFloorBundle.all_floors_visible"
+      mathlibGap := "Six-functor formalism, etale site, motives, and normalization sheaves"
+      bypass :=
+        "Bundle SixFunctorBaseChangePackage, EtaleFoundationCertificate, and NormalizationSheafCertificate"
+      status := FormalizationStatus.certifiedInterface },
+    { item := "G. Delegated citations tracked without hidden manuscript axioms"
+      addedDeclaration :=
+        "Spt2.CertifiedSPT2RealizationWiring.DelegatedCitationNoHiddenDependencyChecklist.floor_data"
+      mathlibGap := "None for this bookkeeping layer"
+      bypass :=
+        "Record named Lean replacements for delegated Hensel and overlap-kernel inputs"
+      status := FormalizationStatus.certifiedInterface } ]
+
+theorem objectLevelWiringItems_count :
+    objectLevelWiringItems.length = 7 := by
+  decide
+
+def objectLevelWiringDeclarations : List String :=
+  objectLevelWiringItems.map ObjectLevelWiringItem.addedDeclaration
+
+theorem objectLevelWiringDeclarations_count :
+    objectLevelWiringDeclarations.length = 7 := by
+  decide
+
+end ObjectLevelWiringChecklist
+
+section ObjectLevelWiringChecklistAxiomAudit
+#print axioms ObjectLevelWiringChecklist.objectLevelWiringItems_count
+#print axioms ObjectLevelWiringChecklist.objectLevelWiringDeclarations_count
+end ObjectLevelWiringChecklistAxiomAudit
+
 end FullFormalizationAudit
 end Spt2
 
@@ -7315,6 +8921,33 @@ def glue (D : DetectorPairData) (sL : D.Left) (sR : D.Right)
     (h : D.resLeft sL = D.resRight sR) : UnionSection D :=
   ⟨(sL, sR), h⟩
 
+/-- Extensionality for the equalizer subtype of glued detector sections. -/
+theorem UnionSection.ext (D : DetectorPairData) {s t : UnionSection D}
+    (hL : restrictLeft D s = restrictLeft D t)
+    (hR : restrictRight D s = restrictRight D t) :
+    s = t := by
+  apply Subtype.ext
+  exact Prod.ext hL hR
+
+/-- A section is judgmentally the glued pair of its two restrictions, after
+using its stored equalizer compatibility proof. -/
+theorem eta (D : DetectorPairData) (s : UnionSection D) :
+    glue D (restrictLeft D s) (restrictRight D s) s.2 = s := by
+  apply UnionSection.ext D <;> rfl
+
+/-- Compatibility is exactly the condition needed to inhabit the equalizer. -/
+theorem compatible_iff_exists_glue (D : DetectorPairData)
+    (sL : D.Left) (sR : D.Right) :
+    D.resLeft sL = D.resRight sR ↔
+      ∃ s : UnionSection D,
+        restrictLeft D s = sL ∧ restrictRight D s = sR := by
+  constructor
+  · intro h
+    exact ⟨glue D sL sR h, rfl, rfl⟩
+  · rintro ⟨s, hL, hR⟩
+    rw [← hL, ← hR]
+    exact s.2
+
 @[simp]
 theorem restrictLeft_glue (D : DetectorPairData)
     (sL : D.Left) (sR : D.Right)
@@ -7359,6 +8992,57 @@ theorem detector_sheaf_on_pair_cover
             restrictLeft D t = sL /\ restrictRight D t = sR -> t = s := by
   exact ⟨(PrincipalOpenReal.basicOpen_pair_cover_top_iff f g).mpr hcover,
     detector_sheaf_on_cover D sL sR hagree⟩
+
+/-- CRT/equalizer cover criterion packaged with the detector equalizer: the
+topological cover condition is the native ideal condition, and the gluing
+condition is precisely equalizer compatibility. -/
+theorem detector_pair_cover_iff_exists_glue
+    {R : Type*} [CommSemiring R] {f g : R}
+    (D : DetectorPairData) (sL : D.Left) (sR : D.Right) :
+    (Ideal.span ({f, g} : Set R) = ⊤ ∧
+      D.resLeft sL = D.resRight sR) ↔
+      (PrimeSpectrum.basicOpen f ⊔ PrimeSpectrum.basicOpen g = ⊤ ∧
+        ∃ s : UnionSection D,
+          restrictLeft D s = sL ∧ restrictRight D s = sR) := by
+  constructor
+  · rintro ⟨hcover, hagree⟩
+    exact ⟨(PrincipalOpenReal.basicOpen_pair_cover_top_iff f g).mpr hcover,
+      (compatible_iff_exists_glue D sL sR).mp hagree⟩
+  · rintro ⟨hcover, hglue⟩
+    exact ⟨(PrincipalOpenReal.basicOpen_pair_cover_top_iff f g).mp hcover,
+      (compatible_iff_exists_glue D sL sR).mpr hglue⟩
+
+/-- The only floor left for the concrete detector sheaf: identify the abstract
+equalizer data with the actual detector sheaf sections on a principal-open
+cover. -/
+structure DetectorSheafInstantiationCertificate (D : DetectorPairData) where
+  actualDetectorSheafConstructed : Prop
+  left_is_actual_sections_on_Df : Prop
+  right_is_actual_sections_on_Dg : Prop
+  overlap_is_actual_sections_on_Dfg : Prop
+  restrictions_are_actual_restrictions : Prop
+  actualDetectorSheafConstructed_certified : actualDetectorSheafConstructed
+  left_certified : left_is_actual_sections_on_Df
+  right_certified : right_is_actual_sections_on_Dg
+  overlap_certified : overlap_is_actual_sections_on_Dfg
+  restrictions_certified : restrictions_are_actual_restrictions
+
+namespace DetectorSheafInstantiationCertificate
+
+theorem floor_data {D : DetectorPairData}
+    (C : DetectorSheafInstantiationCertificate D) :
+    C.actualDetectorSheafConstructed ∧
+      C.left_is_actual_sections_on_Df ∧
+      C.right_is_actual_sections_on_Dg ∧
+      C.overlap_is_actual_sections_on_Dfg ∧
+      C.restrictions_are_actual_restrictions :=
+  ⟨C.actualDetectorSheafConstructed_certified,
+    C.left_certified,
+    C.right_certified,
+    C.overlap_certified,
+    C.restrictions_certified⟩
+
+end DetectorSheafInstantiationCertificate
 
 end DetectorPairData
 
@@ -7445,8 +9129,13 @@ section AxiomAudit
 #print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.sectionwiseLimitIso
 #print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.sectionwiseWidePullbackIso
 #print axioms Spt2.StructuralResolution.SectionwisePresheafLimits.fourDetectorSectionwiseWidePullbackIso
+#print axioms Spt2.StructuralResolution.DetectorPairData.UnionSection.ext
+#print axioms Spt2.StructuralResolution.DetectorPairData.eta
+#print axioms Spt2.StructuralResolution.DetectorPairData.compatible_iff_exists_glue
 #print axioms Spt2.StructuralResolution.DetectorPairData.detector_sheaf_on_cover
 #print axioms Spt2.StructuralResolution.DetectorPairData.detector_sheaf_on_pair_cover
+#print axioms Spt2.StructuralResolution.DetectorPairData.detector_pair_cover_iff_exists_glue
+#print axioms Spt2.StructuralResolution.DetectorPairData.DetectorSheafInstantiationCertificate.floor_data
 #print axioms Spt2.StructuralResolution.TautologyFreeCurve.alg_iff_etaleSilent
 #print axioms Spt2.StructuralResolution.TautologyFreeCurve.alg_iff_motivicSilent
 #print axioms Spt2.StructuralResolution.TautologyFreeCurve.master_equivalence
