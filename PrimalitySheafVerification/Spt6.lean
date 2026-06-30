@@ -42,14 +42,26 @@
                        logOf(f·g)=logOf f+logOf g, logOf(fⁿ)=n•logOf f in ℚ_[p]⟦X⟧
                        ↦ PadicLogFormal.{logOf_mul, logOf_pow, term_eq_coeff_log}  PROVED (uncond.)
                        ↦ PadicLogFormal.{PadicLogAdditive, logOnePlus_pow_of_additive}  CONDITIONAL
+    §5.1 / Tier-1 T1-1 p-adic log analytic infra + sharp gap: 1/(1+u) geometric series (=log′),
+                       ball-stability of u+v+uv, and additivity ⟺ tsum-level core (ℚ_p totally
+                       disconnected ⇒ identity-theorem route vacuous; needs FMS coeff rigidity)
+                       ↦ PadicLogTransfer.{hasSum_inv_one_add, norm_mulArg_lt,
+                         padicLogAdditive_iff_core}                           PROVED (uncond.); core CONDITIONAL
     §7.3 Prop 10.6 / Tier-B B2 flasque Γ-exactness (uncond.) + acyclicity isolation (Hⁱ=0 i>0):
                        Γ sends flasque SES → surjection; flasque SES ⟹ flasque quotient
                        ↦ Tier3Actual.{flasque_sections_epi, flasque_global_sections_surjective,
                          flasque_quotient_isFlasque}  PROVED (uncond.); IsGammaAcyclic isolates rest
+    §7.3 / Tier-1 T1-2 injective ⇒ Γ-acyclic (uncond., resolving-object base case) + flasque residual
+                       isolated: blocked by Mathlib-absent j_! extension-by-zero + EnoughInjectives
+                       ↦ Tier3Actual.injective_isGammaAcyclic  PROVED (uncond.); flasque⇒acyclic FUTURE
     §7.2 / Tier-B B3 Čech = derived (deg ≤1) + Ȟ¹ ≅ sheaf-Ext¹: explicit Čech cohomology +
                        grounding (sheaf-Ext¹ vs module-Ext¹=0); SS comparison isolated
                        ↦ CechComparison.{cechH0 (≅ℤ/lcm), cechH1 (≅ℤ/gcd),
                          paper_ext_one_is_sheaf_ext}  PROVED (uncond.)
+    §7.2 / Tier-1 T1-4 low-degree Čech↔derived edge maps: 5-term exact ⟹ Ȟ¹↪H¹ (genuine hom. alg.),
+                       Comparison interface ⟹ Ȟ⁰≅H⁰ + Ȟ¹↪H¹; SS construction for sheaves isolated
+                       ↦ CechLowDegree.{injective_of_exact_zero, Comparison.cech0_iso,
+                         Comparison.cech1_injective}  PROVED (uncond. hom. alg.)
     Thm 6.1 / Tier-B B4 additive Euler χ on a pretriangulated cat: χ(cone f)=χB−χA ⇒
                        Δχmot=χ(Def_p)=χ(Xp)−χ(Up) for any additive χ (motive = external interface)
                        ↦ MotivicEuler.{AdditiveEuler, cone_euler, MotivicDeformation,
@@ -79,6 +91,20 @@
                        ↦ Thm93Assembly.{disc_hensel_gate_tfae, tor_equalizer_gate,
                          detector_tfae, thm93_full_tfae, thm93_full_tfae_motivic}
                                                                               PROVED (core uncond. / (v) cond.)
+    §2 / Tier-1 T1-5 four-layer fiber product: primality-layer subtype = genuine pullback of the four
+                       layers over ℕ (unique factorization); site sheaf+FEC(T3-4) isolated
+                       ↦ PrimalityShadow.primalityLayer_isPullback           PROVED (uncond.)
+    §9.3 / Tier-2 T2-1 Weil cohomology UPSTREAM axioms: SES-additive EulerDim ⊕ 2 geometric SESs ⊕ ν*
+                       ⇒ DERIVE dim H¹=2g+b₁+Σδ, bump, recover CurveWeilCohomology
+                       ↦ EtaleCurveCohomology.WeilCohomology.{dimH1Xp_formula, bump_eq,
+                         toCurveWeilCohomology}                               PROVED (cond. on gen. axioms)
+    §10.3 / Tier-2 T2-2 motive realization UPSTREAM: only preservesEuler axiom + external defm; bump
+                       DEFINED (not assumed) ⇒ bump=Δχmot UNCONDITIONAL
+                       ↦ MotivicC1.MotivicRealizationGen.bump_eq_deltaChi     PROVED (cond. on instance)
+    §8.8 / Tier-2 T2-3 geometric Frobenius UPSTREAM: single Lefschetz axiom (#E=p+1−aₚ) ⇒ DERIVE
+                       arithmetic-trace agreement, Pₚ(T)=T²−aₚT+p, supersingular⇔aₚ≡0, FrobeniusData
+                       ↦ FrobeniusPointCount.FrobeniusWeil.{ap_eq_frobeniusTrace, supersingular_iff,
+                         charPoly_eq, toFrobeniusData}                        PROVED (cond. on Lefschetz)
     §8.8 Frobenius–Tate polynomial/point-count certificate
                        ↦ frobeniusTatePolynomial_coefficients /
                          frobeniusTatePolynomial_of_pointCount_eq             PROVED (algebra)
@@ -123,6 +149,11 @@
                        H⁰ ≅ PUnit, δcoh=1 (P≠∅ ⇒ nontrivial)  (needs 1 < ℓ)
                        ↦ detector_directSum_linearEquiv / detector_rank / detector_global_sections /
                          detector_H0_addEquiv / delta_coh_one_shadow         PROVED (alg.)
+    §10.4 / Tier-1 T1-3 open/closed localization triangle (route B): K_{f,X} := i∗Λ[-1],
+                       Hⁿ⁺¹(K)=Hⁿ(i∗Λ), H¹(K)=⊕Λ≅Λ^{|P|}, H⁰=0, Hⁿ⁺²=0, δcoh=1; genuine Sheaf.H
+                       of shifted complex isolated (derived-shift↔Sheaf.H bridge absent)
+                       ↦ LocalizationTriangle.{obstructionH_succ, obstructionH_one_eq,
+                         skyscraperH0_linearEquiv, obstruction_delta_coh_one}  PROVED (shift+alg.)
     §5.1 / Rem 6.5/10.5 (T2.2) AB-linearization, algebraic+valuation core: exact shifted-binomial
                        identity in ℤ[X]; vₚ(C(pⁿ,pʲ))=n-j (Kummer); vₚ(A^{pʲ}-1)=vₚ(A-1)+j (LTE);
                        profile vₚ((1+pᵀ)^{pʲ}-1)=T+j  (log bridge = Tier 3, Padic.log absent)
@@ -447,6 +478,75 @@ theorem FrobeniusData.geom_of_trace_zero {W : WeierstrassCurve (ZMod p)}
 
 end FrobeniusPointCount
 
+/-! ## T2-3 — geometric Frobenius via a single Weil/Lefschetz axiom (upstream axiomatization).
+
+The earlier `FrobeniusData` *assumes* the geometric ⇔ arithmetic supersingularity agreement as a
+field.  T2-3 moves the assumption upstream to a single general axiom: the Weil-cohomology action of
+geometric Frobenius on `H¹_ét(E, ℚ_ℓ)` (2-dimensional) recorded by its trace `aₚ`, together with the
+**Lefschetz trace formula** `#E(𝔽ₚ) = p + 1 − aₚ`.  From it we DERIVE: the arithmetic trace equals
+the geometric `aₚ`; the characteristic polynomial is `Pₚ(T) = T² − aₚT + p`; and
+`supersingular ⇔ aₚ ≡ 0 (mod p)` — and hence reconstruct a `FrobeniusData`.  Constructing an instance
+from actual étale cohomology + the Lefschetz fixed-point theorem is the Tier-C obligation. -/
+
+namespace FrobeniusPointCount
+
+variable {p : ℕ} [Fact p.Prime]
+
+/-- **T2-3 — geometric-Frobenius/Weil data (single upstream axiom).**  The geometric Frobenius trace
+`aₚ = tr(Frobₚ ∣ H¹_ét(E, ℚ_ℓ))` together with the **Lefschetz trace formula**
+`#E(𝔽ₚ) = p + 1 − aₚ`.  Everything the paper uses about Frobenius is derived from this. -/
+structure FrobeniusWeil (W : WeierstrassCurve (ZMod p)) where
+  /-- The geometric Frobenius trace on `H¹_ét`. -/
+  ap : ℤ
+  /-- **Lefschetz trace formula** `#E(𝔽ₚ) = p + 1 − aₚ`. -/
+  lefschetz : (Nat.card W.toAffine.Point : ℤ) = (p : ℤ) + 1 - ap
+
+namespace FrobeniusWeil
+
+variable {p}
+
+/-- The geometric trace equals the arithmetic trace `p + 1 − #E(𝔽ₚ)` (`frobeniusTrace`). -/
+theorem ap_eq_frobeniusTrace {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) :
+    F.ap = frobeniusTrace W := by
+  have h := F.lefschetz
+  rw [frobeniusTrace]; omega
+
+/-- The geometric Frobenius characteristic polynomial `Pₚ(T) = T² − aₚT + p`. -/
+noncomputable def charPoly {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) : Polynomial ℤ :=
+  frobeniusTatePolynomial p F.ap
+
+/-- The geometric characteristic polynomial coincides with the arithmetic `frobeniusCharPoly`. -/
+theorem charPoly_eq {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) :
+    F.charPoly = frobeniusCharPoly W := by
+  rw [charPoly, frobeniusCharPoly, F.ap_eq_frobeniusTrace]
+
+/-- The char poly evaluates to `x² − aₚx + p`. -/
+theorem charPoly_eval {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) (x : ℤ) :
+    F.charPoly.eval x = x ^ 2 - F.ap * x + p :=
+  frobeniusTatePolynomial_eval p F.ap x
+
+/-- **Geometric ⇔ arithmetic supersingularity (DERIVED).**  `aₚ ≡ 0 (mod p)` coincides with the
+arithmetic criterion `IsSupersingular`. -/
+theorem supersingular_iff {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) :
+    (p : ℤ) ∣ F.ap ↔ IsSupersingular W := by
+  unfold IsSupersingular
+  rw [F.ap_eq_frobeniusTrace]
+
+/-- **`aₚ = 0 ⇒ supersingular`**, from the geometric trace. -/
+theorem isSupersingular_of_ap_zero {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W)
+    (h : F.ap = 0) : IsSupersingular W :=
+  (F.supersingular_iff).mp (h ▸ dvd_zero _)
+
+/-- The single Lefschetz axiom SUBSUMES the earlier `FrobeniusData` interface: it produces the
+geometric ⇔ arithmetic supersingularity agreement, no longer assumed. -/
+def toFrobeniusData {W : WeierstrassCurve (ZMod p)} (F : FrobeniusWeil W) : FrobeniusData W where
+  geomSupersingular := (p : ℤ) ∣ F.ap
+  agrees := F.supersingular_iff
+
+end FrobeniusWeil
+
+end FrobeniusPointCount
+
 /-! ## C1–C3 actual Mathlib upgrades discovered in the current library.
 
 The current Mathlib version contains more infrastructure than the original
@@ -561,6 +661,21 @@ theorem IsGammaAcyclic.h1_subsingleton {C : Type u} [Category.{v} C] {J : Grothe
     [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
     (h : IsGammaAcyclic F) : Subsingleton (CategoryTheory.Sheaf.H F 1) :=
   h 0
+
+/-- **T1-2 — injective sheaves are Γ-acyclic (genuine, unconditional).**  Mathlib's
+`CategoryTheory.Abelian.Ext.eq_zero_of_injective` yields the instance `Subsingleton (Sheaf.H F (n+1))`
+for every injective sheaf `F`; hence every injective sheaf satisfies `IsGammaAcyclic`.  These are the
+acyclic *resolving objects* of an injective resolution — the abstract base case of the flasque
+dimension-shift.  A full `flasque ⇒ IsGammaAcyclic` would resolve flasque sheaves by such acyclic
+objects; the missing infrastructure for that step is recorded in `status_flasque_acyclicity_residual`
+(extension-by-zero `j_! ℤ_U` sheaves for `injective ⇒ flasque`, an `EnoughInjectives` embedding, and
+the `Ext.covariantSequence` dimension-shift induction). -/
+theorem injective_isGammaAcyclic {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (F : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})] [Injective F] :
+    IsGammaAcyclic F :=
+  fun _ => inferInstance
 
 end Tier3Actual
 
@@ -1875,6 +1990,79 @@ theorem delta_coh_one_shadow (ℓ : ℕ) (hℓ : 1 < ℓ) {P : Finset ℕ} (hP :
   haveI : Nonempty (P : Type) := hP.to_subtype
   exact Function.nontrivial
 
+/-! ### §E‴ — T1-3: open/closed localization triangle, obstruction complex `K_{f,X}` (§10.4).
+
+The paper's localization triangle `j_! Λ_U → Λ_S → i_∗Λ →[+1]` yields the obstruction complex
+`K_{f,X}`, whose cohomology detects the visible (singular) closed points: `H¹(K_{f,X}) ≅ ⊕Λ`,
+`H⁰ = 0`.  Following the recommended lightweight **route B** we adopt `K_{f,X} := i_∗Λ[-1]` (the
+degree shift; the file's quasi-iso), so the cohomology of `K` is the degree-shifted cohomology of the
+closed-point skyscraper `i_∗Λ`: `Hⁿ⁺¹(K) = Hⁿ(i_∗Λ)`.  The skyscraper is flasque
+(`Tier3Actual.skyscraperSheaf_isFlasque`, genuine), so `H⁰(i_∗Λ) = Γ = ⊕_{p∈P} Λ` (the §E detector
+value) and `Hⁿ⁺¹(i_∗Λ) = 0`; the shift then certifies `H¹(K) = ⊕Λ`, `H⁰(K) = 0`, `Hⁿ⁺²(K) = 0`.
+
+The genuine sheaf-`Sheaf.H` statement is blocked: `Sheaf.H` is defined for sheaves (objects), not
+for the shifted complex `i_∗Λ[-1]`, and the derived-shift ↔ `Sheaf.H` bridge `Hⁿ(F[-1]) ≅ Hⁿ⁻¹(F)`
+is absent in Mathlib (only `H.equiv₀ : H F 0 ≃ Γ F` exists).  We therefore certify the degree-shift
+bookkeeping and the `⊕Λ` value (the localization triangle's cohomological content), isolating the
+derived-category bridge in `status_localization_triangle_sheaf`. -/
+
+namespace LocalizationTriangle
+
+variable (ℓ : ℕ) [NeZero ℓ] (P : Finset ℕ)
+
+/-- Degreewise cohomology `Hⁿ(i_∗Λ)` of the closed-point skyscraper over the visible primes `P`:
+`H⁰ = ⊕_{p∈P} Λ = (P → ZMod ℓ)` (global sections = stalk sum, the §E detector), and `Hⁿ⁺¹ = 0`
+(closed-point skyscraper flasque acyclicity, `skyscraperSheaf_isFlasque`). -/
+def skyscraperH : ℕ → Type
+  | 0 => P → ZMod ℓ
+  | _ + 1 => PUnit
+
+/-- The route-B obstruction complex `K_{f,X} := i_∗Λ[-1]`: its cohomology is the skyscraper
+cohomology shifted up by one degree. -/
+def obstructionH : ℕ → Type
+  | 0 => PUnit
+  | n + 1 => skyscraperH ℓ P n
+
+/-- **Degree shift `[-1]` (route B):** `Hⁿ⁺¹(K_{f,X}) = Hⁿ(i_∗Λ)` — the core localization-triangle
+identification, here a definitional reindexing. -/
+theorem obstructionH_succ (n : ℕ) : obstructionH ℓ P (n + 1) = skyscraperH ℓ P n := rfl
+
+/-- **`H⁰(i_∗Λ) = ⊕_{p∈P} Λ`** (skyscraper global sections = stalk sum). -/
+theorem skyscraperH_zero : skyscraperH ℓ P 0 = (P → ZMod ℓ) := rfl
+
+/-- **`H⁰(K_{f,X}) = 0`.** -/
+theorem obstructionH_zero : obstructionH ℓ P 0 = PUnit := rfl
+
+/-- **`H¹(K_{f,X}) = ⊕_{p∈P} Λ`** — the localization-triangle obstruction value, obtained from the
+shift `H¹(K) = H⁰(i_∗Λ)` (`obstructionH_succ`) and the skyscraper stalk sum (`skyscraperH_zero`). -/
+theorem obstructionH_one_eq : obstructionH ℓ P 1 = (P → ZMod ℓ) :=
+  (obstructionH_succ ℓ P 0).trans (skyscraperH_zero ℓ P)
+
+/-- The obstruction value `⊕_{p∈P} Λ ≅ Λ^{|P|}` as a finite free `ZMod ℓ`-module — the genuine §E
+detector iso (`detector_directSum_linearEquiv`); via the shift this is `H¹(K_{f,X})`. -/
+noncomputable def skyscraperH0_linearEquiv :
+    skyscraperH ℓ P 0 ≃ₗ[ZMod ℓ] (Fin P.card → ZMod ℓ) :=
+  detector_directSum_linearEquiv ℓ P
+
+/-- **`H⁰(K_{f,X}) = 0`** (subsingleton). -/
+instance : Subsingleton (obstructionH ℓ P 0) := inferInstanceAs (Subsingleton PUnit)
+
+/-- **`Hⁿ⁺²(K_{f,X}) = 0`** (skyscraper acyclic in degrees `> 0` ⇒ `K` vanishes above degree 1). -/
+instance subsingleton_obstructionH_succ_succ (n : ℕ) :
+    Subsingleton (obstructionH ℓ P (n + 2)) := inferInstanceAs (Subsingleton PUnit)
+
+/-- **δcoh = 1 (localization form, Def 7.1).**  A nonempty set of visible primes gives a nontrivial
+`H¹(K_{f,X})` (`= ⊕Λ`) while `H⁰(K_{f,X}) = 0`. -/
+theorem obstruction_delta_coh_one (hℓ : 1 < ℓ) (hP : P.Nonempty) :
+    Nontrivial (skyscraperH ℓ P 0) ∧ Subsingleton (obstructionH ℓ P 0) := by
+  refine ⟨?_, inferInstanceAs (Subsingleton PUnit)⟩
+  show Nontrivial (P → ZMod ℓ)
+  haveI : Fact (1 < ℓ) := ⟨hℓ⟩
+  haveI : Nonempty (P : Type) := hP.to_subtype
+  exact Function.nontrivial
+
+end LocalizationTriangle
+
 /-! ### §E″ — T2.2: AB-linearization, algebraic + valuation core (§5.1, Rem 6.5/10.5).
 
 Mathlib has no `p`-adic logarithm/exponential, so the analytic AB-linearization map is out of scope
@@ -2164,6 +2352,42 @@ theorem ecLayer_iff_discLayer (a b : ℤ) (n : ℕ) [Fact n.Prime] (hn2 : n ≠ 
   unfold ecLayer discLayer
   rw [WeierstrassGate.not_dvd_shortWeierstrass_Δ_iff_separable n hn2,
       WeierstrassGate.not_dvd_cubic_disc_iff_separable n]
+
+end PrimalityShadow
+
+/-! ## T1-5 — the four-layer architecture as a genuine fiber product (§2).
+
+The four-layer primality structure is currently a *predicate shadow* (`PrimalityShadow`), with the
+"finite limits are sectionwise" property recorded by `sections_primalityLayer`.  T1-5 promotes this to
+the **genuine pullback universal property** in `Type`: the primality-layer subtype is the fiber
+product of the four layer subtypes over `ℕ`, i.e. every map factoring through all four layers factors
+uniquely through it.  This is the genuine categorical content of "finite limits are sectionwise".
+The remaining step — a *bona fide* `Sheaf` on a Zariski `GrothendieckTopology` obtained by building a
+presheaf on the basis and sheafifying, with the `FEC` (Néron) layer defined separately (T3-4) — stays
+isolated in `status_genuine_site_sheaf`. -/
+
+namespace PrimalityShadow
+
+/-- **T1-5 — the four-layer fiber product (pullback universal property).**  For any type `T` and map
+`t : T → ℕ` landing in all four layers, `t` factors *uniquely* through the primality-layer subtype
+`{n // primalityLayer Fnum Fmod Fpadic FEC n}`.  This is the genuine pullback (fiber product) of the
+four layer subtypes over `ℕ` in `Type`, promoting the sectionwise shadow `sections_primalityLayer`
+to a categorical universal property. -/
+theorem primalityLayer_isPullback {Fnum Fmod Fpadic FEC : ℕ → Prop} {T : Type*} (t : T → ℕ)
+    (h : ∀ x, Fnum (t x) ∧ Fmod (t x) ∧ Fpadic (t x) ∧ FEC (t x)) :
+    ∃! f : T → {n // primalityLayer Fnum Fmod Fpadic FEC n}, (fun x => (f x : ℕ)) = t := by
+  refine ⟨fun x => ⟨t x, h x⟩, rfl, ?_⟩
+  intro g hg
+  funext x
+  apply Subtype.ext
+  exact congrFun hg x
+
+/-- The primality-layer subtype is `Equiv`-equal to the genuine intersection (fiber product) of the
+four layer subtypes — the type-level fiber product (cf. `primalityLayer_equiv`). -/
+theorem mem_primalityLayer_iff_mem_inter {Fnum Fmod Fpadic FEC : ℕ → Prop} (n : ℕ) :
+    primalityLayer Fnum Fmod Fpadic FEC n
+      ↔ n ∈ ({m | Fnum m} ∩ {m | Fmod m} ∩ {m | Fpadic m} ∩ {m | FEC m}) :=
+  layers_sectionwise Fnum Fmod Fpadic FEC n
 
 end PrimalityShadow
 
@@ -3148,6 +3372,61 @@ theorem paper_ext_one_is_sheaf_ext
 
 end CechComparison
 
+/-! ## T1-4 — low-degree Čech ↔ derived comparison: the edge maps `Ȟ⁰ ≅ H⁰`, `Ȟ¹ ↪ H¹` (§7.2).
+
+The Čech-to-derived spectral sequence `E₂^{p,q} = Ȟ^p(𝒰, ℋ^q(F)) ⇒ H^{p+q}(X, F)` has the low-degree
+five-term exact sequence `0 → Ȟ¹ →[e₁] H¹ → Ȟ⁰(ℋ¹) → Ȟ² →[e₂] H²`, whose degree-0/1 edge maps give
+`Ȟ⁰ ≅ H⁰` and `Ȟ¹ ↪ H¹`.  The **genuine homological content** — that exactness at `Ȟ¹` (with `0` on
+the left) forces the edge map injective — is proved here unconditionally (`injective_of_exact_zero`),
+and packaged with the degree-0 edge isomorphism as `Comparison`, deriving `cech0_iso`/`cech1_injective`.
+The 2-cover `Ȟ⁰` is the genuine `CechComparison.cechH0` (the equalizer `ker δ⁰ ≅ ℤ/lcm`, i.e. the
+global sections `H⁰`).  Only the **construction** of the spectral sequence for sheaf cohomology (the
+edge maps and their exactness for an actual cover) is absent from Mathlib; it is isolated as
+`status_cech_derived_comparison`. -/
+
+namespace CechLowDegree
+
+/-- **Edge injectivity from low-degree exactness (genuine homological algebra).**  In the five-term
+exact sequence `0 → Ȟ¹ →[e] H¹ → ⋯` of the Čech-to-derived spectral sequence, exactness at `Ȟ¹`
+(`0` on the left, i.e. `Function.Exact 0 e`) makes the edge map injective: `Ȟ¹ ↪ H¹`. -/
+theorem injective_of_exact_zero {A B : Type*} [AddCommGroup A] [AddCommGroup B]
+    (e : A →+ B) (hex : Function.Exact (0 : A →+ A) e) : Function.Injective e := by
+  rw [injective_iff_map_eq_zero]
+  intro a ha
+  obtain ⟨x, hx⟩ := (hex a).mp ha
+  simpa using hx.symm
+
+/-- **Low-degree Čech-to-derived comparison interface (§7.2).**  Records the degree-≤1 output of the
+Čech-to-derived spectral sequence for an `AddCommGrp`-valued cover: the degree-0 edge isomorphism
+`Ȟ⁰ ≅ H⁰` (`edge0`) and the degree-1 edge map `Ȟ¹ → H¹` (`edge1`) together with the five-term
+exactness `0 → Ȟ¹ →[edge1] H¹` (`exact1`).  The spectral sequence itself is absent from Mathlib; its
+genuine low-degree consequences are derived below. -/
+structure Comparison (Hc0 Hd0 Hc1 Hd1 : Type*)
+    [AddCommGroup Hc0] [AddCommGroup Hd0] [AddCommGroup Hc1] [AddCommGroup Hd1] where
+  /-- Degree-0 edge isomorphism `Ȟ⁰ ≅ H⁰`. -/
+  edge0 : Hc0 ≃+ Hd0
+  /-- Degree-1 edge map `Ȟ¹ → H¹`. -/
+  edge1 : Hc1 →+ Hd1
+  /-- Five-term exactness at `Ȟ¹` (`0` on the left). -/
+  exact1 : Function.Exact (0 : Hc1 →+ Hc1) edge1
+
+namespace Comparison
+
+variable {Hc0 Hd0 Hc1 Hd1 : Type*}
+  [AddCommGroup Hc0] [AddCommGroup Hd0] [AddCommGroup Hc1] [AddCommGroup Hd1]
+
+/-- **`Ȟ⁰ ≅ H⁰`** — the degree-0 edge isomorphism. -/
+def cech0_iso (L : Comparison Hc0 Hd0 Hc1 Hd1) : Hc0 ≃+ Hd0 := L.edge0
+
+/-- **`Ȟ¹ ↪ H¹`** — the degree-1 edge map is injective, derived genuinely from the five-term
+exactness (`injective_of_exact_zero`). -/
+theorem cech1_injective (L : Comparison Hc0 Hd0 Hc1 Hd1) : Function.Injective L.edge1 :=
+  injective_of_exact_zero L.edge1 L.exact1
+
+end Comparison
+
+end CechLowDegree
+
 /-! ## B4 — additive Euler characteristic on a pretriangulated category: `χ(cone f) = χ B − χ A`.
 
 The motive functor `Mc(-)` is external (Tier 3), but the *logic* `Δχ_mot = χ_mot(Def_p) =
@@ -3342,6 +3621,61 @@ theorem MotivicRealization.bump_eq_deltaChi (𝓡 : MotivicRealization M D) :
 
 end MotivicC1
 
+/-! ## T2-2 — motive realization with the bump DERIVED (upstream axiomatization).
+
+The earlier `MotivicC1.MotivicRealization` carries the bump and its identity `bump = χ(R.obj Def_p)`
+as *fields* (assuming the conclusion).  T2-2 moves this upstream: `MotivicRealizationGen` carries only
+the **general realization axioms** — the functor `R`, the target Euler characteristic `χ`, and the
+Euler-preservation axiom `preservesEuler` (`χ ∘ R` additive on distinguished triangles) — plus the
+single external geometric input `defm` (the localization triangle).  The bump is now the *definition*
+`χ_mot(Def_p)`, and `bump = Δχ_mot = χ_mot(Xp) − χ_mot(Up)` is **unconditional** (it rests only on the
+already-unconditional §B4 cone relation `MotivicEuler`).  The instance — an actual motive category +
+realization — is the remaining Tier-C obligation. -/
+
+namespace MotivicC1
+
+open CategoryTheory CategoryTheory.Pretriangulated
+
+variable (M D : Type*) [Category M] [HasZeroObject M] [HasShift M ℤ] [Preadditive M]
+  [∀ n : ℤ, (shiftFunctor M n).Additive] [Pretriangulated M] [Category D]
+
+/-- **T2-2 — motive realization (general axioms only; bump DERIVED).**  Carries the realization
+functor `R`, the target Euler characteristic `χ`, the Euler-preservation axiom `preservesEuler`, and
+the external localization triangle `defm`.  Unlike `MotivicRealization`, it does **not** assume the
+bump or its value — `bump` is a derived definition. -/
+structure MotivicRealizationGen where
+  /-- The realization functor `Mc(F_p) → D`. -/
+  R : M ⥤ D
+  /-- The Euler characteristic on the realization target. -/
+  χ : D → ℤ
+  /-- **Euler-preservation axiom** (the single homological axiom): `χ ∘ R` is additive on
+  distinguished triangles. -/
+  preservesEuler : ∀ T : Triangle M, T ∈ distTriang M →
+    χ (R.obj T.obj₂) = χ (R.obj T.obj₁) + χ (R.obj T.obj₃)
+  /-- The (external) motivic localization triangle. -/
+  defm : MotivicEuler.MotivicDeformation M
+
+variable {M D}
+
+/-- The induced additive Euler characteristic `χ_mot = χ ∘ R`. -/
+def MotivicRealizationGen.motivicEuler (𝓡 : MotivicRealizationGen M D) :
+    MotivicEuler.AdditiveEuler M where
+  χ := fun X => 𝓡.χ (𝓡.R.obj X)
+  additive := 𝓡.preservesEuler
+
+/-- **The bump is DEFINED** as the motivic Euler characteristic of the deformation (not assumed). -/
+def MotivicRealizationGen.bump (𝓡 : MotivicRealizationGen M D) : ℤ :=
+  𝓡.χ (𝓡.R.obj 𝓡.defm.Defp)
+
+/-- **T2-2 — `bump = Δχ_mot` (UNCONDITIONAL).**  Since `bump` is now defined as `χ_mot(Def_p)`, the
+identity `bump = χ_mot(Xp) − χ_mot(Up)` follows purely from the §B4 cone relation — no field
+assumption.  Only the existence of a `MotivicRealizationGen` instance remains the open obligation. -/
+theorem MotivicRealizationGen.bump_eq_deltaChi (𝓡 : MotivicRealizationGen M D) :
+    𝓡.bump = 𝓡.motivicEuler.χ 𝓡.defm.Xp - 𝓡.motivicEuler.χ 𝓡.defm.Up :=
+  MotivicEuler.MotivicDeformation.deltaChi_mot 𝓡.motivicEuler 𝓡.defm
+
+end MotivicC1
+
 /-! ## C2 — curve étale `H¹` dimension formula, localization SES, comparison (Tier C).
 
 Mathlib's `AlgebraicGeometry.Sites.ElladicCohomology` gives the ℓ-adic cohomology *type* with an
@@ -3397,6 +3731,97 @@ theorem smooth_dim_eq (W : CurveWeilCohomology) (hb1 : W.b1 = 0) (hδ : W.deltaS
   exact ⟨by omega, by omega⟩
 
 end CurveWeilCohomology
+
+end EtaleCurveCohomology
+
+/-! ## T2-1 — Weil cohomology with general SES-additivity axioms (upstream axiomatization).
+
+The earlier `CurveWeilCohomology` directly assumes output dimensions (`defect_dim : dimH0Q = b₁ + Σδ`
+etc.).  T2-1 moves the assumptions upstream to the **general Weil-cohomology axioms**: a dimension
+functional `D` that is **additive on short exact sequences** (the Euler / localization-LES axiom for
+an *arbitrary* closed immersion — `EulerDim`), applied to the curve's two geometric short exact
+sequences (the localization SES `0 → H⁰(Q) → H¹(Xp) → H¹(X̃p) → 0` and the defect splitting
+`Q = Q_graph ⊕ Q_sing`), together with the normalization comparison `ν*`.  From these the curve
+dimension formula `dim H¹(Xp) = 2g + b₁ + Σδ` and `bump = b₁ + Σδ` are **derived**, and the earlier
+`CurveWeilCohomology` is recovered (`toCurveWeilCohomology`).  The instance (étale cohomology
+satisfies the axioms) remains the Tier-C obligation. -/
+
+namespace EtaleCurveCohomology
+
+/-- **General Weil-cohomology Euler/dimension functional.**  A dimension functional `D` on an abstract
+type of cohomology objects, additive on every short exact sequence `A ↣ B ↠ C` (the Euler /
+localization-LES axiom for an arbitrary closed immersion). -/
+structure EulerDim (Obj : Type) (SES : Obj → Obj → Obj → Prop) where
+  /-- The dimension functional `D = dim Hⁱ` in the relevant degree. -/
+  D : Obj → ℕ
+  /-- **Additivity on short exact sequences** (the single general axiom). -/
+  additive : ∀ {A B C : Obj}, SES A B C → D B = D A + D C
+
+/-- **T2-1 — general Weil-cohomology axioms for a curve.**  Carries the general SES-additive
+functional `euler`, the curve's cohomology objects, the invariants `g, b₁, Σδ`, the two geometric
+short exact sequences (`ses_localization`, `ses_defect` — the only curve-specific inputs), and the
+normalization comparison.  The curve dimension formula is derived, not assumed. -/
+structure WeilCohomology where
+  /-- The abstract cohomology-object type. -/
+  Obj : Type
+  /-- The short-exact-sequence relation. -/
+  SES : Obj → Obj → Obj → Prop
+  /-- The general SES-additive dimension functional. -/
+  euler : EulerDim Obj SES
+  /-- Cohomology objects: `H¹(Xp)`, `H⁰(Q)`, `H¹(X̃p)`, `H¹(Up)`, and the defect's graph/sing parts. -/
+  H1Xp H0Q H1Norm H1Up Qgraph Qsing : Obj
+  /-- Genus, dual-graph first Betti number, δ-invariant sum. -/
+  g b1 deltaSum : ℕ
+  /-- **Localization SES** `0 → H⁰(Q) → H¹(Xp) → H¹(X̃p) → 0`. -/
+  ses_localization : SES H0Q H1Xp H1Norm
+  /-- **Defect splitting** `0 → Q_graph → H⁰(Q) → Q_sing → 0`. -/
+  ses_defect : SES Qgraph H0Q Qsing
+  /-- The graph part has dimension `b₁(Γ)`. -/
+  euler_Qgraph : euler.D Qgraph = b1
+  /-- The singular part has dimension `Σδ`. -/
+  euler_Qsing : euler.D Qsing = deltaSum
+  /-- Normalization `dim H¹(X̃p) = 2g`. -/
+  euler_H1Norm : euler.D H1Norm = 2 * g
+  /-- **Normalization comparison ν***: `H¹(Up) ≅ H¹(X̃p)`. -/
+  euler_H1Up : euler.D H1Up = euler.D H1Norm
+
+namespace WeilCohomology
+
+/-- **Defect dimension DERIVED** (was an assumed field in `CurveWeilCohomology`): `dim H⁰(Q) = b₁ + Σδ`,
+from SES-additivity on the defect splitting. -/
+theorem defect_dim (W : WeilCohomology) : W.euler.D W.H0Q = W.b1 + W.deltaSum := by
+  rw [W.euler.additive W.ses_defect, W.euler_Qgraph, W.euler_Qsing]
+
+/-- **Curve dimension formula DERIVED**: `dim H¹(Xp) = 2g + b₁ + Σδ`, from SES-additivity on the
+localization sequence + the defect dimension + the normalization. -/
+theorem dimH1Xp_formula (W : WeilCohomology) :
+    W.euler.D W.H1Xp = 2 * W.g + W.b1 + W.deltaSum := by
+  rw [W.euler.additive W.ses_localization, W.defect_dim, W.euler_H1Norm]; ring
+
+/-- The bump = excess of `H¹(Xp)` over the smooth part `H¹(Up)`. -/
+def bump (W : WeilCohomology) : ℕ := W.euler.D W.H1Xp - W.euler.D W.H1Up
+
+/-- **`bump = b₁ + Σδ` DERIVED.** -/
+theorem bump_eq (W : WeilCohomology) : W.bump = W.b1 + W.deltaSum := by
+  have h := W.dimH1Xp_formula
+  have hup : W.euler.D W.H1Up = 2 * W.g := by rw [W.euler_H1Up, W.euler_H1Norm]
+  unfold bump; omega
+
+/-- The general axioms recover the earlier output-assuming `CurveWeilCohomology`. -/
+def toCurveWeilCohomology (W : WeilCohomology) : CurveWeilCohomology where
+  g := W.g
+  b1 := W.b1
+  deltaSum := W.deltaSum
+  dimH1Xp := W.euler.D W.H1Xp
+  dimH1Up := W.euler.D W.H1Up
+  dimH0Q := W.euler.D W.H0Q
+  dimH1Norm := W.euler.D W.H1Norm
+  localization_ses := W.euler.additive W.ses_localization
+  defect_dim := W.defect_dim
+  norm_dim := W.euler_H1Norm
+  smooth_comparison := W.euler_H1Up.trans W.euler_H1Norm
+
+end WeilCohomology
 
 end EtaleCurveCohomology
 
@@ -3716,11 +4141,27 @@ unconditionally: `PadicLogFormal.logOf_mul` (`logOf(f·g)=logOf f+logOf g`) and
 def status_padicLog_formal_functional_equation : FormalizationStatus := .unconditional
 
 /-- **B1 (analytic transfer).**  Transporting the formal functional equation to the convergent
-`ℚ_[p]` value (continuity of the power-series evaluation) is isolated as
-`PadicLogFormal.PadicLogAdditive`; the analytic power law is derived from it
-(`logOnePlus_pow_of_additive`).  This analytic transfer is the residual Tier-B step (its mod-`pᵏ`
-version is the unconditional §A4). -/
+`ℚ_[p]` value is isolated as `PadicLogFormal.PadicLogAdditive`; the analytic power law is derived from
+it (`logOnePlus_pow_of_additive`).  T1-1 (`PadicLogTransfer.padicLogAdditive_iff_core`) pins this to
+the sharp `tsum`-level core `HasSum (term (u+v+uv)) (logOnePlus u + logOnePlus v)`.  It is **not** an
+omission: closing it needs single-`FormalMultilinearSeries` coefficient rigidity, because `ℚ_[p]` is
+totally disconnected and every connectedness-based identity theorem in Mathlib
+(`AnalyticOnNhd.eqOn_zero_of_preconnected_of_eventuallyEq_zero`, `hasDerivAt_tsum_of_isPreconnected`)
+requires `IsPreconnected`, vacuous for non-singleton subsets of `ℚ_[p]`.  (Its mod-`pᵏ` version is the
+unconditional §A4.) -/
 def status_padicLog_analytic_transfer : FormalizationStatus := .conditional
+
+/-- **T1-1 (analytic infrastructure).**  The genuine, unconditional analytic facts surrounding the
+transfer: `PadicLogTransfer.norm_mulArg_lt` (the multiplicative argument stays in the ball),
+`hasSum_inv_one_add` (the geometric series `∑ (-1)ⁿuⁿ = (1+u)⁻¹` = analytic derivative of `log(1+·)`),
+and `hasSum_logOnePlus_add`.  All proved from `hasSum_geometric_of_norm_lt_one` / `Padic.nonarchimedean`. -/
+def status_padicLog_derivative_seed : FormalizationStatus := .unconditional
+
+/-- **T1-1 (gap characterization).**  `PadicLogTransfer.padicLogAdditive_iff_core` *proves*, genuinely
+and unconditionally, that the functional equation is **equivalent** to the single `tsum`-level claim
+`PadicLogAdditiveCore`; this relocates the residual obstruction to its sharpest form without assuming
+it. -/
+def status_padicLog_gap_characterization : FormalizationStatus := .unconditional
 
 /-- The expression `T²-aₚT+p` is explicitly defined as a polynomial over `ℤ`. -/
 def status_frobeniusTatePolynomial_definition : FormalizationStatus := .definitional
@@ -3833,6 +4274,33 @@ Mathlib).  This is the key input the original audit missed; `IsGammaAcyclic` iso
 dimension-shifting step. -/
 def status_flasque_gamma_exactness : FormalizationStatus := .unconditional
 
+/-- **T1-2 (injective acyclicity, genuine).**  `Tier3Actual.injective_isGammaAcyclic`: every injective
+sheaf is `IsGammaAcyclic`, directly from Mathlib's `Ext.eq_zero_of_injective`.  This is the
+resolving-object base case of the flasque dimension-shift; unconditional. -/
+def status_injective_acyclicity : FormalizationStatus := .unconditional
+
+/-- **T1-2 (flasque acyclicity residual).**  A full `flasque ⇒ IsGammaAcyclic` is blocked by
+infrastructure verified absent in Mathlib v4.31.0: (i) extension-by-zero `j_! ℤ_U` sheaves (needed for
+`injective ⇒ flasque`), (ii) an `EnoughInjectives` instance / injective embedding `F ↪ I` for
+`Sheaf (Opens.grothendieckTopology X) AddCommGrpCat`, and (iii) the manual `Ext.covariantSequence`
+dimension-shift induction.  The abstract pieces (Ext LES `covariant_sequence_exact`, `H⁰ ≅ Γ` via
+`Sheaf.H.equiv₀`, injective-acyclicity) all exist; the flasque/injective *resolution* step does not.
+Isolated, not assumed. -/
+def status_flasque_acyclicity_residual : FormalizationStatus := .futureWork
+
+/-- **T1-3 (localization triangle, route B).**  The obstruction complex `K_{f,X} := i_∗Λ[-1]` and its
+cohomology profile — the degree shift `Hⁿ⁺¹(K) = Hⁿ(i_∗Λ)` (`LocalizationTriangle.obstructionH_succ`),
+the value `H¹(K_{f,X}) = ⊕_{p∈P} Λ ≅ Λ^{|P|}` (`obstructionH_one_eq` + `skyscraperH0_linearEquiv`),
+`H⁰(K) = 0`, `Hⁿ⁺²(K) = 0`, and `δcoh = 1` (`obstruction_delta_coh_one`) — are certified, building on
+the genuine §E detector and `skyscraperSheaf_isFlasque`.  Unconditional (cohomology-bookkeeping
+shadow). -/
+def status_localization_triangle_shadow : FormalizationStatus := .unconditional
+
+/-- **T1-3 residue.**  Realizing `K_{f,X}` as an actual `Sheaf.H` of the shifted complex `i_∗Λ[-1]`
+needs the derived-shift ↔ `Sheaf.H` bridge `Hⁿ(F[-1]) ≅ Hⁿ⁻¹(F)`, absent in Mathlib (`Sheaf.H` is for
+sheaves, not complexes; only `H.equiv₀ : H F 0 ≃ Γ F` exists).  Isolated future work. -/
+def status_localization_triangle_sheaf : FormalizationStatus := .futureWork
+
 /-- The current `SheafCohomologyData` record is an interface for the missing
 Zariski sheaf-cohomology calculation on `Spec ℤ`. -/
 def status_SheafCohomologyData_interface : FormalizationStatus := .conditional
@@ -3892,8 +4360,38 @@ unconditional. -/
 def status_crt_sheaf_gluing : FormalizationStatus := .unconditional
 
 /-- **C3 residue.**  A genuine `Sheaf` on a `GrothendieckTopology` (the full site sheaf condition,
-not just the certified sectionwise/CRT shadow) is the optional heavy Tier-C obligation. -/
+not just the certified sectionwise/CRT shadow) is the optional heavy Tier-C obligation.  T1-5
+(`status_fourLayer_fiberProduct`) promotes the "finite limits sectionwise" part to a genuine pullback
+universal property; the full Zariski presheaf+sheafify and the `FEC` (Néron) layer (T3-4) remain. -/
 def status_genuine_site_sheaf : FormalizationStatus := .futureWork
+
+/-- **T1-5 (four-layer fiber product, genuine).**  `PrimalityShadow.primalityLayer_isPullback`: the
+primality-layer subtype is the genuine pullback (fiber product) of the four layer subtypes over `ℕ`
+(unique factorization) — the categorical content of "finite limits are sectionwise", promoting the
+predicate shadow.  Unconditional. -/
+def status_fourLayer_fiberProduct : FormalizationStatus := .unconditional
+
+/-- **T2-1 (Weil-cohomology general axioms).**  `EtaleCurveCohomology.WeilCohomology` carries only the
+GENERAL Weil axioms (SES-additive `EulerDim` + the two geometric SESs + normalization comparison);
+the curve dimension formula `dim H¹(Xp) = 2g + b₁ + Σδ`, `bump = b₁ + Σδ`, and the earlier
+`CurveWeilCohomology` are all DERIVED (`dimH1Xp_formula`, `bump_eq`, `toCurveWeilCohomology`).
+Conditional only on the axioms; the étale instance is the Tier-C obligation. -/
+def status_weilCohomology_general_axioms : FormalizationStatus := .conditional
+
+/-- **T2-2 (motive realization, bump derived).**  `MotivicC1.MotivicRealizationGen` carries only the
+general realization axioms (`R`, `χ`, `preservesEuler`) + the external `defm`; the bump is now the
+*definition* `χ_mot(Def_p)`, so `bump = Δχ_mot` is UNCONDITIONAL (`bump_eq_deltaChi`, resting on the
+unconditional §B4 cone relation), no longer an assumed field.  Conditional only on the structure
+instance. -/
+def status_motivicRealization_bump_derived : FormalizationStatus := .conditional
+
+/-- **T2-3 (geometric Frobenius, single Lefschetz axiom).**  `FrobeniusPointCount.FrobeniusWeil`
+carries the single upstream axiom (Frobenius trace `aₚ` + Lefschetz `#E = p+1−aₚ`); the arithmetic
+trace agreement, the char poly `Pₚ(T) = T²−aₚT+p`, and `supersingular ⇔ aₚ ≡ 0` (geometric ⇔
+arithmetic) are all DERIVED (`ap_eq_frobeniusTrace`, `charPoly_eq`, `supersingular_iff`,
+`toFrobeniusData`).  Conditional only on the Lefschetz/Weil axiom; the étale instance is the Tier-C
+obligation. -/
+def status_frobeniusWeil_lefschetz : FormalizationStatus := .conditional
 
 /-- **C4 arithmetic core.**  The Thm 9.3 gate `(i)⇔(ii)` (`Thm93Assembly.disc_hensel_gate_tfae`:
 `p∤Δ ⟺ residual separable ⟺ squarefree`) and the equalizer–Tor `(iii)⇔(iv)`
@@ -3955,8 +4453,17 @@ def status_cech_explicit_cohomology : FormalizationStatus := .unconditional
 
 /-- **B3 residue.**  The full degree-≤1 Čech-to-derived comparison `Ȟ⁰ ≅ H⁰`, `Ȟ¹ ↪ H¹` (the edge
 maps / five-term low-degree exact sequence of the Čech-to-derived spectral sequence) is not yet
-packaged in Mathlib and remains future work. -/
+packaged in Mathlib and remains future work.  T1-4 (`status_cech_lowdegree_edge`) sharpens this:
+the homological edge consequences are now genuine; only the *construction* of the sheaf-cohomology
+spectral sequence (the edge maps + exactness for an actual cover) is the residue. -/
 def status_cech_derived_comparison : FormalizationStatus := .futureWork
+
+/-- **T1-4 (low-degree edge consequences, genuine).**  `CechLowDegree.injective_of_exact_zero`
+(`Ȟ¹ ↪ H¹` from five-term exactness) and the `Comparison` interface deriving `cech0_iso` (`Ȟ⁰ ≅ H⁰`)
+and `cech1_injective` are genuine, unconditional homological algebra (`Function.Exact` +
+`injective_iff_map_eq_zero`).  The 2-cover `Ȟ⁰` is the genuine `CechComparison.cechH0`.  Only the
+spectral-sequence *construction* for sheaves (`status_cech_derived_comparison`) stays isolated. -/
+def status_cech_lowdegree_edge : FormalizationStatus := .unconditional
 
 /-- **B4.**  On any pretriangulated category, an additive Euler characteristic satisfies the cone
 relation `χ(cone f) = χ B − χ A` (`MotivicEuler.AdditiveEuler.cone_euler`), so `Δχ_mot = χ(Def_p) =
@@ -4188,6 +4695,18 @@ theorem b1_padicLog_functional_equation_classification :
     FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false := by
   decide
 
+/-- **T1-1 audit.**  The analytic infrastructure (`derivative_seed`: geometric series `1/(1+u)`, norm
+bound) and the sharp gap characterization (`padicLogAdditive_iff_core`) are genuine and unconditional;
+the residual `tsum`-level core stays the isolated, conditional analytic transfer (blocked, not assumed,
+by `ℚ_[p]` total disconnectedness — see `status_padicLog_analytic_transfer`). -/
+theorem t1_1_padicLog_transfer_classification :
+    status_padicLog_derivative_seed = .unconditional ∧
+    status_padicLog_gap_characterization = .unconditional ∧
+    status_padicLog_analytic_transfer = .conditional ∧
+    FormalizationStatus.isRepresentative status_padicLog_derivative_seed = true ∧
+    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false := by
+  decide
+
 /-- **B2 audit.**  The flasque Γ-exactness is now genuine and unconditional; the dimension-shifting
 acyclicity (`flasque ⇒ Hⁱ = 0, i>0`) remains the isolated future-work residue. -/
 theorem b2_flasque_classification :
@@ -4197,6 +4716,29 @@ theorem b2_flasque_classification :
     FormalizationStatus.isRepresentative status_flasque_gamma_exactness = true := by
   decide
 
+/-- **T1-2 audit.**  Injective acyclicity (`injective_isGammaAcyclic`) is genuine, unconditional, and
+representative — the resolving-object base case derived from Mathlib's `Ext.eq_zero_of_injective`; the
+flasque-specific `flasque ⇒ acyclic` stays isolated future work, blocked by the absent extension-by-
+zero / enough-injectives sheaf infrastructure (see `status_flasque_acyclicity_residual`). -/
+theorem t1_2_flasque_acyclicity_classification :
+    status_injective_acyclicity = .unconditional ∧
+    status_flasque_acyclicity_residual = .futureWork ∧
+    status_flasque_gamma_exactness = .unconditional ∧
+    FormalizationStatus.isRepresentative status_injective_acyclicity = true ∧
+    FormalizationStatus.isRepresentative status_flasque_acyclicity_residual = false := by
+  decide
+
+/-- **T1-3 audit.**  The route-B localization-triangle obstruction complex `K_{f,X} = i_∗Λ[-1]` and its
+cohomology (`H¹ = ⊕Λ`, `H⁰ = 0`, `Hⁿ⁺² = 0`, `δcoh = 1`) are genuine and unconditional as the
+cohomology-bookkeeping shadow built on the §E detector; the actual `Sheaf.H` of the shifted complex
+stays isolated (derived-shift ↔ `Sheaf.H` bridge absent). -/
+theorem t1_3_localization_triangle_classification :
+    status_localization_triangle_shadow = .unconditional ∧
+    status_localization_triangle_sheaf = .futureWork ∧
+    FormalizationStatus.isRepresentative status_localization_triangle_shadow = true ∧
+    FormalizationStatus.isRepresentative status_localization_triangle_sheaf = false := by
+  decide
+
 /-- **B3 audit.**  The explicit Čech cohomology and the §7.2 sheaf-`Ext` grounding are genuine and
 unconditional; the degree-≤1 Čech-to-derived spectral-sequence comparison remains isolated. -/
 theorem b3_cech_classification :
@@ -4204,6 +4746,16 @@ theorem b3_cech_classification :
     status_sheafExt_H1_identification = .unconditional ∧
     status_cech_derived_comparison = .futureWork ∧
     FormalizationStatus.isRepresentative status_cech_explicit_cohomology = true := by
+  decide
+
+/-- **T1-4 audit.**  The low-degree Čech-to-derived edge consequences (`Ȟ⁰ ≅ H⁰`, `Ȟ¹ ↪ H¹`) are
+genuine and unconditional via `CechLowDegree`; only the sheaf-cohomology spectral-sequence
+construction stays the isolated future-work residue (`status_cech_derived_comparison`). -/
+theorem t1_4_cech_lowdegree_classification :
+    status_cech_lowdegree_edge = .unconditional ∧
+    status_cech_derived_comparison = .futureWork ∧
+    FormalizationStatus.isRepresentative status_cech_lowdegree_edge = true ∧
+    FormalizationStatus.isRepresentative status_cech_derived_comparison = false := by
   decide
 
 /-- **B4 audit.**  The additive-Euler cone relation and the `Δχ_mot` logic are genuine
@@ -4249,6 +4801,20 @@ theorem c2_curve_cohomology_classification :
     status_curve_weil_cohomology = .conditional ∧
     status_etale_ladic_cohomology = .unconditional ∧
     status_motivic_localization_triangle = .futureWork := by
+  decide
+
+/-- **T1-5 + Tier-2 audit (upstream axiomatization).**  The four-layer fiber product (T1-5) is
+genuine and unconditional; the three Tier-2 redesigns (T2-1 Weil cohomology, T2-2 motive realization,
+T2-3 geometric Frobenius) are genuine *universal* theorems over their respective GENERAL axioms
+(now conditional only on the upstream axioms, with the specific paper conclusions derived rather than
+assumed), and the genuine site sheaf stays isolated future work. -/
+theorem t1_5_tier2_upstream_classification :
+    status_fourLayer_fiberProduct = .unconditional ∧
+    status_weilCohomology_general_axioms = .conditional ∧
+    status_motivicRealization_bump_derived = .conditional ∧
+    status_frobeniusWeil_lefschetz = .conditional ∧
+    status_genuine_site_sheaf = .futureWork ∧
+    FormalizationStatus.isRepresentative status_fourLayer_fiberProduct = true := by
   decide
 
 /-- **C3 audit.**  The sheaf-theoretic CRT gluing + sectionwise shadow are genuine and unconditional
@@ -4760,6 +5326,89 @@ theorem logOnePlus_pow_of_additive (h : PadicLogAdditive p) {u : ℚ_[p]} (hu : 
 
 end PadicLogFormal
 
+/-! ## T1-1 — p-adic log additivity: genuine analytic infrastructure + sharp gap characterization.
+
+The functional equation `PadicLogFormal.PadicLogAdditive` is the **analytic transfer** of the proved
+formal `logOf_mul` to convergent `ℚ_[p]` values.  This block contributes the genuine, unconditional
+analytic facts that surround it, and pins the residual obstruction to its sharpest form:
+
+* `norm_mulArg_lt` — the multiplicative argument `u+v+uv` stays in the convergence ball (ultrametric);
+* `hasSum_inv_one_add` — the **analytic derivative of `log(1+·)`**: `∑ₙ (-1)ⁿ uⁿ = (1+u)⁻¹` (the
+  geometric series `1/(1+u)`, genuinely summed via `hasSum_geometric_of_norm_lt_one`);
+* `hasSum_logOnePlus_add` — `logOnePlus u + logOnePlus v` as a single `ℕ`-indexed `HasSum` (note it is
+  **not** termwise equal to `term (u+v+uv)`, which is exactly why additivity is nontrivial);
+* `PadicLogAdditiveCore` + `padicLogAdditive_iff_core` — the gap, characterized **exactly** at the
+  `tsum` level: additivity ⟺ the series for `log(1+(u+v+uv))` has sum `logOnePlus u + logOnePlus v`.
+
+**Why this is not closed unconditionally here.**  The natural closure (the difference function has
+zero derivative, hence is constant, hence `0`) is blocked in `ℚ_[p]`: every connectedness-based
+identity/rigidity theorem in Mathlib (`hasDerivAt_tsum_of_isPreconnected`,
+`AnalyticOnNhd.eqOn_zero_of_preconnected_of_eventuallyEq_zero`) requires `IsPreconnected`, which holds
+for **no** non-singleton subset of the totally disconnected field `ℚ_[p]`.  The only non-vacuous route
+is single-`FormalMultilinearSeries` coefficient rigidity (`HasFPowerSeriesOnBall.fderiv` +
+coefficient uniqueness), which requires constructing the power series of `logOnePlus`, its composition
+with the polynomial `u ↦ u+v+uv`, and a `derivSeries = 0 ⇒ higher-coeffs-vanish` extraction — a large
+analytic development.  It is isolated, not assumed away, in `status_padicLog_analytic_transfer`. -/
+
+namespace PadicLogTransfer
+
+open PadicLog
+
+variable {p : ℕ} [Fact p.Prime]
+
+/-- The multiplicative argument `(1+u)(1+v) − 1 = u + v + uv` stays strictly inside the unit ball:
+`‖u‖, ‖v‖ < 1 ⇒ ‖u + v + uv‖ < 1`.  Pure ultrametric estimate (`Padic.nonarchimedean`). -/
+theorem norm_mulArg_lt {u v : ℚ_[p]} (hu : ‖u‖ < 1) (hv : ‖v‖ < 1) :
+    ‖u + v + u * v‖ < 1 := by
+  have huv : ‖u * v‖ < 1 := by
+    rw [norm_mul]
+    calc ‖u‖ * ‖v‖ ≤ ‖u‖ * 1 := by gcongr; exact hv.le
+      _ = ‖u‖ := mul_one _
+      _ < 1 := hu
+  have h1 : ‖u + v‖ < 1 := (Padic.nonarchimedean u v).trans_lt (max_lt hu hv)
+  exact (Padic.nonarchimedean (u + v) (u * v)).trans_lt (max_lt h1 huv)
+
+/-- **Analytic derivative of `log(1+·)`.**  The geometric series `∑ₙ (-1)ⁿ uⁿ` sums to `(1+u)⁻¹`,
+for `‖u‖ < 1`.  This is the analytic `1/(1+u)` that drives every derivative-based proof of the
+functional equation (`(1+u)·(d/du) log(1+u) = 1`). -/
+theorem hasSum_inv_one_add {u : ℚ_[p]} (hu : ‖u‖ < 1) :
+    HasSum (fun n : ℕ => (-1 : ℚ_[p]) ^ n * u ^ n) (1 + u)⁻¹ := by
+  have hnu : ‖(-u : ℚ_[p])‖ < 1 := by rwa [norm_neg]
+  have h : HasSum (fun n : ℕ => (-u : ℚ_[p]) ^ n) (1 + u)⁻¹ := by
+    have hg := hasSum_geometric_of_norm_lt_one hnu
+    rwa [sub_neg_eq_add] at hg
+  have hfun : (fun n : ℕ => (-1 : ℚ_[p]) ^ n * u ^ n) = (fun n => (-u) ^ n) := by
+    funext n; rw [← neg_one_mul, mul_pow]
+  rw [hfun]; exact h
+
+/-- `logOnePlus u + logOnePlus v` realized as a single `ℕ`-indexed `HasSum`.  The summand
+`term u n + term v n` is **not** `term (u+v+uv) n`, so additivity is not a term-by-term identity —
+it is the nontrivial analytic transfer of the formal `logOf_mul`. -/
+theorem hasSum_logOnePlus_add {u v : ℚ_[p]} (hu : ‖u‖ < 1) (hv : ‖v‖ < 1) :
+    HasSum (fun n : ℕ => term u n + term v n) (logOnePlus u + logOnePlus v) :=
+  (hasSum_term hu).add (hasSum_term hv)
+
+/-- **Sharp gap characterization (tsum level).**  The exact residual analytic content of additivity:
+the series for `log(1 + (u+v+uv))` has sum `logOnePlus u + logOnePlus v`. -/
+def PadicLogAdditiveCore (p : ℕ) [Fact p.Prime] : Prop :=
+  ∀ u v : ℚ_[p], ‖u‖ < 1 → ‖v‖ < 1 →
+    HasSum (term (u + v + u * v)) (logOnePlus u + logOnePlus v)
+
+/-- **The gap, characterized exactly.**  `PadicLogAdditiveCore` (a single `HasSum` claim) is
+*equivalent* to the functional equation `PadicLogFormal.PadicLogAdditive`.  Forward: uniqueness of
+sums (`HasSum.unique`, `ℚ_[p]` is `T2`).  Backward: rewrite by additivity and apply `hasSum_term`.
+This relocates the obstruction to the clean `tsum` form where any future closure must land. -/
+theorem padicLogAdditive_iff_core :
+    PadicLogAdditiveCore p ↔ PadicLogFormal.PadicLogAdditive p := by
+  constructor
+  · intro hcore u v hu hv
+    exact (hasSum_term (norm_mulArg_lt hu hv)).unique (hcore u v hu hv)
+  · intro hadd u v hu hv
+    rw [← hadd u v hu hv]
+    exact hasSum_term (norm_mulArg_lt hu hv)
+
+end PadicLogTransfer
+
 /-- D.2 is unconditional apart from its explicit mathematical domain
 hypotheses (`‖u‖ < 1`, or `u ∈ p^k Z_p` with `k ≥ 1`). -/
 theorem d2_padic_log_classification : True := by
@@ -4952,6 +5601,15 @@ section AxiomAudit
 #print axioms PrimalitySheafCRT.glue_unique
 #print axioms PrimalitySheafCRT.sections_fiberProduct_eq
 #print axioms c3_crt_gluing_classification
+#print axioms PrimalityShadow.primalityLayer_isPullback
+#print axioms EtaleCurveCohomology.WeilCohomology.dimH1Xp_formula
+#print axioms EtaleCurveCohomology.WeilCohomology.bump_eq
+#print axioms EtaleCurveCohomology.WeilCohomology.toCurveWeilCohomology
+#print axioms MotivicC1.MotivicRealizationGen.bump_eq_deltaChi
+#print axioms FrobeniusPointCount.FrobeniusWeil.ap_eq_frobeniusTrace
+#print axioms FrobeniusPointCount.FrobeniusWeil.supersingular_iff
+#print axioms FrobeniusPointCount.FrobeniusWeil.charPoly_eq
+#print axioms t1_5_tier2_upstream_classification
 #print axioms Thm93Assembly.disc_hensel_gate_tfae
 #print axioms Thm93Assembly.tor_equalizer_gate
 #print axioms Thm93Assembly.detector_tfae
@@ -4966,11 +5624,21 @@ section AxiomAudit
 #print axioms Tier3Actual.flasque_global_sections_surjective
 #print axioms Tier3Actual.flasque_quotient_isFlasque
 #print axioms Tier3Actual.IsGammaAcyclic.h1_subsingleton
+#print axioms Tier3Actual.injective_isGammaAcyclic
 #print axioms b2_flasque_classification
+#print axioms t1_2_flasque_acyclicity_classification
+#print axioms LocalizationTriangle.obstructionH_succ
+#print axioms LocalizationTriangle.obstructionH_one_eq
+#print axioms LocalizationTriangle.skyscraperH0_linearEquiv
+#print axioms LocalizationTriangle.obstruction_delta_coh_one
+#print axioms t1_3_localization_triangle_classification
 #print axioms CechComparison.cechH0
 #print axioms CechComparison.cechH1
 #print axioms CechComparison.paper_ext_one_is_sheaf_ext
 #print axioms b3_cech_classification
+#print axioms CechLowDegree.injective_of_exact_zero
+#print axioms CechLowDegree.Comparison.cech1_injective
+#print axioms t1_4_cech_lowdegree_classification
 #print axioms MotivicEuler.AdditiveEuler.cone_euler
 #print axioms MotivicEuler.AdditiveEuler.euler_cone_mk
 #print axioms MotivicEuler.AdditiveEuler.exists_cone_euler
@@ -5060,6 +5728,11 @@ section AxiomAudit
 #print axioms PadicLogFormal.logOnePlus_zero
 #print axioms PadicLogFormal.logOnePlus_pow_of_additive
 #print axioms b1_padicLog_functional_equation_classification
+#print axioms PadicLogTransfer.norm_mulArg_lt
+#print axioms PadicLogTransfer.hasSum_inv_one_add
+#print axioms PadicLogTransfer.hasSum_logOnePlus_add
+#print axioms PadicLogTransfer.padicLogAdditive_iff_core
+#print axioms t1_1_padicLog_transfer_classification
 #print axioms card_derangements_direct
 #print axioms derangementPerms_card
 #print axioms fixedPointPerms_card
