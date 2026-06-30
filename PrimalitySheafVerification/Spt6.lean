@@ -50,6 +50,35 @@
                        grounding (sheaf-Ext¹ vs module-Ext¹=0); SS comparison isolated
                        ↦ CechComparison.{cechH0 (≅ℤ/lcm), cechH1 (≅ℤ/gcd),
                          paper_ext_one_is_sheaf_ext}  PROVED (uncond.)
+    Thm 6.1 / Tier-B B4 additive Euler χ on a pretriangulated cat: χ(cone f)=χB−χA ⇒
+                       Δχmot=χ(Def_p)=χ(Xp)−χ(Up) for any additive χ (motive = external interface)
+                       ↦ MotivicEuler.{AdditiveEuler, cone_euler, MotivicDeformation,
+                         deltaChi_mot}                                        PROVED (uncond. cat-theory)
+    §8.8 / Tier-B B5 actual point count + supersingular criterion: a_p=p+1−#E(𝔽_p) (Nat.card),
+                       IsSupersingular := a_p≡0 mod p, a_p=0 ⇒ supersingular; Weil/Hasse = interface
+                       ↦ FrobeniusPointCount.{frobeniusTrace, IsSupersingular,
+                         isSupersingular_of_trace_zero, FrobeniusData}        PROVED (uncond. arith.)
+    Def 7.1 §7.3 / Tier-B B6 cohomological defect δcoh := sInf{i|∃F,supp F=P ∧ Hⁱ(F)≠0};
+                       easy bounds + δcoh=1 (§7.3, via B2); Prop 7.2 base-change = Tier C
+                       ↦ CohDimension.{deltaCoh, deltaCoh_le, deltaCoh_mem,
+                         deltaCoh_eq_one}                                     PROVED (uncond. def)
+    §6 Thm 6.1 / Tier-C C1 Voevodsky motives interface: realization functor + Euler-preservation
+                       axiom ⇒ bump = Δχmot = χmot(Xp)−χmot(Up); instance (DMc + R) = open obligation
+                       ↦ MotivicC1.{MotivicRealization, motivicEuler, bump_eq_deltaChi}  PROVED (cond.)
+    §6/§9.3 / Tier-C C2 curve étale H¹ dim formula: localization SES + normalization axioms ⇒
+                       dim H¹(Xp)=2g+b₁+Σδ, smooth ⇒ dim H¹(Xp)=dim H¹(Up) (bump=0); étale = obligation
+                       ↦ EtaleCurveCohomology.CurveWeilCohomology.{dimH1Xp_formula, bump_eq,
+                         smooth_dim_eq}                                       PROVED (cond.)
+    §2/§3.1 / Tier-C C3 sheaf-theoretic CRT gluing: gluing ⟺ CRT-compatible + separatedness (lcm);
+                       "finite limits sectionwise" shadow certified; genuine site sheaf = obligation
+                       ↦ PrimalitySheafCRT.{glue_iff_compatible, glue_unique,
+                         sections_fiberProduct_eq}                            PROVED (uncond.)
+    §9.2 / Tier-C C4 Thm 9.3 full equivalence (i)⇔(ii)⇔(iii)⇔(iv)⇔(v): arith core genuine
+                       (A2 gate + equalizer–Tor), detector layer (v) universal over C1/C2 interfaces,
+                       geometric instance = obligation; boundary marked by status audit
+                       ↦ Thm93Assembly.{disc_hensel_gate_tfae, tor_equalizer_gate,
+                         detector_tfae, thm93_full_tfae, thm93_full_tfae_motivic}
+                                                                              PROVED (core uncond. / (v) cond.)
     §8.8 Frobenius–Tate polynomial/point-count certificate
                        ↦ frobeniusTatePolynomial_coefficients /
                          frobeniusTatePolynomial_of_pointCount_eq             PROVED (algebra)
@@ -209,6 +238,7 @@ import Mathlib.FieldTheory.Separable
 import Mathlib.FieldTheory.Perfect
 import Mathlib.RingTheory.Polynomial.Resultant.Basic
 import Mathlib.AlgebraicGeometry.EllipticCurve.Weierstrass
+import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
 import Mathlib.Tactic.ComputeDegree
 import Mathlib.Data.Nat.Prime.Int
 import Mathlib.RingTheory.Length
@@ -218,6 +248,7 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.SetTheory.Cardinal.Finite
 import Mathlib.RingTheory.PowerSeries.Log
 import Mathlib.RingTheory.PowerSeries.Inverse
+import Mathlib.CategoryTheory.Triangulated.Pretriangulated
 import Mathlib.Tactic.Tauto
 import Mathlib.Algebra.Module.Projective
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
@@ -352,6 +383,69 @@ theorem frobeniusTatePolynomial_of_pointCount_eq (p N : ℕ)
     rw [frobeniusTrace_eq_zero_iff]
     exact hN
   rw [htrace, frobeniusTatePolynomial_trace_zero]
+
+/-! ## B5 — actual point count and a formalizable supersingularity criterion.
+
+The §C5 shadow above takes the point count `N` as a *given* number.  §B5 binds `a_p` to the **actual**
+group of `𝔽_p`-points (`Nat.card W.toAffine.Point`, via Mathlib's `WeierstrassCurve.Affine.Point`),
+defines supersingularity by the formalizable criterion `a_p ≡ 0 (mod p)`, and proves
+`a_p = 0 ⇒ supersingular` genuinely.  Mathlib lacks the finite-field Frobenius/Hasse package, so the
+agreement of this arithmetic criterion with the *geometric* definition (Hasse invariant `= 0` /
+inseparable Frobenius, with char-polynomial `T² − a_p T + p`) is exposed as the interface
+`FrobeniusData`; constructing an instance from the curve geometry is the unresolved Tier-C obligation. -/
+
+namespace FrobeniusPointCount
+
+open WeierstrassCurve
+
+variable {p : ℕ} [Fact p.Prime]
+
+/-- **`a_p = p + 1 − #E(𝔽_p)`, bound to the actual point count.**  `Nat.card W.toAffine.Point` is the
+genuine number of affine `𝔽_p`-points of `E` (the point at infinity plus the nonsingular solutions of
+the Weierstrass equation). -/
+noncomputable def frobeniusTrace (W : WeierstrassCurve (ZMod p)) : ℤ :=
+  (p : ℤ) + 1 - (Nat.card W.toAffine.Point : ℤ)
+
+/-- The actual trace is the §C5 arithmetic trace at the genuine point count. -/
+theorem frobeniusTrace_eq (W : WeierstrassCurve (ZMod p)) :
+    frobeniusTrace W = frobeniusTraceFromPointCount p (Nat.card W.toAffine.Point) :=
+  rfl
+
+/-- **Supersingularity criterion (formalizable).**  `E/𝔽_p` is supersingular iff `a_p ≡ 0 (mod p)`. -/
+def IsSupersingular (W : WeierstrassCurve (ZMod p)) : Prop :=
+  (p : ℤ) ∣ frobeniusTrace W
+
+/-- **`a_p = 0 ⇒ supersingular`** (genuine: `p ∣ 0`). -/
+theorem isSupersingular_of_trace_zero {W : WeierstrassCurve (ZMod p)}
+    (h : frobeniusTrace W = 0) : IsSupersingular W := by
+  rw [IsSupersingular, h]; exact dvd_zero _
+
+/-- The Frobenius characteristic polynomial `T² − a_p T + p` at the actual trace. -/
+noncomputable def frobeniusCharPoly (W : WeierstrassCurve (ZMod p)) : Polynomial ℤ :=
+  frobeniusTatePolynomial p (frobeniusTrace W)
+
+/-- Evaluation of the Frobenius characteristic polynomial: `T² − a_p T + p`. -/
+theorem frobeniusCharPoly_eval (W : WeierstrassCurve (ZMod p)) (x : ℤ) :
+    (frobeniusCharPoly W).eval x = x ^ 2 - frobeniusTrace W * x + p :=
+  frobeniusTatePolynomial_eval p (frobeniusTrace W) x
+
+/-- **Frobenius/Weil interface (the geometric Tier-C obligation).**  Packages the agreement between a
+geometric supersingularity predicate (Hasse invariant `= 0` / inseparable Frobenius) and the
+arithmetic criterion `a_p ≡ 0 (mod p)`.  Mathlib has no finite-field Frobenius/Hasse theory, so
+constructing an instance from the curve geometry is the unresolved obligation; *given* it, the
+paper's `a_p = 0 ⇒ supersingular` (geometric) is genuine. -/
+structure FrobeniusData (W : WeierstrassCurve (ZMod p)) where
+  /-- A geometric supersingularity predicate (e.g. Hasse invariant zero). -/
+  geomSupersingular : Prop
+  /-- Weil/Hasse agreement: geometric supersingularity ⟺ `a_p ≡ 0 (mod p)`. -/
+  agrees : geomSupersingular ↔ IsSupersingular W
+
+/-- Under the Frobenius/Weil interface, `a_p = 0 ⇒ geometrically supersingular`. -/
+theorem FrobeniusData.geom_of_trace_zero {W : WeierstrassCurve (ZMod p)}
+    (D : FrobeniusData W) (h : frobeniusTrace W = 0) : D.geomSupersingular :=
+  D.agrees.mpr (isSupersingular_of_trace_zero h)
+
+end FrobeniusPointCount
 
 /-! ## C1–C3 actual Mathlib upgrades discovered in the current library.
 
@@ -3054,6 +3148,476 @@ theorem paper_ext_one_is_sheaf_ext
 
 end CechComparison
 
+/-! ## B4 — additive Euler characteristic on a pretriangulated category: `χ(cone f) = χ B − χ A`.
+
+The motive functor `Mc(-)` is external (Tier 3), but the *logic* `Δχ_mot = χ_mot(Def_p) =
+χ_mot(Xp) − χ_mot(Up)` closes in pure category theory.  An integer invariant additive on
+distinguished triangles (= a homomorphism out of the Grothendieck group `K₀`) automatically
+satisfies the cone relation `χ(cone f) = χ B − χ A`.  With `Def_p = cone(Mc(Up) → Mc(Xp))` this gives
+`χ(Def_p) = χ(Xp) − χ(Up)` for *every* additive `χ`; only the realization triangle is an external
+interface (`MotivicDeformation`).  This is the genuine, unconditional logical core of Thm 6.1
+(complementing the ℕ-bookkeeping `curve_master_identity`). -/
+
+namespace MotivicEuler
+
+open CategoryTheory CategoryTheory.Limits CategoryTheory.Pretriangulated
+
+variable (C : Type*) [Category C] [HasZeroObject C] [HasShift C ℤ] [Preadditive C]
+  [∀ n : ℤ, (shiftFunctor C n).Additive] [Pretriangulated C]
+
+/-- An **additive Euler characteristic** on a pretriangulated category: an integer invariant `χ`
+that is additive on distinguished triangles, `χ T.obj₂ = χ T.obj₁ + χ T.obj₃`.  Equivalently, a
+group homomorphism out of the Grothendieck group `K₀(C)`. -/
+structure AdditiveEuler where
+  χ : C → ℤ
+  additive : ∀ T : Triangle C, T ∈ distTriang C → χ T.obj₂ = χ T.obj₁ + χ T.obj₃
+
+/-- The zero invariant is (trivially) an additive Euler characteristic, so `AdditiveEuler` is
+inhabited. -/
+def AdditiveEuler.zero : AdditiveEuler C where
+  χ := fun _ => 0
+  additive := fun _ _ => by simp
+
+/-- **Motivic deformation data (the only external interface).**  The étale/motivic realization fits
+the deformation `Defp` into a distinguished triangle
+`Mc(Up) →(realize) Mc(Xp) →(toDef) Defp →(conn) Mc(Up)[1]`.  Construction of `Mc(-)` is external
+(Tier 3); this packages the realization triangle. -/
+structure MotivicDeformation where
+  Up Xp Defp : C
+  realize : Up ⟶ Xp
+  toDef : Xp ⟶ Defp
+  conn : Defp ⟶ Up⟦(1 : ℤ)⟧
+  dist : Triangle.mk realize toDef conn ∈ distTriang C
+
+variable {C}
+
+/-- **B4 (cone Euler relation).**  For a distinguished triangle `A →(f) B → Z → A[1]`,
+`χ Z = χ B − χ A`.  (`Z` is a cone of `f`.) -/
+theorem AdditiveEuler.cone_euler (E : AdditiveEuler C) {T : Triangle C} (hT : T ∈ distTriang C) :
+    E.χ T.obj₃ = E.χ T.obj₂ - E.χ T.obj₁ := by
+  have h := E.additive T hT
+  omega
+
+/-- **B4 (cone of a morphism, explicit triangle).**  `χ(cone f) = χ B − χ A`. -/
+theorem AdditiveEuler.euler_cone_mk (E : AdditiveEuler C) {A B Z : C}
+    (f : A ⟶ B) (g : B ⟶ Z) (h : Z ⟶ A⟦(1 : ℤ)⟧) (hT : Triangle.mk f g h ∈ distTriang C) :
+    E.χ Z = E.χ B - E.χ A :=
+  E.cone_euler hT
+
+/-- **B4 (every morphism has a cone realizing the Euler relation).**  Via
+`distinguished_cocone_triangle`, `f : A ⟶ B` admits a cone `Z` with `χ Z = χ B − χ A`. -/
+theorem AdditiveEuler.exists_cone_euler (E : AdditiveEuler C) {A B : C} (f : A ⟶ B) :
+    ∃ (Z : C) (g : B ⟶ Z) (h : Z ⟶ A⟦(1 : ℤ)⟧),
+      Triangle.mk f g h ∈ distTriang C ∧ E.χ Z = E.χ B - E.χ A := by
+  obtain ⟨Z, g, h, hT⟩ := distinguished_cocone_triangle f
+  exact ⟨Z, g, h, hT, E.cone_euler hT⟩
+
+/-- **B4 / Thm 6.1 — `Δχ_mot` logic (genuine for ANY additive `χ`).**
+`Δχ_mot = χ(Def_p) = χ(Xp) − χ(Up)`.  Pure category theory; only the realization triangle
+(`MotivicDeformation`) is an external input. -/
+theorem MotivicDeformation.deltaChi_mot (E : AdditiveEuler C) (D : MotivicDeformation C) :
+    E.χ D.Defp = E.χ D.Xp - E.χ D.Up :=
+  E.euler_cone_mk D.realize D.toDef D.conn D.dist
+
+end MotivicEuler
+
+/-! ## B6 — the genuine cohomological defect `δcoh` (Def 7.1) and its easy properties.
+
+`δcoh P` is the least cohomological degree at which a sheaf supported exactly on `P` has nonvanishing
+cohomology.  With `supp` the support assignment and `Sheaf.H` the (Ext-)sheaf cohomology of §C3, this
+is directly formalizable as a `Nat.sInf`.  The base-change/localization invariance of Prop 7.2 needs
+sheaf-cohomology base change (Tier C, Mathlib partial); but the *definition* and the §7.3 value
+`δcoh = 1` are unconditional once combined with §B2 (the closed-point skyscraper has `H¹ ≅ ⊕Λ ≠ 0`
+and acyclic `H⁰`). -/
+
+namespace CohDimension
+
+open CategoryTheory
+
+universe u v w w'
+
+variable {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+  [HasSheafify J AddCommGrpCat.{w}] [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})] {X : Type*}
+
+/-- The set of cohomological degrees at which some sheaf supported exactly on `P` (for the support
+assignment `supp`) has nonvanishing cohomology. -/
+def cohDegrees (supp : Sheaf J AddCommGrpCat.{w} → Set X) (P : Set X) : Set ℕ :=
+  {i : ℕ | ∃ F : Sheaf J AddCommGrpCat.{w}, supp F = P ∧ ¬ Subsingleton (Sheaf.H F i)}
+
+/-- **Def 7.1 — cohomological defect `δcoh P`.**  The least degree in `cohDegrees supp P`
+(`Nat.sInf`, with the empty-set convention `δcoh = 0`). -/
+noncomputable def deltaCoh (supp : Sheaf J AddCommGrpCat.{w} → Set X) (P : Set X) : ℕ :=
+  Nat.sInf (cohDegrees supp P)
+
+variable {supp : Sheaf J AddCommGrpCat.{w} → Set X} {P : Set X}
+
+theorem deltaCoh_eq_sInf : deltaCoh supp P = Nat.sInf (cohDegrees supp P) := rfl
+
+/-- **Easy bound.**  A sheaf supported on `P` with nonvanishing `Hⁱ` forces `δcoh P ≤ i`. -/
+theorem deltaCoh_le {i : ℕ} (F : Sheaf J AddCommGrpCat.{w}) (hsupp : supp F = P)
+    (hi : ¬ Subsingleton (Sheaf.H F i)) : deltaCoh supp P ≤ i :=
+  Nat.sInf_le ⟨F, hsupp, hi⟩
+
+/-- **Easy realization.**  If the defect is attained (degree-set nonempty) then `δcoh P` is itself a
+degree carrying a sheaf with nonvanishing cohomology. -/
+theorem deltaCoh_mem (h : (cohDegrees supp P).Nonempty) :
+    deltaCoh supp P ∈ cohDegrees supp P :=
+  Nat.sInf_mem h
+
+/-- Abstract `Nat.sInf = 1` criterion (`1 ∈ S`, `0 ∉ S`). -/
+theorem sInf_eq_one {S : Set ℕ} (h1 : 1 ∈ S) (h0 : 0 ∉ S) : Nat.sInf S = 1 := by
+  have hle : Nat.sInf S ≤ 1 := Nat.sInf_le h1
+  have hpos : Nat.sInf S ≠ 0 := by
+    rw [Ne, Nat.sInf_eq_zero]
+    push_neg
+    exact ⟨h0, (Set.nonempty_of_mem h1).ne_empty⟩
+  omega
+
+/-- **§7.3 — `δcoh = 1`.**  When some sheaf supported on `P` has `H¹ ≠ 0` (the closed-point
+skyscraper, whose `H¹ ≅ ⊕Λ ≠ 0`) while no sheaf supported on `P` has `H⁰ ≠ 0` (acyclic `H⁰`), the
+cohomological defect is `1`.  The two inputs are exactly §B2's skyscraper detector and `H⁰`-acyclicity. -/
+theorem deltaCoh_eq_one (h1 : 1 ∈ cohDegrees supp P) (h0 : 0 ∉ cohDegrees supp P) :
+    deltaCoh supp P = 1 :=
+  sInf_eq_one h1 h0
+
+end CohDimension
+
+/-! ## C1 — Voevodsky motives & realization (Tier C, universal-axiom interface).
+
+Mathlib has no triangulated category of motives `DMc(F_p)`, no motive functor `Mc(-)`, and no
+motivic-localization/realization theory — the largest gap.  Following the Tier-C principle we make
+the *paper's argument* a genuine theorem by recording the standard axioms as structure fields and
+pushing everything unproven into a single instance-existence obligation.
+
+`MotivicRealization M D` packages: a pretriangulated "motive category" `M` (the role of `DMc(F_p)`);
+a realization functor `R : M ⥤ D`; the **Euler-preservation axiom** `preservesEuler` (`R` carries
+distinguished triangles to additivity of the target Euler characteristic `χ`); the motivic
+localization triangle `Mc(Up) → Mc(Xp) → Def_p → Mc(Up)[1]` (`defm`); and the paper's `bump` with the
+axiom `bump = χ_mot(Def_p)`.  From these, `bump = Δχ_mot = χ_mot(Xp) − χ_mot(Up)` is **derived**
+(§B4 cone relation).  Constructing an actual `MotivicRealization` (the Voevodsky motive category and
+realization functor) is the open obligation; the logical core is genuine and unconditional. -/
+
+namespace MotivicC1
+
+open CategoryTheory CategoryTheory.Pretriangulated
+
+variable (M D : Type*) [Category M] [HasZeroObject M] [HasShift M ℤ] [Preadditive M]
+  [∀ n : ℤ, (shiftFunctor M n).Additive] [Pretriangulated M] [Category D]
+
+/-- **C1 — motivic realization data (Tier-C universal-axiom interface).**  See the section
+docstring.  `R` = realization functor; `χ` = target Euler characteristic; `preservesEuler` = `R`
+preserves the Euler characteristic (sends distinguished triangles to additivity); `defm` = the
+motivic localization triangle; `bump_eq` = `bump = χ_mot(Def_p)`. -/
+structure MotivicRealization where
+  /-- The realization functor `Mc(F_p) → D` (e.g. to the étale/derived realization). -/
+  R : M ⥤ D
+  /-- The Euler characteristic on the realization target. -/
+  χ : D → ℤ
+  /-- **Euler-preservation axiom.**  `R` sends every distinguished triangle to an additive relation
+  for `χ` (i.e. `χ ∘ R` is an additive Euler characteristic on `M`). -/
+  preservesEuler : ∀ T : Triangle M, T ∈ distTriang M →
+    χ (R.obj T.obj₂) = χ (R.obj T.obj₁) + χ (R.obj T.obj₃)
+  /-- The motivic localization triangle `Mc(Up) → Mc(Xp) → Def_p → Mc(Up)[1]`. -/
+  defm : MotivicEuler.MotivicDeformation M
+  /-- The paper's bump invariant. -/
+  bump : ℤ
+  /-- **Realization axiom.**  The bump equals the motivic Euler characteristic of the deformation. -/
+  bump_eq : bump = χ (R.obj defm.Defp)
+
+variable {M D}
+
+/-- The motivic Euler characteristic `χ_mot = χ ∘ R` induced by a realization (additive by the
+Euler-preservation axiom). -/
+def MotivicRealization.motivicEuler (𝓡 : MotivicRealization M D) : MotivicEuler.AdditiveEuler M where
+  χ := fun X => 𝓡.χ (𝓡.R.obj X)
+  additive := 𝓡.preservesEuler
+
+/-- **C1 / Thm 6.1 — `bump = Δχ_mot`.**  For any motivic realization, the paper's bump equals the
+motivic Euler defect `χ_mot(Xp) − χ_mot(Up)`.  Pure consequence of the §B4 cone relation; only the
+*existence* of a realization (an instance of `MotivicRealization`) is the open Tier-C obligation. -/
+theorem MotivicRealization.bump_eq_deltaChi (𝓡 : MotivicRealization M D) :
+    𝓡.bump = 𝓡.motivicEuler.χ 𝓡.defm.Xp - 𝓡.motivicEuler.χ 𝓡.defm.Up := by
+  rw [𝓡.bump_eq]
+  exact MotivicEuler.MotivicDeformation.deltaChi_mot 𝓡.motivicEuler 𝓡.defm
+
+end MotivicC1
+
+/-! ## C2 — curve étale `H¹` dimension formula, localization SES, comparison (Tier C).
+
+Mathlib's `AlgebraicGeometry.Sites.ElladicCohomology` gives the ℓ-adic cohomology *type* with an
+`AddCommGroup` (cf. `Tier3Actual.ellAdicCohomology_nonempty`), but no Poincaré duality, no comparison,
+no curve-dimension or normalization-SES computation — so the dimension values are an interface.
+Following the Tier-C principle, `CurveWeilCohomology` axiomatizes exactly the dimension content of the
+localization sequence `0 → H⁰(Q) → H¹(Xp) → H¹(X̃p) → 0` together with the §A5 defect
+`dim H⁰(Q) = b₁(Γ) + Σδ` and the normalization `dim H¹(X̃p) = dim H¹(Up) = 2g`.  From these the
+dimension formula `dim H¹(Xp) = 2g + b₁ + Σδ` and the smooth-fibre `bump = 0` are *derived* (reusing
+the certified ℕ-bookkeeping `curve_betti_identity`).  Constructing this from actual étale cohomology
+is the open Tier-C obligation; the `b₁`/`Σδ` are the §A5 invariants. -/
+
+namespace EtaleCurveCohomology
+
+/-- **C2 — Weil/étale cohomology dimension data of the curve `Xp` (Tier-C interface).**  Records the
+finite dimensions and the localization-SES / normalization comparison as axioms. -/
+structure CurveWeilCohomology where
+  /-- Genus of the normalization `X̃p`, `b₁(Γp)` (§A5 dual graph), `Σδ` (§A5 δ-invariants),
+  and the étale `H¹` dimensions of `Xp`, of the smooth locus `Up`, of the skyscraper `Q` on the
+  singular points, and of the normalization `X̃p`. -/
+  g b1 deltaSum dimH1Xp dimH1Up dimH0Q dimH1Norm : ℕ
+  /-- **Localization SES** `0 → H⁰(Q) → H¹(Xp) → H¹(X̃p) → 0` (its dimension count). -/
+  localization_ses : dimH1Xp = dimH0Q + dimH1Norm
+  /-- The singular defect `dim H⁰(Q) = b₁(Γ) + Σδ` (§A5). -/
+  defect_dim : dimH0Q = b1 + deltaSum
+  /-- The normalization `dim H¹(X̃p) = 2g` (smooth proper curve of genus `g`). -/
+  norm_dim : dimH1Norm = 2 * g
+  /-- Smooth-locus comparison `dim H¹(Up) = dim H¹(X̃p) = 2g`. -/
+  smooth_comparison : dimH1Up = 2 * g
+
+namespace CurveWeilCohomology
+
+/-- **C2 — étale `H¹` dimension formula: `dim H¹(Xp) = 2g + b₁(Γ) + Σδ`.** -/
+theorem dimH1Xp_formula (W : CurveWeilCohomology) :
+    W.dimH1Xp = 2 * W.g + W.b1 + W.deltaSum := by
+  rw [W.localization_ses, W.defect_dim, W.norm_dim]; omega
+
+/-- The bump = excess of `H¹(Xp)` over the smooth part `H¹(Up)`. -/
+def bump (W : CurveWeilCohomology) : ℕ := W.dimH1Xp - W.dimH1Up
+
+/-- **C2 — `bump = b₁ + Σδ`** (via the certified ℕ-bookkeeping `curve_betti_identity`). -/
+theorem bump_eq (W : CurveWeilCohomology) : W.bump = W.b1 + W.deltaSum :=
+  curve_betti_identity W.g W.b1 W.deltaSum W.dimH1Xp W.dimH1Up (dimH1Xp_formula W) W.smooth_comparison
+
+/-- **C2 — smooth fibre (`Sing = ∅`, i.e. `b₁ = Σδ = 0`): `dim H¹(Xp) = dim H¹(Up)` and `bump = 0`.**
+This is the §9.3 normalization-SES consequence: with no singular defect the localization SES forces
+`H¹(Xp) ≅ H¹(X̃p) = H¹(Up)`, so the étale bump vanishes. -/
+theorem smooth_dim_eq (W : CurveWeilCohomology) (hb1 : W.b1 = 0) (hδ : W.deltaSum = 0) :
+    W.dimH1Xp = W.dimH1Up ∧ W.bump = 0 := by
+  have h := dimH1Xp_formula W
+  have hs := W.smooth_comparison
+  have hb := bump_eq W
+  exact ⟨by omega, by omega⟩
+
+end CurveWeilCohomology
+
+end EtaleCurveCohomology
+
+/-! ## C3 — primality sheaf and sheaf-theoretic CRT gluing (Tier C; cost-honest shadow).
+
+The arithmetic CRT (`crt_solvable_iff`) and the predicate-shadow (`PrimalityShadow`) are already
+certified.  Building a *genuine* `Sheaf` on a Grothendieck site is substantial; following the
+cost-honest recommendation we keep the "finite limits are sectionwise" content as certified and make
+the **sheaf-theoretic CRT gluing** explicit: the gluing axiom (local residues glue iff compatible on
+overlaps) IS `crt_solvable_iff`, and the separatedness axiom (uniqueness mod `lcm`) is `lcm_dvd`.
+Constructing the genuine site sheaf (`GrothendieckTopology` + sheaf condition) is the optional heavy
+obligation. -/
+
+namespace PrimalitySheafCRT
+
+/-- A pair of local residues (`a` mod `M`, `b` mod `N`) is **CRT-compatible** iff the gcd-obstruction
+`a − b` vanishes mod `gcd(M,N)` — the "agree on overlaps" hypothesis of the sheaf gluing axiom. -/
+def CrtCompatible (M N a b : ℤ) : Prop := (↑(Int.gcd M N) : ℤ) ∣ (a - b)
+
+/-- **C3 — sheaf gluing (existence half).**  Local residues glue to a global section iff they are
+CRT-compatible.  This *is* the sheaf gluing axiom for the primality/CRT structure (`crt_solvable_iff`). -/
+theorem glue_iff_compatible (M N a b : ℤ) :
+    (∃ x : ℤ, M ∣ (x - a) ∧ N ∣ (x - b)) ↔ CrtCompatible M N a b :=
+  crt_solvable_iff M N a b
+
+/-- Compatible local residues do glue (the global section exists). -/
+theorem exists_glue_of_compatible (M N a b : ℤ) (h : CrtCompatible M N a b) :
+    ∃ x : ℤ, M ∣ (x - a) ∧ N ∣ (x - b) :=
+  (glue_iff_compatible M N a b).mpr h
+
+/-- Coprime moduli always glue (separated cover, `gcd = 1`). -/
+theorem glue_of_coprime (M N a b : ℤ) (hcop : Int.gcd M N = 1) :
+    ∃ x : ℤ, M ∣ (x - a) ∧ N ∣ (x - b) :=
+  gcd_obstruction_zero_to_gluing M N a b hcop
+
+/-- **C3 — separatedness (uniqueness mod `lcm`).**  Two global sections agreeing mod `M` and mod `N`
+agree mod `lcm(M,N)` — the *separated* half of the sheaf axiom. -/
+theorem glue_unique (M N x y : ℤ) (hM : M ∣ (x - y)) (hN : N ∣ (x - y)) :
+    lcm M N ∣ (x - y) :=
+  lcm_dvd hM hN
+
+/-- **C3 — "finite limits are sectionwise" (certified shadow).**  The primality fiber product is the
+pointwise intersection of the layers' sections (the sheaf-theoretic gluing of the predicate layers,
+certified directly by `PrimalityShadow`). -/
+theorem sections_fiberProduct_eq (Fnum Fmod Fpadic FEC : ℕ → Prop) (U : Set ℕ) :
+    PrimalityShadow.sections (PrimalityShadow.primalityLayer Fnum Fmod Fpadic FEC) U
+      = PrimalityShadow.sections Fnum U ∩ PrimalityShadow.sections Fmod U
+          ∩ PrimalityShadow.sections Fpadic U ∩ PrimalityShadow.sections FEC U :=
+  PrimalityShadow.sections_primalityLayer Fnum Fmod Fpadic FEC U
+
+/-- **C3 — overlaps are intersections** (the separated/restriction shadow). -/
+theorem sections_overlap_eq (F : ℕ → Prop) (U V : Set ℕ) :
+    PrimalityShadow.sections F (U ∩ V)
+      = PrimalityShadow.sections F U ∩ PrimalityShadow.sections F V :=
+  PrimalityShadow.sections_inter F U V
+
+end PrimalitySheafCRT
+
+/-! ## C4 — Theorem 9.3 full equivalence assembly (Tier C capstone).
+
+Thm 9.3 lists five conditions, synchronized on the good-prime open `U = D(Δ)`:
+  (i)   discriminant/Jacobian gate `p ∤ Δ(E)` — the fibre `Xp` is smooth;
+  (ii)  Hensel gate — every simple residue root lifts uniquely to `ℤ_p` (≡ residual separability);
+  (iii) arithmetic equalizer `gcd(M,pᵏ) = 1` on principal-open overlaps;
+  (iv)  derived readout `Tor₁^ℤ(ℤ/M, ℤ/pᵏ) = 0`;
+  (v)   étale–motivic detectors `Xp smooth ⟺ bumpₚ = 0 ⟺ Δχ_mot(p) = 0 ⟺ H¹(L_{Xp}) = 0`.
+
+**Honest certification boundary.**  After A1/A2 the gate (i)⇔(ii) is GENUINE for the concrete
+Weierstrass curve (`disc_hensel_gate_tfae`, from `not_dvd_shortWeierstrass_Δ_iff_separable`), and
+(iii)⇔(iv) is GENUINE via the equalizer–Tor model (`tor_equalizer_gate`, from `tor_subsingleton_iff`).
+The detector layer (v) needs étale cohomology and motives, absent from Mathlib; following the
+universal-axiom principle we DERIVE the (v) faces from the C2 `CurveWeilCohomology` and C1
+`MotivicRealization` interfaces (the "Strategy-B → motif/étale" upgrade: structure fields become the
+hypotheses of a universal theorem), leaving only (a) the §9.3 synchronization bridge `p∤Δ ⟺ gcd=1`
+that the paper *enforces* on `U`, (b) the smooth criterion `p∤Δ ⟺ Sing=∅`, and (c) the ℓ-adic
+realization comparison (Thm 6.1), and (d) the actual geometric instance, as explicit isolated
+hypotheses/obligations.  The `FormalizationStatus` audit marks this boundary precisely. -/
+
+namespace Thm93Assembly
+
+open WeierstrassGate
+
+/-! ### Part 1 — genuine arithmetic/algebraic core: (i)⇔(ii) and (iii)⇔(iv). -/
+
+/-- **Thm 9.3 (i)⇔(ii) — discriminant/Hensel gate (GENUINE).**  For the short Weierstrass curve
+`E : y² = x³ + a x + b` and a prime `p ≠ 2`, the discriminant gate `p ∤ Δ(E)`, the cubic gate
+`p ∤ (4a³+27b²)`, residual separability of `x³+ax+b mod p`, and residual squarefreeness are
+equivalent — all proved unconditionally from A2 (`not_dvd_shortWeierstrass_Δ_iff_separable` and
+`cubic_good_locus_tfae`).  This is the unconditional content of the paper's `(i) ⟺ (ii)` (smooth
+fibre ⟺ simple residue roots ⟺ unique Hensel lift). -/
+theorem disc_hensel_gate_tfae {a b : ℤ} (p : ℕ) [Fact p.Prime] (hp2 : p ≠ 2) :
+    [ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ
+    , ¬ (p : ℤ) ∣ (4 * a ^ 3 + 27 * b ^ 2)
+    , (cubicPoly (a : ZMod p) (b : ZMod p)).Separable
+    , Squarefree (cubicPoly (a : ZMod p) (b : ZMod p)) ].TFAE := by
+  have h := cubic_good_locus_tfae (a := a) (b := b) p
+  tfae_have 1 ↔ 3 := not_dvd_shortWeierstrass_Δ_iff_separable p hp2
+  tfae_have 2 ↔ 3 := h.out 0 1
+  tfae_have 3 ↔ 4 := h.out 1 2
+  tfae_finish
+
+/-- **Thm 9.3 (iii)⇔(iv) — equalizer = derived Tor (GENUINE).**  In the equalizer–Tor model
+`Tor₁^ℤ(ℤ/M, ℤ/N) = ker(·M : ℤ/N → ℤ/N)`, the derived obstruction vanishes (is a subsingleton) iff
+the arithmetic equalizer condition `gcd(M,N) = 1` holds.  Unconditional (`tor_subsingleton_iff`). -/
+theorem tor_equalizer_gate (M N : ℕ) [NeZero N] :
+    Subsingleton (AddMonoidHom.mulLeft (M : ZMod N)).ker ↔ Nat.gcd M N = 1 := by
+  rw [tor_subsingleton_iff N M, Nat.gcd_comm N M]
+
+/-! ### Part 2 — detector layer (v): universal over the C1 (motivic) / C2 (étale) interfaces. -/
+
+/-- **C4 upgrade — the curve detector assembled from the C2 étale interface.**  The C2
+`CurveWeilCohomology` dimension data (localization SES + normalization) — together with the smooth
+criterion `Sing = ∅ ⟺ b₁ = Σδ = 0` and a derived-face criterion — assembles into a full
+`Tier3.CurveDetectorData`.  Hence the étale bump face is *derived* from the localization SES (C2),
+not postulated: this is the Strategy-B hypotheses being supplied by the C2 structure. -/
+def detectorOfWeil {p : ℕ} (W : EtaleCurveCohomology.CurveWeilCohomology)
+    (smooth : Prop) (derived : ℕ)
+    (hsmooth : smooth ↔ (W.b1 = 0 ∧ W.deltaSum = 0))
+    (hder : derived = 0 ↔ smooth) : Tier3.CurveDetectorData p where
+  bump := W.bump
+  eulerJump := W.b1 + W.deltaSum
+  derived := derived
+  b1Graph := W.b1
+  deltaSum := W.deltaSum
+  smooth := smooth
+  bump_eq_jump := W.bump_eq
+  jump_eq_graph := rfl
+  smooth_iff := hsmooth
+  der_iff := hder
+
+/-- **Thm 9.3(v) — detector TFAE (universal over the interface).**  For any curve-detector interface,
+smoothness, vanishing étale bump, vanishing Euler/motivic jump, and vanishing derived (cotangent /
+`H¹(L)`) obstruction are equivalent.  Genuine over the `CurveDetectorData` structure. -/
+theorem detector_tfae {p : ℕ} (D : Tier3.CurveDetectorData p) :
+    [D.smooth, D.bump = 0, D.eulerJump = 0, D.derived = 0].TFAE := by
+  tfae_have 1 ↔ 2 := (Tier3.bump_zero_iff_smooth D).symm
+  tfae_have 2 ↔ 3 := by rw [D.bump_eq_jump]
+  tfae_have 1 ↔ 4 := D.der_iff.symm
+  tfae_finish
+
+/-! ### Part 3 — the full equivalence assembly (i)⇔(ii)⇔(iii)⇔(iv)⇔(v). -/
+
+/-- **Thm 9.3 — full equivalence assembly (i)⇔(ii)⇔(iii)⇔(iv)⇔(v).**  Combines the unconditional
+arithmetic/algebraic core (A2 discriminant/Hensel gate + the equalizer–Tor model) with the étale
+detector layer derived from the C2 data `W`.  The cross-tier bridges are the explicit, ISOLATED
+hypotheses: the §9.3 synchronization `Hsync` (`p∤Δ ⟺ gcd = 1`, enforced on `U`), the smooth criterion
+`Hsmooth` (`p∤Δ ⟺ Sing = ∅`, i.e. `b₁ = Σδ = 0`), and the derived criterion `Hder`.  Every remaining
+face is proved.  The faces are, in order: (i) `p∤Δ`, (ii) residual separability, (iii) equalizer
+`gcd = 1`, (iv) `Tor = 0`, (v-étale) `bump = 0`, (v-derived) `H¹(L_{Xp}) = 0`. -/
+theorem thm93_full_tfae {a b : ℤ} (p : ℕ) [Fact p.Prime] (hp2 : p ≠ 2)
+    (M pk : ℕ) [NeZero pk] (W : EtaleCurveCohomology.CurveWeilCohomology) (derived : ℕ)
+    (Hsync : ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ ↔ Nat.gcd M pk = 1)
+    (Hsmooth : ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ ↔ (W.b1 = 0 ∧ W.deltaSum = 0))
+    (Hder : derived = 0 ↔ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ) :
+    [ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ
+    , (cubicPoly (a : ZMod p) (b : ZMod p)).Separable
+    , Nat.gcd M pk = 1
+    , Subsingleton (AddMonoidHom.mulLeft (M : ZMod pk)).ker
+    , W.bump = 0
+    , derived = 0 ].TFAE := by
+  have hg := disc_hensel_gate_tfae (a := a) (b := b) p hp2
+  have hbump : W.bump = 0 ↔ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ := by
+    rw [W.bump_eq, Nat.add_eq_zero_iff, ← Hsmooth]
+  tfae_have 1 ↔ 2 := hg.out 0 2
+  tfae_have 1 ↔ 3 := Hsync
+  tfae_have 3 ↔ 4 := (tor_equalizer_gate M pk).symm
+  tfae_have 1 ↔ 5 := hbump.symm
+  tfae_have 1 ↔ 6 := Hder.symm
+  tfae_finish
+
+section Motivic
+
+open CategoryTheory CategoryTheory.Pretriangulated
+
+variable {Mot Der : Type*} [Category Mot] [HasZeroObject Mot] [HasShift Mot ℤ] [Preadditive Mot]
+  [∀ n : ℤ, (shiftFunctor Mot n).Additive] [Pretriangulated Mot] [Category Der]
+
+/-- **C4 upgrade — the motivic detector (C1) vanishes iff the fibre is smooth.**  When the ℓ-adic
+realization comparison (Thm 6.1) identifies the motivic Euler defect `𝓡.bump = Δχ_mot` with the
+étale Euler jump `D.eulerJump`, the motivic detector synchronizes with smoothness.  This is the
+Strategy-B → motif upgrade: the motivic face is *derived* from the C1 `MotivicRealization` interface
+together with the comparison hypothesis, rather than being a free assumption. -/
+theorem motivic_detector_iff_smooth {p : ℕ}
+    (D : Tier3.CurveDetectorData p) (𝓡 : MotivicC1.MotivicRealization Mot Der)
+    (hcompat : 𝓡.bump = (D.eulerJump : ℤ)) : 𝓡.bump = 0 ↔ D.smooth := by
+  rw [hcompat, Nat.cast_eq_zero]
+  exact (detector_tfae D).out 2 0
+
+/-- **Thm 9.3 — full assembly with the motivic detector face.**  Extends `thm93_full_tfae` by the
+motivic Euler-jump face `Δχ_mot = 𝓡.bump = 0` (C1), under the realization comparison `Hcompat`
+(`𝓡.bump = b₁ + Σδ`, Thm 6.1).  This is the complete (i)–(v) synchronization, with the arithmetic
+core genuine and the geometric detectors universal over the C1/C2 interfaces. -/
+theorem thm93_full_tfae_motivic {a b : ℤ} (p : ℕ) [Fact p.Prime] (hp2 : p ≠ 2)
+    (M pk : ℕ) [NeZero pk] (W : EtaleCurveCohomology.CurveWeilCohomology) (derived : ℕ)
+    (𝓡 : MotivicC1.MotivicRealization Mot Der)
+    (Hsync : ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ ↔ Nat.gcd M pk = 1)
+    (Hsmooth : ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ ↔ (W.b1 = 0 ∧ W.deltaSum = 0))
+    (Hder : derived = 0 ↔ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ)
+    (Hcompat : 𝓡.bump = ((W.b1 + W.deltaSum : ℕ) : ℤ)) :
+    [ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ
+    , (cubicPoly (a : ZMod p) (b : ZMod p)).Separable
+    , Nat.gcd M pk = 1
+    , Subsingleton (AddMonoidHom.mulLeft (M : ZMod pk)).ker
+    , W.bump = 0
+    , derived = 0
+    , 𝓡.bump = 0 ].TFAE := by
+  have hfull := thm93_full_tfae (a := a) (b := b) p hp2 M pk W derived Hsync Hsmooth Hder
+  have hmot : 𝓡.bump = 0 ↔ ¬ (p : ℤ) ∣ (shortWeierstrass a b).Δ := by
+    rw [Hcompat, Nat.cast_eq_zero, Nat.add_eq_zero_iff, ← Hsmooth]
+  tfae_have 1 ↔ 2 := hfull.out 0 1
+  tfae_have 1 ↔ 3 := hfull.out 0 2
+  tfae_have 1 ↔ 4 := hfull.out 0 3
+  tfae_have 1 ↔ 5 := hfull.out 0 4
+  tfae_have 1 ↔ 6 := hfull.out 0 5
+  tfae_have 1 ↔ 7 := hmot.symm
+  tfae_finish
+
+end Motivic
+
+end Thm93Assembly
+
 /-! ## §L′ — Audit of field-projection theorems and genuine replacements.
 
 The following status constants are intentionally ordinary Lean data, not new
@@ -3176,8 +3740,17 @@ def status_geometric_frobenius_characteristicPolynomial : FormalizationStatus :=
 
 /-- The implication `aₚ=0 → supersingular` cannot be stated faithfully here:
 the relevant supersingularity predicate and its Frobenius criterion have not
-been constructed.  We deliberately do not replace them by a structure field. -/
+been constructed.  We deliberately do not replace them by a structure field.
+(§B5 now binds `aₚ` to the actual point count and proves `aₚ=0 ⇒ supersingular` for the
+*arithmetic* criterion `aₚ ≡ 0 (mod p)` — see `status_supersingular_arithmetic`; only the
+agreement with the geometric definition remains this obligation.) -/
 def status_trace_zero_implies_supersingular : FormalizationStatus := .futureWork
+
+/-- **B5.**  `a_p` is bound to the genuine point count `Nat.card W.toAffine.Point`
+(`FrobeniusPointCount.frobeniusTrace`), and the arithmetic supersingularity criterion
+`a_p ≡ 0 (mod p)` with `a_p = 0 ⇒ supersingular` (`isSupersingular_of_trace_zero`) is unconditional.
+The geometric-agreement (Weil/Hasse) is the `FrobeniusData` interface obligation. -/
+def status_supersingular_arithmetic : FormalizationStatus := .unconditional
 
 /-- The finite scanner and its intermediate readouts are explicit Lean
 definitions. -/
@@ -3294,8 +3867,50 @@ current Mathlib and carry their expected additive group structure. -/
 def status_etale_ladic_cohomology : FormalizationStatus := .unconditional
 
 /-- Constructible motives `DMc`, motivic complexes `Mc`, and `χmot` are not
-defined here; their localization triangle therefore remains future work. -/
+defined here; their localization triangle therefore remains future work.
+(§C1 packages this as the `MotivicC1.MotivicRealization` interface and derives `bump = Δχmot` from
+it; only the *instance* — an actual motive category + realization functor — is this obligation.) -/
 def status_motivic_localization_triangle : FormalizationStatus := .futureWork
+
+/-- **C1 (universal-axiom interface).**  `bump = Δχmot = χmot(Xp) − χmot(Up)` is a *genuine*
+theorem for any `MotivicC1.MotivicRealization` (the realization functor + Euler-preservation axiom +
+localization triangle); it rests on the unconditional §B4 cone relation.  It is conditional only on
+the structure, whose instance is the Tier-C obligation above. -/
+def status_motivic_realization_bump : FormalizationStatus := .conditional
+
+/-- **C2 (universal-axiom interface).**  `dim H¹(Xp) = 2g + b₁(Γ) + Σδ` and the smooth-fibre
+`bump = 0` are *genuine* theorems for any `EtaleCurveCohomology.CurveWeilCohomology` (the localization
+SES + normalization comparison axioms), reusing the certified ℕ-bookkeeping `curve_betti_identity`.
+Conditional only on the structure; the actual étale-cohomology construction (duality/comparison) is
+the Tier-C obligation `status_motivic_localization_triangle`/`status_etale_ladic_cohomology`. -/
+def status_curve_weil_cohomology : FormalizationStatus := .conditional
+
+/-- **C3.**  The sheaf-theoretic CRT gluing — local residues glue iff CRT-compatible
+(`PrimalitySheafCRT.glue_iff_compatible`) and the separatedness `lcm`-uniqueness
+(`glue_unique`), together with the "finite limits are sectionwise" shadow — is genuine and
+unconditional. -/
+def status_crt_sheaf_gluing : FormalizationStatus := .unconditional
+
+/-- **C3 residue.**  A genuine `Sheaf` on a `GrothendieckTopology` (the full site sheaf condition,
+not just the certified sectionwise/CRT shadow) is the optional heavy Tier-C obligation. -/
+def status_genuine_site_sheaf : FormalizationStatus := .futureWork
+
+/-- **C4 arithmetic core.**  The Thm 9.3 gate `(i)⇔(ii)` (`Thm93Assembly.disc_hensel_gate_tfae`:
+`p∤Δ ⟺ residual separable ⟺ squarefree`) and the equalizer–Tor `(iii)⇔(iv)`
+(`Thm93Assembly.tor_equalizer_gate`: `Tor = 0 ⟺ gcd = 1`) are genuine and unconditional. -/
+def status_thm93_arith_core : FormalizationStatus := .unconditional
+
+/-- **C4 detector layer (v).**  The detector TFAE (`Thm93Assembly.detector_tfae`,
+`motivic_detector_iff_smooth`) and the full assembly (`thm93_full_tfae`, `thm93_full_tfae_motivic`)
+are genuine *universal* theorems over the C1 `MotivicRealization` / C2 `CurveWeilCohomology`
+interfaces — conditional only on those structures plus the §9.3 synchronization / realization-
+comparison bridges, which are the explicit isolated hypotheses. -/
+def status_thm93_detector_layer : FormalizationStatus := .conditional
+
+/-- **C4 residue.**  An *unconditional* proof of condition (v) (the étale bump / motivic Euler jump
+/ `H¹(L_{Xp})` detector vanishing on `U`) requires constructing étale cohomology and Voevodsky
+motives — the actual geometric instance, the open Tier-C obligation. -/
+def status_thm93_geometric_instance : FormalizationStatus := .futureWork
 
 /-- `Tier3.box_from_data` merely packages fields of `CurveDetectorData`. -/
 def status_Tier3_box_from_data : FormalizationStatus := .packaging
@@ -3342,6 +3957,21 @@ def status_cech_explicit_cohomology : FormalizationStatus := .unconditional
 maps / five-term low-degree exact sequence of the Čech-to-derived spectral sequence) is not yet
 packaged in Mathlib and remains future work. -/
 def status_cech_derived_comparison : FormalizationStatus := .futureWork
+
+/-- **B4.**  On any pretriangulated category, an additive Euler characteristic satisfies the cone
+relation `χ(cone f) = χ B − χ A` (`MotivicEuler.AdditiveEuler.cone_euler`), so `Δχ_mot = χ(Def_p) =
+χ(Xp) − χ(Up)` (`MotivicEuler.MotivicDeformation.deltaChi_mot`) is unconditional pure category
+theory.  Only the motivic realization triangle is an external interface. -/
+def status_motivic_euler_cone : FormalizationStatus := .unconditional
+
+/-- **B6.**  The cohomological defect `δcoh P := sInf {i | ∃ F, supp F = P ∧ Hⁱ(F) ≠ 0}` (Def 7.1) is
+a genuine, unconditional definition (`CohDimension.deltaCoh`), with the easy bounds
+(`deltaCoh_le`, `deltaCoh_mem`) and the §7.3 value `δcoh = 1` (`deltaCoh_eq_one`, fed by §B2). -/
+def status_deltaCoh_definition : FormalizationStatus := .unconditional
+
+/-- **B6 residue.**  The base-change / localization invariance of Prop 7.2 needs sheaf-cohomology
+base change, which Mathlib provides only partially; it remains Tier-C future work. -/
+def status_deltaCoh_base_change : FormalizationStatus := .futureWork
 
 /-- The audit table itself proves that the old field-projection theorems are not
 classified as representative unconditional results. -/
@@ -3574,6 +4204,73 @@ theorem b3_cech_classification :
     status_sheafExt_H1_identification = .unconditional ∧
     status_cech_derived_comparison = .futureWork ∧
     FormalizationStatus.isRepresentative status_cech_explicit_cohomology = true := by
+  decide
+
+/-- **B4 audit.**  The additive-Euler cone relation and the `Δχ_mot` logic are genuine
+unconditional, representative category theory; only the motivic realization triangle is external. -/
+theorem b4_motivic_euler_classification :
+    status_motivic_euler_cone = .unconditional ∧
+    FormalizationStatus.isRepresentative status_motivic_euler_cone = true := by
+  decide
+
+/-- **B5 audit.**  The actual-point-count trace and the arithmetic supersingularity criterion
+(`a_p ≡ 0 (mod p)`, with `a_p = 0 ⇒ supersingular`) are genuine and unconditional; the geometric
+(Hasse/Weil) agreement stays the isolated `FrobeniusData` obligation. -/
+theorem b5_supersingular_classification :
+    status_supersingular_arithmetic = .unconditional ∧
+    status_geometric_frobenius_characteristicPolynomial = .futureWork ∧
+    status_trace_zero_implies_supersingular = .futureWork ∧
+    FormalizationStatus.isRepresentative status_supersingular_arithmetic = true := by
+  decide
+
+/-- **B6 audit.**  The genuine `δcoh` definition (Def 7.1) and its easy properties (incl. the §7.3
+`δcoh = 1` criterion) are unconditional and representative; Prop 7.2 base-change invariance stays
+isolated Tier-C future work. -/
+theorem b6_deltaCoh_classification :
+    status_deltaCoh_definition = .unconditional ∧
+    status_deltaCoh_base_change = .futureWork ∧
+    FormalizationStatus.isRepresentative status_deltaCoh_definition = true := by
+  decide
+
+/-- **C1 audit.**  The motivic `bump = Δχmot` is a genuine universal theorem over the
+`MotivicRealization` interface (conditional on that structure, resting on the unconditional §B4 cone
+relation); constructing the actual Voevodsky motive category + realization is the open obligation
+(`status_motivic_localization_triangle = futureWork`). -/
+theorem c1_motivic_realization_classification :
+    status_motivic_realization_bump = .conditional ∧
+    status_motivic_euler_cone = .unconditional ∧
+    status_motivic_localization_triangle = .futureWork := by
+  decide
+
+/-- **C2 audit.**  The curve étale-`H¹` dimension formula and smooth `bump = 0` are genuine universal
+theorems over the `CurveWeilCohomology` interface (conditional on it, resting on the unconditional
+ℕ-bookkeeping); the étale-cohomology construction stays the Tier-C obligation. -/
+theorem c2_curve_cohomology_classification :
+    status_curve_weil_cohomology = .conditional ∧
+    status_etale_ladic_cohomology = .unconditional ∧
+    status_motivic_localization_triangle = .futureWork := by
+  decide
+
+/-- **C3 audit.**  The sheaf-theoretic CRT gluing + sectionwise shadow are genuine and unconditional
+(`status_crt_sheaf_gluing`, resting on the certified `crt_solvable_iff`); the genuine site-sheaf
+remains the isolated heavy obligation. -/
+theorem c3_crt_gluing_classification :
+    status_crt_sheaf_gluing = .unconditional ∧
+    status_gcd_obstruction_zero_to_gluing = .unconditional ∧
+    status_genuine_site_sheaf = .futureWork ∧
+    FormalizationStatus.isRepresentative status_crt_sheaf_gluing = true := by
+  decide
+
+/-- **C4 audit.**  The full Thm 9.3 assembly splits exactly along the certification boundary: the
+arithmetic/algebraic core `(i)⇔(ii)⇔(iii)⇔(iv)` is genuine and representative (`= unconditional`),
+the detector layer `(v)` is a genuine universal theorem over the C1/C2 interfaces (`= conditional`),
+and only the actual étale/motivic geometric instance is open (`= futureWork`). -/
+theorem c4_full_equivalence_classification :
+    status_thm93_arith_core = .unconditional ∧
+    status_thm93_detector_layer = .conditional ∧
+    status_thm93_geometric_instance = .futureWork ∧
+    FormalizationStatus.isRepresentative status_thm93_arith_core = true ∧
+    FormalizationStatus.isRepresentative status_thm93_detector_layer = false := by
   decide
 
 /-! ## §M — Summary of paper corrections surfaced by formalization.
@@ -4232,6 +4929,35 @@ section AxiomAudit
 #print axioms frobeniusTatePolynomial_eval
 #print axioms frobeniusTatePolynomial_trace_zero
 #print axioms frobeniusTatePolynomial_of_pointCount_eq
+#print axioms FrobeniusPointCount.frobeniusTrace_eq
+#print axioms FrobeniusPointCount.isSupersingular_of_trace_zero
+#print axioms FrobeniusPointCount.frobeniusCharPoly_eval
+#print axioms FrobeniusPointCount.FrobeniusData.geom_of_trace_zero
+#print axioms b5_supersingular_classification
+#print axioms CohDimension.deltaCoh
+#print axioms CohDimension.deltaCoh_le
+#print axioms CohDimension.deltaCoh_mem
+#print axioms CohDimension.sInf_eq_one
+#print axioms CohDimension.deltaCoh_eq_one
+#print axioms b6_deltaCoh_classification
+#print axioms MotivicC1.MotivicRealization.motivicEuler
+#print axioms MotivicC1.MotivicRealization.bump_eq_deltaChi
+#print axioms c1_motivic_realization_classification
+#print axioms EtaleCurveCohomology.CurveWeilCohomology.dimH1Xp_formula
+#print axioms EtaleCurveCohomology.CurveWeilCohomology.bump_eq
+#print axioms EtaleCurveCohomology.CurveWeilCohomology.smooth_dim_eq
+#print axioms c2_curve_cohomology_classification
+#print axioms PrimalitySheafCRT.glue_iff_compatible
+#print axioms PrimalitySheafCRT.glue_of_coprime
+#print axioms PrimalitySheafCRT.glue_unique
+#print axioms PrimalitySheafCRT.sections_fiberProduct_eq
+#print axioms c3_crt_gluing_classification
+#print axioms Thm93Assembly.disc_hensel_gate_tfae
+#print axioms Thm93Assembly.tor_equalizer_gate
+#print axioms Thm93Assembly.detector_tfae
+#print axioms Thm93Assembly.thm93_full_tfae
+#print axioms Thm93Assembly.thm93_full_tfae_motivic
+#print axioms c4_full_equivalence_classification
 #print axioms Tier3Actual.skyscraperSheaf_isFlasque
 #print axioms Tier3Actual.sheafCohomologyExtEquiv
 #print axioms Tier3Actual.sheafCohomology_eq_ext
@@ -4245,6 +4971,11 @@ section AxiomAudit
 #print axioms CechComparison.cechH1
 #print axioms CechComparison.paper_ext_one_is_sheaf_ext
 #print axioms b3_cech_classification
+#print axioms MotivicEuler.AdditiveEuler.cone_euler
+#print axioms MotivicEuler.AdditiveEuler.euler_cone_mk
+#print axioms MotivicEuler.AdditiveEuler.exists_cone_euler
+#print axioms MotivicEuler.MotivicDeformation.deltaChi_mot
+#print axioms b4_motivic_euler_classification
 #print axioms PrimeScan.mem_simpleRoots_iff
 #print axioms PrimeScan.simpleRootCount_pos_iff
 #print axioms PrimeScan.hasSimpleRoot_eq_true_iff
