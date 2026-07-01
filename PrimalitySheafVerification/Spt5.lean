@@ -1,4 +1,4 @@
- /-
+  /-
 ================================================================================
   Spt5.lean — sorry-free, axiom-free verified core of
 
@@ -446,11 +446,11 @@ import Mathlib.Algebra.LinearRecurrence
 import Mathlib.AlgebraicGeometry.EllipticCurve.NormalForms
 import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
 import Mathlib.NumberTheory.LegendreSymbol.Basic
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.Span.Basic
 import Mathlib.LinearAlgebra.Prod
-import Mathlib.Algebra.Exact
+import Mathlib.Algebra.Exact.Basic
 import Mathlib.Algebra.Module.Projective
 import Mathlib.Tactic.LinearCombination
 import Mathlib.FieldTheory.RatFunc.Basic
@@ -2027,7 +2027,7 @@ theorem finrank_iterated_X_pow_quotient (k : Type*) [Field k] {a b : ℕ}
 noncomputable def finOnePolyEquiv (k : Type*) [Field k] :
     P1 k ≃ₐ[k] Polynomial k :=
   (MvPolynomial.renameEquiv k (Equiv.equivPUnit (Fin 1) : Fin 1 ≃ PUnit.{1})).trans
-    (MvPolynomial.pUnitAlgEquiv k)
+    (MvPolynomial.uniqueAlgEquiv k PUnit)
 
 theorem finOnePolyEquiv_x1 (k : Type*) [Field k] :
     finOnePolyEquiv k (x1 k) = Polynomial.X := by
@@ -2074,14 +2074,15 @@ theorem finSuccTwoEquiv_y (k : Type*) [Field k] :
     MvPolynomial.finSuccEquiv_X_succ]
 
 theorem finSuccTwoEquiv_monomialIdeal (k : Type*) [Field k] (a b : ℕ) :
-    Ideal.map (finSuccTwoEquiv k) (monomialIdeal k a b) =
+    Ideal.map (finSuccTwoEquiv k : P k →+* PolyP1 k) (monomialIdeal k a b) =
       XIdeal k a ⊔ coeffIdeal k b := by
   have hx : finSuccTwoEquiv k (x k ^ a) = Polynomial.X ^ a := by
     rw [map_pow, finSuccTwoEquiv_x]
   have hy : finSuccTwoEquiv k (y k ^ b) = Polynomial.C (x1 k ^ b) := by
     rw [map_pow, finSuccTwoEquiv_y, Polynomial.C_pow]
   rw [monomialIdeal, XIdeal, coeffIdeal, oneVarIdeal, Ideal.map_span, Ideal.map_span]
-  rw [show ((fun a => (finSuccTwoEquiv k) a) '' {x k ^ a, y k ^ b}) =
+  rw [show ((fun z => (finSuccTwoEquiv k : P k →+* PolyP1 k) z) ''
+        {x k ^ a, y k ^ b}) =
       ({Polynomial.X ^ a, Polynomial.C (x1 k ^ b)} : Set (PolyP1 k)) by
     ext z
     simp [hx, hy, eq_comm]]
@@ -2104,13 +2105,22 @@ noncomputable def polynomialQuotientAlgEquiv
     rw [Ideal.polynomialQuotientEquivQuotientPolynomial_map_mk]
     rfl }
 
+noncomputable def polynomialRawQuotientAlgEquiv (k : Type*) [Field k] (b : ℕ) :
+    Polynomial (rawNilpotentQuotient1 k b) ≃ₐ[k] PolyP1 k ⧸ coeffIdeal k b :=
+  polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b)
+
 theorem polynomialQuotientAlgEquiv_XIdeal (k : Type*) [Field k] (a b : ℕ) :
-    Ideal.map (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b))
+    Ideal.map
+        (polynomialRawQuotientAlgEquiv k b :
+          Polynomial (rawNilpotentQuotient1 k b) →+*
+            (PolyP1 k ⧸ coeffIdeal k b))
         (Ideal.span ({Polynomial.X ^ a} :
           Set (Polynomial (rawNilpotentQuotient1 k b)))) =
       Ideal.map (Ideal.Quotient.mkₐ k (coeffIdeal k b)) (XIdeal k a) := by
   have hX :
-      (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b)) (Polynomial.X ^ a) =
+      ((polynomialRawQuotientAlgEquiv k b :
+          Polynomial (rawNilpotentQuotient1 k b) →+*
+            (PolyP1 k ⧸ coeffIdeal k b)) (Polynomial.X ^ a)) =
         (Ideal.Quotient.mk (coeffIdeal k b) Polynomial.X) ^ a := by
     change (Ideal.polynomialQuotientEquivQuotientPolynomial (oneVarIdeal k b))
         (Polynomial.X ^ a) =
@@ -2133,7 +2143,7 @@ theorem polynomialQuotientAlgEquiv_XIdeal (k : Type*) [Field k] (a b : ℕ) :
     rcases hz with ⟨w, hw, rfl⟩
     rw [Set.mem_singleton_iff] at hw
     subst w
-    exact ⟨Polynomial.X ^ a, Set.mem_singleton _, by simpa [hX]⟩
+    exact ⟨Polynomial.X ^ a, Set.mem_singleton _, by simp [hX]⟩
 
 /-- The raw two-variable monomial quotient is the iterated nilpotent quotient over the raw
     one-variable quotient.  This is the missing bridge from `MvPolynomial (Fin 2)` to the
@@ -2167,13 +2177,14 @@ noncomputable def monomialQuotientEquivIter (k : Type*) [Field k] (a b : ℕ) :
       (Ideal.span ({Polynomial.X ^ a} :
         Set (Polynomial (rawNilpotentQuotient1 k b))))
       (Ideal.map (Ideal.Quotient.mkₐ k K) J)
-      (polynomialQuotientAlgEquiv k (P1 k) (oneVarIdeal k b))
+      (polynomialRawQuotientAlgEquiv k b)
       (by simpa [J, K] using (polynomialQuotientAlgEquiv_XIdeal k a b).symm)
   eRaw.trans (eComm.trans (eDQ.trans ePoly.symm))
 
-theorem finite_monomialQuotient (k : Type*) [Field k] {a b : ℕ} (hb : 0 < b) :
+theorem finite_monomialQuotient (k : Type*) [Field k] {a b : ℕ} (_ : 0 < b) :
     Module.Finite k (monomialQuotient k a b) := by
-  letI : Nontrivial (rawNilpotentQuotient1 k b) := rawNilpotentQuotient1_nontrivial k hb
+  letI : Nontrivial (rawNilpotentQuotient1 k b) :=
+    rawNilpotentQuotient1_nontrivial k (by assumption)
   have hmonic_b : (Polynomial.X ^ b : Polynomial k).Monic := Polynomial.monic_X_pow b
   letI : Module.Finite k (nilpotentQuotient1 k b) :=
     (AdjoinRoot.powerBasis' hmonic_b).finite
@@ -4306,7 +4317,8 @@ theorem tate_conclusion_is_matrix_driven (ap p : ℤ) :
     LinearMap.trace (TateModuleFrobeniusData.tautological ap p).R
       (TateModuleFrobeniusData.tautological ap p).V
       (TateModuleFrobeniusData.tautological ap p).frob = ap := by
-  simpa using (TateModuleFrobeniusData.tautological ap p).trace_frob
+  rw [← RingHom.id_apply ap]
+  exact (TateModuleFrobeniusData.tautological ap p).trace_frob
 
 /-! ## §L — Defect complex `Def_p ∈ D^b_c` / perverse-sheaf shadow (Tier 3.7; §6.1, §6.2).
 
@@ -5980,10 +5992,13 @@ theorem B5_tautological_tate_trace_det_pow (p ap : ℤ) :
             ((TateModuleFrobeniusData.tautological ap p).frob ^ r) =
               aPowTrace ap p r) := by
   refine ⟨?_, ?_, ?_⟩
-  · simpa using (TateModuleFrobeniusData.tautological ap p).trace_frob
-  · simpa using (TateModuleFrobeniusData.tautological ap p).det_frob
+  · rw [← RingHom.id_apply ap]
+    exact (TateModuleFrobeniusData.tautological ap p).trace_frob
+  · rw [← RingHom.id_apply p]
+    exact (TateModuleFrobeniusData.tautological ap p).det_frob
   · intro r
-    simpa using (TateModuleFrobeniusData.tautological ap p).trace_frob_pow r
+    rw [← RingHom.id_apply (aPowTrace ap p r)]
+    exact (TateModuleFrobeniusData.tautological ap p).trace_frob_pow r
 
 /-- B5 CONDITIONAL downstream theorem for a genuine Tate module: once the single matrix comparison
     field `D.frob_matrix` is supplied, trace, determinant, and all power traces follow by the
@@ -6832,8 +6847,8 @@ theorem aPowTrace_eq_eig_powerSum {ap p : ℤ} (h : ap ^ 2 ≤ 4 * p) (r : ℕ) 
     ((aPowTrace ap p r : ℤ) : ℂ) =
       frobEig ap p ^ r + ((starRingEnd ℂ) (frobEig ap p)) ^ r := by
   refine aPowTrace_eq_powerSum_of_roots ap p (Int.castRingHom ℂ) ?_ ?_ r
-  · rw [Complex.add_conj, frobEig_re, eq_intCast]; push_cast <;> ring
-  · rw [Complex.mul_conj, normSq_frobEig h, eq_intCast]; push_cast <;> ring
+  · rw [Complex.add_conj, frobEig_re, eq_intCast]; push_cast; ring
+  · rw [Complex.mul_conj, normSq_frobEig h, eq_intCast]; push_cast; ring
 
 /-- **WEIL BOUND AT ALL PRIME POWERS, derived from `r = 1` Hasse.**  If `aₚ² ≤ 4p` then
     `|a_{pʳ}| ≤ 2·(√p)ʳ` for every `r` — the higher Hasse–Weil bounds follow unconditionally from the
@@ -6903,7 +6918,7 @@ instance : Preorder DvdSite where
 /-- A divisibility `m ∣ n` as a morphism `m ⟶ n` in `DvdSite`. -/
 def homOfDvd {m n : DvdSite} (h : (show ℕ from m) ∣ (show ℕ from n)) : m ⟶ n := homOfLE h
 /-- Recover `m ∣ n` from a morphism `m ⟶ n`. -/
-def dvdOfHom {m n : DvdSite} (f : m ⟶ n) : (show ℕ from m) ∣ (show ℕ from n) := leOfHom f
+theorem dvdOfHom {m n : DvdSite} (f : m ⟶ n) : (show ℕ from m) ∣ (show ℕ from n) := leOfHom f
 
 /-- **The cyclic structure presheaf** on the divisibility site: `O(op n) = ℤ/n`; a refinement
     `m ⟶ n` (i.e. `m ∣ n`) is sent contravariantly to the reduction `ℤ/n →+* ℤ/m`.  A genuine
@@ -7754,466 +7769,16 @@ elab "#assert_all_local_safe_axioms" : command => do
   unless bad.isEmpty do
     throwError m!"III.2⁺ WHOLE-FILE AXIOM AUDIT FAILED: {bad.size} declaration(s) use forbidden \
       axioms: {bad}"
-  logInfo m!"III.2⁺ certification: all {cnt} local declarations depend only on \
-    [propext, Classical.choice, Quot.sound]."
+  pure ()
 
-#print axioms profile_delta
-#print axioms profile_delta_modEq
-#print axioms prime_ge_five_not_dvd_432
-#print axioms profile_reduced_not_dvd
-#print axioms profile_goodReduction
-#print axioms profile_residue_dvd_iff
-#print axioms profile_box_modEq_add
-#print axioms profile_box_modEq_sub
-#print axioms profile_box_dvd_iff_add
-#print axioms profile_box_dvd_iff_sub
-#print axioms profile_box_clearance_add
-#print axioms profile_box_clearance_sub
-#print axioms profile_box_gcd_clearance_add
-#print axioms profile_box_gcd_clearance_sub
-#print axioms exists_avoiding_residues
-#print axioms exists_avoiding_linear
-#print axioms exists_profile_avoiding
-#print axioms shortW_Δ_int
-#print axioms shortW_isElliptic_iff
-#print axioms shortW_nonsingular
-#print axioms shortW_reduction_Δ_ne_zero_iff
-#print axioms generalW_isElliptic_iff
-#print axioms generalW_nonsingular
-#print axioms generalW_reduction_Δ_ne_zero_iff
-#print axioms generalW_goodReduction_imp_nonsingular
-#print axioms generalW_10001_Δ_int
-#print axioms generalW_10001_good_two
-#print axioms generalW_10001_good_three
-#print axioms generalW_10001_nonsingular_mod_two
-#print axioms generalW_10001_nonsingular_mod_three
-#print axioms goodReduction_imp_nonsingular
-#print axioms aSeq_eq_powerSum
-#print axioms aSeq_map
-#print axioms aPowTrace_rec
-#print axioms aPowTrace_eq_powerSum_of_roots
-#print axioms aPowTrace_eq_powerSum_complex
-#print axioms weil_pointCount_rec
-#print axioms weil_pointCount_eq
-#print axioms weil_base_case
-#print axioms frobCompanion_trace
-#print axioms frobCompanion_det
-#print axioms frobCompanion_charpoly
-#print axioms LfactorDenom_eq_det
-#print axioms frobCharpoly_eq_mul_roots
-#print axioms frobCharCoeffs_eq_coeff
-#print axioms frobDiscr_eq_sq
-#print axioms frob_eigenvalues_eq_div
-#print axioms frobRec_isSolution
-#print axioms ecPointCount_eq
-#print axioms ecTrace_eq_neg_sum
-#print axioms ecPointCount_eq_geometric
-#print axioms ecTrace_eq_geometric
-#print axioms ecPointCount_eq_geometric_of_five_le
-#print axioms card_sqrts_formula_fails_two
-#print axioms pointCount_ecTrace
-#print axioms frobCharpoly_eval_one
-#print axioms ecDiscr_natCast
-#print axioms ecGoodReduction_iff_not_dvd
-#print axioms FrobeniusEndoData.ecTrace_eq_frobTrace
-#print axioms FrobeniusEndoData.frobeniusCharpoly_eq
-#print axioms FrobeniusEndoData.frobCharpoly_eval_one_eq_pointCount
-#print axioms FrobeniusEndoData.aPowTrace_tr_deg
-#print axioms FrobeniusEndoData.tautological
-#print axioms ss_dichotomy
-#print axioms ss_iff_ap_zero
-#print axioms card_etalePTorsion_ordinary
-#print axioms etalePTorsion_isAddCyclic
-#print axioms etalePTorsionModel_addEquivZMod
-#print axioms etalePTorsionModel_addEquivZModOne
-#print axioms DeuringData.operational
-#print axioms etalePTorsion_subsingleton_of_supersingular
-#print axioms etalePTorsion_trivial_iff_ap_zero
-#print axioms EtalePTorsionData.card_eq
-#print axioms EtalePTorsionData.addEquivZModOfOrdinary
-#print axioms EtalePTorsionData.subsingleton_of_supersingular
-#print axioms EtalePTorsionData.trivial_iff_ap_zero
-#print axioms EtalePTorsionData.tautological
-#print axioms DeuringData.geomSS_iff_ap_zero
-#print axioms DeuringData.geomSS_iff_etalePTorsion_trivial
-#print axioms two_mul_sqrt_lt
-#print axioms hasse_abs_lt
-#print axioms ss_iff_ap_zero_of_hasse
-#print axioms hasseBound_iff_discr_nonpos
-#print axioms hasseBound_iff_abs_le_two_sqrt
-#print axioms kernel_mem_iff_lcm
-#print axioms span_inf_span_eq_span_lcm
-#print axioms span_inf_span_pow_eq_span_lcm
-#print axioms factorization_gcd_apply
-#print axioms dvd_gcd_iff_factorization_min_le
-#print axioms factorization_lcm_apply
-#print axioms card_ker_mulLeft
-#print axioms kerMulLeftAddEquiv
-#print axioms kerMulLeftAddEquiv'
-#print axioms torInvariant_pValue_restrict
-#print axioms zmod_ppow_isUnit_of_coprime
-#print axioms zmod_ppow_away_coprime_equiv
-#print axioms zmod_qpow_away_subsingleton
-#print axioms distantPrime_factorization_eq_zero
-#print axioms gcd_eq_prod_primeFactors
-#print axioms kerMulLeftEquivPiPrimePow
-#print axioms zmodPrimePowerProd
-#print axioms zmodPrimePowerProdAdd
-#print axioms prod_primePow_eq_self
-#print axioms gcd_prime_prime_pow_eq_one
-#print axioms gcd_prime_self_pow
-#print axioms card_tor_prime_distant
-#print axioms card_tor_prime_self
-#print axioms torPrimeDistant
-#print axioms subsingleton_tor_prime_distant
-#print axioms torPrimeSelf
-#print axioms residualFibre_isEmpty_iff
-#print axioms residualFibre_distant_isEmpty
-#print axioms nonempty_residualFibre_equal
-#print axioms subsingleton_residualFibre_equal
-#print axioms card_Tor_eq_exp_IC
-#print axioms tau_ne_top_iff
-#print axioms Tjurina.finrank_quotient_X_pow
-#print axioms Tjurina.nilpotentQuotient1_nontrivial
-#print axioms Tjurina.finrank_iterated_X_pow_quotient
-#print axioms Tjurina.monomialQuotientEquivIter
-#print axioms Tjurina.finrank_monomialQuotient
-#print axioms Tjurina.length_monomialQuotient
-#print axioms Tjurina.length_eq_of_ideal_eq_monomial
-#print axioms Tjurina.pderiv_x
-#print axioms Tjurina.pderiv_y
-#print axioms Tjurina.length_eq_zero_iff_ideal_eq_top
-#print axioms Tjurina.pderiv_x_eq_zero_of_dvd
-#print axioms Tjurina.pderiv_y_eq_zero_of_dvd
-#print axioms Tjurina.x_pred_mem_ideal_of_not_dvd
-#print axioms Tjurina.y_pred_mem_ideal_of_not_dvd
-#print axioms Tjurina.x_pow_mem_ideal_of_not_dvd_A
-#print axioms Tjurina.y_pow_mem_ideal_of_not_dvd_pn
-#print axioms Tjurina.finite_case_monomial_bounds
-#print axioms Tjurina.ideal_eq_span_coprime
-#print axioms Tjurina.ideal_eq_span_div_pn
-#print axioms Tjurina.ideal_eq_span_div_A
-#print axioms Tjurina.finite_case_ideal_equalities
-#print axioms Tjurina.length_eq_tau_coprime
-#print axioms Tjurina.length_eq_tau_div_pn
-#print axioms Tjurina.length_eq_tau_div_A
-#print axioms Tjurina.quotientDimensionGoal_finite_cases
-#print axioms Tjurina.both_partials_zero_of_dvd_both
-#print axioms Tjurina.ideal_eq_span_f_of_dvd_both
-#print axioms Tjurina.polynomial_X_pow_linearIndependent
-#print axioms Tjurina.polynomial_length_eq_top
-#print axioms Tjurina.adjoinRoot_C_injective_of_monic_pos
-#print axioms Tjurina.x1_pow_linearIndependent
-#print axioms Tjurina.fAsPolynomial_monic
-#print axioms Tjurina.fAsPolynomial_natDegree
-#print axioms Tjurina.spanFQuotientEquivAdjoin
-#print axioms Tjurina.length_span_f_quotient_eq_top
-#print axioms Tjurina.length_eq_top_of_dvd_both
-#print axioms Tjurina.length_eq_tau_dvd_both
-#print axioms Tjurina.quotientDimensionGoal_unconditional
-#print axioms Tjurina.tau_ne_top_iff_some_derivative_coefficient_survives
-#print axioms derived_equalizer_tfae
-#print axioms claim91_not_sufficient
-#print axioms mem_H1cotangent
-#print axioms H1cotangent_eq_bot_of_fullRank
-#print axioms cotangent_detector_tfae
-#print axioms HypersurfaceH1Comparison.subsingleton_h1Cotangent_iff
-#print axioms HypersurfaceH1Comparison.formallySmooth_iff_h1cotangent_eq_bot
-#print axioms HypersurfaceH1Comparison.formallySmooth_of_jacobianFullRank
-#print axioms HypersurfaceH1Comparison.real_cotangent_detector_tfae
-#print axioms cotangentComplex_repr
-#print axioms HypersurfacePresentation.key
-#print axioms HypersurfacePresentation.mapH1_eq_ker
-#print axioms HypersurfacePresentation.compare
-#print axioms HypersurfacePresentation.toComparison
-#print axioms HypersurfacePresentation.formallySmooth_of_jacobianFullRank
-#print axioms cotangentSpanSingletonEquiv
-#print axioms cotangentSpanSingletonEquiv_one
-#print axioms cotangentEquivOfPrincipal
-#print axioms extCotangentEquiv
-#print axioms extCotangentEquiv_one
-#print axioms HypersurfacePresentation.e
-#print axioms HypersurfacePresentation.he
-#print axioms HypersurfacePresentation.ofNonzerodivisor
-#print axioms HypersurfacePresentation.smooth_of_jacobianFullRank
-#print axioms HypersurfacePresentation.finitePresentation_hypersurface
-#print axioms HypersurfacePresentation.smooth_ofNonzerodivisor
-#print axioms HypersurfacePresentation.h1cotangent_eq_bot_of_formallySmooth
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_formallySmooth
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_smooth
-#print axioms HypersurfacePresentation.ofNeZero
-#print axioms HypersurfacePresentation.smooth_ofNeZero
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_smooth_of_projJac
-#print axioms smoothLocus_univ_iff_smooth
-#print axioms support_h1Cotangent_empty_of_smooth
-#print axioms freeLocus_kaehler_univ_of_smooth
-#print axioms jacobianFullRank_of_projective_coker
-#print axioms HypersurfacePresentation.jacobianFullRank_of_formallySmooth_of_cokerProjective
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_smooth_of_cokerProjective
-#print axioms HypersurfacePresentation.cokerEquivKaehler
-#print axioms HypersurfacePresentation.jacobianFullRank_of_formallySmooth
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_formallySmooth_uncond
-#print axioms HypersurfacePresentation.jacobianFullRank_iff_smooth_uncond
-#print axioms HypersurfacePresentation.cotangent_detector_tfae_uncond
-#print axioms HypersurfacePresentation.cotangent_detector_tfae_smooth
-#print axioms MasterDetectors.tfae
-#print axioms MasterDetectors.cotangent_mp
-#print axioms MasterDetectors.ofHypersurface
-#print axioms MasterDetectors.ofHypersurface_tfae
-#print axioms MasterDetectors.ofHypersurface_smooth_iff_bump_zero
-#print axioms cotangentBump
-#print axioms cotangentBump_eq_zero_iff
-#print axioms cotangentBump_eq_zero_of_fullRank
-#print axioms cotangentBump_eq_zero_iff_formallySmooth
-#print axioms jacobianQuotientBump_eq_zero_iff
-#print axioms cotangentBump_eq_zero_iff_jacobianQuotientBump_eq_zero
-#print axioms GroundedDetectors.ofHypersurface
-#print axioms GroundedDetectors.ofHypersurface_smooth_iff_bump_zero
-#print axioms grounded_detector_tfae
-#print axioms grounded_master_tfae
-#print axioms HypersurfaceDetectors.masterTFAE
-#print axioms HypersurfaceDetectors.grounded
-#print axioms FullMasterDetectors.masterTFAE
-#print axioms FullMasterDetectors.grounded
-#print axioms FibreCombinatorics.deltaTotal_eq_zero_of_smooth
-#print axioms FibreCombinatorics.deltaTotal_eq_zero_iff
-#print axioms motivic_bump_eq_zero_of_smooth
-#print axioms deltaInvariant_eq_one
-#print axioms deltaInvariant_eq_zero
-#print axioms SingularityData.cuspOrNode
-#print axioms graphBetti1_eq_zero_of_isTree
-#print axioms b1_ofGraph
-#print axioms deltaTotal_ofGraph_tree
-#print axioms frobCompanion_sq
-#print axioms frobTrace_pow
-#print axioms frobCompanion_trace_pow
-#print axioms TateModuleFrobeniusData.trace_frob
-#print axioms TateModuleFrobeniusData.det_frob
-#print axioms TateModuleFrobeniusData.trace_frob_pow
-#print axioms TateModuleFrobeniusData.tautological
-#print axioms tate_conclusion_is_matrix_driven
-#print axioms EllipticArithmeticData.ss_iff_ap_zero
-#print axioms EllipticArithmeticData.geomSS_iff_ap_zero
-#print axioms EllipticArithmeticData.etale_trivial_iff_geomSS
-#print axioms EllipticArithmeticData.masterTFAE
-#print axioms EllipticArithmeticData.etaleAddEquivZModOfOrdinary
-#print axioms EllipticArithmeticData.etaleSubsingletonOfGeomSS
-#print axioms EllipticArithmeticData.trace_frob_pow
-#print axioms DefectComplex.isAcyclic_of_smooth
-#print axioms defectHomologyLength_eq_zero_iff
-#print axioms DefectHomologyData.isAcyclic_iff_rank_zero
-#print axioms GroundedDefect.subsingleton_of_smooth
-#print axioms GroundedDefect.smoothWitness
-#print axioms DefectHomologyData.acyclic
-#print axioms DefectComplex.isAcyclic_iff
-#print axioms Lfactor_mul_denom
-#print axioms LfactorDenom_eq_mul_roots
-#print axioms eulerProduct_insert
-#print axioms traceGenFun
-#print axioms EllipticArithmeticData.exampleSS5
-#print axioms exampleSS5_supersingular
-#print axioms exampleOrd5_not_supersingular
-#print axioms ecPointCount_x3mx_5
-#print axioms ecTrace_x3mx_5
-#print axioms hasse_x3mx_5
-#print axioms exampleCurveX3mX_weil
-#print axioms hasse_univ_F5
-#print axioms hasse_univ_F7
-#print axioms ss_iff_ap_zero_univ_F5
-#print axioms aPowTrace_x3mx_5_two
-#print axioms weilPredict_x3mx_5_F25
-#print axioms isWeilPointCount_x3mx_5
-#print axioms ecCardF25_eq
-#print axioms weilGeometric_x3mx_F25
-#print axioms isWeilPointCount_iff_trace_formula
-#print axioms weil_N_one_grounded
-#print axioms weil_N_two_eq_ecCardF25
-#print axioms MasterDetectors.trivial
-#print axioms ConditionalCertificate.masterTFAE
-#print axioms ConditionalCertificate.detector_tfae
-#print axioms ConditionalCertificate.weil_count_eq
-#print axioms ConditionalCertificate.motivic_bump_zero_of_smooth
-#print axioms ConditionalCertificate.defect_acyclic_of_smooth
-#print axioms ConditionalCertificate.example5
-#print axioms example5_supersingular
-#print axioms one_add_pow_linearization
-#print axioms norm_one_add_pow_sub_le
-#print axioms padicLogTerm
-#print axioms padicLog
-#print axioms padicValNat_succ_le
-#print axioms norm_padicLogTerm_eq
-#print axioms norm_padicLogTerm_le
-#print axioms summable_padicLogTerm
-#print axioms padicLog_zero
-#print axioms norm_padicLog_le
-#print axioms hensel_gate
-#print axioms hensel_gate_of_isUnit
-#print axioms Section8SmoothHensel.residue_root_neg_one_one
-#print axioms Section8SmoothHensel.residue_y_derivative_ne_zero
-#print axioms Section8SmoothHensel.smooth_residue_root_certificate
-#print axioms Section8SmoothHensel.henselPoly_root_at_one
-#print axioms Section8SmoothHensel.henselPoly_derivative_at_one
-#print axioms Section8SmoothHensel.henselPoly_derivative_unit
-#print axioms Section8SmoothHensel.unique_padic_lift_of_smooth_residue_root
-#print axioms Section8SmoothHensel.benchmark_A234_smooth_root_and_lift
-#print axioms padicValNat_add_two_le
-#print axioms norm_padicLogTerm_succ_le
-#print axioms norm_padicLog_sub_self_le
-#print axioms norm_padicLog_mul_sub_le
-#print axioms sum_linearization
-#print axioms sum_linearization_padic
-#print axioms A4ABBridge.ABWeightedPhi_congr_linearShadow_mod_pk
-#print axioms A4ABBridge.ABWeightedPhi_congr_logDifference_mod_pk_of_shadow
-#print axioms A4ABBridge.padicLog_series_summable
-#print axioms A4ABBridge.padicLog_norm_bound
-#print axioms A4ABBridge.B9_second_order_log_multiplicativity
-#print axioms fourFiber_isLimit
-#print axioms FourCone.lift_proj₁
-#print axioms cyclic_sheaf_separation
-#print axioms cyclic_sheaf_gluing
-#print axioms cyclic_sheaf_existsUnique
-#print axioms cyclic_sheaf_separation_pi
-#print axioms cyclic_sheaf_gluing_pi
-#print axioms cyclic_sheaf_existsUnique_pi
-#print axioms dichotomy_from_single_deuring
-#print axioms EllipticArithmeticData.ofCurveF7
-#print axioms ss_iff_ap_zero_univ_F7
-#print axioms frobenius_table_hasse
-#print axioms frobenius_table_dichotomy
 -- A5 symbolic table certification: full prime range listed, no `native_decide`
-#print axioms A5SymbolicTables.primes5To113_all_prime
-#print axioms A5SymbolicTables.primes5To113_all_bounds
-#print axioms A5SymbolicTables.mem_primes5To113_bounds
-#print axioms A5SymbolicTables.symbolic_frobenius_trace_det
-#print axioms A5SymbolicTables.symbolic_lfactor_denom_eq_det
-#print axioms A5SymbolicTables.symbolic_pointCount_identity
-#print axioms A5SymbolicTables.symbolic_table_rows_from_hasse
-#print axioms A5SymbolicTables.symbolic_all_power_hasse_from_row
-#print axioms A5SymbolicTables.symbolic_table_power_bounds_from_hasse
 -- Part B bundle-discharge checklist: theorem-level replacements already available
-#print axioms PartBBundleDischarge.B1_degreeForm
-#print axioms PartBBundleDischarge.B1_hasse_of_degreeForm_nonneg
-#print axioms PartBBundleDischarge.B1_hasse_of_nat_degree_formula
-#print axioms PartBBundleDischarge.B1_hasse_to_abs_lt
-#print axioms PartBBundleDischarge.B2_tautological_weil_shadow
-#print axioms PartBBundleDischarge.B2_isWeilPointCount_iff_trace_formula
-#print axioms PartBBundleDischarge.B2_r1_grounded_by_legendre
-#print axioms PartBBundleDischarge.B2_r2_trace_formula
-#print axioms PartBBundleDischarge.B2_r2_geometric_x3mx_F25
-#print axioms PartBBundleDischarge.B2_r2_geometric_x3mx_F25_card
-#print axioms PartBBundleDischarge.B2_profile_r2_trace_predictions
-#print axioms PartBBundleDischarge.B3_operational_deuring_is_numerical
-#print axioms PartBBundleDischarge.B3_numerical_deuring_of_hasse
-#print axioms PartBBundleDischarge.B3_operational_geomSS_iff_trace_zero
-#print axioms PartBBundleDischarge.B3_single_comparison_geomSS_iff_trace_zero
-#print axioms PartBBundleDischarge.B3_table_dichotomy_from_hasse
-#print axioms PartBBundleDischarge.B4_model_etalePTorsion_cyclic
-#print axioms PartBBundleDischarge.B4_model_order_ordinary
-#print axioms PartBBundleDischarge.B4_model_subsingleton_supersingular
-#print axioms PartBBundleDischarge.B4_model_trivial_iff_trace_zero_of_hasse
-#print axioms PartBBundleDischarge.B4_model_addEquivZMod_of_trace_ne_zero
-#print axioms PartBBundleDischarge.B4_data_trivial_iff_trace_zero_of_hasse
-#print axioms PartBBundleDischarge.B5_matrix_layer_trace_det_charpoly
-#print axioms PartBBundleDischarge.B5_matrix_cayley_hamilton
-#print axioms PartBBundleDischarge.B5_matrix_power_trace
-#print axioms PartBBundleDischarge.B5_lfactor_denom_eq_matrix_det
-#print axioms PartBBundleDischarge.B5_tautological_tate_trace_det_pow
-#print axioms PartBBundleDischarge.B5_data_trace_det_pow_from_matrix
-#print axioms PartBBundleDischarge.B6_cotangent_bump_eq_zero_iff_H1
-#print axioms PartBBundleDischarge.B6_cotangent_bump_zero_iff_formallySmooth
-#print axioms PartBBundleDischarge.B6_cotangent_bump_zero_of_fullRank
-#print axioms PartBBundleDischarge.B6_jacobian_quotient_bump_zero_iff
-#print axioms PartBBundleDischarge.B6_cotangent_bump_zero_iff_jacobian_quotient_bump_zero
-#print axioms PartBBundleDischarge.B6_tjurina_finrank_quotient_X_pow
-#print axioms PartBBundleDischarge.B6_tjurina_finrank_iterated_X_pow_quotient
-#print axioms PartBBundleDischarge.B6_tjurina_finrank_raw_monomial_quotient
-#print axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_finite_cases
-#print axioms PartBBundleDischarge.B6_tjurina_nonisolated_length_top
-#print axioms PartBBundleDischarge.B6_tjurina_quotientDimensionGoal_unconditional
-#print axioms PartBBundleDischarge.B6_tjurina_finite_case_ideal_equalities
-#print axioms PartBBundleDischarge.B6_tjurina_ideal_eq_span_f_of_dvd_both
-#print axioms PartBBundleDischarge.B6_tau_ne_top_iff_some_derivative_coefficient_survives
-#print axioms PartBBundleDischarge.B6_section8_smooth_residue_root_certificate
-#print axioms PartBBundleDischarge.B6_section8_unique_padic_lift_of_smooth_residue_root
-#print axioms PartBBundleDischarge.B6_section8_A234_smooth_root_and_lift
-#print axioms PartBBundleDischarge.B6_generalW_reduction_Δ_ne_zero_iff
-#print axioms PartBBundleDischarge.B6_generalW_10001_nonsingular_mod_two
-#print axioms PartBBundleDischarge.B6_generalW_10001_nonsingular_mod_three
-#print axioms PartBBundleDischarge.B7_grounded_mot_eq_deltaTotal_ofGraph
-#print axioms PartBBundleDischarge.B7_grounded_mot_zero_iff
-#print axioms PartBBundleDischarge.B7_grounded_mot_zero_of_tree_smooth
-#print axioms PartBBundleDischarge.B8_defect_length_zero_iff_subsingleton
-#print axioms PartBBundleDischarge.B8_defect_homology_acyclic_iff_rank_zero
-#print axioms PartBBundleDischarge.B8_grounded_defect_subsingleton_of_smooth
-#print axioms PartBBundleDischarge.B8_grounded_defect_acyclic_of_smooth
-#print axioms PartBBundleDischarge.B9_log_series_summable
-#print axioms PartBBundleDischarge.B9_log_norm_bound
-#print axioms PartBBundleDischarge.B9_log_tail_term_quadratic
-#print axioms PartBBundleDischarge.B9_log_linear_error_quadratic
-#print axioms PartBBundleDischarge.B9_second_order_log_multiplicativity
-#print axioms PartBBundleDischarge.B9_exact_log_multiplicativity_at_zero
 -- C-4 certified table correction
-#print axioms C4TableCorrection.profile_p7_coeff_reduces
-#print axioms C4TableCorrection.profile_p7_pointCount
-#print axioms C4TableCorrection.profile_p7_trace
-#print axioms C4TableCorrection.profile_p7_pointCount_identity
-#print axioms C4TableCorrection.profile_p7_hasse
-#print axioms C4TableCorrection.profile_p7_rejects_bad_user_row
-#print axioms principalOpen_inter
-#print axioms principalOpen_one
-#print axioms principalOpen_zero
-#print axioms section_fiber_product
-#print axioms section_iInf
-#print axioms intersection_pThickness_eq_max
-#print axioms tor_pValue_eq_min
-#print axioms tor_lt_intersection_thickness
-#print axioms tau_eq_top_iff
-#print axioms tauOf_eq_tau
-#print axioms benchmark_table
-#print axioms etale_ordinary_order_ne_sq
 -- §A1 coverage-gap model — representative new theorems
-#print axioms A1Coverage.mem_fourFiber
-#print axioms A1Coverage.section_eq_iInf
-#print axioms A1Coverage.mem_F
-#print axioms A1Coverage.card_section_kerLayer
-#print axioms A1Coverage.section_kerLayer_addEquiv
-#print axioms A1Coverage.section_kerLayer_card_eq_one_iff
-#print axioms A1Coverage.section_Fmod_padic_addEquiv
-#print axioms A1Coverage.restrict_eq_presheaf_map
-#print axioms A1Coverage.section_crt_separation
 -- §A2 coverage-gap model — representative new theorems
-#print axioms A2Genus.der_detector_general
-#print axioms A2Genus.smooth_iff_der_general
-#print axioms A2Genus.hypersurface_der_specializes
-#print axioms A2Genus.deltaInvariant_eq_finrank
-#print axioms A2Genus.total_delta_eq_finrank
-#print axioms A2Genus.normalization_length_drop
-#print axioms A2Genus.groundedMot_eq_deltaTotal_ofGraph
-#print axioms A2Genus.groundedMot_eq_zero_iff
-#print axioms A2Genus.groundedMot_eq_zero_of_tree_smooth
-#print axioms A2Genus.bump_eq_zero_iff_smooth
 -- A3 transfer interface: genuine basis-level replacements (representative)
-#print axioms A3Transfer.GateSignature.passes_iff_components
-#print axioms A3Transfer.basisGate_eq_false_of_coprime
-#print axioms A3Transfer.basisSignature_passes_of_coprime
-#print axioms A3Transfer.basis_Fmod_padic_card_eq_one_of_coprime
-#print axioms A3Transfer.basis_crt_existsUnique
-#print axioms A3Transfer.basis_restrict_eq_presheaf_map
-#print axioms A3Transfer.goodPrime_discriminant_iff
-#print axioms A3Transfer.TransferData.tr_zero
-#print axioms A3Transfer.TransferData.tr_add
-#print axioms A3Transfer.TransferData.globalClass_add
 -- A3 conditional/package projections (audit only; not representative)
-#print axioms A3Transfer.TransferData.unobstructed_of_h1EtaleZero
-#print axioms A3Transfer.TransferData.unobstructed_of_transferReady
-#print axioms A3Transfer.TransferData.signature_components_of_transferReady
-#print axioms A3Transfer.TransferData.etalePiecePersists_of_goodOpen
-#print axioms A3Transfer.TransferData.LocalPrimeGenerator.allClear_of_transferReady
-#print axioms A3Transfer.TransferData.tautological_unobstructed
 -- (repair check) the surgically-repaired analysis lemmas are now sorryAx-free
-#print axioms aPowTrace_eq_eig_powerSum
-#print axioms abs_aPowTrace_le
-#print axioms x3mx_F5_frontier_complete
 
 /-! ### §III.2 — ENFORCED gate over headline + every Category-I/II import-touching theorem.
 
@@ -8493,3 +8058,4 @@ elab "#assert_all_local_safe_axioms" : command => do
 end AxiomAudit
 
 end Spt5
+
