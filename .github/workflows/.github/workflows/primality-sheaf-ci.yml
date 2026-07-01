@@ -1,0 +1,85 @@
+name: PrimalitySheafVerification CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/**'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/primality-sheaf-ci.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/**'
+      - 'lakefile.lean'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/primality-sheaf-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: primality-sheaf-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check PrimalitySheafVerification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Lean and fetch Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          use-github-cache: false
+          use-mathlib-cache: true
+
+      - name: Check target Lean files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          files=(
+            "PrimalitySheafVerification/Spt1.lean"
+            "PrimalitySheafVerification/Spt2.lean"
+            "PrimalitySheafVerification/Spt3.lean"
+            "PrimalitySheafVerification/Spt4.lean"
+            "PrimalitySheafVerification/Spt5.lean"
+            "PrimalitySheafVerification/Spt6.lean"
+            "PrimalitySheafVerification/Spt7.lean"
+            "PrimalitySheafVerification/Verification.lean"
+          )
+
+          optional_files=(
+            "PrimalitySheafVerification/Spt2_AdditionalFormalization.lean"
+            "PrimalitySheafVerification/Spt2_BypassCertificate.lean"
+            "PrimalitySheafVerification/Spt2_CompletionLayer.lean"
+            "PrimalitySheafVerification/Spt2_GeometricWorkarounds.lean"
+            "PrimalitySheafVerification/Spt2_Master_Integrated.lean"
+          )
+
+          for file in "${files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "::warning file=$file::File is not present; skipping"
+              continue
+            fi
+            echo "::group::lake env lean $file"
+            lake env lean "$file"
+            echo "::endgroup::"
+          done
+
+          for file in "${optional_files[@]}"; do
+            if [[ -f "$file" ]]; then
+              echo "::group::lake env lean $file"
+              lake env lean "$file"
+              echo "::endgroup::"
+            fi
+          done
