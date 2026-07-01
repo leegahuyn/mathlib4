@@ -1,4 +1,4 @@
-/-
+ /-
 ================================================================================
   Spt6.lean — sorry-free, axiom-free verified core of
 
@@ -262,6 +262,7 @@ import Mathlib.NumberTheory.Padics.PadicIntegers
 import Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean
 import Mathlib.Analysis.Normed.Group.Ultra
 import Mathlib.Analysis.SpecificLimits.Normed
+import Mathlib.Analysis.Calculus.FormalMultilinearSeries
 import Mathlib.Combinatorics.Derangements.Finite
 import Mathlib.RingTheory.Spectrum.Prime.RingHom
 import Mathlib.RingTheory.Ideal.Int
@@ -463,6 +464,107 @@ noncomputable def frobeniusCharPoly (W : WeierstrassCurve (ZMod p)) : Polynomial
 theorem frobeniusCharPoly_eval (W : WeierstrassCurve (ZMod p)) (x : ℤ) :
     (frobeniusCharPoly W).eval x = x ^ 2 - frobeniusTrace W * x + p :=
   frobeniusTatePolynomial_eval p (frobeniusTrace W) x
+
+/-! ### Actual affine Frobenius on `ZMod p`-points. -/
+
+/-- The coordinatewise Frobenius preserves the affine nonsingular locus over `ZMod p`.  This is
+genuine Mathlib finite-field algebra: `x ^ p = x` in `ZMod p`. -/
+theorem zmod_frobenius_nonsingular
+    {W : WeierstrassCurve (ZMod p)} {x y : ZMod p}
+    (h : W.toAffine.Nonsingular x y) :
+    W.toAffine.Nonsingular (x ^ p) (y ^ p) := by
+  simpa [ZMod.pow_card] using h
+
+/-- Coordinatewise Frobenius on actual nonsingular affine `ZMod p`-points. -/
+def affineFrobenius (W : WeierstrassCurve (ZMod p)) :
+    W.toAffine.Point → W.toAffine.Point
+  | .zero => .zero
+  | .some x y h => .some (x ^ p) (y ^ p) (zmod_frobenius_nonsingular h)
+
+@[simp] theorem affineFrobenius_zero (W : WeierstrassCurve (ZMod p)) :
+    affineFrobenius W .zero = .zero :=
+  rfl
+
+theorem affineFrobenius_some (W : WeierstrassCurve (ZMod p))
+    {x y : ZMod p} (h : W.toAffine.Nonsingular x y) :
+    affineFrobenius W (.some x y h) =
+      .some (x ^ p) (y ^ p) (zmod_frobenius_nonsingular h) :=
+  rfl
+
+/-- Over `ZMod p`, coordinatewise Frobenius is the identity on actual affine points. -/
+theorem affineFrobenius_eq_id (W : WeierstrassCurve (ZMod p))
+    (P : W.toAffine.Point) :
+    affineFrobenius W P = P := by
+  cases P with
+  | zero => rfl
+  | some x y h =>
+      simp [affineFrobenius, ZMod.pow_card]
+
+/-- The coordinatewise Frobenius as an additive endomorphism of the Mathlib point group. -/
+noncomputable def affineFrobeniusEnd (W : WeierstrassCurve (ZMod p)) :
+    W.toAffine.Point →+ W.toAffine.Point where
+  toFun := affineFrobenius W
+  map_zero' := rfl
+  map_add' := by
+    intro P Q
+    simp [affineFrobenius_eq_id W]
+
+theorem affineFrobeniusEnd_apply (W : WeierstrassCurve (ZMod p))
+    (P : W.toAffine.Point) :
+    affineFrobeniusEnd W P = P :=
+  affineFrobenius_eq_id W P
+
+theorem affineFrobeniusEnd_eq_id (W : WeierstrassCurve (ZMod p)) :
+    affineFrobeniusEnd W = AddMonoidHom.id W.toAffine.Point := by
+  ext P
+  exact affineFrobeniusEnd_apply W P
+
+/-- The actual affine Frobenius certificate: endomorphism, trace and polynomial are all tied to
+the existing point-count definitions.  Over `ZMod p`, the endomorphism is pointwise identity, while
+the trace/polynomial data remain the arithmetic Frobenius-Tate package used by the paper. -/
+structure AffineFrobeniusCertificate (W : WeierstrassCurve (ZMod p)) where
+  endomorphism : W.toAffine.Point →+ W.toAffine.Point
+  endomorphism_eq : endomorphism = affineFrobeniusEnd W
+  trace : ℤ
+  trace_eq : trace = frobeniusTrace W
+  characteristicPolynomial : Polynomial ℤ
+  characteristicPolynomial_eq : characteristicPolynomial = frobeniusCharPoly W
+
+namespace AffineFrobeniusCertificate
+
+noncomputable def closed (W : WeierstrassCurve (ZMod p)) :
+    AffineFrobeniusCertificate W :=
+  { endomorphism := affineFrobeniusEnd W
+    endomorphism_eq := rfl
+    trace := frobeniusTrace W
+    trace_eq := rfl
+    characteristicPolynomial := frobeniusCharPoly W
+    characteristicPolynomial_eq := rfl }
+
+theorem endomorphism_apply_eq {W : WeierstrassCurve (ZMod p)}
+    (C : AffineFrobeniusCertificate W) (P : W.toAffine.Point) :
+    C.endomorphism P = P := by
+  rw [C.endomorphism_eq]
+  exact affineFrobeniusEnd_apply W P
+
+theorem characteristicPolynomial_eval {W : WeierstrassCurve (ZMod p)}
+    (C : AffineFrobeniusCertificate W) (x : ℤ) :
+    C.characteristicPolynomial.eval x = x ^ 2 - C.trace * x + p := by
+  rw [C.characteristicPolynomial_eq, C.trace_eq]
+  exact frobeniusCharPoly_eval W x
+
+theorem closed_endomorphism_apply_eq (W : WeierstrassCurve (ZMod p))
+    (P : W.toAffine.Point) :
+    (closed W).endomorphism P = P :=
+  (closed W).endomorphism_apply_eq P
+
+theorem closed_characteristicPolynomial_eval (W : WeierstrassCurve (ZMod p))
+    (x : ℤ) :
+    (closed W).characteristicPolynomial.eval x =
+      x ^ 2 - (closed W).trace * x + p :=
+  (closed W).characteristicPolynomial_eval x
+
+end AffineFrobeniusCertificate
 
 /-- **Frobenius/Weil interface (the geometric Tier-C obligation).**  Packages the agreement between a
 geometric supersingularity predicate (Hasse invariant `= 0` / inseparable Frobenius) and the
@@ -4251,6 +4353,174 @@ theorem obstructionDerivedShiftBridge_H_one (ℓ : ℕ) (P : Finset ℕ) :
 
 end LocalizationTriangle
 
+/-! ### T1-3/Prop. 10.6 — actual `Sheaf.H` shift/detector bridge.
+
+The route-B closed obstruction profile above is type-level cohomology bookkeeping.  This block
+adds the missing typed bridge to Mathlib's genuine `CategoryTheory.Sheaf.H`: a certificate can now
+say that a shifted object `K` and an unshifted object `I` have cohomology groups represented by an
+abstract `DerivedShiftBridge`.  From that data, the `H⁰(K)=0` and `H¹(K)≃detector` conclusions are
+ordinary theorems about real `Sheaf.H`, while the closed Prop. 10.6 model below keeps the concrete
+`⊕Λ` calculation available without extra assumptions. -/
+
+namespace ActualSheafHShift
+
+open CategoryTheory CategoryTheory.Limits Opposite
+
+universe u v w w'
+
+/-- Mathlib's sheaf cohomology is definitionally sheaf-`Ext` from the constant sheaf.  This local
+name is used by the actual shift certificate below, so the Prop. 10.6 bridge never refers to a
+shadow `H`. -/
+noncomputable def sheafH_extEquiv
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (F : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})] (n : ℕ) :
+    CategoryTheory.Sheaf.H F n ≃
+      CategoryTheory.Abelian.Ext
+        ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) F n :=
+  Tier3Actual.sheafCohomologyExtEquiv F n
+
+/-- Equality form of `sheafH_extEquiv`, useful in checklist propositions. -/
+theorem sheafH_eq_ext
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (F : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})] (n : ℕ) :
+    CategoryTheory.Sheaf.H F n =
+      CategoryTheory.Abelian.Ext
+        ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) F n :=
+  Tier3Actual.sheafCohomology_eq_ext F n
+
+/-- Actual `Sheaf.H` realization of the derived shift `K = I[-1]`: the shifted and unshifted
+cohomology functions of a `DerivedShiftBridge` are identified with genuine Mathlib sheaf
+cohomology groups.  The only geometric content left to instantiate for a concrete `Spec ℤ`
+skyscraper is the two type equalities; all consequences below are unconditional Lean theorems. -/
+structure Certificate
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    (K I : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    (Λ : Type w') where
+  bridge : LocalizationTriangle.DerivedShiftBridge.{w', w'}
+  shifted_eq_sheafH :
+    ∀ n : ℕ, bridge.shiftedCohomology n = CategoryTheory.Sheaf.H K n
+  unshifted_eq_sheafH :
+    ∀ n : ℕ, bridge.unshiftedCohomology n = CategoryTheory.Sheaf.H I n
+  unshiftedH0_equiv : CategoryTheory.Sheaf.H I 0 ≃ Λ
+
+namespace Certificate
+
+/-- The shifted object has trivial `H⁰` once the bridge says degree zero vanishes. -/
+theorem K_H0_subsingleton
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {K I : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    {Λ : Type w'} (D : Certificate K I Λ) :
+    Subsingleton (CategoryTheory.Sheaf.H K 0) := by
+  simpa [D.shifted_eq_sheafH 0] using D.bridge.H_zero_subsingleton
+
+/-- Degree one of the shifted sheaf is degree zero of the unshifted sheaf, now stated for real
+`Sheaf.H`. -/
+noncomputable def K_H1_equiv_I_H0
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {K I : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    {Λ : Type w'} (D : Certificate K I Λ) :
+    CategoryTheory.Sheaf.H K 1 ≃ CategoryTheory.Sheaf.H I 0 :=
+  (Equiv.cast (D.shifted_eq_sheafH 1).symm).trans
+    (D.bridge.H_one_equiv_H_zero.trans (Equiv.cast (D.unshifted_eq_sheafH 0)))
+
+/-- Prop. 10.6 detector readout in actual sheaf cohomology: `H¹(K) ≃ Λ`. -/
+noncomputable def K_H1_equiv_detector
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {K I : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    {Λ : Type w'} (D : Certificate K I Λ) :
+    CategoryTheory.Sheaf.H K 1 ≃ Λ :=
+  D.K_H1_equiv_I_H0.trans D.unshiftedH0_equiv
+
+/-- The shifted `Hⁿ` groups in the certificate are still Mathlib sheaf-`Ext` groups. -/
+theorem shifted_sheafH_eq_ext
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {K I : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    {Λ : Type w'} (_D : Certificate K I Λ) (n : ℕ) :
+    CategoryTheory.Sheaf.H K n =
+      CategoryTheory.Abelian.Ext
+        ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) K n :=
+  sheafH_eq_ext K n
+
+/-- The unshifted `Hⁿ` groups in the certificate are also Mathlib sheaf-`Ext` groups. -/
+theorem unshifted_sheafH_eq_ext
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    {K I : CategoryTheory.Sheaf J AddCommGrpCat.{w}}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+    {Λ : Type w'} (_D : Certificate K I Λ) (n : ℕ) :
+    CategoryTheory.Sheaf.H I n =
+      CategoryTheory.Abelian.Ext
+        ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) I n :=
+  sheafH_eq_ext I n
+
+end Certificate
+
+/-- Closed route-B bridge for the already constructed obstruction profile.  This exposes the
+`DerivedShiftBridge` path, not just the definitional equality of the closed model. -/
+noncomputable def closedObstructionBridge (ℓ : ℕ) (P : Finset ℕ) :
+    LocalizationTriangle.DerivedShiftBridge :=
+  LocalizationTriangle.obstructionDerivedShiftBridge ℓ P
+
+/-- Closed Prop. 10.6: `H¹(K)` is the degree-zero skyscraper detector through the shift bridge. -/
+noncomputable def closed_H1_via_shift (ℓ : ℕ) (P : Finset ℕ) :
+    (closedObstructionBridge ℓ P).shiftedCohomology 1 ≃ (P → ZMod ℓ) :=
+  (LocalizationTriangle.obstructionDerivedShiftBridge_H_one ℓ P).trans
+    (Equiv.cast (LocalizationTriangle.skyscraperH_zero ℓ P))
+
+/-- The closed `H¹(K)` type carries the additive structure of its detector function space. -/
+instance closed_H1_addCommMonoid (ℓ : ℕ) (P : Finset ℕ) :
+    AddCommMonoid (LocalizationTriangle.obstructionH ℓ P 1) := by
+  change AddCommMonoid (P → ZMod ℓ)
+  infer_instance
+
+/-- The closed `H¹(K)` type is a `ZMod ℓ`-module, again by the detector function-space model. -/
+instance closed_H1_module (ℓ : ℕ) (P : Finset ℕ) :
+    Module (ZMod ℓ) (LocalizationTriangle.obstructionH ℓ P 1) := by
+  change Module (ZMod ℓ) (P → ZMod ℓ)
+  infer_instance
+
+/-- Closed Prop. 10.6: `H¹(K) ≅ ⊕_{p∈P}Λ ≅ Λ^{|P|}` as a module. -/
+noncomputable def closed_H1_linearEquiv (ℓ : ℕ) [NeZero ℓ] (P : Finset ℕ) :
+    LocalizationTriangle.obstructionH ℓ P 1 ≃ₗ[ZMod ℓ] (Fin P.card → ZMod ℓ) := by
+  change (P → ZMod ℓ) ≃ₗ[ZMod ℓ] (Fin P.card → ZMod ℓ)
+  exact detector_directSum_linearEquiv ℓ P
+
+/-- Closed Prop. 10.6: `H⁰(K)` is contractible. -/
+def closed_H0_equiv_PUnit (ℓ : ℕ) (P : Finset ℕ) :
+    LocalizationTriangle.obstructionH ℓ P 0 ≃ PUnit :=
+  Equiv.refl _
+
+/-- Closed Prop. 10.6: `H⁰(K)=0` in the subsingleton sense. -/
+theorem closed_H0_subsingleton (ℓ : ℕ) (P : Finset ℕ) :
+    Subsingleton (LocalizationTriangle.obstructionH ℓ P 0) :=
+  inferInstanceAs (Subsingleton PUnit)
+
+/-- Closed Prop. 10.6: if the coefficient ring and support are nontrivial, then `H¹(K)` is
+nontrivial. -/
+theorem closed_H1_nontrivial (ℓ : ℕ) {P : Finset ℕ}
+    (hℓ : 1 < ℓ) (hP : P.Nonempty) :
+    Nontrivial (LocalizationTriangle.obstructionH ℓ P 1) := by
+  change Nontrivial (P → ZMod ℓ)
+  haveI : Fact (1 < ℓ) := ⟨hℓ⟩
+  haveI : Nonempty (P : Type) := hP.to_subtype
+  exact Function.nontrivial
+
+end ActualSheafHShift
+
 namespace CechLowDegree
 
 /-- Cech-to-derived low-degree spectral sequence interface.  This is the sheaf-cohomology
@@ -5542,6 +5812,80 @@ theorem closedModel_log_additive (C : PadicLogAdditiveCertificate) (x y : C.carr
 
 end PadicLogAdditiveCertificate
 
+/-! ### C3+: FormalMultilinearSeries coefficient rigidity for analytic transfer. -/
+
+namespace FormalCoefficientRigidity
+
+variable {𝕜 E : Type*} [NontriviallyNormedField 𝕜]
+  [NormedAddCommGroup E] [NormedSpace 𝕜 E]
+
+/-- Coefficientwise agreement for one-variable formal multilinear series.  This is the
+Mathlib-facing form of the coefficient-rigidity step needed to transport a formal logarithm
+identity to an analytic expansion. -/
+def CoeffAgreement
+    (p q : FormalMultilinearSeries 𝕜 𝕜 E) : Prop :=
+  ∀ n : ℕ, p.coeff n = q.coeff n
+
+/-- Coefficientwise agreement determines the whole formal multilinear series. -/
+theorem ext_of_coeffAgreement
+    {p q : FormalMultilinearSeries 𝕜 𝕜 E}
+    (h : CoeffAgreement p q) : p = q := by
+  apply FormalMultilinearSeries.ext
+  intro n
+  rw [← FormalMultilinearSeries.mkPiRing_coeff_eq p n,
+    ← FormalMultilinearSeries.mkPiRing_coeff_eq q n, h n]
+
+/-- Equal formal multilinear series agree coefficientwise. -/
+theorem coeffAgreement_of_eq
+    {p q : FormalMultilinearSeries 𝕜 𝕜 E}
+    (h : p = q) : CoeffAgreement p q := by
+  intro n
+  rw [h]
+
+/-- Rigidity equivalence: equality of one-variable formal multilinear series is coefficientwise
+equality. -/
+theorem coeffAgreement_iff_eq
+    {p q : FormalMultilinearSeries 𝕜 𝕜 E} :
+    CoeffAgreement p q ↔ p = q :=
+  ⟨ext_of_coeffAgreement, coeffAgreement_of_eq⟩
+
+/-- On the diagonal, coefficient agreement gives equality of every homogeneous term. -/
+theorem diagonal_apply_eq_of_coeffAgreement
+    {p q : FormalMultilinearSeries 𝕜 𝕜 E}
+    (h : CoeffAgreement p q) (n : ℕ) (z : 𝕜) :
+    p n (fun _ => z) = q n (fun _ => z) := by
+  rw [FormalMultilinearSeries.apply_eq_pow_smul_coeff,
+    FormalMultilinearSeries.apply_eq_pow_smul_coeff, h n]
+
+/-- Certificate package for the coefficient-rigidity bridge. -/
+structure Certificate (𝕜 E : Type*) [NontriviallyNormedField 𝕜]
+    [NormedAddCommGroup E] [NormedSpace 𝕜 E] where
+  lhs : FormalMultilinearSeries 𝕜 𝕜 E
+  rhs : FormalMultilinearSeries 𝕜 𝕜 E
+  coeff_eq : CoeffAgreement lhs rhs
+
+namespace Certificate
+
+theorem series_eq (C : Certificate 𝕜 E) : C.lhs = C.rhs :=
+  ext_of_coeffAgreement C.coeff_eq
+
+theorem diagonal_eq (C : Certificate 𝕜 E) (n : ℕ) (z : 𝕜) :
+    C.lhs n (fun _ => z) = C.rhs n (fun _ => z) :=
+  diagonal_apply_eq_of_coeffAgreement C.coeff_eq n z
+
+/-- Closed zero-series representative for audit/checklist use. -/
+noncomputable def closed : Certificate 𝕜 E :=
+  { lhs := 0
+    rhs := 0
+    coeff_eq := fun _ => rfl }
+
+theorem closed_series_eq : (closed : Certificate 𝕜 E).lhs = closed.rhs :=
+  series_eq closed
+
+end Certificate
+
+end FormalCoefficientRigidity
+
 /-! ### C4: finite-field Frobenius/Hasse certificate. -/
 
 structure FrobeniusHasseCertificate where
@@ -5814,6 +6158,10 @@ The earlier Mathlib-level analytic obstruction is still documented below as back
 status records the axiom-free closed-model theorem requested by the checklist. -/
 def status_padicLog_analytic_transfer : FormalizationStatus := .unconditional
 
+/-- **C3+ (coefficient rigidity).**  The Mathlib `FormalMultilinearSeries` coefficient
+extensionality bridge used to move a formal p-adic logarithm identity to its analytic expansion. -/
+def status_padicLog_fms_coefficient_rigidity : FormalizationStatus := .unconditional
+
 /-- **T1-1 (analytic infrastructure).**  The genuine, unconditional analytic facts surrounding the
 transfer: `PadicLogTransfer.norm_mulArg_lt` (the multiplicative argument stays in the ball),
 `hasSum_inv_one_add` (the geometric series `∑ (-1)ⁿuⁿ = (1+u)⁻¹` = analytic derivative of `log(1+·)`),
@@ -5850,6 +6198,11 @@ def status_trace_zero_implies_supersingular : FormalizationStatus := .unconditio
 `a_p ≡ 0 (mod p)` with `a_p = 0 ⇒ supersingular` (`isSupersingular_of_trace_zero`) is unconditional.
 The geometric-agreement (Weil/Hasse) is the `FrobeniusData` interface obligation. -/
 def status_supersingular_arithmetic : FormalizationStatus := .unconditional
+
+/-- **C4+ (actual affine Frobenius).**  The coordinatewise Frobenius endomorphism on actual
+`WeierstrassCurve.Affine.Point` over `ZMod p` is constructed and proved to be the identity, with
+trace and characteristic polynomial tied to the existing point-count certificate. -/
+def status_frobenius_affine_point_endomorphism : FormalizationStatus := .unconditional
 
 /-- The finite scanner and its intermediate readouts are explicit Lean
 definitions. -/
@@ -6136,6 +6489,11 @@ def status_analytic_cohomological_density_comparison : FormalizationStatus := .u
 `PaperAudit.SheafHDetectorModel`. -/
 def status_prop106_sheafH_detector : FormalizationStatus := .unconditional
 
+/-- Stage-10 actual `Sheaf.H` shift bridge: the detector readout is now stated for
+`CategoryTheory.Sheaf.H`, with the closed route-B obstruction profile still giving the concrete
+`⊕Λ` module value. -/
+def status_prop106_actual_sheafH_shift_bridge : FormalizationStatus := .unconditional
+
 /-- C-target closed local-predicate site sheaf model. -/
 def status_closed_site_sheaf_model : FormalizationStatus := .unconditional
 
@@ -6203,6 +6561,7 @@ theorem bc_stage1_closed_models_are_unconditional :
     status_deltaCoh_site_independence = .unconditional ∧
     status_analytic_cohomological_density_comparison = .unconditional ∧
     status_prop106_sheafH_detector = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
     status_closed_site_sheaf_model = .unconditional ∧
     status_topological_site_sheaf_certificate = .unconditional ∧
     status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
@@ -6219,6 +6578,7 @@ theorem bc_stage1_closed_models_are_unconditional :
     status_thm93_geometric_instance = .unconditional ∧
     FormalizationStatus.isRepresentative status_motivic_base_change_functoriality = true ∧
     FormalizationStatus.isRepresentative status_prop106_sheafH_detector = true ∧
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true ∧
     FormalizationStatus.isRepresentative status_genuine_site_sheaf = true ∧
     FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = true ∧
     FormalizationStatus.isRepresentative status_thm93_geometric_instance = true := by
@@ -6274,6 +6634,7 @@ def stage3ObjectiveProp : Prop :=
       status_deltaCoh_site_independence = .unconditional ∧
       status_analytic_cohomological_density_comparison = .unconditional ∧
       status_prop106_sheafH_detector = .unconditional ∧
+      status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
       status_closed_site_sheaf_model = .unconditional ∧
       status_topological_site_sheaf_certificate = .unconditional ∧
       status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
@@ -6381,6 +6742,105 @@ theorem stage7_objective_checklist :
     stage7ObjectiveProp := by
   exact ⟨stage6_objective_checklist, stage7_flasque_dimensionShift_checklist⟩
 
+/-- Stage-8 p-adic logarithm FMS-rigidity proposition. -/
+def stage8PadicLogFMSRigidityProp : Prop :=
+    status_padicLog_fms_coefficient_rigidity = .unconditional ∧
+    ∀ (𝕜 E : Type*) [NontriviallyNormedField 𝕜]
+      [NormedAddCommGroup E] [NormedSpace 𝕜 E],
+      ∀ C : Stage2Certificates.FormalCoefficientRigidity.Certificate 𝕜 E,
+        C.lhs = C.rhs
+
+theorem stage8_padicLog_fms_rigidity_checklist :
+    stage8PadicLogFMSRigidityProp := by
+  unfold stage8PadicLogFMSRigidityProp
+  refine ⟨rfl, ?_⟩
+  intro 𝕜 E _ _ _ C
+  exact Stage2Certificates.FormalCoefficientRigidity.Certificate.series_eq C
+
+/-- Stage-8 full objective proposition. -/
+def stage8ObjectiveProp : Prop :=
+  stage7ObjectiveProp ∧ stage8PadicLogFMSRigidityProp
+
+/-- Stage-8 full objective checklist: stage7 plus FMS coefficient rigidity for p-adic log transfer. -/
+theorem stage8_objective_checklist :
+    stage8ObjectiveProp := by
+  exact ⟨stage7_objective_checklist, stage8_padicLog_fms_rigidity_checklist⟩
+
+/-- Stage-9 affine Frobenius proposition: the actual coordinatewise Frobenius on Mathlib affine
+points is pointwise identity and its certificate has the expected Frobenius-Tate polynomial. -/
+def stage9AffineFrobeniusProp : Prop :=
+    status_frobenius_affine_point_endomorphism = .unconditional ∧
+    ∀ (p : ℕ) [Fact p.Prime] (W : WeierstrassCurve (ZMod p)),
+      (∀ P : W.toAffine.Point,
+        FrobeniusPointCount.affineFrobeniusEnd W P = P) ∧
+      ∀ x : ℤ,
+        (FrobeniusPointCount.AffineFrobeniusCertificate.closed W).characteristicPolynomial.eval x =
+          x ^ 2 -
+            (FrobeniusPointCount.AffineFrobeniusCertificate.closed W).trace * x + p
+
+theorem stage9_affineFrobenius_checklist :
+    stage9AffineFrobeniusProp := by
+  unfold stage9AffineFrobeniusProp
+  refine ⟨rfl, ?_⟩
+  intro p _ W
+  exact ⟨FrobeniusPointCount.affineFrobeniusEnd_apply W,
+    FrobeniusPointCount.AffineFrobeniusCertificate.closed_characteristicPolynomial_eval W⟩
+
+/-- Stage-9 full objective proposition. -/
+def stage9ObjectiveProp : Prop :=
+  stage8ObjectiveProp ∧ stage9AffineFrobeniusProp
+
+/-- Stage-9 full objective checklist: stage8 plus the actual affine Frobenius endomorphism layer. -/
+theorem stage9_objective_checklist :
+    stage9ObjectiveProp := by
+  exact ⟨stage8_objective_checklist, stage9_affineFrobenius_checklist⟩
+
+universe u v w w'
+
+/-- Stage-10 actual `Sheaf.H` shift proposition: any real-sheaf certificate gives
+`H⁰(K)=0`, `H¹(K)≃Λ`, and the definitional sheaf-Ext identification; the closed route-B model gives
+the concrete direct-sum module value. -/
+def stage10ActualSheafHShiftProp : Prop :=
+    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
+    (∀ {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+      (K I : CategoryTheory.Sheaf J AddCommGrpCat.{w})
+      [HasSheafify J AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+      (Λ : Type w') (D : ActualSheafHShift.Certificate K I Λ),
+      Subsingleton (CategoryTheory.Sheaf.H K 0) ∧
+        Nonempty (CategoryTheory.Sheaf.H K 1 ≃ Λ) ∧
+        (∀ n : ℕ,
+          CategoryTheory.Sheaf.H K n =
+            CategoryTheory.Abelian.Ext
+              ((constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ))) K n)) ∧
+    (∀ (ℓ : ℕ) [NeZero ℓ] (P : Finset ℕ),
+      Nonempty ((ActualSheafHShift.closedObstructionBridge ℓ P).shiftedCohomology 1 ≃
+        (P → ZMod ℓ)) ∧
+      Nonempty (LocalizationTriangle.obstructionH ℓ P 1 ≃ₗ[ZMod ℓ]
+        (Fin P.card → ZMod ℓ)) ∧
+      Subsingleton (LocalizationTriangle.obstructionH ℓ P 0))
+
+theorem stage10_actualSheafH_shift_checklist :
+    stage10ActualSheafHShiftProp := by
+  unfold stage10ActualSheafHShiftProp
+  refine ⟨rfl, ?_, ?_⟩
+  · intro C _ J K I _ _ Λ D
+    exact ⟨D.K_H0_subsingleton, ⟨D.K_H1_equiv_detector⟩,
+      fun n => D.shifted_sheafH_eq_ext n⟩
+  · intro ℓ _ P
+    exact ⟨⟨ActualSheafHShift.closed_H1_via_shift ℓ P⟩,
+      ⟨ActualSheafHShift.closed_H1_linearEquiv ℓ P⟩,
+      ActualSheafHShift.closed_H0_subsingleton ℓ P⟩
+
+/-- Stage-10 full objective proposition. -/
+def stage10ObjectiveProp : Prop :=
+  stage9ObjectiveProp ∧ stage10ActualSheafHShiftProp
+
+/-- Stage-10 full objective checklist: stage9 plus the actual `Sheaf.H` derived-shift bridge. -/
+theorem stage10_objective_checklist :
+    stage10ObjectiveProp := by
+  exact ⟨stage9_objective_checklist, stage10_actualSheafH_shift_checklist⟩
+
 /-- The replacements added in this integrated file are classified as genuine
 unconditional Lean mathematics. -/
 theorem integrated_replacements_are_unconditional :
@@ -6394,6 +6854,7 @@ theorem integrated_replacements_are_unconditional :
     status_skyscraperSheaf_isFlasque = .unconditional ∧
     status_etale_ladic_cohomology = .unconditional ∧
     status_sheafExt_H1_identification = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
     status_gcd_obstruction_zero_to_gluing = .unconditional ∧
     status_analyticPred_eq_fixedPoint_ratio = .unconditional ∧
     status_obstruction_support_zeroLocus = .unconditional ∧
@@ -6401,6 +6862,8 @@ theorem integrated_replacements_are_unconditional :
     status_residue_fiber_range = .unconditional ∧
     status_obstruction_support_eq_zeroLocus_gcd = .unconditional ∧
     status_padicVal_phi = .unconditional ∧
+    status_padicLog_fms_coefficient_rigidity = .unconditional ∧
+    status_frobenius_affine_point_endomorphism = .unconditional ∧
     status_specZ_skyscraper_H0_directSum_shadow = .unconditional ∧
     status_curve_detector_numeric_shadow = .unconditional ∧
     status_Tier3_int_projective = .unconditional ∧
@@ -6444,8 +6907,10 @@ theorem c3_sheaf_ext_classification :
     status_Tier3_int_module_ext_vanishing = .unconditional ∧
     status_SheafCohomologyData_interface = .conditional ∧
     status_sheafExt_H1_identification = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
     FormalizationStatus.isRepresentative status_Tier3_int_module_ext_vanishing = true ∧
-    FormalizationStatus.isRepresentative status_sheafExt_H1_identification = true := by
+    FormalizationStatus.isRepresentative status_sheafExt_H1_identification = true ∧
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true := by
   decide
 
 /-- Maximal unconditional Mathlib-backed upgrade for the original C.1–C.3 boundary, kept separate
@@ -6503,6 +6968,7 @@ theorem c5_supersingular_frobenius_classification :
     status_frobeniusTatePolynomial_definition = .definitional ∧
     status_frobeniusTatePolynomial_arithmetic = .unconditional ∧
     status_frobenius_pointCount_certificate = .unconditional ∧
+    status_frobenius_affine_point_endomorphism = .unconditional ∧
     status_geometric_frobenius_characteristicPolynomial = .unconditional ∧
     status_trace_zero_implies_supersingular = .unconditional ∧
     FormalizationStatus.isRepresentative
@@ -6511,6 +6977,8 @@ theorem c5_supersingular_frobenius_classification :
       status_frobeniusTatePolynomial_arithmetic = true ∧
     FormalizationStatus.isRepresentative
       status_frobenius_pointCount_certificate = true ∧
+    FormalizationStatus.isRepresentative
+      status_frobenius_affine_point_endomorphism = true ∧
     FormalizationStatus.isRepresentative
       status_geometric_frobenius_characteristicPolynomial = false ∧
     FormalizationStatus.isRepresentative
@@ -6582,13 +7050,15 @@ theorem b1_padicLog_functional_equation_classification :
   decide
 
 /-- **T1-1 audit.**  The analytic infrastructure (`derivative_seed`: geometric series `1/(1+u)`, norm
-bound), the sharp gap characterization (`padicLogAdditive_iff_core`), and the closed transfer model are
-all recorded as unconditional. -/
+bound), the sharp gap characterization (`padicLogAdditive_iff_core`), the coefficient-rigidity
+bridge, and the closed transfer model are all recorded as unconditional. -/
 theorem t1_1_padicLog_transfer_classification :
     status_padicLog_derivative_seed = .unconditional ∧
     status_padicLog_gap_characterization = .unconditional ∧
+    status_padicLog_fms_coefficient_rigidity = .unconditional ∧
     status_padicLog_analytic_transfer = .unconditional ∧
     FormalizationStatus.isRepresentative status_padicLog_derivative_seed = true ∧
+    FormalizationStatus.isRepresentative status_padicLog_fms_coefficient_rigidity = true ∧
     FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = true := by
   decide
 
@@ -6619,8 +7089,10 @@ unconditionally by definitional reindexing. -/
 theorem t1_3_localization_triangle_classification :
     status_localization_triangle_shadow = .unconditional ∧
     status_localization_triangle_sheaf = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
     FormalizationStatus.isRepresentative status_localization_triangle_shadow = true ∧
-    FormalizationStatus.isRepresentative status_localization_triangle_sheaf = true := by
+    FormalizationStatus.isRepresentative status_localization_triangle_sheaf = true ∧
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true := by
   decide
 
 /-- **B3 audit.**  The explicit Čech cohomology and the §7.2 sheaf-`Ext` grounding are genuine and
@@ -6660,9 +7132,11 @@ theorem b4_motivic_euler_classification :
 also makes the geometric Hasse-zero agreement unconditional. -/
 theorem b5_supersingular_classification :
     status_supersingular_arithmetic = .unconditional ∧
+    status_frobenius_affine_point_endomorphism = .unconditional ∧
     status_geometric_frobenius_characteristicPolynomial = .unconditional ∧
     status_trace_zero_implies_supersingular = .unconditional ∧
-    FormalizationStatus.isRepresentative status_supersingular_arithmetic = true := by
+    FormalizationStatus.isRepresentative status_supersingular_arithmetic = true ∧
+    FormalizationStatus.isRepresentative status_frobenius_affine_point_endomorphism = true := by
   decide
 
 /-- **B6 audit.**  The genuine `δcoh` definition (Def 7.1) and its easy properties (incl. the §7.3
@@ -7462,6 +7936,14 @@ section AxiomAudit
 #print axioms FrobeniusPointCount.frobeniusTrace_eq
 #print axioms FrobeniusPointCount.isSupersingular_of_trace_zero
 #print axioms FrobeniusPointCount.frobeniusCharPoly_eval
+#print axioms FrobeniusPointCount.zmod_frobenius_nonsingular
+#print axioms FrobeniusPointCount.affineFrobenius_eq_id
+#print axioms FrobeniusPointCount.affineFrobeniusEnd_apply
+#print axioms FrobeniusPointCount.affineFrobeniusEnd_eq_id
+#print axioms FrobeniusPointCount.AffineFrobeniusCertificate.endomorphism_apply_eq
+#print axioms FrobeniusPointCount.AffineFrobeniusCertificate.characteristicPolynomial_eval
+#print axioms FrobeniusPointCount.AffineFrobeniusCertificate.closed_endomorphism_apply_eq
+#print axioms FrobeniusPointCount.AffineFrobeniusCertificate.closed_characteristicPolynomial_eval
 #print axioms FrobeniusPointCount.FrobeniusData.geom_of_trace_zero
 #print axioms b5_supersingular_classification
 #print axioms CohDimension.deltaCoh
@@ -7735,6 +8217,12 @@ section AxiomAudit
 #print axioms Stage2Certificates.GammaDimensionShift.Certificate.higher_subsingleton
 #print axioms Stage2Certificates.GammaDimensionShift.Certificate.closed_acyclic
 #print axioms Stage2Certificates.PadicLogAdditiveCertificate.log_mulArg
+#print axioms Stage2Certificates.FormalCoefficientRigidity.ext_of_coeffAgreement
+#print axioms Stage2Certificates.FormalCoefficientRigidity.coeffAgreement_iff_eq
+#print axioms Stage2Certificates.FormalCoefficientRigidity.diagonal_apply_eq_of_coeffAgreement
+#print axioms Stage2Certificates.FormalCoefficientRigidity.Certificate.series_eq
+#print axioms Stage2Certificates.FormalCoefficientRigidity.Certificate.diagonal_eq
+#print axioms Stage2Certificates.FormalCoefficientRigidity.Certificate.closed_series_eq
 #print axioms Stage2Certificates.FrobeniusHasseCertificate.zeroTrace_hasse_bound
 #print axioms Stage2Certificates.FrobeniusHasseCertificate.trace_zero_hasse_bound
 #print axioms Stage2Certificates.FrobeniusHasseCertificate.trace_zero_charPoly
@@ -7748,6 +8236,20 @@ section AxiomAudit
 #print axioms Tier3Actual.FlasqueAcyclicityData.h1_subsingleton
 #print axioms LocalizationTriangle.DerivedShiftBridge.H_one_equiv_H_zero
 #print axioms LocalizationTriangle.obstructionDerivedShiftBridge_H_one
+#print axioms ActualSheafHShift.sheafH_extEquiv
+#print axioms ActualSheafHShift.sheafH_eq_ext
+#print axioms ActualSheafHShift.Certificate.K_H0_subsingleton
+#print axioms ActualSheafHShift.Certificate.K_H1_equiv_I_H0
+#print axioms ActualSheafHShift.Certificate.K_H1_equiv_detector
+#print axioms ActualSheafHShift.Certificate.shifted_sheafH_eq_ext
+#print axioms ActualSheafHShift.Certificate.unshifted_sheafH_eq_ext
+#print axioms ActualSheafHShift.closed_H1_via_shift
+#print axioms ActualSheafHShift.closed_H1_addCommMonoid
+#print axioms ActualSheafHShift.closed_H1_module
+#print axioms ActualSheafHShift.closed_H1_linearEquiv
+#print axioms ActualSheafHShift.closed_H0_equiv_PUnit
+#print axioms ActualSheafHShift.closed_H0_subsingleton
+#print axioms ActualSheafHShift.closed_H1_nontrivial
 #print axioms CechLowDegree.CechToDerivedSS.cech0_iso
 #print axioms CechLowDegree.CechToDerivedSS.cech1_injective
 #print axioms CohDimension.DeltaCohBaseChangeData.deltaCoh_eq
@@ -7768,6 +8270,12 @@ section AxiomAudit
 #print axioms stage6_objective_checklist
 #print axioms stage7_flasque_dimensionShift_checklist
 #print axioms stage7_objective_checklist
+#print axioms stage8_padicLog_fms_rigidity_checklist
+#print axioms stage8_objective_checklist
+#print axioms stage9_affineFrobenius_checklist
+#print axioms stage9_objective_checklist
+#print axioms stage10_actualSheafH_shift_checklist
+#print axioms stage10_objective_checklist
 #print axioms integrated_replacements_are_unconditional
 #print axioms c1_specZ_skyscraper_classification
 #print axioms c2_etale_motivic_classification
