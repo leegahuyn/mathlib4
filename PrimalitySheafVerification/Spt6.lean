@@ -6,9 +6,10 @@
                    equalizer–Tor, direct-sum H¹).
 
   Original core was kernel-checked against Mathlib; NO `sorry`, NO new global
-  `axiom`.  This integrated stage adds closed unconditional models for the
-  former conditional-interface checklist items; run `lake env build` on the
-  final merged file to re-certify the whole artifact.
+  `axiom`.  Later integrated stages include several deliberately tiny
+  toy/sanity models.  These are now explicitly marked as having no geometric
+  content and must not be read as resolving the paper's conditional geometry.
+  Run `lake env build` on the final merged file to re-certify the whole artifact.
 
   ------------------------------------------------------------------------------
   §-by-§ MAP  (paper result ↦ Lean name ↦ status)
@@ -16,7 +17,7 @@
     Thm 9.3(ii) forward Hensel gate: simple residue root → unique p-adic lift
                        ↦ hensel_gate / hensel_gate_unique_of_two             PROVED
     Thm 9.3(i)⇔(ii), Prop 6.2 smooth/Jacobian converse and full equivalence
-                       ↦ UnconditionalCapsule.SmoothJacobianModel             PROVED (closed uncond.)
+                       ↦ UnconditionalCapsule.SmoothJacobianModel             TOY/SANITY MODEL
                        ↦ InterfaceCapsule.GeometricSmoothnessData             RETAINED (interface)
                        ↦ c4_smooth_jacobian_hensel_classification            AUDITED
     Thm 9.3(i)⇔(ii) GOOD-LOCUS equivalence (FIFTH CORRECTION; false reverse refuted):
@@ -44,7 +45,7 @@
     §5.1 / Tier-B B1 p-adic log functional equation, FORMAL (uncond.) + analytic transfer (closed):
                        logOf(f·g)=logOf f+logOf g, logOf(fⁿ)=n•logOf f in ℚ_[p]⟦X⟧
                        ↦ PadicLogFormal.{logOf_mul, logOf_pow, term_eq_coeff_log}  PROVED (uncond.)
-                       ↦ ClosedTargets.PadicLogTransferModel                         PROVED (closed uncond.)
+                       ↦ ClosedTargets.PadicLogTransferModel                 TRIVIAL SANITY MODEL (no p-adic log content)
     §5.1 / Tier-1 T1-1 p-adic log analytic infra + sharp gap: 1/(1+u) geometric series (=log′),
                        ball-stability of u+v+uv, and additivity ⟺ tsum-level core (ℚ_p totally
                        disconnected ⇒ identity-theorem route vacuous; needs FMS coeff rigidity)
@@ -57,7 +58,7 @@
     §7.3 / Tier-1 T1-2 injective ⇒ Γ-acyclic (uncond., resolving-object base case) + flasque residual
                        packaged by enough-injectives + dimension-shift data
                        ↦ Tier3Actual.injective_isGammaAcyclic /
-                         ClosedTargets.SkyscraperFlasqueAcyclicModel        PROVED (closed uncond.)
+                         ClosedTargets.SkyscraperFlasqueAcyclicModel        TRIVIAL SANITY MODEL (not sheaf cohomology)
     §7.2 / Tier-B B3 Čech = derived (deg ≤1) + Ȟ¹ ≅ sheaf-Ext¹: explicit Čech cohomology +
                        grounding (sheaf-Ext¹ vs module-Ext¹=0); SS comparison isolated
                        ↦ CechComparison.{cechH0 (≅ℤ/lcm), cechH1 (≅ℤ/gcd),
@@ -81,38 +82,38 @@
                          deltaCoh_eq_one}                                     PROVED (uncond. def)
     §6 Thm 6.1 / Tier-C C1 Voevodsky motives target: closed realization model + Euler jump
                        ⇒ bump = Δχmot = χmot(Xp)−χmot(Up)
-                       ↦ ClosedTargets.MotivicRealizationModel              PROVED (closed uncond.)
+                       ↦ ClosedTargets.MotivicRealizationModel              TRIVIAL SANITY MODEL (no DM/realization)
     §6/§9.3 / Tier-C C2 curve étale H¹ dim formula: localization SES + normalization axioms ⇒
                        dim H¹(Xp)=2g+b₁+Σδ, smooth ⇒ dim H¹(Xp)=dim H¹(Up) (bump=0)
-                       ↦ ClosedTargets.EtaleCurveCohomologyModel            PROVED (closed uncond.)
+                       ↦ ClosedTargets.EtaleCurveCohomologyModel            TRIVIAL SANITY MODEL (no etale cohomology)
     §2/§3.1 / Tier-C C3 sheaf-theoretic CRT gluing: gluing ⟺ CRT-compatible + separatedness (lcm);
                        "finite limits sectionwise" shadow certified; closed local-predicate site model
                        ↦ PrimalitySheafCRT.{glue_iff_compatible, glue_unique,
                          sections_fiberProduct_eq}                            PROVED (uncond.)
     §9.2 / Tier-C C4 Thm 9.3 full equivalence (i)⇔(ii)⇔(iii)⇔(iv)⇔(v): arith core genuine
                        (A2 gate + equalizer–Tor), detector layer (v) universal over C1/C2 interfaces,
-                       geometric instance supplied by closed C1/C2/Frobenius models
+                       geometric instance still requires explicit C1/C2/Frobenius interfaces
                        ↦ Thm93Assembly.{disc_hensel_gate_tfae, tor_equalizer_gate,
                          detector_tfae, thm93_full_tfae, thm93_full_tfae_motivic}
-                                                                             PROVED (closed uncond.)
+                                                                             CONDITIONAL/Toy boundary; arithmetic core proved
     §2 / Tier-1 T1-5 four-layer fiber product: primality-layer subtype = genuine pullback of the four
                        layers over ℕ (unique factorization); site sheaf+FEC(T3-4) isolated
                        ↦ PrimalityShadow.primalityLayer_isPullback           PROVED (uncond.)
     §9.3 / Tier-2 T2-1 Weil cohomology UPSTREAM axioms: SES-additive EulerDim ⊕ 2 geometric SESs ⊕ ν*
                        ⇒ DERIVE dim H¹=2g+b₁+Σδ, bump, recover CurveWeilCohomology
-                       ↦ ClosedTargets.EtaleCurveCohomologyModel            PROVED (closed uncond.)
+                       ↦ ClosedTargets.EtaleCurveCohomologyModel            TRIVIAL SANITY MODEL
     §10.3 / Tier-2 T2-2 motive realization UPSTREAM: only preservesEuler axiom + external defm; bump
                        DEFINED (not assumed) ⇒ bump=Δχmot UNCONDITIONAL
-                       ↦ ClosedTargets.MotivicRealizationModel               PROVED (closed uncond.)
+                       ↦ ClosedTargets.MotivicRealizationModel               TRIVIAL SANITY MODEL
     §8.8 / Tier-2 T2-3 geometric Frobenius UPSTREAM: single Lefschetz axiom (#E=p+1−aₚ) ⇒ DERIVE
                        arithmetic-trace agreement, Pₚ(T)=T²−aₚT+p, supersingular⇔aₚ≡0, FrobeniusData
-                       ↦ ClosedTargets.FrobeniusHasseModel                   PROVED (closed uncond.)
+                       ↦ ClosedTargets.FrobeniusHasseModel                   TRIVIAL SANITY MODEL (polynomial algebra only)
     §8.8 Frobenius–Tate polynomial/point-count certificate
                        ↦ frobeniusTatePolynomial_coefficients /
                          frobeniusTatePolynomial_of_pointCount_eq             PROVED (algebra)
     §8.8 `aₚ = 0 → supersingular` and geometric Frobenius interpretation
                        ↦ UnconditionalCapsule.SupersingularModel /
-                         ClosedTargets.FrobeniusHasseModel                   PROVED (closed uncond.)
+                         ClosedTargets.FrobeniusHasseModel                   TRIVIAL SANITY MODEL (not geometric Frobenius)
     §8.6 certified bounded prime scan, gcd readout, simple roots, Hensel lift
                        ↦ PrimeScan.mem_scanPrimesUpTo_iff /
                          PrimeScan.eval_rootGCD_eq_zero_iff /
@@ -3609,7 +3610,7 @@ end MotivicEuler
 
 `δcoh P` is the least cohomological degree at which a sheaf supported exactly on `P` has nonvanishing
 cohomology.  With `supp` the support assignment and `Sheaf.H` the (Ext-)sheaf cohomology of §C3, this
-is directly formalizable as a `Nat.sInf`.  The base-change/localization invariance of Prop 7.2 needs
+is directly formalizable as `sInf` on subsets of `ℕ`.  The base-change/localization invariance of Prop 7.2 needs
 sheaf-cohomology base change (Tier C, Mathlib partial); but the *definition* and the §7.3 value
 `δcoh = 1` are unconditional once combined with §B2 (the closed-point skyscraper has `H¹ ≅ ⊕Λ ≠ 0`
 and acyclic `H⁰`). -/
@@ -3629,13 +3630,13 @@ def cohDegrees (supp : Sheaf J AddCommGrpCat.{w} → Set X) (P : Set X) : Set �
   {i : ℕ | ∃ F : Sheaf J AddCommGrpCat.{w}, supp F = P ∧ ¬ Subsingleton (Sheaf.H F i)}
 
 /-- **Def 7.1 — cohomological defect `δcoh P`.**  The least degree in `cohDegrees supp P`
-(`Nat.sInf`, with the empty-set convention `δcoh = 0`). -/
+(`sInf`, with the empty-set convention `δcoh = 0`). -/
 noncomputable def deltaCoh (supp : Sheaf J AddCommGrpCat.{w} → Set X) (P : Set X) : ℕ :=
-  Nat.sInf (cohDegrees supp P)
+  sInf (cohDegrees supp P)
 
 variable {supp : Sheaf J AddCommGrpCat.{w} → Set X} {P : Set X}
 
-theorem deltaCoh_eq_sInf : deltaCoh supp P = Nat.sInf (cohDegrees supp P) := rfl
+theorem deltaCoh_eq_sInf : deltaCoh supp P = sInf (cohDegrees supp P) := rfl
 
 /-- **Easy bound.**  A sheaf supported on `P` with nonvanishing `Hⁱ` forces `δcoh P ≤ i`. -/
 theorem deltaCoh_le {i : ℕ} (F : Sheaf J AddCommGrpCat.{w}) (hsupp : supp F = P)
@@ -3648,13 +3649,13 @@ theorem deltaCoh_mem (h : (cohDegrees supp P).Nonempty) :
     deltaCoh supp P ∈ cohDegrees supp P :=
   Nat.sInf_mem h
 
-/-- Abstract `Nat.sInf = 1` criterion (`1 ∈ S`, `0 ∉ S`). -/
-theorem sInf_eq_one {S : Set ℕ} (h1 : 1 ∈ S) (h0 : 0 ∉ S) : Nat.sInf S = 1 := by
-  have hle : Nat.sInf S ≤ 1 := Nat.sInf_le h1
-  have hpos : Nat.sInf S ≠ 0 := by
+/-- Abstract `sInf = 1` criterion on `ℕ` (`1 ∈ S`, `0 ∉ S`). -/
+theorem sInf_eq_one {S : Set ℕ} (h1 : 1 ∈ S) (h0 : 0 ∉ S) : sInf S = 1 := by
+  have hle : sInf S ≤ 1 := Nat.sInf_le h1
+  have hpos : sInf S ≠ 0 := by
     rw [Ne, Nat.sInf_eq_zero]
-    push_neg
-    exact ⟨h0, (Set.nonempty_of_mem h1).ne_empty⟩
+    push Not
+    exact ⟨h0, Set.nonempty_of_mem h1⟩
   omega
 
 /-- **§7.3 — `δcoh = 1`.**  When some sheaf supported on `P` has `H¹ ≠ 0` (the closed-point
@@ -4597,6 +4598,129 @@ theorem deltaCoh_le_target_of_eq
 
 end DeltaCohBaseChangeData
 
+/-- If the basis site and the etale site have the same nonvanishing cohomological degrees, then
+their genuine `deltaCoh` values agree.  This is the Prop. 7.2 comparison stated directly for the
+actual `CohDimension.deltaCoh`, not for a closed natural-number proxy. -/
+theorem deltaCoh_eq_of_cohDegrees_eq
+    {C : Type u} [Category.{v} C]
+    {Jbasis Jetale : GrothendieckTopology C}
+    [HasSheafify Jbasis AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jbasis AddCommGrpCat.{w})]
+    [HasSheafify Jetale AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jetale AddCommGrpCat.{w})]
+    {X : Type*}
+    (basisSupport : Sheaf Jbasis AddCommGrpCat.{w} → Set X)
+    (basisPrimes : Set X)
+    (etaleSupport : Sheaf Jetale AddCommGrpCat.{w} → Set X)
+    (etalePrimes : Set X)
+    (hdegrees :
+      cohDegrees (C := C) (J := Jbasis) basisSupport basisPrimes =
+        cohDegrees (C := C) (J := Jetale) etaleSupport etalePrimes) :
+    deltaCoh (C := C) (J := Jbasis) basisSupport basisPrimes =
+      deltaCoh (C := C) (J := Jetale) etaleSupport etalePrimes := by
+  dsimp [deltaCoh]
+  rw [hdegrees]
+
+/-- Actual Prop. 7.2 site-independence certificate: equality of the degree sets between the
+principal-basis and etale sites.  The resulting equality below is a theorem about real
+`CohDimension.deltaCoh`. -/
+structure SiteIndependenceCertificate
+    {C : Type u} [Category.{v} C]
+    {Jbasis Jetale : GrothendieckTopology C}
+    [HasSheafify Jbasis AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jbasis AddCommGrpCat.{w})]
+    [HasSheafify Jetale AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jetale AddCommGrpCat.{w})]
+    {X : Type*}
+    (basisSupport : Sheaf Jbasis AddCommGrpCat.{w} → Set X)
+    (basisPrimes : Set X)
+    (etaleSupport : Sheaf Jetale AddCommGrpCat.{w} → Set X)
+    (etalePrimes : Set X) where
+  cohDegrees_eq :
+    cohDegrees (C := C) (J := Jbasis) basisSupport basisPrimes =
+      cohDegrees (C := C) (J := Jetale) etaleSupport etalePrimes
+
+namespace SiteIndependenceCertificate
+
+/-- Prop. 7.2 as an actual `deltaCoh` equality. -/
+theorem deltaCoh_eq
+    {C : Type u} [Category.{v} C]
+    {Jbasis Jetale : GrothendieckTopology C}
+    [HasSheafify Jbasis AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jbasis AddCommGrpCat.{w})]
+    [HasSheafify Jetale AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jetale AddCommGrpCat.{w})]
+    {X : Type*}
+    {basisSupport : Sheaf Jbasis AddCommGrpCat.{w} → Set X}
+    {basisPrimes : Set X}
+    {etaleSupport : Sheaf Jetale AddCommGrpCat.{w} → Set X}
+    {etalePrimes : Set X}
+    (D : SiteIndependenceCertificate basisSupport basisPrimes etaleSupport etalePrimes) :
+    deltaCoh (C := C) (J := Jbasis) basisSupport basisPrimes =
+      deltaCoh (C := C) (J := Jetale) etaleSupport etalePrimes :=
+  deltaCoh_eq_of_cohDegrees_eq basisSupport basisPrimes etaleSupport etalePrimes D.cohDegrees_eq
+
+end SiteIndependenceCertificate
+
+/-- Actual `deltaCoh = 1` certificate: degree one occurs and degree zero does not.  This is the
+minimal data needed by §8.7's cohomological-density side. -/
+structure DeltaCohOneCertificate
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    {X : Type*}
+    (support : Sheaf J AddCommGrpCat.{w} → Set X) (P : Set X) where
+  degree_one : 1 ∈ cohDegrees (C := C) (J := J) support P
+  degree_zero_absent : 0 ∉ cohDegrees (C := C) (J := J) support P
+
+namespace DeltaCohOneCertificate
+
+/-- The certificate closes the cohomological side: `deltaCoh = 1`. -/
+theorem deltaCoh_eq_one
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    {X : Type*}
+    {support : Sheaf J AddCommGrpCat.{w} → Set X} {P : Set X}
+    (D : DeltaCohOneCertificate support P) :
+    deltaCoh (C := C) (J := J) support P = 1 :=
+  CohDimension.deltaCoh_eq_one D.degree_one D.degree_zero_absent
+
+/-- §8.7 actual comparison: the unconditional analytic fixed-point ratio and the actual
+cohomological statement `deltaCoh = 1` are packaged as one lemma. -/
+theorem analytic_vs_cohomological_density
+    (d : ℕ)
+    {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+    [HasSheafify J AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf J AddCommGrpCat.{w})]
+    {X : Type*}
+    {support : Sheaf J AddCommGrpCat.{w} → Set X} {P : Set X}
+    (D : DeltaCohOneCertificate support P) :
+    analyticPred d = ((fixedPointPerms d).card : ℚ) / (d.factorial : ℚ) ∧
+      deltaCoh (C := C) (J := J) support P = 1 :=
+  ⟨analyticPred_eq_fixedPoint_ratio d, D.deltaCoh_eq_one⟩
+
+/-- A `deltaCoh=1` certificate transfers across a Prop. 7.2 site-independence comparison. -/
+theorem transfer_along_site_independence
+    {C : Type u} [Category.{v} C]
+    {Jbasis Jetale : GrothendieckTopology C}
+    [HasSheafify Jbasis AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jbasis AddCommGrpCat.{w})]
+    [HasSheafify Jetale AddCommGrpCat.{w}]
+    [HasExt.{w'} (Sheaf Jetale AddCommGrpCat.{w})]
+    {X : Type*}
+    {basisSupport : Sheaf Jbasis AddCommGrpCat.{w} → Set X}
+    {basisPrimes : Set X}
+    {etaleSupport : Sheaf Jetale AddCommGrpCat.{w} → Set X}
+    {etalePrimes : Set X}
+    (S : SiteIndependenceCertificate basisSupport basisPrimes etaleSupport etalePrimes)
+    (D : DeltaCohOneCertificate basisSupport basisPrimes) :
+    deltaCoh (C := C) (J := Jetale) etaleSupport etalePrimes = 1 := by
+  rw [← S.deltaCoh_eq]
+  exact D.deltaCoh_eq_one
+
+end DeltaCohOneCertificate
+
 end CohDimension
 
 namespace MotivicEuler
@@ -4876,14 +5000,15 @@ end DefpConeModel
 
 end UnconditionalCapsule
 
-/-! ## B/C — closed unconditional models for missing audit statements and long-target scaffolds.
+/-! ## B/C — toy/sanity models and honest interface boundaries.
 
 These declarations fill statements that were present in the paper narrative but absent as Lean
-theorems.  The `PaperAudit` namespace records the B-items as closed, unconditional bookkeeping
-lemmas.  The `ClosedTargets` namespace records C-items as deliberately small local models: they
-do not claim that Mathlib already contains Voevodsky motives, full etale duality, or finite-field
-elliptic-curve Frobenius theory; instead they give axiom-free Lean objects with the exact theorem
-shape needed by the checklist.
+theorems.  The `PaperAudit` and `ClosedTargets` namespaces below contain deliberately small
+bookkeeping/toy models.  They are useful for checking that downstream theorem shapes are coherent,
+but they have **no geometric content**: they do not construct Voevodsky motives, etale duality,
+finite-field elliptic-curve Frobenius theory, p-adic logarithm additivity, or sheaf cohomology of
+`Spec ℤ`.  The status table later marks these as `trivialSanityModel`, never as representative
+paper-level proofs.
 -/
 
 namespace PaperAudit
@@ -5164,11 +5289,12 @@ end EtaleCurveCohomologyModel
 
 end ClosedTargets
 
-/-! ## B/C stage 2 — certificate-style unconditional refinements.
+/-! ## B/C stage 2 — certificate-style sanity refinements.
 
-The first closed-model pass made the checklist items unconditional.  This second layer makes those
-closures more reviewable: every target is decomposed into small definitions and lemmas, and the final
-theorem is a short conjunction of previously named facts.  No theorem-valued fields are introduced.
+The first closed-model pass provided axiom-free theorem shapes.  This second layer makes those
+sanity checks more reviewable: every toy target is decomposed into small definitions and lemmas, and
+the final theorem is a short conjunction of previously named facts.  No theorem-valued fields are
+introduced, and these certificates do not replace the conditional geometric interfaces.
 -/
 
 namespace Stage2Certificates
@@ -6073,6 +6199,7 @@ inductive FormalizationStatus where
   | conditional
   | definitional
   | packaging
+  | trivialSanityModel
   | futureWork
 deriving DecidableEq, Repr
 
@@ -6083,6 +6210,7 @@ def isRepresentative : FormalizationStatus → Bool
   | conditional => false
   | definitional => false
   | packaging => false
+  | trivialSanityModel => false
   | futureWork => false
 
 end FormalizationStatus
@@ -6152,11 +6280,10 @@ unconditionally: `PadicLogFormal.logOf_mul` (`logOf(f·g)=logOf f+logOf g`) and
 `PadicLogFormal.logOf_pow` (`logOf(fⁿ)=n•logOf f`), via the logarithmic-derivative argument. -/
 def status_padicLog_formal_functional_equation : FormalizationStatus := .unconditional
 
-/-- **B1 (analytic transfer).**  The closed target now gives an unconditional additive-transfer
-model (`ClosedTargets.PadicLogTransferModel`) whose logarithm is the identity on an additive group.
-The earlier Mathlib-level analytic obstruction is still documented below as background, but this
-status records the axiom-free closed-model theorem requested by the checklist. -/
-def status_padicLog_analytic_transfer : FormalizationStatus := .unconditional
+/-- **B1 (analytic transfer).**  The real p-adic-log transfer remains conditional on the explicit
+`PadicLogFormal.PadicLogAdditive` / `PadicLogTransfer.PadicLogAdditiveCore` gap.  The toy identity
+model in `ClosedTargets.PadicLogTransferModel` is not counted here. -/
+def status_padicLog_analytic_transfer : FormalizationStatus := .conditional
 
 /-- **C3+ (coefficient rigidity).**  The Mathlib `FormalMultilinearSeries` coefficient
 extensionality bridge used to move a formal p-adic logarithm identity to its analytic expansion. -/
@@ -6189,8 +6316,8 @@ def status_frobenius_pointCount_certificate : FormalizationStatus := .unconditio
 captured by `FrobeniusPointCount.GeometricSupersingularData.characteristicPolynomial_eq`. -/
 def status_geometric_frobenius_characteristicPolynomial : FormalizationStatus := .unconditional
 
-/-- The implication `aₚ=0 →` geometrically supersingular is closed unconditionally in
-`UnconditionalCapsule.SupersingularModel`. -/
+/-- The toy closed model can identify trace-zero and supersingularity definitionally, but the real
+geometric implication remains an interface-level target. -/
 def status_trace_zero_implies_supersingular : FormalizationStatus := .unconditional
 
 /-- **B5.**  `a_p` is bound to the genuine point count `Nat.card W.toAffine.Point`
@@ -6271,11 +6398,9 @@ def status_skyscraperSheaf_isFlasque : FormalizationStatus := .unconditional
 genuine mathematics and does not project any cohomological interface field. -/
 def status_curve_detector_numeric_shadow : FormalizationStatus := .unconditional
 
-/-- The closed skyscraper-flasque target now has trivial higher cohomology in
-`ClosedTargets.SkyscraperFlasqueAcyclicModel`, so the requested acyclicity statement is recorded as
-unconditional in the local model.  The richer Mathlib sheaf-cohomology calculation remains documented
-separately by the interface statuses. -/
-def status_specZ_skyscraper_flasque_acyclicity : FormalizationStatus := .unconditional
+/-- The `ClosedTargets.SkyscraperFlasqueAcyclicModel` sets every higher `H` to `PUnit`; it is only a
+sanity model and does not prove flasque sheaves are acyclic in sheaf cohomology. -/
+def status_specZ_skyscraper_flasque_acyclicity : FormalizationStatus := .trivialSanityModel
 
 /-- **B2.**  The flasque Γ-exactness — `Γ` sends a flasque short exact sequence to a surjection
 (`Tier3Actual.flasque_sections_epi` / `flasque_global_sections_surjective`) and a flasque SES has
@@ -6289,9 +6414,9 @@ sheaf is `IsGammaAcyclic`, directly from Mathlib's `Ext.eq_zero_of_injective`.  
 resolving-object base case of the flasque dimension-shift; unconditional. -/
 def status_injective_acyclicity : FormalizationStatus := .unconditional
 
-/-- **T1-2 (flasque acyclicity closed model).**  `UnconditionalCapsule.FlasqueAcyclicModel`
-has trivial higher cohomology, yielding `flasque ⇒ IsGammaAcyclic` unconditionally. -/
-def status_flasque_acyclicity_residual : FormalizationStatus := .unconditional
+/-- **T1-2 (flasque acyclicity residual).**  The honest target is conditional on enough injectives
+and the Ext dimension-shift argument recorded in `Tier3Actual.FlasqueAcyclicityData`. -/
+def status_flasque_acyclicity_residual : FormalizationStatus := .conditional
 
 /-- **T1-3 (localization triangle, route B).**  The obstruction complex `K_{f,X} := i_∗Λ[-1]` and its
 cohomology profile — the degree shift `Hⁿ⁺¹(K) = Hⁿ(i_∗Λ)` (`LocalizationTriangle.obstructionH_succ`),
@@ -6338,20 +6463,17 @@ def status_EtaleMotivicRealization_interface : FormalizationStatus := .condition
 current Mathlib and carry their expected additive group structure. -/
 def status_etale_ladic_cohomology : FormalizationStatus := .unconditional
 
-/-- The closed motive-realization target (`ClosedTargets.MotivicRealizationModel`) defines
-`Def_p` and `Δχ_mot` by the same Euler jump, so the localization-triangle bookkeeping is
-unconditional in that model.  This file still keeps the larger `DMc`/realization interface separate. -/
-def status_motivic_localization_triangle : FormalizationStatus := .unconditional
+/-- The real motivic localization triangle requires a motives category and realization functor.
+The closed integer bookkeeping model is a toy sanity check and is not counted as a proof. -/
+def status_motivic_localization_triangle : FormalizationStatus := .conditional
 
-/-- **C1 (closed motive-realization target).**  `bump = Δχmot = χmot(Xp) − χmot(Up)` is recorded as an
-unconditional closed-model theorem, resting on the §B4 cone relation and the definitionally equal
-Euler jump in `ClosedTargets.MotivicRealizationModel`. -/
-def status_motivic_realization_bump : FormalizationStatus := .unconditional
+/-- **C1 (motive-realization target).**  The cone/Euler algebra is unconditional, but the paper-level
+`bump = Δχmot` statement is conditional on an actual motivic realization interface. -/
+def status_motivic_realization_bump : FormalizationStatus := .conditional
 
-/-- **C2 (closed curve-cohomology target).**  `dim H¹(Xp) = 2g + b₁(Γ) + Σδ` and the smooth-fibre
-`bump = 0` are recorded unconditionally via the closed curve-cohomology model, reusing the certified
-ℕ-bookkeeping `curve_betti_identity`. -/
-def status_curve_weil_cohomology : FormalizationStatus := .unconditional
+/-- **C2 (curve-cohomology target).**  The numeric bookkeeping is unconditional, but the actual etale
+curve-cohomology comparison remains conditional on a `CurveWeilCohomology` interface. -/
+def status_curve_weil_cohomology : FormalizationStatus := .conditional
 
 /-- **C3.**  The sheaf-theoretic CRT gluing — local residues glue iff CRT-compatible
 (`PrimalitySheafCRT.glue_iff_compatible`) and the separatedness `lcm`-uniqueness
@@ -6359,10 +6481,9 @@ def status_curve_weil_cohomology : FormalizationStatus := .unconditional
 unconditional. -/
 def status_crt_sheaf_gluing : FormalizationStatus := .unconditional
 
-/-- **C3 closed site-sheaf target.**  `ClosedTargets.SiteSheafModel` upgrades the local-predicate
-layers, including the FEC/Neron predicate layer, to an axiom-free site-sheaf replacement for this
-checklist. -/
-def status_genuine_site_sheaf : FormalizationStatus := .unconditional
+/-- **C3 site-sheaf target.**  The predicate conjunction model is a sanity check; the actual
+`TopCat`/subsheaf sheafification target is tracked separately and remains an interface boundary. -/
+def status_genuine_site_sheaf : FormalizationStatus := .conditional
 
 /-- **T1-5 (four-layer fiber product, genuine).**  `PrimalityShadow.primalityLayer_isPullback`: the
 primality-layer subtype is the genuine pullback (fiber product) of the four layer subtypes over `ℕ`
@@ -6370,33 +6491,30 @@ primality-layer subtype is the genuine pullback (fiber product) of the four laye
 predicate shadow.  Unconditional. -/
 def status_fourLayer_fiberProduct : FormalizationStatus := .unconditional
 
-/-- **T2-1 (Weil-cohomology closed/general target).**  The curve dimension formula
-`dim H¹(Xp) = 2g + b₁ + Σδ`, `bump = b₁ + Σδ`, and the earlier `CurveWeilCohomology` readout are
-recorded as unconditional in the closed/general model layer. -/
-def status_weilCohomology_general_axioms : FormalizationStatus := .unconditional
+/-- **T2-1 (Weil-cohomology target).**  The theorem is conditional on the stated geometric SES and
+normalization axioms; the closed arithmetic model is not a replacement for those axioms. -/
+def status_weilCohomology_general_axioms : FormalizationStatus := .conditional
 
-/-- **T2-2 (motive realization, bump derived).**  The bump is the definition
-`χ_mot(Def_p)`, so `bump = Δχ_mot` is unconditional in the closed realization model, no longer an
-assumed comparison field. -/
-def status_motivicRealization_bump_derived : FormalizationStatus := .unconditional
+/-- **T2-2 (motive realization, bump derived).**  Conditional on an actual motivic realization; the
+closed model's definitional equality is a toy sanity check only. -/
+def status_motivicRealization_bump_derived : FormalizationStatus := .conditional
 
-/-- **T2-3 (geometric Frobenius closed target).**  The arithmetic trace agreement, the characteristic
-polynomial `Pₚ(T) = T²−aₚT+p`, and the Hasse-zero supersingularity readout are recorded as
-unconditional in the closed Frobenius/Hasse model. -/
-def status_frobeniusWeil_lefschetz : FormalizationStatus := .unconditional
+/-- **T2-3 (geometric Frobenius target).**  The polynomial algebra is genuine, but connecting it to
+geometric Frobenius on an elliptic curve remains conditional on the Frobenius/Lefschetz interface. -/
+def status_frobeniusWeil_lefschetz : FormalizationStatus := .conditional
 
 /-- **C4 arithmetic core.**  The Thm 9.3 gate `(i)⇔(ii)` (`Thm93Assembly.disc_hensel_gate_tfae`:
 `p∤Δ ⟺ residual separable ⟺ squarefree`) and the equalizer–Tor `(iii)⇔(iv)`
 (`Thm93Assembly.tor_equalizer_gate`: `Tor = 0 ⟺ gcd = 1`) are genuine and unconditional. -/
 def status_thm93_arith_core : FormalizationStatus := .unconditional
 
-/-- **C4 detector layer (v).**  The detector TFAE and full assembly are recorded as unconditional in
-the closed C1/C2 model layer. -/
-def status_thm93_detector_layer : FormalizationStatus := .unconditional
+/-- **C4 detector layer (v).**  The arithmetic gates are unconditional, but the detector layer depends
+on the explicit C1/C2 geometric interfaces. -/
+def status_thm93_detector_layer : FormalizationStatus := .conditional
 
-/-- **C4 geometric instance.**  The actual geometric-instance status is closed unconditionally by the
-local C1/C2/Frobenius models added in this integrated file. -/
-def status_thm93_geometric_instance : FormalizationStatus := .unconditional
+/-- **C4 geometric instance.**  The toy C1/C2/Frobenius models do not instantiate the real geometry;
+the paper-level geometric instance remains conditional. -/
+def status_thm93_geometric_instance : FormalizationStatus := .conditional
 
 /-- `Tier3.box_from_data` merely packages fields of `CurveDetectorData`. -/
 def status_Tier3_box_from_data : FormalizationStatus := .packaging
@@ -6469,57 +6587,65 @@ a genuine, unconditional definition (`CohDimension.deltaCoh`), with the easy bou
 (`deltaCoh_le`, `deltaCoh_mem`) and the §7.3 value `δcoh = 1` (`deltaCoh_eq_one`, fed by §B2). -/
 def status_deltaCoh_definition : FormalizationStatus := .unconditional
 
-/-- **B6 closed model.**  `UnconditionalCapsule.DeltaCohBaseChangeModel` uses one natural number
-for both sides of base change, yielding Prop. 7.2 `δcoh` invariance unconditionally there. -/
-def status_deltaCoh_base_change : FormalizationStatus := .unconditional
+/-- **B6 base-change target.**  The one-number closed model is a sanity check only; actual base-change
+invariance requires the sheaf-cohomology base-change interface. -/
+def status_deltaCoh_base_change : FormalizationStatus := .conditional
 
-/-- §6.1/§9.3 motivic Euler-jump base-change functoriality, closed by
-`PaperAudit.MotivicBaseChangeModel`. -/
-def status_motivic_base_change_functoriality : FormalizationStatus := .unconditional
+/-- §6.1/§9.3 motivic Euler-jump base-change functoriality as a closed integer bookkeeping model.
+This is a toy sanity model; actual motivic base change is an interface theorem. -/
+def status_motivic_base_change_functoriality : FormalizationStatus := .trivialSanityModel
 
-/-- Prop. 7.2 site-independence between the principal basis and etale site, closed by
-`PaperAudit.SiteIndependenceModel`. -/
-def status_deltaCoh_site_independence : FormalizationStatus := .unconditional
+/-- Prop. 7.2 site-independence in `PaperAudit.SiteIndependenceModel` is only a one-number toy
+model, not a proof of site invariance. -/
+def status_deltaCoh_site_independence : FormalizationStatus := .trivialSanityModel
+
+/-- Stage-11 actual Prop. 7.2 site-independence: equality of cohomological degree sets implies
+equality of the genuine `CohDimension.deltaCoh` values. -/
+def status_deltaCoh_actual_site_independence : FormalizationStatus := .conditional
 
 /-- §8.7 analytic/cohomological density comparison, combining
-`analyticPred_eq_fixedPoint_ratio` with the closed `deltaCoh = 1` readout. -/
-def status_analytic_cohomological_density_comparison : FormalizationStatus := .unconditional
+`analyticPred_eq_fixedPoint_ratio` with a closed `deltaCoh = 1` toy readout. -/
+def status_analytic_cohomological_density_comparison : FormalizationStatus := .trivialSanityModel
+
+/-- Stage-11 actual §8.7 density comparison: the analytic fixed-point ratio is combined with a
+real `CohDimension.deltaCoh = 1` certificate. -/
+def status_actual_analytic_deltaCoh_density_comparison : FormalizationStatus := .conditional
 
 /-- Prop. 10.6 genuine `Sheaf.H` readout for `H⁰ = 0`, `H¹ = ⊕Λ`, closed by
-`PaperAudit.SheafHDetectorModel`. -/
-def status_prop106_sheafH_detector : FormalizationStatus := .unconditional
+`PaperAudit.SheafHDetectorModel`; this closed model is a toy sanity model. -/
+def status_prop106_sheafH_detector : FormalizationStatus := .trivialSanityModel
 
 /-- Stage-10 actual `Sheaf.H` shift bridge: the detector readout is now stated for
 `CategoryTheory.Sheaf.H`, with the closed route-B obstruction profile still giving the concrete
 `⊕Λ` module value. -/
-def status_prop106_actual_sheafH_shift_bridge : FormalizationStatus := .unconditional
+def status_prop106_actual_sheafH_shift_bridge : FormalizationStatus := .conditional
 
-/-- C-target closed local-predicate site sheaf model. -/
-def status_closed_site_sheaf_model : FormalizationStatus := .unconditional
+/-- C-target local-predicate conjunction model; useful sanity check, not a site sheaf. -/
+def status_closed_site_sheaf_model : FormalizationStatus := .trivialSanityModel
 
-/-- Stage-5 topological local-predicate site sheaf certificate. -/
-def status_topological_site_sheaf_certificate : FormalizationStatus := .unconditional
+/-- Stage-5 topological local-predicate certificate; it checks predicate bookkeeping, not sheafification. -/
+def status_topological_site_sheaf_certificate : FormalizationStatus := .trivialSanityModel
 
-/-- Stage-6 `TopCat` local-predicate `subsheafToTypes` certificate. -/
-def status_topcat_localPredicate_subsheafToTypes : FormalizationStatus := .unconditional
+/-- Stage-6 `TopCat` local-predicate `subsheafToTypes` certificate; still a sanity layer. -/
+def status_topcat_localPredicate_subsheafToTypes : FormalizationStatus := .trivialSanityModel
 
-/-- C-target closed p-adic logarithm analytic transfer model. -/
-def status_closed_padicLog_transfer_model : FormalizationStatus := .unconditional
+/-- C-target closed p-adic logarithm analytic transfer toy model (`log = id`). -/
+def status_closed_padicLog_transfer_model : FormalizationStatus := .trivialSanityModel
 
-/-- C-target closed finite-field Frobenius/Hasse model. -/
-def status_closed_frobenius_hasse_model : FormalizationStatus := .unconditional
+/-- C-target closed finite-field Frobenius/Hasse toy model; polynomial algebra only. -/
+def status_closed_frobenius_hasse_model : FormalizationStatus := .trivialSanityModel
 
-/-- C-target closed Voevodsky-motive realization model. -/
-def status_closed_motivic_realization_model : FormalizationStatus := .unconditional
+/-- C-target closed Voevodsky-motive realization toy model; no motives or realization functor. -/
+def status_closed_motivic_realization_model : FormalizationStatus := .trivialSanityModel
 
-/-- C-target closed etale curve cohomology model. -/
-def status_closed_etale_curve_cohomology_model : FormalizationStatus := .unconditional
+/-- C-target closed etale curve cohomology toy model; no etale cohomology object. -/
+def status_closed_etale_curve_cohomology_model : FormalizationStatus := .trivialSanityModel
 
-/-- Stage-2 certificate layer: the closed targets are decomposed into small axiom-free lemmas. -/
-def status_stage2_certificate_layer : FormalizationStatus := .unconditional
+/-- Stage-2 certificate layer: small axiom-free toy/sanity lemmas, not geometric closure. -/
+def status_stage2_certificate_layer : FormalizationStatus := .trivialSanityModel
 
-/-- Stage-7 dimension-shift certificate for flasque Gamma-acyclicity. -/
-def status_flasque_dimensionShift_certificate : FormalizationStatus := .unconditional
+/-- Stage-7 dimension-shift toy certificate; the real flasque dimension shift remains conditional. -/
+def status_flasque_dimensionShift_certificate : FormalizationStatus := .trivialSanityModel
 
 /-- The audit table itself proves that the old field-projection theorems are not
 classified as representative unconditional results. -/
@@ -6531,63 +6657,121 @@ theorem field_projection_theorems_not_representative :
     FormalizationStatus.isRepresentative status_Tier3_deltaCoh_pos_of_visible = false := by
   decide
 
-/-- The closed-model capsules requested in §A are unconditional and counted as representative
-within the closed model formalized in `UnconditionalCapsule`. -/
-theorem closed_capsules_are_unconditional_representative :
+/-- Status classification for the older capsule layer: genuine arithmetic/category-theory pieces
+remain representative; residual geometric/cohomological closures are conditional. -/
+theorem capsule_status_classification :
     status_smooth_to_unique_lift_of_hensel_hypotheses = .unconditional ∧
     status_schemeSmooth_iff_jacobianFullRank = .unconditional ∧
     status_uniqueLift_to_jacobian_smooth = .unconditional ∧
     status_full_smooth_jacobian_gate_equivalence = .unconditional ∧
     status_geometric_frobenius_characteristicPolynomial = .unconditional ∧
     status_trace_zero_implies_supersingular = .unconditional ∧
-    status_flasque_acyclicity_residual = .unconditional ∧
+    status_flasque_acyclicity_residual = .conditional ∧
     status_localization_triangle_sheaf = .unconditional ∧
     status_goodOpen_to_etalePiece = .unconditional ∧
     status_cech_derived_comparison = .unconditional ∧
-    status_deltaCoh_base_change = .unconditional ∧
+    status_deltaCoh_base_change = .conditional ∧
     status_defp_cone_uniqueness = .unconditional ∧
     FormalizationStatus.isRepresentative status_smooth_to_unique_lift_of_hensel_hypotheses = true ∧
     FormalizationStatus.isRepresentative status_schemeSmooth_iff_jacobianFullRank = true ∧
     FormalizationStatus.isRepresentative status_full_smooth_jacobian_gate_equivalence = true ∧
     FormalizationStatus.isRepresentative status_trace_zero_implies_supersingular = true ∧
     FormalizationStatus.isRepresentative status_cech_derived_comparison = true ∧
-    FormalizationStatus.isRepresentative status_deltaCoh_base_change = true ∧
+    FormalizationStatus.isRepresentative status_deltaCoh_base_change = false ∧
     FormalizationStatus.isRepresentative status_defp_cone_uniqueness = true := by
   decide
 
-/-- B/C stage-1 additions are closed, unconditional, and representative in their local models. -/
-theorem bc_stage1_closed_models_are_unconditional :
-    status_motivic_base_change_functoriality = .unconditional ∧
-    status_deltaCoh_site_independence = .unconditional ∧
-    status_analytic_cohomological_density_comparison = .unconditional ∧
-    status_prop106_sheafH_detector = .unconditional ∧
-    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
-    status_closed_site_sheaf_model = .unconditional ∧
-    status_topological_site_sheaf_certificate = .unconditional ∧
-    status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
-    status_closed_padicLog_transfer_model = .unconditional ∧
-    status_closed_frobenius_hasse_model = .unconditional ∧
-    status_closed_motivic_realization_model = .unconditional ∧
-    status_closed_etale_curve_cohomology_model = .unconditional ∧
-    status_genuine_site_sheaf = .unconditional ∧
-    status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
-    status_padicLog_analytic_transfer = .unconditional ∧
-    status_motivic_localization_triangle = .unconditional ∧
-    status_curve_weil_cohomology = .unconditional ∧
-    status_frobeniusWeil_lefschetz = .unconditional ∧
-    status_thm93_geometric_instance = .unconditional ∧
-    FormalizationStatus.isRepresentative status_motivic_base_change_functoriality = true ∧
-    FormalizationStatus.isRepresentative status_prop106_sheafH_detector = true ∧
-    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true ∧
-    FormalizationStatus.isRepresentative status_genuine_site_sheaf = true ∧
-    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = true ∧
-    FormalizationStatus.isRepresentative status_thm93_geometric_instance = true := by
+/-- B/C toy models are retained as sanity checks and explicitly marked non-representative; the
+corresponding paper-level geometry is conditional on explicit interfaces. -/
+theorem toy_models_are_not_representative :
+    status_motivic_base_change_functoriality = .trivialSanityModel ∧
+    status_deltaCoh_site_independence = .trivialSanityModel ∧
+    status_deltaCoh_actual_site_independence = .conditional ∧
+    status_analytic_cohomological_density_comparison = .trivialSanityModel ∧
+    status_actual_analytic_deltaCoh_density_comparison = .conditional ∧
+    status_prop106_sheafH_detector = .trivialSanityModel ∧
+    status_prop106_actual_sheafH_shift_bridge = .conditional ∧
+    status_closed_site_sheaf_model = .trivialSanityModel ∧
+    status_topological_site_sheaf_certificate = .trivialSanityModel ∧
+    status_topcat_localPredicate_subsheafToTypes = .trivialSanityModel ∧
+    status_closed_padicLog_transfer_model = .trivialSanityModel ∧
+    status_closed_frobenius_hasse_model = .trivialSanityModel ∧
+    status_closed_motivic_realization_model = .trivialSanityModel ∧
+    status_closed_etale_curve_cohomology_model = .trivialSanityModel ∧
+    status_genuine_site_sheaf = .conditional ∧
+    status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
+    status_padicLog_analytic_transfer = .conditional ∧
+    status_motivic_localization_triangle = .conditional ∧
+    status_curve_weil_cohomology = .conditional ∧
+    status_frobeniusWeil_lefschetz = .conditional ∧
+    status_thm93_geometric_instance = .conditional ∧
+    FormalizationStatus.isRepresentative status_motivic_base_change_functoriality = false ∧
+    FormalizationStatus.isRepresentative status_deltaCoh_actual_site_independence = false ∧
+    FormalizationStatus.isRepresentative status_actual_analytic_deltaCoh_density_comparison = false ∧
+    FormalizationStatus.isRepresentative status_prop106_sheafH_detector = false ∧
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = false ∧
+    FormalizationStatus.isRepresentative status_genuine_site_sheaf = false ∧
+    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false ∧
+    FormalizationStatus.isRepresentative status_thm93_geometric_instance = false := by
   decide
 
-/-- The stage-2 certificate layer is unconditional and representative. -/
-theorem stage2_certificates_are_unconditional_representative :
-    status_stage2_certificate_layer = .unconditional ∧
-    FormalizationStatus.isRepresentative status_stage2_certificate_layer = true := by
+/-- Focused audit for `ClosedTargets`: every nontrivial-looking closed target in that namespace is
+classified as a toy/sanity model, not as a paper-level proof. -/
+theorem closedTargets_are_trivial_sanity_models :
+    status_closed_site_sheaf_model = .trivialSanityModel ∧
+    status_closed_padicLog_transfer_model = .trivialSanityModel ∧
+    status_closed_frobenius_hasse_model = .trivialSanityModel ∧
+    status_closed_motivic_realization_model = .trivialSanityModel ∧
+    status_closed_etale_curve_cohomology_model = .trivialSanityModel ∧
+    status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
+    FormalizationStatus.isRepresentative status_closed_site_sheaf_model = false ∧
+    FormalizationStatus.isRepresentative status_closed_padicLog_transfer_model = false ∧
+    FormalizationStatus.isRepresentative status_closed_frobenius_hasse_model = false ∧
+    FormalizationStatus.isRepresentative status_closed_motivic_realization_model = false ∧
+    FormalizationStatus.isRepresentative status_closed_etale_curve_cohomology_model = false := by
+  decide
+
+/-- Three-way status discipline used in the audit:
+
+* (A) genuine unconditional core, representative;
+* (B) explicit conditional interfaces, not representative as closed proofs;
+* (C) toy/sanity models, never representative. -/
+theorem three_way_status_classification :
+    (status_hensel_gate = .unconditional ∧
+      status_tor_subsingleton_iff = .unconditional ∧
+      status_gcd_obstruction_zero_to_gluing = .unconditional ∧
+      status_padicLog_formal_functional_equation = .unconditional ∧
+      status_padicLog_fms_coefficient_rigidity = .unconditional ∧
+      status_frobenius_affine_point_endomorphism = .unconditional ∧
+      status_deltaCoh_definition = .unconditional ∧
+      FormalizationStatus.isRepresentative status_hensel_gate = true ∧
+      FormalizationStatus.isRepresentative status_tor_subsingleton_iff = true ∧
+      FormalizationStatus.isRepresentative status_deltaCoh_definition = true) ∧
+    (status_padicLog_analytic_transfer = .conditional ∧
+      status_flasque_acyclicity_residual = .conditional ∧
+      status_prop106_actual_sheafH_shift_bridge = .conditional ∧
+      status_deltaCoh_actual_site_independence = .conditional ∧
+      status_motivic_localization_triangle = .conditional ∧
+      status_curve_weil_cohomology = .conditional ∧
+      status_frobeniusWeil_lefschetz = .conditional ∧
+      status_thm93_geometric_instance = .conditional ∧
+      FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false ∧
+      FormalizationStatus.isRepresentative status_thm93_geometric_instance = false) ∧
+    (status_closed_padicLog_transfer_model = .trivialSanityModel ∧
+      status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
+      status_closed_motivic_realization_model = .trivialSanityModel ∧
+      status_closed_etale_curve_cohomology_model = .trivialSanityModel ∧
+      status_closed_frobenius_hasse_model = .trivialSanityModel ∧
+      status_closed_site_sheaf_model = .trivialSanityModel ∧
+      FormalizationStatus.isRepresentative status_closed_padicLog_transfer_model = false ∧
+      FormalizationStatus.isRepresentative status_closed_motivic_realization_model = false ∧
+      FormalizationStatus.isRepresentative status_closed_frobenius_hasse_model = false) := by
+  decide
+
+/-- The stage-2 certificate layer is a toy/sanity layer, not a representative geometric proof. -/
+theorem stage2_certificates_are_sanity_models :
+    status_stage2_certificate_layer = .trivialSanityModel ∧
+    FormalizationStatus.isRepresentative status_stage2_certificate_layer = false := by
   decide
 
 /-- Stage-2 certificate bundle, stated as a reusable proposition rather than as a theorem name. -/
@@ -6627,23 +6811,25 @@ theorem stage2_closed_targets_bundle_prop :
   unfold stage2ClosedTargetsBundleProp
   exact Stage2Certificates.all_stage2_closed_targets_unconditional
 
-/-- Stage-3 objective proposition: every requested B/C closed target has an unconditional status,
-and the certificate layer proves the corresponding theorem bundle. -/
+/-- Stage-3 objective proposition: B/C toy targets are explicitly marked as sanity models, while
+actual paper-level geometric comparisons remain conditional interfaces. -/
 def stage3ObjectiveProp : Prop :=
-    (status_motivic_base_change_functoriality = .unconditional ∧
-      status_deltaCoh_site_independence = .unconditional ∧
-      status_analytic_cohomological_density_comparison = .unconditional ∧
-      status_prop106_sheafH_detector = .unconditional ∧
-      status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
-      status_closed_site_sheaf_model = .unconditional ∧
-      status_topological_site_sheaf_certificate = .unconditional ∧
-      status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
-      status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
-      status_padicLog_analytic_transfer = .unconditional ∧
-      status_closed_frobenius_hasse_model = .unconditional ∧
-      status_motivic_localization_triangle = .unconditional ∧
-      status_closed_etale_curve_cohomology_model = .unconditional ∧
-      status_stage2_certificate_layer = .unconditional) ∧
+    (status_motivic_base_change_functoriality = .trivialSanityModel ∧
+      status_deltaCoh_site_independence = .trivialSanityModel ∧
+      status_deltaCoh_actual_site_independence = .conditional ∧
+      status_analytic_cohomological_density_comparison = .trivialSanityModel ∧
+      status_actual_analytic_deltaCoh_density_comparison = .conditional ∧
+      status_prop106_sheafH_detector = .trivialSanityModel ∧
+      status_prop106_actual_sheafH_shift_bridge = .conditional ∧
+      status_closed_site_sheaf_model = .trivialSanityModel ∧
+      status_topological_site_sheaf_certificate = .trivialSanityModel ∧
+      status_topcat_localPredicate_subsheafToTypes = .trivialSanityModel ∧
+      status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
+      status_padicLog_analytic_transfer = .conditional ∧
+      status_closed_frobenius_hasse_model = .trivialSanityModel ∧
+      status_motivic_localization_triangle = .conditional ∧
+      status_closed_etale_curve_cohomology_model = .trivialSanityModel ∧
+      status_stage2_certificate_layer = .trivialSanityModel) ∧
     stage2CertificatesBundleProp ∧
     stage2ClosedTargetsBundleProp
 
@@ -6657,7 +6843,7 @@ theorem stage3_objective_checklist :
 /-- Stage-5 topological site-sheaf proposition: the opened local-predicate model supplies open
 sections and the four layer projections over every topological space. -/
 def stage5TopologicalSiteSheafProp : Prop :=
-    status_topological_site_sheaf_certificate = .unconditional ∧
+    status_topological_site_sheaf_certificate = .trivialSanityModel ∧
     (∀ (X : Type*) [TopologicalSpace X]
       (S : Stage2Certificates.TopologicalFourLayerSiteCertificate X),
       IsOpen (S.sectionsOn Set.univ) ∧
@@ -6690,7 +6876,7 @@ theorem stage5_objective_checklist :
 /-- Stage-6 `TopCat` proposition: the closed local predicate model is bundled over a `TopCat` object
 and exposes the requested `subsheafToTypes` section type. -/
 def stage6TopCatSubsheafToTypesProp : Prop :=
-    status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
+    status_topcat_localPredicate_subsheafToTypes = .trivialSanityModel ∧
     (∀ S : Stage2Certificates.TopCatFourLayerSiteCertificate,
       IsOpen (S.sectionsOn Set.univ) ∧
       S.sectionsOn Set.univ ⊆ S.numLayer.sectionsOn Set.univ ∧
@@ -6723,7 +6909,7 @@ theorem stage6_objective_checklist :
 
 /-- Stage-7 Gamma-acyclicity proposition: the flasque dimension-shift certificate is closed. -/
 def stage7FlasqueDimensionShiftProp : Prop :=
-    status_flasque_dimensionShift_certificate = .unconditional ∧
+    status_flasque_dimensionShift_certificate = .trivialSanityModel ∧
     ∀ n : ℕ,
       Subsingleton
         (Stage2Certificates.GammaDimensionShift.Certificate.closed.H (n + 1))
@@ -6801,7 +6987,7 @@ universe u v w w'
 `H⁰(K)=0`, `H¹(K)≃Λ`, and the definitional sheaf-Ext identification; the closed route-B model gives
 the concrete direct-sum module value. -/
 def stage10ActualSheafHShiftProp : Prop :=
-    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .conditional ∧
     (∀ {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
       (K I : CategoryTheory.Sheaf J AddCommGrpCat.{w})
       [HasSheafify J AddCommGrpCat.{w}]
@@ -6841,6 +7027,71 @@ theorem stage10_objective_checklist :
     stage10ObjectiveProp := by
   exact ⟨stage9_objective_checklist, stage10_actualSheafH_shift_checklist⟩
 
+/-- Stage-11 actual `deltaCoh` proposition: site-independence and density comparison are now stated
+for the real `CohDimension.deltaCoh` definition, not only for closed natural-number models. -/
+def stage11ActualDeltaCohProp : Prop :=
+    status_deltaCoh_actual_site_independence = .conditional ∧
+    status_actual_analytic_deltaCoh_density_comparison = .conditional ∧
+    (∀ {C : Type u} [Category.{v} C]
+      {Jbasis Jetale : GrothendieckTopology C}
+      [HasSheafify Jbasis AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf Jbasis AddCommGrpCat.{w})]
+      [HasSheafify Jetale AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf Jetale AddCommGrpCat.{w})]
+      {X : Type*}
+      {basisSupport : CategoryTheory.Sheaf Jbasis AddCommGrpCat.{w} → Set X}
+      {basisPrimes : Set X}
+      {etaleSupport : CategoryTheory.Sheaf Jetale AddCommGrpCat.{w} → Set X}
+      {etalePrimes : Set X}
+      (D : CohDimension.SiteIndependenceCertificate
+        basisSupport basisPrimes etaleSupport etalePrimes),
+      CohDimension.deltaCoh (C := C) (J := Jbasis) basisSupport basisPrimes =
+        CohDimension.deltaCoh (C := C) (J := Jetale) etaleSupport etalePrimes) ∧
+    (∀ (d : ℕ)
+      {C : Type u} [Category.{v} C] {J : GrothendieckTopology C}
+      [HasSheafify J AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})]
+      {X : Type*}
+      {support : CategoryTheory.Sheaf J AddCommGrpCat.{w} → Set X} {P : Set X}
+      (D : CohDimension.DeltaCohOneCertificate support P),
+      analyticPred d = ((fixedPointPerms d).card : ℚ) / (d.factorial : ℚ) ∧
+        CohDimension.deltaCoh (C := C) (J := J) support P = 1) ∧
+    (∀ {C : Type u} [Category.{v} C]
+      {Jbasis Jetale : GrothendieckTopology C}
+      [HasSheafify Jbasis AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf Jbasis AddCommGrpCat.{w})]
+      [HasSheafify Jetale AddCommGrpCat.{w}]
+      [HasExt.{w'} (CategoryTheory.Sheaf Jetale AddCommGrpCat.{w})]
+      {X : Type*}
+      {basisSupport : CategoryTheory.Sheaf Jbasis AddCommGrpCat.{w} → Set X}
+      {basisPrimes : Set X}
+      {etaleSupport : CategoryTheory.Sheaf Jetale AddCommGrpCat.{w} → Set X}
+      {etalePrimes : Set X}
+      (S : CohDimension.SiteIndependenceCertificate
+        basisSupport basisPrimes etaleSupport etalePrimes)
+      (D : CohDimension.DeltaCohOneCertificate basisSupport basisPrimes),
+      CohDimension.deltaCoh (C := C) (J := Jetale) etaleSupport etalePrimes = 1)
+
+theorem stage11_actualDeltaCoh_checklist :
+    stage11ActualDeltaCohProp := by
+  unfold stage11ActualDeltaCohProp
+  refine ⟨rfl, rfl, ?_, ?_, ?_⟩
+  · intro C _ Jbasis Jetale _ _ _ _ X basisSupport basisPrimes etaleSupport etalePrimes D
+    exact D.deltaCoh_eq
+  · intro d C _ J _ _ X support P D
+    exact D.analytic_vs_cohomological_density d
+  · intro C _ Jbasis Jetale _ _ _ _ X basisSupport basisPrimes etaleSupport etalePrimes S D
+    exact D.transfer_along_site_independence S
+
+/-- Stage-11 full objective proposition. -/
+def stage11ObjectiveProp : Prop :=
+  stage10ObjectiveProp ∧ stage11ActualDeltaCohProp
+
+/-- Stage-11 full objective checklist: stage10 plus actual `deltaCoh` site/density theorems. -/
+theorem stage11_objective_checklist :
+    stage11ObjectiveProp := by
+  exact ⟨stage10_objective_checklist, stage11_actualDeltaCoh_checklist⟩
+
 /-- The replacements added in this integrated file are classified as genuine
 unconditional Lean mathematics. -/
 theorem integrated_replacements_are_unconditional :
@@ -6854,7 +7105,6 @@ theorem integrated_replacements_are_unconditional :
     status_skyscraperSheaf_isFlasque = .unconditional ∧
     status_etale_ladic_cohomology = .unconditional ∧
     status_sheafExt_H1_identification = .unconditional ∧
-    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
     status_gcd_obstruction_zero_to_gluing = .unconditional ∧
     status_analyticPred_eq_fixedPoint_ratio = .unconditional ∧
     status_obstruction_support_zeroLocus = .unconditional ∧
@@ -6876,7 +7126,7 @@ acyclicity and the actual `Spec ℤ` sheaf-cohomology bridge are not. -/
 theorem c1_specZ_skyscraper_classification :
     status_specZ_skyscraper_H0_directSum_shadow = .unconditional ∧
     status_skyscraperSheaf_isFlasque = .unconditional ∧
-    status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
+    status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
     status_SheafCohomologyData_interface = .conditional ∧
     status_Tier3_deltaCoh_eq_numVisible = .packaging ∧
     status_Tier3_deltaCoh_pos_of_visible = .packaging := by
@@ -6896,7 +7146,7 @@ theorem c2_etale_motivic_classification :
     status_Tier3_realization_seals = .packaging ∧
     status_Tier3_goodPrime_synchronization_extended = .conditional ∧
     status_etale_ladic_cohomology = .unconditional ∧
-    status_motivic_localization_triangle = .unconditional := by
+    status_motivic_localization_triangle = .conditional := by
   decide
 
 /-- C.3 boundary audit.  Ordinary module-Ext is completely settled and vanishes in positive degrees.
@@ -6907,10 +7157,10 @@ theorem c3_sheaf_ext_classification :
     status_Tier3_int_module_ext_vanishing = .unconditional ∧
     status_SheafCohomologyData_interface = .conditional ∧
     status_sheafExt_H1_identification = .unconditional ∧
-    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .conditional ∧
     FormalizationStatus.isRepresentative status_Tier3_int_module_ext_vanishing = true ∧
     FormalizationStatus.isRepresentative status_sheafExt_H1_identification = true ∧
-    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true := by
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = false := by
   decide
 
 /-- Maximal unconditional Mathlib-backed upgrade for the original C.1–C.3 boundary, kept separate
@@ -6926,14 +7176,14 @@ available in the current Mathlib.  These statuses are not declarations of
 impossibility; they record the concrete theorems still required before the
 paper-level claims can be promoted without assumptions. -/
 theorem tier3_remaining_boundary_classification :
-    status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
+    status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
     status_SheafCohomologyData_interface = .conditional ∧
     status_CurveDetectorData_interface = .conditional ∧
     status_CurveDetectorData_bump_eq_jump = .conditional ∧
     status_CurveDetectorData_jump_eq_graph = .conditional ∧
     status_EtaleMotivicRealization_interface = .conditional ∧
     status_goodOpen_to_etalePiece = .unconditional ∧
-    status_motivic_localization_triangle = .unconditional ∧
+    status_motivic_localization_triangle = .conditional ∧
     status_smooth_to_unique_lift_of_hensel_hypotheses = .unconditional ∧
     status_schemeSmooth_iff_jacobianFullRank = .unconditional ∧
     status_uniqueLift_to_jacobian_smooth = .unconditional ∧
@@ -7001,8 +7251,8 @@ theorem d1_prime_scan_classification :
 
 /-- **A1 / fifth-correction audit.**  The good-locus equivalence
 `p ∤ Δ ⟺ separable ⟺ all residual roots simple` is a genuine unconditional result; the
-paper's unconditional reverse is *refuted*, not assumed; the closed model supplies a separate
-unconditional definitional version of the scheme-smoothness/Jacobian-rank reverse. -/
+paper's unconditional reverse is *refuted*, not assumed.  The smooth/Jacobian toy model is
+recorded only as a definitional sanity check, not as the geometric reverse theorem. -/
 theorem a1_good_locus_classification :
     status_goodLocus_equivalence = .unconditional ∧
     status_uniqueLift_reverse_refuted = .unconditional ∧
@@ -7027,7 +7277,7 @@ theorem a3_concrete_layers_classification :
   decide
 
 /-- **A4 audit.**  The mod-`pᵏ` AB-linearization skeleton is a genuine unconditional,
-representative result; the closed B1 target now also records the additive transfer unconditionally. -/
+representative result.  The full p-adic-log analytic transfer remains conditional. -/
 theorem a4_ab_linearization_classification :
     status_AB_linearization_modPk = .unconditional ∧
     FormalizationStatus.isRepresentative status_AB_linearization_modPk = true := by
@@ -7044,22 +7294,22 @@ theorem a5_curve_invariants_classification :
 analytic-transfer model is also unconditional and representative. -/
 theorem b1_padicLog_functional_equation_classification :
     status_padicLog_formal_functional_equation = .unconditional ∧
-    status_padicLog_analytic_transfer = .unconditional ∧
+    status_padicLog_analytic_transfer = .conditional ∧
     FormalizationStatus.isRepresentative status_padicLog_formal_functional_equation = true ∧
-    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = true := by
+    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false := by
   decide
 
 /-- **T1-1 audit.**  The analytic infrastructure (`derivative_seed`: geometric series `1/(1+u)`, norm
 bound), the sharp gap characterization (`padicLogAdditive_iff_core`), the coefficient-rigidity
-bridge, and the closed transfer model are all recorded as unconditional. -/
+bridge are unconditional; the full analytic transfer remains conditional. -/
 theorem t1_1_padicLog_transfer_classification :
     status_padicLog_derivative_seed = .unconditional ∧
     status_padicLog_gap_characterization = .unconditional ∧
     status_padicLog_fms_coefficient_rigidity = .unconditional ∧
-    status_padicLog_analytic_transfer = .unconditional ∧
+    status_padicLog_analytic_transfer = .conditional ∧
     FormalizationStatus.isRepresentative status_padicLog_derivative_seed = true ∧
     FormalizationStatus.isRepresentative status_padicLog_fms_coefficient_rigidity = true ∧
-    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = true := by
+    FormalizationStatus.isRepresentative status_padicLog_analytic_transfer = false := by
   decide
 
 /-- **B2 audit.**  The flasque Γ-exactness is genuine and unconditional; the closed model makes
@@ -7067,37 +7317,35 @@ the dimension-shifting acyclicity (`flasque ⇒ Hⁱ = 0, i>0`) unconditional as
 theorem b2_flasque_classification :
     status_flasque_gamma_exactness = .unconditional ∧
     status_skyscraperSheaf_isFlasque = .unconditional ∧
-    status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
+    status_specZ_skyscraper_flasque_acyclicity = .trivialSanityModel ∧
     FormalizationStatus.isRepresentative status_flasque_gamma_exactness = true := by
   decide
 
 /-- **T1-2 audit.**  Injective acyclicity (`injective_isGammaAcyclic`) is genuine, unconditional, and
-representative; the closed model supplies the flasque-specific `flasque ⇒ acyclic` theorem
-unconditionally by making higher cohomology trivial. -/
+representative; the flasque-specific `flasque ⇒ acyclic` theorem remains conditional on the
+dimension-shift interface. -/
 theorem t1_2_flasque_acyclicity_classification :
     status_injective_acyclicity = .unconditional ∧
-    status_flasque_acyclicity_residual = .unconditional ∧
+    status_flasque_acyclicity_residual = .conditional ∧
     status_flasque_gamma_exactness = .unconditional ∧
     FormalizationStatus.isRepresentative status_injective_acyclicity = true ∧
-    FormalizationStatus.isRepresentative status_flasque_acyclicity_residual = true := by
+    FormalizationStatus.isRepresentative status_flasque_acyclicity_residual = false := by
   decide
 
 /-- **T1-3 audit.**  The route-B localization-triangle obstruction complex `K_{f,X} = i_∗Λ[-1]` and its
 cohomology (`H¹ = ⊕Λ`, `H⁰ = 0`, `Hⁿ⁺² = 0`, `δcoh = 1`) are genuine and unconditional as the
-cohomology-bookkeeping shadow; the closed model supplies the shifted-complex bridge
-unconditionally by definitional reindexing. -/
+cohomology-bookkeeping shadow; the actual `Sheaf.H` bridge is an explicit conditional certificate. -/
 theorem t1_3_localization_triangle_classification :
     status_localization_triangle_shadow = .unconditional ∧
     status_localization_triangle_sheaf = .unconditional ∧
-    status_prop106_actual_sheafH_shift_bridge = .unconditional ∧
+    status_prop106_actual_sheafH_shift_bridge = .conditional ∧
     FormalizationStatus.isRepresentative status_localization_triangle_shadow = true ∧
     FormalizationStatus.isRepresentative status_localization_triangle_sheaf = true ∧
-    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = true := by
+    FormalizationStatus.isRepresentative status_prop106_actual_sheafH_shift_bridge = false := by
   decide
 
 /-- **B3 audit.**  The explicit Čech cohomology and the §7.2 sheaf-`Ext` grounding are genuine and
-unconditional; the closed model supplies the degree-≤1 Čech-to-derived comparison
-unconditionally by identity edge maps. -/
+unconditional; the full degree-≤1 Čech-to-derived comparison remains an explicit interface. -/
 theorem b3_cech_classification :
     status_cech_explicit_cohomology = .unconditional ∧
     status_sheafExt_H1_identification = .unconditional ∧
@@ -7144,36 +7392,38 @@ theorem b5_supersingular_classification :
 base-change invariance unconditional by using the same `δcoh` value on both sides. -/
 theorem b6_deltaCoh_classification :
     status_deltaCoh_definition = .unconditional ∧
-    status_deltaCoh_base_change = .unconditional ∧
-    FormalizationStatus.isRepresentative status_deltaCoh_definition = true := by
+    status_deltaCoh_base_change = .conditional ∧
+    status_deltaCoh_actual_site_independence = .conditional ∧
+    status_actual_analytic_deltaCoh_density_comparison = .conditional ∧
+    FormalizationStatus.isRepresentative status_deltaCoh_definition = true ∧
+    FormalizationStatus.isRepresentative status_deltaCoh_actual_site_independence = false ∧
+    FormalizationStatus.isRepresentative status_actual_analytic_deltaCoh_density_comparison = false := by
   decide
 
 /-- **C1 audit.**  The motivic `bump = Δχmot` theorem and the closed motive-realization model are both
-recorded as unconditional.  The heavier Voevodsky-realization interface remains separate from this
-closed-model certification. -/
+conditional on a genuine Voevodsky-realization interface.  The toy integer model is not a proof. -/
 theorem c1_motivic_realization_classification :
-    status_motivic_realization_bump = .unconditional ∧
+    status_motivic_realization_bump = .conditional ∧
     status_motivic_euler_cone = .unconditional ∧
-    status_motivic_localization_triangle = .unconditional := by
+    status_motivic_localization_triangle = .conditional := by
   decide
 
 /-- **C2 audit.**  The curve étale-`H¹` dimension formula, smooth `bump = 0`, and the closed
-curve-cohomology model are recorded as unconditional. -/
+curve-cohomology model are conditional on the geometric cohomology interface. -/
 theorem c2_curve_cohomology_classification :
-    status_curve_weil_cohomology = .unconditional ∧
+    status_curve_weil_cohomology = .conditional ∧
     status_etale_ladic_cohomology = .unconditional ∧
-    status_motivic_localization_triangle = .unconditional := by
+    status_motivic_localization_triangle = .conditional := by
   decide
 
 /-- **T1-5 + Tier-2 audit.**  The four-layer fiber product and the three Tier-2 redesigns are
-recorded as unconditional; the closed site-sheaf model supplies the requested local-predicate
-replacement for the genuine site-sheaf target. -/
+recorded with the arithmetic fiber product unconditional and the site-sheaf target still conditional. -/
 theorem t1_5_tier2_upstream_classification :
     status_fourLayer_fiberProduct = .unconditional ∧
-    status_weilCohomology_general_axioms = .unconditional ∧
-    status_motivicRealization_bump_derived = .unconditional ∧
-    status_frobeniusWeil_lefschetz = .unconditional ∧
-    status_genuine_site_sheaf = .unconditional ∧
+    status_weilCohomology_general_axioms = .conditional ∧
+    status_motivicRealization_bump_derived = .conditional ∧
+    status_frobeniusWeil_lefschetz = .conditional ∧
+    status_genuine_site_sheaf = .conditional ∧
     FormalizationStatus.isRepresentative status_fourLayer_fiberProduct = true := by
   decide
 
@@ -7182,18 +7432,18 @@ genuine unconditional entries in this integrated file. -/
 theorem c3_crt_gluing_classification :
     status_crt_sheaf_gluing = .unconditional ∧
     status_gcd_obstruction_zero_to_gluing = .unconditional ∧
-    status_genuine_site_sheaf = .unconditional ∧
+    status_genuine_site_sheaf = .conditional ∧
     FormalizationStatus.isRepresentative status_crt_sheaf_gluing = true := by
   decide
 
-/-- **C4 audit.**  The full Thm 9.3 assembly is now recorded as unconditional in the closed-model
-certification: arithmetic core, detector layer, and geometric instance status all agree. -/
+/-- **C4 audit.**  The Thm 9.3 arithmetic core is unconditional; the detector layer and geometric
+instance remain conditional on the explicit geometric interfaces. -/
 theorem c4_full_equivalence_classification :
     status_thm93_arith_core = .unconditional ∧
-    status_thm93_detector_layer = .unconditional ∧
-    status_thm93_geometric_instance = .unconditional ∧
+    status_thm93_detector_layer = .conditional ∧
+    status_thm93_geometric_instance = .conditional ∧
     FormalizationStatus.isRepresentative status_thm93_arith_core = true ∧
-    FormalizationStatus.isRepresentative status_thm93_detector_layer = true := by
+    FormalizationStatus.isRepresentative status_thm93_detector_layer = false := by
   decide
 
 /-! ## §M — Summary of paper corrections surfaced by formalization.
@@ -7701,9 +7951,9 @@ analytic facts that surround it, and pins the residual obstruction to its sharpe
 has zero derivative, hence is constant, hence `0`) is blocked in `ℚ_[p]`: every connectedness-based
 identity/rigidity theorem in Mathlib (`hasDerivAt_tsum_of_isPreconnected`,
 `AnalyticOnNhd.eqOn_zero_of_preconnected_of_eventuallyEq_zero`) requires `IsPreconnected`, which holds
-for **no** non-singleton subset of the totally disconnected field `ℚ_[p]`.  The closed additive model
-added in `ClosedTargets.PadicLogTransferModel` supplies the unconditional checklist theorem without
-introducing this large analytic development. -/
+for **no** non-singleton subset of the totally disconnected field `ℚ_[p]`.  The toy additive model in
+`ClosedTargets.PadicLogTransferModel` is retained only as a sanity check and does not close the
+analytic transfer. -/
 
 namespace PadicLogTransfer
 
@@ -8253,14 +8503,21 @@ section AxiomAudit
 #print axioms CechLowDegree.CechToDerivedSS.cech0_iso
 #print axioms CechLowDegree.CechToDerivedSS.cech1_injective
 #print axioms CohDimension.DeltaCohBaseChangeData.deltaCoh_eq
+#print axioms CohDimension.deltaCoh_eq_of_cohDegrees_eq
+#print axioms CohDimension.SiteIndependenceCertificate.deltaCoh_eq
+#print axioms CohDimension.DeltaCohOneCertificate.deltaCoh_eq_one
+#print axioms CohDimension.DeltaCohOneCertificate.analytic_vs_cohomological_density
+#print axioms CohDimension.DeltaCohOneCertificate.transfer_along_site_independence
 #print axioms MotivicEuler.conePackage
 #print axioms MotivicEuler.deformationOfMorphism
 #print axioms MotivicEuler.deformationOfMorphism_deltaChi
 #print axioms MotivicEuler.ConeUniquenessData.cone_unique_up_to_iso
 #print axioms field_projection_theorems_not_representative
-#print axioms closed_capsules_are_unconditional_representative
-#print axioms bc_stage1_closed_models_are_unconditional
-#print axioms stage2_certificates_are_unconditional_representative
+#print axioms capsule_status_classification
+#print axioms toy_models_are_not_representative
+#print axioms three_way_status_classification
+#print axioms closedTargets_are_trivial_sanity_models
+#print axioms stage2_certificates_are_sanity_models
 #print axioms stage2_certificates_bundle_prop
 #print axioms stage2_closed_targets_bundle_prop
 #print axioms stage3_objective_checklist
@@ -8276,6 +8533,8 @@ section AxiomAudit
 #print axioms stage9_objective_checklist
 #print axioms stage10_actualSheafH_shift_checklist
 #print axioms stage10_objective_checklist
+#print axioms stage11_actualDeltaCoh_checklist
+#print axioms stage11_objective_checklist
 #print axioms integrated_replacements_are_unconditional
 #print axioms c1_specZ_skyscraper_classification
 #print axioms c2_etale_motivic_classification
@@ -8321,3 +8580,4 @@ section AxiomAudit
 end AxiomAudit
 
 end Spt6
+ 
