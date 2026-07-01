@@ -2896,4 +2896,3 @@ section AxiomAudit
 #print axioms Spt2.GeometricWorkarounds.NormalizationReal.h1_decomposition
 #print axioms Spt2.GeometricWorkarounds.DualGraphReal.b1_eq_zero_iff_isForest
 end AxiomAudit
-
