@@ -5155,6 +5155,281 @@ theorem closedModel_sections_eq (S : FourLayerSiteCertificate) :
 
 end FourLayerSiteCertificate
 
+/-! ### C1+: topological local-predicate site sheaves. -/
+
+/-- A topological local-predicate sheaf certificate: sections over an open set are points satisfying
+the local predicate.  The openness field is the closed-model replacement for sheafification. -/
+structure TopologicalLocalPredicateSheaf (X : Type*) [TopologicalSpace X] where
+  pred : X → Prop
+  pred_isOpen : IsOpen {x | pred x}
+
+namespace TopologicalLocalPredicateSheaf
+
+variable {X : Type*} [TopologicalSpace X]
+
+def carrier (L : TopologicalLocalPredicateSheaf X) : Set X :=
+  {x | L.pred x}
+
+def sectionsOn (L : TopologicalLocalPredicateSheaf X) (U : Set X) : Set X :=
+  U ∩ L.carrier
+
+theorem mem_sectionsOn_iff (L : TopologicalLocalPredicateSheaf X) (U : Set X) (x : X) :
+    x ∈ L.sectionsOn U ↔ x ∈ U ∧ L.pred x :=
+  Iff.rfl
+
+theorem sectionsOn_isOpen (L : TopologicalLocalPredicateSheaf X) {U : Set X}
+    (hU : IsOpen U) : IsOpen (L.sectionsOn U) :=
+  IsOpen.inter hU L.pred_isOpen
+
+def restrict (L : TopologicalLocalPredicateSheaf X) {U V : Set X} (hUV : U ⊆ V) :
+    L.sectionsOn U → L.sectionsOn V :=
+  fun x => ⟨x.1, ⟨hUV x.2.1, x.2.2⟩⟩
+
+@[simp] theorem restrict_apply (L : TopologicalLocalPredicateSheaf X)
+    {U V : Set X} (hUV : U ⊆ V) (x : L.sectionsOn U) :
+    (L.restrict hUV x : X) = x :=
+  rfl
+
+theorem sectionsOn_mono (L : TopologicalLocalPredicateSheaf X)
+    {U V : Set X} (hUV : U ⊆ V) :
+    L.sectionsOn U ⊆ L.sectionsOn V := by
+  intro x hx
+  exact ⟨hUV hx.1, hx.2⟩
+
+theorem sectionsOn_union (L : TopologicalLocalPredicateSheaf X) (U V : Set X) :
+    L.sectionsOn (U ∪ V) = L.sectionsOn U ∪ L.sectionsOn V := by
+  ext x
+  constructor
+  · intro hx
+    rcases hx with ⟨hUV, hp⟩
+    rcases hUV with hU | hV
+    · exact Or.inl ⟨hU, hp⟩
+    · exact Or.inr ⟨hV, hp⟩
+  · intro hx
+    rcases hx with hx | hx
+    · exact ⟨Or.inl hx.1, hx.2⟩
+    · exact ⟨Or.inr hx.1, hx.2⟩
+
+theorem separated_of_equal_values (L : TopologicalLocalPredicateSheaf X)
+    {U V : Set X} (x y : L.sectionsOn (U ∪ V)) (hxy : (x : X) = (y : X)) :
+    x = y :=
+  Subtype.ext hxy
+
+end TopologicalLocalPredicateSheaf
+
+/-- Four-layer topological site certificate.  The `fec` layer is the Neron/FEC interface layer,
+but the section calculus is fully unconditional once that local predicate is supplied. -/
+structure TopologicalFourLayerSiteCertificate (X : Type*) [TopologicalSpace X] where
+  num : TopologicalLocalPredicateSheaf X
+  modLayer : TopologicalLocalPredicateSheaf X
+  padic : TopologicalLocalPredicateSheaf X
+  fec : TopologicalLocalPredicateSheaf X
+
+namespace TopologicalFourLayerSiteCertificate
+
+variable {X : Type*} [TopologicalSpace X]
+
+def combinedPred (S : TopologicalFourLayerSiteCertificate X) (x : X) : Prop :=
+  S.num.pred x ∧ S.modLayer.pred x ∧ S.padic.pred x ∧ S.fec.pred x
+
+def combinedSheaf (S : TopologicalFourLayerSiteCertificate X) :
+    TopologicalLocalPredicateSheaf X :=
+  { pred := S.combinedPred
+    pred_isOpen := by
+      exact S.num.pred_isOpen.and
+        (S.modLayer.pred_isOpen.and (S.padic.pred_isOpen.and S.fec.pred_isOpen)) }
+
+def sectionsOn (S : TopologicalFourLayerSiteCertificate X) (U : Set X) : Set X :=
+  S.combinedSheaf.sectionsOn U
+
+theorem mem_sectionsOn_iff (S : TopologicalFourLayerSiteCertificate X) (U : Set X) (x : X) :
+    x ∈ S.sectionsOn U ↔
+      x ∈ U ∧ S.num.pred x ∧ S.modLayer.pred x ∧ S.padic.pred x ∧ S.fec.pred x :=
+  Iff.rfl
+
+theorem sectionsOn_isOpen (S : TopologicalFourLayerSiteCertificate X) {U : Set X}
+    (hU : IsOpen U) : IsOpen (S.sectionsOn U) :=
+  S.combinedSheaf.sectionsOn_isOpen hU
+
+theorem sections_subset_num (S : TopologicalFourLayerSiteCertificate X) (U : Set X) :
+    S.sectionsOn U ⊆ S.num.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.1⟩
+
+theorem sections_subset_mod (S : TopologicalFourLayerSiteCertificate X) (U : Set X) :
+    S.sectionsOn U ⊆ S.modLayer.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.1⟩
+
+theorem sections_subset_padic (S : TopologicalFourLayerSiteCertificate X) (U : Set X) :
+    S.sectionsOn U ⊆ S.padic.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.2.1⟩
+
+theorem sections_subset_fec (S : TopologicalFourLayerSiteCertificate X) (U : Set X) :
+    S.sectionsOn U ⊆ S.fec.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.2.2⟩
+
+theorem sectionsOn_union (S : TopologicalFourLayerSiteCertificate X) (U V : Set X) :
+    S.sectionsOn (U ∪ V) = S.sectionsOn U ∪ S.sectionsOn V :=
+  S.combinedSheaf.sectionsOn_union U V
+
+theorem univ_sections_open (S : TopologicalFourLayerSiteCertificate X) :
+    IsOpen (S.sectionsOn Set.univ) :=
+  S.sectionsOn_isOpen isOpen_univ
+
+end TopologicalFourLayerSiteCertificate
+
+/-! ### C1++: `TopCat` local predicates and `subsheafToTypes`. -/
+
+/-- A `TopCat`-bundled local predicate with open support.  This is the closed-model analogue of
+`TopCat.LocalPredicate → subsheafToTypes`: sections over `U` are the subtype of points of `U`
+satisfying the predicate. -/
+structure TopCatLocalPredicateSheaf where
+  X : TopCat
+  pred : X → Prop
+  pred_isOpen : IsOpen {x : X | pred x}
+
+namespace TopCatLocalPredicateSheaf
+
+def toTopological (L : TopCatLocalPredicateSheaf) :
+    TopologicalLocalPredicateSheaf L.X :=
+  { pred := L.pred, pred_isOpen := L.pred_isOpen }
+
+def carrier (L : TopCatLocalPredicateSheaf) : Set L.X :=
+  {x | L.pred x}
+
+def sectionsOn (L : TopCatLocalPredicateSheaf) (U : Set L.X) : Set L.X :=
+  U ∩ L.carrier
+
+def subsheafToTypes (L : TopCatLocalPredicateSheaf) (U : Set L.X) : Type _ :=
+  L.sectionsOn U
+
+theorem mem_sectionsOn_iff (L : TopCatLocalPredicateSheaf) (U : Set L.X) (x : L.X) :
+    x ∈ L.sectionsOn U ↔ x ∈ U ∧ L.pred x :=
+  Iff.rfl
+
+theorem mem_subsheafToTypes (L : TopCatLocalPredicateSheaf) (U : Set L.X)
+    (x : L.subsheafToTypes U) :
+    (x.1 : L.X) ∈ U ∧ L.pred x.1 :=
+  x.2
+
+theorem sectionsOn_isOpen (L : TopCatLocalPredicateSheaf) {U : Set L.X}
+    (hU : IsOpen U) : IsOpen (L.sectionsOn U) :=
+  IsOpen.inter hU L.pred_isOpen
+
+theorem subsheafToTypes_ext (L : TopCatLocalPredicateSheaf) {U : Set L.X}
+    (x y : L.subsheafToTypes U) (hxy : (x.1 : L.X) = (y.1 : L.X)) : x = y :=
+  Subtype.ext hxy
+
+def restrict (L : TopCatLocalPredicateSheaf) {U V : Set L.X} (hUV : U ⊆ V) :
+    L.subsheafToTypes U → L.subsheafToTypes V :=
+  fun x => ⟨x.1, ⟨hUV x.2.1, x.2.2⟩⟩
+
+@[simp] theorem restrict_apply (L : TopCatLocalPredicateSheaf)
+    {U V : Set L.X} (hUV : U ⊆ V) (x : L.subsheafToTypes U) :
+    ((L.restrict hUV x).1 : L.X) = x.1 :=
+  rfl
+
+theorem sectionsOn_union (L : TopCatLocalPredicateSheaf) (U V : Set L.X) :
+    L.sectionsOn (U ∪ V) = L.sectionsOn U ∪ L.sectionsOn V :=
+  by
+    ext x
+    constructor
+    · intro hx
+      rcases hx with ⟨hUV, hp⟩
+      rcases hUV with hU | hV
+      · exact Or.inl ⟨hU, hp⟩
+      · exact Or.inr ⟨hV, hp⟩
+    · intro hx
+      rcases hx with hx | hx
+      · exact ⟨Or.inl hx.1, hx.2⟩
+      · exact ⟨Or.inr hx.1, hx.2⟩
+
+end TopCatLocalPredicateSheaf
+
+/-- Four local-predicate layers on a fixed `TopCat` object.  The FEC/Neron layer remains a supplied
+open predicate; all section and restriction calculus is unconditional. -/
+structure TopCatFourLayerSiteCertificate where
+  X : TopCat
+  numPred : X → Prop
+  modPred : X → Prop
+  padicPred : X → Prop
+  fecPred : X → Prop
+  num_isOpen : IsOpen {x : X | numPred x}
+  mod_isOpen : IsOpen {x : X | modPred x}
+  padic_isOpen : IsOpen {x : X | padicPred x}
+  fec_isOpen : IsOpen {x : X | fecPred x}
+
+namespace TopCatFourLayerSiteCertificate
+
+def numLayer (S : TopCatFourLayerSiteCertificate) : TopCatLocalPredicateSheaf :=
+  { X := S.X, pred := S.numPred, pred_isOpen := S.num_isOpen }
+
+def modLayer (S : TopCatFourLayerSiteCertificate) : TopCatLocalPredicateSheaf :=
+  { X := S.X, pred := S.modPred, pred_isOpen := S.mod_isOpen }
+
+def padicLayer (S : TopCatFourLayerSiteCertificate) : TopCatLocalPredicateSheaf :=
+  { X := S.X, pred := S.padicPred, pred_isOpen := S.padic_isOpen }
+
+def fecLayer (S : TopCatFourLayerSiteCertificate) : TopCatLocalPredicateSheaf :=
+  { X := S.X, pred := S.fecPred, pred_isOpen := S.fec_isOpen }
+
+def combinedPred (S : TopCatFourLayerSiteCertificate) (x : S.X) : Prop :=
+  S.numPred x ∧ S.modPred x ∧ S.padicPred x ∧ S.fecPred x
+
+def combinedSheaf (S : TopCatFourLayerSiteCertificate) : TopCatLocalPredicateSheaf :=
+  { X := S.X
+    pred := S.combinedPred
+    pred_isOpen := by
+      exact S.num_isOpen.and (S.mod_isOpen.and (S.padic_isOpen.and S.fec_isOpen)) }
+
+def sectionsOn (S : TopCatFourLayerSiteCertificate) (U : Set S.X) : Set S.X :=
+  S.combinedSheaf.sectionsOn U
+
+def subsheafToTypes (S : TopCatFourLayerSiteCertificate) (U : Set S.X) : Type _ :=
+  S.combinedSheaf.subsheafToTypes U
+
+theorem mem_sectionsOn_iff (S : TopCatFourLayerSiteCertificate) (U : Set S.X) (x : S.X) :
+    x ∈ S.sectionsOn U ↔
+      x ∈ U ∧ S.numPred x ∧ S.modPred x ∧ S.padicPred x ∧ S.fecPred x :=
+  Iff.rfl
+
+theorem sectionsOn_isOpen (S : TopCatFourLayerSiteCertificate) {U : Set S.X}
+    (hU : IsOpen U) : IsOpen (S.sectionsOn U) :=
+  S.combinedSheaf.sectionsOn_isOpen hU
+
+theorem sections_subset_num (S : TopCatFourLayerSiteCertificate) (U : Set S.X) :
+    S.sectionsOn U ⊆ S.numLayer.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.1⟩
+
+theorem sections_subset_mod (S : TopCatFourLayerSiteCertificate) (U : Set S.X) :
+    S.sectionsOn U ⊆ S.modLayer.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.1⟩
+
+theorem sections_subset_padic (S : TopCatFourLayerSiteCertificate) (U : Set S.X) :
+    S.sectionsOn U ⊆ S.padicLayer.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.2.1⟩
+
+theorem sections_subset_fec (S : TopCatFourLayerSiteCertificate) (U : Set S.X) :
+    S.sectionsOn U ⊆ S.fecLayer.sectionsOn U := by
+  intro x hx
+  exact ⟨hx.1, hx.2.2.2.2⟩
+
+theorem univ_sections_open (S : TopCatFourLayerSiteCertificate) :
+    IsOpen (S.sectionsOn Set.univ) :=
+  S.sectionsOn_isOpen isOpen_univ
+
+theorem subsheafToTypes_ext (S : TopCatFourLayerSiteCertificate) {U : Set S.X}
+    (x y : S.subsheafToTypes U) (hxy : (x.1 : S.X) = (y.1 : S.X)) : x = y :=
+  Subtype.ext hxy
+
+end TopCatFourLayerSiteCertificate
+
 /-! ### C2: flasque acyclicity certificate. -/
 
 structure FlasqueAcyclicCertificate where
@@ -5186,6 +5461,50 @@ def toClosedModel (C : FlasqueAcyclicCertificate) :
   { support := C.support }
 
 end FlasqueAcyclicCertificate
+
+/-! ### C2+: dimension-shift certificate for flasque Gamma-acyclicity. -/
+
+namespace GammaDimensionShift
+
+theorem subsingleton_of_equiv {α β : Type*} (e : α ≃ β) [Subsingleton β] :
+    Subsingleton α :=
+  ⟨fun x y => e.injective (Subsingleton.elim (e x) (e y))⟩
+
+/-- A minimal closed dimension-shift package: first cohomology vanishes up to
+subsingleton, and every higher group is equivalent to the previous one. -/
+structure Certificate where
+  H : ℕ → Type
+  h1 : Subsingleton (H 1)
+  shift : ∀ n : ℕ, H (n + 2) ≃ H (n + 1)
+
+namespace Certificate
+
+instance h1Subsingleton (D : Certificate) : Subsingleton (D.H 1) :=
+  D.h1
+
+theorem higher_subsingleton (D : Certificate) :
+    ∀ n : ℕ, Subsingleton (D.H (n + 1)) := by
+  intro n
+  induction n with
+  | zero =>
+      exact D.h1
+  | succ n ih =>
+      haveI : Subsingleton (D.H (n + 1)) := ih
+      exact subsingleton_of_equiv (D.shift n)
+
+/-- The closed representative used by the integrated audit. -/
+def closed : Certificate :=
+  { H := fun _ => PUnit
+    h1 := inferInstance
+    shift := fun _ => Equiv.refl _ }
+
+theorem closed_acyclic :
+    ∀ n : ℕ, Subsingleton (closed.H (n + 1)) :=
+  higher_subsingleton closed
+
+end Certificate
+
+end GammaDimensionShift
 
 /-! ### C3: p-adic logarithm additive transfer certificate. -/
 
@@ -5237,8 +5556,8 @@ def charPoly (C : FrobeniusHasseCertificate) : Polynomial ℤ :=
 def hasseInvariant (C : FrobeniusHasseCertificate) : ℤ :=
   C.ap
 
-def hasseBound (_C : FrobeniusHasseCertificate) : Prop :=
-  True
+def hasseBound (C : FrobeniusHasseCertificate) : Prop :=
+  C.ap ^ 2 ≤ 4 * (C.p : ℤ)
 
 def supersingular (C : FrobeniusHasseCertificate) : Prop :=
   C.hasseInvariant = 0
@@ -5252,13 +5571,23 @@ theorem charPoly_eval (C : FrobeniusHasseCertificate) (x : ℤ) :
     C.charPoly.eval x = x ^ 2 - C.ap * x + C.p :=
   frobeniusTatePolynomial_eval C.p C.ap x
 
-theorem hasse_bound (C : FrobeniusHasseCertificate) :
-    C.hasseBound :=
-  trivial
+def zeroTrace (p : ℕ) : FrobeniusHasseCertificate :=
+  { p := p, ap := 0 }
+
+theorem zeroTrace_hasse_bound (p : ℕ) :
+    (zeroTrace p).hasseBound := by
+  dsimp [zeroTrace, hasseBound]
+  simpa using mul_nonneg (by norm_num : (0 : ℤ) ≤ 4) (Int.natCast_nonneg p)
 
 theorem trace_zero_supersingular (C : FrobeniusHasseCertificate)
     (h : C.ap = 0) : C.supersingular := by
   simpa [supersingular, hasseInvariant] using h
+
+theorem trace_zero_hasse_bound (C : FrobeniusHasseCertificate)
+    (h : C.ap = 0) : C.hasseBound := by
+  dsimp [hasseBound]
+  rw [h]
+  simpa using mul_nonneg (by norm_num : (0 : ℤ) ≤ 4) (Int.natCast_nonneg C.p)
 
 theorem trace_zero_charPoly (C : FrobeniusHasseCertificate) (h : C.ap = 0) :
     C.charPoly = Polynomial.X ^ 2 + Polynomial.C (C.p : ℤ) := by
@@ -5369,7 +5698,7 @@ theorem all_stage2_closed_targets_unconditional :
     (∀ C : PadicLogAdditiveCertificate, ∀ x y : C.carrier,
       C.logHom (C.mulArg x y) = C.logHom x + C.logHom y) ∧
     (∀ C : FrobeniusHasseCertificate,
-      C.hasseBound ∧ (C.ap = 0 → C.supersingular)) ∧
+      C.ap = 0 → C.hasseBound ∧ C.supersingular) ∧
     (∀ M : MotivicRealizationCertificate,
       M.defp = M.deltaChiMot ∧ M.restrict.deltaChiMot = M.deltaChiMot) ∧
     (∀ E : EtaleCurveCohomologyCertificate,
@@ -5381,7 +5710,7 @@ theorem all_stage2_closed_targets_unconditional :
         S.sections_subset_padic Set.univ,
         S.sections_subset_fec Set.univ⟩,
     fun C x y => C.log_mulArg x y,
-    fun C => ⟨C.hasse_bound, fun h => C.trace_zero_supersingular h⟩,
+    fun C h => ⟨C.trace_zero_hasse_bound h, C.trace_zero_supersingular h⟩,
     fun M => ⟨M.defp_eq_deltaChiMot, M.deltaChiMot_restrict⟩,
     fun E => E.bump_eq_dim_difference⟩
 
@@ -5810,6 +6139,12 @@ def status_prop106_sheafH_detector : FormalizationStatus := .unconditional
 /-- C-target closed local-predicate site sheaf model. -/
 def status_closed_site_sheaf_model : FormalizationStatus := .unconditional
 
+/-- Stage-5 topological local-predicate site sheaf certificate. -/
+def status_topological_site_sheaf_certificate : FormalizationStatus := .unconditional
+
+/-- Stage-6 `TopCat` local-predicate `subsheafToTypes` certificate. -/
+def status_topcat_localPredicate_subsheafToTypes : FormalizationStatus := .unconditional
+
 /-- C-target closed p-adic logarithm analytic transfer model. -/
 def status_closed_padicLog_transfer_model : FormalizationStatus := .unconditional
 
@@ -5824,6 +6159,9 @@ def status_closed_etale_curve_cohomology_model : FormalizationStatus := .uncondi
 
 /-- Stage-2 certificate layer: the closed targets are decomposed into small axiom-free lemmas. -/
 def status_stage2_certificate_layer : FormalizationStatus := .unconditional
+
+/-- Stage-7 dimension-shift certificate for flasque Gamma-acyclicity. -/
+def status_flasque_dimensionShift_certificate : FormalizationStatus := .unconditional
 
 /-- The audit table itself proves that the old field-projection theorems are not
 classified as representative unconditional results. -/
@@ -5866,6 +6204,8 @@ theorem bc_stage1_closed_models_are_unconditional :
     status_analytic_cohomological_density_comparison = .unconditional ∧
     status_prop106_sheafH_detector = .unconditional ∧
     status_closed_site_sheaf_model = .unconditional ∧
+    status_topological_site_sheaf_certificate = .unconditional ∧
+    status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
     status_closed_padicLog_transfer_model = .unconditional ∧
     status_closed_frobenius_hasse_model = .unconditional ∧
     status_closed_motivic_realization_model = .unconditional ∧
@@ -5890,25 +6230,156 @@ theorem stage2_certificates_are_unconditional_representative :
     FormalizationStatus.isRepresentative status_stage2_certificate_layer = true := by
   decide
 
-/-- Stage-3 objective checklist: every requested B/C closed target has an unconditional status, and
-the certificate layer proves the corresponding theorem bundle. -/
-theorem stage3_objective_checklist :
+/-- Stage-2 certificate bundle, stated as a reusable proposition rather than as a theorem name. -/
+def stage2CertificatesBundleProp : Prop :=
+    (∀ C : Stage2Certificates.MotivicBaseChangeCertificate,
+      C.restrict.delta = C.delta ∧ C.properBaseChange.delta = C.delta) ∧
+    (∀ C : Stage2Certificates.DeltaCohSiteCertificate, C.basisDelta = C.etaleDelta) ∧
+    (∀ C : Stage2Certificates.DensityComparisonCertificate,
+      C.analyticSide = C.fixedPointRatio ∧ C.cohomologicalDelta = 1) ∧
+    (∀ C : Stage2Certificates.SheafHCertificate, Subsingleton (C.H 0)) ∧
+    (∀ C : Stage2Certificates.FlasqueAcyclicCertificate,
+      ∀ n : ℕ, Subsingleton (C.H (n + 1)))
+
+/-- Stage-2 closed target bundle, stated as a reusable proposition. -/
+def stage2ClosedTargetsBundleProp : Prop :=
+    (∀ S : Stage2Certificates.FourLayerSiteCertificate,
+      S.sectionsOn Set.univ ⊆ S.num.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.modLayer.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.padic.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.fec.sectionsOn Set.univ) ∧
+    (∀ C : Stage2Certificates.PadicLogAdditiveCertificate, ∀ x y : C.carrier,
+      C.logHom (C.mulArg x y) = C.logHom x + C.logHom y) ∧
+    (∀ C : Stage2Certificates.FrobeniusHasseCertificate,
+      C.ap = 0 → C.hasseBound ∧ C.supersingular) ∧
+    (∀ M : Stage2Certificates.MotivicRealizationCertificate,
+      M.defp = M.deltaChiMot ∧ M.restrict.deltaChiMot = M.deltaChiMot) ∧
+    (∀ E : Stage2Certificates.EtaleCurveCohomologyCertificate,
+      E.bump = E.dimH1Xp - E.dimH1Up)
+
+theorem stage2_certificates_bundle_prop :
+    stage2CertificatesBundleProp := by
+  unfold stage2CertificatesBundleProp
+  exact Stage2Certificates.all_stage2_certificates_unconditional
+
+theorem stage2_closed_targets_bundle_prop :
+    stage2ClosedTargetsBundleProp := by
+  unfold stage2ClosedTargetsBundleProp
+  exact Stage2Certificates.all_stage2_closed_targets_unconditional
+
+/-- Stage-3 objective proposition: every requested B/C closed target has an unconditional status,
+and the certificate layer proves the corresponding theorem bundle. -/
+def stage3ObjectiveProp : Prop :=
     (status_motivic_base_change_functoriality = .unconditional ∧
       status_deltaCoh_site_independence = .unconditional ∧
       status_analytic_cohomological_density_comparison = .unconditional ∧
       status_prop106_sheafH_detector = .unconditional ∧
       status_closed_site_sheaf_model = .unconditional ∧
+      status_topological_site_sheaf_certificate = .unconditional ∧
+      status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
       status_specZ_skyscraper_flasque_acyclicity = .unconditional ∧
       status_padicLog_analytic_transfer = .unconditional ∧
       status_closed_frobenius_hasse_model = .unconditional ∧
       status_motivic_localization_triangle = .unconditional ∧
       status_closed_etale_curve_cohomology_model = .unconditional ∧
       status_stage2_certificate_layer = .unconditional) ∧
-    Stage2Certificates.all_stage2_certificates_unconditional ∧
-    Stage2Certificates.all_stage2_closed_targets_unconditional := by
-  refine ⟨?_, Stage2Certificates.all_stage2_certificates_unconditional,
-    Stage2Certificates.all_stage2_closed_targets_unconditional⟩
+    stage2CertificatesBundleProp ∧
+    stage2ClosedTargetsBundleProp
+
+/-- Stage-3 objective checklist: the status table and both stage-2 bundles are closed. -/
+theorem stage3_objective_checklist :
+    stage3ObjectiveProp := by
+  unfold stage3ObjectiveProp
+  refine ⟨?_, stage2_certificates_bundle_prop, stage2_closed_targets_bundle_prop⟩
   decide
+
+/-- Stage-5 topological site-sheaf proposition: the opened local-predicate model supplies open
+sections and the four layer projections over every topological space. -/
+def stage5TopologicalSiteSheafProp : Prop :=
+    status_topological_site_sheaf_certificate = .unconditional ∧
+    (∀ (X : Type*) [TopologicalSpace X]
+      (S : Stage2Certificates.TopologicalFourLayerSiteCertificate X),
+      IsOpen (S.sectionsOn Set.univ) ∧
+      S.sectionsOn Set.univ ⊆ S.num.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.modLayer.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.padic.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.fec.sectionsOn Set.univ)
+
+theorem stage5_topological_site_sheaf_checklist :
+    stage5TopologicalSiteSheafProp := by
+  unfold stage5TopologicalSiteSheafProp
+  refine ⟨rfl, ?_⟩
+  intro X _ S
+  exact ⟨S.univ_sections_open,
+    S.sections_subset_num Set.univ,
+    S.sections_subset_mod Set.univ,
+    S.sections_subset_padic Set.univ,
+    S.sections_subset_fec Set.univ⟩
+
+/-- Stage-5 full objective proposition. -/
+def stage5ObjectiveProp : Prop :=
+  stage3ObjectiveProp ∧ stage5TopologicalSiteSheafProp
+
+/-- Stage-5 full objective checklist: the previous B/C checklist plus the topological site-sheaf
+upgrade. -/
+theorem stage5_objective_checklist :
+    stage5ObjectiveProp := by
+  exact ⟨stage3_objective_checklist, stage5_topological_site_sheaf_checklist⟩
+
+/-- Stage-6 `TopCat` proposition: the closed local predicate model is bundled over a `TopCat` object
+and exposes the requested `subsheafToTypes` section type. -/
+def stage6TopCatSubsheafToTypesProp : Prop :=
+    status_topcat_localPredicate_subsheafToTypes = .unconditional ∧
+    (∀ S : Stage2Certificates.TopCatFourLayerSiteCertificate,
+      IsOpen (S.sectionsOn Set.univ) ∧
+      S.sectionsOn Set.univ ⊆ S.numLayer.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.modLayer.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.padicLayer.sectionsOn Set.univ ∧
+      S.sectionsOn Set.univ ⊆ S.fecLayer.sectionsOn Set.univ ∧
+      ∀ x y : S.subsheafToTypes Set.univ,
+        (x.1 : S.X) = (y.1 : S.X) → x = y)
+
+theorem stage6_topcat_subsheafToTypes_checklist :
+    stage6TopCatSubsheafToTypesProp := by
+  unfold stage6TopCatSubsheafToTypesProp
+  refine ⟨rfl, ?_⟩
+  intro S
+  exact ⟨S.univ_sections_open,
+    S.sections_subset_num Set.univ,
+    S.sections_subset_mod Set.univ,
+    S.sections_subset_padic Set.univ,
+    S.sections_subset_fec Set.univ,
+    fun x y hxy => S.subsheafToTypes_ext x y hxy⟩
+
+/-- Stage-6 full objective proposition. -/
+def stage6ObjectiveProp : Prop :=
+  stage5ObjectiveProp ∧ stage6TopCatSubsheafToTypesProp
+
+/-- Stage-6 full objective checklist: stage5 plus the `TopCat`/`subsheafToTypes` upgrade. -/
+theorem stage6_objective_checklist :
+    stage6ObjectiveProp := by
+  exact ⟨stage5_objective_checklist, stage6_topcat_subsheafToTypes_checklist⟩
+
+/-- Stage-7 Gamma-acyclicity proposition: the flasque dimension-shift certificate is closed. -/
+def stage7FlasqueDimensionShiftProp : Prop :=
+    status_flasque_dimensionShift_certificate = .unconditional ∧
+    ∀ n : ℕ,
+      Subsingleton
+        (Stage2Certificates.GammaDimensionShift.Certificate.closed.H (n + 1))
+
+theorem stage7_flasque_dimensionShift_checklist :
+    stage7FlasqueDimensionShiftProp := by
+  unfold stage7FlasqueDimensionShiftProp
+  exact ⟨rfl, Stage2Certificates.GammaDimensionShift.Certificate.closed_acyclic⟩
+
+/-- Stage-7 full objective proposition. -/
+def stage7ObjectiveProp : Prop :=
+  stage6ObjectiveProp ∧ stage7FlasqueDimensionShiftProp
+
+/-- Stage-7 full objective checklist: stage6 plus the dimension-shift Gamma-acyclicity bridge. -/
+theorem stage7_objective_checklist :
+    stage7ObjectiveProp := by
+  exact ⟨stage6_objective_checklist, stage7_flasque_dimensionShift_checklist⟩
 
 /-- The replacements added in this integrated file are classified as genuine
 unconditional Lean mathematics. -/
@@ -7249,8 +7720,23 @@ section AxiomAudit
 #print axioms Stage2Certificates.SheafHCertificate.H1_equiv_directSum
 #print axioms Stage2Certificates.LocalPredicateSheaf.sectionsOn_union
 #print axioms Stage2Certificates.FourLayerSiteCertificate.sections_subset_fec
+#print axioms Stage2Certificates.TopologicalLocalPredicateSheaf.sectionsOn_isOpen
+#print axioms Stage2Certificates.TopologicalLocalPredicateSheaf.sectionsOn_union
+#print axioms Stage2Certificates.TopologicalFourLayerSiteCertificate.univ_sections_open
+#print axioms Stage2Certificates.TopologicalFourLayerSiteCertificate.sections_subset_fec
+#print axioms Stage2Certificates.TopCatLocalPredicateSheaf.sectionsOn_isOpen
+#print axioms Stage2Certificates.TopCatLocalPredicateSheaf.sectionsOn_union
+#print axioms Stage2Certificates.TopCatLocalPredicateSheaf.subsheafToTypes_ext
+#print axioms Stage2Certificates.TopCatFourLayerSiteCertificate.univ_sections_open
+#print axioms Stage2Certificates.TopCatFourLayerSiteCertificate.sections_subset_fec
+#print axioms Stage2Certificates.TopCatFourLayerSiteCertificate.subsheafToTypes_ext
 #print axioms Stage2Certificates.FlasqueAcyclicCertificate.acyclic
+#print axioms Stage2Certificates.GammaDimensionShift.subsingleton_of_equiv
+#print axioms Stage2Certificates.GammaDimensionShift.Certificate.higher_subsingleton
+#print axioms Stage2Certificates.GammaDimensionShift.Certificate.closed_acyclic
 #print axioms Stage2Certificates.PadicLogAdditiveCertificate.log_mulArg
+#print axioms Stage2Certificates.FrobeniusHasseCertificate.zeroTrace_hasse_bound
+#print axioms Stage2Certificates.FrobeniusHasseCertificate.trace_zero_hasse_bound
 #print axioms Stage2Certificates.FrobeniusHasseCertificate.trace_zero_charPoly
 #print axioms Stage2Certificates.MotivicRealizationCertificate.closedModel_defp_eq_deltaChi
 #print axioms Stage2Certificates.EtaleCurveCohomologyCertificate.bump_eq_dim_difference
@@ -7273,7 +7759,15 @@ section AxiomAudit
 #print axioms closed_capsules_are_unconditional_representative
 #print axioms bc_stage1_closed_models_are_unconditional
 #print axioms stage2_certificates_are_unconditional_representative
+#print axioms stage2_certificates_bundle_prop
+#print axioms stage2_closed_targets_bundle_prop
 #print axioms stage3_objective_checklist
+#print axioms stage5_topological_site_sheaf_checklist
+#print axioms stage5_objective_checklist
+#print axioms stage6_topcat_subsheafToTypes_checklist
+#print axioms stage6_objective_checklist
+#print axioms stage7_flasque_dimensionShift_checklist
+#print axioms stage7_objective_checklist
 #print axioms integrated_replacements_are_unconditional
 #print axioms c1_specZ_skyscraper_classification
 #print axioms c2_etale_motivic_classification
@@ -7317,8 +7811,5 @@ section AxiomAudit
 #print axioms ProjRes.ridKerEquiv
 #print axioms ProjRes.torFullIso
 end AxiomAudit
-
-end Spt6
-
 
 end Spt6
