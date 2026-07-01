@@ -8058,4 +8058,3 @@ elab "#assert_all_local_safe_axioms" : command => do
 end AxiomAudit
 
 end Spt5
-

@@ -7461,4 +7461,3 @@ This walks every local declaration in the file; the build FAILS if any depends o
 `{propext, Classical.choice, Quot.sound}`.  It is the mechanical witness for
 `Spt3CertificationBoundary.spt3Boundary.noHiddenAxioms`. -/
 #assert_all_local_safe_axioms
-

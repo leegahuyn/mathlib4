@@ -1,4 +1,4 @@
- /-
+/-
 ================================================================================
   Spt6.lean — sorry-free, axiom-free verified core of
 
@@ -8055,10 +8055,9 @@ theorem norm_mulArg_lt {u v : ℚ_[p]} (hu : ‖u‖ < 1) (hv : ‖v‖ < 1) :
     ‖u + v + u * v‖ < 1 := by
   have huv : ‖u * v‖ < 1 := by
     rw [norm_mul]
-    calc ‖u‖ * ‖v‖ ≤ ‖u‖ * 1 := by
-        exact mul_le_mul_of_nonneg_left hv.le (norm_nonneg u)
-      _ = ‖u‖ := mul_one _
-      _ < 1 := hu
+    have hle : ‖u‖ * ‖v‖ ≤ ‖u‖ := by
+      simpa [mul_one] using mul_le_mul_of_nonneg_left hv.le (norm_nonneg u)
+    exact lt_of_le_of_lt hle hu
   have h1 : ‖u + v‖ < 1 := (Padic.nonarchimedean u v).trans_lt (max_lt hu hv)
   exact (Padic.nonarchimedean (u + v) (u * v)).trans_lt (max_lt h1 huv)
 
@@ -8650,4 +8649,3 @@ section AxiomAudit
 end AxiomAudit
 
 end Spt6
- 
