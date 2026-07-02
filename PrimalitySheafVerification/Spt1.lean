@@ -1,4 +1,4 @@
-/-
+ /-
 ================================================================================
   Spt1_Integrated.lean — INTEGRATED formalization of
 
@@ -32,7 +32,7 @@
     Principal-open `TopCat.subsheafToTypes` gluing      [CERTIFIED]
       by `Spt1SheafFull.PrincipalOpenCech.PrincipalOpenGluingCertificate`
     Formal `Spf(ℤ_p)` base-change                     [INTERFACE]
-================================================================================
+================================================================================ 
 -/
 import Mathlib
 
@@ -42,7 +42,6 @@ open Opposite TopologicalSpace CategoryTheory
 set_option linter.unusedVariables false
 set_option linter.deprecated false
 set_option linter.unnecessarySeqFocus false
-set_option linter.defProp false
 set_option linter.unusedSimpArgs false
 set_option linter.unreachableTactic false
 set_option linter.unusedTactic false
@@ -653,7 +652,8 @@ theorem truncLogTermInt_valuation_ge {p : ℕ} [Fact p.Prime] {u : ℤ} {k n : �
   have huq : (u : ℚ) ≠ 0 := Int.cast_ne_zero.mpr hu0
   have hnq : (n : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr hn
   have hpow : (u : ℚ) ^ n ≠ 0 := pow_ne_zero n huq
-  have hsign : (-1 : ℚ) ^ (n + 1) ≠ 0 := pow_ne_zero (n + 1) (by norm_num)
+  have hm1 : (-1 : ℚ) ≠ 0 := by norm_num
+  have hsign : (-1 : ℚ) ^ (n + 1) ≠ 0 := pow_ne_zero (n + 1) hm1
   have hnum : (-1 : ℚ) ^ (n + 1) * (u : ℚ) ^ n ≠ 0 := mul_ne_zero hsign hpow
   have hval :
       padicValRat p (truncLogTermInt u n)
@@ -691,8 +691,9 @@ theorem truncLogTermRat_valuation_ge_of_ne_zero {p : ℕ} [Fact p.Prime]
     (k : ℤ) ≤ padicValRat p (truncLogTermRat u n) := by
   have hnq : (n : ℚ) ≠ 0 := Nat.cast_ne_zero.mpr hn
   have hpow : u ^ n ≠ 0 := pow_ne_zero n hu0
+  have hm1 : (-1 : ℚ) ≠ 0 := by norm_num
   have hsign : (-1 : ℚ) ^ (n + 1) ≠ 0 :=
-    pow_ne_zero (n + 1) (by norm_num)
+    pow_ne_zero (n + 1) hm1
   have hnum : (-1 : ℚ) ^ (n + 1) * u ^ n ≠ 0 :=
     mul_ne_zero hsign hpow
   have hval :
@@ -2198,12 +2199,15 @@ theorem fnum_partial_infinite_composites (b : ℕ) : (partialNumSet b).Infinite 
   have hdom : {p : ℕ | p.Prime ∧ b < p}.Infinite := by
     have hset : {p : ℕ | p.Prime ∧ b < p} = {p | p.Prime} \ {n | n ≤ b} := by
       ext p
-      simp only [Set.mem_setOf_eq, Set.mem_sdiff]
+      simp only [Set.mem_setOf_eq, Set.mem_diff]
       constructor
-      · rintro ⟨hp, hb⟩; exact ⟨hp, by omega⟩
-      · rintro ⟨hp, hb⟩; exact ⟨hp, by omega⟩
+      · rintro ⟨hp, hb⟩
+        exact ⟨hp, Nat.not_le_of_gt hb⟩
+      · rintro ⟨hp, hb⟩
+        exact ⟨hp, Nat.lt_of_not_ge hb⟩
     rw [hset]
-    exact Nat.infinite_setOf_prime.sdiff (Set.finite_le_nat b)
+    intro hfin
+    exact Nat.infinite_setOf_prime (Set.Finite.of_diff hfin (Set.finite_le_nat b))
   have hinj : Set.InjOn (fun p : ℕ => p ^ 2) {p : ℕ | p.Prime ∧ b < p} := by
     intro a _ c _ h
     have hh : a ^ 2 = c ^ 2 := h
@@ -5564,7 +5568,7 @@ noncomputable def resC (N : ℕ) : ChainComplex ModZ ℕ :=
   ChainComplex.of Xf (df N) (resC_sq N)
 
 theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
-  rw [resC, ChainComplex.of_X]
+  change Projective (Xf n)
   match n with
   | 0 => exact (inferInstanceAs (Projective Zz))
   | 1 => exact (inferInstanceAs (Projective Zz))
@@ -6914,6 +6918,8 @@ namespace PadicLog
 
 open Filter Topology
 
+set_option maxSynthPendingDepth 16
+
 variable {p : ℕ} [hp : Fact p.Prime]
 
 noncomputable def padicLogSeries (x : ℚ_[p]) (n : ℕ) : ℚ_[p] :=
@@ -7023,7 +7029,8 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
     have hv : padicValNat p n ≤ n - 1 := by omega
     have hclaim : ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n ≤ 1 := by
       have h1 : ‖x‖ ^ (n - 1) ≤ ((p : ℝ)⁻¹) ^ (n - 1) := by gcongr
-      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by gcongr
+      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
+        gcongr
       calc ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n
           ≤ ((p : ℝ)⁻¹) ^ (n - 1) * (p : ℝ) ^ (n - 1) :=
             mul_le_mul h1 h2 (by positivity) (by positivity)
