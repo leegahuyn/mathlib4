@@ -1,4 +1,4 @@
-/-
+ /-
 ================================================================================
   Spt7.lean — sorry-free, axiom-free verified core of
 
@@ -20,6 +20,32 @@
         Čech Ĥ¹ ≅ ℤ/gcd, Tor₁ ≅ ℤ/gcd, obstruction-free ⇔ gcd=1,
         prime-power CRT decomposition of the concrete Tor₁ kernel
                        ↦ kernel_mem_iff_lcm, crt_solvable_iff, card_ker_mulLeft,
+                         standardIntResolutionD1_range_eq_quotient_ker,
+                         standardIntResolutionD1_ker_eq_bot_of_ne_zero,
+                         StandardIntResolutionCertificate,
+                         standardIntResolutionComplex,
+                         standardIntResolutionAugmentation,
+                         standardIntResolutionComplex_projective,
+                         tensorStandardResolutionD1_eq_torD1,
+                         tensorStandardResolutionComplex,
+                         tensorStandardResolutionD2_range_eq_bot,
+                         tensorStandardResolutionBoundaries1_le_cycles1,
+                         tensorStandardResolutionHomology1EquivZModGcd,
+                         standardResolutionTorOneEndpointIsoGcd,
+                         standardResolutionTorPrimeOneEndpointIsoGcd,
+                         standardResolutionTorOneSecondVariableEndpointIsoGcd,
+                         tensorStandardResolutionH1EquivZModGcd,
+                         StandardFreeResolutionTorComparison,
+                         arithmeticPrimeSpectrumTopCat,
+                         arithmeticConstantIntPresheaf_restrict_value,
+                         arithmeticPredicatePresheaf,
+                         fourLayerGateSectionsEquivIntersection,
+                         arithmeticCechLeftRestrictOverlap_intCast,
+                         arithmeticCechRightRestrictOverlap_intCast,
+                         arithmeticCech_overlap_restrictions_agree_on_global,
+                         arithmeticCech_twoOpen_exact,
+                         arithmeticCech_compatible_iff_gluable,
+                         ArithmeticTwoOpenCechSheafCertificate,
                          obstructionFree_iff_*, TorH1_primePowerDecomposition PROVED
     Thm .19(a) thickness (CORRECTED)  gcd→min, lcm/intersection→max
                        ↦ factorization_gcd_apply / lcm_apply,
@@ -65,6 +91,19 @@
     Prop .18 (depth lower bound; CM/direct dimension trigger)
                        ↦ HasWeakRegularSequenceLength,
                          ModuleDepthDimensionInterface,
+                         ENatDepthDimensionAPI,
+                         ENatDepthDimensionAPI.toModuleDepthDimensionInterface,
+                         prop18_depth_lower_bound_of_enatDepthAPI,
+                         prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay,
+                         prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension,
+                         prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension,
+                         prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension,
+                         prop18_depth_eq_dimension_trigger_of_enatDepthAPI,
+                         prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension,
+                         prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension,
+                         prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI,
+                         prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension,
+                         ENatDepthDimensionInstantiationCertificate,
                          prop18_depth_lower_bound_of_isWeaklyRegular,
                          prop18_depth_lower_bound,
                          prop18_dimension_lower_bound_of_isCohenMacaulay,
@@ -144,8 +183,12 @@
                          SixFunctorData.projectionFormula_iso                PROVED (interface)
     Lem .32 curve reduction (Nagata/Stein factorization as certificate)
                        ↦ CurveFactorization,
+                         CurveFactorization.fullMap,
+                         CurveFactorization.curveReducedShriek,
                          CurveFactorization.shriek_factorization_iso,
-                         CurveFactorization.curveReduction_terms_constructible
+                         CurveFactorization.curveReduction_terms_constructible,
+                         CurveFactorization.CurveReductionConclusion,
+                         CurveFactorization.lem32_curveReduction
                                                                             PROVED (interface)
     Prop .33/.41, Thm .34/.42, Prop .38  Weil II / weight-radius package
                        ↦ weightRadius,
@@ -182,7 +225,9 @@
                          equivalence_C_faithful                             PROVED (interface)
     §J Mathlib-gap workaround checklist
                        ↦ ConcreteSurrogateCertificate,
+                         PresheafCechSkeletonCertificate,
                          LowDegreeKoszulCertificate,
+                         ENatDepthDimensionInstantiationCertificate,
                          BundledInterfaceCertificate,
                          FormalAlgebraCoreCertificate,
                          ExistingAnalogReuseCertificate,
@@ -193,7 +238,17 @@
                          DepthCMLocalizationHandle,
                          EulerProductMathlibHandle,
                          LSeriesDerivativeMathlibHandle,
+                         MathlibLeftDerivedComputationHandle,
                          MathlibAbstractTorFunctorHandle,
+                         mathlibTorOneEndpoint,
+                         MathlibTorOneEndpointHandle,
+                         AbstractTorStandardResolutionReduction,
+                         AbstractTorPrimeFirstVariableReduction,
+                         AbstractTorSecondVariableReduction,
+                         abstractTorOneIsoGcdOfStandardResolutionIso,
+                         abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso,
+                         abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso,
+                         AbstractTorComparisonStatus,
                          ConcreteTorMathlibBridge,
                          KoszulReuseHandle,
                          mathlibHandleInventoryChecklist                    PROVED
@@ -213,13 +268,18 @@
   absent from Mathlib (conditional/omitted).
 -/
 import Mathlib.Algebra.Category.ModuleCat.Basic
+import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Category.ModuleCat.Monoidal.Basic
+import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Homology.HomologicalComplex
 import Mathlib.RingTheory.Ideal.Operations
 import Mathlib.RingTheory.Ideal.Int
 import Mathlib.RingTheory.Localization.AtPrime.Basic
 import Mathlib.RingTheory.Int.Basic
+import Mathlib.RingTheory.Spectrum.Prime.Topology
 import Mathlib.Data.Int.GCD
 import Mathlib.Data.Nat.Prime.Basic
+import Mathlib.Data.ENat.Basic
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Data.ZMod.QuotientRing
 import Mathlib.Data.ZMod.QuotientGroup
@@ -230,6 +290,7 @@ import Mathlib.RingTheory.Regular.RegularSequence
 import Mathlib.RingTheory.Regular.Flat
 import Mathlib.RingTheory.TensorProduct.IsBaseChangePi
 import Mathlib.RingTheory.PowerSeries.Exp
+import Mathlib.Topology.Sheaves.Presheaf
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
@@ -409,6 +470,112 @@ def FEC (P : FourLayerProfile) (x : ℤ) : Prop := ((x : ZMod P.ecMod) = 0)
 /-- The four-layer fiber product, computed sectionwise as intersection of the four gates. -/
 def FourLayerPass (P : FourLayerProfile) (x : ℤ) : Prop :=
   Fnum P x ∧ Fmod P x ∧ Fp_adic P x ∧ FEC P x
+
+/-! ### Thin presheaf skeleton for the four arithmetic gates (§2, §2.3--2.4).
+
+The paper's site language is represented here on `Spec ℤ`.  We deliberately keep the
+presheaf thin: values are constant arithmetic sections, and the four gates cut out a
+subpresheaf by a sectionwise predicate.  Thus restriction maps are literal inclusions
+on the underlying integer value. -/
+
+open CategoryTheory TopologicalSpace Opposite
+
+/-- The Zariski site used by the arithmetic wrapper: `Spec ℤ` as a bundled topological space. -/
+abbrev arithmeticPrimeSpectrumTopCat : TopCat :=
+  TopCat.of (PrimeSpectrum ℤ)
+
+/-- Principal basic opens `D(n)` in `Spec ℤ`. -/
+def arithmeticBasicOpen (n : ℕ) : TopologicalSpace.Opens (PrimeSpectrum ℤ) :=
+  PrimeSpectrum.basicOpen (n : ℤ)
+
+@[simp]
+theorem arithmeticBasicOpen_mul (M N : ℕ) :
+    arithmeticBasicOpen (M * N) = arithmeticBasicOpen M ⊓ arithmeticBasicOpen N := by
+  simpa [arithmeticBasicOpen, Nat.cast_mul] using
+    (PrimeSpectrum.basicOpen_mul (M : ℤ) (N : ℤ))
+
+/-- The constant integer presheaf used as the ambient object for arithmetic gates. -/
+def arithmeticConstantIntPresheaf : arithmeticPrimeSpectrumTopCat.Presheaf (Type) where
+  obj _ := ℤ
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+@[simp]
+theorem arithmeticConstantIntPresheaf_restrict_value
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+    (x : (arithmeticConstantIntPresheaf).obj (op V)) :
+    (arithmeticConstantIntPresheaf).map (homOfLE hUV).op x = x :=
+  rfl
+
+/-- A predicate-cut subpresheaf of the constant integer presheaf. -/
+def arithmeticPredicatePresheaf (P : ℤ → Prop) :
+    arithmeticPrimeSpectrumTopCat.Presheaf (Type) where
+  obj _ := {x : ℤ // P x}
+  map _ x := x
+  map_id _ := rfl
+  map_comp _ _ := rfl
+
+@[simp]
+theorem arithmeticPredicatePresheaf_obj (P : ℤ → Prop)
+    (U : (TopologicalSpace.Opens (PrimeSpectrum ℤ))ᵒᵖ) :
+    (arithmeticPredicatePresheaf P).obj U = {x : ℤ // P x} :=
+  rfl
+
+/-- Inclusion of a predicate-cut presheaf into the ambient constant integer presheaf. -/
+def arithmeticPredicatePresheafInclusion (P : ℤ → Prop) :
+    CategoryTheory.NatTrans (arithmeticPredicatePresheaf P) arithmeticConstantIntPresheaf where
+  app _ x := x.1
+  naturality _ _ _ := rfl
+
+@[simp]
+theorem arithmeticPredicatePresheafInclusion_app (P : ℤ → Prop)
+    (U : (TopologicalSpace.Opens (PrimeSpectrum ℤ))ᵒᵖ)
+    (s : (arithmeticPredicatePresheaf P).obj U) :
+    (arithmeticPredicatePresheafInclusion P).app U s = s.1 :=
+  rfl
+
+/-- Restriction in a predicate-cut presheaf is literal inclusion on the arithmetic value. -/
+@[simp]
+theorem arithmeticPredicatePresheaf_restrict_value (P : ℤ → Prop)
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+    (s : (arithmeticPredicatePresheaf P).obj (op V)) :
+    ((arithmeticPredicatePresheaf P).map (homOfLE hUV).op s).1 = s.1 :=
+  rfl
+
+/-- The four-gate arithmetic subpresheaf. -/
+abbrev fourLayerGatePresheaf (P : FourLayerProfile) :
+    arithmeticPrimeSpectrumTopCat.Presheaf (Type) :=
+  arithmeticPredicatePresheaf (FourLayerPass P)
+
+/-- Sections of the four-gate presheaf over an open set. -/
+abbrev fourLayerGateSections (P : FourLayerProfile)
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) : Type :=
+  (fourLayerGatePresheaf P).obj (op U)
+
+/-- `Γ(U,F)` for the four-gate presheaf is exactly the intersection of the four gates. -/
+def fourLayerGateSectionsEquivIntersection (P : FourLayerProfile)
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) :
+    fourLayerGateSections P U ≃
+      {x : ℤ // Fnum P x ∧ Fmod P x ∧ Fp_adic P x ∧ FEC P x} where
+  toFun s := ⟨s.1, s.2⟩
+  invFun s := ⟨s.1, s.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+@[simp]
+theorem fourLayerGateSectionsEquivIntersection_apply (P : FourLayerProfile)
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) (s : fourLayerGateSections P U) :
+    (fourLayerGateSectionsEquivIntersection P U s).1 = s.1 :=
+  rfl
+
+/-- Restriction of a four-gate section is the same underlying arithmetic section. -/
+@[simp]
+theorem fourLayerGate_restrict_value (P : FourLayerProfile)
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+    (s : fourLayerGateSections P V) :
+    ((fourLayerGatePresheaf P).map (homOfLE hUV).op s).1 = s.1 :=
+  rfl
 
 theorem Fnum_iff_dvd (P : FourLayerProfile) (x : ℤ) :
     Fnum P x ↔ ((P.numMod : ℤ) ∣ x) :=
@@ -747,6 +914,211 @@ theorem cechPhiCoker_card_eq_one_iff_gcd_eq_one (M N : ℕ) :
     Nat.card (cechPhiCoker M N) = 1 ↔ Nat.gcd M N = 1 := by
   rw [cechPhiCoker_card]
 
+/-! ### Two-open Čech/sheaf wrapper for the arithmetic local charts.
+
+This is the promised thin sheaf-language layer: the opens are the principal opens
+`D(M)` and `D(N)` of `Spec ℤ`, their overlap is `D(MN)`, and the equalizer part of
+the two-open sheaf condition is exactly the already-proved CRT exactness
+`range Φ = ker ∂`.  The obstruction group is the cokernel of the same `Φ`. -/
+
+/-- Left open `D(M)` for the arithmetic two-open chart. -/
+def arithmeticCechLeftOpen (M : ℕ) : TopologicalSpace.Opens (PrimeSpectrum ℤ) :=
+  arithmeticBasicOpen M
+
+/-- Right open `D(N)` for the arithmetic two-open chart. -/
+def arithmeticCechRightOpen (N : ℕ) : TopologicalSpace.Opens (PrimeSpectrum ℤ) :=
+  arithmeticBasicOpen N
+
+/-- Overlap `D(MN) = D(M) ∩ D(N)` for the arithmetic two-open chart. -/
+def arithmeticCechOverlapOpen (M N : ℕ) : TopologicalSpace.Opens (PrimeSpectrum ℤ) :=
+  arithmeticBasicOpen (M * N)
+
+@[simp]
+theorem arithmeticCechOverlapOpen_eq_inf (M N : ℕ) :
+    arithmeticCechOverlapOpen M N =
+      arithmeticCechLeftOpen M ⊓ arithmeticCechRightOpen N := by
+  simp [arithmeticCechOverlapOpen, arithmeticCechLeftOpen, arithmeticCechRightOpen,
+    arithmeticBasicOpen_mul]
+
+/-- Restriction from global arithmetic sections to `D(M)`. -/
+def arithmeticCechGlobalRestrictLeft (M : ℕ) : ℤ →+ ZMod M where
+  toFun x := (x : ZMod M)
+  map_zero' := by simp
+  map_add' x y := by simp
+
+/-- Restriction from global arithmetic sections to `D(N)`. -/
+def arithmeticCechGlobalRestrictRight (N : ℕ) : ℤ →+ ZMod N where
+  toFun x := (x : ZMod N)
+  map_zero' := by simp
+  map_add' x y := by simp
+
+@[simp]
+theorem arithmeticCechGlobalRestrictLeft_apply (M : ℕ) (x : ℤ) :
+    arithmeticCechGlobalRestrictLeft M x = (x : ZMod M) :=
+  rfl
+
+@[simp]
+theorem arithmeticCechGlobalRestrictRight_apply (N : ℕ) (x : ℤ) :
+    arithmeticCechGlobalRestrictRight N x = (x : ZMod N) :=
+  rfl
+
+/-- Restriction from `D(M)` to the common overlap. -/
+def arithmeticCechLeftRestrictOverlap (M N : ℕ) :
+    ZMod M →+ ZMod (Nat.gcd M N) :=
+  ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))
+
+/-- Restriction from `D(N)` to the common overlap. -/
+def arithmeticCechRightRestrictOverlap (M N : ℕ) :
+    ZMod N →+ ZMod (Nat.gcd M N) :=
+  ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))
+
+@[simp]
+theorem arithmeticCechLeftRestrictOverlap_intCast (M N : ℕ) (x : ℤ) :
+    arithmeticCechLeftRestrictOverlap M N (x : ZMod M) =
+      (x : ZMod (Nat.gcd M N)) := by
+  simp [arithmeticCechLeftRestrictOverlap]
+
+@[simp]
+theorem arithmeticCechRightRestrictOverlap_intCast (M N : ℕ) (x : ℤ) :
+    arithmeticCechRightRestrictOverlap M N (x : ZMod N) =
+      (x : ZMod (Nat.gcd M N)) := by
+  simp [arithmeticCechRightRestrictOverlap]
+
+@[simp]
+theorem arithmeticCechLeftOverlap_comp_global (M N : ℕ) (x : ℤ) :
+    arithmeticCechLeftRestrictOverlap M N (arithmeticCechGlobalRestrictLeft M x) =
+      (x : ZMod (Nat.gcd M N)) := by
+  simp [arithmeticCechGlobalRestrictLeft_apply]
+
+@[simp]
+theorem arithmeticCechRightOverlap_comp_global (M N : ℕ) (x : ℤ) :
+    arithmeticCechRightRestrictOverlap M N (arithmeticCechGlobalRestrictRight N x) =
+      (x : ZMod (Nat.gcd M N)) := by
+  simp [arithmeticCechGlobalRestrictRight_apply]
+
+/-- The two overlap restrictions agree on every global arithmetic section. -/
+theorem arithmeticCech_overlap_restrictions_agree_on_global (M N : ℕ) (x : ℤ) :
+    arithmeticCechLeftRestrictOverlap M N (arithmeticCechGlobalRestrictLeft M x) =
+      arithmeticCechRightRestrictOverlap M N (arithmeticCechGlobalRestrictRight N x) := by
+  simp
+
+/-- The two restriction maps from global sections to the two opens, packaged as `Φ`. -/
+abbrev arithmeticCechGlobalToLocal (M N : ℕ) : ℤ →+ ZMod M × ZMod N :=
+  crtPhi M N
+
+/-- The difference of the two restrictions to the overlap. -/
+abbrev arithmeticCechLocalDifference (M N : ℕ) :
+    ZMod M × ZMod N →+ ZMod (Nat.gcd M N) :=
+  crtDel M N
+
+@[simp]
+theorem arithmeticCechGlobalToLocal_apply (M N : ℕ) (x : ℤ) :
+    arithmeticCechGlobalToLocal M N x =
+      (arithmeticCechGlobalRestrictLeft M x, arithmeticCechGlobalRestrictRight N x) :=
+  rfl
+
+@[simp]
+theorem arithmeticCechLocalDifference_apply (M N : ℕ) (s : ZMod M × ZMod N) :
+    arithmeticCechLocalDifference M N s =
+      arithmeticCechLeftRestrictOverlap M N s.1 -
+        arithmeticCechRightRestrictOverlap M N s.2 :=
+  rfl
+
+/-- The two-open sheaf equalizer condition, in the exact form used by the Čech complex. -/
+theorem arithmeticCech_twoOpen_exact (M N : ℕ) :
+    Function.Exact (arithmeticCechGlobalToLocal M N) (arithmeticCechLocalDifference M N) :=
+  crtDel_exact_crtPhi M N
+
+/-- A pair of local sections is compatible on the overlap iff it glues to a global section. -/
+theorem arithmeticCech_compatible_iff_gluable (M N : ℕ) (s : ZMod M × ZMod N) :
+    arithmeticCechLocalDifference M N s = 0 ↔
+      ∃ x : ℤ, arithmeticCechGlobalToLocal M N x = s :=
+  arithmeticCech_twoOpen_exact M N s
+
+/-- Equalizer form of the two-open sheaf condition. -/
+theorem arithmeticCech_range_eq_kernel (M N : ℕ) :
+    (arithmeticCechGlobalToLocal M N).range =
+      (arithmeticCechLocalDifference M N).ker :=
+  crtPhi_range_eq_crtDel_ker M N
+
+/-- The first Čech obstruction of the two-open arithmetic chart. -/
+abbrev arithmeticCechH1 (M N : ℕ) : Type :=
+  AddCoker (arithmeticCechGlobalToLocal M N)
+
+/-- The two-open Čech obstruction is the common overlap quotient `ℤ/gcd(M,N)`. -/
+noncomputable def arithmeticCechH1EquivZModGcd (M N : ℕ) :
+    arithmeticCechH1 M N ≃+ ZMod (Nat.gcd M N) :=
+  cechPhiCokerEquivZModGcd M N
+
+@[simp]
+theorem arithmeticCechH1EquivZModGcd_mk (M N : ℕ) (s : ZMod M × ZMod N) :
+    arithmeticCechH1EquivZModGcd M N (QuotientAddGroup.mk s) =
+      arithmeticCechLocalDifference M N s :=
+  cechPhiCokerEquivZModGcd_mk M N s
+
+/-- Cardinal form of the two-open Čech obstruction. -/
+theorem arithmeticCechH1_card (M N : ℕ) :
+    Nat.card (arithmeticCechH1 M N) = Nat.gcd M N :=
+  cechPhiCoker_card M N
+
+/-- A PR-facing certificate bundling the two-open sheaf skeleton used by Lemma .39. -/
+structure ArithmeticTwoOpenCechSheafCertificate (M N : ℕ) where
+  leftOpen : TopologicalSpace.Opens (PrimeSpectrum ℤ)
+  rightOpen : TopologicalSpace.Opens (PrimeSpectrum ℤ)
+  overlapOpen : TopologicalSpace.Opens (PrimeSpectrum ℤ)
+  overlap_eq_inf : overlapOpen = leftOpen ⊓ rightOpen
+  globalRestrictLeft : ℤ →+ ZMod M
+  globalRestrictRight : ℤ →+ ZMod N
+  leftRestrictOverlap : ZMod M →+ ZMod (Nat.gcd M N)
+  rightRestrictOverlap : ZMod N →+ ZMod (Nat.gcd M N)
+  leftRestrictOverlap_intCast :
+    ∀ x : ℤ, leftRestrictOverlap (x : ZMod M) = (x : ZMod (Nat.gcd M N))
+  rightRestrictOverlap_intCast :
+    ∀ x : ℤ, rightRestrictOverlap (x : ZMod N) = (x : ZMod (Nat.gcd M N))
+  overlapRestrictsAgreeOnGlobal :
+    ∀ x : ℤ, leftRestrictOverlap (globalRestrictLeft x) =
+      rightRestrictOverlap (globalRestrictRight x)
+  globalToLocal : ℤ →+ ZMod M × ZMod N
+  localDifference : ZMod M × ZMod N →+ ZMod (Nat.gcd M N)
+  globalToLocal_eq :
+    globalToLocal = arithmeticCechGlobalToLocal M N
+  localDifference_eq :
+    localDifference = arithmeticCechLocalDifference M N
+  compatible_iff_gluable :
+    ∀ s : ZMod M × ZMod N, localDifference s = 0 ↔ ∃ x : ℤ, globalToLocal x = s
+  exact :
+    Function.Exact globalToLocal localDifference
+  range_eq_kernel :
+    globalToLocal.range = localDifference.ker
+  h1Equiv :
+    AddCoker globalToLocal ≃+ ZMod (Nat.gcd M N)
+  h1Card :
+    Nat.card (AddCoker globalToLocal) = Nat.gcd M N
+
+/-- Canonical two-open Čech/sheaf certificate for the arithmetic CRT chart. -/
+noncomputable def arithmeticTwoOpenCechSheafCertificate (M N : ℕ) :
+    ArithmeticTwoOpenCechSheafCertificate M N where
+  leftOpen := arithmeticCechLeftOpen M
+  rightOpen := arithmeticCechRightOpen N
+  overlapOpen := arithmeticCechOverlapOpen M N
+  overlap_eq_inf := arithmeticCechOverlapOpen_eq_inf M N
+  globalRestrictLeft := arithmeticCechGlobalRestrictLeft M
+  globalRestrictRight := arithmeticCechGlobalRestrictRight N
+  leftRestrictOverlap := arithmeticCechLeftRestrictOverlap M N
+  rightRestrictOverlap := arithmeticCechRightRestrictOverlap M N
+  leftRestrictOverlap_intCast := arithmeticCechLeftRestrictOverlap_intCast M N
+  rightRestrictOverlap_intCast := arithmeticCechRightRestrictOverlap_intCast M N
+  overlapRestrictsAgreeOnGlobal := arithmeticCech_overlap_restrictions_agree_on_global M N
+  globalToLocal := arithmeticCechGlobalToLocal M N
+  localDifference := arithmeticCechLocalDifference M N
+  globalToLocal_eq := rfl
+  localDifference_eq := rfl
+  compatible_iff_gluable := arithmeticCech_compatible_iff_gluable M N
+  exact := arithmeticCech_twoOpen_exact M N
+  range_eq_kernel := arithmeticCech_range_eq_kernel M N
+  h1Equiv := arithmeticCechH1EquivZModGcd M N
+  h1Card := arithmeticCechH1_card M N
+
 theorem factorization_gcd_apply {M N : ℕ} (hM : M ≠ 0) (hN : N ≠ 0) (p : ℕ) :
     (Nat.gcd M N).factorization p = min (M.factorization p) (N.factorization p) := by
   rw [Nat.factorization_gcd hM hN, Finsupp.inf_apply]
@@ -1017,6 +1389,968 @@ kernel model of the standard resolution. -/
 noncomputable def TorH1_iso_zmod_gcd (M N : ℕ) [NeZero N] :
     TorH1 M N ≃+ ZMod (Nat.gcd N M) :=
   kerMulLeftEquivZModGcd N M
+
+/-- The left differential in the standard presentation
+`ℤ --×M--> ℤ → ZMod M → 0`. -/
+def standardIntResolutionD1 (M : ℕ) : ℤ →+ ℤ :=
+  AddMonoidHom.mulLeft (M : ℤ)
+
+@[simp]
+theorem standardIntResolutionD1_apply (M : ℕ) (x : ℤ) :
+    standardIntResolutionD1 M x = (M : ℤ) * x :=
+  rfl
+
+/-- The quotient map `ℤ → ZMod M` in the standard presentation. -/
+def standardIntResolutionQuotient (M : ℕ) : ℤ →+ ZMod M :=
+  Int.castAddHom (ZMod M)
+
+@[simp]
+theorem standardIntResolutionQuotient_apply (M : ℕ) (x : ℤ) :
+    standardIntResolutionQuotient M x = (x : ZMod M) :=
+  rfl
+
+@[simp]
+theorem standardIntResolutionQuotient_comp_D1_apply (M : ℕ) (x : ℤ) :
+    standardIntResolutionQuotient M (standardIntResolutionD1 M x) = 0 := by
+  rw [standardIntResolutionD1_apply, standardIntResolutionQuotient_apply]
+  rw [Int.cast_mul]
+  simp
+
+/-- The zero `Int`-module, used to make the two-term standard resolution into a
+Mathlib `ChainComplex`. -/
+abbrev standardIntResolutionZeroObj : ModuleCat Int :=
+  ModuleCat.of Int PUnit
+
+/-- Objects of the standard chain complex `0 → ℤ --M--> ℤ`.
+Degrees `0` and `1` are `ℤ`; higher degrees are the zero module. -/
+abbrev standardIntResolutionComplexObj : ℕ → ModuleCat Int
+  | 0 => ModuleCat.of Int ℤ
+  | 1 => ModuleCat.of Int ℤ
+  | _ + 2 => standardIntResolutionZeroObj
+
+/-- Differentials of the standard chain complex `0 → ℤ --M--> ℤ`. -/
+noncomputable def standardIntResolutionComplexD (M : ℕ) (n : ℕ) :
+    Quiver.Hom (standardIntResolutionComplexObj (n + 1)) (standardIntResolutionComplexObj n) := by
+  cases n with
+  | zero =>
+      exact ModuleCat.ofHom (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap)
+  | succ _ =>
+      exact 0
+
+@[simp]
+theorem standardIntResolutionComplexD_zero (M : ℕ) :
+    standardIntResolutionComplexD M 0 =
+      ModuleCat.ofHom (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap) :=
+  rfl
+
+@[simp]
+theorem standardIntResolutionComplexD_succ (M n : ℕ) :
+    standardIntResolutionComplexD M (n + 1) = 0 :=
+  rfl
+
+/-- Consecutive differentials in the standard integral two-term complex compose to zero. -/
+theorem standardIntResolutionComplexD_comp (M n : ℕ) :
+    standardIntResolutionComplexD M (n + 1) ≫ standardIntResolutionComplexD M n = 0 := by
+  cases n with
+  | zero =>
+      simp [standardIntResolutionComplexD]
+  | succ _ =>
+      simp [standardIntResolutionComplexD]
+
+/-- The Mathlib chain-complex skeleton of the standard presentation
+`0 → ℤ --M--> ℤ → ℤ/M → 0`.  The augmentation and quasi-isomorphism are deliberately
+kept separate; this object is the reusable complex part needed for the abstract `Tor` bridge. -/
+noncomputable def standardIntResolutionComplex (M : ℕ) : ChainComplex (ModuleCat Int) ℕ :=
+  ChainComplex.of standardIntResolutionComplexObj (standardIntResolutionComplexD M)
+    (standardIntResolutionComplexD_comp M)
+
+@[simp]
+theorem standardIntResolutionComplex_d_one_zero (M : ℕ) :
+    (standardIntResolutionComplex M).d 1 0 =
+      ModuleCat.ofHom (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap) := by
+  change
+    (ChainComplex.of standardIntResolutionComplexObj (standardIntResolutionComplexD M)
+      (standardIntResolutionComplexD_comp M)).d (0 + 1) 0 =
+        ModuleCat.ofHom (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap)
+  simpa using
+    (ChainComplex.of_d standardIntResolutionComplexObj (standardIntResolutionComplexD M)
+      (standardIntResolutionComplexD_comp M) 0)
+
+@[simp]
+theorem standardIntResolutionComplex_d_succ_succ (M n : ℕ) :
+    (standardIntResolutionComplex M).d (n + 2) (n + 1) = 0 := by
+  change
+    (ChainComplex.of standardIntResolutionComplexObj (standardIntResolutionComplexD M)
+      (standardIntResolutionComplexD_comp M)).d ((n + 1) + 1) (n + 1) = 0
+  rw [ChainComplex.of_d]
+  exact standardIntResolutionComplexD_succ M n
+
+/-- The augmentation from the standard two-term complex to `ZMod M` in degree zero.
+This is the `π` datum needed to upgrade the explicit complex to a Mathlib
+`ProjectiveResolution`; the quasi-isomorphism proof is intentionally kept as the next
+homology-level bridge. -/
+noncomputable def standardIntResolutionAugmentation (M : ℕ) :
+    standardIntResolutionComplex M ⟶
+      (ChainComplex.single₀ (ModuleCat Int)).obj (ModuleCat.of Int (ZMod M)) :=
+  (ChainComplex.toSingle₀Equiv (standardIntResolutionComplex M)
+    (ModuleCat.of Int (ZMod M))).symm
+    ⟨ModuleCat.ofHom
+        (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap),
+      by
+        rw [standardIntResolutionComplex_d_one_zero]
+        apply ModuleCat.hom_ext
+        ext
+        change standardIntResolutionQuotient M (standardIntResolutionD1 M 1) = 0
+        exact standardIntResolutionQuotient_comp_D1_apply M 1⟩
+
+@[simp]
+theorem standardIntResolutionAugmentation_f_zero (M : ℕ) :
+    (standardIntResolutionAugmentation M).f 0 =
+      ModuleCat.ofHom
+        (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap) := by
+  simp [standardIntResolutionAugmentation]
+
+@[simp]
+theorem standardIntResolutionAugmentation_comp_d_one_zero (M : ℕ) :
+    (standardIntResolutionComplex M).d 1 0 ≫
+      (standardIntResolutionAugmentation M).f 0 = 0 := by
+  simpa [standardIntResolutionAugmentation] using
+    (ChainComplex.toSingle₀Equiv (standardIntResolutionComplex M)
+      (ModuleCat.of Int (ZMod M))
+      (standardIntResolutionAugmentation M)).2
+
+/-- Every term of the standard integral two-term complex is projective. -/
+theorem standardIntResolutionComplex_projective (M n : ℕ) :
+    Projective ((standardIntResolutionComplex M).X n) := by
+  change Projective (standardIntResolutionComplexObj n)
+  cases n with
+  | zero =>
+      change Projective (ModuleCat.of Int ℤ)
+      infer_instance
+  | succ n =>
+      cases n with
+      | zero =>
+          change Projective (ModuleCat.of Int ℤ)
+          infer_instance
+      | succ _ =>
+          change Projective standardIntResolutionZeroObj
+          infer_instance
+
+/-- The image of multiplication by `M` on `ℤ` is the subgroup of integer multiples of `M`. -/
+theorem standardIntResolutionD1_range_eq_zmultiples (M : ℕ) :
+    (standardIntResolutionD1 M).range = AddSubgroup.zmultiples (M : ℤ) := by
+  ext y
+  rw [AddMonoidHom.mem_range, AddSubgroup.mem_zmultiples_iff]
+  constructor
+  · rintro ⟨x, rfl⟩
+    exact ⟨x, by simp [standardIntResolutionD1_apply, mul_comm]⟩
+  · rintro ⟨k, rfl⟩
+    exact ⟨k, by simp [standardIntResolutionD1_apply, mul_comm]⟩
+
+/-- The kernel of the quotient map `ℤ → ZMod M` is the subgroup of multiples of `M`. -/
+theorem standardIntResolutionQuotient_ker_eq_zmultiples (M : ℕ) :
+    (standardIntResolutionQuotient M).ker = AddSubgroup.zmultiples (M : ℤ) := by
+  simpa [standardIntResolutionQuotient] using ZMod.ker_intCastAddHom M
+
+/-- Exactness at the middle `ℤ`: image of `×M` equals the kernel of `ℤ → ZMod M`. -/
+theorem standardIntResolutionD1_range_eq_quotient_ker (M : ℕ) :
+    (standardIntResolutionD1 M).range = (standardIntResolutionQuotient M).ker := by
+  rw [standardIntResolutionD1_range_eq_zmultiples,
+    standardIntResolutionQuotient_ker_eq_zmultiples]
+
+/-- The quotient map `ℤ → ZMod M` is surjective. -/
+theorem standardIntResolutionQuotient_surjective (M : ℕ) :
+    Function.Surjective (standardIntResolutionQuotient M) := by
+  intro x
+  exact ⟨ZMod.cast x, ZMod.intCast_zmod_cast x⟩
+
+/-- The degree-zero augmentation of the standard presentation is an epimorphism. -/
+theorem standardIntResolutionAugmentation_f_zero_epi (M : ℕ) :
+    Epi ((standardIntResolutionAugmentation M).f 0) := by
+  rw [standardIntResolutionAugmentation_f_zero]
+  exact (ModuleCat.epi_iff_surjective _).mpr (standardIntResolutionQuotient_surjective M)
+
+/-- If `M ≠ 0`, multiplication by `M` on `ℤ` is injective, so the standard presentation is
+exact at the left copy of `ℤ`. -/
+theorem standardIntResolutionD1_ker_eq_bot_of_ne_zero {M : ℕ} (hM : M ≠ 0) :
+    (standardIntResolutionD1 M).ker = ⊥ := by
+  ext x
+  rw [AddMonoidHom.mem_ker, AddSubgroup.mem_bot, standardIntResolutionD1_apply]
+  constructor
+  · intro hx
+    exact (mul_eq_zero.mp hx).resolve_left (by exact_mod_cast hM)
+  · intro hx
+    simp [hx]
+
+/-- Certificate for the pre-tensor standard free presentation of `ZMod M`.
+The middle and right exactness statements are unconditional; the left exactness statement is
+available under the necessary hypothesis `M ≠ 0`. -/
+structure StandardIntResolutionCertificate (M : ℕ) where
+  d1 : ℤ →+ ℤ
+  quotient : ℤ →+ ZMod M
+  quotient_comp_d1_apply : ∀ x, quotient (d1 x) = 0
+  d1_range_eq_zmultiples : d1.range = AddSubgroup.zmultiples (M : ℤ)
+  quotient_ker_eq_zmultiples : quotient.ker = AddSubgroup.zmultiples (M : ℤ)
+  exact_middle : d1.range = quotient.ker
+  quotient_surjective : Function.Surjective quotient
+  d1_ker_eq_bot_of_ne_zero : M ≠ 0 → d1.ker = ⊥
+
+/-- Canonical certificate for `ℤ --×M--> ℤ → ZMod M → 0`. -/
+noncomputable def standardIntResolutionCertificate (M : ℕ) :
+    StandardIntResolutionCertificate M where
+  d1 := standardIntResolutionD1 M
+  quotient := standardIntResolutionQuotient M
+  quotient_comp_d1_apply := standardIntResolutionQuotient_comp_D1_apply M
+  d1_range_eq_zmultiples := standardIntResolutionD1_range_eq_zmultiples M
+  quotient_ker_eq_zmultiples := standardIntResolutionQuotient_ker_eq_zmultiples M
+  exact_middle := standardIntResolutionD1_range_eq_quotient_ker M
+  quotient_surjective := standardIntResolutionQuotient_surjective M
+  d1_ker_eq_bot_of_ne_zero := fun hM => standardIntResolutionD1_ker_eq_bot_of_ne_zero hM
+
+/-- The free rank-one term in the standard `ℤ/M` resolution, after tensoring with `ZMod N`.
+Both nonzero terms are canonically `ZMod N`; the remaining differential is multiplication by
+`M`. -/
+abbrev tensorStandardResolutionTerm (_M N : ℕ) : Type :=
+  ZMod N
+
+instance tensorStandardResolutionTerm.addCommGroup (M N : ℕ) :
+    AddCommGroup (tensorStandardResolutionTerm M N) :=
+  inferInstance
+
+/-- The degree-two term of the two-term standard resolution after tensoring.
+It is represented by the zero additive group `ZMod 1`, so its image in degree one is trivial. -/
+abbrev tensorStandardResolutionTerm2 (_M _N : ℕ) : Type :=
+  ZMod 1
+
+instance tensorStandardResolutionTerm2.addCommGroup (M N : ℕ) :
+    AddCommGroup (tensorStandardResolutionTerm2 M N) :=
+  inferInstance
+
+/-- The differential of the tensor of `0 → ℤ --M--> ℤ → ℤ/M → 0` with `ZMod N`. -/
+def tensorStandardResolutionD1 (M N : ℕ) :
+    tensorStandardResolutionTerm M N →+ tensorStandardResolutionTerm M N :=
+  AddMonoidHom.mulLeft (M : ZMod N)
+
+@[simp]
+theorem tensorStandardResolutionD1_apply (M N : ℕ) (x : tensorStandardResolutionTerm M N) :
+    tensorStandardResolutionD1 M N x = (M : ZMod N) * x :=
+  rfl
+
+/-- The tensor-standard differential is definitionally the concrete Tor differential. -/
+theorem tensorStandardResolutionD1_eq_torD1 (M N : ℕ) :
+    tensorStandardResolutionD1 M N = torD1 M N :=
+  rfl
+
+/-- The preceding differential in the tensored two-term resolution. -/
+def tensorStandardResolutionD2 (M N : ℕ) :
+    tensorStandardResolutionTerm2 M N →+ tensorStandardResolutionTerm M N :=
+  0
+
+@[simp]
+theorem tensorStandardResolutionD2_apply (M N : ℕ) (x : tensorStandardResolutionTerm2 M N) :
+    tensorStandardResolutionD2 M N x = 0 := by
+  rfl
+
+@[simp]
+theorem tensorStandardResolutionD1_comp_D2_apply (M N : ℕ)
+    (x : tensorStandardResolutionTerm2 M N) :
+    tensorStandardResolutionD1 M N (tensorStandardResolutionD2 M N x) = 0 := by
+  simp [tensorStandardResolutionD2]
+
+/-- Objects of the tensor-standard chain complex: degrees `0` and `1` are `ZMod N`,
+and higher degrees are zero. -/
+abbrev tensorStandardResolutionComplexObj (N : ℕ) : ℕ → ModuleCat Int
+  | 0 => ModuleCat.of Int (ZMod N)
+  | 1 => ModuleCat.of Int (ZMod N)
+  | _ + 2 => standardIntResolutionZeroObj
+
+/-- Differentials of the tensor-standard chain complex. -/
+noncomputable def tensorStandardResolutionComplexD (M N : ℕ) (n : ℕ) :
+    Quiver.Hom (tensorStandardResolutionComplexObj N (n + 1))
+      (tensorStandardResolutionComplexObj N n) := by
+  cases n with
+  | zero =>
+      exact ModuleCat.ofHom
+        (((tensorStandardResolutionD1 M N) : AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap)
+  | succ _ =>
+      exact 0
+
+@[simp]
+theorem tensorStandardResolutionComplexD_zero (M N : ℕ) :
+    tensorStandardResolutionComplexD M N 0 =
+      ModuleCat.ofHom
+        (((tensorStandardResolutionD1 M N) : AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap) :=
+  rfl
+
+@[simp]
+theorem tensorStandardResolutionComplexD_succ (M N n : ℕ) :
+    tensorStandardResolutionComplexD M N (n + 1) = 0 :=
+  rfl
+
+/-- Consecutive differentials in the tensor-standard two-term complex compose to zero. -/
+theorem tensorStandardResolutionComplexD_comp (M N n : ℕ) :
+    tensorStandardResolutionComplexD M N (n + 1) ≫
+      tensorStandardResolutionComplexD M N n = 0 := by
+  cases n with
+  | zero =>
+      simp [tensorStandardResolutionComplexD]
+  | succ _ =>
+      simp [tensorStandardResolutionComplexD]
+
+/-- The Mathlib chain-complex skeleton obtained after tensoring the standard resolution with
+`ZMod N`.  Degree-one homology of this complex is the concrete kernel model packaged above. -/
+noncomputable def tensorStandardResolutionComplex (M N : ℕ) :
+    ChainComplex (ModuleCat Int) ℕ :=
+  ChainComplex.of (tensorStandardResolutionComplexObj N)
+    (tensorStandardResolutionComplexD M N)
+    (tensorStandardResolutionComplexD_comp M N)
+
+@[simp]
+theorem tensorStandardResolutionComplex_d_one_zero (M N : ℕ) :
+    (tensorStandardResolutionComplex M N).d 1 0 =
+      ModuleCat.ofHom
+        (((tensorStandardResolutionD1 M N) : AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap) := by
+  change
+    (ChainComplex.of (tensorStandardResolutionComplexObj N) (tensorStandardResolutionComplexD M N)
+      (tensorStandardResolutionComplexD_comp M N)).d (0 + 1) 0 =
+        ModuleCat.ofHom
+          (((tensorStandardResolutionD1 M N) : AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap)
+  simpa using
+    (ChainComplex.of_d (tensorStandardResolutionComplexObj N)
+      (tensorStandardResolutionComplexD M N)
+      (tensorStandardResolutionComplexD_comp M N) 0)
+
+@[simp]
+theorem tensorStandardResolutionComplex_d_succ_succ (M N n : ℕ) :
+    (tensorStandardResolutionComplex M N).d (n + 2) (n + 1) = 0 := by
+  change
+    (ChainComplex.of (tensorStandardResolutionComplexObj N) (tensorStandardResolutionComplexD M N)
+      (tensorStandardResolutionComplexD_comp M N)).d ((n + 1) + 1) (n + 1) = 0
+  rw [ChainComplex.of_d]
+  exact tensorStandardResolutionComplexD_succ M N n
+
+/-- The degree-one cycles in the tensored standard resolution. -/
+abbrev tensorStandardResolutionCycles1 (M N : ℕ) :
+    AddSubgroup (tensorStandardResolutionTerm M N) :=
+  (tensorStandardResolutionD1 M N).ker
+
+/-- The degree-one boundaries in the tensored standard resolution. -/
+abbrev tensorStandardResolutionBoundaries1 (M N : ℕ) :
+    AddSubgroup (tensorStandardResolutionTerm M N) :=
+  (tensorStandardResolutionD2 M N).range
+
+theorem tensorStandardResolutionCycles1_eq_kernel (M N : ℕ) :
+    tensorStandardResolutionCycles1 M N = (tensorStandardResolutionD1 M N).ker :=
+  rfl
+
+theorem tensorStandardResolutionD2_range_eq_bot (M N : ℕ) :
+    (tensorStandardResolutionD2 M N).range = ⊥ := by
+  ext x
+  constructor
+  · rintro ⟨y, rfl⟩
+    simp [tensorStandardResolutionD2]
+  · intro hx
+    rw [AddSubgroup.mem_bot] at hx
+    subst x
+    exact ⟨0, by simp [tensorStandardResolutionD2]⟩
+
+theorem tensorStandardResolutionBoundaries1_eq_range (M N : ℕ) :
+    tensorStandardResolutionBoundaries1 M N = (tensorStandardResolutionD2 M N).range :=
+  rfl
+
+theorem tensorStandardResolutionBoundaries1_eq_bot (M N : ℕ) :
+    tensorStandardResolutionBoundaries1 M N = ⊥ :=
+  tensorStandardResolutionD2_range_eq_bot M N
+
+theorem tensorStandardResolutionBoundaries1_le_cycles1 (M N : ℕ) :
+    tensorStandardResolutionBoundaries1 M N ≤ tensorStandardResolutionCycles1 M N := by
+  rw [tensorStandardResolutionBoundaries1_eq_bot]
+  exact bot_le
+
+/-- Membership in the cycle group is the annihilation relation by `M`. -/
+theorem mem_tensorStandardResolutionCycles1_iff (M N : ℕ) (x : ZMod N) :
+    x ∈ tensorStandardResolutionCycles1 M N ↔ (M : ZMod N) * x = 0 := by
+  change x ∈ (AddMonoidHom.mulLeft (M : ZMod N)).ker ↔ (M : ZMod N) * x = 0
+  rw [AddMonoidHom.mem_ker]
+  rfl
+
+/-- The degree-one homology object of the tensor-standard resolution. -/
+abbrev tensorStandardResolutionH1 (M N : ℕ) :
+    AddSubgroup (tensorStandardResolutionTerm M N) :=
+  tensorStandardResolutionCycles1 M N
+
+/-- Since degree-one boundaries are zero, the homology object is the cycle subgroup itself. -/
+abbrev tensorStandardResolutionHomology1 (M N : ℕ) :
+    Type :=
+  tensorStandardResolutionCycles1 M N
+
+instance tensorStandardResolutionHomology1.addCommGroup (M N : ℕ) :
+    AddCommGroup (tensorStandardResolutionHomology1 M N) :=
+  inferInstance
+
+theorem tensorStandardResolutionH1_eq_cycles1 (M N : ℕ) :
+    tensorStandardResolutionH1 M N = tensorStandardResolutionCycles1 M N :=
+  rfl
+
+/-- The explicit homology type is the cycle subgroup; this records the zero-boundary step. -/
+def tensorStandardResolutionHomology1EquivCycles1 (M N : ℕ) :
+    tensorStandardResolutionHomology1 M N ≃+ tensorStandardResolutionCycles1 M N :=
+  AddEquiv.refl _
+
+/-- The tensor-standard homology model is the concrete `TorH1` kernel model. -/
+def tensorStandardResolutionH1EquivTorH1 (M N : ℕ) :
+    tensorStandardResolutionH1 M N ≃+ TorH1 M N :=
+  AddEquiv.refl _
+
+/-- The cycle-as-homology model is the concrete `TorH1` kernel model. -/
+def tensorStandardResolutionHomology1EquivTorH1 (M N : ℕ) :
+    tensorStandardResolutionHomology1 M N ≃+ TorH1 M N :=
+  AddEquiv.refl _
+
+@[simp]
+theorem tensorStandardResolutionH1EquivTorH1_apply (M N : ℕ)
+    (x : tensorStandardResolutionH1 M N) :
+    (tensorStandardResolutionH1EquivTorH1 M N x : ZMod N) = x :=
+  rfl
+
+/-- The tensor-standard homology computes the expected `ℤ/gcd` group. -/
+noncomputable def tensorStandardResolutionH1EquivZModGcd (M N : ℕ) [NeZero N] :
+    tensorStandardResolutionH1 M N ≃+ ZMod (Nat.gcd N M) :=
+  (tensorStandardResolutionH1EquivTorH1 M N).trans (TorH1_iso_zmod_gcd M N)
+
+/-- The explicit cycle-as-homology model computes the expected `ℤ/gcd` group. -/
+noncomputable def tensorStandardResolutionHomology1EquivZModGcd (M N : ℕ) [NeZero N] :
+    tensorStandardResolutionHomology1 M N ≃+ ZMod (Nat.gcd N M) :=
+  (tensorStandardResolutionHomology1EquivTorH1 M N).trans (TorH1_iso_zmod_gcd M N)
+
+@[simp]
+theorem tensorStandardResolutionH1_card (M N : ℕ) [NeZero N] :
+    Nat.card (tensorStandardResolutionH1 M N) = Nat.gcd N M := by
+  simpa [tensorStandardResolutionH1, tensorStandardResolutionD1_eq_torD1, TorH1] using
+    (TorH1_card M N)
+
+@[simp]
+theorem tensorStandardResolutionHomology1_card (M N : ℕ) [NeZero N] :
+    Nat.card (tensorStandardResolutionHomology1 M N) = Nat.gcd N M := by
+  simpa [tensorStandardResolutionHomology1, tensorStandardResolutionH1] using
+    (tensorStandardResolutionH1_card M N)
+
+/-- Kernel membership in the tensor-standard homology is the concrete annihilation relation
+`M • x = 0` in `ZMod N`. -/
+theorem mem_tensorStandardResolutionH1_iff (M N : ℕ) (x : ZMod N) :
+    x ∈ tensorStandardResolutionH1 M N ↔ (M : ZMod N) * x = 0 := by
+  exact mem_tensorStandardResolutionCycles1_iff M N x
+
+/-- The `ModuleCat Int` endpoint represented by the degree-one homology of the
+tensored standard free resolution.  This is the concrete object to which a
+full categorical `leftDerived` calculation should identify Mathlib's abstract
+`Tor₁` endpoint. -/
+abbrev standardResolutionTorOneEndpoint (M N : ℕ) : ModuleCat Int :=
+  ModuleCat.of Int (tensorStandardResolutionHomology1 M N)
+
+/-- As a bundled `Int`-module, the standard-resolution endpoint is the concrete
+kernel model `TorH1`. -/
+noncomputable def standardResolutionTorOneEndpointIsoConcrete (M N : ℕ) :
+    standardResolutionTorOneEndpoint M N ≅ ModuleCat.of Int (TorH1 M N) :=
+  (AddEquiv.toIntLinearEquiv
+    (tensorStandardResolutionHomology1EquivTorH1 M N)).toModuleIso
+
+/-- As a bundled `Int`-module, the standard-resolution endpoint is `ℤ/gcd(N,M)`. -/
+noncomputable def standardResolutionTorOneEndpointIsoGcd (M N : ℕ) [NeZero N] :
+    standardResolutionTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  (AddEquiv.toIntLinearEquiv
+    (tensorStandardResolutionHomology1EquivZModGcd M N)).toModuleIso
+
+/-- PR-facing certificate for the standard-free-resolution computation of `Tor₁`.  This is the
+calculation a future abstract `CategoryTheory.Tor` comparison should target: after tensoring the
+standard free resolution of `ℤ/M` with `ZMod N`, degree-one homology is exactly the already
+formalized kernel model and hence `ZMod (gcd N M)`. -/
+structure StandardFreeResolutionTorComparison (M N : ℕ) [NeZero N] where
+  preTensorResolution : StandardIntResolutionCertificate M
+  preTensorComplex : ChainComplex (ModuleCat Int) ℕ
+  preTensorComplex_eq : preTensorComplex = standardIntResolutionComplex M
+  preTensor_projective : ∀ n, Projective ((standardIntResolutionComplex M).X n)
+  preTensorAugmentation :
+    standardIntResolutionComplex M ⟶
+      (ChainComplex.single₀ (ModuleCat Int)).obj (ModuleCat.of Int (ZMod M))
+  preTensorAugmentation_f_zero :
+    preTensorAugmentation.f 0 =
+      ModuleCat.ofHom
+        (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap)
+  preTensorAugmentation_f_zero_epi : Epi (preTensorAugmentation.f 0)
+  preTensorAugmentation_comp_d_one_zero :
+    (standardIntResolutionComplex M).d 1 0 ≫ preTensorAugmentation.f 0 = 0
+  preTensor_exact_middle : preTensorResolution.d1.range = preTensorResolution.quotient.ker
+  preTensor_surjective : Function.Surjective preTensorResolution.quotient
+  preTensor_left_exact_of_ne_zero : M ≠ 0 → preTensorResolution.d1.ker = ⊥
+  tensorComplex : ChainComplex (ModuleCat Int) ℕ
+  tensorComplex_eq : tensorComplex = tensorStandardResolutionComplex M N
+  tensorD1 : tensorStandardResolutionTerm M N →+ tensorStandardResolutionTerm M N
+  tensorD1_eq_torD1 : tensorD1 = torD1 M N
+  tensorD2 : tensorStandardResolutionTerm2 M N →+ tensorStandardResolutionTerm M N
+  tensorD2_eq_zero : tensorD2 = 0
+  tensorD1_comp_tensorD2_apply : ∀ x, tensorD1 (tensorD2 x) = 0
+  cycles1 : AddSubgroup (tensorStandardResolutionTerm M N)
+  cycles1_eq_kernel : cycles1 = tensorD1.ker
+  boundaries1 : AddSubgroup (tensorStandardResolutionTerm M N)
+  boundaries1_eq_range : boundaries1 = tensorD2.range
+  boundaries1_eq_bot : boundaries1 = ⊥
+  boundaries1_le_cycles1 : boundaries1 ≤ cycles1
+  tensorH1 : AddSubgroup (tensorStandardResolutionTerm M N)
+  tensorH1_eq_kernel : tensorH1 = (tensorD1).ker
+  tensorH1_eq_cycles1 : tensorH1 = cycles1
+  homology1EquivCycles1 : tensorStandardResolutionHomology1 M N ≃+ cycles1
+  homology1EquivConcrete : tensorStandardResolutionHomology1 M N ≃+ TorH1 M N
+  homology1EquivGcd : tensorStandardResolutionHomology1 M N ≃+ ZMod (Nat.gcd N M)
+  standardEndpoint : ModuleCat Int
+  standardEndpoint_eq : standardEndpoint = standardResolutionTorOneEndpoint M N
+  standardEndpointIsoConcrete : standardEndpoint ≅ ModuleCat.of Int (TorH1 M N)
+  standardEndpointIsoGcd : standardEndpoint ≅ ModuleCat.of Int (ZMod (Nat.gcd N M))
+  tensorH1EquivConcrete : tensorH1 ≃+ TorH1 M N
+  concreteEquivGcd : TorH1 M N ≃+ ZMod (Nat.gcd N M)
+  tensorH1EquivGcd : tensorH1 ≃+ ZMod (Nat.gcd N M)
+  tensorH1_card : Nat.card tensorH1 = Nat.gcd N M
+  homology1_card : Nat.card (tensorStandardResolutionHomology1 M N) = Nat.gcd N M
+
+/-- Canonical standard-free-resolution Tor comparison certificate. -/
+noncomputable def standardFreeResolutionTorComparison (M N : ℕ) [NeZero N] :
+    StandardFreeResolutionTorComparison M N where
+  preTensorResolution := standardIntResolutionCertificate M
+  preTensorComplex := standardIntResolutionComplex M
+  preTensorComplex_eq := rfl
+  preTensor_projective := standardIntResolutionComplex_projective M
+  preTensorAugmentation := standardIntResolutionAugmentation M
+  preTensorAugmentation_f_zero := standardIntResolutionAugmentation_f_zero M
+  preTensorAugmentation_f_zero_epi := standardIntResolutionAugmentation_f_zero_epi M
+  preTensorAugmentation_comp_d_one_zero :=
+    standardIntResolutionAugmentation_comp_d_one_zero M
+  preTensor_exact_middle := (standardIntResolutionCertificate M).exact_middle
+  preTensor_surjective := (standardIntResolutionCertificate M).quotient_surjective
+  preTensor_left_exact_of_ne_zero := (standardIntResolutionCertificate M).d1_ker_eq_bot_of_ne_zero
+  tensorComplex := tensorStandardResolutionComplex M N
+  tensorComplex_eq := rfl
+  tensorD1 := tensorStandardResolutionD1 M N
+  tensorD1_eq_torD1 := rfl
+  tensorD2 := tensorStandardResolutionD2 M N
+  tensorD2_eq_zero := rfl
+  tensorD1_comp_tensorD2_apply := tensorStandardResolutionD1_comp_D2_apply M N
+  cycles1 := tensorStandardResolutionCycles1 M N
+  cycles1_eq_kernel := rfl
+  boundaries1 := tensorStandardResolutionBoundaries1 M N
+  boundaries1_eq_range := rfl
+  boundaries1_eq_bot := tensorStandardResolutionBoundaries1_eq_bot M N
+  boundaries1_le_cycles1 := tensorStandardResolutionBoundaries1_le_cycles1 M N
+  tensorH1 := tensorStandardResolutionH1 M N
+  tensorH1_eq_kernel := rfl
+  tensorH1_eq_cycles1 := rfl
+  homology1EquivCycles1 := tensorStandardResolutionHomology1EquivCycles1 M N
+  homology1EquivConcrete := tensorStandardResolutionHomology1EquivTorH1 M N
+  homology1EquivGcd := tensorStandardResolutionHomology1EquivZModGcd M N
+  standardEndpoint := standardResolutionTorOneEndpoint M N
+  standardEndpoint_eq := rfl
+  standardEndpointIsoConcrete := standardResolutionTorOneEndpointIsoConcrete M N
+  standardEndpointIsoGcd := standardResolutionTorOneEndpointIsoGcd M N
+  tensorH1EquivConcrete := tensorStandardResolutionH1EquivTorH1 M N
+  concreteEquivGcd := TorH1_iso_zmod_gcd M N
+  tensorH1EquivGcd := tensorStandardResolutionH1EquivZModGcd M N
+  tensorH1_card := tensorStandardResolutionH1_card M N
+  homology1_card := tensorStandardResolutionHomology1_card M N
+
+/-! ### Base-change naturality for the Čech obstruction square (Thm .3).
+
+The integral model above identifies the cokernel of
+`ℤ → ZMod M × ZMod N` with `ZMod (gcd M N)`.  The next block gives the
+same difference-map model over an arbitrary commutative base ring `R`:
+`R → R/(M) × R/(N)` has cokernel `R/(gcd M N)`.  The map induced from
+`γ : ℤ → R` is then proved to commute with the two obstruction
+identifications on representatives.  This is the algebraic core needed for
+principal opens, localizations, and completions; those special cases only
+instantiate `R` and the usual structure map from `ℤ`. -/
+
+/-- The principal ideal `(n)` in a commutative ring, with `n` coming from `ℕ`. -/
+def principalIdeal (R : Type*) [CommRing R] (n : ℕ) : Ideal R :=
+  Ideal.span {(n : R)}
+
+theorem natCast_mem_principalIdeal_of_dvd
+    (R : Type*) [CommRing R] {a b : ℕ} (h : a ∣ b) :
+    (b : R) ∈ principalIdeal R a := by
+  rcases h with ⟨c, rfl⟩
+  rw [principalIdeal]
+  exact Ideal.mem_span_singleton.mpr ⟨(c : R), by simp [Nat.cast_mul]⟩
+
+theorem principalIdeal_le_principalIdeal_of_dvd
+    (R : Type*) [CommRing R] {a b : ℕ} (h : b ∣ a) :
+    principalIdeal R a ≤ principalIdeal R b := by
+  rw [principalIdeal, principalIdeal, Ideal.span_singleton_le_iff_mem]
+  exact natCast_mem_principalIdeal_of_dvd R h
+
+/-- If `b ∣ a`, quotienting by `(a)` maps naturally to quotienting by `(b)`. -/
+noncomputable def principalQuotientMapOfDvd
+    (R : Type*) [CommRing R] {a b : ℕ} (h : b ∣ a) :
+    R ⧸ principalIdeal R a →+* R ⧸ principalIdeal R b :=
+  Ideal.Quotient.lift (principalIdeal R a)
+    (Ideal.Quotient.mk (principalIdeal R b)) (by
+      intro x hx
+      rw [Ideal.Quotient.eq_zero_iff_mem]
+      exact principalIdeal_le_principalIdeal_of_dvd R h hx)
+
+@[simp]
+theorem principalQuotientMapOfDvd_mk
+    (R : Type*) [CommRing R] {a b : ℕ} (h : b ∣ a) (x : R) :
+    principalQuotientMapOfDvd R h (Ideal.Quotient.mk (principalIdeal R a) x) =
+      Ideal.Quotient.mk (principalIdeal R b) x :=
+  rfl
+
+/-- The base-changed CRT comparison map `R → R/(M) × R/(N)`. -/
+def principalCechPhi (R : Type*) [CommRing R] (M N : ℕ) :
+    R →+ (R ⧸ principalIdeal R M) × (R ⧸ principalIdeal R N) where
+  toFun x := (Ideal.Quotient.mk (principalIdeal R M) x,
+    Ideal.Quotient.mk (principalIdeal R N) x)
+  map_zero' := by simp
+  map_add' x y := by ext <;> simp
+
+/-- The base-changed overlap difference map
+`R/(M) × R/(N) → R/(gcd M N)`. -/
+noncomputable def principalCechDel (R : Type*) [CommRing R] (M N : ℕ) :
+    (R ⧸ principalIdeal R M) × (R ⧸ principalIdeal R N) →+
+      R ⧸ principalIdeal R (Nat.gcd M N) where
+  toFun y :=
+    principalQuotientMapOfDvd R (Nat.gcd_dvd_left M N) y.1 -
+      principalQuotientMapOfDvd R (Nat.gcd_dvd_right M N) y.2
+  map_zero' := by simp
+  map_add' y z := by
+    simp only [Prod.fst_add, Prod.snd_add, map_add]
+    abel
+
+@[simp]
+theorem principalCechDel_mk
+    (R : Type*) [CommRing R] (M N : ℕ) (a b : R) :
+    principalCechDel R M N
+      (Ideal.Quotient.mk (principalIdeal R M) a,
+        Ideal.Quotient.mk (principalIdeal R N) b) =
+      Ideal.Quotient.mk (principalIdeal R (Nat.gcd M N)) (a - b) := by
+  simp [principalCechDel]
+
+@[simp]
+theorem principalCechDel_comp_principalCechPhi
+    (R : Type*) [CommRing R] (M N : ℕ) (x : R) :
+    principalCechDel R M N (principalCechPhi R M N x) = 0 := by
+  simp [principalCechPhi]
+
+theorem nat_gcd_bezout_cast (R : Type*) [CommRing R] (M N : ℕ) :
+    (Nat.gcd M N : R) =
+      (M : R) * ((Int.gcdA (M : ℤ) (N : ℤ) : ℤ) : R) +
+        (N : R) * ((Int.gcdB (M : ℤ) (N : ℤ) : ℤ) : R) := by
+  have hZ : ((Nat.gcd M N : ℕ) : ℤ) =
+      (M : ℤ) * Int.gcdA (M : ℤ) (N : ℤ) +
+        (N : ℤ) * Int.gcdB (M : ℤ) (N : ℤ) := by
+    simpa [int_gcd_natCast M N] using
+      Int.gcd_eq_gcd_ab (M : ℤ) (N : ℤ)
+  have hR := congrArg (fun z : ℤ => (z : R)) hZ
+  simpa [Int.cast_add, Int.cast_mul, Int.cast_natCast] using hR
+
+/-- The base-changed difference map is onto: every class in `R/(gcd)` is
+represented by `(r,0)`. -/
+theorem principalCechDel_surjective
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    Function.Surjective (principalCechDel R M N) := by
+  intro z
+  obtain ⟨r, rfl⟩ := Ideal.Quotient.mk_surjective z
+  refine ⟨(Ideal.Quotient.mk (principalIdeal R M) r, 0), ?_⟩
+  change principalCechDel R M N
+      (Ideal.Quotient.mk (principalIdeal R M) r,
+        Ideal.Quotient.mk (principalIdeal R N) 0) =
+    Ideal.Quotient.mk (principalIdeal R (Nat.gcd M N)) r
+  rw [principalCechDel_mk]
+  simp
+
+/-- Exactness of the base-changed CRT/Čech sequence:
+`range Φ_R = ker ∂_R`. -/
+theorem principalCechPhi_range_eq_principalCechDel_ker
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    (principalCechPhi R M N).range = (principalCechDel R M N).ker := by
+  ext y
+  constructor
+  · rintro ⟨x, rfl⟩
+    simp
+  · intro hy
+    rcases y with ⟨yM, yN⟩
+    obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective yM
+    obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective yN
+    rw [AddMonoidHom.mem_ker, principalCechDel_mk] at hy
+    have hmem : a - b ∈ principalIdeal R (Nat.gcd M N) := by
+      rwa [Ideal.Quotient.eq_zero_iff_mem] at hy
+    rcases (Ideal.mem_span_singleton.mp (by simpa [principalIdeal] using hmem)) with ⟨w, hw⟩
+    let A : R := ((Int.gcdA (M : ℤ) (N : ℤ) : ℤ) : R)
+    let B : R := ((Int.gcdB (M : ℤ) (N : ℤ) : ℤ) : R)
+    let x : R := a - (M : R) * A * w
+    refine ⟨x, ?_⟩
+    ext
+    · simp [principalCechPhi]
+      rw [Ideal.Quotient.eq]
+      change x - a ∈ principalIdeal R M
+      rw [principalIdeal]
+      exact Ideal.mem_span_singleton.mpr ⟨-(A * w), by
+        simp [x]
+        ring⟩
+    · simp [principalCechPhi]
+      rw [Ideal.Quotient.eq]
+      change x - b ∈ principalIdeal R N
+      rw [principalIdeal]
+      have hbez := nat_gcd_bezout_cast R M N
+      have hw' : a - b = (Nat.gcd M N : R) * w := by
+        simpa using hw
+      exact Ideal.mem_span_singleton.mpr ⟨B * w, by
+        simp [x]
+        rw [show a - (M : R) * A * w - b = (a - b) - (M : R) * A * w by ring]
+        rw [hw', hbez]
+        simp [A, B]
+        ring⟩
+
+/-- Universe-polymorphic additive cokernel.  The global `AddCoker` above is
+specialized to same-universe source and target; the base-changed Čech map has
+domain `R` and codomain a product of quotients, so we use this local variant. -/
+abbrev AddCokerU.{u, v} {A : Type u} {B : Type v} [AddCommGroup A] [AddCommGroup B]
+    (f : A →+ B) :=
+  B ⧸ f.range
+
+instance principalCechPhi_range_normal (R : Type*) [CommRing R] (M N : ℕ) :
+    (principalCechPhi R M N).range.Normal :=
+  AddSubgroup.normal_of_comm _
+
+/-- Cokernel of the base-changed CRT comparison map. -/
+abbrev principalCechCoker (R : Type*) [CommRing R] (M N : ℕ) : Type _ :=
+  AddCokerU (principalCechPhi R M N)
+
+/-- Base-changed Čech obstruction: `coker Φ_R ≃+ R/(gcd M N)`. -/
+noncomputable def principalCechCokerEquivQuotientGcd
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    principalCechCoker R M N ≃+ R ⧸ principalIdeal R (Nat.gcd M N) :=
+  QuotientAddGroup.liftEquiv (principalCechPhi R M N).range
+    (φ := principalCechDel R M N) (principalCechDel_surjective R M N)
+    (principalCechPhi_range_eq_principalCechDel_ker R M N)
+
+@[simp]
+theorem principalCechCokerEquivQuotientGcd_mk
+    (R : Type*) [CommRing R] (M N : ℕ)
+    (y : (R ⧸ principalIdeal R M) × (R ⧸ principalIdeal R N)) :
+    principalCechCokerEquivQuotientGcd R M N
+        (QuotientAddGroup.mk (s := (principalCechPhi R M N).range) y) =
+      principalCechDel R M N y := by
+  rfl
+
+/-- The map `ZMod n → R/(n)` induced by the unique ring map `ℤ → R`. -/
+noncomputable def zmodToPrincipalQuotient
+    (R : Type*) [CommRing R] (n : ℕ) :
+    ZMod n →+* R ⧸ principalIdeal R n :=
+  (Ideal.Quotient.lift (Ideal.span {(n : ℤ)})
+    ((Ideal.Quotient.mk (principalIdeal R n)).comp (Int.castRingHom R)) (by
+      intro a ha
+      change Ideal.Quotient.mk (principalIdeal R n) (a : R) = 0
+      rw [Ideal.Quotient.eq_zero_iff_mem]
+      change (a : R) ∈ principalIdeal R n
+      rw [principalIdeal]
+      rcases (Ideal.mem_span_singleton.mp ha) with ⟨z, hz⟩
+      exact Ideal.mem_span_singleton.mpr ⟨(z : R), by
+        change (a : R) = (n : R) * (z : R)
+        rw [hz]
+        simp [Int.cast_mul]⟩)).comp
+    ((Int.quotientSpanNatEquivZMod n).symm : ZMod n →+* ℤ ⧸ Ideal.span {(n : ℤ)})
+
+@[simp]
+theorem zmodToPrincipalQuotient_intCast
+    (R : Type*) [CommRing R] (n : ℕ) (a : ℤ) :
+    zmodToPrincipalQuotient R n (a : ZMod n) =
+      Ideal.Quotient.mk (principalIdeal R n) (a : R) := by
+  simp [zmodToPrincipalQuotient]
+
+/-- Base change on the middle term of the Čech complex. -/
+noncomputable def principalCechBaseChangePair
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    ZMod M × ZMod N →+ (R ⧸ principalIdeal R M) × (R ⧸ principalIdeal R N) where
+  toFun y := (zmodToPrincipalQuotient R M y.1, zmodToPrincipalQuotient R N y.2)
+  map_zero' := by ext <;> simp
+  map_add' y z := by ext <;> simp
+
+/-- Naturality of the difference map under the base change `ℤ → R`. -/
+theorem principalCechDel_baseChangePair
+    (R : Type*) [CommRing R] (M N : ℕ) (y : ZMod M × ZMod N) :
+    principalCechDel R M N (principalCechBaseChangePair R M N y) =
+      zmodToPrincipalQuotient R (Nat.gcd M N) (crtDel M N y) := by
+  rcases y with ⟨yM, yN⟩
+  obtain ⟨a, rfl⟩ := ZMod.intCast_surjective yM
+  obtain ⟨b, rfl⟩ := ZMod.intCast_surjective yN
+  rw [crtDel_intCast]
+  simp only [principalCechBaseChangePair, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
+    zmodToPrincipalQuotient_intCast, map_sub]
+  rw [principalCechDel_mk]
+  simp
+
+/-- Base change on Čech cokernels, induced by the middle-term base-change map. -/
+noncomputable def cechCokerBaseChangeMap
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    cechPhiCoker M N →+ principalCechCoker R M N :=
+  QuotientAddGroup.map (crtPhi M N).range (principalCechPhi R M N).range
+    (principalCechBaseChangePair R M N) (by
+      rintro y ⟨x, rfl⟩
+      exact ⟨(x : R), by
+        ext <;> simp [principalCechBaseChangePair, principalCechPhi, crtPhi]⟩)
+
+@[simp]
+theorem cechCokerBaseChangeMap_mk
+    (R : Type*) [CommRing R] (M N : ℕ) (y : ZMod M × ZMod N) :
+    cechCokerBaseChangeMap R M N
+        (QuotientAddGroup.mk (s := (crtPhi M N).range) y) =
+      QuotientAddGroup.mk (s := (principalCechPhi R M N).range)
+        (principalCechBaseChangePair R M N y) := by
+  unfold cechCokerBaseChangeMap
+  rfl
+
+/-- **Thm .3, Čech naturality square.**  For every commutative base ring `R`,
+the `coker Φ ≃ R/(gcd)` obstruction identification commutes with the map induced
+by the structure morphism `ℤ → R`. -/
+theorem cechCokerBaseChange_naturality_mk
+    (R : Type*) [CommRing R] (M N : ℕ) (y : ZMod M × ZMod N) :
+    principalCechCokerEquivQuotientGcd R M N
+        (cechCokerBaseChangeMap R M N
+          (QuotientAddGroup.mk (s := (crtPhi M N).range) y)) =
+      zmodToPrincipalQuotient R (Nat.gcd M N)
+        (cechPhiCokerEquivZModGcd M N
+          (QuotientAddGroup.mk (s := (crtPhi M N).range) y)) := by
+  simp [principalCechDel_baseChangePair, cechPhiCokerEquivZModGcd_mk]
+
+structure CechBaseChangeNaturalityCertificate
+    (R : Type*) [CommRing R] (M N : ℕ) where
+  cokerMap : cechPhiCoker M N →+ principalCechCoker R M N
+  gcdMap : ZMod (Nat.gcd M N) →+ R ⧸ principalIdeal R (Nat.gcd M N)
+  square_comm :
+    ∀ y : ZMod M × ZMod N,
+      principalCechCokerEquivQuotientGcd R M N (cokerMap (QuotientAddGroup.mk y)) =
+        gcdMap (cechPhiCokerEquivZModGcd M N (QuotientAddGroup.mk y))
+
+/-- Canonical certificate for the Čech base-change naturality square. -/
+noncomputable def cechBaseChangeNaturalityCertificate
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    CechBaseChangeNaturalityCertificate R M N where
+  cokerMap := cechCokerBaseChangeMap R M N
+  gcdMap := (zmodToPrincipalQuotient R (Nat.gcd M N)).toAddMonoidHom
+  square_comm := cechCokerBaseChange_naturality_mk R M N
+
+/-- Localization-specialized packaging: the same proved square applies to every
+localization of `ℤ`. -/
+noncomputable def cechLocalizationNaturalityCertificate
+    (S : Submonoid ℤ) (R : Type*) [CommRing R] [Algebra ℤ R]
+    [IsLocalization S R] (M N : ℕ) :
+    CechBaseChangeNaturalityCertificate R M N :=
+  cechBaseChangeNaturalityCertificate R M N
+
+/-! ### Conditional Tor base-change naturality (Thm .3).
+
+The map on the concrete Tor model is unconditional: the structure morphism
+`ℤ → R` sends the kernel of `×M : ZMod N → ZMod N` into the kernel of
+`×M : R/(N) → R/(N)`.  The final identification of that target kernel with
+`R/(gcd N M)` is kept as an explicit flat/localization hypothesis, because the
+colon-ideal computation can fail without the usual exactness hypotheses. -/
+
+/-- Base-changed degree-1 Tor differential `R/(N) --×M--> R/(N)`. -/
+noncomputable def principalTorD1 (R : Type*) [CommRing R] (M N : ℕ) :
+    R ⧸ principalIdeal R N →+ R ⧸ principalIdeal R N :=
+  AddMonoidHom.mulLeft (Ideal.Quotient.mk (principalIdeal R N) (M : R))
+
+@[simp]
+theorem principalTorD1_mk
+    (R : Type*) [CommRing R] (M N : ℕ) (r : R) :
+    principalTorD1 R M N (Ideal.Quotient.mk (principalIdeal R N) r) =
+      Ideal.Quotient.mk (principalIdeal R N) ((M : R) * r) := by
+  simp [principalTorD1]
+
+/-- Concrete target kernel after base change. -/
+noncomputable abbrev principalTorH1 (R : Type*) [CommRing R] (M N : ℕ) :
+    AddSubgroup (R ⧸ principalIdeal R N) :=
+  (principalTorD1 R M N).ker
+
+/-- The base-change map commutes with the degree-1 Tor differential. -/
+theorem principalTorD1_baseChange
+    (R : Type*) [CommRing R] (M N : ℕ) (x : ZMod N) :
+    principalTorD1 R M N (zmodToPrincipalQuotient R N x) =
+      zmodToPrincipalQuotient R N (torD1 M N x) := by
+  obtain ⟨a, rfl⟩ := ZMod.intCast_surjective x
+  simp [torD1, principalTorD1]
+
+/-- The map on concrete Tor kernels induced by `ℤ → R`. -/
+noncomputable def principalTorBaseChangeMap
+    (R : Type*) [CommRing R] (M N : ℕ) :
+    TorH1 M N →+ principalTorH1 R M N where
+  toFun x :=
+    ⟨zmodToPrincipalQuotient R N (x : ZMod N), by
+      rw [AddMonoidHom.mem_ker, principalTorD1_baseChange]
+      have hx : torD1 M N (x : ZMod N) = 0 :=
+        AddMonoidHom.mem_ker.mp x.2
+      simp [hx]⟩
+  map_zero' := by ext; simp
+  map_add' x y := by ext; simp
+
+@[simp]
+theorem principalTorBaseChangeMap_coe
+    (R : Type*) [CommRing R] (M N : ℕ) (x : TorH1 M N) :
+    (principalTorBaseChangeMap R M N x : R ⧸ principalIdeal R N) =
+      zmodToPrincipalQuotient R N (x : ZMod N) :=
+  rfl
+
+/-- The flat/localization input needed to identify the base-changed Tor kernel
+with `R/(gcd N M)` compatibly with the integral generator normalization. -/
+structure TorBaseChangeNaturalityHypothesis
+    (R : Type*) [CommRing R] (M N : ℕ) [NeZero N] where
+  targetEquiv : principalTorH1 R M N ≃+ R ⧸ principalIdeal R (Nat.gcd N M)
+  square_comm :
+    ∀ x : TorH1 M N,
+      targetEquiv (principalTorBaseChangeMap R M N x) =
+        zmodToPrincipalQuotient R (Nat.gcd N M) (TorH1_iso_zmod_gcd M N x)
+
+/-- Packaged Tor naturality square for Thm .3. -/
+structure TorBaseChangeNaturalityCertificate
+    (R : Type*) [CommRing R] (M N : ℕ) [NeZero N] where
+  kernelMap : TorH1 M N →+ principalTorH1 R M N
+  gcdMap : ZMod (Nat.gcd N M) →+ R ⧸ principalIdeal R (Nat.gcd N M)
+  targetEquiv : principalTorH1 R M N ≃+ R ⧸ principalIdeal R (Nat.gcd N M)
+  square_comm :
+    ∀ x : TorH1 M N,
+      targetEquiv (kernelMap x) = gcdMap (TorH1_iso_zmod_gcd M N x)
+
+/-- Build the Tor naturality square from the explicit flat/localization
+identification of the base-changed kernel. -/
+noncomputable def torBaseChangeNaturalityCertificate
+    (R : Type*) [CommRing R] (M N : ℕ) [NeZero N]
+    (h : TorBaseChangeNaturalityHypothesis R M N) :
+    TorBaseChangeNaturalityCertificate R M N where
+  kernelMap := principalTorBaseChangeMap R M N
+  gcdMap := (zmodToPrincipalQuotient R (Nat.gcd N M)).toAddMonoidHom
+  targetEquiv := h.targetEquiv
+  square_comm := h.square_comm
+
+/-- Pointwise form of the conditional Tor base-change naturality square. -/
+theorem torBaseChange_naturality
+    (R : Type*) [CommRing R] (M N : ℕ) [NeZero N]
+    (h : TorBaseChangeNaturalityHypothesis R M N) (x : TorH1 M N) :
+    h.targetEquiv (principalTorBaseChangeMap R M N x) =
+      zmodToPrincipalQuotient R (Nat.gcd N M) (TorH1_iso_zmod_gcd M N x) :=
+  h.square_comm x
+
+/-- Flat-base packaging: once the flat kernel-identification hypothesis is
+supplied, the Tor naturality square is a theorem. -/
+noncomputable def torFlatBaseChangeNaturalityCertificate
+    (R : Type*) [CommRing R] [Algebra ℤ R] [Module.Flat ℤ R]
+    (M N : ℕ) [NeZero N] (h : TorBaseChangeNaturalityHypothesis R M N) :
+    TorBaseChangeNaturalityCertificate R M N :=
+  torBaseChangeNaturalityCertificate R M N h
+
+/-- Localization-specialized packaging of the conditional Tor square. -/
+noncomputable def torLocalizationNaturalityCertificate
+    (S : Submonoid ℤ) (R : Type*) [CommRing R] [Algebra ℤ R]
+    [IsLocalization S R] (M N : ℕ) [NeZero N]
+    (h : TorBaseChangeNaturalityHypothesis R M N) :
+    TorBaseChangeNaturalityCertificate R M N :=
+  torBaseChangeNaturalityCertificate R M N h
 
 /-- The prime-power CRT product used by `ZMod.equivPi` really multiplies back to `N`. -/
 theorem prod_primePower_factorization_eq_self (N : ℕ) (hN : N ≠ 0) :
@@ -2353,7 +3687,11 @@ function.  To keep the theorem honest and mergeable, the finite depth and dimens
 therefore supplied by a small interface.  The interface asks only for the standard compatibility
 laws that any future concrete depth API should provide: weak regular sequences give lower bounds
 on depth, depth is bounded by dimension, and Cohen-Macaulay modules are exactly the case where the
-two values agree. -/
+two values agree.
+
+The `ENatDepthDimensionAPI` adapter below is the intended bridge for ABS-style APIs whose depth
+and dimension are `ℕ∞`-valued: it isolates the finite truncation step before instantiating the
+finite `ModuleDepthDimensionInterface`. -/
 
 section Depth
 
@@ -2404,6 +3742,211 @@ structure ModuleDepthDimensionInterface (R : Type u) [CommRing R] where
   depth_eq_dimension_of_isCohenMacaulay :
     ∀ {M : Type v} [AddCommGroup M] [Module R M],
       IsCohenMacaulay M → depth M = dimension M
+
+/-- If a finite natural bound is below an `ℕ∞` value that is known finite, it is below the
+finite truncation of that value. -/
+theorem enat_toNat_le_of_natCast_le {n : ℕ} {d : ℕ∞} (hd : d ≠ ⊤)
+    (h : (n : ℕ∞) ≤ d) :
+    n ≤ ENat.toNat d := by
+  simpa [ENat.toNat_coe] using ENat.toNat_le_toNat h hd
+
+/-- Monotonicity of `ENat.toNat` on comparisons whose right-hand side is finite. -/
+theorem enat_toNat_le_toNat_of_le_right_finite {a b : ℕ∞} (hb : b ≠ ⊤)
+    (h : a ≤ b) :
+    ENat.toNat a ≤ ENat.toNat b :=
+  ENat.toNat_le_toNat h hb
+
+/-- For a finite `ℕ∞` value, comparison with a natural number is equivalent to comparison with
+its finite truncation. -/
+theorem enat_natCast_le_iff_le_toNat_of_ne_top {n : ℕ} {d : ℕ∞} (hd : d ≠ ⊤) :
+    (n : ℕ∞) ≤ d ↔ n ≤ ENat.toNat d := by
+  constructor
+  · exact enat_toNat_le_of_natCast_le hd
+  · intro h
+    exact (ENat.coe_le_coe.mpr h).trans (ENat.coe_toNat_le_self d)
+
+/-- For a finite `ℕ∞` value, upper bounds by a natural number are equivalently checked
+after applying `ENat.toNat`. -/
+theorem enat_le_natCast_iff_toNat_le_of_ne_top {d : ℕ∞} {n : ℕ} (hd : d ≠ ⊤) :
+    d ≤ (n : ℕ∞) ↔ ENat.toNat d ≤ n := by
+  constructor
+  · exact ENat.toNat_le_of_le_coe
+  · intro h
+    rw [← ENat.coe_toNat hd]
+    exact ENat.coe_le_coe.mpr h
+
+/-- A finite `ℕ∞` value is determined by its `toNat`. -/
+theorem enat_eq_natCast_of_toNat_eq {d : ℕ∞} (hd : d ≠ ⊤) {n : ℕ}
+    (h : ENat.toNat d = n) :
+    d = (n : ℕ∞) := by
+  rw [← ENat.coe_toNat hd, h]
+
+/-- Equality with a natural number can be checked after finite truncation. -/
+theorem enat_toNat_eq_iff_eq_natCast_of_ne_top {d : ℕ∞} (hd : d ≠ ⊤) {n : ℕ} :
+    ENat.toNat d = n ↔ d = (n : ℕ∞) := by
+  constructor
+  · exact enat_eq_natCast_of_toNat_eq hd
+  · intro h
+    simp [h]
+
+/-- An `ℕ∞`-valued depth/dimension API with exactly the finite hypotheses needed
+to instantiate `ModuleDepthDimensionInterface`.
+
+This is deliberately close to the expected ABS shape: regular sequences compare
+with the `ℕ∞` depth, depth compares with the `ℕ∞` dimension, and Cohen-Macaulayness
+is the equality of those two invariants.  The two finiteness fields are the only
+data lost when passing from `ℕ∞` to the finite `ℕ` wrapper used by Prop .18. -/
+structure ENatDepthDimensionAPI (R : Type u) [CommRing R] where
+  eDepth : (M : Type v) → [AddCommGroup M] → [Module R M] → ℕ∞
+  eDimension : (M : Type v) → [AddCommGroup M] → [Module R M] → ℕ∞
+  IsCohenMacaulay : (M : Type v) → [AddCommGroup M] → [Module R M] → Prop
+  finite_eDepth :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M], eDepth M ≠ ⊤
+  finite_eDimension :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M], eDimension M ≠ ⊤
+  length_le_eDepth_of_isWeaklyRegular :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      IsWeaklyRegular M rs → (rs.length : ℕ∞) ≤ eDepth M
+  eDepth_le_eDimension :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M], eDepth M ≤ eDimension M
+  eDepth_eq_eDimension_of_isCohenMacaulay :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M],
+      IsCohenMacaulay M → eDepth M = eDimension M
+
+namespace ENatDepthDimensionAPI
+
+/-- Finite truncation of the `ℕ∞` depth. -/
+def finiteDepth (A : ENatDepthDimensionAPI.{u, v} R)
+    (M : Type v) [AddCommGroup M] [Module R M] : ℕ :=
+  ENat.toNat (A.eDepth M)
+
+/-- Finite truncation of the `ℕ∞` dimension. -/
+def finiteDimension (A : ENatDepthDimensionAPI.{u, v} R)
+    (M : Type v) [AddCommGroup M] [Module R M] : ℕ :=
+  ENat.toNat (A.eDimension M)
+
+@[simp]
+theorem finiteDepth_eq (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.finiteDepth M = ENat.toNat (A.eDepth M) :=
+  rfl
+
+@[simp]
+theorem finiteDimension_eq (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.finiteDimension M = ENat.toNat (A.eDimension M) :=
+  rfl
+
+/-- Truncated form of the regular-sequence lower bound. -/
+theorem length_le_finiteDepth_of_isWeaklyRegular
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDepth M := by
+  exact enat_toNat_le_of_natCast_le (A.finite_eDepth (M := M))
+    (A.length_le_eDepth_of_isWeaklyRegular (M := M) hreg)
+
+/-- Truncated form of `depth ≤ dimension`. -/
+theorem finiteDepth_le_finiteDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.finiteDepth M ≤ A.finiteDimension M := by
+  simpa [finiteDepth, finiteDimension] using
+    enat_toNat_le_toNat_of_le_right_finite
+      (A.finite_eDimension (M := M)) (A.eDepth_le_eDimension (M := M))
+
+/-- Truncated form of the Cohen-Macaulay equality. -/
+theorem finiteDepth_eq_finiteDimension_of_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R) (hCM : A.IsCohenMacaulay M) :
+    A.finiteDepth M = A.finiteDimension M := by
+  simp [finiteDepth, finiteDimension, A.eDepth_eq_eDimension_of_isCohenMacaulay (M := M) hCM]
+
+/-- Truncation preserves a supplied equality of finite `ℕ∞` depth and dimension. -/
+theorem finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (hEq : A.eDepth M = A.eDimension M) :
+    A.finiteDepth M = A.finiteDimension M := by
+  simp [finiteDepth, finiteDimension, hEq]
+
+/-- The regular-sequence lower bound can be checked before or after finite truncation. -/
+theorem natCast_length_le_eDepth_iff_length_le_finiteDepth
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R} :
+    (rs.length : ℕ∞) ≤ A.eDepth M ↔ rs.length ≤ A.finiteDepth M := by
+  simpa [finiteDepth] using
+    enat_natCast_le_iff_le_toNat_of_ne_top
+      (n := rs.length) (d := A.eDepth M) (A.finite_eDepth (M := M))
+
+/-- Upper bounds for the `ℕ∞` dimension can be checked after finite truncation. -/
+theorem eDimension_le_natCast_iff_finiteDimension_le
+    (A : ENatDepthDimensionAPI.{u, v} R) {n : ℕ} :
+    A.eDimension M ≤ (n : ℕ∞) ↔ A.finiteDimension M ≤ n := by
+  simpa [finiteDimension] using
+    enat_le_natCast_iff_toNat_le_of_ne_top
+      (d := A.eDimension M) (n := n) (A.finite_eDimension (M := M))
+
+/-- Upper bounds for the `ℕ∞` depth can be checked after finite truncation. -/
+theorem eDepth_le_natCast_iff_finiteDepth_le
+    (A : ENatDepthDimensionAPI.{u, v} R) {n : ℕ} :
+    A.eDepth M ≤ (n : ℕ∞) ↔ A.finiteDepth M ≤ n := by
+  simpa [finiteDepth] using
+    enat_le_natCast_iff_toNat_le_of_ne_top
+      (d := A.eDepth M) (n := n) (A.finite_eDepth (M := M))
+
+/-- Lift a finite-depth equality back to the original `ℕ∞` depth value. -/
+theorem eDepth_eq_natCast_of_finiteDepth_eq
+    (A : ENatDepthDimensionAPI.{u, v} R) {n : ℕ}
+    (h : A.finiteDepth M = n) :
+    A.eDepth M = (n : ℕ∞) :=
+  enat_eq_natCast_of_toNat_eq (A.finite_eDepth (M := M)) h
+
+/-- Lift a finite-dimension equality back to the original `ℕ∞` dimension value. -/
+theorem eDimension_eq_natCast_of_finiteDimension_eq
+    (A : ENatDepthDimensionAPI.{u, v} R) {n : ℕ}
+    (h : A.finiteDimension M = n) :
+    A.eDimension M = (n : ℕ∞) :=
+  enat_eq_natCast_of_toNat_eq (A.finite_eDimension (M := M)) h
+
+/-- A truncated equality of finite depth and dimension lifts back to the original `ℕ∞`
+invariants. -/
+theorem eDepth_eq_eDimension_of_finiteDepth_eq_finiteDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (h : A.finiteDepth M = A.finiteDimension M) :
+    A.eDepth M = A.eDimension M := by
+  rw [← ENat.coe_toNat (A.finite_eDepth (M := M)),
+    ← ENat.coe_toNat (A.finite_eDimension (M := M))]
+  simpa [finiteDepth, finiteDimension] using congrArg (fun n : ℕ => (n : ℕ∞)) h
+
+/-- Instantiate the finite Prop .18 interface from an `ℕ∞`-valued depth/dimension API. -/
+def toModuleDepthDimensionInterface (A : ENatDepthDimensionAPI.{u, v} R) :
+    ModuleDepthDimensionInterface.{u, v} R where
+  depth := fun M _ _ => A.finiteDepth M
+  dimension := fun M _ _ => A.finiteDimension M
+  IsCohenMacaulay := fun M _ _ => A.IsCohenMacaulay M
+  length_le_depth_of_isWeaklyRegular := by
+    intro M _ _ rs hreg
+    exact A.length_le_finiteDepth_of_isWeaklyRegular (M := M) hreg
+  depth_le_dimension := by
+    intro M _ _
+    exact A.finiteDepth_le_finiteDimension (M := M)
+  depth_eq_dimension_of_isCohenMacaulay := by
+    intro M _ _ hCM
+    exact A.finiteDepth_eq_finiteDimension_of_isCohenMacaulay (M := M) hCM
+
+@[simp]
+theorem toModuleDepthDimensionInterface_depth
+    (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.toModuleDepthDimensionInterface.depth M = A.finiteDepth M :=
+  rfl
+
+@[simp]
+theorem toModuleDepthDimensionInterface_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.toModuleDepthDimensionInterface.dimension M = A.finiteDimension M :=
+  rfl
+
+@[simp]
+theorem toModuleDepthDimensionInterface_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R) :
+    A.toModuleDepthDimensionInterface.IsCohenMacaulay M ↔ A.IsCohenMacaulay M :=
+  Iff.rfl
+
+end ENatDepthDimensionAPI
 
 namespace ModuleDepthDimensionInterface
 
@@ -3092,6 +4635,742 @@ theorem prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_d
     D.depth M = rs.length ∧ D.dimension M = rs.length :=
   D.depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
     (M := M) hEq h hdim
+
+/-! ### Prop .18 wrappers for `ℕ∞`-valued depth APIs.
+
+These theorems are the de-conditionalization adapter for ABS-style depth libraries: once an
+`ℕ∞`-valued depth/dimension package supplies the standard three laws and finiteness, the existing
+Prop .18 conclusions can be used without mentioning `ModuleDepthDimensionInterface` explicitly. -/
+
+/-- `ℕ∞`-API form of the regular-sequence depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_isWeaklyRegular
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDepth M :=
+  A.length_le_finiteDepth_of_isWeaklyRegular (M := M) hreg
+
+/-- `ℕ∞`-API certificate form of the depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI
+    (A : ENatDepthDimensionAPI.{u, v} R) {r : ℕ}
+    (h : HasWeakRegularSequenceLength R M r) :
+    r ≤ A.finiteDepth M := by
+  simpa using
+    prop18_depth_lower_bound
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) h
+
+/-- `ℕ∞`-API form for Mathlib's strong regular sequences. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_isRegular
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hreg : IsRegular M rs) :
+    rs.length ≤ A.finiteDepth M :=
+  A.length_le_finiteDepth_of_isWeaklyRegular (M := M) hreg.toIsWeaklyRegular
+
+/-- `ℕ∞`-API form of the Koszul-acyclic depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_koszulAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDepth M := by
+  simpa using
+    prop18_depth_lower_bound_of_koszulAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic h
+
+/-- `ℕ∞`-API form of the strong Koszul-acyclic depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_koszulRegularAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDepth M := by
+  simpa using
+    prop18_depth_lower_bound_of_koszulRegularAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic h
+
+/-- `ℕ∞`-API form of the concrete Koszul-model depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_koszulModelAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (h : K.acyclic M rs) :
+    rs.length ≤ A.finiteDepth M := by
+  simpa using
+    prop18_depth_lower_bound_of_koszulModelAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) K h
+
+/-- `ℕ∞`-API form of the low-degree Koszul certificate depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs) :
+    rs.length ≤ A.finiteDepth M := by
+  simpa using
+    prop18_depth_lower_bound_of_lowDegreeRegularityCertificate
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) h
+
+/-- `ℕ∞`-API flat base-change form of the depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_flatBaseChange
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.Flat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDepth N := by
+  simpa using
+    prop18_depth_lower_bound_of_flatBaseChange
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hreg
+
+/-- `ℕ∞`-API faithfully-flat base-change form of the depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.FaithfullyFlat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hreg : IsRegular M rs) :
+    rs.length ≤ A.finiteDepth N := by
+  simpa using
+    prop18_depth_lower_bound_of_faithfullyFlatBaseChange
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hreg
+
+/-- `ℕ∞`-API localization form of the depth lower bound. -/
+theorem prop18_depth_lower_bound_of_enatDepthAPI_localizedModule
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    (T : Submonoid R) [IsLocalization T S] (f : M →ₗ[R] N)
+    [IsLocalizedModule T f] (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDepth N := by
+  simpa using
+    prop18_depth_lower_bound_of_localizedModule
+      (R := R) (M := M) (S := S) (N := N) T f
+      A.toModuleDepthDimensionInterface hreg
+
+/-- `ℕ∞`-API Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_isCohenMacaulay
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hCM hreg
+
+/-- `ℕ∞`-API dimension lower bound from an explicit truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M)
+    (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hEq hreg
+
+/-- `ℕ∞`-API dimension lower bound from an equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension M :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension
+    (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) hreg
+
+/-- `ℕ∞`-API Koszul-acyclic Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulAcyclic_of_isCohenMacaulay
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hCM h
+
+/-- `ℕ∞`-API strong Koszul-acyclic Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_isCohenMacaulay
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hCM h
+
+/-- `ℕ∞`-API concrete-model Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (h : K.acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulModelAcyclic_of_isCohenMacaulay
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) K hCM h
+
+/-- `ℕ∞`-API low-degree Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_isCohenMacaulay
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_isCohenMacaulay
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hCM h
+
+/-- `ℕ∞`-API flat base-change form of the Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_isCohenMacaulay
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.Flat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hCM : A.IsCohenMacaulay N) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_flatBaseChange_of_isCohenMacaulay
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hCM hreg
+
+/-- `ℕ∞`-API faithfully-flat base-change form of the Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_isCohenMacaulay
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.FaithfullyFlat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hCM : A.IsCohenMacaulay N) (hreg : IsRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_isCohenMacaulay
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hCM hreg
+
+/-- `ℕ∞`-API localization form of the Cohen-Macaulay dimension lower bound. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_isCohenMacaulay
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    (T : Submonoid R) [IsLocalization T S] (f : M →ₗ[R] N)
+    [IsLocalizedModule T f] (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hCM : A.IsCohenMacaulay N) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_localizedModule_of_isCohenMacaulay
+      (R := R) (M := M) (S := S) (N := N) T f
+      A.toModuleDepthDimensionInterface hCM hreg
+
+/-- `ℕ∞`-API Koszul-acyclic dimension lower bound from an explicit truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hEq h
+
+/-- `ℕ∞`-API Koszul-acyclic dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h
+
+/-- `ℕ∞`-API strong Koszul-acyclic dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hEq h
+
+/-- `ℕ∞`-API strong Koszul-acyclic dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs) :
+    rs.length ≤ A.finiteDimension M :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h
+
+/-- `ℕ∞`-API concrete-model dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M) (h : K.acyclic M rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_koszulModelAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) K hEq h
+
+/-- `ℕ∞`-API concrete-model dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (h : K.acyclic M rs) :
+    rs.length ≤ A.finiteDimension M :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (M := M) A K (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h
+
+/-- `ℕ∞`-API low-degree dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs) :
+    rs.length ≤ A.finiteDimension M := by
+  simpa using
+    prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hEq h
+
+/-- `ℕ∞`-API low-degree dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs) :
+    rs.length ≤ A.finiteDimension M :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h
+
+/-- `ℕ∞`-API flat base-change dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.Flat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.finiteDepth N = A.finiteDimension N)
+    (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_flatBaseChange_of_depth_eq_dimension
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hEq hreg
+
+/-- `ℕ∞`-API flat base-change dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_eDepth_eq_eDimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.Flat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.eDepth N = A.eDimension N) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension
+    (R := R) (M := M) (S := S) (N := N) (f := f) hf A
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := N) hEq) hreg
+
+/-- `ℕ∞`-API faithfully-flat dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_depth_eq_dimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.FaithfullyFlat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.finiteDepth N = A.finiteDimension N) (hreg : IsRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_depth_eq_dimension
+      (R := R) (M := M) (S := S) (N := N) (f := f) hf
+      A.toModuleDepthDimensionInterface hEq hreg
+
+/-- `ℕ∞`-API faithfully-flat dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_eDepth_eq_eDimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    [Module.FaithfullyFlat R S] {f : M →ₗ[R] N} (hf : IsBaseChange S f)
+    (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.eDepth N = A.eDimension N) (hreg : IsRegular M rs) :
+    rs.length ≤ A.finiteDimension N :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_depth_eq_dimension
+    (R := R) (M := M) (S := S) (N := N) (f := f) hf A
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := N) hEq) hreg
+
+/-- `ℕ∞`-API localization dimension lower bound from a truncated equality. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_depth_eq_dimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    (T : Submonoid R) [IsLocalization T S] (f : M →ₗ[R] N)
+    [IsLocalizedModule T f] (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.finiteDepth N = A.finiteDimension N)
+    (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N := by
+  simpa using
+    prop18_dimension_lower_bound_of_localizedModule_of_depth_eq_dimension
+      (R := R) (M := M) (S := S) (N := N) T f
+      A.toModuleDepthDimensionInterface hEq hreg
+
+/-- `ℕ∞`-API localization dimension lower bound from equality before truncation. -/
+theorem prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_eDepth_eq_eDimension
+    {S : Type u} [CommRing S] [Algebra R S]
+    {N : Type v} [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
+    (T : Submonoid R) [IsLocalization T S] (f : M →ₗ[R] N)
+    [IsLocalizedModule T f] (A : ENatDepthDimensionAPI.{u, v} S)
+    {rs : List R} (hEq : A.eDepth N = A.eDimension N) (hreg : IsWeaklyRegular M rs) :
+    rs.length ≤ A.finiteDimension N :=
+  prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_depth_eq_dimension
+    (R := R) (M := M) (S := S) (N := N) T f A
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := N) hEq) hreg
+
+/-- `ℕ∞`-API equality trigger from Cohen-Macaulayness. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (hreg : IsWeaklyRegular M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hCM hreg hdim
+
+/-- `ℕ∞`-API equality trigger from an explicit truncated equality. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M)
+    (hreg : IsWeaklyRegular M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hEq hreg hdim
+
+/-- `ℕ∞`-API equality trigger from equality before truncation. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (hreg : IsWeaklyRegular M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length :=
+  prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+    (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq)
+    hreg hdim
+
+/-- `ℕ∞`-API equality trigger from a Koszul-acyclicity interface. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hCM h hdim
+
+/-- `ℕ∞`-API equality trigger from a strong Koszul-acyclicity interface. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hCM h hdim
+
+/-- `ℕ∞`-API equality trigger from a concrete Koszul model. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (h : K.acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) K hCM h hdim
+
+/-- `ℕ∞`-API equality trigger from a low-degree Koszul certificate. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hCM h hdim
+
+/-- `ℕ∞`-API equality trigger from a Koszul-acyclicity interface and truncated equality. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hEq h hdim
+
+/-- `ℕ∞`-API equality trigger from a Koszul-acyclicity interface and equality before truncation. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length :=
+  prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h hdim
+
+/-- `ℕ∞`-API equality trigger from a strong Koszul interface and truncated equality. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hAcyclic hEq h hdim
+
+/-- `ℕ∞`-API equality trigger from a strong Koszul interface and equality before truncation. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length :=
+  prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h hdim
+
+/-- `ℕ∞`-API equality trigger from a concrete Koszul model and truncated equality. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M) (h : K.acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) K hEq h hdim
+
+/-- `ℕ∞`-API equality trigger from a concrete Koszul model and equality before truncation. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (h : K.acyclic M rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length :=
+  prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (M := M) A K
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h hdim
+
+/-- `ℕ∞`-API equality trigger from a low-degree Koszul certificate and truncated equality. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length := by
+  simpa using
+    prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+      (R := R) (M := M) (D := A.toModuleDepthDimensionInterface) hEq h hdim
+
+/-- `ℕ∞`-API equality trigger from a low-degree certificate and equality before truncation. -/
+theorem prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.finiteDimension M ≤ rs.length) :
+    A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length :=
+  prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq)
+    h hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from Cohen-Macaulayness.  The upper bound is stated
+in the original `ℕ∞` dimension language, and the conclusion identifies the original
+`ℕ∞` depth and dimension with the sequence length. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (hreg : IsWeaklyRegular M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hdimNat : A.finiteDimension M ≤ rs.length :=
+    (A.eDimension_le_natCast_iff_finiteDimension_le (M := M) (n := rs.length)).1 hdim
+  rcases prop18_depth_eq_dimension_trigger_of_enatDepthAPI
+      (M := M) A hCM hreg hdimNat with ⟨hDepth, hDim⟩
+  exact
+    ⟨A.eDepth_eq_natCast_of_finiteDepth_eq (M := M) hDepth,
+      A.eDimension_eq_natCast_of_finiteDimension_eq (M := M) hDim⟩
+
+/-- Lifted `ℕ∞`-API equality trigger from an explicit truncated equality. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M) (hreg : IsWeaklyRegular M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hdimNat : A.finiteDimension M ≤ rs.length :=
+    (A.eDimension_le_natCast_iff_finiteDimension_le (M := M) (n := rs.length)).1 hdim
+  rcases prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+      (M := M) A hEq hreg hdimNat with ⟨hDepth, hDim⟩
+  exact
+    ⟨A.eDepth_eq_natCast_of_finiteDepth_eq (M := M) hDepth,
+      A.eDimension_eq_natCast_of_finiteDimension_eq (M := M) hDim⟩
+
+/-- Lifted `ℕ∞`-API equality trigger from an explicit equality `eDepth = eDimension`. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (hreg : IsWeaklyRegular M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+      (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq)
+      hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a Koszul-acyclicity interface. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs :=
+    ((koszulAcyclic_iff_isWeaklyRegular_of_interface
+      (R := R) (Acyclic := Acyclic) hAcyclic rs (M := M)).1 h)
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+      (M := M) A hCM hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a strong Koszul-acyclicity interface. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hCM : A.IsCohenMacaulay M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs :=
+    ((koszulAcyclic_iff_isRegular_of_interface
+      (R := R) (Acyclic := Acyclic) hAcyclic rs (M := M)).1 h).toIsWeaklyRegular
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+      (M := M) A hCM hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a concrete Koszul model. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M) (h : K.acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs := (K.acyclic_iff_isWeaklyRegular rs (M := M)).1 h
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+      (M := M) A hCM hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a Koszul interface and truncated equality. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs :=
+    ((koszulAcyclic_iff_isWeaklyRegular_of_interface
+      (R := R) (Acyclic := Acyclic) hAcyclic rs (M := M)).1 h)
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+      (M := M) A hEq hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a Koszul interface and equality before truncation. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulWeakAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a strong Koszul interface and truncated equality. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.finiteDepth M = A.finiteDimension M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs :=
+    ((koszulAcyclic_iff_isRegular_of_interface
+      (R := R) (Acyclic := Acyclic) hAcyclic rs (M := M)).1 h).toIsWeaklyRegular
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+      (M := M) A hEq hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a strong Koszul interface and equality before truncation. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    {Acyclic : KoszulAcyclicPredicate.{u, v} R}
+    (hAcyclic : KoszulRegularAcyclicityInterface.{u, v} (R := R) Acyclic)
+    {rs : List R} (hEq : A.eDepth M = A.eDimension M) (h : Acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+    (M := M) A hAcyclic
+    (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq) h hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a concrete Koszul model and truncated equality. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M) (h : K.acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) := by
+  have hreg : IsWeaklyRegular M rs := (K.acyclic_iff_isWeaklyRegular rs (M := M)).1 h
+  exact
+    prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+      (M := M) A hEq hreg hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a concrete Koszul model and equality before truncation. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R)
+    (K : KoszulComplexModel.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M) (h : K.acyclic M rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+    (M := M) A K (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq)
+    h hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from the low-degree Koszul certificate. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hCM : A.IsCohenMacaulay M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+    (M := M) A hCM (isWeaklyRegular_of_koszulLowDegreeRegularityCertificate (M := M) h) hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a low-degree certificate and truncated equality. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.finiteDepth M = A.finiteDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+    (M := M) A hEq (isWeaklyRegular_of_koszulLowDegreeRegularityCertificate (M := M) h) hdim
+
+/-- Lifted `ℕ∞`-API equality trigger from a low-degree certificate and equality before truncation. -/
+theorem prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+    (A : ENatDepthDimensionAPI.{u, v} R) {rs : List R}
+    (hEq : A.eDepth M = A.eDimension M)
+    (h : koszulLowDegreeRegularityCertificate (M := M) rs)
+    (hdim : A.eDimension M ≤ (rs.length : ℕ∞)) :
+    A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞) :=
+  prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+    (M := M) A (A.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension (M := M) hEq)
+    h hdim
 
 end Depth
 
@@ -4195,6 +6474,25 @@ variable {Sch : Type uSch} [Category.{vSch} Sch]
 variable {D : SixFunctorData Sch}
 variable {X V : Sch} {f : X ⟶ V}
 
+/-- The composite map produced by the supplied open/proper/curve factorization. -/
+def fullMap (φ : CurveFactorization D f) : X ⟶ V :=
+  (φ.jX ≫ φ.g) ≫ φ.pi
+
+@[simp]
+theorem fullMap_def (φ : CurveFactorization D f) :
+    φ.fullMap = (φ.jX ≫ φ.g) ≫ φ.pi :=
+  rfl
+
+/-- The original map is the composite carried by the certificate. -/
+theorem factor_eq_fullMap (φ : CurveFactorization D f) :
+    f = φ.fullMap :=
+  φ.factor
+
+/-- The certified composite can also be rewritten back to the original map. -/
+theorem fullMap_eq_original (φ : CurveFactorization D f) :
+    φ.fullMap = f :=
+  φ.factor.symm
+
 theorem factor_eq (φ : CurveFactorization D f) :
     f = (φ.jX ≫ φ.g) ≫ φ.pi :=
   φ.factor
@@ -4210,6 +6508,21 @@ theorem g_isProper (φ : CurveFactorization D f) :
 theorem pi_isSmoothCurveOver (φ : CurveFactorization D f) :
     D.isSmoothCurveOver φ.pi :=
   φ.pi_smoothCurve
+
+/-- The three geometric side conditions supplied by a curve-reduction certificate. -/
+theorem geometric_conditions (φ : CurveFactorization D f) :
+    D.isOpenImmersion φ.jX ∧ D.isProper φ.g ∧ D.isSmoothCurveOver φ.pi :=
+  ⟨φ.jX_open, φ.g_proper, φ.pi_smoothCurve⟩
+
+/-- The sheaf obtained after pushing through the certified curve factorization. -/
+def curveReducedShriek (φ : CurveFactorization D f) (F : D.Sheaf X) : D.Sheaf V :=
+  D.shriek φ.pi (D.shriek φ.g (D.shriek φ.jX F))
+
+@[simp]
+theorem curveReducedShriek_def (φ : CurveFactorization D f) (F : D.Sheaf X) :
+    φ.curveReducedShriek F =
+      D.shriek φ.pi (D.shriek φ.g (D.shriek φ.jX F)) :=
+  rfl
 
 /-- Constructibility after extension by the open compactification. -/
 theorem jX_shriek_constructible (φ : CurveFactorization D f)
@@ -4230,6 +6543,12 @@ theorem pi_g_jX_shriek_constructible (φ : CurveFactorization D f)
   D.shriek_constr φ.pi (D.shriek φ.g (D.shriek φ.jX F))
     (φ.g_jX_shriek_constructible F hF)
 
+/-- Constructibility of the curve-reduced target object. -/
+theorem curveReducedShriek_constructible (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    D.IsConstr (φ.curveReducedShriek F) := by
+  simpa [curveReducedShriek] using φ.pi_g_jX_shriek_constructible F hF
+
 /-- Curve-reduction functoriality before rewriting by the factorization equality. -/
 theorem shriek_comp_iso (φ : CurveFactorization D f)
     (F : D.Sheaf X) (hF : D.IsConstr F) :
@@ -4248,6 +6567,12 @@ theorem shriek_factorization_iso (φ : CurveFactorization D f)
       (D.shriek φ.pi (D.shriek φ.g (D.shriek φ.jX F))) := by
   exact D.shriek_factorization_iso_of_eq φ.jX φ.g φ.pi φ.factor F hF
 
+/-- Lemma .32 with the curve-reduced target abbreviated. -/
+theorem shriek_factorization_iso_to_curveReducedShriek (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    D.SheafIso (D.shriek f F) (φ.curveReducedShriek F) := by
+  simpa [curveReducedShriek] using φ.shriek_factorization_iso F hF
+
 /-- The two objects related by curve reduction are constructible. -/
 theorem curveReduction_terms_constructible (φ : CurveFactorization D f)
     (F : D.Sheaf X) (hF : D.IsConstr F) :
@@ -4256,6 +6581,60 @@ theorem curveReduction_terms_constructible (φ : CurveFactorization D f)
   constructor
   · exact D.shriek_constr f F hF
   · exact φ.pi_g_jX_shriek_constructible F hF
+
+/-- Constructibility of the original `Rf_! F` side of curve reduction. -/
+theorem source_shriek_constructible (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    D.IsConstr (D.shriek f F) :=
+  (φ.curveReduction_terms_constructible F hF).1
+
+/-- Constructibility of the iterated curve-reduced side of curve reduction. -/
+theorem target_shriek_constructible (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    D.IsConstr (φ.curveReducedShriek F) :=
+  φ.curveReducedShriek_constructible F hF
+
+/-- Packaged output of Lemma .32 for a fixed sheaf: the input constructibility,
+constructibility of both sides, and the functorial `Rf_!` factorization isomorphism. -/
+structure CurveReductionConclusion (φ : CurveFactorization D f) (F : D.Sheaf X) where
+  inputConstructible : D.IsConstr F
+  sourceConstructible : D.IsConstr (D.shriek f F)
+  targetConstructible : D.IsConstr (φ.curveReducedShriek F)
+  factorizationIso : D.SheafIso (D.shriek f F) (φ.curveReducedShriek F)
+
+namespace CurveReductionConclusion
+
+variable {φ : CurveFactorization D f} {F : D.Sheaf X}
+
+/-- Projection of the constructibility hypotheses for the two sides of Lemma .32. -/
+theorem terms_constructible (C : CurveReductionConclusion φ F) :
+    D.IsConstr (D.shriek f F) ∧ D.IsConstr (φ.curveReducedShriek F) :=
+  ⟨C.sourceConstructible, C.targetConstructible⟩
+
+/-- Projection of the curve-reduction isomorphism. -/
+theorem factorization_iso (C : CurveReductionConclusion φ F) :
+    D.SheafIso (D.shriek f F) (φ.curveReducedShriek F) :=
+  C.factorizationIso
+
+end CurveReductionConclusion
+
+/-- The packaged Lemma .32 conclusion from a supplied Nagata/Stein-style
+factorization certificate. -/
+def curveReductionConclusion (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    CurveReductionConclusion φ F where
+  inputConstructible := hF
+  sourceConstructible := φ.source_shriek_constructible F hF
+  targetConstructible := φ.target_shriek_constructible F hF
+  factorizationIso := φ.shriek_factorization_iso_to_curveReducedShriek F hF
+
+/-- **Lemma .32, packaged form.**  Nagata compactification and Stein
+factorization are not asserted globally; once supplied as `φ`, six-functor
+functoriality gives the certified curve-reduction package. -/
+def lem32_curveReduction (φ : CurveFactorization D f)
+    (F : D.Sheaf X) (hF : D.IsConstr F) :
+    CurveReductionConclusion φ F :=
+  φ.curveReductionConclusion F hF
 
 end CurveFactorization
 
@@ -5075,7 +7454,7 @@ theorem equivalence_C_faithful_rh_iff_tp {Sch : Type uSch} [Category.{vSch} Sch]
 
 /-! ## §J — Mathlib-gap workaround checklist
 
-This section turns the five engineering principles used above into kernel-checked
+This section turns the engineering principles used above into kernel-checked
 certificates.  Each field is backed by concrete definitions or already-proved
 theorems in the file; no global axiom is introduced by the checklist layer. -/
 
@@ -5112,6 +7491,58 @@ noncomputable def concreteSurrogateCertificate (M N : ℕ) [NeZero N] :
   cechCokerEquiv := cechPhiCokerEquivZModGcd M N
   torCard := TorH1_card M N
   cechCard := cechPhiCoker_card M N
+
+/-- Principle 1b: the site/sheaf wording needed in §2 is a thin wrapper over
+the concrete arithmetic Čech diagram.  The presheaf part records
+`Γ(U,F) = Fnum ∩ Fmod ∩ Fp_adic ∩ FEC` and identity restrictions; the two-open
+Čech part records the exact equalizer and its `ℤ/gcd` obstruction. -/
+structure PresheafCechSkeletonCertificate where
+  ambientPresheaf : arithmeticPrimeSpectrumTopCat.Presheaf (Type)
+  gatePresheaf :
+    FourLayerProfile → arithmeticPrimeSpectrumTopCat.Presheaf (Type)
+  gateInclusion :
+    ∀ P : FourLayerProfile,
+      CategoryTheory.NatTrans (fourLayerGatePresheaf P) arithmeticConstantIntPresheaf
+  ambientRestrictionValue :
+    ∀ {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+      (x : (arithmeticConstantIntPresheaf).obj (op V)),
+        (arithmeticConstantIntPresheaf).map (homOfLE hUV).op x = x
+  gateSectionsEquivIntersection :
+    ∀ (P : FourLayerProfile) (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)),
+      fourLayerGateSections P U ≃
+        {x : ℤ // Fnum P x ∧ Fmod P x ∧ Fp_adic P x ∧ FEC P x}
+  gateRestrictionValue :
+    ∀ (P : FourLayerProfile) {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)}
+      (hUV : U ≤ V) (s : fourLayerGateSections P V),
+        ((fourLayerGatePresheaf P).map (homOfLE hUV).op s).1 = s.1
+  cechCertificate :
+    ∀ M N : ℕ, ArithmeticTwoOpenCechSheafCertificate M N
+  cechExact :
+    ∀ M N : ℕ,
+      Function.Exact (arithmeticCechGlobalToLocal M N) (arithmeticCechLocalDifference M N)
+  cechOverlapRestrictsAgreeOnGlobal :
+    ∀ (M N : ℕ) (x : ℤ),
+      arithmeticCechLeftRestrictOverlap M N (arithmeticCechGlobalRestrictLeft M x) =
+        arithmeticCechRightRestrictOverlap M N (arithmeticCechGlobalRestrictRight N x)
+  cechH1Equiv :
+    ∀ M N : ℕ, arithmeticCechH1 M N ≃+ ZMod (Nat.gcd M N)
+
+/-- Canonical certificate for the presheaf/Čech skeleton requested in T1-3. -/
+noncomputable def presheafCechSkeletonCertificate : PresheafCechSkeletonCertificate where
+  ambientPresheaf := arithmeticConstantIntPresheaf
+  gatePresheaf := fourLayerGatePresheaf
+  gateInclusion := fun P => arithmeticPredicatePresheafInclusion (FourLayerPass P)
+  ambientRestrictionValue := by
+    intro U V hUV x
+    exact arithmeticConstantIntPresheaf_restrict_value hUV x
+  gateSectionsEquivIntersection := fourLayerGateSectionsEquivIntersection
+  gateRestrictionValue := by
+    intro P U V hUV s
+    exact fourLayerGate_restrict_value P hUV s
+  cechCertificate := arithmeticTwoOpenCechSheafCertificate
+  cechExact := arithmeticCech_twoOpen_exact
+  cechOverlapRestrictsAgreeOnGlobal := arithmeticCech_overlap_restrictions_agree_on_global
+  cechH1Equiv := arithmeticCechH1EquivZModGcd
 
 /-- Principle 2: the actually-used Koszul cases are the explicit `r = 1` and
 `r = 2` low-degree complexes, with regularity certified by Mathlib's
@@ -5165,6 +7596,124 @@ noncomputable def lowDegreeKoszulCertificate
   certificateIffWeakRegular := fun {rs} hrs =>
     koszulLowDegreeRegularityCertificate_iff_isWeaklyRegular_length_le_two
       (M := M) (rs := rs) hrs
+
+/-- Principle 3: an `ℕ∞`-valued ABS-style depth/dimension API instantiates the finite
+Prop .18 interface after the explicit truncation adapter. -/
+structure ENatDepthDimensionInstantiationCertificate
+    (R : Type u) [CommRing R] (A : ENatDepthDimensionAPI.{u, v} R) where
+  finiteInterface : ModuleDepthDimensionInterface.{u, v} R
+  depthEqFiniteDepth :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M],
+      finiteInterface.depth M = A.finiteDepth M
+  dimensionEqFiniteDimension :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M],
+      finiteInterface.dimension M = A.finiteDimension M
+  isCohenMacaulayIff :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M],
+      finiteInterface.IsCohenMacaulay M ↔ A.IsCohenMacaulay M
+  weakRegularDepthLowerBound :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      IsWeaklyRegular M rs → rs.length ≤ A.finiteDepth M
+  certificateDepthLowerBound :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {r : ℕ},
+      HasWeakRegularSequenceLength R M r → r ≤ A.finiteDepth M
+  cmDimensionLowerBound :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.IsCohenMacaulay M → IsWeaklyRegular M rs → rs.length ≤ A.finiteDimension M
+  directEqualityDimensionLowerBound :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.finiteDepth M = A.finiteDimension M →
+        IsWeaklyRegular M rs → rs.length ≤ A.finiteDimension M
+  enatEqualityDimensionLowerBound :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.eDepth M = A.eDimension M →
+        IsWeaklyRegular M rs → rs.length ≤ A.finiteDimension M
+  dimensionLeLengthIff :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.eDimension M ≤ (rs.length : ℕ∞) ↔ A.finiteDimension M ≤ rs.length
+  cmEqualityTrigger :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.IsCohenMacaulay M → IsWeaklyRegular M rs →
+        A.finiteDimension M ≤ rs.length →
+          A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length
+  directEqualityTrigger :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.finiteDepth M = A.finiteDimension M → IsWeaklyRegular M rs →
+        A.finiteDimension M ≤ rs.length →
+          A.finiteDepth M = rs.length ∧ A.finiteDimension M = rs.length
+  cmENatEqualityTrigger :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.IsCohenMacaulay M → IsWeaklyRegular M rs →
+        A.eDimension M ≤ (rs.length : ℕ∞) →
+          A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞)
+  directEqualityENatTrigger :
+    ∀ {M : Type v} [AddCommGroup M] [Module R M] {rs : List R},
+      A.finiteDepth M = A.finiteDimension M → IsWeaklyRegular M rs →
+        A.eDimension M ≤ (rs.length : ℕ∞) →
+          A.eDepth M = (rs.length : ℕ∞) ∧ A.eDimension M = (rs.length : ℕ∞)
+
+namespace ENatDepthDimensionInstantiationCertificate
+
+variable {R : Type u} [CommRing R]
+variable {A : ENatDepthDimensionAPI.{u, v} R}
+
+/-- Projection of the finite Prop .18 interface produced by the truncation adapter. -/
+def interface (C : ENatDepthDimensionInstantiationCertificate R A) :
+    ModuleDepthDimensionInterface.{u, v} R :=
+  C.finiteInterface
+
+end ENatDepthDimensionInstantiationCertificate
+
+/-- Canonical instantiation certificate for an `ℕ∞`-valued depth/dimension API. -/
+noncomputable def enatDepthDimensionInstantiationCertificate
+    (R : Type u) [CommRing R] (A : ENatDepthDimensionAPI.{u, v} R) :
+    ENatDepthDimensionInstantiationCertificate R A where
+  finiteInterface := A.toModuleDepthDimensionInterface
+  depthEqFiniteDepth := by
+    intro M _ _
+    rfl
+  dimensionEqFiniteDimension := by
+    intro M _ _
+    rfl
+  isCohenMacaulayIff := by
+    intro M _ _
+    exact Iff.rfl
+  weakRegularDepthLowerBound := by
+    intro M _ _ rs hreg
+    exact prop18_depth_lower_bound_of_enatDepthAPI_isWeaklyRegular (M := M) A hreg
+  certificateDepthLowerBound := by
+    intro M _ _ r h
+    exact prop18_depth_lower_bound_of_enatDepthAPI (M := M) A h
+  cmDimensionLowerBound := by
+    intro M _ _ rs hCM hreg
+    exact prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay (M := M) A hCM hreg
+  directEqualityDimensionLowerBound := by
+    intro M _ _ rs hEq hreg
+    exact prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension (M := M) A hEq hreg
+  enatEqualityDimensionLowerBound := by
+    intro M _ _ rs hEq hreg
+    exact prop18_dimension_lower_bound_of_enatDepthAPI_eDepth_eq_eDimension (M := M) A hEq hreg
+  dimensionLeLengthIff := by
+    intro M _ _ rs
+    exact A.eDimension_le_natCast_iff_finiteDimension_le (M := M) (n := rs.length)
+  cmEqualityTrigger := by
+    intro M _ _ rs hCM hreg hdim
+    exact prop18_depth_eq_dimension_trigger_of_enatDepthAPI (M := M) A hCM hreg hdim
+  directEqualityTrigger := by
+    intro M _ _ rs hEq hreg hdim
+    exact
+      prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+        (M := M) A hEq hreg hdim
+  cmENatEqualityTrigger := by
+    intro M _ _ rs hCM hreg hdim
+    exact
+      prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+        (M := M) A hCM hreg hdim
+  directEqualityENatTrigger := by
+    intro M _ _ rs hEq hreg hdim
+    exact
+      prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+        (M := M) A hEq hreg hdim
 
 /-- Principle 3: absent global geometry is packaged as fields, and theorems are
 certified projections or conditional consequences of those fields. -/
@@ -5261,19 +7810,29 @@ noncomputable def existingAnalogReuseCertificate : ExistingAnalogReuseCertificat
 /- Universe levels for the polymorphic theorem bundles in the final checklist. -/
 universe uSheafGap uTriGap uGap1 uGap2 uGap3 uGap4 uGap5 uGap6 uGap7 uGap8
 
-/-- Unified checklist asserting that all five Mathlib-gap workaround principles
+/-- Unified checklist asserting that all Mathlib-gap workaround principles
 are backed by concrete Lean certificates. -/
 structure MathlibGapWorkaroundChecklist where
   concreteSurrogate : ∀ (M N : ℕ) [NeZero N], ConcreteSurrogateCertificate M N
+  presheafCechSkeleton : PresheafCechSkeletonCertificate
   lowDegreeKoszul :
     ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M],
       LowDegreeKoszulCertificate R M
+  enatDepthInstantiation :
+    ∀ (R : Type uGap1) [CommRing R] (A : ENatDepthDimensionAPI.{uGap1, uGap2} R),
+      ENatDepthDimensionInstantiationCertificate.{uGap1, uGap2} R A
   bundledInterfaces :
     ∀ {Sch : Type uSch} [Category.{vSch} Sch]
       {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
       {X : Sch} (F : D.Sheaf X)
       (W : WeilIIPackage D F) (G : GrothendieckLefschetzPackage D F),
         BundledInterfaceCertificate.{uSch, vSch, uSheafGap, uTriGap} F W G
+  curveReduction :
+    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
+      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
+      {X V : Sch} {f : X ⟶ V} (φ : CurveFactorization D f)
+      (F : D.Sheaf X), D.IsConstr F →
+        CurveFactorization.CurveReductionConclusion φ F
   formalAlgebra :
     ∀ {K : Type*} [Field K] [Algebra ℚ K] [IsAddTorsionFree K]
       {ι : Type*} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K),
@@ -5281,11 +7840,14 @@ structure MathlibGapWorkaroundChecklist where
   existingAnalogReuse :
     ExistingAnalogReuseCertificate.{uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8}
 
-/-- The integrated five-principle Mathlib-gap checklist. -/
+/-- The integrated Mathlib-gap checklist. -/
 noncomputable def mathlibGapWorkaroundChecklist : MathlibGapWorkaroundChecklist where
   concreteSurrogate := fun M N _ => concreteSurrogateCertificate M N
+  presheafCechSkeleton := presheafCechSkeletonCertificate
   lowDegreeKoszul := fun R M _ _ _ => lowDegreeKoszulCertificate R M
+  enatDepthInstantiation := fun R _ A => enatDepthDimensionInstantiationCertificate R A
   bundledInterfaces := fun F W G => bundledInterfaceCertificate F W G
+  curveReduction := fun φ F hF => CurveFactorization.lem32_curveReduction φ F hF
   formalAlgebra := fun T => formalAlgebraCoreCertificate T
   existingAnalogReuse := existingAnalogReuseCertificate
 
@@ -5333,9 +7895,13 @@ noncomputable def faithfullyFlatBaseChangeHandle : FaithfullyFlatBaseChangeHandl
   faithfullyFlatAlgebra := regularSequence_of_faithfullyFlat_algebra
 
 /-- Handle for the depth/CM-localization side of the ABS-style reuse plan.  The
-numeric depth API is represented by `ModuleDepthDimensionInterface`; the
-localization facts are genuine regular-sequence lemmas. -/
+numeric depth API is represented by `ModuleDepthDimensionInterface`, with an
+`ℕ∞` truncation adapter for ABS-style APIs; the localization facts are genuine
+regular-sequence lemmas. -/
 structure DepthCMLocalizationHandle where
+  enatDepthInstantiation :
+    ∀ (R : Type u) [CommRing R] (A : ENatDepthDimensionAPI.{u, v} R),
+      ENatDepthDimensionInstantiationCertificate.{u, v} R A
   localizedWeakRegular :
     ∀ {R M S N : Type*} [CommRing R] [AddCommGroup M] [Module R M]
       [CommRing S] [Algebra R S] [AddCommGroup N] [Module R N] [Module S N]
@@ -5367,6 +7933,7 @@ structure DepthCMLocalizationHandle where
 
 /-- Canonical handle for localization, depth lower bounds, and the CM dimension trigger. -/
 noncomputable def depthCMLocalizationHandle : DepthCMLocalizationHandle where
+  enatDepthInstantiation := fun R _ A => enatDepthDimensionInstantiationCertificate R A
   localizedWeakRegular := weaklyRegularSequence_of_localizedModule
   atPrimeRegular := regularSequence_of_localizedModule_atPrime_of_mem
   localizedDepthLowerBound := prop18_depth_lower_bound_of_localizedModule
@@ -5414,6 +7981,31 @@ noncomputable def lseriesDerivativeMathlibHandle : LSeriesDerivativeMathlibHandl
   logarithmicDerivative := zetaULSeries_logDeriv_eq
   abscissaLogMul := zetaULSeries_abscissa_logMul
 
+universe uLDHandle vLDHandle uLDTargetHandle vLDTargetHandle
+
+/-- Handle for the general Mathlib theorem that computes a left-derived functor
+from any chosen projective resolution.  This is the categorical API needed for
+the final T1-4 step: instantiate it with the explicit two-term free resolution
+of `ZMod M`, then identify the resulting homology with
+`standardResolutionTorOneEndpoint`. -/
+structure MathlibLeftDerivedComputationHandle where
+  isoLeftDerivedObj :
+    ∀ {C : Type uLDHandle} [Category.{vLDHandle} C]
+      {D : Type uLDTargetHandle} [Category.{vLDTargetHandle} D]
+      [Abelian C] [HasProjectiveResolutions C] [Abelian D]
+      {X : C} (P : ProjectiveResolution X) (F : C ⥤ D) [F.Additive] (n : ℕ),
+        (F.leftDerived n).obj X ≅
+          (HomologicalComplex.homologyFunctor D (ComplexShape.down ℕ) n).obj
+            ((F.mapHomologicalComplex (ComplexShape.down ℕ)).obj P.complex)
+
+/-- Canonical handle for `ProjectiveResolution.isoLeftDerivedObj`. -/
+noncomputable def mathlibLeftDerivedComputationHandle :
+    MathlibLeftDerivedComputationHandle.{uLDHandle, vLDHandle,
+      uLDTargetHandle, vLDTargetHandle} where
+  isoLeftDerivedObj := by
+    intro C _ D _ _ _ _ X P F _ n
+    exact ProjectiveResolution.isoLeftDerivedObj P F n
+
 universe uTorHandle vTorHandle
 
 /-- Handle for the abstract `CategoryTheory.Monoidal.Tor` names.  This records
@@ -5439,19 +8031,233 @@ noncomputable def mathlibAbstractTorFunctorHandle :
       [Abelian C] [MonoidalPreadditive C] [HasProjectiveResolutions C] n =>
     CategoryTheory.Tor' C n
 
+/-- Status of the optional comparison with Mathlib's abstract derived-functor `Tor`.
+The concrete standard-free-resolution calculation is complete in this file; what remains is
+the categorical theorem identifying Mathlib's chosen left-derived functor value with this
+particular standard resolution calculation. -/
+inductive AbstractTorComparisonStatus where
+  | reducedToStandardFreeResolution
+  | abstractDerivedFunctorEndpointPending
+deriving DecidableEq
+
+/-- Mathlib's actual abstract `Tor₁` endpoint for the pair `(ZMod M, ZMod N)` in
+`ModuleCat Int`.  This is the object whose comparison with the explicit
+standard-resolution homology is still absent from Mathlib's `Tor` API. -/
+noncomputable abbrev mathlibTorOneEndpoint (M N : ℕ) : ModuleCat Int :=
+  (((CategoryTheory.Tor (ModuleCat Int) 1).obj (ModuleCat.of Int (ZMod M))).obj
+    (ModuleCat.of Int (ZMod N)))
+
+/-- The corresponding endpoint for Mathlib's alternative `Tor'`, where the left-derived functor
+is taken in the first variable. -/
+noncomputable abbrev mathlibTorPrimeOneEndpoint (M N : ℕ) : ModuleCat Int :=
+  (((CategoryTheory.Tor' (ModuleCat Int) 1).obj (ModuleCat.of Int (ZMod M))).obj
+    (ModuleCat.of Int (ZMod N)))
+
+/-- A typed handle for the precise abstract Tor endpoints relevant to the concrete calculation. -/
+structure MathlibTorOneEndpointHandle (M N : ℕ) where
+  torEndpoint : ModuleCat Int
+  torEndpoint_eq : torEndpoint = mathlibTorOneEndpoint M N
+  torPrimeEndpoint : ModuleCat Int
+  torPrimeEndpoint_eq : torPrimeEndpoint = mathlibTorPrimeOneEndpoint M N
+  comparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical typed handle for the abstract `Tor₁` endpoints. -/
+noncomputable def mathlibTorOneEndpointHandle (M N : ℕ) :
+    MathlibTorOneEndpointHandle M N where
+  torEndpoint := mathlibTorOneEndpoint M N
+  torEndpoint_eq := rfl
+  torPrimeEndpoint := mathlibTorPrimeOneEndpoint M N
+  torPrimeEndpoint_eq := rfl
+  comparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
+
+/-- The explicit standard-resolution endpoint in the variable derived by Mathlib's `Tor'`.
+Mathlib defines `Tor'` by deriving in the first tensor factor, so this is the direct endpoint
+for `Tor' (ZMod M) (ZMod N)`. -/
+abbrev standardResolutionTorPrimeOneEndpoint (M N : ℕ) : ModuleCat Int :=
+  standardResolutionTorOneEndpoint M N
+
+/-- The direct `ℤ/gcd` computation for the endpoint matching Mathlib's `Tor'`
+left-derived variable. -/
+noncomputable def standardResolutionTorPrimeOneEndpointIsoGcd
+    (M N : ℕ) [NeZero N] :
+    standardResolutionTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  standardResolutionTorOneEndpointIsoGcd M N
+
+/-- The explicit standard-resolution endpoint in the variable derived by Mathlib's `Tor`.
+Mathlib defines `Tor` by fixing the first tensor factor and deriving in the second, hence the
+standard resolution for `Tor (ZMod M) (ZMod N)` is the resolution of `ZMod N`, tensored with
+`ZMod M`. -/
+abbrev standardResolutionTorOneSecondVariableEndpoint (M N : ℕ) : ModuleCat Int :=
+  standardResolutionTorOneEndpoint N M
+
+/-- The direct `ℤ/gcd` computation for the endpoint matching Mathlib's `Tor`
+left-derived variable. -/
+noncomputable def standardResolutionTorOneSecondVariableEndpointIsoGcd
+    (M N : ℕ) [NeZero M] :
+    standardResolutionTorOneSecondVariableEndpoint M N ≅
+      ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
+  standardResolutionTorOneEndpointIsoGcd N M
+
+/-- If Mathlib's `Tor` endpoint is identified with the standard free-resolution
+endpoint, the explicit `ℤ/gcd` computation follows by composition.  This is the
+precise remaining categorical comparison theorem needed to turn the concrete
+calculation into a statement about `CategoryTheory.Tor`. -/
+noncomputable def abstractTorOneIsoGcdOfStandardResolutionIso
+    (M N : ℕ) [NeZero N]
+    (h :
+      mathlibTorOneEndpoint M N ≅ standardResolutionTorOneEndpoint M N) :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  h ≪≫ standardResolutionTorOneEndpointIsoGcd M N
+
+/-- The same reduction for Mathlib's alternative `Tor'` endpoint. -/
+noncomputable def abstractTorPrimeOneIsoGcdOfStandardResolutionIso
+    (M N : ℕ) [NeZero N]
+    (h :
+      mathlibTorPrimeOneEndpoint M N ≅ standardResolutionTorOneEndpoint M N) :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  h ≪≫ standardResolutionTorOneEndpointIsoGcd M N
+
+/-- Direction-aware reduction for Mathlib's `Tor'`: a comparison with the first-variable
+standard-resolution endpoint immediately gives the concrete `ℤ/gcd` target. -/
+noncomputable def abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso
+    (M N : ℕ) [NeZero N]
+    (h :
+      mathlibTorPrimeOneEndpoint M N ≅ standardResolutionTorPrimeOneEndpoint M N) :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  h ≪≫ standardResolutionTorPrimeOneEndpointIsoGcd M N
+
+/-- Direction-aware reduction for Mathlib's `Tor`: a comparison with the second-variable
+standard-resolution endpoint immediately gives the concrete `ℤ/gcd` target. -/
+noncomputable def abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso
+    (M N : ℕ) [NeZero M]
+    (h :
+      mathlibTorOneEndpoint M N ≅ standardResolutionTorOneSecondVariableEndpoint M N) :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
+  h ≪≫ standardResolutionTorOneSecondVariableEndpointIsoGcd M N
+
+/-- PR-facing certificate for the part of T1-4 that is completely direction-compatible
+with Mathlib's `Tor'`: only the categorical comparison between Mathlib's derived endpoint and
+this explicit standard endpoint remains to be supplied. -/
+structure AbstractTorPrimeFirstVariableReduction (M N : ℕ) [NeZero N] where
+  abstractEndpoint : MathlibTorOneEndpointHandle M N
+  firstVariableEndpoint : ModuleCat Int
+  firstVariableEndpoint_eq :
+    firstVariableEndpoint = standardResolutionTorPrimeOneEndpoint M N
+  firstVariableEndpointIsoGcd :
+    firstVariableEndpoint ≅ ModuleCat.of Int (ZMod (Nat.gcd N M))
+  torPrimeIsoGcd_of_firstVariableEndpointIso :
+    CategoryTheory.Iso (mathlibTorPrimeOneEndpoint M N) firstVariableEndpoint →
+      CategoryTheory.Iso (mathlibTorPrimeOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd N M)))
+  reducedStatus : AbstractTorComparisonStatus
+  endpointComparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical direction-aware reduction certificate for Mathlib's `Tor'`. -/
+noncomputable def abstractTorPrimeFirstVariableReduction
+    (M N : ℕ) [NeZero N] :
+    AbstractTorPrimeFirstVariableReduction M N where
+  abstractEndpoint := mathlibTorOneEndpointHandle M N
+  firstVariableEndpoint := standardResolutionTorPrimeOneEndpoint M N
+  firstVariableEndpoint_eq := rfl
+  firstVariableEndpointIsoGcd := standardResolutionTorPrimeOneEndpointIsoGcd M N
+  torPrimeIsoGcd_of_firstVariableEndpointIso := fun h =>
+    abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso M N h
+  reducedStatus := AbstractTorComparisonStatus.reducedToStandardFreeResolution
+  endpointComparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
+
+/-- PR-facing certificate for the part of T1-4 that is direction-compatible with Mathlib's
+`Tor`: the standard resolution is taken in the second tensor factor. -/
+structure AbstractTorSecondVariableReduction (M N : ℕ) [NeZero M] where
+  abstractEndpoint : MathlibTorOneEndpointHandle M N
+  secondVariableEndpoint : ModuleCat Int
+  secondVariableEndpoint_eq :
+    secondVariableEndpoint = standardResolutionTorOneSecondVariableEndpoint M N
+  secondVariableEndpointIsoGcd :
+    secondVariableEndpoint ≅ ModuleCat.of Int (ZMod (Nat.gcd M N))
+  torIsoGcd_of_secondVariableEndpointIso :
+    CategoryTheory.Iso (mathlibTorOneEndpoint M N) secondVariableEndpoint →
+      CategoryTheory.Iso (mathlibTorOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd M N)))
+  reducedStatus : AbstractTorComparisonStatus
+  endpointComparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical direction-aware reduction certificate for Mathlib's `Tor`. -/
+noncomputable def abstractTorSecondVariableReduction
+    (M N : ℕ) [NeZero M] :
+    AbstractTorSecondVariableReduction M N where
+  abstractEndpoint := mathlibTorOneEndpointHandle M N
+  secondVariableEndpoint := standardResolutionTorOneSecondVariableEndpoint M N
+  secondVariableEndpoint_eq := rfl
+  secondVariableEndpointIsoGcd := standardResolutionTorOneSecondVariableEndpointIsoGcd M N
+  torIsoGcd_of_secondVariableEndpointIso := fun h =>
+    abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso M N h
+  reducedStatus := AbstractTorComparisonStatus.reducedToStandardFreeResolution
+  endpointComparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
+
+/-- A PR-facing reduction certificate for T1-4.  It records, in `ModuleCat Int`,
+the fully computed standard-resolution endpoint and the exact implication that
+would convert a categorical `leftDerived` comparison into the requested abstract
+`Tor₁(ℤ/M,ℤ/N) ≅ ℤ/gcd` theorem. -/
+structure AbstractTorStandardResolutionReduction (M N : ℕ) [NeZero N] where
+  abstractEndpoint : MathlibTorOneEndpointHandle M N
+  standardEndpoint : ModuleCat Int
+  standardEndpoint_eq :
+    standardEndpoint = standardResolutionTorOneEndpoint M N
+  standardEndpointIsoConcrete :
+    standardEndpoint ≅ ModuleCat.of Int (TorH1 M N)
+  standardEndpointIsoGcd :
+    standardEndpoint ≅ ModuleCat.of Int (ZMod (Nat.gcd N M))
+  torIsoGcd_of_standardEndpointIso :
+    CategoryTheory.Iso (mathlibTorOneEndpoint M N) standardEndpoint →
+      CategoryTheory.Iso (mathlibTorOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd N M)))
+  torPrimeIsoGcd_of_standardEndpointIso :
+    CategoryTheory.Iso (mathlibTorPrimeOneEndpoint M N) standardEndpoint →
+      CategoryTheory.Iso (mathlibTorPrimeOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd N M)))
+  reducedStatus : AbstractTorComparisonStatus
+  endpointComparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical reduction certificate from abstract `Tor₁` to the standard-resolution
+endpoint computed in this file. -/
+noncomputable def abstractTorStandardResolutionReduction
+    (M N : ℕ) [NeZero N] :
+    AbstractTorStandardResolutionReduction M N where
+  abstractEndpoint := mathlibTorOneEndpointHandle M N
+  standardEndpoint := standardResolutionTorOneEndpoint M N
+  standardEndpoint_eq := rfl
+  standardEndpointIsoConcrete := standardResolutionTorOneEndpointIsoConcrete M N
+  standardEndpointIsoGcd := standardResolutionTorOneEndpointIsoGcd M N
+  torIsoGcd_of_standardEndpointIso := fun h =>
+    abstractTorOneIsoGcdOfStandardResolutionIso M N h
+  torPrimeIsoGcd_of_standardEndpointIso := fun h =>
+    abstractTorPrimeOneIsoGcdOfStandardResolutionIso M N h
+  reducedStatus := AbstractTorComparisonStatus.reducedToStandardFreeResolution
+  endpointComparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
+
 /-- Concrete arithmetic bridge for the optional abstract-Tor comparison: the
-paper's computable `Tor₁` surrogate is already identified with `ℤ/gcd`. -/
+paper's computable `Tor₁` surrogate is already identified with `ℤ/gcd`, and the
+standard free-resolution tensor calculation has been reduced to exactly this
+kernel model. -/
 structure ConcreteTorMathlibBridge (M N : ℕ) [NeZero N] where
+  abstractEndpoint : MathlibTorOneEndpointHandle M N
+  abstractReduction : AbstractTorStandardResolutionReduction M N
+  torPrimeFirstVariableReduction : AbstractTorPrimeFirstVariableReduction M N
   kernelEquiv : (AddMonoidHom.mulLeft (M : ZMod N)).ker ≃+ ZMod (Nat.gcd N M)
   torH1Equiv : TorH1 M N ≃+ ZMod (Nat.gcd N M)
-  abstractComparisonPending : True
+  standardResolutionComparison : StandardFreeResolutionTorComparison M N
+  abstractComparisonStatus : AbstractTorComparisonStatus
 
 /-- Canonical concrete Tor bridge. -/
 noncomputable def concreteTorMathlibBridge (M N : ℕ) [NeZero N] :
     ConcreteTorMathlibBridge M N where
+  abstractEndpoint := mathlibTorOneEndpointHandle M N
+  abstractReduction := abstractTorStandardResolutionReduction M N
+  torPrimeFirstVariableReduction := abstractTorPrimeFirstVariableReduction M N
   kernelEquiv := kerMulLeftEquivZModGcd N M
   torH1Equiv := TorH1_iso_zmod_gcd M N
-  abstractComparisonPending := trivial
+  standardResolutionComparison := standardFreeResolutionTorComparison M N
+  abstractComparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
 
 /-- Handle for the reusable low-degree Koszul work.  It packages the explicit
 one- and two-element complexes together with the general model interface already
@@ -5487,7 +8293,11 @@ noncomputable def mathlibHandleInventoryChecklist :
     Nonempty DepthCMLocalizationHandle ∧
     Nonempty EulerProductMathlibHandle ∧
     Nonempty LSeriesDerivativeMathlibHandle ∧
+    Nonempty MathlibLeftDerivedComputationHandle.{uLDHandle, vLDHandle,
+      uLDTargetHandle, vLDTargetHandle} ∧
     Nonempty MathlibAbstractTorFunctorHandle.{uTorHandle, vTorHandle} ∧
+    (∀ M N : ℕ, [NeZero N] → Nonempty (AbstractTorPrimeFirstVariableReduction M N)) ∧
+    (∀ M N : ℕ, [NeZero M] → Nonempty (AbstractTorSecondVariableReduction M N)) ∧
     (∀ M N : ℕ, [NeZero N] → Nonempty (ConcreteTorMathlibBridge M N)) ∧
     (∀ (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
       Nonempty (KoszulReuseHandle R M)) := by
@@ -5496,7 +8306,10 @@ noncomputable def mathlibHandleInventoryChecklist :
       ⟨depthCMLocalizationHandle⟩,
       ⟨eulerProductMathlibHandle⟩,
       ⟨lseriesDerivativeMathlibHandle⟩,
+      ⟨mathlibLeftDerivedComputationHandle⟩,
       ⟨mathlibAbstractTorFunctorHandle⟩,
+      (fun M N _ => ⟨abstractTorPrimeFirstVariableReduction M N⟩),
+      (fun M N _ => ⟨abstractTorSecondVariableReduction M N⟩),
       (fun M N _ => ⟨concreteTorMathlibBridge M N⟩),
       (fun R _ M _ _ => ⟨koszulReuseHandle R M⟩)⟩
 
@@ -5558,6 +8371,17 @@ section AxiomAudit
 #print axioms Fmod_iff_dvd
 #print axioms Fp_adic_iff_dvd
 #print axioms FEC_iff_dvd
+#print axioms arithmeticPrimeSpectrumTopCat
+#print axioms arithmeticBasicOpen
+#print axioms arithmeticBasicOpen_mul
+#print axioms arithmeticConstantIntPresheaf
+#print axioms arithmeticConstantIntPresheaf_restrict_value
+#print axioms arithmeticPredicatePresheaf
+#print axioms arithmeticPredicatePresheafInclusion
+#print axioms arithmeticPredicatePresheaf_restrict_value
+#print axioms fourLayerGatePresheaf
+#print axioms fourLayerGateSectionsEquivIntersection
+#print axioms fourLayerGate_restrict_value
 #print axioms modCritical_AP
 #print axioms numericCritical_AP
 #print axioms pAdicCritical_AP
@@ -5571,6 +8395,25 @@ section AxiomAudit
 #print axioms cechPhiCokerEquivZModGcd
 #print axioms cechPhiCoker_card
 #print axioms cechPhiCoker_card_eq_one_iff_gcd_eq_one
+#print axioms arithmeticCechOverlapOpen_eq_inf
+#print axioms arithmeticCechGlobalRestrictLeft
+#print axioms arithmeticCechGlobalRestrictRight
+#print axioms arithmeticCechLeftRestrictOverlap
+#print axioms arithmeticCechRightRestrictOverlap
+#print axioms arithmeticCechLeftRestrictOverlap_intCast
+#print axioms arithmeticCechRightRestrictOverlap_intCast
+#print axioms arithmeticCechLeftOverlap_comp_global
+#print axioms arithmeticCechRightOverlap_comp_global
+#print axioms arithmeticCech_overlap_restrictions_agree_on_global
+#print axioms arithmeticCechGlobalToLocal
+#print axioms arithmeticCechLocalDifference
+#print axioms arithmeticCech_twoOpen_exact
+#print axioms arithmeticCech_compatible_iff_gluable
+#print axioms arithmeticCech_range_eq_kernel
+#print axioms arithmeticCechH1EquivZModGcd
+#print axioms arithmeticCechH1_card
+#print axioms ArithmeticTwoOpenCechSheafCertificate
+#print axioms arithmeticTwoOpenCechSheafCertificate
 #print axioms factorization_gcd_apply
 #print axioms factorization_lcm_apply
 #print axioms kernel_ideal_inter_nat
@@ -5582,6 +8425,64 @@ section AxiomAudit
 #print axioms card_ker_mulLeft
 #print axioms kerMulLeftEquivZModGcd
 #print axioms TorH1_iso_zmod_gcd
+#print axioms standardIntResolutionD1
+#print axioms standardIntResolutionQuotient
+#print axioms standardIntResolutionQuotient_comp_D1_apply
+#print axioms standardIntResolutionZeroObj
+#print axioms standardIntResolutionComplexObj
+#print axioms standardIntResolutionComplexD
+#print axioms standardIntResolutionComplexD_zero
+#print axioms standardIntResolutionComplexD_succ
+#print axioms standardIntResolutionComplexD_comp
+#print axioms standardIntResolutionComplex
+#print axioms standardIntResolutionComplex_d_one_zero
+#print axioms standardIntResolutionComplex_d_succ_succ
+#print axioms standardIntResolutionAugmentation
+#print axioms standardIntResolutionAugmentation_f_zero
+#print axioms standardIntResolutionAugmentation_f_zero_epi
+#print axioms standardIntResolutionAugmentation_comp_d_one_zero
+#print axioms standardIntResolutionComplex_projective
+#print axioms standardIntResolutionD1_range_eq_zmultiples
+#print axioms standardIntResolutionQuotient_ker_eq_zmultiples
+#print axioms standardIntResolutionD1_range_eq_quotient_ker
+#print axioms standardIntResolutionQuotient_surjective
+#print axioms standardIntResolutionD1_ker_eq_bot_of_ne_zero
+#print axioms StandardIntResolutionCertificate
+#print axioms standardIntResolutionCertificate
+#print axioms tensorStandardResolutionD1
+#print axioms tensorStandardResolutionD1_eq_torD1
+#print axioms tensorStandardResolutionD2
+#print axioms tensorStandardResolutionD1_comp_D2_apply
+#print axioms tensorStandardResolutionComplexObj
+#print axioms tensorStandardResolutionComplexD
+#print axioms tensorStandardResolutionComplexD_zero
+#print axioms tensorStandardResolutionComplexD_succ
+#print axioms tensorStandardResolutionComplexD_comp
+#print axioms tensorStandardResolutionComplex
+#print axioms tensorStandardResolutionComplex_d_one_zero
+#print axioms tensorStandardResolutionComplex_d_succ_succ
+#print axioms tensorStandardResolutionCycles1_eq_kernel
+#print axioms tensorStandardResolutionD2_range_eq_bot
+#print axioms tensorStandardResolutionBoundaries1_eq_bot
+#print axioms tensorStandardResolutionBoundaries1_le_cycles1
+#print axioms mem_tensorStandardResolutionCycles1_iff
+#print axioms tensorStandardResolutionHomology1EquivCycles1
+#print axioms tensorStandardResolutionH1EquivTorH1
+#print axioms tensorStandardResolutionHomology1EquivTorH1
+#print axioms tensorStandardResolutionH1EquivZModGcd
+#print axioms tensorStandardResolutionHomology1EquivZModGcd
+#print axioms tensorStandardResolutionH1_card
+#print axioms tensorStandardResolutionHomology1_card
+#print axioms mem_tensorStandardResolutionH1_iff
+#print axioms standardResolutionTorOneEndpoint
+#print axioms standardResolutionTorOneEndpointIsoConcrete
+#print axioms standardResolutionTorOneEndpointIsoGcd
+#print axioms standardResolutionTorPrimeOneEndpoint
+#print axioms standardResolutionTorPrimeOneEndpointIsoGcd
+#print axioms standardResolutionTorOneSecondVariableEndpoint
+#print axioms standardResolutionTorOneSecondVariableEndpointIsoGcd
+#print axioms StandardFreeResolutionTorComparison
+#print axioms standardFreeResolutionTorComparison
 #print axioms prod_primePower_factorization_eq_self
 #print axioms TorH1_crt_coord_mem
 #print axioms TorH1_crt_inv_mem
@@ -5706,7 +8607,30 @@ section AxiomAudit
 #print axioms hasWeakRegularSequenceLength_of_isWeaklyRegular
 #print axioms hasWeakRegularSequenceLength_of_isRegular
 #print axioms exists_weaklyRegular_of_hasWeakRegularSequenceLength
+#print axioms enat_toNat_le_of_natCast_le
+#print axioms enat_toNat_le_toNat_of_le_right_finite
+#print axioms enat_natCast_le_iff_le_toNat_of_ne_top
+#print axioms enat_le_natCast_iff_toNat_le_of_ne_top
+#print axioms enat_eq_natCast_of_toNat_eq
+#print axioms enat_toNat_eq_iff_eq_natCast_of_ne_top
 #print axioms ModuleDepthDimensionInterface
+#print axioms ENatDepthDimensionAPI
+#print axioms ENatDepthDimensionAPI.finiteDepth
+#print axioms ENatDepthDimensionAPI.finiteDimension
+#print axioms ENatDepthDimensionAPI.length_le_finiteDepth_of_isWeaklyRegular
+#print axioms ENatDepthDimensionAPI.finiteDepth_le_finiteDimension
+#print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_isCohenMacaulay
+#print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension
+#print axioms ENatDepthDimensionAPI.natCast_length_le_eDepth_iff_length_le_finiteDepth
+#print axioms ENatDepthDimensionAPI.eDimension_le_natCast_iff_finiteDimension_le
+#print axioms ENatDepthDimensionAPI.eDepth_le_natCast_iff_finiteDepth_le
+#print axioms ENatDepthDimensionAPI.eDepth_eq_natCast_of_finiteDepth_eq
+#print axioms ENatDepthDimensionAPI.eDimension_eq_natCast_of_finiteDimension_eq
+#print axioms ENatDepthDimensionAPI.eDepth_eq_eDimension_of_finiteDepth_eq_finiteDimension
+#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface
+#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_depth
+#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_dimension
+#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_isCohenMacaulay
 #print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_depth
 #print axioms ModuleDepthDimensionInterface.regular_length_le_depth
 #print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_depth
@@ -5778,6 +8702,70 @@ section AxiomAudit
 #print axioms prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
 #print axioms prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
 #print axioms prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_isWeaklyRegular
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_isRegular
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulAcyclic
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulRegularAcyclic
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulModelAcyclic
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_flatBaseChange
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange
+#print axioms prop18_depth_lower_bound_of_enatDepthAPI_localizedModule
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_isCohenMacaulay
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_eDepth_eq_eDimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_depth_eq_dimension
+#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_eDepth_eq_eDimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
 #print axioms detTraceWeightedLogSeries
 #print axioms detTraceShiftedSeries
 #print axioms coeff_detTraceWeightedLogSeries_zero
@@ -5879,16 +8867,32 @@ section AxiomAudit
 #print axioms SixFunctorData.shriek_tensor_pull_constructible
 #print axioms SixFunctorData.tensor_shriek_constructible
 #print axioms CurveFactorization
+#print axioms CurveFactorization.fullMap
+#print axioms CurveFactorization.fullMap_def
+#print axioms CurveFactorization.factor_eq_fullMap
+#print axioms CurveFactorization.fullMap_eq_original
 #print axioms CurveFactorization.factor_eq
 #print axioms CurveFactorization.jX_isOpenImmersion
 #print axioms CurveFactorization.g_isProper
 #print axioms CurveFactorization.pi_isSmoothCurveOver
+#print axioms CurveFactorization.geometric_conditions
+#print axioms CurveFactorization.curveReducedShriek
+#print axioms CurveFactorization.curveReducedShriek_def
 #print axioms CurveFactorization.jX_shriek_constructible
 #print axioms CurveFactorization.g_jX_shriek_constructible
 #print axioms CurveFactorization.pi_g_jX_shriek_constructible
+#print axioms CurveFactorization.curveReducedShriek_constructible
 #print axioms CurveFactorization.shriek_comp_iso
 #print axioms CurveFactorization.shriek_factorization_iso
+#print axioms CurveFactorization.shriek_factorization_iso_to_curveReducedShriek
 #print axioms CurveFactorization.curveReduction_terms_constructible
+#print axioms CurveFactorization.source_shriek_constructible
+#print axioms CurveFactorization.target_shriek_constructible
+#print axioms CurveFactorization.CurveReductionConclusion
+#print axioms CurveFactorization.CurveReductionConclusion.terms_constructible
+#print axioms CurveFactorization.CurveReductionConclusion.factorization_iso
+#print axioms CurveFactorization.curveReductionConclusion
+#print axioms CurveFactorization.lem32_curveReduction
 #print axioms weightRadius
 #print axioms weightRadius_pos
 #print axioms WeilIIPackage
@@ -5973,10 +8977,21 @@ section AxiomAudit
 #print axioms ConcreteSurrogateCertificate.tor_equiv
 #print axioms ConcreteSurrogateCertificate.cech_equiv
 #print axioms concreteSurrogateCertificate
+#print axioms PresheafCechSkeletonCertificate
+#print axioms presheafCechSkeletonCertificate
 #print axioms LowDegreeKoszulCertificate
 #print axioms LowDegreeKoszulCertificate.singleton_complex
 #print axioms LowDegreeKoszulCertificate.pair_complex
 #print axioms lowDegreeKoszulCertificate
+#print axioms ENatDepthDimensionInstantiationCertificate
+#print axioms ENatDepthDimensionInstantiationCertificate.interface
+#print axioms ENatDepthDimensionInstantiationCertificate.dimensionLeLengthIff
+#print axioms ENatDepthDimensionInstantiationCertificate.cmENatEqualityTrigger
+#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityDimensionLowerBound
+#print axioms ENatDepthDimensionInstantiationCertificate.enatEqualityDimensionLowerBound
+#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityTrigger
+#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityENatTrigger
+#print axioms enatDepthDimensionInstantiationCertificate
 #print axioms BundledInterfaceCertificate
 #print axioms bundledInterfaceCertificate
 #print axioms FormalAlgebraCoreCertificate
@@ -5988,13 +9003,31 @@ section AxiomAudit
 #print axioms FaithfullyFlatBaseChangeHandle
 #print axioms faithfullyFlatBaseChangeHandle
 #print axioms DepthCMLocalizationHandle
+#print axioms DepthCMLocalizationHandle.enatDepthInstantiation
 #print axioms depthCMLocalizationHandle
 #print axioms EulerProductMathlibHandle
 #print axioms eulerProductMathlibHandle
 #print axioms LSeriesDerivativeMathlibHandle
 #print axioms lseriesDerivativeMathlibHandle
+#print axioms MathlibLeftDerivedComputationHandle
+#print axioms mathlibLeftDerivedComputationHandle
 #print axioms MathlibAbstractTorFunctorHandle
 #print axioms mathlibAbstractTorFunctorHandle
+#print axioms AbstractTorComparisonStatus
+#print axioms mathlibTorOneEndpoint
+#print axioms mathlibTorPrimeOneEndpoint
+#print axioms MathlibTorOneEndpointHandle
+#print axioms mathlibTorOneEndpointHandle
+#print axioms abstractTorOneIsoGcdOfStandardResolutionIso
+#print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionIso
+#print axioms abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso
+#print axioms abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso
+#print axioms AbstractTorStandardResolutionReduction
+#print axioms abstractTorStandardResolutionReduction
+#print axioms AbstractTorPrimeFirstVariableReduction
+#print axioms abstractTorPrimeFirstVariableReduction
+#print axioms AbstractTorSecondVariableReduction
+#print axioms abstractTorSecondVariableReduction
 #print axioms ConcreteTorMathlibBridge
 #print axioms concreteTorMathlibBridge
 #print axioms KoszulReuseHandle
