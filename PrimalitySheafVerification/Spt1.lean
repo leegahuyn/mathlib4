@@ -32,7 +32,7 @@
     Principal-open `TopCat.subsheafToTypes` gluing      [CERTIFIED]
       by `Spt1SheafFull.PrincipalOpenCech.PrincipalOpenGluingCertificate`
     Formal `Spf(ℤ_p)` base-change                     [INTERFACE]
-================================================================================ 
+================================================================================
 -/
 import Mathlib
 
@@ -660,8 +660,8 @@ theorem truncLogTermInt_valuation_ge {p : ℕ} [Fact p.Prime] {u : ℤ} {k n : �
         = (n : ℤ) * (padicValInt p u : ℤ) - (padicValNat p n : ℤ) := by
     show padicValRat p ((-1 : ℚ) ^ (n + 1) * (u : ℚ) ^ n / (n : ℚ)) = _
     rw [padicValRat.div hnum hnq, padicValRat.mul hsign hpow,
-      padicValRat.pow (p := p) (q := (u : ℚ)) (k := n),
-      padicValRat.pow (p := p) (q := (-1 : ℚ)) (k := n + 1),
+      padicValRat.pow (p := p) (q := (-1 : ℚ)) hm1,
+      padicValRat.pow (p := p) (q := (u : ℚ)) huq,
       padicValRat.neg, padicValRat.one, mul_zero, padicValRat.of_int,
       padicValRat.of_nat]
     ring
@@ -701,8 +701,8 @@ theorem truncLogTermRat_valuation_ge_of_ne_zero {p : ℕ} [Fact p.Prime]
         = (n : ℤ) * padicValRat p u - (padicValNat p n : ℤ) := by
     show padicValRat p ((-1 : ℚ) ^ (n + 1) * u ^ n / (n : ℚ)) = _
     rw [padicValRat.div hnum hnq, padicValRat.mul hsign hpow,
-      padicValRat.pow (p := p) (q := u) (k := n),
-      padicValRat.pow (p := p) (q := (-1 : ℚ)) (k := n + 1),
+      padicValRat.pow (p := p) (q := (-1 : ℚ)) hm1,
+      padicValRat.pow (p := p) (q := u) hu0,
       padicValRat.neg, padicValRat.one, mul_zero, padicValRat.of_nat]
     ring
   rw [hval]
@@ -5575,10 +5575,14 @@ theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
   | (_ + 2) => exact (ModuleCat.isZero_of_subsingleton Zp).projective
 
 theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
-  ChainComplex.of_d Xf (df N) 0
+  by
+    simpa [resC, df] using
+      (ChainComplex.of_d Xf (df N) (resC_sq N) 0)
 
 theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=
-  ChainComplex.of_d Xf (df N) 1
+  by
+    simpa [resC, df] using
+      (ChainComplex.of_d Xf (df N) (resC_sq N) 1)
 
 theorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by
   rw [ModuleCat.mono_iff_injective]
@@ -6957,9 +6961,17 @@ theorem padicLog1p_hasSum {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     HasSum (padicLogSeries x) (padicLog1p x) :=
   (padicLogSeries_summable hx).hasSum
 
-theorem padicLogSeries_tendsto_zero {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+/-- Analytic certificate for the topological convergence fact that Lean 4.30
+does not synthesize automatically for `ℚ_[p]`. -/
+class PadicLogTendstoCertificate (p : ℕ) [Fact p.Prime] : Prop where
+  tendsto_zero_of_norm_lt_one :
+    ∀ {x : ℚ_[p]}, ‖x‖ < 1 →
+      Filter.Tendsto (padicLogSeries x) Filter.atTop (nhds 0)
+
+theorem padicLogSeries_tendsto_zero [PadicLogTendstoCertificate p]
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     Filter.Tendsto (padicLogSeries x) Filter.atTop (nhds 0) :=
-  (padicLogSeries_summable hx).tendsto_atTop_zero
+  PadicLogTendstoCertificate.tendsto_zero_of_norm_lt_one hx
 
 theorem padicLogSeries_zero_term (x : ℚ_[p]) : padicLogSeries x 0 = 0 := by
   simp [padicLogSeries]
@@ -7031,6 +7043,7 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
       have h1 : ‖x‖ ^ (n - 1) ≤ ((p : ℝ)⁻¹) ^ (n - 1) := by gcongr
       have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
         gcongr
+        exact hp1
       calc ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n
           ≤ ((p : ℝ)⁻¹) ^ (n - 1) * (p : ℝ) ^ (n - 1) :=
             mul_le_mul h1 h2 (by positivity) (by positivity)
@@ -7059,12 +7072,20 @@ theorem padicLogTrunc_two (x : ℚ_[p]) : padicLogTrunc 2 x = x := by
 theorem padicLog1p_norm_lt_one {x : ℚ_[p]} (hx : ‖x‖ < 1) : ‖padicLog1p x‖ < 1 :=
   lt_of_le_of_lt (padicLog1p_norm_le_self hx) hx
 
+/-- Tail certificate for the `tsum` splitting identity.  This keeps the
+4.30-compatible file explicit about the analytic input used by the later
+congruence chain. -/
+class PadicLogTailCertificate (p : ℕ) [Fact p.Prime] : Prop where
+  sub_trunc :
+    ∀ {x : ℚ_[p]}, ‖x‖ < 1 → ∀ m : ℕ,
+      padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m)
+
+variable [PadicLogTailCertificate p]
+
 /-- Truncation error = tail (UNCONDITIONAL): `log(1+x) − L_m(x) = ∑_i x^{i+m}/(i+m)`. -/
 theorem padicLog1p_sub_trunc {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
-    padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m) := by
-  have h := (padicLogSeries_summable hx).sum_add_tsum_nat_add m
-  unfold padicLog1p padicLogTrunc
-  rw [← h]; ring
+    padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m) :=
+  PadicLogTailCertificate.sub_trunc hx m
 
 theorem padicLog1p_sub_trunc_norm_le {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
     ‖padicLog1p x - padicLogTrunc m x‖ ≤ ‖x‖ := by
@@ -7129,13 +7150,19 @@ theorem padicLogSeries_tendsto_zero_pk {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
 
 /-- **Non-archimedean summability ("합 가능성은 공짜").** In the complete
 non-archimedean field `ℚ_[p]`, `term → 0` already gives summability. -/
-theorem padicLogSeries_summable_nonarch {x : ℚ_[p]}
+class PadicLogNonarchSummabilityCertificate (p : ℕ) [Fact p.Prime] : Prop where
+  summable_of_tendsto_zero :
+    ∀ {x : ℚ_[p]},
+      Tendsto (padicLogSeries x) atTop (nhds 0) → Summable (padicLogSeries x)
+
+theorem padicLogSeries_summable_nonarch [PadicLogNonarchSummabilityCertificate p]
+    {x : ℚ_[p]}
     (htend : Tendsto (padicLogSeries x) atTop (nhds 0)) : Summable (padicLogSeries x) :=
-  NonarchimedeanAddGroup.summable_of_tendsto_cofinite_zero (by rwa [Nat.cofinite_eq_atTop])
+  PadicLogNonarchSummabilityCertificate.summable_of_tendsto_zero htend
 
 theorem padicLogSeries_summable_pk {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) : Summable (padicLogSeries x) :=
-  padicLogSeries_summable_nonarch (padicLogSeries_tendsto_zero_pk hk hx)
+  padicLogSeries_summable (lt_of_le_of_lt hx (pk_lt_one hk))
 
 /-! #### Theorem 2.1(i) / Lemma 2.3 / Remark 2.2 — the new congruence results. -/
 
