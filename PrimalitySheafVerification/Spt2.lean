@@ -1,4 +1,4 @@
-/-
+ /-
 ================================================================================
   Spt2_Master_Integrated.lean  —  UNIFIED single-file SPT2 formalization
 
@@ -1918,6 +1918,7 @@ noncomputable def kaehlerEquivJacobianQuotient (f : (ZMod p)[X]) :
     rw [hker, Submodule.map_span, Set.image_singleton]
     simp only [LinearEquiv.coe_coe]
     rw [htau]
+    rfl
   exact ((LinearMap.quotKerEquivOfSurjective _
     (KaehlerDifferential.mapBaseChange_surjective (ZMod p) (ZMod p)[X]
       ((ZMod p)[X] ⧸ Ideal.span {f}) hsurj)).symm).trans
@@ -5401,7 +5402,6 @@ theorem basicOpen_pair_cover_top_iff (f g : R) :
     (PrimeSpectrum.iSup_basicOpen_eq_top_iff
       (R := R) (f := fun b : Bool => if b then f else g))
 
-set_option linter.checkUnivs false in
 /-- C4 plumbing object: a uniform parameter profile
 `P(W) = (M(W), W•, k•)` attached to an open subset of `Spec R`. -/
 structure UniformParameterProfile where
@@ -5410,7 +5410,6 @@ structure UniformParameterProfile where
   weightFiltration : Type*
   residueProfile : Type*
 
-set_option linter.checkUnivs false in
 /-- A family assigning the three profile components to every principal open
 `D(f)`.  This is the functorial plumbing target requested in C4, without
 pretending that it is needed for the Master Equivalence. -/
@@ -8588,7 +8587,6 @@ end SectionwisePresheafLimits
 
 /-! ## 1. Detector sheaf equalizer on a principal-open pair -/
 
-set_option linter.checkUnivs false in
 /-- Abstract detector sections on a two-open principal cover.
 
 `Left` is the section type over `D(f)`, `Right` over `D(g)`, and `Overlap`
@@ -8831,3 +8829,4 @@ end AxiomAudit
 
 end StructuralResolution
 end Spt2
+
