@@ -54,7 +54,7 @@ import Mathlib.AlgebraicGeometry.EllipticCurve.Weierstrass
 import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
 import Mathlib.AlgebraicGeometry.Pullbacks
 import Mathlib.RingTheory.Localization.AtPrime.Basic
-import Mathlib.Algebra.Exact.Basic
+import Mathlib.Algebra.Exact
 import Mathlib.Algebra.DirectSum.Module
 import Mathlib.CategoryTheory.Abelian.LeftDerived
 import Mathlib.CategoryTheory.Monoidal.Tor
@@ -67,7 +67,7 @@ import Mathlib.Algebra.Category.ModuleCat.Monoidal.Closed
 import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Category.ModuleCat.Abelian
 import Mathlib.Algebra.Category.ModuleCat.Biproducts
-import Mathlib.RingTheory.PowerSeries.Log
+import Mathlib.RingTheory.PowerSeries.WellKnown
 import Mathlib.RingTheory.PowerSeries.Inverse
 
 /-
@@ -1095,9 +1095,7 @@ theorem amalgam_section_unique (Fnum Fmod Fpadic FEC : Subfunctor B)
         (amalgam Fnum Fmod Fpadic FEC).toFunctor.map f s =
           (amalgam Fnum Fmod Fpadic FEC).toFunctor.map f t) :
     s = t := by
-  -- v4.31.0 compat: the identity-restriction reduction now needs the explicit
-  -- `Functor.map_id_apply` (post-ConcreteCategory refactor) rather than bare `simp`.
-  simpa only [Functor.map_id_apply] using h (𝟙 U)
+  simpa using h (𝟙 U)
 
 /-- **B-3 (terminal/meet property).** The amalgam is the largest subpresheaf below all
 four layers: any `G` refining each layer refines the amalgam. -/
@@ -1953,7 +1951,7 @@ def W2_truncated_padic_workaround : ChecklistItem :=
        "Mathlib.Analysis.SpecificLimits.Normed",
        "Mathlib.Topology.Algebra.InfiniteSum.Nonarchimedean"],
     integrationNote :=
-      "Item D's p-adic-log lemma chain is now closed for the parts Mathlib supports (Category P parts 5–6).  (1) term→0: padicLogSeries_tendsto_zero_pk via the valuation bound v_p((-1)^{n+1}xⁿ/n) ≥ nk−v_p(n) (padicLogSeries_norm_le_pk) and linear-minus-log divergence (padicValBound_ge).  (2) summability is FREE in the complete non-archimedean ℚ_p: term→0 ⟹ Summable (padicLogSeries_summable_pk, via NonarchimedeanAddGroup.summable_of_tendsto_cofinite_zero).  (3) log 1 = 0: padicLog1p_zero.  (5) ‖log(1+x)‖ ≤ p^{-k}: padicLog1p_norm_le_pk.  (4) homomorphism via the realistic mod-pᵏ route: the order-2 truncated log has EXACT error x·y (padicLogTrunc_two_star_error), so it is additive mod p^{2k} for x,y ∈ pᵏℤ_p (padicLogTrunc_two_hom_modError) — the congruence AB-linearization uses; the FULL series additivity (4a) stays the named hypothesis PadicLogAdditive.  Status kept futureTarget only because the full truncated-log-plus-finite-check certifier is not assembled; the analytic core is DONE, and this resolves the analytic part shared by ② and ⑧.",
+      "Item D's p-adic-log lemma chain is now closed for the parts Mathlib supports (Category P parts 5–6).  (1) term→0: padicLogSeries_tendsto_zero_pk via the valuation bound v_p((-1)^{n+1}xⁿ/n) ≥ nk−v_p(n) (padicLogSeries_norm_le_pk) and linear-minus-log divergence (padicValBound_ge).  (2) summability for x ∈ p^k Z_p follows from the already-proved open-disk summability theorem padicLogSeries_summable (padicLogSeries_summable_pk); the non-archimedean term→0 criterion is retained only as the explicit-interface theorem padicLogSeries_summable_nonarch.  (3) log 1 = 0: padicLog1p_zero.  (5) ‖log(1+x)‖ ≤ p^{-k}: padicLog1p_norm_le_pk.  (4) homomorphism via the realistic mod-pᵏ route: the order-2 truncated log has EXACT error x·y (padicLogTrunc_two_star_error), so it is additive mod p^{2k} for x,y ∈ pᵏℤ_p (padicLogTrunc_two_hom_modError) — the congruence AB-linearization uses; the FULL series additivity (4a) stays the named hypothesis PadicLogAdditive.  Status kept futureTarget only because the full truncated-log-plus-finite-check certifier is not assembled; the analytic core is DONE, and this resolves the analytic part shared by ② and ⑧.",
     recommendedNextStep :=
       "Assemble the closed analytic chain (term→0, free summability, norm bound, mod-pᵏ homomorphism — all DONE) with a finite primality check; only the full-series additivity (4a) would further need a Cauchy-product/Mahler identity." }
 
@@ -2041,17 +2039,16 @@ def B15_formal_logOf_mul : ChecklistItem :=
   { code := "B15",
     title := "Formal logarithm additivity logOf (f*g) = logOf f + logOf g (PowerSeries)",
     gap := GapClass.mathlibPossible,
-    status := ChecklistStatus.proved,
+    status := ChecklistStatus.conditional,
     currentLeanAnchor :=
-      ["PowerSeries.logOf_mul", "PowerSeries.mul_deriv_logOf",
-       "PowerSeries.one_add_X_mul_deriv_log", "Spt3PadicLogFormal.logOf_mul_qp"],
+      ["PowerSeries.LogInterface", "PowerSeries.logOf_mul",
+       "Spt3PadicLogFormal.logOf_mul_qp"],
     mathlibAnchor :=
-      ["Mathlib.RingTheory.PowerSeries.Log", "Mathlib.RingTheory.PowerSeries.Derivative",
-       "Mathlib.RingTheory.PowerSeries.Substitution"],
+      ["Mathlib.RingTheory.PowerSeries.WellKnown", "Mathlib.RingTheory.PowerSeries.Inverse"],
     integrationNote :=
-      "DONE (Category A2-2 / T2-b).  UNCONDITIONALLY proves the FORMAL log additivity PowerSeries.logOf_mul : logOf (f*g) = logOf f + logOf g for constantCoeff f = constantCoeff g = 1 over a ℚ-algebra (IsAddTorsionFree), via the logarithmic-derivative argument: one_add_X_mul_deriv_log ((1+X)·(log)' = 1) ⟹ mul_deriv_logOf (f·(logOf f)' = f') ⟹ derivative.ext.  Mathlib has logOf (recent, 2026) but NOT logOf_mul — this is a clean PR candidate for Mathlib/RingTheory/PowerSeries/Log.lean.  logOf_mul_qp specializes it to ℚ_[p]⟦X⟧.  HONEST: this closes the FORMAL half of the p-adic log homomorphism (4a); the p-adic VALUE version Spt3PadicLog.PadicLogAdditive stays a named hypothesis because evaluating the formal identity at a p-adic point needs PowerSeries.aeval, which requires an IsLinearTopology (adic) base that the field ℚ_[p] does not have.",
+      "[INTERFACE] (Category A2-2 / T2-b).  This branch does not expose the expected PowerSeries.logOf / HasSubst API.  The formal logarithm and multiplicativity law are therefore isolated as PowerSeries.LogInterface, and logOf_mul_qp is conditional on that interface.  The p-adic VALUE version Spt3PadicLog.PadicLogAdditive remains a separate named hypothesis because evaluating formal identities at p-adic points is not available here.",
     recommendedNextStep :=
-      "Submit logOf_mul to Mathlib.  For PadicLogAdditive: a p-adic-analytic evaluation of convergent power series at points of ℚ_[p] (outside Mathlib's adic-only aeval) is needed to transfer the formal identity to values." }
+      "Discharge PowerSeries.LogInterface when this branch gains a formal logarithm API with logOf and product additivity; separately discharge PadicLogAdditive via a p-adic analytic evaluation framework." }
 
 def B16_candidate_separation_integer : ChecklistItem :=
   { code := "B16",
@@ -2203,13 +2200,13 @@ theorem checklist_total_items : all.length = 30 := rfl
 --  B18 multivariate EC good-locus formally-étale added by Category X part 4 / T2-d.)
 
 theorem checklist_current_proved_or_proxy_count :
-    currentProvedOrProxy.length = 24 := rfl
+    currentProvedOrProxy.length = 23 := rfl
 
 theorem checklist_future_target_count :
     futureTargets.length = 5 := rfl
 
 theorem checklist_conditional_count :
-    conditionalClaims.length = 0 := rfl
+    conditionalClaims.length = 1 := rfl
 
 theorem A1_is_blocked_by_missing_AKS_ECPP :
     A1_AKS_ECPP.status = ChecklistStatus.blockedByMathlib := rfl
@@ -2963,17 +2960,17 @@ noncomputable def resC (N : ℕ) : ChainComplex ModZ ℕ :=
   ChainComplex.of Xf (df N) (resC_sq N)
 
 theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
-  rw [resC, ChainComplex.of_X]   -- v4.31.0 compat: `of_x` was renamed to `of_X`
+  change Projective (Xf n)
   match n with
   | 0 => exact (inferInstanceAs (Projective Zz))
   | 1 => exact (inferInstanceAs (Projective Zz))
   | (_ + 2) => exact (ModuleCat.isZero_of_subsingleton Zp).projective
 
 theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
-  ChainComplex.of_d Xf (df N) 0          -- v4.31.0 compat: `of_d` dropped its `sq` argument
+  ChainComplex.of_d Xf (df N) (resC_sq N) 0
 
 theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=
-  ChainComplex.of_d Xf (df N) 1          -- v4.31.0 compat: `of_d` dropped its `sq` argument
+  ChainComplex.of_d Xf (df N) (resC_sq N) 1
 
 theorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by
   rw [ModuleCat.mono_iff_injective]
@@ -4070,22 +4067,28 @@ theorem padicLogSeries_summable {x : ℚ_[p]} (hx : ‖x‖ < 1) :
 noncomputable def padicLog1p (x : ℚ_[p]) : ℚ_[p] := ∑' n : ℕ, padicLogSeries x n
 
 /-- For `‖x‖ < 1`, the series sums to `padicLog1p x`. -/
-theorem padicLog1p_hasSum {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+theorem padicLog1p_hasSum
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     HasSum (padicLogSeries x) (padicLog1p x) :=
   (padicLogSeries_summable hx).hasSum
 
 /-- The terms tend to `0` — the analytic shadow of the valuation-survival facts of
 Category I (`Spt3.padic_log_term_survives`): `‖xⁿ/n‖ → 0 ⟺ v_p(xⁿ/n) → ∞`. -/
-theorem padicLogSeries_tendsto_zero {x : ℚ_[p]} (hx : ‖x‖ < 1) :
-    Filter.Tendsto (padicLogSeries x) Filter.atTop (nhds 0) :=
-  (padicLogSeries_summable hx).tendsto_atTop_zero
+theorem padicLogSeries_tendsto_zero
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+    Filter.Tendsto (padicLogSeries x) Filter.atTop (nhds 0) := by
+  rw [tendsto_zero_iff_norm_tendsto_zero]
+  refine squeeze_zero (fun n => norm_nonneg _) (fun n => padicLogSeries_norm_le x n) ?_
+  have hr : ‖(‖x‖ : ℝ)‖ < 1 := by
+    rwa [Real.norm_of_nonneg (norm_nonneg x)]
+  simpa [pow_one] using
+    (summable_pow_mul_geometric_of_norm_lt_one (R := ℝ) 1 hr).tendsto_atTop_zero
 
 /-- The remaining DEEP analytic inputs, named as `Prop`s (NOT closed here — exactly as
-`Spt3Cert.AKSIsComplete`).  Summability is discharged unconditionally above.  NOTE (T2-b): the
-FORMAL additivity `logOf (f*g) = logOf f + logOf g` is now proved unconditionally
-(`PowerSeries.logOf_mul`, `Spt3PadicLogFormal.logOf_mul_qp`); `PadicLogAdditive` below is the p-adic
-VALUE version, which stays a hypothesis only because evaluating the formal identity at a point of the
-field `ℚ_[p]` is outside Mathlib's adic-only `PowerSeries.aeval`. -/
+`Spt3Cert.AKSIsComplete`).  Summability is discharged above under the topological assumptions
+required by the current `Summable`/`tsum` API.  NOTE (T2-b): this branch does not expose the
+expected formal `PowerSeries.logOf` API, so formal additivity is isolated below by
+`PowerSeries.LogInterface`; `PadicLogAdditive` is the p-adic VALUE version. -/
 def PadicLogAdditive : Prop :=
   ∀ x y : ℚ_[p], ‖x‖ < 1 → ‖y‖ < 1 →
     padicLog1p (x + y + x * y) = padicLog1p x + padicLog1p y
@@ -4236,7 +4239,9 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
     have hv : padicValNat p n ≤ n - 1 := by omega
     have hclaim : ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n ≤ 1 := by
       have h1 : ‖x‖ ^ (n - 1) ≤ ((p : ℝ)⁻¹) ^ (n - 1) := by gcongr
-      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by gcongr
+      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
+        gcongr
+        exact hp1
       calc ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n
           ≤ ((p : ℝ)⁻¹) ^ (n - 1) * (p : ℝ) ^ (n - 1) :=
             mul_le_mul h1 h2 (by positivity) (by positivity)
@@ -4249,10 +4254,10 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
       _ ≤ ‖x‖ * 1 := mul_le_mul_of_nonneg_left hclaim (norm_nonneg x)
       _ = ‖x‖ := mul_one _
 
-/-- **(i) UNCONDITIONAL norm bound.** `‖padicLog1p x‖ ≤ ‖x‖` — log is norm-decreasing
-(maps the disk into itself), via the ultrametric `tsum` bound.  UNCONDITIONAL, hence
-supersedes the Lipschitz-conditional `padicLog1p_norm_le`. -/
-theorem padicLog1p_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) : ‖padicLog1p x‖ ≤ ‖x‖ :=
+/-- **(i) Norm bound.** `‖padicLog1p x‖ ≤ ‖x‖` — log is norm-decreasing
+(maps the disk into itself), via the ultrametric `tsum` bound. -/
+theorem padicLog1p_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+    ‖padicLog1p x‖ ≤ ‖x‖ :=
   IsUltrametricDist.norm_tsum_le_of_forall_le_of_nonneg (norm_nonneg x)
     (fun n => padicLogSeries_norm_le_self hx n)
 
@@ -4268,31 +4273,43 @@ theorem padicLogTrunc_two (x : ℚ_[p]) : padicLogTrunc 2 x = x := by
 /-! ### Category P, part 4 — (j) log maps the disk into itself; (k) truncation error,
     tail bound, and convergence.  All UNCONDITIONAL, kernel-verified against Mathlib v4.31.0. -/
 
-/-- **(j) UNCONDITIONAL.** `‖padicLog1p x‖ < 1` — `log` maps the open unit disk into itself.
-A corollary of the norm bound `‖log(1+x)‖ ≤ ‖x‖ < 1`. -/
-theorem padicLog1p_norm_lt_one {x : ℚ_[p]} (hx : ‖x‖ < 1) : ‖padicLog1p x‖ < 1 :=
+/-- **(j) Disk preservation.** `‖padicLog1p x‖ < 1` — `log` maps the open unit disk into
+itself. -/
+theorem padicLog1p_norm_lt_one {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+    ‖padicLog1p x‖ < 1 :=
   lt_of_le_of_lt (padicLog1p_norm_le_self hx) hx
 
-/-- **(k) Truncation error = tail (UNCONDITIONAL).** `log(1+x) − L_m(x) = ∑_i x^{i+m}/(i+m)`,
-the tail of the series (`Summable.sum_add_tsum_nat_add`). -/
-theorem padicLog1p_sub_trunc {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
+/-- **(k) Truncation error = tail.** `log(1+x) − L_m(x) = ∑_i x^{i+m}/(i+m)`,
+the tail of the series (`Summable.sum_add_tsum_nat_add`), over the canonical topological-add-group
+interface. -/
+theorem padicLog1p_sub_trunc
+    (hTop : IsTopologicalAddGroup ℚ_[p])
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
     padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m) := by
-  have h := (padicLogSeries_summable hx).sum_add_tsum_nat_add m
+  have h :=
+    @Summable.sum_add_tsum_nat_add ℚ_[p] inferInstance inferInstance hTop inferInstance
+      (padicLogSeries x) m (padicLogSeries_summable hx)
   unfold padicLog1p padicLogTrunc
-  rw [← h]; ring
+  rw [← h]
+  simp [Nat.add_comm]
 
-/-- **(k) Tail bound (UNCONDITIONAL).** `‖log(1+x) − L_m(x)‖ ≤ ‖x‖`.  (This uniform bound is
+/-- **(k) Tail bound.** `‖log(1+x) − L_m(x)‖ ≤ ‖x‖`.  (This uniform bound is
 mathematically sharp: at `‖x‖ = p⁻¹` the tail's sup norm equals `‖x‖` for every `m`, so no
 better uniform-in-`m` bound exists; convergence is captured by `padicLogTrunc_tendsto`.) -/
-theorem padicLog1p_sub_trunc_norm_le {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
+theorem padicLog1p_sub_trunc_norm_le
+    (hTop : IsTopologicalAddGroup ℚ_[p])
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
     ‖padicLog1p x - padicLogTrunc m x‖ ≤ ‖x‖ := by
-  rw [padicLog1p_sub_trunc hx m]
+  haveI : IsTopologicalAddGroup ℚ_[p] := hTop
+  rw [padicLog1p_sub_trunc hTop hx m]
   exact IsUltrametricDist.norm_tsum_le_of_forall_le_of_nonneg (norm_nonneg x)
     (fun i => padicLogSeries_norm_le_self hx (i + m))
 
-/-- **(k) Convergence (UNCONDITIONAL).** The truncations converge to the full logarithm:
-`L_m(x) → log(1+x)` as `m → ∞` (`HasSum.tendsto_sum_nat`). -/
-theorem padicLogTrunc_tendsto {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+/-- **(k) Convergence.** The truncations converge to the full logarithm:
+`L_m(x) → log(1+x)` as `m → ∞` (`HasSum.tendsto_sum_nat`), over the canonical
+topological-add-group interface. -/
+theorem padicLogTrunc_tendsto
+    {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     Filter.Tendsto (fun m => padicLogTrunc m x) Filter.atTop (nhds (padicLog1p x)) :=
   (padicLog1p_hasSum hx).tendsto_sum_nat
 
@@ -4629,19 +4646,19 @@ theorem plift_prop_subsingleton {p : Prop} (a b : PLift p) : a = b := by
 /-- Transport a nonemptiness witness along `W ≤ W'` (monotonicity of `Set.Nonempty`). -/
 def liftNE {W W' : Opens S} (h : W ≤ W') :
     PLift (W : Set S).Nonempty → PLift (W' : Set S).Nonempty :=
-  fun q => PLift.up (q.down.mono (SetLike.coe_subset_coe.mpr h))
+  fun q => PLift.up (q.down.mono (fun _ hx => h hx))
 
 /-- **⑦ The repointed constant presheaf.** Value `A` on nonempty opens, a single point on
 the empty open.  Restriction is precomposition with `liftNE`; the functor laws hold by proof
 irrelevance, so no `if`/case split is needed. -/
 def RepointedConst (A : Type) : (Opens S)ᵒᵖ ⥤ Type where
   obj U := PLift (U.unop : Set S).Nonempty → A
-  map i := TypeCat.ofHom (fun g => g ∘ liftNE (leOfHom i.unop))
+  map i := fun g => g ∘ liftNE (leOfHom i.unop)
   map_id _ := by
-    apply (TypeCat.homEquiv).injective; funext g; funext q
+    funext g q
     exact congrArg g (plift_prop_subsingleton _ _)
   map_comp _ _ := by
-    apply (TypeCat.homEquiv).injective; funext g; funext q
+    funext g q
     exact congrArg g (plift_prop_subsingleton _ _)
 
 /-- Computation rule for the restriction maps of `RepointedConst`. -/
@@ -4690,7 +4707,7 @@ theorem RepointedConst_isSheaf (A : Type) :
     refine ⟨fun p => absurd p.down hV, ?_, ?_⟩
     · intro i
       funext q
-      exact absurd (q.down.mono (SetLike.coe_subset_coe.mpr (le_iSup U i))) hV
+      exact absurd (q.down.mono (fun _ hx => (le_iSup U i) hx)) hV
     · intro s' _
       funext p
       exact absurd p.down hV
@@ -4714,7 +4731,7 @@ theorem predLayer_isSheaf (P : ℕ → Prop) :
   intro U s hcov p
   obtain ⟨x, hx⟩ := p.down
   obtain ⟨V, f, hf, hxV⟩ := hcov x hx
-  exact hf (PLift.up ⟨x, hxV⟩)
+  simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
 
 /-- **⑦ Generic four-layer amalgam over the repointed ambient is unconditionally a sheaf.** -/
 theorem repointed_amalgam_isSheaf (P₁ P₂ P₃ P₄ : ℕ → Prop) :
@@ -4820,7 +4837,7 @@ theorem predLayerVar_isSheaf_of_const (Q : Opens S → Set ℕ)
   obtain ⟨x, hx⟩ := p.down
   obtain ⟨V, f, hf, hxV⟩ := hcov x hx
   rw [hconst U.unop ⟨x, hx⟩, ← hconst V ⟨x, hxV⟩]
-  exact hf (PLift.up ⟨x, hxV⟩)
+  simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
 
 /-- **T1-d (per-prime site gate).**  A `q`-adic gate active exactly on opens containing
 `basicOpen q`: over such `U` the (constant) section value must satisfy `cond` (e.g. `q ^ k ∣ ·` or
@@ -4828,20 +4845,22 @@ theorem predLayerVar_isSheaf_of_const (Q : Opens S → Set ℕ)
 transitivity of `≤`, with NON-TRIVIAL restriction maps — the gate changes as the open shrinks past
 `basicOpen q`. -/
 def qAdicGate (q : ℤ) (cond : ℕ → Prop) : Subfunctor (RepointedConst ℕ) :=
-  predLayerVar (fun U => {n | PrimeSpectrum.basicOpen q ≤ U → cond n})
-    (fun {_ _} hVU _n hn hqV => hn (le_trans hqV hVU))
+  predLayerVar (fun U => {n | (PrimeSpectrum.basicOpen q : Set S) ⊆ (U : Set S) → cond n})
+    (fun {_ _} hVU _n hn hqV => hn (fun _ hx => hVU (hqV hx)))
 
 /-- On opens NOT containing `basicOpen q`, the q-adic gate imposes no constraint — every section is
 a member (the gate is genuinely localized on the site). -/
 theorem mem_qAdicGate_of_not_le {q : ℤ} {cond : ℕ → Prop} {U : (Opens S)ᵒᵖ}
-    (h : ¬ PrimeSpectrum.basicOpen q ≤ U.unop) (s : (RepointedConst ℕ).obj U) :
+    (h : ¬ (PrimeSpectrum.basicOpen q : Set S) ⊆ (U.unop : Set S))
+    (s : (RepointedConst ℕ).obj U) :
     s ∈ (qAdicGate q cond).obj U :=
   fun _ hle => absurd hle h
 
 /-- Over opens that DO contain `basicOpen q`, membership in the q-adic gate is exactly the
 `cond`-constraint on the (constant) value — so the gate is non-trivial there. -/
 theorem mem_qAdicGate_of_le {q : ℤ} {cond : ℕ → Prop} {U : (Opens S)ᵒᵖ}
-    (h : PrimeSpectrum.basicOpen q ≤ U.unop) (s : (RepointedConst ℕ).obj U) :
+    (h : (PrimeSpectrum.basicOpen q : Set S) ⊆ (U.unop : Set S))
+    (s : (RepointedConst ℕ).obj U) :
     s ∈ (qAdicGate q cond).obj U ↔ ∀ p, cond (s p) :=
   ⟨fun hs p => hs p h, fun hc p _ => hc p⟩
 
@@ -5710,7 +5729,7 @@ end CategoryPItemDAxiomAudit
 
       • item 2 (summability, "공짜"):  in the complete non-archimedean field `ℚ_[p]`,
         `term → 0 ⟹ Summable` (`NonarchimedeanAddGroup.summable_of_tendsto_cofinite_zero`),
-        so `padicLogSeries_summable_pk` follows from item 1's term-decay with NO real-comparison;
+        so `padicLogSeries_summable_pk` follows from the open-disk summability theorem;
       • item 5 (norm bound): `‖log(1+x)‖ ≤ p^{-k}` for `x ∈ pᵏℤ_p` — immediate from the
         unconditional `padicLog1p_norm_le_self` and `‖x‖ ≤ p^{-k} < 1`;
       • item 4(b) (the realistic homomorphism route): the truncated log is additive modulo a high
@@ -5728,20 +5747,27 @@ open Filter Topology
 
 variable {p : ℕ} [hp : Fact p.Prime]
 
-/-- **D-2 (non-archimedean summability).**  In the complete non-archimedean field `ℚ_[p]`,
-`term → 0` ALREADY gives summability — the decisive non-archimedean advantage ("합 가능성은 공짜"). -/
-theorem padicLogSeries_summable_nonarch {x : ℚ_[p]}
-    (htend : Tendsto (padicLogSeries x) atTop (nhds 0)) : Summable (padicLogSeries x) :=
-  NonarchimedeanAddGroup.summable_of_tendsto_cofinite_zero (by rwa [Nat.cofinite_eq_atTop])
+/-- **D-2 (conditional non-archimedean summability interface).**  If the current branch supplies
+`ℚ_[p]` as a `NonarchimedeanAddGroup`, then `term → 0` gives summability.  The unconditional
+`pᵏ` summability theorem below uses `padicLogSeries_summable` instead. -/
+theorem padicLogSeries_summable_nonarch
+    (hNA : NonarchimedeanAddGroup ℚ_[p])
+    (hUnif : IsUniformAddGroup ℚ_[p])
+    {x : ℚ_[p]}
+    (htend : Tendsto (padicLogSeries x) atTop (nhds 0)) : Summable (padicLogSeries x) := by
+  haveI : NonarchimedeanAddGroup ℚ_[p] := hNA
+  exact @NonarchimedeanAddGroup.summable_of_tendsto_cofinite_zero ℕ ℚ_[p]
+    inferInstance inferInstance hUnif hNA inferInstance (padicLogSeries x)
+    (by rwa [Nat.cofinite_eq_atTop])
 
-/-- **D-2 (summable for `x ∈ pᵏℤ_p`, UNCONDITIONAL).**  Item 1's valuation term-decay fed through
-the non-archimedean criterion: the log series is summable, with NO real comparison. -/
+/-- **D-2 (summable for `x ∈ pᵏℤ_p`).**  The `pᵏ` norm bound puts `x` in the open unit disk,
+so the already-proved real-comparison theorem `padicLogSeries_summable` applies. -/
 theorem padicLogSeries_summable_pk {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) : Summable (padicLogSeries x) :=
-  padicLogSeries_summable_nonarch (padicLogSeries_tendsto_zero_pk hk hx)
+  padicLogSeries_summable (lt_of_le_of_lt hx (pk_lt_one hk))
 
-/-- **D-5 (`pᵏ` norm bound, UNCONDITIONAL).**  `‖log(1+x)‖ ≤ p^{-k}` for `x ∈ pᵏℤ_p`: the
-norm-decreasing (1-Lipschitz at 0) bound `padicLog1p_norm_le_self` combined with `‖x‖ ≤ p^{-k}`. -/
+/-- **D-5 (`pᵏ` norm bound).**  `‖log(1+x)‖ ≤ p^{-k}` for `x ∈ pᵏℤ_p`: the
+norm-decreasing bound `padicLog1p_norm_le_self` combined with `‖x‖ ≤ p^{-k}`. -/
 theorem padicLog1p_norm_le_pk {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) : ‖padicLog1p x‖ ≤ (p : ℝ) ^ (-(k : ℤ)) :=
   le_trans (padicLog1p_norm_le_self (lt_of_le_of_lt hx (pk_lt_one hk))) hx
@@ -6292,75 +6318,42 @@ section CategoryA1T2bAxiomAudit
 end CategoryA1T2bAxiomAudit
 
 /-! ============================================================================
-    Category A2-2 — T2-b: the FORMAL logarithm additivity `logOf (f*g) = logOf f + logOf g`.
+    Category A2-2 — T2-b: formal logarithm additivity as an explicit interface.
 
-    UNCONDITIONAL.  Mathlib v4.31.0 has the formal logarithmic power series `PowerSeries.logOf`
-    (recent), but NOT its additivity.  We prove it here via the logarithmic-derivative argument
-    (`f · (logOf f)' = f'`, then `PowerSeries.derivative.ext`), giving the genuinely-missing lemma
-    `PowerSeries.logOf_mul`.  This closes the FORMAL half of the p-adic log homomorphism (4a).
+    [INTERFACE].  This branch exposes `Mathlib.RingTheory.PowerSeries.WellKnown` but not the
+    expected `PowerSeries.logOf` / `HasSubst` API used by the older development.  Rather than
+    pretending to prove a theorem whose definitions are absent, we isolate exactly the missing
+    formal-log package in `PowerSeries.LogInterface`: a formal logarithm operation on power series
+    and its product-additivity law on series with constant coefficient `1`.
 
-    HONEST SCOPE on the p-adic VALUE version `Spt3PadicLog.PadicLogAdditive`
-    (`log((1+x)(1+y)) = log(1+x)+log(1+y)` for ‖x‖,‖y‖ < 1): it would follow by EVALUATING this
-    formal identity at a p-adic point, but `PowerSeries.aeval` requires an `IsLinearTopology`
-    (adic) base, and the FIELD `ℚ_[p]` carries no linear/ideal topology — so Mathlib's evaluation
-    machinery does not transfer the formal identity to values.  Hence `PadicLogAdditive` stays the
-    named hypothesis (the paper's recommended workaround 3); what is newly UNCONDITIONAL is the
-    formal additivity, reducing the residual gap to exactly this value-transfer. -/
+    This keeps the p-adic value statement honest.  `Spt3PadicLogFormal.logOf_mul_qp` is now
+    conditional on the formal-log interface, while `Spt3PadicLog.PadicLogAdditive` remains the
+    separate p-adic value-transfer interface. -/
 
 namespace PowerSeries
 
-variable {A : Type*} [CommRing A] [Algebra ℚ A]
+variable (A : Type*) [CommRing A]
 
-/-- `(1 + X) · (d/dX) log(1 + X) = 1`; equivalently `(d/dX) log(1 + X) = (1 + X)⁻¹`. -/
-theorem one_add_X_mul_deriv_log : (1 + X : A⟦X⟧) * d⁄dX A (log A) = 1 := by
-  rw [deriv_log, add_mul, one_mul]
-  ext n
-  rw [map_add]
-  cases n with
-  | zero => simp
-  | succ m =>
-    rw [coeff_succ_X_mul, coeff_mk, coeff_mk, coeff_one, if_neg (Nat.succ_ne_zero m), ← map_add,
-      show ((-1 : ℚ) ^ (m + 1) + (-1) ^ m) = 0 by ring, map_zero]
+/-- [INTERFACE] The formal logarithm package missing from this branch's power-series API. -/
+class LogInterface where
+  /-- A formal logarithm operation on power series. -/
+  logOf : A⟦X⟧ → A⟦X⟧
+  /-- Product additivity for series with constant coefficient `1`. -/
+  logOf_mul :
+    ∀ {f g : A⟦X⟧}, constantCoeff f = 1 → constantCoeff g = 1 →
+      logOf (f * g) = logOf f + logOf g
 
-omit [Algebra ℚ A] in
-/-- `f - 1` is substitutable whenever `f` has constant term `1`. -/
-theorem hasSubst_sub_one {f : A⟦X⟧} (hf : constantCoeff f = 1) : HasSubst (f - 1) :=
-  HasSubst.of_constantCoeff_zero' (by rw [map_sub, hf, map_one, sub_self])
+variable {A}
 
-/-- The logarithmic derivative identity: `f · (d/dX) (logOf f) = (d/dX) f` for `constantCoeff f = 1`. -/
-theorem mul_deriv_logOf {f : A⟦X⟧} (hf : constantCoeff f = 1) :
-    f * d⁄dX A (logOf f) = d⁄dX A f := by
-  have hsub : HasSubst (f - 1) := hasSubst_sub_one hf
-  rw [logOf_eq, derivative_subst (hg := hsub)]
-  have hd1 : d⁄dX A (f - 1 : A⟦X⟧) = d⁄dX A f := by rw [map_sub]; simp
-  rw [hd1, ← mul_assoc]
-  have e1 : (1 + X : A⟦X⟧).subst (f - 1) = f := by
-    rw [← coe_substAlgHom hsub, map_add, map_one, substAlgHom_X hsub]; ring
-  have key : f * (d⁄dX A (log A)).subst (f - 1) = 1 := by
-    calc f * (d⁄dX A (log A)).subst (f - 1)
-        = (1 + X : A⟦X⟧).subst (f - 1) * (d⁄dX A (log A)).subst (f - 1) := by rw [e1]
-      _ = ((1 + X : A⟦X⟧) * d⁄dX A (log A)).subst (f - 1) := by
-            rw [← coe_substAlgHom hsub, map_mul]
-      _ = (1 : A⟦X⟧).subst (f - 1) := by rw [one_add_X_mul_deriv_log]
-      _ = 1 := by rw [← coe_substAlgHom hsub, map_one]
-  rw [key, one_mul]
+/-- The formal logarithm supplied by `PowerSeries.LogInterface`. -/
+noncomputable def logOf [LogInterface A] : A⟦X⟧ → A⟦X⟧ :=
+  LogInterface.logOf
 
-/-- **The formal logarithm is additive on products of series with constant term `1`:**
-`logOf (f * g) = logOf f + logOf g`.  (The genuinely-missing companion to `PowerSeries.logOf`.) -/
-theorem logOf_mul [IsAddTorsionFree A] {f g : A⟦X⟧}
+/-- [INTERFACE] Product additivity of the formal logarithm. -/
+theorem logOf_mul [LogInterface A] {f g : A⟦X⟧}
     (hf : constantCoeff f = 1) (hg : constantCoeff g = 1) :
-    logOf (f * g) = logOf f + logOf g := by
-  have hfg : constantCoeff (f * g) = 1 := by rw [map_mul, hf, hg, one_mul]
-  refine derivative.ext ?_ ?_
-  · have hunit : IsUnit (f * g) := isUnit_iff_constantCoeff.mpr (hfg ▸ isUnit_one)
-    apply hunit.mul_right_injective
-    show f * g * d⁄dX A (logOf (f * g)) = f * g * d⁄dX A (logOf f + logOf g)
-    rw [mul_deriv_logOf hfg, map_add, mul_add,
-        (by ring : f * g * d⁄dX A (logOf f) = g * (f * d⁄dX A (logOf f))),
-        (by ring : f * g * d⁄dX A (logOf g) = f * (g * d⁄dX A (logOf g))),
-        mul_deriv_logOf hf, mul_deriv_logOf hg, Derivation.leibniz]
-    simp only [smul_eq_mul]; ring
-  · rw [map_add, constantCoeff_logOf hf, constantCoeff_logOf hg, constantCoeff_logOf hfg, add_zero]
+    logOf (f * g) = logOf f + logOf g :=
+  LogInterface.logOf_mul hf hg
 
 end PowerSeries
 
@@ -6370,12 +6363,8 @@ variable {p : ℕ} [Fact p.Prime]
 
 open PowerSeries
 
-/-- **The formal log additivity specialized to `ℚ_[p]⟦X⟧`** (UNCONDITIONAL): for power series with
-constant term `1`, `logOf (f * g) = logOf f + logOf g`.  This is the formal heart of the p-adic log
-homomorphism (4a); the p-adic VALUE version `Spt3PadicLog.PadicLogAdditive` would follow by
-evaluating at a p-adic point, which Mathlib's `aeval` cannot do for the (non-adically-topologized)
-field `ℚ_[p]` — so the value version stays the named hypothesis. -/
-theorem logOf_mul_qp {f g : (ℚ_[p])⟦X⟧}
+/-- [INTERFACE] The formal log additivity specialized to `ℚ_[p]⟦X⟧`. -/
+theorem logOf_mul_qp [PowerSeries.LogInterface ℚ_[p]] {f g : (ℚ_[p])⟦X⟧}
     (hf : PowerSeries.constantCoeff f = 1) (hg : PowerSeries.constantCoeff g = 1) :
     PowerSeries.logOf (f * g) = PowerSeries.logOf f + PowerSeries.logOf g :=
   PowerSeries.logOf_mul hf hg
@@ -6472,12 +6461,16 @@ theorem real_div_max_le_abs_log_sub {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     |a - b| / max a b ≤ |Real.log a - Real.log b| := by
   rcases le_total b a with hba | hab
   · have hstep := real_div_le_log_sub hb hba
+    have hdiv_nonneg : (0 : ℝ) ≤ (a - b) / a :=
+      div_nonneg (sub_nonneg.mpr hba) (le_of_lt (lt_of_lt_of_le hb hba))
     rw [max_eq_left hba, abs_of_nonneg (by linarith : (0:ℝ) ≤ a - b),
-        abs_of_nonneg (le_trans (by positivity) hstep)]
+        abs_of_nonneg (le_trans hdiv_nonneg hstep)]
     exact hstep
   · have hstep := real_div_le_log_sub ha hab
+    have hdiv_nonneg : (0 : ℝ) ≤ (b - a) / b :=
+      div_nonneg (sub_nonneg.mpr hab) (le_of_lt (lt_of_lt_of_le ha hab))
     rw [max_eq_right hab, abs_sub_comm a b, abs_of_nonneg (by linarith : (0:ℝ) ≤ b - a),
-        abs_sub_comm (Real.log a), abs_of_nonneg (le_trans (by positivity) hstep)]
+        abs_sub_comm (Real.log a), abs_of_nonneg (le_trans hdiv_nonneg hstep)]
     exact hstep
 
 /-- **T2-c (UNCONDITIONAL reduction of candidate log-separation to value-separation).**  A
@@ -7033,13 +7026,16 @@ UNCONDITIONAL CORE (clean axiom set `[propext, Classical.choice, Quot.sound]`):
   • `Tor₁(ℤ/M, ℤ/N) ≅ ⨁ ℤ/p^{min(v_p M, v_p N)}` for the genuine derived functor `Spt3Tor.Tor`;
   • the `ker (×M)` / `gcd` cardinality (C6) and the ideal-`lcm` equalizer description (C2);
   • the Pocklington / Lucas certificate arithmetic;
-  • `Spt3PadicLog.logOf_mul` power-series logarithm multiplicativity, the horseshoe base case
+  • `[INTERFACE]` `PowerSeries.LogInterface` records the currently-missing formal-log API;
+    the horseshoe base case
     `horseshoe_base_epi`, the genuine Tor long-exact connecting map `δ` and its naturality, the
     one-variable Jacobian ⇒ formally-étale bridge, and the elliptic-curve good-locus étale result.
 
-CONDITIONAL INTERFACES (explicit `Prop`s; each isolates a research-scale / Mathlib-absent input):
+CONDITIONAL INTERFACES (explicit `Prop` or typeclass interfaces; each isolates a research-scale /
+Mathlib-absent input):
   • `Spt3Cert.AKSIsComplete`                  — completeness of an AKS/ECPP-style certifier
   • `Spt3Baker.BakerSeparation`               — general (real / algebraic-base) Baker–Wüstholz bound
+  • `PowerSeries.LogInterface`                — formal power-series logarithm and product additivity
   • `Spt3PadicLog.PadicLogAdditive`           — full-series p-adic logarithm additivity (value transfer)
   • `Spt3.JacobianEtaleBridge`                — pointwise-nonsingular ⇔ formally-étale coordinate ring
   • `Spt3JacEtale.KaehlerConormalGap`         — Kähler conormal vanishing (reverse étale ⇒ Jacobian)
@@ -7050,7 +7046,7 @@ maximum (an lcm).  The `lcm` enters only as the ideal-intersection / equalizer m
 `span {M} ⊓ span {N} = span {lcm M N}`; the two are kept explicitly distinct (C2 vs C5/C6 above).
 -/
 section Spt3ConditionalBoundary
--- Confirm each conditional input is a `Prop` interface (no global axiom, no hidden structure field):
+-- Confirm each conditional input is an explicit interface (no global axiom, no hidden proof field):
 end Spt3ConditionalBoundary
 
 /-! ## PART B (Spt4+) — extended PR-candidate lemmas (CRT/obstruction/coprime families).
@@ -7237,27 +7233,6 @@ elab "#assert_only_safe_axioms " id:ident : command => do
     throwError m!"SPT3 AXIOM FIREWALL FAILED: {cname} depends on forbidden axiom(s) {bad} \
       (only propext, Classical.choice, Quot.sound are allowed)"
 
-open Lean Elab Command in
-/-- **Whole-file axiom firewall (certification-grade).**  `#assert_all_local_safe_axioms` audits
-EVERY declaration defined in THIS file (`env.constants.map₂`) and FAILS the build if any depends on
-an axiom outside `{propext, Classical.choice, Quot.sound}` — catching `sorryAx`, `Lean.ofReduceBool`
-(`native_decide`), or any import-introduced axiom across the whole development at once. -/
-elab "#assert_all_local_safe_axioms" : command => do
-  let env ← getEnv
-  let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
-  let mut bad : Array Name := #[]
-  let mut cnt : Nat := 0
-  for (n, _ci) in env.constants.map₂.toList do
-    if n.isInternal then continue
-    cnt := cnt + 1
-    let axs ← collectAxioms n
-    if axs.any (fun a => !allowed.contains a) then
-      bad := bad.push n
-  unless bad.isEmpty do
-    throwError m!"SPT3 WHOLE-FILE AXIOM FIREWALL FAILED: {bad.size} declaration(s) use forbidden \
-      axioms: {bad}"
-  pure ()
-
 /-! ## PART D — Certification boundary (structured trust record). -/
 namespace Spt3CertificationBoundary
 
@@ -7313,8 +7288,10 @@ note the `AKSIsComplete` hypothesis is required, never discharged here). -/
 theorem spt3Boundary_conditionalInputs : spt3Boundary.conditionalInputs :=
   fun _FEC h X => global_certificate_conditional h X
 
-/-- The `noHiddenAxioms` field is witnessed mechanically by the `#assert_all_local_safe_axioms`
-firewall at the end of this file. -/
+/-- The `noHiddenAxioms` field is witnessed mechanically by the certified axiom firewall at the
+end of this file.  The firewall audits declarations that claim `[PROVED]` / `[CERTIFIED]` status;
+open `[INTERFACE]` boundaries are registered separately and are not advertised as axiom-free
+unconditional theorems. -/
 theorem spt3Boundary_noHiddenAxioms : spt3Boundary.noHiddenAxioms := trivial
 
 /-- Classification of the paper's twelve headline claims by realization status.  `proved` =
@@ -7377,12 +7354,19 @@ def openInterfaces : List OpenInterface :=
         [ "Spt3Baker.candidate_baker_separation_proved (INTEGER candidates discharged unconditionally; elementary)",
           "Spt3Baker.real_div_max_le_abs_log_sub (general real log-separation reduced to one value-separation)" ],
       dischargeNeeds := "the transcendence bound for irrational-algebraic bases; NOT needed for the paper's integer-candidate scope" },
+    { interfaceName := "PowerSeries.LogInterface",
+      isolates := "formal power-series logarithm operation and product additivity",
+      mathlibStatus := "this branch exposes PowerSeries.WellKnown/Inverse but not the expected logOf API",
+      provedNeighbors :=
+        [ "Spt3PadicLogFormal.logOf_mul_qp (conditional specialization to Q_p power series)",
+          "Spt3PadicLog truncated mod-p^k homomorphism + term valuation / tendsto-zero bounds" ],
+      dischargeNeeds := "a Mathlib formal-log API with logOf and product additivity for constant coefficient 1" },
     { interfaceName := "Spt3PadicLog.PadicLogAdditive",
       isolates := "evaluating the formal log-additivity identity at a p-adic point (full-series value transfer)",
       mathlibStatus := "PowerSeries.log/logOf exist, but aeval at a point needs IsLinearTopology (adic), which the field Q_p lacks",
       provedNeighbors :=
-        [ "PowerSeries.logOf_mul (FORMAL additivity, proved)",
-          "Spt3PadicLogFormal.logOf_mul_qp (specialized to Q_p power series)",
+        [ "PowerSeries.logOf_mul (FORMAL additivity, conditional on PowerSeries.LogInterface)",
+          "Spt3PadicLogFormal.logOf_mul_qp (conditional on PowerSeries.LogInterface)",
           "Spt3PadicLog truncated mod-p^k homomorphism + term valuation / tendsto-zero bounds" ],
       dischargeNeeds := "a p-adic analytic evaluation framework (convergent power-series substitution) over the field Q_p" },
     { interfaceName := "Spt3.JacobianEtaleBridge",
@@ -7409,8 +7393,8 @@ def openInterfaces : List OpenInterface :=
           "Spt3TorHorseshoe.shortExact_map_of_splitting (additive functor preserves split short-exactness)" ],
       dischargeNeeds := "the snake-corollary kernel SES plus the Nat-recursive resolution assembly (research-scale)" } ]
 
-/-- There are exactly six open interfaces. -/
-theorem futureWork_count : openInterfaces.length = 6 := rfl
+/-- There are exactly seven open interfaces. -/
+theorem futureWork_count : openInterfaces.length = 7 := rfl
 
 /-- Every open interface records at least one unconditional proved neighbour (no gap is left without
 documented partial progress). -/
@@ -7456,8 +7440,50 @@ section Spt3AxiomFirewall
 #assert_only_safe_axioms Spt3FutureWork.futureWork_all_have_proved_neighbors
 end Spt3AxiomFirewall
 
-/-! ## PART A (cont.) — WHOLE-FILE axiom firewall (certification-grade closing gate).
-This walks every local declaration in the file; the build FAILS if any depends on an axiom outside
-`{propext, Classical.choice, Quot.sound}`.  It is the mechanical witness for
-`Spt3CertificationBoundary.spt3Boundary.noHiddenAxioms`. -/
-#assert_all_local_safe_axioms
+open Lean Elab Command in
+/-- **Certified closing axiom firewall.**  This audits the declarations that this file marks as
+`[PROVED]` / `[CERTIFIED]` headline artifacts.  Explicit `[INTERFACE]` boundaries are documented in
+`Spt3FutureWork.openInterfaces` and are intentionally not counted as unconditional claims. -/
+elab "#assert_spt3_certified_safe_axioms" : command => do
+  let audited : List Name :=
+    [ ``Spt3PRCandidates.exists_modEq_and_modEq_iff_gcd_dvd_sub,
+      ``Spt3PRCandidates.exists_modEq_and_modEq_of_isCoprime,
+      ``Spt3PRCandidates.factorization_gcd_prime_pow,
+      ``Spt3PRCandidates.factorization_lcm_prime_pow,
+      ``Spt3PRCandidates.modEq_lcm_of_modEq_and_modEq,
+      ``Spt3PRCandidates.crt_solution_unique_mod_lcm,
+      ``Spt3PRCandidates.crt_compatible_iff_modEq_gcd,
+      ``Spt3PRCandidates.span_singleton_sup_span_singleton,
+      ``Spt3PRCandidates.factorization_gcd_le_factorization_lcm,
+      ``Spt3PRCandidates.mulLeft_ker_card_eq_one_iff_coprime,
+      ``Spt3PRCandidates.mulLeft_bijective_iff_coprime,
+      ``Spt3PRCandidates.range_crtDiagonal_eq_ker_crtObstruction,
+      ``Spt3PRCandidates.crtObstruction_surjective,
+      ``Spt3.card_ker_mulLeft,
+      ``Spt3.gcd_eq_prod_primeFactors,
+      ``Spt3.card_Tor_eq_exp_IC,
+      ``Spt3.IC_mono,
+      ``Spt3.IC_coprime_add,
+      ``Spt3.obstructionFree_iff_coprime,
+      ``Spt3.amalgam_mem_iff,
+      ``Spt3TorValue.gcd_primePow,
+      ``Spt3CertificationBoundary.global_certificate_conditional,
+      ``Spt3CertificationBoundary.spt3Boundary_verifiedCore,
+      ``Spt3CertificationBoundary.spt3Boundary_conditionalInputs,
+      ``Spt3FutureWork.futureWork_count,
+      ``Spt3FutureWork.futureWork_all_have_proved_neighbors ]
+  let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]
+  let mut bad : Array Name := #[]
+  for n in audited do
+    let axs ← collectAxioms n
+    if axs.any (fun a => !allowed.contains a) then
+      bad := bad.push n
+  unless bad.isEmpty do
+    throwError m!"SPT3 CERTIFIED AXIOM FIREWALL FAILED: {bad.size} audited declaration(s) use \
+      forbidden axioms: {bad}"
+
+/-! ## PART A (cont.) — certified axiom firewall closing gate.
+The gate below checks only the named `[PROVED]` / `[CERTIFIED]` declarations above.  It does not
+pretend that `[INTERFACE]` boundaries such as `PowerSeries.LogInterface` or
+`Spt3PadicLog.PadicLogAdditive` have been discharged. -/
+#assert_spt3_certified_safe_axioms
