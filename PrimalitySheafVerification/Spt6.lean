@@ -234,6 +234,7 @@ import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Category.ModuleCat.Ext.HasExt
 import Mathlib.Topology.Sheaves.Flasque
 import Mathlib.CategoryTheory.Sites.SheafCohomology.Basic
+import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives
 import Mathlib.AlgebraicGeometry.Sites.ElladicCohomology
 import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 import Mathlib.Algebra.Homology.ShortComplex.ShortExact
@@ -283,7 +284,7 @@ import Mathlib.RingTheory.Conductor
 import Mathlib.Combinatorics.SimpleGraph.Finite
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Mathlib.SetTheory.Cardinal.Finite
-import Mathlib.RingTheory.PowerSeries.Log
+import Mathlib.RingTheory.PowerSeries.Exp
 import Mathlib.RingTheory.PowerSeries.Inverse
 import Mathlib.CategoryTheory.Triangulated.Pretriangulated
 import Mathlib.Tactic.Tauto
@@ -294,6 +295,23 @@ import Mathlib.Tactic.TFAE
 
 open scoped BigOperators
 open scoped ZeroObject
+
+namespace PowerSeries
+
+variable (A : Type*) [Ring A] [Algebra ℚ A]
+
+/-- The formal power series for `log (1 + X)`.  This is the small part of the
+former `PowerSeries.Log` API used below. -/
+def log : PowerSeries A :=
+  mk fun n => if n = 0 then 0 else algebraMap ℚ A (((-1 : ℚ) ^ (n + 1)) / n)
+
+@[simp]
+theorem coeff_log (n : ℕ) :
+    coeff n (log A) =
+      if n = 0 then 0 else algebraMap ℚ A (((-1 : ℚ) ^ (n + 1)) / n) :=
+  coeff_mk _ _
+
+end PowerSeries
 
 set_option linter.unusedSectionVars false
 set_option linter.unusedVariables false
@@ -400,7 +418,7 @@ theorem frobeniusTatePolynomial_coefficients (p : ℕ) (ap : ℤ) :
       (frobeniusTatePolynomial p ap).coeff 0 = (p : ℤ) := by
   constructor
   · norm_num [frobeniusTatePolynomial]
-    exact Polynomial.coeff_C_of_ne_zero one_ne_zero
+    exact Polynomial.coeff_C_ne_zero (a := ap) one_ne_zero
   constructor
   · norm_num [frobeniusTatePolynomial]
   · norm_num [frobeniusTatePolynomial]
@@ -795,7 +813,12 @@ theorem injective_isGammaAcyclic {C : Type u} [CategoryTheory.Category.{v} C] {J
     [HasSheafify J AddCommGrpCat.{w}]
     [HasExt.{w'} (CategoryTheory.Sheaf J AddCommGrpCat.{w})] [Injective F] :
     IsGammaAcyclic F :=
-  fun _ => inferInstance
+  fun n => by
+    change Subsingleton
+      (CategoryTheory.Abelian.Ext
+        ((CategoryTheory.constantSheaf J AddCommGrpCat.{w}).obj (AddCommGrpCat.of (ULift ℤ)))
+        F (n + 1))
+    exact CategoryTheory.Abelian.Ext.subsingleton_of_injective _ F n
 
 end Tier3Actual
 
@@ -6018,8 +6041,6 @@ end PadicLogAdditiveCertificate
 /-! ### C3+: FormalMultilinearSeries coefficient rigidity for analytic transfer. -/
 
 namespace FormalCoefficientRigidity
-
-set_option linter.overlappingInstances false
 
 variable {𝕜 E : Type*} [NontriviallyNormedField 𝕜]
   [AddCommGroup E] [Module 𝕜 E] [NormedAddCommGroup E] [NormedSpace 𝕜 E]

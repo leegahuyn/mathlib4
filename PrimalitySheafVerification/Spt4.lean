@@ -46,7 +46,7 @@ import Mathlib.GroupTheory.FreeAbelianGroup
 import Mathlib.Algebra.GCDMonoid.Finset
 import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.Data.ZMod.QuotientRing
-import Mathlib.Algebra.Exact.Basic
+import Mathlib.Algebra.Exact
 import Mathlib.NumberTheory.Padics.PadicVal.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.NumberTheory.Padics.Hensel
@@ -1476,7 +1476,7 @@ theorem padicLogTerm_valuation_ge {p : ℕ} (hp : p.Prime) {u : ℤ} {n k : ℕ}
   have hneg1 : padicValRat p (((-1 : ℚ)) ^ (n + 1)) = 0 := by
     simp [padicValRat.pow]
   unfold padicLogTerm
-  rw [padicValRat.div hnum hnQ, padicValRat.mul hsign hupow, padicValRat.pow (u : ℚ),
+  rw [padicValRat.div hnum hnQ, padicValRat.mul hsign hupow, padicValRat.pow huQ,
     padicValRat.of_int, padicValRat.of_nat, hneg1, zero_add]
   have h1 : (k : ℤ) ≤ (padicValInt p u : ℤ) := by exact_mod_cast hkv
   have h2 : (padicValNat p n : ℤ) + (k : ℤ) ≤ (n : ℤ) * (k : ℤ) := by exact_mod_cast hcomb
@@ -1561,7 +1561,7 @@ theorem padicLogTerm_valuation_eq {p : ℕ} [Fact p.Prime] {u : ℤ} {m : ℕ}
   have hneg1 : padicValRat p (((-1 : ℚ)) ^ (m + 1)) = 0 := by
     simp [padicValRat.pow]
   unfold padicLogTerm
-  rw [padicValRat.div hnum hmQ, padicValRat.mul hsign hupow, padicValRat.pow (u : ℚ),
+  rw [padicValRat.div hnum hmQ, padicValRat.mul hsign hupow, padicValRat.pow huQ,
     padicValRat.of_int, padicValRat.of_nat, hneg1, zero_add]
 
 /-- **Sharp termwise bound** `m·k − v_p(m) ≤ v_p(term)` when `u ∈ pᵏℤ`. -/
@@ -4865,13 +4865,19 @@ def Xf : ℕ → ModZ := fun n => match n with | 0 => Zz | 1 => Zz | _ => Zp
 noncomputable def df (N : ℕ) : ∀ n, Xf (n + 1) ⟶ Xf n :=
   fun n => match n with | 0 => mulN N | _ => 0
 
+/-- The differentials in the standard two-term resolution square to zero. -/
+theorem df_comp_zero (N : ℕ) : ∀ n, df N (n + 1) ≫ df N n = 0 :=
+  fun n => by
+    have : df N (n + 1) = 0 := rfl
+    rw [this, zero_comp]
+
 /-- The free resolution complex `0 → ℤ --×N--> ℤ`. -/
 noncomputable def resC (N : ℕ) : ChainComplex ModZ ℕ :=
-  ChainComplex.of Xf (df N) (fun n => by have : df N (n + 1) = 0 := rfl; rw [this, zero_comp])
+  ChainComplex.of Xf (df N) (df_comp_zero N)
 
 /-- Every term of `resC` is projective. -/
 theorem resC_proj (N n : ℕ) : Projective ((resC N).X n) := by
-  rw [resC, ChainComplex.of_X]
+  change Projective (Xf n)
   match n with
   | 0 => exact inferInstanceAs (Projective Zz)
   | 1 => exact inferInstanceAs (Projective Zz)
@@ -4901,7 +4907,7 @@ noncomputable def piN (N : ℕ) :
   (ChainComplex.toSingle₀Equiv (resC N) (ModuleCat.of ℤ (ZMod N))).symm
     ⟨quotN N, by
       have hd : (resC N).d 1 0 = mulN N := by
-        simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+        simpa [resC, df] using (ChainComplex.of_d Xf (df N) (df_comp_zero N) (0 : ℕ))
       rw [hd]; exact mulN_quotN N⟩
 
 /-! ## §Δ29.1b — the augmentation is a quasi-isomorphism: genuine `ProjectiveResolution`.
@@ -4941,7 +4947,8 @@ theorem quotN_surjective (N : ℕ) : Function.Surjective (quotN N).hom := by
 
 /-- The differential `(resC N).d (j+1+1) (j+1)` vanishes (everything above degree 0). -/
 theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := ChainComplex.of_d _ _ (j + 1)
+  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := by
+    simp [resC, ChainComplex.of_d]
   rw [h]; rfl
 
 /-- **The augmentation `piN N` is a quasi-isomorphism** (`N ≠ 0`): `resC N` is a
@@ -4950,7 +4957,7 @@ surjectivity; positive degrees are exact (injectivity of `×N`, then zero module
 theorem piN_quasiIso (N : ℕ) [NeZero N] : QuasiIso (piN N) := by
   have hN : N ≠ 0 := NeZero.ne N
   have hd10 : (resC N).d 1 0 = mulN N := by
-    simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+    simpa [resC, df] using (ChainComplex.of_d Xf (df N) (df_comp_zero N) (0 : ℕ))
   constructor
   intro i
   match i with
@@ -4981,7 +4988,8 @@ theorem piN_quasiIso (N : ℕ) [NeZero N] : QuasiIso (piN N) := by
       have hf : (resC N).d (k + 1 + 2) (k + 1 + 1) = 0 := resC_d_succ_zero N (k + 1)
       have hg : (resC N).d (k + 1 + 1) (k + 1) = 0 := resC_d_succ_zero N k
       haveI : Subsingleton ((resC N).X (k + 1 + 1)) := by
-        rw [resC, ChainComplex.of_X]; exact inferInstanceAs (Subsingleton Zp)
+        change Subsingleton (Xf (k + 1 + 1))
+        exact inferInstanceAs (Subsingleton Zp)
       rw [hf, hg, ModuleCat.hom_zero, ModuleCat.hom_zero, LinearMap.range_zero,
         LinearMap.ker_zero]
       exact Subsingleton.elim _ _
