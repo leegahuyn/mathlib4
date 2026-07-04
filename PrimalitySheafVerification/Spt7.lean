@@ -1,4 +1,4 @@
- /-
+/-
 ================================================================================
   Spt7.lean — sorry-free, axiom-free verified core of
 
@@ -16,6 +16,16 @@
                          modCritical_AP, pAdicCritical_AP,
                          numericCritical_AP, ecCritical_AP,
                          fourLayerStrictIndependence                         PROVED
+    T4-1 numeric / p-adic Buchi gate upgrade
+                       ↦ powPadicCongruence,
+                         BuchiValuationGate,
+                         padicValInt_gate_iff_pow_dvd,
+                         int_pow_dvd_iff_powPadicCongruence,
+                         intCast_mem_padicInt_span_pow_iff,
+                         padicValRat_buchiPhi,
+                         NumericGateBuchiProfile,
+                         PadicLogBridgeCertificate,
+                         PadicNumericGateChecklist                           PROVED
     Thm .3 / .19 / Lem .6 / .39, Cor .9 / .40  equalizer kernel = (lcm),
         Čech Ĥ¹ ≅ ℤ/gcd, Tor₁ ≅ ℤ/gcd, obstruction-free ⇔ gcd=1,
         prime-power CRT decomposition of the concrete Tor₁ kernel
@@ -34,6 +44,9 @@
                          standardResolutionTorOneEndpointIsoGcd,
                          standardResolutionTorPrimeOneEndpointIsoGcd,
                          standardResolutionTorOneSecondVariableEndpointIsoGcd,
+                         tensorStandardResolutionActualHomologyOneIsoStandardEndpoint,
+                         abstractTorPrimeOneIsoGcd, abstractTorOneIsoGcd,
+                         ConcreteTorMathlibCertifiedBridge,
                          tensorStandardResolutionH1EquivZModGcd,
                          StandardFreeResolutionTorComparison,
                          arithmeticPrimeSpectrumTopCat,
@@ -157,6 +170,11 @@
                          quadraticEulerLocalFactor_eq_mul,
                          quadraticEulerPartialProduct_eq_mul,
                          quadraticEulerProduct_hasProd_of_linear,
+                         FrobeniusRootDecomposition,
+                         frobeniusLinearEuler_hasProd_of_abs,
+                         quadraticEulerLocalFactorAt_eq_mul,
+                         quadraticEulerProductAt_hasProd_of_frobenius,
+                         QuadraticEulerProductConvergenceCertificate,
                          zetaULSeries_deriv,
                          zetaULSeries_logDeriv_eq,
                          zetaULSeries_abscissa_logMul                        PROVED
@@ -180,7 +198,12 @@
                          SixFunctorData.exceptionalPull_id_iso,
                          SixFunctorData.exceptionalPull_comp_iso,
                          SixFunctorData.baseChangeShriek_iso,
-                         SixFunctorData.projectionFormula_iso                PROVED (interface)
+                         SixFunctorData.projectionFormula_iso,
+                         Def21StratifiedSheafInterface,
+                         def21ShriekSummand,
+                         Def21ActualSheafConstructionGap,
+                         def21ActualSheafConstructionGap,
+                         def21_actual_constructor_unavailable                PROVED (gap documented)
     Lem .32 curve reduction (Nagata/Stein factorization as certificate)
                        ↦ CurveFactorization,
                          CurveFactorization.fullMap,
@@ -199,6 +222,12 @@
                          DetTraceRadiusCertificate,
                          prop38_radius_limit_of_pure,
                          prop38_radius_limit_of_mixed                       PROVED (interface)
+    Cor .35 open-closed weight control
+                       ↦ openClosedOpenTerm,
+                         openClosedClosedTerm,
+                         OpenClosedWeightControl,
+                         cor35_openClosed_middle_mixedLE_of_open_closed,
+                         cor35_openClosed_defect_concentrated_on_closed      PROVED (interface)
     Lem .36 Grothendieck-Lefschetz trace formula
                        ↦ glAltSign,
                          glAlternatingTraceOf,
@@ -214,6 +243,12 @@
                          thm44_globalPurityB_of_pure,
                          cor45_globalPurityB_radiusLimit,
                          cor46_globalPurityB_logDerivative_expansion        PROVED (interface)
+    §7.2 detector package  étale bump / motivic Euler jump / cotangent defect
+                       ↦ DetectorPackage,
+                         DetectorPackage.detectors_tfae,
+                         DetectorGoodPrimeConclusion,
+                         section72_good_prime_detectors_silent,
+                         section72_detector_equivalence_tfae                PROVED (interface)
     Thm .47 (Equivalence C) good-prime synchronization (CONDITIONAL)
                        ↦ equivalence_C,
                          ArithmeticCechTorGate,
@@ -231,6 +266,7 @@
                          BundledInterfaceCertificate,
                          FormalAlgebraCoreCertificate,
                          ExistingAnalogReuseCertificate,
+                         QuadraticEulerConvergenceChecklist,
                          MathlibGapWorkaroundChecklist,
                          mathlibGapWorkaroundChecklist                      PROVED
     짠K Mathlib handle inventory (exploratory reuse handles)
@@ -269,9 +305,12 @@
 -/
 import Mathlib.Algebra.Category.ModuleCat.Basic
 import Mathlib.Algebra.Category.ModuleCat.Abelian
+import Mathlib.Algebra.Category.ModuleCat.Kernels
 import Mathlib.Algebra.Category.ModuleCat.Monoidal.Basic
 import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Homology.HomologicalComplex
+import Mathlib.Algebra.Homology.QuasiIso
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 import Mathlib.RingTheory.Ideal.Operations
 import Mathlib.RingTheory.Ideal.Int
 import Mathlib.RingTheory.Localization.AtPrime.Basic
@@ -289,12 +328,23 @@ import Mathlib.GroupTheory.SpecificGroups.Cyclic
 import Mathlib.RingTheory.Regular.RegularSequence
 import Mathlib.RingTheory.Regular.Flat
 import Mathlib.RingTheory.TensorProduct.IsBaseChangePi
+import Mathlib.LinearAlgebra.TensorProduct.Prod
+import Mathlib.LinearAlgebra.TensorProduct.Free
 import Mathlib.RingTheory.PowerSeries.Exp
 import Mathlib.Topology.Sheaves.Presheaf
+import Mathlib.Topology.Sheaves.SheafOfFunctions
+import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
+import Mathlib.LinearAlgebra.ExteriorAlgebra.Grading
+import Mathlib.LinearAlgebra.ExteriorAlgebra.Basis
+import Mathlib.Data.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Analysis.SpecialFunctions.Log.Summable
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
 import Mathlib.NumberTheory.LSeries.Deriv
+import Mathlib.NumberTheory.SumPrimeReciprocals
+import Mathlib.NumberTheory.Padics.RingHoms
 import Mathlib.CategoryTheory.Monoidal.Tor
 import Mathlib.Tactic.NormNum.GCD
 import Mathlib.Tactic.TFAE
@@ -478,7 +528,7 @@ presheaf thin: values are constant arithmetic sections, and the four gates cut o
 subpresheaf by a sectionwise predicate.  Thus restriction maps are literal inclusions
 on the underlying integer value. -/
 
-open CategoryTheory TopologicalSpace Opposite
+open CategoryTheory CategoryTheory.Limits TopologicalSpace Opposite
 
 /-- The Zariski site used by the arithmetic wrapper: `Spec ℤ` as a bundled topological space. -/
 abbrev arithmeticPrimeSpectrumTopCat : TopCat :=
@@ -506,6 +556,56 @@ theorem arithmeticConstantIntPresheaf_restrict_value
     {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
     (x : (arithmeticConstantIntPresheaf).obj (op V)) :
     (arithmeticConstantIntPresheaf).map (homOfLE hUV).op x = x :=
+  rfl
+
+/-- The honest Mathlib sheaf used as the ambient sheaf-language wrapper:
+all integer-valued functions on opens of `Spec ℤ`.  The arithmetic model below
+embeds its constant sections into this sheaf. -/
+def arithmeticIntFunctionSheaf : arithmeticPrimeSpectrumTopCat.Sheaf (Type) :=
+  TopCat.sheafToType arithmeticPrimeSpectrumTopCat ℤ
+
+/-- The underlying presheaf of the function sheaf is Mathlib's `presheafToType`. -/
+theorem arithmeticIntFunctionSheaf_presheaf :
+    arithmeticIntFunctionSheaf.presheaf =
+      TopCat.presheafToType arithmeticPrimeSpectrumTopCat ℤ :=
+  rfl
+
+/-- The function sheaf satisfies the genuine Mathlib sheaf condition. -/
+theorem arithmeticIntFunctionSheaf_isSheaf :
+    arithmeticIntFunctionSheaf.presheaf.IsSheaf :=
+  arithmeticIntFunctionSheaf.property
+
+/-- The constant function on an open set attached to an arithmetic integer section. -/
+def arithmeticIntFunctionSheaf_const
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) (x : ℤ) :
+    arithmeticIntFunctionSheaf.presheaf.obj (op U) :=
+  fun _ => x
+
+/-- Restricting a constant integer-valued function remains the same constant function. -/
+@[simp]
+theorem arithmeticIntFunctionSheaf_const_restrict
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V) (x : ℤ) :
+    arithmeticIntFunctionSheaf.presheaf.map (homOfLE hUV).op
+        (arithmeticIntFunctionSheaf_const V x) =
+      arithmeticIntFunctionSheaf_const U x :=
+  rfl
+
+/-- Inclusion of the constant arithmetic presheaf into the honest function sheaf on each open. -/
+def arithmeticConstantIntToFunction
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) :
+    arithmeticConstantIntPresheaf.obj (op U) →
+      arithmeticIntFunctionSheaf.presheaf.obj (op U) :=
+  arithmeticIntFunctionSheaf_const U
+
+/-- The constant-section inclusion commutes with restriction maps. -/
+@[simp]
+theorem arithmeticConstantIntToFunction_restrict
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+    (x : arithmeticConstantIntPresheaf.obj (op V)) :
+    arithmeticIntFunctionSheaf.presheaf.map (homOfLE hUV).op
+        (arithmeticConstantIntToFunction V x) =
+      arithmeticConstantIntToFunction U
+        ((arithmeticConstantIntPresheaf).map (homOfLE hUV).op x) :=
   rfl
 
 /-- A predicate-cut subpresheaf of the constant integer presheaf. -/
@@ -577,6 +677,28 @@ theorem fourLayerGate_restrict_value (P : FourLayerProfile)
     ((fourLayerGatePresheaf P).map (homOfLE hUV).op s).1 = s.1 :=
   rfl
 
+/-- Named inclusion of the four-gate arithmetic presheaf into the ambient constant presheaf. -/
+def fourLayerGatePresheafInclusion (P : FourLayerProfile) :
+    CategoryTheory.NatTrans (fourLayerGatePresheaf P) arithmeticConstantIntPresheaf :=
+  arithmeticPredicatePresheafInclusion (FourLayerPass P)
+
+@[simp]
+theorem fourLayerGatePresheafInclusion_app (P : FourLayerProfile)
+    (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) (s : fourLayerGateSections P U) :
+    (fourLayerGatePresheafInclusion P).app (op U) s = s.1 :=
+  rfl
+
+/-- Naturality of the four-gate inclusion says exactly that restriction is inclusion. -/
+@[simp]
+theorem fourLayerGatePresheafInclusion_naturality_value (P : FourLayerProfile)
+    {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+    (s : fourLayerGateSections P V) :
+    arithmeticConstantIntPresheaf.map (homOfLE hUV).op
+        ((fourLayerGatePresheafInclusion P).app (op V) s) =
+      (fourLayerGatePresheafInclusion P).app (op U)
+        ((fourLayerGatePresheaf P).map (homOfLE hUV).op s) :=
+  rfl
+
 theorem Fnum_iff_dvd (P : FourLayerProfile) (x : ℤ) :
     Fnum P x ↔ ((P.numMod : ℤ) ∣ x) :=
   ZMod.intCast_zmod_eq_zero_iff_dvd x P.numMod
@@ -592,6 +714,497 @@ theorem Fp_adic_iff_dvd (P : FourLayerProfile) (x : ℤ) :
 theorem FEC_iff_dvd (P : FourLayerProfile) (x : ℤ) :
     FEC P x ↔ ((P.ecMod : ℤ) ∣ x) :=
   ZMod.intCast_zmod_eq_zero_iff_dvd x P.ecMod
+
+/-! ### T4-2: concrete elliptic-curve EC layer.
+
+The original four-layer model used `FEC` as a congruence detector.  The following
+definitions attach that detector to an actual Weierstrass model
+`y^2 = x^3 - (p^n * x + A)` over `ℤ`, its coefficientwise reduction modulo `p`,
+the finite set of affine solutions together with the point at infinity, the
+trace `a_p = p + 1 - #E(𝔽_p)`, and the local factor
+`P_p(T) = 1 - a_p T + p T^2`.
+
+Mathlib currently supplies the Weierstrass and point APIs, but not the Hasse
+theorem for this model.  Consequently the Hasse inequality and ordinary /
+supersingular tag are certificate fields rather than axioms. -/
+
+/-- The integral Weierstrass model `y^2 = x^3 - (p^n * x + A)`. -/
+def concreteECIntegralCurve (p n : ℕ) (A : ℤ) : WeierstrassCurve ℤ where
+  a₁ := 0
+  a₂ := 0
+  a₃ := 0
+  a₄ := -((p : ℤ) ^ n)
+  a₆ := -A
+
+@[simp]
+theorem concreteECIntegralCurve_a₁ (p n : ℕ) (A : ℤ) :
+    (concreteECIntegralCurve p n A).a₁ = 0 := rfl
+
+@[simp]
+theorem concreteECIntegralCurve_a₂ (p n : ℕ) (A : ℤ) :
+    (concreteECIntegralCurve p n A).a₂ = 0 := rfl
+
+@[simp]
+theorem concreteECIntegralCurve_a₃ (p n : ℕ) (A : ℤ) :
+    (concreteECIntegralCurve p n A).a₃ = 0 := rfl
+
+@[simp]
+theorem concreteECIntegralCurve_a₄ (p n : ℕ) (A : ℤ) :
+    (concreteECIntegralCurve p n A).a₄ = -((p : ℤ) ^ n) := rfl
+
+@[simp]
+theorem concreteECIntegralCurve_a₆ (p n : ℕ) (A : ℤ) :
+    (concreteECIntegralCurve p n A).a₆ = -A := rfl
+
+/-- Coefficientwise reduction of the integral model modulo `p`. -/
+def concreteECModPCurve (p n : ℕ) (A : ℤ) : WeierstrassCurve (ZMod p) :=
+  (concreteECIntegralCurve p n A).map (Int.castRingHom (ZMod p))
+
+/-- The affine equation on the mod-`p` reduction of the concrete model. -/
+def concreteECModPEquation (p n : ℕ) (A : ℤ) (x y : ZMod p) : Prop :=
+  (concreteECModPCurve p n A).toAffine.Equation x y
+
+/-- The Mathlib Weierstrass equation is exactly
+`y^2 = x^3 - p^n x - A` for the concrete model. -/
+theorem concreteECModPEquation_iff (p n : ℕ) (A : ℤ) (x y : ZMod p) :
+    concreteECModPEquation p n A x y ↔
+      y ^ 2 = x ^ 3 - (p : ZMod p) ^ n * x - (A : ZMod p) := by
+  unfold concreteECModPEquation concreteECModPCurve concreteECIntegralCurve
+  rw [WeierstrassCurve.Affine.equation_iff]
+  simp [WeierstrassCurve.map]
+  ring_nf
+
+/-- Affine solutions of the reduced concrete Weierstrass equation. -/
+abbrev ConcreteECModPAffineSolutions (p n : ℕ) (A : ℤ) :=
+  {xy : ZMod p × ZMod p // concreteECModPEquation p n A xy.1 xy.2}
+
+/-- The finite-point model used for point-counting: affine solutions plus one
+point at infinity.  We use `Option` for the added point to keep `Fintype`
+resolution explicit and stable. -/
+abbrev ConcreteECModPPoints (p n : ℕ) (A : ℤ) :=
+  Option (ConcreteECModPAffineSolutions p n A)
+
+noncomputable instance concreteECModPAffineSolutionsFintype (p n : ℕ) [NeZero p]
+    (A : ℤ) : Fintype (ConcreteECModPAffineSolutions p n A) := by
+  classical
+  infer_instance
+
+/-- The concrete point count `#E(𝔽_p)` for the reduced model, with the point
+at infinity included. -/
+noncomputable def concreteECPointCount (p n : ℕ) [NeZero p] (A : ℤ) : ℕ := by
+  classical
+  exact Fintype.card (ConcreteECModPPoints p n A)
+
+@[simp]
+theorem concreteECPointCount_eq (p n : ℕ) [NeZero p] (A : ℤ) :
+    concreteECPointCount p n A = Fintype.card (ConcreteECModPPoints p n A) := rfl
+
+/-- The point count is the affine solution count plus the point at infinity. -/
+theorem concreteECPointCount_eq_affine_add_one (p n : ℕ) [NeZero p] (A : ℤ) :
+    concreteECPointCount p n A =
+      Fintype.card (ConcreteECModPAffineSolutions p n A) + 1 := by
+  classical
+  simp [concreteECPointCount]
+
+/-- The trace `a_p = p + 1 - #E(𝔽_p)` of the concrete reduced model. -/
+noncomputable def concreteECTrace (p n : ℕ) [NeZero p] (A : ℤ) : ℤ :=
+  (p : ℤ) + 1 - (concreteECPointCount p n A : ℤ)
+
+@[simp]
+theorem concreteECTrace_eq (p n : ℕ) [NeZero p] (A : ℤ) :
+    concreteECTrace p n A =
+      (p : ℤ) + 1 - (concreteECPointCount p n A : ℤ) := rfl
+
+/-- The local quadratic Euler denominator `P_p(T)=1-a_pT+pT^2`. -/
+noncomputable def concreteECLocalFactorPolynomial
+    (p n : ℕ) [NeZero p] (A : ℤ) : Polynomial ℤ :=
+  Polynomial.C 1 - Polynomial.C (concreteECTrace p n A) * Polynomial.X +
+    Polynomial.C (p : ℤ) * Polynomial.X ^ 2
+
+/-- Evaluation form of the local factor denominator. -/
+theorem concreteECLocalFactorPolynomial_eval
+    (p n : ℕ) [NeZero p] (A T : ℤ) :
+    (concreteECLocalFactorPolynomial p n A).eval T =
+      1 - concreteECTrace p n A * T + (p : ℤ) * T ^ 2 := by
+  simp [concreteECLocalFactorPolynomial]
+
+/-- Ordinary/supersingular classification tag for the concrete reduced curve. -/
+inductive ECOrdSSTag where
+  | ordinary
+  | supersingular
+deriving DecidableEq
+
+/-- The ordinary predicate in the trace-divisibility form used over finite
+fields: `p ∤ a_p`. -/
+def ECOrdinary (p n : ℕ) [NeZero p] (A : ℤ) : Prop :=
+  ¬ (p : ℤ) ∣ concreteECTrace p n A
+
+/-- The supersingular predicate in the trace-divisibility form: `p ∣ a_p`. -/
+def ECSupersingular (p n : ℕ) [NeZero p] (A : ℤ) : Prop :=
+  (p : ℤ) ∣ concreteECTrace p n A
+
+/-- A sound ordinary/supersingular tag.  The classification itself is supplied
+as data, because Mathlib does not yet provide the finite-field EC theory needed
+to derive it for every concrete model. -/
+structure ECOrdSSTagCertificate (p n : ℕ) [NeZero p] (A : ℤ) where
+  tag : ECOrdSSTag
+  ordinary_sound : tag = ECOrdSSTag.ordinary → ECOrdinary p n A
+  supersingular_sound : tag = ECOrdSSTag.supersingular → ECSupersingular p n A
+
+namespace ECOrdSSTagCertificate
+
+theorem ordinary
+    {p n : ℕ} [NeZero p] {A : ℤ}
+    (C : ECOrdSSTagCertificate p n A)
+    (h : C.tag = ECOrdSSTag.ordinary) :
+    ECOrdinary p n A :=
+  C.ordinary_sound h
+
+theorem supersingular
+    {p n : ℕ} [NeZero p] {A : ℤ}
+    (C : ECOrdSSTagCertificate p n A)
+    (h : C.tag = ECOrdSSTag.supersingular) :
+    ECSupersingular p n A :=
+  C.supersingular_sound h
+
+end ECOrdSSTagCertificate
+
+/-- Hasse-bound certificate for the concrete EC layer.  Smoothness of the
+mod-`p` Weierstrass curve and the Hasse inequality are explicit proof data. -/
+structure HasseBoundCertificate (p n : ℕ) [NeZero p] (A : ℤ) where
+  pPrime : p.Prime
+  modP_isElliptic : (concreteECModPCurve p n A).IsElliptic
+  bound : |(concreteECTrace p n A : ℝ)| ≤ 2 * Real.sqrt (p : ℝ)
+
+namespace HasseBoundCertificate
+
+theorem trace_abs_le
+    {p n : ℕ} [NeZero p] {A : ℤ}
+    (C : HasseBoundCertificate p n A) :
+    |(concreteECTrace p n A : ℝ)| ≤ 2 * Real.sqrt (p : ℝ) :=
+  C.bound
+
+theorem pointCount_trace_identity
+    {p n : ℕ} [NeZero p] {A : ℤ}
+    (_C : HasseBoundCertificate p n A) :
+    concreteECTrace p n A =
+      (p : ℤ) + 1 - (concreteECPointCount p n A : ℤ) :=
+  rfl
+
+end HasseBoundCertificate
+
+/-- A concrete EC layer attached to the existing congruence gate `FEC`. -/
+structure ECConcreteLayerProfile (P : FourLayerProfile) where
+  p : ℕ
+  n : ℕ
+  A : ℤ
+  nonzeroP : NeZero p
+  ecMod_eq : P.ecMod = p
+  hasse : @HasseBoundCertificate p n nonzeroP A
+  ordSSTag : @ECOrdSSTagCertificate p n nonzeroP A
+
+namespace ECConcreteLayerProfile
+
+/-- The integral curve attached to a concrete EC layer. -/
+def integralCurve {P : FourLayerProfile} (C : ECConcreteLayerProfile P) :
+    WeierstrassCurve ℤ :=
+  concreteECIntegralCurve C.p C.n C.A
+
+/-- The reduced curve attached to a concrete EC layer. -/
+def modPCurve {P : FourLayerProfile} (C : ECConcreteLayerProfile P) :
+    WeierstrassCurve (ZMod C.p) :=
+  concreteECModPCurve C.p C.n C.A
+
+/-- The EC gate of the four-layer profile is precisely the mod-`p` vanishing
+condition attached to the concrete elliptic curve layer. -/
+theorem fec_iff_modPrime {P : FourLayerProfile}
+    (C : ECConcreteLayerProfile P) (x : ℤ) :
+    FEC P x ↔ ((x : ZMod C.p) = 0) := by
+  unfold FEC
+  rw [C.ecMod_eq]
+
+/-- Divisibility form of the same concrete EC gate. -/
+theorem fec_iff_dvd_primeMod {P : FourLayerProfile}
+    (C : ECConcreteLayerProfile P) (x : ℤ) :
+    FEC P x ↔ ((C.p : ℤ) ∣ x) := by
+  rw [FEC_iff_dvd, C.ecMod_eq]
+
+end ECConcreteLayerProfile
+
+/-- Constructor exposing the proof-data shape of the concrete EC layer. -/
+def ecConcreteLayerProfileOf
+    (P : FourLayerProfile) (p n : ℕ) [hp : NeZero p] (A : ℤ)
+    (heq : P.ecMod = p)
+    (H : HasseBoundCertificate p n A)
+    (T : ECOrdSSTagCertificate p n A) :
+    ECConcreteLayerProfile P where
+  p := p
+  n := n
+  A := A
+  nonzeroP := hp
+  ecMod_eq := heq
+  hasse := H
+  ordSSTag := T
+
+/-- Kernel-checked checklist for the concrete elliptic EC layer. -/
+structure EllipticCurveECLayerChecklist where
+  equation_iff :
+    ∀ (p n : ℕ) (A : ℤ) (x y : ZMod p),
+      concreteECModPEquation p n A x y ↔
+        y ^ 2 = x ^ 3 - (p : ZMod p) ^ n * x - (A : ZMod p)
+  pointCount_eq :
+    ∀ (p n : ℕ) [NeZero p] (A : ℤ),
+      concreteECPointCount p n A =
+        Fintype.card (ConcreteECModPAffineSolutions p n A) + 1
+  trace_eq :
+    ∀ (p n : ℕ) [NeZero p] (A : ℤ),
+      concreteECTrace p n A =
+        (p : ℤ) + 1 - (concreteECPointCount p n A : ℤ)
+  localFactor_eval :
+    ∀ (p n : ℕ) [NeZero p] (A T : ℤ),
+      (concreteECLocalFactorPolynomial p n A).eval T =
+        1 - concreteECTrace p n A * T + (p : ℤ) * T ^ 2
+  fec_bridge :
+    ∀ (P : FourLayerProfile) (C : ECConcreteLayerProfile P) (x : ℤ),
+      FEC P x ↔ ((x : ZMod C.p) = 0)
+
+/-- The concrete EC layer checklist, with every item tied to a named theorem. -/
+noncomputable def ellipticCurveECLayerChecklist :
+    EllipticCurveECLayerChecklist where
+  equation_iff := concreteECModPEquation_iff
+  pointCount_eq := by
+    intro p n hp A
+    letI := hp
+    exact concreteECPointCount_eq_affine_add_one p n A
+  trace_eq := by
+    intro p n hp A
+    letI := hp
+    exact concreteECTrace_eq p n A
+  localFactor_eval := by
+    intro p n hp A T
+    letI := hp
+    exact concreteECLocalFactorPolynomial_eval p n A T
+  fec_bridge := by
+    intro P C x
+    exact C.fec_iff_modPrime x
+
+/-! ### T4-1: p-adic numeric gate and Buchi linearization.
+
+The original four-layer model represented the numeric layer by the congruence
+predicate `Fnum`.  The lemmas below upgrade that representation to the genuine
+integer part of the `(Hk)` p-adic reduction: divisibility by `p^k`, equality in
+`ZMod (p^k)`, membership in the principal ideal `(p^k) ⊂ ℤ_[p]`, and the Buchi
+valuation identity for
+`M * S_j(A) / (gcd(j!,m) * Y)`.  The transcendental p-adic logarithm estimate is
+kept as an explicit certificate, because Mathlib's p-adic logarithm API is not
+yet the right surface for that analytic bridge. -/
+
+/-- Congruence modulo `p^k`, used as the arithmetic shadow of the p-adic gate. -/
+def powPadicCongruence (p k : ℕ) (x : ℤ) : Prop :=
+  ((x : ZMod (p ^ k)) = 0)
+
+/-- The integer valuation gate `ν_p(x) ≥ k`, with the zero case separated in the
+same way as Mathlib's `padicValInt`, whose value at zero defaults to `0`. -/
+def BuchiValuationGate (p k : ℕ) (x : ℤ) : Prop :=
+  x = 0 ∨ k ≤ padicValInt p x
+
+/-- Divisibility by `p^k` is the same as vanishing in `ZMod (p^k)`. -/
+theorem int_pow_dvd_iff_powPadicCongruence (p k : ℕ) (x : ℤ) :
+    ((p : ℤ) ^ k ∣ x) ↔ powPadicCongruence p k x := by
+  rw [powPadicCongruence, ZMod.intCast_zmod_eq_zero_iff_dvd]
+  simp
+
+/-- Mathlib's `padicValInt_dvd_iff` in the exact gate form used by `(Hk)`. -/
+theorem padicValInt_gate_iff_pow_dvd (p k : ℕ) [Fact p.Prime] (x : ℤ) :
+    ((p : ℤ) ^ k ∣ x) ↔ BuchiValuationGate p k x := by
+  simpa [BuchiValuationGate] using (padicValInt_dvd_iff (p := p) k x)
+
+/-- Away from zero, the p-adic valuation gate is literally equivalent to
+divisibility by `p^k`. -/
+theorem padicValInt_ge_iff_pow_dvd_of_ne_zero
+    (p k : ℕ) [Fact p.Prime] {x : ℤ} (hx : x ≠ 0) :
+    k ≤ padicValInt p x ↔ ((p : ℤ) ^ k ∣ x) := by
+  rw [padicValInt_gate_iff_pow_dvd (p := p) (k := k) (x := x)]
+  simp [BuchiValuationGate, hx]
+
+/-- The same gate, now as membership of the embedded integer in `(p^k) ⊂ ℤ_[p]`. -/
+theorem intCast_mem_padicInt_span_pow_iff (p k : ℕ) [Fact p.Prime] (x : ℤ) :
+    (x : ℤ_[p]) ∈ (Ideal.span {((p : ℤ_[p]) ^ k)} : Ideal ℤ_[p]) ↔
+      ((p : ℤ) ^ k ∣ x) := by
+  rw [Ideal.mem_span_singleton]
+  exact (PadicInt.pow_p_dvd_int_iff (p := p) k x)
+
+/-- The p-adic integer gate and the finite congruence gate coincide on embedded
+integers. -/
+theorem padicInt_span_pow_iff_powPadicCongruence
+    (p k : ℕ) [Fact p.Prime] (x : ℤ) :
+    (x : ℤ_[p]) ∈ (Ideal.span {((p : ℤ_[p]) ^ k)} : Ideal ℤ_[p]) ↔
+      powPadicCongruence p k x := by
+  rw [intCast_mem_padicInt_span_pow_iff, int_pow_dvd_iff_powPadicCongruence]
+
+/-- Denominator of the Buchi-linearized numeric expression. -/
+def buchiDenominator (j m Y : ℕ) : ℕ :=
+  Nat.gcd (Nat.factorial j) m * Y
+
+/-- Numerator of the Buchi-linearized numeric expression. -/
+def buchiNumerator {α : Type*} (M : ℕ) (S : α → ℤ) (A : α) : ℤ :=
+  (M : ℤ) * S A
+
+/-- The rational Buchi-linearized expression
+`φ_j(A) = M * S_j(A) / (gcd(j!,m) * Y)`. -/
+def buchiPhi {α : Type*} (M j m Y : ℕ) (S : α → ℤ) (A : α) : ℚ :=
+  (buchiNumerator M S A : ℚ) / (buchiDenominator j m Y : ℚ)
+
+/-- The Buchi denominator is nonzero as soon as `Y` is nonzero. -/
+theorem buchiDenominator_ne_zero {j m Y : ℕ} (hY : Y ≠ 0) :
+    buchiDenominator j m Y ≠ 0 := by
+  unfold buchiDenominator
+  exact mul_ne_zero
+    (Nat.ne_of_gt (Nat.gcd_pos_of_pos_left m (Nat.factorial_pos j)))
+    hY
+
+/-- The unconditional algebraic part of the Buchi valuation estimate:
+`ν_p(φ_j(A)) = ν_p(M)+ν_p(S_j(A))-ν_p(gcd(j!,m))-ν_p(Y)`. -/
+theorem padicValRat_buchiPhi {α : Type*}
+    (p M j m Y : ℕ) [Fact p.Prime] (S : α → ℤ) (A : α)
+    (hM : M ≠ 0) (hS : S A ≠ 0) (hY : Y ≠ 0) :
+    padicValRat p (buchiPhi M j m Y S A) =
+      (padicValNat p M : ℤ) + padicValInt p (S A) -
+        (padicValNat p (Nat.gcd (Nat.factorial j) m) : ℤ) -
+        (padicValNat p Y : ℤ) := by
+  have hMrat : (M : ℚ) ≠ 0 := by exact_mod_cast hM
+  have hSrat : ((S A : ℤ) : ℚ) ≠ 0 := by exact_mod_cast hS
+  have hg : Nat.gcd (Nat.factorial j) m ≠ 0 :=
+    Nat.ne_of_gt (Nat.gcd_pos_of_pos_left m (Nat.factorial_pos j))
+  have hgrat : ((Nat.gcd (Nat.factorial j) m : ℕ) : ℚ) ≠ 0 := by exact_mod_cast hg
+  have hYrat : (Y : ℚ) ≠ 0 := by exact_mod_cast hY
+  unfold buchiPhi buchiNumerator buchiDenominator
+  simp only [Int.cast_mul, Int.cast_natCast, Nat.cast_mul]
+  rw [padicValRat.div]
+  · rw [padicValRat.mul]
+    · rw [padicValRat.mul]
+      · simp only [padicValRat.of_nat, padicValRat.of_int]
+        ring
+      · exact hgrat
+      · exact hYrat
+    · exact hMrat
+    · exact hSrat
+  · exact mul_ne_zero hMrat hSrat
+  · exact mul_ne_zero hgrat hYrat
+
+/-- A profile saying that the already-existing `Fnum` modulus is a genuine
+`p^k` numeric gate. -/
+structure NumericGateBuchiProfile (P : FourLayerProfile) where
+  p : ℕ
+  k : ℕ
+  pPrime : p.Prime
+  numMod_eq : P.numMod = p ^ k
+
+namespace NumericGateBuchiProfile
+
+/-- The `Fnum` congruence is exactly congruence modulo the recorded `p^k`. -/
+theorem fnum_iff_powPadicCongruence {P : FourLayerProfile}
+    (B : NumericGateBuchiProfile P) (x : ℤ) :
+    Fnum P x ↔ powPadicCongruence B.p B.k x := by
+  rw [Fnum_iff_dvd, B.numMod_eq]
+  simpa using int_pow_dvd_iff_powPadicCongruence B.p B.k x
+
+/-- The `Fnum` congruence is exactly the integer p-adic valuation gate. -/
+theorem fnum_iff_valuationGate {P : FourLayerProfile}
+    (B : NumericGateBuchiProfile P) (x : ℤ) :
+    Fnum P x ↔ BuchiValuationGate B.p B.k x := by
+  letI : Fact B.p.Prime := ⟨B.pPrime⟩
+  rw [Fnum_iff_dvd, B.numMod_eq]
+  simpa using padicValInt_gate_iff_pow_dvd B.p B.k x
+
+/-- The `Fnum` congruence is the same as membership in `(p^k) ⊂ ℤ_[p]` for
+embedded integers. -/
+theorem fnum_iff_padicInt_span {P : FourLayerProfile}
+    (B : NumericGateBuchiProfile P) [Fact B.p.Prime] (x : ℤ) :
+    Fnum P x ↔
+      (x : ℤ_[B.p]) ∈
+        (Ideal.span {((B.p : ℤ_[B.p]) ^ B.k)} : Ideal ℤ_[B.p]) := by
+  rw [Fnum_iff_dvd, B.numMod_eq]
+  simpa using (intCast_mem_padicInt_span_pow_iff B.p B.k x).symm
+
+end NumericGateBuchiProfile
+
+/-- Certificate boundary for the analytic p-adic logarithm bridge
+`|log(1+u)|_p ≤ p^{-k}`.  The algebraic input is fully proved above; the actual
+log estimate is deliberately supplied as a field. -/
+structure PadicLogBridgeCertificate (p k : ℕ) [Fact p.Prime] where
+  LogBound : ℤ → Prop
+  log_bound_of_padicInt_span :
+    ∀ {u : ℤ},
+      (u : ℤ_[p]) ∈ (Ideal.span {((p : ℤ_[p]) ^ k)} : Ideal ℤ_[p]) →
+        LogBound u
+
+namespace PadicLogBridgeCertificate
+
+/-- A certified p-adic log estimate follows from the valuation gate. -/
+theorem log_bound_of_valuationGate
+    (p k : ℕ) [Fact p.Prime] (L : PadicLogBridgeCertificate p k) {u : ℤ}
+    (hu : BuchiValuationGate p k u) : L.LogBound u := by
+  have hdiv : ((p : ℤ) ^ k ∣ u) :=
+    (padicValInt_gate_iff_pow_dvd p k u).mpr hu
+  exact L.log_bound_of_padicInt_span
+    ((intCast_mem_padicInt_span_pow_iff p k u).mpr hdiv)
+
+/-- A certified p-adic log estimate follows from finite congruence modulo `p^k`. -/
+theorem log_bound_of_powPadicCongruence
+    (p k : ℕ) [Fact p.Prime] (L : PadicLogBridgeCertificate p k) {u : ℤ}
+    (hu : powPadicCongruence p k u) : L.LogBound u := by
+  exact L.log_bound_of_padicInt_span
+    ((padicInt_span_pow_iff_powPadicCongruence p k u).mpr hu)
+
+end PadicLogBridgeCertificate
+
+/-- Checklist bundle for the T4-1 numeric/p-adic gate upgrade. -/
+structure PadicNumericGateChecklist where
+  valuationBridge :
+    ∀ (p k : ℕ) [Fact p.Prime] (x : ℤ),
+      ((p : ℤ) ^ k ∣ x) ↔ BuchiValuationGate p k x
+  congruenceBridge :
+    ∀ (p k : ℕ) (x : ℤ),
+      ((p : ℤ) ^ k ∣ x) ↔ powPadicCongruence p k x
+  padicIntBridge :
+    ∀ (p k : ℕ) [Fact p.Prime] (x : ℤ),
+      (x : ℤ_[p]) ∈ (Ideal.span {((p : ℤ_[p]) ^ k)} : Ideal ℤ_[p]) ↔
+        powPadicCongruence p k x
+  buchiFormula :
+    ∀ {α : Type*} (p M j m Y : ℕ) [Fact p.Prime] (S : α → ℤ) (A : α),
+      M ≠ 0 → S A ≠ 0 → Y ≠ 0 →
+        padicValRat p (buchiPhi M j m Y S A) =
+          (padicValNat p M : ℤ) + padicValInt p (S A) -
+            (padicValNat p (Nat.gcd (Nat.factorial j) m) : ℤ) -
+            (padicValNat p Y : ℤ)
+  fnumProfile :
+    ∀ (P : FourLayerProfile) (p k : ℕ), p.Prime → P.numMod = p ^ k →
+      NumericGateBuchiProfile P
+  logBridgeFromValuation :
+    ∀ (p k : ℕ) [Fact p.Prime] (L : PadicLogBridgeCertificate p k) {u : ℤ},
+      BuchiValuationGate p k u → L.LogBound u
+
+/-- Canonical checklist instance for the T4-1 upgrade. -/
+def padicNumericGateChecklist : PadicNumericGateChecklist where
+  valuationBridge := by
+    intro p k hp x
+    exact padicValInt_gate_iff_pow_dvd p k x
+  congruenceBridge := by
+    intro p k x
+    exact int_pow_dvd_iff_powPadicCongruence p k x
+  padicIntBridge := by
+    intro p k hp x
+    exact padicInt_span_pow_iff_powPadicCongruence p k x
+  buchiFormula := by
+    intro α p M j m Y hp S A hM hS hY
+    exact padicValRat_buchiPhi p M j m Y S A hM hS hY
+  fnumProfile := by
+    intro P p k hp hnum
+    exact ⟨p, k, hp, hnum⟩
+  logBridgeFromValuation := by
+    intro p k hp L u hu
+    exact PadicLogBridgeCertificate.log_bound_of_valuationGate p k L hu
 
 theorem zmod_zero_of_dvd_of_zmod_zero {q n : ℕ} (hqn : q ∣ n) {x : ℤ}
     (hx : ((x : ℤ) : ZMod n) = 0) : ((x : ℤ) : ZMod q) = 0 := by
@@ -1041,6 +1654,72 @@ theorem arithmeticCech_range_eq_kernel (M N : ℕ) :
       (arithmeticCechLocalDifference M N).ker :=
   crtPhi_range_eq_crtDel_ker M N
 
+/-- Compatible local pairs: the equalizer side of the two-open Čech diagram. -/
+abbrev arithmeticCechCompatiblePairs (M N : ℕ) : AddSubgroup (ZMod M × ZMod N) :=
+  (arithmeticCechLocalDifference M N).ker
+
+/-- Gluable local pairs: the image of global arithmetic sections in the local product. -/
+abbrev arithmeticCechGluablePairs (M N : ℕ) : AddSubgroup (ZMod M × ZMod N) :=
+  (arithmeticCechGlobalToLocal M N).range
+
+@[simp]
+theorem arithmeticCech_mem_compatiblePairs_iff (M N : ℕ) (s : ZMod M × ZMod N) :
+    s ∈ arithmeticCechCompatiblePairs M N ↔
+      arithmeticCechLocalDifference M N s = 0 := by
+  rw [AddMonoidHom.mem_ker]
+
+@[simp]
+theorem arithmeticCech_mem_gluablePairs_iff (M N : ℕ) (s : ZMod M × ZMod N) :
+    s ∈ arithmeticCechGluablePairs M N ↔
+      ∃ x : ℤ, arithmeticCechGlobalToLocal M N x = s := by
+  rw [AddMonoidHom.mem_range]
+
+/-- The H0 equalizer of the two-open diagram is exactly the image of global sections. -/
+theorem arithmeticCech_gluablePairs_eq_compatiblePairs (M N : ℕ) :
+    arithmeticCechGluablePairs M N = arithmeticCechCompatiblePairs M N :=
+  arithmeticCech_range_eq_kernel M N
+
+/-- H0 as the image of global sections in the product of two local section groups. -/
+abbrev arithmeticCechH0Image (M N : ℕ) : Type :=
+  arithmeticCechGluablePairs M N
+
+/-- H0 as the equalizer of the two restrictions to the common overlap. -/
+abbrev arithmeticCechH0Equalizer (M N : ℕ) : Type :=
+  arithmeticCechCompatiblePairs M N
+
+/-- The two standard H0 presentations of the two-open arithmetic Čech diagram agree. -/
+noncomputable def arithmeticCechH0ImageEquivEqualizer (M N : ℕ) :
+    arithmeticCechH0Image M N ≃+ arithmeticCechH0Equalizer M N :=
+  AddEquiv.addSubgroupCongr (arithmeticCech_gluablePairs_eq_compatiblePairs M N)
+
+@[simp]
+theorem arithmeticCechH0ImageEquivEqualizer_apply (M N : ℕ)
+    (s : arithmeticCechH0Image M N) :
+    ((arithmeticCechH0ImageEquivEqualizer M N s : arithmeticCechH0Equalizer M N) :
+      ZMod M × ZMod N) = s := by
+  exact AddEquiv.addSubgroupCongr_apply
+    (arithmeticCech_gluablePairs_eq_compatiblePairs M N) s
+
+/-- Two global arithmetic sections induce the same local pair exactly modulo the lcm-kernel. -/
+theorem arithmeticCech_same_local_iff_lcm_dvd_sub (M N : ℕ) (x y : ℤ) :
+    arithmeticCechGlobalToLocal M N x = arithmeticCechGlobalToLocal M N y ↔
+      lcm (M : ℤ) (N : ℤ) ∣ x - y := by
+  constructor
+  · intro hxy
+    have hker : x - y ∈ (arithmeticCechGlobalToLocal M N).ker := by
+      rw [AddMonoidHom.mem_ker]
+      rw [map_sub, hxy, sub_self]
+    exact (crtPhi_mem_ker_iff_lcm M N (x - y)).mp hker
+  · intro hdiv
+    have hker : x - y ∈ (arithmeticCechGlobalToLocal M N).ker :=
+      (crtPhi_mem_ker_iff_lcm M N (x - y)).mpr hdiv
+    rw [AddMonoidHom.mem_ker] at hker
+    have hsub :
+        arithmeticCechGlobalToLocal M N x -
+          arithmeticCechGlobalToLocal M N y = 0 := by
+      simpa [map_sub] using hker
+    exact sub_eq_zero.mp hsub
+
 /-- The first Čech obstruction of the two-open arithmetic chart. -/
 abbrev arithmeticCechH1 (M N : ℕ) : Type :=
   AddCoker (arithmeticCechGlobalToLocal M N)
@@ -1090,6 +1769,14 @@ structure ArithmeticTwoOpenCechSheafCertificate (M N : ℕ) where
     Function.Exact globalToLocal localDifference
   range_eq_kernel :
     globalToLocal.range = localDifference.ker
+  compatiblePairs : AddSubgroup (ZMod M × ZMod N)
+  gluablePairs : AddSubgroup (ZMod M × ZMod N)
+  compatiblePairs_eq_ker :
+    compatiblePairs = localDifference.ker
+  gluablePairs_eq_range :
+    gluablePairs = globalToLocal.range
+  h0ImageEquivEqualizer :
+    gluablePairs ≃+ compatiblePairs
   h1Equiv :
     AddCoker globalToLocal ≃+ ZMod (Nat.gcd M N)
   h1Card :
@@ -1116,6 +1803,11 @@ noncomputable def arithmeticTwoOpenCechSheafCertificate (M N : ℕ) :
   compatible_iff_gluable := arithmeticCech_compatible_iff_gluable M N
   exact := arithmeticCech_twoOpen_exact M N
   range_eq_kernel := arithmeticCech_range_eq_kernel M N
+  compatiblePairs := arithmeticCechCompatiblePairs M N
+  gluablePairs := arithmeticCechGluablePairs M N
+  compatiblePairs_eq_ker := rfl
+  gluablePairs_eq_range := rfl
+  h0ImageEquivEqualizer := arithmeticCechH0ImageEquivEqualizer M N
   h1Equiv := arithmeticCechH1EquivZModGcd M N
   h1Card := arithmeticCechH1_card M N
 
@@ -1421,6 +2113,48 @@ Mathlib `ChainComplex`. -/
 abbrev standardIntResolutionZeroObj : ModuleCat Int :=
   ModuleCat.of Int PUnit
 
+/-- Tensoring the zero `Int`-module on the left gives a subsingleton module. -/
+instance tensorProductPUnitLeft_subsingleton
+    (N : Type*) [AddCommGroup N] [Module Int N] :
+    Subsingleton (TensorProduct Int PUnit N) := by
+  constructor
+  intro x y
+  suffices hx : x = 0 by
+    suffices hy : y = 0 by simp [hx, hy]
+    induction y using TensorProduct.induction_on with
+    | zero => rfl
+    | tmul p n =>
+        rw [Subsingleton.elim p 0, TensorProduct.zero_tmul]
+    | add a b ha hb =>
+        simp [ha, hb]
+  induction x using TensorProduct.induction_on with
+  | zero => rfl
+  | tmul p n =>
+      rw [Subsingleton.elim p 0, TensorProduct.zero_tmul]
+  | add a b ha hb =>
+      simp [ha, hb]
+
+/-- Tensoring the zero `Int`-module on the right gives a subsingleton module. -/
+instance tensorProductPUnitRight_subsingleton
+    (N : Type*) [AddCommGroup N] [Module Int N] :
+    Subsingleton (TensorProduct Int N PUnit) := by
+  constructor
+  intro x y
+  suffices hx : x = 0 by
+    suffices hy : y = 0 by simp [hx, hy]
+    induction y using TensorProduct.induction_on with
+    | zero => rfl
+    | tmul n p =>
+        rw [Subsingleton.elim p 0, TensorProduct.tmul_zero]
+    | add a b ha hb =>
+        simp [ha, hb]
+  induction x using TensorProduct.induction_on with
+  | zero => rfl
+  | tmul n p =>
+      rw [Subsingleton.elim p 0, TensorProduct.tmul_zero]
+  | add a b ha hb =>
+      simp [ha, hb]
+
 /-- Objects of the standard chain complex `0 → ℤ --M--> ℤ`.
 Degrees `0` and `1` are `ℤ`; higher degrees are the zero module. -/
 abbrev standardIntResolutionComplexObj : ℕ → ModuleCat Int
@@ -1564,11 +2298,46 @@ theorem standardIntResolutionQuotient_surjective (M : ℕ) :
   intro x
   exact ⟨ZMod.cast x, ZMod.intCast_zmod_cast x⟩
 
+/-- Linear exactness of `ℤ --×M--> ℤ → ZMod M`.
+This is the `ModuleCat`-ready form of `standardIntResolutionD1_range_eq_quotient_ker`. -/
+theorem standardIntResolution_linear_exact (M : ℕ) :
+    Function.Exact
+      (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap)
+      (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap) := by
+  rw [LinearMap.exact_iff]
+  ext x
+  constructor
+  · intro hx
+    change standardIntResolutionQuotient M x = 0 at hx
+    have hxmem : x ∈ (standardIntResolutionQuotient M).ker := by
+      simpa [AddMonoidHom.mem_ker] using hx
+    rw [← standardIntResolutionD1_range_eq_quotient_ker M] at hxmem
+    rcases hxmem with ⟨y, hy⟩
+    exact ⟨y, by simpa using hy⟩
+  · rintro ⟨y, hy⟩
+    change standardIntResolutionQuotient M x = 0
+    rw [← hy]
+    exact standardIntResolutionQuotient_comp_D1_apply M y
+
 /-- The degree-zero augmentation of the standard presentation is an epimorphism. -/
 theorem standardIntResolutionAugmentation_f_zero_epi (M : ℕ) :
     Epi ((standardIntResolutionAugmentation M).f 0) := by
   rw [standardIntResolutionAugmentation_f_zero]
   exact (ModuleCat.epi_iff_surjective _).mpr (standardIntResolutionQuotient_surjective M)
+
+/-- The degree-zero augmentation is the cokernel of the degree-one differential. -/
+noncomputable def standardIntResolutionAugmentation_f_zero_isColimitCokernelCofork (M : ℕ) :
+    IsColimit (CokernelCofork.ofπ
+      (f := (standardIntResolutionComplex M).d 1 0)
+      ((standardIntResolutionAugmentation M).f 0)
+      (standardIntResolutionAugmentation_comp_d_one_zero M)) := by
+  refine ModuleCat.isColimitCokernelCofork
+    ((standardIntResolutionComplex M).d 1 0)
+    ((standardIntResolutionAugmentation M).f 0) ?_ ?_
+  · simpa [standardIntResolutionComplex_d_one_zero, standardIntResolutionAugmentation_f_zero]
+      using standardIntResolution_linear_exact M
+  · simpa [standardIntResolutionAugmentation_f_zero]
+      using standardIntResolutionQuotient_surjective M
 
 /-- If `M ≠ 0`, multiplication by `M` on `ℤ` is injective, so the standard presentation is
 exact at the left copy of `ℤ`. -/
@@ -1581,6 +2350,103 @@ theorem standardIntResolutionD1_ker_eq_bot_of_ne_zero {M : ℕ} (hM : M ≠ 0) :
     exact (mul_eq_zero.mp hx).resolve_left (by exact_mod_cast hM)
   · intro hx
     simp [hx]
+
+/-- Exactness of the standard integral complex at degree one.
+This is the only positive-degree exactness point requiring `M ≠ 0`. -/
+theorem standardIntResolutionComplex_exactAt_one_of_ne_zero {M : ℕ} (hM : M ≠ 0) :
+    (standardIntResolutionComplex M).ExactAt 1 := by
+  rw [HomologicalComplex.exactAt_iff' _ 2 1 0 (by simp) (by simp)]
+  rw [ShortComplex.moduleCat_exact_iff]
+  intro x hx
+  change ℤ at x
+  change (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap) x = 0 at hx
+  have hxmul : (M : ℤ) * x = 0 := by
+    simpa [standardIntResolutionD1_apply] using hx
+  have hx0 : x = 0 := by
+    exact (mul_eq_zero.mp hxmul).resolve_left (by exact_mod_cast hM)
+  subst x
+  refine ⟨0, ?_⟩
+  simpa [standardIntResolutionComplex_d_succ_succ]
+
+/-- Exactness of the standard integral complex in degrees at least two. -/
+theorem standardIntResolutionComplex_exactAt_succ_succ (M n : ℕ) :
+    (standardIntResolutionComplex M).ExactAt (n + 2) := by
+  rw [HomologicalComplex.exactAt_iff' _ (n + 3) (n + 2) (n + 1) (by simp) (by simp)]
+  rw [ShortComplex.moduleCat_exact_iff]
+  intro x hx
+  change PUnit at x
+  cases x
+  refine ⟨0, ?_⟩
+  change (0 : PUnit) = PUnit.unit
+  rfl
+
+/-- Positive-degree exactness of the standard integral complex. -/
+theorem standardIntResolutionComplex_exactAt_succ_of_ne_zero {M : ℕ} (hM : M ≠ 0)
+    (n : ℕ) :
+    (standardIntResolutionComplex M).ExactAt (n + 1) := by
+  cases n with
+  | zero =>
+      simpa using standardIntResolutionComplex_exactAt_one_of_ne_zero hM
+  | succ n =>
+      simpa [Nat.succ_eq_add_one, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
+        standardIntResolutionComplex_exactAt_succ_succ M n
+
+/-- The standard augmentation is a quasi-isomorphism in every positive degree. -/
+theorem standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero
+    {M : ℕ} (hM : M ≠ 0) (n : ℕ) :
+    QuasiIsoAt (standardIntResolutionAugmentation M) (n + 1) := by
+  rw [quasiIsoAt_iff_exactAt'
+    (standardIntResolutionAugmentation M) (n + 1)
+    (ChainComplex.exactAt_succ_single_obj (ModuleCat.of Int (ZMod M)) n)]
+  exact standardIntResolutionComplex_exactAt_succ_of_ne_zero hM n
+
+/-- The standard augmentation is a quasi-isomorphism in degree zero.
+This packages the already-proved exactness of `ℤ --×M--> ℤ → ZMod M` and
+surjectivity of the quotient map in Mathlib's short-complex language. -/
+theorem standardIntResolutionAugmentation_quasiIsoAt_zero (M : ℕ) :
+    QuasiIsoAt (standardIntResolutionAugmentation M) 0 := by
+  rw [ChainComplex.quasiIsoAt₀_iff, ShortComplex.quasiIso_iff_of_zeros']
+  · constructor
+    · rw [ShortComplex.moduleCat_exact_iff]
+      intro x hx
+      change ℤ at x
+      change standardIntResolutionQuotient M x = 0 at hx
+      have hxmem : x ∈ (standardIntResolutionQuotient M).ker := by
+        simpa [AddMonoidHom.mem_ker] using hx
+      rw [← standardIntResolutionD1_range_eq_quotient_ker M] at hxmem
+      rcases hxmem with ⟨y, hy⟩
+      exact ⟨y, by simpa [standardIntResolutionComplex_d_one_zero,
+        standardIntResolutionAugmentation_f_zero] using hy⟩
+    · simpa [standardIntResolutionAugmentation_f_zero] using
+        standardIntResolutionAugmentation_f_zero_epi M
+  · rfl
+  · rfl
+  · rfl
+
+/-- For `M ≠ 0`, the standard two-term augmentation is a quasi-isomorphism.
+The zero-degree case is the cokernel presentation of `ZMod M`; positive degrees are exact
+because multiplication by a nonzero integer on `ℤ` is injective and all higher terms vanish. -/
+theorem standardIntResolutionAugmentation_quasiIso_of_ne_zero
+    {M : ℕ} (hM : M ≠ 0) :
+    QuasiIso (standardIntResolutionAugmentation M) := by
+  rw [quasiIso_iff]
+  intro n
+  cases n with
+  | zero =>
+      exact standardIntResolutionAugmentation_quasiIsoAt_zero M
+  | succ n =>
+      exact standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero hM n
+
+/-- The explicit free two-term resolution of `ZMod M` as a Mathlib
+`ProjectiveResolution`, valid under the necessary hypothesis `M ≠ 0`. -/
+noncomputable def standardIntProjectiveResolution
+    (M : ℕ) (hM : M ≠ 0) :
+    ProjectiveResolution (ModuleCat.of Int (ZMod M)) where
+  complex := standardIntResolutionComplex M
+  projective := standardIntResolutionComplex_projective M
+  hasHomology := by infer_instance
+  π := standardIntResolutionAugmentation M
+  quasiIso := standardIntResolutionAugmentation_quasiIso_of_ne_zero hM
 
 /-- Certificate for the pre-tensor standard free presentation of `ZMod M`.
 The middle and right exactness statements are unconditional; the left exactness statement is
@@ -1705,6 +2571,58 @@ noncomputable def tensorStandardResolutionComplex (M N : ℕ) :
     (tensorStandardResolutionComplexD M N)
     (tensorStandardResolutionComplexD_comp M N)
 
+/-- Degreewise comparison from Mathlib's actual right tensoring of the standard resolution
+to the hand-coded tensor-standard complex. -/
+noncomputable def tensorRightStandardResolutionComplexComponentIso
+    (M N : ℕ) (n : ℕ) :
+    (((((CategoryTheory.MonoidalCategory.tensoringRight (ModuleCat Int)).obj
+      (ModuleCat.of Int (ZMod N))).mapHomologicalComplex
+        (ComplexShape.down ℕ)).obj (standardIntResolutionComplex M)).X n) ≅
+      (tensorStandardResolutionComplex M N).X n := by
+  cases n with
+  | zero =>
+      exact CategoryTheory.MonoidalCategory.leftUnitor (ModuleCat.of Int (ZMod N))
+  | succ n =>
+      cases n with
+      | zero =>
+          exact CategoryTheory.MonoidalCategory.leftUnitor (ModuleCat.of Int (ZMod N))
+      | succ _ =>
+          change ModuleCat.of Int (TensorProduct Int PUnit (ZMod N)) ≅ ModuleCat.of Int PUnit
+          exact (LinearEquiv.ofSubsingleton _ _).toModuleIso
+
+/-- Degreewise comparison from Mathlib's actual left tensoring of the standard resolution
+to the hand-coded tensor-standard complex in the second variable. -/
+noncomputable def tensorLeftStandardResolutionComplexComponentIso
+    (M N : ℕ) (n : ℕ) :
+    (((((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat Int)).obj
+      (ModuleCat.of Int (ZMod M))).mapHomologicalComplex
+        (ComplexShape.down ℕ)).obj (standardIntResolutionComplex N)).X n) ≅
+      (tensorStandardResolutionComplex N M).X n := by
+  cases n with
+  | zero =>
+      exact CategoryTheory.MonoidalCategory.rightUnitor (ModuleCat.of Int (ZMod M))
+  | succ n =>
+      cases n with
+      | zero =>
+          exact CategoryTheory.MonoidalCategory.rightUnitor (ModuleCat.of Int (ZMod M))
+      | succ _ =>
+          change ModuleCat.of Int (TensorProduct Int (ZMod M) PUnit) ≅ ModuleCat.of Int PUnit
+          exact (LinearEquiv.ofSubsingleton _ _).toModuleIso
+
+/-- Mathlib's actual right tensoring of the standard integral resolution. -/
+noncomputable abbrev tensorRightAppliedStandardResolutionComplex (M N : ℕ) :
+    ChainComplex (ModuleCat Int) ℕ :=
+  ((((CategoryTheory.MonoidalCategory.tensoringRight (ModuleCat Int)).obj
+    (ModuleCat.of Int (ZMod N))).mapHomologicalComplex
+      (ComplexShape.down ℕ)).obj (standardIntResolutionComplex M))
+
+/-- Mathlib's actual left tensoring of the standard integral resolution. -/
+noncomputable abbrev tensorLeftAppliedStandardResolutionComplex (M N : ℕ) :
+    ChainComplex (ModuleCat Int) ℕ :=
+  ((((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat Int)).obj
+    (ModuleCat.of Int (ZMod M))).mapHomologicalComplex
+      (ComplexShape.down ℕ)).obj (standardIntResolutionComplex N))
+
 @[simp]
 theorem tensorStandardResolutionComplex_d_one_zero (M N : ℕ) :
     (tensorStandardResolutionComplex M N).d 1 0 =
@@ -1728,6 +2646,143 @@ theorem tensorStandardResolutionComplex_d_succ_succ (M N n : ℕ) :
       (tensorStandardResolutionComplexD_comp M N)).d ((n + 1) + 1) (n + 1) = 0
   rw [ChainComplex.of_d]
   exact tensorStandardResolutionComplexD_succ M N n
+
+/-- Multiplication by `M` on the standard free rank-one module, as a bundled
+`ModuleCat Int` morphism.  This is the differential before tensoring. -/
+noncomputable abbrev standardIntMulLeftModuleHom (M : Nat) :
+    Quiver.Hom (ModuleCat.of Int Int) (ModuleCat.of Int Int) :=
+  ModuleCat.ofHom
+    (((AddMonoidHom.mulLeft (M : Int)) : AddMonoidHom Int Int).toIntLinearMap)
+
+/-- Multiplication by `M` on `ZMod N`, as a bundled `ModuleCat Int` morphism.
+This is the differential after tensoring with `ZMod N`. -/
+noncomputable abbrev zmodMulLeftModuleHom (M N : Nat) :
+    Quiver.Hom (ModuleCat.of Int (ZMod N)) (ModuleCat.of Int (ZMod N)) :=
+  ModuleCat.ofHom
+    (((AddMonoidHom.mulLeft (M : ZMod N)) :
+      AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap)
+
+/-- The left unitor used to identify `Int ⊗ ZMod N` with `ZMod N`. -/
+noncomputable abbrev zmodLeftUnitorHom (N : Nat) :=
+  (CategoryTheory.MonoidalCategory.leftUnitor (ModuleCat.of Int (ZMod N))).hom
+
+/-- The right unitor used to identify `ZMod M ⊗ Int` with `ZMod M`. -/
+noncomputable abbrev zmodRightUnitorHom (M : Nat) :=
+  (CategoryTheory.MonoidalCategory.rightUnitor (ModuleCat.of Int (ZMod M))).hom
+
+/-- Elementwise compatibility between the left unitor and multiplication-by-`M`:
+identifying `Int ⊗ ZMod N` with `ZMod N` after tensoring the free-resolution
+differential gives the same map as multiplying by `M` on `ZMod N`. -/
+theorem zmodLeftUnitor_comp_zmodMulLeftModuleHom (M N : Nat) :
+    CategoryTheory.CategoryStruct.comp (zmodLeftUnitorHom N) (zmodMulLeftModuleHom M N) =
+      CategoryTheory.CategoryStruct.comp
+        (CategoryTheory.MonoidalCategory.whiskerRight (standardIntMulLeftModuleHom M)
+          (ModuleCat.of Int (ZMod N))) (zmodLeftUnitorHom N) := by
+  apply ModuleCat.hom_ext
+  simp only [ModuleCat.hom_comp]
+  ext t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul z x =>
+      change Int at z
+      change ZMod N at x
+      simp only [LinearMap.comp_apply, zmodLeftUnitorHom, standardIntMulLeftModuleHom,
+        zmodMulLeftModuleHom, ModuleCat.hom_ofHom]
+      rw [ModuleCat.hom_hom_leftUnitor]
+      rw [ModuleCat.hom_whiskerRight]
+      rw [ModuleCat.hom_ofHom]
+      rw [LinearMap.rTensor_tmul]
+      change (AddMonoidHom.mulLeft (M : ZMod N)).toIntLinearMap
+          ((TensorProduct.lid Int (ZMod N)) (TensorProduct.tmul Int z x)) =
+        (TensorProduct.lid Int (ZMod N))
+          (TensorProduct.tmul Int ((AddMonoidHom.mulLeft (M : Int)).toIntLinearMap z) x)
+      rw [TensorProduct.lid_tmul]
+      rw [TensorProduct.lid_tmul]
+      simp [mul_smul]
+  | add a b ha hb =>
+      simp only [LinearMap.comp_apply] at ha
+      simp only [LinearMap.comp_apply] at hb
+      simp only [LinearMap.comp_apply, map_add]
+      rw [ha, hb]
+
+/-- Elementwise compatibility between the right unitor and multiplication-by-`N`:
+identifying `ZMod M ⊗ Int` with `ZMod M` after tensoring the free-resolution
+differential gives the same map as multiplying by `N` on `ZMod M`. -/
+theorem zmodRightUnitor_comp_zmodMulLeftModuleHom (M N : Nat) :
+    CategoryTheory.CategoryStruct.comp (zmodRightUnitorHom M) (zmodMulLeftModuleHom N M) =
+      CategoryTheory.CategoryStruct.comp
+        (CategoryTheory.MonoidalCategory.whiskerLeft (ModuleCat.of Int (ZMod M))
+          (standardIntMulLeftModuleHom N)) (zmodRightUnitorHom M) := by
+  apply ModuleCat.hom_ext
+  simp only [ModuleCat.hom_comp]
+  ext t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul x z =>
+      change ZMod M at x
+      change Int at z
+      simp only [LinearMap.comp_apply, zmodRightUnitorHom, standardIntMulLeftModuleHom,
+        zmodMulLeftModuleHom, ModuleCat.hom_ofHom]
+      rw [ModuleCat.hom_hom_rightUnitor]
+      rw [ModuleCat.hom_whiskerLeft]
+      rw [ModuleCat.hom_ofHom]
+      rw [LinearMap.lTensor_tmul]
+      change (AddMonoidHom.mulLeft (N : ZMod M)).toIntLinearMap
+          ((TensorProduct.rid Int (ZMod M)) (TensorProduct.tmul Int x z)) =
+        (TensorProduct.rid Int (ZMod M))
+          (TensorProduct.tmul Int x ((AddMonoidHom.mulLeft (N : Int)).toIntLinearMap z))
+      rw [TensorProduct.rid_tmul]
+      rw [TensorProduct.rid_tmul]
+      simp [mul_smul]
+  | add a b ha hb =>
+      simp only [LinearMap.comp_apply] at ha
+      simp only [LinearMap.comp_apply] at hb
+      simp only [LinearMap.comp_apply, map_add]
+      rw [ha, hb]
+
+/-- Chain-level comparison from Mathlib's right tensoring to the hand-coded tensor complex. -/
+noncomputable def tensorRightStandardResolutionComplexIso (M N : ℕ) :
+    tensorRightAppliedStandardResolutionComplex M N ≅
+      tensorStandardResolutionComplex M N :=
+  HomologicalComplex.Hom.isoOfComponents
+    (tensorRightStandardResolutionComplexComponentIso M N)
+    (by
+      intro i j hij
+      cases i <;> cases j <;>
+        simp [tensorRightAppliedStandardResolutionComplex,
+          tensorRightStandardResolutionComplexComponentIso] at hij ⊢
+      all_goals
+        subst_vars
+        set_option linter.unnecessarySimpa false in
+          simpa [zmodLeftUnitorHom, zmodMulLeftModuleHom, standardIntMulLeftModuleHom,
+            tensorStandardResolutionD1, standardIntResolutionD1] using
+            (zmodLeftUnitor_comp_zmodMulLeftModuleHom M N))
+
+/-- Chain-level comparison from Mathlib's left tensoring to the hand-coded tensor complex. -/
+noncomputable def tensorLeftStandardResolutionComplexIso (M N : ℕ) :
+    tensorLeftAppliedStandardResolutionComplex M N ≅
+      tensorStandardResolutionComplex N M :=
+  HomologicalComplex.Hom.isoOfComponents
+    (tensorLeftStandardResolutionComplexComponentIso M N)
+    (by
+      intro i j hij
+      cases i <;> cases j <;>
+        simp [tensorLeftAppliedStandardResolutionComplex,
+          tensorLeftStandardResolutionComplexComponentIso] at hij ⊢
+      all_goals
+        subst_vars
+        set_option linter.unnecessarySimpa false in
+          simpa [zmodRightUnitorHom, zmodMulLeftModuleHom, standardIntMulLeftModuleHom,
+            tensorStandardResolutionD1, standardIntResolutionD1] using
+            (zmodRightUnitor_comp_zmodMulLeftModuleHom M N))
+
+/-- Mathlib's actual degree-one homology object of the hand-coded tensor-standard complex. -/
+noncomputable abbrev tensorStandardResolutionActualHomologyOne (M N : Nat) :
+    ModuleCat Int :=
+  (HomologicalComplex.homologyFunctor (ModuleCat Int) (ComplexShape.down Nat) 1).obj
+    (tensorStandardResolutionComplex M N)
 
 /-- The degree-one cycles in the tensored standard resolution. -/
 abbrev tensorStandardResolutionCycles1 (M N : ℕ) :
@@ -1861,6 +2916,63 @@ noncomputable def standardResolutionTorOneEndpointIsoGcd (M N : ℕ) [NeZero N] 
   (AddEquiv.toIntLinearEquiv
     (tensorStandardResolutionHomology1EquivZModGcd M N)).toModuleIso
 
+/-- In the explicitly indexed short complex `X₂ ⟶ X₁ ⟶ X₀`, the incoming
+differential is zero. -/
+@[simp]
+theorem tensorStandardResolutionComplex_scPrimeOne_f_eq_zero (M N : ℕ) :
+    ((tensorStandardResolutionComplex M N).sc' 2 1 0).f = 0 := by
+  change (tensorStandardResolutionComplex M N).d 2 1 = 0
+  simp
+
+/-- The `LinearMap.ker` used by the `ModuleCat` homology API is the same subtype as the
+`AddMonoidHom.ker` used in the explicit concrete Tor model. -/
+noncomputable def tensorStandardResolutionLinearKerIsoCycles1 (M N : ℕ) :
+    LinearMap.ker
+        (((tensorStandardResolutionD1 M N) :
+          AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap) ≃ₗ[Int]
+      tensorStandardResolutionCycles1 M N where
+  toFun x := ⟨x.1, x.2⟩
+  invFun x := ⟨x.1, x.2⟩
+  left_inv x := by
+    cases x
+    rfl
+  right_inv x := by
+    cases x
+    rfl
+  map_add' x y := rfl
+  map_smul' a x := rfl
+
+/-- The abstract cycles object of the degree-one short complex is the explicit kernel
+endpoint used by the standard-resolution Tor computation. -/
+noncomputable def tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint (M N : ℕ) :
+    ((tensorStandardResolutionComplex M N).sc' 2 1 0).cycles ≅
+      standardResolutionTorOneEndpoint M N := by
+  refine ((tensorStandardResolutionComplex M N).sc' 2 1 0).moduleCatCyclesIso ≪≫ ?_
+  simpa [standardResolutionTorOneEndpoint, tensorStandardResolutionHomology1,
+    tensorStandardResolutionCycles1, tensorStandardResolutionComplex_d_one_zero,
+    tensorStandardResolutionD1] using
+    (tensorStandardResolutionLinearKerIsoCycles1 M N).toModuleIso
+
+/-- The explicitly indexed degree-one homology of the tensor-standard complex is the
+concrete kernel endpoint. -/
+noncomputable def tensorStandardResolutionScPrimeOneHomologyIsoStandardEndpoint (M N : ℕ) :
+    ((tensorStandardResolutionComplex M N).sc' 2 1 0).homology ≅
+      standardResolutionTorOneEndpoint M N :=
+  (((tensorStandardResolutionComplex M N).sc' 2 1 0).asIsoHomologyπ
+      (tensorStandardResolutionComplex_scPrimeOne_f_eq_zero M N)).symm ≪≫
+    tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint M N
+
+/-- Mathlib's actual degree-one homology object of the tensor-standard complex is the
+concrete kernel endpoint computed above. -/
+noncomputable def tensorStandardResolutionActualHomologyOneIsoStandardEndpoint (M N : ℕ) :
+    tensorStandardResolutionActualHomologyOne M N ≅
+      standardResolutionTorOneEndpoint M N := by
+  change (tensorStandardResolutionComplex M N).homology 1 ≅
+      standardResolutionTorOneEndpoint M N
+  exact
+    (tensorStandardResolutionComplex M N).homologyIsoSc' 2 1 0 (by simp) (by simp) ≪≫
+      tensorStandardResolutionScPrimeOneHomologyIsoStandardEndpoint M N
+
 /-- PR-facing certificate for the standard-free-resolution computation of `Tor₁`.  This is the
 calculation a future abstract `CategoryTheory.Tor` comparison should target: after tensoring the
 standard free resolution of `ℤ/M` with `ZMod N`, degree-one homology is exactly the already
@@ -1883,6 +2995,10 @@ structure StandardFreeResolutionTorComparison (M N : ℕ) [NeZero N] where
   preTensor_exact_middle : preTensorResolution.d1.range = preTensorResolution.quotient.ker
   preTensor_surjective : Function.Surjective preTensorResolution.quotient
   preTensor_left_exact_of_ne_zero : M ≠ 0 → preTensorResolution.d1.ker = ⊥
+  preTensor_exactAt_positive_of_ne_zero :
+    M ≠ 0 → ∀ n, (standardIntResolutionComplex M).ExactAt (n + 1)
+  preTensor_quasiIsoAt_positive_of_ne_zero :
+    M ≠ 0 → ∀ n, QuasiIsoAt preTensorAugmentation (n + 1)
   tensorComplex : ChainComplex (ModuleCat Int) ℕ
   tensorComplex_eq : tensorComplex = tensorStandardResolutionComplex M N
   tensorD1 : tensorStandardResolutionTerm M N →+ tensorStandardResolutionTerm M N
@@ -1927,6 +3043,10 @@ noncomputable def standardFreeResolutionTorComparison (M N : ℕ) [NeZero N] :
   preTensor_exact_middle := (standardIntResolutionCertificate M).exact_middle
   preTensor_surjective := (standardIntResolutionCertificate M).quotient_surjective
   preTensor_left_exact_of_ne_zero := (standardIntResolutionCertificate M).d1_ker_eq_bot_of_ne_zero
+  preTensor_exactAt_positive_of_ne_zero := fun hM n =>
+    standardIntResolutionComplex_exactAt_succ_of_ne_zero hM n
+  preTensor_quasiIsoAt_positive_of_ne_zero := fun hM n =>
+    standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero hM n
   tensorComplex := tensorStandardResolutionComplex M N
   tensorComplex_eq := rfl
   tensorD1 := tensorStandardResolutionD1 M N
@@ -3530,6 +4650,1020 @@ theorem lowDegreeKoszulComplexModel_lowDegreeCertificate_iff_acyclic
       (lowDegreeKoszulComplexModel.{u, v} R).acyclic M rs :=
   KoszulComplexModel.lowDegreeRegularityCertificate_iff_acyclic
     (lowDegreeKoszulComplexModel.{u, v} R) hrs
+
+/-! ### Arbitrary-length exterior-algebra Koszul core
+
+The low-degree complexes above are the concrete `r = 1` and `r = 2` complexes used in
+the paper.  The following block records the unconditional algebraic core available for
+all lengths today: a list `rs` determines a vector in a finite free module, hence an
+element `ι(rs)` of the exterior algebra, and left multiplication by this element is a
+square-zero differential.  This is the reusable nucleus for the future graded
+`M ⊗ Λ^p(R^n)` Koszul complex/cone induction.
+-/
+
+/-- The finite free coordinate module supporting a Koszul sequence of length `n`. -/
+abbrev koszulFreeModule (R : Type u) (n : ℕ) : Type u :=
+  Fin n → R
+
+/-- The vector in the free coordinate module whose coordinates are the entries of `rs`. -/
+def koszulSequenceVector (rs : List R) : koszulFreeModule R rs.length :=
+  fun i => rs.get i
+
+omit [CommRing R] in
+@[simp] theorem koszulSequenceVector_singleton_zero (r : R) :
+    koszulSequenceVector (R := R) [r] 0 = r :=
+  rfl
+
+omit [CommRing R] in
+@[simp] theorem koszulSequenceVector_pair_zero (x y : R) :
+    koszulSequenceVector (R := R) [x, y] 0 = x :=
+  rfl
+
+omit [CommRing R] in
+@[simp] theorem koszulSequenceVector_pair_one (x y : R) :
+    koszulSequenceVector (R := R) [x, y] 1 = y :=
+  rfl
+
+@[simp] theorem koszulSequenceVector_map_length
+    {S : Type*} [CommRing S] [Algebra R S] (rs : List R) :
+    (rs.map (algebraMap R S)).length = rs.length := by
+  simp
+
+@[simp] theorem koszulSequenceVector_map_algebraMap
+    {S : Type*} [CommRing S] [Algebra R S] (rs : List R)
+    (i : Fin (rs.map (algebraMap R S)).length) :
+    koszulSequenceVector (R := S) (rs.map (algebraMap R S)) i =
+      algebraMap R S
+        (koszulSequenceVector (R := R) rs ⟨i.1, by simpa using i.2⟩) := by
+  simp [koszulSequenceVector]
+
+/-- The total exterior algebra attached to an arbitrary finite Koszul sequence. -/
+abbrev exteriorKoszulAlgebra (rs : List R) :=
+  ExteriorAlgebra R (koszulFreeModule R rs.length)
+
+/-- The degree-one exterior generator attached to the sequence `rs`. -/
+def exteriorKoszulGenerator (rs : List R) : exteriorKoszulAlgebra (R := R) rs :=
+  ExteriorAlgebra.ι R (koszulSequenceVector (R := R) rs)
+
+@[simp]
+theorem exteriorKoszulGenerator_sq (rs : List R) :
+    exteriorKoszulGenerator (R := R) rs *
+        exteriorKoszulGenerator (R := R) rs = 0 :=
+  ExteriorAlgebra.ι_sq_zero (koszulSequenceVector (R := R) rs)
+
+/-- The total exterior-algebra Koszul differential: left wedge by the sequence vector. -/
+noncomputable def exteriorKoszulTotalDifferential (rs : List R) :
+    exteriorKoszulAlgebra (R := R) rs →ₗ[R] exteriorKoszulAlgebra (R := R) rs :=
+  LinearMap.mulLeft R (exteriorKoszulGenerator (R := R) rs)
+
+@[simp]
+theorem exteriorKoszulTotalDifferential_apply
+    (rs : List R) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalDifferential (R := R) rs a =
+      exteriorKoszulGenerator (R := R) rs * a :=
+  rfl
+
+/-- The total exterior-algebra Koszul differential squares to zero for every list length. -/
+theorem exteriorKoszulTotalDifferential_sq (rs : List R) :
+    (exteriorKoszulTotalDifferential (R := R) rs).comp
+        (exteriorKoszulTotalDifferential (R := R) rs) = 0 := by
+  apply LinearMap.ext
+  intro a
+  change exteriorKoszulGenerator (R := R) rs *
+      (exteriorKoszulGenerator (R := R) rs * a) = 0
+  rw [← mul_assoc, exteriorKoszulGenerator_sq, zero_mul]
+
+/-- The total tensor carrier `M ⊗ ExteriorAlgebra` attached to a sequence. -/
+abbrev exteriorKoszulTotalTensorTerm
+    (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M]
+    (rs : List R) :=
+  TensorProduct R M (ExteriorAlgebra R (koszulFreeModule R rs.length))
+
+/-- The tensor extension of the total exterior differential to `M ⊗ ExteriorAlgebra`. -/
+noncomputable def exteriorKoszulTotalTensorDifferential
+    (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M]
+    (rs : List R) :
+    exteriorKoszulTotalTensorTerm R M rs →ₗ[R]
+      exteriorKoszulTotalTensorTerm R M rs :=
+  (exteriorKoszulTotalDifferential (R := R) rs).lTensor M
+
+@[simp]
+theorem exteriorKoszulTotalTensorDifferential_tmul
+    (rs : List R) (m : M) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalTensorDifferential R M rs (TensorProduct.tmul R m a) =
+      TensorProduct.tmul R m (exteriorKoszulGenerator (R := R) rs * a) := by
+  simp [exteriorKoszulTotalTensorDifferential]
+
+/-- Tensoring with `M` preserves the square-zero identity of the total exterior differential. -/
+theorem exteriorKoszulTotalTensorDifferential_sq (rs : List R) :
+    (exteriorKoszulTotalTensorDifferential R M rs).comp
+        (exteriorKoszulTotalTensorDifferential R M rs) = 0 := by
+  rw [exteriorKoszulTotalTensorDifferential,
+    ← LinearMap.lTensor_comp, exteriorKoszulTotalDifferential_sq, LinearMap.lTensor_zero]
+
+/-! ### Flat/base-change core for the available Koszul differentials
+
+The full statement `K(x; M) ⊗[R] S ≃ K(x_S; M_S)` for the graded Koszul complex
+will use the future graded construction.  The lemmas below prove the part that is
+already unconditional in Mathlib: scalar extension sends square-zero differentials to
+square-zero differentials, and in degree one the displayed Koszul multiplication
+differential becomes multiplication by the scalar-extended element.
+-/
+
+/-- Base change preserves a square-zero endomorphism. -/
+theorem linearMap_baseChange_comp_self_eq_zero
+    {S : Type*} [CommRing S] [Algebra R S]
+    {N : Type*} [AddCommGroup N] [Module R N] (f : N →ₗ[R] N)
+    (hf : f.comp f = 0) :
+    (f.baseChange S).comp (f.baseChange S) = 0 := by
+  rw [← LinearMap.baseChange_comp, hf, LinearMap.baseChange_zero]
+
+/-- Base change preserves a zero composite. -/
+theorem linearMap_baseChange_comp_eq_zero
+    {S : Type*} [CommRing S] [Algebra R S]
+    {N P Q : Type*} [AddCommGroup N] [Module R N]
+    [AddCommGroup P] [Module R P] [AddCommGroup Q] [Module R Q]
+    (f : N →ₗ[R] P) (g : P →ₗ[R] Q) (hfg : g.comp f = 0) :
+    (g.baseChange S).comp (f.baseChange S) = 0 := by
+  rw [← LinearMap.baseChange_comp, hfg, LinearMap.baseChange_zero]
+
+/-- The scalar extension of the total exterior Koszul differential. -/
+noncomputable def exteriorKoszulTotalBaseChangeDifferential
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) →ₗ[S]
+      TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) :=
+  (exteriorKoszulTotalDifferential (R := R) rs).baseChange S
+
+@[simp]
+theorem exteriorKoszulTotalBaseChangeDifferential_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalBaseChangeDifferential (R := R) S rs (TensorProduct.tmul R s a) =
+      TensorProduct.tmul R s (exteriorKoszulGenerator (R := R) rs * a) := by
+  change (exteriorKoszulTotalDifferential (R := R) rs).baseChange S
+      (TensorProduct.tmul R s a) =
+    TensorProduct.tmul R s (exteriorKoszulTotalDifferential (R := R) rs a)
+  exact LinearMap.baseChange_tmul (exteriorKoszulTotalDifferential (R := R) rs) s a
+
+/-- The scalar-extended total exterior Koszul differential is square-zero. -/
+theorem exteriorKoszulTotalBaseChangeDifferential_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulTotalBaseChangeDifferential (R := R) S rs).comp
+        (exteriorKoszulTotalBaseChangeDifferential (R := R) S rs) = 0 :=
+  linearMap_baseChange_comp_self_eq_zero
+    (R := R) (S := S) (exteriorKoszulTotalDifferential (R := R) rs)
+    (exteriorKoszulTotalDifferential_sq (R := R) rs)
+
+/-- Compact certificate for scalar extension of the total exterior Koszul core. -/
+structure ExteriorKoszulTotalBaseChangeCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (rs : List R) where
+  differential :
+    TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) →ₗ[S]
+      TensorProduct R S (exteriorKoszulAlgebra (R := R) rs)
+  square_zero : differential.comp differential = 0
+  tmul_formula :
+    ∀ (s : S) (a : exteriorKoszulAlgebra (R := R) rs),
+      differential (TensorProduct.tmul R s a) =
+        TensorProduct.tmul R s (exteriorKoszulGenerator (R := R) rs * a)
+
+/-- The concrete scalar-extension certificate for the total exterior Koszul core. -/
+noncomputable def exteriorKoszulTotalBaseChangeCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulTotalBaseChangeCertificate R S rs where
+  differential := exteriorKoszulTotalBaseChangeDifferential (R := R) S rs
+  square_zero := exteriorKoszulTotalBaseChangeDifferential_sq (R := R) S rs
+  tmul_formula := exteriorKoszulTotalBaseChangeDifferential_tmul (R := R) S rs
+
+/-! The next target-side wrappers name the scalar-extended sequence in two forms.
+The first keeps the length of the original list judgmentally visible.  This is the
+form used by the basis-level base-change equivalence
+`S ⊗[R] Λ_R(R^n) ≃ₗ[S] Λ_S(S^n)`.  The second names the literal list
+`rs.map (algebraMap R S)`.  They do not assert the still-missing exterior algebra
+base-change equivalence; instead they isolate the unconditional target differential
+which that equivalence must intertwine. -/
+
+/-- The scalar-extended target exterior algebra, indexed by the original list length. -/
+abbrev exteriorKoszulScalarTargetAlgebra
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :=
+  ExteriorAlgebra S (koszulFreeModule S rs.length)
+
+/-- The scalar-extended target sequence vector, with the original length kept definitionally. -/
+def exteriorKoszulScalarTargetSequenceVector
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    koszulFreeModule S rs.length :=
+  fun i => algebraMap R S (koszulSequenceVector (R := R) rs i)
+
+@[simp]
+theorem exteriorKoszulScalarTargetSequenceVector_apply
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) (i : Fin rs.length) :
+    exteriorKoszulScalarTargetSequenceVector (R := R) S rs i =
+      algebraMap R S (koszulSequenceVector (R := R) rs i) :=
+  rfl
+
+/-- The scalar-extended target generator, with the original length kept definitionally. -/
+def exteriorKoszulScalarTargetGenerator
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulScalarTargetAlgebra (R := R) S rs :=
+  ExteriorAlgebra.ι S (exteriorKoszulScalarTargetSequenceVector (R := R) S rs)
+
+@[simp]
+theorem exteriorKoszulScalarTargetGenerator_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulScalarTargetGenerator (R := R) S rs *
+        exteriorKoszulScalarTargetGenerator (R := R) S rs = 0 :=
+  ExteriorAlgebra.ι_sq_zero (exteriorKoszulScalarTargetSequenceVector (R := R) S rs)
+
+/-- The scalar-extended target total exterior differential, indexed by the original length. -/
+noncomputable def exteriorKoszulScalarTargetDifferential
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulScalarTargetAlgebra (R := R) S rs →ₗ[S]
+      exteriorKoszulScalarTargetAlgebra (R := R) S rs :=
+  LinearMap.mulLeft S (exteriorKoszulScalarTargetGenerator (R := R) S rs)
+
+@[simp]
+theorem exteriorKoszulScalarTargetDifferential_apply
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (a : exteriorKoszulScalarTargetAlgebra (R := R) S rs) :
+    exteriorKoszulScalarTargetDifferential (R := R) S rs a =
+      exteriorKoszulScalarTargetGenerator (R := R) S rs * a :=
+  rfl
+
+/-- The scalar-extended target total exterior differential is square-zero. -/
+theorem exteriorKoszulScalarTargetDifferential_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulScalarTargetDifferential (R := R) S rs).comp
+        (exteriorKoszulScalarTargetDifferential (R := R) S rs) = 0 := by
+  apply LinearMap.ext
+  intro a
+  change exteriorKoszulScalarTargetGenerator (R := R) S rs *
+      (exteriorKoszulScalarTargetGenerator (R := R) S rs * a) = 0
+  rw [← mul_assoc, exteriorKoszulScalarTargetGenerator_sq, zero_mul]
+
+/-! The next layer adds coefficients to the arbitrary-length total exterior core.
+It is still a totalized exterior model, not yet the full graded `HomologicalComplex`,
+but it records the exact differential identities needed by flat base-change. -/
+
+/-- The scalar-extended target total tensor carrier
+`(S ⊗[R] M) ⊗[S] Λ_S(S^n)` attached to a sequence. -/
+abbrev exteriorKoszulScalarTargetTensorTerm
+    (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type v) [AddCommGroup M] [Module R M] (rs : List R) :=
+  TensorProduct S (TensorProduct R S M)
+    (exteriorKoszulScalarTargetAlgebra (R := R) S rs)
+
+/-- The target differential on `(S ⊗[R] M) ⊗[S] Λ_S(S^n)`, obtained by tensoring
+the scalar-extended exterior differential with the scalar-extended module. -/
+noncomputable def exteriorKoszulScalarTargetTensorDifferential
+    (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type v) [AddCommGroup M] [Module R M] (rs : List R) :
+    exteriorKoszulScalarTargetTensorTerm (R := R) S M rs →ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs :=
+  (exteriorKoszulScalarTargetDifferential (R := R) S rs).lTensor (TensorProduct R S M)
+
+@[simp]
+theorem exteriorKoszulScalarTargetTensorDifferential_tmul
+    (S : Type*) [CommRing S] [Algebra R S]
+    (rs : List R) (sm : TensorProduct R S M)
+    (a : exteriorKoszulScalarTargetAlgebra (R := R) S rs) :
+    exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs
+        (TensorProduct.tmul S sm a) =
+      TensorProduct.tmul S sm
+        (exteriorKoszulScalarTargetGenerator (R := R) S rs * a) := by
+  simp [exteriorKoszulScalarTargetTensorDifferential]
+
+/-- The scalar-extended target tensor differential is square-zero. -/
+theorem exteriorKoszulScalarTargetTensorDifferential_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs).comp
+        (exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs) = 0 := by
+  rw [exteriorKoszulScalarTargetTensorDifferential,
+    ← LinearMap.lTensor_comp, exteriorKoszulScalarTargetDifferential_sq,
+    LinearMap.lTensor_zero]
+
+/-- The source total tensor differential after scalar extension:
+`S ⊗[R] (M ⊗[R] Λ_R(R^n)) → S ⊗[R] (M ⊗[R] Λ_R(R^n))`. -/
+noncomputable def exteriorKoszulTotalTensorBaseChangeDifferential
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) →ₗ[S]
+      TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) :=
+  (exteriorKoszulTotalTensorDifferential R M rs).baseChange S
+
+@[simp]
+theorem exteriorKoszulTotalTensorBaseChangeDifferential_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs
+        (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+      TensorProduct.tmul R s
+        (TensorProduct.tmul R m (exteriorKoszulGenerator (R := R) rs * a)) := by
+  change (exteriorKoszulTotalTensorDifferential R M rs).baseChange S
+      (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+    TensorProduct.tmul R s
+      (exteriorKoszulTotalTensorDifferential R M rs (TensorProduct.tmul R m a))
+  exact LinearMap.baseChange_tmul
+    (exteriorKoszulTotalTensorDifferential R M rs) s (TensorProduct.tmul R m a)
+
+/-- The scalar-extended source total tensor differential remains square-zero. -/
+theorem exteriorKoszulTotalTensorBaseChangeDifferential_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs).comp
+        (exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs) = 0 :=
+  linearMap_baseChange_comp_self_eq_zero
+    (R := R) (S := S) (exteriorKoszulTotalTensorDifferential R M rs)
+    (exteriorKoszulTotalTensorDifferential_sq (R := R) (M := M) rs)
+
+/-- Coefficient-level arbitrary-length total tensor certificate for flat base-change.
+Flatness is not needed for these displayed differential identities; later homology
+transport is the place where the flatness hypothesis is used. -/
+structure ExteriorKoszulTotalTensorBaseChangeCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type v) [AddCommGroup M] [Module R M] (rs : List R) where
+  sourceDifferential :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) →ₗ[S]
+      TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs)
+  source_square_zero : sourceDifferential.comp sourceDifferential = 0
+  source_tmul_formula :
+    ∀ (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs),
+      sourceDifferential (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+        TensorProduct.tmul R s
+          (TensorProduct.tmul R m (exteriorKoszulGenerator (R := R) rs * a))
+  targetDifferential :
+    exteriorKoszulScalarTargetTensorTerm (R := R) S M rs →ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs
+  target_square_zero : targetDifferential.comp targetDifferential = 0
+  target_tmul_formula :
+    ∀ (sm : TensorProduct R S M)
+      (a : exteriorKoszulScalarTargetAlgebra (R := R) S rs),
+      targetDifferential (TensorProduct.tmul S sm a) =
+        TensorProduct.tmul S sm
+          (exteriorKoszulScalarTargetGenerator (R := R) S rs * a)
+
+/-- The concrete coefficient-level arbitrary-length total tensor certificate. -/
+noncomputable def exteriorKoszulTotalTensorBaseChangeCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulTotalTensorBaseChangeCertificate R S M rs where
+  sourceDifferential :=
+    exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs
+  source_square_zero :=
+    exteriorKoszulTotalTensorBaseChangeDifferential_sq (R := R) (M := M) S rs
+  source_tmul_formula :=
+    exteriorKoszulTotalTensorBaseChangeDifferential_tmul (R := R) (M := M) S rs
+  targetDifferential :=
+    exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs
+  target_square_zero :=
+    exteriorKoszulScalarTargetTensorDifferential_sq (R := R) (M := M) S rs
+  target_tmul_formula :=
+    exteriorKoszulScalarTargetTensorDifferential_tmul (R := R) (M := M) S rs
+
+/-- Coordinatewise scalar extension of the finite free module underlying the Koszul sequence. -/
+def koszulFreeModuleScalarMap
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ) :
+    koszulFreeModule R n →ₗ[R] koszulFreeModule S n where
+  toFun v := fun i => algebraMap R S (v i)
+  map_add' v w := by
+    ext i
+    simp
+  map_smul' r v := by
+    ext i
+    simp [Algebra.smul_def]
+
+@[simp]
+theorem koszulFreeModuleScalarMap_apply
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ)
+    (v : koszulFreeModule R n) (i : Fin n) :
+    koszulFreeModuleScalarMap (R := R) S n v i = algebraMap R S (v i) :=
+  rfl
+
+/-- The target exterior generator map, regarded as an `R`-linear map through `R → S`. -/
+def exteriorKoszulTargetIotaRestrictScalars
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ) :
+    koszulFreeModule S n →ₗ[R] ExteriorAlgebra S (koszulFreeModule S n) := by
+  letI : IsScalarTower R S (ExteriorAlgebra S (koszulFreeModule S n)) :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  exact
+    { toFun := fun v => ExteriorAlgebra.ι S v
+      map_add' := by
+        intro v w
+        simp
+      map_smul' := by
+        intro r v
+        rw [← algebraMap_smul S r v]
+        exact ((ExteriorAlgebra.ι S).map_smul (algebraMap R S r) v).trans
+          (IsScalarTower.algebraMap_smul
+            (A := S) (M := ExteriorAlgebra S (koszulFreeModule S n))
+            r (ExteriorAlgebra.ι S v)) }
+
+@[simp]
+theorem exteriorKoszulTargetIotaRestrictScalars_apply
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ)
+    (v : koszulFreeModule S n) :
+    exteriorKoszulTargetIotaRestrictScalars (R := R) S n v = ExteriorAlgebra.ι S v :=
+  rfl
+
+/-- The `R`-algebra map on exterior algebras induced by coordinatewise scalar extension. -/
+noncomputable def exteriorKoszulAlgebraScalarMap
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ) :
+    ExteriorAlgebra R (koszulFreeModule R n) →ₐ[R]
+      ExteriorAlgebra S (koszulFreeModule S n) :=
+  letI : IsScalarTower R S (ExteriorAlgebra S (koszulFreeModule S n)) :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  ExteriorAlgebra.lift R
+    ⟨exteriorKoszulTargetIotaRestrictScalars (R := R) S n ∘ₗ
+        koszulFreeModuleScalarMap (R := R) S n,
+      fun v => by
+        change ExteriorAlgebra.ι S (koszulFreeModuleScalarMap (R := R) S n v) *
+            ExteriorAlgebra.ι S (koszulFreeModuleScalarMap (R := R) S n v) = 0
+        exact ExteriorAlgebra.ι_sq_zero _⟩
+
+@[simp]
+theorem exteriorKoszulAlgebraScalarMap_ι
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ)
+    (v : koszulFreeModule R n) :
+    exteriorKoszulAlgebraScalarMap (R := R) S n (ExteriorAlgebra.ι R v) =
+      ExteriorAlgebra.ι S (koszulFreeModuleScalarMap (R := R) S n v) := by
+  simp [exteriorKoszulAlgebraScalarMap]
+
+/-- The scalar algebra map sends the source Koszul generator to the scalar target generator. -/
+theorem exteriorKoszulAlgebraScalarMap_generator
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulAlgebraScalarMap (R := R) S rs.length
+        (exteriorKoszulGenerator (R := R) rs) =
+      exteriorKoszulScalarTargetGenerator (R := R) S rs := by
+  rw [exteriorKoszulGenerator, exteriorKoszulScalarTargetGenerator,
+    exteriorKoszulAlgebraScalarMap_ι]
+  congr
+
+/-- The tensor-base-changed `S`-algebra map on total exterior algebras. -/
+noncomputable def exteriorKoszulAlgebraBaseChangeAlgHom
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ) :
+    TensorProduct R S (ExteriorAlgebra R (koszulFreeModule R n)) →ₐ[S]
+      ExteriorAlgebra S (koszulFreeModule S n) :=
+  letI : IsScalarTower R S (ExteriorAlgebra S (koszulFreeModule S n)) :=
+    IsScalarTower.of_algebraMap_eq fun _ => rfl
+  (exteriorKoszulAlgebraScalarMap (R := R) S n).liftEquiv R S
+    (ExteriorAlgebra R (koszulFreeModule R n))
+    (ExteriorAlgebra S (koszulFreeModule S n))
+
+@[simp]
+theorem exteriorKoszulAlgebraBaseChangeAlgHom_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ)
+    (s : S) (a : ExteriorAlgebra R (koszulFreeModule R n)) :
+    exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S n (TensorProduct.tmul R s a) =
+      s • exteriorKoszulAlgebraScalarMap (R := R) S n a := by
+  simp [exteriorKoszulAlgebraBaseChangeAlgHom]
+
+/-- The tensor-base-changed algebra map sends pure tensors of the source generator to the
+corresponding scalar multiple of the target generator. -/
+theorem exteriorKoszulAlgebraBaseChangeAlgHom_tmul_generator
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) (s : S) :
+    exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length
+        (TensorProduct.tmul R s (exteriorKoszulGenerator (R := R) rs)) =
+      s • exteriorKoszulScalarTargetGenerator (R := R) S rs := by
+  simp [exteriorKoszulAlgebraScalarMap_generator]
+
+/-- On pure tensors, the tensor-base-changed algebra map intertwines the source
+base-changed differential with the scalar target differential. -/
+theorem exteriorKoszulAlgebraBaseChangeAlgHom_intertwines_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length
+        (exteriorKoszulTotalBaseChangeDifferential (R := R) S rs
+          (TensorProduct.tmul R s a)) =
+      exteriorKoszulScalarTargetDifferential (R := R) S rs
+        (exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length
+          (TensorProduct.tmul R s a)) := by
+  simp [exteriorKoszulTotalBaseChangeDifferential_tmul,
+    exteriorKoszulScalarTargetDifferential_apply,
+    exteriorKoszulAlgebraScalarMap_generator, map_mul]
+
+/-- The tensor-base-changed algebra map is a chain map for the total exterior differentials. -/
+theorem exteriorKoszulAlgebraBaseChangeAlgHom_intertwines
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length).toLinearMap.comp
+        (exteriorKoszulTotalBaseChangeDifferential (R := R) S rs) =
+      (exteriorKoszulScalarTargetDifferential (R := R) S rs).comp
+        (exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length).toLinearMap := by
+  apply LinearMap.ext
+  intro t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul s a =>
+      exact exteriorKoszulAlgebraBaseChangeAlgHom_intertwines_tmul (R := R) S rs s a
+  | add x y hx hy =>
+      simp [map_add, hx, hy]
+
+/-- The coefficient-level comparison map
+`S ⊗[R] (M ⊗[R] Λ_R(R^n)) → (S ⊗[R] M) ⊗[S] Λ_S(S^n)`.
+It first distributes scalar extension across the tensor product, then applies the
+exterior-algebra base-change map on the second factor. -/
+noncomputable def exteriorKoszulTotalTensorBaseChangeMap
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) →ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs :=
+  ((exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length).toLinearMap.lTensor
+      (TensorProduct R S M)).comp
+    (TensorProduct.AlgebraTensorModule.distribBaseChange R S M
+      (exteriorKoszulAlgebra (R := R) rs)).toLinearMap
+
+@[simp]
+theorem exteriorKoszulTotalTensorBaseChangeMap_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs
+        (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+      TensorProduct.tmul S (TensorProduct.tmul R s m)
+        (exteriorKoszulAlgebraScalarMap (R := R) S rs.length a) := by
+  simp [exteriorKoszulTotalTensorBaseChangeMap]
+
+/-- On pure tensors, the coefficient-level comparison map intertwines the base-changed
+source total tensor differential with the scalar target tensor differential. -/
+theorem exteriorKoszulTotalTensorBaseChangeMap_intertwines_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs
+        (exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs
+          (TensorProduct.tmul R s (TensorProduct.tmul R m a))) =
+      exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs
+        (exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs
+          (TensorProduct.tmul R s (TensorProduct.tmul R m a))) := by
+  simp [exteriorKoszulTotalTensorBaseChangeDifferential_tmul,
+    exteriorKoszulTotalTensorBaseChangeMap_tmul,
+    exteriorKoszulScalarTargetTensorDifferential_tmul,
+    exteriorKoszulAlgebraScalarMap_generator, map_mul]
+
+/-- The coefficient-level comparison map is a chain map for the total tensor
+differentials. -/
+theorem exteriorKoszulTotalTensorBaseChangeMap_intertwines
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs).comp
+        (exteriorKoszulTotalTensorBaseChangeDifferential (R := R) (M := M) S rs) =
+      (exteriorKoszulScalarTargetTensorDifferential (R := R) S M rs).comp
+        (exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs) := by
+  apply LinearMap.ext
+  intro t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul s x =>
+      induction x using TensorProduct.induction_on with
+      | zero =>
+          simp
+      | tmul m a =>
+          exact exteriorKoszulTotalTensorBaseChangeMap_intertwines_tmul
+            (R := R) (M := M) S rs s m a
+      | add x y hx hy =>
+          rw [TensorProduct.tmul_add]
+          simp [map_add, hx, hy]
+  | add x y hx hy =>
+      simp [map_add, hx, hy]
+
+/-- Coefficient-level comparison certificate for arbitrary-length total tensor Koszul
+differentials under scalar extension.  This is the concrete chain-map part of
+`K(x; M) ⊗[R] S → K(x_S; S ⊗[R] M)` for the total exterior model. -/
+structure ExteriorKoszulTotalTensorComparisonCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type v) [AddCommGroup M] [Module R M] (rs : List R) where
+  sourceTarget :
+    ExteriorKoszulTotalTensorBaseChangeCertificate R S M rs
+  comparisonMap :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) →ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs
+  comparison_tmul_formula :
+    ∀ (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs),
+      comparisonMap (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+        TensorProduct.tmul S (TensorProduct.tmul R s m)
+          (exteriorKoszulAlgebraScalarMap (R := R) S rs.length a)
+  comparison_intertwines :
+    comparisonMap.comp sourceTarget.sourceDifferential =
+      sourceTarget.targetDifferential.comp comparisonMap
+
+/-- The concrete coefficient-level comparison certificate. -/
+noncomputable def exteriorKoszulTotalTensorComparisonCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulTotalTensorComparisonCertificate R S M rs where
+  sourceTarget :=
+    exteriorKoszulTotalTensorBaseChangeCertificate (R := R) (M := M) S rs
+  comparisonMap :=
+    exteriorKoszulTotalTensorBaseChangeMap (R := R) (M := M) S rs
+  comparison_tmul_formula :=
+    exteriorKoszulTotalTensorBaseChangeMap_tmul (R := R) (M := M) S rs
+  comparison_intertwines :=
+    exteriorKoszulTotalTensorBaseChangeMap_intertwines (R := R) (M := M) S rs
+
+/-- Basis-level base-change equivalence for the total exterior algebra of a finite free
+coordinate module.  This is the unconditional module isomorphism underlying
+`S ⊗[R] Λ_R(R^n) ≃ Λ_S(S^n)`. -/
+noncomputable def exteriorKoszulAlgebraBaseChangeLinearEquiv
+    (S : Type*) [CommRing S] [Algebra R S] (n : ℕ) :
+    TensorProduct R S (ExteriorAlgebra R (koszulFreeModule R n)) ≃ₗ[S]
+      ExteriorAlgebra S (koszulFreeModule S n) :=
+  (Algebra.TensorProduct.equivPiOfFiniteBasis (R := R) S
+      ((Pi.basisFun R (Fin n)).ExteriorAlgebra)) ≪≫ₗ
+    ((Pi.basisFun S (Fin n)).ExteriorAlgebra).equivFun.symm
+
+/-- The list-indexed version of the basis-level total exterior base-change equivalence. -/
+noncomputable def exteriorKoszulAlgebraBaseChangeLinearEquivOfList
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) ≃ₗ[S]
+      exteriorKoszulScalarTargetAlgebra (R := R) S rs :=
+  exteriorKoszulAlgebraBaseChangeLinearEquiv (R := R) S rs.length
+
+/-- Degreewise coefficient-level base-change equivalence for the total tensor carrier:
+`S ⊗[R] (M ⊗[R] Λ_R(R^n)) ≃ₗ[S] (S ⊗[R] M) ⊗[S] Λ_S(S^n)`.
+This is the module isomorphism underlying the coefficient-level comparison map. -/
+noncomputable def exteriorKoszulTotalTensorBaseChangeLinearEquiv
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) ≃ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs :=
+  (TensorProduct.AlgebraTensorModule.distribBaseChange R S M
+      (exteriorKoszulAlgebra (R := R) rs)).trans
+    ((exteriorKoszulAlgebraBaseChangeLinearEquivOfList (R := R) S rs).lTensor
+      (TensorProduct R S M))
+
+@[simp]
+theorem exteriorKoszulTotalTensorBaseChangeLinearEquiv_tmul
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs) :
+    exteriorKoszulTotalTensorBaseChangeLinearEquiv (R := R) (M := M) S rs
+        (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+      TensorProduct.tmul S (TensorProduct.tmul R s m)
+        (exteriorKoszulAlgebraBaseChangeLinearEquivOfList (R := R) S rs
+          (TensorProduct.tmul R (1 : S) a)) := by
+  simp [exteriorKoszulTotalTensorBaseChangeLinearEquiv]
+
+/-- Rich coefficient-level base-change certificate: it contains both the chain map
+comparison and the degreewise linear equivalence on total tensor carriers.  The two
+maps are kept as separate fields because the basis-level exterior equivalence and the
+algebraic universal-property comparison are not identified here by a definitional
+equality. -/
+structure ExteriorKoszulTotalTensorIsoComparisonCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type v) [AddCommGroup M] [Module R M] (rs : List R) where
+  comparison :
+    ExteriorKoszulTotalTensorComparisonCertificate R S M rs
+  comparisonLinearEquiv :
+    TensorProduct R S (exteriorKoszulTotalTensorTerm R M rs) ≃ₗ[S]
+      exteriorKoszulScalarTargetTensorTerm (R := R) S M rs
+  linearEquiv_tmul_formula :
+    ∀ (s : S) (m : M) (a : exteriorKoszulAlgebra (R := R) rs),
+      comparisonLinearEquiv (TensorProduct.tmul R s (TensorProduct.tmul R m a)) =
+        TensorProduct.tmul S (TensorProduct.tmul R s m)
+          (exteriorKoszulAlgebraBaseChangeLinearEquivOfList (R := R) S rs
+            (TensorProduct.tmul R (1 : S) a))
+
+/-- The concrete rich coefficient-level base-change certificate. -/
+noncomputable def exteriorKoszulTotalTensorIsoComparisonCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulTotalTensorIsoComparisonCertificate R S M rs where
+  comparison :=
+    exteriorKoszulTotalTensorComparisonCertificate (R := R) (M := M) S rs
+  comparisonLinearEquiv :=
+    exteriorKoszulTotalTensorBaseChangeLinearEquiv (R := R) (M := M) S rs
+  linearEquiv_tmul_formula :=
+    exteriorKoszulTotalTensorBaseChangeLinearEquiv_tmul (R := R) (M := M) S rs
+
+/-- Compact certificate for the scalar target with the original length kept definitionally. -/
+structure ExteriorKoszulScalarTargetCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (rs : List R) where
+  differential :
+    exteriorKoszulScalarTargetAlgebra (R := R) S rs →ₗ[S]
+      exteriorKoszulScalarTargetAlgebra (R := R) S rs
+  square_zero : differential.comp differential = 0
+  apply_formula :
+    ∀ a : exteriorKoszulScalarTargetAlgebra (R := R) S rs,
+      differential a = exteriorKoszulScalarTargetGenerator (R := R) S rs * a
+  sequence_vector_formula :
+    ∀ i : Fin rs.length,
+      exteriorKoszulScalarTargetSequenceVector (R := R) S rs i =
+        algebraMap R S (koszulSequenceVector (R := R) rs i)
+
+/-- The concrete scalar-target certificate for the arbitrary-length sequence. -/
+noncomputable def exteriorKoszulScalarTargetCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulScalarTargetCertificate R S rs where
+  differential := exteriorKoszulScalarTargetDifferential (R := R) S rs
+  square_zero := exteriorKoszulScalarTargetDifferential_sq (R := R) S rs
+  apply_formula := exteriorKoszulScalarTargetDifferential_apply (R := R) S rs
+  sequence_vector_formula := exteriorKoszulScalarTargetSequenceVector_apply (R := R) S rs
+
+/-- The target exterior algebra for the scalar-extended sequence. -/
+abbrev exteriorKoszulMappedTargetAlgebra
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :=
+  exteriorKoszulAlgebra (R := S) (rs.map (algebraMap R S))
+
+/-- The target degree-one generator for the scalar-extended sequence. -/
+def exteriorKoszulMappedTargetGenerator
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulMappedTargetAlgebra (R := R) S rs :=
+  exteriorKoszulGenerator (R := S) (rs.map (algebraMap R S))
+
+@[simp]
+theorem exteriorKoszulMappedTargetGenerator_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulMappedTargetGenerator (R := R) S rs *
+        exteriorKoszulMappedTargetGenerator (R := R) S rs = 0 :=
+  exteriorKoszulGenerator_sq (R := S) (rs.map (algebraMap R S))
+
+/-- The target total exterior differential after scalar-extending the sequence. -/
+noncomputable def exteriorKoszulMappedTargetDifferential
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    exteriorKoszulMappedTargetAlgebra (R := R) S rs →ₗ[S]
+      exteriorKoszulMappedTargetAlgebra (R := R) S rs :=
+  exteriorKoszulTotalDifferential (R := S) (rs.map (algebraMap R S))
+
+@[simp]
+theorem exteriorKoszulMappedTargetDifferential_apply
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R)
+    (a : exteriorKoszulMappedTargetAlgebra (R := R) S rs) :
+    exteriorKoszulMappedTargetDifferential (R := R) S rs a =
+      exteriorKoszulMappedTargetGenerator (R := R) S rs * a :=
+  rfl
+
+/-- The target total exterior differential for the scalar-extended sequence is square-zero. -/
+theorem exteriorKoszulMappedTargetDifferential_sq
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    (exteriorKoszulMappedTargetDifferential (R := R) S rs).comp
+        (exteriorKoszulMappedTargetDifferential (R := R) S rs) = 0 :=
+  exteriorKoszulTotalDifferential_sq (R := S) (rs.map (algebraMap R S))
+
+/-- Compact certificate for the target total exterior Koszul core after scalar extension. -/
+structure ExteriorKoszulMappedTargetCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (rs : List R) where
+  differential :
+    exteriorKoszulMappedTargetAlgebra (R := R) S rs →ₗ[S]
+      exteriorKoszulMappedTargetAlgebra (R := R) S rs
+  square_zero : differential.comp differential = 0
+  apply_formula :
+    ∀ a : exteriorKoszulMappedTargetAlgebra (R := R) S rs,
+      differential a = exteriorKoszulMappedTargetGenerator (R := R) S rs * a
+  sequence_vector_formula :
+    ∀ i : Fin (rs.map (algebraMap R S)).length,
+      koszulSequenceVector (R := S) (rs.map (algebraMap R S)) i =
+        algebraMap R S
+          (koszulSequenceVector (R := R) rs ⟨i.1, by simpa using i.2⟩)
+
+/-- The concrete target certificate for the scalar-extended arbitrary-length sequence. -/
+noncomputable def exteriorKoszulMappedTargetCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (rs : List R) :
+    ExteriorKoszulMappedTargetCertificate R S rs where
+  differential := exteriorKoszulMappedTargetDifferential (R := R) S rs
+  square_zero := exteriorKoszulMappedTargetDifferential_sq (R := R) S rs
+  apply_formula := exteriorKoszulMappedTargetDifferential_apply (R := R) S rs
+  sequence_vector_formula := koszulSequenceVector_map_algebraMap (R := R) (S := S) rs
+
+/-- Flat-specialized total exterior base-change certificate.  Flatness is not needed for
+the differential identities themselves; it is recorded here because Prop .12(a) uses
+flatness to transport homology once the graded complex comparison is available. -/
+structure ExteriorKoszulTotalFlatBaseChangeCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    [Module.Flat R S] (rs : List R) where
+  source :
+    ExteriorKoszulTotalBaseChangeCertificate R S rs
+  scalarTarget :
+    ExteriorKoszulScalarTargetCertificate R S rs
+  baseChangeLinearEquiv :
+    TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) ≃ₗ[S]
+      exteriorKoszulScalarTargetAlgebra (R := R) S rs
+  baseChangeAlgHom :
+    TensorProduct R S (exteriorKoszulAlgebra (R := R) rs) →ₐ[S]
+      exteriorKoszulScalarTargetAlgebra (R := R) S rs
+  baseChangeAlgHom_intertwines :
+    baseChangeAlgHom.toLinearMap.comp source.differential =
+      scalarTarget.differential.comp baseChangeAlgHom.toLinearMap
+  target :
+    ExteriorKoszulMappedTargetCertificate R S rs
+
+/-- The concrete flat-specialized total exterior base-change certificate. -/
+noncomputable def exteriorKoszulTotalFlatBaseChangeCertificate
+    (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S] (rs : List R) :
+    ExteriorKoszulTotalFlatBaseChangeCertificate R S rs where
+  source := exteriorKoszulTotalBaseChangeCertificate (R := R) S rs
+  scalarTarget := exteriorKoszulScalarTargetCertificate (R := R) S rs
+  baseChangeLinearEquiv := exteriorKoszulAlgebraBaseChangeLinearEquivOfList (R := R) S rs
+  baseChangeAlgHom := exteriorKoszulAlgebraBaseChangeAlgHom (R := R) S rs.length
+  baseChangeAlgHom_intertwines :=
+    exteriorKoszulAlgebraBaseChangeAlgHom_intertwines (R := R) S rs
+  target := exteriorKoszulMappedTargetCertificate (R := R) S rs
+
+/-- In the one-element Koszul complex, base-changing multiplication by `r` gives
+multiplication by `algebraMap R S r` on the scalar extension. -/
+theorem koszulR1Mul_baseChange
+    {S : Type*} [CommRing S] [Algebra R S] (r : R) :
+    (koszulR1Mul (R := R) (M := M) r).baseChange S =
+      koszulR1Mul (R := S) (M := TensorProduct R S M) (algebraMap R S r) := by
+  apply LinearMap.ext
+  intro t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul s m =>
+      rw [LinearMap.baseChange_tmul]
+      change TensorProduct.tmul R s (r • m) =
+        (algebraMap R S r) • TensorProduct.tmul R s m
+      simp [TensorProduct.smul_tmul']
+  | add x y hx hy =>
+      simp [map_add, hx, hy]
+
+@[simp]
+theorem koszulR1Mul_baseChange_tmul
+    {S : Type*} [CommRing S] [Algebra R S] (r : R) (s : S) (m : M) :
+    (koszulR1Mul (R := R) (M := M) r).baseChange S (TensorProduct.tmul R s m) =
+      TensorProduct.tmul R s (r • m) := by
+  change (koszulR1Mul (R := R) (M := M) r).baseChange S (TensorProduct.tmul R s m) =
+    TensorProduct.tmul R s (koszulR1Mul (R := R) (M := M) r m)
+  exact LinearMap.baseChange_tmul (koszulR1Mul (R := R) (M := M) r) s m
+
+/-- A low-degree differential certificate for Prop .12(a) in length one.  No flatness is
+needed for the displayed differential identity; flatness enters when transporting homology. -/
+structure KoszulR1BaseChangeDifferentialCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type*) [AddCommGroup M] [Module R M] (r : R) where
+  sourceDifferential :
+    TensorProduct R S M →ₗ[S] TensorProduct R S M
+  targetDifferential :
+    TensorProduct R S M →ₗ[S] TensorProduct R S M
+  differential_eq : sourceDifferential = targetDifferential
+  source_tmul :
+    ∀ (s : S) (m : M),
+      sourceDifferential (TensorProduct.tmul R s m) = TensorProduct.tmul R s (r • m)
+
+/-- The concrete length-one Koszul base-change differential certificate. -/
+noncomputable def koszulR1BaseChangeDifferentialCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (r : R) :
+    KoszulR1BaseChangeDifferentialCertificate R S M r where
+  sourceDifferential := (koszulR1Mul (R := R) (M := M) r).baseChange S
+  targetDifferential :=
+    koszulR1Mul (R := S) (M := TensorProduct R S M) (algebraMap R S r)
+  differential_eq := koszulR1Mul_baseChange (R := R) (M := M) (S := S) r
+  source_tmul := koszulR1Mul_baseChange_tmul (R := R) (M := M) (S := S) r
+
+/-- Flat-specialized wrapper for the length-one Koszul differential comparison. -/
+noncomputable def koszulR1FlatBaseChangeDifferentialCertificate
+    (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S] (r : R) :
+    KoszulR1BaseChangeDifferentialCertificate R S M r :=
+  koszulR1BaseChangeDifferentialCertificate (R := R) (M := M) S r
+
+/-- Base-changing the `1 → 0` differential of the two-element Koszul complex agrees
+with the scalar-extended target differential after the standard product distributivity
+identification `S ⊗ (M × M) ≃ (S ⊗ M) × (S ⊗ M)`. -/
+theorem koszulR2Left_baseChange
+    {S : Type*} [CommRing S] [Algebra R S] (x y : R) :
+    (koszulR2Left (R := R) (M := M) x y).baseChange S =
+      (koszulR2Left (R := S) (M := TensorProduct R S M)
+        (algebraMap R S x) (algebraMap R S y)).comp
+        (TensorProduct.prodRight R S S M M).toLinearMap := by
+  apply LinearMap.ext
+  intro t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      simp
+  | tmul s p =>
+      rw [LinearMap.baseChange_tmul]
+      change TensorProduct.tmul R s (x • p.1 + y • p.2) =
+        (algebraMap R S x) • TensorProduct.tmul R s p.1 +
+          (algebraMap R S y) • TensorProduct.tmul R s p.2
+      rw [TensorProduct.tmul_add, TensorProduct.tmul_smul, TensorProduct.tmul_smul]
+      simp [TensorProduct.smul_tmul']
+  | add a b ha hb =>
+      simp [map_add, ha, hb]
+
+/-- Base-changing the `2 → 1` differential of the two-element Koszul complex agrees
+with the scalar-extended target differential after applying the standard product
+distributivity identification on the codomain. -/
+theorem koszulR2Right_baseChange
+    {S : Type*} [CommRing S] [Algebra R S] (x y : R) :
+    (TensorProduct.prodRight R S S M M).toLinearMap.comp
+        ((koszulR2Right (R := R) (M := M) x y).baseChange S) =
+      koszulR2Right (R := S) (M := TensorProduct R S M)
+        (algebraMap R S x) (algebraMap R S y) := by
+  apply LinearMap.ext
+  intro t
+  induction t using TensorProduct.induction_on with
+  | zero =>
+      ext <;> simp
+  | tmul s m =>
+      rw [LinearMap.comp_apply, LinearMap.baseChange_tmul]
+      ext <;> simp [koszulR2Right, TensorProduct.smul_tmul', TensorProduct.tmul_smul,
+        TensorProduct.tmul_neg]
+  | add a b ha hb =>
+      simp [map_add, ha, hb]
+
+/-- The scalar-extended two-element Koszul differentials still compose to zero. -/
+theorem koszulR2_baseChange_comp_eq_zero
+    {S : Type*} [CommRing S] [Algebra R S] (x y : R) :
+    ((koszulR2Left (R := R) (M := M) x y).baseChange S).comp
+        ((koszulR2Right (R := R) (M := M) x y).baseChange S) = 0 :=
+  linearMap_baseChange_comp_eq_zero
+    (R := R) (S := S) (koszulR2Right (R := R) (M := M) x y)
+    (koszulR2Left (R := R) (M := M) x y)
+    (koszulR2Left_comp_right (M := M) x y)
+
+/-- Low-degree differential certificate for Prop .12(a) in length two.  The two
+transport fields explicitly record the only nontrivial degreewise identifications:
+`S ⊗ (M × M) ≃ (S ⊗ M) × (S ⊗ M)` in degree one. -/
+structure KoszulR2BaseChangeDifferentialCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    (M : Type*) [AddCommGroup M] [Module R M] (x y : R) where
+  source_d1 :
+    TensorProduct R S (M × M) →ₗ[S] TensorProduct R S M
+  target_d1 :
+    (TensorProduct R S M × TensorProduct R S M) →ₗ[S] TensorProduct R S M
+  d1_transport :
+    source_d1 = target_d1.comp (TensorProduct.prodRight R S S M M).toLinearMap
+  source_d2 :
+    TensorProduct R S M →ₗ[S] TensorProduct R S (M × M)
+  target_d2 :
+    TensorProduct R S M →ₗ[S] (TensorProduct R S M × TensorProduct R S M)
+  d2_transport :
+    (TensorProduct.prodRight R S S M M).toLinearMap.comp source_d2 = target_d2
+  source_square_zero : source_d1.comp source_d2 = 0
+
+/-- The concrete length-two Koszul base-change differential certificate. -/
+noncomputable def koszulR2BaseChangeDifferentialCertificate
+    (S : Type*) [CommRing S] [Algebra R S] (x y : R) :
+    KoszulR2BaseChangeDifferentialCertificate R S M x y where
+  source_d1 := (koszulR2Left (R := R) (M := M) x y).baseChange S
+  target_d1 :=
+    koszulR2Left (R := S) (M := TensorProduct R S M)
+      (algebraMap R S x) (algebraMap R S y)
+  d1_transport := koszulR2Left_baseChange (R := R) (M := M) (S := S) x y
+  source_d2 := (koszulR2Right (R := R) (M := M) x y).baseChange S
+  target_d2 :=
+    koszulR2Right (R := S) (M := TensorProduct R S M)
+      (algebraMap R S x) (algebraMap R S y)
+  d2_transport := koszulR2Right_baseChange (R := R) (M := M) (S := S) x y
+  source_square_zero := koszulR2_baseChange_comp_eq_zero (R := R) (M := M) (S := S) x y
+
+/-- Flat-specialized wrapper for the length-two Koszul differential comparison.  The
+differential identities themselves do not require flatness; flatness is the hypothesis
+used later to transport homology/acyclicity across scalar extension. -/
+noncomputable def koszulR2FlatBaseChangeDifferentialCertificate
+    (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S] (x y : R) :
+    KoszulR2BaseChangeDifferentialCertificate R S M x y :=
+  koszulR2BaseChangeDifferentialCertificate (R := R) (M := M) S x y
+
+/-- A single PR-facing handle for the currently unconditional part of Prop .12(a):
+arbitrary-length total exterior differentials, plus the concrete `r = 1` and `r = 2`
+module Koszul differentials, all after flat scalar extension. -/
+structure KoszulFlatBaseChangeLowDegreeAndTotalCertificate
+    (R : Type u) [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+    [Module.Flat R S]
+    (M : Type*) [AddCommGroup M] [Module R M] where
+  total :
+    ∀ rs : List R, ExteriorKoszulTotalFlatBaseChangeCertificate R S rs
+  total_tensor :
+    ∀ rs : List R, ExteriorKoszulTotalTensorBaseChangeCertificate R S M rs
+  total_tensor_comparison :
+    ∀ rs : List R, ExteriorKoszulTotalTensorComparisonCertificate R S M rs
+  total_tensor_iso_comparison :
+    ∀ rs : List R, ExteriorKoszulTotalTensorIsoComparisonCertificate R S M rs
+  degree_one :
+    ∀ r : R, KoszulR1BaseChangeDifferentialCertificate R S M r
+  degree_two :
+    ∀ x y : R, KoszulR2BaseChangeDifferentialCertificate R S M x y
+
+/-- The concrete flat base-change handle combining arbitrary-length total exterior and
+low-degree module Koszul differential certificates. -/
+noncomputable def koszulFlatBaseChangeLowDegreeAndTotalCertificate
+    (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S] :
+    KoszulFlatBaseChangeLowDegreeAndTotalCertificate R S M where
+  total := fun rs => exteriorKoszulTotalFlatBaseChangeCertificate (R := R) S rs
+  total_tensor := fun rs =>
+    exteriorKoszulTotalTensorBaseChangeCertificate (R := R) (M := M) S rs
+  total_tensor_comparison := fun rs =>
+    exteriorKoszulTotalTensorComparisonCertificate (R := R) (M := M) S rs
+  total_tensor_iso_comparison := fun rs =>
+    exteriorKoszulTotalTensorIsoComparisonCertificate (R := R) (M := M) S rs
+  degree_one := fun r => koszulR1FlatBaseChangeDifferentialCertificate (R := R) (M := M) S r
+  degree_two := fun x y =>
+    koszulR2FlatBaseChangeDifferentialCertificate (R := R) (M := M) S x y
+
+/-- A compact certificate for the arbitrary-length square-zero exterior Koszul core. -/
+structure ExteriorKoszulTotalCore (R : Type u) [CommRing R] where
+  differential :
+    ∀ rs : List R,
+      exteriorKoszulAlgebra (R := R) rs →ₗ[R] exteriorKoszulAlgebra (R := R) rs
+  square_zero :
+    ∀ rs : List R, (differential rs).comp (differential rs) = 0
+  singleton_coordinate :
+    ∀ r : R, koszulSequenceVector (R := R) [r] 0 = r
+  pair_left_coordinate :
+    ∀ x y : R, koszulSequenceVector (R := R) [x, y] 0 = x
+  pair_right_coordinate :
+    ∀ x y : R, koszulSequenceVector (R := R) [x, y] 1 = y
+
+/-- The concrete arbitrary-length total exterior Koszul core. -/
+noncomputable def exteriorKoszulTotalCore (R : Type u) [CommRing R] :
+    ExteriorKoszulTotalCore R where
+  differential := fun rs => exteriorKoszulTotalDifferential (R := R) rs
+  square_zero := fun rs => exteriorKoszulTotalDifferential_sq (R := R) rs
+  singleton_coordinate := fun r => koszulSequenceVector_singleton_zero (R := R) r
+  pair_left_coordinate := fun x y => koszulSequenceVector_pair_zero (R := R) x y
+  pair_right_coordinate := fun x y => koszulSequenceVector_pair_one (R := R) x y
 
 /-- Strong acyclicity interface for arbitrary-length Koszul complexes.
 The nil law is exact rather than automatic because `IsRegular M []` includes the
@@ -6044,6 +8178,210 @@ theorem quadraticEulerProduct_tprod_of_linear {a α β : ℕ → ℂ} {u A B : �
     ∏' p : Nat.Primes, quadraticEulerLocalFactor a p u = A * B :=
   (quadraticEulerProduct_hasProd_of_linear htrace hnorm hα hβ).tprod_eq
 
+/-- Prime-dependent normalized scale `p^{-(s+1/2)}`.  With Frobenius roots of norm `sqrt p`,
+the linear term has norm `p^{-Re(s)}`. -/
+noncomputable def normalizedPrimeScale (s : ℂ) (p : Nat.Primes) : ℂ :=
+  (p : ℂ) ^ (-(s + (1 / 2 : ℂ)))
+
+/-- The normalized linear Frobenius term `γ_p p^{-(s+1/2)}`. -/
+noncomputable def frobeniusLinearTerm (γ : ℕ → ℂ) (s : ℂ) (p : Nat.Primes) : ℂ :=
+  γ p.1 * normalizedPrimeScale s p
+
+/-- The normalized linear denominator `1 - γ_p p^{-(s+1/2)}`. -/
+noncomputable def frobeniusLinearDenominator (γ : ℕ → ℂ) (s : ℂ)
+    (p : Nat.Primes) : ℂ :=
+  1 - frobeniusLinearTerm γ s p
+
+/-- Frobenius-root data over all good prime factors: trace, determinant, and the Weil/Hasse
+root-size certificate `|α_p| = |β_p| = sqrt p`. -/
+structure FrobeniusRootDecomposition (a α β : ℕ → ℂ) where
+  trace : ∀ p : Nat.Primes, a p.1 = α p.1 + β p.1
+  determinant : ∀ p : Nat.Primes, α p.1 * β p.1 = (p : ℂ)
+  abs_alpha : ∀ p : Nat.Primes, ‖α p.1‖ = Real.sqrt (p : ℝ)
+  abs_beta : ∀ p : Nat.Primes, ‖β p.1‖ = Real.sqrt (p : ℝ)
+
+/-- Norm of the normalized prime scale. -/
+theorem normalizedPrimeScale_norm (s : ℂ) (p : Nat.Primes) :
+    ‖normalizedPrimeScale s p‖ = (p : ℝ) ^ (-(s.re + 1 / 2)) := by
+  unfold normalizedPrimeScale
+  rw [Complex.norm_natCast_cpow_of_pos p.prop.pos]
+  simp [Complex.add_re]
+
+/-- Multiplying by the Weil-normalized root size converts `p^{-(s+1/2)}` to `p^{-Re(s)}`. -/
+theorem sqrt_mul_normalizedPrimeScale_norm (s : ℂ) (p : Nat.Primes) :
+    Real.sqrt (p : ℝ) * ‖normalizedPrimeScale s p‖ = (p : ℝ) ^ (-s.re) := by
+  rw [normalizedPrimeScale_norm, Real.sqrt_eq_rpow]
+  rw [← Real.rpow_add]
+  · congr 1
+    ring
+  · exact_mod_cast p.prop.pos
+
+/-- A nonzero product admits a product of inverses by continuity of inversion. -/
+theorem hasProd_inv_of_ne_zero {ι K : Type*} [CommGroupWithZero K] [TopologicalSpace K]
+    [ContinuousInv₀ K] {f : ι → K} {A : K}
+    (hf : HasProd f A) (hA : A ≠ 0) :
+    HasProd (fun i : ι => (f i)⁻¹) A⁻¹ := by
+  rw [HasProd] at hf ⊢
+  convert hf.inv₀ hA using 1
+  ext s
+  exact Finset.prod_inv_distrib (s := s) (f := f)
+
+/-- Norm computation for a single normalized Frobenius root. -/
+theorem frobeniusLinearTerm_norm_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    (s : ℂ) (p : Nat.Primes) :
+    ‖frobeniusLinearTerm γ s p‖ = (p : ℝ) ^ (-s.re) := by
+  rw [frobeniusLinearTerm, norm_mul, hγ p, sqrt_mul_normalizedPrimeScale_norm]
+
+/-- The Frobenius linear terms are absolutely summable on `Re(s) > 1`. -/
+theorem frobeniusLinearTerm_summable_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    {s : ℂ} (hs : 1 < s.re) :
+    Summable (fun p : Nat.Primes => ‖frobeniusLinearTerm γ s p‖) := by
+  have hprime : Summable (fun p : Nat.Primes => (p : ℝ) ^ (-s.re)) :=
+    Nat.Primes.summable_rpow.mpr (by linarith)
+  have hterm :
+      (fun p : Nat.Primes => ‖frobeniusLinearTerm γ s p‖) =
+        fun p : Nat.Primes => (p : ℝ) ^ (-s.re) := by
+    funext p
+    exact frobeniusLinearTerm_norm_of_abs hγ s p
+  rw [hterm]
+  exact hprime
+
+/-- A normalized Frobenius linear denominator is nonzero on `Re(s) > 1`. -/
+theorem frobeniusLinearDenominator_ne_zero_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    {s : ℂ} (hs : 1 < s.re) (p : Nat.Primes) :
+    frobeniusLinearDenominator γ s p ≠ 0 := by
+  have hlt : ‖frobeniusLinearTerm γ s p‖ < 1 := by
+    rw [frobeniusLinearTerm_norm_of_abs hγ s p]
+    exact Real.rpow_lt_one_of_one_lt_of_neg (by exact_mod_cast p.prop.one_lt) (by linarith)
+  simpa [frobeniusLinearDenominator, sub_eq_add_neg] using
+    (isUnit_one_sub_of_norm_lt_one hlt).ne_zero
+
+/-- The normalized Frobenius denominator product converges. -/
+theorem frobeniusLinearEulerDenominator_multipliable_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    {s : ℂ} (hs : 1 < s.re) :
+    Multipliable (frobeniusLinearDenominator γ s) := by
+  have hsum :
+      Summable (fun p : Nat.Primes => ‖-frobeniusLinearTerm γ s p‖) := by
+    simpa only [norm_neg] using frobeniusLinearTerm_summable_of_abs hγ hs
+  have hden :
+      Multipliable (fun p : Nat.Primes => 1 + (-frobeniusLinearTerm γ s p)) :=
+    multipliable_one_add_of_summable hsum
+  simpa [frobeniusLinearDenominator, sub_eq_add_neg] using hden
+
+/-- The normalized Frobenius denominator product has nonzero `tprod` on `Re(s) > 1`. -/
+theorem frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    {s : ℂ} (hs : 1 < s.re) :
+    (∏' p : Nat.Primes, frobeniusLinearDenominator γ s p) ≠ 0 := by
+  have hsum :
+      Summable (fun p : Nat.Primes => ‖-frobeniusLinearTerm γ s p‖) := by
+    simpa only [norm_neg] using frobeniusLinearTerm_summable_of_abs hγ hs
+  have hne :
+      ∀ p : Nat.Primes, 1 + (-frobeniusLinearTerm γ s p) ≠ 0 := by
+    intro p
+    simpa [frobeniusLinearDenominator, sub_eq_add_neg] using
+      frobeniusLinearDenominator_ne_zero_of_abs hγ hs p
+  simpa [frobeniusLinearDenominator, sub_eq_add_neg] using
+    tprod_one_add_ne_zero_of_summable hne hsum
+
+/-- The inverse normalized Frobenius linear Euler product converges on `Re(s) > 1`. -/
+theorem frobeniusLinearEuler_hasProd_of_abs {γ : ℕ → ℂ}
+    (hγ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+    {s : ℂ} (hs : 1 < s.re) :
+    HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator γ s p)⁻¹)
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator γ s p)⁻¹) := by
+  let denom : Nat.Primes → ℂ := frobeniusLinearDenominator γ s
+  have hdenMult : Multipliable denom := by
+    simpa [denom] using frobeniusLinearEulerDenominator_multipliable_of_abs hγ hs
+  have hden : HasProd denom (∏' p : Nat.Primes, denom p) := hdenMult.hasProd
+  have hden_ne : (∏' p : Nat.Primes, denom p) ≠ 0 := by
+    simpa [denom] using frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs hγ hs
+  have hinv : HasProd (fun p : Nat.Primes => (denom p)⁻¹)
+      (∏' p : Nat.Primes, (denom p)⁻¹) := by
+    have hinv0 := hasProd_inv_of_ne_zero hden hden_ne
+    rw [hinv0.tprod_eq]
+    exact hinv0
+  simpa [denom] using hinv
+
+/-- Prime-dependent normalized quadratic Euler local factor. -/
+noncomputable def quadraticEulerLocalFactorAt (a : ℕ → ℂ) (s : ℂ)
+    (p : Nat.Primes) : ℂ :=
+  quadraticEulerLocalFactor a p.1 (normalizedPrimeScale s p)
+
+/-- The normalized quadratic local factor splits into the two normalized Frobenius linear
+factors. -/
+theorem quadraticEulerLocalFactorAt_eq_mul {a α β : ℕ → ℂ}
+    (D : FrobeniusRootDecomposition a α β) (s : ℂ) (p : Nat.Primes) :
+    quadraticEulerLocalFactorAt a s p =
+      (frobeniusLinearDenominator α s p)⁻¹ *
+        (frobeniusLinearDenominator β s p)⁻¹ := by
+  simpa [quadraticEulerLocalFactorAt, frobeniusLinearDenominator,
+    frobeniusLinearTerm] using
+    quadraticEulerLocalFactor_eq_mul (a := a) (α := α) (β := β)
+      (p := p.1) (u := normalizedPrimeScale s p) (D.trace p) (D.determinant p)
+
+/-- **§6.2 actual local factor convergence.** A Frobenius-root decomposition with
+`|α_p| = |β_p| = sqrt p` gives convergence of the normalized quadratic Euler product on
+`Re(s) > 1`. -/
+theorem quadraticEulerProductAt_hasProd_of_frobenius {a α β : ℕ → ℂ}
+    (D : FrobeniusRootDecomposition a α β) {s : ℂ} (hs : 1 < s.re) :
+    HasProd (quadraticEulerLocalFactorAt a s)
+      ((∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹) *
+        (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹)) := by
+  have hα : HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator α s p)⁻¹)
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹) :=
+    frobeniusLinearEuler_hasProd_of_abs D.abs_alpha hs
+  have hβ : HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator β s p)⁻¹)
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹) :=
+    frobeniusLinearEuler_hasProd_of_abs D.abs_beta hs
+  have hlocal :
+      quadraticEulerLocalFactorAt a s =
+        fun p : Nat.Primes =>
+          (frobeniusLinearDenominator α s p)⁻¹ *
+            (frobeniusLinearDenominator β s p)⁻¹ := by
+    funext p
+    exact quadraticEulerLocalFactorAt_eq_mul D s p
+  rw [hlocal]
+  exact hα.mul hβ
+
+/-- `tprod` form of the normalized quadratic Euler product convergence theorem. -/
+theorem quadraticEulerProductAt_tprod_of_frobenius {a α β : ℕ → ℂ}
+    (D : FrobeniusRootDecomposition a α β) {s : ℂ} (hs : 1 < s.re) :
+    ∏' p : Nat.Primes, quadraticEulerLocalFactorAt a s p =
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹) *
+        (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹) :=
+  (quadraticEulerProductAt_hasProd_of_frobenius D hs).tprod_eq
+
+/-- Bundled convergence certificate for the normalized local factor product in §6.2. -/
+structure QuadraticEulerProductConvergenceCertificate (a α β : ℕ → ℂ) (s : ℂ) where
+  frobenius : FrobeniusRootDecomposition a α β
+  halfPlane : 1 < s.re
+  alphaProduct :
+    HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator α s p)⁻¹)
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹)
+  betaProduct :
+    HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator β s p)⁻¹)
+      (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹)
+  quadraticProduct :
+    HasProd (quadraticEulerLocalFactorAt a s)
+      ((∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹) *
+        (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹))
+
+/-- Canonical convergence certificate extracted from Frobenius-root data and `Re(s) > 1`. -/
+noncomputable def quadraticEulerProductConvergenceCertificateOfFrobenius
+    {a α β : ℕ → ℂ} (D : FrobeniusRootDecomposition a α β)
+    {s : ℂ} (hs : 1 < s.re) :
+    QuadraticEulerProductConvergenceCertificate a α β s where
+  frobenius := D
+  halfPlane := hs
+  alphaProduct := frobeniusLinearEuler_hasProd_of_abs D.abs_alpha hs
+  betaProduct := frobeniusLinearEuler_hasProd_of_abs D.abs_beta hs
+  quadraticProduct := quadraticEulerProductAt_hasProd_of_frobenius D hs
+
 /-- L-series avatar of `Z_U` for an arbitrary coefficient sequence. -/
 noncomputable def zetaULSeries (f : ℕ → ℂ) (s : ℂ) : ℂ :=
   LSeries f s
@@ -6450,6 +8788,543 @@ theorem tensor_shriek_constructible (D : SixFunctorData Sch) {X Y : Sch}
 
 end SixFunctorData
 
+universe uStratum
+
+/-! ### Definition .21 stratified sheaves: explicit gap documentation
+
+The paper's Definition .21 constructs a constructible sheaf as
+`F = ⊕ᵢ jᵢ! Lᵢ` from a finite stratification and lisse local systems on the
+strata.  The current file has a six-functor interface (`Sheaf`, `shriek`,
+constructibility, gluing triangles), but Mathlib does not yet provide the
+étale constructible sheaf category, lisse local systems, or a finite direct-sum
+constructor for these sheaves.  The block below records exactly what is already
+available conditionally and what remains a documented gap.
+-/
+
+/-- Conditional interface for the data appearing in Definition .21.
+
+This does not claim to construct the actual étale sheaf category.  It records the
+finite stratification, the local systems on strata, the `jᵢ! Lᵢ` summands
+available through `SixFunctorData.shriek`, and a supplied assembled object when
+an external sheaf theory provides the finite direct sum. -/
+structure Def21StratifiedSheafInterface {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) where
+  X : Sch
+  Stratum : Type uStratum
+  stratumFintype : Fintype Stratum
+  stratumScheme : Stratum → Sch
+  j : (i : Stratum) → stratumScheme i ⟶ X
+  isLocallyClosedStratum : Stratum → Prop
+  stratum_locallyClosed : ∀ i : Stratum, isLocallyClosedStratum i
+  IsLisseLocalSystem : (i : Stratum) → D.Sheaf (stratumScheme i) → Prop
+  localSystem : (i : Stratum) → D.Sheaf (stratumScheme i)
+  localSystem_lisse : ∀ i : Stratum, IsLisseLocalSystem i (localSystem i)
+  summandConstructible :
+    ∀ i : Stratum, D.IsConstr (D.shriek (j i) (localSystem i))
+  assembledSheaf : D.Sheaf X
+  realizesFiniteDirectSum : Prop
+  realizes_finiteDirectSum : realizesFiniteDirectSum
+  assembledConstructible : D.IsConstr assembledSheaf
+
+/-- The individual Definition .21 summand `jᵢ! Lᵢ`, available from the existing
+six-functor interface. -/
+def def21ShriekSummand {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (S : Def21StratifiedSheafInterface D)
+    (i : S.Stratum) : D.Sheaf S.X :=
+  D.shriek (S.j i) (S.localSystem i)
+
+namespace Def21StratifiedSheafInterface
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+
+/-- The index type is finite, as required by Definition .21. -/
+@[reducible]
+def stratum_fintype (S : Def21StratifiedSheafInterface D) :
+    Fintype S.Stratum :=
+  S.stratumFintype
+
+/-- Projection of the locally-closed stratum predicate. -/
+theorem locallyClosed (S : Def21StratifiedSheafInterface D)
+    (i : S.Stratum) :
+    S.isLocallyClosedStratum i :=
+  S.stratum_locallyClosed i
+
+/-- Projection of the lisse-local-system condition on each stratum. -/
+theorem localSystem_lisse_apply (S : Def21StratifiedSheafInterface D)
+    (i : S.Stratum) :
+    S.IsLisseLocalSystem i (S.localSystem i) :=
+  S.localSystem_lisse i
+
+/-- Constructibility of each `jᵢ! Lᵢ` summand. -/
+theorem summand_constructible (S : Def21StratifiedSheafInterface D)
+    (i : S.Stratum) :
+    D.IsConstr (def21ShriekSummand S i) :=
+  S.summandConstructible i
+
+/-- Projection of the supplied finite-direct-sum realization statement. -/
+theorem realizes_directSum (S : Def21StratifiedSheafInterface D) :
+    S.realizesFiniteDirectSum :=
+  S.realizes_finiteDirectSum
+
+/-- Constructibility of the externally supplied assembled sheaf. -/
+theorem assembled_constructible (S : Def21StratifiedSheafInterface D) :
+    D.IsConstr S.assembledSheaf :=
+  S.assembledConstructible
+
+end Def21StratifiedSheafInterface
+
+/-- Definition .21, conditional form: once an external sheaf theory supplies the
+finite direct sum `⊕ᵢ jᵢ! Lᵢ`, constructibility is available as a field. -/
+theorem def21_conditional_assembled_constructible
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (S : Def21StratifiedSheafInterface D) :
+    D.IsConstr S.assembledSheaf :=
+  S.assembled_constructible
+
+/-- Formal documentation of the missing ingredients for an unconditional
+Definition .21 construction in current Mathlib. -/
+structure Def21ActualSheafConstructionGap where
+  etaleConstructibleSheafCategoryAvailable : Prop
+  lisseLocalSystemTheoryAvailable : Prop
+  extensionByZeroForLocallyClosedAvailable : Prop
+  finiteDirectSumsAvailable : Prop
+  actualDef21ConstructorAvailable : Prop
+  constructor_requires_ingredients :
+    actualDef21ConstructorAvailable →
+      etaleConstructibleSheafCategoryAvailable ∧
+        lisseLocalSystemTheoryAvailable ∧
+          extensionByZeroForLocallyClosedAvailable ∧
+            finiteDirectSumsAvailable
+  missing_etaleConstructibleSheafCategory :
+    ¬ etaleConstructibleSheafCategoryAvailable
+  missing_lisseLocalSystemTheory :
+    ¬ lisseLocalSystemTheoryAvailable
+  missing_extensionByZeroForLocallyClosed :
+    ¬ extensionByZeroForLocallyClosedAvailable
+  missing_finiteDirectSums :
+    ¬ finiteDirectSumsAvailable
+
+namespace Def21ActualSheafConstructionGap
+
+/-- All ingredients needed for an unconditional `⊕ᵢ jᵢ! Lᵢ` construction. -/
+def allIngredientsAvailable (G : Def21ActualSheafConstructionGap) : Prop :=
+  G.etaleConstructibleSheafCategoryAvailable ∧
+    G.lisseLocalSystemTheoryAvailable ∧
+      G.extensionByZeroForLocallyClosedAvailable ∧
+        G.finiteDirectSumsAvailable
+
+/-- The documented Mathlib state lacks the complete ingredient package. -/
+theorem not_allIngredientsAvailable (G : Def21ActualSheafConstructionGap) :
+    ¬ G.allIngredientsAvailable := by
+  intro h
+  exact G.missing_etaleConstructibleSheafCategory h.1
+
+/-- Therefore the documented state has no unconditional Definition .21
+constructor. -/
+theorem no_actual_constructor (G : Def21ActualSheafConstructionGap) :
+    ¬ G.actualDef21ConstructorAvailable := by
+  intro h
+  exact G.not_allIngredientsAvailable (G.constructor_requires_ingredients h)
+
+/-- Projection of the missing étale sheaf category ingredient. -/
+theorem missing_etale_category (G : Def21ActualSheafConstructionGap) :
+    ¬ G.etaleConstructibleSheafCategoryAvailable :=
+  G.missing_etaleConstructibleSheafCategory
+
+/-- Projection of the missing lisse local-system theory ingredient. -/
+theorem missing_lisse_theory (G : Def21ActualSheafConstructionGap) :
+    ¬ G.lisseLocalSystemTheoryAvailable :=
+  G.missing_lisseLocalSystemTheory
+
+/-- Projection of the missing locally-closed extension-by-zero ingredient. -/
+theorem missing_extension_by_zero (G : Def21ActualSheafConstructionGap) :
+    ¬ G.extensionByZeroForLocallyClosedAvailable :=
+  G.missing_extensionByZeroForLocallyClosed
+
+/-- Projection of the missing finite-direct-sum ingredient. -/
+theorem missing_finite_direct_sums (G : Def21ActualSheafConstructionGap) :
+    ¬ G.finiteDirectSumsAvailable :=
+  G.missing_finiteDirectSums
+
+end Def21ActualSheafConstructionGap
+
+/-- Canonical gap document for Definition .21 in the present file: the actual
+étale constructible sheaf category and its direct-sum construction are not
+provided as global Mathlib objects here. -/
+def def21ActualSheafConstructionGap : Def21ActualSheafConstructionGap where
+  etaleConstructibleSheafCategoryAvailable := False
+  lisseLocalSystemTheoryAvailable := False
+  extensionByZeroForLocallyClosedAvailable := False
+  finiteDirectSumsAvailable := False
+  actualDef21ConstructorAvailable := False
+  constructor_requires_ingredients := by
+    intro h
+    cases h
+  missing_etaleConstructibleSheafCategory := by
+    intro h
+    exact h
+  missing_lisseLocalSystemTheory := by
+    intro h
+    exact h
+  missing_extensionByZeroForLocallyClosed := by
+    intro h
+    exact h
+  missing_finiteDirectSums := by
+    intro h
+    exact h
+
+/-- Top-level theorem documenting the current Def .21 gap: the unconditional
+constructor is intentionally unavailable in this file. -/
+theorem def21_actual_constructor_unavailable :
+    ¬ def21ActualSheafConstructionGap.actualDef21ConstructorAvailable :=
+  def21ActualSheafConstructionGap.no_actual_constructor
+
+/-! ### Sheaf-level Koszul interface (Theorem .30, Corollaries .27/.31)
+
+Mathlib does not yet provide the derived category of constructible sheaves needed
+to build the paper's sheaf-valued Koszul complex directly.  The following
+interface is deliberately thin: it records the sheaf terms of a Koszul complex,
+the square-zero differential certificate, constructibility of all terms, and the
+single implication used by the paper, namely regularity implies positive-degree
+acyclicity.  The subsequent lemmas are unconditional projections from this data.
+-/
+
+/-- A sheaf-level Koszul model over a six-functor package.
+
+`IsSheafRegular F rs` is the chartwise/locally checked regularity predicate.
+`PositiveAcyclic F rs` is the vanishing assertion for the positive-degree
+cohomology of the Koszul complex.  The field `positiveAcyclicOfRegular` is the
+formal content of Theorem .30 once the sheaf model has been supplied. -/
+structure SheafKoszulModel {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) where
+  koszulSheaf : {X : Sch} → D.Sheaf X → List ℕ → ℕ → D.Sheaf X
+  differentialSqZero : {X : Sch} → D.Sheaf X → List ℕ → Prop
+  differential_sq_zero :
+    ∀ {X : Sch} (F : D.Sheaf X) (rs : List ℕ), differentialSqZero F rs
+  IsSheafRegular : {X : Sch} → D.Sheaf X → List ℕ → Prop
+  PositiveAcyclic : {X : Sch} → D.Sheaf X → List ℕ → Prop
+  positiveCohomology : {X : Sch} → D.Sheaf X → List ℕ → ℕ → Type uTri
+  koszulTermConstructible :
+    ∀ {X : Sch} (F : D.Sheaf X) (rs : List ℕ),
+      D.IsConstr F → ∀ i : ℕ, D.IsConstr (koszulSheaf F rs i)
+  positiveAcyclicOfRegular :
+    ∀ {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
+      D.IsConstr F → IsSheafRegular F rs → PositiveAcyclic F rs
+  positiveSubsingletonOfAcyclic :
+    ∀ {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
+      PositiveAcyclic F rs →
+        ∀ i : ℕ, 0 < i → Subsingleton (positiveCohomology F rs i)
+
+namespace SheafKoszulModel
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+
+/-- The chosen sheaf-Koszul differential squares to zero. -/
+theorem differential_square_zero (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ) :
+    K.differentialSqZero F rs :=
+  K.differential_sq_zero F rs
+
+/-- Every term of the sheaf-Koszul complex of a constructible input is
+constructible. -/
+theorem term_constructible (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ) (hF : D.IsConstr F)
+    (i : ℕ) :
+    D.IsConstr (K.koszulSheaf F rs i) :=
+  K.koszulTermConstructible F rs hF i
+
+/-- **Theorem .30, sheaf-Koszul acyclicity.**  A constructible sheaf satisfying
+the sheaf-level regularity predicate has positive-degree Koszul acyclicity. -/
+theorem positive_acyclic_of_regular (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs) :
+    K.PositiveAcyclic F rs :=
+  K.positiveAcyclicOfRegular hF hreg
+
+/-- Positive acyclicity gives subsingleton positive cohomology groups. -/
+theorem positive_subsingleton_of_acyclic (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hacyc : K.PositiveAcyclic F rs) (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  K.positiveSubsingletonOfAcyclic hacyc i hi
+
+/-- Theorem .30 in the form most useful downstream: regularity gives
+subsingleton positive cohomology. -/
+theorem positive_subsingleton_of_regular (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs)
+    (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  K.positive_subsingleton_of_acyclic
+    (K.positive_acyclic_of_regular hF hreg) i hi
+
+/-- Elementwise vanishing formulation of positive-degree sheaf-Koszul cohomology. -/
+theorem eq_of_positive_degree (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs)
+    {i : ℕ} (hi : 0 < i)
+    (x y : K.positiveCohomology F rs i) :
+    x = y := by
+  haveI := K.positive_subsingleton_of_regular hF hreg i hi
+  exact Subsingleton.elim x y
+
+end SheafKoszulModel
+
+/-- Packaged conclusion of Theorem .30 for one constructible sheaf and one
+regular sequence. -/
+structure SheafKoszulAcyclicityConclusion
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ) where
+  inputConstructible : D.IsConstr F
+  regular : K.IsSheafRegular F rs
+  differentialSqZero : K.differentialSqZero F rs
+  positiveAcyclic : K.PositiveAcyclic F rs
+  positiveSubsingleton :
+    ∀ i : ℕ, 0 < i → Subsingleton (K.positiveCohomology F rs i)
+
+namespace SheafKoszulAcyclicityConclusion
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+variable {K : SheafKoszulModel D}
+variable {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+
+/-- Projection of the positive acyclicity component. -/
+theorem positive_acyclic (C : SheafKoszulAcyclicityConclusion K F rs) :
+    K.PositiveAcyclic F rs :=
+  C.positiveAcyclic
+
+/-- Projection of positive-degree subsingleton cohomology. -/
+theorem positive_subsingleton
+    (C : SheafKoszulAcyclicityConclusion K F rs)
+    (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  C.positiveSubsingleton i hi
+
+/-- Elementwise form of the vanishing conclusion packaged by Theorem .30. -/
+theorem eq_of_positive_degree
+    (C : SheafKoszulAcyclicityConclusion K F rs)
+    {i : ℕ} (hi : 0 < i)
+    (x y : K.positiveCohomology F rs i) :
+    x = y := by
+  haveI := C.positive_subsingleton i hi
+  exact Subsingleton.elim x y
+
+end SheafKoszulAcyclicityConclusion
+
+/-- Construct the Theorem .30 package from the sheaf-Koszul model fields. -/
+def sheafKoszulAcyclicityConclusion
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ)
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs) :
+    SheafKoszulAcyclicityConclusion K F rs where
+  inputConstructible := hF
+  regular := hreg
+  differentialSqZero := K.differential_square_zero F rs
+  positiveAcyclic := K.positive_acyclic_of_regular hF hreg
+  positiveSubsingleton := K.positive_subsingleton_of_regular hF hreg
+
+/-- Theorem .30 as a direct reusable projection. -/
+theorem thm30_sheafKoszul_positive_acyclic
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs) :
+    K.PositiveAcyclic F rs :=
+  K.positive_acyclic_of_regular hF hreg
+
+/-- The positive-degree cohomology vanishing form of Theorem .30. -/
+theorem thm30_sheafKoszul_positive_subsingleton
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs)
+    (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  K.positive_subsingleton_of_regular hF hreg i hi
+
+/-- Corollary .27-style readiness package: after a sheaf-Koszul regularity
+check, the Koszul terms are constructible and positive cohomology is ready for
+weight/trace input. -/
+structure SheafKoszulWeightTraceReadiness
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ) where
+  inputConstructible : D.IsConstr F
+  regular : K.IsSheafRegular F rs
+  differentialSqZero : K.differentialSqZero F rs
+  koszulTermsConstructible :
+    ∀ i : ℕ, D.IsConstr (K.koszulSheaf F rs i)
+  positiveAcyclic : K.PositiveAcyclic F rs
+  positiveSubsingleton :
+    ∀ i : ℕ, 0 < i → Subsingleton (K.positiveCohomology F rs i)
+
+namespace SheafKoszulWeightTraceReadiness
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+variable {K : SheafKoszulModel D}
+variable {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+
+/-- Projection of constructibility for a chosen Koszul term. -/
+theorem term_constructible
+    (R : SheafKoszulWeightTraceReadiness K F rs) (i : ℕ) :
+    D.IsConstr (K.koszulSheaf F rs i) :=
+  R.koszulTermsConstructible i
+
+/-- Projection of the positive acyclicity available to trace formulas. -/
+theorem positive_acyclic
+    (R : SheafKoszulWeightTraceReadiness K F rs) :
+    K.PositiveAcyclic F rs :=
+  R.positiveAcyclic
+
+/-- Projection of positive-degree subsingleton cohomology. -/
+theorem positive_subsingleton
+    (R : SheafKoszulWeightTraceReadiness K F rs)
+    (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  R.positiveSubsingleton i hi
+
+end SheafKoszulWeightTraceReadiness
+
+/-- **Corollary .27, packaged form.**  Theorem .30 supplies exactly the
+constructibility and positive-vanishing data needed by downstream weight and
+trace interfaces. -/
+def cor27_sheafKoszul_weightTraceReadiness
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ)
+    (hF : D.IsConstr F) (hreg : K.IsSheafRegular F rs) :
+    SheafKoszulWeightTraceReadiness K F rs where
+  inputConstructible := hF
+  regular := hreg
+  differentialSqZero := K.differential_square_zero F rs
+  koszulTermsConstructible := fun i => K.term_constructible F rs hF i
+  positiveAcyclic := K.positive_acyclic_of_regular hF hreg
+  positiveSubsingleton := K.positive_subsingleton_of_regular hF hreg
+
+/-- A chartwise certificate for the sheaf-level Koszul regularity predicate. -/
+structure SheafKoszulChartwiseCertificate
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} (K : SheafKoszulModel D)
+    {X : Sch} (F : D.Sheaf X) (rs : List ℕ) where
+  Chart : Type*
+  ChartRegular : Chart → Prop
+  chart_regular : ∀ c : Chart, ChartRegular c
+  sheafRegular_of_chartwise :
+    (∀ c : Chart, ChartRegular c) → K.IsSheafRegular F rs
+
+namespace SheafKoszulChartwiseCertificate
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+variable {K : SheafKoszulModel D}
+variable {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+
+/-- Chartwise regularity implies the global sheaf regularity predicate. -/
+theorem sheaf_regular
+    (C : SheafKoszulChartwiseCertificate K F rs) :
+    K.IsSheafRegular F rs :=
+  C.sheafRegular_of_chartwise C.chart_regular
+
+/-- Chartwise certification gives the positive acyclicity conclusion. -/
+theorem positive_acyclic
+    (C : SheafKoszulChartwiseCertificate K F rs)
+    (hF : D.IsConstr F) :
+    K.PositiveAcyclic F rs :=
+  K.positive_acyclic_of_regular hF C.sheaf_regular
+
+/-- Chartwise certification gives the positive-degree vanishing conclusion. -/
+theorem positive_subsingleton
+    (C : SheafKoszulChartwiseCertificate K F rs)
+    (hF : D.IsConstr F) (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  K.positive_subsingleton_of_regular hF C.sheaf_regular i hi
+
+end SheafKoszulChartwiseCertificate
+
+/-- Packaged Corollary .31 conclusion obtained from chartwise regularity. -/
+structure SheafKoszulChartwiseConclusion
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {K : SheafKoszulModel D}
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (C : SheafKoszulChartwiseCertificate K F rs) where
+  inputConstructible : D.IsConstr F
+  chartwiseRegular : ∀ c : C.Chart, C.ChartRegular c
+  sheafRegular : K.IsSheafRegular F rs
+  positiveAcyclic : K.PositiveAcyclic F rs
+  positiveSubsingleton :
+    ∀ i : ℕ, 0 < i → Subsingleton (K.positiveCohomology F rs i)
+
+namespace SheafKoszulChartwiseConclusion
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+variable {K : SheafKoszulModel D}
+variable {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+variable {C : SheafKoszulChartwiseCertificate K F rs}
+
+/-- Projection of the global regularity obtained from chartwise certification. -/
+theorem sheaf_regular (Q : SheafKoszulChartwiseConclusion C) :
+    K.IsSheafRegular F rs :=
+  Q.sheafRegular
+
+/-- Projection of the positive acyclicity obtained from chartwise certification. -/
+theorem positive_acyclic (Q : SheafKoszulChartwiseConclusion C) :
+    K.PositiveAcyclic F rs :=
+  Q.positiveAcyclic
+
+/-- Projection of positive-degree subsingleton cohomology. -/
+theorem positive_subsingleton
+    (Q : SheafKoszulChartwiseConclusion C)
+    (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  Q.positiveSubsingleton i hi
+
+end SheafKoszulChartwiseConclusion
+
+/-- **Corollary .31, packaged form.**  A chartwise regularity certificate yields
+the sheaf-level regularity and hence the Theorem .30 vanishing conclusion. -/
+def cor31_sheafKoszul_chartwiseConclusion
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {K : SheafKoszulModel D}
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (C : SheafKoszulChartwiseCertificate K F rs)
+    (hF : D.IsConstr F) :
+    SheafKoszulChartwiseConclusion C where
+  inputConstructible := hF
+  chartwiseRegular := C.chart_regular
+  sheafRegular := C.sheaf_regular
+  positiveAcyclic := C.positive_acyclic hF
+  positiveSubsingleton := C.positive_subsingleton hF
+
+/-- Corollary .31 as a direct positive-acyclicity projection. -/
+theorem cor31_sheafKoszul_positive_acyclic
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {K : SheafKoszulModel D}
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (C : SheafKoszulChartwiseCertificate K F rs)
+    (hF : D.IsConstr F) :
+    K.PositiveAcyclic F rs :=
+  C.positive_acyclic hF
+
+/-! The direct `positive_subsingleton` projection below is the form consumed by
+finite-support and trace-formula interfaces after chartwise Koszul verification. -/
+
+/-- Corollary .31 as a direct positive-cohomology vanishing projection. -/
+theorem cor31_sheafKoszul_positive_subsingleton
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {K : SheafKoszulModel D}
+    {X : Sch} {F : D.Sheaf X} {rs : List ℕ}
+    (C : SheafKoszulChartwiseCertificate K F rs)
+    (hF : D.IsConstr F) (i : ℕ) (hi : 0 < i) :
+    Subsingleton (K.positiveCohomology F rs i) :=
+  C.positive_subsingleton hF i hi
+
 /-- Lemma .32-style curve reduction certificate.
 
 The unavailable Nagata compactification and Stein factorization steps are bundled
@@ -6742,6 +9617,404 @@ theorem weightRadius_pos_apply (W : WeilIIPackage D F) (w : ℤ) :
   weightRadius_pos W.q_pos w
 
 end WeilIIPackage
+
+/-! ### Concrete EC layer and Weil II compatibility.
+
+This is the formal wiring requested in T4-2.  The concrete elliptic curve layer
+stores the Hasse inequality as arithmetic proof data, while `WeilIIPackage`
+stores the cohomological radius bound.  A compatibility certificate identifies
+the `H¹`, weight-one radius with `√p`, so the package's purity projection yields
+the expected Frobenius radius statement at the same real bound used by Hasse. -/
+
+/-- Compatibility between a concrete EC Hasse certificate and a Weil II package.
+The field `weightOneRadius_eq_sqrt` is the explicit bridge
+`weightRadius q 1 = √p`; once supplied, `H¹` weight-one purity gives the radius
+bound at `√p` by projection from `WeilIIPackage`. -/
+structure ECWeilICompatibility
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch}
+    (F : D.Sheaf X) (W : WeilIIPackage D F)
+    (p n : ℕ) [NeZero p] (A : ℤ) where
+  hasse : HasseBoundCertificate p n A
+  q_eq_primeCard : W.q = (p : ℝ)
+  h1PureWeightOne : W.isPure 1 1
+  weightOneRadius_eq_sqrt : weightRadius W.q 1 = Real.sqrt (p : ℝ)
+
+namespace ECWeilICompatibility
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch} {X : Sch}
+variable {F : D.Sheaf X} {W : WeilIIPackage D F}
+variable {p n : ℕ} [NeZero p] {A : ℤ}
+
+/-- The arithmetic Hasse inequality carried by the concrete EC certificate. -/
+theorem hasse_bound
+    (C : ECWeilICompatibility F W p n A) :
+    |(concreteECTrace p n A : ℝ)| ≤ 2 * Real.sqrt (p : ℝ) :=
+  C.hasse.bound
+
+/-- The cohomological `H¹` radius bound rewritten at the Hasse radius `√p`. -/
+theorem h1_radiusBound_sqrt
+    (C : ECWeilICompatibility F W p n A) :
+    W.FrobeniusRadiusBound 1 (Real.sqrt (p : ℝ)) := by
+  simpa [C.weightOneRadius_eq_sqrt] using
+    W.pure_weight_radiusBound C.h1PureWeightOne
+
+/-- Pointwise form of the preceding radius bound. -/
+theorem h1_eigenvalue_norm_le_sqrt
+    (C : ECWeilICompatibility F W p n A)
+    {α : ℂ} (hα : α ∈ W.frobEigenvalues 1) :
+    ‖α‖ ≤ Real.sqrt (p : ℝ) :=
+  C.h1_radiusBound_sqrt α hα
+
+end ECWeilICompatibility
+
+/-- Constructor for the EC/Weil II compatibility certificate from the minimal
+proof data: Hasse certificate, cardinality parameter, weight-one purity, and the
+radius identification. -/
+def ecWeilICompatibilityOfPure
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch}
+    (F : D.Sheaf X) (W : WeilIIPackage D F)
+    (p n : ℕ) [NeZero p] (A : ℤ)
+    (H : HasseBoundCertificate p n A)
+    (hq : W.q = (p : ℝ))
+    (hpure : W.isPure 1 1)
+    (hradius : weightRadius W.q 1 = Real.sqrt (p : ℝ)) :
+    ECWeilICompatibility F W p n A where
+  hasse := H
+  q_eq_primeCard := hq
+  h1PureWeightOne := hpure
+  weightOneRadius_eq_sqrt := hradius
+
+/-! ### Open-closed weight control (Corollary .35)
+
+The six-functor interface already contains the open/closed distinguished
+triangle, and `WeilIIPackage` records local weight bounds for a single
+constructible sheaf.  Corollary .35 uses both at once: for an open immersion
+`j : V' ⟶ V` and closed complement `i : Z ⟶ V`, the triangle
+`j_! j^* E → E → i_* i^* E →` lets a weight bound on the open part propagate to
+`E` once the closed part is controlled; equivalently, any failure after the open
+part is controlled is supported on `Z`.
+
+The unavailable derived weight-exactness input is kept as local certificate data
+in `OpenClosedWeightControl`.  All consequences below are ordinary theorem-level
+projections from that data and the existing `SixFunctorData`/`WeilIIPackage`
+interfaces.
+-/
+
+/-- The open term `j_! j^* E` in the open/closed triangle, regarded as a sheaf on
+the ambient space. -/
+def openClosedOpenTerm {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' : Sch} (j : V' ⟶ V)
+    (E : D.Sheaf V) : D.Sheaf V :=
+  D.shriek j (D.pull j E)
+
+/-- The closed term `i_* i^* E` in the open/closed triangle, regarded as a sheaf
+on the ambient space. -/
+def openClosedClosedTerm {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V Z : Sch} (i : Z ⟶ V)
+    (E : D.Sheaf V) : D.Sheaf V :=
+  D.push i (D.pull i E)
+
+@[simp]
+theorem openClosedOpenTerm_def {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' : Sch} (j : V' ⟶ V)
+    (E : D.Sheaf V) :
+    openClosedOpenTerm D j E = D.shriek j (D.pull j E) :=
+  rfl
+
+@[simp]
+theorem openClosedClosedTerm_def {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V Z : Sch} (i : Z ⟶ V)
+    (E : D.Sheaf V) :
+    openClosedClosedTerm D i E = D.push i (D.pull i E) :=
+  rfl
+
+/-- Constructibility of the open term in the open/closed triangle. -/
+theorem openClosedOpenTerm_constructible {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' : Sch} (j : V' ⟶ V)
+    (E : D.Sheaf V) (hE : D.IsConstr E) :
+    D.IsConstr (openClosedOpenTerm D j E) := by
+  exact D.shriek_constructible j (D.pull j E) (D.pull_constructible j E hE)
+
+/-- Constructibility of the closed term in the open/closed triangle. -/
+theorem openClosedClosedTerm_constructible
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V Z : Sch} (i : Z ⟶ V)
+    (E : D.Sheaf V) (hE : D.IsConstr E) :
+    D.IsConstr (openClosedClosedTerm D i E) := by
+  exact D.push_constructible i (D.pull i E) (D.pull_constructible i E hE)
+
+/-- Constructibility of both end terms of the open/closed triangle. -/
+theorem openClosed_terms_constructible
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (E : D.Sheaf V) (hE : D.IsConstr E) :
+    D.IsConstr (openClosedOpenTerm D j E) ∧
+      D.IsConstr (openClosedClosedTerm D i E) := by
+  exact ⟨openClosedOpenTerm_constructible D j E hE,
+    openClosedClosedTerm_constructible D i E hE⟩
+
+/-- The open/closed distinguished triangle used for weight control. -/
+def openClosedWeightTriangle {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (hj : D.isOpenImmersion j) (hi : D.isClosedImmersion i)
+    (E : D.Sheaf V) : D.Triangle V :=
+  D.openClosedTriangle j i hj hi E
+
+@[simp]
+theorem openClosedWeightTriangle_def
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (hj : D.isOpenImmersion j) (hi : D.isClosedImmersion i)
+    (E : D.Sheaf V) :
+    openClosedWeightTriangle D j i hj hi E =
+      D.openClosedTriangle j i hj hi E :=
+  rfl
+
+/-- The open/closed triangle is distinguished for constructible inputs. -/
+theorem openClosedWeightTriangle_distinguished
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    (D : SixFunctorData Sch) {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (hj : D.isOpenImmersion j) (hi : D.isClosedImmersion i)
+    (E : D.Sheaf V) (hE : D.IsConstr E) :
+    D.distinguished (openClosedWeightTriangle D j i hj hi E) := by
+  simpa [openClosedWeightTriangle] using
+    D.glue_triangle_distinguished j i hj hi E hE
+
+/-- Certificate for Corollary .35.
+
+The three Weil packages are attached to `j_!j^*E`, `E`, and `i_*i^*E`.
+The fields `middleMixedLE_of_open_closed`, `openMixedLE_of_middle_closed`, and
+`closedMixedLE_of_open_middle` are the local two-out-of-three weight exactness
+input for the distinguished triangle. -/
+structure OpenClosedWeightControl {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (hj : D.isOpenImmersion j) (hi : D.isClosedImmersion i)
+    (E : D.Sheaf V) where
+  inputConstructible : D.IsConstr E
+  middle : WeilIIPackage D E
+  openPart : WeilIIPackage D (openClosedOpenTerm D j E)
+  closedPart : WeilIIPackage D (openClosedClosedTerm D i E)
+  triangleDistinguished :
+    D.distinguished (openClosedWeightTriangle D j i hj hi E)
+  q_open_eq_middle : openPart.q = middle.q
+  q_closed_eq_middle : closedPart.q = middle.q
+  middleMixedLE_of_open_closed :
+    ∀ {n : ℕ} {w : ℤ},
+      openPart.isMixedLE n w → closedPart.isMixedLE n w → middle.isMixedLE n w
+  openMixedLE_of_middle_closed :
+    ∀ {n : ℕ} {w : ℤ},
+      middle.isMixedLE n w → closedPart.isMixedLE n w → openPart.isMixedLE n w
+  closedMixedLE_of_open_middle :
+    ∀ {n : ℕ} {w : ℤ},
+      openPart.isMixedLE n w → middle.isMixedLE n w → closedPart.isMixedLE n w
+
+namespace OpenClosedWeightControl
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch}
+variable {V V' Z : Sch}
+variable {j : V' ⟶ V} {i : Z ⟶ V}
+variable {hj : D.isOpenImmersion j} {hi : D.isClosedImmersion i}
+variable {E : D.Sheaf V}
+
+/-- The middle sheaf is constructible. -/
+theorem middle_constructible
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) :
+    D.IsConstr E :=
+  C.middle.constructible
+
+/-- The open term is constructible. -/
+theorem open_constructible
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) :
+    D.IsConstr (openClosedOpenTerm D j E) :=
+  C.openPart.constructible
+
+/-- The closed term is constructible. -/
+theorem closed_constructible
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) :
+    D.IsConstr (openClosedClosedTerm D i E) :=
+  C.closedPart.constructible
+
+/-- Projection of the distinguished open/closed triangle. -/
+theorem distinguished_triangle
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) :
+    D.distinguished (openClosedWeightTriangle D j i hj hi E) :=
+  C.triangleDistinguished
+
+/-- The open and middle Weil packages use the same cardinality parameter. -/
+theorem open_weightRadius_eq_middle
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) (w : ℤ) :
+    weightRadius C.openPart.q w = weightRadius C.middle.q w := by
+  rw [C.q_open_eq_middle]
+
+/-- The closed and middle Weil packages use the same cardinality parameter. -/
+theorem closed_weightRadius_eq_middle
+    (C : OpenClosedWeightControl (D := D) j i hj hi E) (w : ℤ) :
+    weightRadius C.closedPart.q w = weightRadius C.middle.q w := by
+  rw [C.q_closed_eq_middle]
+
+/-- Two-out-of-three weight control: open and closed bounds imply the middle
+bound. -/
+theorem middle_mixedLE_of_open_closed
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.middle.isMixedLE n w :=
+  C.middleMixedLE_of_open_closed hopen hclosed
+
+/-- Two-out-of-three weight control: middle and closed bounds imply the open
+bound. -/
+theorem open_mixedLE_of_middle_closed
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hmiddle : C.middle.isMixedLE n w)
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.openPart.isMixedLE n w :=
+  C.openMixedLE_of_middle_closed hmiddle hclosed
+
+/-- Two-out-of-three weight control: open and middle bounds imply the closed
+bound. -/
+theorem closed_mixedLE_of_open_middle
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hmiddle : C.middle.isMixedLE n w) :
+    C.closedPart.isMixedLE n w :=
+  C.closedMixedLE_of_open_middle hopen hmiddle
+
+/-- The transferred middle bound gives the Frobenius radius bound for the
+middle sheaf. -/
+theorem middle_radiusBound_of_open_closed
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.middle.FrobeniusRadiusBound n (weightRadius C.middle.q w) :=
+  C.middle.mixed_weight_radiusBound
+    (C.middle_mixedLE_of_open_closed hopen hclosed)
+
+/-- The open radius bound can be rewritten with the middle cardinality
+parameter. -/
+theorem open_radiusBound_middleRadius_of_mixedLE
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w) :
+    C.openPart.FrobeniusRadiusBound n (weightRadius C.middle.q w) := by
+  simpa [C.open_weightRadius_eq_middle w] using
+    C.openPart.mixed_weight_radiusBound hopen
+
+/-- The closed radius bound can be rewritten with the middle cardinality
+parameter. -/
+theorem closed_radiusBound_middleRadius_of_mixedLE
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.closedPart.FrobeniusRadiusBound n (weightRadius C.middle.q w) := by
+  simpa [C.closed_weightRadius_eq_middle w] using
+    C.closedPart.mixed_weight_radiusBound hclosed
+
+/-- If the open part is controlled but the middle is not, then the missing
+weight bound is forced onto the closed complement. -/
+theorem defect_concentrated_on_closed
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hnotMiddle : ¬ C.middle.isMixedLE n w) :
+    ¬ C.closedPart.isMixedLE n w := by
+  intro hclosed
+  exact hnotMiddle (C.middle_mixedLE_of_open_closed hopen hclosed)
+
+end OpenClosedWeightControl
+
+/-- Build the Corollary .35 certificate from three Weil packages and the
+two-out-of-three weight-control input for the open/closed triangle. -/
+def openClosedWeightControlOfPackages
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {V V' Z : Sch}
+    (j : V' ⟶ V) (i : Z ⟶ V)
+    (hj : D.isOpenImmersion j) (hi : D.isClosedImmersion i)
+    (E : D.Sheaf V)
+    (Wmiddle : WeilIIPackage D E)
+    (Wopen : WeilIIPackage D (openClosedOpenTerm D j E))
+    (Wclosed : WeilIIPackage D (openClosedClosedTerm D i E))
+    (hqOpen : Wopen.q = Wmiddle.q)
+    (hqClosed : Wclosed.q = Wmiddle.q)
+    (hmiddle :
+      ∀ {n : ℕ} {w : ℤ},
+        Wopen.isMixedLE n w → Wclosed.isMixedLE n w → Wmiddle.isMixedLE n w)
+    (hopen :
+      ∀ {n : ℕ} {w : ℤ},
+        Wmiddle.isMixedLE n w → Wclosed.isMixedLE n w → Wopen.isMixedLE n w)
+    (hclosed :
+      ∀ {n : ℕ} {w : ℤ},
+        Wopen.isMixedLE n w → Wmiddle.isMixedLE n w → Wclosed.isMixedLE n w) :
+    OpenClosedWeightControl j i hj hi E where
+  inputConstructible := Wmiddle.constructible
+  middle := Wmiddle
+  openPart := Wopen
+  closedPart := Wclosed
+  triangleDistinguished :=
+    openClosedWeightTriangle_distinguished D j i hj hi E Wmiddle.constructible
+  q_open_eq_middle := hqOpen
+  q_closed_eq_middle := hqClosed
+  middleMixedLE_of_open_closed := hmiddle
+  openMixedLE_of_middle_closed := hopen
+  closedMixedLE_of_open_middle := hclosed
+
+/-- **Corollary .35.**  In an open/closed weight-control certificate, mixed
+weight bounds on the open part and on the closed complement propagate to the
+middle sheaf. -/
+theorem cor35_openClosed_middle_mixedLE_of_open_closed
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {V V' Z : Sch}
+    {j : V' ⟶ V} {i : Z ⟶ V}
+    {hj : D.isOpenImmersion j} {hi : D.isClosedImmersion i}
+    {E : D.Sheaf V}
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.middle.isMixedLE n w :=
+  C.middle_mixedLE_of_open_closed hopen hclosed
+
+/-- Corollary .35 in radius-bound form. -/
+theorem cor35_openClosed_middle_radiusBound_of_open_closed
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {V V' Z : Sch}
+    {j : V' ⟶ V} {i : Z ⟶ V}
+    {hj : D.isOpenImmersion j} {hi : D.isClosedImmersion i}
+    {E : D.Sheaf V}
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hclosed : C.closedPart.isMixedLE n w) :
+    C.middle.FrobeniusRadiusBound n (weightRadius C.middle.q w) :=
+  C.middle_radiusBound_of_open_closed hopen hclosed
+
+/-- **Corollary .35, defect form.**  Once the open part is controlled, failure of
+the same weight bound on the middle sheaf is concentrated on the closed
+complement. -/
+theorem cor35_openClosed_defect_concentrated_on_closed
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {V V' Z : Sch}
+    {j : V' ⟶ V} {i : Z ⟶ V}
+    {hj : D.isOpenImmersion j} {hi : D.isClosedImmersion i}
+    {E : D.Sheaf V}
+    (C : OpenClosedWeightControl (D := D) j i hj hi E)
+    {n : ℕ} {w : ℤ}
+    (hopen : C.openPart.isMixedLE n w)
+    (hnotMiddle : ¬ C.middle.isMixedLE n w) :
+    ¬ C.closedPart.isMixedLE n w :=
+  C.defect_concentrated_on_closed hopen hnotMiddle
 
 /-- Determinant/trace expansion certificate turning eigenvalue radius bounds into
 the analytic radius-limit statement used in Prop .38.
@@ -7272,6 +10545,326 @@ explicit hypotheses.  The arithmetic equalizer face (`gcd = 1`) is unconditional
 open CategoryTheory
 
 universe uSch vSch
+universe uDetector
+
+/-! ### §7.2 Detector package
+
+The paper's three detectors,
+`bump_p(Λ)`, `Δχ_mot(p)`, and `H¹(L_{X_p})`, live in étale, motivic, and
+derived deformation theories that are not available in Mathlib.  As in the
+six-functor and Weil-II layers above, the unavailable input is isolated in a
+local interface.  The interface records the three detector invariants, their
+silence predicates, silence at good primes, and mutual equivalence of the three
+silence predicates.  All theorem statements below are unconditional projections
+from that package.
+-/
+
+/-- Interface for the three §7.2 detectors.
+
+`etaleBump p` models `bump_p(Λ)`, `motivicEulerJump p` models
+`Δχ_mot(p)`, and `cotangentH1Defect p` models `H¹(L_{X_p})`.  The corresponding
+`Silent` predicates are intentionally abstract: future étale/motivic/derived
+formalizations can instantiate them with genuine zero predicates, while this
+file can already use the paper's good-prime and equivalence logic. -/
+structure DetectorPackage where
+  GoodPrime : ℕ → Prop
+  etaleBump : ℕ → Type uDetector
+  motivicEulerJump : ℕ → Type uDetector
+  cotangentH1Defect : ℕ → Type uDetector
+  EtaleSilent : ℕ → Prop
+  MotivicSilent : ℕ → Prop
+  CotangentSilent : ℕ → Prop
+  etaleSilent_iff_subsingleton :
+    ∀ p : ℕ, EtaleSilent p ↔ Subsingleton (etaleBump p)
+  motivicSilent_iff_subsingleton :
+    ∀ p : ℕ, MotivicSilent p ↔ Subsingleton (motivicEulerJump p)
+  cotangentSilent_iff_subsingleton :
+    ∀ p : ℕ, CotangentSilent p ↔ Subsingleton (cotangentH1Defect p)
+  good_etaleSilent : ∀ {p : ℕ}, GoodPrime p → EtaleSilent p
+  good_motivicSilent : ∀ {p : ℕ}, GoodPrime p → MotivicSilent p
+  good_cotangentSilent : ∀ {p : ℕ}, GoodPrime p → CotangentSilent p
+  etaleSilent_iff_motivicSilent :
+    ∀ p : ℕ, EtaleSilent p ↔ MotivicSilent p
+  motivicSilent_iff_cotangentSilent :
+    ∀ p : ℕ, MotivicSilent p ↔ CotangentSilent p
+
+namespace DetectorPackage
+
+/-- The étale bump detector is silent at good primes. -/
+theorem etale_silent_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    P.EtaleSilent p :=
+  P.good_etaleSilent hp
+
+/-- The motivic Euler-jump detector is silent at good primes. -/
+theorem motivic_silent_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    P.MotivicSilent p :=
+  P.good_motivicSilent hp
+
+/-- The cotangent-complex defect detector is silent at good primes. -/
+theorem cotangent_silent_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    P.CotangentSilent p :=
+  P.good_cotangentSilent hp
+
+/-- Silence of the étale bump detector is equivalent to subsingleton-valued
+étale bump data. -/
+theorem etale_bump_subsingleton_of_silent (P : DetectorPackage) {p : ℕ}
+    (h : P.EtaleSilent p) :
+    Subsingleton (P.etaleBump p) :=
+  (P.etaleSilent_iff_subsingleton p).1 h
+
+/-- Subsingleton-valued étale bump data gives the abstract silence predicate. -/
+theorem etale_silent_of_bump_subsingleton (P : DetectorPackage) {p : ℕ}
+    (h : Subsingleton (P.etaleBump p)) :
+    P.EtaleSilent p :=
+  (P.etaleSilent_iff_subsingleton p).2 h
+
+/-- Silence of the motivic Euler-jump detector is equivalent to subsingleton
+motivic jump data. -/
+theorem motivic_jump_subsingleton_of_silent (P : DetectorPackage) {p : ℕ}
+    (h : P.MotivicSilent p) :
+    Subsingleton (P.motivicEulerJump p) :=
+  (P.motivicSilent_iff_subsingleton p).1 h
+
+/-- Subsingleton-valued motivic jump data gives the abstract silence predicate. -/
+theorem motivic_silent_of_jump_subsingleton (P : DetectorPackage) {p : ℕ}
+    (h : Subsingleton (P.motivicEulerJump p)) :
+    P.MotivicSilent p :=
+  (P.motivicSilent_iff_subsingleton p).2 h
+
+/-- Silence of the cotangent-complex detector is equivalent to subsingleton
+cotangent-defect data. -/
+theorem cotangent_defect_subsingleton_of_silent (P : DetectorPackage) {p : ℕ}
+    (h : P.CotangentSilent p) :
+    Subsingleton (P.cotangentH1Defect p) :=
+  (P.cotangentSilent_iff_subsingleton p).1 h
+
+/-- Subsingleton-valued cotangent defect data gives the abstract silence
+predicate. -/
+theorem cotangent_silent_of_defect_subsingleton (P : DetectorPackage) {p : ℕ}
+    (h : Subsingleton (P.cotangentH1Defect p)) :
+    P.CotangentSilent p :=
+  (P.cotangentSilent_iff_subsingleton p).2 h
+
+/-- Good primes make all three detectors silent. -/
+theorem all_silent_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    P.EtaleSilent p ∧ P.MotivicSilent p ∧ P.CotangentSilent p :=
+  ⟨P.etale_silent_of_good hp,
+    P.motivic_silent_of_good hp,
+    P.cotangent_silent_of_good hp⟩
+
+/-- Good primes make the three detector invariants subsingleton-valued. -/
+theorem all_detector_invariants_subsingleton_of_good
+    (P : DetectorPackage) {p : ℕ} (hp : P.GoodPrime p) :
+    Subsingleton (P.etaleBump p) ∧
+      Subsingleton (P.motivicEulerJump p) ∧
+        Subsingleton (P.cotangentH1Defect p) :=
+  ⟨P.etale_bump_subsingleton_of_silent (P.etale_silent_of_good hp),
+    P.motivic_jump_subsingleton_of_silent (P.motivic_silent_of_good hp),
+    P.cotangent_defect_subsingleton_of_silent (P.cotangent_silent_of_good hp)⟩
+
+/-- Étale and motivic detector silence are equivalent. -/
+theorem etale_silent_iff_motivic_silent (P : DetectorPackage) (p : ℕ) :
+    P.EtaleSilent p ↔ P.MotivicSilent p :=
+  P.etaleSilent_iff_motivicSilent p
+
+/-- Motivic and cotangent detector silence are equivalent. -/
+theorem motivic_silent_iff_cotangent_silent (P : DetectorPackage) (p : ℕ) :
+    P.MotivicSilent p ↔ P.CotangentSilent p :=
+  P.motivicSilent_iff_cotangentSilent p
+
+/-- Étale and cotangent detector silence are equivalent. -/
+theorem etale_silent_iff_cotangent_silent (P : DetectorPackage) (p : ℕ) :
+    P.EtaleSilent p ↔ P.CotangentSilent p :=
+  (P.etale_silent_iff_motivic_silent p).trans
+    (P.motivic_silent_iff_cotangent_silent p)
+
+/-- The three silence predicates are mutually equivalent. -/
+theorem detectors_tfae (P : DetectorPackage) (p : ℕ) :
+    [P.EtaleSilent p, P.MotivicSilent p, P.CotangentSilent p].TFAE := by
+  tfae_have 1 ↔ 2 := P.etale_silent_iff_motivic_silent p
+  tfae_have 2 ↔ 3 := P.motivic_silent_iff_cotangent_silent p
+  tfae_finish
+
+/-- The étale detector fires exactly when the étale silence predicate fails. -/
+def EtaleActive (P : DetectorPackage) (p : ℕ) : Prop :=
+  ¬ P.EtaleSilent p
+
+/-- The motivic detector fires exactly when the motivic silence predicate fails. -/
+def MotivicActive (P : DetectorPackage) (p : ℕ) : Prop :=
+  ¬ P.MotivicSilent p
+
+/-- The cotangent detector fires exactly when the cotangent silence predicate
+fails. -/
+def CotangentActive (P : DetectorPackage) (p : ℕ) : Prop :=
+  ¬ P.CotangentSilent p
+
+/-- Active étale and motivic detectors are equivalent. -/
+theorem etale_active_iff_motivic_active (P : DetectorPackage) (p : ℕ) :
+    P.EtaleActive p ↔ P.MotivicActive p := by
+  constructor
+  · intro hEtale hMotivic
+    exact hEtale ((P.etale_silent_iff_motivic_silent p).2 hMotivic)
+  · intro hMotivic hEtale
+    exact hMotivic ((P.etale_silent_iff_motivic_silent p).1 hEtale)
+
+/-- Active motivic and cotangent detectors are equivalent. -/
+theorem motivic_active_iff_cotangent_active (P : DetectorPackage) (p : ℕ) :
+    P.MotivicActive p ↔ P.CotangentActive p := by
+  constructor
+  · intro hMotivic hCotangent
+    exact hMotivic ((P.motivic_silent_iff_cotangent_silent p).2 hCotangent)
+  · intro hCotangent hMotivic
+    exact hCotangent ((P.motivic_silent_iff_cotangent_silent p).1 hMotivic)
+
+/-- Active étale and cotangent detectors are equivalent. -/
+theorem etale_active_iff_cotangent_active (P : DetectorPackage) (p : ℕ) :
+    P.EtaleActive p ↔ P.CotangentActive p :=
+  (P.etale_active_iff_motivic_active p).trans
+    (P.motivic_active_iff_cotangent_active p)
+
+/-- The three active-detector predicates are mutually equivalent. -/
+theorem active_detectors_tfae (P : DetectorPackage) (p : ℕ) :
+    [P.EtaleActive p, P.MotivicActive p, P.CotangentActive p].TFAE := by
+  tfae_have 1 ↔ 2 := P.etale_active_iff_motivic_active p
+  tfae_have 2 ↔ 3 := P.motivic_active_iff_cotangent_active p
+  tfae_finish
+
+/-- No étale detector fires at a good prime. -/
+theorem no_etale_active_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    ¬ P.EtaleActive p := by
+  intro h
+  exact h (P.etale_silent_of_good hp)
+
+/-- No motivic detector fires at a good prime. -/
+theorem no_motivic_active_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    ¬ P.MotivicActive p := by
+  intro h
+  exact h (P.motivic_silent_of_good hp)
+
+/-- No cotangent detector fires at a good prime. -/
+theorem no_cotangent_active_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    ¬ P.CotangentActive p := by
+  intro h
+  exact h (P.cotangent_silent_of_good hp)
+
+/-- Good primes silence all active-detector predicates. -/
+theorem no_detector_active_of_good (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    ¬ P.EtaleActive p ∧ ¬ P.MotivicActive p ∧ ¬ P.CotangentActive p :=
+  ⟨P.no_etale_active_of_good hp,
+    P.no_motivic_active_of_good hp,
+    P.no_cotangent_active_of_good hp⟩
+
+end DetectorPackage
+
+/-- Packaged §7.2 conclusion at a fixed good prime. -/
+structure DetectorGoodPrimeConclusion (P : DetectorPackage) (p : ℕ) where
+  goodPrime : P.GoodPrime p
+  etaleSilent : P.EtaleSilent p
+  motivicSilent : P.MotivicSilent p
+  cotangentSilent : P.CotangentSilent p
+  etaleBumpSubsingleton : Subsingleton (P.etaleBump p)
+  motivicEulerJumpSubsingleton : Subsingleton (P.motivicEulerJump p)
+  cotangentH1DefectSubsingleton : Subsingleton (P.cotangentH1Defect p)
+  silentTFAE : [P.EtaleSilent p, P.MotivicSilent p, P.CotangentSilent p].TFAE
+  activeTFAE : [P.EtaleActive p, P.MotivicActive p, P.CotangentActive p].TFAE
+  noEtaleActive : ¬ P.EtaleActive p
+  noMotivicActive : ¬ P.MotivicActive p
+  noCotangentActive : ¬ P.CotangentActive p
+
+namespace DetectorGoodPrimeConclusion
+
+variable {P : DetectorPackage} {p : ℕ}
+
+/-- Projection of the three silence statements. -/
+theorem detectors_silent (C : DetectorGoodPrimeConclusion P p) :
+    P.EtaleSilent p ∧ P.MotivicSilent p ∧ P.CotangentSilent p :=
+  ⟨C.etaleSilent, C.motivicSilent, C.cotangentSilent⟩
+
+/-- Projection of the three subsingleton-valued detector invariants. -/
+theorem invariants_subsingleton (C : DetectorGoodPrimeConclusion P p) :
+    Subsingleton (P.etaleBump p) ∧
+      Subsingleton (P.motivicEulerJump p) ∧
+        Subsingleton (P.cotangentH1Defect p) :=
+  ⟨C.etaleBumpSubsingleton,
+    C.motivicEulerJumpSubsingleton,
+    C.cotangentH1DefectSubsingleton⟩
+
+/-- Projection of the silence TFAE. -/
+theorem silent_tfae (C : DetectorGoodPrimeConclusion P p) :
+    [P.EtaleSilent p, P.MotivicSilent p, P.CotangentSilent p].TFAE :=
+  C.silentTFAE
+
+/-- Projection of the active-detector TFAE. -/
+theorem active_tfae (C : DetectorGoodPrimeConclusion P p) :
+    [P.EtaleActive p, P.MotivicActive p, P.CotangentActive p].TFAE :=
+  C.activeTFAE
+
+/-- Projection that no detector fires at the packaged good prime. -/
+theorem no_detector_active (C : DetectorGoodPrimeConclusion P p) :
+    ¬ P.EtaleActive p ∧ ¬ P.MotivicActive p ∧ ¬ P.CotangentActive p :=
+  ⟨C.noEtaleActive, C.noMotivicActive, C.noCotangentActive⟩
+
+end DetectorGoodPrimeConclusion
+
+/-- Constructor for the §7.2 good-prime detector conclusion. -/
+def detectorGoodPrimeConclusion (P : DetectorPackage) {p : ℕ}
+    (hp : P.GoodPrime p) :
+    DetectorGoodPrimeConclusion P p where
+  goodPrime := hp
+  etaleSilent := P.etale_silent_of_good hp
+  motivicSilent := P.motivic_silent_of_good hp
+  cotangentSilent := P.cotangent_silent_of_good hp
+  etaleBumpSubsingleton :=
+    P.etale_bump_subsingleton_of_silent (P.etale_silent_of_good hp)
+  motivicEulerJumpSubsingleton :=
+    P.motivic_jump_subsingleton_of_silent (P.motivic_silent_of_good hp)
+  cotangentH1DefectSubsingleton :=
+    P.cotangent_defect_subsingleton_of_silent (P.cotangent_silent_of_good hp)
+  silentTFAE := P.detectors_tfae p
+  activeTFAE := P.active_detectors_tfae p
+  noEtaleActive := P.no_etale_active_of_good hp
+  noMotivicActive := P.no_motivic_active_of_good hp
+  noCotangentActive := P.no_cotangent_active_of_good hp
+
+/-- §7.2: good primes silence all three detectors. -/
+theorem section72_good_prime_detectors_silent
+    (P : DetectorPackage) {p : ℕ} (hp : P.GoodPrime p) :
+    P.EtaleSilent p ∧ P.MotivicSilent p ∧ P.CotangentSilent p :=
+  P.all_silent_of_good hp
+
+/-- §7.2: at good primes, all three detector invariants are subsingleton-valued. -/
+theorem section72_good_prime_detector_invariants_subsingleton
+    (P : DetectorPackage) {p : ℕ} (hp : P.GoodPrime p) :
+    Subsingleton (P.etaleBump p) ∧
+      Subsingleton (P.motivicEulerJump p) ∧
+        Subsingleton (P.cotangentH1Defect p) :=
+  P.all_detector_invariants_subsingleton_of_good hp
+
+/-- §7.2: the three detector silence predicates are mutually equivalent. -/
+theorem section72_detector_equivalence_tfae
+    (P : DetectorPackage) (p : ℕ) :
+    [P.EtaleSilent p, P.MotivicSilent p, P.CotangentSilent p].TFAE :=
+  P.detectors_tfae p
+
+/-- §7.2: the three active-detector predicates are mutually equivalent. -/
+theorem section72_detector_active_equivalence_tfae
+    (P : DetectorPackage) (p : ℕ) :
+    [P.EtaleActive p, P.MotivicActive p, P.CotangentActive p].TFAE :=
+  P.active_detectors_tfae p
+
+/-- §7.2: no detector fires at a good prime. -/
+theorem section72_good_prime_no_detector_active
+    (P : DetectorPackage) {p : ℕ} (hp : P.GoodPrime p) :
+    ¬ P.EtaleActive p ∧ ¬ P.MotivicActive p ∧ ¬ P.CotangentActive p :=
+  P.no_detector_active_of_good hp
 
 /-- Weight/purity part of Equivalence C: a pure Weil weight together with the
 determinant-trace expansion certificate that transports the weight bound to the
@@ -7452,6 +11045,428 @@ theorem equivalence_C_faithful_rh_iff_tp {Sch : Type uSch} [Category.{vSch} Sch]
     RH ↔ TP :=
   hRH.trans hTP.symm
 
+/-! ### Local RH radius bridge (§6.3).
+
+This is the unconditional finite-dimensional core behind the local RH-radius
+statement.  A local determinant factor is represented by `det(1 - X T)`, its
+split linear-factor model records Frobenius eigenvalues with multiplicity, and
+the zeros of the determinant are exactly inverse Frobenius eigenvalues.  The
+circle-radius translation is then a short norm calculation. -/
+
+/-- The polynomial `det(1 - X • T)`.  Mathlib's name for this polynomial is
+`Matrix.charpolyRev`; this wrapper keeps the local Euler-factor wording visible. -/
+noncomputable def matrixDetOneSubPolynomial {K : Type*} [CommRing K]
+    {ι : Type*} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K) : Polynomial K :=
+  T.charpolyRev
+
+theorem matrixDetOneSubPolynomial_eq_charpolyRev {K : Type*} [CommRing K]
+    {ι : Type*} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K) :
+    matrixDetOneSubPolynomial T = T.charpolyRev :=
+  rfl
+
+/-- Polynomial-level determinant formula for the local denominator. -/
+theorem matrixDetOneSubPolynomial_eq_det {K : Type*} [CommRing K]
+    {ι : Type*} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K) :
+    matrixDetOneSubPolynomial T =
+      Matrix.det (1 - (Polynomial.X : Polynomial K) • T.map Polynomial.C) := by
+  simp [matrixDetOneSubPolynomial, Matrix.charpolyRev]
+
+/-- The local denominator attached to a finite list of Frobenius eigenvalues,
+with multiplicities preserved by the list. -/
+def localEulerDenominatorFromEigenvalueList (eigs : List ℂ) (z : ℂ) : ℂ :=
+  (eigs.map fun alpha => (1 - alpha * z)).prod
+
+/-- A reduced `Finset` variant, convenient when multiplicities are irrelevant. -/
+def localEulerDenominatorFromEigenvalues (eigs : Finset ℂ) (z : ℂ) : ℂ :=
+  eigs.prod fun alpha => (1 - alpha * z)
+
+theorem one_sub_mul_eq_zero_iff_eq_inv {alpha z : ℂ} (halpha : alpha ≠ 0) :
+    1 - alpha * z = 0 ↔ z = alpha⁻¹ := by
+  constructor
+  · intro h
+    have hmul : alpha * z = 1 := (sub_eq_zero.mp h).symm
+    calc
+      z = 1 * z := by rw [one_mul]
+      _ = (alpha⁻¹ * alpha) * z := by rw [inv_mul_cancel₀ halpha]
+      _ = alpha⁻¹ * (alpha * z) := by rw [mul_assoc]
+      _ = alpha⁻¹ := by rw [hmul, mul_one]
+  · intro hz
+    subst hz
+    rw [mul_inv_cancel₀ halpha]
+    ring
+
+/-- Zeros of a split local denominator are precisely inverse nonzero
+Frobenius eigenvalues, with multiplicity ignored at the level of locations. -/
+theorem localEulerDenominatorFromEigenvalueList_eq_zero_iff
+    {eigs : List ℂ} {z : ℂ} (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) :
+    localEulerDenominatorFromEigenvalueList eigs z = 0 ↔
+      ∃ alpha ∈ eigs, z = alpha⁻¹ := by
+  unfold localEulerDenominatorFromEigenvalueList
+  rw [List.prod_eq_zero_iff]
+  constructor
+  · intro hzero
+    rcases List.mem_map.mp hzero with ⟨alpha, halpha_mem, halpha_zero⟩
+    exact ⟨alpha, halpha_mem,
+      (one_sub_mul_eq_zero_iff_eq_inv (hnonzero alpha halpha_mem)).mp halpha_zero⟩
+  · rintro ⟨alpha, halpha_mem, hz⟩
+    exact List.mem_map.mpr ⟨alpha, halpha_mem,
+      (one_sub_mul_eq_zero_iff_eq_inv (hnonzero alpha halpha_mem)).mpr hz⟩
+
+/-- The same zero-location statement for the reduced `Finset` model. -/
+theorem localEulerDenominatorFromEigenvalues_eq_zero_iff
+    {eigs : Finset ℂ} {z : ℂ} (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) :
+    localEulerDenominatorFromEigenvalues eigs z = 0 ↔
+      ∃ alpha ∈ eigs, z = alpha⁻¹ := by
+  classical
+  unfold localEulerDenominatorFromEigenvalues
+  rw [Finset.prod_eq_zero_iff]
+  constructor
+  · rintro ⟨alpha, halpha_mem, halpha_zero⟩
+    exact ⟨alpha, halpha_mem,
+      (one_sub_mul_eq_zero_iff_eq_inv (hnonzero alpha halpha_mem)).mp halpha_zero⟩
+  · rintro ⟨alpha, halpha_mem, hz⟩
+    exact ⟨alpha, halpha_mem,
+      (one_sub_mul_eq_zero_iff_eq_inv (hnonzero alpha halpha_mem)).mpr hz⟩
+
+theorem norm_inv_eq_inv_norm_iff {alpha : ℂ} {R : ℝ}
+    (hR : 0 < R) (halpha : alpha ≠ 0) :
+    ‖alpha‖ = R ↔ ‖alpha⁻¹‖ = R⁻¹ := by
+  constructor
+  · intro h
+    rw [norm_inv, h]
+  · intro h
+    rw [norm_inv] at h
+    have hnorm : ‖alpha‖ ≠ 0 := norm_ne_zero_iff.mpr halpha
+    have hRne : R ≠ 0 := ne_of_gt hR
+    have h' := congrArg Inv.inv h
+    simpa [hnorm, hRne] using h'
+
+/-- Frobenius eigenvalues lie on the circle of radius `R`. -/
+def localEigenvalueListOnCircle (eigs : List ℂ) (R : ℝ) : Prop :=
+  ∀ alpha : ℂ, alpha ∈ eigs → ‖alpha‖ = R
+
+/-- Zeros of the local denominator lie on the reciprocal circle of radius `R⁻¹`. -/
+def localListZerosOnCircle (eigs : List ℂ) (R : ℝ) : Prop :=
+  ∀ z : ℂ, localEulerDenominatorFromEigenvalueList eigs z = 0 → ‖z‖ = R⁻¹
+
+/-- Reduced `Finset` version of the eigenvalue circle predicate. -/
+def localEigenvaluesOnCircle (eigs : Finset ℂ) (R : ℝ) : Prop :=
+  ∀ alpha : ℂ, alpha ∈ eigs → ‖alpha‖ = R
+
+/-- Reduced `Finset` version of the zero-circle predicate. -/
+def localZerosOnCircle (eigs : Finset ℂ) (R : ℝ) : Prop :=
+  ∀ z : ℂ, localEulerDenominatorFromEigenvalues eigs z = 0 → ‖z‖ = R⁻¹
+
+theorem localEulerDenominator_eq_zero_of_inverse_mem
+    {eigs : Finset ℂ} {alpha : ℂ}
+    (halpha_mem : alpha ∈ eigs) (halpha : alpha ≠ 0) :
+    localEulerDenominatorFromEigenvalues eigs alpha⁻¹ = 0 := by
+  classical
+  unfold localEulerDenominatorFromEigenvalues
+  exact Finset.prod_eq_zero halpha_mem (by
+    rw [mul_inv_cancel₀ halpha]
+    ring)
+
+/-- Local RH-radius statement for the reduced zero set. -/
+theorem localZerosOnCircle_iff_localEigenvaluesOnCircle
+    {eigs : Finset ℂ} {R : ℝ}
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) (hR : 0 < R) :
+    localZerosOnCircle eigs R ↔ localEigenvaluesOnCircle eigs R := by
+  constructor
+  · intro hzeros alpha halpha_mem
+    have hz : localEulerDenominatorFromEigenvalues eigs alpha⁻¹ = 0 :=
+      localEulerDenominator_eq_zero_of_inverse_mem halpha_mem (hnonzero alpha halpha_mem)
+    have hzinv : ‖alpha⁻¹‖ = R⁻¹ := hzeros alpha⁻¹ hz
+    exact (norm_inv_eq_inv_norm_iff hR (hnonzero alpha halpha_mem)).mpr hzinv
+  · intro heigs z hz
+    obtain ⟨alpha, halpha_mem, rfl⟩ :=
+      (localEulerDenominatorFromEigenvalues_eq_zero_iff hnonzero).mp hz
+    exact (norm_inv_eq_inv_norm_iff hR (hnonzero alpha halpha_mem)).mp
+      (heigs alpha halpha_mem)
+
+/-- Local RH-radius statement with multiplicities retained in the eigenvalue list. -/
+theorem localListZerosOnCircle_iff_localEigenvalueListOnCircle
+    {eigs : List ℂ} {R : ℝ}
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) (hR : 0 < R) :
+    localListZerosOnCircle eigs R ↔ localEigenvalueListOnCircle eigs R := by
+  constructor
+  · intro hzeros alpha halpha_mem
+    have hz : localEulerDenominatorFromEigenvalueList eigs alpha⁻¹ = 0 := by
+      unfold localEulerDenominatorFromEigenvalueList
+      rw [List.prod_eq_zero_iff]
+      exact List.mem_map.mpr ⟨alpha, halpha_mem, by
+        rw [mul_inv_cancel₀ (hnonzero alpha halpha_mem)]
+        ring⟩
+    have hzinv : ‖alpha⁻¹‖ = R⁻¹ := hzeros alpha⁻¹ hz
+    exact (norm_inv_eq_inv_norm_iff hR (hnonzero alpha halpha_mem)).mpr hzinv
+  · intro heigs z hz
+    obtain ⟨alpha, halpha_mem, rfl⟩ :=
+      (localEulerDenominatorFromEigenvalueList_eq_zero_iff hnonzero).mp hz
+    exact (norm_inv_eq_inv_norm_iff hR (hnonzero alpha halpha_mem)).mp
+      (heigs alpha halpha_mem)
+
+/-- The shifted radius `p^((w+n)/2)` used by local RH conventions. -/
+noncomputable def localRHShiftedRadius (q : ℝ) (w : ℤ) (n : ℕ) : ℝ :=
+  q ^ (((w : ℝ) + (n : ℝ)) / 2)
+
+theorem localRHShiftedRadius_pos {q : ℝ} (hq : 0 < q) (w : ℤ) (n : ℕ) :
+    0 < localRHShiftedRadius q w n := by
+  simpa [localRHShiftedRadius] using
+    Real.rpow_pos_of_pos hq (((w : ℝ) + (n : ℝ)) / 2)
+
+/-- A split determinant-factor certificate for a finite-dimensional local factor.
+The list records eigenvalues with multiplicity; the zero-location theorems below
+forget multiplicity exactly where RH-radius statements do. -/
+structure LocalRHDeterminantFactorCertificate {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (T : Matrix ι ι ℂ) where
+  eigenvaluesWithMultiplicity : List ℂ
+  determinantFactorization :
+    ∀ z : ℂ,
+      Polynomial.eval z (matrixDetOneSubPolynomial T) =
+        localEulerDenominatorFromEigenvalueList eigenvaluesWithMultiplicity z
+
+namespace LocalRHDeterminantFactorCertificate
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+variable {T : Matrix ι ι ℂ}
+
+/-- A pole of the reciprocal local factor is a zero of `det(1 - X T)`. -/
+def determinantPole (_C : LocalRHDeterminantFactorCertificate T) (z : ℂ) : Prop :=
+  Polynomial.eval z (matrixDetOneSubPolynomial T) = 0
+
+/-- The reciprocal local-factor poles lie on the reciprocal circle. -/
+def determinantPolesOnCircle (C : LocalRHDeterminantFactorCertificate T)
+    (R : ℝ) : Prop :=
+  ∀ z : ℂ, C.determinantPole z → ‖z‖ = R⁻¹
+
+theorem determinant_pole_iff_local_denominator_zero
+    (C : LocalRHDeterminantFactorCertificate T) {z : ℂ} :
+    C.determinantPole z ↔
+      localEulerDenominatorFromEigenvalueList C.eigenvaluesWithMultiplicity z = 0 := by
+  unfold determinantPole
+  rw [C.determinantFactorization z]
+
+/-- Poles of the reciprocal local factor are exactly inverse Frobenius eigenvalues. -/
+theorem determinant_pole_iff_inverse_eigenvalue
+    (C : LocalRHDeterminantFactorCertificate T) {z : ℂ}
+    (hnonzero : ∀ alpha ∈ C.eigenvaluesWithMultiplicity, alpha ≠ 0) :
+    C.determinantPole z ↔
+      ∃ alpha ∈ C.eigenvaluesWithMultiplicity, z = alpha⁻¹ := by
+  exact (C.determinant_pole_iff_local_denominator_zero).trans
+    (localEulerDenominatorFromEigenvalueList_eq_zero_iff hnonzero)
+
+theorem determinantPolesOnCircle_iff_localListZerosOnCircle
+    (C : LocalRHDeterminantFactorCertificate T) {R : ℝ} :
+    C.determinantPolesOnCircle R ↔
+      localListZerosOnCircle C.eigenvaluesWithMultiplicity R := by
+  constructor
+  · intro hpoles z hz
+    exact hpoles z ((C.determinant_pole_iff_local_denominator_zero).mpr hz)
+  · intro hzeros z hpole
+    exact hzeros z ((C.determinant_pole_iff_local_denominator_zero).mp hpole)
+
+/-- Determinant-pole circle form of the local RH-radius statement. -/
+theorem determinantPolesOnCircle_iff_eigenvaluesOnCircle
+    (C : LocalRHDeterminantFactorCertificate T) {R : ℝ}
+    (hnonzero : ∀ alpha ∈ C.eigenvaluesWithMultiplicity, alpha ≠ 0)
+    (hR : 0 < R) :
+    C.determinantPolesOnCircle R ↔
+      localEigenvalueListOnCircle C.eigenvaluesWithMultiplicity R :=
+  (C.determinantPolesOnCircle_iff_localListZerosOnCircle).trans
+    (localListZerosOnCircle_iff_localEigenvalueListOnCircle hnonzero hR)
+
+end LocalRHDeterminantFactorCertificate
+
+/-- A finite list realizes the Frobenius eigenvalue set in degree `n`.
+Multiplicity is allowed in the list; only membership is compared with the set. -/
+def RealizesFrobeniusEigenvalueSet {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    (W : WeilIIPackage D F) (n : ℕ) (eigs : List ℂ) : Prop :=
+  ∀ alpha : ℂ, alpha ∈ eigs ↔ alpha ∈ W.frobEigenvalues n
+
+/-- The local RH gate: local denominator zeros lie on the reciprocal circle. -/
+def LocalRHGate (eigs : List ℂ) (R : ℝ) : Prop :=
+  localListZerosOnCircle eigs R
+
+theorem localRHGate_iff_localEigenvalueListOnCircle
+    {eigs : List ℂ} {R : ℝ}
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) (hR : 0 < R) :
+    LocalRHGate eigs R ↔ localEigenvalueListOnCircle eigs R :=
+  localListZerosOnCircle_iff_localEigenvalueListOnCircle hnonzero hR
+
+/-- The local RH gate is equivalent to the Frobenius eigenvalue radius condition. -/
+theorem localRHGate_iff_weil_frobenius_abs
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    (W : WeilIIPackage D F) {n : ℕ} {R : ℝ} {eigs : List ℂ}
+    (hrealize : RealizesFrobeniusEigenvalueSet W n eigs)
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0) (hR : 0 < R) :
+    LocalRHGate eigs R ↔
+      ∀ alpha : ℂ, alpha ∈ W.frobEigenvalues n → ‖alpha‖ = R := by
+  constructor
+  · intro hlocal alpha halpha
+    have hcircle :
+        localEigenvalueListOnCircle eigs R :=
+      (localRHGate_iff_localEigenvalueListOnCircle hnonzero hR).mp hlocal
+    exact hcircle alpha ((hrealize alpha).mpr halpha)
+  · intro hradius
+    exact (localRHGate_iff_localEigenvalueListOnCircle hnonzero hR).mpr (by
+      intro alpha halpha_mem
+      exact hradius alpha ((hrealize alpha).mp halpha_mem))
+
+/-- Weil II purity supplies the local RH-radius gate for any finite eigenvalue
+list realizing the Frobenius eigenvalue set. -/
+theorem localRHGate_of_weil_pure
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    (W : WeilIIPackage D F) {n : ℕ} {w : ℤ} {eigs : List ℂ}
+    (hrealize : RealizesFrobeniusEigenvalueSet W n eigs)
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0)
+    (hPure : W.isPure n w) :
+    LocalRHGate eigs (weightRadius W.q w) := by
+  exact (localRHGate_iff_weil_frobenius_abs W hrealize hnonzero
+    (W.weightRadius_pos_apply w)).mpr (by
+      intro alpha halpha
+      exact W.frob_abs_eq hPure halpha)
+
+/-- Weight-gate form of the local RH-radius conclusion. -/
+theorem localRHGate_of_weightPurityGate
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {_C : DetTraceRadiusCertificate W}
+    {n : ℕ} {w : ℤ} {eigs : List ℂ}
+    (hrealize : RealizesFrobeniusEigenvalueSet W n eigs)
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0)
+    (hB : WeightPurityGate W _C n w) :
+    LocalRHGate eigs (weightRadius W.q w) :=
+  localRHGate_of_weil_pure W hrealize hnonzero hB.1
+
+/-- Shifted-radius version, matching the convention `p^((w+n)/2)` once that
+radius is identified with the cohomological Weil radius. -/
+theorem localRHGate_of_weil_pure_shifted
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    (W : WeilIIPackage D F) {n : ℕ} {cohomWeight geomWeight : ℤ}
+    {eigs : List ℂ}
+    (hrealize : RealizesFrobeniusEigenvalueSet W n eigs)
+    (hnonzero : ∀ alpha ∈ eigs, alpha ≠ 0)
+    (hPure : W.isPure n cohomWeight)
+    (hradius :
+      weightRadius W.q cohomWeight =
+        localRHShiftedRadius W.q geomWeight n) :
+    LocalRHGate eigs (localRHShiftedRadius W.q geomWeight n) := by
+  rw [← hradius]
+  exact localRHGate_of_weil_pure W hrealize hnonzero hPure
+
+/-- A certificate saying that the pure-weight predicate is exactly the local
+Frobenius radius condition for the supplied finite local eigenvalue list.  The
+forward implication is provided by `WeilIIPackage`; the reverse implication is
+the intended local RH-to-purity semantic identification. -/
+structure LocalRHWeightCertificate {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    (W : WeilIIPackage D F) (n : ℕ) (w : ℤ) where
+  eigenvaluesWithMultiplicity : List ℂ
+  realizesFrobenius :
+    RealizesFrobeniusEigenvalueSet W n eigenvaluesWithMultiplicity
+  eigenvalues_nonzero :
+    ∀ alpha ∈ eigenvaluesWithMultiplicity, alpha ≠ 0
+  pure_iff_frobenius_radius :
+    W.isPure n w ↔
+      ∀ alpha : ℂ, alpha ∈ W.frobEigenvalues n → ‖alpha‖ = weightRadius W.q w
+
+namespace LocalRHWeightCertificate
+
+variable {Sch : Type uSch} [Category.{vSch} Sch]
+variable {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+variable {W : WeilIIPackage D F} {n : ℕ} {w : ℤ}
+
+/-- The local RH statement carried by the certificate. -/
+def localRH (B : LocalRHWeightCertificate W n w) : Prop :=
+  LocalRHGate B.eigenvaluesWithMultiplicity (weightRadius W.q w)
+
+/-- The certificate converts the pure-weight predicate into the local RH-radius gate. -/
+theorem pure_iff_localRH (B : LocalRHWeightCertificate W n w) :
+    W.isPure n w ↔ B.localRH :=
+  B.pure_iff_frobenius_radius.trans
+    (localRHGate_iff_weil_frobenius_abs W B.realizesFrobenius
+      B.eigenvalues_nonzero (W.weightRadius_pos_apply w)).symm
+
+end LocalRHWeightCertificate
+
+/-- Weight part of Equivalence C restated as a local RH-radius gate plus the
+determinant-trace expansion. -/
+def LocalRHWeightGate {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {n : ℕ} {w : ℤ}
+    (B : LocalRHWeightCertificate W n w)
+    (C : DetTraceRadiusCertificate W) : Prop :=
+  B.localRH ∧ C.hasDetTraceExpansion n w
+
+theorem weightPurityGate_iff_localRHWeightGate
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {_C : DetTraceRadiusCertificate W}
+    {n : ℕ} {w : ℤ}
+    (B : LocalRHWeightCertificate W n w) :
+    WeightPurityGate W _C n w ↔ LocalRHWeightGate B _C := by
+  unfold WeightPurityGate LocalRHWeightGate
+  exact and_congr B.pure_iff_localRH Iff.rfl
+
+/-- Equivalence C gate with the weight part replaced by the local RH-radius gate. -/
+def LocalRHEquivalenceCGate {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {n : ℕ} {w : ℤ}
+    (M N : ℕ) (B : LocalRHWeightCertificate W n w)
+    (C : DetTraceRadiusCertificate W) : Prop :=
+  ArithmeticCechTorGate M N ∧ LocalRHWeightGate B C
+
+/-- The original faithful gate is equivalent to the local RH-radius refinement. -/
+theorem equivalenceCGate_iff_localRHEquivalenceCGate
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {C : DetTraceRadiusCertificate W}
+    {M N n : ℕ} {w : ℤ}
+    (B : LocalRHWeightCertificate W n w) :
+    EquivalenceCGate M N W C n w ↔ LocalRHEquivalenceCGate M N B C := by
+  unfold EquivalenceCGate LocalRHEquivalenceCGate
+  exact and_congr Iff.rfl (weightPurityGate_iff_localRHWeightGate B)
+
+/-- Faithful Equivalence C with the RH side refined to the local RH-radius gate.
+The only remaining semantic bridge is the stated equivalence between the user's
+global/local RH predicate and the local gate for all relevant primes. -/
+theorem equivalence_C_faithful_localRH_tfae
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {C : DetTraceRadiusCertificate W}
+    {M N n : ℕ} {w : ℤ}
+    (B : LocalRHWeightCertificate W n w)
+    (RHLocal TP : Prop)
+    (hRHLocal : RHLocal ↔ LocalRHEquivalenceCGate M N B C)
+    (hTP : TP ↔ EquivalenceCGate M N W C n w) :
+    [RHLocal, TP, LocalRHEquivalenceCGate M N B C,
+      EquivalenceCGate M N W C n w].TFAE := by
+  tfae_have 1 ↔ 3 := hRHLocal
+  tfae_have 2 ↔ 4 := hTP
+  tfae_have 3 ↔ 4 :=
+    (equivalenceCGate_iff_localRHEquivalenceCGate
+      (M := M) (N := N) (C := C) B).symm
+  tfae_finish
+
+/-- Direct `RH ↔ TP` consequence of the local RH-radius refinement. -/
+theorem equivalence_C_faithful_localRH_iff_tp
+    {Sch : Type uSch} [Category.{vSch} Sch]
+    {D : SixFunctorData Sch} {X : Sch} {F : D.Sheaf X}
+    {W : WeilIIPackage D F} {C : DetTraceRadiusCertificate W}
+    {M N n : ℕ} {w : ℤ}
+    (B : LocalRHWeightCertificate W n w)
+    {RHLocal TP : Prop}
+    (hRHLocal : RHLocal ↔ LocalRHEquivalenceCGate M N B C)
+    (hTP : TP ↔ EquivalenceCGate M N W C n w) :
+    RHLocal ↔ TP :=
+  hRHLocal.trans
+    ((equivalenceCGate_iff_localRHEquivalenceCGate
+      (M := M) (N := N) (C := C) B).symm.trans hTP.symm)
+
 /-! ## §J — Mathlib-gap workaround checklist
 
 This section turns the engineering principles used above into kernel-checked
@@ -7498,6 +11513,17 @@ the concrete arithmetic Čech diagram.  The presheaf part records
 Čech part records the exact equalizer and its `ℤ/gcd` obstruction. -/
 structure PresheafCechSkeletonCertificate where
   ambientPresheaf : arithmeticPrimeSpectrumTopCat.Presheaf (Type)
+  ambientSheaf : arithmeticPrimeSpectrumTopCat.Sheaf (Type)
+  ambientSheaf_isSheaf : ambientSheaf.presheaf.IsSheaf
+  constantToSheafSection :
+    ∀ U : TopologicalSpace.Opens (PrimeSpectrum ℤ),
+      ambientPresheaf.obj (op U) → ambientSheaf.presheaf.obj (op U)
+  constantToSheafSection_restrict :
+    ∀ {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
+      (x : ambientPresheaf.obj (op V)),
+        ambientSheaf.presheaf.map (homOfLE hUV).op
+            (constantToSheafSection V x) =
+          constantToSheafSection U (ambientPresheaf.map (homOfLE hUV).op x)
   gatePresheaf :
     FourLayerProfile → arithmeticPrimeSpectrumTopCat.Presheaf (Type)
   gateInclusion :
@@ -7520,6 +11546,12 @@ structure PresheafCechSkeletonCertificate where
   cechExact :
     ∀ M N : ℕ,
       Function.Exact (arithmeticCechGlobalToLocal M N) (arithmeticCechLocalDifference M N)
+  cechH0ImageEquivEqualizer :
+    ∀ M N : ℕ, arithmeticCechH0Image M N ≃+ arithmeticCechH0Equalizer M N
+  cechSameLocalIffLcm :
+    ∀ (M N : ℕ) (x y : ℤ),
+      arithmeticCechGlobalToLocal M N x = arithmeticCechGlobalToLocal M N y ↔
+        lcm (M : ℤ) (N : ℤ) ∣ x - y
   cechOverlapRestrictsAgreeOnGlobal :
     ∀ (M N : ℕ) (x : ℤ),
       arithmeticCechLeftRestrictOverlap M N (arithmeticCechGlobalRestrictLeft M x) =
@@ -7530,8 +11562,14 @@ structure PresheafCechSkeletonCertificate where
 /-- Canonical certificate for the presheaf/Čech skeleton requested in T1-3. -/
 noncomputable def presheafCechSkeletonCertificate : PresheafCechSkeletonCertificate where
   ambientPresheaf := arithmeticConstantIntPresheaf
+  ambientSheaf := arithmeticIntFunctionSheaf
+  ambientSheaf_isSheaf := arithmeticIntFunctionSheaf_isSheaf
+  constantToSheafSection := arithmeticConstantIntToFunction
+  constantToSheafSection_restrict := by
+    intro U V hUV x
+    exact arithmeticConstantIntToFunction_restrict hUV x
   gatePresheaf := fourLayerGatePresheaf
-  gateInclusion := fun P => arithmeticPredicatePresheafInclusion (FourLayerPass P)
+  gateInclusion := fourLayerGatePresheafInclusion
   ambientRestrictionValue := by
     intro U V hUV x
     exact arithmeticConstantIntPresheaf_restrict_value hUV x
@@ -7541,6 +11579,8 @@ noncomputable def presheafCechSkeletonCertificate : PresheafCechSkeletonCertific
     exact fourLayerGate_restrict_value P hUV s
   cechCertificate := arithmeticTwoOpenCechSheafCertificate
   cechExact := arithmeticCech_twoOpen_exact
+  cechH0ImageEquivEqualizer := arithmeticCechH0ImageEquivEqualizer
+  cechSameLocalIffLcm := arithmeticCech_same_local_iff_lcm_dvd_sub
   cechOverlapRestrictsAgreeOnGlobal := arithmeticCech_overlap_restrictions_agree_on_global
   cechH1Equiv := arithmeticCechH1EquivZModGcd
 
@@ -7807,6 +11847,73 @@ noncomputable def existingAnalogReuseCertificate : ExistingAnalogReuseCertificat
   lseriesDerivative := zetaULSeries_deriv
   lseriesLogDerivative := zetaULSeries_logDeriv_eq
 
+/-- Principle 6: actual normalized quadratic local-factor convergence follows from
+Frobenius-root data and the prime-power summability theorem. -/
+structure QuadraticEulerConvergenceChecklist where
+  normalizedScaleNorm :
+    ∀ (s : ℂ) (p : Nat.Primes),
+      ‖normalizedPrimeScale s p‖ = (p : ℝ) ^ (-(s.re + 1 / 2))
+  linearTermSummable :
+    ∀ {γ : ℕ → ℂ}
+      (_ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+      {s : ℂ}, 1 < s.re → Summable (fun p : Nat.Primes => ‖frobeniusLinearTerm γ s p‖)
+  linearEulerHasProd :
+    ∀ {γ : ℕ → ℂ}
+      (_ : ∀ p : Nat.Primes, ‖γ p.1‖ = Real.sqrt (p : ℝ))
+      {s : ℂ}, 1 < s.re →
+        HasProd (fun p : Nat.Primes => (frobeniusLinearDenominator γ s p)⁻¹)
+          (∏' p : Nat.Primes, (frobeniusLinearDenominator γ s p)⁻¹)
+  quadraticEulerHasProd :
+    ∀ {a α β : ℕ → ℂ} (_ : FrobeniusRootDecomposition a α β)
+      {s : ℂ}, 1 < s.re →
+        HasProd (quadraticEulerLocalFactorAt a s)
+          ((∏' p : Nat.Primes, (frobeniusLinearDenominator α s p)⁻¹) *
+            (∏' p : Nat.Primes, (frobeniusLinearDenominator β s p)⁻¹))
+  convergenceCertificate :
+    ∀ {a α β : ℕ → ℂ} (_ : FrobeniusRootDecomposition a α β)
+      {s : ℂ}, 1 < s.re → QuadraticEulerProductConvergenceCertificate a α β s
+
+/-- Canonical checklist for the normalized §6.2 quadratic Euler product convergence layer. -/
+noncomputable def quadraticEulerConvergenceChecklist :
+    QuadraticEulerConvergenceChecklist where
+  normalizedScaleNorm := normalizedPrimeScale_norm
+  linearTermSummable := frobeniusLinearTerm_summable_of_abs
+  linearEulerHasProd := frobeniusLinearEuler_hasProd_of_abs
+  quadraticEulerHasProd := quadraticEulerProductAt_hasProd_of_frobenius
+  convergenceCertificate := @quadraticEulerProductConvergenceCertificateOfFrobenius
+
+/-- Principle 7: the local RH-radius bridge is reduced to finite-dimensional
+determinant factors and the explicit Weil II eigenvalue-radius certificate. -/
+structure LocalRHRadiusChecklist where
+  denominatorZeros :
+    ∀ {eigs : List ℂ} {z : ℂ},
+      (∀ alpha ∈ eigs, alpha ≠ 0) →
+        (localEulerDenominatorFromEigenvalueList eigs z = 0 ↔
+          ∃ alpha ∈ eigs, z = alpha⁻¹)
+  zeroCircleIffEigenvalueCircle :
+    ∀ {eigs : List ℂ} {R : ℝ},
+      (∀ alpha ∈ eigs, alpha ≠ 0) → 0 < R →
+        (localListZerosOnCircle eigs R ↔ localEigenvalueListOnCircle eigs R)
+  determinantPolesCircleIff :
+    ∀ {ι : Type*} [Fintype ι] [DecidableEq ι]
+      {T : Matrix ι ι ℂ} (C : LocalRHDeterminantFactorCertificate T) {R : ℝ},
+      (∀ alpha ∈ C.eigenvaluesWithMultiplicity, alpha ≠ 0) → 0 < R →
+        (C.determinantPolesOnCircle R ↔
+          localEigenvalueListOnCircle C.eigenvaluesWithMultiplicity R)
+  shiftedRadiusPositive :
+    ∀ {q : ℝ}, 0 < q → ∀ (w : ℤ) (n : ℕ), 0 < localRHShiftedRadius q w n
+
+/-- Canonical checklist for the §6.3 local RH-radius bridge. -/
+noncomputable def localRHRadiusChecklist : LocalRHRadiusChecklist.{0} where
+  denominatorZeros := fun hnonzero =>
+    localEulerDenominatorFromEigenvalueList_eq_zero_iff hnonzero
+  zeroCircleIffEigenvalueCircle := fun hnonzero hR =>
+    localListZerosOnCircle_iff_localEigenvalueListOnCircle hnonzero hR
+  determinantPolesCircleIff := by
+    intro ι _ _ T C R hnonzero hR
+    exact C.determinantPolesOnCircle_iff_eigenvaluesOnCircle (R := R) hnonzero hR
+  shiftedRadiusPositive := fun hq w n => localRHShiftedRadius_pos hq w n
+
 /- Universe levels for the polymorphic theorem bundles in the final checklist. -/
 universe uSheafGap uTriGap uGap1 uGap2 uGap3 uGap4 uGap5 uGap6 uGap7 uGap8
 
@@ -7815,6 +11922,8 @@ are backed by concrete Lean certificates. -/
 structure MathlibGapWorkaroundChecklist where
   concreteSurrogate : ∀ (M N : ℕ) [NeZero N], ConcreteSurrogateCertificate M N
   presheafCechSkeleton : PresheafCechSkeletonCertificate
+  padicNumericGate : PadicNumericGateChecklist.{0}
+  ellipticCurveECLayer : EllipticCurveECLayerChecklist
   lowDegreeKoszul :
     ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M],
       LowDegreeKoszulCertificate R M
@@ -7827,6 +11936,7 @@ structure MathlibGapWorkaroundChecklist where
       {X : Sch} (F : D.Sheaf X)
       (W : WeilIIPackage D F) (G : GrothendieckLefschetzPackage D F),
         BundledInterfaceCertificate.{uSch, vSch, uSheafGap, uTriGap} F W G
+  def21ActualSheafGap : Def21ActualSheafConstructionGap
   curveReduction :
     ∀ {Sch : Type uSch} [Category.{vSch} Sch]
       {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
@@ -7839,17 +11949,24 @@ structure MathlibGapWorkaroundChecklist where
         FormalAlgebraCoreCertificate T
   existingAnalogReuse :
     ExistingAnalogReuseCertificate.{uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8}
+  quadraticEulerConvergence : QuadraticEulerConvergenceChecklist
+  localRHRadius : LocalRHRadiusChecklist.{0}
 
 /-- The integrated Mathlib-gap checklist. -/
 noncomputable def mathlibGapWorkaroundChecklist : MathlibGapWorkaroundChecklist where
   concreteSurrogate := fun M N _ => concreteSurrogateCertificate M N
   presheafCechSkeleton := presheafCechSkeletonCertificate
+  padicNumericGate := (padicNumericGateChecklist : PadicNumericGateChecklist.{0})
+  ellipticCurveECLayer := ellipticCurveECLayerChecklist
   lowDegreeKoszul := fun R M _ _ _ => lowDegreeKoszulCertificate R M
   enatDepthInstantiation := fun R _ A => enatDepthDimensionInstantiationCertificate R A
   bundledInterfaces := fun F W G => bundledInterfaceCertificate F W G
+  def21ActualSheafGap := def21ActualSheafConstructionGap
   curveReduction := fun φ F hF => CurveFactorization.lem32_curveReduction φ F hF
   formalAlgebra := fun T => formalAlgebraCoreCertificate T
   existingAnalogReuse := existingAnalogReuseCertificate
+  quadraticEulerConvergence := quadraticEulerConvergenceChecklist
+  localRHRadius := localRHRadiusChecklist
 
 /-! ## §K -- Mathlib handle inventory for the next formalization layers.
 
@@ -8031,12 +12148,10 @@ noncomputable def mathlibAbstractTorFunctorHandle :
       [Abelian C] [MonoidalPreadditive C] [HasProjectiveResolutions C] n =>
     CategoryTheory.Tor' C n
 
-/-- Status of the optional comparison with Mathlib's abstract derived-functor `Tor`.
-The concrete standard-free-resolution calculation is complete in this file; what remains is
-the categorical theorem identifying Mathlib's chosen left-derived functor value with this
-particular standard resolution calculation. -/
+/-- Status of the comparison with Mathlib's abstract derived-functor `Tor`. -/
 inductive AbstractTorComparisonStatus where
   | reducedToStandardFreeResolution
+  | computedViaStandardResolution
   | abstractDerivedFunctorEndpointPending
 deriving DecidableEq
 
@@ -8052,6 +12167,73 @@ is taken in the first variable. -/
 noncomputable abbrev mathlibTorPrimeOneEndpoint (M N : ℕ) : ModuleCat Int :=
   (((CategoryTheory.Tor' (ModuleCat Int) 1).obj (ModuleCat.of Int (ZMod M))).obj
     (ModuleCat.of Int (ZMod N)))
+
+/-- The Mathlib homology object obtained by applying right tensoring with `ZMod N` to the
+explicit standard free resolution of `ZMod M`.  This is the exact target produced by
+`ProjectiveResolution.isoLeftDerivedObj` for Mathlib's first-variable Tor functor `Tor'`. -/
+noncomputable abbrev mathlibTensorRightStandardResolutionHomologyOne
+    (M N : ℕ) : ModuleCat Int :=
+  (HomologicalComplex.homologyFunctor (ModuleCat Int) (ComplexShape.down ℕ) 1).obj
+    ((((tensoringRight (ModuleCat Int)).obj (ModuleCat.of Int (ZMod N))).mapHomologicalComplex
+      (ComplexShape.down ℕ)).obj (standardIntResolutionComplex M))
+
+/-- The Mathlib homology object obtained by applying left tensoring with `ZMod M` to the
+explicit standard free resolution of `ZMod N`.  This is the exact target produced by
+`ProjectiveResolution.isoLeftDerivedObj` for Mathlib's second-variable Tor functor `Tor`. -/
+noncomputable abbrev mathlibTensorLeftStandardResolutionHomologyOne
+    (M N : ℕ) : ModuleCat Int :=
+  (HomologicalComplex.homologyFunctor (ModuleCat Int) (ComplexShape.down ℕ) 1).obj
+    ((((tensoringLeft (ModuleCat Int)).obj (ModuleCat.of Int (ZMod M))).mapHomologicalComplex
+      (ComplexShape.down ℕ)).obj (standardIntResolutionComplex N))
+
+/-- The degree-one homology of Mathlib's right-tensored standard resolution is the degree-one
+homology of the hand-coded tensor-standard complex.  This is the functorial homology transport
+of `tensorRightStandardResolutionComplexIso`. -/
+noncomputable def mathlibTensorRightStandardResolutionHomologyOneIsoActualHomology
+    (M N : ℕ) :
+    mathlibTensorRightStandardResolutionHomologyOne M N ≅
+      tensorStandardResolutionActualHomologyOne M N := by
+  simpa [mathlibTensorRightStandardResolutionHomologyOne,
+    tensorStandardResolutionActualHomologyOne, tensorRightAppliedStandardResolutionComplex] using
+    (HomologicalComplex.homologyMapIso
+      (tensorRightStandardResolutionComplexIso M N) 1)
+
+/-- The degree-one homology of Mathlib's left-tensored standard resolution is the degree-one
+homology of the hand-coded tensor-standard complex in the second variable. -/
+noncomputable def mathlibTensorLeftStandardResolutionHomologyOneIsoActualHomology
+    (M N : ℕ) :
+    mathlibTensorLeftStandardResolutionHomologyOne M N ≅
+      tensorStandardResolutionActualHomologyOne N M := by
+  simpa [mathlibTensorLeftStandardResolutionHomologyOne,
+    tensorStandardResolutionActualHomologyOne, tensorLeftAppliedStandardResolutionComplex] using
+    (HomologicalComplex.homologyMapIso
+      (tensorLeftStandardResolutionComplexIso M N) 1)
+
+/-- Mathlib's abstract `Tor'₁` endpoint computed with the explicit standard free resolution.
+The remaining comparison to `standardResolutionTorOneEndpoint` is now purely the concrete
+identification of the tensor product complex `ℤ ⊗ ZMod N` with the hand-coded
+`tensorStandardResolutionComplex`. -/
+noncomputable def mathlibTorPrimeOneEndpointIsoStandardResolutionHomology
+    (M N : ℕ) (hM : M ≠ 0) :
+    mathlibTorPrimeOneEndpoint M N ≅
+      mathlibTensorRightStandardResolutionHomologyOne M N := by
+  simpa [mathlibTorPrimeOneEndpoint, CategoryTheory.Tor'] using
+    (ProjectiveResolution.isoLeftDerivedObj
+      (standardIntProjectiveResolution M hM)
+      ((tensoringRight (ModuleCat Int)).obj (ModuleCat.of Int (ZMod N))) 1)
+
+/-- Mathlib's abstract `Tor₁` endpoint computed with the explicit standard free resolution
+in the second tensor variable.  The remaining comparison to
+`standardResolutionTorOneSecondVariableEndpoint` is the concrete identification of the tensor
+product complex `ZMod M ⊗ ℤ` with the hand-coded tensor-standard complex. -/
+noncomputable def mathlibTorOneEndpointIsoStandardResolutionHomology
+    (M N : ℕ) (hN : N ≠ 0) :
+    mathlibTorOneEndpoint M N ≅
+      mathlibTensorLeftStandardResolutionHomologyOne M N := by
+  simpa [mathlibTorOneEndpoint, CategoryTheory.Tor] using
+    (ProjectiveResolution.isoLeftDerivedObj
+      (standardIntProjectiveResolution N hN)
+      ((tensoringLeft (ModuleCat Int)).obj (ModuleCat.of Int (ZMod M))) 1)
 
 /-- A typed handle for the precise abstract Tor endpoints relevant to the concrete calculation. -/
 structure MathlibTorOneEndpointHandle (M N : ℕ) where
@@ -8134,6 +12316,158 @@ noncomputable def abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso
       mathlibTorOneEndpoint M N ≅ standardResolutionTorOneSecondVariableEndpoint M N) :
     mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
   h ≪≫ standardResolutionTorOneSecondVariableEndpointIsoGcd M N
+
+/-- Refined `Tor'` reduction after instantiating Mathlib's left-derived functor with the
+explicit standard projective resolution.  The only supplied input is now the concrete
+complex-level comparison between Mathlib tensoring and the hand-coded tensor-standard complex. -/
+noncomputable def abstractTorPrimeOneIsoGcdOfStandardResolutionHomologyIso
+    (M N : ℕ) [NeZero N] (hM : M ≠ 0)
+    (h :
+      mathlibTensorRightStandardResolutionHomologyOne M N ≅
+        standardResolutionTorPrimeOneEndpoint M N) :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  mathlibTorPrimeOneEndpointIsoStandardResolutionHomology M N hM ≪≫
+    h ≪≫ standardResolutionTorPrimeOneEndpointIsoGcd M N
+
+/-- Refined `Tor'` reduction after transporting Mathlib's tensor complex to the hand-coded
+tensor-standard complex.  The remaining input is only the comparison between Mathlib's
+actual homology object of that hand-coded complex and the concrete kernel model. -/
+noncomputable def abstractTorPrimeOneIsoGcdOfActualHomologyIso
+    (M N : ℕ) [NeZero N] (hM : M ≠ 0)
+    (h :
+      tensorStandardResolutionActualHomologyOne M N ≅
+        standardResolutionTorPrimeOneEndpoint M N) :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  mathlibTorPrimeOneEndpointIsoStandardResolutionHomology M N hM ≪≫
+    mathlibTensorRightStandardResolutionHomologyOneIsoActualHomology M N ≪≫
+      h ≪≫ standardResolutionTorPrimeOneEndpointIsoGcd M N
+
+/-- Refined `Tor` reduction after instantiating Mathlib's left-derived functor with the
+explicit standard projective resolution in the second tensor variable. -/
+noncomputable def abstractTorOneIsoGcdOfStandardResolutionHomologyIso
+    (M N : ℕ) [NeZero M] (hN : N ≠ 0)
+    (h :
+      mathlibTensorLeftStandardResolutionHomologyOne M N ≅
+        standardResolutionTorOneSecondVariableEndpoint M N) :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
+  mathlibTorOneEndpointIsoStandardResolutionHomology M N hN ≪≫
+    h ≪≫ standardResolutionTorOneSecondVariableEndpointIsoGcd M N
+
+/-- Refined `Tor` reduction after transporting Mathlib's left-tensored complex to the
+hand-coded tensor-standard complex in the second variable. -/
+noncomputable def abstractTorOneIsoGcdOfActualHomologyIso
+    (M N : ℕ) [NeZero M] (hN : N ≠ 0)
+    (h :
+      tensorStandardResolutionActualHomologyOne N M ≅
+        standardResolutionTorOneSecondVariableEndpoint M N) :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
+  mathlibTorOneEndpointIsoStandardResolutionHomology M N hN ≪≫
+    mathlibTensorLeftStandardResolutionHomologyOneIsoActualHomology M N ≪≫
+      h ≪≫ standardResolutionTorOneSecondVariableEndpointIsoGcd M N
+
+/-- Unconditional Mathlib `Tor'` computation for nonzero cyclic inputs, obtained by:
+projective standard resolution, tensor-complex comparison, Mathlib homology transport, and the
+explicit kernel computation `ker(M : ZMod N → ZMod N) ≅ ZMod (gcd N M)`. -/
+noncomputable def abstractTorPrimeOneIsoGcd
+    (M N : ℕ) [NeZero M] [NeZero N] :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M)) :=
+  abstractTorPrimeOneIsoGcdOfActualHomologyIso M N (NeZero.ne M)
+    (tensorStandardResolutionActualHomologyOneIsoStandardEndpoint M N)
+
+/-- Unconditional Mathlib `Tor` computation for nonzero cyclic inputs, with Mathlib deriving
+in the second tensor variable. -/
+noncomputable def abstractTorOneIsoGcd
+    (M N : ℕ) [NeZero M] [NeZero N] :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N)) :=
+  abstractTorOneIsoGcdOfActualHomologyIso M N (NeZero.ne N)
+    (tensorStandardResolutionActualHomologyOneIsoStandardEndpoint N M)
+
+/-- Certified Mathlib-derived computation step for `Tor'`, with the explicit standard
+projective resolution already installed in the left-derived functor.  The remaining status is
+only the concrete tensor-complex comparison between Mathlib's `⊗` complex and the hand-coded
+two-term model. -/
+structure MathlibTorPrimeStandardResolutionComputation
+    (M N : ℕ) [NeZero M] [NeZero N] where
+  standardProjectiveResolution : ProjectiveResolution (ModuleCat.of Int (ZMod M))
+  standardProjectiveResolution_complex :
+    standardProjectiveResolution.complex = standardIntResolutionComplex M
+  derivedHomologyEndpoint : ModuleCat Int
+  derivedHomologyEndpoint_eq :
+    derivedHomologyEndpoint = mathlibTensorRightStandardResolutionHomologyOne M N
+  torPrimeEndpointIsoDerivedHomology :
+    mathlibTorPrimeOneEndpoint M N ≅ derivedHomologyEndpoint
+  torPrimeIsoGcd_of_homologyEndpointIso :
+    CategoryTheory.Iso derivedHomologyEndpoint (standardResolutionTorPrimeOneEndpoint M N) →
+      CategoryTheory.Iso (mathlibTorPrimeOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd N M)))
+  actualHomologyIsoStandardEndpoint :
+    tensorStandardResolutionActualHomologyOne M N ≅
+      standardResolutionTorPrimeOneEndpoint M N
+  torPrimeIsoGcd :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M))
+  leftDerivedStatus : AbstractTorComparisonStatus
+  tensorComplexComparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical certified Mathlib-derived computation step for `Tor'`. -/
+noncomputable def mathlibTorPrimeStandardResolutionComputation
+    (M N : ℕ) [NeZero M] [NeZero N] :
+    MathlibTorPrimeStandardResolutionComputation M N where
+  standardProjectiveResolution := standardIntProjectiveResolution M (NeZero.ne M)
+  standardProjectiveResolution_complex := rfl
+  derivedHomologyEndpoint := mathlibTensorRightStandardResolutionHomologyOne M N
+  derivedHomologyEndpoint_eq := rfl
+  torPrimeEndpointIsoDerivedHomology :=
+    mathlibTorPrimeOneEndpointIsoStandardResolutionHomology M N (NeZero.ne M)
+  torPrimeIsoGcd_of_homologyEndpointIso := fun h =>
+    abstractTorPrimeOneIsoGcdOfStandardResolutionHomologyIso M N (NeZero.ne M) h
+  actualHomologyIsoStandardEndpoint :=
+    tensorStandardResolutionActualHomologyOneIsoStandardEndpoint M N
+  torPrimeIsoGcd := abstractTorPrimeOneIsoGcd M N
+  leftDerivedStatus := AbstractTorComparisonStatus.computedViaStandardResolution
+  tensorComplexComparisonStatus := AbstractTorComparisonStatus.computedViaStandardResolution
+
+/-- Certified Mathlib-derived computation step for `Tor`, with the explicit standard
+projective resolution installed in the second tensor variable. -/
+structure MathlibTorStandardResolutionComputation
+    (M N : ℕ) [NeZero M] [NeZero N] where
+  standardProjectiveResolution : ProjectiveResolution (ModuleCat.of Int (ZMod N))
+  standardProjectiveResolution_complex :
+    standardProjectiveResolution.complex = standardIntResolutionComplex N
+  derivedHomologyEndpoint : ModuleCat Int
+  derivedHomologyEndpoint_eq :
+    derivedHomologyEndpoint = mathlibTensorLeftStandardResolutionHomologyOne M N
+  torEndpointIsoDerivedHomology :
+    mathlibTorOneEndpoint M N ≅ derivedHomologyEndpoint
+  torIsoGcd_of_homologyEndpointIso :
+    CategoryTheory.Iso derivedHomologyEndpoint
+        (standardResolutionTorOneSecondVariableEndpoint M N) →
+      CategoryTheory.Iso (mathlibTorOneEndpoint M N)
+        (ModuleCat.of Int (ZMod (Nat.gcd M N)))
+  actualHomologyIsoSecondVariableEndpoint :
+    tensorStandardResolutionActualHomologyOne N M ≅
+      standardResolutionTorOneSecondVariableEndpoint M N
+  torIsoGcd :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N))
+  leftDerivedStatus : AbstractTorComparisonStatus
+  tensorComplexComparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical certified Mathlib-derived computation step for `Tor`. -/
+noncomputable def mathlibTorStandardResolutionComputation
+    (M N : ℕ) [NeZero M] [NeZero N] :
+    MathlibTorStandardResolutionComputation M N where
+  standardProjectiveResolution := standardIntProjectiveResolution N (NeZero.ne N)
+  standardProjectiveResolution_complex := rfl
+  derivedHomologyEndpoint := mathlibTensorLeftStandardResolutionHomologyOne M N
+  derivedHomologyEndpoint_eq := rfl
+  torEndpointIsoDerivedHomology :=
+    mathlibTorOneEndpointIsoStandardResolutionHomology M N (NeZero.ne N)
+  torIsoGcd_of_homologyEndpointIso := fun h =>
+    abstractTorOneIsoGcdOfStandardResolutionHomologyIso M N (NeZero.ne N) h
+  actualHomologyIsoSecondVariableEndpoint :=
+    tensorStandardResolutionActualHomologyOneIsoStandardEndpoint N M
+  torIsoGcd := abstractTorOneIsoGcd M N
+  leftDerivedStatus := AbstractTorComparisonStatus.computedViaStandardResolution
+  tensorComplexComparisonStatus := AbstractTorComparisonStatus.computedViaStandardResolution
 
 /-- PR-facing certificate for the part of T1-4 that is completely direction-compatible
 with Mathlib's `Tor'`: only the categorical comparison between Mathlib's derived endpoint and
@@ -8259,6 +12593,30 @@ noncomputable def concreteTorMathlibBridge (M N : ℕ) [NeZero N] :
   standardResolutionComparison := standardFreeResolutionTorComparison M N
   abstractComparisonStatus := AbstractTorComparisonStatus.abstractDerivedFunctorEndpointPending
 
+/-- Fully certified bridge from Mathlib's abstract `Tor`/`Tor'` endpoints to the concrete
+`ℤ/gcd` computations, for nonzero cyclic inputs. -/
+structure ConcreteTorMathlibCertifiedBridge (M N : ℕ) [NeZero M] [NeZero N] where
+  concreteBridge : ConcreteTorMathlibBridge M N
+  torPrimeComputation : MathlibTorPrimeStandardResolutionComputation M N
+  torComputation : MathlibTorStandardResolutionComputation M N
+  torPrimeIsoGcd :
+    mathlibTorPrimeOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd N M))
+  torIsoGcd :
+    mathlibTorOneEndpoint M N ≅ ModuleCat.of Int (ZMod (Nat.gcd M N))
+  comparisonStatus : AbstractTorComparisonStatus
+
+/-- Canonical fully certified bridge from abstract Mathlib `Tor`/`Tor'` to the explicit
+`ZMod (gcd)` endpoints. -/
+noncomputable def concreteTorMathlibCertifiedBridge
+    (M N : ℕ) [NeZero M] [NeZero N] :
+    ConcreteTorMathlibCertifiedBridge M N where
+  concreteBridge := concreteTorMathlibBridge M N
+  torPrimeComputation := mathlibTorPrimeStandardResolutionComputation M N
+  torComputation := mathlibTorStandardResolutionComputation M N
+  torPrimeIsoGcd := abstractTorPrimeOneIsoGcd M N
+  torIsoGcd := abstractTorOneIsoGcd M N
+  comparisonStatus := AbstractTorComparisonStatus.computedViaStandardResolution
+
 /-- Handle for the reusable low-degree Koszul work.  It packages the explicit
 one- and two-element complexes together with the general model interface already
 proved in this file. -/
@@ -8298,7 +12656,13 @@ noncomputable def mathlibHandleInventoryChecklist :
     Nonempty MathlibAbstractTorFunctorHandle.{uTorHandle, vTorHandle} ∧
     (∀ M N : ℕ, [NeZero N] → Nonempty (AbstractTorPrimeFirstVariableReduction M N)) ∧
     (∀ M N : ℕ, [NeZero M] → Nonempty (AbstractTorSecondVariableReduction M N)) ∧
+    (∀ M N : ℕ, [NeZero M] → [NeZero N] →
+      Nonempty (MathlibTorPrimeStandardResolutionComputation M N)) ∧
+    (∀ M N : ℕ, [NeZero M] → [NeZero N] →
+      Nonempty (MathlibTorStandardResolutionComputation M N)) ∧
     (∀ M N : ℕ, [NeZero N] → Nonempty (ConcreteTorMathlibBridge M N)) ∧
+    (∀ M N : ℕ, [NeZero M] → [NeZero N] →
+      Nonempty (ConcreteTorMathlibCertifiedBridge M N)) ∧
     (∀ (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
       Nonempty (KoszulReuseHandle R M)) := by
   exact
@@ -8310,7 +12674,10 @@ noncomputable def mathlibHandleInventoryChecklist :
       ⟨mathlibAbstractTorFunctorHandle⟩,
       (fun M N _ => ⟨abstractTorPrimeFirstVariableReduction M N⟩),
       (fun M N _ => ⟨abstractTorSecondVariableReduction M N⟩),
+      (fun M N _ _ => ⟨mathlibTorPrimeStandardResolutionComputation M N⟩),
+      (fun M N _ _ => ⟨mathlibTorStandardResolutionComputation M N⟩),
       (fun M N _ => ⟨concreteTorMathlibBridge M N⟩),
+      (fun M N _ _ => ⟨concreteTorMathlibCertifiedBridge M N⟩),
       (fun R _ M _ _ => ⟨koszulReuseHandle R M⟩)⟩
 
 end MathlibHandleInventory
@@ -8371,17 +12738,70 @@ section AxiomAudit
 #print axioms Fmod_iff_dvd
 #print axioms Fp_adic_iff_dvd
 #print axioms FEC_iff_dvd
+#print axioms concreteECIntegralCurve
+#print axioms concreteECModPCurve
+#print axioms concreteECModPEquation_iff
+#print axioms ConcreteECModPAffineSolutions
+#print axioms ConcreteECModPPoints
+#print axioms concreteECPointCount
+#print axioms concreteECPointCount_eq_affine_add_one
+#print axioms concreteECTrace
+#print axioms concreteECLocalFactorPolynomial
+#print axioms concreteECLocalFactorPolynomial_eval
+#print axioms ECOrdSSTag
+#print axioms ECOrdinary
+#print axioms ECSupersingular
+#print axioms ECOrdSSTagCertificate
+#print axioms HasseBoundCertificate
+#print axioms HasseBoundCertificate.trace_abs_le
+#print axioms ECConcreteLayerProfile
+#print axioms ECConcreteLayerProfile.fec_iff_modPrime
+#print axioms ECConcreteLayerProfile.fec_iff_dvd_primeMod
+#print axioms ecConcreteLayerProfileOf
+#print axioms EllipticCurveECLayerChecklist
+#print axioms ellipticCurveECLayerChecklist
+#print axioms powPadicCongruence
+#print axioms BuchiValuationGate
+#print axioms int_pow_dvd_iff_powPadicCongruence
+#print axioms padicValInt_gate_iff_pow_dvd
+#print axioms padicValInt_ge_iff_pow_dvd_of_ne_zero
+#print axioms intCast_mem_padicInt_span_pow_iff
+#print axioms padicInt_span_pow_iff_powPadicCongruence
+#print axioms buchiDenominator
+#print axioms buchiNumerator
+#print axioms buchiPhi
+#print axioms buchiDenominator_ne_zero
+#print axioms padicValRat_buchiPhi
+#print axioms NumericGateBuchiProfile
+#print axioms NumericGateBuchiProfile.fnum_iff_powPadicCongruence
+#print axioms NumericGateBuchiProfile.fnum_iff_valuationGate
+#print axioms NumericGateBuchiProfile.fnum_iff_padicInt_span
+#print axioms PadicLogBridgeCertificate
+#print axioms PadicLogBridgeCertificate.log_bound_of_valuationGate
+#print axioms PadicLogBridgeCertificate.log_bound_of_powPadicCongruence
+#print axioms PadicNumericGateChecklist
+#print axioms padicNumericGateChecklist
 #print axioms arithmeticPrimeSpectrumTopCat
 #print axioms arithmeticBasicOpen
 #print axioms arithmeticBasicOpen_mul
 #print axioms arithmeticConstantIntPresheaf
 #print axioms arithmeticConstantIntPresheaf_restrict_value
+#print axioms arithmeticIntFunctionSheaf
+#print axioms arithmeticIntFunctionSheaf_presheaf
+#print axioms arithmeticIntFunctionSheaf_isSheaf
+#print axioms arithmeticIntFunctionSheaf_const
+#print axioms arithmeticIntFunctionSheaf_const_restrict
+#print axioms arithmeticConstantIntToFunction
+#print axioms arithmeticConstantIntToFunction_restrict
 #print axioms arithmeticPredicatePresheaf
 #print axioms arithmeticPredicatePresheafInclusion
 #print axioms arithmeticPredicatePresheaf_restrict_value
 #print axioms fourLayerGatePresheaf
 #print axioms fourLayerGateSectionsEquivIntersection
 #print axioms fourLayerGate_restrict_value
+#print axioms fourLayerGatePresheafInclusion
+#print axioms fourLayerGatePresheafInclusion_app
+#print axioms fourLayerGatePresheafInclusion_naturality_value
 #print axioms modCritical_AP
 #print axioms numericCritical_AP
 #print axioms pAdicCritical_AP
@@ -8410,6 +12830,16 @@ section AxiomAudit
 #print axioms arithmeticCech_twoOpen_exact
 #print axioms arithmeticCech_compatible_iff_gluable
 #print axioms arithmeticCech_range_eq_kernel
+#print axioms arithmeticCechCompatiblePairs
+#print axioms arithmeticCechGluablePairs
+#print axioms arithmeticCech_mem_compatiblePairs_iff
+#print axioms arithmeticCech_mem_gluablePairs_iff
+#print axioms arithmeticCech_gluablePairs_eq_compatiblePairs
+#print axioms arithmeticCechH0Image
+#print axioms arithmeticCechH0Equalizer
+#print axioms arithmeticCechH0ImageEquivEqualizer
+#print axioms arithmeticCechH0ImageEquivEqualizer_apply
+#print axioms arithmeticCech_same_local_iff_lcm_dvd_sub
 #print axioms arithmeticCechH1EquivZModGcd
 #print axioms arithmeticCechH1_card
 #print axioms ArithmeticTwoOpenCechSheafCertificate
@@ -8446,7 +12876,16 @@ section AxiomAudit
 #print axioms standardIntResolutionQuotient_ker_eq_zmultiples
 #print axioms standardIntResolutionD1_range_eq_quotient_ker
 #print axioms standardIntResolutionQuotient_surjective
+#print axioms standardIntResolution_linear_exact
+#print axioms standardIntResolutionAugmentation_f_zero_isColimitCokernelCofork
 #print axioms standardIntResolutionD1_ker_eq_bot_of_ne_zero
+#print axioms standardIntResolutionComplex_exactAt_one_of_ne_zero
+#print axioms standardIntResolutionComplex_exactAt_succ_succ
+#print axioms standardIntResolutionComplex_exactAt_succ_of_ne_zero
+#print axioms standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero
+#print axioms standardIntResolutionAugmentation_quasiIsoAt_zero
+#print axioms standardIntResolutionAugmentation_quasiIso_of_ne_zero
+#print axioms standardIntProjectiveResolution
 #print axioms StandardIntResolutionCertificate
 #print axioms standardIntResolutionCertificate
 #print axioms tensorStandardResolutionD1
@@ -8461,6 +12900,18 @@ section AxiomAudit
 #print axioms tensorStandardResolutionComplex
 #print axioms tensorStandardResolutionComplex_d_one_zero
 #print axioms tensorStandardResolutionComplex_d_succ_succ
+#print axioms tensorRightStandardResolutionComplexComponentIso
+#print axioms tensorLeftStandardResolutionComplexComponentIso
+#print axioms tensorRightAppliedStandardResolutionComplex
+#print axioms tensorLeftAppliedStandardResolutionComplex
+#print axioms standardIntMulLeftModuleHom
+#print axioms zmodMulLeftModuleHom
+#print axioms zmodLeftUnitorHom
+#print axioms zmodRightUnitorHom
+#print axioms zmodLeftUnitor_comp_zmodMulLeftModuleHom
+#print axioms zmodRightUnitor_comp_zmodMulLeftModuleHom
+#print axioms tensorRightStandardResolutionComplexIso
+#print axioms tensorLeftStandardResolutionComplexIso
 #print axioms tensorStandardResolutionCycles1_eq_kernel
 #print axioms tensorStandardResolutionD2_range_eq_bot
 #print axioms tensorStandardResolutionBoundaries1_eq_bot
@@ -8477,10 +12928,32 @@ section AxiomAudit
 #print axioms standardResolutionTorOneEndpoint
 #print axioms standardResolutionTorOneEndpointIsoConcrete
 #print axioms standardResolutionTorOneEndpointIsoGcd
+#print axioms tensorStandardResolutionComplex_scPrimeOne_f_eq_zero
+#print axioms tensorStandardResolutionLinearKerIsoCycles1
+#print axioms tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint
+#print axioms tensorStandardResolutionScPrimeOneHomologyIsoStandardEndpoint
+#print axioms tensorStandardResolutionActualHomologyOne
+#print axioms tensorStandardResolutionActualHomologyOneIsoStandardEndpoint
 #print axioms standardResolutionTorPrimeOneEndpoint
 #print axioms standardResolutionTorPrimeOneEndpointIsoGcd
 #print axioms standardResolutionTorOneSecondVariableEndpoint
 #print axioms standardResolutionTorOneSecondVariableEndpointIsoGcd
+#print axioms mathlibTensorRightStandardResolutionHomologyOne
+#print axioms mathlibTensorLeftStandardResolutionHomologyOne
+#print axioms mathlibTensorRightStandardResolutionHomologyOneIsoActualHomology
+#print axioms mathlibTensorLeftStandardResolutionHomologyOneIsoActualHomology
+#print axioms mathlibTorPrimeOneEndpointIsoStandardResolutionHomology
+#print axioms mathlibTorOneEndpointIsoStandardResolutionHomology
+#print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionHomologyIso
+#print axioms abstractTorOneIsoGcdOfStandardResolutionHomologyIso
+#print axioms abstractTorPrimeOneIsoGcdOfActualHomologyIso
+#print axioms abstractTorOneIsoGcdOfActualHomologyIso
+#print axioms abstractTorPrimeOneIsoGcd
+#print axioms abstractTorOneIsoGcd
+#print axioms MathlibTorPrimeStandardResolutionComputation
+#print axioms mathlibTorPrimeStandardResolutionComputation
+#print axioms MathlibTorStandardResolutionComputation
+#print axioms mathlibTorStandardResolutionComputation
 #print axioms StandardFreeResolutionTorComparison
 #print axioms standardFreeResolutionTorComparison
 #print axioms prod_primePower_factorization_eq_self
@@ -8588,6 +13061,98 @@ section AxiomAudit
 #print axioms lowDegreeKoszulComplexModel_complex_pair
 #print axioms lowDegreeKoszulComplexModel_acyclic_iff_isWeaklyRegular
 #print axioms lowDegreeKoszulComplexModel_lowDegreeCertificate_iff_acyclic
+#print axioms koszulFreeModule
+#print axioms koszulSequenceVector
+#print axioms koszulSequenceVector_singleton_zero
+#print axioms koszulSequenceVector_pair_zero
+#print axioms koszulSequenceVector_pair_one
+#print axioms koszulSequenceVector_map_length
+#print axioms koszulSequenceVector_map_algebraMap
+#print axioms exteriorKoszulAlgebra
+#print axioms exteriorKoszulGenerator
+#print axioms exteriorKoszulGenerator_sq
+#print axioms exteriorKoszulTotalDifferential
+#print axioms exteriorKoszulTotalDifferential_apply
+#print axioms exteriorKoszulTotalDifferential_sq
+#print axioms exteriorKoszulTotalTensorTerm
+#print axioms exteriorKoszulTotalTensorDifferential
+#print axioms exteriorKoszulTotalTensorDifferential_tmul
+#print axioms exteriorKoszulTotalTensorDifferential_sq
+#print axioms linearMap_baseChange_comp_self_eq_zero
+#print axioms exteriorKoszulTotalBaseChangeDifferential
+#print axioms exteriorKoszulTotalBaseChangeDifferential_tmul
+#print axioms exteriorKoszulTotalBaseChangeDifferential_sq
+#print axioms ExteriorKoszulTotalBaseChangeCertificate
+#print axioms exteriorKoszulTotalBaseChangeCertificate
+#print axioms exteriorKoszulScalarTargetAlgebra
+#print axioms exteriorKoszulScalarTargetSequenceVector
+#print axioms exteriorKoszulScalarTargetSequenceVector_apply
+#print axioms exteriorKoszulScalarTargetGenerator
+#print axioms exteriorKoszulScalarTargetGenerator_sq
+#print axioms exteriorKoszulScalarTargetDifferential
+#print axioms exteriorKoszulScalarTargetDifferential_apply
+#print axioms exteriorKoszulScalarTargetDifferential_sq
+#print axioms exteriorKoszulScalarTargetTensorTerm
+#print axioms exteriorKoszulScalarTargetTensorDifferential
+#print axioms exteriorKoszulScalarTargetTensorDifferential_tmul
+#print axioms exteriorKoszulScalarTargetTensorDifferential_sq
+#print axioms exteriorKoszulTotalTensorBaseChangeDifferential
+#print axioms exteriorKoszulTotalTensorBaseChangeDifferential_tmul
+#print axioms exteriorKoszulTotalTensorBaseChangeDifferential_sq
+#print axioms ExteriorKoszulTotalTensorBaseChangeCertificate
+#print axioms exteriorKoszulTotalTensorBaseChangeCertificate
+#print axioms koszulFreeModuleScalarMap
+#print axioms koszulFreeModuleScalarMap_apply
+#print axioms exteriorKoszulTargetIotaRestrictScalars
+#print axioms exteriorKoszulTargetIotaRestrictScalars_apply
+#print axioms exteriorKoszulAlgebraScalarMap
+#print axioms exteriorKoszulAlgebraScalarMap_ι
+#print axioms exteriorKoszulAlgebraScalarMap_generator
+#print axioms exteriorKoszulAlgebraBaseChangeAlgHom
+#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul
+#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul_generator
+#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines_tmul
+#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines
+#print axioms exteriorKoszulTotalTensorBaseChangeMap
+#print axioms exteriorKoszulTotalTensorBaseChangeMap_tmul
+#print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines_tmul
+#print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines
+#print axioms ExteriorKoszulTotalTensorComparisonCertificate
+#print axioms exteriorKoszulTotalTensorComparisonCertificate
+#print axioms exteriorKoszulAlgebraBaseChangeLinearEquiv
+#print axioms exteriorKoszulAlgebraBaseChangeLinearEquivOfList
+#print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv
+#print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv_tmul
+#print axioms ExteriorKoszulTotalTensorIsoComparisonCertificate
+#print axioms exteriorKoszulTotalTensorIsoComparisonCertificate
+#print axioms ExteriorKoszulScalarTargetCertificate
+#print axioms exteriorKoszulScalarTargetCertificate
+#print axioms exteriorKoszulMappedTargetAlgebra
+#print axioms exteriorKoszulMappedTargetGenerator
+#print axioms exteriorKoszulMappedTargetGenerator_sq
+#print axioms exteriorKoszulMappedTargetDifferential
+#print axioms exteriorKoszulMappedTargetDifferential_apply
+#print axioms exteriorKoszulMappedTargetDifferential_sq
+#print axioms ExteriorKoszulMappedTargetCertificate
+#print axioms exteriorKoszulMappedTargetCertificate
+#print axioms ExteriorKoszulTotalFlatBaseChangeCertificate
+#print axioms exteriorKoszulTotalFlatBaseChangeCertificate
+#print axioms koszulR1Mul_baseChange
+#print axioms koszulR1Mul_baseChange_tmul
+#print axioms KoszulR1BaseChangeDifferentialCertificate
+#print axioms koszulR1BaseChangeDifferentialCertificate
+#print axioms koszulR1FlatBaseChangeDifferentialCertificate
+#print axioms linearMap_baseChange_comp_eq_zero
+#print axioms koszulR2Left_baseChange
+#print axioms koszulR2Right_baseChange
+#print axioms koszulR2_baseChange_comp_eq_zero
+#print axioms KoszulR2BaseChangeDifferentialCertificate
+#print axioms koszulR2BaseChangeDifferentialCertificate
+#print axioms koszulR2FlatBaseChangeDifferentialCertificate
+#print axioms KoszulFlatBaseChangeLowDegreeAndTotalCertificate
+#print axioms koszulFlatBaseChangeLowDegreeAndTotalCertificate
+#print axioms ExteriorKoszulTotalCore
+#print axioms exteriorKoszulTotalCore
 #print axioms KoszulRegularAcyclicityInterface
 #print axioms koszulAcyclic_iff_isRegular_of_interface
 #print axioms koszulLowDegreePositiveAcyclic_of_isRegular_length_le_two
@@ -8825,6 +13390,25 @@ section AxiomAudit
 #print axioms quadraticEulerPartialProduct_eq_mul
 #print axioms quadraticEulerProduct_hasProd_of_linear
 #print axioms quadraticEulerProduct_tprod_of_linear
+#print axioms normalizedPrimeScale
+#print axioms frobeniusLinearTerm
+#print axioms frobeniusLinearDenominator
+#print axioms FrobeniusRootDecomposition
+#print axioms normalizedPrimeScale_norm
+#print axioms sqrt_mul_normalizedPrimeScale_norm
+#print axioms hasProd_inv_of_ne_zero
+#print axioms frobeniusLinearTerm_norm_of_abs
+#print axioms frobeniusLinearTerm_summable_of_abs
+#print axioms frobeniusLinearDenominator_ne_zero_of_abs
+#print axioms frobeniusLinearEulerDenominator_multipliable_of_abs
+#print axioms frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs
+#print axioms frobeniusLinearEuler_hasProd_of_abs
+#print axioms quadraticEulerLocalFactorAt
+#print axioms quadraticEulerLocalFactorAt_eq_mul
+#print axioms quadraticEulerProductAt_hasProd_of_frobenius
+#print axioms quadraticEulerProductAt_tprod_of_frobenius
+#print axioms QuadraticEulerProductConvergenceCertificate
+#print axioms quadraticEulerProductConvergenceCertificateOfFrobenius
 #print axioms zetaULSeries
 #print axioms zetaULSeries_summable_of_abscissa_lt
 #print axioms zetaULSeries_deriv
@@ -8866,6 +13450,55 @@ section AxiomAudit
 #print axioms SixFunctorData.projectionFormula_terms_constructible
 #print axioms SixFunctorData.shriek_tensor_pull_constructible
 #print axioms SixFunctorData.tensor_shriek_constructible
+#print axioms Def21StratifiedSheafInterface
+#print axioms def21ShriekSummand
+#print axioms Def21StratifiedSheafInterface.stratum_fintype
+#print axioms Def21StratifiedSheafInterface.locallyClosed
+#print axioms Def21StratifiedSheafInterface.localSystem_lisse_apply
+#print axioms Def21StratifiedSheafInterface.summand_constructible
+#print axioms Def21StratifiedSheafInterface.realizes_directSum
+#print axioms Def21StratifiedSheafInterface.assembled_constructible
+#print axioms def21_conditional_assembled_constructible
+#print axioms Def21ActualSheafConstructionGap
+#print axioms Def21ActualSheafConstructionGap.allIngredientsAvailable
+#print axioms Def21ActualSheafConstructionGap.not_allIngredientsAvailable
+#print axioms Def21ActualSheafConstructionGap.no_actual_constructor
+#print axioms Def21ActualSheafConstructionGap.missing_etale_category
+#print axioms Def21ActualSheafConstructionGap.missing_lisse_theory
+#print axioms Def21ActualSheafConstructionGap.missing_extension_by_zero
+#print axioms Def21ActualSheafConstructionGap.missing_finite_direct_sums
+#print axioms def21ActualSheafConstructionGap
+#print axioms def21_actual_constructor_unavailable
+#print axioms SheafKoszulModel
+#print axioms SheafKoszulModel.differential_square_zero
+#print axioms SheafKoszulModel.term_constructible
+#print axioms SheafKoszulModel.positive_acyclic_of_regular
+#print axioms SheafKoszulModel.positive_subsingleton_of_acyclic
+#print axioms SheafKoszulModel.positive_subsingleton_of_regular
+#print axioms SheafKoszulModel.eq_of_positive_degree
+#print axioms SheafKoszulAcyclicityConclusion
+#print axioms SheafKoszulAcyclicityConclusion.positive_acyclic
+#print axioms SheafKoszulAcyclicityConclusion.positive_subsingleton
+#print axioms SheafKoszulAcyclicityConclusion.eq_of_positive_degree
+#print axioms sheafKoszulAcyclicityConclusion
+#print axioms thm30_sheafKoszul_positive_acyclic
+#print axioms thm30_sheafKoszul_positive_subsingleton
+#print axioms SheafKoszulWeightTraceReadiness
+#print axioms SheafKoszulWeightTraceReadiness.term_constructible
+#print axioms SheafKoszulWeightTraceReadiness.positive_acyclic
+#print axioms SheafKoszulWeightTraceReadiness.positive_subsingleton
+#print axioms cor27_sheafKoszul_weightTraceReadiness
+#print axioms SheafKoszulChartwiseCertificate
+#print axioms SheafKoszulChartwiseCertificate.sheaf_regular
+#print axioms SheafKoszulChartwiseCertificate.positive_acyclic
+#print axioms SheafKoszulChartwiseCertificate.positive_subsingleton
+#print axioms SheafKoszulChartwiseConclusion
+#print axioms SheafKoszulChartwiseConclusion.sheaf_regular
+#print axioms SheafKoszulChartwiseConclusion.positive_acyclic
+#print axioms SheafKoszulChartwiseConclusion.positive_subsingleton
+#print axioms cor31_sheafKoszul_chartwiseConclusion
+#print axioms cor31_sheafKoszul_positive_acyclic
+#print axioms cor31_sheafKoszul_positive_subsingleton
 #print axioms CurveFactorization
 #print axioms CurveFactorization.fullMap
 #print axioms CurveFactorization.fullMap_def
@@ -8906,6 +13539,39 @@ section AxiomAudit
 #print axioms WeilIIPackage.pure_weight_radiusBound
 #print axioms WeilIIPackage.mixed_weight_radiusBound
 #print axioms WeilIIPackage.weightRadius_pos_apply
+#print axioms ECWeilICompatibility
+#print axioms ECWeilICompatibility.hasse_bound
+#print axioms ECWeilICompatibility.h1_radiusBound_sqrt
+#print axioms ECWeilICompatibility.h1_eigenvalue_norm_le_sqrt
+#print axioms ecWeilICompatibilityOfPure
+#print axioms openClosedOpenTerm
+#print axioms openClosedClosedTerm
+#print axioms openClosedOpenTerm_def
+#print axioms openClosedClosedTerm_def
+#print axioms openClosedOpenTerm_constructible
+#print axioms openClosedClosedTerm_constructible
+#print axioms openClosed_terms_constructible
+#print axioms openClosedWeightTriangle
+#print axioms openClosedWeightTriangle_def
+#print axioms openClosedWeightTriangle_distinguished
+#print axioms OpenClosedWeightControl
+#print axioms OpenClosedWeightControl.middle_constructible
+#print axioms OpenClosedWeightControl.open_constructible
+#print axioms OpenClosedWeightControl.closed_constructible
+#print axioms OpenClosedWeightControl.distinguished_triangle
+#print axioms OpenClosedWeightControl.open_weightRadius_eq_middle
+#print axioms OpenClosedWeightControl.closed_weightRadius_eq_middle
+#print axioms OpenClosedWeightControl.middle_mixedLE_of_open_closed
+#print axioms OpenClosedWeightControl.open_mixedLE_of_middle_closed
+#print axioms OpenClosedWeightControl.closed_mixedLE_of_open_middle
+#print axioms OpenClosedWeightControl.middle_radiusBound_of_open_closed
+#print axioms OpenClosedWeightControl.open_radiusBound_middleRadius_of_mixedLE
+#print axioms OpenClosedWeightControl.closed_radiusBound_middleRadius_of_mixedLE
+#print axioms OpenClosedWeightControl.defect_concentrated_on_closed
+#print axioms openClosedWeightControlOfPackages
+#print axioms cor35_openClosed_middle_mixedLE_of_open_closed
+#print axioms cor35_openClosed_middle_radiusBound_of_open_closed
+#print axioms cor35_openClosed_defect_concentrated_on_closed
 #print axioms DetTraceRadiusCertificate
 #print axioms DetTraceRadiusCertificate.radius_of_radiusBound
 #print axioms prop38_radius_limit_of_pure
@@ -8956,6 +13622,45 @@ section AxiomAudit
 #print axioms cor45_globalPurityB_radiusLimit
 #print axioms cor46_globalPurityB_logDerivative_expansion
 #print axioms cor46_globalPurityB_matrixTrace_logDerivative_expansion
+#print axioms DetectorPackage
+#print axioms DetectorPackage.etale_silent_of_good
+#print axioms DetectorPackage.motivic_silent_of_good
+#print axioms DetectorPackage.cotangent_silent_of_good
+#print axioms DetectorPackage.etale_bump_subsingleton_of_silent
+#print axioms DetectorPackage.etale_silent_of_bump_subsingleton
+#print axioms DetectorPackage.motivic_jump_subsingleton_of_silent
+#print axioms DetectorPackage.motivic_silent_of_jump_subsingleton
+#print axioms DetectorPackage.cotangent_defect_subsingleton_of_silent
+#print axioms DetectorPackage.cotangent_silent_of_defect_subsingleton
+#print axioms DetectorPackage.all_silent_of_good
+#print axioms DetectorPackage.all_detector_invariants_subsingleton_of_good
+#print axioms DetectorPackage.etale_silent_iff_motivic_silent
+#print axioms DetectorPackage.motivic_silent_iff_cotangent_silent
+#print axioms DetectorPackage.etale_silent_iff_cotangent_silent
+#print axioms DetectorPackage.detectors_tfae
+#print axioms DetectorPackage.EtaleActive
+#print axioms DetectorPackage.MotivicActive
+#print axioms DetectorPackage.CotangentActive
+#print axioms DetectorPackage.etale_active_iff_motivic_active
+#print axioms DetectorPackage.motivic_active_iff_cotangent_active
+#print axioms DetectorPackage.etale_active_iff_cotangent_active
+#print axioms DetectorPackage.active_detectors_tfae
+#print axioms DetectorPackage.no_etale_active_of_good
+#print axioms DetectorPackage.no_motivic_active_of_good
+#print axioms DetectorPackage.no_cotangent_active_of_good
+#print axioms DetectorPackage.no_detector_active_of_good
+#print axioms DetectorGoodPrimeConclusion
+#print axioms DetectorGoodPrimeConclusion.detectors_silent
+#print axioms DetectorGoodPrimeConclusion.invariants_subsingleton
+#print axioms DetectorGoodPrimeConclusion.silent_tfae
+#print axioms DetectorGoodPrimeConclusion.active_tfae
+#print axioms DetectorGoodPrimeConclusion.no_detector_active
+#print axioms detectorGoodPrimeConclusion
+#print axioms section72_good_prime_detectors_silent
+#print axioms section72_good_prime_detector_invariants_subsingleton
+#print axioms section72_detector_equivalence_tfae
+#print axioms section72_detector_active_equivalence_tfae
+#print axioms section72_good_prime_no_detector_active
 #print axioms WeightPurityGate
 #print axioms weightPurityGate_pure
 #print axioms weightPurityGate_detTraceExpansion
@@ -8973,6 +13678,28 @@ section AxiomAudit
 #print axioms FaithfulEquivalenceCConclusion.rh_tp_gate_tfae
 #print axioms equivalence_C_faithful
 #print axioms equivalence_C_faithful_rh_iff_tp
+#print axioms matrixDetOneSubPolynomial
+#print axioms matrixDetOneSubPolynomial_eq_det
+#print axioms localEulerDenominatorFromEigenvalueList_eq_zero_iff
+#print axioms localEulerDenominatorFromEigenvalues_eq_zero_iff
+#print axioms localListZerosOnCircle_iff_localEigenvalueListOnCircle
+#print axioms localRHShiftedRadius_pos
+#print axioms LocalRHDeterminantFactorCertificate
+#print axioms LocalRHDeterminantFactorCertificate.determinant_pole_iff_inverse_eigenvalue
+#print axioms LocalRHDeterminantFactorCertificate.determinantPolesOnCircle_iff_eigenvaluesOnCircle
+#print axioms RealizesFrobeniusEigenvalueSet
+#print axioms LocalRHGate
+#print axioms localRHGate_iff_weil_frobenius_abs
+#print axioms localRHGate_of_weil_pure
+#print axioms localRHGate_of_weightPurityGate
+#print axioms localRHGate_of_weil_pure_shifted
+#print axioms LocalRHWeightCertificate
+#print axioms LocalRHWeightCertificate.pure_iff_localRH
+#print axioms LocalRHWeightGate
+#print axioms LocalRHEquivalenceCGate
+#print axioms equivalenceCGate_iff_localRHEquivalenceCGate
+#print axioms equivalence_C_faithful_localRH_tfae
+#print axioms equivalence_C_faithful_localRH_iff_tp
 #print axioms ConcreteSurrogateCertificate
 #print axioms ConcreteSurrogateCertificate.tor_equiv
 #print axioms ConcreteSurrogateCertificate.cech_equiv
@@ -8998,6 +13725,12 @@ section AxiomAudit
 #print axioms formalAlgebraCoreCertificate
 #print axioms ExistingAnalogReuseCertificate
 #print axioms existingAnalogReuseCertificate
+#print axioms QuadraticEulerConvergenceChecklist
+#print axioms quadraticEulerConvergenceChecklist
+#print axioms LocalRHRadiusChecklist
+#print axioms localRHRadiusChecklist
+#print axioms EllipticCurveECLayerChecklist
+#print axioms ellipticCurveECLayerChecklist
 #print axioms MathlibGapWorkaroundChecklist
 #print axioms mathlibGapWorkaroundChecklist
 #print axioms FaithfullyFlatBaseChangeHandle
@@ -9030,6 +13763,8 @@ section AxiomAudit
 #print axioms abstractTorSecondVariableReduction
 #print axioms ConcreteTorMathlibBridge
 #print axioms concreteTorMathlibBridge
+#print axioms ConcreteTorMathlibCertifiedBridge
+#print axioms concreteTorMathlibCertifiedBridge
 #print axioms KoszulReuseHandle
 #print axioms koszulReuseHandle
 #print axioms mathlibHandleInventoryChecklist
