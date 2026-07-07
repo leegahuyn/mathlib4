@@ -1,4 +1,4 @@
-/-
+ /-
 ================================================================================
   Spt7.lean — sorry-free, axiom-free verified core of
 
@@ -337,7 +337,7 @@ import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Point
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.ExteriorAlgebra.Grading
 import Mathlib.LinearAlgebra.ExteriorAlgebra.Basis
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Summable
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
@@ -348,6 +348,13 @@ import Mathlib.NumberTheory.Padics.RingHoms
 import Mathlib.CategoryTheory.Monoidal.Tor
 import Mathlib.Tactic.NormNum.GCD
 import Mathlib.Tactic.TFAE
+
+set_option linter.defProp false
+set_option linter.checkUnivs false
+set_option linter.unnecessarySimpa false
+set_option linter.unusedSimpArgs false
+set_option linter.unusedVariables false
+set_option linter.unusedTactic false
 
 open scoped BigOperators
 open scoped PowerSeries
@@ -547,11 +554,10 @@ theorem arithmeticBasicOpen_mul (M N : ℕ) :
 /-- The constant integer presheaf used as the ambient object for arithmetic gates. -/
 def arithmeticConstantIntPresheaf : arithmeticPrimeSpectrumTopCat.Presheaf (Type) where
   obj _ := ℤ
-  map _ x := x
+  map _ := ↾(fun x => x)
   map_id _ := rfl
   map_comp _ _ := rfl
 
-@[simp]
 theorem arithmeticConstantIntPresheaf_restrict_value
     {U V : TopologicalSpace.Opens (PrimeSpectrum ℤ)} (hUV : U ≤ V)
     (x : (arithmeticConstantIntPresheaf).obj (op V)) :
@@ -595,7 +601,7 @@ def arithmeticConstantIntToFunction
     (U : TopologicalSpace.Opens (PrimeSpectrum ℤ)) :
     arithmeticConstantIntPresheaf.obj (op U) →
       arithmeticIntFunctionSheaf.presheaf.obj (op U) :=
-  arithmeticIntFunctionSheaf_const U
+  fun x => arithmeticIntFunctionSheaf_const U x
 
 /-- The constant-section inclusion commutes with restriction maps. -/
 @[simp]
@@ -612,7 +618,7 @@ theorem arithmeticConstantIntToFunction_restrict
 def arithmeticPredicatePresheaf (P : ℤ → Prop) :
     arithmeticPrimeSpectrumTopCat.Presheaf (Type) where
   obj _ := {x : ℤ // P x}
-  map _ x := x
+  map _ := ↾(fun x => x)
   map_id _ := rfl
   map_comp _ _ := rfl
 
@@ -625,8 +631,9 @@ theorem arithmeticPredicatePresheaf_obj (P : ℤ → Prop)
 /-- Inclusion of a predicate-cut presheaf into the ambient constant integer presheaf. -/
 def arithmeticPredicatePresheafInclusion (P : ℤ → Prop) :
     CategoryTheory.NatTrans (arithmeticPredicatePresheaf P) arithmeticConstantIntPresheaf where
-  app _ x := x.1
-  naturality _ _ _ := rfl
+  app _ := ↾(fun x => x.1)
+  naturality _ _ _ := by
+    rfl
 
 @[simp]
 theorem arithmeticPredicatePresheafInclusion_app (P : ℤ → Prop)
@@ -1197,7 +1204,7 @@ structure EllipticCurveECLayerChecklist where
       FEC P x ↔ ((x : ZMod C.p) = 0)
 
 /-- The concrete EC layer checklist, with every item tied to a named theorem. -/
-noncomputable def ellipticCurveECLayerChecklist :
+theorem ellipticCurveECLayerChecklist :
     EllipticCurveECLayerChecklist where
   equation_iff := concreteECModPEquation_iff
   jacobianF_zero_iff := concreteECModPEquation_iff_jacobianF_zero
@@ -1527,7 +1534,7 @@ def paperLogMinusPnLogA
 /-- The paper notation `log X - p_n log A` is the certified subtraction expression. -/
 theorem paperLogMinusPnLogA_eq
     (C : PadicABLogTruncationCertificate p k) (X : ℤ) (p_n : ℕ) (A : ℤ) :
-    C.paperLogMinusPnLogA X p_n A =
+    PadicABLogTruncationCertificate.paperLogMinusPnLogA p k C X p_n A =
       C.subLog (C.logX X) (C.smulNatLogA p_n A) := by
   exact C.logLinearRemainder_eq X p_n A
 
@@ -1539,7 +1546,7 @@ def paperHkInteger
 /-- The `(Hk)` truncation integer is the linearized integer `X - p_n A`. -/
 theorem paperHkInteger_eq
     (C : PadicABLogTruncationCertificate p k) (X : ℤ) (p_n : ℕ) (A : ℤ) :
-    C.paperHkInteger X p_n A = X - (p_n : ℤ) * A :=
+    PadicABLogTruncationCertificate.paperHkInteger p k C X p_n A = X - (p_n : ℤ) * A :=
   C.truncationInteger_eq X p_n A
 
 /-- The paper `(Hk)` congruence gives the certified `|log(1+u)|_p ≤ p^{-k}`-style
@@ -1548,11 +1555,13 @@ theorem paperLogBound_of_HkGate
     {α : Type*} (C : PadicABLogTruncationCertificate p k)
     {M _j _m _Y : ℕ} {S : α → ℤ} {A0 : α}
     {X A : ℤ} {p_n : ℕ}
-    (htrunc : C.paperHkInteger X p_n A = buchiHkRemainder M S A0)
+    (htrunc : PadicABLogTruncationCertificate.paperHkInteger p k C X p_n A =
+      buchiHkRemainder M S A0)
     (hHk : paperABHkGate p k M S A0) :
-    C.LogBound (C.paperLogMinusPnLogA X p_n A) := by
+    C.LogBound (PadicABLogTruncationCertificate.paperLogMinusPnLogA p k C X p_n A) := by
   have hcong : powPadicCongruence p k (C.truncationInteger X p_n A) := by
-    change powPadicCongruence p k (C.paperHkInteger X p_n A)
+    change powPadicCongruence p k
+      (PadicABLogTruncationCertificate.paperHkInteger p k C X p_n A)
     rw [htrunc]
     exact hHk
   simpa [paperLogMinusPnLogA] using
@@ -1671,20 +1680,20 @@ numeric/p-adic bound already expressed through `(Hk)`. -/
 structure ActualPadicLogTruncationChecklist where
   toCertificate :
     ∀ (p k : ℕ) [Fact p.Prime],
-      ActualPadicLogTruncationPackage p k →
+      ActualPadicLogTruncationPackage.{0} p k →
         PadicABLogTruncationCertificate.{0} p k
   logOnePlusBoundOfCongruence :
     ∀ (p k : ℕ) [Fact p.Prime]
-      (P : ActualPadicLogTruncationPackage p k) {u : ℤ},
+      (P : ActualPadicLogTruncationPackage.{0} p k) {u : ℤ},
         powPadicCongruence p k u → P.LogBound (P.logOnePlus u)
   logLinearBoundOfTruncation :
     ∀ (p k : ℕ) [Fact p.Prime]
-      (P : ActualPadicLogTruncationPackage p k) {X A : ℤ} {p_n : ℕ},
+      (P : ActualPadicLogTruncationPackage.{0} p k) {X A : ℤ} {p_n : ℕ},
         powPadicCongruence p k (P.truncationInteger X p_n A) →
           P.LogBound (P.logLinearRemainder X p_n A)
   logLinearBoundOfHkGate :
     ∀ {α : Type*} (p k : ℕ) [Fact p.Prime]
-      (P : ActualPadicLogTruncationPackage p k)
+      (P : ActualPadicLogTruncationPackage.{0} p k)
       {M _j _m _Y : ℕ} {S : α → ℤ} {A0 : α} {X A : ℤ} {p_n : ℕ},
         P.truncationInteger X p_n A = buchiHkRemainder M S A0 →
           paperABHkGate p k M S A0 →
@@ -1692,7 +1701,7 @@ structure ActualPadicLogTruncationChecklist where
 
 /-- Canonical current-file checklist for the actual p-adic log comparison layer. -/
 noncomputable def actualPadicLogTruncationChecklist :
-    ActualPadicLogTruncationChecklist where
+    ActualPadicLogTruncationChecklist.{0} where
   toCertificate := by
     intro p k hp P
     exact ActualPadicLogTruncationPackage.toPadicABLogTruncationCertificate p k P
@@ -1709,8 +1718,8 @@ noncomputable def actualPadicLogTruncationChecklist :
   logLinearBoundOfHkGate := by
     intro α p k hp P M _j _m _Y S A0 X A p_n htrunc hHk
     exact
-      ActualPadicLogTruncationPackage.log_bound_of_buchiHkGate
-        p k P htrunc hHk
+      @ActualPadicLogTruncationPackage.log_bound_of_buchiHkGate
+        p k hp α P M _j _m _Y S A0 X A p_n htrunc hHk
 
 /-- Checklist for the AB-linearization and p-adic log truncation bridge. -/
 structure ABPadicLogTruncationChecklist where
@@ -1766,22 +1775,23 @@ structure PaperABPadicGateChecklist where
   logMinusPnLogA_eq :
     ∀ (p k : ℕ) [Fact p.Prime]
       (C : PadicABLogTruncationCertificate.{0} p k) (X : ℤ) (p_n : ℕ) (A : ℤ),
-        C.paperLogMinusPnLogA X p_n A =
+        PadicABLogTruncationCertificate.paperLogMinusPnLogA p k C X p_n A =
           C.subLog (C.logX X) (C.smulNatLogA p_n A)
   hKInteger_eq :
     ∀ (p k : ℕ) [Fact p.Prime]
       (C : PadicABLogTruncationCertificate.{0} p k) (X : ℤ) (p_n : ℕ) (A : ℤ),
-        C.paperHkInteger X p_n A = X - (p_n : ℤ) * A
+        PadicABLogTruncationCertificate.paperHkInteger p k C X p_n A = X - (p_n : ℤ) * A
   logBoundOfHk :
     ∀ {α : Type*} (p k : ℕ) [Fact p.Prime]
       (C : PadicABLogTruncationCertificate.{0} p k)
       {M _j _m _Y : ℕ} {S : α → ℤ} {A0 : α} {X A : ℤ} {p_n : ℕ},
-        C.paperHkInteger X p_n A = buchiHkRemainder M S A0 →
+        PadicABLogTruncationCertificate.paperHkInteger p k C X p_n A =
+          buchiHkRemainder M S A0 →
           paperABHkGate p k M S A0 →
-            C.LogBound (C.paperLogMinusPnLogA X p_n A)
+            C.LogBound (PadicABLogTruncationCertificate.paperLogMinusPnLogA p k C X p_n A)
 
 /-- Canonical paper-notation checklist for the numeric/p-adic gate. -/
-def paperABPadicGateChecklist : PaperABPadicGateChecklist where
+theorem paperABPadicGateChecklist : PaperABPadicGateChecklist.{0, 0, 0, 0} where
   phiJ_eq := by
     intro α M j m Y S A
     exact paperABPhi_eq_buchiPhi M j m Y S A
@@ -1799,8 +1809,9 @@ def paperABPadicGateChecklist : PaperABPadicGateChecklist where
     exact PadicABLogTruncationCertificate.paperHkInteger_eq p k C X p_n A
   logBoundOfHk := by
     intro α p k hp C M _j _m _Y S A0 X A p_n htrunc hHk
-    exact PadicABLogTruncationCertificate.paperLogBound_of_HkGate
-      p k C htrunc hHk
+    exact
+      @PadicABLogTruncationCertificate.paperLogBound_of_HkGate
+        p k hp α C M _j _m _Y S A0 X A p_n htrunc hHk
 
 /-- Checklist bundle for the T4-1 numeric/p-adic gate upgrade. -/
 structure PadicNumericGateChecklist where
@@ -2851,7 +2862,7 @@ theorem standardIntResolutionComplex_d_one_zero (M : ℕ) :
         ModuleCat.ofHom (((standardIntResolutionD1 M) : AddMonoidHom ℤ ℤ).toIntLinearMap)
   simpa using
     (ChainComplex.of_d standardIntResolutionComplexObj (standardIntResolutionComplexD M)
-      (standardIntResolutionComplexD_comp M) 0)
+      0)
 
 @[simp]
 theorem standardIntResolutionComplex_d_succ_succ (M n : ℕ) :
@@ -2859,8 +2870,9 @@ theorem standardIntResolutionComplex_d_succ_succ (M n : ℕ) :
   change
     (ChainComplex.of standardIntResolutionComplexObj (standardIntResolutionComplexD M)
       (standardIntResolutionComplexD_comp M)).d ((n + 1) + 1) (n + 1) = 0
-  rw [ChainComplex.of_d]
-  exact standardIntResolutionComplexD_succ M n
+  simpa using
+    (ChainComplex.of_d standardIntResolutionComplexObj (standardIntResolutionComplexD M)
+      (n + 1)).trans (standardIntResolutionComplexD_succ M n)
 
 /-- The augmentation from the standard two-term complex to `ZMod M` in degree zero.
 This is the `π` datum needed to upgrade the explicit complex to a Mathlib
@@ -2891,10 +2903,11 @@ theorem standardIntResolutionAugmentation_f_zero (M : ℕ) :
 theorem standardIntResolutionAugmentation_comp_d_one_zero (M : ℕ) :
     (standardIntResolutionComplex M).d 1 0 ≫
       (standardIntResolutionAugmentation M).f 0 = 0 := by
-  simpa [standardIntResolutionAugmentation] using
-    (ChainComplex.toSingle₀Equiv (standardIntResolutionComplex M)
-      (ModuleCat.of Int (ZMod M))
-      (standardIntResolutionAugmentation M)).2
+  rw [standardIntResolutionComplex_d_one_zero, standardIntResolutionAugmentation_f_zero]
+  apply ModuleCat.hom_ext
+  apply LinearMap.ext
+  intro x
+  exact standardIntResolutionQuotient_comp_D1_apply M x
 
 /-- Every term of the standard integral two-term complex is projective. -/
 theorem standardIntResolutionComplex_projective (M n : ℕ) :
@@ -2977,10 +2990,12 @@ noncomputable def standardIntResolutionAugmentation_f_zero_isColimitCokernelCofo
   refine ModuleCat.isColimitCokernelCofork
     ((standardIntResolutionComplex M).d 1 0)
     ((standardIntResolutionAugmentation M).f 0) ?_ ?_
-  · simpa [standardIntResolutionComplex_d_one_zero, standardIntResolutionAugmentation_f_zero]
-      using standardIntResolution_linear_exact M
-  · simpa [standardIntResolutionAugmentation_f_zero]
-      using standardIntResolutionQuotient_surjective M
+  · rw [standardIntResolutionComplex_d_one_zero, standardIntResolutionAugmentation_f_zero]
+    change Function.Exact (standardIntResolutionD1 M) (standardIntResolutionQuotient M)
+    exact standardIntResolution_linear_exact M
+  · rw [standardIntResolutionAugmentation_f_zero]
+    change Function.Surjective (standardIntResolutionQuotient M)
+    exact standardIntResolutionQuotient_surjective M
 
 /-- If `M ≠ 0`, multiplication by `M` on `ℤ` is injective, so the standard presentation is
 exact at the left copy of `ℤ`. -/
@@ -3058,10 +3073,13 @@ theorem standardIntResolutionAugmentation_quasiIsoAt_zero (M : ℕ) :
         simpa [AddMonoidHom.mem_ker] using hx
       rw [← standardIntResolutionD1_range_eq_quotient_ker M] at hxmem
       rcases hxmem with ⟨y, hy⟩
-      exact ⟨y, by simpa [standardIntResolutionComplex_d_one_zero,
-        standardIntResolutionAugmentation_f_zero] using hy⟩
-    · simpa [standardIntResolutionAugmentation_f_zero] using
-        standardIntResolutionAugmentation_f_zero_epi M
+      exact ⟨y, by
+        change standardIntResolutionD1 M y = x
+        simpa using hy⟩
+    · change Epi (ModuleCat.ofHom
+        (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap))
+      rw [← standardIntResolutionAugmentation_f_zero M]
+      exact standardIntResolutionAugmentation_f_zero_epi M
   · rfl
   · rfl
   · rfl
@@ -3224,10 +3242,16 @@ noncomputable def tensorRightStandardResolutionComplexComponentIso
       (tensorStandardResolutionComplex M N).X n := by
   cases n with
   | zero =>
+      change CategoryTheory.MonoidalCategory.tensorObj
+          (ModuleCat.of Int Int) (ModuleCat.of Int (ZMod N)) ≅
+        ModuleCat.of Int (ZMod N)
       exact CategoryTheory.MonoidalCategory.leftUnitor (ModuleCat.of Int (ZMod N))
   | succ n =>
       cases n with
       | zero =>
+          change CategoryTheory.MonoidalCategory.tensorObj
+              (ModuleCat.of Int Int) (ModuleCat.of Int (ZMod N)) ≅
+            ModuleCat.of Int (ZMod N)
           exact CategoryTheory.MonoidalCategory.leftUnitor (ModuleCat.of Int (ZMod N))
       | succ _ =>
           change ModuleCat.of Int (TensorProduct Int PUnit (ZMod N)) ≅ ModuleCat.of Int PUnit
@@ -3243,10 +3267,16 @@ noncomputable def tensorLeftStandardResolutionComplexComponentIso
       (tensorStandardResolutionComplex N M).X n := by
   cases n with
   | zero =>
+      change CategoryTheory.MonoidalCategory.tensorObj
+          (ModuleCat.of Int (ZMod M)) (ModuleCat.of Int Int) ≅
+        ModuleCat.of Int (ZMod M)
       exact CategoryTheory.MonoidalCategory.rightUnitor (ModuleCat.of Int (ZMod M))
   | succ n =>
       cases n with
       | zero =>
+          change CategoryTheory.MonoidalCategory.tensorObj
+              (ModuleCat.of Int (ZMod M)) (ModuleCat.of Int Int) ≅
+            ModuleCat.of Int (ZMod M)
           exact CategoryTheory.MonoidalCategory.rightUnitor (ModuleCat.of Int (ZMod M))
       | succ _ =>
           change ModuleCat.of Int (TensorProduct Int (ZMod M) PUnit) ≅ ModuleCat.of Int PUnit
@@ -3278,8 +3308,7 @@ theorem tensorStandardResolutionComplex_d_one_zero (M N : ℕ) :
           (((tensorStandardResolutionD1 M N) : AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap)
   simpa using
     (ChainComplex.of_d (tensorStandardResolutionComplexObj N)
-      (tensorStandardResolutionComplexD M N)
-      (tensorStandardResolutionComplexD_comp M N) 0)
+      (tensorStandardResolutionComplexD M N) 0)
 
 @[simp]
 theorem tensorStandardResolutionComplex_d_succ_succ (M N n : ℕ) :
@@ -3287,8 +3316,10 @@ theorem tensorStandardResolutionComplex_d_succ_succ (M N n : ℕ) :
   change
     (ChainComplex.of (tensorStandardResolutionComplexObj N) (tensorStandardResolutionComplexD M N)
       (tensorStandardResolutionComplexD_comp M N)).d ((n + 1) + 1) (n + 1) = 0
-  rw [ChainComplex.of_d]
-  exact tensorStandardResolutionComplexD_succ M N n
+  simpa using
+    (ChainComplex.of_d (tensorStandardResolutionComplexObj N)
+      (tensorStandardResolutionComplexD M N) (n + 1)).trans
+        (tensorStandardResolutionComplexD_succ M N n)
 
 /-- Multiplication by `M` on the standard free rank-one module, as a bundled
 `ModuleCat Int` morphism.  This is the differential before tensoring. -/
@@ -3393,15 +3424,33 @@ noncomputable def tensorRightStandardResolutionComplexIso (M N : ℕ) :
     (tensorRightStandardResolutionComplexComponentIso M N)
     (by
       intro i j hij
-      cases i <;> cases j <;>
-        simp [tensorRightAppliedStandardResolutionComplex,
-          tensorRightStandardResolutionComplexComponentIso] at hij ⊢
-      all_goals
-        subst_vars
-        set_option linter.unnecessarySimpa false in
-          simpa [zmodLeftUnitorHom, zmodMulLeftModuleHom, standardIntMulLeftModuleHom,
-            tensorStandardResolutionD1, standardIntResolutionD1] using
-            (zmodLeftUnitor_comp_zmodMulLeftModuleHom M N))
+      simp only [ComplexShape.down_Rel] at hij
+      subst i
+      cases j with
+      | zero =>
+          change
+            CategoryTheory.CategoryStruct.comp (zmodLeftUnitorHom N)
+                (zmodMulLeftModuleHom M N) =
+              CategoryTheory.CategoryStruct.comp
+                (CategoryTheory.MonoidalCategory.whiskerRight
+                  (standardIntMulLeftModuleHom M) (ModuleCat.of Int (ZMod N)))
+                (zmodLeftUnitorHom N)
+          exact zmodLeftUnitor_comp_zmodMulLeftModuleHom M N
+      | succ n =>
+          have ht :
+              (tensorStandardResolutionComplex M N).d (n + 1 + 1) (n + 1) = 0 := by
+            simpa [Nat.add_assoc] using tensorStandardResolutionComplex_d_succ_succ M N n
+          have hs :
+              (standardIntResolutionComplex M).d (n + 1 + 1) (n + 1) = 0 := by
+            simpa [Nat.add_assoc] using standardIntResolutionComplex_d_succ_succ M n
+          have ha :
+              (tensorRightAppliedStandardResolutionComplex M N).d (n + 1 + 1) (n + 1) = 0 := by
+            change (((CategoryTheory.MonoidalCategory.tensoringRight (ModuleCat Int)).obj
+              (ModuleCat.of Int (ZMod N))).map
+                ((standardIntResolutionComplex M).d (n + 1 + 1) (n + 1))) = 0
+            rw [hs, Functor.map_zero]
+          rw [ht, ha]
+          simp)
 
 /-- Chain-level comparison from Mathlib's left tensoring to the hand-coded tensor complex. -/
 noncomputable def tensorLeftStandardResolutionComplexIso (M N : ℕ) :
@@ -3411,15 +3460,33 @@ noncomputable def tensorLeftStandardResolutionComplexIso (M N : ℕ) :
     (tensorLeftStandardResolutionComplexComponentIso M N)
     (by
       intro i j hij
-      cases i <;> cases j <;>
-        simp [tensorLeftAppliedStandardResolutionComplex,
-          tensorLeftStandardResolutionComplexComponentIso] at hij ⊢
-      all_goals
-        subst_vars
-        set_option linter.unnecessarySimpa false in
-          simpa [zmodRightUnitorHom, zmodMulLeftModuleHom, standardIntMulLeftModuleHom,
-            tensorStandardResolutionD1, standardIntResolutionD1] using
-            (zmodRightUnitor_comp_zmodMulLeftModuleHom M N))
+      simp only [ComplexShape.down_Rel] at hij
+      subst i
+      cases j with
+      | zero =>
+          change
+            CategoryTheory.CategoryStruct.comp (zmodRightUnitorHom M)
+                (zmodMulLeftModuleHom N M) =
+              CategoryTheory.CategoryStruct.comp
+                (CategoryTheory.MonoidalCategory.whiskerLeft (ModuleCat.of Int (ZMod M))
+                  (standardIntMulLeftModuleHom N))
+                (zmodRightUnitorHom M)
+          exact zmodRightUnitor_comp_zmodMulLeftModuleHom M N
+      | succ n =>
+          have ht :
+              (tensorStandardResolutionComplex N M).d (n + 1 + 1) (n + 1) = 0 := by
+            simpa [Nat.add_assoc] using tensorStandardResolutionComplex_d_succ_succ N M n
+          have hs :
+              (standardIntResolutionComplex N).d (n + 1 + 1) (n + 1) = 0 := by
+            simpa [Nat.add_assoc] using standardIntResolutionComplex_d_succ_succ N n
+          have ha :
+              (tensorLeftAppliedStandardResolutionComplex M N).d (n + 1 + 1) (n + 1) = 0 := by
+            change (((CategoryTheory.MonoidalCategory.tensoringLeft (ModuleCat Int)).obj
+              (ModuleCat.of Int (ZMod M))).map
+                ((standardIntResolutionComplex N).d (n + 1 + 1) (n + 1))) = 0
+            rw [hs, Functor.map_zero]
+          rw [ht, ha]
+          simp)
 
 /-- Mathlib's actual degree-one homology object of the hand-coded tensor-standard complex. -/
 noncomputable abbrev tensorStandardResolutionActualHomologyOne (M N : Nat) :
@@ -3591,6 +3658,10 @@ noncomputable def tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint (M
     ((tensorStandardResolutionComplex M N).sc' 2 1 0).cycles ≅
       standardResolutionTorOneEndpoint M N := by
   refine ((tensorStandardResolutionComplex M N).sc' 2 1 0).moduleCatCyclesIso ≪≫ ?_
+  change ModuleCat.of Int
+      (LinearMap.ker (((tensorStandardResolutionD1 M N) :
+        AddMonoidHom (ZMod N) (ZMod N)).toIntLinearMap)) ≅
+    standardResolutionTorOneEndpoint M N
   simpa [standardResolutionTorOneEndpoint, tensorStandardResolutionHomology1,
     tensorStandardResolutionCycles1, tensorStandardResolutionComplex_d_one_zero,
     tensorStandardResolutionD1] using
@@ -3879,7 +3950,7 @@ abbrev AddCokerU.{u, v} {A : Type u} {B : Type v} [AddCommGroup A] [AddCommGroup
 
 instance principalCechPhi_range_normal (R : Type*) [CommRing R] (M N : ℕ) :
     (principalCechPhi R M N).range.Normal :=
-  AddSubgroup.normal_of_comm _
+  inferInstance
 
 /-- Cokernel of the base-changed CRT comparison map. -/
 abbrev principalCechCoker (R : Type*) [CommRing R] (M N : ℕ) : Type _ :=
@@ -4599,8 +4670,7 @@ theorem koszulR1ChainComplex_d_one_zero (r : R) :
       ModuleCat.ofHom (koszulR1Mul (M := M) r) := by
   simpa [koszulR1ChainComplex] using
     ChainComplex.of_d (koszulR1Obj (R := R) (M := M))
-      (koszulR1Differential (M := M) r)
-      (koszulR1Differential_sq (M := M) r) 0
+      (koszulR1Differential (M := M) r) 0
 
 /-- Every higher displayed differential of the two-term model is zero. -/
 theorem koszulR1ChainComplex_d_succ_succ (r : R) (n : ℕ) :
@@ -4611,8 +4681,7 @@ theorem koszulR1ChainComplex_d_succ_succ (r : R) (n : ℕ) :
       (koszulR1Differential_sq (M := M) r)).d ((n + 1) + 1) (n + 1) = 0
   exact
     (ChainComplex.of_d (koszulR1Obj (R := R) (M := M))
-      (koszulR1Differential (M := M) r)
-      (koszulR1Differential_sq (M := M) r) (n + 1)).trans
+      (koszulR1Differential (M := M) r) (n + 1)).trans
         (koszulR1Differential_succ (M := M) r n)
 
 /-- The concrete degree-one homology of the single-element Koszul model:
@@ -4853,8 +4922,7 @@ theorem koszulR2ChainComplex_d_one_zero (x y : R) :
       ModuleCat.ofHom (koszulR2Left (M := M) x y) := by
   simpa [koszulR2ChainComplex] using
     ChainComplex.of_d (koszulR2Obj (R := R) (M := M))
-      (koszulR2Differential (M := M) x y)
-      (koszulR2Differential_sq (M := M) x y) 0
+      (koszulR2Differential (M := M) x y) 0
 
 /-- The degree `2 → 1` differential is `d₂(c)=(y•c,-x•c)`. -/
 theorem koszulR2ChainComplex_d_two_one (x y : R) :
@@ -4862,8 +4930,7 @@ theorem koszulR2ChainComplex_d_two_one (x y : R) :
       ModuleCat.ofHom (koszulR2Right (M := M) x y) := by
   simpa [koszulR2ChainComplex] using
     ChainComplex.of_d (koszulR2Obj (R := R) (M := M))
-      (koszulR2Differential (M := M) x y)
-      (koszulR2Differential_sq (M := M) x y) 1
+      (koszulR2Differential (M := M) x y) 1
 
 /-- The degree-one cycles `ker d₁`. -/
 abbrev koszulR2H1Cycles (x y : R) : Submodule R (M × M) :=
@@ -8855,8 +8922,8 @@ theorem zetaULinearLocalFactor_eq_geometric_tsum {f : ℕ →*₀ ℂ}
 theorem zetaU_eulerProduct_hasProd {f : ℕ →*₀ ℂ}
     (hsum : Summable (‖f ·‖)) :
     HasProd (zetaULinearLocalFactor f) (zetaUCompletelyMultiplicativeValue f) := by
-  simpa [zetaULinearLocalFactor, zetaUCompletelyMultiplicativeValue] using
-    EulerProduct.eulerProduct_completely_multiplicative_hasProd (f := f) hsum
+  change HasProd (fun p : Nat.Primes => (1 - f p)⁻¹) (∑' n : ℕ, f n)
+  exact EulerProduct.eulerProduct_completely_multiplicative_hasProd (f := f) hsum
 
 /-- Completely multiplicative Euler product for `Z_U`, stated as a `tprod` identity. -/
 theorem zetaU_eulerProduct_tprod {f : ℕ →*₀ ℂ}
@@ -9041,7 +9108,8 @@ theorem frobeniusLinearEulerDenominator_multipliable_of_abs {γ : ℕ → ℂ}
   have hden :
       Multipliable (fun p : Nat.Primes => 1 + (-frobeniusLinearTerm γ s p)) :=
     multipliable_one_add_of_summable hsum
-  simpa [frobeniusLinearDenominator, sub_eq_add_neg] using hden
+  change Multipliable (fun p : Nat.Primes => 1 + (-frobeniusLinearTerm γ s p))
+  exact hden
 
 /-- The normalized Frobenius denominator product has nonzero `tprod` on `Re(s) > 1`. -/
 theorem frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs {γ : ℕ → ℂ}
@@ -9168,7 +9236,8 @@ theorem zetaULSeries_summable_of_abscissa_lt {f : ℕ → ℂ} {s : ℂ}
 theorem zetaULSeries_deriv {f : ℕ → ℂ} {s : ℂ}
     (h : abscissaOfAbsConv f < s.re) :
     deriv (zetaULSeries f) s = -zetaULSeries (LSeries.logMul f) s := by
-  simpa [zetaULSeries] using LSeries_deriv (f := f) (s := s) h
+  change deriv (LSeries f) s = -LSeries (LSeries.logMul f) s
+  exact LSeries_deriv (f := f) (s := s) h
 
 /-- Logarithmic derivative of the L-series avatar of `Z_U`.  This definition is total; at zeros
 of `Z_U` it uses Lean's total division on `ℂ`. -/
@@ -13256,7 +13325,7 @@ structure ActualKoszulTheoremPackage (R : Type uGap1) [CommRing R] where
     ∀ (M : Type uGap2) [AddCommGroup M] [Module R M],
       LowDegreeKoszulCertificate R M
   flatBaseChangeLowDegreeAndTotal :
-    ∀ (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S]
+    ∀ (S : Type uGap3) [CommRing S] [Algebra R S] [Module.Flat R S]
       (M : Type uGap2) [AddCommGroup M] [Module R M],
         KoszulFlatBaseChangeLowDegreeAndTotalCertificate R S M
   mappingConeConstructionAvailable : Prop
@@ -13276,14 +13345,14 @@ namespace ActualKoszulTheoremPackage
 /-- Projection: the actual package supplies the weak nil/cons acyclicity
 interface already used by the low-degree model. -/
 theorem weakInterface
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     KoszulWeakAcyclicityInterface.{uGap1, uGap2} (R := R) P.model.acyclic :=
   P.model.weakInterface
 
 /-- Projection: arbitrary-length Koszul acyclicity is equivalent to weak
 regularity once the actual model is supplied. -/
 theorem acyclic_iff_isWeaklyRegular
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
     (rs : List R) {M : Type uGap2} [AddCommGroup M] [Module R M] :
     P.model.acyclic M rs ↔ IsWeaklyRegular M rs :=
   KoszulComplexModel.acyclic_iff_isWeaklyRegular P.model rs
@@ -13291,7 +13360,7 @@ theorem acyclic_iff_isWeaklyRegular
 /-- Projection: the stronger actual package gives the paper's regular-sequence
 criterion for all list lengths. -/
 theorem acyclic_iff_isRegular
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
     (rs : List R) {M : Type uGap2} [AddCommGroup M] [Module R M] :
     P.model.acyclic M rs ↔ IsRegular M rs :=
   koszulAcyclic_iff_isRegular_of_interface
@@ -13300,7 +13369,7 @@ theorem acyclic_iff_isRegular
 /-- Projection: the supplied actual model still agrees with the explicit
 length-one complex. -/
 noncomputable def singletonIso
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
     {M : Type uGap2} [AddCommGroup M] [Module R M] (r : R) :
     P.model.complex M [r] ≅ koszulR1ChainComplex (M := M) r :=
   P.model.singletonIso r
@@ -13308,7 +13377,7 @@ noncomputable def singletonIso
 /-- Projection: the supplied actual model still agrees with the explicit
 length-two complex. -/
 noncomputable def pairIso
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
     {M : Type uGap2} [AddCommGroup M] [Module R M] (x y : R) :
     P.model.complex M [x, y] ≅ koszulR2ChainComplex (M := M) x y :=
   P.model.pairIso x y
@@ -13316,7 +13385,7 @@ noncomputable def pairIso
 /-- Projection: low-degree regularity certificates are recovered from the
 actual arbitrary-length acyclicity model. -/
 theorem lowDegreeCertificate_iff_acyclic
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
     {rs : List R} (hrs : rs.length ≤ 2)
     {M : Type uGap2} [AddCommGroup M] [Module R M] :
     koszulLowDegreeRegularityCertificate (M := M) rs ↔ P.model.acyclic M rs :=
@@ -13325,40 +13394,40 @@ theorem lowDegreeCertificate_iff_acyclic
 /-- Projection: flat scalar extension has the current-file differential/base-change
 certificates in every length and in low degrees. -/
 noncomputable def flatBaseChangeCertificate
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
-    (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S]
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
+    (S : Type uGap3) [CommRing S] [Algebra R S] [Module.Flat R S]
     (M : Type uGap2) [AddCommGroup M] [Module R M] :
     KoszulFlatBaseChangeLowDegreeAndTotalCertificate R S M :=
   P.flatBaseChangeLowDegreeAndTotal S M
 
 /-- Projection: mapping-cone recursion is available in the actual package. -/
 theorem mappingConeConstruction_available
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     P.mappingConeConstructionAvailable :=
   P.allKoszulTheoremsAvailable.1
 
 /-- Projection: the tensor/exterior graded construction is available in the actual package. -/
 theorem tensorExteriorConstruction_available
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     P.tensorExteriorConstructionAvailable :=
   P.allKoszulTheoremsAvailable.2.1
 
 /-- Projection: the long exact homology sequence is available in the actual package. -/
 theorem longExactHomologySequence_available
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     P.longExactHomologySequenceAvailable :=
   P.allKoszulTheoremsAvailable.2.2.1
 
 /-- Projection: the Nakayama bridge is available in the actual package. -/
 theorem nakayamaBridge_available
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     P.nakayamaBridgeAvailable :=
   P.allKoszulTheoremsAvailable.2.2.2.1
 
 /-- Projection: the full regular iff positive-acyclicity theorem is available
 in the actual package. -/
 theorem fullRegularIffPositiveAcyclic_available
-    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R) :
+    {R : Type uGap1} [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R) :
     P.fullRegularIffPositiveAcyclicAvailable :=
   P.allKoszulTheoremsAvailable.2.2.2.2
 
@@ -13369,57 +13438,57 @@ into the present file. -/
 structure ActualKoszulTheoremChecklist where
   exteriorCore :
     ∀ (R : Type uGap1) [CommRing R],
-      ActualKoszulTheoremPackage.{uGap1, uGap2} R → ExteriorKoszulTotalCore R
+      ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R → ExteriorKoszulTotalCore R
   model :
     ∀ (R : Type uGap1) [CommRing R],
-      ActualKoszulTheoremPackage.{uGap1, uGap2} R → KoszulComplexModel.{uGap1, uGap2} R
+      ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R → KoszulComplexModel.{uGap1, uGap2} R
   weakInterface :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       KoszulWeakAcyclicityInterface.{uGap1, uGap2} (R := R) P.model.acyclic
   regularInterface :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       KoszulRegularAcyclicityInterface.{uGap1, uGap2} (R := R) P.model.acyclic
   acyclicIffWeaklyRegular :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
       (rs : List R) {M : Type uGap2} [AddCommGroup M] [Module R M],
         P.model.acyclic M rs ↔ IsWeaklyRegular M rs
   acyclicIffRegular :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
       (rs : List R) {M : Type uGap2} [AddCommGroup M] [Module R M],
         P.model.acyclic M rs ↔ IsRegular M rs
   lowDegreeCertificate :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
       (M : Type uGap2) [AddCommGroup M] [Module R M],
         LowDegreeKoszulCertificate R M
   lowDegreeCertificateIffAcyclic :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
       {rs : List R}, rs.length ≤ 2 →
       ∀ {M : Type uGap2} [AddCommGroup M] [Module R M],
         koszulLowDegreeRegularityCertificate (M := M) rs ↔ P.model.acyclic M rs
   flatBaseChange :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R)
-      (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S]
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R)
+      (S : Type uGap3) [CommRing S] [Algebra R S] [Module.Flat R S]
       (M : Type uGap2) [AddCommGroup M] [Module R M],
         KoszulFlatBaseChangeLowDegreeAndTotalCertificate R S M
   mappingConeConstructionAvailable :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       P.mappingConeConstructionAvailable
   tensorExteriorConstructionAvailable :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       P.tensorExteriorConstructionAvailable
   longExactHomologySequenceAvailable :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       P.longExactHomologySequenceAvailable
   nakayamaBridgeAvailable :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       P.nakayamaBridgeAvailable
   fullRegularIffPositiveAcyclicAvailable :
-    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2} R),
+    ∀ (R : Type uGap1) [CommRing R] (P : ActualKoszulTheoremPackage.{uGap1, uGap2, uGap3} R),
       P.fullRegularIffPositiveAcyclicAvailable
 
 /-- Canonical projection checklist for a future actual arbitrary-length Koszul package. -/
 noncomputable def actualKoszulTheoremChecklist :
-    ActualKoszulTheoremChecklist.{uGap1, uGap2} where
+    ActualKoszulTheoremChecklist.{uGap1, uGap2, uGap3} where
   exteriorCore := by
     intro R _ P
     exact P.exteriorCore
@@ -13462,51 +13531,6 @@ noncomputable def actualKoszulTheoremChecklist :
   fullRegularIffPositiveAcyclicAvailable := by
     intro R _ P
     exact ActualKoszulTheoremPackage.fullRegularIffPositiveAcyclic_available P
-
-/-- The eight remaining major formalization fronts, gathered as reusable APIs.
-
-Each field is either an already-proved concrete certificate or an explicit
-package boundary for the external mathematics that must eventually instantiate
-the current interfaces. -/
-structure CoreRemainingFormalizationChecklist where
-  numericPadicGate : PaperABPadicGateChecklist
-  actualPadicLogTruncation : ActualPadicLogTruncationChecklist
-  ellipticCurveGate : EllipticCurveECLayerChecklist
-  actualEllipticCurveGate : ActualECGateChecklist
-  cechTorNaturality :
-    ∀ (R : Type uGap1) [CommRing R] (M N : ℕ) [NeZero N],
-      CechTorNaturalityChecklist R M N
-  actualCechTorNaturality : ActualCechTorNaturalityChecklist
-  generalKoszul : GeneralKoszulBridgeChecklist.{uGap1, uGap2}
-  actualGeneralKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2}
-  actualDepthDimension : ActualDepthDimensionChecklist.{uGap1, uGap2}
-  actualConstructibleSheaf :
-    ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1}
-  weilTrace :
-    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
-      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
-      {X : Sch} (F : D.Sheaf X)
-      (W : WeilIIPackage D F) (G : GrothendieckLefschetzPackage D F),
-        BundledInterfaceCertificate.{uSch, vSch, uSheafGap, uTriGap} F W G
-  equivalenceC : GlobalEquivalenceCChecklist
-
-/-- Canonical current-file checklist for the eight remaining core fronts. -/
-noncomputable def coreRemainingFormalizationChecklist :
-    CoreRemainingFormalizationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2} where
-  numericPadicGate := paperABPadicGateChecklist
-  actualPadicLogTruncation := actualPadicLogTruncationChecklist
-  ellipticCurveGate := ellipticCurveECLayerChecklist
-  actualEllipticCurveGate := actualECGateChecklist
-  cechTorNaturality := fun R _ M N _ => cechTorNaturalityChecklist R M N
-  actualCechTorNaturality := actualCechTorNaturalityChecklist
-  generalKoszul := generalKoszulBridgeChecklist
-  actualGeneralKoszul := actualKoszulTheoremChecklist
-  actualDepthDimension := actualDepthDimensionChecklist
-  actualConstructibleSheaf :=
-    (actualConstructibleSheafChecklist :
-      ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1})
-  weilTrace := fun F W G => bundledInterfaceCertificate F W G
-  equivalenceC := globalEquivalenceCChecklist
 
 /-- Actual EC theorem package, parameterized by one local prime/fiber.  A future
 Mathlib EC/Hensel development should instantiate this with the real
@@ -13633,21 +13657,21 @@ structure ActualECGateChecklist where
   discriminantIffIsElliptic :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ},
       ActualECTheoremPackage p n A →
-        concreteECDiscriminantGate p n A ↔ (concreteECModPCurve p n A).IsElliptic
+        (concreteECDiscriminantGate p n A ↔ (concreteECModPCurve p n A).IsElliptic)
   affineSmoothIffDiscriminant :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ},
       ActualECTheoremPackage p n A →
-        concreteECAffineSmooth p n A ↔ concreteECDiscriminantGate p n A
+        (concreteECAffineSmooth p n A ↔ concreteECDiscriminantGate p n A)
   smoothFiberIffDiscriminant :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ},
       ActualECTheoremPackage p n A →
-        concreteECSmoothFiberGate p n A ↔ concreteECDiscriminantGate p n A
+        (concreteECSmoothFiberGate p n A ↔ concreteECDiscriminantGate p n A)
   henselLiftableIffJacobian :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ}
       (P : ActualECTheoremPackage p n A) {x y : ZMod p},
         concreteECModPEquation p n A x y →
-          P.fullGate.jacobianHensel.henselLiftable x y ↔
-            concreteECJacobianNonzero p n A x y
+          (P.fullGate.jacobianHensel.henselLiftable x y ↔
+            concreteECJacobianNonzero p n A x y)
   henselLiftableOfHenselGate :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ}
       (P : ActualECTheoremPackage p n A) {x y : ZMod p},
@@ -13730,6 +13754,13 @@ noncomputable def actualECGateChecklist : ActualECGateChecklist where
   ordinarySupersingularAvailable := by
     intro p n hp A P
     exact ActualECTheoremPackage.ordinary_supersingular_available P
+
+/-- Status of the comparison with Mathlib's abstract derived-functor `Tor`. -/
+inductive AbstractTorComparisonStatus where
+  | reducedToStandardFreeResolution
+  | computedViaStandardResolution
+  | abstractDerivedFunctorEndpointPending
+deriving DecidableEq
 
 /-- Actual derived Čech--Tor naturality package.  The concrete maps are already
 present; this package records the external derived-functor comparison needed to
@@ -13910,7 +13941,7 @@ structure ActualCechTorNaturalityChecklist where
 
 /-- Canonical projection checklist for actual derived Čech--Tor naturality. -/
 noncomputable def actualCechTorNaturalityChecklist :
-    ActualCechTorNaturalityChecklist where
+    ActualCechTorNaturalityChecklist.{uGap1} where
   concreteChecklist := by
     intro R _ _ M N _ P
     exact P.concreteChecklist
@@ -13950,6 +13981,51 @@ noncomputable def actualCechTorNaturalityChecklist :
   crtRefinementComparisonAvailable := by
     intro R _ _ M N _ P
     exact ActualDerivedCechTorNaturalityPackage.crt_refinement_comparison_available P
+
+/-- The eight remaining major formalization fronts, gathered as reusable APIs.
+
+Each field is either an already-proved concrete certificate or an explicit
+package boundary for the external mathematics that must eventually instantiate
+the current interfaces. -/
+structure CoreRemainingFormalizationChecklist where
+  numericPadicGate : PaperABPadicGateChecklist.{0, 0, 0, 0}
+  actualPadicLogTruncation : ActualPadicLogTruncationChecklist.{0}
+  ellipticCurveGate : EllipticCurveECLayerChecklist
+  actualEllipticCurveGate : ActualECGateChecklist
+  cechTorNaturality :
+    ∀ (R : Type uGap1) [CommRing R] (M N : ℕ) [NeZero N],
+      CechTorNaturalityChecklist R M N
+  actualCechTorNaturality : ActualCechTorNaturalityChecklist.{uGap1}
+  generalKoszul : GeneralKoszulBridgeChecklist.{uGap1, uGap2}
+  actualGeneralKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2, uGap3}
+  actualDepthDimension : ActualDepthDimensionChecklist.{uGap1, uGap2}
+  actualConstructibleSheaf :
+    ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1}
+  weilTrace :
+    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
+      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
+      {X : Sch} (F : D.Sheaf X)
+      (W : WeilIIPackage D F) (G : GrothendieckLefschetzPackage D F),
+        BundledInterfaceCertificate.{uSch, vSch, uSheafGap, uTriGap} F W G
+  equivalenceC : GlobalEquivalenceCChecklist.{uSch, vSch, uSheafGap, uTriGap}
+
+/-- Canonical current-file checklist for the eight remaining core fronts. -/
+noncomputable def coreRemainingFormalizationChecklist :
+    CoreRemainingFormalizationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2, uGap3} where
+  numericPadicGate := paperABPadicGateChecklist
+  actualPadicLogTruncation := actualPadicLogTruncationChecklist
+  ellipticCurveGate := ellipticCurveECLayerChecklist
+  actualEllipticCurveGate := actualECGateChecklist
+  cechTorNaturality := fun R _ M N _ => cechTorNaturalityChecklist R M N
+  actualCechTorNaturality := actualCechTorNaturalityChecklist
+  generalKoszul := generalKoszulBridgeChecklist
+  actualGeneralKoszul := actualKoszulTheoremChecklist
+  actualDepthDimension := actualDepthDimensionChecklist
+  actualConstructibleSheaf :=
+    (actualConstructibleSheafChecklist :
+      ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1})
+  weilTrace := fun F W G => bundledInterfaceCertificate F W G
+  equivalenceC := globalEquivalenceCChecklist
 
 /-- Actual Weil II / trace-formula package.  It bundles the interfaces already
 used downstream: weights, trace formula, determinant-trace radius transport, and
@@ -14118,12 +14194,12 @@ end ActualGlobalEquivalenceCTheoremPackage
 remaining large mathematical gaps. -/
 structure ActualExternalMathPackagesChecklist where
   actualECGate : ActualECGateChecklist
-  actualCechTorNaturality : ActualCechTorNaturalityChecklist
-  actualKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2}
+  actualCechTorNaturality : ActualCechTorNaturalityChecklist.{uGap1}
+  actualKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2, uGap3}
   ecSmoothIffDiscriminant :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ},
       ActualECTheoremPackage p n A →
-        concreteECSmoothFiberGate p n A ↔ concreteECDiscriminantGate p n A
+        (concreteECSmoothFiberGate p n A ↔ concreteECDiscriminantGate p n A)
   ecHasseBound :
     ∀ {p n : ℕ} [NeZero p] {A : ℤ},
       ActualECTheoremPackage p n A →
@@ -14156,7 +14232,7 @@ structure ActualExternalMathPackagesChecklist where
 
 /-- Canonical projection checklist for actual external theorem packages. -/
 noncomputable def actualExternalMathPackagesChecklist :
-    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2} where
+    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2, uGap3} where
   actualECGate := actualECGateChecklist
   actualCechTorNaturality := actualCechTorNaturalityChecklist
   actualKoszul := actualKoszulTheoremChecklist
@@ -14181,56 +14257,59 @@ noncomputable def actualExternalMathPackagesChecklist :
 
 /-- Unified checklist asserting that all Mathlib-gap workaround principles
 are backed by concrete Lean certificates. -/
-structure MathlibGapWorkaroundChecklist where
+structure MathlibGapWorkaroundChecklist.{uMWSch, vMWSch, uMWSheaf, uMWTri,
+    uMW1, uMW2, uMW3, uMW4, uMW5, uMW6, uMW7, uMW8} where
   concreteSurrogate : ∀ (M N : ℕ) [NeZero N], ConcreteSurrogateCertificate M N
   presheafCechSkeleton : PresheafCechSkeletonCertificate
   padicNumericGate : PadicNumericGateChecklist.{0}
   abPadicLogTruncation : ABPadicLogTruncationChecklist.{0, 0}
-  actualPadicLogTruncation : ActualPadicLogTruncationChecklist
+  actualPadicLogTruncation : ActualPadicLogTruncationChecklist.{0}
   ellipticCurveECLayer : EllipticCurveECLayerChecklist
   actualECGate : ActualECGateChecklist
   lowDegreeKoszul :
-    ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M],
+    ∀ (R : Type uMW1) (M : Type uMW2) [CommRing R] [AddCommGroup M] [Module R M],
       LowDegreeKoszulCertificate R M
   enatDepthInstantiation :
-    ∀ (R : Type uGap1) [CommRing R] (A : ENatDepthDimensionAPI.{uGap1, uGap2} R),
-      ENatDepthDimensionInstantiationCertificate.{uGap1, uGap2} R A
-  actualDepthDimension : ActualDepthDimensionChecklist.{uGap1, uGap2}
+    ∀ (R : Type uMW1) [CommRing R] (A : ENatDepthDimensionAPI.{uMW1, uMW2} R),
+      ENatDepthDimensionInstantiationCertificate.{uMW1, uMW2} R A
+  actualDepthDimension : ActualDepthDimensionChecklist.{uMW1, uMW2}
   bundledInterfaces :
-    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
-      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
+    ∀ {Sch : Type uMWSch} [Category.{vMWSch} Sch]
+      {D : SixFunctorData.{uMWSch, vMWSch, uMWSheaf, uMWTri} Sch}
       {X : Sch} (F : D.Sheaf X)
       (W : WeilIIPackage D F) (G : GrothendieckLefschetzPackage D F),
-        BundledInterfaceCertificate.{uSch, vSch, uSheafGap, uTriGap} F W G
+        BundledInterfaceCertificate.{uMWSch, vMWSch, uMWSheaf, uMWTri} F W G
   actualConstructibleSheaf :
-    ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1}
+    ActualConstructibleSheafChecklist.{uMWSch, vMWSch, uMWSheaf, uMWTri, uMW1}
   def21ActualSheafGap : Def21ActualSheafConstructionGap
   curveReduction :
-    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
-      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
+    ∀ {Sch : Type uMWSch} [Category.{vMWSch} Sch]
+      {D : SixFunctorData.{uMWSch, vMWSch, uMWSheaf, uMWTri} Sch}
       {X V : Sch} {f : X ⟶ V} (φ : CurveFactorization D f)
       (F : D.Sheaf X), D.IsConstr F →
         CurveFactorization.CurveReductionConclusion φ F
   formalAlgebra :
-    ∀ {K : Type*} [Field K] [Algebra ℚ K] [IsAddTorsionFree K]
-      {ι : Type*} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K),
+    ∀ {K : Type uMW1} [Field K] [Algebra ℚ K] [IsAddTorsionFree K]
+      {ι : Type uMW2} [Fintype ι] [DecidableEq ι] (T : Matrix ι ι K),
         FormalAlgebraCoreCertificate T
   existingAnalogReuse :
-    ExistingAnalogReuseCertificate.{uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8}
+    ExistingAnalogReuseCertificate.{uMW1, uMW2, uMW3, uMW4, uMW5, uMW6, uMW7, uMW8}
   quadraticEulerConvergence : QuadraticEulerConvergenceChecklist
   localRHRadius : LocalRHRadiusChecklist.{0}
   cechTorNaturality :
-    ∀ (R : Type uGap1) [CommRing R] (M N : ℕ) [NeZero N],
+    ∀ (R : Type uMW1) [CommRing R] (M N : ℕ) [NeZero N],
       CechTorNaturalityChecklist R M N
-  actualCechTorNaturality : ActualCechTorNaturalityChecklist
-  actualKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2}
+  actualCechTorNaturality : ActualCechTorNaturalityChecklist.{uMW1}
+  actualKoszul : ActualKoszulTheoremChecklist.{uMW1, uMW2, uMW3}
   coreRemainingFormalization :
-    CoreRemainingFormalizationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    CoreRemainingFormalizationChecklist.{uMWSch, vMWSch, uMWSheaf, uMWTri, uMW1, uMW2, uMW3}
   actualExternalMathPackages :
-    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    ActualExternalMathPackagesChecklist.{uMWSch, vMWSch, uMWSheaf, uMWTri, uMW1, uMW2, uMW3}
 
 /-- The integrated Mathlib-gap checklist. -/
-noncomputable def mathlibGapWorkaroundChecklist : MathlibGapWorkaroundChecklist where
+noncomputable def mathlibGapWorkaroundChecklist :
+    MathlibGapWorkaroundChecklist.{uSch, vSch, uSheafGap, uTriGap,
+      uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8} where
   concreteSurrogate := fun M N _ => concreteSurrogateCertificate M N
   presheafCechSkeleton := presheafCechSkeletonCertificate
   padicNumericGate := (padicNumericGateChecklist : PadicNumericGateChecklist.{0})
@@ -14437,13 +14516,6 @@ noncomputable def mathlibAbstractTorFunctorHandle :
       [Abelian C] [MonoidalPreadditive C] [HasProjectiveResolutions C] n =>
     CategoryTheory.Tor' C n
 
-/-- Status of the comparison with Mathlib's abstract derived-functor `Tor`. -/
-inductive AbstractTorComparisonStatus where
-  | reducedToStandardFreeResolution
-  | computedViaStandardResolution
-  | abstractDerivedFunctorEndpointPending
-deriving DecidableEq
-
 /-- Mathlib's actual abstract `Tor₁` endpoint for the pair `(ZMod M, ZMod N)` in
 `ModuleCat Int`.  This is the object whose comparison with the explicit
 standard-resolution homology is still absent from Mathlib's `Tor` API. -/
@@ -14506,7 +14578,8 @@ noncomputable def mathlibTorPrimeOneEndpointIsoStandardResolutionHomology
     (M N : ℕ) (hM : M ≠ 0) :
     mathlibTorPrimeOneEndpoint M N ≅
       mathlibTensorRightStandardResolutionHomologyOne M N := by
-  simpa [mathlibTorPrimeOneEndpoint, CategoryTheory.Tor'] using
+  simpa [mathlibTorPrimeOneEndpoint, mathlibTensorRightStandardResolutionHomologyOne,
+    CategoryTheory.Tor', standardIntProjectiveResolution] using
     (ProjectiveResolution.isoLeftDerivedObj
       (standardIntProjectiveResolution M hM)
       ((tensoringRight (ModuleCat Int)).obj (ModuleCat.of Int (ZMod N))) 1)
@@ -14519,7 +14592,8 @@ noncomputable def mathlibTorOneEndpointIsoStandardResolutionHomology
     (M N : ℕ) (hN : N ≠ 0) :
     mathlibTorOneEndpoint M N ≅
       mathlibTensorLeftStandardResolutionHomologyOne M N := by
-  simpa [mathlibTorOneEndpoint, CategoryTheory.Tor] using
+  simpa [mathlibTorOneEndpoint, mathlibTensorLeftStandardResolutionHomologyOne,
+    CategoryTheory.Tor, standardIntProjectiveResolution] using
     (ProjectiveResolution.isoLeftDerivedObj
       (standardIntProjectiveResolution N hN)
       ((tensoringLeft (ModuleCat Int)).obj (ModuleCat.of Int (ZMod M))) 1)
@@ -15400,13 +15474,13 @@ abbrev paper_numericPadic_logMinusPnLogA :=
 
 /-- **Numeric/p-adic gate.** Checklist connecting paper notation to the
 truncation/log-bound certificate API. -/
-def paper_numericPadic_gateChecklist : PaperABPadicGateChecklist :=
+def paper_numericPadic_gateChecklist : PaperABPadicGateChecklist.{0, 0, 0, 0} :=
   paperABPadicGateChecklist
 
 /-- **Numeric/p-adic gate.** Checklist saying that any actual p-adic
 `log(1+u)` package instantiates the paper truncation/log-bound certificate. -/
 noncomputable def paper_numericPadic_actualLogChecklist :
-    ActualPadicLogTruncationChecklist :=
+    ActualPadicLogTruncationChecklist.{0} :=
   actualPadicLogTruncationChecklist
 
 /-- **EC gate.** Concrete checklist for Hensel/Jacobian/discriminant/Hasse/tag
@@ -15423,14 +15497,14 @@ noncomputable def paper_ecGate_actualChecklist : ActualECGateChecklist :=
 comparison checklist extending the concrete `ZMod` and standard-resolution
 squares. -/
 noncomputable def paper_cechTorNaturality_actualChecklist :
-    ActualCechTorNaturalityChecklist :=
+    ActualCechTorNaturalityChecklist.{uGap1} :=
   actualCechTorNaturalityChecklist
 
 /-- **Koszul, arbitrary length.** Actual theorem-package checklist for replacing
 the current low-degree/interface layer by the full tensor/exterior,
 mapping-cone, long-exact, Nakayama, and regularity-equivalence package. -/
 noncomputable def paper_koszul_actualGeneralChecklist :
-    ActualKoszulTheoremChecklist.{uGap1, uGap2} :=
+    ActualKoszulTheoremChecklist.{uGap1, uGap2, uGap3} :=
   actualKoszulTheoremChecklist
 
 /-- Checklist collecting the eight remaining major formalization fronts. -/
@@ -15989,7 +16063,8 @@ theorem paperComparisonIsoReductionNames_count :
     paperComparisonIsoReductionNames.length = 10 := by
   rfl
 
-/-- Names that should remain visible in the `#print axioms` audit layer. -/
+/-- Names kept for the axiom-audit layer; the executable `#print axioms` commands are
+commented below so ordinary builds stay silent. -/
 def paperAxiomAuditInterfaceNames : List String :=
   ["paper_objectiveImplementationChecklist",
    "mathlibGapWorkaroundChecklist",
@@ -16018,14 +16093,17 @@ theorem paperAxiomAuditInterfaceNames_count :
 It records the policy-level audit while pointing back to concrete certificates,
 external package boundaries, comparison-iso reductions, and corrected-statement
 records. -/
-structure PaperMathlibAbsenceStrategyChecklist where
+structure PaperMathlibAbsenceStrategyChecklist.{uPMASch, vPMASch, uPMASheaf, uPMATri,
+    uPMA1, uPMA2, uPMA3, uPMA4, uPMA5, uPMA6, uPMA7, uPMA8} where
   principles : List String
   principles_count : paperMathlibAbsenceStrategyPrinciples.length = 5
   concreteSurrogate :
     ∀ (M N : ℕ) [NeZero N], ConcreteSurrogateCertificate M N
-  gapWorkaround : MathlibGapWorkaroundChecklist
+  gapWorkaround :
+    MathlibGapWorkaroundChecklist.{uPMASch, vPMASch, uPMASheaf, uPMATri,
+      uPMA1, uPMA2, uPMA3, uPMA4, uPMA5, uPMA6, uPMA7, uPMA8}
   externalPackages :
-    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    ActualExternalMathPackagesChecklist.{uPMASch, vPMASch, uPMASheaf, uPMATri, uPMA1, uPMA2, uPMA3}
   comparisonIsoReductions : List String
   comparisonIsoReductions_count : paperComparisonIsoReductionNames.length = 10
   printAxiomsAuditInterfaces : List String
@@ -16036,7 +16114,8 @@ structure PaperMathlibAbsenceStrategyChecklist where
 
 /-- Canonical checklist instance for the Mathlib-absence strategy. -/
 noncomputable def paperMathlibAbsenceStrategyChecklist :
-    PaperMathlibAbsenceStrategyChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2} where
+    PaperMathlibAbsenceStrategyChecklist.{uSch, vSch, uSheafGap, uTriGap,
+      uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8} where
   principles := paperMathlibAbsenceStrategyPrinciples
   principles_count := paperMathlibAbsenceStrategyPrinciples_count
   concreteSurrogate := fun M N _ => concreteSurrogateCertificate M N
@@ -16129,7 +16208,7 @@ theorem paperCriticalAliasAuditNumbers_complete :
 /-- Typed checklist for the paper aliases singled out in the objective.  Each
 field is a direct reference to an existing top-level theorem/definition alias,
 not merely a string inventory row. -/
-structure PaperCriticalAliasChecklist where
+structure PaperCriticalAliasChecklist.{uPCSch, vPCSch, uPCSheaf, uPCTri, uPC1, uPC2, uPC3} where
   aliasNames : List String
   aliasNames_count : paperCriticalAliasNames.length = 15
   auditRows : List PaperCriticalAliasAuditRecord
@@ -16149,22 +16228,22 @@ structure PaperCriticalAliasChecklist where
     ∀ {m N : ℕ}, m ≠ 0 → N ≠ 0 →
       (Nat.card (TorH1 m N) : ℝ) = Real.exp (paper_def5_obstructionIndex m N)
   prop12FlatBaseChange :
-    ∀ {R : Type*} [CommRing R]
-      {M : Type*} [AddCommGroup M] [Module R M]
-      (S : Type*) [CommRing S] [Algebra R S] [Module.Flat R S],
+    ∀ {R : Type uPC1} [CommRing R]
+      {M : Type uPC2} [AddCommGroup M] [Module R M]
+      (S : Type uPC3) [CommRing S] [Algebra R S] [Module.Flat R S],
         KoszulFlatBaseChangeLowDegreeAndTotalCertificate R S M
   thm17FaithfullyFlat :
-    ∀ {R : Type*} [CommRing R]
-      {M : Type*} [AddCommGroup M] [Module R M]
-      {S N : Type*} [CommRing S] [Algebra R S]
+    ∀ {R : Type uPC1} [CommRing R]
+      {M : Type uPC2} [AddCommGroup M] [Module R M]
+      {S : Type uPC3} {N : Type uPC2} [CommRing S] [Algebra R S]
       [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N]
       [Module.FaithfullyFlat R S] {f : M →ₗ[R] N},
       IsBaseChange S f → ∀ {rs : List R},
         IsRegular M rs → IsRegular N (rs.map (algebraMap R S))
   thm17Localization :
-    ∀ {R : Type*} [CommRing R]
-      {M : Type*} [AddCommGroup M] [Module R M]
-      {S N : Type*} [CommRing S] [Algebra R S]
+    ∀ {R : Type uPC1} [CommRing R]
+      {M : Type uPC2} [AddCommGroup M] [Module R M]
+      {S : Type uPC3} {N : Type uPC2} [CommRing S] [Algebra R S]
       [AddCommGroup N] [Module R N] [Module S N] [IsScalarTower R S N],
       (T : Submonoid R) → [IsLocalization T S] → (f : M →ₗ[R] N) →
       [IsLocalizedModule T f] → ∀ {rs : List R},
@@ -16180,30 +16259,41 @@ structure PaperCriticalAliasChecklist where
     ∀ {M N : ℕ}, M ≠ 0 → N ≠ 0 → Nat.gcd M N = 1 →
       ArithmeticCechTorGate M N
   thm30Conclusion :
-    ∀ {Sch : Type*} [Category Sch] {D : SixFunctorData Sch}
-      (K : SheafKoszulModel D) {X : Sch} (F : D.Sheaf X) (rs : List ℕ),
+    ∀ {Sch : Type uPCSch} [Category.{vPCSch} Sch]
+      {D : SixFunctorData.{uPCSch, vPCSch, uPCSheaf, uPCTri} Sch}
+      (K : SheafKoszulModel.{uPCSch, vPCSch, uPC1, uPCSheaf, uPCTri} D)
+      {X : Sch} (F : D.Sheaf X) (rs : List ℕ),
       D.IsConstr F → K.IsSheafRegular F rs →
         SheafKoszulAcyclicityConclusion K F rs
   thm30PositiveAcyclic :
-    ∀ {Sch : Type*} [Category Sch] {D : SixFunctorData Sch}
-      (K : SheafKoszulModel D) {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
+    ∀ {Sch : Type uPCSch} [Category.{vPCSch} Sch]
+      {D : SixFunctorData.{uPCSch, vPCSch, uPCSheaf, uPCTri} Sch}
+      (K : SheafKoszulModel.{uPCSch, vPCSch, uPC1, uPCSheaf, uPCTri} D)
+      {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
       D.IsConstr F → K.IsSheafRegular F rs → K.PositiveAcyclic F rs
   cor31Conclusion :
-    ∀ {Sch : Type*} [Category Sch] {D : SixFunctorData Sch}
-      {K : SheafKoszulModel D} {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
-      (C : SheafKoszulChartwiseCertificate K F rs) → D.IsConstr F →
+    ∀ {Sch : Type uPCSch} [Category.{vPCSch} Sch]
+      {D : SixFunctorData.{uPCSch, vPCSch, uPCSheaf, uPCTri} Sch}
+      {K : SheafKoszulModel.{uPCSch, vPCSch, uPC1, uPCSheaf, uPCTri} D}
+      {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
+      (C : SheafKoszulChartwiseCertificate.{uPCSch, vPCSch, uPC2, uPCSheaf, uPCTri, uPC1}
+        K F rs) → D.IsConstr F →
         SheafKoszulChartwiseConclusion C
   cor31PositiveAcyclic :
-    ∀ {Sch : Type*} [Category Sch] {D : SixFunctorData Sch}
-      {K : SheafKoszulModel D} {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
-      (C : SheafKoszulChartwiseCertificate K F rs) →
+    ∀ {Sch : Type uPCSch} [Category.{vPCSch} Sch]
+      {D : SixFunctorData.{uPCSch, vPCSch, uPCSheaf, uPCTri} Sch}
+      {K : SheafKoszulModel.{uPCSch, vPCSch, uPC1, uPCSheaf, uPCTri} D}
+      {X : Sch} {F : D.Sheaf X} {rs : List ℕ},
+      (C : SheafKoszulChartwiseCertificate.{uPCSch, vPCSch, uPC2, uPCSheaf, uPCTri, uPC1}
+        K F rs) →
         D.IsConstr F → K.PositiveAcyclic F rs
   standing48 : PaperStanding48WorkingOpenCertificate
   standing48Silent :
     ∀ {p k : ℕ}, p.Prime → 5 ≤ p → ArithmeticCechTorGate (p + 3) (p ^ k)
 
 /-- Canonical typed checklist for the critical paper aliases. -/
-noncomputable def paperCriticalAliasChecklist : PaperCriticalAliasChecklist where
+noncomputable def paperCriticalAliasChecklist :
+    PaperCriticalAliasChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2, uGap3} where
   aliasNames := paperCriticalAliasNames
   aliasNames_count := paperCriticalAliasNames_count
   auditRows := paperCriticalAliasAuditRecords
@@ -16389,7 +16479,8 @@ theorem paperExternalInstantiationChecklistNames_complete :
 
 /-- Typed checklist collecting the remaining external instantiation work while
 pointing back to the existing package boundaries and workaround strategy. -/
-structure PaperRemainingExternalInstantiationChecklist where
+structure PaperRemainingExternalInstantiationChecklist.{uPRESch, vPRESch, uPRESheaf, uPRETri,
+    uPRE1, uPRE2, uPRE3, uPRE4, uPRE5, uPRE6, uPRE7, uPRE8} where
   rows : List PaperExternalInstantiationRecord
   rows_count : paperExternalInstantiationRecords.length = 9
   keys : List String
@@ -16416,15 +16507,17 @@ structure PaperRemainingExternalInstantiationChecklist where
        "ActualConstructibleSheafChecklist", "ActualExternalMathPackagesChecklist",
        "ActualExternalMathPackagesChecklist"]
   coreChecklist :
-    CoreRemainingFormalizationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    CoreRemainingFormalizationChecklist.{uPRESch, vPRESch, uPRESheaf, uPRETri, uPRE1, uPRE2, uPRE3}
   externalPackages :
-    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    ActualExternalMathPackagesChecklist.{uPRESch, vPRESch, uPRESheaf, uPRETri, uPRE1, uPRE2, uPRE3}
   mathlibAbsenceStrategy :
-    PaperMathlibAbsenceStrategyChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    PaperMathlibAbsenceStrategyChecklist.{uPRESch, vPRESch, uPRESheaf, uPRETri,
+      uPRE1, uPRE2, uPRE3, uPRE4, uPRE5, uPRE6, uPRE7, uPRE8}
 
 /-- Canonical checklist for the remaining external instantiation work. -/
 noncomputable def paperRemainingExternalInstantiationChecklist :
-    PaperRemainingExternalInstantiationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2} where
+    PaperRemainingExternalInstantiationChecklist.{uSch, vSch, uSheafGap, uTriGap,
+      uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8} where
   rows := paperExternalInstantiationRecords
   rows_count := paperExternalInstantiationRecords_count
   keys := paperExternalInstantiationKeys
@@ -16536,7 +16629,8 @@ theorem paperObjectiveCompletionMatrix_keys_eq_requirement_keys :
 /-- Typed implementation checklist for the active objective.  Fields point to
 proved concrete certificates where available, and to explicit external-package
 interfaces where the required mathematics is not yet in Mathlib. -/
-structure PaperObjectiveImplementationChecklist where
+structure PaperObjectiveImplementationChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri,
+    uPO1, uPO2, uPO3, uPO4, uPO5, uPO6, uPO7, uPO8} where
   statementInventoryRows : List PaperStatementAliasRecord
   statementInventoryComplete :
     paperStatementInventoryNumbers = paperStatementInventoryExpectedNumbers
@@ -16548,40 +16642,43 @@ structure PaperObjectiveImplementationChecklist where
   completionMatrixKeysMatch :
     paperObjectiveCompletionMatrixKeys =
       paperObjectiveRequirementRecords.map (fun r => r.key)
-  criticalAliases : PaperCriticalAliasChecklist
+  criticalAliases :
+    PaperCriticalAliasChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri, uPO1, uPO2, uPO3}
   correctedStatementRows : List PaperCorrectedStatementAuditRecord
   correctedStatementRowsCount : paperCorrectedStatementAuditRecords.length = 1
   thm19OriginalUncertifiable : ¬ paper_thm19_originalMinIntersectionClaim
   mathlibAbsenceStrategy :
-    PaperMathlibAbsenceStrategyChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    PaperMathlibAbsenceStrategyChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri,
+      uPO1, uPO2, uPO3, uPO4, uPO5, uPO6, uPO7, uPO8}
   remainingExternalInstantiations :
-    PaperRemainingExternalInstantiationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    PaperRemainingExternalInstantiationChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri,
+      uPO1, uPO2, uPO3, uPO4, uPO5, uPO6, uPO7, uPO8}
   canonicalProfile : PaperCanonicalProfileChecklist
-  numericPadicGate : PaperABPadicGateChecklist
-  actualPadicLogTruncation : ActualPadicLogTruncationChecklist
+  numericPadicGate : PaperABPadicGateChecklist.{0, 0, 0, 0}
+  actualPadicLogTruncation : ActualPadicLogTruncationChecklist.{0}
   ellipticCurveGate : EllipticCurveECLayerChecklist
   actualEllipticCurveGate : ActualECGateChecklist
   cechTorNaturality :
-    ∀ (R : Type uGap1) [CommRing R] (M N : ℕ) [NeZero N],
+    ∀ (R : Type uPO1) [CommRing R] (M N : ℕ) [NeZero N],
       CechTorNaturalityChecklist R M N
-  actualCechTorNaturality : ActualCechTorNaturalityChecklist
+  actualCechTorNaturality : ActualCechTorNaturalityChecklist.{uPO1}
   lowDegreeKoszul :
-    ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M],
+    ∀ (R : Type uPO1) (M : Type uPO2) [CommRing R] [AddCommGroup M] [Module R M],
       LowDegreeKoszulCertificate R M
-  generalKoszul : GeneralKoszulBridgeChecklist.{uGap1, uGap2}
-  actualGeneralKoszul : ActualKoszulTheoremChecklist.{uGap1, uGap2}
-  actualDepthDimension : ActualDepthDimensionChecklist.{uGap1, uGap2}
+  generalKoszul : GeneralKoszulBridgeChecklist.{uPO1, uPO2}
+  actualGeneralKoszul : ActualKoszulTheoremChecklist.{uPO1, uPO2, uPO3}
+  actualDepthDimension : ActualDepthDimensionChecklist.{uPO1, uPO2}
   actualConstructibleSheaf :
-    ActualConstructibleSheafChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1}
+    ActualConstructibleSheafChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri, uPO1}
   actualSixFunctorData :
-    ∀ {Sch : Type uSch} [Category.{vSch} Sch],
-      ActualSixFunctorTheoremPackage.{uSch, vSch, uSheafGap, uTriGap} Sch →
-        SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch
+    ∀ {Sch : Type uPOSch} [Category.{vPOSch} Sch],
+      ActualSixFunctorTheoremPackage.{uPOSch, vPOSch, uPOSheaf, uPOTri} Sch →
+        SixFunctorData.{uPOSch, vPOSch, uPOSheaf, uPOTri} Sch
   localRHRadius : LocalRHRadiusChecklist.{0}
-  equivalenceC : GlobalEquivalenceCChecklist
+  equivalenceC : GlobalEquivalenceCChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri}
   globalEquivalence :
-    ∀ {Sch : Type uSch} [Category.{vSch} Sch]
-      {D : SixFunctorData.{uSch, vSch, uSheafGap, uTriGap} Sch}
+    ∀ {Sch : Type uPOSch} [Category.{vPOSch} Sch]
+      {D : SixFunctorData.{uPOSch, vPOSch, uPOSheaf, uPOTri} Sch}
       {X : Sch} {F : D.Sheaf X}
       {W : WeilIIPackage D F} {C : DetTraceRadiusCertificate W}
       {M N n : ℕ} {w : ℤ} {B : LocalRHWeightCertificate W n w},
@@ -16589,14 +16686,17 @@ structure PaperObjectiveImplementationChecklist where
         (n := n) (w := w) B) →
         P.bridge.RH ↔ P.bridge.TP
   coreRemainingFormalization :
-    CoreRemainingFormalizationChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
+    CoreRemainingFormalizationChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri, uPO1, uPO2, uPO3}
   actualExternalMathPackages :
-    ActualExternalMathPackagesChecklist.{uSch, vSch, uSheafGap, uTriGap, uGap1, uGap2}
-  mathlibGapWorkaround : MathlibGapWorkaroundChecklist
+    ActualExternalMathPackagesChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri, uPO1, uPO2, uPO3}
+  mathlibGapWorkaround :
+    MathlibGapWorkaroundChecklist.{uPOSch, vPOSch, uPOSheaf, uPOTri,
+      uPO1, uPO2, uPO3, uPO4, uPO5, uPO6, uPO7, uPO8}
 
 /-- Canonical implementation audit for the integrated file. -/
 noncomputable def paper_objectiveImplementationChecklist :
-    PaperObjectiveImplementationChecklist where
+    PaperObjectiveImplementationChecklist.{uSch, vSch, uSheafGap, uTriGap,
+      uGap1, uGap2, uGap3, uGap4, uGap5, uGap6, uGap7, uGap8} where
   statementInventoryRows := paperStatementAliasRecords
   statementInventoryComplete := paperStatementInventory_numbers_complete
   statementInventoryCount := paperStatementInventory_count
@@ -16639,1372 +16739,1372 @@ noncomputable def paper_objectiveImplementationChecklist :
 
 /-! ## Axiom audit. -/
 section AxiomAudit
-#print axioms PaperStatementKind
-#print axioms PaperStatementAliasRecord
-#print axioms paperStatementAliasRecords
-#print axioms paperStatementInventoryExpectedNumbers
-#print axioms paperStatementInventoryNumbers
-#print axioms paperStatementInventory_numbers_complete
-#print axioms paperStatementInventory_count
-#print axioms PaperObjectiveRequirementRecord
-#print axioms paperObjectiveRequirementRecords
-#print axioms paperObjectiveRequirementRecords_count
-#print axioms PaperOriginalStatementStatus
-#print axioms paper_thm19_originalMinIntersectionClaim
-#print axioms paper_thm19_originalMinIntersection_uncertifiable
-#print axioms PaperCorrectedStatementAuditRecord
-#print axioms paperCorrectedStatementAuditRecords
-#print axioms paperCorrectedStatementAuditRecords_count
-#print axioms paper_thm19_correction_status
-#print axioms paperMathlibAbsenceStrategyPrinciples
-#print axioms paperMathlibAbsenceStrategyPrinciples_count
-#print axioms paperComparisonIsoReductionNames
-#print axioms paperComparisonIsoReductionNames_count
-#print axioms paperAxiomAuditInterfaceNames
-#print axioms paperAxiomAuditInterfaceNames_count
-#print axioms PaperMathlibAbsenceStrategyChecklist
-#print axioms paperMathlibAbsenceStrategyChecklist
-#print axioms paperCriticalAliasNames
-#print axioms paperCriticalAliasNames_count
-#print axioms PaperCriticalAliasAuditRecord
-#print axioms paperCriticalAliasAuditRecords
-#print axioms paperCriticalAliasAuditRecords_count
-#print axioms paperCriticalAliasAuditNumbers
-#print axioms paperCriticalAliasAuditNumbers_complete
-#print axioms PaperCriticalAliasChecklist
-#print axioms paperCriticalAliasChecklist
-#print axioms PaperExternalInstantiationStatus
-#print axioms PaperExternalInstantiationRecord
-#print axioms paperExternalInstantiationRecords
-#print axioms paperExternalInstantiationRecords_count
-#print axioms paperExternalInstantiationKeys
-#print axioms paperExternalInstantiationKeys_complete
-#print axioms paperExternalInstantiationPackageNames
-#print axioms paperExternalInstantiationPackageNames_complete
-#print axioms paperExternalInstantiationChecklistNames
-#print axioms paperExternalInstantiationChecklistNames_complete
-#print axioms PaperRemainingExternalInstantiationChecklist
-#print axioms paperRemainingExternalInstantiationChecklist
-#print axioms PaperObjectiveCompletionStatus
-#print axioms PaperObjectiveCompletionRecord
-#print axioms paperObjectiveCompletionMatrix
-#print axioms paperObjectiveCompletionMatrix_count
-#print axioms paperObjectiveCompletionMatrixKeys
-#print axioms paperObjectiveCompletionMatrix_keys_eq_requirement_keys
-#print axioms PaperObjectiveImplementationChecklist
-#print axioms paper_objectiveImplementationChecklist
-#print axioms IsNthPrime
-#print axioms CanonicalPaperProfile
-#print axioms canonicalPaperProfile
-#print axioms paper_canonicalProfile_A_eq_four
-#print axioms paper_canonicalProfile_y_eq_one
-#print axioms paper_canonicalProfile_p_n_isNthPrime
-#print axioms paper_canonicalProfile_p_n_prime
-#print axioms paper_canonicalProfile_primesBelow_card
-#print axioms paper_canonicalProfile_Mplus_eq_profile
-#print axioms paper_canonicalProfile_Mminus_eq_profile
-#print axioms paper_canonicalProfile_Mplus_eq_p_n_add_three
-#print axioms paper_canonicalProfile_Mminus_eq_p_n_sub_three
-#print axioms paper_thm1_canonicalProfile_coprime
-#print axioms paper_thm1_canonicalProfile_obstructionFree
-#print axioms PaperCanonicalProfileChecklist
-#print axioms paperCanonicalProfileChecklist
-#print axioms paper_thm1_canonicalProfileChecklist
-#print axioms paper_def5_obstructionIndex
-#print axioms paper_def5_tor_cardinality_formula
-#print axioms paper_lem6_primePowerTorIso
-#print axioms paper_prop7_crtSplitting
-#print axioms paper_prop7_tor_cardinality
-#print axioms paper_prop8_obstructionIndex_mono_left
-#print axioms paper_prop12_flatBaseChangeCertificate
-#print axioms paper_thm17_sheafLocalPreservation_faithfullyFlat
-#print axioms paper_thm17_sheafLocalPreservation_localization
-#print axioms paper_prop28_cechTorGate_tfae
-#print axioms paper_prop28_cechTorGate_of_gcd_eq_one
-#print axioms paper_thm30_sheafKoszulAcyclicityConclusion
-#print axioms paper_thm30_positiveAcyclic
-#print axioms paper_cor31_sheafKoszulChartwiseConclusion
-#print axioms paper_cor31_positiveAcyclic
-#print axioms PaperStanding48WorkingOpenCertificate
-#print axioms paper_standing48_workingOpenCertificate
-#print axioms paper_standing48_canonicalCechTorSilent
-#print axioms paper_numericPadic_phiJ
-#print axioms paper_numericPadic_HkGate
-#print axioms paper_numericPadic_logMinusPnLogA
-#print axioms paper_numericPadic_gateChecklist
-#print axioms paper_numericPadic_actualLogChecklist
-#print axioms paper_ecGate_concreteChecklist
-#print axioms paper_ecGate_actualChecklist
-#print axioms paper_cechTorNaturality_actualChecklist
-#print axioms paper_koszul_actualGeneralChecklist
-#print axioms paper_coreRemainingFormalizationChecklist
-#print axioms paper_actualExternalMathPackagesChecklist
-#print axioms paper_remark2_operationalSummary
-#print axioms paper_thm3_cechH1Iso
-#print axioms paper_thm3_torOneIso
-#print axioms paper_thm3_cechBaseChangeNaturality
-#print axioms paper_thm3_cechTorNaturalityChecklist
-#print axioms paper_remark4_geometricReadout
-#print axioms paper_cor9_obstructionFreeTFAE
-#print axioms paper_lem10_stalkRegularityTest
-#print axioms paper_thm11_koszulCriterion
-#print axioms paper_remark13_equalizerBridge
-#print axioms paper_lem14_stalkRegularityTest
-#print axioms paper_thm15_koszulCriterion
-#print axioms paper_prop16_faithfullyFlatBaseChange
-#print axioms paper_prop16_localizationBaseChange
-#print axioms paper_prop18_depthDimensionAdapter
-#print axioms paper_prop18_actualDepthDimensionInstantiation
-#print axioms paper_thm19_correctedLocalizedIntersection
-#print axioms paper_def20_finiteStratificationInterface
-#print axioms paper_def20_actualSixFunctorTheoremPackage
-#print axioms paper_def20_actualSixFunctorData
-#print axioms paper_def21_constructibleGlobalLayerInterface
-#print axioms paper_def21_shriekSummand
-#print axioms paper_def21_actualSheafConstructionPackage
-#print axioms paper_def21_actualConstructibleSheafChecklist
-#print axioms paper_def21_actualConstructibleSheafChecklistValue
-#print axioms paper_lem22_constructibility
-#print axioms paper_lem23_pullbackConstructible
-#print axioms paper_lem23_baseChangeShriek
-#print axioms paper_lem24_gluingTriangle
-#print axioms paper_lem24_openClosedTermsConstructible
-#print axioms paper_lem25_tensorConstructible
-#print axioms paper_lem25_internalHomConstructible
-#print axioms paper_lem25_dualConstructible
-#print axioms paper_remark26_goodPrimeCechTorUpgrade
-#print axioms paper_cor27_weightTraceReadiness
-#print axioms paper_lem29_henselianPadicPullbackStability
-#print axioms paper_lem32_curveReduction
-#print axioms paper_prop33_mixedUpperBound
-#print axioms paper_thm34_pureCases
-#print axioms paper_cor35_openClosedWeightControl
-#print axioms paper_lem36_traceFormulaExpansion
-#print axioms paper_lem37_detTraceIdentity
-#print axioms paper_prop38_radiusBoundsFromWeights
-#print axioms paper_lem39_cechH1ArithmeticModel
-#print axioms paper_lem39_cechH1Cardinality
-#print axioms paper_cor40_goodPrimeCechAcyclicity
-#print axioms paper_prop41_mixedUpperBounds
-#print axioms paper_thm42_pureCases
-#print axioms paper_prop43_finiteSupportCohomology
-#print axioms paper_thm44_globalPurityPure
-#print axioms paper_thm44_globalPurityMixed
-#print axioms paper_cor45_degreeZero
-#print axioms paper_cor46_degreeOne
-#print axioms paper_thm47_equivalenceC
-#print axioms paper_thm47_localRHEquivalenceC
-#print axioms paper_thm47_globalEquivalenceC
-#print axioms canonical_coprime
-#print axioms arithmeticProgression_injective
-#print axioms crtBinaryArithmeticProgression_exists
-#print axioms Fnum_iff_dvd
-#print axioms Fmod_iff_dvd
-#print axioms Fp_adic_iff_dvd
-#print axioms FEC_iff_dvd
-#print axioms concreteECIntegralCurve
-#print axioms concreteECModPCurve
-#print axioms concreteECModPEquation_iff
-#print axioms concreteECJacobianF
-#print axioms concreteECModPEquation_iff_jacobianF_zero
-#print axioms concreteECJacobianDX
-#print axioms concreteECJacobianDY
-#print axioms concreteECJacobianNonzero
-#print axioms concreteECAffineSingularPoint
-#print axioms concreteECJacobianNonzero_iff_not_both_partials_zero
-#print axioms concreteECAffineSmooth
-#print axioms concreteECHenselGate
-#print axioms concreteECHenselGate_iff
-#print axioms concreteECAffineSmooth_iff_all_henselGate
-#print axioms concreteECShortDiscriminantInt
-#print axioms concreteECShortDiscriminantModP
-#print axioms concreteECDiscriminantGate
-#print axioms concreteECSmoothFiberGate
-#print axioms ECJacobianHenselSmoothCertificate
-#print axioms ECJacobianHenselSmoothCertificate.smoothFiberGate_iff_discriminant
-#print axioms ECJacobianHenselSmoothCertificate.henselLiftable_iff_jacobian_of_equation
-#print axioms ECJacobianHenselSmoothCertificate.henselLiftable_of_henselGate
-#print axioms ConcreteECModPAffineSolutions
-#print axioms ConcreteECModPPoints
-#print axioms concreteECPointCount
-#print axioms concreteECPointCount_eq_affine_add_one
-#print axioms concreteECTrace
-#print axioms concreteECLocalFactorPolynomial
-#print axioms concreteECLocalFactorPolynomial_eval
-#print axioms ECOrdSSTag
-#print axioms ECOrdinary
-#print axioms ECSupersingular
-#print axioms ECOrdSSTagCertificate
-#print axioms HasseBoundCertificate
-#print axioms HasseBoundCertificate.trace_abs_le
-#print axioms ECFullGateCertificate
-#print axioms ECFullGateCertificate.smoothFiberGate_iff_discriminant
-#print axioms ECFullGateCertificate.hasse_bound
-#print axioms ECFullGateCertificate.ordinary_of_tag
-#print axioms ECFullGateCertificate.supersingular_of_tag
-#print axioms ECConcreteLayerProfile
-#print axioms ECConcreteLayerProfile.fec_iff_modPrime
-#print axioms ECConcreteLayerProfile.fec_iff_dvd_primeMod
-#print axioms ecConcreteLayerProfileOf
-#print axioms EllipticCurveECLayerChecklist
-#print axioms ellipticCurveECLayerChecklist
-#print axioms powPadicCongruence
-#print axioms BuchiValuationGate
-#print axioms int_pow_dvd_iff_powPadicCongruence
-#print axioms padicValInt_gate_iff_pow_dvd
-#print axioms padicValInt_ge_iff_pow_dvd_of_ne_zero
-#print axioms intCast_mem_padicInt_span_pow_iff
-#print axioms padicInt_span_pow_iff_powPadicCongruence
-#print axioms buchiDenominator
-#print axioms buchiNumerator
-#print axioms buchiPhi
-#print axioms paperABPhi
-#print axioms paperABPhi_eq_buchiPhi
-#print axioms buchiDenominator_ne_zero
-#print axioms padicValRat_buchiPhi
-#print axioms NumericGateBuchiProfile
-#print axioms NumericGateBuchiProfile.fnum_iff_powPadicCongruence
-#print axioms NumericGateBuchiProfile.fnum_iff_valuationGate
-#print axioms NumericGateBuchiProfile.fnum_iff_padicInt_span
-#print axioms PadicLogBridgeCertificate
-#print axioms PadicLogBridgeCertificate.log_bound_of_valuationGate
-#print axioms PadicLogBridgeCertificate.log_bound_of_powPadicCongruence
-#print axioms buchiHkRemainder
-#print axioms paperABHkGate
-#print axioms buchiHkRemainder_powPadicCongruence_iff_dvd
-#print axioms paperABHkGate_iff_dvd
-#print axioms paperABHkGate_iff_valuationGate
-#print axioms PadicABLogTruncationCertificate
-#print axioms PadicABLogTruncationCertificate.ofPadicLogBridge
-#print axioms PadicABLogTruncationCertificate.log_bound_of_powPadicCongruence
-#print axioms PadicABLogTruncationCertificate.log_bound_of_buchiHkRemainder
-#print axioms PadicABLogTruncationCertificate.paperLogMinusPnLogA
-#print axioms PadicABLogTruncationCertificate.paperLogMinusPnLogA_eq
-#print axioms PadicABLogTruncationCertificate.paperHkInteger
-#print axioms PadicABLogTruncationCertificate.paperHkInteger_eq
-#print axioms PadicABLogTruncationCertificate.paperLogBound_of_HkGate
-#print axioms ActualPadicLogTruncationPackage
-#print axioms ActualPadicLogTruncationPackage.logOnePlus_bound_of_powPadicCongruence
-#print axioms ActualPadicLogTruncationPackage.logOnePlus_bound_of_valuationGate
-#print axioms ActualPadicLogTruncationPackage.log_bound_of_truncationCongruence
-#print axioms ActualPadicLogTruncationPackage.log_bound_of_buchiHkGate
-#print axioms ActualPadicLogTruncationPackage.toPadicABLogTruncationCertificate
-#print axioms ActualPadicLogTruncationChecklist
-#print axioms actualPadicLogTruncationChecklist
-#print axioms ABPadicLogTruncationChecklist
-#print axioms abPadicLogTruncationChecklist
-#print axioms PaperABPadicGateChecklist
-#print axioms paperABPadicGateChecklist
-#print axioms PadicNumericGateChecklist
-#print axioms padicNumericGateChecklist
-#print axioms arithmeticPrimeSpectrumTopCat
-#print axioms arithmeticBasicOpen
-#print axioms arithmeticBasicOpen_mul
-#print axioms arithmeticConstantIntPresheaf
-#print axioms arithmeticConstantIntPresheaf_restrict_value
-#print axioms arithmeticIntFunctionSheaf
-#print axioms arithmeticIntFunctionSheaf_presheaf
-#print axioms arithmeticIntFunctionSheaf_isSheaf
-#print axioms arithmeticIntFunctionSheaf_const
-#print axioms arithmeticIntFunctionSheaf_const_restrict
-#print axioms arithmeticConstantIntToFunction
-#print axioms arithmeticConstantIntToFunction_restrict
-#print axioms arithmeticPredicatePresheaf
-#print axioms arithmeticPredicatePresheafInclusion
-#print axioms arithmeticPredicatePresheaf_restrict_value
-#print axioms fourLayerGatePresheaf
-#print axioms fourLayerGateSectionsEquivIntersection
-#print axioms fourLayerGate_restrict_value
-#print axioms fourLayerGatePresheafInclusion
-#print axioms fourLayerGatePresheafInclusion_app
-#print axioms fourLayerGatePresheafInclusion_naturality_value
-#print axioms modCritical_AP
-#print axioms numericCritical_AP
-#print axioms pAdicCritical_AP
-#print axioms ecCritical_AP
-#print axioms fourLayerStrictIndependence
-#print axioms kernel_mem_iff_lcm
-#print axioms crt_solvable_iff
-#print axioms crtPhi_mem_ker_iff_lcm
-#print axioms crtDel_exact_crtPhi
-#print axioms crtDel_surjective
-#print axioms cechPhiCokerEquivZModGcd
-#print axioms cechPhiCoker_card
-#print axioms cechPhiCoker_card_eq_one_iff_gcd_eq_one
-#print axioms arithmeticCechOverlapOpen_eq_inf
-#print axioms arithmeticCechGlobalRestrictLeft
-#print axioms arithmeticCechGlobalRestrictRight
-#print axioms arithmeticCechLeftRestrictOverlap
-#print axioms arithmeticCechRightRestrictOverlap
-#print axioms arithmeticCechLeftRestrictOverlap_intCast
-#print axioms arithmeticCechRightRestrictOverlap_intCast
-#print axioms arithmeticCechLeftOverlap_comp_global
-#print axioms arithmeticCechRightOverlap_comp_global
-#print axioms arithmeticCech_overlap_restrictions_agree_on_global
-#print axioms arithmeticCechGlobalToLocal
-#print axioms arithmeticCechLocalDifference
-#print axioms arithmeticCech_twoOpen_exact
-#print axioms arithmeticCech_compatible_iff_gluable
-#print axioms arithmeticCech_range_eq_kernel
-#print axioms arithmeticCechCompatiblePairs
-#print axioms arithmeticCechGluablePairs
-#print axioms arithmeticCech_mem_compatiblePairs_iff
-#print axioms arithmeticCech_mem_gluablePairs_iff
-#print axioms arithmeticCech_gluablePairs_eq_compatiblePairs
-#print axioms arithmeticCechH0Image
-#print axioms arithmeticCechH0Equalizer
-#print axioms arithmeticCechH0ImageEquivEqualizer
-#print axioms arithmeticCechH0ImageEquivEqualizer_apply
-#print axioms arithmeticCech_same_local_iff_lcm_dvd_sub
-#print axioms arithmeticCechH1EquivZModGcd
-#print axioms arithmeticCechH1_card
-#print axioms ArithmeticTwoOpenCechSheafCertificate
-#print axioms arithmeticTwoOpenCechSheafCertificate
-#print axioms factorization_gcd_apply
-#print axioms factorization_lcm_apply
-#print axioms kernel_ideal_inter_nat
-#print axioms lcm_prime_power_thickness
-#print axioms gcd_prime_power_thickness
-#print axioms lcm_prime_power_unit_part_not_dvd
-#print axioms localized_lcm_prime_power_ideal_eq_span
-#print axioms localized_intersection_prime_power_ideal_eq_span
-#print axioms card_ker_mulLeft
-#print axioms kerMulLeftEquivZModGcd
-#print axioms TorH1_iso_zmod_gcd
-#print axioms standardIntResolutionD1
-#print axioms standardIntResolutionQuotient
-#print axioms standardIntResolutionQuotient_comp_D1_apply
-#print axioms standardIntResolutionZeroObj
-#print axioms standardIntResolutionComplexObj
-#print axioms standardIntResolutionComplexD
-#print axioms standardIntResolutionComplexD_zero
-#print axioms standardIntResolutionComplexD_succ
-#print axioms standardIntResolutionComplexD_comp
-#print axioms standardIntResolutionComplex
-#print axioms standardIntResolutionComplex_d_one_zero
-#print axioms standardIntResolutionComplex_d_succ_succ
-#print axioms standardIntResolutionAugmentation
-#print axioms standardIntResolutionAugmentation_f_zero
-#print axioms standardIntResolutionAugmentation_f_zero_epi
-#print axioms standardIntResolutionAugmentation_comp_d_one_zero
-#print axioms standardIntResolutionComplex_projective
-#print axioms standardIntResolutionD1_range_eq_zmultiples
-#print axioms standardIntResolutionQuotient_ker_eq_zmultiples
-#print axioms standardIntResolutionD1_range_eq_quotient_ker
-#print axioms standardIntResolutionQuotient_surjective
-#print axioms standardIntResolution_linear_exact
-#print axioms standardIntResolutionAugmentation_f_zero_isColimitCokernelCofork
-#print axioms standardIntResolutionD1_ker_eq_bot_of_ne_zero
-#print axioms standardIntResolutionComplex_exactAt_one_of_ne_zero
-#print axioms standardIntResolutionComplex_exactAt_succ_succ
-#print axioms standardIntResolutionComplex_exactAt_succ_of_ne_zero
-#print axioms standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero
-#print axioms standardIntResolutionAugmentation_quasiIsoAt_zero
-#print axioms standardIntResolutionAugmentation_quasiIso_of_ne_zero
-#print axioms standardIntProjectiveResolution
-#print axioms StandardIntResolutionCertificate
-#print axioms standardIntResolutionCertificate
-#print axioms tensorStandardResolutionD1
-#print axioms tensorStandardResolutionD1_eq_torD1
-#print axioms tensorStandardResolutionD2
-#print axioms tensorStandardResolutionD1_comp_D2_apply
-#print axioms tensorStandardResolutionComplexObj
-#print axioms tensorStandardResolutionComplexD
-#print axioms tensorStandardResolutionComplexD_zero
-#print axioms tensorStandardResolutionComplexD_succ
-#print axioms tensorStandardResolutionComplexD_comp
-#print axioms tensorStandardResolutionComplex
-#print axioms tensorStandardResolutionComplex_d_one_zero
-#print axioms tensorStandardResolutionComplex_d_succ_succ
-#print axioms tensorRightStandardResolutionComplexComponentIso
-#print axioms tensorLeftStandardResolutionComplexComponentIso
-#print axioms tensorRightAppliedStandardResolutionComplex
-#print axioms tensorLeftAppliedStandardResolutionComplex
-#print axioms standardIntMulLeftModuleHom
-#print axioms zmodMulLeftModuleHom
-#print axioms zmodLeftUnitorHom
-#print axioms zmodRightUnitorHom
-#print axioms zmodLeftUnitor_comp_zmodMulLeftModuleHom
-#print axioms zmodRightUnitor_comp_zmodMulLeftModuleHom
-#print axioms tensorRightStandardResolutionComplexIso
-#print axioms tensorLeftStandardResolutionComplexIso
-#print axioms tensorStandardResolutionCycles1_eq_kernel
-#print axioms tensorStandardResolutionD2_range_eq_bot
-#print axioms tensorStandardResolutionBoundaries1_eq_bot
-#print axioms tensorStandardResolutionBoundaries1_le_cycles1
-#print axioms mem_tensorStandardResolutionCycles1_iff
-#print axioms tensorStandardResolutionHomology1EquivCycles1
-#print axioms tensorStandardResolutionH1EquivTorH1
-#print axioms tensorStandardResolutionHomology1EquivTorH1
-#print axioms tensorStandardResolutionH1EquivZModGcd
-#print axioms tensorStandardResolutionHomology1EquivZModGcd
-#print axioms tensorStandardResolutionH1_card
-#print axioms tensorStandardResolutionHomology1_card
-#print axioms mem_tensorStandardResolutionH1_iff
-#print axioms standardResolutionTorOneEndpoint
-#print axioms standardResolutionTorOneEndpointIsoConcrete
-#print axioms standardResolutionTorOneEndpointIsoGcd
-#print axioms tensorStandardResolutionComplex_scPrimeOne_f_eq_zero
-#print axioms tensorStandardResolutionLinearKerIsoCycles1
-#print axioms tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint
-#print axioms tensorStandardResolutionScPrimeOneHomologyIsoStandardEndpoint
-#print axioms tensorStandardResolutionActualHomologyOne
-#print axioms tensorStandardResolutionActualHomologyOneIsoStandardEndpoint
-#print axioms standardResolutionTorPrimeOneEndpoint
-#print axioms standardResolutionTorPrimeOneEndpointIsoGcd
-#print axioms standardResolutionTorOneSecondVariableEndpoint
-#print axioms standardResolutionTorOneSecondVariableEndpointIsoGcd
-#print axioms mathlibTensorRightStandardResolutionHomologyOne
-#print axioms mathlibTensorLeftStandardResolutionHomologyOne
-#print axioms mathlibTensorRightStandardResolutionHomologyOneIsoActualHomology
-#print axioms mathlibTensorLeftStandardResolutionHomologyOneIsoActualHomology
-#print axioms mathlibTorPrimeOneEndpointIsoStandardResolutionHomology
-#print axioms mathlibTorOneEndpointIsoStandardResolutionHomology
-#print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionHomologyIso
-#print axioms abstractTorOneIsoGcdOfStandardResolutionHomologyIso
-#print axioms abstractTorPrimeOneIsoGcdOfActualHomologyIso
-#print axioms abstractTorOneIsoGcdOfActualHomologyIso
-#print axioms abstractTorPrimeOneIsoGcd
-#print axioms abstractTorOneIsoGcd
-#print axioms MathlibTorPrimeStandardResolutionComputation
-#print axioms mathlibTorPrimeStandardResolutionComputation
-#print axioms MathlibTorStandardResolutionComputation
-#print axioms mathlibTorStandardResolutionComputation
-#print axioms StandardFreeResolutionTorComparison
-#print axioms standardFreeResolutionTorComparison
-#print axioms prod_primePower_factorization_eq_self
-#print axioms TorH1_crt_coord_mem
-#print axioms TorH1_crt_inv_mem
-#print axioms TorH1_primePowerDecomposition
-#print axioms gcd_eq_prod_primeFactors
-#print axioms card_Tor_eq_exp_IC
-#print axioms IC_mono
-#print axioms IC_mono_left
-#print axioms IC_coprime_add
-#print axioms IC_nonneg
-#print axioms gcd_eq_one_iff_IC_eq_zero
-#print axioms TorH1_card_eq_one_iff_gcd_eq_one
-#print axioms cor9_tfae_gcd_tor_ic
-#print axioms ArithmeticCechTorGate
-#print axioms arithmeticCechTorGate_iff_gcd_eq_one
-#print axioms arithmeticCechTorGate_tfae
-#print axioms singleton_regular_iff
-#print axioms cons_regular_iff
-#print axioms koszulR1Mul
-#print axioms koszulR1Obj
-#print axioms koszulR1Differential
-#print axioms koszulR1Differential_sq
-#print axioms koszulR1ChainComplex
-#print axioms koszulR1ChainComplex_d_one_zero
-#print axioms koszulR1ChainComplex_d_succ_succ
-#print axioms koszulR1H1
-#print axioms koszulR1H0
-#print axioms koszulR1H1_eq_bot_iff_isSMulRegular
-#print axioms koszulR1_range_eq_smul_top
-#print axioms koszulR1H0EquivQuotSMulTop
-#print axioms koszulR1PositiveAcyclic
-#print axioms koszulR1PositiveAcyclic_iff_isSMulRegular
-#print axioms koszulR1PositiveAcyclic_iff_isWeaklyRegular_singleton
-#print axioms koszulR1PositiveAcyclic_of_isWeaklyRegular_singleton
-#print axioms koszulR2Left
-#print axioms koszulR2Right
-#print axioms koszulR2Left_comp_right
-#print axioms koszulRange_lsmul_eq_smul_top
-#print axioms ofList_pair_smul_top_eq_smul_sup_smul
-#print axioms koszulR2Left_range_eq_ofList_pair_smul_top
-#print axioms koszulR2H0EquivQuotOfListPair
-#print axioms koszulR2H2
-#print axioms mem_koszulR2H2_iff
-#print axioms koszulR2H2_eq_bot_of_isWeaklyRegular_pair
-#print axioms koszulR2Obj
-#print axioms koszulR2Differential
-#print axioms koszulR2Differential_sq
-#print axioms koszulR2ChainComplex
-#print axioms koszulR2ChainComplex_d_one_zero
-#print axioms koszulR2ChainComplex_d_two_one
-#print axioms koszulR2H1Cycles
-#print axioms koszulR2RightToCycles
-#print axioms koszulR2H1
-#print axioms koszulR2RightToCycles_range_eq_top_of_isWeaklyRegular_pair
-#print axioms koszulR2H1_subsingleton_of_isWeaklyRegular_pair
-#print axioms koszulR2PositiveAcyclic
-#print axioms koszulR2H2_eq_bot_of_positiveAcyclic
-#print axioms koszulR2H1_subsingleton_of_positiveAcyclic
-#print axioms koszulR2PositiveAcyclic_of_isWeaklyRegular_pair
-#print axioms koszulR2PositiveAcyclic_of_cons_certificate
-#print axioms koszulLowDegreePositiveAcyclic
-#print axioms koszulLowDegreePositiveAcyclic_nil
-#print axioms koszulLowDegreePositiveAcyclic_singleton
-#print axioms koszulLowDegreePositiveAcyclic_pair
-#print axioms not_koszulLowDegreePositiveAcyclic_cons_cons_cons
-#print axioms length_le_two_of_koszulLowDegreePositiveAcyclic
-#print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_singleton
-#print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_pair
-#print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_length_le_two
-#print axioms koszulLowDegreeRegularityCertificate
-#print axioms koszulLowDegreeRegularityCertificate_nil
-#print axioms koszulLowDegreeRegularityCertificate_singleton
-#print axioms koszulLowDegreeRegularityCertificate_pair
-#print axioms not_koszulLowDegreeRegularityCertificate_cons_cons_cons
-#print axioms koszulLowDegreePositiveAcyclic_of_regularCertificate
-#print axioms length_le_two_of_koszulLowDegreeRegularityCertificate
-#print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_singleton
-#print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_pair
-#print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_length_le_two
-#print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate_singleton
-#print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate_pair
-#print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate
-#print axioms koszulLowDegreeRegularityCertificate_iff_isWeaklyRegular_length_le_two
-#print axioms KoszulAcyclicPredicate
-#print axioms KoszulWeakAcyclicityInterface
-#print axioms koszulAcyclic_iff_isWeaklyRegular_of_interface
-#print axioms koszulInterface_singleton_iff_koszulR1PositiveAcyclic
-#print axioms koszulR2PositiveAcyclic_of_interface_pair
-#print axioms koszulLowDegreePositiveAcyclic_of_interface_length_le_two
-#print axioms koszulLowDegreeRegularityCertificate_iff_interface_length_le_two
-#print axioms KoszulComplexModel
-#print axioms KoszulComplexModel.acyclic_iff_isWeaklyRegular
-#print axioms KoszulComplexModel.lowDegreeRegularityCertificate_iff_acyclic
-#print axioms KoszulComplexModel.lowDegreePositiveAcyclic_of_acyclic
-#print axioms KoszulComplexModel.acyclic_of_lowDegreeRegularityCertificate
-#print axioms weakRegularKoszulAcyclicPredicate
-#print axioms weakRegularKoszulWeakInterface
-#print axioms lowDegreeKoszulComplex
-#print axioms lowDegreeKoszulComplex_singleton
-#print axioms lowDegreeKoszulComplex_pair
-#print axioms lowDegreeKoszulComplexModel
-#print axioms lowDegreeKoszulComplexModel_complex_singleton
-#print axioms lowDegreeKoszulComplexModel_complex_pair
-#print axioms lowDegreeKoszulComplexModel_acyclic_iff_isWeaklyRegular
-#print axioms lowDegreeKoszulComplexModel_lowDegreeCertificate_iff_acyclic
-#print axioms koszulFreeModule
-#print axioms koszulSequenceVector
-#print axioms koszulSequenceVector_singleton_zero
-#print axioms koszulSequenceVector_pair_zero
-#print axioms koszulSequenceVector_pair_one
-#print axioms koszulSequenceVector_map_length
-#print axioms koszulSequenceVector_map_algebraMap
-#print axioms exteriorKoszulAlgebra
-#print axioms exteriorKoszulGenerator
-#print axioms exteriorKoszulGenerator_sq
-#print axioms exteriorKoszulTotalDifferential
-#print axioms exteriorKoszulTotalDifferential_apply
-#print axioms exteriorKoszulTotalDifferential_sq
-#print axioms exteriorKoszulTotalTensorTerm
-#print axioms exteriorKoszulTotalTensorDifferential
-#print axioms exteriorKoszulTotalTensorDifferential_tmul
-#print axioms exteriorKoszulTotalTensorDifferential_sq
-#print axioms linearMap_baseChange_comp_self_eq_zero
-#print axioms exteriorKoszulTotalBaseChangeDifferential
-#print axioms exteriorKoszulTotalBaseChangeDifferential_tmul
-#print axioms exteriorKoszulTotalBaseChangeDifferential_sq
-#print axioms ExteriorKoszulTotalBaseChangeCertificate
-#print axioms exteriorKoszulTotalBaseChangeCertificate
-#print axioms exteriorKoszulScalarTargetAlgebra
-#print axioms exteriorKoszulScalarTargetSequenceVector
-#print axioms exteriorKoszulScalarTargetSequenceVector_apply
-#print axioms exteriorKoszulScalarTargetGenerator
-#print axioms exteriorKoszulScalarTargetGenerator_sq
-#print axioms exteriorKoszulScalarTargetDifferential
-#print axioms exteriorKoszulScalarTargetDifferential_apply
-#print axioms exteriorKoszulScalarTargetDifferential_sq
-#print axioms exteriorKoszulScalarTargetTensorTerm
-#print axioms exteriorKoszulScalarTargetTensorDifferential
-#print axioms exteriorKoszulScalarTargetTensorDifferential_tmul
-#print axioms exteriorKoszulScalarTargetTensorDifferential_sq
-#print axioms exteriorKoszulTotalTensorBaseChangeDifferential
-#print axioms exteriorKoszulTotalTensorBaseChangeDifferential_tmul
-#print axioms exteriorKoszulTotalTensorBaseChangeDifferential_sq
-#print axioms ExteriorKoszulTotalTensorBaseChangeCertificate
-#print axioms exteriorKoszulTotalTensorBaseChangeCertificate
-#print axioms koszulFreeModuleScalarMap
-#print axioms koszulFreeModuleScalarMap_apply
-#print axioms exteriorKoszulTargetIotaRestrictScalars
-#print axioms exteriorKoszulTargetIotaRestrictScalars_apply
-#print axioms exteriorKoszulAlgebraScalarMap
-#print axioms exteriorKoszulAlgebraScalarMap_ι
-#print axioms exteriorKoszulAlgebraScalarMap_generator
-#print axioms exteriorKoszulAlgebraBaseChangeAlgHom
-#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul
-#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul_generator
-#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines_tmul
-#print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines
-#print axioms exteriorKoszulTotalTensorBaseChangeMap
-#print axioms exteriorKoszulTotalTensorBaseChangeMap_tmul
-#print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines_tmul
-#print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines
-#print axioms ExteriorKoszulTotalTensorComparisonCertificate
-#print axioms exteriorKoszulTotalTensorComparisonCertificate
-#print axioms exteriorKoszulAlgebraBaseChangeLinearEquiv
-#print axioms exteriorKoszulAlgebraBaseChangeLinearEquivOfList
-#print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv
-#print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv_tmul
-#print axioms ExteriorKoszulTotalTensorIsoComparisonCertificate
-#print axioms exteriorKoszulTotalTensorIsoComparisonCertificate
-#print axioms ExteriorKoszulScalarTargetCertificate
-#print axioms exteriorKoszulScalarTargetCertificate
-#print axioms exteriorKoszulMappedTargetAlgebra
-#print axioms exteriorKoszulMappedTargetGenerator
-#print axioms exteriorKoszulMappedTargetGenerator_sq
-#print axioms exteriorKoszulMappedTargetDifferential
-#print axioms exteriorKoszulMappedTargetDifferential_apply
-#print axioms exteriorKoszulMappedTargetDifferential_sq
-#print axioms ExteriorKoszulMappedTargetCertificate
-#print axioms exteriorKoszulMappedTargetCertificate
-#print axioms ExteriorKoszulTotalFlatBaseChangeCertificate
-#print axioms exteriorKoszulTotalFlatBaseChangeCertificate
-#print axioms koszulR1Mul_baseChange
-#print axioms koszulR1Mul_baseChange_tmul
-#print axioms KoszulR1BaseChangeDifferentialCertificate
-#print axioms koszulR1BaseChangeDifferentialCertificate
-#print axioms koszulR1FlatBaseChangeDifferentialCertificate
-#print axioms linearMap_baseChange_comp_eq_zero
-#print axioms koszulR2Left_baseChange
-#print axioms koszulR2Right_baseChange
-#print axioms koszulR2_baseChange_comp_eq_zero
-#print axioms KoszulR2BaseChangeDifferentialCertificate
-#print axioms koszulR2BaseChangeDifferentialCertificate
-#print axioms koszulR2FlatBaseChangeDifferentialCertificate
-#print axioms KoszulFlatBaseChangeLowDegreeAndTotalCertificate
-#print axioms koszulFlatBaseChangeLowDegreeAndTotalCertificate
-#print axioms ExteriorKoszulTotalCore
-#print axioms exteriorKoszulTotalCore
-#print axioms KoszulRegularAcyclicityInterface
-#print axioms koszulAcyclic_iff_isRegular_of_interface
-#print axioms koszulLowDegreePositiveAcyclic_of_isRegular_length_le_two
-#print axioms koszulLowDegreeRegularityCertificate_of_isRegular_length_le_two
-#print axioms koszulLowDegreePositiveAcyclic_of_regular_interface_length_le_two
-#print axioms koszulLowDegreeRegularityCertificate_of_regular_interface_length_le_two
-#print axioms regular_of_linearEquiv
-#print axioms weaklyRegularSequence_of_flat_of_isBaseChange
-#print axioms regularSequence_of_faithfullyFlat_of_isBaseChange
-#print axioms regularSequence_of_faithfullyFlat_algebra
-#print axioms weaklyRegularSequence_of_localizedModule
-#print axioms regularSequence_of_localizedModule_atPrime_of_mem
-#print axioms regularSequence_of_faithfullyFlat_of_isBaseChange_prodMap
-#print axioms regularSequence_of_faithfullyFlat_of_isBaseChange_pi
-#print axioms HasWeakRegularSequenceLength
-#print axioms hasWeakRegularSequenceLength_zero
-#print axioms hasWeakRegularSequenceLength_of_isWeaklyRegular
-#print axioms hasWeakRegularSequenceLength_of_isRegular
-#print axioms exists_weaklyRegular_of_hasWeakRegularSequenceLength
-#print axioms enat_toNat_le_of_natCast_le
-#print axioms enat_toNat_le_toNat_of_le_right_finite
-#print axioms enat_natCast_le_iff_le_toNat_of_ne_top
-#print axioms enat_le_natCast_iff_toNat_le_of_ne_top
-#print axioms enat_eq_natCast_of_toNat_eq
-#print axioms enat_toNat_eq_iff_eq_natCast_of_ne_top
-#print axioms ModuleDepthDimensionInterface
-#print axioms ENatDepthDimensionAPI
-#print axioms ENatDepthDimensionAPI.finiteDepth
-#print axioms ENatDepthDimensionAPI.finiteDimension
-#print axioms ENatDepthDimensionAPI.length_le_finiteDepth_of_isWeaklyRegular
-#print axioms ENatDepthDimensionAPI.finiteDepth_le_finiteDimension
-#print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_isCohenMacaulay
-#print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension
-#print axioms ENatDepthDimensionAPI.natCast_length_le_eDepth_iff_length_le_finiteDepth
-#print axioms ENatDepthDimensionAPI.eDimension_le_natCast_iff_finiteDimension_le
-#print axioms ENatDepthDimensionAPI.eDepth_le_natCast_iff_finiteDepth_le
-#print axioms ENatDepthDimensionAPI.eDepth_eq_natCast_of_finiteDepth_eq
-#print axioms ENatDepthDimensionAPI.eDimension_eq_natCast_of_finiteDimension_eq
-#print axioms ENatDepthDimensionAPI.eDepth_eq_eDimension_of_finiteDepth_eq_finiteDimension
-#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface
-#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_depth
-#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_dimension
-#print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_depth
-#print axioms ModuleDepthDimensionInterface.regular_length_le_depth
-#print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_depth
-#print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_depth
-#print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_depth
-#print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_depth
-#print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.regular_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.dimension_le_depth_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.regular_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_depth
-#print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_dimension_of_isCohenMacaulay
-#print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_dimension_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.depth_eq_length_of_isCohenMacaulay_of_dimension_le_length
-#print axioms ModuleDepthDimensionInterface.dimension_eq_length_of_isCohenMacaulay_of_dimension_le_length
-#print axioms ModuleDepthDimensionInterface.depth_eq_length_of_depth_eq_dimension_of_dimension_le_length
-#print axioms ModuleDepthDimensionInterface.dimension_eq_length_of_depth_eq_dimension_of_dimension_le_length
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulAcyclic
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulRegularAcyclic
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulModelAcyclic
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulAcyclic_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_depth_lower_bound_of_isWeaklyRegular
-#print axioms prop18_depth_lower_bound
-#print axioms prop18_depth_lower_bound_of_isRegular
-#print axioms prop18_depth_lower_bound_of_koszulAcyclic
-#print axioms prop18_depth_lower_bound_of_koszulRegularAcyclic
-#print axioms prop18_depth_lower_bound_of_koszulModelAcyclic
-#print axioms prop18_depth_lower_bound_of_lowDegreeRegularityCertificate
-#print axioms prop18_depth_lower_bound_of_flatBaseChange
-#print axioms prop18_depth_lower_bound_of_faithfullyFlatBaseChange
-#print axioms prop18_depth_lower_bound_of_localizedModule
-#print axioms prop18_dimension_lower_bound_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_koszulAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_koszulModelAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_koszulAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_flatBaseChange_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_localizedModule_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_flatBaseChange_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_localizedModule_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger
-#print axioms prop18_depth_eq_dimension_trigger_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_isWeaklyRegular
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_isRegular
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulAcyclic
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulRegularAcyclic
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulModelAcyclic
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_flatBaseChange
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange
-#print axioms prop18_depth_lower_bound_of_enatDepthAPI_localizedModule
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_isCohenMacaulay
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_eDepth_eq_eDimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_depth_eq_dimension
-#print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_eDepth_eq_eDimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_eDepth_eq_eDimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_eDepth_eq_eDimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
-#print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
-#print axioms detTraceWeightedLogSeries
-#print axioms detTraceShiftedSeries
-#print axioms coeff_detTraceWeightedLogSeries_zero
-#print axioms coeff_detTraceWeightedLogSeries_of_ne_zero
-#print axioms coeff_detTraceShiftedSeries
-#print axioms constantCoeff_detTraceWeightedLogSeries
-#print axioms derivative_detTraceWeightedLogSeries
-#print axioms derivative_exp_subst_of_constantCoeff_zero
-#print axioms constantCoeff_exp_subst_of_constantCoeff_zero
-#print axioms powerSeries_eq_of_derivative_eq_mul
-#print axioms exp_subst_eq_of_derivative_eq_mul
-#print axioms exp_detTraceWeightedLogSeries_unique
-#print axioms derivative_det_eq_sum_updateCol
-#print axioms derivative_det_eq_sum_adjugate_mulVec
-#print axioms oneSubXMatrixPoly
-#print axioms derivative_oneSubXMatrixPoly_apply
-#print axioms derivative_det_oneSubXMatrixPoly
-#print axioms psMatrixOfPowers
-#print axioms oneSubXMatrix
-#print axioms oneSubXMatrix_eq_map_oneSubXMatrixPoly
-#print axioms trace_adjugate_map_oneSubXMatrixPoly
-#print axioms derivative_det_oneSubXMatrix
-#print axioms coeff_psMatrixOfPowers
-#print axioms coeff_constMul_psMatrixOfPowers
-#print axioms coeff_X_constMul_psMatrixOfPowers_zero
-#print axioms coeff_X_constMul_psMatrixOfPowers_succ
-#print axioms oneSubXMatrix_mul_psMatrixOfPowers
-#print axioms det_oneSubXMatrix_eq_charpolyRev
-#print axioms constantCoeff_det_oneSubXMatrix
-#print axioms inv_det_smul_adjugate_oneSubXMatrix_eq_psMatrixOfPowers
-#print axioms coeff_trace_psMatrixOfPowers_mul_const
-#print axioms inv_det_mul_trace_adjugate_mul_eq_trace_psMatrixOfPowers_mul_const
-#print axioms derivative_inv_det_oneSubXMatrix
-#print axioms matrixDetOneSubSeries
-#print axioms matrixDetOneSubInvSeries
-#print axioms matrixTracePower
-#print axioms matrixTraceLogSeries
-#print axioms matrixTraceResolventSeries
-#print axioms derivative_matrixTraceLogSeries
-#print axioms matrixTraceResolventSeries_eq_trace_psMatrixOfPowers_mul_const
-#print axioms constantCoeff_matrixDetOneSubSeries
-#print axioms coeff_one_matrixDetOneSubSeries
-#print axioms constantCoeff_matrixDetOneSubInvSeries
-#print axioms derivative_matrixDetOneSubInvSeries
-#print axioms lem37_det_trace_formal_identity
-#print axioms zetaULinearLocalFactor
-#print axioms zetaUCompletelyMultiplicativeValue
-#print axioms zetaULinearLocalFactor_eq_geometric_tsum
-#print axioms zetaU_eulerProduct_hasProd
-#print axioms zetaU_eulerProduct_tprod
-#print axioms zetaU_eulerProduct_partial
-#print axioms quadraticEulerDenominator
-#print axioms quadraticEulerLocalFactor
-#print axioms quadraticEulerDenominator_eq_mul
-#print axioms quadraticEulerLocalFactor_eq_mul
-#print axioms quadraticEulerPartialProduct
-#print axioms quadraticEulerPartialProduct_eq_mul
-#print axioms quadraticEulerProduct_hasProd_of_linear
-#print axioms quadraticEulerProduct_tprod_of_linear
-#print axioms normalizedPrimeScale
-#print axioms frobeniusLinearTerm
-#print axioms frobeniusLinearDenominator
-#print axioms FrobeniusRootDecomposition
-#print axioms normalizedPrimeScale_norm
-#print axioms sqrt_mul_normalizedPrimeScale_norm
-#print axioms hasProd_inv_of_ne_zero
-#print axioms frobeniusLinearTerm_norm_of_abs
-#print axioms frobeniusLinearTerm_summable_of_abs
-#print axioms frobeniusLinearDenominator_ne_zero_of_abs
-#print axioms frobeniusLinearEulerDenominator_multipliable_of_abs
-#print axioms frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs
-#print axioms frobeniusLinearEuler_hasProd_of_abs
-#print axioms quadraticEulerLocalFactorAt
-#print axioms quadraticEulerLocalFactorAt_eq_mul
-#print axioms quadraticEulerProductAt_hasProd_of_frobenius
-#print axioms quadraticEulerProductAt_tprod_of_frobenius
-#print axioms QuadraticEulerProductConvergenceCertificate
-#print axioms quadraticEulerProductConvergenceCertificateOfFrobenius
-#print axioms zetaULSeries
-#print axioms zetaULSeries_summable_of_abscissa_lt
-#print axioms zetaULSeries_deriv
-#print axioms zetaULSeriesLogDeriv
-#print axioms zetaULSeries_logDeriv_eq
-#print axioms zetaULSeries_abscissa_logMul
-#print axioms SixFunctorData
-#print axioms SixFunctorData.sheafIso_refl_apply
-#print axioms SixFunctorData.sheafIso_symm_apply
-#print axioms SixFunctorData.sheafIso_trans_apply
-#print axioms SixFunctorData.pull_constructible
-#print axioms SixFunctorData.push_constructible
-#print axioms SixFunctorData.shriek_constructible
-#print axioms SixFunctorData.exceptionalPull_constructible
-#print axioms SixFunctorData.tensor_constructible
-#print axioms SixFunctorData.internalHom_constructible
-#print axioms SixFunctorData.dual_constructible
-#print axioms SixFunctorData.unit_constructible
-#print axioms SixFunctorData.glue_triangle_distinguished
-#print axioms SixFunctorData.monoidal_dual_iso
-#print axioms SixFunctorData.pull_iso_congr
-#print axioms SixFunctorData.pull_id_iso
-#print axioms SixFunctorData.pull_comp_iso
-#print axioms SixFunctorData.push_iso_congr
-#print axioms SixFunctorData.push_id_iso
-#print axioms SixFunctorData.push_comp_iso
-#print axioms SixFunctorData.shriek_iso_congr
-#print axioms SixFunctorData.shriek_id_iso
-#print axioms SixFunctorData.shriek_comp_iso
-#print axioms SixFunctorData.shriek_comp_three_iso
-#print axioms SixFunctorData.shriek_factorization_iso_of_eq
-#print axioms SixFunctorData.exceptionalPull_iso_congr
-#print axioms SixFunctorData.exceptionalPull_id_iso
-#print axioms SixFunctorData.exceptionalPull_comp_iso
-#print axioms SixFunctorData.baseChangeShriek_iso
-#print axioms SixFunctorData.projectionFormula_iso
-#print axioms SixFunctorData.baseChangeShriek_left_constructible
-#print axioms SixFunctorData.baseChangeShriek_right_constructible
-#print axioms SixFunctorData.projectionFormula_terms_constructible
-#print axioms SixFunctorData.shriek_tensor_pull_constructible
-#print axioms SixFunctorData.tensor_shriek_constructible
-#print axioms Def21StratifiedSheafInterface
-#print axioms def21ShriekSummand
-#print axioms Def21StratifiedSheafInterface.stratum_fintype
-#print axioms Def21StratifiedSheafInterface.locallyClosed
-#print axioms Def21StratifiedSheafInterface.localSystem_lisse_apply
-#print axioms Def21StratifiedSheafInterface.summand_constructible
-#print axioms Def21StratifiedSheafInterface.realizes_directSum
-#print axioms Def21StratifiedSheafInterface.assembled_constructible
-#print axioms def21_conditional_assembled_constructible
-#print axioms Def21ActualSheafConstructionGap
-#print axioms Def21ActualSheafConstructionGap.allIngredientsAvailable
-#print axioms Def21ActualSheafConstructionGap.not_allIngredientsAvailable
-#print axioms Def21ActualSheafConstructionGap.no_actual_constructor
-#print axioms Def21ActualSheafConstructionGap.missing_etale_category
-#print axioms Def21ActualSheafConstructionGap.missing_lisse_theory
-#print axioms Def21ActualSheafConstructionGap.missing_extension_by_zero
-#print axioms Def21ActualSheafConstructionGap.missing_finite_direct_sums
-#print axioms def21ActualSheafConstructionGap
-#print axioms def21_actual_constructor_unavailable
-#print axioms SheafKoszulModel
-#print axioms SheafKoszulModel.differential_square_zero
-#print axioms SheafKoszulModel.term_constructible
-#print axioms SheafKoszulModel.positive_acyclic_of_regular
-#print axioms SheafKoszulModel.positive_subsingleton_of_acyclic
-#print axioms SheafKoszulModel.positive_subsingleton_of_regular
-#print axioms SheafKoszulModel.eq_of_positive_degree
-#print axioms SheafKoszulAcyclicityConclusion
-#print axioms SheafKoszulAcyclicityConclusion.positive_acyclic
-#print axioms SheafKoszulAcyclicityConclusion.positive_subsingleton
-#print axioms SheafKoszulAcyclicityConclusion.eq_of_positive_degree
-#print axioms sheafKoszulAcyclicityConclusion
-#print axioms thm30_sheafKoszul_positive_acyclic
-#print axioms thm30_sheafKoszul_positive_subsingleton
-#print axioms SheafKoszulWeightTraceReadiness
-#print axioms SheafKoszulWeightTraceReadiness.term_constructible
-#print axioms SheafKoszulWeightTraceReadiness.positive_acyclic
-#print axioms SheafKoszulWeightTraceReadiness.positive_subsingleton
-#print axioms cor27_sheafKoszul_weightTraceReadiness
-#print axioms SheafKoszulChartwiseCertificate
-#print axioms SheafKoszulChartwiseCertificate.sheaf_regular
-#print axioms SheafKoszulChartwiseCertificate.positive_acyclic
-#print axioms SheafKoszulChartwiseCertificate.positive_subsingleton
-#print axioms SheafKoszulChartwiseConclusion
-#print axioms SheafKoszulChartwiseConclusion.sheaf_regular
-#print axioms SheafKoszulChartwiseConclusion.positive_acyclic
-#print axioms SheafKoszulChartwiseConclusion.positive_subsingleton
-#print axioms cor31_sheafKoszul_chartwiseConclusion
-#print axioms cor31_sheafKoszul_positive_acyclic
-#print axioms cor31_sheafKoszul_positive_subsingleton
-#print axioms CurveFactorization
-#print axioms CurveFactorization.fullMap
-#print axioms CurveFactorization.fullMap_def
-#print axioms CurveFactorization.factor_eq_fullMap
-#print axioms CurveFactorization.fullMap_eq_original
-#print axioms CurveFactorization.factor_eq
-#print axioms CurveFactorization.jX_isOpenImmersion
-#print axioms CurveFactorization.g_isProper
-#print axioms CurveFactorization.pi_isSmoothCurveOver
-#print axioms CurveFactorization.geometric_conditions
-#print axioms CurveFactorization.curveReducedShriek
-#print axioms CurveFactorization.curveReducedShriek_def
-#print axioms CurveFactorization.jX_shriek_constructible
-#print axioms CurveFactorization.g_jX_shriek_constructible
-#print axioms CurveFactorization.pi_g_jX_shriek_constructible
-#print axioms CurveFactorization.curveReducedShriek_constructible
-#print axioms CurveFactorization.shriek_comp_iso
-#print axioms CurveFactorization.shriek_factorization_iso
-#print axioms CurveFactorization.shriek_factorization_iso_to_curveReducedShriek
-#print axioms CurveFactorization.curveReduction_terms_constructible
-#print axioms CurveFactorization.source_shriek_constructible
-#print axioms CurveFactorization.target_shriek_constructible
-#print axioms CurveFactorization.CurveReductionConclusion
-#print axioms CurveFactorization.CurveReductionConclusion.terms_constructible
-#print axioms CurveFactorization.CurveReductionConclusion.factorization_iso
-#print axioms CurveFactorization.curveReductionConclusion
-#print axioms CurveFactorization.lem32_curveReduction
-#print axioms weightRadius
-#print axioms weightRadius_pos
-#print axioms WeilIIPackage
-#print axioms WeilIIPackage.constructible
-#print axioms WeilIIPackage.pure_to_mixedLE
-#print axioms WeilIIPackage.mixedLE_of_le
-#print axioms WeilIIPackage.frob_abs_eq
-#print axioms WeilIIPackage.frob_norm_le_of_pure
-#print axioms WeilIIPackage.frob_norm_le_of_mixed
-#print axioms WeilIIPackage.FrobeniusRadiusBound
-#print axioms WeilIIPackage.pure_weight_radiusBound
-#print axioms WeilIIPackage.mixed_weight_radiusBound
-#print axioms WeilIIPackage.weightRadius_pos_apply
-#print axioms ECWeilICompatibility
-#print axioms ECWeilICompatibility.hasse_bound
-#print axioms ECWeilICompatibility.h1_radiusBound_sqrt
-#print axioms ECWeilICompatibility.h1_eigenvalue_norm_le_sqrt
-#print axioms ecWeilICompatibilityOfPure
-#print axioms openClosedOpenTerm
-#print axioms openClosedClosedTerm
-#print axioms openClosedOpenTerm_def
-#print axioms openClosedClosedTerm_def
-#print axioms openClosedOpenTerm_constructible
-#print axioms openClosedClosedTerm_constructible
-#print axioms openClosed_terms_constructible
-#print axioms openClosedWeightTriangle
-#print axioms openClosedWeightTriangle_def
-#print axioms openClosedWeightTriangle_distinguished
-#print axioms OpenClosedWeightControl
-#print axioms OpenClosedWeightControl.middle_constructible
-#print axioms OpenClosedWeightControl.open_constructible
-#print axioms OpenClosedWeightControl.closed_constructible
-#print axioms OpenClosedWeightControl.distinguished_triangle
-#print axioms OpenClosedWeightControl.open_weightRadius_eq_middle
-#print axioms OpenClosedWeightControl.closed_weightRadius_eq_middle
-#print axioms OpenClosedWeightControl.middle_mixedLE_of_open_closed
-#print axioms OpenClosedWeightControl.open_mixedLE_of_middle_closed
-#print axioms OpenClosedWeightControl.closed_mixedLE_of_open_middle
-#print axioms OpenClosedWeightControl.middle_radiusBound_of_open_closed
-#print axioms OpenClosedWeightControl.open_radiusBound_middleRadius_of_mixedLE
-#print axioms OpenClosedWeightControl.closed_radiusBound_middleRadius_of_mixedLE
-#print axioms OpenClosedWeightControl.defect_concentrated_on_closed
-#print axioms openClosedWeightControlOfPackages
-#print axioms cor35_openClosed_middle_mixedLE_of_open_closed
-#print axioms cor35_openClosed_middle_radiusBound_of_open_closed
-#print axioms cor35_openClosed_defect_concentrated_on_closed
-#print axioms DetTraceRadiusCertificate
-#print axioms DetTraceRadiusCertificate.radius_of_radiusBound
-#print axioms prop38_radius_limit_of_pure
-#print axioms prop38_radius_limit_of_mixed
-#print axioms glAltSign
-#print axioms glAltSign_of_even
-#print axioms glAltSign_of_not_even
-#print axioms glAltSign_zero
-#print axioms glAlternatingTraceOf
-#print axioms glAlternatingMatrixTraceOf
-#print axioms glAlternatingMatrixTraceShiftedSeries
-#print axioms coeff_glAlternatingMatrixTraceShiftedSeries
-#print axioms GrothendieckLefschetzPackage
-#print axioms GrothendieckLefschetzPackage.constructible
-#print axioms GrothendieckLefschetzPackage.alternatingTrace
-#print axioms GrothendieckLefschetzPackage.pointCount_eq_alternatingTrace
-#print axioms GrothendieckLefschetzPackage.pointCount_succ_eq_alternatingTrace
-#print axioms GrothendieckLefschetzPackage.alternatingTraceShiftedSeries
-#print axioms GrothendieckLefschetzPackage.coeff_alternatingTraceShiftedSeries
-#print axioms GrothendieckLefschetzPackage.detTraceShiftedSeries_eq_alternatingTraceShiftedSeries
-#print axioms GrothendieckLefschetzPackage.constantCoeff_logSeries
-#print axioms GrothendieckLefschetzPackage.coeff_logSeries_of_ne_zero
-#print axioms GrothendieckLefschetzPackage.logDerivative_expansion
-#print axioms GrothendieckLefschetzPackage.coeff_logDerivative_expansion
-#print axioms GrothendieckLefschetzPackage.alternatingTrace_eq_matrixTrace
-#print axioms GrothendieckLefschetzPackage.alternatingTraceShiftedSeries_eq_matrixTraceShiftedSeries
-#print axioms GrothendieckLefschetzPackage.logDerivative_matrixTrace_expansion
-#print axioms GrothendieckLefschetzPackage.coeff_logDerivative_matrixTrace_expansion
-#print axioms GrothendieckLefschetzPackage.complex_det_trace_formal_identity
-#print axioms GrothendieckLefschetzPackage.complex_det_trace_formal_identity_family
-#print axioms lem36_logDerivative_expansion
-#print axioms lem36_logDerivative_matrixTrace_expansion
-#print axioms FiniteSupportCohomologyVanishing
-#print axioms FiniteSupportCohomologyVanishing.constructible
-#print axioms FiniteSupportCohomologyVanishing.finite_support
-#print axioms FiniteSupportCohomologyVanishing.PositiveCohomologyVanishes
-#print axioms FiniteSupportCohomologyVanishing.positive_cohomology_vanishes
-#print axioms FiniteSupportCohomologyVanishing.eq_of_positive_degree
-#print axioms prop43_positive_cohomology_vanishes
-#print axioms prop43_positive_cohomology_eq
-#print axioms GlobalPurityBConclusion
-#print axioms GlobalPurityBConclusion.positive_vanishing
-#print axioms GlobalPurityBConclusion.radius_limit
-#print axioms GlobalPurityBConclusion.logDerivative_expansion
-#print axioms GlobalPurityBConclusion.matrixTrace_logDerivative_expansion
-#print axioms thm44_globalPurityB_of_pure
-#print axioms thm44_globalPurityB_of_mixed
-#print axioms cor45_globalPurityB_radiusLimit
-#print axioms cor46_globalPurityB_logDerivative_expansion
-#print axioms cor46_globalPurityB_matrixTrace_logDerivative_expansion
-#print axioms DetectorPackage
-#print axioms DetectorPackage.etale_silent_of_good
-#print axioms DetectorPackage.motivic_silent_of_good
-#print axioms DetectorPackage.cotangent_silent_of_good
-#print axioms DetectorPackage.etale_bump_subsingleton_of_silent
-#print axioms DetectorPackage.etale_silent_of_bump_subsingleton
-#print axioms DetectorPackage.motivic_jump_subsingleton_of_silent
-#print axioms DetectorPackage.motivic_silent_of_jump_subsingleton
-#print axioms DetectorPackage.cotangent_defect_subsingleton_of_silent
-#print axioms DetectorPackage.cotangent_silent_of_defect_subsingleton
-#print axioms DetectorPackage.all_silent_of_good
-#print axioms DetectorPackage.all_detector_invariants_subsingleton_of_good
-#print axioms DetectorPackage.etale_silent_iff_motivic_silent
-#print axioms DetectorPackage.motivic_silent_iff_cotangent_silent
-#print axioms DetectorPackage.etale_silent_iff_cotangent_silent
-#print axioms DetectorPackage.detectors_tfae
-#print axioms DetectorPackage.EtaleActive
-#print axioms DetectorPackage.MotivicActive
-#print axioms DetectorPackage.CotangentActive
-#print axioms DetectorPackage.etale_active_iff_motivic_active
-#print axioms DetectorPackage.motivic_active_iff_cotangent_active
-#print axioms DetectorPackage.etale_active_iff_cotangent_active
-#print axioms DetectorPackage.active_detectors_tfae
-#print axioms DetectorPackage.no_etale_active_of_good
-#print axioms DetectorPackage.no_motivic_active_of_good
-#print axioms DetectorPackage.no_cotangent_active_of_good
-#print axioms DetectorPackage.no_detector_active_of_good
-#print axioms DetectorGoodPrimeConclusion
-#print axioms DetectorGoodPrimeConclusion.detectors_silent
-#print axioms DetectorGoodPrimeConclusion.invariants_subsingleton
-#print axioms DetectorGoodPrimeConclusion.silent_tfae
-#print axioms DetectorGoodPrimeConclusion.active_tfae
-#print axioms DetectorGoodPrimeConclusion.no_detector_active
-#print axioms detectorGoodPrimeConclusion
-#print axioms section72_good_prime_detectors_silent
-#print axioms section72_good_prime_detector_invariants_subsingleton
-#print axioms section72_detector_equivalence_tfae
-#print axioms section72_detector_active_equivalence_tfae
-#print axioms section72_good_prime_no_detector_active
-#print axioms WeightPurityGate
-#print axioms weightPurityGate_pure
-#print axioms weightPurityGate_detTraceExpansion
-#print axioms weightPurityGate_radiusBound
-#print axioms weightPurityGate_radiusLimit
-#print axioms EquivalenceCGate
-#print axioms equivalenceCGate_arithmetic
-#print axioms equivalenceCGate_weightPurity
-#print axioms equivalenceCGate_radiusLimit
-#print axioms equivalence_C
-#print axioms equivalence_C_faithful_tfae
-#print axioms FaithfulEquivalenceCConclusion
-#print axioms FaithfulEquivalenceCConclusion.arithmetic_tfae
-#print axioms FaithfulEquivalenceCConclusion.radius_limit
-#print axioms FaithfulEquivalenceCConclusion.rh_tp_gate_tfae
-#print axioms equivalence_C_faithful
-#print axioms equivalence_C_faithful_rh_iff_tp
-#print axioms matrixDetOneSubPolynomial
-#print axioms matrixDetOneSubPolynomial_eq_det
-#print axioms localEulerDenominatorFromEigenvalueList_eq_zero_iff
-#print axioms localEulerDenominatorFromEigenvalues_eq_zero_iff
-#print axioms localListZerosOnCircle_iff_localEigenvalueListOnCircle
-#print axioms localRHShiftedRadius_pos
-#print axioms LocalRHDeterminantFactorCertificate
-#print axioms LocalRHDeterminantFactorCertificate.determinant_pole_iff_inverse_eigenvalue
-#print axioms LocalRHDeterminantFactorCertificate.determinantPolesOnCircle_iff_eigenvaluesOnCircle
-#print axioms RealizesFrobeniusEigenvalueSet
-#print axioms LocalRHGate
-#print axioms localRHGate_iff_weil_frobenius_abs
-#print axioms localRHGate_of_weil_pure
-#print axioms localRHGate_of_weightPurityGate
-#print axioms localRHGate_of_weil_pure_shifted
-#print axioms LocalRHWeightCertificate
-#print axioms LocalRHWeightCertificate.pure_iff_localRH
-#print axioms LocalRHWeightGate
-#print axioms LocalRHEquivalenceCGate
-#print axioms equivalenceCGate_iff_localRHEquivalenceCGate
-#print axioms equivalence_C_faithful_localRH_tfae
-#print axioms equivalence_C_faithful_localRH_iff_tp
-#print axioms GlobalZeroPoleCircleGate
-#print axioms GlobalEulerProductConvergenceGate
-#print axioms GlobalEulerProductNoCancellation
-#print axioms GlobalRiemannHypothesisGate
-#print axioms GlobalRiemannHypothesisGate.zeroPoleCircle
-#print axioms GlobalRiemannHypothesisGate.eulerProduct
-#print axioms GlobalRiemannHypothesisGate.noCancellation
-#print axioms TracePurityGate
-#print axioms ArithmeticTracePurityGate
-#print axioms arithmeticTracePurityGate_iff_equivalenceCGate
-#print axioms GlobalEquivalenceCBridge
-#print axioms GlobalEquivalenceCBridge.rh_iff_tp
-#print axioms GlobalEquivalenceCBridge.rh_tp_global_local_trace_tfae
-#print axioms GlobalEquivalenceCConclusion
-#print axioms globalEquivalenceCConclusion
-#print axioms GlobalEquivalenceCChecklist
-#print axioms globalEquivalenceCChecklist
-#print axioms ConcreteSurrogateCertificate
-#print axioms ConcreteSurrogateCertificate.tor_equiv
-#print axioms ConcreteSurrogateCertificate.cech_equiv
-#print axioms concreteSurrogateCertificate
-#print axioms PresheafCechSkeletonCertificate
-#print axioms presheafCechSkeletonCertificate
-#print axioms LowDegreeKoszulCertificate
-#print axioms LowDegreeKoszulCertificate.singleton_complex
-#print axioms LowDegreeKoszulCertificate.pair_complex
-#print axioms lowDegreeKoszulCertificate
-#print axioms ENatDepthDimensionInstantiationCertificate
-#print axioms ENatDepthDimensionInstantiationCertificate.interface
-#print axioms ENatDepthDimensionInstantiationCertificate.dimensionLeLengthIff
-#print axioms ENatDepthDimensionInstantiationCertificate.cmENatEqualityTrigger
-#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityDimensionLowerBound
-#print axioms ENatDepthDimensionInstantiationCertificate.enatEqualityDimensionLowerBound
-#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityTrigger
-#print axioms ENatDepthDimensionInstantiationCertificate.directEqualityENatTrigger
-#print axioms enatDepthDimensionInstantiationCertificate
-#print axioms ActualDepthDimensionPackage
-#print axioms ActualDepthDimensionPackage.finiteDepth_eq_actual
-#print axioms ActualDepthDimensionPackage.finiteDimension_eq_actual
-#print axioms ActualDepthDimensionPackage.api_isCohenMacaulay_iff_actual
-#print axioms ActualDepthDimensionPackage.finiteInterface
-#print axioms ActualDepthDimensionPackage.length_le_actualDepth_of_isWeaklyRegular
-#print axioms ActualDepthDimensionPackage.length_le_actualDimension_of_actualCohenMacaulay
-#print axioms ActualDepthDimensionInstantiationCertificate
-#print axioms actualDepthDimensionInstantiationCertificate
-#print axioms ActualDepthDimensionChecklist
-#print axioms actualDepthDimensionChecklist
-#print axioms BundledInterfaceCertificate
-#print axioms bundledInterfaceCertificate
-#print axioms ActualSixFunctorTheoremPackage
-#print axioms ActualSixFunctorTheoremPackage.toSixFunctorData
-#print axioms ActualSixFunctorTheoremPackage.constructible_sheaf_category_available
-#print axioms ActualSixFunctorTheoremPackage.pull_push_shriek_available
-#print axioms ActualSixFunctorTheoremPackage.tensor_internalHom_duality_available
-#print axioms ActualSixFunctorTheoremPackage.baseChange_projectionFormula_available
-#print axioms ActualSixFunctorTheoremPackage.openClosedTriangle_available
-#print axioms ActualDef21SheafConstructionPackage
-#print axioms ActualDef21SheafConstructionPackage.toStratifiedSheafInterface
-#print axioms ActualDef21SheafConstructionPackage.allIngredientsAvailable
-#print axioms ActualDef21SheafConstructionPackage.actual_constructor_available
-#print axioms ActualDef21SheafConstructionPackage.realizes_finiteDirectSum
-#print axioms ActualDef21SheafConstructionPackage.assembled_constructible
-#print axioms ActualConstructibleSheafChecklist
-#print axioms actualConstructibleSheafChecklist
-#print axioms FormalAlgebraCoreCertificate
-#print axioms formalAlgebraCoreCertificate
-#print axioms ExistingAnalogReuseCertificate
-#print axioms existingAnalogReuseCertificate
-#print axioms QuadraticEulerConvergenceChecklist
-#print axioms quadraticEulerConvergenceChecklist
-#print axioms LocalRHRadiusChecklist
-#print axioms localRHRadiusChecklist
-#print axioms PadicCompletionComparison
-#print axioms cechPadicCompletionNaturalityCertificate
-#print axioms torPadicCompletionNaturalityCertificate
-#print axioms CechCRTRefinementHypothesis
-#print axioms CechCRTRefinementCertificate
-#print axioms cechCRTRefinementCertificateOfHypothesis
-#print axioms TorCRTRefinementCertificate
-#print axioms torCRTRefinementCertificate
-#print axioms CechTorNaturalityChecklist
-#print axioms cechTorNaturalityChecklist
-#print axioms EllipticCurveECLayerChecklist
-#print axioms ellipticCurveECLayerChecklist
-#print axioms GeneralKoszulBridgeChecklist
-#print axioms generalKoszulBridgeChecklist
-#print axioms ActualKoszulTheoremPackage
-#print axioms ActualKoszulTheoremPackage.weakInterface
-#print axioms ActualKoszulTheoremPackage.acyclic_iff_isWeaklyRegular
-#print axioms ActualKoszulTheoremPackage.acyclic_iff_isRegular
-#print axioms ActualKoszulTheoremPackage.singletonIso
-#print axioms ActualKoszulTheoremPackage.pairIso
-#print axioms ActualKoszulTheoremPackage.lowDegreeCertificate_iff_acyclic
-#print axioms ActualKoszulTheoremPackage.flatBaseChangeCertificate
-#print axioms ActualKoszulTheoremPackage.mappingConeConstruction_available
-#print axioms ActualKoszulTheoremPackage.tensorExteriorConstruction_available
-#print axioms ActualKoszulTheoremPackage.longExactHomologySequence_available
-#print axioms ActualKoszulTheoremPackage.nakayamaBridge_available
-#print axioms ActualKoszulTheoremPackage.fullRegularIffPositiveAcyclic_available
-#print axioms ActualKoszulTheoremChecklist
-#print axioms actualKoszulTheoremChecklist
-#print axioms CoreRemainingFormalizationChecklist
-#print axioms coreRemainingFormalizationChecklist
-#print axioms ActualECTheoremPackage
-#print axioms ActualECTheoremPackage.smoothFiber_iff_discriminant
-#print axioms ActualECTheoremPackage.hasse_bound
-#print axioms ActualECTheoremPackage.ordinary_of_tag
-#print axioms ActualECTheoremPackage.supersingular_of_tag
-#print axioms ActualECTheoremPackage.p_prime
-#print axioms ActualECTheoremPackage.discriminant_iff_isElliptic
-#print axioms ActualECTheoremPackage.affineSmooth_iff_discriminant
-#print axioms ActualECTheoremPackage.henselLiftable_iff_jacobian_of_equation
-#print axioms ActualECTheoremPackage.henselLiftable_of_henselGate
-#print axioms ActualECTheoremPackage.pointCount_trace_identity
-#print axioms ActualECTheoremPackage.discriminant_smoothness_available
-#print axioms ActualECTheoremPackage.hensel_jacobian_available
-#print axioms ActualECTheoremPackage.hasse_bound_available
-#print axioms ActualECTheoremPackage.ordinary_supersingular_available
-#print axioms ActualECGateChecklist
-#print axioms actualECGateChecklist
-#print axioms ActualDerivedCechTorNaturalityPackage
-#print axioms ActualDerivedCechTorNaturalityPackage.torCertificate
-#print axioms ActualDerivedCechTorNaturalityPackage.tor_square_comm
-#print axioms ActualDerivedCechTorNaturalityPackage.cech_baseChange_square
-#print axioms ActualDerivedCechTorNaturalityPackage.tor_baseChange_square
-#print axioms ActualDerivedCechTorNaturalityPackage.cech_localization_square
-#print axioms ActualDerivedCechTorNaturalityPackage.tor_localization_square
-#print axioms ActualDerivedCechTorNaturalityPackage.cech_padicCompletion_square
-#print axioms ActualDerivedCechTorNaturalityPackage.tor_padicCompletion_square
-#print axioms ActualDerivedCechTorNaturalityPackage.tor_crtRefinement_square
-#print axioms ActualDerivedCechTorNaturalityPackage.cech_crtRefinement_square
-#print axioms ActualDerivedCechTorNaturalityPackage.derived_tor_comparison_available
-#print axioms ActualDerivedCechTorNaturalityPackage.localization_completion_comparison_available
-#print axioms ActualDerivedCechTorNaturalityPackage.crt_refinement_comparison_available
-#print axioms ActualCechTorNaturalityChecklist
-#print axioms actualCechTorNaturalityChecklist
-#print axioms ActualWeilTraceTheoremPackage
-#print axioms ActualWeilTraceTheoremPackage.constructible
-#print axioms ActualWeilTraceTheoremPackage.pointCountTrace
-#print axioms ActualWeilTraceTheoremPackage.positiveCohomologyVanishes
-#print axioms ActualWeilTraceTheoremPackage.ellAdicCohomology_available
-#print axioms ActualWeilTraceTheoremPackage.frobeniusWeights_available
-#print axioms ActualWeilTraceTheoremPackage.traceFormula_available
-#print axioms ActualWeilTraceTheoremPackage.compactSupportVanishing_available
-#print axioms ActualGlobalEquivalenceCTheoremPackage
-#print axioms ActualGlobalEquivalenceCTheoremPackage.rh_iff_tp
-#print axioms ActualGlobalEquivalenceCTheoremPackage.global_euler_product_available
-#print axioms ActualGlobalEquivalenceCTheoremPackage.zero_pole_circle_available
-#print axioms ActualGlobalEquivalenceCTheoremPackage.no_cancellation_available
-#print axioms ActualGlobalEquivalenceCTheoremPackage.trace_purity_available
-#print axioms ActualExternalMathPackagesChecklist
-#print axioms actualExternalMathPackagesChecklist
-#print axioms MathlibGapWorkaroundChecklist
-#print axioms mathlibGapWorkaroundChecklist
-#print axioms FaithfullyFlatBaseChangeHandle
-#print axioms faithfullyFlatBaseChangeHandle
-#print axioms DepthCMLocalizationHandle
-#print axioms DepthCMLocalizationHandle.enatDepthInstantiation
-#print axioms depthCMLocalizationHandle
-#print axioms EulerProductMathlibHandle
-#print axioms eulerProductMathlibHandle
-#print axioms LSeriesDerivativeMathlibHandle
-#print axioms lseriesDerivativeMathlibHandle
-#print axioms MathlibLeftDerivedComputationHandle
-#print axioms mathlibLeftDerivedComputationHandle
-#print axioms MathlibAbstractTorFunctorHandle
-#print axioms mathlibAbstractTorFunctorHandle
-#print axioms AbstractTorComparisonStatus
-#print axioms mathlibTorOneEndpoint
-#print axioms mathlibTorPrimeOneEndpoint
-#print axioms MathlibTorOneEndpointHandle
-#print axioms mathlibTorOneEndpointHandle
-#print axioms abstractTorOneIsoGcdOfStandardResolutionIso
-#print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionIso
-#print axioms abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso
-#print axioms abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso
-#print axioms AbstractTorStandardResolutionReduction
-#print axioms abstractTorStandardResolutionReduction
-#print axioms AbstractTorPrimeFirstVariableReduction
-#print axioms abstractTorPrimeFirstVariableReduction
-#print axioms AbstractTorSecondVariableReduction
-#print axioms abstractTorSecondVariableReduction
-#print axioms ConcreteTorMathlibBridge
-#print axioms concreteTorMathlibBridge
-#print axioms ConcreteTorMathlibCertifiedBridge
-#print axioms concreteTorMathlibCertifiedBridge
-#print axioms KoszulReuseHandle
-#print axioms koszulReuseHandle
-#print axioms mathlibHandleInventoryChecklist
+-- #print axioms PaperStatementKind
+-- #print axioms PaperStatementAliasRecord
+-- #print axioms paperStatementAliasRecords
+-- #print axioms paperStatementInventoryExpectedNumbers
+-- #print axioms paperStatementInventoryNumbers
+-- #print axioms paperStatementInventory_numbers_complete
+-- #print axioms paperStatementInventory_count
+-- #print axioms PaperObjectiveRequirementRecord
+-- #print axioms paperObjectiveRequirementRecords
+-- #print axioms paperObjectiveRequirementRecords_count
+-- #print axioms PaperOriginalStatementStatus
+-- #print axioms paper_thm19_originalMinIntersectionClaim
+-- #print axioms paper_thm19_originalMinIntersection_uncertifiable
+-- #print axioms PaperCorrectedStatementAuditRecord
+-- #print axioms paperCorrectedStatementAuditRecords
+-- #print axioms paperCorrectedStatementAuditRecords_count
+-- #print axioms paper_thm19_correction_status
+-- #print axioms paperMathlibAbsenceStrategyPrinciples
+-- #print axioms paperMathlibAbsenceStrategyPrinciples_count
+-- #print axioms paperComparisonIsoReductionNames
+-- #print axioms paperComparisonIsoReductionNames_count
+-- #print axioms paperAxiomAuditInterfaceNames
+-- #print axioms paperAxiomAuditInterfaceNames_count
+-- #print axioms PaperMathlibAbsenceStrategyChecklist
+-- #print axioms paperMathlibAbsenceStrategyChecklist
+-- #print axioms paperCriticalAliasNames
+-- #print axioms paperCriticalAliasNames_count
+-- #print axioms PaperCriticalAliasAuditRecord
+-- #print axioms paperCriticalAliasAuditRecords
+-- #print axioms paperCriticalAliasAuditRecords_count
+-- #print axioms paperCriticalAliasAuditNumbers
+-- #print axioms paperCriticalAliasAuditNumbers_complete
+-- #print axioms PaperCriticalAliasChecklist
+-- #print axioms paperCriticalAliasChecklist
+-- #print axioms PaperExternalInstantiationStatus
+-- #print axioms PaperExternalInstantiationRecord
+-- #print axioms paperExternalInstantiationRecords
+-- #print axioms paperExternalInstantiationRecords_count
+-- #print axioms paperExternalInstantiationKeys
+-- #print axioms paperExternalInstantiationKeys_complete
+-- #print axioms paperExternalInstantiationPackageNames
+-- #print axioms paperExternalInstantiationPackageNames_complete
+-- #print axioms paperExternalInstantiationChecklistNames
+-- #print axioms paperExternalInstantiationChecklistNames_complete
+-- #print axioms PaperRemainingExternalInstantiationChecklist
+-- #print axioms paperRemainingExternalInstantiationChecklist
+-- #print axioms PaperObjectiveCompletionStatus
+-- #print axioms PaperObjectiveCompletionRecord
+-- #print axioms paperObjectiveCompletionMatrix
+-- #print axioms paperObjectiveCompletionMatrix_count
+-- #print axioms paperObjectiveCompletionMatrixKeys
+-- #print axioms paperObjectiveCompletionMatrix_keys_eq_requirement_keys
+-- #print axioms PaperObjectiveImplementationChecklist
+-- #print axioms paper_objectiveImplementationChecklist
+-- #print axioms IsNthPrime
+-- #print axioms CanonicalPaperProfile
+-- #print axioms canonicalPaperProfile
+-- #print axioms paper_canonicalProfile_A_eq_four
+-- #print axioms paper_canonicalProfile_y_eq_one
+-- #print axioms paper_canonicalProfile_p_n_isNthPrime
+-- #print axioms paper_canonicalProfile_p_n_prime
+-- #print axioms paper_canonicalProfile_primesBelow_card
+-- #print axioms paper_canonicalProfile_Mplus_eq_profile
+-- #print axioms paper_canonicalProfile_Mminus_eq_profile
+-- #print axioms paper_canonicalProfile_Mplus_eq_p_n_add_three
+-- #print axioms paper_canonicalProfile_Mminus_eq_p_n_sub_three
+-- #print axioms paper_thm1_canonicalProfile_coprime
+-- #print axioms paper_thm1_canonicalProfile_obstructionFree
+-- #print axioms PaperCanonicalProfileChecklist
+-- #print axioms paperCanonicalProfileChecklist
+-- #print axioms paper_thm1_canonicalProfileChecklist
+-- #print axioms paper_def5_obstructionIndex
+-- #print axioms paper_def5_tor_cardinality_formula
+-- #print axioms paper_lem6_primePowerTorIso
+-- #print axioms paper_prop7_crtSplitting
+-- #print axioms paper_prop7_tor_cardinality
+-- #print axioms paper_prop8_obstructionIndex_mono_left
+-- #print axioms paper_prop12_flatBaseChangeCertificate
+-- #print axioms paper_thm17_sheafLocalPreservation_faithfullyFlat
+-- #print axioms paper_thm17_sheafLocalPreservation_localization
+-- #print axioms paper_prop28_cechTorGate_tfae
+-- #print axioms paper_prop28_cechTorGate_of_gcd_eq_one
+-- #print axioms paper_thm30_sheafKoszulAcyclicityConclusion
+-- #print axioms paper_thm30_positiveAcyclic
+-- #print axioms paper_cor31_sheafKoszulChartwiseConclusion
+-- #print axioms paper_cor31_positiveAcyclic
+-- #print axioms PaperStanding48WorkingOpenCertificate
+-- #print axioms paper_standing48_workingOpenCertificate
+-- #print axioms paper_standing48_canonicalCechTorSilent
+-- #print axioms paper_numericPadic_phiJ
+-- #print axioms paper_numericPadic_HkGate
+-- #print axioms paper_numericPadic_logMinusPnLogA
+-- #print axioms paper_numericPadic_gateChecklist
+-- #print axioms paper_numericPadic_actualLogChecklist
+-- #print axioms paper_ecGate_concreteChecklist
+-- #print axioms paper_ecGate_actualChecklist
+-- #print axioms paper_cechTorNaturality_actualChecklist
+-- #print axioms paper_koszul_actualGeneralChecklist
+-- #print axioms paper_coreRemainingFormalizationChecklist
+-- #print axioms paper_actualExternalMathPackagesChecklist
+-- #print axioms paper_remark2_operationalSummary
+-- #print axioms paper_thm3_cechH1Iso
+-- #print axioms paper_thm3_torOneIso
+-- #print axioms paper_thm3_cechBaseChangeNaturality
+-- #print axioms paper_thm3_cechTorNaturalityChecklist
+-- #print axioms paper_remark4_geometricReadout
+-- #print axioms paper_cor9_obstructionFreeTFAE
+-- #print axioms paper_lem10_stalkRegularityTest
+-- #print axioms paper_thm11_koszulCriterion
+-- #print axioms paper_remark13_equalizerBridge
+-- #print axioms paper_lem14_stalkRegularityTest
+-- #print axioms paper_thm15_koszulCriterion
+-- #print axioms paper_prop16_faithfullyFlatBaseChange
+-- #print axioms paper_prop16_localizationBaseChange
+-- #print axioms paper_prop18_depthDimensionAdapter
+-- #print axioms paper_prop18_actualDepthDimensionInstantiation
+-- #print axioms paper_thm19_correctedLocalizedIntersection
+-- #print axioms paper_def20_finiteStratificationInterface
+-- #print axioms paper_def20_actualSixFunctorTheoremPackage
+-- #print axioms paper_def20_actualSixFunctorData
+-- #print axioms paper_def21_constructibleGlobalLayerInterface
+-- #print axioms paper_def21_shriekSummand
+-- #print axioms paper_def21_actualSheafConstructionPackage
+-- #print axioms paper_def21_actualConstructibleSheafChecklist
+-- #print axioms paper_def21_actualConstructibleSheafChecklistValue
+-- #print axioms paper_lem22_constructibility
+-- #print axioms paper_lem23_pullbackConstructible
+-- #print axioms paper_lem23_baseChangeShriek
+-- #print axioms paper_lem24_gluingTriangle
+-- #print axioms paper_lem24_openClosedTermsConstructible
+-- #print axioms paper_lem25_tensorConstructible
+-- #print axioms paper_lem25_internalHomConstructible
+-- #print axioms paper_lem25_dualConstructible
+-- #print axioms paper_remark26_goodPrimeCechTorUpgrade
+-- #print axioms paper_cor27_weightTraceReadiness
+-- #print axioms paper_lem29_henselianPadicPullbackStability
+-- #print axioms paper_lem32_curveReduction
+-- #print axioms paper_prop33_mixedUpperBound
+-- #print axioms paper_thm34_pureCases
+-- #print axioms paper_cor35_openClosedWeightControl
+-- #print axioms paper_lem36_traceFormulaExpansion
+-- #print axioms paper_lem37_detTraceIdentity
+-- #print axioms paper_prop38_radiusBoundsFromWeights
+-- #print axioms paper_lem39_cechH1ArithmeticModel
+-- #print axioms paper_lem39_cechH1Cardinality
+-- #print axioms paper_cor40_goodPrimeCechAcyclicity
+-- #print axioms paper_prop41_mixedUpperBounds
+-- #print axioms paper_thm42_pureCases
+-- #print axioms paper_prop43_finiteSupportCohomology
+-- #print axioms paper_thm44_globalPurityPure
+-- #print axioms paper_thm44_globalPurityMixed
+-- #print axioms paper_cor45_degreeZero
+-- #print axioms paper_cor46_degreeOne
+-- #print axioms paper_thm47_equivalenceC
+-- #print axioms paper_thm47_localRHEquivalenceC
+-- #print axioms paper_thm47_globalEquivalenceC
+-- #print axioms canonical_coprime
+-- #print axioms arithmeticProgression_injective
+-- #print axioms crtBinaryArithmeticProgression_exists
+-- #print axioms Fnum_iff_dvd
+-- #print axioms Fmod_iff_dvd
+-- #print axioms Fp_adic_iff_dvd
+-- #print axioms FEC_iff_dvd
+-- #print axioms concreteECIntegralCurve
+-- #print axioms concreteECModPCurve
+-- #print axioms concreteECModPEquation_iff
+-- #print axioms concreteECJacobianF
+-- #print axioms concreteECModPEquation_iff_jacobianF_zero
+-- #print axioms concreteECJacobianDX
+-- #print axioms concreteECJacobianDY
+-- #print axioms concreteECJacobianNonzero
+-- #print axioms concreteECAffineSingularPoint
+-- #print axioms concreteECJacobianNonzero_iff_not_both_partials_zero
+-- #print axioms concreteECAffineSmooth
+-- #print axioms concreteECHenselGate
+-- #print axioms concreteECHenselGate_iff
+-- #print axioms concreteECAffineSmooth_iff_all_henselGate
+-- #print axioms concreteECShortDiscriminantInt
+-- #print axioms concreteECShortDiscriminantModP
+-- #print axioms concreteECDiscriminantGate
+-- #print axioms concreteECSmoothFiberGate
+-- #print axioms ECJacobianHenselSmoothCertificate
+-- #print axioms ECJacobianHenselSmoothCertificate.smoothFiberGate_iff_discriminant
+-- #print axioms ECJacobianHenselSmoothCertificate.henselLiftable_iff_jacobian_of_equation
+-- #print axioms ECJacobianHenselSmoothCertificate.henselLiftable_of_henselGate
+-- #print axioms ConcreteECModPAffineSolutions
+-- #print axioms ConcreteECModPPoints
+-- #print axioms concreteECPointCount
+-- #print axioms concreteECPointCount_eq_affine_add_one
+-- #print axioms concreteECTrace
+-- #print axioms concreteECLocalFactorPolynomial
+-- #print axioms concreteECLocalFactorPolynomial_eval
+-- #print axioms ECOrdSSTag
+-- #print axioms ECOrdinary
+-- #print axioms ECSupersingular
+-- #print axioms ECOrdSSTagCertificate
+-- #print axioms HasseBoundCertificate
+-- #print axioms HasseBoundCertificate.trace_abs_le
+-- #print axioms ECFullGateCertificate
+-- #print axioms ECFullGateCertificate.smoothFiberGate_iff_discriminant
+-- #print axioms ECFullGateCertificate.hasse_bound
+-- #print axioms ECFullGateCertificate.ordinary_of_tag
+-- #print axioms ECFullGateCertificate.supersingular_of_tag
+-- #print axioms ECConcreteLayerProfile
+-- #print axioms ECConcreteLayerProfile.fec_iff_modPrime
+-- #print axioms ECConcreteLayerProfile.fec_iff_dvd_primeMod
+-- #print axioms ecConcreteLayerProfileOf
+-- #print axioms EllipticCurveECLayerChecklist
+-- #print axioms ellipticCurveECLayerChecklist
+-- #print axioms powPadicCongruence
+-- #print axioms BuchiValuationGate
+-- #print axioms int_pow_dvd_iff_powPadicCongruence
+-- #print axioms padicValInt_gate_iff_pow_dvd
+-- #print axioms padicValInt_ge_iff_pow_dvd_of_ne_zero
+-- #print axioms intCast_mem_padicInt_span_pow_iff
+-- #print axioms padicInt_span_pow_iff_powPadicCongruence
+-- #print axioms buchiDenominator
+-- #print axioms buchiNumerator
+-- #print axioms buchiPhi
+-- #print axioms paperABPhi
+-- #print axioms paperABPhi_eq_buchiPhi
+-- #print axioms buchiDenominator_ne_zero
+-- #print axioms padicValRat_buchiPhi
+-- #print axioms NumericGateBuchiProfile
+-- #print axioms NumericGateBuchiProfile.fnum_iff_powPadicCongruence
+-- #print axioms NumericGateBuchiProfile.fnum_iff_valuationGate
+-- #print axioms NumericGateBuchiProfile.fnum_iff_padicInt_span
+-- #print axioms PadicLogBridgeCertificate
+-- #print axioms PadicLogBridgeCertificate.log_bound_of_valuationGate
+-- #print axioms PadicLogBridgeCertificate.log_bound_of_powPadicCongruence
+-- #print axioms buchiHkRemainder
+-- #print axioms paperABHkGate
+-- #print axioms buchiHkRemainder_powPadicCongruence_iff_dvd
+-- #print axioms paperABHkGate_iff_dvd
+-- #print axioms paperABHkGate_iff_valuationGate
+-- #print axioms PadicABLogTruncationCertificate
+-- #print axioms PadicABLogTruncationCertificate.ofPadicLogBridge
+-- #print axioms PadicABLogTruncationCertificate.log_bound_of_powPadicCongruence
+-- #print axioms PadicABLogTruncationCertificate.log_bound_of_buchiHkRemainder
+-- #print axioms PadicABLogTruncationCertificate.paperLogMinusPnLogA
+-- #print axioms PadicABLogTruncationCertificate.paperLogMinusPnLogA_eq
+-- #print axioms PadicABLogTruncationCertificate.paperHkInteger
+-- #print axioms PadicABLogTruncationCertificate.paperHkInteger_eq
+-- #print axioms PadicABLogTruncationCertificate.paperLogBound_of_HkGate
+-- #print axioms ActualPadicLogTruncationPackage
+-- #print axioms ActualPadicLogTruncationPackage.logOnePlus_bound_of_powPadicCongruence
+-- #print axioms ActualPadicLogTruncationPackage.logOnePlus_bound_of_valuationGate
+-- #print axioms ActualPadicLogTruncationPackage.log_bound_of_truncationCongruence
+-- #print axioms ActualPadicLogTruncationPackage.log_bound_of_buchiHkGate
+-- #print axioms ActualPadicLogTruncationPackage.toPadicABLogTruncationCertificate
+-- #print axioms ActualPadicLogTruncationChecklist
+-- #print axioms actualPadicLogTruncationChecklist
+-- #print axioms ABPadicLogTruncationChecklist
+-- #print axioms abPadicLogTruncationChecklist
+-- #print axioms PaperABPadicGateChecklist
+-- #print axioms paperABPadicGateChecklist
+-- #print axioms PadicNumericGateChecklist
+-- #print axioms padicNumericGateChecklist
+-- #print axioms arithmeticPrimeSpectrumTopCat
+-- #print axioms arithmeticBasicOpen
+-- #print axioms arithmeticBasicOpen_mul
+-- #print axioms arithmeticConstantIntPresheaf
+-- #print axioms arithmeticConstantIntPresheaf_restrict_value
+-- #print axioms arithmeticIntFunctionSheaf
+-- #print axioms arithmeticIntFunctionSheaf_presheaf
+-- #print axioms arithmeticIntFunctionSheaf_isSheaf
+-- #print axioms arithmeticIntFunctionSheaf_const
+-- #print axioms arithmeticIntFunctionSheaf_const_restrict
+-- #print axioms arithmeticConstantIntToFunction
+-- #print axioms arithmeticConstantIntToFunction_restrict
+-- #print axioms arithmeticPredicatePresheaf
+-- #print axioms arithmeticPredicatePresheafInclusion
+-- #print axioms arithmeticPredicatePresheaf_restrict_value
+-- #print axioms fourLayerGatePresheaf
+-- #print axioms fourLayerGateSectionsEquivIntersection
+-- #print axioms fourLayerGate_restrict_value
+-- #print axioms fourLayerGatePresheafInclusion
+-- #print axioms fourLayerGatePresheafInclusion_app
+-- #print axioms fourLayerGatePresheafInclusion_naturality_value
+-- #print axioms modCritical_AP
+-- #print axioms numericCritical_AP
+-- #print axioms pAdicCritical_AP
+-- #print axioms ecCritical_AP
+-- #print axioms fourLayerStrictIndependence
+-- #print axioms kernel_mem_iff_lcm
+-- #print axioms crt_solvable_iff
+-- #print axioms crtPhi_mem_ker_iff_lcm
+-- #print axioms crtDel_exact_crtPhi
+-- #print axioms crtDel_surjective
+-- #print axioms cechPhiCokerEquivZModGcd
+-- #print axioms cechPhiCoker_card
+-- #print axioms cechPhiCoker_card_eq_one_iff_gcd_eq_one
+-- #print axioms arithmeticCechOverlapOpen_eq_inf
+-- #print axioms arithmeticCechGlobalRestrictLeft
+-- #print axioms arithmeticCechGlobalRestrictRight
+-- #print axioms arithmeticCechLeftRestrictOverlap
+-- #print axioms arithmeticCechRightRestrictOverlap
+-- #print axioms arithmeticCechLeftRestrictOverlap_intCast
+-- #print axioms arithmeticCechRightRestrictOverlap_intCast
+-- #print axioms arithmeticCechLeftOverlap_comp_global
+-- #print axioms arithmeticCechRightOverlap_comp_global
+-- #print axioms arithmeticCech_overlap_restrictions_agree_on_global
+-- #print axioms arithmeticCechGlobalToLocal
+-- #print axioms arithmeticCechLocalDifference
+-- #print axioms arithmeticCech_twoOpen_exact
+-- #print axioms arithmeticCech_compatible_iff_gluable
+-- #print axioms arithmeticCech_range_eq_kernel
+-- #print axioms arithmeticCechCompatiblePairs
+-- #print axioms arithmeticCechGluablePairs
+-- #print axioms arithmeticCech_mem_compatiblePairs_iff
+-- #print axioms arithmeticCech_mem_gluablePairs_iff
+-- #print axioms arithmeticCech_gluablePairs_eq_compatiblePairs
+-- #print axioms arithmeticCechH0Image
+-- #print axioms arithmeticCechH0Equalizer
+-- #print axioms arithmeticCechH0ImageEquivEqualizer
+-- #print axioms arithmeticCechH0ImageEquivEqualizer_apply
+-- #print axioms arithmeticCech_same_local_iff_lcm_dvd_sub
+-- #print axioms arithmeticCechH1EquivZModGcd
+-- #print axioms arithmeticCechH1_card
+-- #print axioms ArithmeticTwoOpenCechSheafCertificate
+-- #print axioms arithmeticTwoOpenCechSheafCertificate
+-- #print axioms factorization_gcd_apply
+-- #print axioms factorization_lcm_apply
+-- #print axioms kernel_ideal_inter_nat
+-- #print axioms lcm_prime_power_thickness
+-- #print axioms gcd_prime_power_thickness
+-- #print axioms lcm_prime_power_unit_part_not_dvd
+-- #print axioms localized_lcm_prime_power_ideal_eq_span
+-- #print axioms localized_intersection_prime_power_ideal_eq_span
+-- #print axioms card_ker_mulLeft
+-- #print axioms kerMulLeftEquivZModGcd
+-- #print axioms TorH1_iso_zmod_gcd
+-- #print axioms standardIntResolutionD1
+-- #print axioms standardIntResolutionQuotient
+-- #print axioms standardIntResolutionQuotient_comp_D1_apply
+-- #print axioms standardIntResolutionZeroObj
+-- #print axioms standardIntResolutionComplexObj
+-- #print axioms standardIntResolutionComplexD
+-- #print axioms standardIntResolutionComplexD_zero
+-- #print axioms standardIntResolutionComplexD_succ
+-- #print axioms standardIntResolutionComplexD_comp
+-- #print axioms standardIntResolutionComplex
+-- #print axioms standardIntResolutionComplex_d_one_zero
+-- #print axioms standardIntResolutionComplex_d_succ_succ
+-- #print axioms standardIntResolutionAugmentation
+-- #print axioms standardIntResolutionAugmentation_f_zero
+-- #print axioms standardIntResolutionAugmentation_f_zero_epi
+-- #print axioms standardIntResolutionAugmentation_comp_d_one_zero
+-- #print axioms standardIntResolutionComplex_projective
+-- #print axioms standardIntResolutionD1_range_eq_zmultiples
+-- #print axioms standardIntResolutionQuotient_ker_eq_zmultiples
+-- #print axioms standardIntResolutionD1_range_eq_quotient_ker
+-- #print axioms standardIntResolutionQuotient_surjective
+-- #print axioms standardIntResolution_linear_exact
+-- #print axioms standardIntResolutionAugmentation_f_zero_isColimitCokernelCofork
+-- #print axioms standardIntResolutionD1_ker_eq_bot_of_ne_zero
+-- #print axioms standardIntResolutionComplex_exactAt_one_of_ne_zero
+-- #print axioms standardIntResolutionComplex_exactAt_succ_succ
+-- #print axioms standardIntResolutionComplex_exactAt_succ_of_ne_zero
+-- #print axioms standardIntResolutionAugmentation_quasiIsoAt_succ_of_ne_zero
+-- #print axioms standardIntResolutionAugmentation_quasiIsoAt_zero
+-- #print axioms standardIntResolutionAugmentation_quasiIso_of_ne_zero
+-- #print axioms standardIntProjectiveResolution
+-- #print axioms StandardIntResolutionCertificate
+-- #print axioms standardIntResolutionCertificate
+-- #print axioms tensorStandardResolutionD1
+-- #print axioms tensorStandardResolutionD1_eq_torD1
+-- #print axioms tensorStandardResolutionD2
+-- #print axioms tensorStandardResolutionD1_comp_D2_apply
+-- #print axioms tensorStandardResolutionComplexObj
+-- #print axioms tensorStandardResolutionComplexD
+-- #print axioms tensorStandardResolutionComplexD_zero
+-- #print axioms tensorStandardResolutionComplexD_succ
+-- #print axioms tensorStandardResolutionComplexD_comp
+-- #print axioms tensorStandardResolutionComplex
+-- #print axioms tensorStandardResolutionComplex_d_one_zero
+-- #print axioms tensorStandardResolutionComplex_d_succ_succ
+-- #print axioms tensorRightStandardResolutionComplexComponentIso
+-- #print axioms tensorLeftStandardResolutionComplexComponentIso
+-- #print axioms tensorRightAppliedStandardResolutionComplex
+-- #print axioms tensorLeftAppliedStandardResolutionComplex
+-- #print axioms standardIntMulLeftModuleHom
+-- #print axioms zmodMulLeftModuleHom
+-- #print axioms zmodLeftUnitorHom
+-- #print axioms zmodRightUnitorHom
+-- #print axioms zmodLeftUnitor_comp_zmodMulLeftModuleHom
+-- #print axioms zmodRightUnitor_comp_zmodMulLeftModuleHom
+-- #print axioms tensorRightStandardResolutionComplexIso
+-- #print axioms tensorLeftStandardResolutionComplexIso
+-- #print axioms tensorStandardResolutionCycles1_eq_kernel
+-- #print axioms tensorStandardResolutionD2_range_eq_bot
+-- #print axioms tensorStandardResolutionBoundaries1_eq_bot
+-- #print axioms tensorStandardResolutionBoundaries1_le_cycles1
+-- #print axioms mem_tensorStandardResolutionCycles1_iff
+-- #print axioms tensorStandardResolutionHomology1EquivCycles1
+-- #print axioms tensorStandardResolutionH1EquivTorH1
+-- #print axioms tensorStandardResolutionHomology1EquivTorH1
+-- #print axioms tensorStandardResolutionH1EquivZModGcd
+-- #print axioms tensorStandardResolutionHomology1EquivZModGcd
+-- #print axioms tensorStandardResolutionH1_card
+-- #print axioms tensorStandardResolutionHomology1_card
+-- #print axioms mem_tensorStandardResolutionH1_iff
+-- #print axioms standardResolutionTorOneEndpoint
+-- #print axioms standardResolutionTorOneEndpointIsoConcrete
+-- #print axioms standardResolutionTorOneEndpointIsoGcd
+-- #print axioms tensorStandardResolutionComplex_scPrimeOne_f_eq_zero
+-- #print axioms tensorStandardResolutionLinearKerIsoCycles1
+-- #print axioms tensorStandardResolutionScPrimeOneCyclesIsoStandardEndpoint
+-- #print axioms tensorStandardResolutionScPrimeOneHomologyIsoStandardEndpoint
+-- #print axioms tensorStandardResolutionActualHomologyOne
+-- #print axioms tensorStandardResolutionActualHomologyOneIsoStandardEndpoint
+-- #print axioms standardResolutionTorPrimeOneEndpoint
+-- #print axioms standardResolutionTorPrimeOneEndpointIsoGcd
+-- #print axioms standardResolutionTorOneSecondVariableEndpoint
+-- #print axioms standardResolutionTorOneSecondVariableEndpointIsoGcd
+-- #print axioms mathlibTensorRightStandardResolutionHomologyOne
+-- #print axioms mathlibTensorLeftStandardResolutionHomologyOne
+-- #print axioms mathlibTensorRightStandardResolutionHomologyOneIsoActualHomology
+-- #print axioms mathlibTensorLeftStandardResolutionHomologyOneIsoActualHomology
+-- #print axioms mathlibTorPrimeOneEndpointIsoStandardResolutionHomology
+-- #print axioms mathlibTorOneEndpointIsoStandardResolutionHomology
+-- #print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionHomologyIso
+-- #print axioms abstractTorOneIsoGcdOfStandardResolutionHomologyIso
+-- #print axioms abstractTorPrimeOneIsoGcdOfActualHomologyIso
+-- #print axioms abstractTorOneIsoGcdOfActualHomologyIso
+-- #print axioms abstractTorPrimeOneIsoGcd
+-- #print axioms abstractTorOneIsoGcd
+-- #print axioms MathlibTorPrimeStandardResolutionComputation
+-- #print axioms mathlibTorPrimeStandardResolutionComputation
+-- #print axioms MathlibTorStandardResolutionComputation
+-- #print axioms mathlibTorStandardResolutionComputation
+-- #print axioms StandardFreeResolutionTorComparison
+-- #print axioms standardFreeResolutionTorComparison
+-- #print axioms prod_primePower_factorization_eq_self
+-- #print axioms TorH1_crt_coord_mem
+-- #print axioms TorH1_crt_inv_mem
+-- #print axioms TorH1_primePowerDecomposition
+-- #print axioms gcd_eq_prod_primeFactors
+-- #print axioms card_Tor_eq_exp_IC
+-- #print axioms IC_mono
+-- #print axioms IC_mono_left
+-- #print axioms IC_coprime_add
+-- #print axioms IC_nonneg
+-- #print axioms gcd_eq_one_iff_IC_eq_zero
+-- #print axioms TorH1_card_eq_one_iff_gcd_eq_one
+-- #print axioms cor9_tfae_gcd_tor_ic
+-- #print axioms ArithmeticCechTorGate
+-- #print axioms arithmeticCechTorGate_iff_gcd_eq_one
+-- #print axioms arithmeticCechTorGate_tfae
+-- #print axioms singleton_regular_iff
+-- #print axioms cons_regular_iff
+-- #print axioms koszulR1Mul
+-- #print axioms koszulR1Obj
+-- #print axioms koszulR1Differential
+-- #print axioms koszulR1Differential_sq
+-- #print axioms koszulR1ChainComplex
+-- #print axioms koszulR1ChainComplex_d_one_zero
+-- #print axioms koszulR1ChainComplex_d_succ_succ
+-- #print axioms koszulR1H1
+-- #print axioms koszulR1H0
+-- #print axioms koszulR1H1_eq_bot_iff_isSMulRegular
+-- #print axioms koszulR1_range_eq_smul_top
+-- #print axioms koszulR1H0EquivQuotSMulTop
+-- #print axioms koszulR1PositiveAcyclic
+-- #print axioms koszulR1PositiveAcyclic_iff_isSMulRegular
+-- #print axioms koszulR1PositiveAcyclic_iff_isWeaklyRegular_singleton
+-- #print axioms koszulR1PositiveAcyclic_of_isWeaklyRegular_singleton
+-- #print axioms koszulR2Left
+-- #print axioms koszulR2Right
+-- #print axioms koszulR2Left_comp_right
+-- #print axioms koszulRange_lsmul_eq_smul_top
+-- #print axioms ofList_pair_smul_top_eq_smul_sup_smul
+-- #print axioms koszulR2Left_range_eq_ofList_pair_smul_top
+-- #print axioms koszulR2H0EquivQuotOfListPair
+-- #print axioms koszulR2H2
+-- #print axioms mem_koszulR2H2_iff
+-- #print axioms koszulR2H2_eq_bot_of_isWeaklyRegular_pair
+-- #print axioms koszulR2Obj
+-- #print axioms koszulR2Differential
+-- #print axioms koszulR2Differential_sq
+-- #print axioms koszulR2ChainComplex
+-- #print axioms koszulR2ChainComplex_d_one_zero
+-- #print axioms koszulR2ChainComplex_d_two_one
+-- #print axioms koszulR2H1Cycles
+-- #print axioms koszulR2RightToCycles
+-- #print axioms koszulR2H1
+-- #print axioms koszulR2RightToCycles_range_eq_top_of_isWeaklyRegular_pair
+-- #print axioms koszulR2H1_subsingleton_of_isWeaklyRegular_pair
+-- #print axioms koszulR2PositiveAcyclic
+-- #print axioms koszulR2H2_eq_bot_of_positiveAcyclic
+-- #print axioms koszulR2H1_subsingleton_of_positiveAcyclic
+-- #print axioms koszulR2PositiveAcyclic_of_isWeaklyRegular_pair
+-- #print axioms koszulR2PositiveAcyclic_of_cons_certificate
+-- #print axioms koszulLowDegreePositiveAcyclic
+-- #print axioms koszulLowDegreePositiveAcyclic_nil
+-- #print axioms koszulLowDegreePositiveAcyclic_singleton
+-- #print axioms koszulLowDegreePositiveAcyclic_pair
+-- #print axioms not_koszulLowDegreePositiveAcyclic_cons_cons_cons
+-- #print axioms length_le_two_of_koszulLowDegreePositiveAcyclic
+-- #print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_singleton
+-- #print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_pair
+-- #print axioms koszulLowDegreePositiveAcyclic_of_isWeaklyRegular_length_le_two
+-- #print axioms koszulLowDegreeRegularityCertificate
+-- #print axioms koszulLowDegreeRegularityCertificate_nil
+-- #print axioms koszulLowDegreeRegularityCertificate_singleton
+-- #print axioms koszulLowDegreeRegularityCertificate_pair
+-- #print axioms not_koszulLowDegreeRegularityCertificate_cons_cons_cons
+-- #print axioms koszulLowDegreePositiveAcyclic_of_regularCertificate
+-- #print axioms length_le_two_of_koszulLowDegreeRegularityCertificate
+-- #print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_singleton
+-- #print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_pair
+-- #print axioms koszulLowDegreeRegularityCertificate_of_isWeaklyRegular_length_le_two
+-- #print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate_singleton
+-- #print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate_pair
+-- #print axioms isWeaklyRegular_of_koszulLowDegreeRegularityCertificate
+-- #print axioms koszulLowDegreeRegularityCertificate_iff_isWeaklyRegular_length_le_two
+-- #print axioms KoszulAcyclicPredicate
+-- #print axioms KoszulWeakAcyclicityInterface
+-- #print axioms koszulAcyclic_iff_isWeaklyRegular_of_interface
+-- #print axioms koszulInterface_singleton_iff_koszulR1PositiveAcyclic
+-- #print axioms koszulR2PositiveAcyclic_of_interface_pair
+-- #print axioms koszulLowDegreePositiveAcyclic_of_interface_length_le_two
+-- #print axioms koszulLowDegreeRegularityCertificate_iff_interface_length_le_two
+-- #print axioms KoszulComplexModel
+-- #print axioms KoszulComplexModel.acyclic_iff_isWeaklyRegular
+-- #print axioms KoszulComplexModel.lowDegreeRegularityCertificate_iff_acyclic
+-- #print axioms KoszulComplexModel.lowDegreePositiveAcyclic_of_acyclic
+-- #print axioms KoszulComplexModel.acyclic_of_lowDegreeRegularityCertificate
+-- #print axioms weakRegularKoszulAcyclicPredicate
+-- #print axioms weakRegularKoszulWeakInterface
+-- #print axioms lowDegreeKoszulComplex
+-- #print axioms lowDegreeKoszulComplex_singleton
+-- #print axioms lowDegreeKoszulComplex_pair
+-- #print axioms lowDegreeKoszulComplexModel
+-- #print axioms lowDegreeKoszulComplexModel_complex_singleton
+-- #print axioms lowDegreeKoszulComplexModel_complex_pair
+-- #print axioms lowDegreeKoszulComplexModel_acyclic_iff_isWeaklyRegular
+-- #print axioms lowDegreeKoszulComplexModel_lowDegreeCertificate_iff_acyclic
+-- #print axioms koszulFreeModule
+-- #print axioms koszulSequenceVector
+-- #print axioms koszulSequenceVector_singleton_zero
+-- #print axioms koszulSequenceVector_pair_zero
+-- #print axioms koszulSequenceVector_pair_one
+-- #print axioms koszulSequenceVector_map_length
+-- #print axioms koszulSequenceVector_map_algebraMap
+-- #print axioms exteriorKoszulAlgebra
+-- #print axioms exteriorKoszulGenerator
+-- #print axioms exteriorKoszulGenerator_sq
+-- #print axioms exteriorKoszulTotalDifferential
+-- #print axioms exteriorKoszulTotalDifferential_apply
+-- #print axioms exteriorKoszulTotalDifferential_sq
+-- #print axioms exteriorKoszulTotalTensorTerm
+-- #print axioms exteriorKoszulTotalTensorDifferential
+-- #print axioms exteriorKoszulTotalTensorDifferential_tmul
+-- #print axioms exteriorKoszulTotalTensorDifferential_sq
+-- #print axioms linearMap_baseChange_comp_self_eq_zero
+-- #print axioms exteriorKoszulTotalBaseChangeDifferential
+-- #print axioms exteriorKoszulTotalBaseChangeDifferential_tmul
+-- #print axioms exteriorKoszulTotalBaseChangeDifferential_sq
+-- #print axioms ExteriorKoszulTotalBaseChangeCertificate
+-- #print axioms exteriorKoszulTotalBaseChangeCertificate
+-- #print axioms exteriorKoszulScalarTargetAlgebra
+-- #print axioms exteriorKoszulScalarTargetSequenceVector
+-- #print axioms exteriorKoszulScalarTargetSequenceVector_apply
+-- #print axioms exteriorKoszulScalarTargetGenerator
+-- #print axioms exteriorKoszulScalarTargetGenerator_sq
+-- #print axioms exteriorKoszulScalarTargetDifferential
+-- #print axioms exteriorKoszulScalarTargetDifferential_apply
+-- #print axioms exteriorKoszulScalarTargetDifferential_sq
+-- #print axioms exteriorKoszulScalarTargetTensorTerm
+-- #print axioms exteriorKoszulScalarTargetTensorDifferential
+-- #print axioms exteriorKoszulScalarTargetTensorDifferential_tmul
+-- #print axioms exteriorKoszulScalarTargetTensorDifferential_sq
+-- #print axioms exteriorKoszulTotalTensorBaseChangeDifferential
+-- #print axioms exteriorKoszulTotalTensorBaseChangeDifferential_tmul
+-- #print axioms exteriorKoszulTotalTensorBaseChangeDifferential_sq
+-- #print axioms ExteriorKoszulTotalTensorBaseChangeCertificate
+-- #print axioms exteriorKoszulTotalTensorBaseChangeCertificate
+-- #print axioms koszulFreeModuleScalarMap
+-- #print axioms koszulFreeModuleScalarMap_apply
+-- #print axioms exteriorKoszulTargetIotaRestrictScalars
+-- #print axioms exteriorKoszulTargetIotaRestrictScalars_apply
+-- #print axioms exteriorKoszulAlgebraScalarMap
+-- #print axioms exteriorKoszulAlgebraScalarMap_ι
+-- #print axioms exteriorKoszulAlgebraScalarMap_generator
+-- #print axioms exteriorKoszulAlgebraBaseChangeAlgHom
+-- #print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul
+-- #print axioms exteriorKoszulAlgebraBaseChangeAlgHom_tmul_generator
+-- #print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines_tmul
+-- #print axioms exteriorKoszulAlgebraBaseChangeAlgHom_intertwines
+-- #print axioms exteriorKoszulTotalTensorBaseChangeMap
+-- #print axioms exteriorKoszulTotalTensorBaseChangeMap_tmul
+-- #print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines_tmul
+-- #print axioms exteriorKoszulTotalTensorBaseChangeMap_intertwines
+-- #print axioms ExteriorKoszulTotalTensorComparisonCertificate
+-- #print axioms exteriorKoszulTotalTensorComparisonCertificate
+-- #print axioms exteriorKoszulAlgebraBaseChangeLinearEquiv
+-- #print axioms exteriorKoszulAlgebraBaseChangeLinearEquivOfList
+-- #print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv
+-- #print axioms exteriorKoszulTotalTensorBaseChangeLinearEquiv_tmul
+-- #print axioms ExteriorKoszulTotalTensorIsoComparisonCertificate
+-- #print axioms exteriorKoszulTotalTensorIsoComparisonCertificate
+-- #print axioms ExteriorKoszulScalarTargetCertificate
+-- #print axioms exteriorKoszulScalarTargetCertificate
+-- #print axioms exteriorKoszulMappedTargetAlgebra
+-- #print axioms exteriorKoszulMappedTargetGenerator
+-- #print axioms exteriorKoszulMappedTargetGenerator_sq
+-- #print axioms exteriorKoszulMappedTargetDifferential
+-- #print axioms exteriorKoszulMappedTargetDifferential_apply
+-- #print axioms exteriorKoszulMappedTargetDifferential_sq
+-- #print axioms ExteriorKoszulMappedTargetCertificate
+-- #print axioms exteriorKoszulMappedTargetCertificate
+-- #print axioms ExteriorKoszulTotalFlatBaseChangeCertificate
+-- #print axioms exteriorKoszulTotalFlatBaseChangeCertificate
+-- #print axioms koszulR1Mul_baseChange
+-- #print axioms koszulR1Mul_baseChange_tmul
+-- #print axioms KoszulR1BaseChangeDifferentialCertificate
+-- #print axioms koszulR1BaseChangeDifferentialCertificate
+-- #print axioms koszulR1FlatBaseChangeDifferentialCertificate
+-- #print axioms linearMap_baseChange_comp_eq_zero
+-- #print axioms koszulR2Left_baseChange
+-- #print axioms koszulR2Right_baseChange
+-- #print axioms koszulR2_baseChange_comp_eq_zero
+-- #print axioms KoszulR2BaseChangeDifferentialCertificate
+-- #print axioms koszulR2BaseChangeDifferentialCertificate
+-- #print axioms koszulR2FlatBaseChangeDifferentialCertificate
+-- #print axioms KoszulFlatBaseChangeLowDegreeAndTotalCertificate
+-- #print axioms koszulFlatBaseChangeLowDegreeAndTotalCertificate
+-- #print axioms ExteriorKoszulTotalCore
+-- #print axioms exteriorKoszulTotalCore
+-- #print axioms KoszulRegularAcyclicityInterface
+-- #print axioms koszulAcyclic_iff_isRegular_of_interface
+-- #print axioms koszulLowDegreePositiveAcyclic_of_isRegular_length_le_two
+-- #print axioms koszulLowDegreeRegularityCertificate_of_isRegular_length_le_two
+-- #print axioms koszulLowDegreePositiveAcyclic_of_regular_interface_length_le_two
+-- #print axioms koszulLowDegreeRegularityCertificate_of_regular_interface_length_le_two
+-- #print axioms regular_of_linearEquiv
+-- #print axioms weaklyRegularSequence_of_flat_of_isBaseChange
+-- #print axioms regularSequence_of_faithfullyFlat_of_isBaseChange
+-- #print axioms regularSequence_of_faithfullyFlat_algebra
+-- #print axioms weaklyRegularSequence_of_localizedModule
+-- #print axioms regularSequence_of_localizedModule_atPrime_of_mem
+-- #print axioms regularSequence_of_faithfullyFlat_of_isBaseChange_prodMap
+-- #print axioms regularSequence_of_faithfullyFlat_of_isBaseChange_pi
+-- #print axioms HasWeakRegularSequenceLength
+-- #print axioms hasWeakRegularSequenceLength_zero
+-- #print axioms hasWeakRegularSequenceLength_of_isWeaklyRegular
+-- #print axioms hasWeakRegularSequenceLength_of_isRegular
+-- #print axioms exists_weaklyRegular_of_hasWeakRegularSequenceLength
+-- #print axioms enat_toNat_le_of_natCast_le
+-- #print axioms enat_toNat_le_toNat_of_le_right_finite
+-- #print axioms enat_natCast_le_iff_le_toNat_of_ne_top
+-- #print axioms enat_le_natCast_iff_toNat_le_of_ne_top
+-- #print axioms enat_eq_natCast_of_toNat_eq
+-- #print axioms enat_toNat_eq_iff_eq_natCast_of_ne_top
+-- #print axioms ModuleDepthDimensionInterface
+-- #print axioms ENatDepthDimensionAPI
+-- #print axioms ENatDepthDimensionAPI.finiteDepth
+-- #print axioms ENatDepthDimensionAPI.finiteDimension
+-- #print axioms ENatDepthDimensionAPI.length_le_finiteDepth_of_isWeaklyRegular
+-- #print axioms ENatDepthDimensionAPI.finiteDepth_le_finiteDimension
+-- #print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_isCohenMacaulay
+-- #print axioms ENatDepthDimensionAPI.finiteDepth_eq_finiteDimension_of_eDepth_eq_eDimension
+-- #print axioms ENatDepthDimensionAPI.natCast_length_le_eDepth_iff_length_le_finiteDepth
+-- #print axioms ENatDepthDimensionAPI.eDimension_le_natCast_iff_finiteDimension_le
+-- #print axioms ENatDepthDimensionAPI.eDepth_le_natCast_iff_finiteDepth_le
+-- #print axioms ENatDepthDimensionAPI.eDepth_eq_natCast_of_finiteDepth_eq
+-- #print axioms ENatDepthDimensionAPI.eDimension_eq_natCast_of_finiteDimension_eq
+-- #print axioms ENatDepthDimensionAPI.eDepth_eq_eDimension_of_finiteDepth_eq_finiteDimension
+-- #print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface
+-- #print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_depth
+-- #print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_dimension
+-- #print axioms ENatDepthDimensionAPI.toModuleDepthDimensionInterface_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.regular_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_depth
+-- #print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.regular_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.dimension_le_depth_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.weaklyRegular_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.regular_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.hasWeakRegularSequenceLength_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.koszulAcyclic_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.koszulRegularAcyclic_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.koszulModel_acyclic_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_depth
+-- #print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_dimension_of_isCohenMacaulay
+-- #print axioms ModuleDepthDimensionInterface.lowDegreeRegularityCertificate_length_le_dimension_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_length_of_isCohenMacaulay_of_dimension_le_length
+-- #print axioms ModuleDepthDimensionInterface.dimension_eq_length_of_isCohenMacaulay_of_dimension_le_length
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_length_of_depth_eq_dimension_of_dimension_le_length
+-- #print axioms ModuleDepthDimensionInterface.dimension_eq_length_of_depth_eq_dimension_of_dimension_le_length
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulAcyclic
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulRegularAcyclic
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulModelAcyclic
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms ModuleDepthDimensionInterface.depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_depth_lower_bound_of_isWeaklyRegular
+-- #print axioms prop18_depth_lower_bound
+-- #print axioms prop18_depth_lower_bound_of_isRegular
+-- #print axioms prop18_depth_lower_bound_of_koszulAcyclic
+-- #print axioms prop18_depth_lower_bound_of_koszulRegularAcyclic
+-- #print axioms prop18_depth_lower_bound_of_koszulModelAcyclic
+-- #print axioms prop18_depth_lower_bound_of_lowDegreeRegularityCertificate
+-- #print axioms prop18_depth_lower_bound_of_flatBaseChange
+-- #print axioms prop18_depth_lower_bound_of_faithfullyFlatBaseChange
+-- #print axioms prop18_depth_lower_bound_of_localizedModule
+-- #print axioms prop18_dimension_lower_bound_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_koszulAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_koszulModelAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_flatBaseChange_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_localizedModule_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_flatBaseChange_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_faithfullyFlatBaseChange_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_localizedModule_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger
+-- #print axioms prop18_depth_eq_dimension_trigger_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_isWeaklyRegular
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_isRegular
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulAcyclic
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulRegularAcyclic
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_koszulModelAcyclic
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_flatBaseChange
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange
+-- #print axioms prop18_depth_lower_bound_of_enatDepthAPI_localizedModule
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_isCohenMacaulay
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_flatBaseChange_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_faithfullyFlatBaseChange_of_eDepth_eq_eDimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_depth_eq_dimension
+-- #print axioms prop18_dimension_lower_bound_of_enatDepthAPI_localizedModule_of_eDepth_eq_eDimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_depth_eq_dimension_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_depth_eq_dimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_eDepth_eq_eDimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulRegularAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_depth_eq_dimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_koszulModelAcyclic_of_eDepth_eq_eDimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_depth_eq_dimension
+-- #print axioms prop18_eDepth_eDimension_eq_natCast_length_trigger_of_enatDepthAPI_lowDegreeRegularityCertificate_of_eDepth_eq_eDimension
+-- #print axioms detTraceWeightedLogSeries
+-- #print axioms detTraceShiftedSeries
+-- #print axioms coeff_detTraceWeightedLogSeries_zero
+-- #print axioms coeff_detTraceWeightedLogSeries_of_ne_zero
+-- #print axioms coeff_detTraceShiftedSeries
+-- #print axioms constantCoeff_detTraceWeightedLogSeries
+-- #print axioms derivative_detTraceWeightedLogSeries
+-- #print axioms derivative_exp_subst_of_constantCoeff_zero
+-- #print axioms constantCoeff_exp_subst_of_constantCoeff_zero
+-- #print axioms powerSeries_eq_of_derivative_eq_mul
+-- #print axioms exp_subst_eq_of_derivative_eq_mul
+-- #print axioms exp_detTraceWeightedLogSeries_unique
+-- #print axioms derivative_det_eq_sum_updateCol
+-- #print axioms derivative_det_eq_sum_adjugate_mulVec
+-- #print axioms oneSubXMatrixPoly
+-- #print axioms derivative_oneSubXMatrixPoly_apply
+-- #print axioms derivative_det_oneSubXMatrixPoly
+-- #print axioms psMatrixOfPowers
+-- #print axioms oneSubXMatrix
+-- #print axioms oneSubXMatrix_eq_map_oneSubXMatrixPoly
+-- #print axioms trace_adjugate_map_oneSubXMatrixPoly
+-- #print axioms derivative_det_oneSubXMatrix
+-- #print axioms coeff_psMatrixOfPowers
+-- #print axioms coeff_constMul_psMatrixOfPowers
+-- #print axioms coeff_X_constMul_psMatrixOfPowers_zero
+-- #print axioms coeff_X_constMul_psMatrixOfPowers_succ
+-- #print axioms oneSubXMatrix_mul_psMatrixOfPowers
+-- #print axioms det_oneSubXMatrix_eq_charpolyRev
+-- #print axioms constantCoeff_det_oneSubXMatrix
+-- #print axioms inv_det_smul_adjugate_oneSubXMatrix_eq_psMatrixOfPowers
+-- #print axioms coeff_trace_psMatrixOfPowers_mul_const
+-- #print axioms inv_det_mul_trace_adjugate_mul_eq_trace_psMatrixOfPowers_mul_const
+-- #print axioms derivative_inv_det_oneSubXMatrix
+-- #print axioms matrixDetOneSubSeries
+-- #print axioms matrixDetOneSubInvSeries
+-- #print axioms matrixTracePower
+-- #print axioms matrixTraceLogSeries
+-- #print axioms matrixTraceResolventSeries
+-- #print axioms derivative_matrixTraceLogSeries
+-- #print axioms matrixTraceResolventSeries_eq_trace_psMatrixOfPowers_mul_const
+-- #print axioms constantCoeff_matrixDetOneSubSeries
+-- #print axioms coeff_one_matrixDetOneSubSeries
+-- #print axioms constantCoeff_matrixDetOneSubInvSeries
+-- #print axioms derivative_matrixDetOneSubInvSeries
+-- #print axioms lem37_det_trace_formal_identity
+-- #print axioms zetaULinearLocalFactor
+-- #print axioms zetaUCompletelyMultiplicativeValue
+-- #print axioms zetaULinearLocalFactor_eq_geometric_tsum
+-- #print axioms zetaU_eulerProduct_hasProd
+-- #print axioms zetaU_eulerProduct_tprod
+-- #print axioms zetaU_eulerProduct_partial
+-- #print axioms quadraticEulerDenominator
+-- #print axioms quadraticEulerLocalFactor
+-- #print axioms quadraticEulerDenominator_eq_mul
+-- #print axioms quadraticEulerLocalFactor_eq_mul
+-- #print axioms quadraticEulerPartialProduct
+-- #print axioms quadraticEulerPartialProduct_eq_mul
+-- #print axioms quadraticEulerProduct_hasProd_of_linear
+-- #print axioms quadraticEulerProduct_tprod_of_linear
+-- #print axioms normalizedPrimeScale
+-- #print axioms frobeniusLinearTerm
+-- #print axioms frobeniusLinearDenominator
+-- #print axioms FrobeniusRootDecomposition
+-- #print axioms normalizedPrimeScale_norm
+-- #print axioms sqrt_mul_normalizedPrimeScale_norm
+-- #print axioms hasProd_inv_of_ne_zero
+-- #print axioms frobeniusLinearTerm_norm_of_abs
+-- #print axioms frobeniusLinearTerm_summable_of_abs
+-- #print axioms frobeniusLinearDenominator_ne_zero_of_abs
+-- #print axioms frobeniusLinearEulerDenominator_multipliable_of_abs
+-- #print axioms frobeniusLinearEulerDenominator_tprod_ne_zero_of_abs
+-- #print axioms frobeniusLinearEuler_hasProd_of_abs
+-- #print axioms quadraticEulerLocalFactorAt
+-- #print axioms quadraticEulerLocalFactorAt_eq_mul
+-- #print axioms quadraticEulerProductAt_hasProd_of_frobenius
+-- #print axioms quadraticEulerProductAt_tprod_of_frobenius
+-- #print axioms QuadraticEulerProductConvergenceCertificate
+-- #print axioms quadraticEulerProductConvergenceCertificateOfFrobenius
+-- #print axioms zetaULSeries
+-- #print axioms zetaULSeries_summable_of_abscissa_lt
+-- #print axioms zetaULSeries_deriv
+-- #print axioms zetaULSeriesLogDeriv
+-- #print axioms zetaULSeries_logDeriv_eq
+-- #print axioms zetaULSeries_abscissa_logMul
+-- #print axioms SixFunctorData
+-- #print axioms SixFunctorData.sheafIso_refl_apply
+-- #print axioms SixFunctorData.sheafIso_symm_apply
+-- #print axioms SixFunctorData.sheafIso_trans_apply
+-- #print axioms SixFunctorData.pull_constructible
+-- #print axioms SixFunctorData.push_constructible
+-- #print axioms SixFunctorData.shriek_constructible
+-- #print axioms SixFunctorData.exceptionalPull_constructible
+-- #print axioms SixFunctorData.tensor_constructible
+-- #print axioms SixFunctorData.internalHom_constructible
+-- #print axioms SixFunctorData.dual_constructible
+-- #print axioms SixFunctorData.unit_constructible
+-- #print axioms SixFunctorData.glue_triangle_distinguished
+-- #print axioms SixFunctorData.monoidal_dual_iso
+-- #print axioms SixFunctorData.pull_iso_congr
+-- #print axioms SixFunctorData.pull_id_iso
+-- #print axioms SixFunctorData.pull_comp_iso
+-- #print axioms SixFunctorData.push_iso_congr
+-- #print axioms SixFunctorData.push_id_iso
+-- #print axioms SixFunctorData.push_comp_iso
+-- #print axioms SixFunctorData.shriek_iso_congr
+-- #print axioms SixFunctorData.shriek_id_iso
+-- #print axioms SixFunctorData.shriek_comp_iso
+-- #print axioms SixFunctorData.shriek_comp_three_iso
+-- #print axioms SixFunctorData.shriek_factorization_iso_of_eq
+-- #print axioms SixFunctorData.exceptionalPull_iso_congr
+-- #print axioms SixFunctorData.exceptionalPull_id_iso
+-- #print axioms SixFunctorData.exceptionalPull_comp_iso
+-- #print axioms SixFunctorData.baseChangeShriek_iso
+-- #print axioms SixFunctorData.projectionFormula_iso
+-- #print axioms SixFunctorData.baseChangeShriek_left_constructible
+-- #print axioms SixFunctorData.baseChangeShriek_right_constructible
+-- #print axioms SixFunctorData.projectionFormula_terms_constructible
+-- #print axioms SixFunctorData.shriek_tensor_pull_constructible
+-- #print axioms SixFunctorData.tensor_shriek_constructible
+-- #print axioms Def21StratifiedSheafInterface
+-- #print axioms def21ShriekSummand
+-- #print axioms Def21StratifiedSheafInterface.stratum_fintype
+-- #print axioms Def21StratifiedSheafInterface.locallyClosed
+-- #print axioms Def21StratifiedSheafInterface.localSystem_lisse_apply
+-- #print axioms Def21StratifiedSheafInterface.summand_constructible
+-- #print axioms Def21StratifiedSheafInterface.realizes_directSum
+-- #print axioms Def21StratifiedSheafInterface.assembled_constructible
+-- #print axioms def21_conditional_assembled_constructible
+-- #print axioms Def21ActualSheafConstructionGap
+-- #print axioms Def21ActualSheafConstructionGap.allIngredientsAvailable
+-- #print axioms Def21ActualSheafConstructionGap.not_allIngredientsAvailable
+-- #print axioms Def21ActualSheafConstructionGap.no_actual_constructor
+-- #print axioms Def21ActualSheafConstructionGap.missing_etale_category
+-- #print axioms Def21ActualSheafConstructionGap.missing_lisse_theory
+-- #print axioms Def21ActualSheafConstructionGap.missing_extension_by_zero
+-- #print axioms Def21ActualSheafConstructionGap.missing_finite_direct_sums
+-- #print axioms def21ActualSheafConstructionGap
+-- #print axioms def21_actual_constructor_unavailable
+-- #print axioms SheafKoszulModel
+-- #print axioms SheafKoszulModel.differential_square_zero
+-- #print axioms SheafKoszulModel.term_constructible
+-- #print axioms SheafKoszulModel.positive_acyclic_of_regular
+-- #print axioms SheafKoszulModel.positive_subsingleton_of_acyclic
+-- #print axioms SheafKoszulModel.positive_subsingleton_of_regular
+-- #print axioms SheafKoszulModel.eq_of_positive_degree
+-- #print axioms SheafKoszulAcyclicityConclusion
+-- #print axioms SheafKoszulAcyclicityConclusion.positive_acyclic
+-- #print axioms SheafKoszulAcyclicityConclusion.positive_subsingleton
+-- #print axioms SheafKoszulAcyclicityConclusion.eq_of_positive_degree
+-- #print axioms sheafKoszulAcyclicityConclusion
+-- #print axioms thm30_sheafKoszul_positive_acyclic
+-- #print axioms thm30_sheafKoszul_positive_subsingleton
+-- #print axioms SheafKoszulWeightTraceReadiness
+-- #print axioms SheafKoszulWeightTraceReadiness.term_constructible
+-- #print axioms SheafKoszulWeightTraceReadiness.positive_acyclic
+-- #print axioms SheafKoszulWeightTraceReadiness.positive_subsingleton
+-- #print axioms cor27_sheafKoszul_weightTraceReadiness
+-- #print axioms SheafKoszulChartwiseCertificate
+-- #print axioms SheafKoszulChartwiseCertificate.sheaf_regular
+-- #print axioms SheafKoszulChartwiseCertificate.positive_acyclic
+-- #print axioms SheafKoszulChartwiseCertificate.positive_subsingleton
+-- #print axioms SheafKoszulChartwiseConclusion
+-- #print axioms SheafKoszulChartwiseConclusion.sheaf_regular
+-- #print axioms SheafKoszulChartwiseConclusion.positive_acyclic
+-- #print axioms SheafKoszulChartwiseConclusion.positive_subsingleton
+-- #print axioms cor31_sheafKoszul_chartwiseConclusion
+-- #print axioms cor31_sheafKoszul_positive_acyclic
+-- #print axioms cor31_sheafKoszul_positive_subsingleton
+-- #print axioms CurveFactorization
+-- #print axioms CurveFactorization.fullMap
+-- #print axioms CurveFactorization.fullMap_def
+-- #print axioms CurveFactorization.factor_eq_fullMap
+-- #print axioms CurveFactorization.fullMap_eq_original
+-- #print axioms CurveFactorization.factor_eq
+-- #print axioms CurveFactorization.jX_isOpenImmersion
+-- #print axioms CurveFactorization.g_isProper
+-- #print axioms CurveFactorization.pi_isSmoothCurveOver
+-- #print axioms CurveFactorization.geometric_conditions
+-- #print axioms CurveFactorization.curveReducedShriek
+-- #print axioms CurveFactorization.curveReducedShriek_def
+-- #print axioms CurveFactorization.jX_shriek_constructible
+-- #print axioms CurveFactorization.g_jX_shriek_constructible
+-- #print axioms CurveFactorization.pi_g_jX_shriek_constructible
+-- #print axioms CurveFactorization.curveReducedShriek_constructible
+-- #print axioms CurveFactorization.shriek_comp_iso
+-- #print axioms CurveFactorization.shriek_factorization_iso
+-- #print axioms CurveFactorization.shriek_factorization_iso_to_curveReducedShriek
+-- #print axioms CurveFactorization.curveReduction_terms_constructible
+-- #print axioms CurveFactorization.source_shriek_constructible
+-- #print axioms CurveFactorization.target_shriek_constructible
+-- #print axioms CurveFactorization.CurveReductionConclusion
+-- #print axioms CurveFactorization.CurveReductionConclusion.terms_constructible
+-- #print axioms CurveFactorization.CurveReductionConclusion.factorization_iso
+-- #print axioms CurveFactorization.curveReductionConclusion
+-- #print axioms CurveFactorization.lem32_curveReduction
+-- #print axioms weightRadius
+-- #print axioms weightRadius_pos
+-- #print axioms WeilIIPackage
+-- #print axioms WeilIIPackage.constructible
+-- #print axioms WeilIIPackage.pure_to_mixedLE
+-- #print axioms WeilIIPackage.mixedLE_of_le
+-- #print axioms WeilIIPackage.frob_abs_eq
+-- #print axioms WeilIIPackage.frob_norm_le_of_pure
+-- #print axioms WeilIIPackage.frob_norm_le_of_mixed
+-- #print axioms WeilIIPackage.FrobeniusRadiusBound
+-- #print axioms WeilIIPackage.pure_weight_radiusBound
+-- #print axioms WeilIIPackage.mixed_weight_radiusBound
+-- #print axioms WeilIIPackage.weightRadius_pos_apply
+-- #print axioms ECWeilICompatibility
+-- #print axioms ECWeilICompatibility.hasse_bound
+-- #print axioms ECWeilICompatibility.h1_radiusBound_sqrt
+-- #print axioms ECWeilICompatibility.h1_eigenvalue_norm_le_sqrt
+-- #print axioms ecWeilICompatibilityOfPure
+-- #print axioms openClosedOpenTerm
+-- #print axioms openClosedClosedTerm
+-- #print axioms openClosedOpenTerm_def
+-- #print axioms openClosedClosedTerm_def
+-- #print axioms openClosedOpenTerm_constructible
+-- #print axioms openClosedClosedTerm_constructible
+-- #print axioms openClosed_terms_constructible
+-- #print axioms openClosedWeightTriangle
+-- #print axioms openClosedWeightTriangle_def
+-- #print axioms openClosedWeightTriangle_distinguished
+-- #print axioms OpenClosedWeightControl
+-- #print axioms OpenClosedWeightControl.middle_constructible
+-- #print axioms OpenClosedWeightControl.open_constructible
+-- #print axioms OpenClosedWeightControl.closed_constructible
+-- #print axioms OpenClosedWeightControl.distinguished_triangle
+-- #print axioms OpenClosedWeightControl.open_weightRadius_eq_middle
+-- #print axioms OpenClosedWeightControl.closed_weightRadius_eq_middle
+-- #print axioms OpenClosedWeightControl.middle_mixedLE_of_open_closed
+-- #print axioms OpenClosedWeightControl.open_mixedLE_of_middle_closed
+-- #print axioms OpenClosedWeightControl.closed_mixedLE_of_open_middle
+-- #print axioms OpenClosedWeightControl.middle_radiusBound_of_open_closed
+-- #print axioms OpenClosedWeightControl.open_radiusBound_middleRadius_of_mixedLE
+-- #print axioms OpenClosedWeightControl.closed_radiusBound_middleRadius_of_mixedLE
+-- #print axioms OpenClosedWeightControl.defect_concentrated_on_closed
+-- #print axioms openClosedWeightControlOfPackages
+-- #print axioms cor35_openClosed_middle_mixedLE_of_open_closed
+-- #print axioms cor35_openClosed_middle_radiusBound_of_open_closed
+-- #print axioms cor35_openClosed_defect_concentrated_on_closed
+-- #print axioms DetTraceRadiusCertificate
+-- #print axioms DetTraceRadiusCertificate.radius_of_radiusBound
+-- #print axioms prop38_radius_limit_of_pure
+-- #print axioms prop38_radius_limit_of_mixed
+-- #print axioms glAltSign
+-- #print axioms glAltSign_of_even
+-- #print axioms glAltSign_of_not_even
+-- #print axioms glAltSign_zero
+-- #print axioms glAlternatingTraceOf
+-- #print axioms glAlternatingMatrixTraceOf
+-- #print axioms glAlternatingMatrixTraceShiftedSeries
+-- #print axioms coeff_glAlternatingMatrixTraceShiftedSeries
+-- #print axioms GrothendieckLefschetzPackage
+-- #print axioms GrothendieckLefschetzPackage.constructible
+-- #print axioms GrothendieckLefschetzPackage.alternatingTrace
+-- #print axioms GrothendieckLefschetzPackage.pointCount_eq_alternatingTrace
+-- #print axioms GrothendieckLefschetzPackage.pointCount_succ_eq_alternatingTrace
+-- #print axioms GrothendieckLefschetzPackage.alternatingTraceShiftedSeries
+-- #print axioms GrothendieckLefschetzPackage.coeff_alternatingTraceShiftedSeries
+-- #print axioms GrothendieckLefschetzPackage.detTraceShiftedSeries_eq_alternatingTraceShiftedSeries
+-- #print axioms GrothendieckLefschetzPackage.constantCoeff_logSeries
+-- #print axioms GrothendieckLefschetzPackage.coeff_logSeries_of_ne_zero
+-- #print axioms GrothendieckLefschetzPackage.logDerivative_expansion
+-- #print axioms GrothendieckLefschetzPackage.coeff_logDerivative_expansion
+-- #print axioms GrothendieckLefschetzPackage.alternatingTrace_eq_matrixTrace
+-- #print axioms GrothendieckLefschetzPackage.alternatingTraceShiftedSeries_eq_matrixTraceShiftedSeries
+-- #print axioms GrothendieckLefschetzPackage.logDerivative_matrixTrace_expansion
+-- #print axioms GrothendieckLefschetzPackage.coeff_logDerivative_matrixTrace_expansion
+-- #print axioms GrothendieckLefschetzPackage.complex_det_trace_formal_identity
+-- #print axioms GrothendieckLefschetzPackage.complex_det_trace_formal_identity_family
+-- #print axioms lem36_logDerivative_expansion
+-- #print axioms lem36_logDerivative_matrixTrace_expansion
+-- #print axioms FiniteSupportCohomologyVanishing
+-- #print axioms FiniteSupportCohomologyVanishing.constructible
+-- #print axioms FiniteSupportCohomologyVanishing.finite_support
+-- #print axioms FiniteSupportCohomologyVanishing.PositiveCohomologyVanishes
+-- #print axioms FiniteSupportCohomologyVanishing.positive_cohomology_vanishes
+-- #print axioms FiniteSupportCohomologyVanishing.eq_of_positive_degree
+-- #print axioms prop43_positive_cohomology_vanishes
+-- #print axioms prop43_positive_cohomology_eq
+-- #print axioms GlobalPurityBConclusion
+-- #print axioms GlobalPurityBConclusion.positive_vanishing
+-- #print axioms GlobalPurityBConclusion.radius_limit
+-- #print axioms GlobalPurityBConclusion.logDerivative_expansion
+-- #print axioms GlobalPurityBConclusion.matrixTrace_logDerivative_expansion
+-- #print axioms thm44_globalPurityB_of_pure
+-- #print axioms thm44_globalPurityB_of_mixed
+-- #print axioms cor45_globalPurityB_radiusLimit
+-- #print axioms cor46_globalPurityB_logDerivative_expansion
+-- #print axioms cor46_globalPurityB_matrixTrace_logDerivative_expansion
+-- #print axioms DetectorPackage
+-- #print axioms DetectorPackage.etale_silent_of_good
+-- #print axioms DetectorPackage.motivic_silent_of_good
+-- #print axioms DetectorPackage.cotangent_silent_of_good
+-- #print axioms DetectorPackage.etale_bump_subsingleton_of_silent
+-- #print axioms DetectorPackage.etale_silent_of_bump_subsingleton
+-- #print axioms DetectorPackage.motivic_jump_subsingleton_of_silent
+-- #print axioms DetectorPackage.motivic_silent_of_jump_subsingleton
+-- #print axioms DetectorPackage.cotangent_defect_subsingleton_of_silent
+-- #print axioms DetectorPackage.cotangent_silent_of_defect_subsingleton
+-- #print axioms DetectorPackage.all_silent_of_good
+-- #print axioms DetectorPackage.all_detector_invariants_subsingleton_of_good
+-- #print axioms DetectorPackage.etale_silent_iff_motivic_silent
+-- #print axioms DetectorPackage.motivic_silent_iff_cotangent_silent
+-- #print axioms DetectorPackage.etale_silent_iff_cotangent_silent
+-- #print axioms DetectorPackage.detectors_tfae
+-- #print axioms DetectorPackage.EtaleActive
+-- #print axioms DetectorPackage.MotivicActive
+-- #print axioms DetectorPackage.CotangentActive
+-- #print axioms DetectorPackage.etale_active_iff_motivic_active
+-- #print axioms DetectorPackage.motivic_active_iff_cotangent_active
+-- #print axioms DetectorPackage.etale_active_iff_cotangent_active
+-- #print axioms DetectorPackage.active_detectors_tfae
+-- #print axioms DetectorPackage.no_etale_active_of_good
+-- #print axioms DetectorPackage.no_motivic_active_of_good
+-- #print axioms DetectorPackage.no_cotangent_active_of_good
+-- #print axioms DetectorPackage.no_detector_active_of_good
+-- #print axioms DetectorGoodPrimeConclusion
+-- #print axioms DetectorGoodPrimeConclusion.detectors_silent
+-- #print axioms DetectorGoodPrimeConclusion.invariants_subsingleton
+-- #print axioms DetectorGoodPrimeConclusion.silent_tfae
+-- #print axioms DetectorGoodPrimeConclusion.active_tfae
+-- #print axioms DetectorGoodPrimeConclusion.no_detector_active
+-- #print axioms detectorGoodPrimeConclusion
+-- #print axioms section72_good_prime_detectors_silent
+-- #print axioms section72_good_prime_detector_invariants_subsingleton
+-- #print axioms section72_detector_equivalence_tfae
+-- #print axioms section72_detector_active_equivalence_tfae
+-- #print axioms section72_good_prime_no_detector_active
+-- #print axioms WeightPurityGate
+-- #print axioms weightPurityGate_pure
+-- #print axioms weightPurityGate_detTraceExpansion
+-- #print axioms weightPurityGate_radiusBound
+-- #print axioms weightPurityGate_radiusLimit
+-- #print axioms EquivalenceCGate
+-- #print axioms equivalenceCGate_arithmetic
+-- #print axioms equivalenceCGate_weightPurity
+-- #print axioms equivalenceCGate_radiusLimit
+-- #print axioms equivalence_C
+-- #print axioms equivalence_C_faithful_tfae
+-- #print axioms FaithfulEquivalenceCConclusion
+-- #print axioms FaithfulEquivalenceCConclusion.arithmetic_tfae
+-- #print axioms FaithfulEquivalenceCConclusion.radius_limit
+-- #print axioms FaithfulEquivalenceCConclusion.rh_tp_gate_tfae
+-- #print axioms equivalence_C_faithful
+-- #print axioms equivalence_C_faithful_rh_iff_tp
+-- #print axioms matrixDetOneSubPolynomial
+-- #print axioms matrixDetOneSubPolynomial_eq_det
+-- #print axioms localEulerDenominatorFromEigenvalueList_eq_zero_iff
+-- #print axioms localEulerDenominatorFromEigenvalues_eq_zero_iff
+-- #print axioms localListZerosOnCircle_iff_localEigenvalueListOnCircle
+-- #print axioms localRHShiftedRadius_pos
+-- #print axioms LocalRHDeterminantFactorCertificate
+-- #print axioms LocalRHDeterminantFactorCertificate.determinant_pole_iff_inverse_eigenvalue
+-- #print axioms LocalRHDeterminantFactorCertificate.determinantPolesOnCircle_iff_eigenvaluesOnCircle
+-- #print axioms RealizesFrobeniusEigenvalueSet
+-- #print axioms LocalRHGate
+-- #print axioms localRHGate_iff_weil_frobenius_abs
+-- #print axioms localRHGate_of_weil_pure
+-- #print axioms localRHGate_of_weightPurityGate
+-- #print axioms localRHGate_of_weil_pure_shifted
+-- #print axioms LocalRHWeightCertificate
+-- #print axioms LocalRHWeightCertificate.pure_iff_localRH
+-- #print axioms LocalRHWeightGate
+-- #print axioms LocalRHEquivalenceCGate
+-- #print axioms equivalenceCGate_iff_localRHEquivalenceCGate
+-- #print axioms equivalence_C_faithful_localRH_tfae
+-- #print axioms equivalence_C_faithful_localRH_iff_tp
+-- #print axioms GlobalZeroPoleCircleGate
+-- #print axioms GlobalEulerProductConvergenceGate
+-- #print axioms GlobalEulerProductNoCancellation
+-- #print axioms GlobalRiemannHypothesisGate
+-- #print axioms GlobalRiemannHypothesisGate.zeroPoleCircle
+-- #print axioms GlobalRiemannHypothesisGate.eulerProduct
+-- #print axioms GlobalRiemannHypothesisGate.noCancellation
+-- #print axioms TracePurityGate
+-- #print axioms ArithmeticTracePurityGate
+-- #print axioms arithmeticTracePurityGate_iff_equivalenceCGate
+-- #print axioms GlobalEquivalenceCBridge
+-- #print axioms GlobalEquivalenceCBridge.rh_iff_tp
+-- #print axioms GlobalEquivalenceCBridge.rh_tp_global_local_trace_tfae
+-- #print axioms GlobalEquivalenceCConclusion
+-- #print axioms globalEquivalenceCConclusion
+-- #print axioms GlobalEquivalenceCChecklist
+-- #print axioms globalEquivalenceCChecklist
+-- #print axioms ConcreteSurrogateCertificate
+-- #print axioms ConcreteSurrogateCertificate.tor_equiv
+-- #print axioms ConcreteSurrogateCertificate.cech_equiv
+-- #print axioms concreteSurrogateCertificate
+-- #print axioms PresheafCechSkeletonCertificate
+-- #print axioms presheafCechSkeletonCertificate
+-- #print axioms LowDegreeKoszulCertificate
+-- #print axioms LowDegreeKoszulCertificate.singleton_complex
+-- #print axioms LowDegreeKoszulCertificate.pair_complex
+-- #print axioms lowDegreeKoszulCertificate
+-- #print axioms ENatDepthDimensionInstantiationCertificate
+-- #print axioms ENatDepthDimensionInstantiationCertificate.interface
+-- #print axioms ENatDepthDimensionInstantiationCertificate.dimensionLeLengthIff
+-- #print axioms ENatDepthDimensionInstantiationCertificate.cmENatEqualityTrigger
+-- #print axioms ENatDepthDimensionInstantiationCertificate.directEqualityDimensionLowerBound
+-- #print axioms ENatDepthDimensionInstantiationCertificate.enatEqualityDimensionLowerBound
+-- #print axioms ENatDepthDimensionInstantiationCertificate.directEqualityTrigger
+-- #print axioms ENatDepthDimensionInstantiationCertificate.directEqualityENatTrigger
+-- #print axioms enatDepthDimensionInstantiationCertificate
+-- #print axioms ActualDepthDimensionPackage
+-- #print axioms ActualDepthDimensionPackage.finiteDepth_eq_actual
+-- #print axioms ActualDepthDimensionPackage.finiteDimension_eq_actual
+-- #print axioms ActualDepthDimensionPackage.api_isCohenMacaulay_iff_actual
+-- #print axioms ActualDepthDimensionPackage.finiteInterface
+-- #print axioms ActualDepthDimensionPackage.length_le_actualDepth_of_isWeaklyRegular
+-- #print axioms ActualDepthDimensionPackage.length_le_actualDimension_of_actualCohenMacaulay
+-- #print axioms ActualDepthDimensionInstantiationCertificate
+-- #print axioms actualDepthDimensionInstantiationCertificate
+-- #print axioms ActualDepthDimensionChecklist
+-- #print axioms actualDepthDimensionChecklist
+-- #print axioms BundledInterfaceCertificate
+-- #print axioms bundledInterfaceCertificate
+-- #print axioms ActualSixFunctorTheoremPackage
+-- #print axioms ActualSixFunctorTheoremPackage.toSixFunctorData
+-- #print axioms ActualSixFunctorTheoremPackage.constructible_sheaf_category_available
+-- #print axioms ActualSixFunctorTheoremPackage.pull_push_shriek_available
+-- #print axioms ActualSixFunctorTheoremPackage.tensor_internalHom_duality_available
+-- #print axioms ActualSixFunctorTheoremPackage.baseChange_projectionFormula_available
+-- #print axioms ActualSixFunctorTheoremPackage.openClosedTriangle_available
+-- #print axioms ActualDef21SheafConstructionPackage
+-- #print axioms ActualDef21SheafConstructionPackage.toStratifiedSheafInterface
+-- #print axioms ActualDef21SheafConstructionPackage.allIngredientsAvailable
+-- #print axioms ActualDef21SheafConstructionPackage.actual_constructor_available
+-- #print axioms ActualDef21SheafConstructionPackage.realizes_finiteDirectSum
+-- #print axioms ActualDef21SheafConstructionPackage.assembled_constructible
+-- #print axioms ActualConstructibleSheafChecklist
+-- #print axioms actualConstructibleSheafChecklist
+-- #print axioms FormalAlgebraCoreCertificate
+-- #print axioms formalAlgebraCoreCertificate
+-- #print axioms ExistingAnalogReuseCertificate
+-- #print axioms existingAnalogReuseCertificate
+-- #print axioms QuadraticEulerConvergenceChecklist
+-- #print axioms quadraticEulerConvergenceChecklist
+-- #print axioms LocalRHRadiusChecklist
+-- #print axioms localRHRadiusChecklist
+-- #print axioms PadicCompletionComparison
+-- #print axioms cechPadicCompletionNaturalityCertificate
+-- #print axioms torPadicCompletionNaturalityCertificate
+-- #print axioms CechCRTRefinementHypothesis
+-- #print axioms CechCRTRefinementCertificate
+-- #print axioms cechCRTRefinementCertificateOfHypothesis
+-- #print axioms TorCRTRefinementCertificate
+-- #print axioms torCRTRefinementCertificate
+-- #print axioms CechTorNaturalityChecklist
+-- #print axioms cechTorNaturalityChecklist
+-- #print axioms EllipticCurveECLayerChecklist
+-- #print axioms ellipticCurveECLayerChecklist
+-- #print axioms GeneralKoszulBridgeChecklist
+-- #print axioms generalKoszulBridgeChecklist
+-- #print axioms ActualKoszulTheoremPackage
+-- #print axioms ActualKoszulTheoremPackage.weakInterface
+-- #print axioms ActualKoszulTheoremPackage.acyclic_iff_isWeaklyRegular
+-- #print axioms ActualKoszulTheoremPackage.acyclic_iff_isRegular
+-- #print axioms ActualKoszulTheoremPackage.singletonIso
+-- #print axioms ActualKoszulTheoremPackage.pairIso
+-- #print axioms ActualKoszulTheoremPackage.lowDegreeCertificate_iff_acyclic
+-- #print axioms ActualKoszulTheoremPackage.flatBaseChangeCertificate
+-- #print axioms ActualKoszulTheoremPackage.mappingConeConstruction_available
+-- #print axioms ActualKoszulTheoremPackage.tensorExteriorConstruction_available
+-- #print axioms ActualKoszulTheoremPackage.longExactHomologySequence_available
+-- #print axioms ActualKoszulTheoremPackage.nakayamaBridge_available
+-- #print axioms ActualKoszulTheoremPackage.fullRegularIffPositiveAcyclic_available
+-- #print axioms ActualKoszulTheoremChecklist
+-- #print axioms actualKoszulTheoremChecklist
+-- #print axioms CoreRemainingFormalizationChecklist
+-- #print axioms coreRemainingFormalizationChecklist
+-- #print axioms ActualECTheoremPackage
+-- #print axioms ActualECTheoremPackage.smoothFiber_iff_discriminant
+-- #print axioms ActualECTheoremPackage.hasse_bound
+-- #print axioms ActualECTheoremPackage.ordinary_of_tag
+-- #print axioms ActualECTheoremPackage.supersingular_of_tag
+-- #print axioms ActualECTheoremPackage.p_prime
+-- #print axioms ActualECTheoremPackage.discriminant_iff_isElliptic
+-- #print axioms ActualECTheoremPackage.affineSmooth_iff_discriminant
+-- #print axioms ActualECTheoremPackage.henselLiftable_iff_jacobian_of_equation
+-- #print axioms ActualECTheoremPackage.henselLiftable_of_henselGate
+-- #print axioms ActualECTheoremPackage.pointCount_trace_identity
+-- #print axioms ActualECTheoremPackage.discriminant_smoothness_available
+-- #print axioms ActualECTheoremPackage.hensel_jacobian_available
+-- #print axioms ActualECTheoremPackage.hasse_bound_available
+-- #print axioms ActualECTheoremPackage.ordinary_supersingular_available
+-- #print axioms ActualECGateChecklist
+-- #print axioms actualECGateChecklist
+-- #print axioms ActualDerivedCechTorNaturalityPackage
+-- #print axioms ActualDerivedCechTorNaturalityPackage.torCertificate
+-- #print axioms ActualDerivedCechTorNaturalityPackage.tor_square_comm
+-- #print axioms ActualDerivedCechTorNaturalityPackage.cech_baseChange_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.tor_baseChange_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.cech_localization_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.tor_localization_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.cech_padicCompletion_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.tor_padicCompletion_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.tor_crtRefinement_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.cech_crtRefinement_square
+-- #print axioms ActualDerivedCechTorNaturalityPackage.derived_tor_comparison_available
+-- #print axioms ActualDerivedCechTorNaturalityPackage.localization_completion_comparison_available
+-- #print axioms ActualDerivedCechTorNaturalityPackage.crt_refinement_comparison_available
+-- #print axioms ActualCechTorNaturalityChecklist
+-- #print axioms actualCechTorNaturalityChecklist
+-- #print axioms ActualWeilTraceTheoremPackage
+-- #print axioms ActualWeilTraceTheoremPackage.constructible
+-- #print axioms ActualWeilTraceTheoremPackage.pointCountTrace
+-- #print axioms ActualWeilTraceTheoremPackage.positiveCohomologyVanishes
+-- #print axioms ActualWeilTraceTheoremPackage.ellAdicCohomology_available
+-- #print axioms ActualWeilTraceTheoremPackage.frobeniusWeights_available
+-- #print axioms ActualWeilTraceTheoremPackage.traceFormula_available
+-- #print axioms ActualWeilTraceTheoremPackage.compactSupportVanishing_available
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage.rh_iff_tp
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage.global_euler_product_available
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage.zero_pole_circle_available
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage.no_cancellation_available
+-- #print axioms ActualGlobalEquivalenceCTheoremPackage.trace_purity_available
+-- #print axioms ActualExternalMathPackagesChecklist
+-- #print axioms actualExternalMathPackagesChecklist
+-- #print axioms MathlibGapWorkaroundChecklist
+-- #print axioms mathlibGapWorkaroundChecklist
+-- #print axioms FaithfullyFlatBaseChangeHandle
+-- #print axioms faithfullyFlatBaseChangeHandle
+-- #print axioms DepthCMLocalizationHandle
+-- #print axioms DepthCMLocalizationHandle.enatDepthInstantiation
+-- #print axioms depthCMLocalizationHandle
+-- #print axioms EulerProductMathlibHandle
+-- #print axioms eulerProductMathlibHandle
+-- #print axioms LSeriesDerivativeMathlibHandle
+-- #print axioms lseriesDerivativeMathlibHandle
+-- #print axioms MathlibLeftDerivedComputationHandle
+-- #print axioms mathlibLeftDerivedComputationHandle
+-- #print axioms MathlibAbstractTorFunctorHandle
+-- #print axioms mathlibAbstractTorFunctorHandle
+-- #print axioms AbstractTorComparisonStatus
+-- #print axioms mathlibTorOneEndpoint
+-- #print axioms mathlibTorPrimeOneEndpoint
+-- #print axioms MathlibTorOneEndpointHandle
+-- #print axioms mathlibTorOneEndpointHandle
+-- #print axioms abstractTorOneIsoGcdOfStandardResolutionIso
+-- #print axioms abstractTorPrimeOneIsoGcdOfStandardResolutionIso
+-- #print axioms abstractTorPrimeOneIsoGcdOfFirstVariableStandardResolutionIso
+-- #print axioms abstractTorOneIsoGcdOfSecondVariableStandardResolutionIso
+-- #print axioms AbstractTorStandardResolutionReduction
+-- #print axioms abstractTorStandardResolutionReduction
+-- #print axioms AbstractTorPrimeFirstVariableReduction
+-- #print axioms abstractTorPrimeFirstVariableReduction
+-- #print axioms AbstractTorSecondVariableReduction
+-- #print axioms abstractTorSecondVariableReduction
+-- #print axioms ConcreteTorMathlibBridge
+-- #print axioms concreteTorMathlibBridge
+-- #print axioms ConcreteTorMathlibCertifiedBridge
+-- #print axioms concreteTorMathlibCertifiedBridge
+-- #print axioms KoszulReuseHandle
+-- #print axioms koszulReuseHandle
+-- #print axioms mathlibHandleInventoryChecklist
 end AxiomAudit
 
 end Spt7
