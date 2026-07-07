@@ -1,0 +1,14 @@
+﻿
+File                                 Lines
+----                                 -----
+PrimalitySheafVerification\Spt1.lean  6702
+PrimalitySheafVerification\Spt2.lean  7358
+PrimalitySheafVerification\Spt3.lean  6248
+PrimalitySheafVerification\Spt4.lean  6931
+PrimalitySheafVerification\Spt5.lean  6741
+PrimalitySheafVerification\Spt6.lean  6792
+PrimalitySheafVerification\Spt7.lean  5344
+TOTAL                                46116
+
+
+
