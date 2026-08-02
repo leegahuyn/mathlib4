@@ -1,0 +1,69 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -3371,6 +3371,7 @@
+     A.kerᗮ ≃L[ℂ] A.range := by
+   letI : CompleteSpace A.kerᗮ :=
+     Submodule.instOrthogonalCompleteSpace (K := A.ker)
++  letI : CompleteSpace A.range := d.range_isClosed.completeSpace_coe
+   let f : A.kerᗮ →L[ℂ] A.range := d.kernelComplementRestriction
+   exact ContinuousLinearEquiv.ofBijective f
+     (LinearMap.ker_eq_bot.mpr
+@@ -18753,23 +18754,45 @@
+ /-- The induced uniform additive structure on the graph-range subtype is
+ transported by the canonical subtype isometry.  This must be globally visible:
+ later graph-completion abbreviations depend on it outside this namespace block. -/
++noncomputable instance graphRangeIsUniformAddGroup :
++    IsUniformAddGroup Q.GraphRange :=
++  IsUniformInducing.isUniformAddGroup Q.GraphRange.subtype
++    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
++
++/-- Complex scalar multiplication on the graph range is uniformly continuous. -/
++noncomputable instance graphRangeUniformContinuousConstSMul :
++    UniformContinuousConstSMul ℂ Q.GraphRange :=
++  IsUniformInducing.uniformContinuousConstSMul
++    (M := ℂ) (X := Q.GraphRange)
++    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
++    (fun _ _ ↦ rfl)
++
++/-- The Definition 1 Sobolev space: completion of the genuine energy graph. -/
+ abbrev SobolevCompletion :=
+   UniformSpace.Completion Q.GraphRange
+ 
+-/-! v15 retained root repair: expose the canonical Mathlib completion structures under
+-this dependent abbreviation.  The right-hand sides are Mathlib's canonical
+-instances, so these declarations do not introduce alternative metrics or
+-uniformities; they only prevent instance search from getting stuck behind
+-`Q.SobolevCompletion`. -/
++/-! Expose Mathlib's canonical completion structures through the dependent abbreviation. -/
++noncomputable instance sobolevCompletionNormedAddCommGroup :
++    NormedAddCommGroup Q.SobolevCompletion :=
++  UniformSpace.Completion.instNormedAddCommGroup Q.GraphRange
++
++noncomputable instance sobolevCompletionNormedSpace :
++    NormedSpace ℂ Q.SobolevCompletion :=
++  UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
++
++noncomputable instance sobolevCompletionInnerProductSpace :
++    InnerProductSpace ℂ Q.SobolevCompletion :=
++  @UniformSpace.Completion.innerProductSpace
++    ℂ Q.GraphRange Complex.instRCLike inferInstance inferInstance
++
++noncomputable instance sobolevCompletionCompleteSpace :
++    CompleteSpace Q.SobolevCompletion :=
++  UniformSpace.Completion.completeSpace Q.GraphRange
++
+ noncomputable def coreEmbedding :
+-    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion := by
+-  letI : IsUniformAddGroup Q.GraphRange :=
+-    Q.graphRangeIsUniformAddGroup
+-  letI : UniformContinuousConstSMul ℂ Q.GraphRange :=
+-    Q.graphRangeUniformContinuousConstSMul
+-  exact
+-    (UniformSpace.Completion.toComplₗᵢ :
+-      Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
++    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion :=
++  (UniformSpace.Completion.toComplₗᵢ :
++    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
+ 
+ theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
+   simpa [coreEmbedding] using
