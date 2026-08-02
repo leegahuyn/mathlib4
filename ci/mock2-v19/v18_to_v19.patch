@@ -1,0 +1,342 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -1,14 +1,16 @@
+ /-
+-Mock2 Functional Analysis v18 audit-guided repair candidate.
++Mock2 Functional Analysis v19 TXT-error-focused root repair candidate.
+ 
+ Derived from the exact Codex-edited source SHA-256
+ d6cd6c9e2fc895dd4e9be681f17f3e905ffaef47a6515de4d9293e680d806bf1
+-and its actual 665-error direct-Lean log under Lean v4.30.0-rc1.
++and the user-supplied 667-error direct-Lean TXT log under Lean v4.30.0-rc1.
+ 
+-This revision combines declaration-level restores selected from prior actual
+-direct-Lean audits with targeted Mathlib-v4.30 API, completion-instance,
+-scalar-tower, coercion, and proof-shape repairs.  It introduces no proof holes.
+-Direct Lean remains the final authority; no successful build is asserted here.
++This revision is derived from the user-supplied v18 source and targets only the
++errors reported in the accompanying direct-Lean TXT log.  It exposes the graph
++completion aliases, installs the canonical real/complex scalar tower at usable
++priority, completes closed operator ranges before Banach inversion, and repairs
++the first no-progress proof.  It introduces no proof holes.  Direct Lean remains
++the final authority; no successful build is asserted here.
+ -/
+ 
+ /-
+@@ -311,6 +313,14 @@
+ 
+ namespace Mock2FA
+ 
++/-! v19 TXT-error repair: make the canonical real-to-complex scalar tower
++available at normal priority.  Mathlib deliberately registers the generic
++`complexToReal` instance at low priority; the large `ContDiff` terms below
++otherwise time out or fail before finding it. -/
++local instance (priority := 1000) realComplexComplexIsScalarTower :
++    IsScalarTower ℝ ℂ ℂ :=
++  IsScalarTower.complexToReal
++
+ noncomputable section
+ 
+ set_option maxHeartbeats 0
+@@ -2020,9 +2030,7 @@
+     (lam : ℝ) (u v : V) :
+     shiftedForm B mass lam u v =
+       B u v + (lam : ℂ) * mass u v := by
+-  change B u v + (((lam : ℂ) • mass u) v) =
+-    B u v + (lam : ℂ) * mass u v
+-  simp only [Pi.smul_apply, smul_eq_mul]
++  simp [shiftedForm]
+ 
+ /-- Operator form of the exact residual left by a shift. -/
+ theorem shiftedForm_equation_iff_residual
+@@ -3367,6 +3375,7 @@
+     A.kerᗮ ≃L[ℂ] A.range := by
+   letI : CompleteSpace A.kerᗮ :=
+     Submodule.instOrthogonalCompleteSpace (K := A.ker)
++  letI : CompleteSpace A.range := d.range_isClosed.completeSpace_coe
+   let f : A.kerᗮ →L[ℂ] A.range := d.kernelComplementRestriction
+   exact ContinuousLinearEquiv.ofBijective f
+     (LinearMap.ker_eq_bot.mpr
+@@ -15463,8 +15472,7 @@
+     (by simpa only [one_mul] using core_integrable u)
+     (fun w _ => differentiableAt_const (c := (1 : ℂ)))
+     (fun w _ => (u.contDiff.differentiable (by simp)) w)
+-  simpa only [one_mul, fderiv_const_apply,
+-    Pi.zero_apply, zero_mul, integral_zero, neg_zero,
++  simpa only [one_mul, zero_mul, integral_zero, neg_zero,
+     directionalDerivative_apply] using h
+ 
+ /-- Exact product rule as an equality in the genuine compact test core. -/
+@@ -18699,7 +18707,7 @@
+ 
+ /-- The graph range quotients out exactly the possible raw zero-energy kernel,
+ so it is always a genuine pre-Hilbert space. -/
+-def GraphRange :=
++abbrev GraphRange :=
+   LinearMap.range Q.graph
+ 
+ 
+@@ -18763,7 +18771,7 @@
+     (fun _ _ ↦ rfl)
+ 
+ /-- The Definition 1 Sobolev space: completion of the genuine energy graph. -/
+-def SobolevCompletion :=
++abbrev SobolevCompletion :=
+   UniformSpace.Completion Q.GraphRange
+ 
+ /-! v15 retained root repair: expose the canonical Mathlib completion structures under
+@@ -19039,8 +19047,8 @@
+     ComplexLaxMilgram.ComplexCoerciveWith
+       (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator := by
+   refine ⟨zero_lt_one, fun u ↦ ?_⟩
+-  change ‖u‖ ^ 2 ≤ (⟪u, u⟫_ℂ).re
+-  exact (norm_sq_eq_re_inner (𝕜 := ℂ) u).le
++  rw [one_mul, Q.completionEnergyOperator_apply,
++    inner_self_eq_norm_sq]
+ 
+ /-- The completed energy operator is injective. -/
+ theorem completionEnergyOperator_injective :
+@@ -19706,7 +19714,7 @@
+ 
+ /-- Hilbert completion of the actual fixed-phase graph
+ `(u, R_n u, L_n u)`. -/
+-def GraphSobolevCompletion (n : ℤ) :=
++abbrev GraphSobolevCompletion (n : ℤ) :=
+   (coordinates n).SobolevCompletion
+ 
+ /- All normed, Hilbert and complete-space structures on the actual graph
+@@ -21051,8 +21059,7 @@
+       (peterssonCompletionEmbedding_denseRange M)
+       (peterssonCompletionEmbedding_isUniformInducing M)
+     ext u
+-    simp only [ContinuousLinearMap.comp_apply,
+-      Pi.add_apply,
++    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.add_apply,
+       ContinuousLinearMap.extend_eq _
+         (peterssonCompletionEmbedding_denseRange M)
+         (peterssonCompletionEmbedding_isUniformInducing M)]
+@@ -21062,12 +21069,10 @@
+       (peterssonCompletionEmbedding_denseRange M)
+       (peterssonCompletionEmbedding_isUniformInducing M)
+     ext u
+-    simp only [ContinuousLinearMap.comp_apply,
+-      Pi.smul_apply,
++    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
+       ContinuousLinearMap.extend_eq _
+         (peterssonCompletionEmbedding_denseRange M)
+-        (peterssonCompletionEmbedding_isUniformInducing M),
+-      RingHom.id_apply]
++        (peterssonCompletionEmbedding_isUniformInducing M)]
+ 
+ /-- Extension to the completed test space does not increase the anti-dual
+ operator norm. -/
+@@ -21866,7 +21871,7 @@
+     explicitUnshiftedFredholmOperator u =
+       u - explicitKernelProjection u := by
+   simp only [explicitUnshiftedFredholmOperator,
+-    Pi.sub_apply, ContinuousLinearMap.id_apply]
++    ContinuousLinearMap.sub_apply, ContinuousLinearMap.id_apply]
+ 
+ /-- The shifted operator is the identity continuous equivalence. -/
+ noncomputable def explicitShiftedFredholmEquiv :
+@@ -23187,8 +23192,6 @@
+       (Complex.I * dx (upstairsCuspCutoff N) z +
+           dy (upstairsCuspCutoff N) z) *
+         (u : SmoothQuotientCompactFunction) z := by
+-  simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply,
+-    LinearMap.comp_apply, Pi.sub_apply]
+   change
+     raiseRaw (paperOrbitExponent n)
+         (upstairsCuspCutoff N *
+@@ -23209,8 +23212,6 @@
+       (-Complex.I * heightC z ^ 2 * dx (upstairsCuspCutoff N) z +
+           heightC z ^ 2 * dy (upstairsCuspCutoff N) z) *
+         (u : SmoothQuotientCompactFunction) z := by
+-  simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply,
+-    LinearMap.comp_apply, Pi.sub_apply]
+   change
+     lowerRaw (paperOrbitExponent n)
+         (upstairsCuspCutoff N *
+@@ -25181,39 +25182,37 @@
+ theorem submodule_adjoint_adjoint_eq_topologicalClosure
+     (g : Submodule ℂ (E × F)) :
+     g.adjoint.adjoint = g.topologicalClosure := by
+-  calc
+-    g.adjoint.adjoint = gᗮᗮ := by
+-      ext x
+-      rcases x with ⟨x₀, x₁⟩
+-      constructor
+-      · intro hx
+-        rw [Submodule.mem_orthogonal]
+-        rintro ⟨p, q⟩ hpq
+-        have hpqAdj : (q, -p) ∈ g.adjoint := by
+-          rw [Submodule.mem_adjoint_iff]
+-          intro a b hab
+-          have hOrth :=
+-            (Submodule.mem_orthogonal (K := g) (p, q)).mp hpq (a, b) hab
+-          simpa only [prod_inner_apply, inner_neg_right, sub_neg_eq_add,
+-            add_comm] using hOrth
+-        have hDouble :=
+-          (Submodule.mem_adjoint_iff g.adjoint (x₀, x₁)).mp hx q (-p) hpqAdj
+-        simp only [prod_inner_apply, inner_neg_left] at hDouble ⊢
+-        linear_combination -hDouble
+-      · intro hx
+-        rw [Submodule.mem_adjoint_iff]
+-        intro c d hcd
+-        have hOrth : (-d, c) ∈ gᗮ := by
+-          rw [Submodule.mem_orthogonal]
+-          rintro ⟨a, b⟩ hab
+-          have hAdj :=
+-            (Submodule.mem_adjoint_iff g (c, d)).mp hcd a b hab
+-          simpa only [prod_inner_apply, inner_neg_right] using hAdj
+-        have hDouble :=
+-          (Submodule.mem_orthogonal (K := gᗮ) (x₀, x₁)).mp hx (-d, c) hOrth
+-        simp only [prod_inner_apply, inner_neg_left] at hDouble
+-        linear_combination -hDouble
+-    _ = g.topologicalClosure := g.orthogonal_orthogonal_eq_closure
++  rw [← g.orthogonal_orthogonal_eq_closure]
++  ext x
++  rcases x with ⟨x₀, x₁⟩
++  constructor
++  · intro hx
++    rw [Submodule.mem_orthogonal]
++    rintro ⟨p, q⟩ hpq
++    have hpqAdj : (q, -p) ∈ g.adjoint := by
++      rw [Submodule.mem_adjoint_iff]
++      intro a b hab
++      have hOrth :=
++        (Submodule.mem_orthogonal (K := g) (p, q)).mp hpq (a, b) hab
++      simpa only [prod_inner_apply, inner_neg_right, sub_neg_eq_add,
++        add_comm] using hOrth
++    have hDouble :=
++      (Submodule.mem_adjoint_iff g.adjoint (x₀, x₁)).mp hx q (-p) hpqAdj
++    simp only [prod_inner_apply, inner_neg_left] at hDouble ⊢
++    linear_combination -hDouble
++  · intro hx
++    rw [Submodule.mem_adjoint_iff]
++    intro c d hcd
++    have hOrth : (-d, c) ∈ gᗮ := by
++      rw [Submodule.mem_orthogonal]
++      rintro ⟨a, b⟩ hab
++      have hAdj :=
++        (Submodule.mem_adjoint_iff g (c, d)).mp hcd a b hab
++      simpa only [prod_inner_apply, inner_neg_right] using hAdj
++    have hDouble :=
++      (Submodule.mem_orthogonal (K := gᗮ) (x₀, x₁)).mp hx (-d, c) hOrth
++    simp only [prod_inner_apply, inner_neg_left] at hDouble
++    linear_combination -hDouble
+ 
+ /-- Once a densely defined operator is closable, the domain of its Hilbert
+ adjoint is automatically dense.  The proof uses the preceding graph theorem:
+@@ -27314,15 +27313,13 @@
+ theorem successorGraphCoordinates_eq_coordinates (n : ℤ) :
+     successorGraphCoordinates n =
+       (by
+-        have h : n + 1 - 1 = n := by ring
+-        simpa only [h] using
++        simpa only [add_sub_cancel_right] using
+           (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
+             (n + 1))) := by
+-  have h : n + 1 - 1 = n := by ring
+   simp only [successorGraphCoordinates,
+     reindexedActualLoweredCoordinate, reindexedActualLower,
+     DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates,
+-    loweredCoordinate, h]
++    loweredCoordinate, add_sub_cancel_right]
+ 
+ /-- Every raw successor graph vector belongs to the genuine physical joint
+ operator graph. -/
+@@ -27732,17 +27729,14 @@
+     (v : InverseEtaFixedPhaseCore (n + 1)) :
+     graphLowerFromSuccExtension n (coreMap (n + 1) v) =
+       lowerFromSuccCoordinate n v := by
+-  have h : n + 1 - 1 = n := by ring
+-  have hcore :=
+-    lowerExtension_core
+-      (Q := DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
+-        (n + 1)) v
+-  simpa only [graphLowerFromSuccExtension, h,
+-    DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates,
+-    DefinitionOneSobolev.FixedPhasePeterssonCoordinates.loweredCoordinate,
+-    lowerFromSuccCoordinate, reindexedActualLower,
+-    reindexedActualLower_eq_lowerFromSucc,
+-    ContinuousLinearMap.comp_apply] using hcore
++  change lowerExtension (n + 1) (coreMap (n + 1) v) =
++    lowerFromSuccCoordinate n v
++  rw [lowerExtension_core]
++  change
++    l2Coordinate n (reindexedActualLower n v) =
++      lowerFromSuccCoordinate n v
++  rw [reindexedActualLower_eq_lowerFromSucc]
++  rfl
+ 
+ /-- The continuous Green defect on adjacent completed graph domains. -/
+ noncomputable def graphSobolevGreenDefect (n : ℤ)
+@@ -28225,7 +28219,10 @@
+ theorem hyperbolicDensityNNReal_continuous :
+     Continuous hyperbolicDensityNNReal := by
+   unfold hyperbolicDensityNNReal
+-  fun_prop
++  exact
++    (.pow (.div₀ continuous_const
++      (UpperHalfPlane.continuous_im.subtype_mk _)
++      (fun z => NNReal.ne_iff.mp z.im_ne_zero)) _)
+ 
+ /-- Pointwise cancellation of `y⁻²` against the explicit `y²` factor
+ in the Euclidean-divergence density. -/
+@@ -29056,11 +29053,9 @@
+     DifferentiableAt ℝ (curvedTilePiolaX H X) p := by
+   have hΦ := hasFDerivAt_curvedTileRectangleMap (H := H) hp
+   have hXc := hX.comp p hΦ
+-  have hfst : HasFDerivAt (fun q : ℝ × ℝ => q.1)
+-      (ContinuousLinearMap.fst ℝ ℝ ℝ) p := hasFDerivAt_fst
+   have hh := (modularLowerHeight_hasDerivAt hp).comp_hasFDerivAt
+-    p hfst
+-  have hjReal := (hasFDerivAt_const H p).sub hh
++    p hasFDerivAt_fst
++  have hjReal := (hasFDerivAt_const p H).sub hh
+   have hj := Complex.ofRealCLM.hasFDerivAt.comp p hjReal
+   simpa [curvedTilePiolaX] using (hj.mul hXc).differentiableAt
+ 
+@@ -29978,7 +29973,6 @@
+   unfold d1 dx dy
+   rw [hξ, map_add, map_smul, map_smul]
+   simp only [Complex.real_smul, one_mul]
+-  norm_num
+ 
+ @[simp]
+ theorem dx_neg {f : ℍ → ℂ} (hf : RealSmooth f) (z : ℍ) :
+@@ -31028,7 +31022,11 @@
+ theorem fluxIntegral_reverse (X Y : ℍ → ℂ)
+     (C : ComplexBoundaryChain) :
+     fluxIntegral X Y C.reverse = -fluxIntegral X Y C := by
+-  simp [reverse, fluxIntegral, List.map_map, Function.comp_def]
++  induction C with
++  | nil => simp [reverse, fluxIntegral]
++  | cons p C ih =>
++      simp [reverse, fluxIntegral, ih]
++      ring
+ 
+ /-- Adding every internal edge once in each orientation contributes exactly
+ zero to the finite boundary integral. -/
+@@ -31361,16 +31359,10 @@
+   have hxR : HasDerivAt (fun _s : Real => (1 / 2 : Real)) 0 t :=
+     hasDerivAt_const (t : Real) _
+   have hyR : HasDerivAt
+-      (fun s : Real => Real.sqrt 3 / 2 + s) 1 t := by
+-    simpa only [Pi.add_apply, id_eq, zero_add] using
+-      (hasDerivAt_const (t : Real) (Real.sqrt 3 / 2)).add
+-        (hasDerivAt_id (t : Real))
+-  change HasDerivAt
+-    (fun s : Real =>
+-      ((((1 / 2 : Real)) : Complex) +
+-        ((Real.sqrt 3 / 2 + s : Real) : Complex) * Complex.I))
+-    Complex.I (t : Real)
+-  simpa only [Pi.add_apply] using
++      (fun s : Real => Real.sqrt 3 / 2 + s) 1 t :=
++    (hasDerivAt_const (t : Real) (Real.sqrt 3 / 2)).add
++      (hasDerivAt_id (t : Real))
++  simpa [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity] using
+     hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+ 
+ /-- Uniform base-edge derivative theorem, including both finite circular
