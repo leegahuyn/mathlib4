@@ -1,0 +1,1 @@
+Temporary corrected V21 validation branch. Master is not modified. The workflow reconstructs exact V20, applies the corrected V20-to-V21 patch, and records the direct Lean log.
