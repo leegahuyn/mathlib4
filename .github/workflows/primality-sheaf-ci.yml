@@ -1,8 +1,8 @@
-name: Mock2 V21 validation
+name: Mock2 V21 corrected validation
 
 on:
   push:
-    branches: [chatgpt/mock2-v20-validation, chatgpt/mock2-v21-validation]
+    branches: [chatgpt/mock2-v21-validation-3]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -28,26 +28,21 @@ jobs:
           use-github-cache: false
           use-mathlib-cache: true
 
-      - name: Reconstruct exact V20 and build V21
+      - name: Reconstruct exact V20 and corrected V21
         shell: bash
         run: |
           set -euo pipefail
           target=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
           base64 -d ci/mock2-v19/base_00 | gzip -d > /tmp/v18_from_github.patch
           git apply /tmp/v18_from_github.patch
-          cp "$target" /tmp/mock2-v18.lean
           git apply ci/mock2-v19/v18_to_v19.patch
-          cp "$target" /tmp/mock2-v19.lean
           git apply ci/mock2-v20/v19_to_v20.patch
-          cp "$target" /tmp/mock2-v20.lean
-          echo "V20 SHA: $(sha256sum /tmp/mock2-v20.lean | cut -d' ' -f1)"
-          test "$(sha256sum /tmp/mock2-v20.lean | cut -d' ' -f1)" = "4be644826b8a0e87cb7438b9a8552539e5a02720f1b216d854540b643574dbb0"
-          python3 ci/mock2-v21/build_v21.py \
-            /tmp/mock2-v18.lean /tmp/mock2-v19.lean /tmp/mock2-v20.lean \
-            ci/mock2-v21/swaps.tsv.gz.b64 "$target"
-          git apply ci/mock2-v21/manual_root.patch
+          echo "V20 SHA: $(sha256sum "$target" | cut -d' ' -f1)"
+          test "$(sha256sum "$target" | cut -d' ' -f1)" = "4be644826b8a0e87cb7438b9a8552539e5a02720f1b216d854540b643574dbb0"
+          base64 -d ci/mock2-v21/v20_to_v21_corrected.patch.gz.b64 | gzip -d > /tmp/v20_to_v21.patch
+          git apply /tmp/v20_to_v21.patch
           echo "V21 SHA: $(sha256sum "$target" | cut -d' ' -f1)"
-          test "$(sha256sum "$target" | cut -d' ' -f1)" = "a7d80033f25df5faa76f1ba60d9e49aef517de44e736608f9d160a9c7e15a4be"
+          test "$(sha256sum "$target" | cut -d' ' -f1)" = "2f49407a7ba153a420e3308ede9653a9eeae55834ef5b15e9e8f359ac482d36a"
 
       - name: Direct Lean check and retain log
         id: leancheck
@@ -75,7 +70,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mock2-v21-direct-log
+          name: mock2-v21-corrected-direct-log
           path: |
             ci/mock2-v21/results/direct.log
             ci/mock2-v21/results/summary.txt
@@ -88,7 +83,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add ci/mock2-v21/results/direct.log ci/mock2-v21/results/summary.txt
-          git commit -m "Record Mock2 V21 direct Lean log [skip validation]" || true
+          git commit -m "Record corrected Mock2 V21 direct Lean log [skip validation]" || true
           git push
 
       - name: Set validation conclusion
