@@ -2,7 +2,9 @@ name: Mock2 V21 validation
 
 on:
   push:
-    branches: [chatgpt/mock2-v20-validation]
+    branches: [chatgpt/mock2-v20-validation, chatgpt/mock2-v21-validation]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -69,7 +71,18 @@ jobs:
           cat ci/mock2-v21/results/summary.txt
           exit 0
 
-      - name: Commit validation log
+      - name: Upload direct log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mock2-v21-direct-log
+          path: |
+            ci/mock2-v21/results/direct.log
+            ci/mock2-v21/results/summary.txt
+          if-no-files-found: warn
+
+      - name: Commit validation log on push runs
+        if: github.event_name == 'push'
         shell: bash
         run: |
           git config user.name github-actions[bot]
