@@ -1,0 +1,178 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -1,12 +1,12 @@
+ /-
+-Mock2 Functional Analysis v19 TXT-error-focused root repair candidate.
++Mock2 Functional Analysis v20 direct-log-focused repair candidate.
+ 
+ Derived from the exact Codex-edited source SHA-256
+ d6cd6c9e2fc895dd4e9be681f17f3e905ffaef47a6515de4d9293e680d806bf1
+ and the user-supplied 667-error direct-Lean TXT log under Lean v4.30.0-rc1.
+ 
+-This revision is derived from the user-supplied v18 source and targets only the
+-errors reported in the accompanying direct-Lean TXT log.  It exposes the graph
++This revision is derived from the user-supplied v19 source and targets only the
++530 errors reported in the accompanying direct-Lean TXT log.  It exposes the graph
+ completion aliases, installs the canonical real/complex scalar tower at usable
+ priority, completes closed operator ranges before Banach inversion, and repairs
+ the first no-progress proof.  It introduces no proof holes.  Direct Lean remains
+@@ -313,23 +313,15 @@
+ 
+ namespace Mock2FA
+ 
+-/-! v19 TXT-error repair: make the canonical real-to-complex scalar tower
+-available at normal priority.  Mathlib deliberately registers the generic
+-`complexToReal` instance at low priority; the large `ContDiff` terms below
+-otherwise time out or fail before finding it. -/
+-local instance (priority := 1000) realComplexComplexIsScalarTower :
+-    IsScalarTower ℝ ℂ ℂ :=
+-  IsScalarTower.complexToReal
++/-! v20 direct-log repair: promote Mathlib's canonical real-to-complex
++scalar-tower instance instead of introducing duplicate wrapper instances. -/
++attribute [local instance 1000] IsScalarTower.complexToReal
+ 
+ noncomputable section
+ 
+ set_option maxHeartbeats 0
+ set_option maxRecDepth 100000
+ 
+-/-- Direct witness for the canonical real/complex scalar tower. -/
+-instance complexRealComplexScalarTower : IsScalarTower ℝ ℂ ℂ :=
+-  IsScalarTower.complexToReal
+-
+ /-! ## 1. Existing real compatibility layer -/
+ 
+ section RealCompatibility
+@@ -2030,7 +2022,9 @@
+     (lam : ℝ) (u v : V) :
+     shiftedForm B mass lam u v =
+       B u v + (lam : ℂ) * mass u v := by
+-  simp [shiftedForm]
++  change (B u + (lam : ℂ) • mass u) v = _
++  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
++    smul_eq_mul]
+ 
+ /-- Operator form of the exact residual left by a shift. -/
+ theorem shiftedForm_equation_iff_residual
+@@ -3300,18 +3294,6 @@
+     extends ShiftedCompactDecomposition A where
+ 
+ namespace NontrivialKernelFredholmData
+-/-- Uniform additive structure inherited by the actual operator range. -/
+-noncomputable local instance operatorRangeIsUniformAddGroup :
+-    IsUniformAddGroup A.range :=
+-  IsUniformInducing.isUniformAddGroup A.range.subtype
+-    A.range.subtypeₗᵢ.isometry.isUniformInducing
+-
+-noncomputable local instance operatorRangeUniformContinuousConstSMul :
+-    UniformContinuousConstSMul ℂ A.range :=
+-  IsUniformInducing.uniformContinuousConstSMul
+-    (M := ℂ) (X := A.range)
+-    A.range.subtypeₗᵢ.isometry.isUniformInducing
+-    (fun _ _ ↦ rfl)
+ 
+ /-- Closed range follows unconditionally from compact preconditioning. -/
+ theorem range_isClosed (d : NontrivialKernelFredholmData A) :
+@@ -3373,9 +3355,10 @@
+ noncomputable def kernelComplementEquivRange
+     (d : NontrivialKernelFredholmData A) :
+     A.kerᗮ ≃L[ℂ] A.range := by
+-  letI : CompleteSpace A.kerᗮ :=
++  letI hKerComplete : CompleteSpace A.kerᗮ :=
+     Submodule.instOrthogonalCompleteSpace (K := A.ker)
+-  letI : CompleteSpace A.range := d.range_isClosed.completeSpace_coe
++  letI hRangeComplete : CompleteSpace A.range :=
++    IsClosed.completeSpace_coe d.range_isClosed
+   let f : A.kerᗮ →L[ℂ] A.range := d.kernelComplementRestriction
+   exact ContinuousLinearEquiv.ofBijective f
+     (LinearMap.ker_eq_bot.mpr
+@@ -15472,6 +15455,10 @@
+     (by simpa only [one_mul] using core_integrable u)
+     (fun w _ => differentiableAt_const (c := (1 : ℂ)))
+     (fun w _ => (u.contDiff.differentiable (by simp)) w)
++  have hconst : (fun x : ℂ => fderiv ℝ (fun _w : ℂ => (1 : ℂ)) x ξ) = 0 := by
++    funext x
++    simp
++  rw [hconst] at h
+   simpa only [one_mul, zero_mul, integral_zero, neg_zero,
+     directionalDerivative_apply] using h
+ 
+@@ -18754,60 +18741,18 @@
+     apply h
+     exact congrArg Subtype.val huv
+ 
+-/-- The induced uniform additive structure on the graph-range subtype is
+-transported by the canonical subtype isometry.  This must be globally visible:
+-later graph-completion abbreviations depend on it outside this namespace block. -/
+-noncomputable instance graphRangeIsUniformAddGroup :
+-    IsUniformAddGroup Q.GraphRange :=
+-  IsUniformInducing.isUniformAddGroup Q.GraphRange.subtype
+-    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
+-
+-/-- Complex scalar multiplication on the graph range is uniformly continuous. -/
+-noncomputable instance graphRangeUniformContinuousConstSMul :
+-    UniformContinuousConstSMul ℂ Q.GraphRange :=
+-  IsUniformInducing.uniformContinuousConstSMul
+-    (M := ℂ) (X := Q.GraphRange)
+-    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
+-    (fun _ _ ↦ rfl)
+-
+-/-- The Definition 1 Sobolev space: completion of the genuine energy graph. -/
++/-- The Definition 1 Sobolev space: completion of the genuine energy graph.
++Because both names are abbreviations, Mathlib's canonical subtype and completion
++instances remain definitionally visible; no duplicate metric/uniform structures
++are installed. -/
+ abbrev SobolevCompletion :=
+   UniformSpace.Completion Q.GraphRange
+ 
+-/-! v15 retained root repair: expose the canonical Mathlib completion structures under
+-this dependent abbreviation.  The right-hand sides are Mathlib's canonical
+-instances, so these declarations do not introduce alternative metrics or
+-uniformities; they only prevent instance search from getting stuck behind
+-`Q.SobolevCompletion`. -/
+-noncomputable instance sobolevCompletionNormedAddCommGroup :
+-    NormedAddCommGroup Q.SobolevCompletion :=
+-  UniformSpace.Completion.instNormedAddCommGroup Q.GraphRange
+-
+-noncomputable instance sobolevCompletionNormedSpace :
+-    NormedSpace ℂ Q.SobolevCompletion :=
+-  UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
+-
+-noncomputable instance sobolevCompletionInnerProductSpace :
+-    InnerProductSpace ℂ Q.SobolevCompletion :=
+-  @UniformSpace.Completion.innerProductSpace
+-    ℂ Q.GraphRange Complex.instRCLike inferInstance inferInstance
+-
+-noncomputable instance sobolevCompletionCompleteSpace :
+-    CompleteSpace Q.SobolevCompletion :=
+-  UniformSpace.Completion.completeSpace Q.GraphRange
+-
+--- These are aliases of Mathlib's canonical completion structures.
+-
+ /-- Canonical isometric embedding of the graph core into its completion. -/
+ noncomputable def coreEmbedding :
+-    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion := by
+-  letI : IsUniformAddGroup Q.GraphRange :=
+-    Q.graphRangeIsUniformAddGroup
+-  letI : UniformContinuousConstSMul ℂ Q.GraphRange :=
+-    Q.graphRangeUniformContinuousConstSMul
+-  exact
+-    (UniformSpace.Completion.toComplₗᵢ :
+-      Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
++    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion :=
++  (UniformSpace.Completion.toComplₗᵢ :
++    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
+ 
+ theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
+   simpa [coreEmbedding] using
+@@ -19047,8 +18992,8 @@
+     ComplexLaxMilgram.ComplexCoerciveWith
+       (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator := by
+   refine ⟨zero_lt_one, fun u ↦ ?_⟩
+-  rw [one_mul, Q.completionEnergyOperator_apply,
+-    inner_self_eq_norm_sq]
++  rw [one_mul, Q.completionEnergyOperator_apply]
++  exact (norm_sq_eq_re_inner (𝕜 := ℂ) u).le
+ 
+ /-- The completed energy operator is injective. -/
+ theorem completionEnergyOperator_injective :
