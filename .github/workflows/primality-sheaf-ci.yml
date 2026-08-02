@@ -1,6 +1,8 @@
 name: Mock2 V20 validation
 
 on:
+  push:
+    branches: [chatgpt/mock2-v20-validation]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -13,8 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
-      - uses: actions/checkout@v7
-      - uses: leanprover/lean-action@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Lean and Mathlib cache
+        uses: leanprover/lean-action@v1
         with:
           auto-config: false
           use-github-cache: false
@@ -35,7 +39,8 @@ jobs:
           lake env lean -DmaxErrors=1000000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean 2>&1 | tee mock2-v20-direct.log
       - name: Upload direct log
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: mock2-v20-direct-log
           path: mock2-v20-direct.log
+          if-no-files-found: warn
