@@ -50,33 +50,11 @@ def main() -> int:
     ext
     simp [Algebra.Extension.Cotangent.val_smul'']
 
-@[simp] lemma quotientExtensionCotangentEquivKer_val (f : K[X])
+@[simp] lemma quotientExtensionCotangentEquivKer_apply (f : K[X])
     (x : (quotientExtension f).ker.Cotangent) :
-    (quotientExtensionCotangentEquivKer f x).val = x.val := rfl
+    quotientExtensionCotangentEquivKer f x = Algebra.Extension.Cotangent.of x := rfl
 """,
-        "Spt2 expose extension-cotangent transport value",
-    )
-
-    changed |= replace_once(
-        spt2,
-        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent := by
-  rw [quotientExtension_ker]
-  exact LinearEquiv.refl K _
-""",
-        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent := by
-  rw [quotientExtension_ker]
-  exact LinearEquiv.refl K _
-
-@[simp] lemma quotientSpanCotangentEquivKer_val (f : K[X])
-    (x : (Ideal.span ({f} : Set K[X])).Cotangent) :
-    (quotientSpanCotangentEquivKer f x).val = x.val := by
-  simp [quotientSpanCotangentEquivKer, quotientExtension_ker]
-""",
-        "Spt2 expose ideal-cotangent transport value",
+        "Spt2 expose extension-cotangent transport application",
     )
 
     changed |= replace_once(
@@ -89,15 +67,14 @@ def main() -> int:
   simp [quotientSpanCotangentEquivKer, quotientExtension_ker,
     Algebra.Extension.Cotangent.val_mk, Algebra.Extension.Cotangent.val_of]
 """,
-        """  apply Algebra.Extension.Cotangent.ext
-  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
-    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_val,
-    quotientSpanCotangentEquivKer_val]
+        """  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
+    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
+  rw [quotientSpanCotangentEquivKer, quotientExtension_ker]
   unfold principalCotangentQuotEquiv
   rw [LinearEquiv.ofBijective_apply, hmap]
   rfl
 """,
-        "Spt2 prove conormal generator through value computation lemmas",
+        "Spt2 compute conormal generator before quotient extensionality",
     )
 
     print("SPT closure repairs changed sources." if changed else "No SPT closure changes needed.")
