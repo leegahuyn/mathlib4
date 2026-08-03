@@ -1,8 +1,12 @@
 name: Primality Sheaf Repair Matrix
 
 on:
-  push:
-    branches: [fix/primality-sheaf-clean-build]
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/**'
+      - 'scripts/apply_*.py'
+      - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
