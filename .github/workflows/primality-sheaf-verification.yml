@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - 'PrimalitySheafVerification/**'
+      - 'scripts/apply_deterministic_repairs.py'
       - '.github/workflows/primality-sheaf-verification.yml'
   workflow_dispatch:
 
@@ -28,6 +29,9 @@ jobs:
         with:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
+
+      - name: Apply deterministic repair layer
+        run: python3 scripts/apply_deterministic_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@v1
@@ -112,6 +116,9 @@ jobs:
             \( -name '*.olean' -o -name '*.ilean' -o -name '*.olean.private' \) \
             -printf '%f,%s,%TY-%Tm-%TdT%TH:%TM:%TSZ\n' \
             2>/dev/null | sort > build-logs/artifact-report.csv || true
+
+          git diff -- PrimalitySheafVerification \
+            > build-logs/tested-repair.patch || true
 
           grep -R -nE '\bsorry\b|\badmit\b|^[[:space:]]*axiom\b|\bunsafe\b' \
             PrimalitySheafVerification/*.lean \
