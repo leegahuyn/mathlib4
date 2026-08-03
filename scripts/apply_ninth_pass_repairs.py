@@ -167,7 +167,6 @@ def repair_mock2() -> None:
     (residueRestriction hM hN).comp (Phi M N) = Phi M' N' := by
   apply AddMonoidHom.ext
   intro z
-  obtain ⟨a, rfl⟩ := Int.cast_surjective z
   apply Prod.ext <;> simp only [AddMonoidHom.comp_apply, residueRestriction_apply,
     Phi_apply, map_intCast]
 """, "residue restriction comparison naturality"),
