@@ -36,14 +36,20 @@ noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
     ((quotientSpanCotangentEquivKer f).trans
       (quotientExtensionCotangentEquivKer f))
 """,
-        """noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
+    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
+      (quotientExtension f).ker.Cotangent := by
+  rw [quotientExtension_ker]
+  exact LinearEquiv.refl K _
+
+noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
     (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
       (quotientExtension f).Cotangent :=
   ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
-    (((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm).restrictScalars K).trans
+    ((quotientSpanCotangentEquivKer f).trans
       (quotientExtensionCotangentEquivKer f))
 """,
-        "Spt2 restore the already-compiling conormal transport",
+        "Spt2 make the conormal ideal transport an explicit reflexive equivalence",
     ) or changed
 
     changed = replace_once(
@@ -83,7 +89,7 @@ noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
   have hmem := hf (PLift.up ⟨x, hxV⟩)
   rw [RepointedConst_map_apply] at hmem
   have heq :
-      s (liftNE (leOfHom f.unop) (PLift.up ⟨x, hxV⟩)) = s p :=
+      s (liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩)) = s p :=
     RepointedConst_const s _ _
   rwa [heq] at hmem
 """,
@@ -102,7 +108,7 @@ noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
   rw [hconst V ⟨x, hxV⟩] at hmem
   rw [hconst U.unop ⟨x, hx⟩]
   have heq :
-      s (liftNE (leOfHom f.unop) (PLift.up ⟨x, hxV⟩)) = s p :=
+      s (liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩)) = s p :=
     RepointedConst_const s _ _
   rwa [heq] at hmem
 """,
