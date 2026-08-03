@@ -37,6 +37,7 @@ jobs:
           python3 scripts/apply_spt5_repairs.py
           python3 scripts/apply_spt_remaining_repairs.py
           python3 scripts/apply_spt_final_repairs.py
+          python3 scripts/apply_spt_closure_repairs.py
           python3 scripts/apply_mock1_repairs.py
           python3 scripts/apply_mock1_second_repairs.py
           python3 scripts/apply_mock1_advanced_repairs.py
