@@ -660,8 +660,8 @@ theorem truncLogTermInt_valuation_ge {p : ℕ} [Fact p.Prime] {u : ℤ} {k n : �
         = (n : ℤ) * (padicValInt p u : ℤ) - (padicValNat p n : ℤ) := by
     show padicValRat p ((-1 : ℚ) ^ (n + 1) * (u : ℚ) ^ n / (n : ℚ)) = _
     rw [padicValRat.div hnum hnq, padicValRat.mul hsign hpow,
-      padicValRat.pow (p := p) (q := (-1 : ℚ)) hm1,
-      padicValRat.pow (p := p) (q := (u : ℚ)) huq,
+      padicValRat.pow (p := p) (-1 : ℚ),
+      padicValRat.pow (p := p) (u : ℚ),
       padicValRat.neg, padicValRat.one, mul_zero, padicValRat.of_int,
       padicValRat.of_nat]
     ring
@@ -701,8 +701,8 @@ theorem truncLogTermRat_valuation_ge_of_ne_zero {p : ℕ} [Fact p.Prime]
         = (n : ℤ) * padicValRat p u - (padicValNat p n : ℤ) := by
     show padicValRat p ((-1 : ℚ) ^ (n + 1) * u ^ n / (n : ℚ)) = _
     rw [padicValRat.div hnum hnq, padicValRat.mul hsign hpow,
-      padicValRat.pow (p := p) (q := (-1 : ℚ)) hm1,
-      padicValRat.pow (p := p) (q := u) hu0,
+      padicValRat.pow (p := p) (-1 : ℚ),
+      padicValRat.pow (p := p) u,
       padicValRat.neg, padicValRat.one, mul_zero, padicValRat.of_nat]
     ring
   rw [hval]
@@ -1267,7 +1267,7 @@ theorem minimalCertificate_sound {X : ℕ} (hX : 2 ≤ X)
   have hle : X.minFac * X.minFac ≤ X := by
     have h := Nat.minFac_le_div (by omega) hnp
     calc X.minFac * X.minFac
-        ≤ X.minFac * (X / X.minFac) := mul_le_mul_left' h _
+        ≤ X.minFac * (X / X.minFac) := Nat.mul_le_mul_left X.minFac h
       _ = X := Nat.mul_div_cancel' hmfd
   have hlt : X.minFac < cert.pn := by
     by_contra hge
