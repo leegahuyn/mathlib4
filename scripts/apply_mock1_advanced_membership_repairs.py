@@ -26,7 +26,7 @@ REQUIREMENT_CASES = [
 def mem_term(index: int) -> str:
     term = "List.Mem.head _"
     for _ in range(index):
-        term = f"List.Mem.tail ({term})"
+        term = f"List.Mem.tail _ ({term})"
     return term
 
 
