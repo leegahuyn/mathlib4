@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from apply_spt2_cotangent_final import main as repair_spt2_cotangent_final
+
 ROOT = Path("PrimalitySheafVerification")
 
 
@@ -189,6 +191,7 @@ omit [NormedSpace ℂ E] in
 
 
 def main() -> int:
+    repair_spt2_cotangent_final()
     repair_spt4()
     repair_mock1()
     repair_mock1_advanced()
