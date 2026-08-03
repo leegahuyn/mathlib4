@@ -22,8 +22,47 @@ def repair_spt2() -> bool:
     path = ROOT / "Spt2.lean"
     changed = False
 
-    # Keep the checked-in kernel-witness transport proof.  Replacing it by y.2
-    # is ill-typed because the two kernels are equivalent, not definitionally equal.
+    changed = replace_once(
+        path,
+        """noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
+      (quotientExtension f).Cotangent :=
+  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
+    (((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm).restrictScalars K).trans
+      (quotientExtensionCotangentEquivKer f))
+""",
+        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
+    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
+      (quotientExtension f).ker.Cotangent := by
+  rw [quotientExtension_ker]
+
+noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
+      (quotientExtension f).Cotangent :=
+  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
+    ((quotientSpanCotangentEquivKer f).trans
+      (quotientExtensionCotangentEquivKer f))
+""",
+        "Spt2 transport conormal modules by rewriting the kernel ideal",
+    ) or changed
+
+    changed = replace_once(
+        path,
+        """  invFun y :=
+    ⟨(PrincipalUnivariateAQ.quotientConormalEquivForward f hf).symm y.1, by
+      rw [LinearMap.mem_ker]
+      rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
+      simp⟩
+""",
+        """  invFun y :=
+    ⟨(PrincipalUnivariateAQ.quotientConormalEquivForward f hf).symm y.1, by
+      rw [LinearMap.mem_ker]
+      rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
+      exact y.property⟩
+""",
+        "Spt2 consume the H1Cotangent kernel witness explicitly",
+    ) or changed
+
     changed = replace_once(
         path,
         """      rw [SetLike.mem_coe, LinearMap.mem_ker, KaehlerDifferential.mapBaseChange_tmul,
@@ -56,8 +95,45 @@ def repair_spt3() -> bool:
     path = ROOT / "Spt3.lean"
     changed = False
 
-    # Keep amalgam_section_unique and RepointedConst.map in their checked-in
-    # forms.  Earlier automated rewrites introduced the concrete-map/PLift cascade.
+    changed = replace_once(
+        path,
+        """    s = t := by
+  simpa using h (𝟙 U)
+""",
+        """    s = t := by
+  have hId := h (𝟙 U)
+  rw [Functor.map_id] at hId
+  change s = t at hId
+  exact hId
+""",
+        "Spt3 simplify section uniqueness through the identity map",
+    ) or changed
+
+    changed = replace_once(
+        path,
+        """def RepointedConst (A : Type) : (Opens S)ᵒᵖ ⥤ Type where
+  obj U := PLift (U.unop : Set S).Nonempty → A
+  map i := fun g => g ∘ liftNE (leOfHom i.unop)
+  map_id _ := by
+    funext g q
+    exact congrArg g (plift_prop_subsingleton _ _)
+  map_comp _ _ := by
+    funext g q
+    exact congrArg g (plift_prop_subsingleton _ _)
+""",
+        """def RepointedConst (A : Type) : (Opens S)ᵒᵖ ⥤ Type where
+  obj U := PLift (U.unop : Set S).Nonempty → A
+  map i := TypeCat.ofHom (fun g q => g (liftNE (leOfHom i.unop) q))
+  map_id _ := by
+    ext g q
+    exact congrArg g (plift_prop_subsingleton _ _)
+  map_comp _ _ := by
+    ext g q
+    exact congrArg g (plift_prop_subsingleton _ _)
+""",
+        "Spt3 bundle RepointedConst restriction functions as Type morphisms",
+    ) or changed
+
     changed = replace_once(
         path,
         """theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
@@ -134,10 +210,13 @@ def repair_spt4() -> bool:
   rw [h]; rfl
 """,
         """theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  dsimp [resC, df]
-  rfl
+  simpa [resC, df] using
+    (ChainComplex.of_d Xf (df N)
+      (fun n => by
+        have : df N (n + 1) = 0 := rfl
+        rw [this, zero_comp]) (j + 1))
 """,
-        "Spt4 compute higher resolution differentials definitionally",
+        "Spt4 compute higher resolution differentials through ChainComplex.of_d",
     ) or changed
 
     changed = replace_once(
