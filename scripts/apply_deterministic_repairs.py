@@ -47,9 +47,29 @@ def repair_spt1() -> bool:
             "Spt1 obsolete multiplication monotonicity lemma",
         ),
         (
+            "theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=\n",
+            "set_option maxHeartbeats 800000 in\ntheorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=\n",
+            "Spt1 local heartbeat budget for resC degree 1-to-0 differential",
+        ),
+        (
+            "theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=\n",
+            "set_option maxHeartbeats 800000 in\ntheorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=\n",
+            "Spt1 local heartbeat budget for resC degree 2-to-1 differential",
+        ),
+        (
             "theorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by\n",
             "set_option maxHeartbeats 800000 in\ntheorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by\n",
             "Spt1 local heartbeat budget for categorical mono elaboration",
+        ),
+        (
+            """      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
+        gcongr
+        exact hp1
+""",
+            """      have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
+        gcongr
+""",
+            "Spt1 remove tactic after gcongr already closes the goal",
         ),
         (
             """    rw [key, hnorm, hsplit]
