@@ -7,12 +7,11 @@ on:
   pull_request:
     paths:
       - 'PrimalitySheafVerification/**'
-      - 'scripts/apply_deterministic_repairs.py'
       - '.github/workflows/primality-sheaf-verification.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: primality-sheaf-${{ github.ref }}
@@ -30,27 +29,7 @@ jobs:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
 
-      - name: Apply deterministic source repairs
-        run: python3 scripts/apply_deterministic_repairs.py
-
-      - name: Commit source repairs when needed
-        id: repair-commit
-        shell: bash
-        run: |
-          if git diff --quiet -- PrimalitySheafVerification/Spt1.lean PrimalitySheafVerification/QYM.lean; then
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add PrimalitySheafVerification/Spt1.lean PrimalitySheafVerification/QYM.lean
-          git commit -m 'fix: update Spt1 APIs and place QYM import first'
-          git push origin HEAD:fix/primality-sheaf-clean-build
-          echo 'changed=true' >> "$GITHUB_OUTPUT"
-
       - name: Set up Lean
-        if: steps.repair-commit.outputs.changed != 'true'
         uses: leanprover/lean-action@v1
         with:
           build: false
@@ -58,11 +37,9 @@ jobs:
           lint: false
 
       - name: Restore Mathlib compiled cache
-        if: steps.repair-commit.outputs.changed != 'true'
         run: lake exe cache get
 
       - name: Compile all 13 modules and collect logs
-        if: steps.repair-commit.outputs.changed != 'true'
         id: module-build
         shell: bash
         run: |
@@ -143,7 +120,7 @@ jobs:
           exit "$overall"
 
       - name: Upload build logs and artifacts report
-        if: always() && steps.repair-commit.outputs.changed != 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: primality-sheaf-build-logs
