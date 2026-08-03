@@ -39,7 +39,9 @@ noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
         """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
     (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
       (quotientExtension f).ker.Cotangent := by
-  rw [quotientExtension_ker]
+  have h : Ideal.span ({f} : Set K[X]) = (quotientExtension f).ker :=
+    (quotientExtension_ker f).symm
+  cases h
   exact LinearEquiv.refl K _
 
 noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
@@ -49,7 +51,7 @@ noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
     ((quotientSpanCotangentEquivKer f).trans
       (quotientExtensionCotangentEquivKer f))
 """,
-        "Spt2 make the conormal ideal transport an explicit reflexive equivalence",
+        "Spt2 eliminate the ideal equality before cotangent instance synthesis",
     ) or changed
 
     changed = replace_once(
