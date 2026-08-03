@@ -44,29 +44,25 @@ def repair_spt2() -> None:
         exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩).val
   rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
   congr 1
-  apply Subtype.ext
-  rfl
 """
     text, did = replace_once(text, old, new,
         "Spt2 normalize quotient representative before rewriting")
     changed |= did
+
+    old = """  rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
+  congr 1
+  apply Subtype.ext
+  rfl
+"""
+    new = """  rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
+  congr 1
+"""
+    text, did = replace_once(text, old, new,
+        "Spt2 remove tactics after congr closes the goal")
+    changed |= did
+
     if changed:
         path.write_text(text, encoding="utf-8", newline="\n")
-
-
-def replace_theorem_body_with_decide(text: str, name: str) -> tuple[str, bool]:
-    pattern = re.compile(
-        rf"(theorem {re.escape(name)}\b[\s\S]*? := by)\n(?:  .+\n)+?(?=\n(?:theorem|/--|structure|def|noncomputable def|end)\b)",
-        re.MULTILINE,
-    )
-    m = pattern.search(text)
-    if not m:
-        print(f"Mock1 {name}: already applied/source changed")
-        return text, False
-    block = m.group(0)
-    prefix = block.split(":= by", 1)[0] + ":= by\n  decide\n"
-    print(f"Mock1 {name}: kernel decision proof applied")
-    return text[:m.start()] + prefix + text[m.end():], True
 
 
 def repair_mock1() -> None:
@@ -84,12 +80,13 @@ def repair_mock1() -> None:
     (PadicInt.mahlerSeries_apply_nat (p := p) (a := a) ha
       (m := m) (n := N) hmN)
 """
-    new = """  simpa [finiteMahlerEvalSMul, ← Fin.sum_univ_eq_sum_range] using
+    new = """  simpa [finiteMahlerEvalSMul, ← Fin.sum_univ_eq_sum_range,
+    Nat.cast_smul_eq_nsmul] using
     (PadicInt.mahlerSeries_apply_nat (p := p) (a := a) ha
       (m := m) (n := N) hmN)
 """
     text, did = replace_once(text, old, new,
-        "Mock1 convert Mahler range sum to Fin sum")
+        "Mock1 convert Mahler range sum and scalar action")
     changed |= did
 
     old = """          intro j _hj
@@ -103,19 +100,6 @@ def repair_mock1() -> None:
     text, did = replace_once(text, old, new,
         "Mock1 expose Mahler coefficient under eta reduction")
     changed |= did
-
-    decide_names = [
-        "pdfMahler_value_3", "pdfMahler_value_4", "pdfMahler_value_5",
-        "pdfMahler_finiteEval_value_0", "pdfMahler_finiteEval_value_1",
-        "pdfMahler_finiteEval_value_2", "pdfMahler_finiteEval_value_3",
-        "pdfMahler_finiteEval_value_4", "pdfMahler_finiteEval_value_5",
-        "pdfMahler_extrapolated_6", "pdfMahler_extrapolated_7",
-        "pdfMahler_extrapolated_8", "pdfMahler_extrapolated_9",
-        "pdfMahler_extrapolated_10",
-    ]
-    for name in decide_names:
-        text, did = replace_theorem_body_with_decide(text, name)
-        changed |= did
 
     count = text.count("coe_lcm_dvd_iff")
     if count:
@@ -145,12 +129,16 @@ def repair_mock1() -> None:
         "Mock1 global Cech difference proof")
     changed |= did
 
-    text = text.replace(
+    text2 = text.replace(
         "(CechDiff s i j n : ZMod pk)",
         "(CechDiff (R := ℤ) s i j n : ZMod pk)")
-    text = text.replace(
+    text2 = text2.replace(
         "CechObstructionCocycle M pk (CechDiff s) hker",
         "CechObstructionCocycle M pk (CechDiff (R := ℤ) s) hker")
+    if text2 != text:
+        text = text2
+        changed = True
+        print("Mock1 make Cech coefficient ring explicit")
 
     for name in ["D4GateCertificate_of_lcm_overlap",
                  "D4GateCertificate_of_modular_padic_congruence"]:
@@ -257,32 +245,6 @@ def repair_mock1_advanced() -> None:
             text = text2
             changed = True
             print(f"Mock1Advanced {name}: changed {n} data theorem declaration(s)")
-
-    local_mem_old = """theorem mem_all (cmd : LocalAuditCommand) :
-    List.Mem cmd all := by
-  cases cmd <;> simp [all]
-"""
-    local_mem_new = """theorem mem_all (cmd : LocalAuditCommand) :
-    List.Mem cmd all := by
-  cases cmd <;> decide
-"""
-    text, did = replace_once(text, local_mem_old, local_mem_new,
-        "Mock1Advanced local audit command membership")
-    changed |= did
-
-    old = """theorem printAxiomsAudit_covers_layer
-    (layer : AxiomAuditLayer) :
-    List.Mem layer (auditLayers LocalAuditCommand.printAxiomsAudit) := by
-  cases layer <;> simp [auditLayers]
-"""
-    new = """theorem printAxiomsAudit_covers_layer
-    (layer : AxiomAuditLayer) :
-    List.Mem layer (auditLayers LocalAuditCommand.printAxiomsAudit) := by
-  cases layer <;> decide
-"""
-    text, did = replace_once(text, old, new,
-        "Mock1Advanced print-axioms layer coverage")
-    changed |= did
 
     if changed:
         path.write_text(text, encoding="utf-8", newline="\n")
