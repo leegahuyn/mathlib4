@@ -48,11 +48,12 @@ def main() -> int:
   rw [e, extCotangentEquiv_one]
 """,
         """theorem he : B.e 1 = Extension.Cotangent.mk B.f := by
-  simpa [e] using
-    (extCotangentEquiv_one (P := B.P.toExtension) (f := B.f.val)
-      (by simpa using B.hf) (by simpa using B.hspan))
+  change
+    (LinearMap.toSpanSingleton S B.P.toExtension.Cotangent
+      (Extension.Cotangent.mk B.f)) 1 = Extension.Cotangent.mk B.f
+  rw [LinearMap.toSpanSingleton_apply, one_smul]
 """,
-        "Spt5 transport hypersurface generator proof explicitly",
+        "Spt5 prove hypersurface generator directly from the span map",
     ) or changed
 
     changed = replace_once(
@@ -81,10 +82,9 @@ def main() -> int:
 """,
         """  map_id n := by
     apply RingCat.hom_ext
-    ext x
-    rfl
+    exact Subsingleton.elim _ _
 """,
-        "Spt5 prove cyclic presheaf identity pointwise",
+        "Spt5 prove cyclic presheaf identity by uniqueness of ZMod ring maps",
     ) or changed
 
     print("Spt5 repairs changed sources." if changed else "No Spt5 changes needed.")
