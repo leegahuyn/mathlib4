@@ -23,8 +23,12 @@ NEW_SPAN = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
     quotientSpanCotangentEquivKer f
         ((Ideal.span ({f} : Set K[X])).toCotangent x) =
       (quotientExtension f).ker.toCotangent
-        (LinearEquiv.ofEq _ _ (quotientExtension_ker f).symm x) :=
-  Ideal.Cotangent.equivOfEq_toCotangent _ _ _ x
+        (LinearEquiv.ofEq _ _ (quotientExtension_ker f).symm x) := by
+  simpa only [quotientSpanCotangentEquivKer,
+    LinearEquiv.restrictScalars_apply] using
+    (Ideal.Cotangent.equivOfEq_toCotangent
+      (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
+      (quotientExtension_ker f).symm x)
 """
 
 OLD_PROOF = """  have hker : (quotientExtension f).ker = Ideal.span ({f} : Set K[X]) :=
@@ -37,12 +41,15 @@ OLD_PROOF = """  have hker : (quotientExtension f).ker = Ideal.span ({f} : Set K
   rfl
 """
 
-NEW_PROOF = """  apply Algebra.Extension.Cotangent.ext
+NEW_PROOF = """  have hprincipal :
+      principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
+        principalCotangentQuotMap f
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) := rfl
+  apply Algebra.Extension.Cotangent.ext
   simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
     LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
-  unfold principalCotangentQuotEquiv
-  rw [LinearEquiv.ofBijective_apply, hmap,
-    quotientSpanCotangentEquivKer_toCotangent]
+  rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
   congr 1
   apply Subtype.ext
   rfl
