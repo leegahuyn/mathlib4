@@ -8,6 +8,7 @@ on:
     paths:
       - 'PrimalitySheafVerification/**'
       - 'scripts/apply_deterministic_repairs.py'
+      - 'scripts/apply_spt2_spt3_repairs.py'
       - '.github/workflows/primality-sheaf-verification.yml'
   workflow_dispatch:
 
@@ -30,8 +31,10 @@ jobs:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
 
-      - name: Apply deterministic repair layer
-        run: python3 scripts/apply_deterministic_repairs.py
+      - name: Apply deterministic repair layers
+        run: |
+          python3 scripts/apply_deterministic_repairs.py
+          python3 scripts/apply_spt2_spt3_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@v1
