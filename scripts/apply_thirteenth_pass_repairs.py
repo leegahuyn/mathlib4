@@ -47,7 +47,7 @@ def repair_spt2() -> None:
   change Algebra.Extension.Cotangent.of
       (quotientSpanCotangentEquivKer f
         (principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
-          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a)) =
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a))) =
     Algebra.Extension.Cotangent.mk
       (P := quotientExtension f)
       ⟨a * f, by
