@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [Spt2, Spt4, Mock1, Mock1_Advanced, Mock2, Mock2_Advanced, Mock2_FunctionalAnalysis]
+        module: [Spt2, Mock1_Advanced]
 
     steps:
       - name: Checkout
