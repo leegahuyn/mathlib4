@@ -4,34 +4,7 @@ from pathlib import Path
 
 PATH = Path("PrimalitySheafVerification/Spt2.lean")
 
-OLD_SPAN = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent := by
-  rw [quotientExtension_ker]
-  exact LinearEquiv.refl K _
-"""
-
-INTERMEDIATE_SPAN = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent :=
-  (Ideal.Cotangent.equivOfEq
-    (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
-    (quotientExtension_ker f).symm).restrictScalars K
-
-@[simp] lemma quotientSpanCotangentEquivKer_toCotangent (f : K[X])
-    (x : Ideal.span ({f} : Set K[X])) :
-    quotientSpanCotangentEquivKer f
-        ((Ideal.span ({f} : Set K[X])).toCotangent x) =
-      (quotientExtension f).ker.toCotangent
-        (LinearEquiv.ofEq _ _ (quotientExtension_ker f).symm x) := by
-  simpa only [quotientSpanCotangentEquivKer,
-    LinearEquiv.restrictScalars_apply] using
-    (Ideal.Cotangent.equivOfEq_toCotangent
-      (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
-      (quotientExtension_ker f).symm x)
-"""
-
-NEW_SPAN = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
+CURRENT_BLOCK = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
     (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
       (quotientExtension f).ker.Cotangent := by
   rw [quotientExtension_ker]
@@ -45,19 +18,26 @@ NEW_SPAN = """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
         (LinearEquiv.ofEq _ _ (quotientExtension_ker f).symm x) := by
   rw [quotientExtension_ker]
   rfl
+
+noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
+      (quotientExtension f).Cotangent :=
+  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
+    ((quotientSpanCotangentEquivKer f).trans
+      (quotientExtensionCotangentEquivKer f))
 """
 
-OLD_PROOF = """  have hker : (quotientExtension f).ker = Ideal.span ({f} : Set K[X]) :=
-    quotientExtension_ker f
-  cases hker
-  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
-    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
-  unfold quotientSpanCotangentEquivKer principalCotangentQuotEquiv
-  rw [LinearEquiv.ofBijective_apply, hmap]
-  rfl
+DIRECT_BLOCK = """noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
+    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
+      (quotientExtension f).Cotangent :=
+  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
+    (((Ideal.Cotangent.equivOfEq
+        (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
+        (quotientExtension_ker f).symm).restrictScalars K).trans
+      (quotientExtensionCotangentEquivKer f))
 """
 
-INTERMEDIATE_PROOF = """  have hprincipal :
+CURRENT_PROOF = """  have hprincipal :
       principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
           ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
         principalCotangentQuotMap f
@@ -67,20 +47,28 @@ INTERMEDIATE_PROOF = """  have hprincipal :
     LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
   rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
   congr 1
-  apply Subtype.ext
-  rfl
 """
 
-NEW_PROOF = """  have hprincipal :
+DIRECT_PROOF = """  have hprincipal :
       principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
           ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
         principalCotangentQuotMap f
           ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) := rfl
-  apply Algebra.Extension.Cotangent.ext
   simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
     LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
-  rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
-  congr 1
+  change Algebra.Extension.Cotangent.of
+      ((Ideal.Cotangent.equivOfEq
+        (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
+        (quotientExtension_ker f).symm)
+        (principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a))) =
+    Algebra.Extension.Cotangent.mk
+      (P := quotientExtension f)
+      ⟨a * f, by
+        rw [quotientExtension_ker]
+        exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩
+  rw [hprincipal, hmap, Ideal.Cotangent.equivOfEq_toCotangent]
+  rfl
 """
 
 
@@ -98,23 +86,12 @@ def replace_once(text: str, old: str, new: str, label: str) -> tuple[str, bool]:
 def main() -> int:
     text = PATH.read_text(encoding="utf-8")
     changed = False
-
-    if INTERMEDIATE_SPAN in text:
-        text, did = replace_once(text, INTERMEDIATE_SPAN, NEW_SPAN,
-            "Spt2 kernel-rewrite cotangent transport")
-    else:
-        text, did = replace_once(text, OLD_SPAN, NEW_SPAN,
-            "Spt2 current Ideal.Cotangent transport")
+    text, did = replace_once(text, CURRENT_BLOCK, DIRECT_BLOCK,
+        "Spt2 direct current Ideal.Cotangent transport")
     changed |= did
-
-    if INTERMEDIATE_PROOF in text:
-        text, did = replace_once(text, INTERMEDIATE_PROOF, NEW_PROOF,
-            "Spt2 remove proof command after congr closes goal")
-    else:
-        text, did = replace_once(text, OLD_PROOF, NEW_PROOF,
-            "Spt2 current conormal generator proof")
+    text, did = replace_once(text, CURRENT_PROOF, DIRECT_PROOF,
+        "Spt2 direct conormal generator proof")
     changed |= did
-
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
     return 0
