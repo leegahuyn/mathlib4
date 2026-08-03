@@ -10,8 +10,8 @@ on:
       - 'scripts/apply_deterministic_repairs.py'
       - 'scripts/apply_spt2_spt3_repairs.py'
       - 'scripts/apply_spt5_repairs.py'
-      - 'scripts/apply_spt_remaining_repairs.py'
       - 'scripts/apply_spt_final_repairs.py'
+      - 'scripts/apply_spt_remaining_repairs.py'
       - 'scripts/apply_mock1_repairs.py'
       - '.github/workflows/primality-sheaf-verification.yml'
   workflow_dispatch:
@@ -40,8 +40,8 @@ jobs:
           python3 scripts/apply_deterministic_repairs.py
           python3 scripts/apply_spt2_spt3_repairs.py
           python3 scripts/apply_spt5_repairs.py
-          python3 scripts/apply_spt_remaining_repairs.py
           python3 scripts/apply_spt_final_repairs.py
+          python3 scripts/apply_spt_remaining_repairs.py
           python3 scripts/apply_mock1_repairs.py
 
       - name: Set up Lean
@@ -59,9 +59,10 @@ jobs:
         shell: bash
         run: |
           set +e
-          mkdir -p build-logs
+          mkdir -p build-logs/repaired-sources
           artifact_dir='.lake/build/lib/lean/PrimalitySheafVerification'
           mkdir -p "$artifact_dir"
+          cp PrimalitySheafVerification/*.lean build-logs/repaired-sources/
 
           modules=(
             Spt1
