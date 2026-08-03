@@ -72,43 +72,43 @@ theorem requestedDefinitions_length_pos
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.domainQCusps
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | spt =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.sptEqualizerCrt
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | muKernel =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.appellLerchSpecialization
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | rademacher =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.rademacherExpansion
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | pAdic =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.padicMahler
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | regression =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.regressionCertificate
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
   | advanced =>
       have h := RequestedDefinitionItem.mem_all
         RequestedDefinitionItem.abstractConcreteSeparation
       exact List.length_pos.mpr
-        (List.mem_filter.mpr ⟨h, rfl⟩)
+        (List.mem_filter.mpr ⟨h, by simp⟩)
 
 theorem requestedDefinition_layer_sound
     (layer : IntegratedLayer) (item : RequestedDefinitionItem)
     (hmem : List.Mem item (requestedDefinitions layer)) :
     RequestedDefinitionItem.integratedLayer item = layer :=
-  (List.mem_filter.mp hmem).2
+  of_decide_eq_true (List.mem_filter.mp hmem).2
 
 theorem requestedDefinition_objective_sound
     (layer : IntegratedLayer) (item : RequestedDefinitionItem)
@@ -123,7 +123,7 @@ theorem requestedDefinition_mem_integratedLayer
     (item : RequestedDefinitionItem) :
     List.Mem item
       (requestedDefinitions (RequestedDefinitionItem.integratedLayer item)) :=
-  List.mem_filter.mpr ⟨RequestedDefinitionItem.mem_all item, rfl⟩
+  List.mem_filter.mpr ⟨RequestedDefinitionItem.mem_all item, by simp⟩
 """
 
 
