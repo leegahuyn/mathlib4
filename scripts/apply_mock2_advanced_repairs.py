@@ -10,9 +10,7 @@ def rep(text: str, old: str, new: str, label: str) -> tuple[str, bool]:
     if n == 0:
         print(f"{label}: already applied/source changed")
         return text, False
-    if n != 1:
-        raise RuntimeError(f"{label}: expected one match, found {n}")
-    print(f"{label}: applied")
+    print(f"{label}: applied {n}")
     return text.replace(old, new), True
 
 
