@@ -17,14 +17,23 @@ BAD_SPAN_VAL = """@[simp] lemma quotientSpanCotangentEquivKer_val (f : K[X])
 
 """
 
-OLD_PROOF = """  apply Algebra.Extension.Cotangent.ext
+OLD_PROOFS = [
+"""  apply Algebra.Extension.Cotangent.ext
   simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
     LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_val,
     quotientSpanCotangentEquivKer_val]
   unfold principalCotangentQuotEquiv
   rw [LinearEquiv.ofBijective_apply, hmap]
   rfl
-"""
+""",
+"""  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
+    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
+  rw [quotientSpanCotangentEquivKer, quotientExtension_ker]
+  unfold principalCotangentQuotEquiv
+  rw [LinearEquiv.ofBijective_apply, hmap]
+  rfl
+""",
+]
 
 NEW_PROOF = """  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
     LinearEquiv.restrictScalars_apply]
@@ -61,15 +70,19 @@ def main() -> int:
             print(f"Spt2 remove invalid {label}: applied")
         elif count > 1:
             raise RuntimeError(f"Spt2 {label}: expected at most one match, found {count}")
-    count = text.count(OLD_PROOF)
-    if count == 1:
-        text = text.replace(OLD_PROOF, NEW_PROOF)
-        changed = True
-        print("Spt2 cotangent generator proof: applied")
-    elif count == 0:
+    proof_changed = False
+    for old in OLD_PROOFS:
+        count = text.count(old)
+        if count == 1:
+            text = text.replace(old, NEW_PROOF)
+            changed = True
+            proof_changed = True
+            print("Spt2 cotangent generator proof: applied")
+            break
+        if count > 1:
+            raise RuntimeError(f"Spt2 cotangent generator proof: expected at most one match, found {count}")
+    if not proof_changed:
         print("Spt2 cotangent generator proof: already applied/source changed")
-    else:
-        raise RuntimeError(f"Spt2 cotangent generator proof: expected one match, found {count}")
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
     return 0
