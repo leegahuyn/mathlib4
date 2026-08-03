@@ -24,7 +24,6 @@ def repair_spt2() -> bool:
 
     # Keep the checked-in kernel-witness transport proof.  Replacing it by y.2
     # is ill-typed because the two kernels are equivalent, not definitionally equal.
-
     changed = replace_once(
         path,
         """      rw [SetLike.mem_coe, LinearMap.mem_ker, KaehlerDifferential.mapBaseChange_tmul,
@@ -59,7 +58,6 @@ def repair_spt3() -> bool:
 
     # Keep amalgam_section_unique and RepointedConst.map in their checked-in
     # forms.  Earlier automated rewrites introduced the concrete-map/PLift cascade.
-
     changed = replace_once(
         path,
         """theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
@@ -99,10 +97,69 @@ def repair_spt3() -> bool:
     return changed
 
 
+def repair_spt4() -> bool:
+    path = ROOT / "Spt4.lean"
+    changed = False
+
+    changed = replace_once(
+        path,
+        """theorem Fmod_crt_compatible {M M' : ℕ} (h : Nat.Coprime M M') (U : PrincipalOpen) (n : ℕ) :
+    (Fmod M ⊓ Fmod M').pred U n ↔ (Fmod (M * M')).pred U n := by
+  rw [SubPresheaf.mem_inf]; exact modGate_crt h n
+""",
+        """theorem Fmod_crt_compatible {M M' : ℕ} (h : Nat.Coprime M M') (U : PrincipalOpen) (n : ℕ) :
+    (Fmod M ⊓ Fmod M').pred U n ↔ (Fmod (M * M')).pred U n := by
+  change (modGate M n ∧ modGate M' n) ↔ modGate (M * M') n
+  exact modGate_crt h n
+""",
+        "Spt4 expose CRT predicates directly",
+    ) or changed
+
+    changed = replace_once(
+        path,
+        """      have hd : (resC N).d 1 0 = mulN N := by
+        simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+""",
+        """      have hd : (resC N).d 1 0 = mulN N := by
+        dsimp [resC, df]
+        rfl
+""",
+        "Spt4 compute augmentation differential definitionally",
+    ) or changed
+
+    changed = replace_once(
+        path,
+        """theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
+  have h : (resC N).d (j + 1 + 1) (j + 1) = df N (j + 1) := ChainComplex.of_d _ _ (j + 1)
+  rw [h]; rfl
+""",
+        """theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
+  dsimp [resC, df]
+  rfl
+""",
+        "Spt4 compute higher resolution differentials definitionally",
+    ) or changed
+
+    changed = replace_once(
+        path,
+        """  have hd10 : (resC N).d 1 0 = mulN N := by
+    simpa [resC, df] using (ChainComplex.of_d Xf (df N) (0 : ℕ))
+""",
+        """  have hd10 : (resC N).d 1 0 = mulN N := by
+    dsimp [resC, df]
+    rfl
+""",
+        "Spt4 compute quasi-isomorphism degree-zero differential",
+    ) or changed
+
+    return changed
+
+
 def main() -> int:
     changed = repair_spt2()
     changed = repair_spt3() or changed
-    print("Spt2/Spt3 repairs changed sources." if changed else "No Spt2/Spt3 changes needed.")
+    changed = repair_spt4() or changed
+    print("Spt2/Spt3/Spt4 repairs changed sources." if changed else "No Spt2/Spt3/Spt4 changes needed.")
     return 0
 
 
