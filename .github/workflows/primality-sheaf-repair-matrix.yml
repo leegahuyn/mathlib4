@@ -1,0 +1,80 @@
+name: Primality Sheaf Repair Matrix
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: primality-sheaf-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    name: Repair ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [Spt2, Spt4, Mock1, Mock1_Advanced, Mock2, Mock2_Advanced, Mock2_FunctionalAnalysis]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/primality-sheaf-clean-build
+          fetch-depth: 1
+
+      - name: Apply repair layers
+        run: |
+          python3 scripts/apply_deterministic_repairs.py
+          python3 scripts/apply_spt2_spt3_repairs.py
+          python3 scripts/apply_spt5_repairs.py
+          python3 scripts/apply_spt_remaining_repairs.py
+          python3 scripts/apply_spt_final_repairs.py
+          python3 scripts/apply_spt_closure_repairs.py
+          python3 scripts/apply_mock1_repairs.py
+          python3 scripts/apply_mock1_second_repairs.py
+          python3 scripts/apply_mock1_advanced_repairs.py
+          python3 scripts/apply_mock1_advanced_second_repairs.py
+          python3 scripts/apply_mock2_scope_repairs.py
+          python3 scripts/apply_mock2_advanced_repairs.py
+          python3 scripts/apply_mock2_functional_analysis_repairs.py
+
+      - name: Set up Lean
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
+        with:
+          build: false
+          test: false
+          lint: false
+
+      - name: Restore Mathlib cache
+        run: lake exe cache get
+
+      - name: Compile
+        shell: bash
+        run: |
+          set +e
+          module='${{ matrix.module }}'
+          mkdir -p "build-logs/${module}" '.lake/build/lib/lean/PrimalitySheafVerification'
+          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/repaired-source.lean"
+          lake env lean "PrimalitySheafVerification/${module}.lean" \
+            -o ".lake/build/lib/lean/PrimalitySheafVerification/${module}.olean" \
+            -i ".lake/build/lib/lean/PrimalitySheafVerification/${module}.ilean" 2>&1 \
+            | tee "build-logs/${module}/${module}.log"
+          code=${PIPESTATUS[0]}
+          echo "$code" > "build-logs/${module}/exit-code.txt"
+          exit "$code"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: repair-${{ matrix.module }}
+          path: build-logs/${{ matrix.module }}
+          if-no-files-found: error
+          retention-days: 30
