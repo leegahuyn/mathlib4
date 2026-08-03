@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout repair branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
@@ -47,7 +47,7 @@ jobs:
           python3 scripts/apply_mock2_functional_analysis_repairs.py
 
       - name: Set up Lean
-        uses: leanprover/lean-action@v1
+        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
         with:
           build: false
           test: false
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload build logs and artifacts report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: primality-sheaf-build-logs
           path: |
