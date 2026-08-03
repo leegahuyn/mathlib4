@@ -67,14 +67,16 @@ def main() -> int:
   simp [quotientSpanCotangentEquivKer, quotientExtension_ker,
     Algebra.Extension.Cotangent.val_mk, Algebra.Extension.Cotangent.val_of]
 """,
-        """  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
+        """  have hker : (quotientExtension f).ker = Ideal.span ({f} : Set K[X]) :=
+    quotientExtension_ker f
+  cases hker
+  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
     LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
-  rw [quotientSpanCotangentEquivKer, quotientExtension_ker]
-  unfold principalCotangentQuotEquiv
+  unfold quotientSpanCotangentEquivKer principalCotangentQuotEquiv
   rw [LinearEquiv.ofBijective_apply, hmap]
   rfl
 """,
-        "Spt2 compute conormal generator before quotient extensionality",
+        "Spt2 eliminate the dependent ideal transport before computation",
     )
 
     print("SPT closure repairs changed sources." if changed else "No SPT closure changes needed.")
