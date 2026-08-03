@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 
 ROOT = Path("PrimalitySheafVerification")
+IMPORT_RE = re.compile(r"^\s*(?:public\s+)?import\s+\S")
 
 
 def repair_spt1() -> bool:
@@ -46,29 +48,39 @@ def repair_spt1() -> bool:
 
 def repair_qym_import() -> bool:
     path = ROOT / "QYM.lean"
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     lines = text.splitlines()
 
     import_indices = [
         index for index, line in enumerate(lines)
-        if line.strip() == "import Mathlib"
+        if IMPORT_RE.match(line)
     ]
     if not import_indices:
-        raise RuntimeError("QYM.lean has no exact `import Mathlib` command")
-
-    first_nonempty = next((line.strip() for line in lines if line.strip()), "")
-    if first_nonempty == "import Mathlib":
-        print("QYM: import is already the first command")
+        print("QYM: no import command found; source left unchanged")
         return False
 
-    import_index = import_indices[0]
-    del lines[import_index]
-    while lines and not lines[0].strip():
-        del lines[0]
+    first_nonempty_index = next(
+        (index for index, line in enumerate(lines) if line.strip()),
+        len(lines),
+    )
+    leading_imports = list(range(first_nonempty_index, first_nonempty_index + len(import_indices)))
+    if import_indices == leading_imports:
+        print("QYM: all imports are already the first commands")
+        return False
 
-    repaired = "import Mathlib\n\n" + "\n".join(lines) + "\n"
+    import_index_set = set(import_indices)
+    imports = [lines[index].strip() for index in import_indices]
+    remaining = [
+        line for index, line in enumerate(lines)
+        if index not in import_index_set
+    ]
+    while remaining and not remaining[0].strip():
+        remaining.pop(0)
+
+    repaired = "\n".join(imports) + "\n\n" + "\n".join(remaining).rstrip() + "\n"
     path.write_text(repaired, encoding="utf-8", newline="\n")
-    print(f"QYM: moved import Mathlib from line {import_index + 1} to line 1")
+    locations = ", ".join(str(index + 1) for index in import_indices)
+    print(f"QYM: moved import command(s) from line(s) {locations} to the beginning")
     return True
 
 
