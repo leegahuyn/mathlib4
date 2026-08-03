@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path("PrimalitySheafVerification")
@@ -16,6 +17,27 @@ def replace_once(path: Path, old: str, new: str, label: str) -> bool:
     path.write_text(text.replace(old, new), encoding="utf-8", newline="\n")
     print(f"{label}: applied")
     return True
+
+
+def replace_regex_once(path: Path, pattern: str, replacement: str, label: str) -> bool:
+    text = path.read_text(encoding="utf-8")
+    repaired, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
+    if count == 0:
+        print(f"{label}: already applied or source changed")
+        return False
+    path.write_text(repaired, encoding="utf-8", newline="\n")
+    print(f"{label}: applied")
+    return True
+
+
+def repair_spt1() -> bool:
+    path = ROOT / "Spt1.lean"
+    return replace_regex_once(
+        path,
+        r"(have h2 : \(p : ℝ\) \^ padicValNat p n ≤ \(p : ℝ\) \^ \(n - 1\) := by\n\s+gcongr)\n\s+exact hp1",
+        r"\1",
+        "Spt1 remove command after gcongr closes h2",
+    )
 
 
 def repair_spt2() -> bool:
@@ -134,9 +156,10 @@ def repair_spt3() -> bool:
 
 
 def main() -> int:
-    changed = repair_spt2()
+    changed = repair_spt1()
+    changed = repair_spt2() or changed
     changed = repair_spt3() or changed
-    print("Spt2/Spt3 repairs changed sources." if changed else "No Spt2/Spt3 changes needed.")
+    print("Spt1/Spt2/Spt3 repairs changed sources." if changed else "No Spt1/Spt2/Spt3 changes needed.")
     return 0
 
 
