@@ -10,6 +10,7 @@ from apply_seventh_pass_repairs import main as repair_seventh_pass
 from apply_sixth_pass_repairs import main as repair_sixth_pass
 from apply_spt2_canonical_final import main as repair_spt2_canonical
 from apply_spt2_current_api_final import main as repair_spt2_current_api
+from apply_tenth_pass_repairs import main as repair_tenth_pass
 from apply_third_pass_repairs import main as repair_third_pass
 
 
@@ -25,6 +26,7 @@ def main() -> int:
     repair_seventh_pass()
     repair_eighth_pass()
     repair_ninth_pass()
+    repair_tenth_pass()
     return 0
 
 
