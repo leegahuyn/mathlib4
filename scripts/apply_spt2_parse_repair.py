@@ -24,8 +24,11 @@ def main() -> int:
     if old_count == 0 and new_count == 1:
         print("Spt2: cotangent application repair already applied")
         return 0
+    if old_count == 0 and new_count == 0:
+        print("Spt2: obsolete exact-layout parse repair no longer matches; continuing")
+        return 0
     raise RuntimeError(
-        f"Spt2 cotangent parse repair: expected one old or new match; old={old_count}, new={new_count}"
+        f"Spt2 cotangent parse repair matched ambiguously; old={old_count}, new={new_count}"
     )
 
 
