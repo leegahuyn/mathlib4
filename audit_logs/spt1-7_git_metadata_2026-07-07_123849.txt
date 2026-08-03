@@ -1,0 +1,14 @@
+﻿Spt1-Spt7 Git Metadata
+Generated: 07/07/2026 12:38:50
+
+Repository root:
+C:/Users/?ъ슜??mathlib4
+
+Current commit:
+0de56c235f50f0ec95f8f5c2aad252b969f9f4cc
+
+Current branch:
+codex/spt3-lean-clean-build
+
+Git status:
+?? spt3_error.txt ?? spt3_error_after_import_fix.txt ?? spt3_error_after_powerseries_fix.txt

@@ -7080,14 +7080,12 @@ class PadicLogTailCertificate (p : ℕ) [Fact p.Prime] : Prop where
     ∀ {x : ℚ_[p]}, ‖x‖ < 1 → ∀ m : ℕ,
       padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m)
 
-variable [PadicLogTailCertificate p]
-
 /-- Truncation error = tail (UNCONDITIONAL): `log(1+x) − L_m(x) = ∑_i x^{i+m}/(i+m)`. -/
-theorem padicLog1p_sub_trunc {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
+theorem padicLog1p_sub_trunc [PadicLogTailCertificate p] {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
     padicLog1p x - padicLogTrunc m x = ∑' i : ℕ, padicLogSeries x (i + m) :=
   PadicLogTailCertificate.sub_trunc hx m
 
-theorem padicLog1p_sub_trunc_norm_le {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
+theorem padicLog1p_sub_trunc_norm_le [PadicLogTailCertificate p] {x : ℚ_[p]} (hx : ‖x‖ < 1) (m : ℕ) :
     ‖padicLog1p x - padicLogTrunc m x‖ ≤ ‖x‖ := by
   rw [padicLog1p_sub_trunc hx m]
   exact IsUltrametricDist.norm_tsum_le_of_forall_le_of_nonneg (norm_nonneg x)
@@ -7173,20 +7171,20 @@ theorem padicLog1p_norm_le_pow {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
   (padicLog1p_norm_le_self (lt_of_le_of_lt hx (pk_lt_one hk))).trans hx
 
 /-- The first-order remainder is exactly the `n ≥ 2` tail. -/
-theorem padicLog1p_sub_self_eq_tail {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+theorem padicLog1p_sub_self_eq_tail [PadicLogTailCertificate p] {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     padicLog1p x - x = ∑' i : ℕ, padicLogSeries x (i + 2) := by
   have h := padicLog1p_sub_trunc hx 2
   rwa [padicLogTrunc_two] at h
 
 /-- **Remark 2.2 remainder bound (UNCONDITIONAL).** `‖log(1+x) − x‖ ≤ ‖x‖`. -/
-theorem padicLog1p_sub_self_norm_le {x : ℚ_[p]} (hx : ‖x‖ < 1) :
+theorem padicLog1p_sub_self_norm_le [PadicLogTailCertificate p] {x : ℚ_[p]} (hx : ‖x‖ < 1) :
     ‖padicLog1p x - x‖ ≤ ‖x‖ := by
   have h := padicLog1p_sub_trunc_norm_le hx 2
   rwa [padicLogTrunc_two] at h
 
 /-- **Equation (4) / (13) congruence core (UNCONDITIONAL).**
 `log(1 + u) ≡ u (mod pᵏ)` for `u ∈ pᵏℤ_p` (`k ≥ 1`):  `‖log(1+u) − u‖ ≤ p^{-k}`. -/
-theorem padicLog1p_congr_self_of_pow {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
+theorem padicLog1p_congr_self_of_pow [PadicLogTailCertificate p] {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) :
     ‖padicLog1p x - x‖ ≤ (p : ℝ) ^ (-(k : ℤ)) :=
   (padicLog1p_sub_self_norm_le (lt_of_le_of_lt hx (pk_lt_one hk))).trans hx
@@ -7264,7 +7262,7 @@ theorem starPow_norm_le {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
 /-- **Mod-`pᵏ` additivity (UNCONDITIONAL).**  `log((1+x)(1+y)) ≡ log(1+x) + log(1+y)
 (mod pᵏ)` for `x, y ∈ pᵏℤ_p`.  This is the genuine multiplicative→additive transfer
 used by the paper, with NO `PadicLogAdditive` hypothesis. -/
-theorem padicLog1p_add_congr {x y : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
+theorem padicLog1p_add_congr [PadicLogTailCertificate p] {x y : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) (hy : ‖y‖ ≤ (p : ℝ) ^ (-(k : ℤ))) :
     ‖padicLog1p (padicStar x y) - (padicLog1p x + padicLog1p y)‖ ≤ (p : ℝ) ^ (-(k : ℤ)) := by
   have ultra : ∀ a b : ℚ_[p], ‖a‖ ≤ (p : ℝ) ^ (-(k : ℤ)) → ‖b‖ ≤ (p : ℝ) ^ (-(k : ℤ)) →
@@ -7288,7 +7286,7 @@ theorem padicLog1p_add_congr {x y : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
   exact ultra _ _ (ultra _ _ (ultra _ _ ha (by rwa [norm_neg])) (by rwa [norm_neg])) hd
 
 /-- **Mod-`pᵏ` power law (UNCONDITIONAL).**  `log((1+x)^j) ≡ j · log(1+x) (mod pᵏ)`. -/
-theorem padicLog1p_starPow_congr {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
+theorem padicLog1p_starPow_congr [PadicLogTailCertificate p] {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (hx : ‖x‖ ≤ (p : ℝ) ^ (-(k : ℤ))) (j : ℕ) :
     ‖padicLog1p (starPow x j) - j • padicLog1p x‖ ≤ (p : ℝ) ^ (-(k : ℤ)) := by
   have ultra : ∀ a b : ℚ_[p], ‖a‖ ≤ (p : ℝ) ^ (-(k : ℤ)) → ‖b‖ ≤ (p : ℝ) ^ (-(k : ℤ)) →
@@ -7312,7 +7310,7 @@ theorem padicLog1p_starPow_congr {x : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
 /-- **`log(A^{pⁿ}) ≡ pⁿ · log A (mod pᵏ)` (UNCONDITIONAL).**  With `A = 1 + a`,
 `Y = A^{pⁿ}` (so `Y − 1 = starPow a (pⁿ)`): the paper's `log Y = pⁿ log A`,
 modulo `pᵏ`, with NO hypothesis. -/
-theorem logY_eq_pn_logA_mod {a : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
+theorem logY_eq_pn_logA_mod [PadicLogTailCertificate p] {a : ℚ_[p]} {k : ℕ} (hk : 1 ≤ k)
     (ha : ‖a‖ ≤ (p : ℝ) ^ (-(k : ℤ))) (n : ℕ) :
     ‖padicLog1p (starPow a (p ^ n)) - (p ^ n) • padicLog1p a‖ ≤ (p : ℝ) ^ (-(k : ℤ)) :=
   padicLog1p_starPow_congr hk ha (p ^ n)
@@ -7333,7 +7331,7 @@ theorem cast_norm_le_pow {q : ℚ} {k : ℕ}
 
 /-- **Genuine `MtALogInput`, generic form (UNCONDITIONAL).**  For any rational
 `q ∈ pᵏℤ_p`, the genuine p-adic logarithm satisfies `log(1+q) ≡ q (mod pᵏ)`. -/
-theorem padic_congr_of_boundOrZero {q : ℚ} {k : ℕ} (hk : 1 ≤ k)
+theorem padic_congr_of_boundOrZero [PadicLogTailCertificate p] {q : ℚ} {k : ℕ} (hk : 1 ≤ k)
     (hbz : q = 0 ∨ (k : ℤ) ≤ padicValRat p q) :
     ‖padicLog1p ((q : ℚ_[p])) - ((q : ℚ_[p]))‖ ≤ (p : ℝ) ^ (-(k : ℤ)) :=
   padicLog1p_congr_self_of_pow hk (cast_norm_le_pow hbz)
@@ -7343,7 +7341,7 @@ Under `(Hk)`, for the actual `u = (X − Y)/Y` of §2.1 (Gap A), the genuine
 logarithm satisfies `Σ_{j<n} aⱼφⱼ(A) = u ≡ log(1+u) (mod pᵏ)`.  No `MtALogInput`
 hypothesis and no `PadicLogAPI` interface is needed — Gap B *discharges* them
 for the genuine `ℚ_[p]`-valued logarithm. -/
-theorem eq4_padic_congr {M A m n k : ℕ} (a : ℕ → ℤ)
+theorem eq4_padic_congr [PadicLogTailCertificate p] {M A m n k : ℕ} (a : ℕ → ℤ)
     (hk : 1 ≤ k) (hHk : Hk p M A m n k (Yexp A p n)) :
     ‖padicLog1p ((uexp M A m p n a : ℚ_[p])) - ((uexp M A m p n a : ℚ_[p]))‖
       ≤ (p : ℝ) ^ (-(k : ℤ)) :=
@@ -7353,7 +7351,8 @@ theorem eq4_padic_congr {M A m n k : ℕ} (a : ℕ → ℤ)
 `eq4_padic_congr` recording explicitly that the genuine `ℚ_[p]`-logarithm congruence
 needs NO `PadicLogAdditive` / `PadicLogAPI` / `MtALogInput` hypothesis: the mod-`pᵏ`
 bound is unconditional.  Hence `PadicLogAdditive` is OPTIONAL scaffolding. -/
-theorem eq4_padic_congr_discharges_without_additivity {M A m n k : ℕ} (a : ℕ → ℤ)
+theorem eq4_padic_congr_discharges_without_additivity [PadicLogTailCertificate p]
+    {M A m n k : ℕ} (a : ℕ → ℤ)
     (hk : 1 ≤ k) (hHk : Hk p M A m n k (Yexp A p n)) :
     ‖padicLog1p ((uexp M A m p n a : ℚ_[p])) - ((uexp M A m p n a : ℚ_[p]))‖
       ≤ (p : ℝ) ^ (-(k : ℤ)) :=

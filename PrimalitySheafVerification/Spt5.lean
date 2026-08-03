@@ -446,11 +446,11 @@ import Mathlib.Algebra.LinearRecurrence
 import Mathlib.AlgebraicGeometry.EllipticCurve.NormalForms
 import Mathlib.AlgebraicGeometry.EllipticCurve.Affine.Basic
 import Mathlib.NumberTheory.LegendreSymbol.Basic
-import Mathlib.Analysis.Real.Sqrt
+import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.LinearAlgebra.Span.Basic
 import Mathlib.LinearAlgebra.Prod
-import Mathlib.Algebra.Exact.Basic
+import Mathlib.Algebra.Exact
 import Mathlib.Algebra.Module.Projective
 import Mathlib.Tactic.LinearCombination
 import Mathlib.FieldTheory.RatFunc.Basic
@@ -2027,7 +2027,7 @@ theorem finrank_iterated_X_pow_quotient (k : Type*) [Field k] {a b : ℕ}
 noncomputable def finOnePolyEquiv (k : Type*) [Field k] :
     P1 k ≃ₐ[k] Polynomial k :=
   (MvPolynomial.renameEquiv k (Equiv.equivPUnit (Fin 1) : Fin 1 ≃ PUnit.{1})).trans
-    (MvPolynomial.uniqueAlgEquiv k PUnit)
+    (MvPolynomial.pUnitAlgEquiv k)
 
 theorem finOnePolyEquiv_x1 (k : Type*) [Field k] :
     finOnePolyEquiv k (x1 k) = Polynomial.X := by

@@ -1,0 +1,183 @@
+﻿PrimalitySheafVerification/Spt1.lean:329:the unsafe automatic-subgroup-cyclicity inference that the review flagged.
+PrimalitySheafVerification/Spt1.lean:865:example : Fintype.card {x : ZMod 9 // (12 : ZMod 9) * x = 0} = 3 := by native_decide
+PrimalitySheafVerification/Spt1.lean:2084:gates (which collapse to primality), the PARTIAL filters each admit a composite
+PrimalitySheafVerification/Spt1.lean:3346:without it the `native_decide` witnesses below failed to synthesize `Decidable`
+PrimalitySheafVerification/Spt1.lean:3575:    complete, axiom-clean proof.
+PrimalitySheafVerification/Spt1.lean:3765:  explicit interface `PadicLogAPI`; no hidden axiom or certificate field claims
+PrimalitySheafVerification/Spt1.lean:5271:documented long-term interface `SpfPadicBaseChangeInterface` (no silent axiom). -/
+PrimalitySheafVerification/Spt1.lean:7529:as an explicit input instead of hiding it as a global axiom.
+PrimalitySheafVerification/Spt2.lean:21:  No `sorry` and no project-level `axiom`.  The geometric layers Mathlib cannot
+PrimalitySheafVerification/Spt2.lean:70:  Spt2.lean ??sorry-free, axiom-free verified core and full paper interface
+PrimalitySheafVerification/Spt2.lean:75:  with NO `sorry` and NO project-level `axiom`.  The `AxiomAudit` section runs
+PrimalitySheafVerification/Spt2.lean:77:  `[propext, Classical.choice, Quot.sound]` ??never on `sorryAx`.
+PrimalitySheafVerification/Spt2.lean:110:  scheme cotangent complex).  Rather than hide them as global `axiom`s, 짠6 below
+PrimalitySheafVerification/Spt2.lean:116:  corollaries, and theorems from that data with no `sorry` and no project axiom.
+PrimalitySheafVerification/Spt2.lean:636:CANNOT be constructed here.  Instead of hiding them as global `axiom`s, we take
+PrimalitySheafVerification/Spt2.lean:639:`#print axioms` shows NO `sorryAx` and NO new global axiom: every assumption is
+PrimalitySheafVerification/Spt2.lean:717:theorem (no `sorry`, no new axiom, not conditional). -/
+PrimalitySheafVerification/Spt2.lean:2244:conormal coordinate calculation.  No scheme-level axiom is hidden here: once the
+PrimalitySheafVerification/Spt2.lean:2379:paper is then a theorem with a closed Lean proof.  There is no `axiom` and no
+PrimalitySheafVerification/Spt2.lean:2380:`sorry`; the mathematical hypotheses are visible as structure fields rather than
+PrimalitySheafVerification/Spt2.lean:2735:/-! ## Axiom audit ??evidence of `sorryAx`-freeness. -/
+PrimalitySheafVerification/Spt2.lean:3256:without adding a new project axiom. -/
+PrimalitySheafVerification/Spt2.lean:3823:the final equivalence is proved from those fields with no `axiom` and no
+PrimalitySheafVerification/Spt2.lean:3824:`sorry`.
+PrimalitySheafVerification/Spt2.lean:4792:  No `sorry`, no project `axiom`.
+PrimalitySheafVerification/Spt2.lean:5485:  No `sorry`, no project `axiom`.
+PrimalitySheafVerification/Spt2.lean:5906:so this is a local certificate, not a global axiom. -/
+PrimalitySheafVerification/Spt2.lean:5965:turn the length computation into a theorem without postulating a global axiom. -/
+PrimalitySheafVerification/Spt2.lean:8093:       "Derive all detector gates from the comparison certificate, not from a hidden project axiom",
+PrimalitySheafVerification/Spt3.lean:3:  Spt3Unified.lean ??INTEGRATED, sorry-free, axiom-free formalization of
+PrimalitySheafVerification/Spt3.lean:10:  Every result is kernel-checked; the axiom firewall confirms dependence
+PrimalitySheafVerification/Spt3.lean:11:  only on [propext, Classical.choice, Quot.sound] (never sorryAx).
+PrimalitySheafVerification/Spt3.lean:75:  Spt3.lean ??sorry-free, axiom-free verified core of
+PrimalitySheafVerification/Spt3.lean:80:  `sorry` and NO new global `axiom`.  The axiom firewall enforces that audited
+PrimalitySheafVerification/Spt3.lean:82:  (never `sorryAx`); the conditional results (짠G) carry their assumptions as
+PrimalitySheafVerification/Spt3.lean:329:shows no `sorryAx` and no new global axiom. -/
+PrimalitySheafVerification/Spt3.lean:658:  against Mathlib (sorry-free, axiom-free).  This realises 짠2.1 / 짠3.2 / 짠4.5 at
+PrimalitySheafVerification/Spt3.lean:746:  sorry-free, axiom-free.
+PrimalitySheafVerification/Spt3.lean:796:    Spt3Cert above.  sorry-free, axiom-free (audited at the end).
+PrimalitySheafVerification/Spt3.lean:1457:previous one (catches a composite the lighter gates admit) ??the non-redundancy / minimality
+PrimalitySheafVerification/Spt3.lean:1588:  missing Mathlib infrastructure is not introduced as `axiom`, and paper-level
+PrimalitySheafVerification/Spt3.lean:2403:    Mathlib, sorry-free and axiom-free (audited at the end):
+PrimalitySheafVerification/Spt3.lean:2513:admit every candidate (each is the full subpresheaf `??, the normalized
+PrimalitySheafVerification/Spt3.lean:2532:    reachable in current Mathlib.  All kernel-verified, sorry-free, axiom-free.
+PrimalitySheafVerification/Spt3.lean:2730:    cannot be CLOSED sorry-free without first BUILDING `Tor` itself ??a research-scale
+PrimalitySheafVerification/Spt3.lean:2813:      ??`torZeroIso`                 `Tor?(N, -) ??N ??-`            (derived-functor axiom).
+PrimalitySheafVerification/Spt3.lean:2814:      ??`torSucc_projective_isZero`  `Tor?쇺굤??N, P) = 0` for projective `P`  (axiom).
+PrimalitySheafVerification/Spt3.lean:2827:    functor and the homology-group value rather than fake the object iso with `sorry`. -/
+PrimalitySheafVerification/Spt3.lean:2882:/-- **Derived-functor axiom 1.** `Tor?(N, -) ??N ??-`. -/
+PrimalitySheafVerification/Spt3.lean:2886:/-- **Derived-functor axiom 2.** Higher `Tor` of a projective module vanishes. -/
+PrimalitySheafVerification/Spt3.lean:3068:    item by proving the precise obstruction rather than introducing an axiom.
+PrimalitySheafVerification/Spt3.lean:3255:    The two genuinely-new last-mile closures, kernel-verified (sorry-free,
+PrimalitySheafVerification/Spt3.lean:3256:    axiom-free; audited below):
+PrimalitySheafVerification/Spt3.lean:3410:    We do EXACTLY this ??UNCONDITIONALLY: no `sorry`, no new `axiom`, and no
+PrimalitySheafVerification/Spt3.lean:3415:    `sorryAx` and never a new global axiom):
+PrimalitySheafVerification/Spt3.lean:3589:    Everything is kernel-checked, sorry-free, axiom-free (audited at the end):
+PrimalitySheafVerification/Spt3.lean:3761:    Two requested extensions of Category N, both kernel-checked, sorry-free,
+PrimalitySheafVerification/Spt3.lean:3762:    axiom-free (audited at the end):
+PrimalitySheafVerification/Spt3.lean:4024:    Kernel-verified against Mathlib v4.31.0 (sorry-free; the `#print axioms` audit
+PrimalitySheafVerification/Spt3.lean:4116:    against Mathlib v4.31.0 (axiom audit below). -/
+PrimalitySheafVerification/Spt3.lean:4356:`#print axioms` here certifies the absence of `sorry`, NOT the truth of the assumed bound. -/
+PrimalitySheafVerification/Spt3.lean:4500:    All kernel-verified, sorry-free, on standard axioms only.
+PrimalitySheafVerification/Spt3.lean:5046:    certifies absence of `sorry`, NOT the truth of the assumed bound. -/
+PrimalitySheafVerification/Spt3.lean:6952:  * only the genuinely new statements are proved here, each with the clean axiom set
+PrimalitySheafVerification/Spt3.lean:7012:-- NEW lemmas proved in this file (clean axiom set):
+PrimalitySheafVerification/Spt3.lean:7021:`axiom` command is used anywhere in this file: every deep theorem Mathlib v4.31.0 lacks is carried
+PrimalitySheafVerification/Spt3.lean:7024:UNCONDITIONAL CORE (clean axiom set `[propext, Classical.choice, Quot.sound]`):
+PrimalitySheafVerification/Spt3.lean:7049:-- Confirm each conditional input is an explicit interface (no global axiom, no hidden proof field):
+PrimalitySheafVerification/Spt3.lean:7217:/-! ## PART A ??compile-time axiom firewall (reused from the SPT5 development).
+PrimalitySheafVerification/Spt3.lean:7219:Printing axiom dependencies only *prints*.  The two `elab` commands below make the audit *enforced*: each
+PrimalitySheafVerification/Spt3.lean:7221:Quot.sound}`.  They use Lean's `collectAxioms` engine, so any `sorryAx` (from
+PrimalitySheafVerification/Spt3.lean:7222:`sorry`), `Lean.ofReduceBool` (from `native_decide`), or an import-introduced axiom turns into a
+PrimalitySheafVerification/Spt3.lean:7225:/-- **Compile-time axiom gate.**  `#assert_only_safe_axioms id` errors unless `id`'s transitive
+PrimalitySheafVerification/Spt3.lean:7226:axiom dependencies are ??`{propext, Classical.choice, Quot.sound}`. -/
+PrimalitySheafVerification/Spt3.lean:7233:    throwError m!"SPT3 AXIOM FIREWALL FAILED: {cname} depends on forbidden axiom(s) {bad} \
+PrimalitySheafVerification/Spt3.lean:7259:  /-- The statement that the trusted base is the Lean kernel + lake + axiom firewall + human review. -/
+PrimalitySheafVerification/Spt3.lean:7291:/-- The `noHiddenAxioms` field is witnessed mechanically by the certified axiom firewall at the
+PrimalitySheafVerification/Spt3.lean:7293:open `[INTERFACE]` boundaries are registered separately and are not advertised as axiom-free
+PrimalitySheafVerification/Spt3.lean:7298:unconditional clean-axiom theorem; `conditional` = relative to a named `Prop` interface;
+PrimalitySheafVerification/Spt3.lean:7322:It is documentation with teeth: it compiles, it is audited by the axiom firewall, and `provedNeighbors`
+PrimalitySheafVerification/Spt3.lean:7407:/-! ## PART A (cont.) ??curated compile-time axiom firewall over the headline declarations.
+PrimalitySheafVerification/Spt3.lean:7408:Each line is a HARD build error if the named declaration acquires a forbidden axiom. -/
+PrimalitySheafVerification/Spt3.lean:7444:/-- **Certified closing axiom firewall.**  This audits the declarations that this file marks as
+PrimalitySheafVerification/Spt3.lean:7485:/-! ## PART A (cont.) ??certified axiom firewall closing gate.
+PrimalitySheafVerification/Spt4.lean:11:                       proofs (no `sorry`, no new global `axiom`).  Mathlib's
+PrimalitySheafVerification/Spt4.lean:1019:hypothesis (NOT a global `axiom`); each field is a genuine biconditional between a
+PrimalitySheafVerification/Spt4.lean:1819:hypotheses (structure fields), never as global `axiom`s**.  On this interface the
+PrimalitySheafVerification/Spt4.lean:2273:hypothesis ??never a global `axiom`. -/
+PrimalitySheafVerification/Spt4.lean:2303:certificates.  NOTE on honesty: we prove the sweeps **generally** (axiom-free over
+PrimalitySheafVerification/Spt4.lean:2304:the whole range) rather than by `native_decide`, which would add the compiler-trust
+PrimalitySheafVerification/Spt4.lean:2305:axiom and break the `{propext, Classical.choice, Quot.sound}` invariant; a small
+PrimalitySheafVerification/Spt4.lean:2325:the entire range (axiom-free), not by `native_decide`. -/
+PrimalitySheafVerification/Spt4.lean:2336:-- Explicit kernel-`decide` machine check on a representative subrange (axiom-free).
+PrimalitySheafVerification/Spt4.lean:2503:The deep geometric inputs are externalized as hypotheses (never global `axiom`s),
+PrimalitySheafVerification/Spt4.lean:2537:   ??  genuine proofs (no `sorry`, no new global `axiom`).                       ??PrimalitySheafVerification/Spt4.lean:2753:bound; recorded as an explicit hypothesis, never a global `axiom`. -/
+PrimalitySheafVerification/Spt4.lean:2853:(b) asserting them as a global `axiom`, which would BREAK this file's core
+PrimalitySheafVerification/Spt4.lean:2880:axiom: every theorem still kernel-checks within the three standard axioms. -/
+PrimalitySheafVerification/Spt4.lean:3546:explicit certificate (never a global `axiom`), prove it *yields* the all-degree
+PrimalitySheafVerification/Spt4.lean:4358:`axiom`). -/
+PrimalitySheafVerification/Spt4.lean:4837:   ??  resolution-`H?? Tor object iso (all sorry-free).                          ??PrimalitySheafVerification/Spt4.lean:4925:`ProjectiveResolution (??N)` ??no `sorry`, no axiom. -/
+PrimalitySheafVerification/Spt4.lean:5059:computation; recorded as a predicate, never asserted with `sorry`. -/
+PrimalitySheafVerification/Spt4.lean:5067:Four upgrades, all sorry-free and axiom-clean:
+PrimalitySheafVerification/Spt4.lean:5183:as a named, satisfiable hypothesis (never a global `axiom`). -/
+PrimalitySheafVerification/Spt4.lean:5709:紐⑤뱺 ??寃곌낵??臾댁“嫄대??대떎(媛???녿뒗 ?꾩뿭 `axiom` ?놁쓬). -/
+PrimalitySheafVerification/Spt4.lean:8693:/-! ## 짠? ??audit of the checklist extensions (axiom-free witness). -/
+PrimalitySheafVerification/Spt5.lean:3:  Spt5.lean ??sorry-free, axiom-free verified core of
+PrimalitySheafVerification/Spt5.lean:8:  Every theorem is kernel-checked against Mathlib, NO `sorry`, NO new global
+PrimalitySheafVerification/Spt5.lean:9:  `axiom`.  The `AxiomAudit` section confirms `sorryAx`-freeness; conditional
+PrimalitySheafVerification/Spt5.lean:19:  785 `Spt5.*` results, and FAILS the build if a single one depends on `sorryAx`
+PrimalitySheafVerification/Spt5.lean:20:  (`sorry`), `Lean.ofReduceBool` (`native_decide`), or any other axiom outside
+PrimalitySheafVerification/Spt5.lean:21:  the safe three ??verified non-vacuous against a `sorry`/`native_decide` probe.
+PrimalitySheafVerification/Spt5.lean:270:                       supplies the row Hasse proofs; `native_decide` explicitly excluded
+PrimalitySheafVerification/Spt5.lean:2875:    axiom; the splitting comes from Mathlib's `LinearMap.exists_rightInverse_of_surjective` +
+PrimalitySheafVerification/Spt5.lean:4904:      equality.  We do not add an axiom or structure field for that missing analytic theorem. -/
+PrimalitySheafVerification/Spt5.lean:4926:    `sum_linearization_padic`; no structure field, axiom, `sorry`, or log-multiplicativity assumption
+PrimalitySheafVerification/Spt5.lean:5235:/-- **SHEAF SEPARATION (identity axiom).**  A global section of the cyclic structure sheaf over
+PrimalitySheafVerification/Spt5.lean:5242:/-- **SHEAF GLUING (gluing axiom).**  Any pair of local sections `(s?? s_b)` over the cover
+PrimalitySheafVerification/Spt5.lean:5256:/-- The glued global section is UNIQUE (separation + gluing ??`??`): the full sheaf axiom on the
+PrimalitySheafVerification/Spt5.lean:5329:    theories).  Fabricating proofs would violate the file's `sorry`-free / axiom-audited contract.
+PrimalitySheafVerification/Spt5.lean:5355:    discharged on instances.  No `sorry`, no extra axioms (enforced by 짠III.2 `#assert_only_safe_axioms`). -/
+PrimalitySheafVerification/Spt5.lean:5735:    that route is a kernel-reduction cost issue, and `native_decide` is forbidden by the III.2+
+PrimalitySheafVerification/Spt5.lean:5736:    axiom firewall.  What is unconditional below is the Lean mathematics around the table:
+PrimalitySheafVerification/Spt5.lean:5751:      `native_decide`, which would import `Lean.ofReduceBool`. -/
+PrimalitySheafVerification/Spt5.lean:5833:    `(m,n)`, then Hasse follows.  No elliptic-curve geometry, no bundle field, no axiom: evaluate the
+PrimalitySheafVerification/Spt5.lean:6214:    discussion, and it uses no custom axiom. -/
+PrimalitySheafVerification/Spt5.lean:6705:          axiom-clean) TRACE level: `a??= a?? is the genuine Legendre count over `?뵿??, `a_{49} = a?눫꿎닋14`
+PrimalitySheafVerification/Spt5.lean:6708:          `native_decide` would add the `ofReduceBool` axiom and break the III.2??firewall) ??so the
+PrimalitySheafVerification/Spt5.lean:7451:    smuggled in as an axiom, but isolated as explicit structure fields and audited by the file-wide
+PrimalitySheafVerification/Spt5.lean:7452:    safe-axiom firewall. -/
+PrimalitySheafVerification/Spt5.lean:7698:    it proves the interface is logically consistent and axiom-free. -/
+PrimalitySheafVerification/Spt5.lean:7728:/-! ### 짠III.2 ??AUTOMATED axiom audit (compile-time gate).
+PrimalitySheafVerification/Spt5.lean:7733:    `collectAxioms` engine as `#print axioms`, so any `sorryAx` (from `sorry`), `Lean.ofReduceBool`
+PrimalitySheafVerification/Spt5.lean:7734:    (from `native_decide`), or NEW axiom introduced by an import (`Mathlib.NumberTheory.Padics.*`,
+PrimalitySheafVerification/Spt5.lean:7741:/-- **Compile-time axiom gate.**  `#assert_only_safe_axioms id` errors unless `id`'s transitive axiom
+PrimalitySheafVerification/Spt5.lean:7749:    throwError m!"III.2 AXIOM AUDIT FAILED: {cname} depends on forbidden axiom(s) {bad} \
+PrimalitySheafVerification/Spt5.lean:7753:/-- **짠III.2????WHOLE-FILE axiom firewall (certification-grade).**  `#assert_all_local_safe_axioms`
+PrimalitySheafVerification/Spt5.lean:7755:    not just a curated subset) and FAILS the build if any depends on an axiom outside
+PrimalitySheafVerification/Spt5.lean:7756:    `{propext, Classical.choice, Quot.sound}` ??catching `sorryAx` (`sorry`), `Lean.ofReduceBool`
+PrimalitySheafVerification/Spt5.lean:7757:    (`native_decide`), or any import-introduced axiom across the entire development at once. -/
+PrimalitySheafVerification/Spt5.lean:7774:-- A5 symbolic table certification: full prime range listed, no `native_decide`
+PrimalitySheafVerification/Spt5.lean:7781:-- (repair check) the surgically-repaired analysis lemmas are now sorryAx-free
+PrimalitySheafVerification/Spt5.lean:7785:    If ANY line below introduced a forbidden axiom, this section would fail to compile.  Grouped by
+PrimalitySheafVerification/Spt5.lean:7786:    the import whose axiom-cleanliness it certifies. -/
+PrimalitySheafVerification/Spt5.lean:7858:-- A5 symbolic table certification: full prime range listed, no `native_decide`
+PrimalitySheafVerification/Spt5.lean:7999:-- `decide`-based numeric facts (must use `decide`, NOT `native_decide` ??no `ofReduceBool`)
+PrimalitySheafVerification/Spt5.lean:8055:   above and fails the build on any forbidden axiom.  (Placed last so it sees the whole file.) -/
+PrimalitySheafVerification/Spt6.lean:3:  Spt6.lean ??sorry-free, axiom-free verified core of
+PrimalitySheafVerification/Spt6.lean:8:  Original core was kernel-checked against Mathlib; NO `sorry`, NO new global
+PrimalitySheafVerification/Spt6.lean:9:  `axiom`.  Later integrated stages include several deliberately tiny
+PrimalitySheafVerification/Spt6.lean:105:    짠10.3 / Tier-2 T2-2 motive realization UPSTREAM: only preservesEuler axiom + external defm; bump
+PrimalitySheafVerification/Spt6.lean:108:    짠8.8 / Tier-2 T2-3 geometric Frobenius UPSTREAM: single Lefschetz axiom (#E=p+1?뭓?? ??DERIVE
+PrimalitySheafVerification/Spt6.lean:616:/-! ## T2-3 ??geometric Frobenius via a single Weil/Lefschetz axiom (upstream axiomatization).
+PrimalitySheafVerification/Spt6.lean:619:field.  T2-3 moves the assumption upstream to a single general axiom: the Weil-cohomology action of
+PrimalitySheafVerification/Spt6.lean:630:/-- **T2-3 ??geometric-Frobenius/Weil data (single upstream axiom).**  The geometric Frobenius trace
+PrimalitySheafVerification/Spt6.lean:678:/-- The single Lefschetz axiom SUBSUMES the earlier `FrobeniusData` interface: it produces the
+PrimalitySheafVerification/Spt6.lean:1689:    `.some`; the resulting use of `Classical.choice` stays inside the allowed axiom set.) -/
+PrimalitySheafVerification/Spt6.lean:3330:/-! ## 짠L ??Tier 3: interface / conditional formalization of the cohomological inputs (axiom-free).
+PrimalitySheafVerification/Spt6.lean:3715:/-! ## C1 ??Voevodsky motives & realization (Tier C, universal-axiom interface).
+PrimalitySheafVerification/Spt6.lean:3723:a realization functor `R : M 收?D`; the **Euler-preservation axiom** `preservesEuler` (`R` carries
+PrimalitySheafVerification/Spt6.lean:3726:axiom `bump = ?_mot(Def_p)`.  From these, `bump = ??_mot = ?_mot(Xp) ???_mot(Up)` is **derived**
+PrimalitySheafVerification/Spt6.lean:3740:/-- **C1 ??motivic realization data (Tier-C universal-axiom interface).**  See the section
+PrimalitySheafVerification/Spt6.lean:3751:  /-- **Euler-preservation axiom.**  `R` sends every distinguished triangle to an additive relation
+PrimalitySheafVerification/Spt6.lean:3759:  /-- **Realization axiom.**  The bump equals the motivic Euler characteristic of the deformation. -/
+PrimalitySheafVerification/Spt6.lean:3767:Euler-preservation axiom). -/
+PrimalitySheafVerification/Spt6.lean:3787:Euler-preservation axiom `preservesEuler` (`? ??R` additive on distinguished triangles) ??plus the
+PrimalitySheafVerification/Spt6.lean:3804:functor `R`, the target Euler characteristic `?`, the Euler-preservation axiom `preservesEuler`, and
+PrimalitySheafVerification/Spt6.lean:3814:  /-- **Euler-preservation axiom** (the single homological axiom): `? ??R` is additive on
+PrimalitySheafVerification/Spt6.lean:3912:functional `D` that is **additive on short exact sequences** (the Euler / localization-LES axiom for
+PrimalitySheafVerification/Spt6.lean:3924:localization-LES axiom for an arbitrary closed immersion). -/
+PrimalitySheafVerification/Spt6.lean:3928:  /-- **Additivity on short exact sequences** (the single general axiom). -/
+PrimalitySheafVerification/Spt6.lean:4011:the **sheaf-theoretic CRT gluing** explicit: the gluing axiom (local residues glue iff compatible on
+PrimalitySheafVerification/Spt6.lean:4012:overlaps) IS `crt_solvable_iff`, and the separatedness axiom (uniqueness mod `lcm`) is `lcm_dvd`.
+PrimalitySheafVerification/Spt6.lean:4019:`a ??b` vanishes mod `gcd(M,N)` ??the "agree on overlaps" hypothesis of the sheaf gluing axiom. -/
+PrimalitySheafVerification/Spt6.lean:4023:CRT-compatible.  This *is* the sheaf gluing axiom for the primality/CRT structure (`crt_solvable_iff`). -/
+PrimalitySheafVerification/Spt6.lean:4039:agree mod `lcm(M,N)` ??the *separated* half of the sheaf axiom. -/
+PrimalitySheafVerification/Spt6.lean:4074:universal-axiom principle we DERIVE the (v) faces from the C2 `CurveWeilCohomology` and C1
+PrimalitySheafVerification/Spt6.lean:4230:axiom-free conditional interfaces.  Each theorem is either a projection of an explicit structure
+PrimalitySheafVerification/Spt6.lean:5390:The first closed-model pass provided axiom-free theorem shapes.  This second layer makes those
+PrimalitySheafVerification/Spt6.lean:6537:/-- `CurveDetectorData` is an honest axiom-free interface, but its comparison
+PrimalitySheafVerification/Spt6.lean:6735:/-- Stage-2 certificate layer: small axiom-free toy/sanity lemmas, not geometric closure. -/
+PrimalitySheafVerification/Spt7.lean:3:  Spt7.lean ??sorry-free, axiom-free verified core of
+PrimalitySheafVerification/Spt7.lean:8:  Kernel-checked against Mathlib; NO `sorry`, NO new global `axiom`.  Conditional
+PrimalitySheafVerification/Spt7.lean:5080:theorems in the file; no global axiom is introduced by the checklist layer. -/
