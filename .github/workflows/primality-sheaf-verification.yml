@@ -19,19 +19,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Lean and Mathlib cache
+      - name: Set up Lean
         uses: leanprover/lean-action@v1
         with:
           build: false
           test: false
           lint: false
 
-      - name: Build all 13 modules and collect logs
+      - name: Restore Mathlib compiled cache
+        run: lake exe cache get
+
+      - name: Compile all 13 modules and collect logs
         id: module-build
         shell: bash
         run: |
           set +e
           mkdir -p build-logs
+          artifact_dir='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p "$artifact_dir"
 
           modules=(
             Spt1
@@ -53,8 +58,10 @@ jobs:
           overall=0
 
           for module in "${modules[@]}"; do
-            echo "::group::Building ${module}"
-            lake --no-ansi build "+PrimalitySheafVerification.${module}" 2>&1 \
+            echo "::group::Compiling ${module}"
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "${artifact_dir}/${module}.olean" \
+              -i "${artifact_dir}/${module}.ilean" 2>&1 \
               | tee "build-logs/${module}.log"
             code=${PIPESTATUS[0]}
             echo "$code" > "build-logs/${module}.exit-code.txt"
@@ -72,9 +79,16 @@ jobs:
           done
 
           if [ "$overall" -eq 0 ]; then
-            lake --no-ansi build +PrimalitySheafVerification.BuildAll 2>&1 \
+            echo '::group::Compiling BuildAll'
+            lake env lean PrimalitySheafVerification/BuildAll.lean \
+              -o "${artifact_dir}/BuildAll.olean" \
+              -i "${artifact_dir}/BuildAll.ilean" 2>&1 \
               | tee build-logs/BuildAll.log
             aggregate_code=${PIPESTATUS[0]}
+            echo '::endgroup::'
+            if [ "$aggregate_code" -ne 0 ]; then
+              overall=1
+            fi
           else
             aggregate_code=1
             echo 'Skipped because at least one module failed.' \
@@ -83,7 +97,7 @@ jobs:
 
           echo "$aggregate_code" > build-logs/BuildAll.exit-code.txt
 
-          find .lake/build/lib/lean/PrimalitySheafVerification \
+          find "$artifact_dir" \
             -maxdepth 1 -type f \
             \( -name '*.olean' -o -name '*.ilean' -o -name '*.olean.private' \) \
             -printf '%f,%s,%TY-%Tm-%TdT%TH:%TM:%TSZ\n' \
@@ -100,6 +114,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: primality-sheaf-build-logs
-          path: build-logs
+          path: |
+            build-logs
+            .lake/build/lib/lean/PrimalitySheafVerification
           if-no-files-found: error
           retention-days: 30
