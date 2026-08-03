@@ -5,14 +5,14 @@ from pathlib import Path
 ROOT = Path("PrimalitySheafVerification")
 
 
-def replace_once(path: Path, old: str, new: str, label: str) -> bool:
+def replace(path: Path, old: str, new: str, label: str) -> bool:
     text = path.read_text(encoding="utf-8")
-    count = text.count(old)
-    if count == 0:
-        print(f"{label}: already applied or source changed")
+    n = text.count(old)
+    if n == 0:
+        print(f"{label}: already applied/source changed")
         return False
-    if count != 1:
-        raise RuntimeError(f"{label}: expected one match, found {count}")
+    if n != 1:
+        raise RuntimeError(f"{label}: expected one match, found {n}")
     path.write_text(text.replace(old, new), encoding="utf-8", newline="\n")
     print(f"{label}: applied")
     return True
@@ -20,122 +20,39 @@ def replace_once(path: Path, old: str, new: str, label: str) -> bool:
 
 def main() -> int:
     changed = False
-
     spt2 = ROOT / "Spt2.lean"
-    changed = replace_once(
-        spt2,
-        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent := by
-  rw [quotientExtension_ker]
-
-noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
-    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
-      (quotientExtension f).Cotangent :=
-  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
-    ((quotientSpanCotangentEquivKer f).trans
-      (quotientExtensionCotangentEquivKer f))
+    changed |= replace(spt2,
+"""  map_add' x y := rfl
+  map_smul' r x := by
 """,
-        """noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
-    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
-      (quotientExtension f).ker.Cotangent := by
-  have h : Ideal.span ({f} : Set K[X]) = (quotientExtension f).ker :=
-    (quotientExtension_ker f).symm
-  cases h
-  exact LinearEquiv.refl K _
-
-noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
-    (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
-      (quotientExtension f).Cotangent :=
-  ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
-    ((quotientSpanCotangentEquivKer f).trans
-      (quotientExtensionCotangentEquivKer f))
+"""  map_add' x y := by
+    apply Algebra.Extension.Cotangent.ext
+    rfl
+  map_smul' r x := by
+""", "Spt2 cotangent equivalence additivity")
+    changed |= replace(spt2,
+"""  unfold principalCotangentQuotEquiv quotientExtensionCotangentEquivKer
+  rw [hmap]
 """,
-        "Spt2 eliminate the ideal equality before cotangent instance synthesis",
-    ) or changed
-
-    changed = replace_once(
-        spt2,
-        """      rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
-      exact y.property⟩
-""",
-        """      rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
-      simpa only [LinearMap.mem_ker, LinearEquiv.apply_symm_apply] using y.property⟩
-""",
-        "Spt2 cancel the conormal equivalence in the stored kernel witness",
-    ) or changed
+"""  unfold principalCotangentQuotEquiv quotientExtensionCotangentEquivKer
+  rw [LinearEquiv.ofBijective_apply, hmap]
+""", "Spt2 expose bijective equivalence application")
 
     spt3 = ROOT / "Spt3.lean"
-    changed = replace_once(
-        spt3,
-        """    s = t := by
-  have hId := h (𝟙 U)
-  rw [Functor.map_id] at hId
-  change s = t at hId
-  exact hId
-""",
-        """    s = t := by
-  have hId := h (𝟙 U)
-  rw [(amalgam Fnum Fmod Fpadic FEC).toFunctor.map_id] at hId
-  simpa using hId
-""",
-        "Spt3 use the concrete functor map-id theorem",
-    ) or changed
-
-    changed = replace_once(
-        spt3,
-        """  obtain ⟨V, f, hf, hxV⟩ := hcov x hx
-  simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
-""",
-        """  obtain ⟨V, f, hf, hxV⟩ := hcov x hx
-  have hmem := hf (PLift.up ⟨x, hxV⟩)
-  rw [RepointedConst_map_apply] at hmem
-  have heq :
-      s (liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩)) = s p :=
-    RepointedConst_const s _ _
-  rwa [heq] at hmem
-""",
-        "Spt3 transport predicate membership across proof-irrelevant points",
-    ) or changed
-
-    changed = replace_once(
-        spt3,
-        """  obtain ⟨V, f, hf, hxV⟩ := hcov x hx
-  rw [hconst U.unop ⟨x, hx⟩, ← hconst V ⟨x, hxV⟩]
-  simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
-""",
-        """  obtain ⟨V, f, hf, hxV⟩ := hcov x hx
-  have hmem := hf (PLift.up ⟨x, hxV⟩)
-  rw [RepointedConst_map_apply] at hmem
-  rw [hconst V ⟨x, hxV⟩] at hmem
-  rw [hconst U.unop ⟨x, hx⟩]
-  have heq :
-      s (liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩)) = s p :=
-    RepointedConst_const s _ _
-  rwa [heq] at hmem
-""",
-        "Spt3 transport variable-layer membership across proof-irrelevant points",
-    ) or changed
+    text = spt3.read_text(encoding="utf-8")
+    n = text.count("leOfHom f.unop")
+    if n:
+        spt3.write_text(text.replace("leOfHom f.unop", "leOfHom f"), encoding="utf-8", newline="\n")
+        print(f"Spt3 restriction arrow direction: applied {n}")
+        changed = True
 
     spt4 = ROOT / "Spt4.lean"
-    changed = replace_once(
-        spt4,
-        """theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  simpa [resC, df] using
-    (ChainComplex.of_d Xf (df N)
-      (fun n => by
-        have : df N (n + 1) = 0 := rfl
-        rw [this, zero_comp]) (j + 1))
-""",
-        """theorem resC_d_succ_zero (N j : ℕ) : (resC N).d (j + 1 + 1) (j + 1) = 0 := by
-  change ChainComplex.of.d Xf (df N) (j + 1 + 1) (j + 1) = 0
-  rw [ChainComplex.of_d]
-  rfl
-""",
-        "Spt4 compute higher resolution differential without simplifier expansion",
-    ) or changed
+    changed |= replace(spt4,
+"""set_option maxHeartbeats 800000 in
+theorem resC_d_succ_zero""",
+"""theorem resC_d_succ_zero""", "Spt4 remove misplaced local option")
 
-    print("Final Spt2/Spt3/Spt4 repairs changed sources." if changed else "No final SPT changes needed.")
+    print("Final SPT repairs changed sources." if changed else "No final SPT changes needed.")
     return 0
 
 
