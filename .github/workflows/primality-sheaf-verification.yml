@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: primality-sheaf-${{ github.ref }}
@@ -52,6 +52,21 @@ jobs:
           python3 scripts/apply_second_pass_repairs.py
           python3 scripts/apply_forty_first_idempotence_fix.py
           python3 scripts/apply_post_second_pass_repairs.py
+
+      - name: Materialize deterministic repairs into Lean sources
+        if: github.event_name == 'push' && github.ref == 'refs/heads/fix/primality-sheaf-clean-build'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- PrimalitySheafVerification; then
+            echo 'Lean sources already contain every deterministic repair.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification
+          git commit -m 'repair: materialize deterministic Lean source repairs [skip ci]'
+          git push origin HEAD:fix/primality-sheaf-clean-build
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
