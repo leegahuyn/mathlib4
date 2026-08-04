@@ -26,6 +26,7 @@ from apply_forty_seventh_pass_repairs import (
 from apply_forty_eighth_mock1_targeting import (
     main as repair_forty_eighth_mock1_targeting,
 )
+from apply_forty_ninth_pass_repairs import main as repair_forty_ninth_pass
 from apply_fourth_pass_repairs import main as repair_fourth_pass
 from apply_fourteenth_pass_repairs import main as repair_fourteenth_pass
 from apply_mock1_advanced_fifth_repairs import main as repair_mock1_advanced_fifth
@@ -125,6 +126,7 @@ def main() -> int:
     repair_forty_seventh_mock2()
     repair_forty_seventh_mock2_advanced()
     repair_forty_seventh_functional_analysis()
+    repair_forty_ninth_pass()
     return 0
 
 
