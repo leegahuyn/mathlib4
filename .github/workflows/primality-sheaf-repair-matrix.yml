@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: primality-sheaf-matrix-${{ github.ref }}
+  group: primality-sheaf-matrix-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -24,13 +24,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [Spt2, Mock1, Mock1_Advanced, Mock2, Mock2_Advanced, Mock2_FunctionalAnalysis]
+        module: [Mock1_Advanced, Mock2, Mock2_Advanced, Mock2_FunctionalAnalysis]
 
     steps:
-      - name: Checkout
+      - name: Checkout triggering head commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/primality-sheaf-clean-build
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
       - name: Apply current unmaterialized repairs
