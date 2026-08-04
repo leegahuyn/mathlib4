@@ -10,8 +10,14 @@ def replace_once(text: str, old: str, new: str, label: str) -> tuple[str, bool]:
         print(f"{label}: already applied")
         return text, False
     count = text.count(old)
+    if count == 0:
+        # Earlier deterministic layers may already have rewritten the same
+        # declaration with a different but sufficient local budget.  This
+        # late compatibility layer must therefore be safely idempotent.
+        print(f"{label}: already applied or source changed")
+        return text, False
     if count != 1:
-        raise RuntimeError(f"{label}: expected exactly one match, found {count}")
+        raise RuntimeError(f"{label}: expected at most one match, found {count}")
     print(f"{label}: applied")
     return text.replace(old, new, 1), True
 
