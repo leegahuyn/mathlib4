@@ -126,19 +126,24 @@ def repair_mock2_advanced() -> None:
     text = path.read_text(encoding="utf-8")
     changed = False
 
-    start = text.index("namespace GenuineInverseHalfWeightSobolev")
-    end = text.index("end GenuineInverseHalfWeightSobolev", start)
-    block = text[start:end]
-    replacements = {
-        "IsAutomorphic ν": "GenuineInverseHalfWeightAutomorphy.IsAutomorphic ν",
-        "IsAEAutomorphic ν": "GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic ν",
-    }
-    for old, new in replacements.items():
-        block, n = re.subn(rf"(?<![A-Za-z0-9_.]){re.escape(old)}", new, block)
-        if n:
-            changed = True
-            print(f"Mock2Advanced qualify {old}: applied {n}")
-    text = text[:start] + block + text[end:]
+    namespace_start = "namespace GenuineInverseHalfWeightSobolev"
+    namespace_end = "end GenuineInverseHalfWeightSobolev"
+    if namespace_start in text:
+        start = text.index(namespace_start)
+        end = text.index(namespace_end, start)
+        block = text[start:end]
+        replacements = {
+            "IsAutomorphic ν": "GenuineInverseHalfWeightAutomorphy.IsAutomorphic ν",
+            "IsAEAutomorphic ν": "GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic ν",
+        }
+        for old, new in replacements.items():
+            block, n = re.subn(rf"(?<![A-Za-z0-9_.]){re.escape(old)}", new, block)
+            if n:
+                changed = True
+                print(f"Mock2Advanced qualify {old}: applied {n}")
+        text = text[:start] + block + text[end:]
+    else:
+        print("Mock2Advanced Sobolev namespace qualification: already materialized or namespace removed")
 
     old = """  apply hclosure
   simpa only [Submodule.topologicalClosure_coe] using u.property
