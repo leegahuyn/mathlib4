@@ -4,7 +4,7 @@ import apply_fifty_seventh_pass_repairs as pass57
 
 
 def main() -> int:
-    """Apply only the next unmaterialized Lean repair wave."""
+    """Verify the materialized fifty-seventh Lean repair wave idempotently."""
     return pass57.main()
 
 
