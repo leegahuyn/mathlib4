@@ -79,10 +79,11 @@ def repair_mock1() -> None:
     A_inftyMatrix.mulVec c = A_infty_mul c := by
   classical
   funext i
-  simp [Matrix.mulVec, dotProduct, A_inftyMatrix, A_infty, A_infty_mul]
+  simp [Matrix.mulVec, dotProduct, A_inftyMatrix, A_infty, A_infty_mul,
+    sub_eq_add_neg]
 """
     text, did = replace_once(text, old, new,
-        "Mock1 unfold the Sum-indexed extraction dot product")
+        "Mock1 unfold and normalize the Sum-indexed extraction dot product")
     changed |= did
 
     old = """theorem S4D6J12Matrix_mulVec_solution :
@@ -127,10 +128,10 @@ def repair_mock1() -> None:
   fin_cases i <;>
     simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
       S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
-      ring
+    first | ring | congr 1
 """
     text, did = replace_once(text, old, new,
-        "Mock1 expand the symbolic D6/J12 right inverse")
+        "Mock1 normalize the symbolic D6/J12 right inverse indices")
     changed |= did
 
     if changed:
