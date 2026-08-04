@@ -73,8 +73,12 @@ NEW_PROOF = """  have hprincipal :
       ⟨a * f, (quotientExtension_ker f).symm ▸
         Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩
   rw [hprincipal, hmap]
-  simp only [quotientSpanCotangentEquivKer,
-    idealCotangentEquivOfEqKX_toCotangent]
+  apply Algebra.Extension.Cotangent.ext
+  simp only [Algebra.Extension.Cotangent.val_of,
+    Algebra.Extension.Cotangent.val_mk, quotientSpanCotangentEquivKer]
+  rw [idealCotangentEquivOfEqKX_toCotangent]
+  congr 1
+  apply Subtype.ext
   rfl
 """
 
@@ -104,16 +108,16 @@ def main() -> int:
     if NEW_PROOF not in text:
         if OLD_PROOF in text:
             text = text.replace(OLD_PROOF, NEW_PROOF, 1)
-            print("Spt2 generator transport without extension-level elimination: applied")
+            print("Spt2 generator transport via cotangent extensionality: applied")
             changed = True
         elif PREVIOUS_PROOF in text:
             text = text.replace(PREVIOUS_PROOF, NEW_PROOF, 1)
-            print("Spt2 generator transport without extension-level elimination: applied")
+            print("Spt2 generator transport via cotangent extensionality: applied")
             changed = True
         else:
             raise RuntimeError("Spt2 generator proof anchor not found")
     else:
-        print("Spt2 generator transport without extension-level elimination: already applied")
+        print("Spt2 generator transport via cotangent extensionality: already applied")
 
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
