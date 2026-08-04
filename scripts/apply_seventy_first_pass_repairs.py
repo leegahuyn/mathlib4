@@ -281,8 +281,8 @@ def repair_mock2_advanced() -> None:
         text,
         """a.sqrtFactor_ne_zero""",
         """sqrtFactor_ne_zero a""",
-        3,
-        "Mock2Advanced replace three remaining square-root field-notation calls",
+        7,
+        "Mock2Advanced replace seven remaining square-root field-notation calls",
     )
     changed |= did
 
