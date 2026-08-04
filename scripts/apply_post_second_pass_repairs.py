@@ -5,6 +5,7 @@ from apply_eighth_pass_repairs import main as repair_eighth_pass
 from apply_eleventh_pass_repairs import main as repair_eleventh_pass
 from apply_fifteenth_pass_repairs import main as repair_fifteenth_pass
 from apply_fifth_pass_repairs import main as repair_fifth_pass
+from apply_fortieth_pre_repairs import main as repair_fortieth_pre_pass
 from apply_fourth_pass_repairs import main as repair_fourth_pass
 from apply_fourteenth_pass_repairs import main as repair_fourteenth_pass
 from apply_mock1_advanced_fifth_repairs import main as repair_mock1_advanced_fifth
@@ -88,6 +89,7 @@ def main() -> int:
     repair_thirty_sixth_pass()
     repair_thirty_seventh_pass()
     repair_thirty_eighth_pass()
+    repair_fortieth_pre_pass()
     repair_thirty_ninth_pass()
     return 0
 
