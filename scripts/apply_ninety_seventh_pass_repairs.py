@@ -9,12 +9,72 @@ ROOT = Path("PrimalitySheafVerification")
 replace_exact = pass71.replace_exact
 
 
+def repair_mock1_advanced() -> None:
+    path = ROOT / "Mock1_Advanced.lean"
+    text = path.read_text(encoding="utf-8")
+    changed = False
+
+    text, did = replace_exact(
+        text,
+        """def AdvancedClaimsIIPaperI2MahlerEval (n : Nat) : Int :=
+  AdvancedClaimsIIPaperI2MahlerRawEval n %
+    (PrimePower AdvancedClaimsIIPaperI2Prime
+      AdvancedClaimsIIPaperI2Precision : Int)
+""",
+        """def AdvancedClaimsIIPaperI2MahlerEval (n : Nat) : Int :=
+  AdvancedClaimsIIPaperI2MahlerRawEval n -
+    (PrimePower AdvancedClaimsIIPaperI2Prime
+      AdvancedClaimsIIPaperI2Precision : Int) *
+      (AdvancedClaimsIIPaperI2MahlerRawEval n /
+        (PrimePower AdvancedClaimsIIPaperI2Prime
+          AdvancedClaimsIIPaperI2Precision : Int))
+""",
+        1,
+        "Mock1Advanced express the normalized Mahler value by quotient subtraction",
+    )
+    changed |= did
+
+    text, did = replace_exact(
+        text,
+        """  matches_target := by
+    intro n
+    unfold FiniteCongruenceMod IntCongruent
+    refine ⟨AdvancedClaimsIIPaperI2MahlerRawEval n /
+      (PrimePower AdvancedClaimsIIPaperI2Prime
+        AdvancedClaimsIIPaperI2Precision : Int), ?_⟩
+    have h := Int.emod_add_ediv
+      (AdvancedClaimsIIPaperI2MahlerRawEval n)
+      (PrimePower AdvancedClaimsIIPaperI2Prime
+        AdvancedClaimsIIPaperI2Precision : Int)
+    unfold AdvancedClaimsIIPaperI2MahlerEval
+    omega
+""",
+        """  matches_target := by
+    intro n
+    unfold FiniteCongruenceMod IntCongruent
+    refine ⟨AdvancedClaimsIIPaperI2MahlerRawEval n /
+      (PrimePower AdvancedClaimsIIPaperI2Prime
+        AdvancedClaimsIIPaperI2Precision : Int), ?_⟩
+    unfold AdvancedClaimsIIPaperI2MahlerEval
+    ring
+""",
+        1,
+        "Mock1Advanced certify the raw Mahler sum by an explicit divisibility witness",
+    )
+    changed |= did
+
+    if changed:
+        path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def repair_mock2() -> None:
     path = ROOT / "Mock2.lean"
     text = path.read_text(encoding="utf-8")
     changed = False
 
-    old = """theorem inverseDerivative_conjugate_term
+    replacements = [
+        (
+            """theorem inverseDerivative_conjugate_term
     (g : LocalFrameChange (X := X) (U := U)) (A : Omega X 1 U) :
     matrixWedge (matrixWedge (matrixDifferential g.inverse) A) g.forward =
       -matrixWedge g.pureGauge (g.conjugateOne A) := by
@@ -38,8 +98,8 @@ def repair_mock2() -> None:
         simpa using
           matrixWedge_assoc g.pureGauge (matrixWedge g.inverse A) g.forward
   rw [matrixWedge_neg_left, matrixWedge_neg_left, hnormalize]
-"""
-    new = """theorem inverseDerivative_conjugate_term
+""",
+            """theorem inverseDerivative_conjugate_term
     (g : LocalFrameChange (X := X) (U := U)) (A : Omega X 1 U) :
     matrixWedge (matrixWedge (matrixDifferential g.inverse) A) g.forward =
       -matrixWedge g.pureGauge (g.conjugateOne A) := by
@@ -71,13 +131,11 @@ def repair_mock2() -> None:
       rw [matrixWedge_neg_left, matrixWedge_neg_left]
     _ = -matrixWedge g.pureGauge (g.conjugateOne A) := by
       rw [hnormalize]
-"""
-    text, did = replace_exact(
-        text, old, new, 1,
-        "Mock2 normalize the inverse derivative conjugate term by calc")
-    changed |= did
-
-    old = """theorem inverseDerivative_differential_term
+""",
+            "Mock2 normalize the inverse derivative conjugate term by calc",
+        ),
+        (
+            """theorem inverseDerivative_differential_term
     (g : LocalFrameChange (X := X) (U := U)) :
     matrixWedge (matrixDifferential g.inverse)
         (matrixDifferential g.forward) =
@@ -92,8 +150,8 @@ def repair_mock2() -> None:
     simpa using matrixWedge_assoc g.pureGauge g.inverse
       (matrixDifferential g.forward)
   rw [matrixWedge_neg_left, hnormalize]
-"""
-    new = """theorem inverseDerivative_differential_term
+""",
+            """theorem inverseDerivative_differential_term
     (g : LocalFrameChange (X := X) (U := U)) :
     matrixWedge (matrixDifferential g.inverse)
         (matrixDifferential g.forward) =
@@ -117,10 +175,32 @@ def repair_mock2() -> None:
       rw [matrixWedge_neg_left]
     _ = -matrixWedge g.pureGauge g.pureGauge := by
       rw [hnormalize]
+""",
+            "Mock2 normalize the inverse derivative differential term by calc",
+        ),
+        (
+            """      rw [g.inverseDerivative_differential_term,
+        matrixDifferential_squared]
+""",
+            """      rw [g.inverseDerivative_differential_term,
+        matrixDifferential_squared] <;> rfl
+""",
+            "Mock2 close the rewritten Maurer-Cartan summand by reflexivity",
+        ),
+    ]
+    for old, new, label in replacements:
+        text, did = replace_exact(text, old, new, 1, label)
+        changed |= did
+
+    old = """      simp [identityZeroForm, zeroFormMatrix, matrixVectorWedge,
+        Fin.sum_univ_two, zeroFormCoefficient, wedge]
+"""
+    new = """      simp [identityZeroForm, zeroFormMatrix, matrixVectorWedge,
+        Fin.sum_univ_two, zeroFormCoefficient, wedge, Matrix.one_apply]
 """
     text, did = replace_exact(
         text, old, new, 1,
-        "Mock2 normalize the inverse derivative differential term by calc")
+        "Mock2 expose identity-matrix entries in the vector action")
     changed |= did
 
     if changed:
@@ -132,66 +212,52 @@ def repair_mock2_advanced() -> None:
     text = path.read_text(encoding="utf-8")
     changed = False
 
-    start = text.index("namespace GenuineWeightedSobolev")
-    end = text.index("end GenuineWeightedSobolev", start)
-    block = text[start:end]
-    for old_name, new_name in [
-        ("GenuineInverseHalfWeightAutomorphy.IsAutomorphic",
-         "GenuineHalfWeightAutomorphy.IsAutomorphic"),
-        ("GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic",
-         "GenuineHalfWeightAutomorphy.IsAEAutomorphic"),
-    ]:
-        count = block.count(old_name)
-        if count:
-            block = block.replace(old_name, new_name)
-            changed = True
-            print(f"Mock2Advanced restore {new_name}: applied {count}")
-    explicit = "exact (M.core_equivariant v hv).isAE μ)"
-    implicit = "exact (M.core_equivariant v hv).isAE)"
-    if explicit in block:
-        block = block.replace(explicit, implicit, 1)
-        changed = True
-        print("Mock2Advanced restore implicit measure in the genuine half-weight completion: applied 1")
-    text = text[:start] + block + text[end:]
-
     replacements = [
-        ("""  rw [cuspPowerDensity_integrable_iff hY]
+        (
+            """  rw [cuspPowerDensity_integrable_iff hY]
   unfold basicGrowth
   linarith
 """,
-         """  rw [cuspPowerDensity_integrable_iff hY]
+            """  rw [cuspPowerDensity_integrable_iff hY]
   unfold basicGrowth
   constructor <;> intro h <;> linarith
 """,
-         "Mock2Advanced split the exact basic power window"),
-        ("""  rw [cuspPowerDensity_integrable_iff hY]
+            "Mock2Advanced split the exact basic power window",
+        ),
+        (
+            """  rw [cuspPowerDensity_integrable_iff hY]
   unfold rankinSelbergGrowth basicGrowth
   linarith
 """,
-         """  rw [cuspPowerDensity_integrable_iff hY]
+            """  rw [cuspPowerDensity_integrable_iff hY]
   unfold rankinSelbergGrowth basicGrowth
   constructor <;> intro h <;> linarith
 """,
-         "Mock2Advanced split the exact Rankin-Selberg power window"),
-        ("""  rw [rankinSelberg_power_integrable_iff hY,
+            "Mock2Advanced split the exact Rankin-Selberg power window",
+        ),
+        (
+            """  rw [rankinSelberg_power_integrable_iff hY,
     eisensteinGrowth_eq_self (by linarith : 1 / 2 ≤ σ)]
   linarith
 """,
-         """  rw [rankinSelberg_power_integrable_iff hY,
+            """  rw [rankinSelberg_power_integrable_iff hY,
     eisensteinGrowth_eq_self (by linarith : 1 / 2 ≤ σ)]
   constructor <;> intro h <;> linarith
 """,
-         "Mock2Advanced split the beta-one Rankin-Selberg window"),
-        ("""  rw [intervalIntegral.integrableOn_Ioo_rpow_iff hY]
+            "Mock2Advanced split the beta-one Rankin-Selberg window",
+        ),
+        (
+            """  rw [intervalIntegral.integrableOn_Ioo_rpow_iff hY]
   linarith
 """,
-         """  rw [intervalIntegral.integrableOn_Ioo_rpow_iff hY]
+            """  rw [intervalIntegral.integrableOn_Ioo_rpow_iff hY]
   constructor <;> intro h <;> linarith
 """,
-         "Mock2Advanced split the near-zero beta-one window"),
+            "Mock2Advanced split the near-zero beta-one window",
+        ),
     ]
-    for old_text, new_text, label in replacements:
-        text, did = replace_exact(text, old_text, new_text, 1, label)
+    for old, new, label in replacements:
+        text, did = replace_exact(text, old, new, 1, label)
         changed |= did
 
     if changed:
@@ -203,12 +269,26 @@ def repair_functional_analysis() -> None:
     text = path.read_text(encoding="utf-8")
     changed = False
 
-    old = """theorem gammaTwoOpenCarrier_isOpen : IsOpen gammaTwoOpenCarrier := by
+    text, did = replace_exact(
+        text,
+        """      (measurableSet_eq Complex.measurable_re
+        measurable_const).nullMeasurableSet
+""",
+        """      (Complex.measurable_re measurableSet_singleton).nullMeasurableSet
+""",
+        1,
+        "FunctionalAnalysis use measurable real-part preimage of a singleton",
+    )
+    changed |= did
+
+    text, did = replace_exact(
+        text,
+        """theorem gammaTwoOpenCarrier_isOpen : IsOpen gammaTwoOpenCarrier := by
   unfold gammaTwoOpenCarrier
   refine isOpen_iUnion fun q ↦ ?_
   exact ModularGroup.isOpen_fdo.smul (gammaTwoCosetRep q)
-"""
-    new = """theorem gammaTwoOpenCarrier_isOpen : IsOpen gammaTwoOpenCarrier := by
+""",
+        """theorem gammaTwoOpenCarrier_isOpen : IsOpen gammaTwoOpenCarrier := by
   unfold gammaTwoOpenCarrier
   refine isOpen_iUnion fun q ↦ ?_
   let g : SL(2, ℤ) := gammaTwoCosetRep q
@@ -224,10 +304,10 @@ def repair_functional_analysis() -> None:
       exact Set.mem_smul_set.mpr ⟨g⁻¹ • z, hz, by simp⟩
   rw [hset]
   exact ModularGroup.isOpen_fdo.preimage (continuous_sl2z_smul g⁻¹)
-"""
-    text, did = replace_exact(
-        text, old, new, 1,
-        "FunctionalAnalysis prove openness of modular translates by inverse preimage")
+""",
+        1,
+        "FunctionalAnalysis prove openness of modular translates by inverse preimage",
+    )
     changed |= did
 
     marker = """/-- All translates of the boundary omitted from the full modular open tile. -/
@@ -241,7 +321,7 @@ def repair_functional_analysis() -> None:
          (((γ : SL(2, ℤ)) : Matrix (Fin 2) (Fin 2) ℤ) 1 1)) from by
       intro a b h
       apply Matrix.SpecialLinearGroup.ext
-      funext i j
+      intro i j
       fin_cases i <;> fin_cases j <;> simp_all).countable
 
 """
@@ -258,6 +338,7 @@ def repair_functional_analysis() -> None:
 
 def main() -> int:
     pass96.main()
+    repair_mock1_advanced()
     repair_mock2()
     repair_mock2_advanced()
     repair_functional_analysis()
