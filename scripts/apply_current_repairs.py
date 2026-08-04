@@ -27,7 +27,7 @@ def tolerant_replace_exact(
 
 
 def main() -> int:
-    """Apply only repairs not yet materialized into the checked-in Lean sources."""
+    """Recheck the materialized fifty-fifth repair against the current sources."""
     pass55.replace_exact = tolerant_replace_exact
     return pass55.main()
 
