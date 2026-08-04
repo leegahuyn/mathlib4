@@ -9,10 +9,12 @@ from apply_fortieth_pre_repairs import main as repair_fortieth_pre_pass
 from apply_forty_first_pass_repairs import (
     repair_functional_analysis as repair_forty_first_functional_analysis,
     repair_mock2 as repair_forty_first_mock2,
-    repair_mock2_advanced as repair_forty_first_mock2_advanced,
 )
 from apply_forty_second_mock1_advanced_repairs import (
     main as repair_forty_second_mock1_advanced,
+)
+from apply_forty_third_mock2_advanced_repairs import (
+    main as repair_forty_third_mock2_advanced,
 )
 from apply_fourth_pass_repairs import main as repair_fourth_pass
 from apply_fourteenth_pass_repairs import main as repair_fourteenth_pass
@@ -105,7 +107,7 @@ def main() -> int:
     repair_thirty_ninth_functional_analysis()
     repair_forty_second_mock1_advanced()
     repair_forty_first_mock2()
-    repair_forty_first_mock2_advanced()
+    repair_forty_third_mock2_advanced()
     repair_forty_first_functional_analysis()
     return 0
 
