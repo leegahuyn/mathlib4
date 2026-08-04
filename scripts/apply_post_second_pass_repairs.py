@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from apply_eighteenth_pass_repairs import main as repair_eighteenth_pass
 from apply_eighth_pass_repairs import main as repair_eighth_pass
 from apply_eleventh_pass_repairs import main as repair_eleventh_pass
 from apply_fifteenth_pass_repairs import main as repair_fifteenth_pass
@@ -41,6 +42,7 @@ def main() -> int:
     repair_fifteenth_pass()
     repair_sixteenth_pass()
     repair_seventeenth_pass()
+    repair_eighteenth_pass()
     return 0
 
 
