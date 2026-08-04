@@ -83,7 +83,7 @@ def repair_mock2_advanced() -> None:
 """,
         """        exact (M.core_equivariant v hv).isAE)
 """,
-        1,
+        2,
         "Mock2Advanced keep the target measure implicit in isAE",
     )
     changed |= did
