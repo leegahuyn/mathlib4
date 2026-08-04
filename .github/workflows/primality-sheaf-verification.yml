@@ -34,7 +34,9 @@ jobs:
         run: python3 scripts/apply_current_repairs.py
 
       - name: Materialize current repairs into Lean sources
-        if: github.event_name == 'push' && github.ref == 'refs/heads/fix/primality-sheaf-clean-build'
+        if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/fix/primality-sheaf-clean-build') ||
+          (github.event_name == 'pull_request' && github.head_ref == 'fix/primality-sheaf-clean-build')
         shell: bash
         run: |
           set -euo pipefail
