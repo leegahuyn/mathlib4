@@ -4,7 +4,7 @@ import apply_sixty_seventh_pass_repairs as pass67
 import apply_sixty_eighth_pass_repairs as pass68
 import apply_sixty_ninth_pass_repairs as pass69
 import apply_seventieth_pass_repairs as pass70
-import apply_eightieth_pass_repairs as pass80
+import apply_eighty_first_pass_repairs as pass81
 
 
 def main() -> int:
@@ -13,7 +13,7 @@ def main() -> int:
     pass68.main()
     pass69.main()
     pass70.main()
-    return pass80.main()
+    return pass81.main()
 
 
 if __name__ == "__main__":
