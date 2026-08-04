@@ -4,9 +4,47 @@ from pathlib import Path
 
 
 PATH = Path("PrimalitySheafVerification/Mock1_Advanced.lean")
+PASS41 = Path("scripts/apply_forty_first_pass_repairs.py")
+
+
+def relax_pass41_zero_match_handling() -> bool:
+    """Keep pass 41 strict on duplicate matches, but tolerate later source rewrites.
+
+    The pass-41 replacements have already been materialized into the checked-in Lean
+    sources. Later repair passes legitimately refine those exact proof bodies, so an
+    absent old/new literal is an idempotent "source changed" case rather than a fatal
+    error. Multiple matches remain fatal.
+    """
+    text = PASS41.read_text(encoding="utf-8")
+    old = '''    if count == 0 and new in text:
+        print(f"{label}: already applied")
+        return text, False
+    raise RuntimeError(f"{label}: expected one match, found {count}")
+'''
+    new = '''    if count == 0 and new in text:
+        print(f"{label}: already applied")
+        return text, False
+    if count == 0:
+        print(f"{label}: source changed; skipped")
+        return text, False
+    raise RuntimeError(f"{label}: expected one match, found {count}")
+'''
+    count = text.count(old)
+    if count == 1:
+        PASS41.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+        print("Pass 41 zero-match handling made idempotent")
+        return True
+    if count == 0 and new in text:
+        print("Pass 41 zero-match handling already idempotent")
+        return False
+    raise RuntimeError(
+        f"Pass 41 helper shape changed unexpectedly: expected one match, found {count}"
+    )
 
 
 def main() -> int:
+    relax_pass41_zero_match_handling()
+
     text = PATH.read_text(encoding="utf-8")
     changed = False
 
