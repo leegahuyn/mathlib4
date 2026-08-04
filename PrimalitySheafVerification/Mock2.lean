@@ -4005,7 +4005,8 @@ theorem rightNaturalitySquare
                 (z : ZMod (Pk p k)) =
               (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
                 ZMod (Pk p k)) := by
-          simp only [Int.cast_mul, Int.cast_natCast, Nat.cast_pow]
+          simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+            Nat.cast_pow]
         have hexp :
             p ^ shiftExponent M p k =
               p ^ shiftExponent M p k' *
@@ -4024,7 +4025,7 @@ theorem rightNaturalitySquare
                 ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
                   ZMod (Pk p k')) := by
             simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
-            ring
+            ac_rfl
     _ = powerShiftHom M p k'
         (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
           ZMod (p ^ thicknessExponent M p k')) :=
@@ -4661,7 +4662,7 @@ def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=
   rfl
 
 @[simp] theorem freeResolutionComplex_X_add_two (M n : ℕ) :
-    (freeResolutionComplex M).X (n + 2) = 0 :=
+    (freeResolutionComplex M).X (n + 2) = zeroIntegerModule :=
   rfl
 
 @[simp] theorem freeResolutionComplex_d_one_zero (M : ℕ) :
