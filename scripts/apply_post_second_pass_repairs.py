@@ -6,7 +6,14 @@ from apply_eleventh_pass_repairs import main as repair_eleventh_pass
 from apply_fifteenth_pass_repairs import main as repair_fifteenth_pass
 from apply_fifth_pass_repairs import main as repair_fifth_pass
 from apply_fortieth_pre_repairs import main as repair_fortieth_pre_pass
-from apply_forty_first_pass_repairs import main as repair_forty_first_pass
+from apply_forty_first_pass_repairs import (
+    repair_functional_analysis as repair_forty_first_functional_analysis,
+    repair_mock2 as repair_forty_first_mock2,
+    repair_mock2_advanced as repair_forty_first_mock2_advanced,
+)
+from apply_forty_second_mock1_advanced_repairs import (
+    main as repair_forty_second_mock1_advanced,
+)
 from apply_fourth_pass_repairs import main as repair_fourth_pass
 from apply_fourteenth_pass_repairs import main as repair_fourteenth_pass
 from apply_mock1_advanced_fifth_repairs import main as repair_mock1_advanced_fifth
@@ -96,7 +103,10 @@ def main() -> int:
     repair_fortieth_pre_pass()
     repair_thirty_ninth_mock2()
     repair_thirty_ninth_functional_analysis()
-    repair_forty_first_pass()
+    repair_forty_second_mock1_advanced()
+    repair_forty_first_mock2()
+    repair_forty_first_mock2_advanced()
+    repair_forty_first_functional_analysis()
     return 0
 
 
