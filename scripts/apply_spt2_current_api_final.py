@@ -71,6 +71,19 @@ DIRECT_PROOF = """  have hprincipal :
   rfl
 """
 
+PATCHED_PROOF = """  have hprincipal :
+      principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
+        principalCotangentQuotMap f
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) := rfl
+  apply Algebra.Extension.Cotangent.ext
+  simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
+    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
+  rw [hprincipal, hmap, quotientSpanCotangentEquivKer_toCotangent]
+  congr 1
+  rw [quotientExtension_ker]
+"""
+
 
 def replace_once(text: str, old: str, new: str, label: str) -> tuple[str, bool]:
     count = text.count(old)
@@ -89,8 +102,11 @@ def main() -> int:
     text, did = replace_once(text, CURRENT_BLOCK, DIRECT_BLOCK,
         "Spt2 direct current Ideal.Cotangent transport")
     changed |= did
-    text, did = replace_once(text, CURRENT_PROOF, DIRECT_PROOF,
-        "Spt2 direct conormal generator proof")
+    text, did = replace_once(text, CURRENT_PROOF, PATCHED_PROOF,
+        "Spt2 reduce dependent cotangent cast after congruence")
+    changed |= did
+    text, did = replace_once(text, DIRECT_PROOF, PATCHED_PROOF,
+        "Spt2 replace direct conormal generator proof")
     changed |= did
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
