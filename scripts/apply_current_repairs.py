@@ -4,16 +4,16 @@ import apply_sixty_seventh_pass_repairs as pass67
 import apply_sixty_eighth_pass_repairs as pass68
 import apply_sixty_ninth_pass_repairs as pass69
 import apply_seventieth_pass_repairs as pass70
-import apply_one_hundred_tenth_pass_repairs as pass110
+import apply_one_hundred_eleventh_pass_repairs as pass111
 
 
 def main() -> int:
-    """Apply retained passes 67–70 and the current pass-110 repair chain."""
+    """Apply retained passes 67–70 and the current pass-111 repair chain."""
     pass67.main()
     pass68.main()
     pass69.main()
     pass70.main()
-    return pass110.main()
+    return pass111.main()
 
 
 if __name__ == "__main__":
