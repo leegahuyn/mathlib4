@@ -830,9 +830,10 @@ theorem denseRange_coreToTrial
     DenseRange (coreToTrial M) := by
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
-  · exact M.core.le_topologicalClosure
   · intro x hx
     exact hx
+  · intro x hx
+    exact M.core.le_topologicalClosure hx
 
 /-- We fix the convention that data are continuous complex-linear functionals in
 the trial argument. -/
@@ -1920,8 +1921,11 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm)
           ((Lp.compMeasurePreserving (⇑chart.coord) hcoord) F) = F
-    conv_rhs => rw [← Lp.compMeasurePreserving_id_apply F]
-    exact hcomp.symm
+    have hfun : (chart.coord ∘ chart.coord.symm) = id := by
+      funext x
+      exact chart.coord.apply_symm_apply x
+    rw [hfun] at hcomp
+    simpa only [Lp.compMeasurePreserving_id_apply] using hcomp.symm
   · apply LinearMap.ext
     intro u
     have hcomp :=
@@ -1930,8 +1934,11 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord) hcoord)
           ((Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm) u) = u
-    conv_rhs => rw [← Lp.compMeasurePreserving_id_apply u]
-    exact hcomp.symm
+    have hfun : (chart.coord.symm ∘ chart.coord) = id := by
+      funext x
+      exact chart.coord.symm_apply_apply x
+    rw [hfun] at hcomp
+    simpa only [Lp.compMeasurePreserving_id_apply] using hcomp.symm
 
 /-! ## Definitions 9 and 11: a kernel-family trivialization interface -/
 
@@ -5459,9 +5466,10 @@ theorem denseRange_coreToTrial
     DenseRange (coreToTrial M) := by
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
-  · exact M.core.le_topologicalClosure
   · intro x hx
     exact hx
+  · intro x hx
+    exact M.core.le_topologicalClosure hx
 
 /-- The sum of the three genuine graph-energy components. -/
 def Datum.graphEnergy

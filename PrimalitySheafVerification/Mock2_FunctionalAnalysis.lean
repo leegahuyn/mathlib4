@@ -4340,9 +4340,12 @@ theorem etaSqrtFactor_continuous (γ : SL(2, ℤ)) :
     Continuous (etaSqrtFactor γ) := by
   let g : GL (Fin 2) ℝ := γ
   by_cases hc : g 1 0 = 0
-  · simpa [etaSqrtFactor, UpperHalfPlane.denom, g, hc] using
-      (continuous_const : Continuous
-        (fun _ : ℍ ↦ Complex.sqrt (g 1 1)))
+  · have hfun : etaSqrtFactor γ =
+        (fun _ : ℍ ↦ Complex.sqrt (g 1 1)) := by
+      funext z
+      simp [etaSqrtFactor, UpperHalfPlane.denom, g, hc]
+    rw [hfun]
+    exact continuous_const
   · rw [continuous_iff_continuousAt]
     intro z
     have him : (UpperHalfPlane.denom g z).im ≠ 0 := by
@@ -4353,7 +4356,7 @@ theorem etaSqrtFactor_continuous (γ : SL(2, ℤ)) :
       fun_prop
     change ContinuousAt (fun w : ℍ ↦
       Complex.sqrt (UpperHalfPlane.denom g w)) z
-    exact (Complex.continuousAt_sqrt (Or.inr him)).comp' hdenom
+    exact (Complex.continuousAt_sqrt (Or.inr him)).comp z hdenom
 
 /-- The eta-normalized square-root phase before proving that it is constant. -/
 noncomputable def etaPhaseRatio (γ : SL(2, ℤ)) (z : ℍ) : ℂ :=
