@@ -70,19 +70,19 @@ def repair_mock1() -> None:
     changed = False
 
     old = """theorem A_inftyMatrix_mulVec_eq_A_infty_mul (c : S4Col → ℚ) :
-    A_inftyMatrix.mulVec c = A_infty c := by
+    A_inftyMatrix.mulVec c = A_infty_mul c := by
+  classical
   funext i
   simp [Matrix.mulVec, A_inftyMatrix, A_infty, A_infty_mul]
 """
     new = """theorem A_inftyMatrix_mulVec_eq_A_infty_mul (c : S4Col → ℚ) :
-    A_inftyMatrix.mulVec c = A_infty c := by
+    A_inftyMatrix.mulVec c = A_infty_mul c := by
   classical
   funext i
-  simp [Matrix.mulVec, dotProduct, Fintype.sum_sum_type,
-    A_inftyMatrix, A_infty, A_infty_mul]
+  simp [Matrix.mulVec, dotProduct, A_inftyMatrix, A_infty, A_infty_mul]
 """
     text, did = replace_once(text, old, new,
-        "Mock1 split the Sum-indexed extraction dot product")
+        "Mock1 unfold the Sum-indexed extraction dot product")
     changed |= did
 
     old = """theorem S4D6J12Matrix_mulVec_solution :
@@ -118,18 +118,16 @@ def repair_mock1() -> None:
     S4D6J12Matrix.mulVec (S4D6J12Solve b) = b := by
   ext i
   fin_cases i <;>
-    simp [Matrix.mulVec, S4D6J12Matrix, S4D6J12MatrixEntry,
-      S4D6J12Solve, S4D6J12SolveEntry] <;>
-    ring
+    simp [Matrix.mulVec, S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
+      ring
 """
     new = """theorem S4D6J12Matrix_mulVec_solve (b : Fin S4D6 → ℚ) :
     S4D6J12Matrix.mulVec (S4D6J12Solve b) = b := by
   ext i
   fin_cases i <;>
     simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
-      S4D6J12Matrix, S4D6J12MatrixEntry,
-      S4D6J12Solve, S4D6J12SolveEntry] <;>
-    ring
+      S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
+      ring
 """
     text, did = replace_once(text, old, new,
         "Mock1 expand the symbolic D6/J12 right inverse")
