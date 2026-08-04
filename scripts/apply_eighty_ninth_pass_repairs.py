@@ -104,14 +104,27 @@ def repair_mock2_advanced() -> None:
     text = path.read_text(encoding="utf-8")
     changed = False
 
+    weighted_start = text.index("namespace GenuineWeightedSobolev")
+    weighted_end = text.index("end GenuineWeightedSobolev", weighted_start)
+    weighted = text[weighted_start:weighted_end]
+    old = """        exact (M.core_equivariant v hv).isAE μ)
+"""
+    new = """        exact (M.core_equivariant v hv).isAE)
+"""
+    count = weighted.count(old)
+    if count == 1:
+        weighted = weighted.replace(old, new, 1)
+        text = text[:weighted_start] + weighted + text[weighted_end:]
+        changed = True
+        print("Mock2Advanced keep the half-weight measure implicit: applied 1")
+    elif count == 0 and new in weighted:
+        print("Mock2Advanced keep the half-weight measure implicit: already applied")
+    else:
+        raise RuntimeError(
+            f"Mock2Advanced expected one half-weight isAE call, found {count}"
+        )
+
     replacements = [
-        (
-            """        exact (M.core_equivariant v hv).isAE μ)
-""",
-            """        exact (M.core_equivariant v hv).isAE)
-""",
-            "Mock2Advanced keep the measure implicit for half-weight automorphy",
-        ),
         (
             """      rw [hrem]
       ring
@@ -200,12 +213,14 @@ def repair_functional_analysis() -> None:
 """,
             """theorem gammaTwoToSL2Real_isClosedEmbedding :
     Topology.IsClosedEmbedding gammaTwoToSL2Real := by
-  simpa only [gammaTwoToSL2Real, MonoidHom.coe_comp, Function.comp_apply] using
-    (Matrix.SpecialLinearGroup.isClosedEmbedding_mapGLInt
-      (n := Fin 2)).comp
+  change Topology.IsClosedEmbedding
+    (fun γ : GammaTwo =>
+      Matrix.SpecialLinearGroup.map (algebraMap ℤ ℝ) (γ : SL(2, ℤ)))
+  exact
+    Real.isClosedEmbedding_intCast.specialLinearGroup_map.comp
       ((isClosed_discrete (GammaTwo : Set SL(2, ℤ))).isClosedEmbedding_subtypeVal)
 """,
-            "FunctionalAnalysis identify the closed embedding after unfolding the monoid-hom composition",
+            "FunctionalAnalysis compose the two closed SL embeddings directly",
         ),
         (
             """    rw [volume_eq_prod, Measure.prod_prod]
