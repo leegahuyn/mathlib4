@@ -65,7 +65,10 @@ def repair_functional_analysis() -> None:
 
 def main() -> int:
     pass114.main()
-    pass115.repair_mock1_advanced()
+    # Pass 114 already installs the explicit constructor-by-constructor
+    # requirement-membership proof.  The later pass-115 rewrite replaced it
+    # with a broad simp proof that leaves all 51 closed membership goals open
+    # under Lean 4.33.  Preserve the stronger structural proof instead.
     pass115.repair_mock2()
     pass115.repair_mock2_advanced()
     repair_functional_analysis()
