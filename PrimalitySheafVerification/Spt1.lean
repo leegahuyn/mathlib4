@@ -5567,6 +5567,7 @@ theorem resC_sq (N : ℕ) : ∀ n, df N (n + 1) ≫ df N n = 0 :=
 noncomputable def resC (N : ℕ) : ChainComplex ModZ ℕ :=
   ChainComplex.of Xf (df N) (resC_sq N)
 
+set_option maxHeartbeats 800000 in
 theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
   change Projective (Xf n)
   match n with
@@ -5574,16 +5575,15 @@ theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
   | 1 => exact (inferInstanceAs (Projective Zz))
   | (_ + 2) => exact (ModuleCat.isZero_of_subsingleton Zp).projective
 
-theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
-  by
-    simpa [resC, df] using
-      (ChainComplex.of_d Xf (df N) (resC_sq N) 0)
+theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N := by
+  dsimp [resC, df]
+  rfl
 
-theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=
-  by
-    simpa [resC, df] using
-      (ChainComplex.of_d Xf (df N) (resC_sq N) 1)
+theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 := by
+  dsimp [resC, df]
+  rfl
 
+set_option maxHeartbeats 800000 in
 theorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by
   rw [ModuleCat.mono_iff_injective]
   intro a b hab
@@ -7043,16 +7043,18 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
       have h1 : ‖x‖ ^ (n - 1) ≤ ((p : ℝ)⁻¹) ^ (n - 1) := by gcongr
       have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
         gcongr
-        exact hp1
       calc ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n
           ≤ ((p : ℝ)⁻¹) ^ (n - 1) * (p : ℝ) ^ (n - 1) :=
             mul_le_mul h1 h2 (by positivity) (by positivity)
         _ = 1 := by rw [inv_pow, inv_mul_cancel₀ (by positivity)]
     have hsplit : ‖x‖ ^ n = ‖x‖ ^ (n - 1) * ‖x‖ := by
       rw [← pow_succ, Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr hn)]
-    rw [key, hnorm, hsplit]
-    calc ‖x‖ ^ (n - 1) * ‖x‖ * (p : ℝ) ^ padicValNat p n
-        = ‖x‖ * (‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n) := by ring
+    calc
+      ‖padicLogSeries x n‖
+          = ‖x‖ ^ n * ‖(n : ℚ_[p])‖⁻¹ := key
+      _ = (‖x‖ ^ (n - 1) * ‖x‖) * (p : ℝ) ^ padicValNat p n := by
+            rw [hnorm, hsplit]
+      _ = ‖x‖ * (‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n) := by ring
       _ ≤ ‖x‖ * 1 := mul_le_mul_of_nonneg_left hclaim (norm_nonneg x)
       _ = ‖x‖ := mul_one _
 

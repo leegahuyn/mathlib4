@@ -284,6 +284,8 @@ open InnerProductSpace
 
 namespace Mock2FA
 
+set_option maxRecDepth 100000
+
 /-! ## 1. Existing real compatibility layer -/
 
 section RealCompatibility
@@ -326,7 +328,7 @@ If an analytic integral is conjugate-linear in its test vector, it must first be
 transported to a conjugate space or conjugated; it may not silently be identified
 with this pairing.
 -/
-def dualPairing (f : StrongDual ℂ E) (v : E) : ℂ :=
+noncomputable def dualPairing (f : StrongDual ℂ E) (v : E) : ℂ :=
   f v
 
 @[simp]
@@ -439,7 +441,7 @@ theorem dualRatioSetOn_nonneg {D : Set E} {f : StrongDual ℂ E} {r : ℝ}
 For a core containing no nonzero vector this is `0`, because
 `Real.sSup_empty = 0`.
 -/
-def coreRatioNorm (D : Set E) (f : StrongDual ℂ E) : ℝ :=
+noncomputable def coreRatioNorm (D : Set E) (f : StrongDual ℂ E) : ℝ :=
   sSup (dualRatioSetOn D f)
 
 theorem coreRatioNorm_nonneg (D : Set E) (f : StrongDual ℂ E) :
@@ -708,7 +710,7 @@ abbrev StrongAntiDual (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E] :=
   E →L⋆[ℂ] ℂ
 
 /-- Evaluation of a conjugate-linear functional. -/
-def antiDualPairing (f : StrongAntiDual E) (v : E) : ℂ :=
+noncomputable def antiDualPairing (f : StrongAntiDual E) (v : E) : ℂ :=
   f v
 
 @[simp]
@@ -749,14 +751,25 @@ theorem antiDual_holder (f : StrongAntiDual E) (v : E) :
     ‖antiDualPairing f v‖ ≤ ‖f‖ * ‖v‖ :=
   f.le_opNorm v
 
-/-- The inner product supplies the canonical anti-dual pairing in the test
+/- The inner product supplies the canonical anti-dual pairing in the test
 variable, with exactly the orientation used by `∫ g * conj v`.
 -/
-theorem innerSLFlip_pairing [InnerProductSpace ℂ E] (u v : E) :
-    antiDualPairing (innerSLFlip ℂ u) v = ⟪v, u⟫_ℂ :=
-  by
-    simpa only [antiDualPairing] using
-      (innerSLFlip_apply_apply ℂ u v)
+end AntiDualAndWeakEquation
+
+section InnerSLFlipPairing
+
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+
+theorem innerSLFlip_pairing (u v : E) :
+    antiDualPairing (innerSLFlip ℂ u) v = ⟪v, u⟫_ℂ := by
+  simpa only [antiDualPairing] using
+    (innerSLFlip_apply_apply ℂ u v)
+
+end InnerSLFlipPairing
+
+section AntiDualAndWeakEquation
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 /-- A weak sesquilinear operator maps a trial vector to the anti-dual. -/
 abbrev WeakAntiOperator (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E] :=
@@ -907,8 +920,8 @@ theorem weakLinearSolution_existsUnique (A : E ≃L[ℂ] StrongDual ℂ E)
 
 theorem weakLinearSolution_norm_le (A : E ≃L[ℂ] StrongDual ℂ E)
     (f : StrongDual ℂ E) :
-    ‖weakLinearSolution A f‖ ≤ ‖A.symm‖ * ‖f‖ :=
-  A.symm.le_opNorm f
+    ‖weakLinearSolution A f‖ ≤ ‖A.symm.toContinuousLinearMap‖ * ‖f‖ :=
+  A.symm.toContinuousLinearMap.le_opNorm f
 
 /-- Real parts of a complex equality, tested once directly and once after
 multiplication by `i`, recover the full complex equality. This is the small
@@ -1006,12 +1019,12 @@ theorem antiTestIntegrand_density_add
   simp [antiTestIntegrand, add_mul]
 
 /-- Global Bochner pairing for the linear test convention. -/
-def linearBochnerPairing (μ : MeasureTheory.Measure X) (ρ : X → ℂ)
+noncomputable def linearBochnerPairing (μ : MeasureTheory.Measure X) (ρ : X → ℂ)
     (T : V →ₗ[ℂ] (X → ℂ)) (v : V) : ℂ :=
   ∫ x, linearTestIntegrand ρ T v x ∂μ
 
 /-- Global Bochner pairing for the conjugate-linear test convention. -/
-def antiBochnerPairing (μ : MeasureTheory.Measure X) (ρ : X → ℂ)
+noncomputable def antiBochnerPairing (μ : MeasureTheory.Measure X) (ρ : X → ℂ)
     (T : V →ₗ[ℂ] (X → ℂ)) (v : V) : ℂ :=
   ∫ x, antiTestIntegrand ρ T v x ∂μ
 
@@ -1033,8 +1046,9 @@ theorem linearBochnerPairing_smul
       c * linearBochnerPairing μ ρ T v := by
   unfold linearBochnerPairing
   rw [linearTestIntegrand_smul]
-  simpa only [smul_eq_mul] using
-    (MeasureTheory.integral_smul c (linearTestIntegrand ρ T v))
+  change (∫ x, c * linearTestIntegrand ρ T v x ∂μ) =
+    c * ∫ x, linearTestIntegrand ρ T v x ∂μ
+  exact MeasureTheory.integral_smul c (linearTestIntegrand ρ T v)
 
 theorem antiBochnerPairing_add
     {μ : MeasureTheory.Measure X} {ρ : X → ℂ}
@@ -1054,9 +1068,10 @@ theorem antiBochnerPairing_smul
       (starRingEnd ℂ) c * antiBochnerPairing μ ρ T v := by
   unfold antiBochnerPairing
   rw [antiTestIntegrand_smul]
-  simpa only [smul_eq_mul] using
-    (MeasureTheory.integral_smul ((starRingEnd ℂ) c)
-      (antiTestIntegrand ρ T v))
+  change (∫ x, (starRingEnd ℂ) c * antiTestIntegrand ρ T v x ∂μ) =
+    (starRingEnd ℂ) c * ∫ x, antiTestIntegrand ρ T v x ∂μ
+  exact MeasureTheory.integral_smul ((starRingEnd ℂ) c)
+    (antiTestIntegrand ρ T v)
 
 /-! #### Regularity and integral representation are separate obligations -/
 
@@ -1596,18 +1611,33 @@ end RealLaxMilgramCore
 
 section Realification
 
+set_option maxHeartbeats 800000
+set_option maxRecDepth 100000
+
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
 
 /-- The real-linear map underlying the real part of a complex anti-linear
 functional.  The scalar proof uses that conjugation fixes real scalars. -/
-def realifiedFunctionalLinear (F : StrongAntiDual V) : V →ₗ[ℝ] ℝ where
-  toFun v := (F v).re
-  map_add' u v := by
-    simp
-  map_smul' r v := by
-    have hr : r • v = (r : ℂ) • v := rfl
-    simp only [hr, map_smulₛₗ, starRingEnd_apply, Complex.star_def,
-      Complex.conj_ofReal, smul_eq_mul, Complex.re_ofReal_mul]
+noncomputable def realifiedFunctionalLinear (F : StrongAntiDual V) : V →ₗ[ℝ] ℝ := by
+  set_option maxHeartbeats 800000 in
+  set_option maxRecDepth 10000 in
+    exact
+      { toFun := fun v => (F v).re
+        map_add' := by
+          intro u v
+          simp
+        map_smul' := by
+          set_option maxHeartbeats 4000000 in
+            set_option maxRecDepth 100000 in
+              intro r v
+              have hr : r • v = (r : ℂ) • v := rfl
+              rw [hr, map_smulₛₗ]
+              change
+                (((starRingEnd ℂ) (r : ℂ)) * F v).re =
+                  r * (F v).re
+              rw [starRingEnd_apply, Complex.star_def,
+                Complex.conj_ofReal]
+              exact Complex.re_ofReal_mul r (F v) }
 
 theorem realifiedFunctionalLinear_bound (F : StrongAntiDual V) (v : V) :
     ‖realifiedFunctionalLinear F v‖ ≤ ‖F‖ * ‖v‖ := by
@@ -1617,7 +1647,7 @@ theorem realifiedFunctionalLinear_bound (F : StrongAntiDual V) (v : V) :
 
 /-- The real part of a bounded anti-linear functional, as a bounded real
 linear functional. -/
-def realifiedFunctional (F : StrongAntiDual V) : V →L[ℝ] ℝ :=
+noncomputable def realifiedFunctional (F : StrongAntiDual V) : V →L[ℝ] ℝ :=
   (realifiedFunctionalLinear F).mkContinuous ‖F‖
     (realifiedFunctionalLinear_bound F)
 
@@ -1638,25 +1668,34 @@ theorem realifiedFunctional_continuous (F : StrongAntiDual V) :
 
 /-- The real-bilinear map underlying the real part of a bounded complex
 sesquilinear form. -/
-def realifiedFormLinear (B : ContinuousSesquilinearForm V) :
-    V →ₗ[ℝ] V →ₗ[ℝ] ℝ :=
-  LinearMap.mk₂ ℝ (fun u v => (B u v).re)
-    (by
-      intro u₁ u₂ v
-      simp)
-    (by
-      intro r u v
-      have hr : r • u = (r : ℂ) • u := rfl
-      simp only [hr, map_smul, ContinuousLinearMap.smul_apply,
-        smul_eq_mul, Complex.re_ofReal_mul])
-    (by
-      intro u v₁ v₂
-      simp)
-    (by
-      intro r u v
-      have hr : r • v = (r : ℂ) • v := rfl
-      simp only [hr, map_smulₛₗ, starRingEnd_apply, Complex.star_def,
-        Complex.conj_ofReal, smul_eq_mul, Complex.re_ofReal_mul])
+noncomputable def realifiedFormLinear (B : ContinuousSesquilinearForm V) :
+    V →ₗ[ℝ] V →ₗ[ℝ] ℝ := by
+  set_option maxHeartbeats 800000 in
+  set_option maxRecDepth 10000 in
+    exact LinearMap.mk₂ ℝ (fun u v => (B u v).re)
+      (by
+        intro u₁ u₂ v
+        simp)
+      (by
+        intro r u v
+        have hr : r • u = (r : ℂ) • u := rfl
+        simp only [hr, map_smul, smul_apply,
+          smul_eq_mul, Complex.re_ofReal_mul])
+      (by
+        intro u v₁ v₂
+        simp)
+      (by
+        set_option maxHeartbeats 4000000 in
+          set_option maxRecDepth 100000 in
+            intro r u v
+            have hr : r • v = (r : ℂ) • v := rfl
+            rw [hr, map_smulₛₗ]
+            change
+              (((starRingEnd ℂ) (r : ℂ)) * B u v).re =
+                r * (B u v).re
+            rw [starRingEnd_apply, Complex.star_def,
+              Complex.conj_ofReal]
+            exact Complex.re_ofReal_mul r (B u v))
 
 theorem realifiedFormLinear_bound (B : ContinuousSesquilinearForm V)
     (u v : V) :
@@ -1667,7 +1706,7 @@ theorem realifiedFormLinear_bound (B : ContinuousSesquilinearForm V)
     ((B u).le_of_opNorm_le (B.le_opNorm u) v)
 
 /-- Realification of a bounded complex sesquilinear form. -/
-def realifiedForm (B : ContinuousSesquilinearForm V) :
+noncomputable def realifiedForm (B : ContinuousSesquilinearForm V) :
     V →L[ℝ] V →L[ℝ] ℝ :=
   (realifiedFormLinear B).mkContinuous₂ ‖B‖
     (realifiedFormLinear_bound B)
@@ -1740,6 +1779,9 @@ theorem complex_eq_of_re_eq_of_re_neg_I_mul_eq {z w : ℂ}
 
 section RecoverComplexEquation
 
+set_option maxHeartbeats 800000
+set_option maxRecDepth 100000
+
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
 
 /-- Equality of real parts against every test vector upgrades to equality in
@@ -1749,12 +1791,17 @@ theorem weakAntiEquation_of_forall_re_eq
     (B : ContinuousSesquilinearForm V) (u : V) (F : StrongAntiDual V)
     (h : ∀ v : V, (B u v).re = (F v).re) :
     WeakAntiEquation B u F := by
-  apply (weakAntiEquation_iff_forall B u F).2
-  intro v
-  apply complex_eq_of_re_eq_of_re_neg_I_mul_eq (h v)
-  have hI := h (Complex.I • v)
-  simpa only [map_smulₛₗ, starRingEnd_apply, Complex.star_def,
-    Complex.conj_I, smul_eq_mul] using hI
+  set_option maxHeartbeats 4000000 in
+    set_option maxRecDepth 100000 in
+      apply (weakAntiEquation_iff_forall B u F).2
+      intro v
+      apply complex_eq_of_re_eq_of_re_neg_I_mul_eq (h v)
+      have hI := h (Complex.I • v)
+      rw [map_smulₛₗ, map_smulₛₗ] at hI
+      have hstar : starRingEnd ℂ Complex.I = -Complex.I := by
+        exact Complex.conj_I
+      rw [hstar] at hI
+      simpa only [smul_eq_mul] using hI
 
 theorem forall_re_eq_iff_weakAntiEquation
     (B : ContinuousSesquilinearForm V) (u : V) (F : StrongAntiDual V) :
@@ -1883,7 +1930,7 @@ theorem solveWith_coercivity_mul_norm_le (α : ℝ)
           ‖F‖ * ‖solveWith α B hB F‖ := by
       simpa only [pow_two, mul_assoc] using
         solveWith_energy_le α B hB F
-    exact (mul_le_mul_right hnorm).mp hcancel
+    exact le_of_mul_le_mul_right hcancel hnorm
 
 /-- Sharp a-priori estimate with the same explicit coercivity constant. -/
 theorem solveWith_norm_le (α : ℝ) (B : ContinuousSesquilinearForm V)
@@ -1964,25 +2011,25 @@ variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
 /-- A shift by a specified bounded mass form.  Keeping `mass` explicit is
 essential: on an `H¹` trial space, `innerSLFlip ℂ` is the `H¹` Riesz pairing,
 whereas the paper's display uses an `L²` mass pairing. -/
-def shiftedForm (B mass : ContinuousSesquilinearForm V) (λ : ℝ) :
+noncomputable def shiftedForm (B mass : ContinuousSesquilinearForm V) (lam : ℝ) :
     ContinuousSesquilinearForm V :=
-  B + (λ : ℂ) • mass
+  B + (lam : ℂ) • mass
 
 @[simp]
 theorem shiftedForm_apply (B mass : ContinuousSesquilinearForm V)
-    (λ : ℝ) (u v : V) :
-    shiftedForm B mass λ u v =
-      B u v + (λ : ℂ) * mass u v := by
+    (lam : ℝ) (u v : V) :
+    shiftedForm B mass lam u v =
+      B u v + (lam : ℂ) * mass u v := by
   simp [shiftedForm]
 
 /-- Operator form of the exact residual left by a shift. -/
 theorem shiftedForm_equation_iff_residual
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
     (u : V) (F : StrongAntiDual V) :
-    shiftedForm B mass λ u = F ↔
-      B u = F - (λ : ℂ) • mass u := by
-  change B u + (λ : ℂ) • mass u = F ↔
-    B u = F - (λ : ℂ) • mass u
+    shiftedForm B mass lam u = F ↔
+      B u = F - (lam : ℂ) • mass u := by
+  change B u + (lam : ℂ) • mass u = F ↔
+    B u = F - (lam : ℂ) • mass u
   constructor
   · intro h
     exact (eq_sub_iff_add_eq).2 h
@@ -1991,18 +2038,18 @@ theorem shiftedForm_equation_iff_residual
 
 /-- Pointwise form of the exact residual left by a shift. -/
 theorem shiftedForm_equation_iff_forall_residual
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
     (u : V) (F : StrongAntiDual V) :
-    shiftedForm B mass λ u = F ↔
-      ∀ v : V, B u v = F v - (λ : ℂ) * mass u v := by
+    shiftedForm B mass lam u = F ↔
+      ∀ v : V, B u v = F v - (lam : ℂ) * mass u v := by
   constructor
   · intro h v
     have hres :=
-      (shiftedForm_equation_iff_residual B mass λ u F).1 h
+      (shiftedForm_equation_iff_residual B mass lam u F).1 h
     have hv := congrArg (fun G : StrongAntiDual V => G v) hres
     simpa using hv
   · intro h
-    apply (shiftedForm_equation_iff_residual B mass λ u F).2
+    apply (shiftedForm_equation_iff_residual B mass lam u F).2
     ext v
     simpa using h v
 
@@ -2010,14 +2057,15 @@ theorem shiftedForm_equation_iff_forall_residual
 vanishes.  This is the precise replacement for an unconditional shift-removal
 claim. -/
 theorem shiftedForm_solution_is_unshifted_iff_mass_zero
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
     (u : V) (F : StrongAntiDual V)
-    (hshift : shiftedForm B mass λ u = F) :
-    B u = F ↔ (λ : ℂ) • mass u = 0 := by
-  have hsum : B u + (λ : ℂ) • mass u = F := by
+    (hshift : shiftedForm B mass lam u = F) :
+    B u = F ↔ (lam : ℂ) • mass u = 0 := by
+  have hsum : B u + (lam : ℂ) • mass u = F := by
     ext v
     have hv := congrArg (fun G : StrongAntiDual V => G v) hshift
-    simpa only [shiftedForm_apply] using hv
+    change (B u) v + (lam : ℂ) * (mass u) v = F v at hv
+    exact hv
   constructor
   · intro hB
     apply add_left_cancel (a := B u)
@@ -2025,7 +2073,7 @@ theorem shiftedForm_solution_is_unshifted_iff_mass_zero
   · intro hmass
     calc
       B u = B u + 0 := (add_zero _).symm
-      _ = B u + (λ : ℂ) • mass u := by rw [hmass]
+      _ = B u + (lam : ℂ) • mass u := by rw [hmass]
       _ = F := hsum
 
 end ShiftedForms
@@ -2036,7 +2084,7 @@ variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℂ V]
 
 /-- The Riesz mass form of `V` itself.  It is offered only as a typed
 convenience and is not identified with an `L²` pivot mass on an `H¹` space. -/
-def rieszMassForm : ContinuousSesquilinearForm V :=
+noncomputable def rieszMassForm : ContinuousSesquilinearForm V :=
   innerSLFlip ℂ
 
 @[simp]
@@ -2045,15 +2093,15 @@ theorem rieszMassForm_apply (u v : V) :
   simp [rieszMassForm]
 
 /-- Shift by the Riesz mass of `V`. -/
-def rieszShiftedForm (B : ContinuousSesquilinearForm V) (λ : ℝ) :
+noncomputable def rieszShiftedForm (B : ContinuousSesquilinearForm V) (lam : ℝ) :
     ContinuousSesquilinearForm V :=
-  shiftedForm B rieszMassForm λ
+  shiftedForm B rieszMassForm lam
 
 @[simp]
 theorem rieszShiftedForm_apply (B : ContinuousSesquilinearForm V)
-    (λ : ℝ) (u v : V) :
-    rieszShiftedForm B λ u v =
-      B u v + (λ : ℂ) * ⟪v, u⟫_ℂ := by
+    (lam : ℝ) (u v : V) :
+    rieszShiftedForm B lam u v =
+      B u v + (lam : ℂ) * ⟪v, u⟫_ℂ := by
   simp [rieszShiftedForm]
 
 end RieszShiftedForms
@@ -2066,80 +2114,80 @@ variable [CompleteSpace V]
 /-- Solve a shifted form under an explicit coercivity proof for that shifted
 form.  No coercivity of an arbitrary shift is manufactured here. -/
 noncomputable def solveShifted (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) : V :=
-  solveWith α (shiftedForm B mass λ) hShift F
+  solveWith α (shiftedForm B mass lam) hShift F
 
 /-- The shifted solver concludes exactly the shifted equation. -/
 theorem solveShifted_spec (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) (v : V) :
-    B (solveShifted α B mass λ hShift F) v +
-        (λ : ℂ) * mass (solveShifted α B mass λ hShift F) v =
+    B (solveShifted α B mass lam hShift F) v +
+        (lam : ℂ) * mass (solveShifted α B mass lam hShift F) v =
       F v := by
   simpa only [solveShifted, shiftedForm_apply] using
-    solveWith_spec α (shiftedForm B mass λ) hShift F v
+    solveWith_spec α (shiftedForm B mass lam) hShift F v
 
 theorem solveShifted_equation (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) :
-    shiftedForm B mass λ (solveShifted α B mass λ hShift F) = F := by
+    shiftedForm B mass lam (solveShifted α B mass lam hShift F) = F := by
   ext v
   simpa only [shiftedForm_apply] using
-    solveShifted_spec α B mass λ hShift F v
+    solveShifted_spec α B mass lam hShift F v
 
 /-- The unshifted residual retained by the shifted solution. -/
 theorem solveShifted_residual (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) (v : V) :
-    B (solveShifted α B mass λ hShift F) v =
-      F v - (λ : ℂ) * mass (solveShifted α B mass λ hShift F) v :=
-  (eq_sub_iff_add_eq).2 (solveShifted_spec α B mass λ hShift F v)
+    B (solveShifted α B mass lam hShift F) v =
+      F v - (lam : ℂ) * mass (solveShifted α B mass lam hShift F) v :=
+  (eq_sub_iff_add_eq).2 (solveShifted_spec α B mass lam hShift F v)
 
 theorem solveShifted_unique (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) {u : V}
-    (hu : ∀ v, B u v + (λ : ℂ) * mass u v = F v) :
-    u = solveShifted α B mass λ hShift F := by
+    (hu : ∀ v, B u v + (lam : ℂ) * mass u v = F v) :
+    u = solveShifted α B mass lam hShift F := by
   simpa only [solveShifted] using
-    solveWith_unique α (shiftedForm B mass λ) hShift F
+    solveWith_unique α (shiftedForm B mass lam) hShift F
       (fun v => by simpa only [shiftedForm_apply] using hu v)
 
 theorem solveShifted_existsUnique (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) :
     ∃! u : V, ∀ v,
-      B u v + (λ : ℂ) * mass u v = F v := by
-  refine ⟨solveShifted α B mass λ hShift F,
-    solveShifted_spec α B mass λ hShift F, ?_⟩
+      B u v + (lam : ℂ) * mass u v = F v := by
+  refine ⟨solveShifted α B mass lam hShift F,
+    solveShifted_spec α B mass lam hShift F, ?_⟩
   intro u hu
-  exact solveShifted_unique α B mass λ hShift F hu
+  exact solveShifted_unique α B mass lam hShift F hu
 
 theorem solveShifted_norm_le (α : ℝ)
-    (B mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm B mass λ))
+    (B mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm B mass lam))
     (F : StrongAntiDual V) :
-    ‖solveShifted α B mass λ hShift F‖ ≤ α⁻¹ * ‖F‖ := by
+    ‖solveShifted α B mass lam hShift F‖ ≤ α⁻¹ * ‖F‖ := by
   simpa only [solveShifted] using
-    solveWith_norm_le α (shiftedForm B mass λ) hShift F
+    solveWith_norm_le α (shiftedForm B mass lam) hShift F
 
 /-- For the canonical `V`-Riesz shift, the conclusion remains visibly
 shifted; no theorem below replaces it by `B u v = F v`. -/
 theorem solveRieszShifted_spec (α : ℝ)
-    (B : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (rieszShiftedForm B λ))
+    (B : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (rieszShiftedForm B lam))
     (F : StrongAntiDual V) (v : V) :
-    B (solveShifted α B rieszMassForm λ hShift F) v +
-        (λ : ℂ) * ⟪v, solveShifted α B rieszMassForm λ hShift F⟫_ℂ =
+    B (solveShifted α B rieszMassForm lam hShift F) v +
+        (lam : ℂ) * ⟪v, solveShifted α B rieszMassForm lam hShift F⟫_ℂ =
       F v := by
   simpa only [rieszMassForm_apply] using
-    solveShifted_spec α B rieszMassForm λ hShift F v
+    solveShifted_spec α B rieszMassForm lam hShift F v
 
 end ShiftedSolver
 
@@ -2234,7 +2282,7 @@ structure CuspTailCompactApproximation (T : E →L[ℂ] F) where
   truncation : ℕ → E →L[ℂ] F
   truncation_isCompact : ∀ n, IsCompactOperator (truncation n)
   tail_norm :
-    Tendsto (fun n => ‖truncation n - T‖) atTop (𝓝 0)
+    Filter.Tendsto (fun n => ‖truncation n - T‖) Filter.atTop (nhds 0)
 
 namespace CuspTailCompactApproximation
 
@@ -2244,7 +2292,7 @@ variable {T : E →L[ℂ] F}
 def ofNormBound
     (truncation : ℕ → E →L[ℂ] F)
     (hcompact : ∀ n, IsCompactOperator (truncation n))
-    (ε : ℕ → ℝ) (hε : Tendsto ε atTop (𝓝 0))
+    (ε : ℕ → ℝ) (hε : Filter.Tendsto ε Filter.atTop (nhds 0))
     (htail : ∀ n, ‖truncation n - T‖ ≤ ε n) :
     CuspTailCompactApproximation T where
   truncation := truncation
@@ -2257,9 +2305,9 @@ variable [CompleteSpace F]
 /-- Operator-norm limits of compact cusp truncations are compact. -/
 theorem isCompactOperator (h : CuspTailCompactApproximation T) :
     IsCompactOperator T := by
-  apply isCompactOperator_of_tendsto
-  · exact tendsto_iff_norm_sub_tendsto_zero.mpr h.tail_norm
-  · exact Filter.Eventually.of_forall h.truncation_isCompact
+  exact isCompactOperator_of_tendsto (l := Filter.atTop)
+    (tendsto_iff_norm_sub_tendsto_zero.mpr h.tail_norm)
+    (Filter.Eventually.of_forall h.truncation_isCompact)
 
 end CuspTailCompactApproximation
 
@@ -2316,7 +2364,7 @@ structure SesquilinearCuspTailControl
   epsilon : ℕ → ℝ
   epsilon_nonneg : ∀ n, 0 ≤ epsilon n
   epsilon_tendsto_zero :
-    Tendsto epsilon atTop (𝓝 0)
+    Filter.Tendsto epsilon Filter.atTop (nhds 0)
   tail_bound :
     ∀ n u v,
       ‖(truncation n - C) u v‖ ≤
@@ -2341,7 +2389,7 @@ theorem tail_opNorm_le
 /-- The pointwise tail certificate produces operator-norm convergence. -/
 theorem tail_norm_tendsto_zero
     (h : SesquilinearCuspTailControl C) :
-    Tendsto (fun n => ‖h.truncation n - C‖) atTop (𝓝 0) :=
+    Filter.Tendsto (fun n => ‖h.truncation n - C‖) Filter.atTop (nhds 0) :=
   squeeze_zero
     (fun n => norm_nonneg (h.truncation n - C))
     h.tail_opNorm_le h.epsilon_tendsto_zero
@@ -2722,8 +2770,9 @@ noncomputable def solve
 theorem solve_spec
     (d : FredholmBypassData A) (F : W) :
     A (d.solve F) = F := by
-  simpa [solve, solutionOperator] using
-    d.unshiftedEquiv.apply_symm_apply F
+  rw [← d.unshiftedEquiv_apply (d.solve F)]
+  unfold solve solutionOperator
+  exact d.unshiftedEquiv.apply_symm_apply F
 
 theorem solve_unique
     (d : FredholmBypassData A) (F : W)
@@ -2851,22 +2900,22 @@ theorem coerciveFormEquiv_symm_norm_le
   exact solveWith_norm_le α S hS F
 
 /-- Package a shifted form using exactly the compactness assumption needed by
-Fredholm: compactness of the actual lower-order term (λ : ℂ) • mass.  This
-formulation also covers λ = 0 without asking for compactness of mass itself. -/
+Fredholm: compactness of the actual lower-order term (lam : ℂ) • mass.  This
+formulation also covers lam = 0 without asking for compactness of mass itself. -/
 noncomputable def shiftedFredholmDataOfCompactLowerOrder
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
-    (hLower : IsCompactOperator ((λ : ℂ) • mass))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
+    (hLower : IsCompactOperator ((lam : ℂ) • mass))
     (hker : HasTrivialKernel A) :
     FredholmBypassData A where
   shiftedEquiv :=
-    coerciveFormEquiv α (shiftedForm A mass λ) hShift
-  lowerOrder := (λ : ℂ) • mass
+    coerciveFormEquiv α (shiftedForm A mass lam) hShift
+  lowerOrder := (lam : ℂ) • mass
   shifted_eq := by
     ext u v
-    change shiftedForm A mass λ u v =
-      (A + (λ : ℂ) • mass) u v
+    change shiftedForm A mass lam u v =
+      (A + (lam : ℂ) • mass) u v
     simp [shiftedForm]
   lowerOrder_isCompact := hLower
   unshiftedKernel := hker
@@ -2875,89 +2924,89 @@ noncomputable def shiftedFredholmDataOfCompactLowerOrder
 available. -/
 noncomputable def shiftedFredholmData
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A) :
     FredholmBypassData A :=
-  shiftedFredholmDataOfCompactLowerOrder α A mass λ hShift
-    (by simpa using hmass.smul (λ : ℂ)) hker
+  shiftedFredholmDataOfCompactLowerOrder α A mass lam hShift
+    (by simpa using hmass.smul (lam : ℂ)) hker
 
 /-- A concrete cusp-tail certificate supplies the compactness input required
 by the shifted Fredholm package. -/
 noncomputable def shiftedFredholmDataOfCuspTail
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (htail : SesquilinearCuspTailControl mass)
     (hker : HasTrivialKernel A) :
     FredholmBypassData A :=
-  shiftedFredholmData α A mass λ hShift
+  shiftedFredholmData α A mass lam hShift
     htail.isCompactOperator hker
 
 @[simp]
 theorem shiftedFredholmData_shiftedEquiv_symm_apply
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A)
     (F : StrongAntiDual V) :
-    (shiftedFredholmData α A mass λ hShift hmass hker).shiftedEquiv.symm F =
-      solveWith α (shiftedForm A mass λ) hShift F := by
+    (shiftedFredholmData α A mass lam hShift hmass hker).shiftedEquiv.symm F =
+      solveWith α (shiftedForm A mass lam) hShift F := by
   change
-    (coerciveFormEquiv α (shiftedForm A mass λ) hShift).symm F =
-      solveWith α (shiftedForm A mass λ) hShift F
+    (coerciveFormEquiv α (shiftedForm A mass lam) hShift).symm F =
+      solveWith α (shiftedForm A mass lam) hShift F
   exact coerciveFormEquiv_symm_apply α
-    (shiftedForm A mass λ) hShift F
+    (shiftedForm A mass lam) hShift F
 
 /-- The final unshifted solution obtained by the corrected Fredholm route. -/
 noncomputable def solveOfShiftedForm
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A)
     (F : StrongAntiDual V) : V :=
-  (shiftedFredholmData α A mass λ hShift hmass hker).solve F
+  (shiftedFredholmData α A mass lam hShift hmass hker).solve F
 
 /-- Unlike the raw shifted solver, the Fredholm solution satisfies the
 original unshifted equation. -/
 theorem solveOfShiftedForm_spec
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A)
     (F : StrongAntiDual V) :
-    A (solveOfShiftedForm α A mass λ hShift hmass hker F) = F :=
-  (shiftedFredholmData α A mass λ hShift hmass hker).solve_spec F
+    A (solveOfShiftedForm α A mass lam hShift hmass hker F) = F :=
+  (shiftedFredholmData α A mass lam hShift hmass hker).solve_spec F
 
 theorem solveOfShiftedForm_existsUnique
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A)
     (F : StrongAntiDual V) :
     ∃! u : V, A u = F :=
-  (shiftedFredholmData α A mass λ hShift hmass hker).solve_existsUnique F
+  (shiftedFredholmData α A mass lam hShift hmass hker).solve_existsUnique F
 
 /-- Two-stage estimate.  The new normalized inverse norm is not replaced by
 the shifted coercivity constant. -/
 theorem solveOfShiftedForm_norm_le
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A)
     (F : StrongAntiDual V) :
-    ‖solveOfShiftedForm α A mass λ hShift hmass hker F‖ ≤
-      (shiftedFredholmData α A mass λ hShift hmass hker).normalizedInverseNorm *
+    ‖solveOfShiftedForm α A mass lam hShift hmass hker F‖ ≤
+      (shiftedFredholmData α A mass lam hShift hmass hker).normalizedInverseNorm *
         (α⁻¹ * ‖F‖) := by
-  let d := shiftedFredholmData α A mass λ hShift hmass hker
+  let d := shiftedFredholmData α A mass lam hShift hmass hker
   calc
-    ‖solveOfShiftedForm α A mass λ hShift hmass hker F‖ ≤
+    ‖solveOfShiftedForm α A mass lam hShift hmass hker F‖ ≤
         d.normalizedInverseNorm * ‖d.shiftedEquiv.symm F‖ :=
       d.solve_norm_le_normalized F
     _ ≤ d.normalizedInverseNorm * (α⁻¹ * ‖F‖) :=
@@ -2965,21 +3014,21 @@ theorem solveOfShiftedForm_norm_le
         (by
           rw [shiftedFredholmData_shiftedEquiv_symm_apply]
           exact solveWith_norm_le α
-            (shiftedForm A mass λ) hShift F)
+            (shiftedForm A mass lam) hShift F)
         d.normalizedInverseNorm_nonneg
 
 /-- The actual unshifted inverse norm is bounded by the product of the
 normalized Fredholm constant and the shifted coercive bound. -/
 theorem shiftedFredholm_inverseNorm_le
     (α : ℝ)
-    (A mass : ContinuousSesquilinearForm V) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A mass λ))
+    (A mass : ContinuousSesquilinearForm V) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A mass lam))
     (hmass : IsCompactOperator mass)
     (hker : HasTrivialKernel A) :
-    (shiftedFredholmData α A mass λ hShift hmass hker).inverseNorm ≤
-      (shiftedFredholmData α A mass λ hShift hmass hker).normalizedInverseNorm *
+    (shiftedFredholmData α A mass lam hShift hmass hker).inverseNorm ≤
+      (shiftedFredholmData α A mass lam hShift hmass hker).normalizedInverseNorm *
         α⁻¹ := by
-  let d := shiftedFredholmData α A mass λ hShift hmass hker
+  let d := shiftedFredholmData α A mass lam hShift hmass hker
   apply d.solutionOperator.opNorm_le_bound
     (mul_nonneg d.normalizedInverseNorm_nonneg
       (inv_nonneg.mpr hShift.1.le))
@@ -2993,7 +3042,7 @@ theorem shiftedFredholm_inverseNorm_le
         (by
           rw [shiftedFredholmData_shiftedEquiv_symm_apply]
           exact solveWith_norm_le α
-            (shiftedForm A mass λ) hShift F)
+            (shiftedForm A mass lam) hShift F)
         d.normalizedInverseNorm_nonneg
     _ = (d.normalizedInverseNorm * α⁻¹) * ‖F‖ :=
       (mul_assoc _ _ _).symm
@@ -3040,7 +3089,7 @@ variable [NormedAddCommGroup X] [InnerProductSpace ℂ X] [CompleteSpace X]
 /-- The Fredholm defect restricted to the orthogonal complement of its full
 kernel.  The codomain is deliberately the ambient Hilbert space; no
 self-adjointness or invariance of the complement is assumed. -/
-def fredholmDefectKernelComplementRestriction (K : X →L[ℂ] X) :
+noncomputable def fredholmDefectKernelComplementRestriction (K : X →L[ℂ] X) :
     (fredholmDefect K).kerᗮ →L[ℂ] X :=
   (fredholmDefect K).comp (fredholmDefect K).kerᗮ.subtypeL
 
@@ -3067,8 +3116,8 @@ theorem fredholmDefectKernelComplementRestriction_injective
   have hOrth : (u : X) - (v : X) ∈ (fredholmDefect K).kerᗮ :=
     Submodule.sub_mem _ u.property v.property
   have hZero : (u : X) - (v : X) = 0 := by
-    apply inner_self_eq_zero.mp
-    exact (fredholmDefect K).ker.inner_right_of_mem_orthogonal hKer hOrth
+    exact (inner_self_eq_zero (𝕜 := ℂ)).mp
+      ((fredholmDefect K).ker.inner_right_of_mem_orthogonal hKer hOrth)
   exact sub_eq_zero.mp hZero
 
 /-- Compactness supplies an anti-Lipschitz estimate on the entire orthogonal
@@ -3106,7 +3155,7 @@ theorem fredholmDefectKernelComplementRestriction_antilipschitz
       ‖x‖ ≤ 1 ∧ c ≤ ‖x‖ ∧ ‖R x‖ < φ n :=
     hcShell (φ n) (hφPos n)
   choose x hxNormUpper hxNormLower hxDefect using hxExists
-  have hDefectTendsto : Tendsto (fun n ↦ R (x n)) atTop (𝓝 0) :=
+  have hDefectTendsto : Filter.Tendsto (fun n ↦ R (x n)) Filter.atTop (nhds 0) :=
     squeeze_zero_norm (by grind) hφ
 
   /- A compact subsequence of `K x_n` is also a convergent subsequence of
@@ -3118,10 +3167,21 @@ theorem fredholmDefectKernelComplementRestriction_antilipschitz
     hCCompact.tendsto_subseq (x := ySeq)
       (fun n ↦ hCContains
         ⟨(x n : X), by simpa using hxNormUpper n, rfl⟩)
-  have hxTendsto : Tendsto (fun n ↦ (x (ψ n) : X)) atTop (𝓝 y) := by
+  have hxTendsto : Filter.Tendsto (fun n ↦ (x (ψ n) : X)) Filter.atTop (nhds y) := by
     have hSum := (hDefectTendsto.comp hψ.tendsto_atTop).add hKy
-    simpa only [R, fredholmDefectKernelComplementRestriction_apply,
-      ySeq, fredholmDefect_apply, sub_add_cancel, zero_add] using hSum
+    change Filter.Tendsto
+      (fun n => R (x (ψ n)) + ySeq (ψ n))
+      Filter.atTop (nhds (0 + y)) at hSum
+    have hfun :
+        (fun n => R (x (ψ n)) + ySeq (ψ n)) =
+          (fun n => (x (ψ n) : X)) := by
+      funext n
+      change
+        ((x (ψ n) : X) - K (x (ψ n) : X)) +
+            K (x (ψ n) : X) = (x (ψ n) : X)
+      exact sub_add_cancel _ _
+    rw [hfun] at hSum
+    simpa only [zero_add] using hSum
 
   /- Closedness of the orthogonal complement and continuity of `I-K` put the
   limit in both complementary subspaces. -/
@@ -3129,17 +3189,20 @@ theorem fredholmDefectKernelComplementRestriction_antilipschitz
     apply S.ker.isClosed_orthogonal.mem_of_tendsto hxTendsto
     exact Filter.Eventually.of_forall fun n ↦ (x (ψ n)).property
   have hDefectSubseq :
-      Tendsto (fun n ↦ S (x (ψ n) : X)) atTop (𝓝 0) := by
+      Filter.Tendsto (fun n ↦ S (x (ψ n) : X)) Filter.atTop (nhds 0) := by
+    change Filter.Tendsto
+      ((fun n => S (x n : X)) ∘ ψ) Filter.atTop (nhds 0)
     simpa only [S, R,
       fredholmDefectKernelComplementRestriction_apply] using
       hDefectTendsto.comp hψ.tendsto_atTop
   have hyKerEq : S y = 0 := by
     apply tendsto_nhds_unique _ hDefectSubseq
-    simpa only [Function.comp_apply] using
-      S.continuous.continuousAt.tendsto.comp hxTendsto
+    change Filter.Tendsto
+      (S ∘ fun n => (x (ψ n) : X)) Filter.atTop (nhds (S y))
+    exact S.continuous.continuousAt.tendsto.comp hxTendsto
   have hyKer : y ∈ S.ker := hyKerEq
   have hyZero : y = 0 := by
-    apply inner_self_eq_zero.mp
+    apply (inner_self_eq_zero (𝕜 := ℂ)).mp
     exact S.ker.inner_right_of_mem_orthogonal hyKer hyOrth
 
   /- The shell lower bound forbids convergence to zero. -/
@@ -3147,7 +3210,7 @@ theorem fredholmDefectKernelComplementRestriction_antilipschitz
     rintro rfl
     rw [NormedAddGroup.tendsto_nhds_zero] at hxTendsto
     have hSmall := hxTendsto c hc
-    filter_upwards [hSmall] with n hn
+    obtain ⟨n, hn⟩ := hSmall.exists
     exact (not_lt_of_ge (by simpa using hxNormLower (ψ n))) hn
   exact hyNe hyZero
 
@@ -3232,7 +3295,7 @@ theorem range_isClosed (d : NontrivialKernelFredholmData A) :
 
 /-- The restriction of `A` from the orthogonal complement of its kernel to its
 actual range. -/
-def kernelComplementRestriction (d : NontrivialKernelFredholmData A) :
+noncomputable def kernelComplementRestriction (d : NontrivialKernelFredholmData A) :
     A.kerᗮ →L[ℂ] A.range :=
   (A.comp A.kerᗮ.subtypeL).codRestrict A.range
     (fun u => ⟨(u : V), rfl⟩)
@@ -3258,7 +3321,7 @@ theorem kernelComplementRestriction_injective
   have horth : (u : V) - (v : V) ∈ A.kerᗮ :=
     Submodule.sub_mem _ u.property v.property
   have hzero : (u : V) - (v : V) = 0 := by
-    apply inner_self_eq_zero.mp
+    apply (inner_self_eq_zero (𝕜 := ℂ)).mp
     exact A.ker.inner_right_of_mem_orthogonal hker horth
   exact sub_eq_zero.mp hzero
 
@@ -3388,8 +3451,10 @@ theorem solvable_iff_forall_adjointKernel_inner_eq_zero
     (∃ u : V, A u = f) ↔
       ∀ w : W, ContinuousLinearMap.adjoint A w = 0 → inner ℂ w f = 0 := by
   rw [d.solvable_iff_mem_orthogonal_adjointKernel]
-  simpa only [LinearMap.mem_ker] using
-    ((ContinuousLinearMap.adjoint A).ker.mem_orthogonal f)
+  change
+    f ∈ (ContinuousLinearMap.adjoint A).kerᗮ ↔
+      ∀ w : W, w ∈ (ContinuousLinearMap.adjoint A).ker → inner ℂ w f = 0
+  exact (ContinuousLinearMap.adjoint A).ker.mem_orthogonal f
 
 /-- The reduced inverse norm is the actual operator norm of the canonical
 solution operator, distinct from the shifted coercivity constant. -/
@@ -3399,8 +3464,10 @@ noncomputable def canonicalInverseNorm
 
 theorem canonicalInverseNorm_nonneg
     (d : NontrivialKernelFredholmData A) :
-    0 ≤ d.canonicalInverseNorm :=
-  norm_nonneg _
+    0 ≤ d.canonicalInverseNorm := by
+  change 0 ≤ ‖d.canonicalSolutionOperator‖
+  exact norm_nonneg
+    (d.canonicalSolutionOperator : A.range →L[ℂ] V)
 
 /-- Sharp operator-norm a-priori estimate on the compatible range. -/
 theorem canonicalSolution_norm_le
@@ -3640,6 +3707,7 @@ theorem discretePotential_nonneg (n : ℕ) : 0 ≤ discretePotential n := by
 theorem discretePotential_bounded_on_initialSegment (N : ℕ) :
     ∀ n ≤ N, discretePotential n ≤ discretePotential N := by
   intro n hn
+  change (n : ℝ) ≤ (N : ℝ)
   exact_mod_cast hn
 
 theorem discretePotential_not_uniformly_bounded :
@@ -3660,9 +3728,10 @@ theorem discretePotentialForm_not_uniformly_bounded :
       |discretePotentialForm n u v| ≤ C * |u| * |v| := by
   rintro ⟨C, hC⟩
   obtain ⟨n, hn⟩ := exists_nat_gt C
+  have hn0 : (0 : ℝ) ≤ (n : ℝ) := by positivity
   have hbound : (n : ℝ) ≤ C := by
     simpa [discretePotentialForm, discretePotential,
-      abs_of_nonneg (Nat.cast_nonneg n)] using hC n 1 1
+      abs_of_nonneg hn0] using hC n 1 1
   exact (not_lt_of_ge hbound) hn
 
 end PotentialObstruction
@@ -3675,28 +3744,28 @@ variable {𝕜 E : Type*} [NontriviallyNormedField 𝕜]
   [NormedAddCommGroup E] [NormedSpace 𝕜 E]
 
 /-- The operator actually solved after adding a coercive mass shift. -/
-def shiftedOperator (A : E →L[𝕜] E) (λ : 𝕜) : E →L[𝕜] E :=
-  A + λ • ContinuousLinearMap.id 𝕜 E
+def shiftedOperator (A : E →L[𝕜] E) (lam : 𝕜) : E →L[𝕜] E :=
+  A + lam • ContinuousLinearMap.id 𝕜 E
 
 @[simp]
-theorem shiftedOperator_apply (A : E →L[𝕜] E) (λ : 𝕜) (u : E) :
-    shiftedOperator A λ u = A u + λ • u := by
+theorem shiftedOperator_apply (A : E →L[𝕜] E) (lam : 𝕜) (u : E) :
+    shiftedOperator A lam u = A u + lam • u := by
   simp [shiftedOperator]
 
 /-- A shifted equation has a residual mass term when rewritten for `A`. -/
-theorem shiftedEquation_iff_residual (A : E →L[𝕜] E) (λ : 𝕜)
+theorem shiftedEquation_iff_residual (A : E →L[𝕜] E) (lam : 𝕜)
     (u f : E) :
-    shiftedOperator A λ u = f ↔ A u = f - λ • u := by
+    shiftedOperator A lam u = f ↔ A u = f - lam • u := by
   simpa only [shiftedOperator_apply] using
-    (eq_sub_iff_add_eq : A u = f - λ • u ↔ A u + λ • u = f).symm
+    (eq_sub_iff_add_eq : A u = f - lam • u ↔ A u + lam • u = f).symm
 
 /-- Under a shifted equation, the same vector solves the unshifted equation
 exactly when its mass term vanishes.
 -/
 theorem shiftedSolution_isUnshifted_iff_massTerm_zero
-    (A : E →L[𝕜] E) (λ : 𝕜) (u f : E)
-    (hshift : shiftedOperator A λ u = f) :
-    A u = f ↔ λ • u = 0 := by
+    (A : E →L[𝕜] E) (lam : 𝕜) (u f : E)
+    (hshift : shiftedOperator A lam u = f) :
+    A u = f ↔ lam • u = 0 := by
   rw [shiftedOperator_apply] at hshift
   constructor
   · intro h
@@ -3745,10 +3814,10 @@ theorem no_poincare_with_nonzero_jointKernel
 /-- Writing a spectral value as `1/4 + t^2` with real `t` already excludes
 exceptional spectrum below `1/4`.
 -/
-theorem real_spectral_parameter_forces_quarter_lower {λ t : ℝ}
-    (hλ : λ = (1 : ℝ) / 4 + t ^ 2) :
-    (1 : ℝ) / 4 ≤ λ := by
-  rw [hλ]
+theorem real_spectral_parameter_forces_quarter_lower {lam t : ℝ}
+    (hlam : lam = (1 : ℝ) / 4 + t ^ 2) :
+    (1 : ℝ) / 4 ≤ lam := by
+  rw [hlam]
   exact le_add_of_nonneg_right (sq_nonneg t)
 
 end SpectralObstructions
@@ -3859,14 +3928,18 @@ def gammaTwoHyperbolic : SL(2, ℤ) :=
 
 theorem gammaTwoHyperbolic_mem :
     gammaTwoHyperbolic ∈ CongruenceSubgroup.Gamma 2 := by
-  simp [gammaTwoHyperbolic, CongruenceSubgroup.Gamma_mem]
+  rw [CongruenceSubgroup.Gamma_mem]
+  change
+    ((3 : ZMod 2) = 1 ∧ (2 : ZMod 2) = 0 ∧
+      (4 : ZMod 2) = 0 ∧ (3 : ZMod 2) = 1)
+  decide
 
 /-- This element sends `Im(i) = 1` to `1/25`. -/
 theorem gammaTwoHyperbolic_smul_I_im :
     (gammaTwoHyperbolic • UpperHalfPlane.I).im = (1 : ℝ) / 25 := by
   rw [ModularGroup.im_smul_eq_div_normSq]
-  norm_num [ModularGroup.denom_apply, gammaTwoHyperbolic,
-    Complex.normSq_apply]
+  change (((3 : ℝ) * 3 + (4 : ℝ) * 4)⁻¹) = (1 : ℝ) / 25
+  norm_num
 
 /-- Even the radius of the usual q-parameter is not invariant under this
 `Gamma(2)` element. -/
@@ -3973,7 +4046,7 @@ namespace HalfIntegralMultiplier
 variable {Γ : Subgroup SL(2, ℤ)} {k : ℤ}
 
 /-- The combined weight-`k/2` automorphy factor. -/
-def factor (M : HalfIntegralMultiplier Γ k) (γ : Γ) (z : ℍ) : ℂ :=
+noncomputable def factor (M : HalfIntegralMultiplier Γ k) (γ : Γ) (z : ℍ) : ℂ :=
   M.nu γ * M.sqrtFactor γ z ^ (-k)
 
 @[simp]
@@ -4096,7 +4169,7 @@ theorem subgroupDenom_mul (γ δ : Γ) (z : ℍ) :
         (((γ * δ : Γ) : SL(2, ℤ)) : GL (Fin 2) ℝ) z =
       UpperHalfPlane.denom
           ((γ : SL(2, ℤ)) : GL (Fin 2) ℝ)
-          ((δ : SL(2, ℤ)) • z) *
+          (((δ : SL(2, ℤ)) • z : ℍ)) *
         UpperHalfPlane.denom
           ((δ : SL(2, ℤ)) : GL (Fin 2) ℝ) z := by
   simpa [UpperHalfPlane.σ, MulAction.compHom_smul_def] using
@@ -5369,7 +5442,7 @@ theorem gammaTwoEffective_stabilizer_finite (z : ℍ) :
 fixes its centre.  This is the local-reduction statement at ordinary,
 elliptic, and paired-side points in one uniform form. -/
 theorem gammaTwoEffective_exists_nhds_image_smul_eq_self (z : ℍ) :
-    ∃ U ∈ 𝓝 z, ∀ a : GammaTwoEffective,
+    ∃ U ∈ nhds z, ∀ a : GammaTwoEffective,
       (((a • ·) '' U) ∩ U).Nonempty → a • z = z :=
   ProperlyDiscontinuousSMul.exists_nhds_image_smul_eq_self
     GammaTwoEffective z
@@ -5377,7 +5450,7 @@ theorem gammaTwoEffective_exists_nhds_image_smul_eq_self (z : ℍ) :
 /-- The preceding local reduction can be chosen with a compact neighbourhood
 of the centre. -/
 theorem gammaTwoEffective_exists_compact_nhds_image_smul_eq_self (z : ℍ) :
-    ∃ C : Set ℍ, IsCompact C ∧ C ∈ 𝓝 z ∧
+    ∃ C : Set ℍ, IsCompact C ∧ C ∈ nhds z ∧
       ∀ a : GammaTwoEffective,
         (((a • ·) '' C) ∩ C).Nonempty → a • z = z := by
   obtain ⟨U, hUnhd, hU⟩ :=
@@ -10202,7 +10275,7 @@ theorem compact_has_compact_upstairs_lift
   choose L hLc hLn using fun q : GammaTwoQuotient =>
     exists_compact_mem_nhds (z q)
   have hImageNhd : ∀ q : GammaTwoQuotient,
-      gammaTwoQuotientMk '' L q ∈ 𝓝 q := by
+      gammaTwoQuotientMk '' L q ∈ nhds q := by
     intro q
     simpa only [hz q] using
       gammaTwoQuotientMk_isOpenQuotientMap.isOpenMap.image_mem_nhds
@@ -11542,7 +11615,7 @@ theorem d1_d1 {f : ℍ → ℂ} (hf : RealSmooth f) (z : ℍ)
     (ξ η : ℂ) :
     d1 (fun w => d1 f w η) z ξ = d2 f z ξ η := by
   have hLocal :
-      upperLift (fun w : ℍ => d1 f w η) =ᶠ[𝓝 (z : ℂ)]
+      upperLift (fun w : ℍ => d1 f w η) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ => fderiv ℝ (upperLift f) w η) := by
     filter_upwards [
       UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
@@ -11935,7 +12008,7 @@ direction. -/
 theorem d1_heightC (z : ℍ) (ξ : ℂ) :
     d1 heightC z ξ = (ξ.im : ℂ) := by
   have hLocal :
-      upperLift heightC =ᶠ[𝓝 (z : ℂ)] heightCoordinateCLM := by
+      upperLift heightC =ᶠ[nhds (z : ℂ)] heightCoordinateCLM := by
     filter_upwards [
       UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
     exact upperLift_heightC_eqOn hw
@@ -12345,7 +12418,7 @@ theorem neg_raiseSmoothLinear_lowerSmoothLinear_apply
 ambient chart extension at an upper-half-plane point. -/
 theorem upperLift_eventuallyEq_zero_of_not_mem_tsupport
     {f : ℍ → ℂ} {z : ℍ} (hz : z ∉ tsupport f) :
-    upperLift f =ᶠ[𝓝 (z : ℂ)] (0 : ℂ → ℂ) := by
+    upperLift f =ᶠ[nhds (z : ℂ)] (0 : ℂ → ℂ) := by
   rw [notMem_tsupport_iff_eventuallyEq] at hz
   rw [← UpperHalfPlane.isOpenEmbedding_coe.map_nhds_eq, eventuallyEq_map]
   simpa [upperLift, Function.comp_def] using hz
@@ -13145,7 +13218,7 @@ theorem d1_inverseEtaPaperOrbitDenom_zpow
       (hasDerivAt_zpow m (UpperHalfPlane.denom g z)
         (Or.inl (UpperHalfPlane.denom_ne_zero g z))).scomp (z : ℂ) hAffine
   have hLocal :
-      upperLift (fun w ↦ inverseEtaPaperOrbitDenom γ w ^ m) =ᶠ[𝓝 (z : ℂ)]
+      upperLift (fun w ↦ inverseEtaPaperOrbitDenom γ w ^ m) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ ↦ UpperHalfPlane.denom g w ^ m) := by
     filter_upwards [
       UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
@@ -14680,11 +14753,11 @@ noncomputable def rpowMul (p : ℝ) (u : Core) : Core := by
     by_cases hw : 0 < w.im
     · exact (rpowScale_contDiffAt_of_im_pos p hw).mul
         u.contDiff.contDiffAt
-    · have hu : (u : ℂ → ℂ) =ᶠ[𝓝 w] (0 : ℂ → ℂ) := by
+    · have hu : (u : ℂ → ℂ) =ᶠ[nhds w] (0 : ℂ → ℂ) := by
         rw [← notMem_tsupport_iff_eventuallyEq]
         intro hwu
         exact hw (u.tsupport_subset hwu)
-      have hzero : f =ᶠ[𝓝 w] (0 : ℂ → ℂ) := by
+      have hzero : f =ᶠ[nhds w] (0 : ℂ → ℂ) := by
         filter_upwards [hu] with z hz
         simp [f, hz]
       exact contDiffAt_const.congr_of_eventuallyEq hzero
@@ -14851,11 +14924,11 @@ noncomputable def localizeLeft (f : ℍ → ℂ) (hf : RealSmooth f)
     intro w
     by_cases hw : 0 < w.im
     · exact (hf w hw).contDiffAt.mul v.contDiff.contDiffAt
-    · have hv : (v : ℂ → ℂ) =ᶠ[𝓝 w] (0 : ℂ → ℂ) := by
+    · have hv : (v : ℂ → ℂ) =ᶠ[nhds w] (0 : ℂ → ℂ) := by
         rw [← notMem_tsupport_iff_eventuallyEq]
         intro hwv
         exact hw (v.tsupport_subset hwv)
-      have hzero : F =ᶠ[𝓝 w] (0 : ℂ → ℂ) := by
+      have hzero : F =ᶠ[nhds w] (0 : ℂ → ℂ) := by
         filter_upwards [hv] with z hz
         simp [F, hz]
       exact contDiffAt_const.congr_of_eventuallyEq hzero
@@ -15378,7 +15451,7 @@ theorem restrictToUpper_realSmooth (u : Core) :
 
 theorem upperLift_restrictToUpper_eventuallyEq
     (u : Core) (z : ℍ) :
-    upperLift (restrictToUpper u) =ᶠ[𝓝 (z : ℂ)] (u : ℂ → ℂ) := by
+    upperLift (restrictToUpper u) =ᶠ[nhds (z : ℂ)] (u : ℂ → ℂ) := by
   filter_upwards [
     UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
   exact upperLift_restrictToUpper_eqOn u hw
@@ -15590,7 +15663,7 @@ theorem d1_complexHeightRpow (p : ℝ) (z : ℍ) (ξ : ℂ) :
     d1 (fun w : ℍ => ((w.im ^ p : ℝ) : ℂ)) z ξ =
       (((p * z.im ^ (p - 1)) * ξ.im : ℝ) : ℂ) := by
   have hLocal :
-      upperLift (fun w : ℍ => ((w.im ^ p : ℝ) : ℂ)) =ᶠ[𝓝 (z : ℂ)]
+      upperLift (fun w : ℍ => ((w.im ^ p : ℝ) : ℂ)) =ᶠ[nhds (z : ℂ)]
         HalfWeightCompactCoordinateGreen.rpowScale p := by
     filter_upwards [
       UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
@@ -20606,31 +20679,31 @@ variable [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 analytic hypotheses left are coercivity of the displayed shifted form and
 triviality of the unshifted kernel; compactness is discharged here. -/
 noncomputable def rankOneShiftedFredholmData
-    (α : ℝ) (A : ContinuousSesquilinearForm H) (φ : H) (λ : ℝ)
-    (hShift : ComplexCoerciveWith α (shiftedForm A (rankOneForm φ) λ))
+    (α : ℝ) (A : ContinuousSesquilinearForm H) (φ : H) (lam : ℝ)
+    (hShift : ComplexCoerciveWith α (shiftedForm A (rankOneForm φ) lam))
     (hker : HasTrivialKernel A) :
     FredholmBypassData A :=
-  shiftedFredholmData α A (rankOneForm φ) λ hShift
+  shiftedFredholmData α A (rankOneForm φ) lam hShift
     (rankOneForm_isCompact φ) hker
 
 /-- Operator-level shifted decomposition with rank-one lower order. -/
 noncomputable def rankOneShiftedCompactDecomposition
-    (A : H →L[ℂ] H) (S : H ≃L[ℂ] H) (φ : H) (λ : ℂ)
-    (hS : S.toContinuousLinearMap = A + λ • hilbertRankOne φ) :
+    (A : H →L[ℂ] H) (S : H ≃L[ℂ] H) (φ : H) (lam : ℂ)
+    (hS : S.toContinuousLinearMap = A + lam • hilbertRankOne φ) :
     ShiftedCompactDecomposition A where
   shiftedEquiv := S
-  lowerOrder := λ • hilbertRankOne φ
+  lowerOrder := lam • hilbertRankOne φ
   shifted_eq := hS
-  lowerOrder_isCompact := (hilbertRankOne_isCompact φ).smul λ
+  lowerOrder_isCompact := (hilbertRankOne_isCompact φ).smul lam
 
 /-- Direct input to the complete nontrivial-kernel Fredholm alternative.
 No kernel-triviality assumption is inserted. -/
 noncomputable def rankOneNontrivialKernelFredholmData
-    (A : H →L[ℂ] H) (S : H ≃L[ℂ] H) (φ : H) (λ : ℂ)
-    (hS : S.toContinuousLinearMap = A + λ • hilbertRankOne φ) :
+    (A : H →L[ℂ] H) (S : H ≃L[ℂ] H) (φ : H) (lam : ℂ)
+    (hS : S.toContinuousLinearMap = A + lam • hilbertRankOne φ) :
     NontrivialKernelFredholmData A :=
   NontrivialKernelFredholmData.ofShiftedCompactDecomposition
-    (rankOneShiftedCompactDecomposition A S φ λ hS)
+    (rankOneShiftedCompactDecomposition A S φ lam hS)
 
 end FredholmConstructors
 
@@ -21200,12 +21273,12 @@ of the shifted trivial-kernel Fredholm constructor. -/
 noncomputable def compactCoreKernelShiftedFredholmData
     (n : ℤ) (φ₀ : InverseEtaFixedPhaseCore n)
     (α : ℝ)
-    (A : ContinuousSesquilinearForm (GraphSobolevCompletion n)) (λ : ℝ)
+    (A : ContinuousSesquilinearForm (GraphSobolevCompletion n)) (lam : ℝ)
     (hShift : ComplexCoerciveWith α
-      (shiftedForm A (compactCoreKernelForm n φ₀) λ))
+      (shiftedForm A (compactCoreKernelForm n φ₀) lam))
     (hker : HasTrivialKernel A) :
     FredholmBypassData A :=
-  shiftedFredholmData α A (compactCoreKernelForm n φ₀) λ hShift
+  shiftedFredholmData α A (compactCoreKernelForm n φ₀) lam hShift
     (compactCoreKernelForm_isCompact n φ₀) hker
 
 /-- Operator-level compact-core kernel data for the full Fredholm alternative
@@ -21214,18 +21287,18 @@ noncomputable def compactCoreKernelNontrivialFredholmData
     (n : ℤ) (φ₀ : InverseEtaFixedPhaseCore n)
     (A : GraphSobolevCompletion n →L[ℂ] GraphSobolevCompletion n)
     (S : GraphSobolevCompletion n ≃L[ℂ] GraphSobolevCompletion n)
-    (λ : ℂ)
+    (lam : ℂ)
     (hS : S.toContinuousLinearMap =
-      A + λ • graphBaseHilbertKernel n (compactCoreKernelVector n φ₀)) :
+      A + lam • graphBaseHilbertKernel n (compactCoreKernelVector n φ₀)) :
     NontrivialKernelFredholmData A :=
   NontrivialKernelFredholmData.ofShiftedCompactDecomposition
     { shiftedEquiv := S
       lowerOrder :=
-        λ • graphBaseHilbertKernel n (compactCoreKernelVector n φ₀)
+        lam • graphBaseHilbertKernel n (compactCoreKernelVector n φ₀)
       shifted_eq := hS
       lowerOrder_isCompact :=
         (pulledBackHilbertKernel_isCompact (baseExtension n)
-          (compactCoreKernelVector n φ₀)).smul λ }
+          (compactCoreKernelVector n φ₀)).smul lam }
 
 end FixedPhaseGraphKernel
 
@@ -22274,7 +22347,7 @@ theorem coreMap_cuspCutoffOperator_tendsto (n : ℤ)
     (u : InverseEtaFixedPhaseCore n) :
     Filter.Tendsto
       (fun M ↦ coreMap n (cuspCutoffOperator M n u))
-      Filter.atTop (𝓝 (coreMap n u)) := by
+      Filter.atTop (nhds (coreMap n u)) := by
   apply (tendsto_congr' ?_).mpr tendsto_const_nhds
   exact (cuspCutoffOperator_eventuallyEq n u).fun_comp (coreMap n)
 
@@ -23322,7 +23395,7 @@ theorem tsupport_euclideanRaiseTestAdjoint_subset (n : ℤ)
   have hx0 := notMem_tsupport_iff_eventuallyEq.mp hx
   have hy0 := notMem_tsupport_iff_eventuallyEq.mp hy
   have hv0 := notMem_tsupport_iff_eventuallyEq.mp hwv
-  have hzero : (euclideanRaiseTestAdjoint n v : ℂ → ℂ) =ᶠ[𝓝 w] 0 := by
+  have hzero : (euclideanRaiseTestAdjoint n v : ℂ → ℂ) =ᶠ[nhds w] 0 := by
     filter_upwards [hx0, hy0, hv0] with z hzx hzy hzv
     simp [euclideanRaiseTestAdjoint, hzx, hzy, hzv]
   exact (notMem_tsupport_iff_eventuallyEq.mpr hzero) hw
@@ -23352,7 +23425,7 @@ theorem tsupport_euclideanLowerFromSuccTestAdjoint_subset (n : ℤ)
   have hy0 := notMem_tsupport_iff_eventuallyEq.mp hy
   have hv0 := notMem_tsupport_iff_eventuallyEq.mp hwv
   have hzero :
-      (euclideanLowerFromSuccTestAdjoint n v : ℂ → ℂ) =ᶠ[𝓝 w] 0 := by
+      (euclideanLowerFromSuccTestAdjoint n v : ℂ → ℂ) =ᶠ[nhds w] 0 := by
     filter_upwards [hx0, hy0, hv0] with z hzx hzy hzv
     simp [euclideanLowerFromSuccTestAdjoint, hzx, hzy, hzv]
   exact (notMem_tsupport_iff_eventuallyEq.mpr hzero) hw
@@ -28591,7 +28664,7 @@ theorem d1_selectedCosetDerivative
         (Or.inl (UpperHalfPlane.denom_ne_zero
           (selectedCosetGL q) z))).scomp (z : ℂ) hAffine
   have hLocal :
-      upperLift (selectedCosetDerivative q) =ᶠ[𝓝 (z : ℂ)]
+      upperLift (selectedCosetDerivative q) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ =>
           UpperHalfPlane.denom (selectedCosetGL q) w ^ (-2 : ℤ)) := by
     filter_upwards [
@@ -28787,7 +28860,7 @@ theorem d1_comp_selectedCosetAction
         differentiableAt (by simp)
   have hComp := hOuter.hasFDerivAt.comp (z : ℂ) hInner
   have hLocal :
-      upperLift (fun w => f (selectedCosetAction q w)) =ᶠ[𝓝 (z : ℂ)]
+      upperLift (fun w => f (selectedCosetAction q w)) =ᶠ[nhds (z : ℂ)]
         upperLift f ∘ selectedCosetAmbientMap q := by
     filter_upwards [
       UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos] with w hw
@@ -29832,7 +29905,7 @@ def HasSequentialGraphCore
   ∀ p : E × F, p ∈ A.graph →
     ∃ q : ℕ → E × F,
       (∀ j : ℕ, q j ∈ S.graph) ∧
-        Tendsto q atTop (𝓝 p)
+        Filter.Tendsto q Filter.atTop (nhds p)
 
 /-- In Hilbert spaces the sequential formulation is exactly equality of the
 closed small graph with the graph of a closed extension.  The extension and
@@ -31079,11 +31152,11 @@ theorem selectedFields_eventuallyEq_zero_on_modularOpenHighTail
           Y (selectedCosetAction q z) = 0)
     (q : GammaTwoRightCoset) {z : ℍ}
     (hz : z ∈ modularOpenHighTail H) :
-    (fun w : ℍ => X (selectedCosetAction q w)) =ᶠ[𝓝 z]
+    (fun w : ℍ => X (selectedCosetAction q w)) =ᶠ[nhds z]
         (0 : ℍ → ℂ) ∧
-      (fun w : ℍ => Y (selectedCosetAction q w)) =ᶠ[𝓝 z]
+      (fun w : ℍ => Y (selectedCosetAction q w)) =ᶠ[nhds z]
         (0 : ℍ → ℂ) := by
-  have hTailNhd : modularOpenHighTail H ∈ 𝓝 z :=
+  have hTailNhd : modularOpenHighTail H ∈ nhds z :=
     (modularOpenHighTail_isOpen H).mem_nhds hz
   constructor
   · filter_upwards [hTailNhd] with w hw
@@ -31101,8 +31174,8 @@ theorem selectedCosetPiola_eventuallyEq_zero_on_modularOpenHighTail
           Y (selectedCosetAction q z) = 0)
     (q : GammaTwoRightCoset) {z : ℍ}
     (hz : z ∈ modularOpenHighTail H) :
-    selectedCosetPiolaX q X Y =ᶠ[𝓝 z] (0 : ℍ → ℂ) ∧
-      selectedCosetPiolaY q X Y =ᶠ[𝓝 z] (0 : ℍ → ℂ) := by
+    selectedCosetPiolaX q X Y =ᶠ[nhds z] (0 : ℍ → ℂ) ∧
+      selectedCosetPiolaY q X Y =ᶠ[nhds z] (0 : ℍ → ℂ) := by
   have hFields :=
     selectedFields_eventuallyEq_zero_on_modularOpenHighTail hZero q hz
   constructor
@@ -32426,7 +32499,7 @@ is directly applicable to a log-height cusp slice, whose behaviour below the
 chosen truncation height is irrelevant. -/
 theorem tendsto_zero_normSq_le_energy_Ioi
     {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) {r₀ : ℝ}
-    (hzero : Tendsto f atTop (𝓝 0))
+    (hzero : Filter.Tendsto f Filter.atTop (nhds 0))
     (henergy : IntegrableOn
       (fun r => ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2) (Set.Ioi r₀)) :
     ‖f r₀‖ ^ 2 ≤
@@ -32448,7 +32521,7 @@ theorem tendsto_zero_normSq_le_energy_Ioi
       ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).
         mono_measure Measure.restrict_le_self)).mp
     exact hgDerivIntegrable
-  have hgzero : Tendsto g atTop (𝓝 0) := by
+  have hgzero : Filter.Tendsto g Filter.atTop (nhds 0) := by
     simpa only [g, norm_zero, zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using
       hzero.norm.pow 2
   have hFTC : (∫ r in Set.Ioi r₀, deriv g r) = -g r₀ := by
@@ -32476,7 +32549,7 @@ theorem tendsto_zero_normSq_le_energy_Ioi
 integrable one-dimensional `H¹` energy on every right tail. -/
 theorem eventuallyEq_zero_energy_integrableOn_Ioi
     {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f)
-    (hzero : f =ᶠ[atTop] 0) (r₀ : ℝ) :
+    (hzero : f =ᶠ[Filter.atTop] 0) (r₀ : ℝ) :
     IntegrableOn (fun r => ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2)
       (Set.Ioi r₀) := by
   rcases (eventually_atTop.1 hzero) with ⟨B₀, hB₀⟩
@@ -32494,7 +32567,7 @@ theorem eventuallyEq_zero_energy_integrableOn_Ioi
       Set.Ioc_subset_Icc_self
   have heZero : ∀ r ∈ Set.Ioi B, e r = 0 := by
     intro r hr
-    have hfLocal : f =ᶠ[𝓝 r] 0 := by
+    have hfLocal : f =ᶠ[nhds r] 0 := by
       filter_upwards [isOpen_Ioi.mem_nhds hr] with s hs
       exact hzeroB s (le_of_lt hs)
     have hdf : deriv f r = 0 := by
@@ -33430,10 +33503,10 @@ theorem norm_selectedCuspCoreTrace_sq_eq_integral_logHeightEndpoint
 theorem selectedLogHeightNaturalGauge_eventuallyEq_zero
     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
     {t : ℝ} (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
-    selectedLogHeightNaturalGauge n q u t =ᶠ[atTop] 0 := by
+    selectedLogHeightNaturalGauge n q u t =ᶠ[Filter.atTop] 0 := by
   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero n u with
     ⟨Y₀, hY₀, hZero⟩
-  have hExpEventually : ∀ᶠ r : ℝ in atTop, Y₀ < Real.exp r :=
+  have hExpEventually : ∀ᶠ r : ℝ in Filter.atTop, Y₀ < Real.exp r :=
     Real.tendsto_exp_atTop.eventually (eventually_gt_atTop Y₀)
   filter_upwards [hExpEventually] with r hr
   have hExpOne : 1 ≤ Real.exp r :=
@@ -33458,7 +33531,7 @@ theorem selectedLogHeightNaturalGauge_eventuallyEq_zero
 theorem selectedLogHeightNaturalGauge_tendsto_zero
     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
     {t : ℝ} (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
-    Tendsto (selectedLogHeightNaturalGauge n q u t) atTop (𝓝 0) :=
+    Filter.Tendsto (selectedLogHeightNaturalGauge n q u t) Filter.atTop (nhds 0) :=
   (selectedLogHeightNaturalGauge_eventuallyEq_zero n q u ht).tendsto
 
 /-- The one-dimensional natural gauge has integrable `H¹` energy on every
@@ -33690,7 +33763,7 @@ theorem selectedLogHeightEnergyDensity_uniform_eventually_zero
     ⟨R, hZero⟩
   refine ⟨R, ?_⟩
   intro t ht r hr
-  have hLocal : selectedLogHeightNaturalGauge n q u t =ᶠ[𝓝 r] 0 := by
+  have hLocal : selectedLogHeightNaturalGauge n q u t =ᶠ[nhds r] 0 := by
     filter_upwards [isOpen_Ioi.mem_nhds hr] with s hs
     exact hZero t ht s hs
   have hDeriv : deriv (selectedLogHeightNaturalGauge n q u t) r = 0 := by
@@ -34076,7 +34149,7 @@ theorem selectedHeightGraphDensity_uniform_eventually_zero
 integrable on every closed right tail. -/
 theorem continuousOn_eventuallyEq_zero_integrableOn_Ici
     {f : ℝ → ℝ} {a : ℝ} (hf : ContinuousOn f (Set.Ici a))
-    (hzero : f =ᶠ[atTop] 0) : IntegrableOn f (Set.Ici a) := by
+    (hzero : f =ᶠ[Filter.atTop] 0) : IntegrableOn f (Set.Ici a) := by
   rcases (eventually_atTop.1 hzero) with ⟨B₀, hB₀⟩
   let B : ℝ := max B₀ a
   have haB : a ≤ B := le_max_right _ _
@@ -34138,7 +34211,7 @@ theorem exp_mul_selectedHeightGraphDensity_integrableOn_Ici_log
   apply continuousOn_eventuallyEq_zero_integrableOn_Ici hcont
   rcases selectedHeightGraphDensity_uniform_eventually_zero n q u with
     ⟨B, _hB, hZero⟩
-  have hExpEventually : ∀ᶠ r : ℝ in atTop, B < Real.exp r :=
+  have hExpEventually : ∀ᶠ r : ℝ in Filter.atTop, B < Real.exp r :=
     Real.tendsto_exp_atTop.eventually (eventually_gt_atTop B)
   filter_upwards [hExpEventually] with r hr
   simp only [g, hZero t ht (Real.exp r) hr, zero_mul]
@@ -34903,10 +34976,10 @@ theorem completedSelectedCuspTraceUniformFamily_tendsto_zero
     (n : ℤ) (q : GammaTwoRightCoset) (C : ℝ) (hC : 0 ≤ C)
     (hEstimate : ∀ Y, CoreGraphTraceEstimate n q Y C)
     (x : GraphSobolevCompletion n) :
-    Tendsto
+    Filter.Tendsto
       (fun Y => completedSelectedCuspTraceUniformFamily
         n q C hC hEstimate Y x)
-      atTop (𝓝 0) := by
+      Filter.atTop (nhds 0) := by
   rw [Metric.tendsto_atTop]
   intro ε hε
   have hCOne : 0 < C + 1 := by linarith
@@ -34990,9 +35063,9 @@ selected-cusp trace limit, with no residual estimate parameter. -/
 theorem unconditionalCompletedSelectedCuspTrace_tendsto_zero
     (n : ℤ) (q : GammaTwoRightCoset)
     (x : GraphSobolevCompletion n) :
-    Tendsto
+    Filter.Tendsto
       (fun Y => unconditionalCompletedSelectedCuspTrace n q Y x)
-      atTop (𝓝 0) := by
+      Filter.atTop (nhds 0) := by
   simpa only [unconditionalCompletedSelectedCuspTrace,
     unconditionalCompletedSelectedCuspTraceFamily] using
       completedSelectedCuspTraceUniformFamily_tendsto_zero
@@ -35008,10 +35081,10 @@ theorem UniformSelectedCuspCoreGraphTraceEstimate.exists_fullStrongTraceLimit
         (hEstimate : ∀ (q : GammaTwoRightCoset) (Y : ℝ),
           CoreGraphTraceEstimate n q Y C),
       ∀ (q : GammaTwoRightCoset) (x : GraphSobolevCompletion n),
-        Tendsto
+        Filter.Tendsto
           (fun Y => completedSelectedCuspTraceUniformFamily
             n q C hC (hEstimate q) Y x)
-          atTop (𝓝 0) := by
+          Filter.atTop (nhds 0) := by
   rcases hUniform with ⟨C, hC, hEstimate⟩
   refine ⟨C, hC, hEstimate, ?_⟩
   intro q x
@@ -35043,11 +35116,11 @@ theorem completedSelectedCuspTraceFamily_opNorm_tendsto_zero
     (n : ℤ) (q : GammaTwoRightCoset) (C : ℝ → ℝ)
     (hC : ∀ Y, 0 ≤ C Y)
     (hEstimate : ∀ Y, CoreGraphTraceEstimate n q Y (C Y))
-    (hCZero : Tendsto C atTop (𝓝 0)) :
-    Tendsto
+    (hCZero : Filter.Tendsto C Filter.atTop (nhds 0)) :
+    Filter.Tendsto
       (fun Y =>
         ‖completedSelectedCuspTraceFamily n q C hC hEstimate Y‖)
-      atTop (𝓝 0) :=
+      Filter.atTop (nhds 0) :=
   squeeze_zero
     (fun Y => norm_nonneg
       (completedSelectedCuspTraceFamily n q C hC hEstimate Y))
@@ -35060,11 +35133,11 @@ theorem completedSelectedCuspTraceFamily_tendsto_zero
     (n : ℤ) (q : GammaTwoRightCoset) (C : ℝ → ℝ)
     (hC : ∀ Y, 0 ≤ C Y)
     (hEstimate : ∀ Y, CoreGraphTraceEstimate n q Y (C Y))
-    (hCZero : Tendsto C atTop (𝓝 0))
+    (hCZero : Filter.Tendsto C Filter.atTop (nhds 0))
     (x : GraphSobolevCompletion n) :
-    Tendsto
+    Filter.Tendsto
       (fun Y => completedSelectedCuspTraceFamily n q C hC hEstimate Y x)
-      atTop (𝓝 0) := by
+      Filter.atTop (nhds 0) := by
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   exact squeeze_zero
     (fun Y => norm_nonneg
@@ -35081,8 +35154,8 @@ def HasCofinalTraceVanishingSubsequence
     {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     [NormedAddCommGroup F] [NormedSpace ℂ F]
     (T : ℝ → E →L[ℂ] F) (x : E) : Prop :=
-  ∃ φ : ℕ → ℝ, StrictMono φ ∧ Tendsto φ atTop atTop ∧
-    Tendsto (fun j => T (φ j) x) atTop (𝓝 0)
+  ∃ φ : ℕ → ℝ, StrictMono φ ∧ Filter.Tendsto φ Filter.atTop Filter.atTop ∧
+    Filter.Tendsto (fun j => T (φ j) x) Filter.atTop (nhds 0)
 
 /-- Full trace decay at every real height implies subsequence decay.  No
 converse is asserted. -/
@@ -35090,7 +35163,7 @@ theorem hasCofinalTraceVanishingSubsequence_of_fullLimit
     {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     [NormedAddCommGroup F] [NormedSpace ℂ F]
     (T : ℝ → E →L[ℂ] F) (x : E)
-    (hFull : Tendsto (fun Y => T Y x) atTop (𝓝 0)) :
+    (hFull : Filter.Tendsto (fun Y => T Y x) Filter.atTop (nhds 0)) :
     HasCofinalTraceVanishingSubsequence T x := by
   refine ⟨fun j : ℕ => (j : ℝ), Nat.strictMono_cast,
     tendsto_natCast_atTop_atTop, ?_⟩
@@ -35100,7 +35173,7 @@ theorem completedSelectedCuspTraceFamily_hasCofinalSubsequence
     (n : ℤ) (q : GammaTwoRightCoset) (C : ℝ → ℝ)
     (hC : ∀ Y, 0 ≤ C Y)
     (hEstimate : ∀ Y, CoreGraphTraceEstimate n q Y (C Y))
-    (hCZero : Tendsto C atTop (𝓝 0))
+    (hCZero : Filter.Tendsto C Filter.atTop (nhds 0))
     (x : GraphSobolevCompletion n) :
     HasCofinalTraceVanishingSubsequence
       (completedSelectedCuspTraceFamily n q C hC hEstimate) x :=
@@ -35129,9 +35202,9 @@ theorem inner_trace_tendsto_zero
     {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     [NormedAddCommGroup F] [InnerProductSpace ℂ F]
     (T U : ℝ → E →L[ℂ] F) (x y : E)
-    (hT : Tendsto (fun Y => T Y x) atTop (𝓝 0))
-    (hU : Tendsto (fun Y => U Y y) atTop (𝓝 0)) :
-    Tendsto (fun Y => inner ℂ (T Y x) (U Y y)) atTop (𝓝 0) := by
+    (hT : Filter.Tendsto (fun Y => T Y x) Filter.atTop (nhds 0))
+    (hU : Filter.Tendsto (fun Y => U Y y) Filter.atTop (nhds 0)) :
+    Filter.Tendsto (fun Y => inner ℂ (T Y x) (U Y y)) Filter.atTop (nhds 0) := by
   simpa using hT.inner hU
 
 namespace AxiomAuditP3SelectedCuspTrace
@@ -35211,7 +35284,7 @@ def HasSequentialGraphLocalization
   K ⊆ (A.graph : Set (E × F)) ∧
     ∀ p : E × F, p ∈ A.graph →
       ∃ q : ℕ → E × F,
-        (∀ j : ℕ, q j ∈ K) ∧ Tendsto q atTop (𝓝 p)
+        (∀ j : ℕ, q j ∈ K) ∧ Filter.Tendsto q Filter.atTop (nhds p)
 
 /-- A localization class is sequentially regularizable by `S` when every one
 of its vectors is a graph limit of vectors in the literal domain of `S`. -/
@@ -35221,7 +35294,7 @@ def HasSequentialGraphRegularization
     (S : E →ₗ.[ℂ] F) (K : Set (E × F)) : Prop :=
   ∀ p : E × F, p ∈ K →
     ∃ q : ℕ → E × F,
-      (∀ j : ℕ, q j ∈ S.graph) ∧ Tendsto q atTop (𝓝 p)
+      (∀ j : ℕ, q j ∈ S.graph) ∧ Filter.Tendsto q Filter.atTop (nhds p)
 
 /-- Sequential maximal-domain localization followed by sequential
 Friedrichs regularization gives a genuine sequential graph core.  The proof
@@ -35356,7 +35429,7 @@ theorem periodizedGauge_eventuallyEq_ambientTest
     {z : ℍ}
     (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) =ᶠ[𝓝 (z : ℂ)]
+        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) =ᶠ[nhds (z : ℂ)]
       (v : ℂ → ℂ) :=
   hEq.eventuallyEq_of_mem
     (PhysicalLocalL2.ambientGammaTwoOpenCarrier_isOpen.mem_nhds hz)
@@ -36716,7 +36789,7 @@ Petersson vector.  Uniform contractivity and exact eventual stabilization on
 the dense smooth core give the standard two-error argument. -/
 theorem peterssonCuspCutoff_tendsto_id
     (n : ℤ) (x : OrbitPeterssonHilbert n) :
-    Tendsto (fun N ↦ peterssonCuspCutoff N n x) atTop (𝓝 x) := by
+    Filter.Tendsto (fun N ↦ peterssonCuspCutoff N n x) Filter.atTop (nhds x) := by
   rw [Metric.tendsto_atTop]
   intro ε hε
   obtain ⟨u, hu⟩ := (denseRange_l2Coordinate n).exists_dist_lt x (ε / 2)
@@ -37126,7 +37199,7 @@ statement, not a strong convergence assertion on the whole completion. -/
 theorem raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
     (fun N ↦ raisePeterssonCuspCommutator N n (l2Coordinate n u))
-      =ᶠ[atTop] (fun _ ↦ 0) := by
+      =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
     exists_raiseCuspCutoffCommutator_eventually_eq_zero n u
   filter_upwards [eventually_ge_atTop N] with M hM
@@ -37137,7 +37210,7 @@ smooth source. -/
 theorem lowerPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
     (fun N ↦ lowerPeterssonCuspCommutator N n (l2Coordinate n u))
-      =ᶠ[atTop] (fun _ ↦ 0) := by
+      =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
     exists_lowerCuspCutoffCommutator_eventually_eq_zero n u
   filter_upwards [eventually_ge_atTop N] with M hM
@@ -37164,7 +37237,7 @@ theorem exists_lowerFromSuccCuspCutoffCommutator_eventually_eq_zero
 theorem lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
     (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ lowerFromSuccPeterssonCuspCommutator N n
-      (l2Coordinate (n + 1) u)) =ᶠ[atTop] (fun _ ↦ 0) := by
+      (l2Coordinate (n + 1) u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
     exists_lowerFromSuccCuspCutoffCommutator_eventually_eq_zero n u
   filter_upwards [eventually_ge_atTop N] with M hM
@@ -37541,11 +37614,11 @@ structure AdjointCutoffExhaustion
     ContinuousLinearMap.adjoint (V j) (T x) =
       T ⟨ContinuousLinearMap.adjoint (U j) (x : E),
         adjoint_U_mem_domain j x⟩ + C j x
-  tendsto_U : ∀ x : E, Tendsto (fun j ↦ U j x) atTop (𝒩 x)
-  tendsto_V : ∀ y : F, Tendsto (fun j ↦ V j y) atTop (𝒩 y)
+  tendsto_U : ∀ x : E, Filter.Tendsto (fun j ↦ U j x) Filter.atTop (𝒩 x)
+  tendsto_V : ∀ y : F, Filter.Tendsto (fun j ↦ V j y) Filter.atTop (𝒩 y)
   tendsto_adjoint_C_zero : ∀ y : F,
-    Tendsto (fun j ↦ ContinuousLinearMap.adjoint (C j) y)
-      atTop (𝒩 0)
+    Filter.Tendsto (fun j ↦ ContinuousLinearMap.adjoint (C j) y)
+      Filter.atTop (𝒩 0)
   localized_property : ∀ j (y : T†.domain),
     (V j (y : F),
       U j (T† y) + ContinuousLinearMap.adjoint (C j) (y : F)) ∈ P
@@ -37573,12 +37646,12 @@ theorem AdjointCutoffExhaustion.hasSequentialGraphLocalization
   · exact adjoint_graph_mem_of_bounded_cutoff_commutator T hT
       (X.U j) (X.V j) (X.C j)
       (X.adjoint_U_mem_domain j) (X.commutator j) y
-  have hBase : Tendsto (fun j ↦ X.V j (y : F)) atTop (𝒩 p.1) := by
+  have hBase : Filter.Tendsto (fun j ↦ X.V j (y : F)) Filter.atTop (𝒩 p.1) := by
     simpa only [hyBase] using X.tendsto_V (y : F)
-  have hValue : Tendsto
+  have hValue : Filter.Tendsto
       (fun j ↦ X.U j (T† y) +
         ContinuousLinearMap.adjoint (X.C j) (y : F))
-      atTop (𝒩 p.2) := by
+      Filter.atTop (𝒩 p.2) := by
     simpa only [hyValue, add_zero] using
       (X.tendsto_U (T† y)).add
         (X.tendsto_adjoint_C_zero (y : F))
@@ -37902,7 +37975,7 @@ theorem adjoint_raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
     (n : ℤ) (v : InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ ContinuousLinearMap.adjoint
       (raisePeterssonCuspCommutator N n) (l2Coordinate (n + 1) v))
-        =ᶠ[atTop] (fun _ ↦ 0) := by
+        =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [
     lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
       n v] with N hN
@@ -37914,7 +37987,7 @@ theorem adjoint_lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coor
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
     (fun N ↦ ContinuousLinearMap.adjoint
       (lowerFromSuccPeterssonCuspCommutator N n) (l2Coordinate n u))
-        =ᶠ[atTop] (fun _ ↦ 0) := by
+        =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [
     raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
       n u] with N hN
@@ -38084,7 +38157,7 @@ one.  The pointwise envelope makes this proof independent of a classification
 of parabolic stabilizers. -/
 theorem modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt
     {z : ℍ} (hz : 1 < modularMaxHeight z) :
-    modularMaxHeight =ᶠ[𝓝 z]
+    modularMaxHeight =ᶠ[nhds z]
       (fun w ↦ ((modularHeightMaximizer z) • w).im) := by
   let g : SL(2, ℤ) := modularHeightMaximizer z
   let U : Set ℍ := {w | 1 < (g • w).im}
@@ -38115,7 +38188,7 @@ theorem modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt
 in one fixed integral modular chart throughout the whole positive region. -/
 theorem modularLogMaxHeight_eventuallyEq_chart_of_pos
     {z : ℍ} (hz : 0 < modularLogMaxHeight z) :
-    modularLogMaxHeight =ᶠ[𝓝 z]
+    modularLogMaxHeight =ᶠ[nhds z]
       (fun w ↦ Real.log (((modularHeightMaximizer z) • w).im)) := by
   have hHeight : 1 < modularMaxHeight z := by
     rwa [modularLogMaxHeight,
@@ -38442,10 +38515,10 @@ upper-half-plane chart. -/
 theorem modularLogMaxHeight_upperLift_eventuallyEq_chart
     {z : ℍ} (hz : 0 < modularLogMaxHeight z) :
     (fun w : ℂ ↦ modularLogMaxHeight (UpperHalfPlane.ofComplex w)) =ᶠ[
-        𝓝[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)]
+        nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)]
       integralLogHeightChart (modularHeightMaximizer z) := by
-  have hMap : Tendsto UpperHalfPlane.ofComplex
-      (𝓝[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (𝓝 z) := by
+  have hMap : Filter.Tendsto UpperHalfPlane.ofComplex
+      (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by
     simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using
       (UpperHalfPlane.ofComplex.continuousOn
         (x := (z : ℂ)) z.im_pos)
@@ -38484,24 +38557,24 @@ theorem intrinsicCuspCutoff_realSmooth (N : ℕ) :
         Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt
           (z : ℂ) hReal
     have hEq : upperLift (intrinsicCuspCutoff N) =ᶠ[
-        𝓝[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)] chartCutoff := by
+        nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)] chartCutoff := by
       have hLocal := modularLogMaxHeight_upperLift_eventuallyEq_chart hz
       filter_upwards [hLocal] with v hv
       simp only [upperLift, Function.comp_def, intrinsicCuspCutoff,
         intrinsicCuspCutoffReal, chartCutoff, g, hv]
     exact hChart.congr_of_eventuallyEq_of_mem hEq z.im_pos
   · have hzle : modularLogMaxHeight z ≤ 0 := le_of_not_gt hz
-    have hRhoNhds : {q : ℍ | modularLogMaxHeight q < 1} ∈ 𝓝 z := by
+    have hRhoNhds : {q : ℍ | modularLogMaxHeight q < 1} ∈ nhds z := by
       exact (isOpen_lt continuous_const modularLogMaxHeight_continuous).
         mem_nhds (by simpa only [Set.mem_setOf_eq] using hzle.trans_lt zero_lt_one)
-    have hMap : Tendsto UpperHalfPlane.ofComplex
-        (𝓝[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (𝓝 z) := by
+    have hMap : Filter.Tendsto UpperHalfPlane.ofComplex
+        (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by
       simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using
         (UpperHalfPlane.ofComplex.continuousOn
           (x := (z : ℂ)) z.im_pos)
     have hPulled := hMap hRhoNhds
     have hEq : upperLift (intrinsicCuspCutoff N) =ᶠ[
-        𝓝[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)]
+        nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)]
         (fun _ : ℂ ↦ (1 : ℂ)) := by
       filter_upwards [hPulled] with v hv
       change intrinsicCuspCutoff N (UpperHalfPlane.ofComplex v) = 1
@@ -38623,11 +38696,11 @@ theorem intrinsicCuspCutoff_fderiv_hyperbolic_bound
   have hC : 0 ≤ C := by
     exact div_nonneg (mul_nonneg (by norm_num)
       intrinsicTransitionLipschitzConstant.coe_nonneg) z.im_pos.le
-  have hLocal : ∀ᶠ w : ℂ in 𝓝 (z : ℂ),
+  have hLocal : ∀ᶠ w : ℂ in nhds (z : ℂ),
       ‖upperLift (intrinsicCuspCutoff N) w -
           upperLift (intrinsicCuspCutoff N) (z : ℂ)‖ ≤
         C * ‖w - (z : ℂ)‖ := by
-    have hImNhds : {w : ℂ | z.im / 2 < w.im} ∈ 𝓝 (z : ℂ) := by
+    have hImNhds : {w : ℂ | z.im / 2 < w.im} ∈ nhds (z : ℂ) := by
       exact (isOpen_lt continuous_const Complex.continuous_im).
         mem_nhds (by simpa only [Set.mem_setOf_eq] using
           (by linarith [z.im_pos] : z.im / 2 < z.im))
@@ -38820,7 +38893,7 @@ theorem exists_intrinsicCuspCutoffOperator_eventually_eq
 
 theorem intrinsicCuspCutoffOperator_eventuallyEq
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
-    (fun M ↦ intrinsicCuspCutoffOperator M n u) =ᶠ[atTop]
+    (fun M ↦ intrinsicCuspCutoffOperator M n u) =ᶠ[Filter.atTop]
       (fun _ ↦ u) := by
   obtain ⟨N, hN⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq n u
@@ -38903,8 +38976,8 @@ theorem norm_intrinsicPeterssonCuspCutoff_apply_le
 
 theorem intrinsicPeterssonCuspCutoff_tendsto_id
     (n : ℤ) (x : OrbitPeterssonHilbert n) :
-    Tendsto (fun N ↦ intrinsicPeterssonCuspCutoff N n x)
-      atTop (𝓝 x) := by
+    Filter.Tendsto (fun N ↦ intrinsicPeterssonCuspCutoff N n x)
+      Filter.atTop (nhds x) := by
   rw [Metric.tendsto_atTop]
   intro eps heps
   obtain ⟨u, hu⟩ :=
@@ -39326,7 +39399,7 @@ theorem norm_intrinsicLowerFromSuccPeterssonCommutator_apply_le
 
 theorem intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
-    (fun N ↦ intrinsicRaiseCuspCutoffCommutator N n u) =ᶠ[atTop]
+    (fun N ↦ intrinsicRaiseCuspCutoffCommutator N n u) =ᶠ[Filter.atTop]
       (fun _ ↦ 0) := by
   obtain ⟨Nu, hNu⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq n u
@@ -39344,7 +39417,7 @@ theorem intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero
 
 theorem intrinsicLowerFromSuccCuspCutoffCommutator_eventuallyEq_zero
     (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
-    (fun N ↦ intrinsicLowerFromSuccCuspCutoffCommutator N n u) =ᶠ[atTop]
+    (fun N ↦ intrinsicLowerFromSuccCuspCutoffCommutator N n u) =ᶠ[Filter.atTop]
       (fun _ ↦ 0) := by
   obtain ⟨Nu, hNu⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq (n + 1) u
@@ -39363,7 +39436,7 @@ theorem intrinsicLowerFromSuccCuspCutoffCommutator_eventuallyEq_zero
 theorem intrinsicRaisePeterssonCommutator_eventuallyEq_zero_on_core
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
     (fun N ↦ intrinsicRaisePeterssonCommutator N n
-      (l2Coordinate n u)) =ᶠ[atTop] (fun _ ↦ 0) := by
+      (l2Coordinate n u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero n u]
     with N hN
   rw [intrinsicRaisePeterssonCommutator_l2Coordinate, hN, map_zero]
@@ -39371,7 +39444,7 @@ theorem intrinsicRaisePeterssonCommutator_eventuallyEq_zero_on_core
 theorem intrinsicLowerFromSuccPeterssonCommutator_eventuallyEq_zero_on_core
     (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ intrinsicLowerFromSuccPeterssonCommutator N n
-      (l2Coordinate (n + 1) u)) =ᶠ[atTop] (fun _ ↦ 0) := by
+      (l2Coordinate (n + 1) u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [
     intrinsicLowerFromSuccCuspCutoffCommutator_eventuallyEq_zero n u]
       with N hN
@@ -39388,9 +39461,9 @@ theorem tendsto_zero_of_uniform_bound_of_eventuallyEq_on_denseRange
     (A : ℕ → E →L[ℂ] F) (B : ℝ) (hB : 0 ≤ B)
     (core : D → E) (hDense : DenseRange core)
     (hBound : ∀ N x, ‖A N x‖ ≤ B * ‖x‖)
-    (hCore : ∀ u, (fun N ↦ A N (core u)) =ᶠ[atTop] (fun _ ↦ 0))
+    (hCore : ∀ u, (fun N ↦ A N (core u)) =ᶠ[Filter.atTop] (fun _ ↦ 0))
     (x : E) :
-    Tendsto (fun N ↦ A N x) atTop (𝓝 0) := by
+    Filter.Tendsto (fun N ↦ A N x) Filter.atTop (nhds 0) := by
   rw [Metric.tendsto_atTop]
   intro eps heps
   let eta : ℝ := eps / (B + 1)
@@ -39416,8 +39489,8 @@ theorem tendsto_zero_of_uniform_bound_of_eventuallyEq_on_denseRange
 
 theorem intrinsicRaisePeterssonCommutator_tendsto_zero
     (n : ℤ) (x : OrbitPeterssonHilbert n) :
-    Tendsto (fun N ↦ intrinsicRaisePeterssonCommutator N n x)
-      atTop (𝓝 0) := by
+    Filter.Tendsto (fun N ↦ intrinsicRaisePeterssonCommutator N n x)
+      Filter.atTop (nhds 0) := by
   exact tendsto_zero_of_uniform_bound_of_eventuallyEq_on_denseRange
     (fun N ↦ intrinsicRaisePeterssonCommutator N n)
     intrinsicCommutatorUniformBound
@@ -39428,8 +39501,8 @@ theorem intrinsicRaisePeterssonCommutator_tendsto_zero
 
 theorem intrinsicLowerFromSuccPeterssonCommutator_tendsto_zero
     (n : ℤ) (x : OrbitPeterssonHilbert (n + 1)) :
-    Tendsto (fun N ↦ intrinsicLowerFromSuccPeterssonCommutator N n x)
-      atTop (𝓝 0) := by
+    Filter.Tendsto (fun N ↦ intrinsicLowerFromSuccPeterssonCommutator N n x)
+      Filter.atTop (nhds 0) := by
   exact tendsto_zero_of_uniform_bound_of_eventuallyEq_on_denseRange
     (fun N ↦ intrinsicLowerFromSuccPeterssonCommutator N n)
     intrinsicCommutatorUniformBound
@@ -40056,7 +40129,7 @@ theorem tsupport_euclideanRaiseForwardTest_subset (n : ℤ)
   have hy0 := notMem_tsupport_iff_eventuallyEq.mp hy
   have hv0 := notMem_tsupport_iff_eventuallyEq.mp hwv
   have hzero :
-      (euclideanRaiseForwardTest n v : ℂ → ℂ) =ᶠ[𝓝 w] 0 := by
+      (euclideanRaiseForwardTest n v : ℂ → ℂ) =ᶠ[nhds w] 0 := by
     filter_upwards [hx0, hy0, hv0] with z hzx hzy hzv
     simp [euclideanRaiseForwardTest, hzx, hzy, hzv]
   exact (notMem_tsupport_iff_eventuallyEq.mpr hzero) hw
@@ -40086,7 +40159,7 @@ theorem tsupport_euclideanLowerFromSuccForwardTest_subset (n : ℤ)
   have hy0 := notMem_tsupport_iff_eventuallyEq.mp hy
   have hv0 := notMem_tsupport_iff_eventuallyEq.mp hwv
   have hzero :
-      (euclideanLowerFromSuccForwardTest n v : ℂ → ℂ) =ᶠ[𝓝 w] 0 := by
+      (euclideanLowerFromSuccForwardTest n v : ℂ → ℂ) =ᶠ[nhds w] 0 := by
     filter_upwards [hx0, hy0, hv0] with z hzx hzy hzv
     simp [euclideanLowerFromSuccForwardTest, hzx, hzy, hzv]
   exact (notMem_tsupport_iff_eventuallyEq.mpr hzero) hw
@@ -40262,11 +40335,11 @@ the Petersson Hilbert completion because the embedding preserves norms. -/
 theorem tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto
     {m : ℤ} {ι : Type*} {l : Filter ι}
     {x : ι → OrbitPeterssonHilbert m} {x0 : OrbitPeterssonHilbert m}
-    (h : Tendsto
+    (h : Filter.Tendsto
       (fun i ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (x i))
       l
-      (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m x0))) :
-    Tendsto x l (𝓝 x0) := by
+      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m x0))) :
+    Filter.Tendsto x l (nhds x0) := by
   rw [tendsto_iff_norm_sub_tendsto_zero] at h ⊢
   simpa only [map_sub,
     PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm] using h
@@ -40283,20 +40356,20 @@ theorem periodize_ambientRaisingGraphApproximation
     (v : ℕ → PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
       PhysicalLocalL2.ambientGammaTwoOpenCarrier)
-    (hBase : Tendsto
+    (hBase : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
-      atTop
-      (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)))
-    (hRaise : Tendsto
+      Filter.atTop
+      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)))
+    (hRaise : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
         (euclideanRaiseForwardTest n (v j)))
-      atTop
-      (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      Filter.atTop
+      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.2))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1),
       (∀ j : ℕ, q j ∈ (physicalRaise n).graph) ∧
-        Tendsto q atTop (𝓝 p) := by
+        Filter.Tendsto q Filter.atTop (nhds p) := by
   let u : ℕ → InverseEtaFixedPhaseCore n := fun j ↦
     gammaTwoPeriodizedPhysicalCore n (v j)
   let q : ℕ → OrbitPeterssonHilbert n ×
@@ -40314,28 +40387,28 @@ theorem periodize_ambientRaisingGraphApproximation
       (physicalRaise n).graph
     simpa only [l2CoreRangeEquiv_coe, physicalRaise_on_core] using
       (physicalRaise n).mem_graph (l2CoreRangeEquiv n (u j))
-  · have hBaseEmbedded : Tendsto
+  · have hBaseEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (u j)))
-        atTop
-        (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) :=
+        Filter.atTop
+        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
-    have hRaiseEmbedded : Tendsto
+    have hRaiseEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (raisedCoordinate n (u j)))
-        atTop
-        (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        Filter.atTop
+        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.2)) :=
       hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_raisedCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
-    have hBasePhysical : Tendsto
-        (fun j ↦ l2Coordinate n (u j)) atTop (𝓝 p.1) :=
+    have hBasePhysical : Filter.Tendsto
+        (fun j ↦ l2Coordinate n (u j)) Filter.atTop (nhds p.1) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hBaseEmbedded
-    have hRaisePhysical : Tendsto
-        (fun j ↦ raisedCoordinate n (u j)) atTop (𝓝 p.2) :=
+    have hRaisePhysical : Filter.Tendsto
+        (fun j ↦ raisedCoordinate n (u j)) Filter.atTop (nhds p.2) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hRaiseEmbedded
     exact hBasePhysical.prodMk_nhds hRaisePhysical
 
@@ -40346,20 +40419,20 @@ theorem periodize_ambientLoweringGraphApproximation
     (v : ℕ → PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
       PhysicalLocalL2.ambientGammaTwoOpenCarrier)
-    (hBase : Tendsto
+    (hBase : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
-      atTop
-      (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      Filter.atTop
+      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.1)))
-    (hLower : Tendsto
+    (hLower : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
         (euclideanLowerFromSuccForwardTest n (v j)))
-      atTop
-      (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
+      Filter.atTop
+      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n,
       (∀ j : ℕ, q j ∈ (physicalLowerFromSucc n).graph) ∧
-        Tendsto q atTop (𝓝 p) := by
+        Filter.Tendsto q Filter.atTop (nhds p) := by
   let u : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1) (v j)
   let q : ℕ → OrbitPeterssonHilbert (n + 1) ×
@@ -40380,28 +40453,28 @@ theorem periodize_ambientLoweringGraphApproximation
       physicalLowerFromSucc_on_core] using
         (physicalLowerFromSucc n).mem_graph
           (l2CoreRangeEquiv (n + 1) (u j))
-  · have hBaseEmbedded : Tendsto
+  · have hBaseEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (l2Coordinate (n + 1) (u j)))
-        atTop
-        (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        Filter.atTop
+        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
-    have hLowerEmbedded : Tendsto
+    have hLowerEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (lowerFromSuccCoordinate n (u j)))
-        atTop
-        (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)) :=
+        Filter.atTop
+        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)) :=
       hLower.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_lowerFromSuccCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
-    have hBasePhysical : Tendsto
-        (fun j ↦ l2Coordinate (n + 1) (u j)) atTop (𝓝 p.1) :=
+    have hBasePhysical : Filter.Tendsto
+        (fun j ↦ l2Coordinate (n + 1) (u j)) Filter.atTop (nhds p.1) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hBaseEmbedded
-    have hLowerPhysical : Tendsto
-        (fun j ↦ lowerFromSuccCoordinate n (u j)) atTop (𝓝 p.2) :=
+    have hLowerPhysical : Filter.Tendsto
+        (fun j ↦ lowerFromSuccCoordinate n (u j)) Filter.atTop (nhds p.2) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hLowerEmbedded
     exact hBasePhysical.prodMk_nhds hLowerPhysical
 
@@ -40417,15 +40490,15 @@ theorem raisingCompactFriedrichsPeriodizationAt_of_ambientApproximation
         ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
             PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
-            atTop
-            (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) ∧
-          Tendsto
+            Filter.atTop
+            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) ∧
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
               (euclideanRaiseForwardTest n (v j)))
-            atTop
-            (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+            Filter.atTop
+            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
               p.2))) :
     RaisingCompactFriedrichsPeriodizationAt n := by
   intro p hp
@@ -40440,17 +40513,17 @@ theorem loweringCompactFriedrichsPeriodizationAt_of_ambientApproximation
         ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
             PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
               (v j))
-            atTop
-            (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+            Filter.atTop
+            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
               p.1)) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
               (euclideanLowerFromSuccForwardTest n (v j)))
-            atTop
-            (𝓝 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
+            Filter.atTop
+            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
     LoweringCompactFriedrichsPeriodizationAt n := by
   intro p hp
   obtain ⟨v, hv, hBase, hLower⟩ := hApprox p hp
@@ -40502,7 +40575,7 @@ noncomputable def gammaTwoReducedChartCompact (z : ℍ) : Set ℍ :=
 
 theorem gammaTwoReducedChartCompact_spec (z : ℍ) :
     IsCompact (gammaTwoReducedChartCompact z) ∧
-      gammaTwoReducedChartCompact z ∈ 𝓝 z ∧
+      gammaTwoReducedChartCompact z ∈ nhds z ∧
       ∀ a : GammaTwoEffective,
         (((a • ·) '' gammaTwoReducedChartCompact z) ∩
           gammaTwoReducedChartCompact z).Nonempty →
@@ -40737,8 +40810,8 @@ abbrev AmbientPlaneL2 :=
 The representative of `DomAddAct.mk t +v f` is `w |-> f (t+w)`. -/
 theorem ambientPlaneL2_translation_tendsto
     (f : AmbientPlaneL2) :
-    Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
-      (𝓝 0) (𝓝 f) := by
+    Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
+      (nhds 0) (nhds f) := by
   have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
     fun_prop
   simpa using h.continuousAt
@@ -40746,8 +40819,8 @@ theorem ambientPlaneL2_translation_tendsto
 /-- Equivalent norm form of strong `L2` translation continuity. -/
 theorem ambientPlaneL2_norm_translation_sub_tendsto_zero
     (f : AmbientPlaneL2) :
-    Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖)
-      (𝓝 0) (𝓝 0) := by
+    Filter.Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖)
+      (nhds 0) (nhds 0) := by
   have h : Continuous
       (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by
     fun_prop
@@ -40919,11 +40992,11 @@ theorem integral_shrinkingKernel_smul_translation_sub_tendsto_zero
     (hL1 : ∀ n : ℕ, (∫ t : ℂ, ‖K n t‖) ≤ C)
     (hSupport : ∀ n : ℕ, ∀ t : ℂ,
       K n t ≠ 0 → ‖t‖ ≤ r n)
-    (hr : Tendsto r atTop (𝓝 0)) :
-    Tendsto
+    (hr : Filter.Tendsto r Filter.atTop (nhds 0)) :
+    Filter.Tendsto
       (fun n : ℕ ↦
         ∫ t : ℂ, K n t • (DomAddAct.mk (-t) +ᵥ f - f))
-      atTop (𝓝 0) := by
+      Filter.atTop (nhds 0) := by
   rw [Metric.tendsto_atTop]
   intro ε hε
   let η : ℝ := ε / (C + 1)
@@ -40933,17 +41006,17 @@ theorem integral_shrinkingKernel_smul_translation_sub_tendsto_zero
     rw [η, div_mul_eq_mul_div, div_lt_iff₀ hC1]
     nlinarith
   have hTranslationEventually :
-      {t : ℂ | ‖DomAddAct.mk (-t) +ᵥ f - f‖ < η} ∈ 𝓝 0 := by
+      {t : ℂ | ‖DomAddAct.mk (-t) +ᵥ f - f‖ < η} ∈ nhds 0 := by
     have hT := ambientPlaneL2_norm_translation_sub_tendsto_zero f
-    have hNeg : Tendsto (fun t : ℂ ↦ -t) (𝓝 0) (𝓝 0) := by
+    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by
       fun_prop
-    have hComp : Tendsto
+    have hComp : Filter.Tendsto
         (fun t : ℂ ↦ ‖DomAddAct.mk (-t) +ᵥ f - f‖)
-        (𝓝 0) (𝓝 0) := hT.comp hNeg
+        (nhds 0) (nhds 0) := hT.comp hNeg
     exact hComp (Iio_mem_nhds hη)
   obtain ⟨δ, hδpos, hδ⟩ :=
     Metric.mem_nhds_iff.mp hTranslationEventually
-  have hrEventually : ∀ᶠ n : ℕ in atTop, r n < δ :=
+  have hrEventually : ∀ᶠ n : ℕ in Filter.atTop, r n < δ :=
     hr (Iio_mem_nhds hδpos)
   obtain ⟨N, hN⟩ := eventually_atTop.1 hrEventually
   refine ⟨N, fun n hn ↦ ?_⟩
@@ -41193,10 +41266,10 @@ theorem friedrichsMollifier_support_bound
   exact ((lt_div_iff₀ ha).2 hlt).le
 
 theorem friedrichsRadius_tendsto_zero :
-    Tendsto friedrichsRadius atTop (𝒩 0) := by
-  have hbase : Tendsto
+    Filter.Tendsto friedrichsRadius Filter.atTop (𝒩 0) := by
+  have hbase : Filter.Tendsto
       (fun j : ℕ ↦ (1 : ℝ) / ((j : ℝ) + 1))
-      atTop (𝒩 0) :=
+      Filter.atTop (𝒩 0) :=
     tendsto_one_div_add_atTop_nhds_zero_nat
   have hmul := (tendsto_const_nhds (x := (2 : ℝ))).mul hbase
   simpa only [friedrichsRadius, friedrichsScale,
@@ -41588,10 +41661,10 @@ theorem friedrichsMollifierAction_eq_base_add_error
 
 theorem friedrichsMollifierError_tendsto_zero
     (f : AmbientPlaneL2) :
-    Tendsto
+    Filter.Tendsto
       (fun j : ℕ ↦ ∫ t : ℂ, friedrichsMollifier j t •
         (DomAddAct.mk (-t) +ᵥ f - f))
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
   apply
     FixedPhaseAffineFriedrichs.
       integral_shrinkingKernel_smul_translation_sub_tendsto_zero
@@ -41605,8 +41678,8 @@ theorem friedrichsMollifierError_tendsto_zero
 
 theorem friedrichsMollifierAction_tendsto
     (f : AmbientPlaneL2) :
-    Tendsto (fun j : ℕ ↦ friedrichsMollifierAction j f)
-      atTop (𝒩 f) := by
+    Filter.Tendsto (fun j : ℕ ↦ friedrichsMollifierAction j f)
+      Filter.atTop (𝒩 f) := by
   have h := (tendsto_const_nhds (x := f)).add
     (friedrichsMollifierError_tendsto_zero f)
   simpa only [add_zero] using h.congr'
@@ -41631,11 +41704,11 @@ theorem friedrichsAffineCommutatorAction_eq_error
 
 theorem friedrichsAffineCommutatorError_tendsto_zero
     (sigma : ℂ) (f : AmbientPlaneL2) :
-    Tendsto
+    Filter.Tendsto
       (fun j : ℕ ↦ ∫ t : ℂ,
         friedrichsAffineCommutatorKernel sigma j t •
           (DomAddAct.mk (-t) +ᵥ f - f))
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
   apply
     FixedPhaseAffineFriedrichs.
       integral_shrinkingKernel_smul_translation_sub_tendsto_zero
@@ -41651,9 +41724,9 @@ theorem friedrichsAffineCommutatorError_tendsto_zero
 
 theorem friedrichsAffineCommutatorAction_tendsto_zero
     (sigma : ℂ) (f : AmbientPlaneL2) :
-    Tendsto
+    Filter.Tendsto
       (fun j : ℕ ↦ friedrichsAffineCommutatorAction sigma j f)
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
   exact (friedrichsAffineCommutatorError_tendsto_zero sigma f).congr'
     (Filter.Eventually.of_forall fun j ↦
       (friedrichsAffineCommutatorAction_eq_error sigma j f).symm)
@@ -41667,9 +41740,9 @@ noncomputable def friedrichsAffineForwardCoordinate
 
 theorem friedrichsAffineForwardCoordinate_tendsto
     (sigma : ℂ) (u Pu : AmbientPlaneL2) :
-    Tendsto
+    Filter.Tendsto
       (fun j : ℕ ↦ friedrichsAffineForwardCoordinate sigma j u Pu)
-      atTop (𝒩 Pu) := by
+      Filter.atTop (𝒩 Pu) := by
   simpa only [friedrichsAffineForwardCoordinate, add_zero] using
     (friedrichsMollifierAction_tendsto Pu).add
       (friedrichsAffineCommutatorAction_tendsto_zero sigma u)
@@ -41679,12 +41752,12 @@ lowering affine coordinates.  This is stronger than choosing unrelated
 subsequences for the two first-order operators. -/
 theorem friedrichsJointAffineCoordinates_tendsto
     (u Ru Lu : AmbientPlaneL2) :
-    Tendsto
+    Filter.Tendsto
       (fun j : ℕ ↦
         (friedrichsMollifierAction j u,
           friedrichsAffineForwardCoordinate Complex.I j u Ru,
           friedrichsAffineForwardCoordinate (-Complex.I) j u Lu))
-      atTop (𝒩 (u, Ru, Lu)) := by
+      Filter.atTop (𝒩 (u, Ru, Lu)) := by
   exact (friedrichsMollifierAction_tendsto u).prodMk_nhds <|
     (friedrichsAffineForwardCoordinate_tendsto Complex.I u Ru).
       prodMk_nhds
@@ -41730,27 +41803,27 @@ theorem periodize_ambientJointGraphApproximation
     (v : ℕ → PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
       PhysicalLocalL2.ambientGammaTwoOpenCarrier)
-    (hBase : Tendsto
+    (hBase : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
-      atTop
+      Filter.atTop
       (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.1)))
-    (hRaise : Tendsto
+    (hRaise : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 ((n + 1) + 1)
         (euclideanRaiseForwardTest (n + 1) (v j)))
-      atTop
+      Filter.atTop
       (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
         ((n + 1) + 1) p.2.fst)))
-    (hLower : Tendsto
+    (hLower : Filter.Tendsto
       (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
         (euclideanLowerFromSuccForwardTest n (v j)))
-      atTop
+      Filter.atTop
       (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         p.2.snd))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n,
       (∀ j : ℕ, q j ∈ (physicalJointFromSucc n).graph) ∧
-        Tendsto q atTop (𝒩 p) := by
+        Filter.Tendsto q Filter.atTop (𝒩 p) := by
   let u : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1) (v j)
   let q : ℕ → OrbitPeterssonHilbert (n + 1) ×
@@ -41777,49 +41850,49 @@ theorem periodize_ambientJointGraphApproximation
       physicalJointFromSucc_on_core] using
         (physicalJointFromSucc n).mem_graph
           (l2CoreRangeEquiv (n + 1) (u j))
-  · have hBaseEmbedded : Tendsto
+  · have hBaseEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (l2Coordinate (n + 1) (u j)))
-        atTop
+        Filter.atTop
         (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
-    have hRaiseEmbedded : Tendsto
+    have hRaiseEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
           ((n + 1) + 1) (raisedCoordinate (n + 1) (u j)))
-        atTop
+        Filter.atTop
         (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
           ((n + 1) + 1) p.2.fst)) :=
       hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_raisedCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
-    have hLowerEmbedded : Tendsto
+    have hLowerEmbedded : Filter.Tendsto
         (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (lowerFromSuccCoordinate n (u j)))
-        atTop
+        Filter.atTop
         (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           p.2.snd)) :=
       hLower.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_lowerFromSuccCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
-    have hBasePhysical : Tendsto
-        (fun j ↦ l2Coordinate (n + 1) (u j)) atTop (𝒩 p.1) :=
+    have hBasePhysical : Filter.Tendsto
+        (fun j ↦ l2Coordinate (n + 1) (u j)) Filter.atTop (𝒩 p.1) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hBaseEmbedded
-    have hRaisePhysical : Tendsto
+    have hRaisePhysical : Filter.Tendsto
         (fun j ↦ raisedCoordinate (n + 1) (u j))
-        atTop (𝒩 p.2.fst) :=
+        Filter.atTop (𝒩 p.2.fst) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hRaiseEmbedded
-    have hLowerPhysical : Tendsto
+    have hLowerPhysical : Filter.Tendsto
         (fun j ↦ lowerFromSuccCoordinate n (u j))
-        atTop (𝒩 p.2.snd) :=
+        Filter.atTop (𝒩 p.2.snd) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hLowerEmbedded
-    have hTarget : Tendsto
+    have hTarget : Filter.Tendsto
         (fun j ↦ WithLp.toLp 2
           (raisedCoordinate (n + 1) (u j),
             lowerFromSuccCoordinate n (u j)))
-        atTop (𝒩 p.2) := by
+        Filter.atTop (𝒩 p.2) := by
       have hPair := hRaisePhysical.prodMk_nhds hLowerPhysical
       exact (WithLp.prod_continuous_toLp (p := 2)).continuousAt.tendsto.comp
         hPair
@@ -41837,23 +41910,23 @@ theorem hasSequentialJointGraphRegularization_of_ambientApproximation
         ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
             PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2
               (n + 1) (v j))
-            atTop
+            Filter.atTop
             (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
               (n + 1) p.1)) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2
               ((n + 1) + 1)
               (euclideanRaiseForwardTest (n + 1) (v j)))
-            atTop
+            Filter.atTop
             (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
               ((n + 1) + 1) p.2.fst)) ∧
-          Tendsto
+          Filter.Tendsto
             (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
               (euclideanLowerFromSuccForwardTest n (v j)))
-            atTop
+            Filter.atTop
             (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
               p.2.snd))) :
     HasSequentialGraphRegularization (physicalJointFromSucc n) K := by
@@ -43246,17 +43319,17 @@ theorem intrinsicJointCutoffTriple_mem_weightedWeakSubmodule
 
 theorem baseProjection_intrinsicJointCutoffTriple_tendsto
     (n : ℤ) (x : WeakCoordinateAmbient n) :
-    Tendsto
+    Filter.Tendsto
       (fun j ↦ baseProjection n (intrinsicJointCutoffTriple j n x))
-      atTop (𝓝 (baseProjection n x)) := by
+      Filter.atTop (nhds (baseProjection n x)) := by
   simpa only [baseProjection_intrinsicJointCutoffTriple] using
     intrinsicPeterssonCuspCutoff_tendsto_id (n + 1) (baseProjection n x)
 
 theorem raiseProjection_intrinsicJointCutoffTriple_tendsto
     (n : ℤ) (x : WeakCoordinateAmbient n) :
-    Tendsto
+    Filter.Tendsto
       (fun j ↦ raiseProjection n (intrinsicJointCutoffTriple j n x))
-      atTop (𝓝 (raiseProjection n x)) := by
+      Filter.atTop (nhds (raiseProjection n x)) := by
   simpa only [raiseProjection_intrinsicJointCutoffTriple, add_zero] using
     (intrinsicPeterssonCuspCutoff_tendsto_id ((n + 1) + 1)
       (raiseProjection n x)).add
@@ -43265,9 +43338,9 @@ theorem raiseProjection_intrinsicJointCutoffTriple_tendsto
 
 theorem lowerProjection_intrinsicJointCutoffTriple_tendsto
     (n : ℤ) (x : WeakCoordinateAmbient n) :
-    Tendsto
+    Filter.Tendsto
       (fun j ↦ lowerProjection n (intrinsicJointCutoffTriple j n x))
-      atTop (𝓝 (lowerProjection n x)) := by
+      Filter.atTop (nhds (lowerProjection n x)) := by
   simpa only [lowerProjection_intrinsicJointCutoffTriple, add_zero] using
     (intrinsicPeterssonCuspCutoff_tendsto_id n
       (lowerProjection n x)).add
@@ -43277,8 +43350,8 @@ theorem lowerProjection_intrinsicJointCutoffTriple_tendsto
 /-- Joint convergence in the actual three-coordinate Hilbert norm. -/
 theorem intrinsicJointCutoffTriple_tendsto
     (n : ℤ) (x : WeakCoordinateAmbient n) :
-    Tendsto (fun j ↦ intrinsicJointCutoffTriple j n x)
-      atTop (𝓝 x) := by
+    Filter.Tendsto (fun j ↦ intrinsicJointCutoffTriple j n x)
+      Filter.atTop (nhds x) := by
   have hBase := baseProjection_intrinsicJointCutoffTriple_tendsto n x
   have hRaise := raiseProjection_intrinsicJointCutoffTriple_tendsto n x
   have hLower := lowerProjection_intrinsicJointCutoffTriple_tendsto n x
@@ -43293,7 +43366,7 @@ def HasSequentialIntrinsicJointLocalizationAt (n : ℤ) : Prop :=
     ∃ q : ℕ → WeightedWeakSobolev n,
       (∀ j, HasJointCompactCarrierSupport n
         (q j : WeakCoordinateAmbient n)) ∧
-      Tendsto q atTop (𝓝 x)
+      Filter.Tendsto q Filter.atTop (nhds x)
 
 /-- Unconditional simultaneous localization.  There is one cutoff index in
 all three coordinates; no diagonal extraction is used. -/
@@ -43317,7 +43390,7 @@ theorem hasSequentialIntrinsicJointLocalizationAt_unconditional
 smaller than the same positive tolerance. -/
 theorem intrinsicJointCutoffTriple_eventually_three_dist_lt
     (n : ℤ) (x : WeakCoordinateAmbient n) {eps : ℝ} (heps : 0 < eps) :
-    ∀ᶠ j : ℕ in atTop,
+    ∀ᶠ j : ℕ in Filter.atTop,
       dist (baseProjection n (intrinsicJointCutoffTriple j n x))
           (baseProjection n x) < eps ∧
         dist (raiseProjection n (intrinsicJointCutoffTriple j n x))
@@ -43440,17 +43513,17 @@ norm; compactness is a conclusion below, not part of this definition. -/
 def HasVanishingFiniteModeTail
     (b : HilbertBasis I ℂ E) (modes : ℕ → Finset I)
     (T : H →L[ℂ] E) : Prop :=
-  Tendsto
+  Filter.Tendsto
     (fun N ↦ ‖finiteModeLocalization b (modes N) T - T‖)
-    atTop (𝓝 0)
+    Filter.atTop (nhds 0)
 
 /-- Operator-norm convergence of finite Fourier projections. -/
 theorem finiteModeLocalization_tendsto
     (b : HilbertBasis I ℂ E) (modes : ℕ → Finset I)
     (T : H →L[ℂ] E)
     (hTail : HasVanishingFiniteModeTail b modes T) :
-    Tendsto (fun N ↦ finiteModeLocalization b (modes N) T)
-      atTop (𝓝 T) := by
+    Filter.Tendsto (fun N ↦ finiteModeLocalization b (modes N) T)
+      Filter.atTop (nhds T) := by
   rw [tendsto_iff_norm_sub_tendsto_zero]
   exact hTail
 
@@ -43928,10 +44001,10 @@ theorem discriminantCuspEpsilon_nonneg (N : ℕ) :
   (discriminantCuspEpsilon_pos N).le
 
 theorem discriminantCuspEpsilon_tendsto_zero :
-    Tendsto discriminantCuspEpsilon atTop (𝓝 0) := by
+    Filter.Tendsto discriminantCuspEpsilon Filter.atTop (nhds 0) := by
   simpa only [discriminantCuspEpsilon, Nat.cast_add, Nat.cast_one] using
     (tendsto_one_div_add_atTop_nhds_zero_nat :
-      Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) atTop (𝓝 0))
+      Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))
 
 /-- One actual literal three-cusp height chosen for the `N`-th quantitative
 tail tolerance. -/
@@ -44037,7 +44110,7 @@ noncomputable def twoTorusCanonicalModes (N : ℕ) :
 sets.  Thus they genuinely exhaust the full Fourier basis, independently of
 any Sobolev estimate. -/
 theorem twoTorusCanonicalModes_tendsto_atTop :
-    Tendsto twoTorusCanonicalModes atTop atTop := by
+    Filter.Tendsto twoTorusCanonicalModes Filter.atTop Filter.atTop := by
   unfold twoTorusCanonicalModes
   exact
     (Filter.tendsto_finset_image_atTop_atTop
@@ -44049,10 +44122,10 @@ This is Parseval completeness, not yet the stronger operator-norm convergence
 from a Sobolev graph into `L²`. -/
 theorem twoTorusFiniteFourierProjection_tendsto
     (f : TwoTorusL2) :
-    Tendsto
+    Filter.Tendsto
       (fun N ↦ twoTorusFiniteFourierProjection
         (twoTorusCanonicalModes N) f)
-      atTop (𝓝 f) := by
+      Filter.atTop (nhds f) := by
   simpa only [twoTorusFiniteFourierProjection_apply] using
     (UnitAddTorus.hasSum_mFourier_series_L2 f).comp
       twoTorusCanonicalModes_tendsto_atTop
@@ -44931,7 +45004,7 @@ theorem hasVanishingFiniteModeTail_of_quantitative
     (modes : ℕ → Finset (Fin 2 → ℤ))
     (T : H →L[ℂ] TwoTorusL2) (delta : ℕ → ℝ)
     (h : HasQuantitativeFiniteModeTail modes T delta)
-    (hdelta : Tendsto delta atTop (𝓝 0)) :
+    (hdelta : Filter.Tendsto delta Filter.atTop (nhds 0)) :
     HasVanishingFiniteModeTail twoTorusFourierBasis modes T := by
   exact squeeze_zero
     (fun N ↦ norm_nonneg
@@ -44946,7 +45019,7 @@ theorem twoTorus_isCompactOperator_of_quantitativeTail
     (modes : ℕ → Finset (Fin 2 → ℤ))
     (T : H →L[ℂ] TwoTorusL2) (delta : ℕ → ℝ)
     (h : HasQuantitativeFiniteModeTail modes T delta)
-    (hdelta : Tendsto delta atTop (𝓝 0)) :
+    (hdelta : Filter.Tendsto delta Filter.atTop (nhds 0)) :
     IsCompactOperator T :=
   twoTorus_isCompactOperator_of_fourierTail modes T
     (hasVanishingFiniteModeTail_of_quantitative modes T delta h hdelta)
@@ -44961,12 +45034,12 @@ theorem reciprocalFourierTail_nonneg {C : ℝ} (hC : 0 ≤ C) (N : ℕ) :
   positivity
 
 theorem reciprocalFourierTail_tendsto_zero (C : ℝ) :
-    Tendsto (reciprocalFourierTail C) atTop (𝓝 0) := by
+    Filter.Tendsto (reciprocalFourierTail C) Filter.atTop (nhds 0) := by
   simpa only [reciprocalFourierTail, div_eq_mul_inv, Nat.cast_add,
     Nat.cast_one, mul_zero] using
     tendsto_const_nhds.mul
       (tendsto_one_div_add_atTop_nhds_zero_nat :
-        Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) atTop (𝓝 0))
+        Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0))
 
 theorem twoTorus_isCompactOperator_of_reciprocalTail
     (modes : ℕ → Finset (Fin 2 → ℤ))
@@ -45027,17 +45100,17 @@ theorem gammaTwoLocalCuspCoordinate_translation
     mul_smul, inv_smul_smul]
   rw [ModularGroup.coe_T_zpow_smul_eq]
 
-/-- Exact transition matrix from the `κ`-coordinate to the `λ`-coordinate. -/
+/-- Exact transition matrix from the `κ`-coordinate to the `lam`-coordinate. -/
 def gammaTwoCuspCoordinateTransition
-    (κ λ : GammaTwoCusp) : SL(2, ℤ) :=
-  (gammaTwoCuspScaling λ)⁻¹ * gammaTwoCuspScaling κ
+    (κ lam : GammaTwoCusp) : SL(2, ℤ) :=
+  (gammaTwoCuspScaling lam)⁻¹ * gammaTwoCuspScaling κ
 
 /-- Cusp transport is a Mobius coordinate transition determined by the two
 scaling matrices, not a transition of a quotient-global radius. -/
 theorem gammaTwoLocalCuspCoordinate_transition
-    (κ λ : GammaTwoCusp) (z : ℍ) :
-    gammaTwoLocalCuspCoordinate λ z =
-      (((gammaTwoCuspCoordinateTransition κ λ) •
+    (κ lam : GammaTwoCusp) (z : ℍ) :
+    gammaTwoLocalCuspCoordinate lam z =
+      (((gammaTwoCuspCoordinateTransition κ lam) •
         ((gammaTwoCuspScaling κ)⁻¹ • z) : ℍ) : ℂ) := by
   simp [gammaTwoLocalCuspCoordinate, gammaTwoCuspCoordinateTransition,
     mul_smul]
@@ -45049,10 +45122,10 @@ def gammaTwoLocalCuspQ (κ : GammaTwoCusp) (z : ℍ) : ℂ :=
 /-- The local parameter at a second cusp is obtained by applying the exact
 scaling-matrix transition before the same width-two exponential. -/
 theorem gammaTwoLocalCuspQ_transition
-    (κ λ : GammaTwoCusp) (z : ℍ) :
-    gammaTwoLocalCuspQ λ z =
+    (κ lam : GammaTwoCusp) (z : ℍ) :
+    gammaTwoLocalCuspQ lam z =
       Function.Periodic.qParam 2
-        ((((gammaTwoCuspCoordinateTransition κ λ) •
+        ((((gammaTwoCuspCoordinateTransition κ lam) •
           ((gammaTwoCuspScaling κ)⁻¹ • z) : ℍ) : ℂ)) := by
   rw [gammaTwoLocalCuspQ, gammaTwoLocalCuspCoordinate_transition]
 
@@ -45228,7 +45301,7 @@ zero function.  Hence a nonzero compactly supported tent on the real spectral
 axis cannot simultaneously be used as an entire Kuznetsov test function. -/
 theorem entire_test_eq_zero_of_eventually_zero
     (f : ℂ → ℂ) (hf : AnalyticOnNhd ℂ f Set.univ)
-    {z₀ : ℂ} (hzero : f =ᶠ[𝓝 z₀] (0 : ℂ → ℂ)) :
+    {z₀ : ℂ} (hzero : f =ᶠ[nhds z₀] (0 : ℂ → ℂ)) :
     f = 0 := by
   have hzeroAnalytic :
       AnalyticOnNhd ℂ (0 : ℂ → ℂ) Set.univ := by
@@ -45842,7 +45915,7 @@ theorem support_affineCommutatorConvolution_subset_cthickening
       hK.add_closedBall_zero (friedrichsRadius_pos j).le
 
 theorem eventually_friedrichsRadius_lt {delta : ℝ} (hdelta : 0 < delta) :
-    ∀ᶠ j : ℕ in atTop, friedrichsRadius j < delta :=
+    ∀ᶠ j : ℕ in Filter.atTop, friedrichsRadius j < delta :=
   (tendsto_order.1 friedrichsRadius_tendsto_zero).2 delta hdelta
 
 theorem cthickening_friedrichsRadius_subset_chart
@@ -45860,7 +45933,7 @@ theorem eventually_three_friedrichs_supports_subset_chart
     {K U : Set ℂ} (hK : IsCompact K) (hU : IsOpen U)
     (hKU : K ⊆ U) (u : AmbientPlaneL2)
     (hu : Function.support (u : ℂ → ℂ) ⊆ K) :
-    ∀ᶠ j : ℕ in atTop,
+    ∀ᶠ j : ℕ in Filter.atTop,
       Function.support (friedrichsMollifiedRepresentative j u) ⊆ U ∧
       Function.support
           (friedrichsAffineCommutatorKernel Complex.I j
@@ -47006,31 +47079,31 @@ theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
     (n : ℤ) (u : ℕ → InverseEtaFixedPhaseCore (n + 1))
     {x : OrbitPeterssonHilbert (n + 1)}
     {r : OrbitPeterssonHilbert ((n + 1) + 1)}
-    (hBase : Tendsto (fun j ↦ l2Coordinate (n + 1) (u j))
-      atTop (𝒩 x))
-    (hRaise : Tendsto (fun j ↦ raisedCoordinate (n + 1) (u j))
-      atTop (𝒩 r)) :
+    (hBase : Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (u j))
+      Filter.atTop (𝒩 x))
+    (hRaise : Filter.Tendsto (fun j ↦ raisedCoordinate (n + 1) (u j))
+      Filter.atTop (𝒩 r)) :
     CauchySeq (fun j ↦ lowerFromSuccCoordinate n (u j)) := by
-  have hBaseDist : Tendsto
+  have hBaseDist : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖l2Coordinate (n + 1) (u jk.1) -
           l2Coordinate (n + 1) (u jk.2)‖)
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
     simpa only [dist_eq_norm] using
       (cauchySeq_iff_tendsto_dist_atTop_0.mp hBase.cauchySeq)
-  have hRaiseDist : Tendsto
+  have hRaiseDist : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖raisedCoordinate (n + 1) (u jk.1) -
           raisedCoordinate (n + 1) (u jk.2)‖)
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
     simpa only [dist_eq_norm] using
       (cauchySeq_iff_tendsto_dist_atTop_0.mp hRaise.cauchySeq)
   let c : ℝ := (((paperOrbitExponent (n + 1) : ℤ) : ℝ) / 2)
-  have hLowerSq : Tendsto
+  have hLowerSq : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖lowerFromSuccCoordinate n (u jk.1) -
           lowerFromSuccCoordinate n (u jk.2)‖ ^ 2)
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
     have hModel := (hRaiseDist.pow 2).sub
       ((hBaseDist.pow 2).const_mul c)
     simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
@@ -47039,11 +47112,11 @@ theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
         have h := lowered_norm_sq_eq_raised_sub_mass n
           (u jk.1 - u jk.2)
         simpa only [map_sub, c] using h.symm)
-  have hLowerNorm : Tendsto
+  have hLowerNorm : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖lowerFromSuccCoordinate n (u jk.1) -
           lowerFromSuccCoordinate n (u jk.2)‖)
-      atTop (𝒩 0) := by
+      Filter.atTop (𝒩 0) := by
     have hSqrt := Real.continuous_sqrt.continuousAt.tendsto.comp hLowerSq
     simpa only [Real.sqrt_sq (norm_nonneg _), Real.sqrt_zero] using hSqrt
   apply cauchySeq_iff_tendsto_dist_atTop_0.mpr
@@ -47095,13 +47168,13 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
             physicalRaise (n + 1) y := rfl
         _ = (q j).2 := hyValue
   choose w hwBase hwRaise using hCore
-  have hBase : Tendsto
-      (fun j ↦ l2Coordinate (n + 1) (w j)) atTop
+  have hBase : Filter.Tendsto
+      (fun j ↦ l2Coordinate (n + 1) (w j)) Filter.atTop
       (𝒩 (baseCoordinate n x)) :=
     (continuous_fst.tendsto _).comp hqLimit |>.congr'
       (Filter.Eventually.of_forall fun j ↦ hwBase j |>.symm)
-  have hRaiseCoord : Tendsto
-      (fun j ↦ raisedCoordinate (n + 1) (w j)) atTop
+  have hRaiseCoord : Filter.Tendsto
+      (fun j ↦ raisedCoordinate (n + 1) (w j)) Filter.atTop
       (𝒩 (raiseCoordinate n x)) :=
     (continuous_snd.tendsto _).comp hqLimit |>.congr'
       (Filter.Eventually.of_forall fun j ↦ hwRaise j |>.symm)
@@ -47138,12 +47211,12 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
         (closedLowerFromSucc n).graph.sub hLimitLower hTargetLower
     exact sub_eq_zero.mp
       ((closedLowerFromSucc n).graph_fst_eq_zero_snd hSub rfl)
-  have hLowerCoord : Tendsto
-      (fun j ↦ lowerFromSuccCoordinate n (w j)) atTop
+  have hLowerCoord : Filter.Tendsto
+      (fun j ↦ lowerFromSuccCoordinate n (w j)) Filter.atTop
       (𝒩 (lowerCoordinate n x)) := by
     simpa only [hlEq] using hl
-  have hSmooth : Tendsto (fun j ↦ smoothCoreMap n (w j))
-      atTop (𝒩 x) := by
+  have hSmooth : Filter.Tendsto (fun j ↦ smoothCoreMap n (w j))
+      Filter.atTop (𝒩 x) := by
     rw [tendsto_subtype_rng]
     simpa only [coe_smoothCoreMap,
       FixedPhaseClosedOperators.successorGraphCoordinates,
@@ -51222,8 +51295,8 @@ theorem opNorm_literalStagePlaneFiniteApproximation_sub_le
 
 theorem literalStagePlaneFiniteApproximation_tendsto
     (Y : ℝ) (n : ℤ) :
-    Tendsto (literalStagePlaneFiniteApproximation Y n) atTop
-      (𝓝 (completedLiteralStagePlaneBase Y n)) := by
+    Filter.Tendsto (literalStagePlaneFiniteApproximation Y n) Filter.atTop
+      (nhds (completedLiteralStagePlaneBase Y n)) := by
   rw [tendsto_iff_norm_sub_tendsto_zero]
   exact squeeze_zero
     (fun N ↦ norm_nonneg
@@ -51234,7 +51307,7 @@ theorem literalStagePlaneFiniteApproximation_tendsto
       simpa only [div_eq_mul_inv, mul_zero, Nat.cast_add, Nat.cast_one] using
         tendsto_const_nhds.mul
           (tendsto_one_div_add_atTop_nhds_zero_nat :
-            Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) atTop (𝓝 0)))
+            Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1)) Filter.atTop (nhds 0)))
 
 /-- The actual localized physical base coordinate is compact.  This is the
 Rellich theorem: finite-rank rectangle projections converge in operator norm,
@@ -55079,7 +55152,7 @@ theorem periodizedGauge_eventuallyEq_ambientTest_on_reducedChart
     (hx : x ∈ gammaTwoReducedChart z₀) :
     SmoothCompactCoreGeometry.upperLift
         (PhysicalLocalL2.fixedPhaseEuclideanGauge m
-          (gammaTwoPeriodizedPhysicalCore m v)) =ᶠ[𝓝 (x : ℂ)]
+          (gammaTwoPeriodizedPhysicalCore m v)) =ᶠ[nhds (x : ℂ)]
       (v : ℂ → ℂ) := by
   apply
     (gammaTwoPeriodizedPhysicalCore_gauge_eqOn_reducedChart
@@ -56484,13 +56557,13 @@ theorem exists_bufferedLocalRaisingApproximation
     ∃ v : ℕ → FullPlaneTest,
       ∃ hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
         ambientGammaTwoReducedChart z₀,
-      Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) atTop (𝒩 u) ∧
-      Tendsto
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto
         (fun j ↦ fullPlaneTestToL2
           (ambientTestCoreToFullPlaneTest
             (euclideanRaiseForwardTest n
               (reducedChartAmbientTest (v j) (hv j)))))
-        atTop (𝒩 Ru) := by
+        Filter.atTop (𝒩 Ru) := by
   let U : Set ℂ := ambientGammaTwoReducedChart z₀
   have hU : IsOpen U := ambientGammaTwoReducedChart_isOpen z₀
   obtain ⟨N, hN⟩ := exists_friedrichsBufferStart hK hU hKU
@@ -56529,13 +56602,13 @@ theorem exists_bufferedLocalLoweringApproximation
     ∃ v : ℕ → FullPlaneTest,
       ∃ hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
         ambientGammaTwoReducedChart z₀,
-      Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) atTop (𝒩 u) ∧
-      Tendsto
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto
         (fun j ↦ fullPlaneTestToL2
           (ambientTestCoreToFullPlaneTest
             (euclideanLowerFromSuccForwardTest n
               (reducedChartAmbientTest (v j) (hv j)))))
-        atTop (𝒩 Lu) := by
+        Filter.atTop (𝒩 Lu) := by
   let U : Set ℂ := ambientGammaTwoReducedChart z₀
   have hU : IsOpen U := ambientGammaTwoReducedChart_isOpen z₀
   obtain ⟨N, hN⟩ := exists_friedrichsBufferStart hK hU hKU
@@ -56742,8 +56815,8 @@ theorem exists_periodizedLocalRaisingGraphLimit
           (physicalRaise n).graph) ∧
       ∃ x : OrbitPeterssonHilbert n,
       ∃ y : OrbitPeterssonHilbert (n + 1),
-        Tendsto (fun j ↦ l2Coordinate n (q j)) atTop (𝒩 x) ∧
-        Tendsto (fun j ↦ raisedCoordinate n (q j)) atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
+        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
         orbitPeterssonReducedChartEmbedding n z₀ x = u ∧
         orbitPeterssonReducedChartEmbedding (n + 1) z₀ y = Ru := by
   obtain ⟨v, hv, hBase, hRaise⟩ :=
@@ -56774,17 +56847,17 @@ theorem exists_periodizedLocalRaisingGraphLimit
       hRaise.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
-  have hChartBase : Tendsto
+  have hChartBase : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding n z₀
-        (l2Coordinate n (q j))) atTop (𝒩 u) := by
+        (l2Coordinate n (q j))) Filter.atTop (𝒩 u) := by
     exact hBase.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hqModel j)).symm
-  have hChartRaise : Tendsto
+  have hChartRaise : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding (n + 1) z₀
         (l2Coordinate (n + 1)
           (InverseEtaFixedPhaseCore.raise n (q j))))
-      atTop (𝒩 Ru) := by
+      Filter.atTop (𝒩 Ru) := by
     exact hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hrModel j)).symm
@@ -56822,8 +56895,8 @@ theorem exists_periodizedLocalLoweringGraphLimit
           (physicalLowerFromSucc n).graph) ∧
       ∃ x : OrbitPeterssonHilbert (n + 1),
       ∃ y : OrbitPeterssonHilbert n,
-        Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) atTop (𝒩 x) ∧
-        Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
+        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
         orbitPeterssonReducedChartEmbedding (n + 1) z₀ x = u ∧
         orbitPeterssonReducedChartEmbedding n z₀ y = Lu := by
   obtain ⟨v, hv, hBase, hLower⟩ :=
@@ -56855,17 +56928,17 @@ theorem exists_periodizedLocalLoweringGraphLimit
       r hrModel hLower.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
-  have hChartBase : Tendsto
+  have hChartBase : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding (n + 1) z₀
-        (l2Coordinate (n + 1) (q j))) atTop (𝒩 u) := by
+        (l2Coordinate (n + 1) (q j))) Filter.atTop (𝒩 u) := by
     exact hBase.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hqModel j)).symm
-  have hChartLower : Tendsto
+  have hChartLower : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding n z₀
         (l2Coordinate n
           (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))))
-      atTop (𝒩 Lu) := by
+      Filter.atTop (𝒩 Lu) := by
     exact hLower.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hrModel j)).symm
@@ -56959,9 +57032,9 @@ theorem exists_periodizedLocalRaisingGraphLimitWithModels
           (physicalRaise n).graph) ∧
       (∀ j : ℕ,
         IsReducedChartGaugeModel n z₀ (q j) (v j)) ∧
-      Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) atTop (𝒩 u) ∧
-      Tendsto (fun j ↦ l2Coordinate n (q j)) atTop (𝒩 x) ∧
-      Tendsto (fun j ↦ raisedCoordinate n (q j)) atTop (𝒩 y) := by
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
+      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) := by
   obtain ⟨v, hv, hBase, hRaise⟩ :=
     exists_bufferedLocalRaisingApproximation
       hK hKU u Ru hu hWeak
@@ -57021,9 +57094,9 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
           (physicalLowerFromSucc n).graph) ∧
       (∀ j : ℕ,
         IsReducedChartGaugeModel (n + 1) z₀ (q j) (v j)) ∧
-      Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) atTop (𝒩 u) ∧
-      Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) atTop (𝒩 x) ∧
-      Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) atTop (𝒩 y) := by
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
+      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) := by
   obtain ⟨v, hv, hBase, hLower⟩ :=
     exists_bufferedLocalLoweringApproximation
       hK hKU u Lu hu hWeak
@@ -58331,8 +58404,8 @@ theorem localBaseLimit_eq_invariantScalarMultiplier
     (q : ℕ → InverseEtaFixedPhaseCore m)
     (v : ℕ → FullPlaneTest)
     (hModel : ∀ j : ℕ, IsReducedChartGaugeModel m z₀ (q j) (v j))
-    (hq : Tendsto (fun j ↦ l2Coordinate m (q j)) atTop (𝒩 x))
-    (hv : Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) atTop
+    (hq : Filter.Tendsto (fun j ↦ l2Coordinate m (q j)) Filter.atTop (𝒩 x))
+    (hv : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop
       (𝒩 (fullPlaneTestMulCLM (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding m z₀ p)))) :
     x = invariantScalarPeterssonMultiplier
@@ -58342,14 +58415,14 @@ theorem localBaseLimit_eq_invariantScalarMultiplier
     (effectiveScalarSmoothQuotient phi)
     (effectiveScalarSmoothQuotient_invariant phi) m p
   have hPair (w : OrbitPeterssonHilbert m) : inner ℂ w x = inner ℂ w y := by
-    have hLeft : Tendsto
-        (fun j ↦ inner ℂ w (l2Coordinate m (q j))) atTop
+    have hLeft : Filter.Tendsto
+        (fun j ↦ inner ℂ w (l2Coordinate m (q j))) Filter.atTop
         (𝒩 (inner ℂ w x)) :=
       (continuous_const.inner continuous_id).continuousAt.tendsto.comp hq
-    have hRight : Tendsto
+    have hRight : Filter.Tendsto
         (fun j ↦ inner ℂ
           (orbitPeterssonReducedChartEmbedding m z₀ w)
-          (fullPlaneTestToL2 (v j))) atTop
+          (fullPlaneTestToL2 (v j))) Filter.atTop
         (𝒩 (inner ℂ
           (orbitPeterssonReducedChartEmbedding m z₀ w)
           (fullPlaneTestMulCLM (ambientTestCoreToFullPlaneTest phi)
@@ -58465,8 +58538,8 @@ theorem raising_limit_mem_oppositeMaximalGraph
     (hq : ∀ j : ℕ,
       (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
         (physicalRaise n).graph)
-    (hx : Tendsto (fun j ↦ l2Coordinate n (q j)) atTop (𝒩 x))
-    (hy : Tendsto (fun j ↦ raisedCoordinate n (q j)) atTop (𝒩 y)) :
+    (hx : Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x))
+    (hy : Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y)) :
     (x, y) ∈ ((-physicalLowerFromSucc n)†).graph := by
   apply (LinearPMap.adjoint_isClosed
     (negativePhysicalLowerFromSucc_dense_domain n)).mem_of_tendsto
@@ -58484,8 +58557,8 @@ theorem lowering_limit_mem_oppositeMaximalGraph
     (hq : ∀ j : ℕ,
       (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
         (physicalLowerFromSucc n).graph)
-    (hx : Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) atTop (𝒩 x))
-    (hy : Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) atTop (𝒩 y)) :
+    (hx : Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x))
+    (hy : Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y)) :
     (x, y) ∈ ((-physicalRaise n)†).graph := by
   apply (LinearPMap.adjoint_isClosed
     (negativePhysicalRaise_dense_domain n)).mem_of_tendsto
@@ -58514,8 +58587,8 @@ theorem exists_localizedRaisingGraphSequence
       (∀ j : ℕ,
         (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
           (physicalRaise n).graph) ∧
-      Tendsto (fun j ↦ l2Coordinate n (q j)) atTop (𝒩 x) ∧
-      Tendsto (fun j ↦ raisedCoordinate n (q j)) atTop (𝒩 y) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
+      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
       x = invariantScalarPeterssonMultiplier
         (effectiveScalarSmoothQuotient phi)
         (effectiveScalarSmoothQuotient_invariant phi) n p.1 ∧
@@ -58546,8 +58619,8 @@ theorem exists_localizedRaisingGraphSequence
   obtain ⟨q, v, x, y, hqGraph, hqModel, hv, hx, hy⟩ :=
     exists_periodizedLocalRaisingGraphLimitWithModels
       hK hKU u Ru hu hWeak
-  have hvMultiplier : Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
-      atTop (𝒩 (fullPlaneTestMulCLM
+  have hvMultiplier : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
+      Filter.atTop (𝒩 (fullPlaneTestMulCLM
         (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding n z₀ p.1))) := by
     simpa only [u, psi, fullPlaneTestMulCLM_apply] using hv
@@ -58573,8 +58646,8 @@ theorem exists_localizedLoweringGraphSequence
       (∀ j : ℕ,
         (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
           (physicalLowerFromSucc n).graph) ∧
-      Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) atTop (𝒩 x) ∧
-      Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) atTop (𝒩 y) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
+      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
       x = invariantScalarPeterssonMultiplier
         (effectiveScalarSmoothQuotient phi)
         (effectiveScalarSmoothQuotient_invariant phi) (n + 1) p.1 ∧
@@ -58605,8 +58678,8 @@ theorem exists_localizedLoweringGraphSequence
   obtain ⟨q, v, x, y, hqGraph, hqModel, hv, hx, hy⟩ :=
     exists_periodizedLocalLoweringGraphLimitWithModels
       hK hKU u Lu hu hWeak
-  have hvMultiplier : Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
-      atTop (𝒩 (fullPlaneTestMulCLM
+  have hvMultiplier : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
+      Filter.atTop (𝒩 (fullPlaneTestMulCLM
         (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1))) := by
     simpa only [u, psi, fullPlaneTestMulCLM_apply] using hv
@@ -58710,8 +58783,8 @@ theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
         (∀ j : ℕ,
           (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
             (physicalRaise n).graph) ∧
-        Tendsto (fun j ↦ l2Coordinate n (q j)) atTop (𝒩 x) ∧
-        Tendsto (fun j ↦ raisedCoordinate n (q j)) atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
+        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
         x = invariantScalarPeterssonMultiplier
           (effectiveScalarSmoothQuotient (theta i))
           (effectiveScalarSmoothQuotient_invariant (theta i)) n p.1 ∧
@@ -58751,7 +58824,7 @@ theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
       (l2Coordinate n (q i j), raisedCoordinate n (q i j))) ∈
         (physicalRaise n).graph
     exact (physicalRaise n).graph.sum_mem fun i _hi ↦ hqGraph i j
-  · have hSum : Tendsto Q atTop
+  · have hSum : Filter.Tendsto Q Filter.atTop
         (𝒩 (∑ i : {z // z ∈ t}, (x i, y i))) := by
       simpa only [Q] using
         (tendsto_finset_sum Finset.univ fun i _hi ↦
@@ -58779,8 +58852,8 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
         (∀ j : ℕ,
           (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
             (physicalLowerFromSucc n).graph) ∧
-        Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) atTop (𝒩 x) ∧
-        Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
+        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
         x = invariantScalarPeterssonMultiplier
           (effectiveScalarSmoothQuotient (theta i))
           (effectiveScalarSmoothQuotient_invariant (theta i)) (n + 1) p.1 ∧
@@ -58822,7 +58895,7 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
       (l2Coordinate (n + 1) (q i j), lowerFromSuccCoordinate n (q i j))) ∈
         (physicalLowerFromSucc n).graph
     exact (physicalLowerFromSucc n).graph.sum_mem fun i _hi ↦ hqGraph i j
-  · have hSum : Tendsto Q atTop
+  · have hSum : Filter.Tendsto Q Filter.atTop
         (𝒩 (∑ i : {z // z ∈ t}, (x i, y i))) := by
       simpa only [Q] using
         (tendsto_finset_sum Finset.univ fun i _hi ↦

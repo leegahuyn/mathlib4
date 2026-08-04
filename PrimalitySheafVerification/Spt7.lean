@@ -2897,7 +2897,7 @@ theorem standardIntResolutionAugmentation_f_zero (M : ℕ) :
     (standardIntResolutionAugmentation M).f 0 =
       ModuleCat.ofHom
         (((standardIntResolutionQuotient M) : AddMonoidHom ℤ (ZMod M)).toIntLinearMap) := by
-  simp [standardIntResolutionAugmentation]
+  rfl
 
 @[simp]
 theorem standardIntResolutionAugmentation_comp_d_one_zero (M : ℕ) :
@@ -4642,7 +4642,9 @@ theorem koszulR1Differential_succ (r : R) (n : ℕ) :
 theorem koszulR1Differential_sq (r : R) (n : ℕ) :
     koszulR1Differential (M := M) r (n + 1) ≫
       koszulR1Differential (M := M) r n = 0 := by
-  cases n <;> simp [koszulR1Differential]
+  cases n with
+  | zero => simp only [koszulR1Differential_succ, zero_comp]
+  | succ n => simp only [koszulR1Differential_succ, zero_comp]
 
 /-- The explicit two-term chain complex computing the single-element Koszul model. -/
 noncomputable def koszulR1ChainComplex (r : R) : ChainComplex (ModuleCat R) ℕ :=
@@ -4889,7 +4891,9 @@ theorem koszulR2Differential_sq (x y : R) (n : ℕ) :
       apply ModuleCat.hom_ext
       exact koszulR2Left_comp_right (M := M) x y
   | succ n =>
-      cases n <;> simp [koszulR2Differential]
+      cases n with
+      | zero => simp only [koszulR2Differential_succ_succ, zero_comp]
+      | succ n => simp only [koszulR2Differential_succ_succ, zero_comp]
 
 /-- The explicit three-term chain complex computing the two-element Koszul model. -/
 noncomputable def koszulR2ChainComplex (x y : R) : ChainComplex (ModuleCat R) ℕ :=
@@ -8415,7 +8419,7 @@ theorem derivative_exp_subst_of_constantCoeff_zero {K : Type*} [CommRing K] [Alg
     d⁄dX K ((PowerSeries.exp K).subst f) =
       ((PowerSeries.exp K).subst f) * d⁄dX K f := by
   simpa [PowerSeries.derivative_exp] using
-    (PowerSeries.derivative_subst (A := K)
+    (PowerSeries.derivative_subst (R := K)
       (f := PowerSeries.exp K) (g := f) (PowerSeries.HasSubst.of_constantCoeff_zero' hf))
 
 theorem constantCoeff_exp_subst_of_constantCoeff_zero {K : Type*} [CommRing K] [Algebra ℚ K]

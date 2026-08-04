@@ -774,25 +774,33 @@ variable (hM : 1 ≤ M)
 variable (hp : Nat.Prime p)
 variable (hk : 1 ≤ k)
 
+include hM in
 theorem M_pos_of_setup : 0 < M := pos_of_one_le hM
 
+include hM in
 theorem M_ne_zero_of_setup : M ≠ 0 :=
   Nat.ne_of_gt (M_pos_of_setup M hM)
 
+include hk in
 theorem k_pos_of_setup : 0 < k := pos_of_one_le hk
 
+include hk in
 theorem k_ne_zero_of_setup : k ≠ 0 :=
   Nat.ne_of_gt (k_pos_of_setup k hk)
 
+include hp in
 theorem p_pos_of_prime : 0 < p := hp.pos
 
+include hp in
 theorem p_ne_zero_of_prime : p ≠ 0 :=
   Nat.ne_of_gt (p_pos_of_prime p hp)
 
+include hp in
 theorem padicExponentProxy_eq_padicValNat :
     padicExponentProxy M p = padicValNat p M := by
   simpa [padicExponentProxy] using (Nat.factorization_def M hp)
 
+include hM hp in
 /-- The factorization exponent has the defining divisibility property of the
 `p`-adic valuation on the nonzero paper-level modulus `M`. -/
 theorem p_pow_dvd_M_iff_le_padicExponentProxy (e : ℕ) :
@@ -801,56 +809,70 @@ theorem p_pow_dvd_M_iff_le_padicExponentProxy (e : ℕ) :
     (Nat.Prime.pow_dvd_iff_le_factorization
       (p := p) (k := e) (n := M) hp (M_ne_zero_of_setup M hM))
 
+include hM hp in
 /-- The same valuation specification stated with Mathlib's `padicValNat`. -/
 theorem p_pow_dvd_M_iff_le_padicValNat (e : ℕ) :
     p ^ e ∣ M ↔ e ≤ padicValNat p M := by
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact p_pow_dvd_M_iff_le_padicExponentProxy M p hM hp e
 
+include hp in
 theorem Pk_pos : 0 < Pk p k := by
-  exact Nat.pow_pos (p_pos_of_prime p hp) k
+  exact Nat.pow_pos (p_pos_of_prime p hp)
 
+include hp in
 theorem Pk_ne_zero : Pk p k ≠ 0 := by
   exact Nat.ne_of_gt (Pk_pos p k hp)
 
+include hp in
 theorem Pk_one_le : 1 ≤ Pk p k := by
   exact Nat.succ_le_iff.mpr (Pk_pos p k hp)
 
+include hk in
 /-- The assumption `1 ≤ k` ensures that the distinguished prime really occurs
 in the prime-power modulus. -/
 theorem p_dvd_Pk : p ∣ Pk p k := by
   simpa [Pk] using (dvd_pow_self p (k_ne_zero_of_setup k hk))
 
+include hp in
 theorem Pk_factorization :
     (Pk p k).factorization = Finsupp.single p k := by
   simpa [Pk] using (Nat.Prime.factorization_pow (p := p) (k := k) hp)
 
+include hp in
 theorem Pk_factorization_self :
     (Pk p k).factorization p = k := by
   simpa [Pk] using (Nat.factorization_pow_self (p := p) (n := k) hp)
 
+include hp in
 theorem prime_pow_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (p ^ k).factorization q = 0 := by
   classical
   rw [Nat.Prime.factorization_pow (p := p) (k := k) hp]
   simp [Finsupp.single_eq_of_ne hq]
 
+include hp in
 theorem Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (Pk p k).factorization q = 0 := by
   simpa [Pk] using
     (prime_pow_factorization_ne (p := p) (k := k) hp hq)
 
+include hp in
 /-- Uniform pointwise form of the full factorization of `Pk`. -/
 theorem Pk_factorization_apply (q : ℕ) :
     (Pk p k).factorization q = if q = p then k else 0 := by
   by_cases hq : q = p
   · subst q
-    simp [Pk_factorization_self p k hp]
-  · simp [hq, Pk_factorization_ne p k hp hq]
+    rw [if_pos rfl]
+    exact Pk_factorization_self p k hp
+  · rw [if_neg hq]
+    exact Pk_factorization_ne p k hp hq
 
+include hM in
 theorem gcd_M_Pk_ne_zero : Nat.gcd M (Pk p k) ≠ 0 :=
   Nat.gcd_ne_zero_left (M_ne_zero_of_setup M hM)
 
+include hM in
 theorem gcd_M_Pk_pos : 0 < Nat.gcd M (Pk p k) :=
   Nat.pos_of_ne_zero (gcd_M_Pk_ne_zero M p k hM)
 
@@ -860,6 +882,7 @@ theorem gcd_M_Pk_dvd_M : Nat.gcd M (Pk p k) ∣ M :=
 theorem gcd_M_Pk_dvd_Pk : Nat.gcd M (Pk p k) ∣ Pk p k :=
   Nat.gcd_dvd_right M (Pk p k)
 
+include hM hp in
 /-- Pointwise factorization of `gcd(M,p^k)` at the distinguished prime `p`. -/
 theorem gcd_M_Pk_factorization_self :
     (Nat.gcd M (Pk p k)).factorization p =
@@ -867,6 +890,7 @@ theorem gcd_M_Pk_factorization_self :
   rw [factorization_gcd_apply (M_ne_zero_of_setup M hM)
       (Pk_ne_zero p k hp) p, Pk_factorization_self p k hp]
 
+include hM hp in
 /-- Away from `p`, the gcd with `p^k` has no prime support. -/
 theorem gcd_M_Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
     (Nat.gcd M (Pk p k)).factorization q = 0 := by
@@ -874,15 +898,19 @@ theorem gcd_M_Pk_factorization_ne {q : ℕ} (hq : q ≠ p) :
       (Pk_ne_zero p k hp) q, Pk_factorization_ne p k hp hq]
   simp
 
+include hM hp in
 /-- Uniform pointwise proxy for the valuation profile of `gcd(M,p^k)`. -/
 theorem gcd_M_Pk_factorization_apply (q : ℕ) :
     (Nat.gcd M (Pk p k)).factorization q =
       if q = p then min (M.factorization p) k else 0 := by
   by_cases hq : q = p
   · subst q
-    simp [gcd_M_Pk_factorization_self M p k hM hp]
-  · simp [hq, gcd_M_Pk_factorization_ne M p k hM hp hq]
+    rw [if_pos rfl]
+    exact gcd_M_Pk_factorization_self M p k hM hp
+  · rw [if_neg hq]
+    exact gcd_M_Pk_factorization_ne M p k hM hp hq
 
+include hM hp in
 /-- Full valuation-free factorization of `gcd(M,p^k)`.  This is stronger than
 the distinguished-prime equality alone: it also certifies that no other prime
 occurs in the gcd. -/
@@ -898,6 +926,7 @@ theorem gcd_M_Pk_factorization :
   · rw [gcd_M_Pk_factorization_ne M p k hM hp hq,
       Finsupp.single_eq_of_ne hq]
 
+include hM hp in
 /-- Full factorization stated with the named valuation proxy. -/
 theorem gcd_M_Pk_factorization_padicProxy :
     (Nat.gcd M (Pk p k)).factorization =
@@ -905,6 +934,7 @@ theorem gcd_M_Pk_factorization_padicProxy :
   simpa [padicExponentProxy] using
     (gcd_M_Pk_factorization M p k hM hp)
 
+include hM hp in
 /-- Full factorization stated with Mathlib's `padicValNat`. -/
 theorem gcd_M_Pk_factorization_padicValNat :
     (Nat.gcd M (Pk p k)).factorization =
@@ -912,6 +942,7 @@ theorem gcd_M_Pk_factorization_padicValNat :
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact gcd_M_Pk_factorization_padicProxy M p k hM hp
 
+include hM hp in
 /-- Proposition 21 prime-power gcd formula, using `factorization p` as the
 valuation-free proxy for the `p`-adic valuation of `M`. -/
 theorem gcd_M_Pk_eq_pow_min_factorization :
@@ -920,24 +951,28 @@ theorem gcd_M_Pk_eq_pow_min_factorization :
     (gcd_M_Pk_ne_zero M p k hM)
     (gcd_M_Pk_factorization M p k hM hp)
 
+include hM hp in
 /-- Same formula with the named valuation proxy used in paper-level statements. -/
 theorem gcd_M_Pk_eq_pow_min_padicProxy :
     Nat.gcd M (Pk p k) = p ^ min (padicExponentProxy M p) k := by
   simpa [padicExponentProxy] using
     (gcd_M_Pk_eq_pow_min_factorization M p k hM hp)
 
+include hM hp in
 /-- The same gcd formula stated with Mathlib's `padicValNat`. -/
 theorem gcd_M_Pk_eq_pow_min_padicValNat :
     Nat.gcd M (Pk p k) = p ^ min (padicValNat p M) k := by
   rw [← padicExponentProxy_eq_padicValNat M p hp]
   exact gcd_M_Pk_eq_pow_min_padicProxy M p k hM hp
 
+include hM hp in
 /-- The `v_p(M) ≤ k` branch used in the paper's kernel computation. -/
 theorem gcd_M_Pk_eq_padicPart_of_padicValNat_le
     (hv : padicValNat p M ≤ k) :
     Nat.gcd M (Pk p k) = p ^ padicValNat p M := by
   rw [gcd_M_Pk_eq_pow_min_padicValNat M p k hM hp, min_eq_left hv]
 
+include hM hp in
 /-- The `k ≤ v_p(M)` branch: the entire prime-power modulus survives in the
 gcd. -/
 theorem gcd_M_Pk_eq_Pk_of_k_le_padicValNat
@@ -984,6 +1019,7 @@ structure PrimePowerSetupCertificate : Prop where
   gcd_eq_pow_min_padicValNat :
     Nat.gcd M (Pk p k) = p ^ min (padicValNat p M) k
 
+include hM hp hk in
 theorem primePowerSetup_certificate :
     PrimePowerSetupCertificate M p k := by
   exact
@@ -1288,7 +1324,8 @@ theorem Phi_intersectionIdealIncl_eq_zero
 /-- Homomorphism-level zero composite for the literal ideal model. -/
 theorem Phi_comp_intersectionIdealIncl_eq_zero (M N : ℕ) :
     (Phi M N).comp (intersectionIdealIncl M N) = 0 := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   exact Phi_intersectionIdealIncl_eq_zero M N x
 
 /-- Auditable package for the complete ideal-intersection/kernel bridge. -/
@@ -1603,7 +1640,15 @@ def psi (M N : ℕ) : ZMod M × ZMod N →+ ZMod (Nat.gcd M N) where
       ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N)) x.2
   map_zero' := by simp
   map_add' x y := by
-    simp [sub_eq_add_neg, add_assoc, add_left_comm, add_comm]
+    change
+      (ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) (x.1 + y.1) -
+          (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) (x.2 + y.2) =
+        ((ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) x.1 -
+            (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) x.2) +
+          ((ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))) y.1 -
+            (ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))) y.2)
+    rw [map_add, map_add]
+    abel
 
 @[simp] theorem psi_apply (M N : ℕ) (x : ZMod M × ZMod N) :
     psi M N x =
@@ -1629,17 +1674,19 @@ image in the gcd quotient. -/
 @[simp] theorem psi_representatives_apply (M N : ℕ) (a b : ℤ) :
     psi M N ((a : ZMod M), (b : ZMod N)) =
       ((a - b : ℤ) : ZMod (Nat.gcd M N)) := by
-  simp [psi, sub_eq_add_neg]
+  simp only [psi_apply, map_intCast, Int.cast_sub]
 
 /-- The composite `ψ ∘ Φ` vanishes. -/
 theorem psi_Phi_eq_zero (M N : ℕ) (z : ℤ) :
     psi M N (Phi M N z) = 0 := by
-  simp [Phi, psi]
+  rw [Phi_apply, psi_representatives_apply]
+  simp
 
 /-- Homomorphism-level form of `ψ ∘ Φ = 0`. -/
 theorem psi_comp_Phi_eq_zero (M N : ℕ) :
     (psi M N).comp (Phi M N) = 0 := by
-  ext z
+  apply AddMonoidHom.ext
+  intro z
   exact psi_Phi_eq_zero M N z
 
 /-- Representative form of the cokernel condition:
@@ -1922,7 +1969,9 @@ theorem PhiKernelIncl_range_eq_Phi_ker (M N : ℕ) :
   constructor
   · intro hz
     obtain ⟨x, rfl⟩ := AddMonoidHom.mem_range.mp hz
-    simpa [PhiKernelModel] using x.property
+    change (PhiKernelIncl M N x : ℤ) ∈
+      AddSubgroup.zmultiples (lcm (M : ℤ) (N : ℤ))
+    exact x.property
   · intro hz
     exact AddMonoidHom.mem_range.mpr
       ⟨⟨z, by simpa [PhiKernelModel] using hz⟩, rfl⟩
@@ -1941,7 +1990,8 @@ theorem Phi_PhiKernelIncl_eq_zero (M N : ℕ) (x : PhiKernelModel M N) :
 /-- Homomorphism-level zero composite `Φ ∘ i = 0`. -/
 theorem Phi_comp_PhiKernelIncl_eq_zero (M N : ℕ) :
     (Phi M N).comp (PhiKernelIncl M N) = 0 := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   exact Phi_PhiKernelIncl_eq_zero M N x
 
 /-- Mathlib `Function.Exact` formulation of exactness at the product term. -/
@@ -2079,7 +2129,7 @@ both zero endpoints.
 namespace Prop21StandardSequence
 
 /-- The categorical zero object used at both ends of the sequence. -/
-def zeroObject : Ab := 0
+abbrev zeroObject : Ab := AddCommGrpCat.of (ZMod 1)
 
 /-- The paper's literal ideal-intersection term as an object of `Ab`. -/
 def intersectionObject (M N : ℕ) : Ab :=
@@ -2127,13 +2177,14 @@ theorem zeroToIntersection_comp_intersectionInclusion (M N : ℕ) :
 theorem intersectionInclusion_comp_comparison (M N : ℕ) :
     intersectionInclusion M N ≫ comparison M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [intersectionInclusion, comparison] using
-    (Phi_comp_intersectionIdealIncl_eq_zero M N)
+  change (Phi M N).comp (intersectionIdealIncl M N) = 0
+  exact Phi_comp_intersectionIdealIncl_eq_zero M N
 
 theorem comparison_comp_difference (M N : ℕ) :
     comparison M N ≫ difference M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [comparison, difference] using (psi_comp_Phi_eq_zero M N)
+  change (psi M N).comp (Phi M N) = 0
+  exact psi_comp_Phi_eq_zero M N
 
 theorem difference_comp_gcdToZero (M N : ℕ) :
     difference M N ≫ gcdToZero M N = 0 := by
@@ -2215,10 +2266,10 @@ theorem leftEndpoint_exact (M N : ℕ) :
   change intersectionIdealIncl M N x = 0 at hx
   have hx0 : x = 0 := by
     apply intersectionIdealIncl_injective M N
-    simpa using hx
+    exact hx.trans (map_zero (intersectionIdealIncl M N)).symm
   subst x
   refine ⟨0, ?_⟩
-  simp [leftEndpoint, zeroToIntersection]
+  rfl
 
 /-- Exactness at `ℤ`, transported from the proved `Function.Exact` theorem. -/
 theorem atInteger_exact (M N : ℕ) :
@@ -2273,7 +2324,7 @@ end Prop21StandardSequence
 /-! ### §D.5.1 — The actual quotient cokernel of `Phi`. -/
 
 /-- The literal additive cokernel of `Phi`, defined as codomain modulo range. -/
-def PhiCokernel (M N : ℕ) : Type :=
+abbrev PhiCokernel (M N : ℕ) : Type :=
   (ZMod M × ZMod N) ⧸ (Phi M N).range
 
 namespace PhiCokernel
@@ -2299,7 +2350,8 @@ theorem quotientMap_ker (M N : ℕ) :
 /-- The canonical quotient map annihilates the comparison map. -/
 theorem quotientMap_comp_Phi_eq_zero (M N : ℕ) :
     (quotientMap M N).comp (Phi M N) = 0 := by
-  ext z
+  apply AddMonoidHom.ext
+  intro z
   change quotientMap M N (Phi M N z) = 0
   apply AddMonoidHom.mem_ker.mp
   rw [quotientMap_ker]
@@ -2419,8 +2471,8 @@ def quotientMorphism (M N : ℕ) :
 theorem comparison_comp_quotientMorphism (M N : ℕ) :
     Prop21StandardSequence.comparison M N ≫ quotientMorphism M N = 0 := by
   apply AddCommGrpCat.hom_ext
-  simpa [Prop21StandardSequence.comparison, quotientMorphism] using
-    (quotientMap_comp_Phi_eq_zero M N)
+  change (quotientMap M N).comp (Phi M N) = 0
+  exact quotientMap_comp_Phi_eq_zero M N
 
 /-- The short complex whose third term is the literal quotient cokernel. -/
 def atResidueProduct (M N : ℕ) : ShortComplex Ab where
@@ -2475,8 +2527,8 @@ theorem quotientMorphism_comp_gcdIso_hom (M N : ℕ) :
     quotientMorphism M N ≫ (gcdIso M N).hom =
       Prop21StandardSequence.difference M N := by
   apply AddCommGrpCat.hom_ext
-  simpa [quotientMorphism, gcdIso, Prop21StandardSequence.difference] using
-    (equivZMod_toAddMonoidHom_comp_quotientMap M N)
+  change (equivZMod M N).toAddMonoidHom.comp (quotientMap M N) = psi M N
+  exact equivZMod_toAddMonoidHom_comp_quotientMap M N
 
 /-- Isomorphism between the literal-cokernel short complex and the paper's
 `ZMod (gcd M N)` short complex. -/
@@ -2567,9 +2619,13 @@ def residueRestriction
     (ZMod.castHom hM (ZMod M') x.1,
       ZMod.castHom hN (ZMod N') x.2)
   map_zero' := by
-    ext <;> simp
+    apply Prod.ext
+    · exact map_zero (ZMod.castHom hM (ZMod M'))
+    · exact map_zero (ZMod.castHom hN (ZMod N'))
   map_add' x y := by
-    ext <;> simp
+    apply Prod.ext
+    · exact map_add (ZMod.castHom hM (ZMod M')) x.1 y.1
+    · exact map_add (ZMod.castHom hN (ZMod N')) x.2 y.2
 
 @[simp] theorem residueRestriction_apply
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N)
@@ -2594,6 +2650,14 @@ def gcdRestriction
   (ZMod.castHom (gcd_dvd_gcd_of_dvd hM hN)
     (ZMod (Nat.gcd M' N'))).toAddMonoidHom
 
+@[simp] theorem gcdRestriction_apply
+    {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N)
+    (x : ZMod (Nat.gcd M N)) :
+    gcdRestriction hM hN x =
+      ZMod.castHom (gcd_dvd_gcd_of_dvd hM hN)
+        (ZMod (Nat.gcd M' N')) x :=
+  rfl
+
 /-- Naturality of the literal ideal inclusion. -/
 theorem intersectionRestriction_comp_inclusion
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
@@ -2606,18 +2670,22 @@ theorem intersectionRestriction_comp_inclusion
 theorem residueRestriction_comp_Phi
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     (residueRestriction hM hN).comp (Phi M N) = Phi M' N' := by
-  ext z <;> simp [residueRestriction, Phi]
+  apply AddMonoidHom.ext
+  intro z
+  apply Prod.ext <;> simp only [AddMonoidHom.comp_apply, residueRestriction_apply,
+    Phi_apply, map_intCast]
 
 /-- Naturality square for the difference map `psi`. -/
 theorem gcdRestriction_comp_psi
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     (gcdRestriction hM hN).comp (psi M N) =
       (psi M' N').comp (residueRestriction hM hN) := by
-  ext x
-  rcases x with ⟨x, y⟩
+  apply AddMonoidHom.ext
+  rintro ⟨x, y⟩
   obtain ⟨a, rfl⟩ := ZMod.intCast_surjective x
   obtain ⟨b, rfl⟩ := ZMod.intCast_surjective y
-  simp [gcdRestriction, residueRestriction, psi]
+  simp only [AddMonoidHom.comp_apply, gcdRestriction_apply,
+    psi_representatives_apply, residueRestriction_apply, map_intCast]
 
 /-- The residue restriction carries `range Phi` into the target range. -/
 theorem Phi_range_le_comap_residueRestriction
@@ -2690,14 +2758,20 @@ def leftEndpointHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     Prop21StandardSequence.leftEndpoint M N ⟶
       Prop21StandardSequence.leftEndpoint M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 0
   τ₂ := AddCommGrpCat.ofHom (intersectionRestriction hM hN)
-  τ₃ := 𝟙 _
-  comm₁₂ := by simp [Prop21StandardSequence.zeroToIntersection]
+  τ₃ := 𝟙 Prop21StandardSequence.integerObject
+  comm₁₂ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.intersectionInclusion] using
-      (intersectionRestriction_comp_inclusion hM hN)
+    change (intersectionIdealIncl M' N').comp
+      (intersectionRestriction hM hN) = intersectionIdealIncl M N
+    exact intersectionRestriction_comp_inclusion hM hN
 
 /-- Standard short-complex morphism across the integer exactness square. -/
 def atIntegerHom
@@ -2705,33 +2779,35 @@ def atIntegerHom
     Prop21StandardSequence.atInteger M N ⟶
       Prop21StandardSequence.atInteger M' N' where
   τ₁ := AddCommGrpCat.ofHom (intersectionRestriction hM hN)
-  τ₂ := 𝟙 _
+  τ₂ := 𝟙 Prop21StandardSequence.integerObject
   τ₃ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.intersectionInclusion] using
-      (intersectionRestriction_comp_inclusion hM hN)
+    change (intersectionIdealIncl M' N').comp
+      (intersectionRestriction hM hN) = intersectionIdealIncl M N
+    exact intersectionRestriction_comp_inclusion hM hN
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
 
 /-- Standard short-complex morphism across the residue-product square. -/
 def atResidueProductHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     Prop21StandardSequence.atResidueProduct M N ⟶
       Prop21StandardSequence.atResidueProduct M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 𝟙 Prop21StandardSequence.integerObject
   τ₂ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₃ := AddCommGrpCat.ofHom (gcdRestriction hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.difference] using
-      (gcdRestriction_comp_psi hM hN).symm
+    change (psi M' N').comp (residueRestriction hM hN) =
+      (gcdRestriction hM hN).comp (psi M N)
+    exact (gcdRestriction_comp_psi hM hN).symm
 
 /-- Standard short-complex morphism for the right endpoint. -/
 def rightEndpointHom
@@ -2740,31 +2816,37 @@ def rightEndpointHom
       Prop21StandardSequence.rightEndpoint M' N' where
   τ₁ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₂ := AddCommGrpCat.ofHom (gcdRestriction hM hN)
-  τ₃ := 𝟙 _
+  τ₃ := 0
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [Prop21StandardSequence.difference] using
-      (gcdRestriction_comp_psi hM hN).symm
-  comm₂₃ := by simp [Prop21StandardSequence.gcdToZero]
+    change (psi M' N').comp (residueRestriction hM hN) =
+      (gcdRestriction hM hN).comp (psi M N)
+    exact (gcdRestriction_comp_psi hM hN).symm
+  comm₂₃ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
 
 /-- Naturality morphism for the short complex ending in the literal cokernel. -/
 def actualAtResidueProductHom
     {M N M' N' : ℕ} (hM : M' ∣ M) (hN : N' ∣ N) :
     PhiCokernel.atResidueProduct M N ⟶
       PhiCokernel.atResidueProduct M' N' where
-  τ₁ := 𝟙 _
+  τ₁ := 𝟙 Prop21StandardSequence.integerObject
   τ₂ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₃ := AddCommGrpCat.ofHom (cokernelMap hM hN)
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.atResidueProduct,
-      Prop21StandardSequence.comparison] using
-      (residueRestriction_comp_Phi hM hN).symm
+    change Phi M' N' = (residueRestriction hM hN).comp (Phi M N)
+    exact (residueRestriction_comp_Phi hM hN).symm
   comm₂₃ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.atResidueProduct,
-      PhiCokernel.quotientMorphism] using
-      (cokernelMap_comp_quotientMap hM hN).symm
+    change (PhiCokernel.quotientMap M' N').comp
+      (residueRestriction hM hN) =
+        (cokernelMap hM hN).comp (PhiCokernel.quotientMap M N)
+    exact (cokernelMap_comp_quotientMap hM hN).symm
 
 /-- Naturality morphism for the literal cokernel's right zero endpoint. -/
 def actualRightEndpointHom
@@ -2773,13 +2855,19 @@ def actualRightEndpointHom
       PhiCokernel.rightEndpoint M' N' where
   τ₁ := AddCommGrpCat.ofHom (residueRestriction hM hN)
   τ₂ := AddCommGrpCat.ofHom (cokernelMap hM hN)
-  τ₃ := 𝟙 _
+  τ₃ := 0
   comm₁₂ := by
     apply AddCommGrpCat.hom_ext
-    simpa [PhiCokernel.rightEndpoint,
-      PhiCokernel.quotientMorphism] using
-      (cokernelMap_comp_quotientMap hM hN).symm
-  comm₂₃ := by simp [PhiCokernel.rightEndpoint, PhiCokernel.toZero]
+    change (PhiCokernel.quotientMap M' N').comp
+      (residueRestriction hM hN) =
+        (cokernelMap hM hN).comp (PhiCokernel.quotientMap M N)
+    exact (cokernelMap_comp_quotientMap hM hN).symm
+  comm₂₃ := by
+    apply AddCommGrpCat.hom_ext
+    apply AddMonoidHom.ext
+    intro x
+    change 0 = 0
+    rfl
 
 /-- Auditable statement of the proven naturality range. -/
 structure Certificate
@@ -2839,17 +2927,19 @@ end Prop21Naturality
 
 /-! ### §D.5.3 — Integrated, unconditional Section 3.2 certificates. -/
 
+universe uSection32
+
 /-- All Section 3.2 claims for arbitrary natural moduli, with no positivity or
 coprimality assumptions. -/
 structure Prop21Section32Certificate (M N : ℕ) : Prop where
   standard_exact_diagram :
     Prop21StandardSequence.StandardDiagramCertificate M N
-  actual_quotient_cokernel : PhiCokernel.Certificate M N
+  actual_quotient_cokernel : PhiCokernel.Certificate.{uSection32} M N
   legacy_five_term_exactness : ShortExact5 M N
   literal_five_term_exactness : LiteralIntersectionShortExact5 M N
 
 theorem prop21Section32_certificate (M N : ℕ) :
-    Prop21Section32Certificate M N := by
+    Prop21Section32Certificate.{uSection32} M N := by
   exact
     { standard_exact_diagram :=
         Prop21StandardSequence.standardDiagram_certificate M N
@@ -2863,11 +2953,11 @@ structure Prop21PrimePowerSection32Certificate (M p k : ℕ) : Prop where
   paper_assumptions : 1 ≤ M ∧ Nat.Prime p ∧ 1 ≤ k
   prime_power_setup : PrimePowerSetupCertificate M p k
   previous_exact_sequence : Prop21ExactSequenceCertificate M p k
-  standard_and_actual_cokernel : Prop21Section32Certificate M (Pk p k)
+  standard_and_actual_cokernel : Prop21Section32Certificate.{uSection32} M (Pk p k)
 
 theorem prop21PrimePowerSection32_certificate
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p) (hk : 1 ≤ k) :
-    Prop21PrimePowerSection32Certificate M p k := by
+    Prop21PrimePowerSection32Certificate.{uSection32} M p k := by
   exact
     { paper_assumptions := ⟨hM, hp, hk⟩
       prime_power_setup := primePowerSetup_certificate
@@ -2881,7 +2971,7 @@ theorem prop21PrimePowerSection32_certificate
 /-! ## §E — Tor₁ obstruction model. -/
 
 /-- The elementary `Tor₁` obstruction model used by the SPT overlap block. -/
-def Tor1Model (M N : ℕ) := ZMod (Nat.gcd M N)
+abbrev Tor1Model (M N : ℕ) := ZMod (Nat.gcd M N)
 
 theorem Tor1Model_card (M N : ℕ) [NeZero (Nat.gcd M N)] :
     Fintype.card (Tor1Model M N) = Nat.gcd M N := by
@@ -2892,8 +2982,8 @@ theorem Tor1Model_trivial_iff (M N : ℕ) [NeZero (Nat.gcd M N)] :
   simpa [Tor1Model] using (obstructionFree_iff_card (g := Nat.gcd M N))
 
 theorem Tor1Model_exp_IC (M N : ℕ) (hM : M ≠ 0) (hN : N ≠ 0) :
+    letI : NeZero (Nat.gcd M N) := ⟨Nat.gcd_ne_zero_left hM⟩
     (Fintype.card (Tor1Model M N) : ℝ) = Real.exp (IC M N) := by
-  haveI : NeZero (Nat.gcd M N) := ⟨Nat.gcd_ne_zero_left hM⟩
   rw [Tor1Model_card, card_Tor_eq_exp_IC hM hN]
 
 /-!
@@ -3103,9 +3193,10 @@ def quotientStepIntegerHom (M N : ℕ) : ℤ →+ ZMod N :=
 modulus changes the image by the full modulus `N`. -/
 theorem quotientStepIntegerHom_gcd_eq_zero (M N : ℕ) :
     quotientStepIntegerHom M N (Nat.gcd M N : ℤ) = 0 := by
-  change (quotientStep M N : ZMod N) *
-    (Nat.gcd M N : ZMod N) = 0
-  rw [← Nat.cast_mul, quotientStep_mul_gcd, ZMod.natCast_self]
+  rw [quotientStepIntegerHom_apply]
+  have h := congrArg (fun n : ℕ => (n : ZMod N))
+    (quotientStep_mul_gcd M N)
+  simpa only [Nat.cast_mul, Int.cast_natCast, ZMod.natCast_self] using h
 
 /-- Canonical additive map
 `ZMod (gcd M N) → ZMod N`, `[a] ↦ [(N / gcd M N) * a]`. -/
@@ -3141,7 +3232,7 @@ def gcdToKernelHom (M N : ℕ) :
     simp
   map_add' x y := by
     apply Subtype.ext
-    simp
+    exact map_add (quotientToAmbientHom M N) x y
 
 @[simp] theorem gcdToKernelHom_val (M N : ℕ)
     (x : ZMod (Nat.gcd M N)) :
@@ -3152,7 +3243,7 @@ def gcdToKernelHom (M N : ℕ) :
     (M N : ℕ) (z : ℤ) :
     (gcdToKernelHom M N (z : ZMod (Nat.gcd M N)) : ZMod N) =
       (quotientStep M N : ZMod N) * (z : ZMod N) := by
-  simp
+  exact quotientToAmbientHom_intCast M N z
 
 theorem quotientStep_ne_zero (M N : ℕ) [NeZero N] :
     quotientStep M N ≠ 0 := by
@@ -3209,7 +3300,7 @@ theorem leftFactor_coprime_quotientStep
     (M N : ℕ) [NeZero N] :
     Nat.Coprime (leftFactor M N) (quotientStep M N) := by
   simpa [leftFactor, quotientStep] using
-    (coprime_div_gcd_div_gcd
+    (Nat.coprime_div_gcd_div_gcd
       (m := M) (n := N)
       (Nat.pos_of_ne_zero (gcd_ne_zero_of_right M N)))
 
@@ -3256,9 +3347,8 @@ theorem gcdToKernelHom_surjective
   change quotientToAmbientHom M N
       (q : ZMod (Nat.gcd M N)) = (z : ZMod N)
   rw [quotientToAmbientHom_intCast]
-  change ((((quotientStep M N : ℕ) : ℤ) * q : ℤ) : ZMod N) =
-    (z : ZMod N)
-  simpa [hq]
+  simpa only [Int.cast_mul, Int.cast_natCast] using
+    congrArg (fun t : ℤ => (t : ZMod N)) hq.symm
 
 /-- Canonical additive equivalence in the forward direction.  Its inverse is
 unique because the displayed homomorphism is bijective; no cyclic generator is
@@ -3281,7 +3371,8 @@ theorem gcdToKernelHom_unique
     (M N : ℕ) (f : ZMod (Nat.gcd M N) →+ Tor1CyclicModel M N)
     (h_one : f 1 = gcdToKernelHom M N 1) :
     f = gcdToKernelHom M N := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
   have hz : (z : ZMod (Nat.gcd M N)) =
       z • (1 : ZMod (Nat.gcd M N)) := by
@@ -3289,10 +3380,10 @@ theorem gcdToKernelHom_unique
   calc
     f (z : ZMod (Nat.gcd M N)) = f (z • (1 : ZMod (Nat.gcd M N))) :=
       congrArg f hz
-    _ = z • f 1 := f.map_zsmul 1 z
+    _ = z • f 1 := f.map_zsmul z 1
     _ = z • gcdToKernelHom M N 1 := congrArg (z • ·) h_one
     _ = gcdToKernelHom M N (z • (1 : ZMod (Nat.gcd M N))) :=
-      ((gcdToKernelHom M N).map_zsmul 1 z).symm
+      ((gcdToKernelHom M N).map_zsmul z 1).symm
     _ = gcdToKernelHom M N (z : ZMod (Nat.gcd M N)) :=
       congrArg (gcdToKernelHom M N) hz.symm
 
@@ -3406,8 +3497,9 @@ theorem M_cast_eq_unit_mul_padicPower
     (M : ZMod (Pk p k)) =
       (unitFactorUnit M p k hM hp : ZMod (Pk p k)) *
         (p ^ valuationExponent M p : ZMod (Pk p k)) := by
-  rw [unitFactor_decomposition M p hp, Nat.cast_mul,
-    coe_unitFactorUnit, mul_comm]
+  have h := congrArg (fun n : ℕ => (n : ZMod (Pk p k)))
+    (unitFactor_decomposition M p hp)
+  simpa only [Nat.cast_mul, Nat.cast_pow, coe_unitFactorUnit, mul_comm] using h
 
 /-- Multiplication by `M'` is an automorphism, so it does not alter the
 multiplication kernel. -/
@@ -3417,7 +3509,7 @@ theorem kernel_condition_iff_padicPower
     (M : ZMod (Pk p k)) * x = 0 ↔
       (p ^ valuationExponent M p : ZMod (Pk p k)) * x = 0 := by
   rw [M_cast_eq_unit_mul_padicPower M p k hM hp, mul_assoc,
-    Units.mul_left_eq_zero]
+    Units.mul_right_eq_zero]
 
 /-- Integer map `a ↦ p^(k-m) * a` before quotient descent. -/
 def powerShiftIntegerHom (M p k : ℕ) : ℤ →+ ZMod (Pk p k) :=
@@ -3436,10 +3528,14 @@ def powerShiftIntegerHom (M p k : ℕ) : ℤ →+ ZMod (Pk p k) :=
 theorem powerShiftIntegerHom_modulus_eq_zero (M p k : ℕ) :
     powerShiftIntegerHom M p k
       (p ^ thicknessExponent M p k : ℤ) = 0 := by
-  change (p ^ shiftExponent M p k : ZMod (Pk p k)) *
-      (p ^ thicknessExponent M p k : ZMod (Pk p k)) = 0
-  rw [← Nat.cast_mul, pow_shift_mul_pow_thickness]
-  exact ZMod.natCast_self (Pk p k)
+  rw [powerShiftIntegerHom_apply]
+  have h :
+      ((p ^ shiftExponent M p k * p ^ thicknessExponent M p k : ℕ) :
+        ZMod (Pk p k)) = 0 := by
+    rw [pow_shift_mul_pow_thickness]
+    exact ZMod.natCast_self (Pk p k)
+  simpa only [Nat.cast_mul, Nat.cast_pow, Int.cast_pow,
+    Int.cast_natCast] using h
 
 /-- The explicit, representative-independent power-shift homomorphism. -/
 def powerShiftHom (M p k : ℕ) :
@@ -3454,7 +3550,19 @@ def powerShiftHom (M p k : ℕ) :
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (p ^ shiftExponent M p k : ZMod (Pk p k)) *
         (z : ZMod (Pk p k)) := by
-  simp [powerShiftHom]
+  rw [powerShiftHom]
+  calc
+    (ZMod.lift (p ^ thicknessExponent M p k)
+        ⟨powerShiftIntegerHom M p k,
+          powerShiftIntegerHom_modulus_eq_zero M p k⟩)
+        (z : ZMod (p ^ thicknessExponent M p k)) =
+      powerShiftIntegerHom M p k z :=
+        ZMod.lift_coe (p ^ thicknessExponent M p k)
+          ⟨powerShiftIntegerHom M p k,
+            powerShiftIntegerHom_modulus_eq_zero M p k⟩ z
+    _ = (p ^ shiftExponent M p k : ZMod (Pk p k)) *
+        (z : ZMod (Pk p k)) :=
+      powerShiftIntegerHom_apply M p k z
 
 theorem powerShiftHom_add
     (M p k : ℕ) (x y : ZMod (p ^ thicknessExponent M p k)) :
@@ -3474,7 +3582,8 @@ theorem Pk_dvd_M_mul_shift
   calc
     M * p ^ shiftExponent M p k =
         (p ^ thicknessExponent M p k * c) *
-          p ^ shiftExponent M p k := by rw [hc]
+          p ^ shiftExponent M p k :=
+      congrArg (fun t => t * p ^ shiftExponent M p k) hc
     _ = (p ^ thicknessExponent M p k *
           p ^ shiftExponent M p k) * c := by ac_rfl
     _ = p ^ k * c := by rw [pow_thickness_mul_pow_shift]
@@ -3486,11 +3595,15 @@ theorem powerShiftHom_mem_kernel
     powerShiftHom M p k x ∈ Tor1CyclicModel M (Pk p k) := by
   apply (Tor1CyclicModel_mem_iff M (Pk p k) _).2
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
-  rw [powerShiftHom_intCast, ← mul_assoc, ← Nat.cast_mul]
+  rw [powerShiftHom_intCast, ← mul_assoc]
   have hzero :
-      (M * p ^ shiftExponent M p k : ZMod (Pk p k)) = 0 :=
-    (ZMod.natCast_eq_zero_iff _ _).2
-      (Pk_dvd_M_mul_shift M p k hM hp)
+      (M : ZMod (Pk p k)) *
+        (p ^ shiftExponent M p k : ZMod (Pk p k)) = 0 := by
+    have hcast :
+        ((M * p ^ shiftExponent M p k : ℕ) : ZMod (Pk p k)) = 0 :=
+      (ZMod.natCast_eq_zero_iff _ _).2
+        (Pk_dvd_M_mul_shift M p k hM hp)
+    simpa only [Nat.cast_mul, Nat.cast_pow] using hcast
   rw [hzero, zero_mul]
 
 /-- The explicit power-shift map with codomain restricted to the kernel. -/
@@ -3502,10 +3615,12 @@ def powerShiftKernelHom
     powerShiftHom_mem_kernel M p k hM hp x⟩
   map_zero' := by
     apply Subtype.ext
-    simp
+    exact map_zero (powerShiftHom M p k)
   map_add' x y := by
     apply Subtype.ext
-    simp
+    change powerShiftHom M p k (x + y) =
+      powerShiftHom M p k x + powerShiftHom M p k y
+    exact map_add (powerShiftHom M p k) x y
 
 @[simp] theorem powerShiftKernelHom_val
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p)
@@ -3520,7 +3635,7 @@ def powerShiftKernelHom
         (z : ZMod (p ^ thicknessExponent M p k)) : ZMod (Pk p k)) =
       (p ^ shiftExponent M p k : ZMod (Pk p k)) *
         (z : ZMod (Pk p k)) := by
-  simp
+  exact powerShiftHom_intCast M p k z
 
 /-- Injectivity follows by cancelling the nonzero factor `p^(k-m)` from the
 integer divisibility relation `p^k ∣ p^(k-m) * (a-b)`. -/
@@ -3537,7 +3652,8 @@ theorem powerShiftHom_injective
   have hz' :
       ((((p ^ shiftExponent M p k : ℕ) : ℤ) * (a - b) : ℤ) :
         ZMod (Pk p k)) = 0 := by
-    simpa using hz
+    simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+      Nat.cast_pow] using hz
   have hdiv : (Pk p k : ℤ) ∣
       (p ^ shiftExponent M p k : ℤ) * (a - b) :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -3578,11 +3694,13 @@ theorem powerShiftKernelHom_surjective
   · have hm : thicknessExponent M p k = valuationExponent M p := by
       exact min_eq_left hvk
     have hs : shiftExponent M p k = k - valuationExponent M p := by
-      simp [shiftExponent, hm]
+      unfold shiftExponent
+      rw [hm]
     have hpz' :
         ((((p ^ valuationExponent M p : ℕ) : ℤ) * z : ℤ) :
           ZMod (Pk p k)) = 0 := by
-      simpa using hpz
+      simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+        Nat.cast_pow] using hpz
     have hdiv : (Pk p k : ℤ) ∣
         (p ^ valuationExponent M p : ℤ) * z :=
       (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -3606,21 +3724,23 @@ theorem powerShiftKernelHom_surjective
     change powerShiftHom M p k
         (q : ZMod (p ^ thicknessExponent M p k)) =
       (z : ZMod (Pk p k))
-    rw [powerShiftHom_intCast]
-    change ((((p ^ shiftExponent M p k : ℕ) : ℤ) * q : ℤ) :
-      ZMod (Pk p k)) = (z : ZMod (Pk p k))
-    simpa [hs, hq]
+    rw [powerShiftHom_intCast, hs]
+    have hqcast := congrArg
+      (fun t : ℤ => (t : ZMod (Pk p k))) hq.symm
+    simpa only [Int.cast_mul, Int.cast_pow, Int.cast_natCast,
+      Nat.cast_pow] using hqcast
   · have hkv : k ≤ valuationExponent M p := le_of_not_ge hvk
     have hm : thicknessExponent M p k = k := min_eq_right hkv
     have hs : shiftExponent M p k = 0 := by
-      simp [shiftExponent, hm]
+      unfold shiftExponent
+      rw [hm]
+      exact Nat.sub_self k
     refine ⟨(z : ZMod (p ^ thicknessExponent M p k)), ?_⟩
     apply Subtype.ext
     change powerShiftHom M p k
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (z : ZMod (Pk p k))
-    rw [powerShiftHom_intCast]
-    simp [hs]
+    rw [powerShiftHom_intCast, hs, pow_zero, one_mul]
 
 /-- The explicit canonical equivalence in the direction displayed in the
 checklist. -/
@@ -3643,8 +3763,7 @@ theorem generic_quotientStep_eq_pow_shift
     (M p k : ℕ) (hM : 1 ≤ M) (hp : Nat.Prime p) :
     Tor1Canonical.quotientStep M (Pk p k) =
       p ^ shiftExponent M p k := by
-  apply Nat.mul_right_cancel
-    (Nat.pow_pos hp.pos (thicknessExponent M p k))
+  apply Nat.mul_right_cancel (pow_pos hp.pos _)
   calc
     Tor1Canonical.quotientStep M (Pk p k) *
         p ^ thicknessExponent M p k =
@@ -3667,7 +3786,10 @@ theorem powerShiftKernelHom_agrees_gcdToKernelHom_intCast
       Tor1Canonical.gcdToKernelHom M (Pk p k)
         (z : ZMod (Nat.gcd M (Pk p k))) := by
   apply Subtype.ext
-  simp [generic_quotientStep_eq_pow_shift M p k hM hp]
+  rw [powerShiftKernelHom_intCast,
+    Tor1Canonical.gcdToKernelHom_intCast,
+    generic_quotientStep_eq_pow_shift M p k hM hp,
+    Nat.cast_pow]
 
 /-- The explicit forward map is uniquely characterized by the image of the
 standard class of `1`; this is the generator-independent meaning of canonical
@@ -3678,21 +3800,22 @@ theorem powerShiftKernelHom_unique
       Tor1CyclicModel M (Pk p k))
     (h_one : f 1 = powerShiftKernelHom M p k hM hp 1) :
     f = powerShiftKernelHom M p k hM hp := by
-  ext x
+  apply AddMonoidHom.ext
+  intro x
   obtain ⟨z, rfl⟩ := ZMod.intCast_surjective x
   have hz : (z : ZMod (p ^ thicknessExponent M p k)) =
       z • (1 : ZMod (p ^ thicknessExponent M p k)) := by
-    simp
+    exact (zsmul_one z).symm
   calc
     f (z : ZMod (p ^ thicknessExponent M p k)) =
         f (z • (1 : ZMod (p ^ thicknessExponent M p k))) :=
       congrArg f hz
-    _ = z • f 1 := f.map_zsmul 1 z
+    _ = z • f 1 := f.map_zsmul z 1
     _ = z • powerShiftKernelHom M p k hM hp 1 :=
       congrArg (z • ·) h_one
     _ = powerShiftKernelHom M p k hM hp
         (z • (1 : ZMod (p ^ thicknessExponent M p k))) :=
-      ((powerShiftKernelHom M p k hM hp).map_zsmul 1 z).symm
+      ((powerShiftKernelHom M p k hM hp).map_zsmul z 1).symm
     _ = powerShiftKernelHom M p k hM hp
         (z : ZMod (p ^ thicknessExponent M p k)) :=
       congrArg (powerShiftKernelHom M p k hM hp) hz.symm
@@ -3716,7 +3839,13 @@ def PkReduction (p k k' : ℕ) (hkk : k' ≤ k) :
     (p k k' : ℕ) (hkk : k' ≤ k) (z : ℤ) :
     PkReduction p k k' hkk (z : ZMod (Pk p k)) =
       (z : ZMod (Pk p k')) := by
-  simp [PkReduction]
+  change
+    ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+        (ZMod (Pk p k')) (z : ZMod (Pk p k)) =
+      (z : ZMod (Pk p k'))
+  exact map_intCast
+    (ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+      (ZMod (Pk p k'))) z
 
 /-- Covariant map on kernel models induced by reducing the tensor factor. -/
 def rightKernelMap
@@ -3725,16 +3854,26 @@ def rightKernelMap
       Tor1CyclicModel M (Pk p k') where
   toFun x := ⟨PkReduction p k k' hkk x.1, by
     apply (Tor1CyclicModel_mem_iff M (Pk p k') _).2
-    have hx := congrArg
-      (ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
-        (ZMod (Pk p k'))) x.2
-    simpa [PkReduction] using hx⟩
+    let φ : ZMod (Pk p k) →+* ZMod (Pk p k') :=
+      ZMod.castHom (by simpa [Pk] using pow_dvd_pow p hkk)
+        (ZMod (Pk p k'))
+    change (M : ZMod (Pk p k')) * φ x.1 = 0
+    calc
+      (M : ZMod (Pk p k')) * φ x.1 =
+          φ ((M : ZMod (Pk p k)) * x.1) := by
+        simpa only [map_natCast] using
+          (map_mul φ (M : ZMod (Pk p k)) x.1).symm
+      _ = φ 0 := congrArg φ x.2
+      _ = 0 := map_zero φ⟩
   map_zero' := by
     apply Subtype.ext
-    simp [PkReduction]
+    change PkReduction p k k' hkk 0 = 0
+    exact map_zero (PkReduction p k k' hkk)
   map_add' x y := by
     apply Subtype.ext
-    simp [PkReduction]
+    change PkReduction p k k' hkk (x.1 + y.1) =
+      PkReduction p k k' hkk x.1 + PkReduction p k k' hkk y.1
+    exact map_add (PkReduction p k k' hkk) x.1 y.1
 
 @[simp] theorem rightKernelMap_val
     (M p k k' : ℕ) (hkk : k' ≤ k)
@@ -3758,10 +3897,15 @@ def leftKernelMap
       exact x.2⟩
   map_zero' := by
     apply Subtype.ext
-    simp
+    change (M / M' : ZMod (Pk p k)) * 0 = 0
+    exact mul_zero _
   map_add' x y := by
     apply Subtype.ext
-    simp [mul_add]
+    change
+      (M / M' : ZMod (Pk p k)) * (x.1 + y.1) =
+        (M / M' : ZMod (Pk p k)) * x.1 +
+          (M / M' : ZMod (Pk p k)) * y.1
+    exact mul_add _ _ _
 
 @[simp] theorem leftKernelMap_val
     {M M' : ℕ} (hMM : M' ∣ M) (p k : ℕ)
@@ -3778,15 +3922,14 @@ theorem thicknessExponent_mono_of_le_k
 theorem shiftExponent_mono_of_le_k
     (M p : ℕ) {k' k : ℕ} (hkk : k' ≤ k) :
     shiftExponent M p k' ≤ shiftExponent M p k := by
-  by_cases hv : valuationExponent M p ≤ k'
-  · have hv' : valuationExponent M p ≤ k := hv.trans hkk
-    simpa [shiftExponent, thicknessExponent, min_eq_left hv,
-      min_eq_left hv'] using
-        (Nat.sub_le_sub_right hkk (valuationExponent M p))
-  · have hkv : k' ≤ valuationExponent M p := le_of_not_ge hv
-    have hz : shiftExponent M p k' = 0 := by
-      simp [shiftExponent, thicknessExponent, min_eq_right hkv]
-    rw [hz]
+  change k' - min (padicValNat p M) k' ≤
+    k - min (padicValNat p M) k
+  by_cases hv : padicValNat p M ≤ k'
+  · have hv' : padicValNat p M ≤ k := hv.trans hkk
+    rw [min_eq_left hv, min_eq_left hv']
+    exact Nat.sub_le_sub_right hkk (padicValNat p M)
+  · have hkv : k' ≤ padicValNat p M := le_of_not_ge hv
+    rw [min_eq_right hkv, Nat.sub_self]
     exact Nat.zero_le _
 
 /-- The explicit map between the two thickness groups required by right-factor
@@ -3809,7 +3952,14 @@ def rightThicknessMap
       (p ^ (shiftExponent M p k - shiftExponent M p k') :
         ZMod (p ^ thicknessExponent M p k')) *
         (z : ZMod (p ^ thicknessExponent M p k')) := by
-  simp [rightThicknessMap]
+  change
+    (p ^ (shiftExponent M p k - shiftExponent M p k') :
+        ZMod (p ^ thicknessExponent M p k')) *
+      (ZMod.castHom
+        (pow_dvd_pow p (thicknessExponent_mono_of_le_k M p hkk))
+        (ZMod (p ^ thicknessExponent M p k'))
+        (z : ZMod (p ^ thicknessExponent M p k))) = _
+  rw [map_intCast]
 
 theorem rightThicknessMap_intCast_as_intCast
     (M p : ℕ) {k' k : ℕ} (hkk : k' ≤ k) (z : ℤ) :
@@ -3817,7 +3967,8 @@ theorem rightThicknessMap_intCast_as_intCast
         (z : ZMod (p ^ thicknessExponent M p k)) =
       (((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z :
         ZMod (p ^ thicknessExponent M p k')) := by
-  simpa using rightThicknessMap_intCast M p hkk z
+  rw [rightThicknessMap_intCast]
+  simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast, Nat.cast_pow]
 
 /-- Explicit naturality square in the prime-power tensor exponent. -/
 theorem rightNaturalitySquare
@@ -3836,10 +3987,55 @@ theorem rightNaturalitySquare
     powerShiftHom M p k'
       (rightThicknessMap M p hkk
         (z : ZMod (p ^ thicknessExponent M p k)))
-  rw [powerShiftHom_intCast, rightThicknessMap_intCast_as_intCast,
-    powerShiftHom_intCast]
-  simp [PkReduction, ← mul_assoc, ← Nat.cast_mul, ← pow_add,
-    Nat.add_sub_of_le (shiftExponent_mono_of_le_k M p hkk)]
+  calc
+    PkReduction p k k' hkk
+        (powerShiftHom M p k
+          (z : ZMod (p ^ thicknessExponent M p k))) =
+      PkReduction p k k' hkk
+        ((p ^ shiftExponent M p k : ZMod (Pk p k)) *
+          (z : ZMod (Pk p k))) :=
+        congrArg (PkReduction p k k' hkk)
+          (powerShiftHom_intCast M p k z)
+    _ =
+      (p ^ shiftExponent M p k' : ZMod (Pk p k')) *
+        ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
+          ZMod (Pk p k')) := by
+        have hsrc :
+            (p ^ shiftExponent M p k : ZMod (Pk p k)) *
+                (z : ZMod (Pk p k)) =
+              (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
+                ZMod (Pk p k)) := by
+          ring_nf
+        have hexp :
+            p ^ shiftExponent M p k =
+              p ^ shiftExponent M p k' *
+                p ^ (shiftExponent M p k - shiftExponent M p k') := by
+          rw [← pow_add,
+            Nat.add_sub_of_le (shiftExponent_mono_of_le_k M p hkk)]
+        rw [hsrc, PkReduction_intCast]
+        calc
+          (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
+              ZMod (Pk p k')) =
+            (((((p ^ shiftExponent M p k' *
+                p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
+              ZMod (Pk p k')) := by rw [hexp]
+          _ =
+              (p ^ shiftExponent M p k' : ZMod (Pk p k')) *
+                ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
+                  ZMod (Pk p k')) := by
+            simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
+            ring_nf
+    _ = powerShiftHom M p k'
+        (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
+          ZMod (p ^ thicknessExponent M p k')) :=
+      (powerShiftHom_intCast M p k'
+        (((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z)).symm
+    _ = powerShiftHom M p k'
+        (rightThicknessMap M p hkk
+          (z : ZMod (p ^ thicknessExponent M p k))) := by
+      rw [rightThicknessMap_intCast_as_intCast]
+      congr 1
+      simp only [Int.cast_mul]
 
 /-- Universality of the second-variable naturality map: commutativity of the
 square determines `rightThicknessMap` uniquely because the target power-shift
@@ -3855,10 +4051,9 @@ theorem rightThicknessMap_unique
         powerShiftKernelHom M p k' hM hp (f x)) :
     f = rightThicknessMap M p hkk := by
   ext x
-  apply (powerShiftEquiv M p k' hM hp).injective
-  have h₁ := hsquare x
-  have h₂ := rightNaturalitySquare M p hkk hM hp x
-  simpa using h₁.symm.trans h₂
+  apply powerShiftKernelHom_injective M p k' hM hp
+  exact (hsquare x).symm.trans
+    (rightNaturalitySquare M p hkk hM hp x)
 
 /-- The map on thickness models forced by covariance in the first cyclic
 argument.  It is defined by the explicit kernel maps and their canonical
@@ -3880,9 +4075,15 @@ theorem leftNaturalitySquare
     leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x) =
       powerShiftKernelHom M' p k hM' hp
         (leftThicknessMap hMM p k hM hM' hp x) := by
-  simpa [leftThicknessMap] using
-    ((powerShiftEquiv M' p k hM' hp).apply_symm_apply
-      (leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x))).symm
+  change
+    leftKernelMap hMM p k (powerShiftKernelHom M p k hM hp x) =
+      (powerShiftEquiv M' p k hM' hp)
+        ((powerShiftEquiv M' p k hM' hp).symm
+          (leftKernelMap hMM p k
+            (powerShiftKernelHom M p k hM hp x)))
+  exact ((powerShiftEquiv M' p k hM' hp).apply_symm_apply
+    (leftKernelMap hMM p k
+      (powerShiftKernelHom M p k hM hp x))).symm
 
 /-- Universality of the first-variable naturality map: the square determines
 it uniquely because the target power-shift map is injective. -/
@@ -3896,10 +4097,9 @@ theorem leftThicknessMap_unique
         powerShiftKernelHom M' p k hM' hp (f x)) :
     f = leftThicknessMap hMM p k hM hM' hp := by
   ext x
-  apply (powerShiftEquiv M' p k hM' hp).injective
-  have h₁ := hsquare x
-  have h₂ := leftNaturalitySquare hMM p k hM hM' hp x
-  simpa using h₁.symm.trans h₂
+  apply powerShiftKernelHom_injective M' p k hM' hp
+  exact (hsquare x).symm.trans
+    (leftNaturalitySquare hMM p k hM hM' hp x)
 
 end Tor1PrimePowerCanonical
 
@@ -4307,8 +4507,8 @@ theorem prop21CanonicalTor_certificate
       explicit_equivalence :=
         ⟨Tor1PrimePowerCanonical.powerShiftEquiv M p k hM hp⟩
       agrees_with_gcd_on_representatives :=
-        Tor1PrimePowerCanonical.
-          powerShiftKernelHom_agrees_gcdToKernelHom_intCast M p k hM hp
+        Tor1PrimePowerCanonical.powerShiftKernelHom_agrees_gcdToKernelHom_intCast
+          M p k hM hp
       generator_independent :=
         Tor1PrimePowerCanonical.powerShiftKernelHom_unique M p k hM hp
       right_naturality := fun hkk =>
@@ -4371,7 +4571,8 @@ def residueProjection (M : ℕ) : integerModule ⟶ residueModule M :=
 theorem integerMul_comp_residueProjection (M : ℕ) :
     integerMul M ≫ residueProjection M = 0 := by
   apply ModuleCat.hom_ext
-  ext z
+  apply LinearMap.ext
+  intro z
   change (((M : ℤ) * z : ℤ) : ZMod M) = 0
   rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
   exact dvd_mul_right (M : ℤ) z
@@ -4384,13 +4585,12 @@ def resolutionAtZero (M : ℕ) : ShortComplex (ModuleCat ℤ) :=
 theorem resolutionAtZero_exact (M : ℕ) :
     (resolutionAtZero M).Exact := by
   rw [ShortComplex.moduleCat_exact_iff]
+  change ∀ z : ℤ, ((z : ZMod M) = 0) →
+    ∃ q : ℤ, (M : ℤ) * q = z
   intro z hz
-  change (z : ZMod M) = 0 at hz
   obtain ⟨q, hq⟩ :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd z M).mp hz
-  refine ⟨q, ?_⟩
-  change (M : ℤ) * q = z
-  exact hq.symm
+  exact ⟨q, hq.symm⟩
 
 theorem residueProjection_surjective (M : ℕ) :
     Function.Surjective (residueProjection M) := by

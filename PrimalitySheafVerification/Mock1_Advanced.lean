@@ -157,14 +157,18 @@ structure MultiplierCharacter where
   value : ModularMatrix -> Complex
   value_T : Complex := value ModularMatrix.T
   value_S : Complex := value ModularMatrix.S
+  value_T_spec : value_T = value ModularMatrix.T := by rfl
+  value_S_spec : value_S = value ModularMatrix.S := by rfl
 
 namespace MultiplierCharacter
 
 theorem value_T_eq (chi : MultiplierCharacter) :
-    chi.value_T = chi.value ModularMatrix.T := rfl
+    chi.value_T = chi.value ModularMatrix.T :=
+  chi.value_T_spec
 
 theorem value_S_eq (chi : MultiplierCharacter) :
-    chi.value_S = chi.value ModularMatrix.S := rfl
+    chi.value_S = chi.value ModularMatrix.S :=
+  chi.value_S_spec
 
 end MultiplierCharacter
 
@@ -806,11 +810,13 @@ theorem refl (M a : Nat) : NatCongruent M a a := by
 
 theorem symm {M a b : Nat} (h : NatCongruent M a b) :
     NatCongruent M b a := by
-  exact h.symm
+  unfold NatCongruent at h ⊢
+  exact Eq.symm h
 
 theorem trans {M a b c : Nat} (hab : NatCongruent M a b)
     (hbc : NatCongruent M b c) : NatCongruent M a c := by
-  exact hab.trans hbc
+  unfold NatCongruent at hab hbc ⊢
+  exact Eq.trans hab hbc
 
 end NatCongruent
 
@@ -867,9 +873,9 @@ def ArithmeticEqualizer (M N x : Nat) : Prop :=
 theorem arithmeticEqualizer_iff_lcm_dvd (M N x : Nat) :
     ArithmeticEqualizer M N x <-> Dvd.dvd (Nat.lcm M N) x := by
   constructor
-  next h =>
-    exact Nat.lcm_dvd h.1 h.2
-  next h =>
+  · rintro ⟨hM, hN⟩
+    exact Nat.lcm_dvd hM hN
+  · intro h
     exact And.intro (dvd_trans (Nat.dvd_lcm_left M N) h)
       (dvd_trans (Nat.dvd_lcm_right M N) h)
 
@@ -917,11 +923,14 @@ theorem refl (M N a : Nat) : PairCompatible M N a a := by
 
 theorem symm {M N a b : Nat} (h : PairCompatible M N a b) :
     PairCompatible M N b a := by
-  exact h.symm
+  unfold PairCompatible at h ⊢
+  exact Eq.symm h
 
 theorem of_gcd_eq_one {M N a b : Nat} (h : Nat.gcd M N = 1) :
     PairCompatible M N a b := by
-  simp [PairCompatible, h]
+  unfold PairCompatible
+  rw [h]
+  omega
 
 end PairCompatible
 
@@ -1762,7 +1771,7 @@ structure MahlerFiniteCertificate where
   eval : Nat -> Int
   eval_eq :
     forall n, eval n = Finset.univ.sum (fun j : Fin length => coeff j * basis j n)
-  matches :
+  matches_target :
     forall n, IntCongruent (PrimePower p k) (eval n) (target n)
 
 namespace MahlerFiniteCertificate
@@ -1775,7 +1784,7 @@ theorem eval_formula_at (c : MahlerFiniteCertificate) (n : Nat) :
 
 theorem eval_congruent (c : MahlerFiniteCertificate) (n : Nat) :
     IntCongruent (PrimePower c.p c.k) (c.eval n) (c.target n) :=
-  c.matches n
+  c.matches_target n
 
 end MahlerFiniteCertificate
 
@@ -1791,7 +1800,7 @@ structure MahlerBinomialCertificate where
       eval n =
         Finset.univ.sum
           (fun j : Fin length => coeff j * mahlerBinomialBasis (j : Nat) n)
-  matches :
+  matches_target :
     forall n, FiniteCongruenceMod p k (eval n) (target n)
 
 namespace MahlerBinomialCertificate
@@ -1805,7 +1814,7 @@ theorem eval_formula_at (c : MahlerBinomialCertificate) (n : Nat) :
 
 theorem eval_congruent (c : MahlerBinomialCertificate) (n : Nat) :
     FiniteCongruenceMod c.p c.k (c.eval n) (c.target n) :=
-  c.matches n
+  c.matches_target n
 
 end MahlerBinomialCertificate
 
@@ -1841,12 +1850,12 @@ end PAdicOverlapCertificate
 
 /-! ## Regression layer: OLS/interval certificate for entropy constants. -/
 
-def EntropyModel (a : Nat -> Real) (alpha beta : Real) (n : Nat) : Real :=
+noncomputable def EntropyModel (a : Nat -> Real) (alpha beta : Real) (n : Nat) : Real :=
   Real.log |a n| -
     (alpha * Real.sqrt (n : Real) - (1 / 2 : Real) * Real.log (n : Real) + beta)
 
 def EntropyGrowth (a : Nat -> Real) (alpha beta : Real) : Prop :=
-  Tendsto (fun n => EntropyModel a alpha beta n) atTop (nhds (0 : Real))
+  Filter.Tendsto (fun n => EntropyModel a alpha beta n) Filter.atTop (nhds (0 : Real))
 
 def EntropyGrowthEpsilonN (a : Nat -> Real) (alpha beta : Real) : Prop :=
   forall eps : Real, 0 < eps ->
@@ -1895,11 +1904,11 @@ end EntropyAsymptoticCertificate
 
 theorem entropy_intercept {a : Nat -> Real} {alpha beta : Real}
     (h : EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) := by
+      Filter.atTop (nhds beta) := by
   have h2 := h.add_const beta
   simp only [zero_add] at h2
   exact h2.congr (fun n => by
@@ -1909,10 +1918,9 @@ theorem entropy_intercept {a : Nat -> Real} {alpha beta : Real}
 theorem entropy_beta_unique {a : Nat -> Real} {alpha beta beta' : Real}
     (h : EntropyGrowth a alpha beta) (h' : EntropyGrowth a alpha beta') :
     beta = beta' := by
-  have key : Tendsto (fun _ : Nat => beta' - beta) atTop (nhds (0 - 0 : Real)) :=
+  have key : Filter.Tendsto (fun _ : Nat => beta' - beta) Filter.atTop (nhds (0 - 0 : Real)) :=
     (h.sub h').congr (fun n => by
-      simp [EntropyGrowth, EntropyModel]
-      ring)
+      simp [EntropyGrowth, EntropyModel])
   rw [sub_zero] at key
   have hconst : beta' - beta = 0 :=
     tendsto_nhds_unique tendsto_const_nhds key
@@ -2076,7 +2084,7 @@ theorem exactEntropyCoeff_growth (alpha beta : Real) :
   simpa [EntropyGrowth, EntropyModel, exactEntropyCoeff, log_abs_exp]
     using
       (tendsto_const_nhds :
-        Tendsto (fun _ : Nat => (0 : Real)) atTop (nhds (0 : Real)))
+        Filter.Tendsto (fun _ : Nat => (0 : Real)) Filter.atTop (nhds (0 : Real)))
 
 theorem exactEntropyCoeff_growth_epsilonN (alpha beta : Real) :
     EntropyGrowthEpsilonN (exactEntropyCoeff alpha beta) alpha beta := by
@@ -2195,11 +2203,11 @@ theorem qseries_coefficientAt_eq_object {X : Type*}
   exact c.qSeriesCertificate.coefficientAt_eq_object n
 
 theorem entropy_intercept_limit {X : Type*} (c : AbstractCertificate X) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |c.object.coeff n| - c.alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds c.beta) :=
+      Filter.atTop (nhds c.beta) :=
   MockCert.entropy_intercept c.entropyProof
 
 theorem entropy_small_eventually {X : Type*} (c : AbstractCertificate X)
@@ -2678,11 +2686,11 @@ structure ConcreteCertificate (X : Type*) extends AbstractCertificate X where
 namespace ConcreteCertificate
 
 theorem entropy_intercept_limit {X : Type*} (c : ConcreteCertificate X) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |c.object.coeff n| - c.alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds c.beta) :=
+      Filter.atTop (nhds c.beta) :=
   c.toAbstractCertificate.entropy_intercept_limit
 
 theorem qseries_object_link {X : Type*}
@@ -3557,7 +3565,7 @@ def referenceMahler : MahlerFiniteCertificate where
   eval_eq := by
     intro n
     simp
-  matches := by
+  matches_target := by
     intro n
     simp [IntCongruent, PrimePower]
 
@@ -3571,7 +3579,7 @@ def referenceMahlerBinomial : MahlerBinomialCertificate where
   eval_eq := by
     intro n
     simp
-  matches := by
+  matches_target := by
     intro n
     simp [FiniteCongruenceMod, IntCongruent, PrimePower]
 
@@ -3751,12 +3759,12 @@ def referenceConcreteCertificate : ConcreteCertificate Unit where
   paperClaimRegistryName_nonempty := by simp
 
 theorem reference_entropy_intercept :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referenceConcreteCertificate.object.coeff n| -
           referenceConcreteCertificate.alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referenceConcreteCertificate.beta) :=
+      Filter.atTop (nhds referenceConcreteCertificate.beta) :=
   referenceConcreteCertificate.entropy_intercept_limit
 
 structure FormalizationChecklist where
@@ -6668,7 +6676,9 @@ theorem definition_coverage (C : FormalizationChecklist) :
   rademacher_tail := by
     intro n hn
     exact C.rademacher_tail_at hn
-  rademacher_tail_envelope_nonneg := C.rademacher_tail_envelope_nonneg
+  rademacher_tail_envelope_nonneg := by
+    intro n
+    exact mul_nonneg C.rademacherWitness.tail.C_nonneg (Real.exp_pos _).le
   degeneracy_channel := C.degeneracy_agrees
   effective_cardy_formula := effectiveCardyConstant_formula C.entropyWitness.alpha
   effective_cardy_nonneg := C.effective_cardy_nonnegative
@@ -6801,7 +6811,7 @@ theorem tor_obstruction_cyclic {X : Type*}
 
 theorem effective_cardy_formula {X : Type*}
     (B : UnconditionalCertificationBundle X) :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2) :=
   B.definitions.effective_cardy_formula
 
@@ -7153,10 +7163,10 @@ structure CertificationRequirementAudit (X : Type*)
     forall n, B.checklist.degeneracyWitness.value n =
       B.checklist.qSeriesWitness.coeff n
   effective_cardy :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2)
   effective_cardy_nonneg :
-    0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha
+    0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha
   spt_equalizer :
     Dvd.dvd
       (Nat.lcm B.checklist.sptWitness.M
@@ -7360,7 +7370,7 @@ theorem rademacher_tail_envelope_nonneg_at {X : Type*}
 theorem effective_cardy_at {X : Type*}
     {B : UnconditionalCertificationBundle X}
     (H : CertificationRequirementAudit X B) :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2) :=
   H.effective_cardy
 
@@ -7644,10 +7654,10 @@ def Covered {X : Type*}
   | degeneracy_cardy =>
       (forall n, B.checklist.degeneracyWitness.value n =
         B.checklist.qSeriesWitness.coeff n) /\
-      effectiveCardyConstant B.checklist.entropyWitness.alpha =
+      MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
         6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 /
           (Real.pi ^ 2) /\
-      0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha
+      0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha
   | spt_crt =>
       Dvd.dvd
         (Nat.lcm B.checklist.sptWitness.M
@@ -7756,7 +7766,21 @@ theorem all_length :
 
 theorem mem_all (key : RequirementKey) :
     List.Mem key all := by
-  cases key <;> simp [all]
+  cases key with
+  | domain_q_cusp => exact List.Mem.head _
+  | qseries_principal_polar => exact List.Mem.tail _ (List.Mem.head _)
+  | appell_completion_shadow => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | xi_operator => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | slash_transport => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | linear_systems => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | entropy_asymptotic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | rademacher_expansion => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | degeneracy_cardy => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | spt_crt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | tor_surrogate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | padic_mahler => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | rational_ols => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | abstract_concrete_chain => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
 
 theorem covered_of_all_mem {X : Type*}
     {B : UnconditionalCertificationBundle X}
@@ -8129,32 +8153,12 @@ def referenceFiniteSupport :
     rfl
 
 def referenceQSeriesEntropyAsymptotic :
-    EntropyAsymptoticCertificate referenceQSeries.coeff where
-  alpha := 1
-  beta := 0
-  tendsto_form := by
-    simpa [referenceQSeries, referenceObject] using exactEntropyCoeff_growth 1 0
-  epsilonN_form := by
-    simpa [referenceQSeries, referenceObject] using
-      exactEntropyCoeff_growth_epsilonN 1 0
-  littleO_one_form := by
-    exact
-      (entropyGrowthLittleOOne_iff_epsilonN referenceQSeries.coeff 1 0).mpr
-        (by
-          simpa [referenceQSeries, referenceObject] using
-            exactEntropyCoeff_growth_epsilonN 1 0)
+    EntropyAsymptoticCertificate referenceQSeries.coeff := by
+  simpa [referenceQSeries, referenceObjectQSeries] using referenceEntropyAsymptotic
 
 def referenceQSeriesRademacherExpansion :
-    RademacherExpansionCertificate referenceQSeries.coeff where
-  expansion := referenceRademacherExpansionData
-  cutoff := fun _ => 1
-  remainder := fun _ => 0
-  coeff_eq_truncation := by
-    intro n
-    simp [referenceQSeries, referenceRademacherExpansionData,
-      RademacherExpansionData.truncation]
-  tail := referenceExponentialTail
-  tail_eq_remainder := rfl
+    RademacherExpansionCertificate referenceQSeries.coeff := by
+  simpa [referenceQSeries, referenceObjectQSeries] using referenceRademacherExpansion
 
 def referenceLaurentQSeries : LaurentQSeries Complex where
   coeff := fun _ => 0
@@ -8546,332 +8550,332 @@ theorem targets_length_pos (layer : AxiomAuditLayer) :
 theorem coverage_targets_requested_definition_final_ledger :
     List.Mem "MockCert.RequestedDefinitionFinalLedger.all_requested_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
 
 theorem coverage_targets_requested_definition_all_requirements :
     List.Mem "MockCert.RequestedDefinitionFinalLedger.all_requirements_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
 
 theorem coverage_targets_requested_definition_checklist :
     List.Mem "MockCert.RequestedDefinitionFinalLedger.requested_definition_checklist_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
 
 theorem coverage_targets_requested_detail_final_ledger :
     List.Mem "MockCert.RequestedDetailFinalLedger.objective_definitions_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
 
 theorem coverage_targets_requested_detail_muHat :
     List.Mem "MockCert.RequestedDetailFinalLedger.appell_muHat_completion_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
 
 theorem coverage_targets_requested_detail_ols_interval :
     List.Mem "MockCert.RequestedDetailFinalLedger.ols_interval_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
 
 theorem coverage_targets_unconditional_seal :
     List.Mem "MockCert.UnconditionalCertificationSeal.print_axioms_covers_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
 
 theorem coverage_targets_unconditional_abstract_concrete :
     List.Mem "MockCert.UnconditionalCertificationSeal.abstract_concrete_separation_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
 
 theorem coverage_targets_handoff_seal :
     List.Mem "MockCert.CertificationHandoffSeal.local_print_axioms_command_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
 
 theorem coverage_targets_handoff_environment_print :
     List.Mem "MockCert.CertificationHandoffSeal.environment_print_axioms_command_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
 
 theorem coverage_targets_advanced_aggregation :
     List.Mem "MockCert.AdvancedFinalTheoremAggregation.print_axioms_covers_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
 
 theorem coverage_targets_advanced_abstract_concrete :
     List.Mem "MockCert.AdvancedFinalTheoremAggregation.abstract_concrete_separation_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
 
 theorem coverage_targets_advanced_final_theorem :
     List.Mem "MockCert.advanced_final_theorem_aggregation"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
 
 theorem coverage_targets_integrated_requested_definitions :
     List.Mem "MockCert.IntegratedLayer.requestedDefinitions_length_pos"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
 
 theorem coverage_targets_requested_layer_blueprint :
     List.Mem "MockCert.RequestedLayerBlueprint.every_requested_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
 
 theorem coverage_targets_requested_layer_objective_sound :
     List.Mem "MockCert.RequestedLayerBlueprint.objective_sound_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
 
 theorem coverage_targets_lake_project_lock_toolchain :
     List.Mem "MockCert.LakeProjectLockCertificate.toolchain_spec_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
 
 theorem coverage_targets_lake_project_lock_mathlib :
     List.Mem "MockCert.LakeProjectLockCertificate.mathlib_commit_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
 
 theorem coverage_targets_lake_project_lock_lean_command :
     List.Mem "MockCert.LakeProjectLockCertificate.lean_command_text_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
 
 theorem coverage_targets_lake_project_lock_print_axioms :
     List.Mem "MockCert.LakeProjectLockCertificate.print_axioms_command_text_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))
 
 theorem coverage_targets_mock1_entropy_intercept :
     List.Mem "MockCert.Mock1AdvancedCompatibilityCertificate.entropy_intercept_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))
 
 theorem coverage_targets_mock1_entropy_beta_unique :
     List.Mem "MockCert.Mock1AdvancedCompatibilityCertificate.entropy_beta_unique_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))
 
 theorem coverage_targets_mock1_shadow_zero :
     List.Mem "MockCert.Mock1AdvancedCompatibilityCertificate.shadow_zero_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))
 
 theorem coverage_targets_release_aggregation :
     List.Mem "MockCert.UnconditionalCertificationReleaseEnvelope.aggregation_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))
 
 theorem coverage_targets_release_project_lock :
     List.Mem "MockCert.UnconditionalCertificationReleaseEnvelope.project_lock_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))
 
 theorem coverage_targets_release_mock1 :
     List.Mem "MockCert.UnconditionalCertificationReleaseEnvelope.mock1_compatibility_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))
 
 theorem coverage_targets_release_all_requested :
     List.Mem "MockCert.UnconditionalCertificationReleaseEnvelope.all_requested_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))
 
 theorem coverage_targets_release_print_axioms :
     List.Mem "MockCert.UnconditionalCertificationReleaseEnvelope.print_axioms_covers_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_all_requested :
     List.Mem "MockCert.RequirementCompletionLedger.all_requested_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_all_requirements :
     List.Mem "MockCert.RequirementCompletionLedger.all_requirements_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_proof_fields :
     List.Mem "MockCert.RequirementCompletionLedger.proof_fields_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_basic_layer :
     List.Mem "MockCert.RequirementCompletionLedger.basic_layer_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_project_toolchain :
     List.Mem "MockCert.RequirementCompletionLedger.project_toolchain_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_requirement_completion_mock1_sanitized :
     List.Mem "MockCert.RequirementCompletionLedger.mock1_sanitized_comment_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_module_all_length :
     List.Mem "MockCert.PaperInfrastructureModule.all_length"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_registry_claims_file :
     List.Mem "MockCert.PaperModuleRegistry.paperClaims_file_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_protocol_entrypoint :
     List.Mem "MockCert.PaperProtocolCertificate.registered_entrypoint_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_infrastructure_claims_file :
     List.Mem "MockCert.AdvancedPaperInfrastructureLedger.paper_claims_file_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_infrastructure_proof_fields :
     List.Mem "MockCert.AdvancedPaperInfrastructureLedger.proof_fields_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))
 
 theorem coverage_targets_paper_infrastructure_end_to_end :
     List.Mem "MockCert.AdvancedPaperInfrastructureLedger.end_to_end_evidence_eq_at"
       (targets AxiomAuditLayer.coverage) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))
 
 theorem reference_targets_requested_definition_final_ledger :
     List.Mem "MockCert.referenceRequestedDefinitionFinalLedger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
 
 theorem reference_targets_requested_detail_final_ledger :
     List.Mem "MockCert.referenceRequestedDetailFinalLedger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
 
 theorem reference_targets_unconditional_seal :
     List.Mem "MockCert.referenceUnconditionalCertificationSeal"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
 
 theorem reference_targets_handoff_seal :
     List.Mem "MockCert.referenceCertificationHandoffSeal"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
 
 theorem reference_targets_advanced_aggregation :
     List.Mem "MockCert.referenceAdvancedFinalTheoremAggregation"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
 
 theorem reference_targets_requested_definition_final_ledger_theorem :
     List.Mem "MockCert.reference_requested_definition_final_ledger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
 
 theorem reference_targets_requested_detail_final_ledger_theorem :
     List.Mem "MockCert.reference_requested_detail_final_ledger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
 
 theorem reference_targets_unconditional_seal_theorem :
     List.Mem "MockCert.reference_unconditional_certification_seal"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
 
 theorem reference_targets_handoff_seal_theorem :
     List.Mem "MockCert.reference_certification_handoff_seal"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
 
 theorem reference_targets_advanced_aggregation_theorem :
     List.Mem "MockCert.reference_advanced_final_theorem_aggregation"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
 
 theorem reference_targets_advanced_detail_ledger :
     List.Mem "MockCert.reference_advanced_detail_ledger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
 
 theorem reference_targets_advanced_environment_toolchain :
     List.Mem "MockCert.reference_advanced_environment_toolchain"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
 
 theorem reference_targets_requested_layer_blueprint :
     List.Mem "MockCert.referenceRequestedLayerBlueprint"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
 
 theorem reference_targets_requested_layer_blueprint_theorem :
     List.Mem "MockCert.reference_requested_layer_blueprint"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
 
 theorem reference_targets_lake_project_lock :
     List.Mem "MockCert.referenceLakeProjectLockCertificate"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
 
 theorem reference_targets_lake_project_lock_theorem :
     List.Mem "MockCert.reference_lake_project_lock_certificate"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
 
 theorem reference_targets_mock1_compatibility :
     List.Mem "MockCert.referenceMock1AdvancedCompatibilityCertificate"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
 
 theorem reference_targets_mock1_compatibility_theorem :
     List.Mem "MockCert.reference_mock1_advanced_compatibility"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))
 
 theorem reference_targets_release_envelope :
     List.Mem "MockCert.referenceUnconditionalCertificationReleaseEnvelope"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))
 
 theorem reference_targets_release_envelope_theorem :
     List.Mem "MockCert.reference_unconditional_certification_release_envelope"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))
 
 theorem reference_targets_requirement_completion_ledger :
     List.Mem "MockCert.referenceRequirementCompletionLedger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))
 
 theorem reference_targets_requirement_completion_ledger_theorem :
     List.Mem "MockCert.reference_requirement_completion_ledger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))
 
 theorem reference_targets_paper_module_registry :
     List.Mem "MockCert.referencePaperModuleRegistry"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))
 
 theorem reference_targets_paper_protocol :
     List.Mem "MockCert.referencePaperProtocolCertificate"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))
 
 theorem reference_targets_paper_infrastructure_ledger :
     List.Mem "MockCert.referenceAdvancedPaperInfrastructureLedger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))
 
 theorem reference_targets_paper_infrastructure_ledger_theorem :
     List.Mem "MockCert.reference_advanced_paper_infrastructure_ledger"
       (targets AxiomAuditLayer.reference) := by
-  simp [targets]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))
 
 def primaryRequirement : AxiomAuditLayer -> RequirementKey
   | domain => RequirementKey.domain_q_cusp
@@ -8914,7 +8918,7 @@ theorem requiredKeys_length_pos (layer : AxiomAuditLayer) :
 theorem primaryRequirement_mem_requiredKeys
     (layer : AxiomAuditLayer) :
     List.Mem (primaryRequirement layer) (requiredKeys layer) := by
-  cases layer <;> simp [primaryRequirement, requiredKeys]
+  cases layer <;> exact List.Mem.head _
 
 theorem primaryRequirement_covered {X : Type*}
     {B : UnconditionalCertificationBundle X}
@@ -8975,7 +8979,22 @@ theorem all_length :
 
 theorem mem_all (item : ObjectiveItem) :
     List.Mem item all := by
-  cases item <;> simp [all]
+  cases item with
+  | domainModel => exact List.Mem.head _
+  | qSeriesPrincipal => exact List.Mem.tail _ (List.Mem.head _)
+  | appellLerchBlock => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | xiOperator => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | slashAction => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | linearPrincipalSystem => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | entropyAsymptotic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | rademacherData => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | degeneracyChannel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | effectiveCardyConstant => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | sptEqualizer => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | torObstruction => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | padicMahler => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | regressionCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | abstractConcreteSeparation => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
 
 def primaryRequirement : ObjectiveItem -> RequirementKey
   | domainModel => RequirementKey.domain_q_cusp
@@ -9487,14 +9506,14 @@ theorem degeneracy_channel_at {X : Type*}
 theorem effective_cardy_formula_at {X : Type*}
     {B : UnconditionalCertificationBundle X}
     (M : ObjectiveDefinitionMatrix B) :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2) :=
   M.definitions.effective_cardy_formula
 
 theorem effective_cardy_nonneg_at {X : Type*}
     {B : UnconditionalCertificationBundle X}
     (M : ObjectiveDefinitionMatrix B) :
-    0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha :=
+    0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha :=
   M.definitions.effective_cardy_nonneg
 
 theorem spt_modular_ideal_generator_at {X : Type*}
@@ -9955,10 +9974,10 @@ structure RequestedDefinitionChecklist {X : Type*}
       (Finset.range (2 * n + 1)).sum
         (fun j => c ((j : Int) - n) * a n ((j : Int) - n))
   effective_cardy_formula :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2)
   effective_cardy_nonneg :
-    0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha
+    0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha
   spt_modular_ideal_generator :
     (modularIdeal B.checklist.sptIdealWitness.spt.M).generator =
       B.checklist.sptIdealWitness.spt.M
@@ -10534,14 +10553,14 @@ theorem degeneracy_jacobi_slice_model_at {X : Type*}
 theorem effective_cardy_formula_at {X : Type*}
     {B : UnconditionalCertificationBundle X}
     (H : RequestedDefinitionChecklist B) :
-    effectiveCardyConstant B.checklist.entropyWitness.alpha =
+    MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
       6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 / (Real.pi ^ 2) :=
   H.effective_cardy_formula
 
 theorem effective_cardy_nonneg_at {X : Type*}
     {B : UnconditionalCertificationBundle X}
     (H : RequestedDefinitionChecklist B) :
-    0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha :=
+    0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha :=
   H.effective_cardy_nonneg
 
 theorem spt_modular_ideal_generator_at {X : Type*}
@@ -10817,7 +10836,23 @@ theorem all_length :
 
 theorem mem_all (item : RequestedDefinitionItem) :
     List.Mem item all := by
-  cases item <;> simp [all]
+  cases item with
+  | domainQCusps => exact List.Mem.head _
+  | qSeriesPrincipalPolar => exact List.Mem.tail _ (List.Mem.head _)
+  | appellLerchSpecialization => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | completionMuHatShadow => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | xiOperator => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | slashTransportMultiplier => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | principalLinearSystems => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | entropyAsymptotic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | rademacherExpansion => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | degeneracyChannel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | effectiveCardyConstant => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | sptEqualizerCrt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | torObstruction => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | padicMahler => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | regressionCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | abstractConcreteSeparation => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
 
 def primaryObjective : RequestedDefinitionItem -> ObjectiveItem
   | domainQCusps => ObjectiveItem.domainModel
@@ -11014,10 +11049,10 @@ def Covered {X : Type*} {B : UnconditionalCertificationBundle X}
         (Finset.range (2 * n + 1)).sum
           (fun j => c ((j : Int) - n) * a n ((j : Int) - n)))
   | effectiveCardyConstant =>
-      effectiveCardyConstant B.checklist.entropyWitness.alpha =
+      MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha =
         6 * (B.checklist.entropyWitness.alpha / 2) ^ 2 /
           (Real.pi ^ 2) /\
-      0 <= effectiveCardyConstant B.checklist.entropyWitness.alpha
+      0 <= MockCert.effectiveCardyConstant B.checklist.entropyWitness.alpha
   | sptEqualizerCrt =>
       (modularIdeal B.checklist.sptIdealWitness.spt.M).generator =
         B.checklist.sptIdealWitness.spt.M /\
@@ -11360,7 +11395,14 @@ theorem all_length :
 
 theorem mem_all (layer : IntegratedLayer) :
     List.Mem layer all := by
-  cases layer <;> simp [all]
+  cases layer with
+  | basic => exact List.Mem.head _
+  | spt => exact List.Mem.tail _ (List.Mem.head _)
+  | muKernel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | rademacher => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | pAdic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | regression => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | advanced => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
 
 def fileName : IntegratedLayer -> String
   | basic => "Basic.lean"
@@ -11433,37 +11475,22 @@ theorem objectives_length_pos (layer : IntegratedLayer) :
 theorem exists_layer_for_objective (item : ObjectiveItem) :
     exists layer : IntegratedLayer,
       List.Mem item (objectives layer) := by
-  cases item
-  case domainModel =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case qSeriesPrincipal =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case appellLerchBlock =>
-    exact Exists.intro IntegratedLayer.muKernel (by simp [objectives])
-  case xiOperator =>
-    exact Exists.intro IntegratedLayer.muKernel (by simp [objectives])
-  case slashAction =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case linearPrincipalSystem =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case entropyAsymptotic =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case rademacherData =>
-    exact Exists.intro IntegratedLayer.rademacher (by simp [objectives])
-  case degeneracyChannel =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case effectiveCardyConstant =>
-    exact Exists.intro IntegratedLayer.basic (by simp [objectives])
-  case sptEqualizer =>
-    exact Exists.intro IntegratedLayer.spt (by simp [objectives])
-  case torObstruction =>
-    exact Exists.intro IntegratedLayer.spt (by simp [objectives])
-  case padicMahler =>
-    exact Exists.intro IntegratedLayer.pAdic (by simp [objectives])
-  case regressionCertificate =>
-    exact Exists.intro IntegratedLayer.regression (by simp [objectives])
-  case abstractConcreteSeparation =>
-    exact Exists.intro IntegratedLayer.advanced (by simp [objectives])
+  cases item with
+  | domainModel => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.head _)
+  | qSeriesPrincipal => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.head _))
+  | appellLerchBlock => exact Exists.intro IntegratedLayer.muKernel (by exact List.Mem.head _)
+  | xiOperator => exact Exists.intro IntegratedLayer.muKernel (by exact List.Mem.tail _ (List.Mem.head _))
+  | slashAction => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | linearPrincipalSystem => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | entropyAsymptotic => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | rademacherData => exact Exists.intro IntegratedLayer.rademacher (by exact List.Mem.head _)
+  | degeneracyChannel => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | effectiveCardyConstant => exact Exists.intro IntegratedLayer.basic (by exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | sptEqualizer => exact Exists.intro IntegratedLayer.spt (by exact List.Mem.head _)
+  | torObstruction => exact Exists.intro IntegratedLayer.spt (by exact List.Mem.tail _ (List.Mem.head _))
+  | padicMahler => exact Exists.intro IntegratedLayer.pAdic (by exact List.Mem.head _)
+  | regressionCertificate => exact Exists.intro IntegratedLayer.regression (by exact List.Mem.head _)
+  | abstractConcreteSeparation => exact Exists.intro IntegratedLayer.advanced (by exact List.Mem.head _)
 
 theorem objective_covered {X : Type*}
     {B : UnconditionalCertificationBundle X}
@@ -11499,8 +11526,23 @@ theorem primaryObjective_mem_integratedLayer_objectives
     (item : RequestedDefinitionItem) :
     List.Mem (primaryObjective item)
       (IntegratedLayer.objectives (integratedLayer item)) := by
-  cases item <;> simp [integratedLayer, primaryObjective,
-    IntegratedLayer.objectives]
+  cases item with
+  | domainQCusps => exact List.Mem.head _
+  | qSeriesPrincipalPolar => exact List.Mem.tail _ (List.Mem.head _)
+  | appellLerchSpecialization => exact List.Mem.head _
+  | completionMuHatShadow => exact List.Mem.head _
+  | xiOperator => exact List.Mem.tail _ (List.Mem.head _)
+  | slashTransportMultiplier => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | principalLinearSystems => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | entropyAsymptotic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | rademacherExpansion => exact List.Mem.head _
+  | degeneracyChannel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | effectiveCardyConstant => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | sptEqualizerCrt => exact List.Mem.head _
+  | torObstruction => exact List.Mem.tail _ (List.Mem.head _)
+  | padicMahler => exact List.Mem.head _
+  | regressionCertificate => exact List.Mem.head _
+  | abstractConcreteSeparation => exact List.Mem.head _
 
 theorem integratedLayer_fileName_nonempty
     (item : RequestedDefinitionItem) :
@@ -11575,65 +11617,84 @@ def referenceIntegratedFileManifest :
   layerAudits := IntegratedLayer.auditLayers
   layerAudits_eq := rfl
 
-theorem reference_integrated_file_manifest :
+def reference_integrated_file_manifest :
     IntegratedFileManifest :=
   referenceIntegratedFileManifest
 
 namespace IntegratedLayer
 
-def requestedDefinitions : IntegratedLayer -> List RequestedDefinitionItem
-  | basic =>
-      [RequestedDefinitionItem.domainQCusps,
-        RequestedDefinitionItem.qSeriesPrincipalPolar,
-        RequestedDefinitionItem.slashTransportMultiplier,
-        RequestedDefinitionItem.principalLinearSystems,
-        RequestedDefinitionItem.entropyAsymptotic,
-        RequestedDefinitionItem.degeneracyChannel,
-        RequestedDefinitionItem.effectiveCardyConstant]
-  | spt =>
-      [RequestedDefinitionItem.sptEqualizerCrt,
-        RequestedDefinitionItem.torObstruction]
-  | muKernel =>
-      [RequestedDefinitionItem.appellLerchSpecialization,
-        RequestedDefinitionItem.completionMuHatShadow,
-        RequestedDefinitionItem.xiOperator]
-  | rademacher =>
-      [RequestedDefinitionItem.rademacherExpansion]
-  | pAdic =>
-      [RequestedDefinitionItem.padicMahler]
-  | regression =>
-      [RequestedDefinitionItem.regressionCertificate]
-  | advanced =>
-      [RequestedDefinitionItem.abstractConcreteSeparation]
+def requestedDefinitions (layer : IntegratedLayer) :
+    List RequestedDefinitionItem :=
+  RequestedDefinitionItem.all.filter fun item =>
+    RequestedDefinitionItem.integratedLayer item = layer
+
+private theorem requestedDefinitions_length_pos_of_mem
+    {x : RequestedDefinitionItem} {xs : List RequestedDefinitionItem}
+    (h : List.Mem x xs) : 0 < xs.length := by
+  induction xs with
+  | nil => cases h
+  | cons _ _ => exact Nat.succ_pos _
 
 theorem requestedDefinitions_length_pos
     (layer : IntegratedLayer) :
     0 < (requestedDefinitions layer).length := by
-  cases layer <;> simp [requestedDefinitions]
+  cases layer with
+  | basic =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.domainQCusps
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | spt =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.sptEqualizerCrt
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | muKernel =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.appellLerchSpecialization
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | rademacher =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.rademacherExpansion
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | pAdic =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.padicMahler
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | regression =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.regressionCertificate
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
+  | advanced =>
+      have h := RequestedDefinitionItem.mem_all
+        RequestedDefinitionItem.abstractConcreteSeparation
+      exact requestedDefinitions_length_pos_of_mem
+        (List.mem_filter.mpr ⟨h, rfl⟩)
 
 theorem requestedDefinition_layer_sound
     (layer : IntegratedLayer) (item : RequestedDefinitionItem)
     (hmem : List.Mem item (requestedDefinitions layer)) :
-    RequestedDefinitionItem.integratedLayer item = layer := by
-  cases layer <;> cases item <;>
-    simpa [requestedDefinitions, RequestedDefinitionItem.integratedLayer]
-      using hmem
+    RequestedDefinitionItem.integratedLayer item = layer :=
+  of_decide_eq_true (List.mem_filter.mp hmem).2
 
 theorem requestedDefinition_objective_sound
     (layer : IntegratedLayer) (item : RequestedDefinitionItem)
     (hmem : List.Mem item (requestedDefinitions layer)) :
     List.Mem (RequestedDefinitionItem.primaryObjective item)
       (objectives layer) := by
-  cases layer <;> cases item <;>
-    simpa [requestedDefinitions, RequestedDefinitionItem.primaryObjective,
-      objectives] using hmem
+  have hlayer := requestedDefinition_layer_sound layer item hmem
+  rw [← hlayer]
+  exact RequestedDefinitionItem.primaryObjective_mem_integratedLayer_objectives item
 
 theorem requestedDefinition_mem_integratedLayer
     (item : RequestedDefinitionItem) :
     List.Mem item
-      (requestedDefinitions (RequestedDefinitionItem.integratedLayer item)) := by
-  cases item <;>
-    simp [requestedDefinitions, RequestedDefinitionItem.integratedLayer]
+      (requestedDefinitions (RequestedDefinitionItem.integratedLayer item)) :=
+  List.mem_filter.mpr ⟨RequestedDefinitionItem.mem_all item, by simp⟩
 
 theorem every_requestedDefinition_placed
     (item : RequestedDefinitionItem) :
@@ -11715,7 +11776,7 @@ structure RequestedLayerBlueprint where
 
 namespace RequestedLayerBlueprint
 
-theorem manifest_at (B : RequestedLayerBlueprint) :
+noncomputable def manifest_at (B : RequestedLayerBlueprint) :
     IntegratedFileManifest :=
   B.manifest
 
@@ -11854,7 +11915,7 @@ def referenceRequestedLayerBlueprint :
     intro item _hmem
     exact IntegratedLayer.every_requestedDefinition_placed item
 
-theorem reference_requested_layer_blueprint :
+noncomputable def reference_requested_layer_blueprint :
     RequestedLayerBlueprint :=
   referenceRequestedLayerBlueprint
 
@@ -11878,7 +11939,12 @@ theorem all_length :
 
 theorem mem_all (cmd : LocalAuditCommand) :
     List.Mem cmd all := by
-  cases cmd <;> simp [all]
+  cases cmd with
+  | leanFileCheck => exact List.Mem.head _
+  | printAxiomsAudit => exact List.Mem.tail _ (List.Mem.head _)
+  | staticTextScan => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | hashSnapshot =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
 
 def shellText : LocalAuditCommand -> String
   | leanFileCheck => "lake env lean outputs/Mock1_Integrated.lean"
@@ -11939,7 +12005,20 @@ theorem auditLayer_targets_nonempty
 theorem printAxiomsAudit_covers_layer
     (layer : AxiomAuditLayer) :
     List.Mem layer (auditLayers LocalAuditCommand.printAxiomsAudit) := by
-  cases layer <;> simp [auditLayers]
+  cases layer with
+  | domain => exact List.Mem.head _
+  | qseries => exact List.Mem.tail _ (List.Mem.head _)
+  | muKernel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | slash => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | linear => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | entropy => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | rademacher => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | degeneracy => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | sptTor => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | padicMahler => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | regression => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | coverage => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | reference => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
 
 end LocalAuditCommand
 
@@ -12026,7 +12105,7 @@ def referenceLocalAuditManifest :
   manifestTargets := AxiomAuditLayer.targets
   manifestTargets_eq := rfl
 
-theorem reference_local_audit_manifest :
+noncomputable def reference_local_audit_manifest :
     LocalAuditManifest :=
   referenceLocalAuditManifest
 
@@ -12212,7 +12291,7 @@ def referenceEnvironmentPinManifest :
   leanCheckCommand_eq := rfl
   printAxiomsCommand_eq := rfl
 
-theorem reference_environment_pin_manifest :
+noncomputable def reference_environment_pin_manifest :
     EnvironmentPinManifest :=
   referenceEnvironmentPinManifest
 
@@ -12272,19 +12351,19 @@ structure LakeProjectLockCertificate where
 
 namespace LakeProjectLockCertificate
 
-theorem environment_at (L : LakeProjectLockCertificate) :
+noncomputable def environment_at (L : LakeProjectLockCertificate) :
     EnvironmentPinManifest :=
   L.environment
 
-theorem local_audit_at (L : LakeProjectLockCertificate) :
+noncomputable def local_audit_at (L : LakeProjectLockCertificate) :
     LocalAuditManifest :=
   L.localAudit
 
-theorem file_manifest_at (L : LakeProjectLockCertificate) :
+noncomputable def file_manifest_at (L : LakeProjectLockCertificate) :
     IntegratedFileManifest :=
   L.fileManifest
 
-theorem layer_blueprint_at (L : LakeProjectLockCertificate) :
+noncomputable def layer_blueprint_at (L : LakeProjectLockCertificate) :
     RequestedLayerBlueprint :=
   L.layerBlueprint
 
@@ -12408,7 +12487,7 @@ def referenceLakeProjectLockCertificate :
   static_scan_command_text := rfl
   hash_command_text := rfl
 
-theorem reference_lake_project_lock_certificate :
+noncomputable def reference_lake_project_lock_certificate :
     LakeProjectLockCertificate :=
   referenceLakeProjectLockCertificate
 
@@ -12460,7 +12539,7 @@ theorem layer_objectives_nonempty_at {X : Type*}
 end IntegratedLayerAudit
 
 structure RequestedDefinitionLayerMatrix {X : Type*}
-    (B : UnconditionalCertificationBundle X) : Prop where
+    (B : UnconditionalCertificationBundle X) where
   requestedAudit : RequestedDefinitionAuditMatrix B
   integratedAudit : IntegratedLayerAudit B
   itemLayer : RequestedDefinitionItem -> IntegratedLayer
@@ -12683,7 +12762,7 @@ theorem integrated_layer_audit {X : Type*}
   everyObjectivePlaced := IntegratedLayer.exists_layer_for_objective
   layerObjectivesNonempty := IntegratedLayer.objectives_length_pos
 
-theorem requested_definition_layer_matrix {X : Type*}
+noncomputable def requested_definition_layer_matrix {X : Type*}
     (B : UnconditionalCertificationBundle X) :
     RequestedDefinitionLayerMatrix B where
   requestedAudit := B.requested_definition_audit_matrix
@@ -12720,7 +12799,7 @@ theorem reference_integrated_layer_audit :
     IntegratedLayerAudit referenceCertificationBundle :=
   referenceCertificationBundle.integrated_layer_audit
 
-theorem reference_requested_definition_layer_matrix :
+noncomputable def reference_requested_definition_layer_matrix :
     RequestedDefinitionLayerMatrix referenceCertificationBundle :=
   referenceCertificationBundle.requested_definition_layer_matrix
 
@@ -12794,7 +12873,7 @@ theorem integrated_layer_matrix_at (P : UnconditionalityPolicy) :
     IntegratedLayerAudit referenceCertificationBundle :=
   P.integratedLayerMatrix
 
-theorem requested_definition_layer_matrix_at
+noncomputable def requested_definition_layer_matrix_at
     (P : UnconditionalityPolicy) :
     RequestedDefinitionLayerMatrix referenceCertificationBundle :=
   P.requestedDefinitionLayerMatrix
@@ -12874,7 +12953,7 @@ def referenceUnconditionalityPolicy :
     reference_local_audit_manifest.command_text_nonempty
       LocalAuditCommand.staticTextScan
 
-theorem reference_unconditionality_policy :
+noncomputable def reference_unconditionality_policy :
     UnconditionalityPolicy :=
   referenceUnconditionalityPolicy
 
@@ -13022,28 +13101,28 @@ theorem integrated_layer_audit_at (C : AxiomAuditCompleteness) :
     IntegratedLayerAudit C.manifest.bundle :=
   C.integratedLayerAudit
 
-theorem requested_definition_layer_matrix_at
+noncomputable def requested_definition_layer_matrix_at
     (C : AxiomAuditCompleteness) :
     RequestedDefinitionLayerMatrix C.manifest.bundle :=
   C.requestedDefinitionLayerMatrix
 
-theorem file_manifest_at (C : AxiomAuditCompleteness) :
+noncomputable def file_manifest_at (C : AxiomAuditCompleteness) :
     IntegratedFileManifest :=
   C.fileManifest
 
-theorem local_audit_at (C : AxiomAuditCompleteness) :
+noncomputable def local_audit_at (C : AxiomAuditCompleteness) :
     LocalAuditManifest :=
   C.localAudit
 
-theorem environment_pin_at (C : AxiomAuditCompleteness) :
+noncomputable def environment_pin_at (C : AxiomAuditCompleteness) :
     EnvironmentPinManifest :=
   C.environmentPin
 
-theorem project_lock_at (C : AxiomAuditCompleteness) :
+noncomputable def project_lock_at (C : AxiomAuditCompleteness) :
     LakeProjectLockCertificate :=
   C.projectLock
 
-theorem unconditionality_at (C : AxiomAuditCompleteness) :
+noncomputable def unconditionality_at (C : AxiomAuditCompleteness) :
     UnconditionalityPolicy :=
   C.unconditionality
 
@@ -13937,11 +14016,11 @@ def referenceAxiomAuditCompleteness :
   proofFieldMatrix := reference_proof_field_discharge_matrix
   requirementAudit := reference_axiom_audit_matrix.audit
 
-theorem reference_axiom_audit_complete :
+noncomputable def reference_axiom_audit_complete :
     AxiomAuditCompleteness :=
   referenceAxiomAuditCompleteness
 
-theorem reference_axiom_audit_project_lock :
+noncomputable def reference_axiom_audit_project_lock :
     LakeProjectLockCertificate :=
   referenceAxiomAuditCompleteness.project_lock_at
 
@@ -14483,7 +14562,7 @@ theorem reference_axiom_audit_objective_has_layer
       List.Mem item (IntegratedLayer.objectives layer) :=
   referenceAxiomAuditCompleteness.objective_has_layer item
 
-theorem reference_axiom_audit_file_manifest :
+noncomputable def reference_axiom_audit_file_manifest :
     IntegratedFileManifest :=
   referenceAxiomAuditCompleteness.file_manifest_at
 
@@ -14499,7 +14578,7 @@ theorem reference_axiom_audit_file_layer_audits_nonempty
       layer).length :=
   referenceAxiomAuditCompleteness.file_layer_audits_nonempty layer
 
-theorem reference_axiom_audit_local_manifest :
+noncomputable def reference_axiom_audit_local_manifest :
     LocalAuditManifest :=
   referenceAxiomAuditCompleteness.local_audit_at
 
@@ -14544,7 +14623,7 @@ theorem reference_axiom_audit_local_hash_command :
       "Get-FileHash -Algorithm SHA256 outputs/Mock1_Integrated.lean" :=
   referenceAxiomAuditCompleteness.local_hash_snapshot_shellText
 
-theorem reference_axiom_audit_environment_pin :
+noncomputable def reference_axiom_audit_environment_pin :
     EnvironmentPinManifest :=
   referenceAxiomAuditCompleteness.environment_pin_at
 
@@ -14587,7 +14666,7 @@ theorem reference_axiom_audit_environment_lean_command :
       LocalAuditCommand.shellText LocalAuditCommand.leanFileCheck :=
   referenceAxiomAuditCompleteness.environment_lean_check_command
 
-theorem reference_axiom_audit_unconditionality :
+noncomputable def reference_axiom_audit_unconditionality :
     UnconditionalityPolicy :=
   referenceAxiomAuditCompleteness.unconditionality_at
 
@@ -14825,7 +14904,7 @@ theorem requested_definition_audit_at
     RequestedDefinitionAuditMatrix R.completeness.manifest.bundle :=
   R.requestedDefinitionAudit
 
-theorem requested_definition_layer_matrix_at
+noncomputable def requested_definition_layer_matrix_at
     (R : CertificationReadiness) :
     RequestedDefinitionLayerMatrix R.completeness.manifest.bundle :=
   R.requestedDefinitionLayerMatrix
@@ -15398,7 +15477,7 @@ theorem proof_field_checklist_definitions_at
   ProofFieldDischargeMatrix.checklist_definitions_at
     R.proofFieldMatrix
 
-theorem policy_at (R : CertificationReadiness) :
+noncomputable def policy_at (R : CertificationReadiness) :
     UnconditionalityPolicy :=
   R.policy
 
@@ -15440,7 +15519,7 @@ def referenceCertificationReadiness :
   proofFieldMatrix := referenceAxiomAuditCompleteness.proof_field_matrix_at
   policy := referenceAxiomAuditCompleteness.unconditionality_at
 
-theorem reference_certification_readiness :
+noncomputable def reference_certification_readiness :
     CertificationReadiness :=
   referenceCertificationReadiness
 
@@ -15503,7 +15582,7 @@ theorem reference_readiness_requested_definition_audit :
     RequestedDefinitionAuditMatrix referenceAxiomAuditManifest.bundle :=
   referenceCertificationReadiness.requested_definition_audit_at
 
-theorem reference_readiness_requested_definition_layer_matrix :
+noncomputable def reference_readiness_requested_definition_layer_matrix :
     RequestedDefinitionLayerMatrix referenceAxiomAuditManifest.bundle :=
   referenceCertificationReadiness.requested_definition_layer_matrix_at
 
@@ -16087,7 +16166,7 @@ structure EndToEndCertificationEvidence where
 
 namespace EndToEndCertificationEvidence
 
-theorem readiness_at (E : EndToEndCertificationEvidence) :
+noncomputable def readiness_at (E : EndToEndCertificationEvidence) :
     CertificationReadiness :=
   E.readiness
 
@@ -18137,7 +18216,7 @@ def unconditional_certification_seal
 
 structure CertificationHandoffSeal
     (E : EndToEndCertificationEvidence) : Prop where
-  seal :
+  «seal» :
     UnconditionalCertificationSeal E
   detail_ledger :
     RequestedDetailFinalLedger E
@@ -18200,7 +18279,7 @@ namespace CertificationHandoffSeal
 theorem seal_at {E : EndToEndCertificationEvidence}
     (H : CertificationHandoffSeal E) :
     UnconditionalCertificationSeal E :=
-  H.seal
+  H.«seal»
 
 theorem detail_ledger_at {E : EndToEndCertificationEvidence}
     (H : CertificationHandoffSeal E) :
@@ -18325,7 +18404,7 @@ end CertificationHandoffSeal
 def certification_handoff_seal
     (E : EndToEndCertificationEvidence) :
     CertificationHandoffSeal E where
-  seal := unconditional_certification_seal E
+  «seal» := unconditional_certification_seal E
   detail_ledger := requested_detail_final_ledger E
   requested_definition_checklist :=
     EndToEndCertificationEvidence.requested_definition_checklist_at E
@@ -18371,7 +18450,7 @@ structure AdvancedFinalTheoremAggregation
     (E : EndToEndCertificationEvidence) : Prop where
   handoff :
     CertificationHandoffSeal E
-  seal :
+  «seal» :
     UnconditionalCertificationSeal E
   definition_ledger :
     RequestedDefinitionFinalLedger E
@@ -18449,7 +18528,7 @@ theorem handoff_at {E : EndToEndCertificationEvidence}
 theorem seal_at {E : EndToEndCertificationEvidence}
     (A : AdvancedFinalTheoremAggregation E) :
     UnconditionalCertificationSeal E :=
-  A.seal
+  A.«seal»
 
 theorem definition_ledger_at {E : EndToEndCertificationEvidence}
     (A : AdvancedFinalTheoremAggregation E) :
@@ -18582,7 +18661,7 @@ def advanced_final_theorem_aggregation
     (E : EndToEndCertificationEvidence) :
     AdvancedFinalTheoremAggregation E where
   handoff := certification_handoff_seal E
-  seal := unconditional_certification_seal E
+  «seal» := unconditional_certification_seal E
   definition_ledger := requested_definition_final_ledger E
   detail_ledger := requested_detail_final_ledger E
   requested_definition_checklist :=
@@ -19164,7 +19243,7 @@ theorem reference_final_ledger_local_print_axioms
   RequestedDefinitionFinalLedger.local_print_axioms_at
     referenceRequestedDefinitionFinalLedger layer
 
-theorem reference_end_to_end_certification_evidence :
+noncomputable def reference_end_to_end_certification_evidence :
     EndToEndCertificationEvidence :=
   referenceEndToEndCertificationEvidence
 
@@ -19940,11 +20019,11 @@ abbrev EntropyGrowth (a : Nat -> Real) (alpha beta : Real) : Prop :=
 
 theorem entropy_intercept {a : Nat -> Real} {alpha beta : Real}
     (h : EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   MockCert.entropy_intercept h
 
 theorem entropy_beta_unique {a : Nat -> Real} {alpha beta beta' : Real}
@@ -19972,6 +20051,8 @@ namespace MockCert
 
 open Filter Topology
 
+universe uHol uShadow
+
 structure Mock1AdvancedCompatibilityCertificate where
   sourceFile : String
   sourceFile_eq :
@@ -19995,72 +20076,72 @@ structure Mock1AdvancedCompatibilityCertificate where
   entropy_intercept :
     forall {a : Nat -> Real} {alpha beta : Real},
       Mock1Adv.EntropyGrowth a alpha beta ->
-        Tendsto
+        Filter.Tendsto
           (fun n =>
             Real.log |a n| - alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-          atTop (nhds beta)
+          Filter.atTop (nhds beta)
   entropy_beta_unique :
     forall {a : Nat -> Real} {alpha beta beta' : Real},
       Mock1Adv.EntropyGrowth a alpha beta ->
         Mock1Adv.EntropyGrowth a alpha beta' ->
           beta = beta'
   corollary1_holomorphic :
-    forall {X : Type*} (Fminus R : X -> Complex) (S : Complex),
+    forall {X : Type uHol} (Fminus R : X -> Complex) (S : Complex),
       (forall x, Fminus x = (Complex.I / 2) * S * R x) ->
         S = 0 ->
           forall x, Fminus x = 0
   shadow_zero :
-    forall {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex),
+    forall {X : Type uShadow} (xiFhat g : X -> Complex) (S kappa : Complex),
       (forall x, xiFhat x = S * kappa * g x) ->
         S = 0 ->
           forall x, xiFhat x = 0
 
 namespace Mock1AdvancedCompatibilityCertificate
 
-theorem source_file_at (C : Mock1AdvancedCompatibilityCertificate) :
+theorem source_file_at (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow}) :
     C.sourceFile = "MockCert/Mock1_Advanced.lean" :=
   C.sourceFile_eq
 
-theorem namespace_at (C : Mock1AdvancedCompatibilityCertificate) :
+theorem namespace_at (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow}) :
     C.compatibilityNamespace = "Mock1Adv" :=
   C.compatibilityNamespace_eq
 
 theorem root_import_line_at
-    (C : Mock1AdvancedCompatibilityCertificate) :
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow}) :
     C.rootImportLine = "import MockCert.Mock1_Advanced" :=
   C.rootImportLine_eq
 
 theorem audit_import_line_at
-    (C : Mock1AdvancedCompatibilityCertificate) :
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow}) :
     C.auditImportLine = "import MockCert.Mock1_Advanced" :=
   C.auditImportLine_eq
 
 theorem sanitized_comment_nonempty_at
-    (C : Mock1AdvancedCompatibilityCertificate) :
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow}) :
     Not (C.sanitizedComment = "") :=
   C.sanitizedComment_nonempty
 
 theorem entropyGrowth_bridge_at
-    (C : Mock1AdvancedCompatibilityCertificate)
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow})
     (a : Nat -> Real) (alpha beta : Real) :
     Mock1Adv.EntropyGrowth a alpha beta =
       EntropyGrowth a alpha beta :=
   C.entropyGrowth_bridge a alpha beta
 
 theorem entropy_intercept_at
-    (C : Mock1AdvancedCompatibilityCertificate)
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow})
     {a : Nat -> Real} {alpha beta : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   C.entropy_intercept h
 
 theorem entropy_beta_unique_at
-    (C : Mock1AdvancedCompatibilityCertificate)
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow})
     {a : Nat -> Real} {alpha beta beta' : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta)
     (h' : Mock1Adv.EntropyGrowth a alpha beta') :
@@ -20068,25 +20149,25 @@ theorem entropy_beta_unique_at
   C.entropy_beta_unique h h'
 
 theorem corollary1_holomorphic_at
-    (C : Mock1AdvancedCompatibilityCertificate)
-    {X : Type*} (Fminus R : X -> Complex) (S : Complex)
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow})
+    {X : Type uHol} (Fminus R : X -> Complex) (S : Complex)
     (hsplit : forall x, Fminus x = (Complex.I / 2) * S * R x)
     (hS : S = 0) :
     forall x, Fminus x = 0 :=
-  C.corollary1_holomorphic Fminus R S hsplit hS
+  Mock1Adv.corollary1_holomorphic Fminus R S hsplit hS
 
 theorem shadow_zero_at
-    (C : Mock1AdvancedCompatibilityCertificate)
-    {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex)
+    (C : Mock1AdvancedCompatibilityCertificate.{uHol, uShadow})
+    {X : Type uShadow} (xiFhat g : X -> Complex) (S kappa : Complex)
     (hshadow : forall x, xiFhat x = S * kappa * g x)
     (hS : S = 0) :
     forall x, xiFhat x = 0 :=
-  C.shadow_zero xiFhat g S kappa hshadow hS
+  Mock1Adv.shadow_zero_of_S_zero xiFhat g S kappa hshadow hS
 
 end Mock1AdvancedCompatibilityCertificate
 
 def referenceMock1AdvancedCompatibilityCertificate :
-    Mock1AdvancedCompatibilityCertificate where
+    Mock1AdvancedCompatibilityCertificate.{0, 0} where
   sourceFile := "MockCert/Mock1_Advanced.lean"
   sourceFile_eq := rfl
   compatibilityNamespace := "Mock1Adv"
@@ -20114,8 +20195,8 @@ def referenceMock1AdvancedCompatibilityCertificate :
     intro _X xiFhat g S kappa hshadow hS
     exact Mock1Adv.shadow_zero_of_S_zero xiFhat g S kappa hshadow hS
 
-theorem reference_mock1_advanced_compatibility :
-    Mock1AdvancedCompatibilityCertificate :=
+noncomputable def reference_mock1_advanced_compatibility :
+    Mock1AdvancedCompatibilityCertificate.{0, 0} :=
   referenceMock1AdvancedCompatibilityCertificate
 
 theorem reference_mock1_advanced_source :
@@ -20131,11 +20212,11 @@ theorem reference_mock1_advanced_namespace :
 theorem reference_mock1_advanced_entropy_intercept
     {a : Nat -> Real} {alpha beta : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   referenceMock1AdvancedCompatibilityCertificate.entropy_intercept_at h
 
 theorem reference_mock1_advanced_entropy_beta_unique
@@ -20150,23 +20231,23 @@ theorem reference_mock1_advanced_corollary1_holomorphic
     (hsplit : forall x, Fminus x = (Complex.I / 2) * S * R x)
     (hS : S = 0) :
     forall x, Fminus x = 0 :=
-  referenceMock1AdvancedCompatibilityCertificate.corollary1_holomorphic_at
-    Fminus R S hsplit hS
+  Mock1Adv.corollary1_holomorphic Fminus R S hsplit hS
 
 theorem reference_mock1_advanced_shadow_zero
     {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex)
     (hshadow : forall x, xiFhat x = S * kappa * g x)
     (hS : S = 0) :
     forall x, xiFhat x = 0 :=
-  referenceMock1AdvancedCompatibilityCertificate.shadow_zero_at
-    xiFhat g S kappa hshadow hS
+  Mock1Adv.shadow_zero_of_S_zero xiFhat g S kappa hshadow hS
+
+universe uRelease
 
 structure UnconditionalCertificationReleaseEnvelope where
   evidence : EndToEndCertificationEvidence
   aggregation : AdvancedFinalTheoremAggregation evidence
   projectLock : LakeProjectLockCertificate
   layerBlueprint : RequestedLayerBlueprint
-  mock1Compatibility : Mock1AdvancedCompatibilityCertificate
+  mock1Compatibility : Mock1AdvancedCompatibilityCertificate.{0, 0}
   finalLedger : RequestedDefinitionFinalLedger evidence
   detailLedger : RequestedDetailFinalLedger evidence
   allRequested :
@@ -20208,56 +20289,56 @@ structure UnconditionalCertificationReleaseEnvelope where
   mock1EntropyIntercept :
     forall {a : Nat -> Real} {alpha beta : Real},
       Mock1Adv.EntropyGrowth a alpha beta ->
-        Tendsto
+        Filter.Tendsto
           (fun n =>
             Real.log |a n| - alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-          atTop (nhds beta)
+          Filter.atTop (nhds beta)
   mock1ShadowZero :
-    forall {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex),
+    forall {X : Type uRelease} (xiFhat g : X -> Complex) (S kappa : Complex),
       (forall x, xiFhat x = S * kappa * g x) ->
         S = 0 ->
           forall x, xiFhat x = 0
 
 namespace UnconditionalCertificationReleaseEnvelope
 
-theorem evidence_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def evidence_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     EndToEndCertificationEvidence :=
   R.evidence
 
-theorem aggregation_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def aggregation_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     AdvancedFinalTheoremAggregation R.evidence :=
   R.aggregation
 
-theorem project_lock_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def project_lock_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     LakeProjectLockCertificate :=
   R.projectLock
 
-theorem layer_blueprint_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def layer_blueprint_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     RequestedLayerBlueprint :=
   R.layerBlueprint
 
-theorem mock1_compatibility_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
-    Mock1AdvancedCompatibilityCertificate :=
+noncomputable def mock1_compatibility_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
+    Mock1AdvancedCompatibilityCertificate.{0, 0} :=
   R.mock1Compatibility
 
-theorem final_ledger_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def final_ledger_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     RequestedDefinitionFinalLedger R.evidence :=
   R.finalLedger
 
-theorem detail_ledger_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+noncomputable def detail_ledger_at
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     RequestedDetailFinalLedger R.evidence :=
   R.detailLedger
 
 theorem all_requested_at
-    (R : UnconditionalCertificationReleaseEnvelope)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
     (item : RequestedDefinitionItem)
     (hmem : List.Mem item RequestedDefinitionItem.all) :
     RequestedDefinitionItem.Covered
@@ -20265,7 +20346,7 @@ theorem all_requested_at
   R.allRequested item hmem
 
 theorem all_requirements_at
-    (R : UnconditionalCertificationReleaseEnvelope)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
     (key : RequirementKey)
     (hmem : List.Mem key RequirementKey.all) :
     RequirementKey.Covered
@@ -20273,7 +20354,7 @@ theorem all_requirements_at
   R.allRequirements key hmem
 
 theorem layer_every_requested_at
-    (R : UnconditionalCertificationReleaseEnvelope)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
     (item : RequestedDefinitionItem)
     (hmem : List.Mem item RequestedDefinitionItem.all) :
     exists layer : IntegratedLayer,
@@ -20281,7 +20362,7 @@ theorem layer_every_requested_at
   R.layerEveryRequested item hmem
 
 theorem print_axioms_covers_at
-    (R : UnconditionalCertificationReleaseEnvelope)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
     (layer : AxiomAuditLayer) :
     List.Mem layer
       (R.evidence.readiness.completeness.localAudit.commandLayers
@@ -20289,53 +20370,53 @@ theorem print_axioms_covers_at
   R.printAxiomsCovers layer
 
 theorem project_toolchain_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.projectLock.environment.leanToolchainSpec =
       "leanprover/lean4:v4.31.0" :=
   R.projectToolchain
 
 theorem project_mathlib_commit_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.projectLock.environment.mathlibCommit =
       "fabf563a7c95a166b8d7b6efca11c8b4dc9d911f" :=
   R.projectMathlibCommit
 
 theorem project_lean_command_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.projectLock.environment.leanCheckCommand =
       "lake env lean outputs/Mock1_Integrated.lean" :=
   R.projectLeanCommand
 
 theorem project_print_axioms_command_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.projectLock.environment.printAxiomsCommand =
       "lake env lean MockCert/Audit.lean" :=
   R.projectPrintAxiomsCommand
 
 theorem mock1_source_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.mock1Compatibility.sourceFile = "MockCert/Mock1_Advanced.lean" :=
   R.mock1Source
 
 theorem mock1_namespace_at
-    (R : UnconditionalCertificationReleaseEnvelope) :
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease}) :
     R.mock1Compatibility.compatibilityNamespace = "Mock1Adv" :=
   R.mock1Namespace
 
 theorem mock1_entropy_intercept_at
-    (R : UnconditionalCertificationReleaseEnvelope)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
     {a : Nat -> Real} {alpha beta : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   R.mock1EntropyIntercept h
 
 theorem mock1_shadow_zero_at
-    (R : UnconditionalCertificationReleaseEnvelope)
-    {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex)
+    (R : UnconditionalCertificationReleaseEnvelope.{uRelease})
+    {X : Type uRelease} (xiFhat g : X -> Complex) (S kappa : Complex)
     (hshadow : forall x, xiFhat x = S * kappa * g x)
     (hS : S = 0) :
     forall x, xiFhat x = 0 :=
@@ -20343,8 +20424,8 @@ theorem mock1_shadow_zero_at
 
 end UnconditionalCertificationReleaseEnvelope
 
-def referenceUnconditionalCertificationReleaseEnvelope :
-    UnconditionalCertificationReleaseEnvelope where
+noncomputable def referenceUnconditionalCertificationReleaseEnvelope :
+    UnconditionalCertificationReleaseEnvelope.{0} where
   evidence := referenceEndToEndCertificationEvidence
   aggregation := referenceAdvancedFinalTheoremAggregation
   projectLock := referenceLakeProjectLockCertificate
@@ -20387,25 +20468,25 @@ def referenceUnconditionalCertificationReleaseEnvelope :
     exact referenceMock1AdvancedCompatibilityCertificate.shadow_zero_at
       xiFhat g S kappa hshadow hS
 
-theorem reference_unconditional_certification_release_envelope :
-    UnconditionalCertificationReleaseEnvelope :=
+noncomputable def reference_unconditional_certification_release_envelope :
+    UnconditionalCertificationReleaseEnvelope.{0} :=
   referenceUnconditionalCertificationReleaseEnvelope
 
-theorem reference_release_aggregation :
+noncomputable def reference_release_aggregation :
     AdvancedFinalTheoremAggregation
       referenceUnconditionalCertificationReleaseEnvelope.evidence :=
   referenceUnconditionalCertificationReleaseEnvelope.aggregation_at
 
-theorem reference_release_project_lock :
+noncomputable def reference_release_project_lock :
     LakeProjectLockCertificate :=
   referenceUnconditionalCertificationReleaseEnvelope.project_lock_at
 
-theorem reference_release_layer_blueprint :
+noncomputable def reference_release_layer_blueprint :
     RequestedLayerBlueprint :=
   referenceUnconditionalCertificationReleaseEnvelope.layer_blueprint_at
 
-theorem reference_release_mock1_compatibility :
-    Mock1AdvancedCompatibilityCertificate :=
+noncomputable def reference_release_mock1_compatibility :
+    Mock1AdvancedCompatibilityCertificate.{0, 0} :=
   referenceUnconditionalCertificationReleaseEnvelope.mock1_compatibility_at
 
 theorem reference_release_all_requested
@@ -20433,16 +20514,16 @@ theorem reference_release_project_toolchain :
 theorem reference_release_mock1_entropy_intercept
     {a : Nat -> Real} {alpha beta : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   referenceUnconditionalCertificationReleaseEnvelope.mock1_entropy_intercept_at
     h
 
 structure RequirementCompletionLedger where
-  release : UnconditionalCertificationReleaseEnvelope
+  release : UnconditionalCertificationReleaseEnvelope.{0}
   proofPayload :
     CertificateProofPayload
       release.evidence.readiness.completeness.manifest.bundle.abstract
@@ -20681,21 +20762,21 @@ structure RequirementCompletionLedger where
   mock1EntropyIntercept :
     forall {a : Nat -> Real} {alpha beta : Real},
       Mock1Adv.EntropyGrowth a alpha beta ->
-        Tendsto
+        Filter.Tendsto
           (fun n =>
             Real.log |a n| - alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-          atTop (nhds beta)
+          Filter.atTop (nhds beta)
   mock1ShadowZero :
-    forall {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex),
+    forall {X : Type} (xiFhat g : X -> Complex) (S kappa : Complex),
       (forall x, xiFhat x = S * kappa * g x) ->
         S = 0 ->
           forall x, xiFhat x = 0
 
 namespace RequirementCompletionLedger
 
-theorem release_at (L : RequirementCompletionLedger) :
-    UnconditionalCertificationReleaseEnvelope :=
+noncomputable def release_at (L : RequirementCompletionLedger) :
+    UnconditionalCertificationReleaseEnvelope.{0} :=
   L.release
 
 theorem proof_payload_at (L : RequirementCompletionLedger) :
@@ -21074,24 +21155,24 @@ theorem mock1_entropy_intercept_at
     (L : RequirementCompletionLedger)
     {a : Nat -> Real} {alpha beta : Real}
     (h : Mock1Adv.EntropyGrowth a alpha beta) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |a n| - alpha * Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds beta) :=
+      Filter.atTop (nhds beta) :=
   L.mock1EntropyIntercept h
 
 theorem mock1_shadow_zero_at
     (L : RequirementCompletionLedger)
-    {X : Type*} (xiFhat g : X -> Complex) (S kappa : Complex)
+    {X : Type} (xiFhat g : X -> Complex) (S kappa : Complex)
     (hshadow : forall x, xiFhat x = S * kappa * g x)
     (hS : S = 0) :
     forall x, xiFhat x = 0 :=
-  L.mock1ShadowZero xiFhat g S kappa hshadow hS
+  L.mock1ShadowZero (X := X) xiFhat g S kappa hshadow hS
 
 end RequirementCompletionLedger
 
-def referenceRequirementCompletionLedger :
+noncomputable def referenceRequirementCompletionLedger :
     RequirementCompletionLedger where
   release := referenceUnconditionalCertificationReleaseEnvelope
   proofPayload :=
@@ -21313,7 +21394,7 @@ def referenceRequirementCompletionLedger :
     exact referenceUnconditionalCertificationReleaseEnvelope.mock1_shadow_zero_at
       xiFhat g S kappa hshadow hS
 
-theorem reference_requirement_completion_ledger :
+noncomputable def reference_requirement_completion_ledger :
     RequirementCompletionLedger :=
   referenceRequirementCompletionLedger
 
@@ -21419,7 +21500,30 @@ theorem all_length :
 
 theorem mem_all (m : PaperInfrastructureModule) :
     List.Mem m all := by
-  cases m <;> simp [all]
+  cases m with
+  | paperClaims => exact List.Mem.head _
+  | paperSymbols => exact List.Mem.tail _ (List.Mem.head _)
+  | paperData => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | paperTables => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | protocol => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | principalPart => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | principalPartExponent => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | cuspTransport => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | spt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | sptCRT => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | muKernel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | muKernelPaper => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | rademacher => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | rademacherTail => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | kernelCusp => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | betaArchimedean => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
+  | exactCoefficient => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
+  | pAdic => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
+  | pAdicMahler => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
+  | regression => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
+  | entropyCardy => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
+  | advanced => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
+  | paperInstances => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
 
 def fileName : PaperInfrastructureModule -> String
   | paperClaims => "PaperClaims.lean"
@@ -21598,7 +21702,7 @@ def referencePaperModuleRegistry :
   imports_eq := rfl
   registered := PaperInfrastructureModule.mem_all
 
-theorem reference_paper_module_registry :
+def reference_paper_module_registry :
     PaperModuleRegistry :=
   referencePaperModuleRegistry
 
@@ -21696,7 +21800,7 @@ def referencePaperDataConsistencySchema :
   coefficientTableRows_pos := by simp
   claimCount_pos := by simp
 
-theorem reference_paper_data_consistency_schema :
+def reference_paper_data_consistency_schema :
     PaperDataConsistencySchema :=
   referencePaperDataConsistencySchema
 
@@ -21724,11 +21828,11 @@ structure PaperProtocolCertificate where
 
 namespace PaperProtocolCertificate
 
-theorem module_registry_at (P : PaperProtocolCertificate) :
+def module_registry_at (P : PaperProtocolCertificate) :
     PaperModuleRegistry :=
   P.moduleRegistry
 
-theorem data_schema_at (P : PaperProtocolCertificate) :
+def data_schema_at (P : PaperProtocolCertificate) :
     PaperDataConsistencySchema :=
   P.dataSchema
 
@@ -21781,7 +21885,7 @@ def referencePaperProtocolCertificate :
   data_claim_registry_nonempty :=
     referencePaperDataConsistencySchema.claim_registry_nonempty_at
 
-theorem reference_paper_protocol_certificate :
+def reference_paper_protocol_certificate :
     PaperProtocolCertificate :=
   referencePaperProtocolCertificate
 
@@ -21857,21 +21961,21 @@ structure AdvancedPaperInfrastructureLedger where
 
 namespace AdvancedPaperInfrastructureLedger
 
-theorem completion_at (L : AdvancedPaperInfrastructureLedger) :
+def completion_at (L : AdvancedPaperInfrastructureLedger) :
     RequirementCompletionLedger :=
   L.completion
 
-theorem module_registry_at
+def module_registry_at
     (L : AdvancedPaperInfrastructureLedger) :
     PaperModuleRegistry :=
   L.moduleRegistry
 
-theorem data_schema_at
+def data_schema_at
     (L : AdvancedPaperInfrastructureLedger) :
     PaperDataConsistencySchema :=
   L.dataSchema
 
-theorem protocol_at (L : AdvancedPaperInfrastructureLedger) :
+def protocol_at (L : AdvancedPaperInfrastructureLedger) :
     PaperProtocolCertificate :=
   L.protocol
 
@@ -21975,7 +22079,7 @@ theorem proof_fields_at
       L.completion.release.evidence.readiness.completeness.manifest.bundle :=
   L.proofFields
 
-theorem end_to_end_evidence_at
+noncomputable def end_to_end_evidence_at
     (L : AdvancedPaperInfrastructureLedger) :
     EndToEndCertificationEvidence :=
   L.endToEndEvidence
@@ -21987,7 +22091,7 @@ theorem end_to_end_evidence_eq_at
 
 end AdvancedPaperInfrastructureLedger
 
-def referenceAdvancedPaperInfrastructureLedger :
+noncomputable def referenceAdvancedPaperInfrastructureLedger :
     AdvancedPaperInfrastructureLedger where
   completion := referenceRequirementCompletionLedger
   moduleRegistry := referencePaperModuleRegistry
@@ -22044,15 +22148,15 @@ def referenceAdvancedPaperInfrastructureLedger :
   endToEndEvidence_eq :=
     rfl
 
-theorem reference_advanced_paper_infrastructure_ledger :
+noncomputable def reference_advanced_paper_infrastructure_ledger :
     AdvancedPaperInfrastructureLedger :=
   referenceAdvancedPaperInfrastructureLedger
 
-theorem reference_paper_infrastructure_protocol :
+noncomputable def reference_paper_infrastructure_protocol :
     PaperProtocolCertificate :=
   referenceAdvancedPaperInfrastructureLedger.protocol_at
 
-theorem reference_paper_infrastructure_data_schema :
+noncomputable def reference_paper_infrastructure_data_schema :
     PaperDataConsistencySchema :=
   referenceAdvancedPaperInfrastructureLedger.data_schema_at
 
@@ -22248,12 +22352,12 @@ theorem table_length_pos_at (S : PaperObjectSchema) :
 
 end PaperObjectSchema
 
-def referencePrincipalPartData : PrincipalPartData where
+noncomputable def referencePrincipalPartData : PrincipalPartData where
   order := referenceConcreteCertificate.principalPart.order
   rowCount := referenceConcreteCertificate.principalPart.order
   rowCount_eq_order := rfl
 
-def referencePaperObjectSchema : PaperObjectSchema where
+noncomputable def referencePaperObjectSchema : PaperObjectSchema where
   objectName := referenceConcreteCertificate.paperObjectName
   familyName := referenceConcreteCertificate.paperFamilyName
   channel := CoefficientChannel.scalar
@@ -22321,7 +22425,7 @@ def zeroRationalInterval : RationalInterval where
   upper := 0
   lower_le_upper := le_rfl
 
-def referenceDiagnosticTable : DiagnosticTable where
+noncomputable def referenceDiagnosticTable : DiagnosticTable where
   rows := referenceConcreteCertificate.paperCoefficientTableLength
   alphaInterval := unitRationalInterval
   betaInterval := zeroRationalInterval
@@ -22387,7 +22491,7 @@ def referenceEntrypoints : RegisteredEntrypoints where
   audit_eq := rfl
   instances_eq := rfl
 
-def referenceVerificationProtocol : VerificationProtocol where
+noncomputable def referenceVerificationProtocol : VerificationProtocol where
   schema := referencePaperObjectSchema
   table := referenceDiagnosticTable
   entrypoints := referenceEntrypoints
@@ -22446,7 +22550,7 @@ def referenceZPreservingBlock : ZPreservingBlock where
   transportedWeight := 0
   preserves_z := rfl
 
-def referencePrincipalPartSolve :
+noncomputable def referencePrincipalPartSolve :
     PrincipalPartSolveCertificate where
   data := referencePrincipalPartData
   block := referenceZPreservingBlock
@@ -22555,7 +22659,7 @@ def zeroCuspLabel : CuspLabel where
   name := "zero"
   name_nonempty := by simp
 
-def referenceTransportedPrincipalPart :
+noncomputable def referenceTransportedPrincipalPart :
     TransportedPrincipalPart where
   source := infinityCuspLabel
   target := zeroCuspLabel
@@ -22848,12 +22952,12 @@ namespace EntropyCardyCertificate
 
 theorem entropy_intercept_at
     (C : EntropyCardyCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |C.concrete.object.coeff n| -
           C.concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds C.concrete.beta) :=
+      Filter.atTop (nhds C.concrete.beta) :=
   C.concrete.entropy_intercept_limit
 
 theorem cardy_nonnegative_at
@@ -22913,12 +23017,12 @@ theorem table_length_positive_at
 
 theorem entropy_intercept_at
     (I : NamedConcreteInstance) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |I.certificate.object.coeff n| -
           I.certificate.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds I.certificate.beta) :=
+      Filter.atTop (nhds I.certificate.beta) :=
   I.certificate.entropy_intercept_limit
 
 theorem spt_equalizer_lcm_dvd_at
@@ -22945,13 +23049,13 @@ noncomputable def referenceNamedConcreteInstance :
     referenceConcreteCertificate.paper_coefficient_table_length_pos
 
 theorem reference_named_instance_entropy :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referenceNamedConcreteInstance.certificate.object.coeff n| -
           referenceNamedConcreteInstance.certificate.alpha *
             Real.sqrt (n : Real) +
           (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referenceNamedConcreteInstance.certificate.beta) :=
+      Filter.atTop (nhds referenceNamedConcreteInstance.certificate.beta) :=
   referenceNamedConcreteInstance.entropy_intercept_at
 
 theorem reference_named_instance_table_length_positive :
@@ -23137,7 +23241,7 @@ inductive PaperLabelKind where
 deriving DecidableEq, Repr
 
 structure NumberedPaperLabel where
-  section : PaperSection
+  paperSection : PaperSection
   theoremNumber : Option PaperTheoremNumber
   tableNumber : Option PaperTableNumber
   equationNumber : Option PaperEquationNumber
@@ -23186,13 +23290,13 @@ def toPaperClaim : AdvancedClaim -> PaperClaim
 
 def toNumberedLabel : AdvancedClaim -> NumberedPaperLabel
   | entropyGrowth =>
-      { section := PaperSection.section1_3
+      { paperSection := PaperSection.section1_3
         theoremNumber := some PaperTheoremNumber.theorem1_1
         tableNumber := none
         equationNumber := some PaperEquationNumber.eq3_1
         kind := PaperLabelKind.theorem }
   | sptEqualizer =>
-      { section := PaperSection.section3_1
+      { paperSection := PaperSection.section3_1
         theoremNumber := some PaperTheoremNumber.theorem3_2
         tableNumber := none
         equationNumber := some PaperEquationNumber.eq3_2
@@ -23235,13 +23339,13 @@ theorem mem_all (d : DiagnosticOnlyItem) :
 
 def toNumberedLabel : DiagnosticOnlyItem -> NumberedPaperLabel
   | entropyDiagnosticTable =>
-      { section := PaperSection.diagnostics
+      { paperSection := PaperSection.diagnostics
         theoremNumber := none
         tableNumber := some PaperTableNumber.table1
         equationNumber := none
         kind := PaperLabelKind.diagnosticOnly }
   | coefficientDataTable =>
-      { section := PaperSection.diagnostics
+      { paperSection := PaperSection.diagnostics
         theoremNumber := none
         tableNumber := some PaperTableNumber.table2
         equationNumber := none
@@ -24321,11 +24425,30 @@ def all : List PaperTablesFRequirement :=
 
 theorem all_length :
     all.length = 8 := by
-  decide
+  rfl
 
 theorem mem_all (r : PaperTablesFRequirement) :
     List.Mem r all := by
-  cases r <;> simp [all]
+  cases r with
+  | parameterTableSchema => exact List.Mem.head _
+  | residualTableSchema => exact List.Mem.tail _ (List.Mem.head _)
+  | rationalPassFailIntervals =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | rowModeAnnotations =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | finiteTableRecheckBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))
+  | externalScriptListCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | paperRowsConvertedIntoCert =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | rationalOnlyNumerics =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
 
 end PaperTablesFRequirement
 
@@ -24721,44 +24844,33 @@ theorem reference_paper_tables_f_checklist :
         referencePaperTablesFCompletionCertificate.residualRows /\
       referencePaperTablesFCompletionCertificate.paperTables.externalScript.rows =
         referencePaperTablesFCompletionCertificate.residualRows :=
-  And.intro
-    (fun r => referencePaperTablesFCompletionCertificate.covers_at r)
-    (And.intro
-      referencePaperTablesFCompletionCertificate.parameter_schema_length_at
-      (And.intro
-        referencePaperTablesFCompletionCertificate.residual_schema_length_at
-        (And.intro
-          referencePaperTablesFCompletionCertificate.external_rows_length_at
-          (And.intro
-            referencePaperTablesFCompletionCertificate.threshold_bounds_at
-            (And.intro
-              (fun row hrow =>
-                And.intro
-                  (referencePaperTablesFCompletionCertificate.parameter_row_mode_at row hrow)
-                  (And.intro
-                    (referencePaperTablesFCompletionCertificate.parameter_row_kind_at row hrow)
-                    (referencePaperTablesFCompletionCertificate.parameter_row_alpha_mem_at row hrow)))
-              (And.intro
-                (fun row hrow =>
-                  And.intro
-                    (referencePaperTablesFCompletionCertificate.residual_row_mode_at row hrow)
-                    (And.intro
-                      (referencePaperTablesFCompletionCertificate.residual_row_kind_at row hrow)
-                      (And.intro
-                        (referencePaperTablesFCompletionCertificate.residual_rt_value_mem_at row hrow)
-                        (And.intro
-                          (referencePaperTablesFCompletionCertificate.residual_rs_value_mem_at row hrow)
-                          (And.intro
-                            (referencePaperTablesFCompletionCertificate.residual_rt_threshold_at row hrow)
-                            (referencePaperTablesFCompletionCertificate.residual_rs_threshold_at row hrow)))))
-                (And.intro
-                  (fun row hrow =>
-                    referencePaperTablesFCompletionCertificate.external_row_rechecked_at row hrow)
-                  (And.intro
-                    referencePaperTablesFCompletionCertificate.parameter_rows_into_cert_at
-                    (And.intro
-                      referencePaperTablesFCompletionCertificate.residual_rows_into_cert_at
-                      referencePaperTablesFCompletionCertificate.external_rows_into_cert_at))))))))))
+by
+  refine ⟨
+    (fun r => referencePaperTablesFCompletionCertificate.covers_at r),
+    referencePaperTablesFCompletionCertificate.parameter_schema_length_at,
+    referencePaperTablesFCompletionCertificate.residual_schema_length_at,
+    referencePaperTablesFCompletionCertificate.external_rows_length_at,
+    referencePaperTablesFCompletionCertificate.threshold_bounds_at,
+    ?_, ?_, ?_,
+    referencePaperTablesFCompletionCertificate.parameter_rows_into_cert_at,
+    referencePaperTablesFCompletionCertificate.residual_rows_into_cert_at,
+    referencePaperTablesFCompletionCertificate.external_rows_into_cert_at⟩
+  · intro row hrow
+    exact ⟨
+      referencePaperTablesFCompletionCertificate.parameter_row_mode_at row hrow,
+      referencePaperTablesFCompletionCertificate.parameter_row_kind_at row hrow,
+      referencePaperTablesFCompletionCertificate.parameter_row_alpha_mem_at row hrow⟩
+  · intro row hrow
+    exact ⟨
+      referencePaperTablesFCompletionCertificate.residual_row_mode_at row hrow,
+      referencePaperTablesFCompletionCertificate.residual_row_kind_at row hrow,
+      referencePaperTablesFCompletionCertificate.residual_rt_value_mem_at row hrow,
+      referencePaperTablesFCompletionCertificate.residual_rs_value_mem_at row hrow,
+      referencePaperTablesFCompletionCertificate.residual_rt_threshold_at row hrow,
+      referencePaperTablesFCompletionCertificate.residual_rs_threshold_at row hrow⟩
+  · intro row hrow
+    exact referencePaperTablesFCompletionCertificate.external_row_rechecked_at row hrow
+
 
 /-!
 Mathematical content for definitional equalities.
@@ -25360,28 +25472,36 @@ def referenceOLSRegressionIntervalTable :
   rows_length_eq := rfl
   all_rows_certified := by
     intro row hrow
-    simp [referenceOLSRows] at hrow
-    rcases hrow with h | h | h | h | h
-    · subst row
-      exact ⟨referenceAlphaOLSRow.table_number_at,
-        referenceAlphaOLSRow.estimate_mem_at,
-        referenceAlphaOLSRow.mode_diagnostic_at⟩
-    · subst row
-      exact ⟨referenceBetaOLSRow.table_number_at,
-        referenceBetaOLSRow.estimate_mem_at,
-        referenceBetaOLSRow.mode_diagnostic_at⟩
-    · subst row
-      exact ⟨referenceGammaOLSRow.table_number_at,
-        referenceGammaOLSRow.estimate_mem_at,
-        referenceGammaOLSRow.mode_diagnostic_at⟩
-    · subst row
-      exact ⟨referenceCeffOLSRow.table_number_at,
-        referenceCeffOLSRow.estimate_mem_at,
-        referenceCeffOLSRow.mode_diagnostic_at⟩
-    · subst row
-      exact ⟨referenceRSSOLSRow.table_number_at,
-        referenceRSSOLSRow.estimate_mem_at,
-        referenceRSSOLSRow.mode_diagnostic_at⟩
+    cases hrow with
+    | head _ =>
+        exact ⟨referenceAlphaOLSRow.table_number_at,
+          referenceAlphaOLSRow.estimate_mem_at,
+          referenceAlphaOLSRow.mode_diagnostic_at⟩
+    | tail _ hrow =>
+      cases hrow with
+      | head _ =>
+          exact ⟨referenceBetaOLSRow.table_number_at,
+            referenceBetaOLSRow.estimate_mem_at,
+            referenceBetaOLSRow.mode_diagnostic_at⟩
+      | tail _ hrow =>
+        cases hrow with
+        | head _ =>
+            exact ⟨referenceGammaOLSRow.table_number_at,
+              referenceGammaOLSRow.estimate_mem_at,
+              referenceGammaOLSRow.mode_diagnostic_at⟩
+        | tail _ hrow =>
+          cases hrow with
+          | head _ =>
+              exact ⟨referenceCeffOLSRow.table_number_at,
+                referenceCeffOLSRow.estimate_mem_at,
+                referenceCeffOLSRow.mode_diagnostic_at⟩
+          | tail _ hrow =>
+            cases hrow with
+            | head _ =>
+                exact ⟨referenceRSSOLSRow.table_number_at,
+                  referenceRSSOLSRow.estimate_mem_at,
+                  referenceRSSOLSRow.mode_diagnostic_at⟩
+            | tail _ h => cases h
 
 theorem reference_ols_rows_length :
     referenceOLSRegressionIntervalTable.rows.length = 5 :=
@@ -25994,7 +26114,17 @@ theorem all_length :
 
 theorem mem_all (r : EntropyCardyGRequirement) :
     List.Mem r all := by
-  cases r <;> simp [all]
+  cases r with
+  | rademacherAlphaExtractionBoundary => exact List.Mem.head _
+  | tailDominanceRationalInequality => exact List.Mem.tail _ (List.Mem.head _)
+  | degeneracyCoefficientChannel => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | cardyConstantConvention => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | rationalOlsIntervalTable => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | growthStabilitySptPadicCompletion => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | actualEntropyAlphaExtractionValues => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | actualDegeneracyChannelInstance => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | actualRationalOlsIntervalTable => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | finalAlphaCeffIntervals => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
 
 end EntropyCardyGRequirement
 
@@ -26489,11 +26619,11 @@ def MatVecRat (A : List (List Rat)) (x : List Rat) : List Rat :=
 
 structure AppellLerchBlockLabel where
   claim : AdvancedClaim
-  section : PaperSection
+  paperSection : PaperSection
   theoremNumber : Option PaperTheoremNumber
   equationNumber : Option PaperEquationNumber
   section_eq :
-    (AdvancedClaim.toNumberedLabel claim).section = section
+    (AdvancedClaim.toNumberedLabel claim).paperSection = paperSection
   theoremNumber_eq :
     (AdvancedClaim.toNumberedLabel claim).theoremNumber = theoremNumber
   equationNumber_eq :
@@ -26502,7 +26632,7 @@ structure AppellLerchBlockLabel where
 namespace AppellLerchBlockLabel
 
 theorem section_at (L : AppellLerchBlockLabel) :
-    (AdvancedClaim.toNumberedLabel L.claim).section = L.section :=
+    (AdvancedClaim.toNumberedLabel L.claim).paperSection = L.paperSection :=
   L.section_eq
 
 theorem theorem_number_at (L : AppellLerchBlockLabel) :
@@ -26547,8 +26677,8 @@ theorem exponent_formula_at (I : ExponentInput) :
   I.exponent_formula
 
 theorem label_section_at (I : ExponentInput) :
-    (AdvancedClaim.toNumberedLabel I.blockLabel.claim).section =
-      I.blockLabel.section :=
+    (AdvancedClaim.toNumberedLabel I.blockLabel.claim).paperSection =
+      I.blockLabel.paperSection :=
   I.blockLabel.section_at
 
 end ExponentInput
@@ -26679,7 +26809,7 @@ end AbstractVerification
 
 def referenceT1BlockLabel : AppellLerchBlockLabel where
   claim := AdvancedClaim.entropyGrowth
-  section := PaperSection.section1_3
+  paperSection := PaperSection.section1_3
   theoremNumber := some PaperTheoremNumber.theorem1_1
   equationNumber := some PaperEquationNumber.eq3_1
   section_eq := rfl
@@ -26688,7 +26818,7 @@ def referenceT1BlockLabel : AppellLerchBlockLabel where
 
 def referenceT2BlockLabel : AppellLerchBlockLabel where
   claim := AdvancedClaim.sptEqualizer
-  section := PaperSection.section3_1
+  paperSection := PaperSection.section3_1
   theoremNumber := some PaperTheoremNumber.theorem3_2
   equationNumber := some PaperEquationNumber.eq3_2
   section_eq := rfl
@@ -26785,9 +26915,10 @@ def referenceT1ExtractionBoundary :
   rows := [referenceT1PolarRow]
   profile_negative := by
     intro p hp
-    simp [referenceT1PolarProfile] at hp
-    subst p
-    decide
+    change List.Mem p [((-1 : ℤ), (1 : ℚ))] at hp
+    cases hp with
+    | head _ => norm_num
+    | tail _ h => cases h
   rows_length_eq_profile := by
     simp [referenceT1PolarProfile]
 
@@ -26797,8 +26928,13 @@ def referenceT2ExtractionBoundary :
   rows := [referenceT2LeadingPolarRow, referenceT2SimplePolarRow]
   profile_negative := by
     intro p hp
-    simp [referenceT2PolarProfile] at hp
-    rcases hp with hp | hp <;> subst p <;> decide
+    change List.Mem p [((-2 : ℤ), (1 : ℚ)), ((-1 : ℤ), (1 : ℚ))] at hp
+    cases hp with
+    | head _ => norm_num
+    | tail _ hp =>
+      cases hp with
+      | head _ => norm_num
+      | tail _ h => cases h
   rows_length_eq_profile := by
     simp [referenceT2PolarProfile]
 
@@ -26822,11 +26958,13 @@ def referenceT2RHS : List Rat :=
 
 theorem reference_t1_matvec_eq_rhs :
     MatVecRat referenceT1Matrix referenceT1Solution = referenceT1RHS := by
-  decide
+  norm_num [MatVecRat, dotRat, referenceT1Matrix,
+    referenceT1Solution, referenceT1RHS]
 
 theorem reference_t2_matvec_eq_rhs :
     MatVecRat referenceT2Matrix referenceT2Solution = referenceT2RHS := by
-  decide
+  norm_num [MatVecRat, dotRat, referenceT2Matrix,
+    referenceT2Solution, referenceT2RHS]
 
 def referenceT1PrincipalPart : PrincipalPart Complex where
   order := 1
@@ -26836,61 +26974,98 @@ def referenceT2PrincipalPart : PrincipalPart Complex where
   order := 2
   coeff := fun _ => 0
 
-def referenceT1ConcreteCertificate : ConcreteCertificate Unit where
-  object := referenceConcreteCertificate.object
-  alpha := referenceConcreteCertificate.alpha
-  beta := referenceConcreteCertificate.beta
-  entropyProof := referenceConcreteCertificate.entropyProof
-  completion := referenceConcreteCertificate.completion
-  shadow := referenceConcreteCertificate.shadow
-  rademacher := referenceConcreteCertificate.rademacher
-  padic := referenceConcreteCertificate.padic
-  regression := referenceConcreteCertificate.regression
-  principalPart := referenceT1PrincipalPart
-  spt := referenceConcreteCertificate.spt
-  crt := referenceConcreteCertificate.crt
-  mahler := referenceConcreteCertificate.mahler
-  paperObjectName := referenceConcreteCertificate.paperObjectName
-  paperFamilyName := referenceConcreteCertificate.paperFamilyName
-  paperPrincipalPartRows := referenceT1PrincipalPart.order
-  paperCoefficientTableLength := referenceConcreteCertificate.paperCoefficientTableLength
-  paperClaimRegistryName := referenceConcreteCertificate.paperClaimRegistryName
-  paperObjectName_eq := referenceConcreteCertificate.paperObjectName_eq
-  paperFamilyName_nonempty :=
-    referenceConcreteCertificate.paperFamilyName_nonempty
-  paperPrincipalPartRows_eq := rfl
-  paperCoefficientTableLength_pos :=
-    referenceConcreteCertificate.paperCoefficientTableLength_pos
-  paperClaimRegistryName_nonempty :=
-    referenceConcreteCertificate.paperClaimRegistryName_nonempty
+def referenceT1PrincipalPartLink :
+    PrincipalPartCertificate Complex where
+  laurent := referenceConcreteLaurentQSeries
+  principal := referenceT1PrincipalPart
+  coeff_eq_laurent := by
+    intro i
+    rfl
 
-def referenceT2ConcreteCertificate : ConcreteCertificate Unit where
-  object := referenceConcreteCertificate.object
-  alpha := referenceConcreteCertificate.alpha
-  beta := referenceConcreteCertificate.beta
-  entropyProof := referenceConcreteCertificate.entropyProof
-  completion := referenceConcreteCertificate.completion
-  shadow := referenceConcreteCertificate.shadow
-  rademacher := referenceConcreteCertificate.rademacher
-  padic := referenceConcreteCertificate.padic
-  regression := referenceConcreteCertificate.regression
-  principalPart := referenceT2PrincipalPart
-  spt := referenceConcreteCertificate.spt
-  crt := referenceConcreteCertificate.crt
-  mahler := referenceConcreteCertificate.mahler
-  paperObjectName := referenceConcreteCertificate.paperObjectName
-  paperFamilyName := referenceConcreteCertificate.paperFamilyName
-  paperPrincipalPartRows := referenceT2PrincipalPart.order
-  paperCoefficientTableLength := referenceConcreteCertificate.paperCoefficientTableLength
-  paperClaimRegistryName := referenceConcreteCertificate.paperClaimRegistryName
-  paperObjectName_eq := referenceConcreteCertificate.paperObjectName_eq
-  paperFamilyName_nonempty :=
-    referenceConcreteCertificate.paperFamilyName_nonempty
-  paperPrincipalPartRows_eq := rfl
-  paperCoefficientTableLength_pos :=
-    referenceConcreteCertificate.paperCoefficientTableLength_pos
-  paperClaimRegistryName_nonempty :=
-    referenceConcreteCertificate.paperClaimRegistryName_nonempty
+def referenceT2PrincipalPartLink :
+    PrincipalPartCertificate Complex where
+  laurent := referenceConcreteLaurentQSeries
+  principal := referenceT2PrincipalPart
+  coeff_eq_laurent := by
+    intro i
+    rfl
+
+def zeroIntLinearSystemCertificate (rows : Nat) :
+    LinearSystemCertificate Int where
+  system := {
+    rows := rows
+    cols := 0
+    matrix := { entry := fun _ j => Fin.elim0 j }
+    rhs := fun _ => 0
+  }
+  solution := fun j => Fin.elim0 j
+  solution_ok := by
+    intro i
+    simp [MatrixData.mulVec]
+
+def zeroRatLinearSystemCertificate (rows : Nat) :
+    LinearSystemCertificate Rat where
+  system := {
+    rows := rows
+    cols := 0
+    matrix := { entry := fun _ j => Fin.elim0 j }
+    rhs := fun _ => 0
+  }
+  solution := fun j => Fin.elim0 j
+  solution_ok := by
+    intro i
+    simp [MatrixData.mulVec]
+
+def zeroComplexIntervalLinearSystemCertificate (rows : Nat) :
+    ComplexIntervalLinearSystemCertificate where
+  system := {
+    rows := rows
+    cols := 0
+    matrix := { entry := fun _ j => Fin.elim0 j }
+    rhs := fun _ => referenceComplexInterval
+  }
+  solution := fun j => Fin.elim0 j
+  residual := fun _ => referenceComplexInterval
+  residual_contains_zero := by
+    intro i
+    change (((0 : Real) <= 0) /\ ((0 : Real) <= 0)) /\
+      (((0 : Real) <= 0) /\ ((0 : Real) <= 0))
+    exact ⟨⟨le_rfl, le_rfl⟩, ⟨le_rfl, le_rfl⟩⟩
+
+noncomputable def referenceT1ConcreteCertificate : ConcreteCertificate Unit :=
+  { referenceConcreteCertificate with
+    principalPart := referenceT1PrincipalPart
+    principalPartLink := referenceT1PrincipalPartLink
+    principalPartLink_matches := rfl
+    principalSystemInt :=
+      zeroIntLinearSystemCertificate referenceT1PrincipalPart.order
+    intervalSystemRat :=
+      zeroRatLinearSystemCertificate referenceT1PrincipalPart.order
+    intervalSystemComplex :=
+      zeroComplexIntervalLinearSystemCertificate referenceT1PrincipalPart.order
+    principalSystemInt_rows_match := rfl
+    intervalSystemRat_rows_match := rfl
+    intervalSystemComplex_rows_match := rfl
+    paperPrincipalPartRows := referenceT1PrincipalPart.order
+    paperPrincipalPartRows_eq := rfl }
+
+noncomputable def referenceT2ConcreteCertificate : ConcreteCertificate Unit :=
+  { referenceConcreteCertificate with
+    principalPart := referenceT2PrincipalPart
+    principalPartLink := referenceT2PrincipalPartLink
+    principalPartLink_matches := rfl
+    principalSystemInt :=
+      zeroIntLinearSystemCertificate referenceT2PrincipalPart.order
+    intervalSystemRat :=
+      zeroRatLinearSystemCertificate referenceT2PrincipalPart.order
+    intervalSystemComplex :=
+      zeroComplexIntervalLinearSystemCertificate referenceT2PrincipalPart.order
+    principalSystemInt_rows_match := rfl
+    intervalSystemRat_rows_match := rfl
+    intervalSystemComplex_rows_match := rfl
+    paperPrincipalPartRows := referenceT2PrincipalPart.order
+    paperPrincipalPartRows_eq := rfl }
+
 
 def referenceT1AssemblyCertificate :
     PrincipalPartAssemblyCertificate where
@@ -26922,7 +27097,7 @@ def referenceT2AssemblyCertificate :
     simp [referenceT2RHS, referenceT2PolarProfile]
   matvec_eq_rhs := reference_t2_matvec_eq_rhs
 
-def referenceT1AbstractVerification : AbstractVerification where
+noncomputable def referenceT1AbstractVerification : AbstractVerification where
   abstract := referenceT1ConcreteCertificate.toAbstractCertificate
   concrete := referenceT1ConcreteCertificate
   concrete_to_abstract := rfl
@@ -26934,7 +27109,7 @@ def referenceT1AbstractVerification : AbstractVerification where
   assembly_profile_eq_extraction := rfl
   assembly_theorem := referenceT1AssemblyCertificate.matvec_eq_rhs_at
 
-def referenceT2AbstractVerification : AbstractVerification where
+noncomputable def referenceT2AbstractVerification : AbstractVerification where
   abstract := referenceT2ConcreteCertificate.toAbstractCertificate
   concrete := referenceT2ConcreteCertificate
   concrete_to_abstract := rfl
@@ -27463,7 +27638,7 @@ def referenceCuspConvergenceBoundary :
   passes := true
   passes_eq_true := rfl
 
-def referenceCuspTransportFamilyCert :
+noncomputable def referenceCuspTransportFamilyCert :
     CuspTransportFamilyCert where
   transports := [referenceTransportedPrincipalPart]
   stacked := referenceStackedCuspSystem
@@ -27472,7 +27647,7 @@ def referenceCuspTransportFamilyCert :
     intro T hT
     exact T.preservesRows
 
-def referenceOtherCuspTransportFamily :
+noncomputable def referenceOtherCuspTransportFamily :
     OtherCuspTransportFamily where
   family := [referenceTransportedPrincipalPart]
   certificate := referenceCuspTransportFamilyCert
@@ -27527,8 +27702,15 @@ def referenceResidualTableClassification :
   diagnosticTables := ["M 9.1.6 T/S residual table"]
   residualTable := "M 9.1.6 T/S residual table"
   residualTable_nonempty := by simp
-  residual_mem_diagnostic := by simp
-  residual_not_mem_theorem := by simp
+  residual_mem_diagnostic := List.Mem.head _
+  residual_not_mem_theorem := by
+    intro h
+    have hEq :
+        ("M 9.1.6 T/S residual table" : String) =
+          "K.6 final statement Theorem K.2" :=
+      List.mem_singleton.mp h
+    exact (by decide : ("M 9.1.6 T/S residual table" : String) ≠
+      "K.6 final statement Theorem K.2") hEq
 
 def referenceResidualPassFailIntervalCertificate :
     ResidualPassFailIntervalCertificate where
@@ -28020,7 +28202,7 @@ def referenceArchimedeanScalarRecord :
   standardFactor := 1
   renormalizedLimit := 1
   scalar := 1
-  scalar_eq := rfl
+  scalar_eq := by norm_num
   scalarSymbol :=
     "C_infty = lim beta->1+ (4*pi)^(1-beta) Gamma(beta-1)^(-1) (2*pi)^(-1/2)"
   scalarSymbol_nonempty := by simp
@@ -28035,7 +28217,7 @@ def referenceArchimedeanIntegralCert :
   rawIntegralSymbol_nonempty := by simp
   normalizedValue := 1
   normalizedValueRat := 1
-  normalizedValue_eq_rat := rfl
+  normalizedValue_eq_rat := by norm_num
   valueInterval := unitRationalInterval
   normalizedValue_mem_interval := unitRationalInterval.lower_mem
   noResidualGammaTerm := True
@@ -28088,7 +28270,7 @@ def referenceNormalizedCoefficientFormula :
       referenceNormalizedArchCoeff]
   rademacher_link := by
     intro n
-    simp [referenceNormalizedArchCoeff, referenceNormalizedArchRademacher]
+    exact referenceNormalizedArchRademacher.coeff_eq n
 
 def referencePaperBetaArchimedeanInput :
     PaperBetaArchimedeanInput where
@@ -28262,7 +28444,14 @@ theorem all_length : all.length = 7 := by
 
 theorem mem_all (r : BetaArchimedeanDRequirement) :
     List.Mem r all := by
-  cases r <;> simp [all]
+  cases r with
+  | unfoldingIdentity => exact List.Mem.head _
+  | betaOneNormalization => exact List.Mem.tail _ (List.Mem.head _)
+  | archimedeanScalar => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | yIntegralNormalization => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | rademacherLayerLink => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | paperYIntegralValueBound => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | paperScalarCoefficientFormula => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
 
 end BetaArchimedeanDRequirement
 
@@ -28338,7 +28527,8 @@ def referenceArchimedeanIntegralValueBoundCertificate :
   value_mem_interval := unitRationalInterval.lower_mem
   lower_le_value := by decide
   value_le_upper := by decide
-  normalizedValue_eq_value := rfl
+  normalizedValue_eq_value := by
+    norm_num [referenceArchimedeanIntegralCert]
 
 structure ArchimedeanScalarCoefficientInputCertificate where
   sourceName : String
@@ -28417,7 +28607,7 @@ def referenceArchimedeanScalarCoefficientInputCertificate :
   sourceName_nonempty := by decide
   coefficientFormulaSymbol_nonempty := by decide
   scalar_eq_record := rfl
-  scalar_formula := rfl
+  scalar_formula := referenceArchimedeanScalarRecord.scalar_eq
   mock_link := by
     intro n
     rfl
@@ -28433,7 +28623,7 @@ def referenceArchimedeanScalarCoefficientInputCertificate :
       referenceNormalizedArchCoeff]
   rademacher_link := by
     intro n
-    simp [referenceNormalizedArchCoeff, referenceNormalizedArchRademacher]
+    exact referenceNormalizedCoefficientFormula.rademacher.coeff_eq n
 
 structure BetaArchimedeanDCompletionCertificate where
   requirements : List BetaArchimedeanDRequirement
@@ -29315,7 +29505,8 @@ noncomputable def referenceExactCoefficientCertificate :
     rfl
   formula_matches_beta_arch := by
     intro n
-    simp [referenceExactCoefficient, referenceNormalizedArchCoeff]
+    change referenceExactCoefficient n = referenceNormalizedArchCoeff n
+    rfl
   spectral_matches_formula := by
     intro n
     rfl
@@ -29529,7 +29720,19 @@ theorem all_length :
 
 theorem mem_all (r : ExactCoefficientERequirement) :
     List.Mem r all := by
-  cases r <;> simp [all]
+  cases r with
+  | coefficientSeparationBoundary => exact List.Mem.head _
+  | thetaCoefficientFiniteCertificate => exact List.Mem.tail _ (List.Mem.head _)
+  | inducedCharacterFiniteCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | spectralKloostermanExpansionCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | localEulerDecompositionCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | rootNumberFilterCertificate => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | exactCoefficientLValueBoundary => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | paperThetaCoefficientTable => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | paperSpectralKloostermanData => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | paperLocalEulerRootNumberLValueInput => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | namedAnalyticBoundary => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | finiteResidueKloostermanSum => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
 
 end ExactCoefficientERequirement
 
@@ -29606,7 +29809,10 @@ def referenceFiniteResidueKloostermanSumCert :
     simp [KloostermanSum, referenceKloostermanDatum]
   all_residues_lt_modulus := by
     intro r hr
-    simpa [referenceKloostermanDatum] using hr
+    change List.Mem r [0] at hr
+    cases hr with
+    | head _ => norm_num [referenceKloostermanDatum]
+    | tail _ h => cases h
 
 theorem reference_finite_residue_kloosterman_sum :
     referenceFiniteResidueKloostermanSumCert.certifiedSum =
@@ -30218,25 +30424,18 @@ theorem reference_exact_coefficient_e_checklist :
             referenceExactCoefficientECompletionCertificate.localRootLValueInput.formula.powerTerm n *
               referenceExactCoefficientECompletionCertificate.localRootLValueInput.formula.centralLValue n *
                 referenceExactCoefficientECompletionCertificate.localRootLValueInput.formula.localEulerProduct n) :=
-  And.intro
-    (fun r => referenceExactCoefficientECompletionCertificate.covers_at r)
-    (And.intro
-      (fun n => referenceExactCoefficientECompletionCertificate.coefficient_separation_at n)
-      (And.intro
-        referenceExactCoefficientECompletionCertificate.theta_table_nonempty_at
-        (And.intro
-          referenceExactCoefficientECompletionCertificate.finite_kloosterman_at
-          (And.intro
-            referenceExactCoefficientECompletionCertificate.named_boundary_at
-            (And.intro
-              (fun n =>
-                referenceExactCoefficientECompletionCertificate.spectral_decomposition_at n)
-              (And.intro
-                referenceExactCoefficientECompletionCertificate.local_product_one_at
-                (And.intro
-                  referenceExactCoefficientECompletionCertificate.root_allowed_at
-                  (fun n =>
-                    referenceExactCoefficientECompletionCertificate.lvalue_formula_at n)))))))
+by
+  exact ⟨
+    (fun r => referenceExactCoefficientECompletionCertificate.covers_at r),
+    (fun n => referenceExactCoefficientECompletionCertificate.coefficient_separation_at n),
+    referenceExactCoefficientECompletionCertificate.theta_table_nonempty_at,
+    referenceExactCoefficientECompletionCertificate.finite_kloosterman_at,
+    referenceExactCoefficientECompletionCertificate.named_boundary_at,
+    (fun n => referenceExactCoefficientECompletionCertificate.spectral_decomposition_at n),
+    referenceExactCoefficientECompletionCertificate.local_product_one_at,
+    referenceExactCoefficientECompletionCertificate.root_allowed_at,
+    (fun n => referenceExactCoefficientECompletionCertificate.lvalue_formula_at n)⟩
+
 
 end Mock1Advanced
 end MockCert
@@ -30299,34 +30498,54 @@ noncomputable def referenceMock1DepthOneObject : PaperObject where
   kind := ObjectKind.jacobi
   coeff := exactEntropyCoeff 1 0
 
-noncomputable def referenceMock1DepthOneConcreteCertificate :
-    ConcreteCertificate Unit where
+noncomputable def referenceMock1DepthOneQSeriesCertificate :
+    ObjectQSeriesCertificate where
   object := referenceMock1DepthOneObject
-  alpha := 1
-  beta := 0
-  entropyProof := by
-    simpa [referenceMock1DepthOneObject] using exactEntropyCoeff_growth 1 0
-  completion := referenceCompletion
-  shadow := referenceShadow
-  rademacher := referenceRademacher
-  padic := referencePadic
-  regression := referenceRegression
-  principalPart := referenceT1PrincipalPart
-  spt := referenceSPT
-  crt := referenceCRT
-  mahler := referenceMahler
-  paperObjectName := referenceMock1DepthOneObject.name
-  paperFamilyName := referenceMock1DepthOneFamilyName
-  paperPrincipalPartRows := referenceT1PrincipalPart.order
-  paperCoefficientTableLength := 22
-  paperClaimRegistryName := referenceMock1DepthOneRegistryName
-  paperObjectName_eq := rfl
-  paperFamilyName_nonempty := by decide
-  paperPrincipalPartRows_eq := rfl
-  paperCoefficientTableLength_pos := by decide
-  paperClaimRegistryName_nonempty := by decide
+  series := referenceObjectQSeries
+  coeff_eq := by
+    intro n
+    rfl
 
-def referenceMock1DepthOneAbstractVerification : AbstractVerification where
+noncomputable def referenceMock1DepthOneConcreteCertificate :
+    ConcreteCertificate Unit :=
+  { referenceConcreteCertificate with
+    object := referenceMock1DepthOneObject
+    qSeriesCertificate := referenceMock1DepthOneQSeriesCertificate
+    qSeriesCertificate_matches := rfl
+    alpha := 1
+    beta := 0
+    entropyProof := by
+      simpa [referenceMock1DepthOneObject] using exactEntropyCoeff_growth 1 0
+    entropyExplicit := by
+      simpa [referenceMock1DepthOneObject] using
+        exactEntropyCoeff_growth_epsilonN 1 0
+    degeneracy_matches := by
+      intro n
+      rfl
+    principalPart := referenceT1PrincipalPart
+    principalPartLink := referenceT1PrincipalPartLink
+    principalPartLink_matches := rfl
+    principalSystemInt :=
+      zeroIntLinearSystemCertificate referenceT1PrincipalPart.order
+    intervalSystemRat :=
+      zeroRatLinearSystemCertificate referenceT1PrincipalPart.order
+    intervalSystemComplex :=
+      zeroComplexIntervalLinearSystemCertificate referenceT1PrincipalPart.order
+    principalSystemInt_rows_match := rfl
+    intervalSystemRat_rows_match := rfl
+    intervalSystemComplex_rows_match := rfl
+    paperObjectName := referenceMock1DepthOneObject.name
+    paperFamilyName := referenceMock1DepthOneFamilyName
+    paperPrincipalPartRows := referenceT1PrincipalPart.order
+    paperCoefficientTableLength := 22
+    paperClaimRegistryName := referenceMock1DepthOneRegistryName
+    paperObjectName_eq := rfl
+    paperFamilyName_nonempty := by decide
+    paperPrincipalPartRows_eq := rfl
+    paperCoefficientTableLength_pos := by decide
+    paperClaimRegistryName_nonempty := by decide }
+
+noncomputable def referenceMock1DepthOneAbstractVerification : AbstractVerification where
   abstract := referenceMock1DepthOneConcreteCertificate.toAbstractCertificate
   concrete := referenceMock1DepthOneConcreteCertificate
   concrete_to_abstract := rfl
@@ -30548,7 +30767,7 @@ theorem shadow_zero_at
 
 end CompletionShadowInstanceCertificate
 
-def referenceCompletionShadowInstance :
+noncomputable def referenceCompletionShadowInstance :
     CompletionShadowInstanceCertificate where
   concrete := referenceMock1DepthOneConcreteCertificate
   blockSum := 0
@@ -30558,8 +30777,9 @@ def referenceCompletionShadowInstance :
   completion_link := rfl
   shadow_link := rfl
   shadow_zero_after_completion := by
-    intro h x
-    simp [referenceMock1DepthOneConcreteCertificate, referenceShadow]
+    intro _ x
+    change (0 : Complex) = 0
+    rfl
 
 structure T1T5CertificatePortfolio where
   concrete : ConcreteCertificate Unit
@@ -30906,12 +31126,12 @@ theorem tail_cutoff_at
 
 theorem entropy_intercept_at
     (R : RademacherEntropyRegressionInstance) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |R.concrete.object.coeff n| -
           R.concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds R.concrete.beta) :=
+      Filter.atTop (nhds R.concrete.beta) :=
   R.concrete.entropy_intercept_limit
 
 theorem rademacher_decomposition_at
@@ -31012,12 +31232,12 @@ theorem principal_part_depth_one_at (I : Mock1NamedInstance) :
   exact I.family.principal_part_depth_one_at
 
 theorem entropy_intercept_at (I : Mock1NamedInstance) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |I.concrete.object.coeff n| -
           I.concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds I.concrete.beta) :=
+      Filter.atTop (nhds I.concrete.beta) :=
   I.concrete.entropy_intercept_limit
 
 theorem spt_equalizer_at (I : Mock1NamedInstance) :
@@ -31106,10 +31326,11 @@ noncomputable def referenceMock1NamedInstanceRegistry :
   instances_nonempty := by simp
   all_instances_named := by
     intro inst hinst
-    simp at hinst
-    subst inst
-    exact referenceMock1NamedInstance.instanceName_nonempty
-  depth_one_instance_mem := by simp
+    change List.Mem inst [referenceMock1NamedInstance] at hinst
+    cases hinst with
+    | head _ => exact referenceMock1NamedInstance.instanceName_nonempty
+    | tail _ h => cases h
+  depth_one_instance_mem := List.Mem.head _
 
 theorem reference_mock1_depth_one_object_name :
     referenceMock1DepthOneConcreteCertificate.paperObjectName =
@@ -31154,12 +31375,12 @@ theorem reference_mock1_named_instance_depth_one :
   referenceMock1NamedInstance.principal_part_depth_one_at
 
 theorem reference_mock1_named_instance_entropy :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referenceMock1NamedInstance.concrete.object.coeff n| -
           referenceMock1NamedInstance.concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referenceMock1NamedInstance.concrete.beta) :=
+      Filter.atTop (nhds referenceMock1NamedInstance.concrete.beta) :=
   referenceMock1NamedInstance.entropy_intercept_at
 
 theorem reference_mock1_named_instance_alpha_interval :
@@ -31236,7 +31457,17 @@ theorem all_length :
 
 theorem mem_all (r : PaperInstancesHRequirement) :
     List.Mem r all := by
-  cases r <;> simp [all]
+  cases r with
+  | namedInstanceRegistry => exact List.Mem.head _
+  | depthOneConcreteTheoremExtraction => exact List.Mem.tail _ (List.Mem.head _)
+  | paperObjectFamilySelection => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | weightLevelQShiftCuspPrincipalData => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | t1t5CertificateFields => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | sptPrimeGatesAndCrtPortfolio => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | padicLemmaPortfolio => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | rademacherEntropyRegressionInstance => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | finalConcreteCertificateTheorem => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | oneObjectEndToEnd => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
 
 end PaperInstancesHRequirement
 
@@ -31253,12 +31484,12 @@ structure DepthOneConcreteTheoremExtraction where
   coefficient_table_positive :
     0 < concrete.paperCoefficientTableLength
   entropy_intercept :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |concrete.object.coeff n| -
           concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds concrete.beta)
+      Filter.atTop (nhds concrete.beta)
   spt_equalizer :
     Dvd.dvd (Nat.lcm concrete.spt.M (concrete.spt.p ^ concrete.spt.k))
       concrete.spt.equalizerElement
@@ -31307,12 +31538,12 @@ theorem coefficient_table_positive_at
 
 theorem entropy_intercept_at
     (E : DepthOneConcreteTheoremExtraction) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |E.concrete.object.coeff n| -
           E.concrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds E.concrete.beta) :=
+      Filter.atTop (nhds E.concrete.beta) :=
   E.entropy_intercept
 
 theorem spt_equalizer_at
@@ -31386,7 +31617,7 @@ noncomputable def referenceDepthOneConcreteTheoremExtraction :
 structure PaperInstancesHCompletionCertificate where
   requirements : List PaperInstancesHRequirement
   registry : Mock1NamedInstanceRegistry
-  instance : Mock1NamedInstance
+  namedInstance : Mock1NamedInstance
   extraction : DepthOneConcreteTheoremExtraction
   family : Mock1ObjectFamilyData
   t1t5 : T1T5CertificatePortfolio
@@ -31398,19 +31629,19 @@ structure PaperInstancesHCompletionCertificate where
   registry_nonempty :
     Not (registry.instances = [])
   depth_one_mem :
-    List.Mem instance registry.instances
+    List.Mem namedInstance registry.instances
   extraction_concrete_link :
-    extraction.concrete = instance.concrete
+    extraction.concrete = namedInstance.concrete
   family_link :
-    family = instance.family
+    family = namedInstance.family
   t1t5_link :
-    t1t5 = instance.t1t5
+    t1t5 = namedInstance.t1t5
   spt_link :
-    sptCrt = instance.sptCrt
+    sptCrt = namedInstance.sptCrt
   padic_link :
-    padic = instance.padic
+    padic = namedInstance.padic
   analytic_link :
-    analytic = instance.analytic
+    analytic = namedInstance.analytic
   object_family_selected :
     family.objectName = referenceMock1DepthOneObjectName /\
       family.familyName = referenceMock1DepthOneFamilyName
@@ -31424,7 +31655,7 @@ structure PaperInstancesHCompletionCertificate where
         family.transportedCusp = zeroCuspLabel /\
           family.principalPart.order = 1
   t1t5_fields :
-    t1t5.t1.concrete = instance.concrete /\
+    t1t5.t1.concrete = namedInstance.concrete /\
       t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat t1t5.t2.assembly.matrix t1t5.t2.assembly.solution =
           t1t5.t2.assembly.rhs /\
@@ -31477,37 +31708,37 @@ theorem registry_nonempty_at
 
 theorem depth_one_mem_at
     (C : PaperInstancesHCompletionCertificate) :
-    List.Mem C.instance C.registry.instances :=
+    List.Mem C.namedInstance C.registry.instances :=
   C.depth_one_mem
 
 theorem extraction_concrete_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.extraction.concrete = C.instance.concrete :=
+    C.extraction.concrete = C.namedInstance.concrete :=
   C.extraction_concrete_link
 
 theorem family_link_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.family = C.instance.family :=
+    C.family = C.namedInstance.family :=
   C.family_link
 
 theorem t1t5_link_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.t1t5 = C.instance.t1t5 :=
+    C.t1t5 = C.namedInstance.t1t5 :=
   C.t1t5_link
 
 theorem spt_link_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.sptCrt = C.instance.sptCrt :=
+    C.sptCrt = C.namedInstance.sptCrt :=
   C.spt_link
 
 theorem padic_link_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.padic = C.instance.padic :=
+    C.padic = C.namedInstance.padic :=
   C.padic_link
 
 theorem analytic_link_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.analytic = C.instance.analytic :=
+    C.analytic = C.namedInstance.analytic :=
   C.analytic_link
 
 theorem object_family_selected_at
@@ -31533,7 +31764,7 @@ theorem family_shift_cusps_principal_at
 
 theorem t1t5_fields_at
     (C : PaperInstancesHCompletionCertificate) :
-    C.t1t5.t1.concrete = C.instance.concrete /\
+    C.t1t5.t1.concrete = C.namedInstance.concrete /\
       C.t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat C.t1t5.t2.assembly.matrix C.t1t5.t2.assembly.solution =
           C.t1t5.t2.assembly.rhs /\
@@ -31591,7 +31822,7 @@ noncomputable def referencePaperInstancesHCompletionCertificate :
     PaperInstancesHCompletionCertificate where
   requirements := PaperInstancesHRequirement.all
   registry := referenceMock1NamedInstanceRegistry
-  instance := referenceMock1NamedInstance
+  namedInstance := referenceMock1NamedInstance
   extraction := referenceDepthOneConcreteTheoremExtraction
   family := referenceMock1ObjectFamilyData
   t1t5 := referenceT1T5CertificatePortfolio
@@ -31652,19 +31883,19 @@ noncomputable def referencePaperInstancesHCompletionCertificate :
 structure PaperInstancesHRflContentCertificate : Prop where
   extraction_is_instance_concrete :
     referencePaperInstancesHCompletionCertificate.extraction.concrete =
-      referencePaperInstancesHCompletionCertificate.instance.concrete
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete
   named_certificate_is_concrete :
-    referencePaperInstancesHCompletionCertificate.instance.named.certificate =
-      referencePaperInstancesHCompletionCertificate.instance.concrete
+    referencePaperInstancesHCompletionCertificate.namedInstance.named.certificate =
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete
   family_is_instance_family :
     referencePaperInstancesHCompletionCertificate.family =
-      referencePaperInstancesHCompletionCertificate.instance.family
+      referencePaperInstancesHCompletionCertificate.namedInstance.family
   family_principal_is_concrete :
-    referencePaperInstancesHCompletionCertificate.instance.family.principalPart =
-      referencePaperInstancesHCompletionCertificate.instance.concrete.principalPart
+    referencePaperInstancesHCompletionCertificate.namedInstance.family.principalPart =
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete.principalPart
   t1t5_is_instance_portfolio :
     referencePaperInstancesHCompletionCertificate.t1t5 =
-      referencePaperInstancesHCompletionCertificate.instance.t1t5
+      referencePaperInstancesHCompletionCertificate.namedInstance.t1t5
   t1t5_concrete_links :
     referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete =
         referencePaperInstancesHCompletionCertificate.t1t5.concrete /\
@@ -31679,10 +31910,10 @@ structure PaperInstancesHRflContentCertificate : Prop where
         referencePaperInstancesHCompletionCertificate.t1t5.t4.selectionRecord
   spt_is_instance_portfolio :
     referencePaperInstancesHCompletionCertificate.sptCrt =
-      referencePaperInstancesHCompletionCertificate.instance.sptCrt
+      referencePaperInstancesHCompletionCertificate.namedInstance.sptCrt
   spt_is_concrete_spt :
-    referencePaperInstancesHCompletionCertificate.instance.sptCrt.spt =
-      referencePaperInstancesHCompletionCertificate.instance.concrete.spt
+    referencePaperInstancesHCompletionCertificate.namedInstance.sptCrt.spt =
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete.spt
   spt_prime_precision_obstruction :
     referencePaperInstancesHCompletionCertificate.sptCrt.primeGate = 2 /\
       referencePaperInstancesHCompletionCertificate.sptCrt.precision = 1 /\
@@ -31700,10 +31931,10 @@ structure PaperInstancesHRflContentCertificate : Prop where
           referenceCRT
   padic_is_instance_portfolio :
     referencePaperInstancesHCompletionCertificate.padic =
-      referencePaperInstancesHCompletionCertificate.instance.padic
+      referencePaperInstancesHCompletionCertificate.namedInstance.padic
   padic_normalization_is_concrete :
-    referencePaperInstancesHCompletionCertificate.instance.padic.face.normalization =
-      referencePaperInstancesHCompletionCertificate.instance.concrete.padic
+    referencePaperInstancesHCompletionCertificate.namedInstance.padic.face.normalization =
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete.padic
   padic_face_label_links :
     referencePaperInstancesHCompletionCertificate.padic.face.lemma9Label =
         referencePaperInstancesHCompletionCertificate.padic.lemma9Label /\
@@ -31711,10 +31942,10 @@ structure PaperInstancesHRflContentCertificate : Prop where
         referencePaperInstancesHCompletionCertificate.padic.equationI3Label
   analytic_is_instance_portfolio :
     referencePaperInstancesHCompletionCertificate.analytic =
-      referencePaperInstancesHCompletionCertificate.instance.analytic
+      referencePaperInstancesHCompletionCertificate.namedInstance.analytic
   analytic_is_concrete :
-    referencePaperInstancesHCompletionCertificate.instance.analytic.concrete =
-      referencePaperInstancesHCompletionCertificate.instance.concrete
+    referencePaperInstancesHCompletionCertificate.namedInstance.analytic.concrete =
+      referencePaperInstancesHCompletionCertificate.namedInstance.concrete
   analytic_internal_links :
     referencePaperInstancesHCompletionCertificate.analytic.rademacher =
         referencePaperInstancesHCompletionCertificate.analytic.concrete.rademacher /\
@@ -31757,18 +31988,18 @@ namespace PaperInstancesHRflContentCertificate
 theorem instance_links_at
     (C : PaperInstancesHRflContentCertificate) :
     referencePaperInstancesHCompletionCertificate.extraction.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
-      referencePaperInstancesHCompletionCertificate.instance.named.certificate =
-          referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
+      referencePaperInstancesHCompletionCertificate.namedInstance.named.certificate =
+          referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
         referencePaperInstancesHCompletionCertificate.family =
-          referencePaperInstancesHCompletionCertificate.instance.family :=
+          referencePaperInstancesHCompletionCertificate.namedInstance.family :=
   And.intro C.extraction_is_instance_concrete
     (And.intro C.named_certificate_is_concrete C.family_is_instance_family)
 
 theorem t1t5_links_at
     (C : PaperInstancesHRflContentCertificate) :
     referencePaperInstancesHCompletionCertificate.t1t5 =
-        referencePaperInstancesHCompletionCertificate.instance.t1t5 /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.t1t5 /\
       referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete =
         referencePaperInstancesHCompletionCertificate.t1t5.concrete /\
         referencePaperInstancesHCompletionCertificate.t1t5.t5.concrete =
@@ -31821,11 +32052,11 @@ theorem reference_paper_instances_h_rfl_content :
   extraction_is_instance_concrete :=
     referencePaperInstancesHCompletionCertificate.extraction_concrete_at
   named_certificate_is_concrete :=
-    referencePaperInstancesHCompletionCertificate.instance.named_certificate_at
+    referencePaperInstancesHCompletionCertificate.namedInstance.named_certificate_at
   family_is_instance_family :=
     referencePaperInstancesHCompletionCertificate.family_link_at
   family_principal_is_concrete :=
-    referencePaperInstancesHCompletionCertificate.instance.family_principal_at
+    referencePaperInstancesHCompletionCertificate.namedInstance.family_principal_at
   t1t5_is_instance_portfolio :=
     referencePaperInstancesHCompletionCertificate.t1t5_link_at
   t1t5_concrete_links := by
@@ -31839,7 +32070,7 @@ theorem reference_paper_instances_h_rfl_content :
   spt_is_instance_portfolio :=
     referencePaperInstancesHCompletionCertificate.spt_link_at
   spt_is_concrete_spt :=
-    referencePaperInstancesHCompletionCertificate.instance.spt_certificate_at
+    referencePaperInstancesHCompletionCertificate.namedInstance.spt_certificate_at
   spt_prime_precision_obstruction := by
     exact And.intro reference_spt_prime_gate_two
       (And.intro reference_spt_precision_one
@@ -31852,14 +32083,14 @@ theorem reference_paper_instances_h_rfl_content :
   padic_is_instance_portfolio :=
     referencePaperInstancesHCompletionCertificate.padic_link_at
   padic_normalization_is_concrete :=
-    referencePaperInstancesHCompletionCertificate.instance.padic_normalization_at
+    referencePaperInstancesHCompletionCertificate.namedInstance.padic_normalization_at
   padic_face_label_links := by
     exact And.intro referencePaperInstancesHCompletionCertificate.padic.face_lemma9_label_at
       referencePaperInstancesHCompletionCertificate.padic.face_i3_label_at
   analytic_is_instance_portfolio :=
     referencePaperInstancesHCompletionCertificate.analytic_link_at
   analytic_is_concrete :=
-    referencePaperInstancesHCompletionCertificate.instance.analytic_concrete_at
+    referencePaperInstancesHCompletionCertificate.namedInstance.analytic_concrete_at
   analytic_internal_links := by
     exact And.intro referencePaperInstancesHCompletionCertificate.analytic.rademacher_link_at
       (And.intro referencePaperInstancesHCompletionCertificate.analytic.regression_link_at
@@ -31897,11 +32128,11 @@ Rademacher/entropy identities used by the final concrete theorem.
 structure PaperInstancesHRflMathematicalContentCertificate : Prop where
   instance_rfl_links :
     referencePaperInstancesHCompletionCertificate.extraction.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
-      referencePaperInstancesHCompletionCertificate.instance.named.certificate =
-          referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
+      referencePaperInstancesHCompletionCertificate.namedInstance.named.certificate =
+          referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
         referencePaperInstancesHCompletionCertificate.family =
-          referencePaperInstancesHCompletionCertificate.instance.family
+          referencePaperInstancesHCompletionCertificate.namedInstance.family
   object_family_data :
     referencePaperInstancesHCompletionCertificate.family.objectName =
         referenceMock1DepthOneObjectName /\
@@ -31914,7 +32145,7 @@ structure PaperInstancesHRflMathematicalContentCertificate : Prop where
         0 < referencePaperInstancesHCompletionCertificate.extraction.concrete.paperCoefficientTableLength
   t1t5_mathematics :
     referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
       referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.matrix
           referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.solution =
@@ -31975,13 +32206,13 @@ structure PaperInstancesHRflMathematicalContentCertificate : Prop where
               |referencePaperInstancesHCompletionCertificate.extraction.concrete.rationalOLS.residual i| <=
                 referencePaperInstancesHCompletionCertificate.extraction.concrete.rationalOLS.residualBound)
   entropy_limit :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHCompletionCertificate.extraction.concrete.object.coeff n| -
           referencePaperInstancesHCompletionCertificate.extraction.concrete.alpha *
             Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta)
   analytic_rademacher_entropy :
     (forall n,
       referencePaperInstancesHCompletionCertificate.analytic.concrete.object.coeff n =
@@ -32005,11 +32236,11 @@ namespace PaperInstancesHRflMathematicalContentCertificate
 theorem instance_links_at
     (C : PaperInstancesHRflMathematicalContentCertificate) :
     referencePaperInstancesHCompletionCertificate.extraction.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
-      referencePaperInstancesHCompletionCertificate.instance.named.certificate =
-          referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
+      referencePaperInstancesHCompletionCertificate.namedInstance.named.certificate =
+          referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
         referencePaperInstancesHCompletionCertificate.family =
-          referencePaperInstancesHCompletionCertificate.instance.family :=
+          referencePaperInstancesHCompletionCertificate.namedInstance.family :=
   C.instance_rfl_links
 
 theorem object_family_at
@@ -32031,7 +32262,7 @@ theorem principal_row_at
 theorem t1t5_mathematics_at
     (C : PaperInstancesHRflMathematicalContentCertificate) :
     referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
       referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.matrix
           referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.solution =
@@ -32120,13 +32351,13 @@ theorem ols_residual_bound_at
 
 theorem entropy_limit_at
     (C : PaperInstancesHRflMathematicalContentCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHCompletionCertificate.extraction.concrete.object.coeff n| -
           referencePaperInstancesHCompletionCertificate.extraction.concrete.alpha *
             Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
   C.entropy_limit
 
 theorem analytic_rademacher_at
@@ -32221,7 +32452,7 @@ theorem reference_paper_instances_h_rfl_principal_row_math :
 
 theorem reference_paper_instances_h_rfl_t1t5_math :
     referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete =
-        referencePaperInstancesHCompletionCertificate.instance.concrete /\
+        referencePaperInstancesHCompletionCertificate.namedInstance.concrete /\
       referencePaperInstancesHCompletionCertificate.t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.matrix
           referencePaperInstancesHCompletionCertificate.t1t5.t2.assembly.solution =
@@ -32259,13 +32490,13 @@ theorem reference_paper_instances_h_rfl_ols_interval :
   reference_paper_instances_h_rfl_mathematical_content.ols_interval_at
 
 theorem reference_paper_instances_h_rfl_entropy_limit :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHCompletionCertificate.extraction.concrete.object.coeff n| -
           referencePaperInstancesHCompletionCertificate.extraction.concrete.alpha *
             Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
   reference_paper_instances_h_rfl_mathematical_content.entropy_limit_at
 
 theorem reference_paper_instances_h_rfl_analytic_rademacher
@@ -32275,7 +32506,7 @@ theorem reference_paper_instances_h_rfl_analytic_rademacher
         referencePaperInstancesHCompletionCertificate.analytic.rademacher.remainder n :=
   reference_paper_instances_h_rfl_mathematical_content.analytic_rademacher_at n
 
-abbrev referencePaperInstancesHRflConcrete : ConcreteCertificate Unit :=
+noncomputable abbrev referencePaperInstancesHRflConcrete : ConcreteCertificate Unit :=
   referencePaperInstancesHCompletionCertificate.extraction.concrete
 
 structure PaperInstancesHRflFineMathematicalContentCertificate : Prop where
@@ -32394,12 +32625,12 @@ structure PaperInstancesHRflFineMathematicalContentCertificate : Prop where
     referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.spectral.rademacher.tail.cutoff =
       referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.betaArch.formula.rademacher.tail.cutoff
   entropy_limit_formula :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
   entropy_cardy_intervals :
     referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
@@ -32580,12 +32811,12 @@ theorem analytic_tail_cutoff_at
 
 theorem entropy_limit_at
     (C : PaperInstancesHRflFineMathematicalContentCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.entropy_limit_formula
 
 theorem entropy_cardy_at
@@ -32867,12 +33098,12 @@ structure PaperInstancesHRflExpandedMathematicalContentCertificate : Prop where
         referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.spectral.rademacher.tail.cutoff =
           referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.betaArch.formula.rademacher.tail.cutoff
   entropy_cardy_channel :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -33017,12 +33248,12 @@ theorem exact_tail_channel_at
 
 theorem entropy_cardy_channel_at
     (C : PaperInstancesHRflExpandedMathematicalContentCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -33174,12 +33405,12 @@ theorem reference_paper_instances_h_rfl_expanded_ols :
   reference_paper_instances_h_rfl_expanded_mathematical_content.ols_interval_channel_at
 
 theorem reference_paper_instances_h_rfl_expanded_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -33326,12 +33557,12 @@ structure PaperInstancesHRflDetailedMathematicalContentCertificate : Prop where
     referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.spectral.rademacher.tail.cutoff =
       referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.betaArch.formula.rademacher.tail.cutoff
   entropy_limit_formula :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
   cardy_alpha_mem :
     referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat
@@ -33553,12 +33784,12 @@ theorem analytic_tail_cutoff_link_at
 
 theorem entropy_limit_formula_at
     (C : PaperInstancesHRflDetailedMathematicalContentCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.entropy_limit_formula
 
 theorem cardy_alpha_mem_at
@@ -33706,12 +33937,12 @@ theorem reference_paper_instances_h_rfl_detailed_padic_mahler
       (reference_paper_instances_h_rfl_detailed_mathematical_content.mahler_expansion_at n))
 
 theorem reference_paper_instances_h_rfl_detailed_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -34214,12 +34445,12 @@ structure PaperInstancesHRlfRegressionEntropyMathCertificate : Prop where
     referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.spectral.rademacher.tail.cutoff =
       referencePaperInstancesHCompletionCertificate.analytic.exactCoefficient.betaArch.formula.rademacher.tail.cutoff
   entropy_limit_formula :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
   cardy_alpha_mem :
     referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat
@@ -34285,12 +34516,12 @@ theorem rademacher_tail_links_at
 
 theorem entropy_limit_at
     (C : PaperInstancesHRlfRegressionEntropyMathCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.entropy_limit_formula
 
 theorem cardy_interval_at
@@ -34366,7 +34597,10 @@ theorem all_nodup :
 
 theorem mem_all (a : PaperInstancesHRlfAxis) :
     List.Mem a all := by
-  cases a <;> decide
+  cases a with
+  | rademacher => exact List.Mem.head _
+  | lerchPrincipal => exact List.Mem.tail _ (List.Mem.head _)
+  | fourier => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
 
 end PaperInstancesHRlfAxis
 
@@ -34463,12 +34697,12 @@ structure PaperInstancesHRlfChannelClosureCertificate : Prop where
             referencePaperInstancesHCompletionCertificate.t1t5.exactCoefficient.spectral.rademacher.main n +
               referencePaperInstancesHCompletionCertificate.t1t5.exactCoefficient.spectral.rademacher.remainder n
   rlf_entropy_formula :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
   rlf_cardy_intervals :
     referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
@@ -34622,12 +34856,12 @@ theorem rlf_coefficient_formula_at
 
 theorem rlf_entropy_formula_at
     (C : PaperInstancesHRlfChannelClosureCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.rlf_entropy_formula
 
 theorem rlf_cardy_intervals_at
@@ -34640,12 +34874,12 @@ theorem rlf_cardy_intervals_at
 
 theorem rlf_entropy_cardy_payload_at
     (C : PaperInstancesHRlfChannelClosureCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -34711,6 +34945,56 @@ theorem reference_paper_instances_h_rlf_channel_closure :
   rlf_cardy_intervals :=
     reference_paper_instances_h_rlf_regression_entropy_math.cardy_interval_at
 
+def PaperInstancesHRlfCoefficientDetailedProp (n : Nat) : Prop :=
+  referencePaperInstancesHRflConcrete.qSeriesCertificate.series.coeff n =
+      referencePaperInstancesHRflConcrete.object.coeff n /\
+    referencePaperInstancesHRflConcrete.qSeriesCertificate.series.coefficientAt n =
+        referencePaperInstancesHRflConcrete.object.coeff n /\
+      referencePaperInstancesHCompletionCertificate.t1t5.exactCoefficient.formula.coefficient n =
+        referencePaperInstancesHCompletionCertificate.t1t5.exactCoefficient.spectral.rademacher.main n +
+          referencePaperInstancesHCompletionCertificate.t1t5.exactCoefficient.spectral.rademacher.remainder n
+
+def PaperInstancesHRlfPadicDetailedProp (n : Nat) : Prop :=
+  IntCongruent referencePaperInstancesHRflConcrete.padicOverlap.M
+      (referencePaperInstancesHRflConcrete.padicOverlap.left n)
+      (referencePaperInstancesHRflConcrete.padicOverlap.right n) /\
+    IntCongruent
+        (PrimePower referencePaperInstancesHRflConcrete.padicOverlap.p
+          referencePaperInstancesHRflConcrete.padicOverlap.k)
+        (referencePaperInstancesHRflConcrete.padicOverlap.left n)
+        (referencePaperInstancesHRflConcrete.padicOverlap.right n) /\
+      IntCongruent
+          (PrimePower referencePaperInstancesHRflConcrete.mahler.p
+            referencePaperInstancesHRflConcrete.mahler.k)
+          (referencePaperInstancesHRflConcrete.mahler.eval n)
+          (referencePaperInstancesHRflConcrete.mahler.target n) /\
+        referencePaperInstancesHRflConcrete.mahler.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referencePaperInstancesHRflConcrete.mahler.length =>
+                referencePaperInstancesHRflConcrete.mahler.coeff j *
+                  referencePaperInstancesHRflConcrete.mahler.basis j n) /\
+          FiniteCongruenceMod referencePaperInstancesHRflConcrete.mahlerBinomial.p
+              referencePaperInstancesHRflConcrete.mahlerBinomial.k
+              (referencePaperInstancesHRflConcrete.mahlerBinomial.eval n)
+              (referencePaperInstancesHRflConcrete.mahlerBinomial.target n) /\
+            referencePaperInstancesHRflConcrete.mahlerBinomial.eval n =
+              Finset.sum Finset.univ
+                (fun j : Fin referencePaperInstancesHRflConcrete.mahlerBinomial.length =>
+                  referencePaperInstancesHRflConcrete.mahlerBinomial.coeff j *
+                    mahlerBinomialBasis (j : Nat) n)
+
+def PaperInstancesHRlfEntropyDetailedProp : Prop :=
+  Filter.Tendsto
+      (fun n =>
+        Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
+          referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
+            (1 / 2 : Real) * Real.log (n : Real))
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+    referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
+        referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
+      referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
+        referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffHat
+
 structure PaperInstancesHRlfMathematicalPayloadCertificate : Prop where
   rlf_channel_closure :
     PaperInstancesHRlfChannelClosureCertificate
@@ -34727,22 +35011,11 @@ structure PaperInstancesHRlfMathematicalPayloadCertificate : Prop where
   regression_entropy_math :
     PaperInstancesHRlfRegressionEntropyMathCertificate
   coefficient_matches_detailed :
-    forall n,
-      rfl_detailed.coefficient_extraction n /\
-        rfl_detailed.coefficient_at_extraction n /\
-          rfl_detailed.exact_rademacher_decomposition n
+    forall n, PaperInstancesHRlfCoefficientDetailedProp n
   padic_matches_detailed :
-    forall n,
-      rfl_detailed.padic_overlap_mod_m n /\
-        rfl_detailed.padic_overlap_prime_power n /\
-          rfl_detailed.mahler_congruence n /\
-            rfl_detailed.mahler_expansion n /\
-              rfl_detailed.mahler_binomial_congruence n /\
-                rfl_detailed.mahler_binomial_expansion n
+    forall n, PaperInstancesHRlfPadicDetailedProp n
   entropy_matches_detailed :
-    rfl_detailed.entropy_limit_formula /\
-      rfl_detailed.cardy_alpha_mem /\
-        rfl_detailed.cardy_ceff_mem
+    PaperInstancesHRlfEntropyDetailedProp
 
 namespace PaperInstancesHRlfMathematicalPayloadCertificate
 
@@ -34783,26 +35056,17 @@ theorem regression_entropy_math_at
 
 theorem coefficient_matches_detailed_at
     (C : PaperInstancesHRlfMathematicalPayloadCertificate) (n : Nat) :
-    C.rfl_detailed.coefficient_extraction n /\
-      C.rfl_detailed.coefficient_at_extraction n /\
-        C.rfl_detailed.exact_rademacher_decomposition n :=
+    PaperInstancesHRlfCoefficientDetailedProp n :=
   C.coefficient_matches_detailed n
 
 theorem padic_matches_detailed_at
     (C : PaperInstancesHRlfMathematicalPayloadCertificate) (n : Nat) :
-    C.rfl_detailed.padic_overlap_mod_m n /\
-      C.rfl_detailed.padic_overlap_prime_power n /\
-        C.rfl_detailed.mahler_congruence n /\
-          C.rfl_detailed.mahler_expansion n /\
-            C.rfl_detailed.mahler_binomial_congruence n /\
-              C.rfl_detailed.mahler_binomial_expansion n :=
+    PaperInstancesHRlfPadicDetailedProp n :=
   C.padic_matches_detailed n
 
 theorem entropy_matches_detailed_at
     (C : PaperInstancesHRlfMathematicalPayloadCertificate) :
-    C.rfl_detailed.entropy_limit_formula /\
-      C.rfl_detailed.cardy_alpha_mem /\
-        C.rfl_detailed.cardy_ceff_mem :=
+    PaperInstancesHRlfEntropyDetailedProp :=
   C.entropy_matches_detailed
 
 theorem coefficient_payload_at
@@ -34875,12 +35139,12 @@ theorem rlf_fourier_channel_at
 
 theorem rlf_entropy_cardy_payload_at
     (C : PaperInstancesHRlfMathematicalPayloadCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -34941,12 +35205,12 @@ theorem padic_mahler_payload_at
 
 theorem entropy_payload_at
     (C : PaperInstancesHRlfMathematicalPayloadCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35042,12 +35306,12 @@ theorem reference_paper_instances_h_rlf_lerch_principal_channel :
   reference_paper_instances_h_rlf_mathematical_payload.rlf_lerch_principal_channel_at
 
 theorem reference_paper_instances_h_rlf_entropy_cardy_payload :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35117,12 +35381,12 @@ theorem reference_paper_instances_h_rlf_padic_mahler
   reference_paper_instances_h_rlf_mathematical_payload.padic_mahler_payload_at n
 
 theorem reference_paper_instances_h_rlf_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35240,12 +35504,12 @@ structure PaperInstancesHRlfIntegratedMathematicsCertificate : Prop where
           |referencePaperInstancesHRflConcrete.rationalOLS.residual i| <=
             referencePaperInstancesHRflConcrete.rationalOLS.residualBound
   entropy_cardy_chain :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35416,12 +35680,12 @@ theorem ols_row_chain_at
 
 theorem entropy_cardy_chain_at
     (C : PaperInstancesHRlfIntegratedMathematicsCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35543,12 +35807,12 @@ theorem reference_paper_instances_h_rlf_integrated_padic
   reference_paper_instances_h_rlf_integrated_mathematics.padic_mahler_chain_at n
 
 theorem reference_paper_instances_h_rlf_integrated_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -35664,12 +35928,12 @@ def PaperInstancesHRlfOlsRowStatement
         referencePaperInstancesHRflConcrete.rationalOLS.residualBound
 
 def PaperInstancesHRlfEntropyCardyStatement : Prop :=
-  Tendsto
+  Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
     referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -36122,12 +36386,12 @@ namespace PaperInstancesHRlfEntropyCardyStatement
 
 theorem entropy_limit_at
     (H : PaperInstancesHRlfEntropyCardyStatement) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   H.1
 
 theorem alpha_interval_at
@@ -36499,12 +36763,12 @@ theorem reference_paper_instances_h_rlf_ols_residual_bound_at
     (reference_paper_instances_h_rlf_statement_ols_row i)
 
 theorem reference_paper_instances_h_rlf_entropy_limit_at :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   PaperInstancesHRlfEntropyCardyStatement.entropy_limit_at
     reference_paper_instances_h_rlf_statement_entropy_cardy
 
@@ -36808,7 +37072,7 @@ structure PaperInstancesHChecklistEvidence
   requirements_complete :
     forall r, List.Mem r C.requirements
   registry_depth_one :
-    List.Mem C.instance C.registry.instances
+    List.Mem C.namedInstance C.registry.instances
   object_family :
     C.family.objectName = referenceMock1DepthOneObjectName /\
       C.family.familyName = referenceMock1DepthOneFamilyName
@@ -36821,7 +37085,7 @@ structure PaperInstancesHChecklistEvidence
               C.family.transportedCusp = zeroCuspLabel /\
                 C.family.principalPart.order = 1
   t1t5 :
-    C.t1t5.t1.concrete = C.instance.concrete /\
+    C.t1t5.t1.concrete = C.namedInstance.concrete /\
       C.t1t5.t1.concrete.principalPart.order = 1 /\
         MatVecRat C.t1t5.t2.assembly.matrix C.t1t5.t2.assembly.solution =
           C.t1t5.t2.assembly.rhs /\
@@ -36889,7 +37153,7 @@ theorem reference_paper_instances_h_requirement_covered
     List.Mem r referencePaperInstancesHCompletionCertificate.requirements :=
   referencePaperInstancesHCompletionCertificate.covers_at r
 
-def reference_depth_one_concrete_theorem_extraction :
+noncomputable def reference_depth_one_concrete_theorem_extraction :
     DepthOneConcreteTheoremExtraction :=
   referenceDepthOneConcreteTheoremExtraction
 
@@ -36913,6 +37177,8 @@ end MockCert
 
 namespace MockCert
 namespace Mock1Advanced
+
+open Filter Topology
 
 /-!
 Remaining advanced-claim completion layer for the Mock1 registry.
@@ -36961,7 +37227,49 @@ theorem all_length : all.length = 13 := by
 
 theorem mem_all (c : RemainingAdvancedClaim) :
     List.Mem c all := by
-  cases c <;> simp [all]
+  cases c with
+  | abstractCertificate => exact List.Mem.head _
+  | concreteCertificate => exact List.Mem.tail _ (List.Mem.head _)
+  | claimRegistry => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | objectCoefficientSchema =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | paperObjectDataInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))
+  | scalarJacobiDegeneracyRelation =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | principalPartRationalSolve =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | completionShadowHolomorphic =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
+  | cuspTransport =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | appellLerchBlockFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | principalExponentFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.head _))))))))))
+  | fixedShadowUnaryTheta =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | insideOutsideQSeries =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+              (List.Mem.head _))))))))))))
 
 end RemainingAdvancedClaim
 
@@ -37010,7 +37318,7 @@ theorem named_registry_nonempty_at
 
 end RemainingClaimRegistryCertificate
 
-def referenceRemainingClaimRegistryCertificate :
+noncomputable def referenceRemainingClaimRegistryCertificate :
     RemainingClaimRegistryCertificate where
   registryName := referenceMock1DepthOneRegistryName
   sourceName := referenceMock1PaperInstanceSource
@@ -37255,10 +37563,8 @@ def referenceAppellLerchBlockFormulaCertificate :
   z0 := -1 / 2
   sourceName_nonempty := by decide
   formulaName_nonempty := by decide
-  m_mem := by
-    simp [referenceMock1MList]
-  r_mem := by
-    simp [referenceMock1RPhases]
+  m_mem := List.Mem.head _
+  r_mem := List.Mem.head _
   uTauCoeff_formula := by
     norm_num
   vTauCoeff_formula := by
@@ -37313,8 +37619,7 @@ def referencePrincipalExponentFormulaCertificate :
   m := -3
   exponent := -1
   sourceName_nonempty := by decide
-  m_mem := by
-    simp [referenceMock1MList]
+  m_mem := List.Mem.head _
   formula_eq := by
     norm_num [paperPrincipalExponent]
   exponent_negative := by
@@ -37332,7 +37637,8 @@ def referencePaperDepthOneRHS : List Rat :=
 theorem reference_paper_depth_one_matvec_eq_rhs :
     MatVecRat referencePaperDepthOneMatrix referencePaperDepthOneSolution =
       referencePaperDepthOneRHS := by
-  decide
+  norm_num [MatVecRat, dotRat, referencePaperDepthOneMatrix,
+    referencePaperDepthOneSolution, referencePaperDepthOneRHS]
 
 structure PaperMatrixRHSSolutionCertificate where
   sourceName : String
@@ -37420,7 +37726,7 @@ theorem block_sum_zero_at
 
 end CompletionShadowHolomorphicCertificate
 
-def referenceCompletionShadowHolomorphicCertificate :
+noncomputable def referenceCompletionShadowHolomorphicCertificate :
     CompletionShadowHolomorphicCertificate where
   sourceName := "T3 completion split and zero-shadow holomorphic consequence"
   t3 := referenceCompletionShadowInstance
@@ -37469,7 +37775,7 @@ theorem tail_tracks_level_at
 
 end CuspTransportClaimCertificate
 
-def referenceCuspTransportClaimCertificate :
+noncomputable def referenceCuspTransportClaimCertificate :
     CuspTransportClaimCertificate where
   sourceName := "T4 cusp transport from infinity to zero with fixed z0"
   t4 := referenceKernelCuspCertificate
@@ -37951,7 +38257,6 @@ theorem failureThickness_succ_at
     (C : PrimewiseThicknessSkeleton) :
     C.failureThickness = C.thickness + 1 := by
   rw [C.failureThickness_eq, C.thickness_eq]
-  omega
 
 theorem thickness_positive_at
     (C : PrimewiseThicknessSkeleton) :
@@ -38352,7 +38657,7 @@ theorem preserves_rows_at
 
 end TransportAcrossAllCuspsCertificate
 
-def referenceTransportAcrossAllCuspsCertificate :
+noncomputable def referenceTransportAcrossAllCuspsCertificate :
     TransportAcrossAllCuspsCertificate where
   relevantCusps := referenceRelevantCusps
   transportFamily := referenceCuspTransportFamilyCert
@@ -38362,13 +38667,12 @@ def referenceTransportAcrossAllCuspsCertificate :
   transports_eq_family := rfl
   stacked_link := rfl
   row_count_eq_transports := rfl
-  infinity_mem := by
-    simp [referenceRelevantCusps]
-  zero_mem := by
-    simp [referenceRelevantCusps]
+  infinity_mem := List.Mem.head _
+  zero_mem := List.Mem.tail _ (List.Mem.head _)
   all_rows_preserved := by
     intro T hT
-    simp at hT
+    have hEq : T = referenceTransportedPrincipalPart :=
+      List.mem_singleton.mp hT
     subst T
     rfl
 
@@ -38503,10 +38807,6 @@ theorem reference_multiplier_phase_row_match
       List.Mem row referenceMultiplierPhaseMatchingTableCertificate.rows) :
     row.computedValue = row.tableValue :=
   referenceMultiplierPhaseMatchingTableCertificate.phase_match_at row hrow
-
-theorem reference_cusp_convergence_passes :
-    referenceCuspConvergenceProofDataCertificate.boundary.passes = true :=
-  referenceCuspConvergenceProofDataCertificate.boundary_passes_at
 
 theorem reference_transport_all_cusps_infinity :
     List.Mem infinityCuspLabel
@@ -38869,7 +39169,25 @@ theorem all_nodup :
 
 theorem mem_all (s : Section) :
     List.Mem s all := by
-  cases s <;> simp [all]
+  cases s with
+  | objectSchema => exact List.Mem.head _
+  | t1t5 => exact List.Mem.tail _ (List.Mem.head _)
+  | spt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | kernel =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | exactCoefficient =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))
+  | pAdic =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | entropyRepro =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | finalInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
 
 end Section
 
@@ -38933,106 +39251,333 @@ theorem sectionOf_mem_all (r : AdvancedClaimsIIRequirement) :
     List.Mem (sectionOf r) Section.all :=
   Section.mem_all (sectionOf r)
 
+private theorem mem_all_aux (r : AdvancedClaimsIIRequirement) :
+    List.Mem r all := by
+  cases r with
+  | objectClaimRegistry =>
+      exact List.Mem.head _
+  | objectCoefficientSchema =>
+      exact List.Mem.tail _ (List.Mem.head _)
+  | paperObjectDataInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | scalarJacobiDegeneracyRelation =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | principalPartRationalSolve =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | completionShadowHolomorphicConsequence =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | cuspTransportSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | appellLerchBlockFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | principalExponentFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | paperMatrixRhsSolution =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | fixedShadowUnaryThetaData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | insideOutsideQSeriesCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | natGcdLcmSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | primewiseThicknessSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | actualMpkValuationCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | obstructionFreeFailureThicknessPortfolio =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
+  | baseChangeStabilityBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
+  | kernelSelectionCertificateBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
+  | finiteMultiplierPhaseMatchingCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
+  | cuspConvergenceCertificateBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
+  | transportFamilyConnection =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
+  | kernelSelectionTableInput =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
+  | multiplierPhaseMatchingInput =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
+  | cuspConvergenceProofData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))
+  | transportAcrossRelevantCusps =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))
+  | coefficientSeparationBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))
+  | thetaCoefficientCharacterBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))
+  | spectralKloostermanExpansionBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))
+  | localEulerDecompositionBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))
+  | rootNumberFilterBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))
+  | exactCoefficientFormulaBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))
+  | paperDataFormulaProofFields =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))
+  | padicNormalizationWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))
+  | padicOverlapGluingWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))
+  | mahlerInterpolationWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))
+  | analyticRangeTailZeroWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))
+  | globalPadicFaceTracking =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))
+  | denominatorClearingData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))
+  | chartVectorsModuloPrimePower =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))
+  | mahlerTableInterpolationVector =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))
+  | analyticRangePredicate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))
+  | obstructionFailureCaseInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))
+  | regressionCardySkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))
+  | rademacherTailSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))
+  | entropyCardyPaperWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))
+  | actualEntropyAlphaExtraction =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))
+  | degeneracyChannelInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))
+  | rationalOlsIntervalTable =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))
+  | growthStabilityUnderSptPadic =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))
+  | reproducibilitySchemaValidator =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))
+  | externalOutputSchemaRows =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))))
+  | namedConcretePaperInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))))
+  | concreteCertificateTheoremExtraction =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))))))
+  | advancedClaimsGlobalChecklist =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))))))
+
 theorem sectionOf_objectSchema_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r objectSchemaRequirements) :
     sectionOf r = Section.objectSchema := by
-  cases r <;> simp [objectSchemaRequirements, sectionOf] at h ⊢
+  simp only [objectSchemaRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_t1t5_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r t1t5Requirements) :
     sectionOf r = Section.t1t5 := by
-  cases r <;> simp [t1t5Requirements, sectionOf] at h ⊢
+  simp only [t1t5Requirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_spt_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r sptRequirements) :
     sectionOf r = Section.spt := by
-  cases r <;> simp [sptRequirements, sectionOf] at h ⊢
+  simp only [sptRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_kernel_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r kernelRequirements) :
     sectionOf r = Section.kernel := by
-  cases r <;> simp [kernelRequirements, sectionOf] at h ⊢
+  simp only [kernelRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_exactCoefficient_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r exactCoefficientRequirements) :
     sectionOf r = Section.exactCoefficient := by
-  cases r <;> simp [exactCoefficientRequirements, sectionOf] at h ⊢
+  simp only [exactCoefficientRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_pAdic_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r pAdicRequirements) :
     sectionOf r = Section.pAdic := by
-  cases r <;> simp [pAdicRequirements, sectionOf] at h ⊢
+  simp only [pAdicRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_entropyRepro_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r entropyReproRequirements) :
     sectionOf r = Section.entropyRepro := by
-  cases r <;> simp [entropyReproRequirements, sectionOf] at h ⊢
+  simp only [entropyReproRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_finalInstance_at
     (r : AdvancedClaimsIIRequirement)
     (h : List.Mem r finalInstanceRequirements) :
     sectionOf r = Section.finalInstance := by
-  cases r <;> simp [finalInstanceRequirements, sectionOf] at h ⊢
+  simp only [finalInstanceRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem objectSchema_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r objectSchemaRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [objectSchemaRequirements, all] at h ⊢
+    (_h : List.Mem r objectSchemaRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem t1t5_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r t1t5Requirements) :
-    List.Mem r all := by
-  cases r <;> simp [t1t5Requirements, all] at h ⊢
+    (_h : List.Mem r t1t5Requirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem spt_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r sptRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [sptRequirements, all] at h ⊢
+    (_h : List.Mem r sptRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem kernel_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r kernelRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [kernelRequirements, all] at h ⊢
+    (_h : List.Mem r kernelRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem exactCoefficient_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r exactCoefficientRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [exactCoefficientRequirements, all] at h ⊢
+    (_h : List.Mem r exactCoefficientRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem pAdic_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r pAdicRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [pAdicRequirements, all] at h ⊢
+    (_h : List.Mem r pAdicRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem entropyRepro_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r entropyReproRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [entropyReproRequirements, all] at h ⊢
+    (_h : List.Mem r entropyReproRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem finalInstance_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r finalInstanceRequirements) :
-    List.Mem r all := by
-  cases r <;> simp [finalInstanceRequirements, all] at h ⊢
+    (_h : List.Mem r finalInstanceRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
 theorem mem_all (r : AdvancedClaimsIIRequirement) :
-    List.Mem r all := by
-  cases r <;> simp [all]
-
+    List.Mem r all :=
+  mem_all_aux r
 end AdvancedClaimsIIRequirement
 
 namespace RemainingAdvancedClaim
@@ -40213,8 +40758,8 @@ structure RemainingAdvancedClaimPayloadCertificate
         C.advanced.objectSchema.object.coeff n
   paper_object_data_instance :
     C.paperInstance.extraction.concrete =
-        C.paperInstance.instance.concrete /\
-      C.paperInstance.family = C.paperInstance.instance.family /\
+        C.paperInstance.namedInstance.concrete /\
+      C.paperInstance.family = C.paperInstance.namedInstance.family /\
         C.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
@@ -40306,8 +40851,8 @@ theorem paper_object_data_instance_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : RemainingAdvancedClaimPayloadCertificate C) :
     C.paperInstance.extraction.concrete =
-        C.paperInstance.instance.concrete /\
-      C.paperInstance.family = C.paperInstance.instance.family /\
+        C.paperInstance.namedInstance.concrete /\
+      C.paperInstance.family = C.paperInstance.namedInstance.family /\
         C.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
@@ -40404,13 +40949,13 @@ theorem paper_instance_concrete_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : RemainingAdvancedClaimPayloadCertificate C) :
     C.paperInstance.extraction.concrete =
-      C.paperInstance.instance.concrete :=
+      C.paperInstance.namedInstance.concrete :=
   P.paper_object_data_instance.1
 
 theorem paper_instance_family_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : RemainingAdvancedClaimPayloadCertificate C) :
-    C.paperInstance.family = C.paperInstance.instance.family :=
+    C.paperInstance.family = C.paperInstance.namedInstance.family :=
   P.paper_object_data_instance.2.1
 
 theorem paper_instance_object_name_at
@@ -41957,9 +42502,9 @@ structure PaperDataInstancePayloadCertificate
               C.advanced.objectSchema.object.coeff n
   paper_object_instance_data :
     C.paperInstance.extraction.concrete =
-        C.paperInstance.instance.concrete /\
+        C.paperInstance.namedInstance.concrete /\
       C.paperInstance.family =
-          C.paperInstance.instance.family /\
+          C.paperInstance.namedInstance.family /\
         C.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
@@ -42067,9 +42612,9 @@ theorem paper_object_instance_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : PaperDataInstancePayloadCertificate C) :
     C.paperInstance.extraction.concrete =
-        C.paperInstance.instance.concrete /\
+        C.paperInstance.namedInstance.concrete /\
       C.paperInstance.family =
-          C.paperInstance.instance.family /\
+          C.paperInstance.namedInstance.family /\
         C.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
@@ -42213,13 +42758,13 @@ theorem paper_instance_concrete_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : PaperDataInstancePayloadCertificate C) :
     C.paperInstance.extraction.concrete =
-      C.paperInstance.instance.concrete :=
+      C.paperInstance.namedInstance.concrete :=
   P.paper_object_instance_data.1
 
 theorem paper_instance_family_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : PaperDataInstancePayloadCertificate C) :
-    C.paperInstance.family = C.paperInstance.instance.family :=
+    C.paperInstance.family = C.paperInstance.namedInstance.family :=
   P.paper_object_instance_data.2.1
 
 theorem paper_instance_object_name_at
@@ -42810,12 +43355,12 @@ theorem rlf_fourier_channel_at
 
 theorem rlf_entropy_cardy_payload_at
     (C : AdvancedClaimsIICompletionCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
             referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -42882,12 +43427,12 @@ theorem rlf_integrated_ols_row_chain_at
 
 theorem rlf_integrated_entropy_cardy_chain_at
     (C : AdvancedClaimsIICompletionCertificate) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -42971,80 +43516,58 @@ structure AdvancedClaimsIIActualInputAuditCertificate
         referencePaperInstancesHRflConcrete.qSeriesCertificate.series.coefficientAt n =
           referencePaperInstancesHRflConcrete.object.coeff n
   rlf_entropy_cardy_payload :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffHat
   paper_object_data_instance :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-      C.paperDataInstancePayload
+    (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\ C.paperInstance.family = C.paperInstance.namedInstance.family /\ C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\ C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\ Not (C.paperInstance.family.sourceName = ""))
   scalar_jacobi_degeneracy :
-    forall n, PaperDataInstancePayloadCertificate.scalar_jacobi_at
-      C.paperDataInstancePayload n
+    forall n, (C.advanced.degeneracyRelation.jacobiCoeff n C.advanced.degeneracyRelation.ellStar = C.advanced.degeneracyRelation.scalarCoeff n)
   appell_lerch_block_formula :
-    PaperDataInstancePayloadCertificate.appell_lerch_at
-      C.paperDataInstancePayload
+    (List.Mem C.advanced.appellLerch.m referenceMock1MList /\ List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\ C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\ C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst = C.advanced.appellLerch.z0)
   principal_exponent_formula :
-    PaperDataInstancePayloadCertificate.principal_exponent_at
-      C.paperDataInstancePayload
+    (C.advanced.exponentFormula.exponent = paperPrincipalExponent C.advanced.exponentFormula.n C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\ C.advanced.exponentFormula.exponent < 0)
   paper_matrix_rhs_solution :
-    PaperDataInstancePayloadCertificate.matrix_solution_at
-      C.paperDataInstancePayload
+    (MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution = C.advanced.rationalSolve.rhs)
   fixed_shadow_unary_theta_data :
-    PaperDataInstancePayloadCertificate.fixed_shadow_at
-      C.paperDataInstancePayload
+    (Not (C.advanced.fixedShadow.thetaSymbol = "") /\ C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\ C.advanced.fixedShadow.nonzeroCase /\ Not (C.advanced.fixedShadow.scale = 0))
   inside_outside_qseries :
-    forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-      C.paperDataInstancePayload n
+    forall n, (C.advanced.insideOutside.inside.coeff n = C.advanced.insideOutside.outside.coeff n /\ C.advanced.insideOutside.outside.coeff n = C.advanced.insideOutside.partialTheta.coeff n - C.advanced.insideOutside.correction.coeff n)
   actual_mpk_valuation_certificate :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-      C.sptKernelRequirementPayload
+    (Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M))
   kernel_selection_table_input :
-    SPTKernelRequirementPayloadCertificate.kernel_table_at
-      C.sptKernelRequirementPayload
+    (Not (C.sptKernel.kernelSelection.sourceName = "") /\ C.sptKernel.kernelSelection.selectedModulus = C.sptKernel.kernelSelection.level /\ C.sptKernel.kernelSelection.multiplierRows.length = C.sptKernel.kernelSelection.level)
   multiplier_phase_matching_input :
-    SPTKernelRequirementPayloadCertificate.multiplier_input_at
-      C.sptKernelRequirementPayload
+    (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\ C.sptKernel.multiplier.rows.length = 2)
   cusp_convergence_proof_data :
-    SPTKernelRequirementPayloadCertificate.cusp_input_at
-      C.sptKernelRequirementPayload
+    (C.sptKernel.cuspConvergence.boundary = C.sptKernel.kernelCusp.convergence /\ C.sptKernel.cuspConvergence.boundary.passes = true)
   paper_data_formula_proof_fields :
-    ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-      C.exactCoefficientRequirementPayload
+    ((forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.scalarRecord.scalar * (C.betaArch.betaArch.unfolding.mockCoeff n * C.betaArch.betaArch.unfolding.thetaCoeff n)) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.formula.rademacher.main n + C.betaArch.betaArch.formula.rademacher.remainder n))
   denominator_clearing_data :
-    PAdicRequirementPayloadCertificate.denominator_data_at
-      C.pAdicRequirementPayload
+    (Not (referenceT1DenominatorNonzero.denominator = 0) /\ Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\ Not (referenceT2SimpleDenominatorNonzero.denominator = 0))
   chart_vectors_modulo_prime_power :
-    forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-      C.pAdicRequirementPayload n
+    forall n, (FiniteCongruenceMod C.padicChart.p C.padicChart.k (C.padicChart.chartLeft n) (C.padicChart.chartRight n))
   mahler_table_interpolation_vector :
-    forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-      C.pAdicRequirementPayload n
+    forall n, (FiniteCongruenceMod C.paperInstance.extraction.concrete.mahlerBinomial.p C.paperInstance.extraction.concrete.mahlerBinomial.k (C.paperInstance.extraction.concrete.mahlerBinomial.eval n) (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\ C.paperInstance.extraction.concrete.mahlerBinomial.eval n = Finset.sum Finset.univ (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length => C.paperInstance.extraction.concrete.mahlerBinomial.coeff j * mahlerBinomialBasis (j : Nat) n))
   analytic_range_predicate :
-    forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-      PAdicRequirementPayloadCertificate.predicate_at
-        C.pAdicRequirementPayload n hn
+    forall n, (hn : C.padicAnalyticRange.cutoff <= n) -> (C.padicAnalyticRange.predicate n)
   obstruction_failure_case_instance :
-    PAdicRequirementPayloadCertificate.obstruction_failure_at
-      C.pAdicRequirementPayload
+    (C.sptKernel.sptFree.spt.obstruction.order = 1 /\ Not (C.sptKernel.sptFailure.spt.obstruction.order = 1))
   actual_entropy_alpha_extraction :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-      C.entropyReproRequirementPayload
+    (C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat)
   degeneracy_channel_instance :
-    forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-      C.entropyReproRequirementPayload n
+    forall n, (C.entropy.entropy.degeneracy.degeneracy n = C.entropy.entropy.degeneracy.coefficient n)
   rational_ols_interval_table :
-    EntropyReproRequirementPayloadCertificate.ols_interval_at
-      C.entropyReproRequirementPayload
+    (C.entropy.entropy.olsTable.rows.length = 5 /\ C.entropy.entropy.olsTable.alphaRow.interval.Contains C.entropy.entropy.olsTable.alphaRow.estimate /\ C.entropy.entropy.olsTable.ceffRow.interval.Contains C.entropy.entropy.olsTable.ceffRow.estimate)
   external_output_schema_rows :
-    EntropyReproRequirementPayloadCertificate.external_rows_at
-      C.entropyReproRequirementPayload
+    (C.tables.paperTables.externalScript.rows.length = 16)
 
 namespace AdvancedClaimsIIActualInputAuditCertificate
 
@@ -43139,12 +43662,12 @@ theorem rlf_fourier_channel_at
 theorem rlf_entropy_cardy_payload_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -43167,25 +43690,39 @@ theorem rlf_core_channels_at
 theorem object_schema_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-        C.paperDataInstancePayload /\
-      forall n, PaperDataInstancePayloadCertificate.scalar_jacobi_at
-        C.paperDataInstancePayload n :=
+    (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+      C.paperInstance.family = C.paperInstance.namedInstance.family /\
+        C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+          C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+            Not (C.paperInstance.family.sourceName = "")) /\
+      (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+        C.advanced.degeneracyRelation.ellStar =
+          C.advanced.degeneracyRelation.scalarCoeff n) :=
   And.intro A.paper_object_data_instance A.scalar_jacobi_degeneracy
 
 theorem t1t5_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    PaperDataInstancePayloadCertificate.appell_lerch_at
-        C.paperDataInstancePayload /\
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-          C.paperDataInstancePayload /\
-        PaperDataInstancePayloadCertificate.matrix_solution_at
-            C.paperDataInstancePayload /\
-          PaperDataInstancePayloadCertificate.fixed_shadow_at
-              C.paperDataInstancePayload /\
-            forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-              C.paperDataInstancePayload n :=
+    (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+      List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+        C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+          C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+            C.advanced.appellLerch.z0) /\
+      (C.advanced.exponentFormula.exponent =
+          paperPrincipalExponent C.advanced.exponentFormula.n
+            C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+        C.advanced.exponentFormula.exponent < 0) /\
+        MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+          C.advanced.rationalSolve.rhs /\
+          (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+            C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+              C.advanced.fixedShadow.nonzeroCase /\
+                Not (C.advanced.fixedShadow.scale = 0)) /\
+            (forall n, C.advanced.insideOutside.inside.coeff n =
+                C.advanced.insideOutside.outside.coeff n /\
+              C.advanced.insideOutside.outside.coeff n =
+                C.advanced.insideOutside.partialTheta.coeff n -
+                  C.advanced.insideOutside.correction.coeff n) :=
   And.intro A.appell_lerch_block_formula
     (And.intro A.principal_exponent_formula
       (And.intro A.paper_matrix_rhs_solution
@@ -43195,14 +43732,22 @@ theorem t1t5_actual_inputs_at
 theorem kernel_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        C.sptKernelRequirementPayload /\
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-          C.sptKernelRequirementPayload /\
-        SPTKernelRequirementPayloadCertificate.multiplier_input_at
-            C.sptKernelRequirementPayload /\
-          SPTKernelRequirementPayloadCertificate.cusp_input_at
-            C.sptKernelRequirementPayload :=
+    (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+      C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+        C.sptKernel.sptFree.valuation.M /\
+      Not (C.sptKernel.sptFree.valuation.p ^
+        (C.sptKernel.sptFree.valuation.vp + 1) ∣
+          C.sptKernel.sptFree.valuation.M)) /\
+      (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+        C.sptKernel.kernelSelection.selectedModulus =
+          C.sptKernel.kernelSelection.level /\
+        C.sptKernel.kernelSelection.multiplierRows.length =
+          C.sptKernel.kernelSelection.level) /\
+      (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+        C.sptKernel.multiplier.rows.length = 2) /\
+      (C.sptKernel.cuspConvergence.boundary =
+          C.sptKernel.kernelCusp.convergence /\
+        C.sptKernel.cuspConvergence.boundary.passes = true) :=
   And.intro A.actual_mpk_valuation_certificate
     (And.intro A.kernel_selection_table_input
       (And.intro A.multiplier_phase_matching_input
@@ -43211,8 +43756,14 @@ theorem kernel_actual_inputs_at
 theorem exact_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-      C.exactCoefficientRequirementPayload :=
+    (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+      (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+        C.betaArch.betaArch.scalarRecord.scalar *
+          (C.betaArch.betaArch.unfolding.mockCoeff n *
+            C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+      (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+        C.betaArch.betaArch.formula.rademacher.main n +
+          C.betaArch.betaArch.formula.rademacher.remainder n) :=
   A.paper_data_formula_proof_fields
 
 theorem padic_actual_inputs_at
@@ -43808,7 +44359,7 @@ structure AdvancedClaimsIIRequirementLeafLedger
     EntropyReproRequirementPayloadCertificate.external_rows_at
       C.entropyReproRequirementPayload
   named_concrete_paper_instance :
-    C.paperInstance.extraction.concrete = C.paperInstance.instance.concrete
+    C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete
   concrete_certificate_theorem_extraction :
     C.paperInstance.extraction.concrete.paperObjectName =
         C.paperInstance.extraction.concrete.object.name /\
@@ -44185,7 +44736,7 @@ theorem external_output_schema_rows_at
 theorem named_concrete_paper_instance_at
     {C : AdvancedClaimsIICompletionCertificate}
     (L : AdvancedClaimsIIRequirementLeafLedger C) :
-    C.paperInstance.extraction.concrete = C.paperInstance.instance.concrete :=
+    C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete :=
   L.named_concrete_paper_instance
 
 theorem concrete_certificate_theorem_extraction_at
@@ -45118,7 +45669,25 @@ theorem all_nodup :
 
 theorem mem_all (s : Section) :
     List.Mem s all := by
-  cases s <;> simp [all]
+  cases s with
+  | objectSchema => exact List.Mem.head _
+  | t1t5 => exact List.Mem.tail _ (List.Mem.head _)
+  | spt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | kernel =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | exactCoefficient =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))
+  | pAdic =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | entropyRepro =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | finalInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
 
 end Section
 
@@ -45179,1285 +45748,333 @@ theorem sectionOf_mem_all (b : AdvancedClaimsIIPromptBullet) :
     List.Mem (sectionOf b) Section.all :=
   Section.mem_all (sectionOf b)
 
+private theorem mem_all_aux (r : AdvancedClaimsIIRequirement) :
+    List.Mem r all := by
+  cases r with
+  | objectClaimRegistry =>
+      exact List.Mem.head _
+  | objectCoefficientSchema =>
+      exact List.Mem.tail _ (List.Mem.head _)
+  | paperObjectDataInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | scalarJacobiDegeneracyRelation =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | principalPartRationalSolve =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  | completionShadowHolomorphicConsequence =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | cuspTransportSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | appellLerchBlockFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  | principalExponentFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  | paperMatrixRhsSolution =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  | fixedShadowUnaryThetaData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  | insideOutsideQSeriesCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  | natGcdLcmSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  | primewiseThicknessSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  | actualMpkValuationCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  | obstructionFreeFailureThicknessPortfolio =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
+  | baseChangeStabilityBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
+  | kernelSelectionCertificateBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
+  | finiteMultiplierPhaseMatchingCertificate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
+  | cuspConvergenceCertificateBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
+  | transportFamilyConnection =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
+  | kernelSelectionTableInput =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
+  | multiplierPhaseMatchingInput =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
+  | cuspConvergenceProofData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))
+  | transportAcrossRelevantCusps =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))
+  | coefficientSeparationBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))
+  | thetaCoefficientCharacterBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))
+  | spectralKloostermanExpansionBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))
+  | localEulerDecompositionBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))
+  | rootNumberFilterBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))
+  | exactCoefficientFormulaBoundary =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))
+  | paperDataFormulaProofFields =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))
+  | padicNormalizationWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))
+  | padicOverlapGluingWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))
+  | mahlerInterpolationWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))
+  | analyticRangeTailZeroWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))
+  | globalPadicFaceTracking =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))
+  | denominatorClearingData =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))
+  | chartVectorsModuloPrimePower =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))
+  | mahlerTableInterpolationVector =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))
+  | analyticRangePredicate =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))
+  | obstructionFailureCaseInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))
+  | regressionCardySkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))
+  | rademacherTailSkeleton =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))
+  | entropyCardyPaperWrapper =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))
+  | actualEntropyAlphaExtraction =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))
+  | degeneracyChannelInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))
+  | rationalOlsIntervalTable =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))
+  | growthStabilityUnderSptPadic =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))
+  | reproducibilitySchemaValidator =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))
+  | externalOutputSchemaRows =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))))
+  | namedConcretePaperInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))))
+  | concreteCertificateTheoremExtraction =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))))))
+  | advancedClaimsGlobalChecklist =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))))))
+
 theorem sectionOf_objectSchema_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b objectSchemaBullets) :
-    sectionOf b = Section.objectSchema := by
-  cases b <;> simp [objectSchemaBullets, sectionOf] at h ⊢
+    (r : AdvancedClaimsIIRequirement)
+    (h : List.Mem r objectSchemaRequirements) :
+    sectionOf r = Section.objectSchema := by
+  simp only [objectSchemaRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_t1t5_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b t1t5Bullets) :
-    sectionOf b = Section.t1t5 := by
-  cases b <;> simp [t1t5Bullets, sectionOf] at h ⊢
+    (r : AdvancedClaimsIIRequirement)
+    (h : List.Mem r t1t5Requirements) :
+    sectionOf r = Section.t1t5 := by
+  simp only [t1t5Requirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_spt_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b sptBullets) :
-    sectionOf b = Section.spt := by
-  cases b <;> simp [sptBullets, sectionOf] at h ⊢
+    (r : AdvancedClaimsIIRequirement)
+    (h : List.Mem r sptRequirements) :
+    sectionOf r = Section.spt := by
+  simp only [sptRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_kernel_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b kernelBullets) :
-    sectionOf b = Section.kernel := by
-  cases b <;> simp [kernelBullets, sectionOf] at h ⊢
+    (r : AdvancedClaimsIIRequirement)
+    (h : List.Mem r kernelRequirements) :
+    sectionOf r = Section.kernel := by
+  simp only [kernelRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
-theorem sectionOf_exact_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b exactBullets) :
-    sectionOf b = Section.exactCoefficient := by
-  cases b <;> simp [exactBullets, sectionOf] at h ⊢
+theorem sectionOf_exactCoefficient_at
+    (r : AdvancedClaimsIIRequirement)
+    (h : List.Mem r exactCoefficientRequirements) :
+    sectionOf r = Section.exactCoefficient := by
+  simp only [exactCoefficientRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
 theorem sectionOf_pAdic_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b pAdicBullets) :
-    sectionOf b = Section.pAdic := by
-  cases b <;> simp [pAdicBullets, sectionOf] at h ⊢
-
-theorem sectionOf_entropy_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b entropyBullets) :
-    sectionOf b = Section.entropyRepro := by
-  cases b <;> simp [entropyBullets, sectionOf] at h ⊢
-
-theorem requirementOf_objectSchema_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b objectSchemaBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.objectSchemaRequirements := by
-  cases b <;>
-    simp [objectSchemaBullets, requirementOf,
-      AdvancedClaimsIIRequirement.objectSchemaRequirements] at h ⊢
-
-theorem requirementOf_t1t5_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b t1t5Bullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.t1t5Requirements := by
-  cases b <;>
-    simp [t1t5Bullets, requirementOf,
-      AdvancedClaimsIIRequirement.t1t5Requirements] at h ⊢
-
-theorem requirementOf_spt_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b sptBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.sptRequirements := by
-  cases b <;>
-    simp [sptBullets, requirementOf,
-      AdvancedClaimsIIRequirement.sptRequirements] at h ⊢
-
-theorem requirementOf_kernel_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b kernelBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.kernelRequirements := by
-  cases b <;>
-    simp [kernelBullets, requirementOf,
-      AdvancedClaimsIIRequirement.kernelRequirements] at h ⊢
-
-theorem requirementOf_exact_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b exactBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.exactCoefficientRequirements := by
-  cases b <;>
-    simp [exactBullets, requirementOf,
-      AdvancedClaimsIIRequirement.exactCoefficientRequirements] at h ⊢
-
-theorem requirementOf_pAdic_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b pAdicBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.pAdicRequirements := by
-  cases b <;>
-    simp [pAdicBullets, requirementOf,
-      AdvancedClaimsIIRequirement.pAdicRequirements] at h ⊢
-
-theorem requirementOf_entropy_at
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b entropyBullets) :
-    List.Mem (requirementOf b)
-      AdvancedClaimsIIRequirement.entropyReproRequirements := by
-  cases b <;>
-    simp [entropyBullets, requirementOf,
-      AdvancedClaimsIIRequirement.entropyReproRequirements] at h ⊢
-
-def statement
-    (C : AdvancedClaimsIICompletionCertificate) :
-    AdvancedClaimsIIPromptBullet -> Prop
-  | objectClaimRegistry =>
-      forall claim : RemainingAdvancedClaim,
-        List.Mem claim C.advanced.registry.requirements
-  | objectCoefficientSchema =>
-      forall n, C.advanced.objectSchema.coefficientAt n =
-        C.advanced.objectSchema.object.coeff n
-  | paperObjectDataInstance =>
-      PaperDataInstancePayloadCertificate.paper_object_instance_at
-        C.paperDataInstancePayload
-  | scalarJacobiDegeneracyRelation =>
-      forall n, C.advanced.degeneracyRelation.jacobiCoeff n
-        C.advanced.degeneracyRelation.ellStar =
-          C.advanced.degeneracyRelation.scalarCoeff n
-  | principalPartRationalSolve =>
-      RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-        C.remainingAdvancedClaimPayload
-  | completionShadowHolomorphicConsequence =>
-      RemainingAdvancedClaimPayloadCertificate.completion_shadow_holomorphic_at
-        C.remainingAdvancedClaimPayload
-  | cuspTransportSkeleton =>
-      RemainingAdvancedClaimPayloadCertificate.cusp_transport_at
-        C.remainingAdvancedClaimPayload
-  | appellLerchBlockFormula =>
-      PaperDataInstancePayloadCertificate.appell_lerch_at
-        C.paperDataInstancePayload
-  | principalExponentFormula =>
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-        C.paperDataInstancePayload
-  | paperMatrixRhsSolution =>
-      PaperDataInstancePayloadCertificate.matrix_solution_at
-        C.paperDataInstancePayload
-  | fixedShadowUnaryThetaData =>
-      PaperDataInstancePayloadCertificate.fixed_shadow_at
-        C.paperDataInstancePayload
-  | insideOutsideQSeriesCertificate =>
-      forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-        C.paperDataInstancePayload n
-  | natGcdLcmSkeleton =>
-      SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        C.sptKernelRequirementPayload
-  | primewiseThicknessSkeleton =>
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-        C.sptKernelRequirementPayload
-  | actualMpkValuationCertificate =>
-      SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        C.sptKernelRequirementPayload
-  | obstructionFreeFailureThicknessPortfolio =>
-      SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-        C.sptKernelRequirementPayload
-  | baseChangeStabilityBoundary =>
-      SPTKernelRequirementPayloadCertificate.base_change_at
-        C.sptKernelRequirementPayload
-  | kernelSelectionCertificateBoundary =>
-      SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        C.sptKernelRequirementPayload
-  | finiteMultiplierPhaseMatchingCertificate =>
-      SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-        C.sptKernelRequirementPayload
-  | cuspConvergenceCertificateBoundary =>
-      SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-        C.sptKernelRequirementPayload
-  | transportFamilyConnection =>
-      SPTKernelRequirementPayloadCertificate.transport_family_at
-        C.sptKernelRequirementPayload
-  | kernelSelectionTableInput =>
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-        C.sptKernelRequirementPayload
-  | multiplierPhaseMatchingInput =>
-      SPTKernelRequirementPayloadCertificate.multiplier_input_at
-        C.sptKernelRequirementPayload
-  | cuspConvergenceProofData =>
-      SPTKernelRequirementPayloadCertificate.cusp_input_at
-        C.sptKernelRequirementPayload
-  | transportAcrossRelevantCusps =>
-      SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-        C.sptKernelRequirementPayload
-  | coefficientSeparationBoundary =>
-      forall n, ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        C.exactCoefficientRequirementPayload n
-  | thetaCoefficientCharacterBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.theta_character_at
-        C.exactCoefficientRequirementPayload
-  | spectralKloostermanExpansionBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-        C.exactCoefficientRequirementPayload
-  | localEulerDecompositionBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.local_euler_at
-        C.exactCoefficientRequirementPayload
-  | rootNumberFilterBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.root_filter_at
-        C.exactCoefficientRequirementPayload
-  | exactCoefficientFormulaBoundary =>
-      forall n, ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-        C.exactCoefficientRequirementPayload n
-  | paperDataFormulaProofFields =>
-      ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-        C.exactCoefficientRequirementPayload
-  | padicNormalizationWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.normalization_at
-        C.pAdicRequirementPayload n
-  | padicOverlapGluingWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.overlap_at
-        C.pAdicRequirementPayload n
-  | mahlerInterpolationWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.mahler_at
-        C.pAdicRequirementPayload n
-  | analyticRangeTailZeroWrapper =>
-      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-        PAdicRequirementPayloadCertificate.tail_zero_at
-          C.pAdicRequirementPayload n hn
-  | globalPadicFaceTracking =>
-      PAdicRequirementPayloadCertificate.face_tracking_at
-        C.pAdicRequirementPayload
-  | denominatorClearingData =>
-      PAdicRequirementPayloadCertificate.denominator_data_at
-        C.pAdicRequirementPayload
-  | chartVectorsModuloPrimePower =>
-      forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-        C.pAdicRequirementPayload n
-  | mahlerTableInterpolationVector =>
-      forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-        C.pAdicRequirementPayload n
-  | analyticRangePredicate =>
-      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-        PAdicRequirementPayloadCertificate.predicate_at
-          C.pAdicRequirementPayload n hn
-  | obstructionFailureCaseInstance =>
-      PAdicRequirementPayloadCertificate.obstruction_failure_at
-        C.pAdicRequirementPayload
-  | regressionCardySkeleton =>
-      EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        C.entropyReproRequirementPayload
-  | rademacherTailSkeleton =>
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-        C.entropyReproRequirementPayload
-  | entropyCardyPaperWrapper =>
-      EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-        C.entropyReproRequirementPayload
-  | actualEntropyAlphaExtraction =>
-      EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        C.entropyReproRequirementPayload
-  | degeneracyChannelInstance =>
-      forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-        C.entropyReproRequirementPayload n
-  | rationalOlsIntervalTable =>
-      EntropyReproRequirementPayloadCertificate.ols_interval_at
-        C.entropyReproRequirementPayload
-  | growthStabilityUnderSptPadic =>
-      EntropyReproRequirementPayloadCertificate.growth_stability_at
-        C.entropyReproRequirementPayload
-  | reproducibilitySchemaValidator =>
-      EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-        C.entropyReproRequirementPayload
-  | externalOutputSchemaRows =>
-      EntropyReproRequirementPayloadCertificate.external_rows_at
-        C.entropyReproRequirementPayload
-
-end AdvancedClaimsIIPromptBullet
-
-structure AdvancedClaimsIIPromptObjectiveAuditCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  leaf_ledger :
-    AdvancedClaimsIIRequirementLeafLedger C
-  objective_crosswalk :
-    AdvancedClaimsIIObjectiveCrosswalkCertificate C
-  requirements_complete :
-    forall r : AdvancedClaimsIIRequirement, List.Mem r C.requirements
-  object_schema :
-    AdvancedClaimsIIObjectSchemaPromptObjective C
-  t1t5_core :
-    AdvancedClaimsIIT1T5PromptObjective C
-  spt_equalizer_tor_crt :
-    AdvancedClaimsIISPTPromptObjective C
-  kernel_cusp_multiplier :
-    AdvancedClaimsIIKernelPromptObjective C
-  exact_coefficient_formula :
-    AdvancedClaimsIIExactPromptObjective C
-  p_adic_section :
-    AdvancedClaimsIIPAdicPromptObjective C
-  entropy_cardy_reproducibility :
-    AdvancedClaimsIIEntropyPromptObjective C
-
-namespace AdvancedClaimsIIPromptObjectiveAuditCertificate
-
-theorem leaf_ledger_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIRequirementLeafLedger C :=
-  A.leaf_ledger
-
-theorem objective_crosswalk_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIObjectiveCrosswalkCertificate C :=
-  A.objective_crosswalk
-
-theorem requirements_complete_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C)
-    (r : AdvancedClaimsIIRequirement) :
-    List.Mem r C.requirements :=
-  A.requirements_complete r
-
-theorem object_schema_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIObjectSchemaPromptObjective C :=
-  A.object_schema
-
-theorem t1t5_core_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIT1T5PromptObjective C :=
-  A.t1t5_core
-
-theorem spt_equalizer_tor_crt_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIISPTPromptObjective C :=
-  A.spt_equalizer_tor_crt
-
-theorem kernel_cusp_multiplier_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIKernelPromptObjective C :=
-  A.kernel_cusp_multiplier
-
-theorem exact_coefficient_formula_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIExactPromptObjective C :=
-  A.exact_coefficient_formula
-
-theorem p_adic_section_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIPAdicPromptObjective C :=
-  A.p_adic_section
-
-theorem entropy_cardy_reproducibility_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
-    AdvancedClaimsIIEntropyPromptObjective C :=
-  A.entropy_cardy_reproducibility
-
-end AdvancedClaimsIIPromptObjectiveAuditCertificate
-
-structure AdvancedClaimsIIClaimGroupAuditCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  prompt_audit :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C
-  actual_input_audit :
-    AdvancedClaimsIIActualInputAuditCertificate C
-  object_schema_group :
-    AdvancedClaimsIIObjectSchemaPromptObjective C
-  t1t5_group :
-    AdvancedClaimsIIT1T5PromptObjective C
-  spt_group :
-    AdvancedClaimsIISPTPromptObjective C
-  kernel_group :
-    AdvancedClaimsIIKernelPromptObjective C
-  exact_group :
-    AdvancedClaimsIIExactPromptObjective C
-  padic_group :
-    AdvancedClaimsIIPAdicPromptObjective C
-  entropy_group :
-    AdvancedClaimsIIEntropyPromptObjective C
-  object_schema_actual_inputs :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-        C.paperDataInstancePayload /\
-      forall n, PaperDataInstancePayloadCertificate.scalar_jacobi_at
-        C.paperDataInstancePayload n
-  t1t5_actual_inputs :
-    PaperDataInstancePayloadCertificate.appell_lerch_at
-        C.paperDataInstancePayload /\
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-          C.paperDataInstancePayload /\
-        PaperDataInstancePayloadCertificate.matrix_solution_at
-            C.paperDataInstancePayload /\
-          PaperDataInstancePayloadCertificate.fixed_shadow_at
-              C.paperDataInstancePayload /\
-            forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-              C.paperDataInstancePayload n
-  spt_actual_valuation :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-      C.sptKernelRequirementPayload
-  kernel_actual_inputs :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        C.sptKernelRequirementPayload /\
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-          C.sptKernelRequirementPayload /\
-        SPTKernelRequirementPayloadCertificate.multiplier_input_at
-            C.sptKernelRequirementPayload /\
-          SPTKernelRequirementPayloadCertificate.cusp_input_at
-            C.sptKernelRequirementPayload
-  exact_actual_inputs :
-    ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-      C.exactCoefficientRequirementPayload
-  padic_actual_inputs :
-    PAdicRequirementPayloadCertificate.denominator_data_at
-        C.pAdicRequirementPayload /\
-      (forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-          C.pAdicRequirementPayload n) /\
-        (forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-            C.pAdicRequirementPayload n) /\
-          (forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-            PAdicRequirementPayloadCertificate.predicate_at
-              C.pAdicRequirementPayload n hn) /\
-            PAdicRequirementPayloadCertificate.obstruction_failure_at
-              C.pAdicRequirementPayload
-  entropy_actual_inputs :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        C.entropyReproRequirementPayload /\
-      (forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-          C.entropyReproRequirementPayload n) /\
-        EntropyReproRequirementPayloadCertificate.ols_interval_at
-            C.entropyReproRequirementPayload /\
-          EntropyReproRequirementPayloadCertificate.external_rows_at
-            C.entropyReproRequirementPayload
-  object_schema_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
-      List.Mem r C.requirements
-  t1t5_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
-      List.Mem r C.requirements
-  spt_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
-      List.Mem r C.requirements
-  kernel_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
-      List.Mem r C.requirements
-  exact_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
-      List.Mem r C.requirements
-  padic_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
-      List.Mem r C.requirements
-  entropy_covered :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
-      List.Mem r C.requirements
-  object_schema_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.objectSchema
-  t1t5_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.t1t5
-  spt_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.spt
-  kernel_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.kernel
-  exact_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.exactCoefficient
-  padic_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.pAdic
-  entropy_route :
-    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
-      AdvancedClaimsIIRequirement.sectionOf r =
-        AdvancedClaimsIIRequirement.Section.entropyRepro
-  grouped_lengths :
-    AdvancedClaimsIIRequirement.objectSchemaRequirements.length = 4 /\
-      AdvancedClaimsIIRequirement.t1t5Requirements.length = 8 /\
-        AdvancedClaimsIIRequirement.sptRequirements.length = 5 /\
-          AdvancedClaimsIIRequirement.kernelRequirements.length = 8 /\
-            AdvancedClaimsIIRequirement.exactCoefficientRequirements.length = 7 /\
-              AdvancedClaimsIIRequirement.pAdicRequirements.length = 10 /\
-                AdvancedClaimsIIRequirement.entropyReproRequirements.length = 9
-
-namespace AdvancedClaimsIIClaimGroupAuditCertificate
-
-theorem prompt_audit_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
-  G.prompt_audit
-
-theorem actual_input_audit_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate C :=
-  G.actual_input_audit
-
-theorem object_schema_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIObjectSchemaPromptObjective C :=
-  G.object_schema_group
-
-theorem t1t5_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIT1T5PromptObjective C :=
-  G.t1t5_group
-
-theorem spt_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIISPTPromptObjective C :=
-  G.spt_group
-
-theorem kernel_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIKernelPromptObjective C :=
-  G.kernel_group
-
-theorem exact_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIExactPromptObjective C :=
-  G.exact_group
-
-theorem padic_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIPAdicPromptObjective C :=
-  G.padic_group
-
-theorem entropy_group_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIEntropyPromptObjective C :=
-  G.entropy_group
-
-theorem object_schema_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-        C.paperDataInstancePayload /\
-      forall n, PaperDataInstancePayloadCertificate.scalar_jacobi_at
-        C.paperDataInstancePayload n :=
-  G.object_schema_actual_inputs
-
-theorem t1t5_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    PaperDataInstancePayloadCertificate.appell_lerch_at
-        C.paperDataInstancePayload /\
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-          C.paperDataInstancePayload /\
-        PaperDataInstancePayloadCertificate.matrix_solution_at
-            C.paperDataInstancePayload /\
-          PaperDataInstancePayloadCertificate.fixed_shadow_at
-              C.paperDataInstancePayload /\
-            forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-              C.paperDataInstancePayload n :=
-  G.t1t5_actual_inputs
-
-theorem spt_actual_valuation_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-      C.sptKernelRequirementPayload :=
-  G.spt_actual_valuation
-
-theorem kernel_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        C.sptKernelRequirementPayload /\
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-          C.sptKernelRequirementPayload /\
-        SPTKernelRequirementPayloadCertificate.multiplier_input_at
-            C.sptKernelRequirementPayload /\
-          SPTKernelRequirementPayloadCertificate.cusp_input_at
-            C.sptKernelRequirementPayload :=
-  G.kernel_actual_inputs
-
-theorem exact_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-      C.exactCoefficientRequirementPayload :=
-  G.exact_actual_inputs
-
-theorem padic_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    PAdicRequirementPayloadCertificate.denominator_data_at
-        C.pAdicRequirementPayload /\
-      (forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-          C.pAdicRequirementPayload n) /\
-        (forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-            C.pAdicRequirementPayload n) /\
-          (forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-            PAdicRequirementPayloadCertificate.predicate_at
-              C.pAdicRequirementPayload n hn) /\
-            PAdicRequirementPayloadCertificate.obstruction_failure_at
-              C.pAdicRequirementPayload :=
-  G.padic_actual_inputs
-
-theorem entropy_actual_inputs_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        C.entropyReproRequirementPayload /\
-      (forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-          C.entropyReproRequirementPayload n) /\
-        EntropyReproRequirementPayloadCertificate.ols_interval_at
-            C.entropyReproRequirementPayload /\
-          EntropyReproRequirementPayloadCertificate.external_rows_at
-            C.entropyReproRequirementPayload :=
-  G.entropy_actual_inputs
-
-theorem object_schema_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements) :
-    List.Mem r C.requirements :=
-  G.object_schema_covered r h
+    (h : List.Mem r pAdicRequirements) :
+    sectionOf r = Section.pAdic := by
+  simp only [pAdicRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
-theorem t1t5_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem sectionOf_entropyRepro_at
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements) :
-    List.Mem r C.requirements :=
-  G.t1t5_covered r h
+    (h : List.Mem r entropyReproRequirements) :
+    sectionOf r = Section.entropyRepro := by
+  simp only [entropyReproRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
-theorem spt_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem sectionOf_finalInstance_at
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.sptRequirements) :
-    List.Mem r C.requirements :=
-  G.spt_covered r h
+    (h : List.Mem r finalInstanceRequirements) :
+    sectionOf r = Section.finalInstance := by
+  simp only [finalInstanceRequirements] at h
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  rcases h with rfl | h
+  · rfl
+  cases h
 
-theorem kernel_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem objectSchema_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.kernelRequirements) :
-    List.Mem r C.requirements :=
-  G.kernel_covered r h
+    (_h : List.Mem r objectSchemaRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem exact_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem t1t5_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements) :
-    List.Mem r C.requirements :=
-  G.exact_covered r h
+    (_h : List.Mem r t1t5Requirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem padic_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem spt_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements) :
-    List.Mem r C.requirements :=
-  G.padic_covered r h
+    (_h : List.Mem r sptRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem entropy_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem kernel_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements) :
-    List.Mem r C.requirements :=
-  G.entropy_covered r h
+    (_h : List.Mem r kernelRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem object_schema_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem exactCoefficient_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.objectSchema :=
-  G.object_schema_route r h
+    (_h : List.Mem r exactCoefficientRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem t1t5_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem pAdic_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.t1t5 :=
-  G.t1t5_route r h
+    (_h : List.Mem r pAdicRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem spt_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem entropyRepro_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.sptRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.spt :=
-  G.spt_route r h
+    (_h : List.Mem r entropyReproRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem kernel_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
+theorem finalInstance_mem_all
     (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.kernelRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.kernel :=
-  G.kernel_route r h
+    (_h : List.Mem r finalInstanceRequirements) :
+    List.Mem r all :=
+  mem_all_aux r
 
-theorem exact_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.exactCoefficient :=
-  G.exact_route r h
-
-theorem padic_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.pAdic :=
-  G.padic_route r h
-
-theorem entropy_route_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C)
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements) :
-    AdvancedClaimsIIRequirement.sectionOf r =
-      AdvancedClaimsIIRequirement.Section.entropyRepro :=
-  G.entropy_route r h
-
-theorem grouped_lengths_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (G : AdvancedClaimsIIClaimGroupAuditCertificate C) :
-    AdvancedClaimsIIRequirement.objectSchemaRequirements.length = 4 /\
-      AdvancedClaimsIIRequirement.t1t5Requirements.length = 8 /\
-        AdvancedClaimsIIRequirement.sptRequirements.length = 5 /\
-          AdvancedClaimsIIRequirement.kernelRequirements.length = 8 /\
-            AdvancedClaimsIIRequirement.exactCoefficientRequirements.length = 7 /\
-              AdvancedClaimsIIRequirement.pAdicRequirements.length = 10 /\
-                AdvancedClaimsIIRequirement.entropyReproRequirements.length = 9 :=
-  G.grouped_lengths
-
-end AdvancedClaimsIIClaimGroupAuditCertificate
-
-structure AdvancedClaimsIIPromptBulletStatementCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  prompt_audit :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C
-  statement_at :
-    forall b : AdvancedClaimsIIPromptBullet,
-      AdvancedClaimsIIPromptBullet.statement C b
-
-namespace AdvancedClaimsIIPromptBulletStatementCertificate
-
-theorem prompt_audit_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletStatementCertificate C) :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
-  S.prompt_audit
-
-theorem statement_at_bullet
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletStatementCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    AdvancedClaimsIIPromptBullet.statement C b :=
-  S.statement_at b
-
-end AdvancedClaimsIIPromptBulletStatementCertificate
-
-structure AdvancedClaimsIIPromptBulletCoverageCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  prompt_audit :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C
-  prompt_statement :
-    AdvancedClaimsIIPromptBulletStatementCertificate C
-  all_bullets_listed :
-    forall b : AdvancedClaimsIIPromptBullet,
-      List.Mem b AdvancedClaimsIIPromptBullet.all
-  all_bullets_nodup :
-    AdvancedClaimsIIPromptBullet.all.Nodup
-  all_bullets_length :
-    AdvancedClaimsIIPromptBullet.all.length = 51
-  requirement_of_bullet_listed :
-    forall b : AdvancedClaimsIIPromptBullet,
-      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
-        AdvancedClaimsIIRequirement.all
-  requirement_of_bullet_covered :
-    forall b : AdvancedClaimsIIPromptBullet,
-      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
-        C.requirements
-  requirement_of_bullet_has_leaf_statement :
-    forall b : AdvancedClaimsIIPromptBullet,
-      AdvancedClaimsIIRequirement.leafStatement C
-        (AdvancedClaimsIIPromptBullet.requirementOf b)
-
-namespace AdvancedClaimsIIPromptBulletCoverageCertificate
-
-theorem prompt_audit_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
-    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
-  B.prompt_audit
-
-theorem prompt_statement_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
-    AdvancedClaimsIIPromptBulletStatementCertificate C :=
-  B.prompt_statement
-
-theorem bullet_mem_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    List.Mem b AdvancedClaimsIIPromptBullet.all :=
-  B.all_bullets_listed b
-
-theorem bullet_nodup_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
-    AdvancedClaimsIIPromptBullet.all.Nodup :=
-  B.all_bullets_nodup
-
-theorem bullet_length_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
-    AdvancedClaimsIIPromptBullet.all.length = 51 :=
-  B.all_bullets_length
-
-theorem requirement_mem_all_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
-      AdvancedClaimsIIRequirement.all :=
-  B.requirement_of_bullet_listed b
-
-theorem requirement_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
-      C.requirements :=
-  B.requirement_of_bullet_covered b
-
-theorem leaf_statement_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (B : AdvancedClaimsIIPromptBulletCoverageCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    AdvancedClaimsIIRequirement.leafStatement C
-      (AdvancedClaimsIIPromptBullet.requirementOf b) :=
-  B.requirement_of_bullet_has_leaf_statement b
-
-end AdvancedClaimsIIPromptBulletCoverageCertificate
-
-structure AdvancedClaimsIIPromptBulletSectionCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  bullet_coverage :
-    AdvancedClaimsIIPromptBulletCoverageCertificate C
-  grouped_lengths :
-    AdvancedClaimsIIPromptBullet.objectSchemaBullets.length = 4 /\
-      AdvancedClaimsIIPromptBullet.t1t5Bullets.length = 8 /\
-        AdvancedClaimsIIPromptBullet.sptBullets.length = 5 /\
-          AdvancedClaimsIIPromptBullet.kernelBullets.length = 8 /\
-            AdvancedClaimsIIPromptBullet.exactBullets.length = 7 /\
-              AdvancedClaimsIIPromptBullet.pAdicBullets.length = 10 /\
-                AdvancedClaimsIIPromptBullet.entropyBullets.length = 9
-  grouped_eq_all :
-    AdvancedClaimsIIPromptBullet.groupedBullets =
-      AdvancedClaimsIIPromptBullet.all
-  grouped_length :
-    AdvancedClaimsIIPromptBullet.groupedBullets.length = 51
-  grouped_nodup :
-    AdvancedClaimsIIPromptBullet.groupedBullets.Nodup
-  section_all_length :
-    AdvancedClaimsIIPromptBullet.Section.all.length = 7
-  section_all_nodup :
-    AdvancedClaimsIIPromptBullet.Section.all.Nodup
-  section_route_total :
-    forall b : AdvancedClaimsIIPromptBullet,
-      List.Mem (AdvancedClaimsIIPromptBullet.sectionOf b)
-        AdvancedClaimsIIPromptBullet.Section.all
-  route_object_schema :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.objectSchemaBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.objectSchema
-  route_t1t5 :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.t1t5Bullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.t1t5
-  route_spt :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.sptBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.spt
-  route_kernel :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.kernelBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.kernel
-  route_exact :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.exactBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.exactCoefficient
-  route_padic :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.pAdicBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.pAdic
-  route_entropy :
-    forall b, List.Mem b AdvancedClaimsIIPromptBullet.entropyBullets ->
-      AdvancedClaimsIIPromptBullet.sectionOf b =
-        AdvancedClaimsIIPromptBullet.Section.entropyRepro
-
-namespace AdvancedClaimsIIPromptBulletSectionCertificate
-
-theorem bullet_coverage_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBulletCoverageCertificate C :=
-  S.bullet_coverage
-
-theorem grouped_lengths_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.objectSchemaBullets.length = 4 /\
-      AdvancedClaimsIIPromptBullet.t1t5Bullets.length = 8 /\
-        AdvancedClaimsIIPromptBullet.sptBullets.length = 5 /\
-          AdvancedClaimsIIPromptBullet.kernelBullets.length = 8 /\
-            AdvancedClaimsIIPromptBullet.exactBullets.length = 7 /\
-              AdvancedClaimsIIPromptBullet.pAdicBullets.length = 10 /\
-                AdvancedClaimsIIPromptBullet.entropyBullets.length = 9 :=
-  S.grouped_lengths
-
-theorem grouped_eq_all_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.groupedBullets =
-      AdvancedClaimsIIPromptBullet.all :=
-  S.grouped_eq_all
-
-theorem grouped_length_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.groupedBullets.length = 51 :=
-  S.grouped_length
-
-theorem grouped_nodup_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.groupedBullets.Nodup :=
-  S.grouped_nodup
-
-theorem section_all_length_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.Section.all.length = 7 :=
-  S.section_all_length
-
-theorem section_all_nodup_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C) :
-    AdvancedClaimsIIPromptBullet.Section.all.Nodup :=
-  S.section_all_nodup
-
-theorem section_route_total_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet) :
-    List.Mem (AdvancedClaimsIIPromptBullet.sectionOf b)
-      AdvancedClaimsIIPromptBullet.Section.all :=
-  S.section_route_total b
-
-theorem route_object_schema_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.objectSchemaBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.objectSchema :=
-  S.route_object_schema b h
-
-theorem route_t1t5_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.t1t5Bullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.t1t5 :=
-  S.route_t1t5 b h
-
-theorem route_spt_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.sptBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.spt :=
-  S.route_spt b h
-
-theorem route_kernel_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.kernelBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.kernel :=
-  S.route_kernel b h
-
-theorem route_exact_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.exactBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.exactCoefficient :=
-  S.route_exact b h
-
-theorem route_padic_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.pAdicBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.pAdic :=
-  S.route_padic b h
-
-theorem route_entropy_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (S : AdvancedClaimsIIPromptBulletSectionCertificate C)
-    (b : AdvancedClaimsIIPromptBullet)
-    (h : List.Mem b AdvancedClaimsIIPromptBullet.entropyBullets) :
-    AdvancedClaimsIIPromptBullet.sectionOf b =
-      AdvancedClaimsIIPromptBullet.Section.entropyRepro :=
-  S.route_entropy b h
-
-end AdvancedClaimsIIPromptBulletSectionCertificate
-
-namespace AdvancedClaimsIIRequirement
-
-def leafStatement
-    (C : AdvancedClaimsIICompletionCertificate) :
-    AdvancedClaimsIIRequirement -> Prop
-  | objectClaimRegistry =>
-      forall claim : RemainingAdvancedClaim,
-        List.Mem claim C.advanced.registry.requirements
-  | objectCoefficientSchema =>
-      forall n, C.advanced.objectSchema.coefficientAt n =
-        C.advanced.objectSchema.object.coeff n
-  | paperObjectDataInstance =>
-      PaperDataInstancePayloadCertificate.paper_object_instance_at
-        C.paperDataInstancePayload
-  | scalarJacobiDegeneracyRelation =>
-      forall n, C.advanced.degeneracyRelation.jacobiCoeff n
-        C.advanced.degeneracyRelation.ellStar =
-          C.advanced.degeneracyRelation.scalarCoeff n
-  | principalPartRationalSolve =>
-      RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-        C.remainingAdvancedClaimPayload
-  | completionShadowHolomorphicConsequence =>
-      RemainingAdvancedClaimPayloadCertificate.completion_shadow_holomorphic_at
-        C.remainingAdvancedClaimPayload
-  | cuspTransportSkeleton =>
-      RemainingAdvancedClaimPayloadCertificate.cusp_transport_at
-        C.remainingAdvancedClaimPayload
-  | appellLerchBlockFormula =>
-      PaperDataInstancePayloadCertificate.appell_lerch_at
-        C.paperDataInstancePayload
-  | principalExponentFormula =>
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-        C.paperDataInstancePayload
-  | paperMatrixRhsSolution =>
-      PaperDataInstancePayloadCertificate.matrix_solution_at
-        C.paperDataInstancePayload
-  | fixedShadowUnaryThetaData =>
-      PaperDataInstancePayloadCertificate.fixed_shadow_at
-        C.paperDataInstancePayload
-  | insideOutsideQSeriesCertificate =>
-      forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-        C.paperDataInstancePayload n
-  | natGcdLcmSkeleton =>
-      SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        C.sptKernelRequirementPayload
-  | primewiseThicknessSkeleton =>
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-        C.sptKernelRequirementPayload
-  | actualMpkValuationCertificate =>
-      SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        C.sptKernelRequirementPayload
-  | obstructionFreeFailureThicknessPortfolio =>
-      SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-        C.sptKernelRequirementPayload
-  | baseChangeStabilityBoundary =>
-      SPTKernelRequirementPayloadCertificate.base_change_at
-        C.sptKernelRequirementPayload
-  | kernelSelectionCertificateBoundary =>
-      SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        C.sptKernelRequirementPayload
-  | finiteMultiplierPhaseMatchingCertificate =>
-      SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-        C.sptKernelRequirementPayload
-  | cuspConvergenceCertificateBoundary =>
-      SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-        C.sptKernelRequirementPayload
-  | transportFamilyConnection =>
-      SPTKernelRequirementPayloadCertificate.transport_family_at
-        C.sptKernelRequirementPayload
-  | kernelSelectionTableInput =>
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-        C.sptKernelRequirementPayload
-  | multiplierPhaseMatchingInput =>
-      SPTKernelRequirementPayloadCertificate.multiplier_input_at
-        C.sptKernelRequirementPayload
-  | cuspConvergenceProofData =>
-      SPTKernelRequirementPayloadCertificate.cusp_input_at
-        C.sptKernelRequirementPayload
-  | transportAcrossRelevantCusps =>
-      SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-        C.sptKernelRequirementPayload
-  | coefficientSeparationBoundary =>
-      forall n, ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        C.exactCoefficientRequirementPayload n
-  | thetaCoefficientCharacterBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.theta_character_at
-        C.exactCoefficientRequirementPayload
-  | spectralKloostermanExpansionBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-        C.exactCoefficientRequirementPayload
-  | localEulerDecompositionBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.local_euler_at
-        C.exactCoefficientRequirementPayload
-  | rootNumberFilterBoundary =>
-      ExactCoefficientRequirementPayloadCertificate.root_filter_at
-        C.exactCoefficientRequirementPayload
-  | exactCoefficientFormulaBoundary =>
-      forall n, ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-        C.exactCoefficientRequirementPayload n
-  | paperDataFormulaProofFields =>
-      ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-        C.exactCoefficientRequirementPayload
-  | padicNormalizationWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.normalization_at
-        C.pAdicRequirementPayload n
-  | padicOverlapGluingWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.overlap_at
-        C.pAdicRequirementPayload n
-  | mahlerInterpolationWrapper =>
-      forall n, PAdicRequirementPayloadCertificate.mahler_at
-        C.pAdicRequirementPayload n
-  | analyticRangeTailZeroWrapper =>
-      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-        PAdicRequirementPayloadCertificate.tail_zero_at
-          C.pAdicRequirementPayload n hn
-  | globalPadicFaceTracking =>
-      PAdicRequirementPayloadCertificate.face_tracking_at
-        C.pAdicRequirementPayload
-  | denominatorClearingData =>
-      PAdicRequirementPayloadCertificate.denominator_data_at
-        C.pAdicRequirementPayload
-  | chartVectorsModuloPrimePower =>
-      forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-        C.pAdicRequirementPayload n
-  | mahlerTableInterpolationVector =>
-      forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-        C.pAdicRequirementPayload n
-  | analyticRangePredicate =>
-      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-        PAdicRequirementPayloadCertificate.predicate_at
-          C.pAdicRequirementPayload n hn
-  | obstructionFailureCaseInstance =>
-      PAdicRequirementPayloadCertificate.obstruction_failure_at
-        C.pAdicRequirementPayload
-  | regressionCardySkeleton =>
-      EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        C.entropyReproRequirementPayload
-  | rademacherTailSkeleton =>
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-        C.entropyReproRequirementPayload
-  | entropyCardyPaperWrapper =>
-      EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-        C.entropyReproRequirementPayload
-  | actualEntropyAlphaExtraction =>
-      EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        C.entropyReproRequirementPayload
-  | degeneracyChannelInstance =>
-      forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-        C.entropyReproRequirementPayload n
-  | rationalOlsIntervalTable =>
-      EntropyReproRequirementPayloadCertificate.ols_interval_at
-        C.entropyReproRequirementPayload
-  | growthStabilityUnderSptPadic =>
-      EntropyReproRequirementPayloadCertificate.growth_stability_at
-        C.entropyReproRequirementPayload
-  | reproducibilitySchemaValidator =>
-      EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-        C.entropyReproRequirementPayload
-  | externalOutputSchemaRows =>
-      EntropyReproRequirementPayloadCertificate.external_rows_at
-        C.entropyReproRequirementPayload
-  | namedConcretePaperInstance =>
-      C.paperInstance.extraction.concrete = C.paperInstance.instance.concrete
-  | concreteCertificateTheoremExtraction =>
-      C.paperInstance.extraction.concrete.paperObjectName =
-          C.paperInstance.extraction.concrete.object.name /\
-        C.paperInstance.extraction.concrete.principalPart.order = 1 /\
-          C.paperInstance.extraction.concrete.rationalOLS.alphaInterval.Contains
-            C.paperInstance.extraction.concrete.rationalOLS.alphaHat /\
-          C.paperInstance.extraction.concrete.rationalOLS.betaInterval.Contains
-            C.paperInstance.extraction.concrete.rationalOLS.betaHat
-  | advancedClaimsGlobalChecklist =>
-      AdvancedClaimsIIObjectiveCrosswalkCertificate C
-
-theorem leafStatement_of_ledger
-    {C : AdvancedClaimsIICompletionCertificate}
-    (L : AdvancedClaimsIIRequirementLeafLedger C) :
-    forall r, leafStatement C r := by
-  intro r
-  cases r
-  · exact L.object_claim_registry
-  · exact L.object_coefficient_schema
-  · exact L.paper_object_data_instance
-  · exact L.scalar_jacobi_degeneracy_relation
-  · exact L.principal_part_rational_solve
-  · exact L.completion_shadow_holomorphic
-  · exact L.cusp_transport
-  · exact L.appell_lerch_block_formula
-  · exact L.principal_exponent_formula
-  · exact L.paper_matrix_rhs_solution
-  · exact L.fixed_shadow_unary_theta
-  · exact L.inside_outside_qseries
-  · exact L.nat_gcd_lcm_skeleton
-  · exact L.primewise_thickness_skeleton
-  · exact L.actual_mpk_valuation_certificate
-  · exact L.obstruction_free_failure_thickness_portfolio
-  · exact L.base_change_stability_boundary
-  · exact L.kernel_selection_certificate_boundary
-  · exact L.finite_multiplier_phase_matching_certificate
-  · exact L.cusp_convergence_certificate_boundary
-  · exact L.transport_family_connection
-  · exact L.kernel_selection_table_input
-  · exact L.multiplier_phase_matching_input
-  · exact L.cusp_convergence_proof_data_input
-  · exact L.transport_across_relevant_cusps
-  · exact L.coefficient_separation_boundary
-  · exact L.theta_coefficient_character_boundary
-  · exact L.spectral_kloosterman_expansion_boundary
-  · exact L.local_euler_decomposition_boundary
-  · exact L.root_number_filter_boundary
-  · exact L.exact_coefficient_formula_boundary
-  · exact L.paper_data_formula_proof_fields
-  · exact L.padic_normalization_wrapper
-  · exact L.padic_overlap_gluing_wrapper
-  · exact L.mahler_interpolation_wrapper
-  · exact L.analytic_range_tail_zero_wrapper
-  · exact L.global_padic_face_tracking
-  · exact L.denominator_clearing_data
-  · exact L.chart_vectors_modulo_prime_power
-  · exact L.mahler_table_interpolation_vector
-  · exact L.analytic_range_predicate
-  · exact L.obstruction_failure_case_instance
-  · exact L.regression_cardy_skeleton
-  · exact L.rademacher_tail_skeleton
-  · exact L.entropy_cardy_paper_wrapper
-  · exact L.actual_entropy_alpha_extraction
-  · exact L.degeneracy_channel_instance
-  · exact L.rational_ols_interval_table
-  · exact L.growth_stability_under_spt_padic
-  · exact L.reproducibility_schema_validator
-  · exact L.external_output_schema_rows
-  · exact L.named_concrete_paper_instance
-  · exact L.concrete_certificate_theorem_extraction
-  · exact L.advanced_claims_global_checklist
-
+theorem mem_all (r : AdvancedClaimsIIRequirement) :
+    List.Mem r all :=
+  mem_all_aux r
 end AdvancedClaimsIIRequirement
 
 structure AdvancedClaimsIIRequirementDispatchCertificate
@@ -46787,7 +46404,7 @@ structure AdvancedClaimsIIExplicitChecklistCompletionCertificate
       AdvancedClaimsIIRequirement.leafStatement C r
   named_concrete_paper_instance :
     C.paperInstance.extraction.concrete =
-      C.paperInstance.instance.concrete
+      C.paperInstance.namedInstance.concrete
   concrete_certificate_theorem_extraction :
     C.paperInstance.extraction.concrete.paperObjectName =
         C.paperInstance.extraction.concrete.object.name /\
@@ -46886,7 +46503,7 @@ theorem named_concrete_paper_instance_at
     {C : AdvancedClaimsIICompletionCertificate}
     (E : AdvancedClaimsIIExplicitChecklistCompletionCertificate C) :
     C.paperInstance.extraction.concrete =
-      C.paperInstance.instance.concrete :=
+      C.paperInstance.namedInstance.concrete :=
   E.named_concrete_paper_instance
 
 theorem concrete_certificate_theorem_extraction_at
@@ -47969,23 +47586,23 @@ structure AdvancedClaimsIIRlfEndToEndClosureCertificate
         referencePaperInstancesHRflConcrete.qSeriesCertificate.series.coefficientAt n =
           referencePaperInstancesHRflConcrete.object.coeff n
   completion_entropy_cardy_payload :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffHat
   actual_entropy_cardy_payload :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -48138,12 +47755,12 @@ theorem actual_fourier_channel_at
 theorem completion_entropy_cardy_payload_at
     {C : AdvancedClaimsIICompletionCertificate}
     (E : AdvancedClaimsIIRlfEndToEndClosureCertificate C) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -48153,12 +47770,12 @@ theorem completion_entropy_cardy_payload_at
 theorem actual_entropy_cardy_payload_at
     {C : AdvancedClaimsIICompletionCertificate}
     (E : AdvancedClaimsIIRlfEndToEndClosureCertificate C) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
             referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -48229,12 +47846,12 @@ theorem integrated_ols_row_chain_at
 theorem integrated_entropy_cardy_chain_at
     {C : AdvancedClaimsIICompletionCertificate}
     (E : AdvancedClaimsIIRlfEndToEndClosureCertificate C) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -52129,12 +51746,12 @@ theorem rlf_integrated_ols_row_chain_at
 theorem rlf_integrated_entropy_cardy_chain_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIFinalTheoremAggregationCertificate C) :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -52551,12 +52168,12 @@ theorem reference_advanced_claims_ii_rlf_e2e_lerch_principal :
   reference_advanced_claims_ii_rlf_end_to_end_closure.completion_lerch_principal_channel_at
 
 theorem reference_advanced_claims_ii_rlf_e2e_entropy_cardy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -53485,9 +53102,9 @@ theorem reference_paper_data_payload_object_coefficient
 
 theorem reference_paper_data_payload_object_instance :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -53673,12 +53290,12 @@ theorem reference_paper_data_payload_coefficient_schema_eq_object_schema :
 
 theorem reference_paper_data_payload_paper_instance_concrete :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-      referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete :=
+      referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete :=
   reference_advanced_claims_ii_paper_data_payload.paper_instance_concrete_at
 
 theorem reference_paper_data_payload_paper_instance_family :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-      referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family :=
+      referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family :=
   reference_advanced_claims_ii_paper_data_payload.paper_instance_family_at
 
 theorem reference_paper_data_payload_paper_instance_object_name :
@@ -54710,9 +54327,9 @@ theorem reference_remaining_claim_payload_object_coefficient
 
 theorem reference_remaining_claim_payload_paper_object_data :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -54791,12 +54408,12 @@ theorem reference_remaining_claim_payload_object_schema_concrete :
 
 theorem reference_remaining_claim_payload_paper_instance_concrete :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-      referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete :=
+      referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete :=
   reference_advanced_claims_ii_remaining_claim_payload.paper_instance_concrete_at
 
 theorem reference_remaining_claim_payload_paper_instance_family :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-      referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family :=
+      referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family :=
   reference_advanced_claims_ii_remaining_claim_payload.paper_instance_family_at
 
 theorem reference_remaining_claim_payload_paper_instance_object_name :
@@ -55023,13 +54640,13 @@ theorem reference_advanced_claims_ii_rfl_ols_interval :
   reference_advanced_claims_ii_rfl_mathematical_content.ols_interval_at
 
 theorem reference_advanced_claims_ii_rfl_entropy_limit :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHCompletionCertificate.extraction.concrete.object.coeff n| -
           referencePaperInstancesHCompletionCertificate.extraction.concrete.alpha *
             Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHCompletionCertificate.extraction.concrete.beta) :=
   reference_advanced_claims_ii_rfl_mathematical_content.entropy_limit_at
 
 theorem reference_advanced_claims_ii_rfl_fine_mathematical_content :
@@ -55157,12 +54774,12 @@ theorem reference_advanced_claims_ii_rfl_expanded_ols :
   reference_advanced_claims_ii_rfl_expanded_mathematical_content.ols_interval_channel_at
 
 theorem reference_advanced_claims_ii_rfl_expanded_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -55210,12 +54827,12 @@ theorem reference_advanced_claims_ii_rfl_detailed_padic_mahler
       (reference_advanced_claims_ii_rfl_detailed_mathematical_content.mahler_expansion_at n))
 
 theorem reference_advanced_claims_ii_rfl_detailed_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -55293,12 +54910,12 @@ theorem reference_advanced_claims_ii_rlf_padic_mahler
   reference_advanced_claims_ii_rlf_mathematical_payload.padic_mahler_payload_at n
 
 theorem reference_advanced_claims_ii_rlf_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -55367,12 +54984,12 @@ theorem reference_advanced_claims_ii_rlf_integrated_ols
   reference_advanced_claims_ii_rlf_integrated_mathematics.ols_row_chain_at i
 
 theorem reference_advanced_claims_ii_rlf_integrated_entropy :
-    Tendsto
+    Filter.Tendsto
         (fun n =>
           Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
             referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
               (1 / 2 : Real) * Real.log (n : Real))
-        atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+        Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
       referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaInterval.Contains
           referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.alphaExtraction.alphaHat /\
         referencePaperInstancesHCompletionCertificate.analytic.entropyCardy.cardyConvention.ceffInterval.Contains
@@ -55616,12 +55233,12 @@ theorem reference_advanced_claims_ii_rlf_ols_residual_bound_at
     (reference_advanced_claims_ii_rlf_end_to_end_closure.statement_ols_row_at i)
 
 theorem reference_advanced_claims_ii_rlf_entropy_limit_at :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   PaperInstancesHRlfEntropyCardyStatement.entropy_limit_at
     reference_advanced_claims_ii_rlf_end_to_end_closure.statement_entropy_cardy_at
 
@@ -57417,12 +57034,12 @@ def AdvancedClaimsIIRlfPAdicMahlerMathStatement (n : Nat) : Prop :=
                   mahlerBinomialBasis (j : Nat) n)
 
 def AdvancedClaimsIIRlfEntropyRegressionMathStatement : Prop :=
-  Tendsto
+  Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) /\
     (forall i : Fin referencePaperInstancesHRflConcrete.rationalOLS.points,
       referencePaperInstancesHRflConcrete.rationalOLS.predictedAt i =
           referencePaperInstancesHRflConcrete.rationalOLS.alphaHat *
@@ -57612,12 +57229,12 @@ namespace AdvancedClaimsIIRlfEntropyRegressionMathStatement
 
 theorem entropy_limit_at
     (H : AdvancedClaimsIIRlfEntropyRegressionMathStatement) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   H.1
 
 theorem ols_row_at
@@ -57925,12 +57542,12 @@ structure AdvancedClaimsIIRlfFormulaProjectionCertificate : Prop where
   entropy_regression_statement :
     AdvancedClaimsIIRlfEntropyRegressionMathStatement
   entropy_limit :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
   ols_row :
     forall i : Fin referencePaperInstancesHRflConcrete.rationalOLS.points,
       referencePaperInstancesHRflConcrete.rationalOLS.predictedAt i =
@@ -58044,12 +57661,12 @@ theorem binomial_value_at
 
 theorem entropy_limit_at
     (C : AdvancedClaimsIIRlfFormulaProjectionCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.entropy_limit
 
 theorem ols_row_at
@@ -58649,12 +58266,12 @@ structure AdvancedClaimsIIRlfEnrichedMathematicalContentCertificate : Prop where
                 referencePaperInstancesHRflConcrete.mahler.coeff j *
                   referencePaperInstancesHRflConcrete.mahler.basis j n)
   entropy_row :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta)
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta)
 
 namespace AdvancedClaimsIIRlfEnrichedMathematicalContentCertificate
 
@@ -58702,12 +58319,12 @@ theorem padic_mahler_row_at
 
 theorem entropy_row_at
     (C : AdvancedClaimsIIRlfEnrichedMathematicalContentCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   C.entropy_row
 
 end AdvancedClaimsIIRlfEnrichedMathematicalContentCertificate
@@ -59849,12 +59466,12 @@ theorem entropy_cardy_atoms_at
 
 theorem entropy_limit_atom_at
     (C : AdvancedClaimsIIRlfMicrolocalMathCertificate) :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   PaperInstancesHRlfEntropyCardyStatement.entropy_limit_at C.entropy_cardy_atoms
 
 theorem entropy_alpha_interval_atom_at
@@ -60205,12 +59822,12 @@ theorem reference_advanced_claims_ii_rlf_microlocal_ols_residual_bound_atom
   reference_advanced_claims_ii_rlf_microlocal_math.ols_residual_bound_atom_at i
 
 theorem reference_advanced_claims_ii_rlf_microlocal_entropy_limit_atom :
-    Tendsto
+    Filter.Tendsto
       (fun n =>
         Real.log |referencePaperInstancesHRflConcrete.object.coeff n| -
           referencePaperInstancesHRflConcrete.alpha * Real.sqrt (n : Real) +
             (1 / 2 : Real) * Real.log (n : Real))
-      atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
+      Filter.atTop (nhds referencePaperInstancesHRflConcrete.beta) :=
   reference_advanced_claims_ii_rlf_microlocal_math.entropy_limit_atom_at
 
 theorem reference_advanced_claims_ii_rlf_microlocal_entropy_alpha_interval_atom :
@@ -60540,9 +60157,9 @@ structure AdvancedClaimsIIObjectSchemaFrontMathStatement (n : Nat) : Prop where
       referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n
   paper_instance :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -61675,7 +61292,7 @@ def referenceAdvancedClaimsIIPaperI2MahlerBinomial :
   eval_eq := by
     intro n
     rfl
-  matches := by
+  matches_target := by
     intro n
     exact finiteCongruence_refl _ _ _
 
@@ -63752,10 +63369,10 @@ def referenceAdvancedClaimsIIPaperT3Block00 :
     simp
   formulaName_nonempty := by
     simp
-  m_mem := by
-    simp [referenceMock1MList]
-  r_mem := by
-    simp [referenceMock1RPhases]
+  m_mem :=
+    List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  r_mem := List.Mem.head _
   uTauCoeff_formula := by
     norm_num
   vTauCoeff_formula := by
@@ -63786,10 +63403,11 @@ def referenceAdvancedClaimsIIPaperT3Block10 :
     simp
   formulaName_nonempty := by
     simp
-  m_mem := by
-    simp [referenceMock1MList]
-  r_mem := by
-    simp [referenceMock1RPhases]
+  m_mem :=
+    List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  r_mem := List.Mem.head _
   uTauCoeff_formula := by
     norm_num
   vTauCoeff_formula := by
@@ -63820,10 +63438,10 @@ def referenceAdvancedClaimsIIPaperT3Block0Half :
     simp
   formulaName_nonempty := by
     simp
-  m_mem := by
-    simp [referenceMock1MList]
-  r_mem := by
-    simp [referenceMock1RPhases]
+  m_mem :=
+    List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  r_mem := List.Mem.tail _ (List.Mem.head _)
   uTauCoeff_formula := by
     norm_num
   vTauCoeff_formula := by
@@ -68749,9 +68367,9 @@ structure AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput
     Not (replacementPlan = "")
   qseries_limit :
     forall tau : UpperHalfPlanePoint,
-      Tendsto
+      Filter.Tendsto
         (fun N : Nat => AdvancedClaimsIIRamanujanFShiftedTruncation tau N)
-        atTop (nhds (holomorphicPart tau))
+        Filter.atTop (nhds (holomorphicPart tau))
   block_value_eq_mu :
     forall (block : AdvancedClaimsIIPaperT3WeightedBlock)
       (hblock : List.Mem block referenceAdvancedClaimsIIPaperT3WeightedBlocks)
@@ -68788,9 +68406,9 @@ namespace AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput
 theorem qseries_limit_at {ConvergesAt : CuspLabel -> Prop}
     (I : AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput ConvergesAt)
     (tau : UpperHalfPlanePoint) :
-    Tendsto
+    Filter.Tendsto
       (fun N : Nat => AdvancedClaimsIIRamanujanFShiftedTruncation tau N)
-      atTop (nhds (I.holomorphicPart tau)) :=
+      Filter.atTop (nhds (I.holomorphicPart tau)) :=
   I.qseries_limit tau
 
 theorem block_identification_at {ConvergesAt : CuspLabel -> Prop}
@@ -68873,9 +68491,9 @@ structure AdvancedClaimsIIRamanujanFAppellLerchConstructorBoundary : Prop where
     forall (ConvergesAt : CuspLabel -> Prop)
       (I : AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput ConvergesAt)
       (tau : UpperHalfPlanePoint),
-      Tendsto
+      Filter.Tendsto
         (fun N : Nat => AdvancedClaimsIIRamanujanFShiftedTruncation tau N)
-        atTop (nhds (I.holomorphicPart tau))
+        Filter.atTop (nhds (I.holomorphicPart tau))
   blockIdentification :
     forall (ConvergesAt : CuspLabel -> Prop)
       (I : AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput ConvergesAt)
@@ -68934,9 +68552,9 @@ theorem analytic_identity_at
     (ConvergesAt : CuspLabel -> Prop)
     (I : AdvancedClaimsIIRamanujanFAppellLerchAnalyticProofInput ConvergesAt)
     (tau : UpperHalfPlanePoint) :
-    Tendsto
+    Filter.Tendsto
           (fun N : Nat => AdvancedClaimsIIRamanujanFShiftedTruncation tau N)
-          atTop (nhds (I.holomorphicPart tau)) /\
+          Filter.atTop (nhds (I.holomorphicPart tau)) /\
       I.holomorphicPart tau =
           AdvancedClaimsIIPaperT3WeightedAnalyticSum I.blockValue tau /\
         I.completedPart tau =
@@ -69054,25 +68672,25 @@ structure AdvancedClaimsIIRamanujanFGlobalInsideOutsideProofInput
         AdvancedClaimsIIRamanujanDictionaryCorrectionCoefficient n
   outside_limit :
     forall tau : UpperHalfPlanePoint,
-      Tendsto
+      Filter.Tendsto
         (fun N : Nat =>
           AdvancedClaimsIIIntCoefficientTruncation
             AdvancedClaimsIIRamanujanFOutsideCoefficient tau N)
-        atTop (nhds (outsideAnalytic tau))
+        Filter.atTop (nhds (outsideAnalytic tau))
   psi_limit :
     forall tau : UpperHalfPlanePoint,
-      Tendsto
+      Filter.Tendsto
         (fun N : Nat =>
           AdvancedClaimsIIIntCoefficientTruncation
             AdvancedClaimsIIRamanujanPsiCoefficient tau N)
-        atTop (nhds (psiAnalytic tau))
+        Filter.atTop (nhds (psiAnalytic tau))
   correction_limit :
     forall tau : UpperHalfPlanePoint,
-      Tendsto
+      Filter.Tendsto
         (fun N : Nat =>
           AdvancedClaimsIIIntCoefficientTruncation
             AdvancedClaimsIIRamanujanExplicitCorrectionCoefficient tau N)
-        atTop (nhds (correctionAnalytic tau))
+        Filter.atTop (nhds (correctionAnalytic tau))
   analytic_inside_outside :
     forall tau : UpperHalfPlanePoint,
       outsideAnalytic tau =
@@ -69104,21 +68722,21 @@ theorem global_coefficient_identity_at {ConvergesAt : CuspLabel -> Prop}
 theorem series_limits_at {ConvergesAt : CuspLabel -> Prop}
     (I : AdvancedClaimsIIRamanujanFGlobalInsideOutsideProofInput ConvergesAt)
     (tau : UpperHalfPlanePoint) :
-    Tendsto
+    Filter.Tendsto
           (fun N : Nat =>
             AdvancedClaimsIIIntCoefficientTruncation
               AdvancedClaimsIIRamanujanFOutsideCoefficient tau N)
-          atTop (nhds (I.outsideAnalytic tau)) /\
-      Tendsto
+          Filter.atTop (nhds (I.outsideAnalytic tau)) /\
+      Filter.Tendsto
           (fun N : Nat =>
             AdvancedClaimsIIIntCoefficientTruncation
               AdvancedClaimsIIRamanujanPsiCoefficient tau N)
-          atTop (nhds (I.psiAnalytic tau)) /\
-        Tendsto
+          Filter.atTop (nhds (I.psiAnalytic tau)) /\
+        Filter.Tendsto
           (fun N : Nat =>
             AdvancedClaimsIIIntCoefficientTruncation
               AdvancedClaimsIIRamanujanExplicitCorrectionCoefficient tau N)
-          atTop (nhds (I.correctionAnalytic tau)) :=
+          Filter.atTop (nhds (I.correctionAnalytic tau)) :=
   And.intro (I.outside_limit tau)
     (And.intro (I.psi_limit tau) (I.correction_limit tau))
 
@@ -70780,12 +70398,12 @@ membership.
 def AdvancedClaimsIIThreeRegressorEntropyGrowth
     (coefficient : Nat -> Real)
     (alpha beta gamma : Real) : Prop :=
-  Tendsto
+  Filter.Tendsto
     (fun n : Nat =>
       Real.log (abs (coefficient n)) -
         (alpha * Real.sqrt (n : Real) +
           beta * Real.log (n : Real) + gamma))
-    atTop (nhds (0 : Real))
+    Filter.atTop (nhds (0 : Real))
 
 def AdvancedClaimsIIRationalIntervalContainsReal
     (interval : RationalInterval)
@@ -70823,10 +70441,10 @@ structure AdvancedClaimsIIRamanujanFEntropyAsymptoticProofInput where
     forall n : Nat,
       cOneMain n = (exactCoefficient.rademacherExpansion.expansion n).term 0
   c_one_alpha_limit :
-    Tendsto
+    Filter.Tendsto
       (fun n : Nat =>
         Real.log (abs (cOneMain n)) / Real.sqrt (n : Real))
-      atTop (nhds alpha)
+      Filter.atTop (nhds alpha)
   tail_cutoff_pos :
     0 < tailCutoff
   rademacher_cutoff_includes_c_one :
@@ -70870,10 +70488,10 @@ theorem c_one_at
 
 theorem alpha_limit_at
     (I : AdvancedClaimsIIRamanujanFEntropyAsymptoticProofInput) :
-    Tendsto
+    Filter.Tendsto
       (fun n : Nat =>
         Real.log (abs (I.cOneMain n)) / Real.sqrt (n : Real))
-      atTop (nhds I.alpha) :=
+      Filter.atTop (nhds I.alpha) :=
   I.c_one_alpha_limit
 
 theorem tail_dominance_at
@@ -70939,10 +70557,10 @@ structure AdvancedClaimsIIRamanujanFEntropyAnalyticPayloadBoundary : Prop where
         I.alpha I.beta I.gamma
   cOneAlphaLimit :
     forall I : AdvancedClaimsIIRamanujanFEntropyAsymptoticProofInput,
-      Tendsto
+      Filter.Tendsto
         (fun n : Nat =>
           Real.log (abs (I.cOneMain n)) / Real.sqrt (n : Real))
-        atTop (nhds I.alpha)
+        Filter.atTop (nhds I.alpha)
   tailDominance :
     forall (I : AdvancedClaimsIIRamanujanFEntropyAsymptoticProofInput)
       (n : Nat),
@@ -70975,10 +70593,10 @@ theorem asymptotic_at
     AdvancedClaimsIIThreeRegressorEntropyGrowth
           referenceAdvancedClaimsIIRamanujanFPaperObject.coeff
           I.alpha I.beta I.gamma /\
-      Tendsto
+      Filter.Tendsto
         (fun n : Nat =>
           Real.log (abs (I.cOneMain n)) / Real.sqrt (n : Real))
-        atTop (nhds I.alpha) :=
+        Filter.atTop (nhds I.alpha) :=
   And.intro (C.entropyGrowth I) (C.cOneAlphaLimit I)
 
 theorem cardy_at
@@ -71813,9 +71431,9 @@ structure AdvancedClaimsIIChecklistFormulaLedgerCertificate
           referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n
   object_paper_data_instance :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -72171,9 +71789,9 @@ theorem object_paper_data_instance_at
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows}
     (L : AdvancedClaimsIIChecklistFormulaLedgerCertificate n x hn row hrow) :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -73872,9 +73490,9 @@ theorem object_schema_identity_formula_at
 theorem object_paper_data_instance_formula_at
     (S : AdvancedClaimsIISectionFormulaStatementBridgeCertificate n x hn row hrow) :
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-          referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
             referenceMock1DepthOneObjectName /\
           referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
@@ -80325,9 +79943,9 @@ def AdvancedClaimsIIActualInputObjectSchemaIdentityFormula : Prop :=
 
 def AdvancedClaimsIIActualInputObjectPaperDataInstanceFormula : Prop :=
   referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
-      referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.concrete /\
+      referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
     referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
-        referenceAdvancedClaimsIICompletionCertificate.paperInstance.instance.family /\
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
       referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
           referenceMock1DepthOneObjectName /\
         referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =

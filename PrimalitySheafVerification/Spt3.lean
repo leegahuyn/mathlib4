@@ -1095,7 +1095,12 @@ theorem amalgam_section_unique (Fnum Fmod Fpadic FEC : Subfunctor B)
         (amalgam Fnum Fmod Fpadic FEC).toFunctor.map f s =
           (amalgam Fnum Fmod Fpadic FEC).toFunctor.map f t) :
     s = t := by
-  simpa using h (𝟙 U)
+  have hId := h (𝟙 U)
+  have hmap :
+      (amalgam Fnum Fmod Fpadic FEC).toFunctor.map (𝟙 U) = 𝟙 _ := by
+    simpa using (amalgam Fnum Fmod Fpadic FEC).toFunctor.map_id U
+  rw [hmap] at hId
+  simpa using hId
 
 /-- **B-3 (terminal/meet property).** The amalgam is the largest subpresheaf below all
 four layers: any `G` refining each layer refines the amalgam. -/
@@ -2966,11 +2971,13 @@ theorem resC_proj (N : ℕ) (n : ℕ) : Projective ((resC N).X n) := by
   | 1 => exact (inferInstanceAs (Projective Zz))
   | (_ + 2) => exact (ModuleCat.isZero_of_subsingleton Zp).projective
 
-theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N :=
-  ChainComplex.of_d Xf (df N) (resC_sq N) 0
+theorem resC_d10 (N : ℕ) : (resC N).d 1 0 = mulN N := by
+  dsimp [resC, df]
+  rfl
 
-theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 :=
-  ChainComplex.of_d Xf (df N) (resC_sq N) 1
+theorem resC_d21 (N : ℕ) : (resC N).d 2 1 = 0 := by
+  dsimp [resC, df]
+  rfl
 
 theorem mulN_mono (N : ℕ) [NeZero N] : Mono (mulN N) := by
   rw [ModuleCat.mono_iff_injective]
@@ -4241,7 +4248,6 @@ theorem padicLogSeries_norm_le_self {x : ℚ_[p]} (hx : ‖x‖ < 1) (n : ℕ) :
       have h1 : ‖x‖ ^ (n - 1) ≤ ((p : ℝ)⁻¹) ^ (n - 1) := by gcongr
       have h2 : (p : ℝ) ^ padicValNat p n ≤ (p : ℝ) ^ (n - 1) := by
         gcongr
-        exact hp1
       calc ‖x‖ ^ (n - 1) * (p : ℝ) ^ padicValNat p n
           ≤ ((p : ℝ)⁻¹) ^ (n - 1) * (p : ℝ) ^ (n - 1) :=
             mul_le_mul h1 h2 (by positivity) (by positivity)
@@ -4653,12 +4659,12 @@ the empty open.  Restriction is precomposition with `liftNE`; the functor laws h
 irrelevance, so no `if`/case split is needed. -/
 def RepointedConst (A : Type) : (Opens S)ᵒᵖ ⥤ Type where
   obj U := PLift (U.unop : Set S).Nonempty → A
-  map i := fun g => g ∘ liftNE (leOfHom i.unop)
+  map i := TypeCat.ofHom (fun g q => g (liftNE (leOfHom i.unop) q))
   map_id _ := by
-    funext g q
+    ext g q
     exact congrArg g (plift_prop_subsingleton _ _)
   map_comp _ _ := by
-    funext g q
+    ext g q
     exact congrArg g (plift_prop_subsingleton _ _)
 
 /-- Computation rule for the restriction maps of `RepointedConst`. -/
@@ -4731,6 +4737,10 @@ theorem predLayer_isSheaf (P : ℕ → Prop) :
   intro U s hcov p
   obtain ⟨x, hx⟩ := p.down
   obtain ⟨V, f, hf, hxV⟩ := hcov x hx
+  have hp :
+      liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩) = p :=
+    plift_prop_subsingleton _ _
+  rw [← hp]
   simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
 
 /-- **⑦ Generic four-layer amalgam over the repointed ambient is unconditionally a sheaf.** -/
@@ -4837,6 +4847,10 @@ theorem predLayerVar_isSheaf_of_const (Q : Opens S → Set ℕ)
   obtain ⟨x, hx⟩ := p.down
   obtain ⟨V, f, hf, hxV⟩ := hcov x hx
   rw [hconst U.unop ⟨x, hx⟩, ← hconst V ⟨x, hxV⟩]
+  have hp :
+      liftNE (leOfHom f) (PLift.up ⟨x, hxV⟩) = p :=
+    plift_prop_subsingleton _ _
+  rw [← hp]
   simpa [RepointedConst_map_apply] using hf (PLift.up ⟨x, hxV⟩)
 
 /-- **T1-d (per-prime site gate).**  A `q`-adic gate active exactly on opens containing

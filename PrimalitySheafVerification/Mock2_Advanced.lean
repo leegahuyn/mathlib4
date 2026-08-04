@@ -151,19 +151,21 @@ abbrev hyperbolicMeasure : Measure UpperHalfPlane :=
 theorem hyperbolicMeasure_def :
     hyperbolicMeasure =
       (volume.comap UpperHalfPlane.coe).withDensity fun z =>
-        ↑((1 / ⟨z.im, z.im_pos.le⟩ : ℝ≥0) ^ 2) :=
-  UpperHalfPlane.volume_def
+        ENNReal.ofNNReal ((1 / NNReal.mk z.im z.im_pos.le) ^ 2) := by
+  simpa only [hyperbolicMeasure] using UpperHalfPlane.volume_def
 
 /-- Every element of `Γ(2)` preserves the concrete hyperbolic measure. -/
 theorem gamma2Act_measurePreserving (γ : Gamma2Element) :
     MeasurePreserving (gamma2Act γ) hyperbolicMeasure hyperbolicMeasure := by
-  simpa only [hyperbolicMeasure, gamma2Act,
-    MulAction.compHom_smul_def] using
-    (measurePreserving_smul
-      ((Matrix.SpecialLinearGroup.mapGL
-        (n := Fin 2) (R := ℤ) ℝ)
-        (γ : Matrix.SpecialLinearGroup (Fin 2) ℤ))
-      (volume : Measure UpperHalfPlane))
+  change MeasurePreserving
+    (fun τ : UpperHalfPlane =>
+      ((Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ)
+        (γ : Matrix.SpecialLinearGroup (Fin 2) ℤ)) • τ)
+    (volume : Measure UpperHalfPlane) (volume : Measure UpperHalfPlane)
+  exact measurePreserving_smul
+    ((Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ)
+      (γ : Matrix.SpecialLinearGroup (Fin 2) ℤ))
+    (volume : Measure UpperHalfPlane)
 
 @[simp]
 theorem gamma2_smul_eq_gamma2Act
@@ -271,6 +273,7 @@ theorem norm_thetaTailTerm (τ : UpperHalfPlane) (n : ℕ) :
       (Real.pi * ((n : ℝ) + 1) ^ 2 : ℝ) *
         ((τ : ℂ) * Complex.I)),
     Complex.re_ofReal_mul, Complex.mul_I_re]
+  simp only [UpperHalfPlane.coe_im]
   ring
 
 /-- The positive Gaussian tail is summable for every positive height. -/
@@ -316,9 +319,8 @@ theorem intervalIntegral_gaussianMajorant_le_Ioi
     (∫ x in (0 : ℝ)..(N : ℝ), gaussianMajorant y x) ≤
       ∫ x in Set.Ioi (0 : ℝ), gaussianMajorant y x := by
   have hInt : IntegrableOn (gaussianMajorant y) (Set.Ioi (0 : ℝ)) := by
-    simpa only [gaussianMajorant] using
-      (integrableOn_Ioi_exp_neg_mul_sq_iff.mpr
-        (mul_pos Real.pi_pos hy))
+    change IntegrableOn (fun x : ℝ => Real.exp (-(Real.pi * y) * x ^ 2)) (Set.Ioi 0)
+    exact integrableOn_Ioi_exp_neg_mul_sq_iff.mpr (mul_pos Real.pi_pos hy)
   rw [intervalIntegral.integral_of_le (Nat.cast_nonneg N)]
   exact setIntegral_mono_set hInt
     (Eventually.of_forall fun x => (Real.exp_pos _).le)
@@ -339,7 +341,8 @@ theorem tsum_gaussianMajorant_le_inv_sqrt (τ : UpperHalfPlane) :
     _ ≤ ∫ x in Set.Ioi (0 : ℝ), gaussianMajorant τ.im x :=
       intervalIntegral_gaussianMajorant_le_Ioi τ.im τ.im_pos N
     _ = Real.sqrt (Real.pi / (Real.pi * τ.im)) / 2 := by
-      rw [gaussianMajorant, integral_gaussian_Ioi]
+      change (∫ x in Set.Ioi (0 : ℝ), Real.exp (-(Real.pi * τ.im) * x ^ 2)) = _
+      rw [integral_gaussian_Ioi]
     _ = (Real.sqrt τ.im)⁻¹ / 2 := by
       have hratio : Real.pi / (Real.pi * τ.im) = τ.im⁻¹ := by
         calc
@@ -506,7 +509,7 @@ instance : Group Gamma2Metaplectic :=
       apply Gamma2Metaplectic.ext
       · simp only [matrix_mul, mul_assoc]
       · funext τ
-        simp only [factor_mul, gamma2Act_mul, mul_assoc])
+        simp only [factor_mul, matrix_mul, gamma2Act_mul, mul_assoc])
     (by
       intro a
       apply Gamma2Metaplectic.ext
@@ -516,13 +519,13 @@ instance : Group Gamma2Metaplectic :=
     (by
       intro a
       apply Gamma2Metaplectic.ext
-      · simp only [matrix_mul, matrix_inv, inv_mul]
+      · simp [matrix_mul, matrix_inv]
       · funext τ
         have hact :
             gamma2Act a.matrix⁻¹ (gamma2Act a.matrix τ) = τ := by
           rw [← gamma2Act_mul]
           simp
-        simp only [factor_mul, factor_inv, hact, inv_mul])
+        simp [factor_mul, factor_inv, hact])
 
 /-- Forgetting the branch function is a genuine group homomorphism. -/
 def toGamma2 : Gamma2Metaplectic →* Gamma2Element where
@@ -572,7 +575,10 @@ def trivial : FixedGamma2MetaplecticLift where
         { matrix := γ
           factor := fun _ => 1 }
       map_one' := by
-        apply Gamma2Metaplectic.ext <;> simp
+        apply Gamma2Metaplectic.ext
+        · rfl
+        · funext τ
+          rfl
       map_mul' := by
         intro γ δ
         apply Gamma2Metaplectic.ext
@@ -723,7 +729,8 @@ theorem weightedAutomorphicSobolev_ae
         exact (M.core_equivariant v hv).isAE)
       M.ae_equivariant_closed
   apply hclosure
-  simpa only [Submodule.topologicalClosure_coe] using u.property
+  change (u : H) ∈ M.core.topologicalClosure
+  exact u.property
 
 /-- The sum of the three stored graph-energy components. -/
 def WeightedSobolevDatum.graphEnergy
@@ -788,6 +795,13 @@ abbrev TrialSpace
     (M : WeightedSobolevDatum J μ H) : Type _ :=
   ↥(weightedAutomorphicSobolev M)
 
+noncomputable local instance trialSpaceComplete
+    {J : HalfWeightAutomorphyFactor} {μ : Measure UpperHalfPlane}
+    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    [CompleteSpace H]
+    (M : WeightedSobolevDatum J μ H) : CompleteSpace (TrialSpace M) :=
+  (isClosed_weightedAutomorphicSobolev M).completeSpace_coe
+
 /-- The core inclusion into the completed trial space. -/
 def coreToTrial
     {J : HalfWeightAutomorphyFactor} {μ : Measure UpperHalfPlane}
@@ -815,7 +829,9 @@ theorem denseRange_coreToTrial
     (M : WeightedSobolevDatum J μ H) :
     DenseRange (coreToTrial M) := by
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
-  simpa [-SetLike.coe_sort_coe]
+  rw [denseRange_inclusion_iff]
+  intro x hx
+  exact M.core.le_topologicalClosure hx
 
 /-- We fix the convention that data are continuous complex-linear functionals in
 the trial argument. -/
@@ -877,7 +893,9 @@ theorem trialToAEAutomorphic_injective
   intro u v huv
   apply Subtype.ext
   apply M.toFunction_injective
-  simpa [trialToAEAutomorphic] using congrArg Subtype.val huv
+  have hfun := congrArg Subtype.val huv
+  change M.toFunction (u : H) = M.toFunction (v : H) at hfun
+  exact hfun
 
 /-- The dual pairing under the declared complex-linear convention. -/
 def dualPairing
@@ -985,7 +1003,13 @@ inductive Gamma2Cusp
   | infinity
   | zero
   | one
-  deriving DecidableEq, Fintype
+  deriving DecidableEq
+
+instance : Fintype Gamma2Cusp where
+  elems := {Gamma2Cusp.infinity, Gamma2Cusp.zero, Gamma2Cusp.one}
+  complete := by
+    intro k
+    cases k <;> simp
 
 @[simp]
 theorem Gamma2Cusp.card_eq : Fintype.card Gamma2Cusp = 3 := by
@@ -1145,33 +1169,36 @@ def strictCuspHoroball (κ : Gamma2Cusp) : Set UpperHalfPlane :=
 theorem disjoint_strictCuspHoroball_infinity_zero :
     Disjoint (strictCuspHoroball Gamma2Cusp.infinity)
       (strictCuspHoroball Gamma2Cusp.zero) := by
-  refine Set.disjoint_left.mpr fun τ h∞ h₀ => ?_
-  have hy : 1 < τ.im := by
-    simpa [strictCuspHoroball] using h∞
-  have hd := normSq_lt_im_of_one_lt_cuspHeight_zero τ h₀
+  apply Set.disjoint_left.mpr
+  intro tau hInf hZero
+  have hy : 1 < tau.im := by
+    simpa [strictCuspHoroball] using hInf
+  have hd := normSq_lt_im_of_one_lt_cuspHeight_zero tau hZero
   simp only [Complex.normSq_apply, UpperHalfPlane.coe_re,
     UpperHalfPlane.coe_im] at hd
-  nlinarith [mul_self_nonneg τ.re, mul_self_nonneg τ.im]
+  nlinarith [mul_self_nonneg tau.re, mul_self_nonneg tau.im]
 
 /-- The strict height-one horoballs at infinity and one are disjoint. -/
 theorem disjoint_strictCuspHoroball_infinity_one :
     Disjoint (strictCuspHoroball Gamma2Cusp.infinity)
       (strictCuspHoroball Gamma2Cusp.one) := by
-  refine Set.disjoint_left.mpr fun τ h∞ h₁ => ?_
-  have hy : 1 < τ.im := by
-    simpa [strictCuspHoroball] using h∞
-  have hd := normSq_sub_one_lt_im_of_one_lt_cuspHeight_one τ h₁
+  apply Set.disjoint_left.mpr
+  intro tau hInf hOne
+  have hy : 1 < tau.im := by
+    simpa [strictCuspHoroball] using hInf
+  have hd := normSq_sub_one_lt_im_of_one_lt_cuspHeight_one tau hOne
   simp only [Complex.normSq_apply, Complex.sub_re, Complex.sub_im,
     UpperHalfPlane.coe_re, UpperHalfPlane.coe_im, Complex.one_re,
     Complex.one_im, sub_zero] at hd
-  nlinarith [mul_self_nonneg (τ.re - 1), mul_self_nonneg τ.im]
+  nlinarith [mul_self_nonneg (tau.re - 1), mul_self_nonneg tau.im]
 
 /-- The two finite-cusp strict height-one horoballs are disjoint.  The final
 contradiction is the sum-of-squares identity centered at `(1/2, 1/2)`. -/
 theorem disjoint_strictCuspHoroball_zero_one :
     Disjoint (strictCuspHoroball Gamma2Cusp.zero)
       (strictCuspHoroball Gamma2Cusp.one) := by
-  refine Set.disjoint_left.mpr fun τ h₀ h₁ => ?_
+  rw [Set.disjoint_left]
+  intro τ h₀ h₁
   have hd₀ := normSq_lt_im_of_one_lt_cuspHeight_zero τ h₀
   have hd₁ := normSq_sub_one_lt_im_of_one_lt_cuspHeight_one τ h₁
   simp only [Complex.normSq_apply, UpperHalfPlane.coe_re,
@@ -1183,18 +1210,18 @@ theorem disjoint_strictCuspHoroball_zero_one :
 
 /-- The three concrete strict height-one cusp horoballs are pairwise disjoint. -/
 theorem pairwise_disjoint_strictCuspHoroball :
-    Pairwise (Disjoint on strictCuspHoroball) := by
-  intro κ λ hκλ
-  cases κ <;> cases λ
-  · exact (hκλ rfl).elim
+    Pairwise (fun κ κ' => Disjoint (strictCuspHoroball κ) (strictCuspHoroball κ')) := by
+  intro κ κ' hκκ'
+  cases κ <;> cases κ'
+  · exact (hκκ' rfl).elim
   · exact disjoint_strictCuspHoroball_infinity_zero
   · exact disjoint_strictCuspHoroball_infinity_one
   · exact disjoint_strictCuspHoroball_infinity_zero.symm
-  · exact (hκλ rfl).elim
+  · exact (hκκ' rfl).elim
   · exact disjoint_strictCuspHoroball_zero_one
   · exact disjoint_strictCuspHoroball_infinity_one.symm
   · exact disjoint_strictCuspHoroball_zero_one.symm
-  · exact (hκλ rfl).elim
+  · exact (hκκ' rfl).elim
 
 /-- The cusp-local parameter of width two.
 
@@ -1319,27 +1346,24 @@ Proposition 1. -/
 theorem IsCompact.exists_truncationHeight
     {K F : Set UpperHalfPlane} (hK : IsCompact K) (hKF : K ⊆ F) :
     ∃ Y : ℝ, K ⊆ truncatedFundamentalDomain F Y := by
-  rcases hK.bddAbove_image
-      (continuous_cuspHeight Gamma2Cusp.infinity).continuousOn with
-    ⟨Y∞, hY∞⟩
-  rcases hK.bddAbove_image
-      (continuous_cuspHeight Gamma2Cusp.zero).continuousOn with
-    ⟨Y₀, hY₀⟩
-  rcases hK.bddAbove_image
-      (continuous_cuspHeight Gamma2Cusp.one).continuousOn with
-    ⟨Y₁, hY₁⟩
-  refine ⟨max Y∞ (max Y₀ Y₁), ?_⟩
+  obtain ⟨yInf, hyInf⟩ := hK.bddAbove_image
+    (continuous_cuspHeight Gamma2Cusp.infinity).continuousOn
+  obtain ⟨yZero, hyZero⟩ := hK.bddAbove_image
+    (continuous_cuspHeight Gamma2Cusp.zero).continuousOn
+  obtain ⟨yOne, hyOne⟩ := hK.bddAbove_image
+    (continuous_cuspHeight Gamma2Cusp.one).continuousOn
+  refine ⟨max yInf (max yZero yOne), ?_⟩
   intro τ hτ
   refine ⟨hKF hτ, ?_⟩
   intro κ
   cases κ with
   | infinity =>
-      exact (hY∞ ⟨τ, hτ, rfl⟩).trans (le_max_left _ _)
+      exact (hyInf ⟨τ, hτ, rfl⟩).trans (le_max_left _ _)
   | zero =>
-      exact (hY₀ ⟨τ, hτ, rfl⟩).trans
+      exact (hyZero ⟨τ, hτ, rfl⟩).trans
         ((le_max_left _ _).trans (le_max_right _ _))
   | one =>
-      exact (hY₁ ⟨τ, hτ, rfl⟩).trans
+      exact (hyOne ⟨τ, hτ, rfl⟩).trans
         ((le_max_right _ _).trans (le_max_right _ _))
 
 /-- Compactness and exhaustion require a chosen admissible fundamental polygon;
@@ -1440,7 +1464,11 @@ theorem continuousMassAtCusp_pos_iff_activity
     support_continuousMassDensity] using
     (integral_pos_iff_support_of_nonneg
       (continuousMassDensity_nonneg D κ m)
-      (by simpa [continuousMassDensity] using D.integrable κ m))
+      (by
+        change Integrable
+          (fun t => D.test t * Complex.normSq (D.coefficient κ m t))
+          (D.spectralMeasure κ)
+        exact D.integrable κ m))
 
 /-- The total mass is positive exactly when at least one cusp contribution is
 positive. -/
@@ -1449,7 +1477,7 @@ theorem massFunctional_pos_iff
     0 < massFunctional D m ↔
       ∃ κ : Gamma2Cusp, 0 < continuousMassAtCusp D κ m := by
   unfold massFunctional
-  simpa [profileBesselUniformKernelEnvelope] using
+  simpa using
     (Finset.sum_pos_iff_of_nonneg
       (s := Finset.univ)
       (f := fun κ => continuousMassAtCusp D κ m)
@@ -1598,7 +1626,7 @@ theorem sameMultiplierScalarCancellation_requires_unitarity :
       (j * u) * (starRingEnd ℂ) (j * v) ≠
         u * (starRingEnd ℂ) v := by
   refine ⟨2, 1, 1, by norm_num, ?_⟩
-  norm_num
+  norm_num [starRingEnd_apply, Complex.star_def]
 
 /-- The corrected multiplier-cancellation statement used by a scalar
 Rankin--Selberg integrand. -/
@@ -1614,8 +1642,14 @@ theorem hermitianContraction_invariant
     u (gamma2Act γ τ) *
         (starRingEnd ℂ) (v (gamma2Act γ τ)) =
       u τ * (starRingEnd ℂ) (v τ)
-  rw [hu γ τ, hv γ τ]
-  simp only [map_mul, star_star]
+  rw [hu γ τ, hv γ τ, map_mul, map_inv₀]
+  have hstar :
+      (starRingEnd ℂ) ((starRingEnd ℂ) (J.factor γ τ : ℂ)) =
+        (J.factor γ τ : ℂ) := by
+    simpa only [starRingEnd_apply] using
+      (star_star (J.factor γ τ : ℂ))
+  have hstarInv := congrArg Inv.inv hstar
+  rw [hstarInv]
   calc
     ((J.factor γ τ : ℂ) * u τ) *
         ((J.factor γ τ : ℂ)⁻¹ * (starRingEnd ℂ) (v τ)) =
@@ -1807,9 +1841,10 @@ theorem CuspQChart.symm_measurePreserving
     MeasurePreserving chart.coord.symm (chart.transformedMeasure μ) μ where
   measurable := chart.coord.symm.measurable
   map_eq := by
-    simpa only [CuspQChart.transformedMeasure] using
-      (MeasurableEquiv.map_symm_map
-        (μ := μ) chart.coord.toMeasurableEquiv)
+    change Measure.map (⇑chart.coord.toMeasurableEquiv.symm)
+      (Measure.map (⇑chart.coord.toMeasurableEquiv) μ) = μ
+    exact MeasurableEquiv.map_symm_map
+      (μ := μ) chart.coord.toMeasurableEquiv
 
 /-- Exact `L^p` seminorm preservation under pushforward through a cusp chart.
 Unlike the quadratic-integral corollary above, this holds simultaneously for
@@ -1818,14 +1853,23 @@ theorem CuspQChart.eLpNorm_pushFunction
     {κ : Gamma2Cusp} (chart : CuspQChart κ)
     (μ : Measure {τ // τ ∈ chart.tauDomain})
     {E : Type*} [NormedAddCommGroup E]
-    (p : ℝ≥0∞) (u : {τ // τ ∈ chart.tauDomain} → E) :
+    (p : ENNReal) (u : {τ // τ ∈ chart.tauDomain} → E) :
     eLpNorm (pushFunction chart.coord.toEquiv u) p
         (chart.transformedMeasure μ) =
       eLpNorm u p μ := by
-  simpa only [CuspQChart.transformedMeasure, pushFunction,
-    Function.comp_apply, Equiv.symm_apply_apply] using
-    (chart.coord.toMeasurableEquiv.measurableEmbedding.eLpNorm_map_measure
-      (μ := μ) (g := pushFunction chart.coord.toEquiv u) (p := p))
+  change
+    eLpNorm (pushFunction chart.coord.toEquiv u) p
+        (Measure.map (⇑chart.coord.toMeasurableEquiv) μ) =
+      eLpNorm u p μ
+  have h :=
+    chart.coord.toMeasurableEquiv.measurableEmbedding.eLpNorm_map_measure
+      (μ := μ) (g := pushFunction chart.coord.toEquiv u) (p := p)
+  have hcomp :
+      pushFunction chart.coord.toEquiv u ∘
+          (⇑chart.coord.toMeasurableEquiv) = u := by
+    funext x
+    simp [pushFunction]
+  simpa only [hcomp] using h
 
 /-- `MemLp` is equivalent on the two sides of a cusp chart.  In particular,
 transport cannot manufacture integrability by using Mathlib's default value
@@ -1834,14 +1878,22 @@ theorem CuspQChart.memLp_pushFunction_iff
     {κ : Gamma2Cusp} (chart : CuspQChart κ)
     (μ : Measure {τ // τ ∈ chart.tauDomain})
     {E : Type*} [NormedAddCommGroup E]
-    (p : ℝ≥0∞) (u : {τ // τ ∈ chart.tauDomain} → E) :
+    (p : ENNReal) (u : {τ // τ ∈ chart.tauDomain} → E) :
     MemLp (pushFunction chart.coord.toEquiv u) p
         (chart.transformedMeasure μ) ↔
       MemLp u p μ := by
-  simpa only [CuspQChart.transformedMeasure, pushFunction,
-    Function.comp_apply, Equiv.symm_apply_apply] using
-    (chart.coord.toMeasurableEquiv.memLp_map_measure_iff
-      (μ := μ) (g := pushFunction chart.coord.toEquiv u) (p := p))
+  change
+    MemLp (pushFunction chart.coord.toEquiv u) p
+        (Measure.map (⇑chart.coord.toMeasurableEquiv) μ) ↔
+      MemLp u p μ
+  have h := chart.coord.toMeasurableEquiv.memLp_map_measure_iff
+      (μ := μ) (g := pushFunction chart.coord.toEquiv u) (p := p)
+  have hcomp :
+      pushFunction chart.coord.toEquiv u ∘
+          (⇑chart.coord.toMeasurableEquiv) = u := by
+    funext x
+    simp [pushFunction]
+  simpa only [hcomp] using h
 
 /-- The chart pushforward is a genuine linear isometric equivalence of `L^p`
 spaces.  Its inverse is pullback along the forward coordinate. -/
@@ -1849,7 +1901,7 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     {κ : Gamma2Cusp} (chart : CuspQChart κ)
     (μ : Measure {τ // τ ∈ chart.tauDomain})
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
-    (p : ℝ≥0∞) [Fact (1 ≤ p)] :
+    (p : ENNReal) [Fact (1 ≤ p)] :
     Lp E p μ ≃ₗᵢ[ℂ] Lp E p (chart.transformedMeasure μ) := by
   let hcoord := chart.coord_measurePreserving μ
   let hsymm := chart.symm_measurePreserving μ
@@ -1865,13 +1917,21 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     have hcomp :=
       Lp.compMeasurePreserving_comp_apply
         (E := E) (p := p) F hcoord hsymm
-    simpa [forward, backward, Function.comp_def] using hcomp.symm
+    change
+      (Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm)
+          ((Lp.compMeasurePreserving (⇑chart.coord) hcoord) F) = F
+    simpa only [Function.comp_def, chart.coord.apply_symm_apply,
+      Lp.compMeasurePreserving_id_apply] using hcomp.symm
   · apply LinearMap.ext
     intro u
     have hcomp :=
       Lp.compMeasurePreserving_comp_apply
         (E := E) (p := p) u hsymm hcoord
-    simpa [forward, backward, Function.comp_def] using hcomp.symm
+    change
+      (Lp.compMeasurePreserving (⇑chart.coord) hcoord)
+          ((Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm) u) = u
+    simpa only [Function.comp_def, chart.coord.symm_apply_apply,
+      Lp.compMeasurePreserving_id_apply] using hcomp.symm
 
 /-! ## Definitions 9 and 11: a kernel-family trivialization interface -/
 
@@ -1985,9 +2045,11 @@ def QLocalSystem.flatSections
     simp
   add_mem' := by
     intro σ τ hσ hτ r s
+    change L.transport r s (σ r + τ r) = σ s + τ s
     rw [map_add, hσ r s, hτ r s]
   smul_mem' := by
     intro c σ hσ r s
+    change L.transport r s (c • σ r) = c • σ s
     rw [map_smul, hσ r s]
 
 /-- Evaluation at any radius identifies one fiber with the full space of flat
@@ -2200,13 +2262,13 @@ fully typed without pretending that arbitrary subsets are chart domains. -/
 structure LinearPresheaf
     (X : Type*) [TopologicalSpace X]
     (E : Type*) [AddCommGroup E] [Module ℂ E] where
-  section : TopologicalSpace.Opens X → Submodule ℂ E
+  «section» : TopologicalSpace.Opens X → Submodule ℂ E
   restrict : ∀ {U V : TopologicalSpace.Opens X},
-    V ≤ U → section U →ₗ[ℂ] section V
-  restrict_id : ∀ (U : TopologicalSpace.Opens X) (s : section U),
+    V ≤ U → «section» U →ₗ[ℂ] «section» V
+  restrict_id : ∀ (U : TopologicalSpace.Opens X) (s : «section» U),
     restrict (le_refl U) s = s
   restrict_comp : ∀ {U V W : TopologicalSpace.Opens X}
-    (hVU : V ≤ U) (hWV : W ≤ V) (s : section U),
+    (hVU : V ≤ U) (hWV : W ≤ V) (s : «section» U),
     restrict hWV (restrict hVU s) = restrict (hWV.trans hVU) s
 
 /-- Unique gluing for the concrete open-set presheaf model. -/
@@ -2335,7 +2397,7 @@ structure QGaugeVariableSheaf
     (L : LinearPresheaf X E) (M : LinearPresheaf X F) where
   sheaf : LinearPresheaf X G
   sheaf_condition : IsLinearSheaf sheaf
-  include : TensorPresheafMorphism L M sheaf
+  «include» : TensorPresheafMorphism L M sheaf
   factor : ∀ {G' : Type*} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G'), IsLinearSheaf T →
       TensorPresheafMorphism L M T → LinearPresheafMorphism sheaf T
@@ -2343,13 +2405,13 @@ structure QGaugeVariableSheaf
     (T : LinearPresheaf X G') (hT : IsLinearSheaf T)
     (f : TensorPresheafMorphism L M T)
     (U : TopologicalSpace.Opens X) (s : TensorPresheafSection L M U),
-    (factor T hT f).app U (include.app U s) = f.app U s
+    (factor T hT f).app U («include».app U s) = f.app U s
   factor_unique : ∀ {G' : Type*} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G') (hT : IsLinearSheaf T)
     (f : TensorPresheafMorphism L M T)
     (g : LinearPresheafMorphism sheaf T),
     (∀ (U : TopologicalSpace.Opens X) (s : TensorPresheafSection L M U),
-      g.app U (include.app U s) = f.app U s) →
+      g.app U («include».app U s) = f.app U s) →
     g = factor T hT f
 
 /-- The sheafification field is exposed in its standard existence-and-uniqueness
@@ -2586,7 +2648,8 @@ theorem balancedEqualizerLift_unique
   intro z
   apply Subtype.ext
   have hz := congrArg (fun k : Z →ₗ[ℂ] A => k z) hg
-  simpa only [LinearMap.comp_apply] using hz
+  change (g z : A) = f z at hz
+  exact hz
 
 /-- The objectwise component of the proposed correction to Definition 14: the
 equalizer of two presheaf morphisms on an open set.  Naturality below proves that
@@ -3939,7 +4002,7 @@ instance : Group Element :=
     (by
       intro a
       apply ext
-      · simp only [matrix_mul, matrix_inv, inv_mul]
+      · simp [matrix_mul, matrix_inv]
       · funext τ
         have hact :
             gamma2Act a.matrix⁻¹ (gamma2Act a.matrix τ) = τ := by
@@ -5395,7 +5458,9 @@ theorem denseRange_coreToTrial
     (M : Datum ν μ H) :
     DenseRange (coreToTrial M) := by
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
-  simpa [-SetLike.coe_sort_coe]
+  rw [denseRange_inclusion_iff]
+  intro x hx
+  exact M.core.le_topologicalClosure hx
 
 /-- The sum of the three genuine graph-energy components. -/
 def Datum.graphEnergy
@@ -26239,7 +26304,7 @@ def ClaimEvidence : Claim → Prop
       ∀ {κ : Gamma2Cusp} (chart : CuspQChart κ)
           (μ : Measure {τ // τ ∈ chart.tauDomain})
           {E : Type*} [NormedAddCommGroup E]
-          (p : ℝ≥0∞) (u : {τ // τ ∈ chart.tauDomain} → E),
+          (p : ENNReal) (u : {τ // τ ∈ chart.tauDomain} → E),
         MemLp (pushFunction chart.coord.toEquiv u) p
             (chart.transformedMeasure μ) ↔ MemLp u p μ
   | .definition9 =>

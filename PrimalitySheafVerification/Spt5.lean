@@ -3083,8 +3083,11 @@ include f in
 theorem extCotangentEquiv_one (hf : f ∈ (P.Ring)⁰) (hker : P.ker = Ideal.span {f}) :
     extCotangentEquiv P f hf hker 1
       = Extension.Cotangent.mk ⟨f, hker ▸ Ideal.mem_span_singleton_self f⟩ := by
-  simp only [extCotangentEquiv, LinearEquiv.ofBijective_apply, LinearMap.toSpanSingleton_apply,
-    one_smul]
+  change
+    (LinearMap.toSpanSingleton S P.Cotangent
+      (Extension.Cotangent.mk ⟨f, hker ▸ Ideal.mem_span_singleton_self f⟩)) 1 =
+      Extension.Cotangent.mk ⟨f, hker ▸ Ideal.mem_span_singleton_self f⟩
+  rw [LinearMap.toSpanSingleton_apply, one_smul]
 
 end ExtensionCotangentFreeness
 
@@ -3152,7 +3155,10 @@ noncomputable def e : S ≃ₗ[S] B.P.toExtension.Cotangent :=
 
 /-- The generator condition `e 1 = [f]`, now a THEOREM (was the assumed `he` field). -/
 theorem he : B.e 1 = Extension.Cotangent.mk B.f := by
-  rw [e, extCotangentEquiv_one]
+  change
+    (LinearMap.toSpanSingleton S B.P.toExtension.Cotangent
+      (Extension.Cotangent.mk B.f)) 1 = Extension.Cotangent.mk B.f
+  rw [LinearMap.toSpanSingleton_apply, one_smul]
 
 /-- The image of `∂f/∂x` in `S` (first partial). -/
 noncomputable def fx : S := aeval B.P.val (pderiv 0 B.f.val)
@@ -3464,8 +3470,11 @@ noncomputable def cotangentSpanSingletonEquiv (hf : f ∈ R⁰) :
 theorem cotangentSpanSingletonEquiv_one (hf : f ∈ R⁰) :
     cotangentSpanSingletonEquiv f hf 1
       = (Ideal.span {f}).toCotangent ⟨f, Ideal.mem_span_singleton_self f⟩ := by
-  rw [cotangentSpanSingletonEquiv, LinearEquiv.ofBijective_apply,
-    LinearMap.toSpanSingleton_apply, one_smul]
+  change
+    (LinearMap.toSpanSingleton (R ⧸ Ideal.span {f}) (Ideal.span {f}).Cotangent
+      ((Ideal.span {f}).toCotangent ⟨f, Ideal.mem_span_singleton_self f⟩)) 1 =
+      (Ideal.span {f}).toCotangent ⟨f, Ideal.mem_span_singleton_self f⟩
+  rw [LinearMap.toSpanSingleton_apply, one_smul]
 
 /-- Generic principal-ideal form: any ideal `I = (f)` with `f` a nonzerodivisor has
     `(R ⧸ I) ≃ₗ I.Cotangent`.  (Convenient when the ideal arises as some `P.ker` propositionally
@@ -6926,7 +6935,9 @@ theorem dvdOfHom {m n : DvdSite} (f : m ⟶ n) : (show ℕ from m) ∣ (show ℕ
 noncomputable def cyclicPresheaf : DvdSiteᵒᵖ ⥤ RingCat where
   obj n := RingCat.of (ZMod (show ℕ from unop n))
   map {n m} f := RingCat.ofHom (ZMod.castHom (dvdOfHom f.unop) (ZMod (show ℕ from unop m)))
-  map_id n := by apply RingCat.hom_ext; simp [ZMod.castHom_self]
+  map_id n := by
+    apply RingCat.hom_ext
+    exact Subsingleton.elim _ _
   map_comp {n m k} f g := by
     apply RingCat.hom_ext
     simp only [RingCat.hom_comp, RingCat.hom_ofHom]
