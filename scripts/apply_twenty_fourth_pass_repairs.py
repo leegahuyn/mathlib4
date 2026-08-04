@@ -38,10 +38,10 @@ def repair_mock1_advanced() -> None:
   classical
   simp [targets]
 
- theorem mem_all (r : PaperTablesFRequirement) :
+theorem mem_all (r : PaperTablesFRequirement) :
     List.Mem r all := by
   cases r <;> simp [all]
-""".replace("\n theorem", "\ntheorem"),
+""",
         """theorem all_length :
     all.length = 8 := by
   rfl
@@ -130,11 +130,11 @@ def repair_mock2() -> None:
 
     for old, new, label in [
         ("    exact (Category.zero_comp _).symm\n",
-         "    simp [Prop21StandardSequence.leftEndpoint,\n      Prop21StandardSequence.zeroToIntersection]\n",
-         "Mock2 unfold the left zero square"),
+         "    exact (zero_comp _).symm\n",
+         "Mock2 use the global zero_comp lemma"),
         ("    exact Category.comp_zero _\n",
-         "    simp [Prop21StandardSequence.rightEndpoint,\n      Prop21StandardSequence.gcdToZero]\n",
-         "Mock2 unfold category right zero squares"),
+         "    exact comp_zero _\n",
+         "Mock2 use the global comp_zero lemma"),
     ]:
         count = text.count(old)
         if count:
@@ -150,11 +150,23 @@ def repair_mock2() -> None:
     new = """theorem quotientStepIntegerHom_gcd_eq_zero (M N : ℕ) :
     quotientStepIntegerHom M N (Nat.gcd M N : ℤ) = 0 := by
   rw [quotientStepIntegerHom_apply]
-  norm_num only [Int.cast_natCast]
-  rw [← Nat.cast_mul, quotientStep_mul_gcd, ZMod.natCast_self]
+  have h := congrArg (fun n : ℕ => (n : ZMod N))
+    (quotientStep_mul_gcd M N)
+  simpa only [Nat.cast_mul, Int.cast_natCast, ZMod.natCast_self] using h
 """
     text, did = replace_once(text, old, new,
-        "Mock2 normalize the integer cast before the gcd calculation")
+        "Mock2 transport the quotient-step gcd identity through the cast")
+    changed |= did
+
+    old = """  rw [quotientToAmbientHom_intCast]
+  exact_mod_cast hq.symm
+"""
+    new = """  rw [quotientToAmbientHom_intCast]
+  simpa only [Int.cast_mul] using
+    congrArg (fun t : ℤ => (t : ZMod N)) hq.symm
+"""
+    text, did = replace_once(text, old, new,
+        "Mock2 transport the surjectivity factorization through the cast")
     changed |= did
 
     if changed:
@@ -164,14 +176,46 @@ def repair_mock2() -> None:
 def repair_mock2_advanced() -> None:
     path = ROOT / "Mock2_Advanced.lean"
     text = path.read_text(encoding="utf-8")
-    old = """        ENNReal.ofNNReal (((1 : NNReal) /
+    changed = False
+
+    old = """theorem hyperbolicMeasure_def :
+    hyperbolicMeasure =
+      (volume.comap UpperHalfPlane.coe).withDensity fun z =>
+        ENNReal.ofNNReal (((1 : NNReal) /
           (⟨z.im, z.im_pos.le⟩ : NNReal)) ^ 2) := by
+  set_option maxHeartbeats 800000 in
+    simpa only [hyperbolicMeasure] using UpperHalfPlane.volume_def
 """
-    new = """        ENNReal.ofNNReal (((1 : NNReal) /
-          NNReal.ofReal z.im) ^ 2) := by
+    new = """theorem hyperbolicMeasure_def :
+    hyperbolicMeasure =
+      (volume.comap UpperHalfPlane.coe).withDensity fun z =>
+        ↑((1 / NNReal.mk z.im z.im_pos.le : ℝ≥0) ^ 2) := by
+  simpa only [hyperbolicMeasure] using UpperHalfPlane.volume_def
 """
-    text, changed = replace_once(text, old, new,
-        "Mock2Advanced use the canonical NNReal constructor for the density")
+    text, did = replace_once(text, old, new,
+        "Mock2Advanced match UpperHalfPlane.volume_def exactly")
+    changed |= did
+
+    anchor = """abbrev TrialSpace
+    {J : HalfWeightAutomorphyFactor} {μ : Measure UpperHalfPlane}
+    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    [CompleteSpace H]
+    (M : WeightedSobolevDatum J μ H) : Type _ :=
+  ↥(weightedAutomorphicSobolev M)
+
+"""
+    addition = anchor + """noncomputable local instance trialSpaceComplete
+    {J : HalfWeightAutomorphyFactor} {μ : Measure UpperHalfPlane}
+    {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    [CompleteSpace H]
+    (M : WeightedSobolevDatum J μ H) : CompleteSpace (TrialSpace M) :=
+  (isClosed_weightedAutomorphicSobolev M).completeSpace_coe
+
+"""
+    text, did = replace_once(text, anchor, addition,
+        "Mock2Advanced install completeness of the closed trial space")
+    changed |= did
+
     if changed:
         path.write_text(text, encoding="utf-8", newline="\n")
 
