@@ -20,6 +20,15 @@ from apply_spt2_current_api_final import main as repair_spt2_current_api
 from apply_tenth_pass_repairs import main as repair_tenth_pass
 from apply_third_pass_repairs import main as repair_third_pass
 from apply_thirteenth_pass_repairs import main as repair_thirteenth_pass
+from apply_thirtieth_pass_repairs import main as repair_thirtieth_pass
+from apply_thirty_first_pass_repairs import main as repair_thirty_first_pass
+from apply_thirty_second_pass_repairs import main as repair_thirty_second_pass
+from apply_thirty_third_pre_repairs import main as repair_thirty_third_pre_pass
+from apply_thirty_fourth_duplicate_pre_repair import main as repair_thirty_fourth_duplicate_pre
+from apply_thirty_fourth_pass_repairs import main as repair_thirty_fourth_pass
+from apply_thirty_fifth_pre_repairs import main as repair_thirty_fifth_pre_pass
+from apply_thirty_sixth_pass_repairs import main as repair_thirty_sixth_pass
+from apply_thirty_seventh_pass_repairs import main as repair_thirty_seventh_pass
 from apply_twelfth_pass_repairs import main as repair_twelfth_pass
 from apply_twentieth_pass_fixed import main as repair_twentieth_pass
 from apply_twenty_first_pass_repairs import main as repair_twenty_first_pass
@@ -32,14 +41,6 @@ from apply_twenty_sixth_pass_repairs import main as repair_twenty_sixth_pass
 from apply_twenty_seventh_pass_repairs import main as repair_twenty_seventh_pass
 from apply_twenty_eighth_pass_repairs import main as repair_twenty_eighth_pass
 from apply_twenty_ninth_pass_repairs import main as repair_twenty_ninth_pass
-from apply_thirtieth_pass_repairs import main as repair_thirtieth_pass
-from apply_thirty_first_pass_repairs import main as repair_thirty_first_pass
-from apply_thirty_second_pass_repairs import main as repair_thirty_second_pass
-from apply_thirty_third_pre_repairs import main as repair_thirty_third_pre_pass
-from apply_thirty_fourth_duplicate_pre_repair import main as repair_thirty_fourth_duplicate_pre
-from apply_thirty_fourth_pass_repairs import main as repair_thirty_fourth_pass
-from apply_thirty_fifth_pre_repairs import main as repair_thirty_fifth_pre_pass
-from apply_thirty_sixth_pass_repairs import main as repair_thirty_sixth_pass
 
 
 def main() -> int:
@@ -83,6 +84,7 @@ def main() -> int:
     repair_thirty_fourth_duplicate_pre()
     repair_thirty_fourth_pass()
     repair_thirty_sixth_pass()
+    repair_thirty_seventh_pass()
     return 0
 
 
