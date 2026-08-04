@@ -3938,8 +3938,9 @@ theorem gammaTwoHyperbolic_mem :
 theorem gammaTwoHyperbolic_smul_I_im :
     (gammaTwoHyperbolic • UpperHalfPlane.I).im = (1 : ℝ) / 25 := by
   rw [ModularGroup.im_smul_eq_div_normSq]
-  change (((3 : ℝ) * 3 + (4 : ℝ) * 4)⁻¹) = (1 : ℝ) / 25
-  norm_num
+  norm_num [gammaTwoHyperbolic, UpperHalfPlane.I, UpperHalfPlane.denom,
+    Matrix.SpecialLinearGroup.map, Matrix.SpecialLinearGroup.toGL,
+    Complex.normSq]
 
 /-- Even the radius of the usual q-parameter is not invariant under this
 `Gamma(2)` element. -/
@@ -4172,7 +4173,8 @@ theorem subgroupDenom_mul (γ δ : Γ) (z : ℍ) :
           (((δ : SL(2, ℤ)) • z : ℍ)) *
         UpperHalfPlane.denom
           ((δ : SL(2, ℤ)) : GL (Fin 2) ℝ) z := by
-  simpa [UpperHalfPlane.σ, MulAction.compHom_smul_def] using
+  simpa [UpperHalfPlane.σ, MulAction.compHom_smul_def,
+    Matrix.SpecialLinearGroup.mapGL] using
     (UpperHalfPlane.denom_cocycle_σ
       ((γ : SL(2, ℤ)) : GL (Fin 2) ℝ)
       ((δ : SL(2, ℤ)) : GL (Fin 2) ℝ) z)

@@ -39368,13 +39368,13 @@ theorem sectionOf_objectSchema_at
     (h : List.Mem r objectSchemaRequirements) :
     sectionOf r = Section.objectSchema := by
   simp only [objectSchemaRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39383,21 +39383,21 @@ theorem sectionOf_t1t5_at
     (h : List.Mem r t1t5Requirements) :
     sectionOf r = Section.t1t5 := by
   simp only [t1t5Requirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39406,15 +39406,15 @@ theorem sectionOf_spt_at
     (h : List.Mem r sptRequirements) :
     sectionOf r = Section.spt := by
   simp only [sptRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39423,21 +39423,21 @@ theorem sectionOf_kernel_at
     (h : List.Mem r kernelRequirements) :
     sectionOf r = Section.kernel := by
   simp only [kernelRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39446,19 +39446,19 @@ theorem sectionOf_exactCoefficient_at
     (h : List.Mem r exactCoefficientRequirements) :
     sectionOf r = Section.exactCoefficient := by
   simp only [exactCoefficientRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39467,25 +39467,25 @@ theorem sectionOf_pAdic_at
     (h : List.Mem r pAdicRequirements) :
     sectionOf r = Section.pAdic := by
   simp only [pAdicRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39494,23 +39494,23 @@ theorem sectionOf_entropyRepro_at
     (h : List.Mem r entropyReproRequirements) :
     sectionOf r = Section.entropyRepro := by
   simp only [entropyReproRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -39519,11 +39519,11 @@ theorem sectionOf_finalInstance_at
     (h : List.Mem r finalInstanceRequirements) :
     sectionOf r = Section.finalInstance := by
   simp only [finalInstanceRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -43948,7 +43948,7 @@ theorem all_nodup :
 
 theorem mem_all (s : AdvancedClaimsIIObjectiveSection) :
     List.Mem s all := by
-  cases s <;> decide
+  cases s <;> simp [all]
 
 def requirements : AdvancedClaimsIIObjectiveSection ->
     List AdvancedClaimsIIRequirement
@@ -45865,13 +45865,13 @@ theorem sectionOf_objectSchema_at
     (h : List.Mem r objectSchemaRequirements) :
     sectionOf r = Section.objectSchema := by
   simp only [objectSchemaRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45880,21 +45880,21 @@ theorem sectionOf_t1t5_at
     (h : List.Mem r t1t5Requirements) :
     sectionOf r = Section.t1t5 := by
   simp only [t1t5Requirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45903,15 +45903,15 @@ theorem sectionOf_spt_at
     (h : List.Mem r sptRequirements) :
     sectionOf r = Section.spt := by
   simp only [sptRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45920,21 +45920,21 @@ theorem sectionOf_kernel_at
     (h : List.Mem r kernelRequirements) :
     sectionOf r = Section.kernel := by
   simp only [kernelRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45943,19 +45943,19 @@ theorem sectionOf_exactCoefficient_at
     (h : List.Mem r exactCoefficientRequirements) :
     sectionOf r = Section.exactCoefficient := by
   simp only [exactCoefficientRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45964,25 +45964,25 @@ theorem sectionOf_pAdic_at
     (h : List.Mem r pAdicRequirements) :
     sectionOf r = Section.pAdic := by
   simp only [pAdicRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -45991,23 +45991,23 @@ theorem sectionOf_entropyRepro_at
     (h : List.Mem r entropyReproRequirements) :
     sectionOf r = Section.entropyRepro := by
   simp only [entropyReproRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 
@@ -46016,11 +46016,11 @@ theorem sectionOf_finalInstance_at
     (h : List.Mem r finalInstanceRequirements) :
     sectionOf r = Section.finalInstance := by
   simp only [finalInstanceRequirements] at h
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases h with rfl | h
+  rcases List.mem_cons.mp h with rfl | h
   · rfl
   cases h
 

@@ -831,7 +831,7 @@ theorem denseRange_coreToTrial
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
   intro x hx
-  exact M.core.le_topologicalClosure hx
+  exact subset_closure hx
 
 /-- We fix the convention that data are continuous complex-linear functionals in
 the trial argument. -/
@@ -1648,8 +1648,7 @@ theorem hermitianContraction_invariant
         (J.factor γ τ : ℂ) := by
     simpa only [starRingEnd_apply] using
       (star_star (J.factor γ τ : ℂ))
-  have hstarInv := congrArg Inv.inv hstar
-  rw [hstarInv]
+  rw [map_inv₀, hstar]
   calc
     ((J.factor γ τ : ℂ) * u τ) *
         ((J.factor γ τ : ℂ)⁻¹ * (starRingEnd ℂ) (v τ)) =
@@ -1920,8 +1919,7 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm)
           ((Lp.compMeasurePreserving (⇑chart.coord) hcoord) F) = F
-    simpa only [Function.comp_def, chart.coord.apply_symm_apply,
-      Lp.compMeasurePreserving_id_apply] using hcomp.symm
+    exact hcomp.symm.trans (Lp.compMeasurePreserving_id_apply F)
   · apply LinearMap.ext
     intro u
     have hcomp :=
@@ -1930,8 +1928,7 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord) hcoord)
           ((Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm) u) = u
-    simpa only [Function.comp_def, chart.coord.symm_apply_apply,
-      Lp.compMeasurePreserving_id_apply] using hcomp.symm
+    exact hcomp.symm.trans (Lp.compMeasurePreserving_id_apply u)
 
 /-! ## Definitions 9 and 11: a kernel-family trivialization interface -/
 
@@ -5460,7 +5457,7 @@ theorem denseRange_coreToTrial
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
   intro x hx
-  exact M.core.le_topologicalClosure hx
+  exact subset_closure hx
 
 /-- The sum of the three genuine graph-energy components. -/
 def Datum.graphEnergy

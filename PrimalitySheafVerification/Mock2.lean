@@ -4005,7 +4005,12 @@ theorem rightNaturalitySquare
                 (z : ZMod (Pk p k)) =
               (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
                 ZMod (Pk p k)) := by
-          ring_nf
+          change
+            (p : ZMod (Pk p k)) ^ shiftExponent M p k *
+                (z : ZMod (Pk p k)) =
+              (p : ZMod (Pk p k)) ^ shiftExponent M p k *
+                (z : ZMod (Pk p k))
+          rfl
         have hexp :
             p ^ shiftExponent M p k =
               p ^ shiftExponent M p k' *
@@ -4024,7 +4029,7 @@ theorem rightNaturalitySquare
                 ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
                   ZMod (Pk p k')) := by
             simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
-            ring_nf
+            ac_rfl
     _ = powerShiftHom M p k'
         (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
           ZMod (p ^ thicknessExponent M p k')) :=
@@ -4603,15 +4608,18 @@ theorem residueProjection_epi (M : ℕ) : Epi (residueProjection M) :=
 
 /-- Exactness at degree one is injectivity of multiplication by nonzero `M`. -/
 def resolutionAtOne (M : ℕ) : ShortComplex (ModuleCat ℤ) :=
-  ShortComplex.mk (0 : (0 : ModuleCat ℤ) ⟶ integerModule)
+  ShortComplex.mk (0 : zeroIntegerModule ⟶ integerModule)
     (integerMul M) (by simp)
 
 theorem integerMul_injective (M : ℕ) (hM : M ≠ 0) :
     Function.Injective (integerMul M) := by
   intro x y hxy
   have hMZ : (M : ℤ) ≠ 0 := by exact_mod_cast hM
-  change (M : ℤ) * x = (M : ℤ) * y at hxy
-  exact mul_left_cancel₀ hMZ hxy
+  let x' : ℤ := x
+  let y' : ℤ := y
+  change (M : ℤ) * x' = (M : ℤ) * y' at hxy
+  have hxy' : x' = y' := mul_left_cancel₀ hMZ hxy
+  simpa [x', y'] using hxy'
 
 theorem resolutionAtOne_exact (M : ℕ) (hM : M ≠ 0) :
     (resolutionAtOne M).Exact := by
@@ -4628,7 +4636,7 @@ theorem resolutionAtOne_exact (M : ℕ) (hM : M ≠ 0) :
 def freeResolutionX : ℕ → ModuleCat ℤ
   | 0 => integerModule
   | 1 => integerModule
-  | _ + 2 => 0
+  | _ + 2 => zeroIntegerModule
 
 /-- Differentials of the standard two-term free resolution. -/
 def freeResolutionD (M : ℕ) :
@@ -4676,7 +4684,7 @@ theorem freeResolutionX_free (n : ℕ) : Module.Free ℤ (freeResolutionX n) := 
     infer_instance
   · change Module.Free ℤ ℤ
     infer_instance
-  · change Module.Free ℤ (0 : ModuleCat ℤ)
+  · change Module.Free ℤ zeroIntegerModule
     infer_instance
 
 /-- Every term of the explicit free resolution is categorically projective. -/
@@ -4687,7 +4695,7 @@ theorem freeResolutionX_projective (n : ℕ) :
   · exact ModuleCat.projective_of_free (Basis.singleton Unit ℤ)
   · apply CategoryTheory.Limits.IsZero.projective
     exact (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+      CategoryTheory.Limits.IsZero zeroIntegerModule)
 
 /-- Exactness of the chain complex in homological degree one. -/
 theorem freeResolutionComplex_exactAt_one
@@ -4702,7 +4710,7 @@ theorem freeResolutionComplex_exactAt_add_two (M n : ℕ) :
   apply HomologicalComplex.ExactAt.of_isZero
   simpa using
     (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+      CategoryTheory.Limits.IsZero zeroIntegerModule)
 
 theorem freeResolutionComplex_exactAt_succ
     (M : ℕ) (hM : M ≠ 0) (n : ℕ) :
@@ -4799,10 +4807,10 @@ theorem tensorResolutionComplex_X_add_two_isZero (M N n : ℕ) :
     CategoryTheory.Limits.IsZero
       ((tensorResolutionComplex M N).X (n + 2)) := by
   change CategoryTheory.Limits.IsZero
-    ((tensorRightFunctor N).obj (0 : ModuleCat ℤ))
+    ((tensorRightFunctor N).obj zeroIntegerModule)
   exact (tensorRightFunctor N).map_isZero
     (CategoryTheory.Limits.isZero_zero :
-      CategoryTheory.Limits.IsZero (0 : ModuleCat ℤ))
+      CategoryTheory.Limits.IsZero zeroIntegerModule)
 
 /-- The degree `1 → 0` differential is the image of integer multiplication. -/
 @[simp] theorem tensorResolutionComplex_d_one_zero (M N : ℕ) :
@@ -4860,7 +4868,7 @@ theorem tensor_integerMul_leftUnitor (M N : ℕ) :
 def normalizedTensorShortComplex (M N : ℕ) :
     ShortComplex (ModuleCat ℤ) :=
   ShortComplex.mk
-    (0 : (0 : ModuleCat ℤ) ⟶ residueModule N)
+    (0 : zeroIntegerModule ⟶ residueModule N)
     (ModuleCat.ofHom (residueMulLinear M N)) (by simp)
 
 @[simp] theorem normalizedTensorShortComplex_f (M N : ℕ) :
