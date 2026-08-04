@@ -33,24 +33,8 @@ jobs:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
 
-      - name: Apply repair layers
-        run: |
-          python3 scripts/apply_deterministic_repairs.py
-          python3 scripts/apply_spt2_spt3_repairs.py
-          python3 scripts/apply_spt5_repairs.py
-          python3 scripts/apply_spt_remaining_repairs.py
-          python3 scripts/apply_spt_final_repairs.py
-          python3 scripts/apply_spt_closure_repairs.py
-          python3 scripts/apply_spt_terminal_repairs.py
-          python3 scripts/apply_mock1_repairs.py
-          python3 scripts/apply_mock1_second_repairs.py
-          python3 scripts/apply_mock1_advanced_repairs.py
-          python3 scripts/apply_mock1_advanced_second_repairs.py
-          python3 scripts/apply_mock2_scope_repairs.py
-          python3 scripts/apply_mock2_advanced_repairs.py
-          python3 scripts/apply_mock2_functional_analysis_repairs.py
-          python3 scripts/apply_second_pass_repairs.py
-          python3 scripts/apply_post_second_pass_repairs.py
+      - name: Apply current unmaterialized repairs
+        run: python3 scripts/apply_current_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
