@@ -45958,7 +45958,7 @@ theorem all_nodup :
 theorem mem_all
     (b : AdvancedClaimsIIPromptBullet) :
     List.Mem b all := by
-  decide
+  cases b <;> simp [all]
 
 def requirementOf :
     AdvancedClaimsIIPromptBullet -> AdvancedClaimsIIRequirement
@@ -46248,10 +46248,6 @@ theorem mem_all (s : Section) :
   | entropyRepro =>
       exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
-  | finalInstance =>
-      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
-          (List.Mem.tail _ (List.Mem.head _)))))))
 
 end Section
 
@@ -46425,10 +46421,10 @@ private theorem mem_all_aux (r : AdvancedClaimsIIRequirement) :
       exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 theorem sectionOf_objectSchema_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r objectSchemaRequirements) :
-    sectionOf r = Section.objectSchema := by
-  simp only [objectSchemaRequirements] at h
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b objectSchemaBullets) :
+    sectionOf b = Section.objectSchema := by
+  simp only [objectSchemaBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46440,10 +46436,10 @@ theorem sectionOf_objectSchema_at
   cases h
 
 theorem sectionOf_t1t5_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r t1t5Requirements) :
-    sectionOf r = Section.t1t5 := by
-  simp only [t1t5Requirements] at h
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b t1t5Bullets) :
+    sectionOf b = Section.t1t5 := by
+  simp only [t1t5Bullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46463,10 +46459,10 @@ theorem sectionOf_t1t5_at
   cases h
 
 theorem sectionOf_spt_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r sptRequirements) :
-    sectionOf r = Section.spt := by
-  simp only [sptRequirements] at h
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b sptBullets) :
+    sectionOf b = Section.spt := by
+  simp only [sptBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46480,10 +46476,10 @@ theorem sectionOf_spt_at
   cases h
 
 theorem sectionOf_kernel_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r kernelRequirements) :
-    sectionOf r = Section.kernel := by
-  simp only [kernelRequirements] at h
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b kernelBullets) :
+    sectionOf b = Section.kernel := by
+  simp only [kernelBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46502,11 +46498,11 @@ theorem sectionOf_kernel_at
   · rfl
   cases h
 
-theorem sectionOf_exactCoefficient_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r exactCoefficientRequirements) :
-    sectionOf r = Section.exactCoefficient := by
-  simp only [exactCoefficientRequirements] at h
+theorem sectionOf_exact_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b exactBullets) :
+    sectionOf b = Section.exactCoefficient := by
+  simp only [exactBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46524,10 +46520,10 @@ theorem sectionOf_exactCoefficient_at
   cases h
 
 theorem sectionOf_pAdic_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r pAdicRequirements) :
-    sectionOf r = Section.pAdic := by
-  simp only [pAdicRequirements] at h
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b pAdicBullets) :
+    sectionOf b = Section.pAdic := by
+  simp only [pAdicBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46550,11 +46546,11 @@ theorem sectionOf_pAdic_at
   · rfl
   cases h
 
-theorem sectionOf_entropyRepro_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r entropyReproRequirements) :
-    sectionOf r = Section.entropyRepro := by
-  simp only [entropyReproRequirements] at h
+theorem sectionOf_entropy_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b entropyBullets) :
+    sectionOf b = Section.entropyRepro := by
+  simp only [entropyBullets] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46567,19 +46563,6 @@ theorem sectionOf_entropyRepro_at
   · rfl
   rcases List.mem_cons.mp h with rfl | h
   · rfl
-  rcases List.mem_cons.mp h with rfl | h
-  · rfl
-  rcases List.mem_cons.mp h with rfl | h
-  · rfl
-  rcases List.mem_cons.mp h with rfl | h
-  · rfl
-  cases h
-
-theorem sectionOf_finalInstance_at
-    (r : AdvancedClaimsIIRequirement)
-    (h : List.Mem r finalInstanceRequirements) :
-    sectionOf r = Section.finalInstance := by
-  simp only [finalInstanceRequirements] at h
   rcases List.mem_cons.mp h with rfl | h
   · rfl
   rcases List.mem_cons.mp h with rfl | h
@@ -46589,57 +46572,48 @@ theorem sectionOf_finalInstance_at
   cases h
 
 theorem objectSchema_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r objectSchemaRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b objectSchemaBullets) :
+    List.Mem b all :=
+  mem_all b
 
 theorem t1t5_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r t1t5Requirements) :
-    List.Mem r all :=
-  mem_all_aux r
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b t1t5Bullets) :
+    List.Mem b all :=
+  mem_all b
 
 theorem spt_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r sptRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b sptBullets) :
+    List.Mem b all :=
+  mem_all b
 
 theorem kernel_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r kernelRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b kernelBullets) :
+    List.Mem b all :=
+  mem_all b
 
-theorem exactCoefficient_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r exactCoefficientRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+theorem exact_mem_all
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b exactBullets) :
+    List.Mem b all :=
+  mem_all b
 
 theorem pAdic_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r pAdicRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b pAdicBullets) :
+    List.Mem b all :=
+  mem_all b
 
-theorem entropyRepro_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r entropyReproRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
+theorem entropy_mem_all
+    (b : AdvancedClaimsIIPromptBullet)
+    (_h : List.Mem b entropyBullets) :
+    List.Mem b all :=
+  mem_all b
 
-theorem finalInstance_mem_all
-    (r : AdvancedClaimsIIRequirement)
-    (_h : List.Mem r finalInstanceRequirements) :
-    List.Mem r all :=
-  mem_all_aux r
-
-theorem mem_all (r : AdvancedClaimsIIRequirement) :
-    List.Mem r all :=
-  mem_all_aux r
-end AdvancedClaimsIIRequirement
+end AdvancedClaimsIIPromptBullet
 
 structure AdvancedClaimsIIRequirementDispatchCertificate
     (C : AdvancedClaimsIICompletionCertificate) : Prop where

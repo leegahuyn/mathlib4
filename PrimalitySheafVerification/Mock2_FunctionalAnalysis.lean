@@ -4356,7 +4356,7 @@ theorem etaSqrtFactor_continuous (γ : SL(2, ℤ)) :
       fun_prop
     change ContinuousAt (fun w : ℍ ↦
       Complex.sqrt (UpperHalfPlane.denom g w)) z
-    exact (Complex.continuousAt_sqrt (Or.inr him)).comp hdenom
+    exact (Complex.continuousAt_sqrt (Or.inr him)).comp' hdenom
 
 /-- The eta-normalized square-root phase before proving that it is constant. -/
 noncomputable def etaPhaseRatio (γ : SL(2, ℤ)) (z : ℍ) : ℂ :=
@@ -4371,9 +4371,9 @@ theorem etaPhaseRatio_pow_twentyFour (γ : SL(2, ℤ)) (z : ℍ) :
       ModularForm.eta (((γ : SL(2, ℤ)) • z : ℍ) : ℂ) ^ 24 =
         UpperHalfPlane.denom (γ : GL (Fin 2) ℝ) z ^ 12 *
           ModularForm.eta (z : ℂ) ^ 24 := by
-    simpa [ModularForm.discriminant] using
+    simpa [CuspForm.discriminant, ModularForm.discriminant] using
       (SlashInvariantForm.slash_action_eqn''
-        ModularForm.discriminantCuspForm
+        CuspForm.discriminant
         (show (γ : GL (Fin 2) ℝ) ∈ 𝒮ℒ from ⟨γ, rfl⟩) z)
   rw [etaPhaseRatio, div_pow, hdisc, mul_pow,
     etaSqrtFactor_pow_twentyFour]
