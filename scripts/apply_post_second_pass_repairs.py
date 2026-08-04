@@ -39,6 +39,7 @@ from apply_thirty_third_pre_repairs import main as repair_thirty_third_pre_pass
 from apply_thirty_fourth_duplicate_pre_repair import main as repair_thirty_fourth_duplicate_pre
 from apply_thirty_fourth_pass_repairs import main as repair_thirty_fourth_pass
 from apply_thirty_fifth_pre_repairs import main as repair_thirty_fifth_pre_pass
+from apply_thirty_sixth_pass_repairs import main as repair_thirty_sixth_pass
 
 
 def main() -> int:
@@ -81,6 +82,7 @@ def main() -> int:
     repair_thirty_fifth_pre_pass()
     repair_thirty_fourth_duplicate_pre()
     repair_thirty_fourth_pass()
+    repair_thirty_sixth_pass()
     return 0
 
 
