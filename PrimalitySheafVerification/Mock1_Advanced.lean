@@ -39184,6 +39184,10 @@ theorem mem_all (s : Section) :
   | entropyRepro =>
       exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
         (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | finalInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
 
 end Section
 
@@ -44911,7 +44915,8 @@ def AdvancedClaimsIIObjectSchemaPromptObjective
     List.Mem claim C.advanced.registry.requirements) /\
     (forall n, C.advanced.objectSchema.coefficientAt n =
       C.advanced.objectSchema.object.coeff n) /\
-          C.paperInstance.extraction.concrete =
+      (
+    C.paperInstance.extraction.concrete =
         C.paperInstance.namedInstance.concrete /\
       C.paperInstance.family =
           C.paperInstance.namedInstance.family /\
@@ -44919,61 +44924,83 @@ def AdvancedClaimsIIObjectSchemaPromptObjective
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
               referenceMock1DepthOneFamilyName /\
-            Not (C.paperInstance.family.sourceName = "") /\
+            Not (C.paperInstance.family.sourceName = "")
+) /\
         (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
           C.advanced.degeneracyRelation.ellStar =
             C.advanced.degeneracyRelation.scalarCoeff n)
 
 def AdvancedClaimsIIT1T5PromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-      MatVecRat C.advanced.rationalSolve.matrix
+  (
+    MatVecRat C.advanced.rationalSolve.matrix
       C.advanced.rationalSolve.solution =
-        C.advanced.rationalSolve.rhs /\
-        C.advanced.completionShadow.blockSum = 0 /\
-      forall x, C.advanced.completionShadow.shadow.xiFhat x = 0 /\
-          C.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+        C.advanced.rationalSolve.rhs
+) /\
+    (
+    C.advanced.completionShadow.blockSum = 0 /\
+      forall x, C.advanced.completionShadow.shadow.xiFhat x = 0
+) /\
+      (
+    C.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
         C.advanced.cuspTransport.t4.transportFamily.transports.length /\
       C.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
-        C.advanced.cuspTransport.t4.tailTracking.kernel.level /\
-            List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+        C.advanced.cuspTransport.t4.tailTracking.kernel.level
+) /\
+        (
+    List.Mem C.advanced.appellLerch.m referenceMock1MList /\
       List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
         C.advanced.appellLerch.uTauCoeff -
             C.advanced.appellLerch.vTauCoeff = 0 /\
           C.advanced.appellLerch.uConst -
               C.advanced.appellLerch.vConst =
-            C.advanced.appellLerch.z0 /\
-              C.advanced.exponentFormula.exponent =
+            C.advanced.appellLerch.z0
+) /\
+          (
+    C.advanced.exponentFormula.exponent =
         paperPrincipalExponent C.advanced.exponentFormula.n
           C.advanced.exponentFormula.ell
           C.advanced.exponentFormula.m /\
-      C.advanced.exponentFormula.exponent < 0 /\
-                MatVecRat C.advanced.rationalSolve.matrix
+      C.advanced.exponentFormula.exponent < 0
+) /\
+            (
+    MatVecRat C.advanced.rationalSolve.matrix
       C.advanced.rationalSolve.solution =
-        C.advanced.rationalSolve.rhs /\
-                  Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+        C.advanced.rationalSolve.rhs
+) /\
+              (
+    Not (C.advanced.fixedShadow.thetaSymbol = "") /\
       C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
         C.advanced.fixedShadow.nonzeroCase /\
-          Not (C.advanced.fixedShadow.scale = 0) /\
-                (forall n,     C.advanced.insideOutside.inside.coeff n =
+          Not (C.advanced.fixedShadow.scale = 0)
+) /\
+                (forall n, (
+    C.advanced.insideOutside.inside.coeff n =
         C.advanced.insideOutside.outside.coeff n /\
       C.advanced.insideOutside.outside.coeff n =
         C.advanced.insideOutside.partialTheta.coeff n -
-          C.advanced.insideOutside.correction.coeff n)
+          C.advanced.insideOutside.correction.coeff n
+))
 
 def AdvancedClaimsIISPTPromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-      Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
+  (
+    Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
         C.sptKernel.sptFree.gcdLcm.M /\
       Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
           C.sptKernel.sptFree.gcdLcm.primePower /\
         Dvd.dvd C.sptKernel.sptFree.gcdLcm.M
             C.sptKernel.sptFree.gcdLcm.lcmValue /\
           Dvd.dvd C.sptKernel.sptFree.gcdLcm.primePower
-            C.sptKernel.sptFree.gcdLcm.lcmValue /\
-        C.sptKernel.sptFree.thickness.failureThickness =
+            C.sptKernel.sptFree.gcdLcm.lcmValue
+) /\
+    (
+    C.sptKernel.sptFree.thickness.failureThickness =
         C.sptKernel.sptFree.thickness.thickness + 1 /\
-      0 < C.sptKernel.sptFree.thickness.thickness /\
-          Nat.Prime C.sptKernel.sptFree.valuation.p /\
+      0 < C.sptKernel.sptFree.thickness.thickness
+) /\
+      (
+    Nat.Prime C.sptKernel.sptFree.valuation.p /\
       Dvd.dvd
           (C.sptKernel.sptFree.valuation.p ^
             C.sptKernel.sptFree.valuation.vp)
@@ -44982,73 +45009,107 @@ def AdvancedClaimsIISPTPromptObjective
           (Dvd.dvd
             (C.sptKernel.sptFree.valuation.p ^
               (C.sptKernel.sptFree.valuation.vp + 1))
-            C.sptKernel.sptFree.valuation.M) /\
-            C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            C.sptKernel.sptFree.valuation.M)
+) /\
+        (
+    C.sptKernel.sptFree.spt.obstruction.order = 1 /\
       Not (C.sptKernel.sptFailure.spt.obstruction.order = 1) /\
         C.sptKernel.sptFailure.failureThickness =
-          C.sptKernel.sptFailure.spt.obstruction.order /\
-              Dvd.dvd
+          C.sptKernel.sptFailure.spt.obstruction.order
+) /\
+          (
+    Dvd.dvd
       (Nat.lcm C.sptKernel.baseChange.target.M
         (C.sptKernel.baseChange.target.p ^
           C.sptKernel.baseChange.target.k))
       (C.sptKernel.baseChange.mapEqualizer
         C.sptKernel.baseChange.source.equalizerElement)
+)
 
 def AdvancedClaimsIIKernelPromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-      C.sptKernel.kernelSelection.selectedModulus =
+  (
+    C.sptKernel.kernelSelection.selectedModulus =
         C.sptKernel.kernelSelection.level /\
       C.sptKernel.kernelSelection.record.selection.selectedModulus =
-        C.sptKernel.kernelSelection.record.level /\
-        0 < C.sptKernel.multiplier.root.phases /\
+        C.sptKernel.kernelSelection.record.level
+) /\
+    (
+    0 < C.sptKernel.multiplier.root.phases /\
       C.sptKernel.multiplier.rows.length = 2 /\
         forall row, List.Mem row C.sptKernel.multiplier.rows ->
-          row.computedValue = row.tableValue /\
-          C.sptKernel.cuspConvergence.boundary.passes = true /\
+          row.computedValue = row.tableValue
+) /\
+      (
+    C.sptKernel.cuspConvergence.boundary.passes = true /\
       C.sptKernel.cuspConvergence.cutoff =
-        C.sptKernel.cuspConvergence.boundary.cutoff /\
-            C.sptKernel.transport.transportFamily =
+        C.sptKernel.cuspConvergence.boundary.cutoff
+) /\
+        (
+    C.sptKernel.transport.transportFamily =
         C.sptKernel.kernelCusp.transportFamily /\
       C.sptKernel.transport.stacked.rowCount =
-        C.sptKernel.transport.transports.length /\
-              Not (C.sptKernel.kernelSelection.sourceName = "") /\
+        C.sptKernel.transport.transports.length
+) /\
+          (
+    Not (C.sptKernel.kernelSelection.sourceName = "") /\
       C.sptKernel.kernelSelection.selectedModulus =
           C.sptKernel.kernelSelection.level /\
         C.sptKernel.kernelSelection.multiplierRows.length =
-          C.sptKernel.kernelSelection.level /\
-                C.sptKernel.multiplier.ts =
+          C.sptKernel.kernelSelection.level
+) /\
+            (
+    C.sptKernel.multiplier.ts =
         C.sptKernel.kernelCusp.phaseMatching /\
-      C.sptKernel.multiplier.rows.length = 2 /\
-                  C.sptKernel.cuspConvergence.boundary =
+      C.sptKernel.multiplier.rows.length = 2
+) /\
+              (
+    C.sptKernel.cuspConvergence.boundary =
         C.sptKernel.kernelCusp.convergence /\
-      C.sptKernel.cuspConvergence.boundary.passes = true /\
-                    List.Mem infinityCuspLabel C.sptKernel.transport.relevantCusps /\
+      C.sptKernel.cuspConvergence.boundary.passes = true
+) /\
+                (
+    List.Mem infinityCuspLabel C.sptKernel.transport.relevantCusps /\
       List.Mem zeroCuspLabel C.sptKernel.transport.relevantCusps /\
         forall T, List.Mem T C.sptKernel.transport.transports ->
           T.principal.rowCount = T.principal.order
+)
 
 def AdvancedClaimsIIExactPromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-  (forall n,     C.exact.exact.formula.coefficient n =
+  (forall n, (
+    C.exact.exact.formula.coefficient n =
       C.exact.exact.separation.scalarPart n +
-        C.exact.exact.separation.thetaPart n) /\
-        Not (C.exact.thetaTable.rows = []) /\
+        C.exact.exact.separation.thetaPart n
+)) /\
+    (
+    Not (C.exact.thetaTable.rows = []) /\
       C.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
         C.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
-          C.exact.spectralInput.analyticBoundary.lValueTheoryAccepted /\
-          C.exact.spectralInput.finiteResidue.certifiedSum =
+          C.exact.spectralInput.analyticBoundary.lValueTheoryAccepted
+) /\
+      (
+    C.exact.spectralInput.finiteResidue.certifiedSum =
         C.exact.spectralInput.spectral.kloostermanValue /\
       forall n, C.exact.spectralInput.spectral.coefficient n =
         C.exact.spectralInput.spectral.rademacher.main n +
-          C.exact.spectralInput.spectral.rademacher.remainder n /\
-            C.exact.localRootLValueInput.localEuler.productValue = 1 /\
-              C.exact.localRootLValueInput.rootFilter.allowed = true /\
-            (forall n,     C.exact.localRootLValueInput.formula.coefficient n =
+          C.exact.spectralInput.spectral.rademacher.remainder n
+) /\
+        (
+    C.exact.localRootLValueInput.localEuler.productValue = 1
+) /\
+          (
+    C.exact.localRootLValueInput.rootFilter.allowed = true
+) /\
+            (forall n, (
+    C.exact.localRootLValueInput.formula.coefficient n =
       C.exact.localRootLValueInput.formula.globalConstant *
         C.exact.localRootLValueInput.formula.powerTerm n *
           C.exact.localRootLValueInput.formula.centralLValue n *
-            C.exact.localRootLValueInput.formula.localEulerProduct n) /\
-                  (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+            C.exact.localRootLValueInput.formula.localEulerProduct n
+)) /\
+              (
+    (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
       (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
         C.betaArch.betaArch.scalarRecord.scalar *
           (C.betaArch.betaArch.unfolding.mockCoeff n *
@@ -45056,19 +45117,25 @@ def AdvancedClaimsIIExactPromptObjective
         (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
           C.betaArch.betaArch.formula.rademacher.main n +
             C.betaArch.betaArch.formula.rademacher.remainder n)
+)
 
 def AdvancedClaimsIIPAdicPromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-  (forall n,     IntCongruent
+  (forall n, (
+    IntCongruent
       (PrimePower C.paperInstance.padic.face.normalization.p
         C.paperInstance.padic.face.normalization.k)
       (C.paperInstance.padic.face.normalization.normalized n)
-      (C.paperInstance.padic.face.normalization.raw n)) /\
-    (forall n,     IntCongruent C.padicOverlap.M
+      (C.paperInstance.padic.face.normalization.raw n)
+)) /\
+    (forall n, (
+    IntCongruent C.padicOverlap.M
         (C.padicOverlap.left n) (C.padicOverlap.right n) /\
       IntCongruent (PrimePower C.padicOverlap.p C.padicOverlap.k)
-        (C.padicOverlap.left n) (C.padicOverlap.right n)) /\
-      (forall n,     IntCongruent
+        (C.padicOverlap.left n) (C.padicOverlap.right n)
+)) /\
+      (forall n, (
+    IntCongruent
         (PrimePower C.paperInstance.padic.face.mahler.p
           C.paperInstance.padic.face.mahler.k)
         (C.paperInstance.padic.face.mahler.eval n)
@@ -45077,24 +45144,34 @@ def AdvancedClaimsIIPAdicPromptObjective
         Finset.sum Finset.univ
           (fun j : Fin C.paperInstance.extraction.concrete.mahler.length =>
             C.paperInstance.extraction.concrete.mahler.coeff j *
-              C.paperInstance.extraction.concrete.mahler.basis j n)) /\
+              C.paperInstance.extraction.concrete.mahler.basis j n)
+)) /\
         (forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-              C.padicAnalyticRange.predicate n /\
-      C.padicAnalyticRange.tail n = 0) /\
-              Not (C.paperInstance.padic.lemma9Label = "") /\
+          (
+    C.padicAnalyticRange.predicate n /\
+      C.padicAnalyticRange.tail n = 0
+)) /\
+          (
+    Not (C.paperInstance.padic.lemma9Label = "") /\
       Not (C.paperInstance.padic.equationI3Label = "") /\
         Not (C.paperInstance.padic.equationI4Label = "") /\
           Not (C.paperInstance.padic.equationI5Label = "") /\
             C.paperInstance.padic.face.lemma9Label =
                 C.paperInstance.padic.lemma9Label /\
               C.paperInstance.padic.face.propositionI3Label =
-                C.paperInstance.padic.equationI3Label /\
-                Not (referenceT1DenominatorNonzero.denominator = 0) /\
+                C.paperInstance.padic.equationI3Label
+) /\
+            (
+    Not (referenceT1DenominatorNonzero.denominator = 0) /\
       Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
-        Not (referenceT2SimpleDenominatorNonzero.denominator = 0) /\
-              (forall n,     FiniteCongruenceMod C.padicChart.p C.padicChart.k
-      (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
-                (forall n,     FiniteCongruenceMod
+        Not (referenceT2SimpleDenominatorNonzero.denominator = 0)
+) /\
+              (forall n, (
+    FiniteCongruenceMod C.padicChart.p C.padicChart.k
+      (C.padicChart.chartLeft n) (C.padicChart.chartRight n)
+)) /\
+                (forall n, (
+    FiniteCongruenceMod
         C.paperInstance.extraction.concrete.mahlerBinomial.p
         C.paperInstance.extraction.concrete.mahlerBinomial.k
         (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
@@ -45103,44 +45180,69 @@ def AdvancedClaimsIIPAdicPromptObjective
         Finset.sum Finset.univ
           (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
             C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
-              mahlerBinomialBasis (j : Nat) n)) /\
+              mahlerBinomialBasis (j : Nat) n)
+)) /\
                   (forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-                        C.padicAnalyticRange.predicate n) /\
-                        C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+                    (
+    C.padicAnalyticRange.predicate n
+)) /\
+                    (
+    C.sptKernel.sptFree.spt.obstruction.order = 1 /\
       Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)
+)
 
 def AdvancedClaimsIIEntropyPromptObjective
     (C : AdvancedClaimsIICompletionCertificate) : Prop :=
-      C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+  (
+    C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
       C.entropy.symbolic.ceffInterval.Contains C.entropy.symbolic.ceffHat /\
-        C.entropy.entropy.olsTable.rows.length = 5 /\
-        C.entropy.entropy.alphaExtraction.cEqualsOne /\
+        C.entropy.entropy.olsTable.rows.length = 5
+) /\
+    (
+    C.entropy.entropy.alphaExtraction.cEqualsOne /\
       C.entropy.entropy.tailDominance.tailUpper <=
         C.entropy.entropy.tailDominance.dominanceThreshold *
-          C.entropy.entropy.tailDominance.mainLower /\
-          C.entropy.entropy.olsTable.alphaRow.interval.Contains
+          C.entropy.entropy.tailDominance.mainLower
+) /\
+      (
+    C.entropy.entropy.olsTable.alphaRow.interval.Contains
         C.entropy.entropy.olsTable.alphaRow.estimate /\
       C.entropy.entropy.olsTable.ceffRow.interval.Contains
         C.entropy.entropy.olsTable.ceffRow.estimate /\
-        C.entropy.entropy.paperTables.residualTable.rows.length = 16 /\
-            C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
-          (forall n,     C.entropy.entropy.degeneracy.degeneracy n =
-      C.entropy.entropy.degeneracy.coefficient n) /\
-                C.entropy.entropy.olsTable.rows.length = 5 /\
+        C.entropy.entropy.paperTables.residualTable.rows.length = 16
+) /\
+        (
+    C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat
+) /\
+          (forall n, (
+    C.entropy.entropy.degeneracy.degeneracy n =
+      C.entropy.entropy.degeneracy.coefficient n
+)) /\
+            (
+    C.entropy.entropy.olsTable.rows.length = 5 /\
       C.entropy.entropy.olsTable.alphaRow.interval.Contains
         C.entropy.entropy.olsTable.alphaRow.estimate /\
         C.entropy.entropy.olsTable.ceffRow.interval.Contains
-          C.entropy.entropy.olsTable.ceffRow.estimate /\
-                  C.entropy.entropy.growthStability.spt.p =
+          C.entropy.entropy.olsTable.ceffRow.estimate
+) /\
+              (
+    C.entropy.entropy.growthStability.spt.p =
         C.entropy.entropy.growthStability.padic.p /\
       C.entropy.entropy.growthStability.spt.k =
         C.entropy.entropy.growthStability.padic.k /\
-        C.entropy.entropy.growthStability.obstructionOrder = 1 /\
-                    C.tables.paperTables.externalScript.rows.length = 16 /\
+        C.entropy.entropy.growthStability.obstructionOrder = 1
+) /\
+                (
+    C.tables.paperTables.externalScript.rows.length = 16 /\
       forall row : ResidualTableRow,
         List.Mem row C.tables.paperTables.externalScript.rows ->
-          row.rtCheck.pass = true /\ row.rsCheck.pass = true /\
-                      C.tables.paperTables.externalScript.rows.length = 16amespace AdvancedClaimsIIObjectSchemaPromptObjective
+          row.rtCheck.pass = true /\ row.rsCheck.pass = true
+) /\
+                  (
+    C.tables.paperTables.externalScript.rows.length = 16
+)
+
+namespace AdvancedClaimsIIObjectSchemaPromptObjective
 
 theorem claim_registry_at
     {C : AdvancedClaimsIICompletionCertificate}
@@ -45159,7 +45261,8 @@ theorem coefficient_schema_at
 theorem paper_object_data_instance_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIObjectSchemaPromptObjective C) :
-        C.paperInstance.extraction.concrete =
+    (
+    C.paperInstance.extraction.concrete =
         C.paperInstance.namedInstance.concrete /\
       C.paperInstance.family =
           C.paperInstance.namedInstance.family /\
@@ -45167,7 +45270,8 @@ theorem paper_object_data_instance_at
             referenceMock1DepthOneObjectName /\
           C.paperInstance.family.familyName =
               referenceMock1DepthOneFamilyName /\
-            Not (C.paperInstance.family.sourceName = "") :=
+            Not (C.paperInstance.family.sourceName = "")
+) :=
   P.2.2.1
 
 theorem scalar_jacobi_degeneracy_at
@@ -45185,74 +45289,90 @@ namespace AdvancedClaimsIIT1T5PromptObjective
 theorem principal_part_rational_solve_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        MatVecRat C.advanced.rationalSolve.matrix
+    (
+    MatVecRat C.advanced.rationalSolve.matrix
       C.advanced.rationalSolve.solution =
-        C.advanced.rationalSolve.rhs :=
+        C.advanced.rationalSolve.rhs
+) :=
   P.1
 
 theorem completion_shadow_holomorphic_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        C.advanced.completionShadow.blockSum = 0 /\
-      forall x, C.advanced.completionShadow.shadow.xiFhat x = 0 :=
+    (
+    C.advanced.completionShadow.blockSum = 0 /\
+      forall x, C.advanced.completionShadow.shadow.xiFhat x = 0
+) :=
   P.2.1
 
 theorem cusp_transport_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        C.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+    (
+    C.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
         C.advanced.cuspTransport.t4.transportFamily.transports.length /\
       C.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
-        C.advanced.cuspTransport.t4.tailTracking.kernel.level :=
+        C.advanced.cuspTransport.t4.tailTracking.kernel.level
+) :=
   P.2.2.1
 
 theorem appell_lerch_block_formula_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+    (
+    List.Mem C.advanced.appellLerch.m referenceMock1MList /\
       List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
         C.advanced.appellLerch.uTauCoeff -
             C.advanced.appellLerch.vTauCoeff = 0 /\
           C.advanced.appellLerch.uConst -
               C.advanced.appellLerch.vConst =
-            C.advanced.appellLerch.z0 :=
+            C.advanced.appellLerch.z0
+) :=
   P.2.2.2.1
 
 theorem principal_exponent_formula_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        C.advanced.exponentFormula.exponent =
+    (
+    C.advanced.exponentFormula.exponent =
         paperPrincipalExponent C.advanced.exponentFormula.n
           C.advanced.exponentFormula.ell
           C.advanced.exponentFormula.m /\
-      C.advanced.exponentFormula.exponent < 0 :=
+      C.advanced.exponentFormula.exponent < 0
+) :=
   P.2.2.2.2.1
 
 theorem paper_matrix_rhs_solution_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        MatVecRat C.advanced.rationalSolve.matrix
+    (
+    MatVecRat C.advanced.rationalSolve.matrix
       C.advanced.rationalSolve.solution =
-        C.advanced.rationalSolve.rhs :=
+        C.advanced.rationalSolve.rhs
+) :=
   P.2.2.2.2.2.1
 
 theorem fixed_shadow_unary_theta_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) :
-        Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+    (
+    Not (C.advanced.fixedShadow.thetaSymbol = "") /\
       C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
         C.advanced.fixedShadow.nonzeroCase /\
-          Not (C.advanced.fixedShadow.scale = 0) :=
+          Not (C.advanced.fixedShadow.scale = 0)
+) :=
   P.2.2.2.2.2.2.1
 
 theorem inside_outside_qseries_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIT1T5PromptObjective C) (n : Nat) :
-        C.advanced.insideOutside.inside.coeff n =
+    (
+    C.advanced.insideOutside.inside.coeff n =
         C.advanced.insideOutside.outside.coeff n /\
       C.advanced.insideOutside.outside.coeff n =
         C.advanced.insideOutside.partialTheta.coeff n -
-          C.advanced.insideOutside.correction.coeff n :=
+          C.advanced.insideOutside.correction.coeff n
+) :=
   P.2.2.2.2.2.2.2 n
 
 end AdvancedClaimsIIT1T5PromptObjective
@@ -45262,28 +45382,33 @@ namespace AdvancedClaimsIISPTPromptObjective
 theorem nat_gcd_lcm_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIISPTPromptObjective C) :
-        Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
+    (
+    Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
         C.sptKernel.sptFree.gcdLcm.M /\
       Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
           C.sptKernel.sptFree.gcdLcm.primePower /\
         Dvd.dvd C.sptKernel.sptFree.gcdLcm.M
             C.sptKernel.sptFree.gcdLcm.lcmValue /\
           Dvd.dvd C.sptKernel.sptFree.gcdLcm.primePower
-            C.sptKernel.sptFree.gcdLcm.lcmValue :=
+            C.sptKernel.sptFree.gcdLcm.lcmValue
+) :=
   P.1
 
 theorem primewise_thickness_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIISPTPromptObjective C) :
-        C.sptKernel.sptFree.thickness.failureThickness =
+    (
+    C.sptKernel.sptFree.thickness.failureThickness =
         C.sptKernel.sptFree.thickness.thickness + 1 /\
-      0 < C.sptKernel.sptFree.thickness.thickness :=
+      0 < C.sptKernel.sptFree.thickness.thickness
+) :=
   P.2.1
 
 theorem valuation_certificate_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIISPTPromptObjective C) :
-        Nat.Prime C.sptKernel.sptFree.valuation.p /\
+    (
+    Nat.Prime C.sptKernel.sptFree.valuation.p /\
       Dvd.dvd
           (C.sptKernel.sptFree.valuation.p ^
             C.sptKernel.sptFree.valuation.vp)
@@ -45292,27 +45417,32 @@ theorem valuation_certificate_at
           (Dvd.dvd
             (C.sptKernel.sptFree.valuation.p ^
               (C.sptKernel.sptFree.valuation.vp + 1))
-            C.sptKernel.sptFree.valuation.M) :=
+            C.sptKernel.sptFree.valuation.M)
+) :=
   P.2.2.1
 
 theorem obstruction_failure_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIISPTPromptObjective C) :
-        C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+    (
+    C.sptKernel.sptFree.spt.obstruction.order = 1 /\
       Not (C.sptKernel.sptFailure.spt.obstruction.order = 1) /\
         C.sptKernel.sptFailure.failureThickness =
-          C.sptKernel.sptFailure.spt.obstruction.order :=
+          C.sptKernel.sptFailure.spt.obstruction.order
+) :=
   P.2.2.2.1
 
 theorem base_change_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIISPTPromptObjective C) :
-        Dvd.dvd
+    (
+    Dvd.dvd
       (Nat.lcm C.sptKernel.baseChange.target.M
         (C.sptKernel.baseChange.target.p ^
           C.sptKernel.baseChange.target.k))
       (C.sptKernel.baseChange.mapEqualizer
-        C.sptKernel.baseChange.source.equalizerElement) :=
+        C.sptKernel.baseChange.source.equalizerElement)
+) :=
   P.2.2.2.2
 
 end AdvancedClaimsIISPTPromptObjective
@@ -45322,71 +45452,87 @@ namespace AdvancedClaimsIIKernelPromptObjective
 theorem kernel_selection_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        C.sptKernel.kernelSelection.selectedModulus =
+    (
+    C.sptKernel.kernelSelection.selectedModulus =
         C.sptKernel.kernelSelection.level /\
       C.sptKernel.kernelSelection.record.selection.selectedModulus =
-        C.sptKernel.kernelSelection.record.level :=
+        C.sptKernel.kernelSelection.record.level
+) :=
   P.1
 
 theorem multiplier_phase_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        0 < C.sptKernel.multiplier.root.phases /\
+    (
+    0 < C.sptKernel.multiplier.root.phases /\
       C.sptKernel.multiplier.rows.length = 2 /\
         forall row, List.Mem row C.sptKernel.multiplier.rows ->
-          row.computedValue = row.tableValue :=
+          row.computedValue = row.tableValue
+) :=
   P.2.1
 
 theorem cusp_convergence_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        C.sptKernel.cuspConvergence.boundary.passes = true /\
+    (
+    C.sptKernel.cuspConvergence.boundary.passes = true /\
       C.sptKernel.cuspConvergence.cutoff =
-        C.sptKernel.cuspConvergence.boundary.cutoff :=
+        C.sptKernel.cuspConvergence.boundary.cutoff
+) :=
   P.2.2.1
 
 theorem transport_family_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        C.sptKernel.transport.transportFamily =
+    (
+    C.sptKernel.transport.transportFamily =
         C.sptKernel.kernelCusp.transportFamily /\
       C.sptKernel.transport.stacked.rowCount =
-        C.sptKernel.transport.transports.length :=
+        C.sptKernel.transport.transports.length
+) :=
   P.2.2.2.1
 
 theorem kernel_table_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        Not (C.sptKernel.kernelSelection.sourceName = "") /\
+    (
+    Not (C.sptKernel.kernelSelection.sourceName = "") /\
       C.sptKernel.kernelSelection.selectedModulus =
           C.sptKernel.kernelSelection.level /\
         C.sptKernel.kernelSelection.multiplierRows.length =
-          C.sptKernel.kernelSelection.level :=
+          C.sptKernel.kernelSelection.level
+) :=
   P.2.2.2.2.1
 
 theorem multiplier_input_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        C.sptKernel.multiplier.ts =
+    (
+    C.sptKernel.multiplier.ts =
         C.sptKernel.kernelCusp.phaseMatching /\
-      C.sptKernel.multiplier.rows.length = 2 :=
+      C.sptKernel.multiplier.rows.length = 2
+) :=
   P.2.2.2.2.2.1
 
 theorem cusp_input_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        C.sptKernel.cuspConvergence.boundary =
+    (
+    C.sptKernel.cuspConvergence.boundary =
         C.sptKernel.kernelCusp.convergence /\
-      C.sptKernel.cuspConvergence.boundary.passes = true :=
+      C.sptKernel.cuspConvergence.boundary.passes = true
+) :=
   P.2.2.2.2.2.2.1
 
 theorem transport_across_cusps_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIKernelPromptObjective C) :
-        List.Mem infinityCuspLabel C.sptKernel.transport.relevantCusps /\
+    (
+    List.Mem infinityCuspLabel C.sptKernel.transport.relevantCusps /\
       List.Mem zeroCuspLabel C.sptKernel.transport.relevantCusps /\
         forall T, List.Mem T C.sptKernel.transport.transports ->
-          T.principal.rowCount = T.principal.order :=
+          T.principal.rowCount = T.principal.order
+) :=
   P.2.2.2.2.2.2.2
 
 end AdvancedClaimsIIKernelPromptObjective
@@ -45396,63 +45542,77 @@ namespace AdvancedClaimsIIExactPromptObjective
 theorem coefficient_separation_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) (n : Nat) :
-        C.exact.exact.formula.coefficient n =
+    (
+    C.exact.exact.formula.coefficient n =
       C.exact.exact.separation.scalarPart n +
-        C.exact.exact.separation.thetaPart n :=
+        C.exact.exact.separation.thetaPart n
+) :=
   P.1 n
 
 theorem theta_character_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) :
-        Not (C.exact.thetaTable.rows = []) /\
+    (
+    Not (C.exact.thetaTable.rows = []) /\
       C.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
         C.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
-          C.exact.spectralInput.analyticBoundary.lValueTheoryAccepted :=
+          C.exact.spectralInput.analyticBoundary.lValueTheoryAccepted
+) :=
   P.2.1
 
 theorem spectral_kloosterman_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) :
-        C.exact.spectralInput.finiteResidue.certifiedSum =
+    (
+    C.exact.spectralInput.finiteResidue.certifiedSum =
         C.exact.spectralInput.spectral.kloostermanValue /\
       forall n, C.exact.spectralInput.spectral.coefficient n =
         C.exact.spectralInput.spectral.rademacher.main n +
-          C.exact.spectralInput.spectral.rademacher.remainder n :=
+          C.exact.spectralInput.spectral.rademacher.remainder n
+) :=
   P.2.2.1
 
 theorem local_euler_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) :
-        C.exact.localRootLValueInput.localEuler.productValue = 1 :=
+    (
+    C.exact.localRootLValueInput.localEuler.productValue = 1
+) :=
   P.2.2.2.1
 
 theorem root_filter_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) :
-        C.exact.localRootLValueInput.rootFilter.allowed = true :=
+    (
+    C.exact.localRootLValueInput.rootFilter.allowed = true
+) :=
   P.2.2.2.2.1
 
 theorem exact_formula_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) (n : Nat) :
-        C.exact.localRootLValueInput.formula.coefficient n =
+    (
+    C.exact.localRootLValueInput.formula.coefficient n =
       C.exact.localRootLValueInput.formula.globalConstant *
         C.exact.localRootLValueInput.formula.powerTerm n *
           C.exact.localRootLValueInput.formula.centralLValue n *
-            C.exact.localRootLValueInput.formula.localEulerProduct n :=
+            C.exact.localRootLValueInput.formula.localEulerProduct n
+) :=
   P.2.2.2.2.2.1 n
 
 theorem paper_formula_fields_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIExactPromptObjective C) :
-        (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+    (
+    (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
       (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
         C.betaArch.betaArch.scalarRecord.scalar *
           (C.betaArch.betaArch.unfolding.mockCoeff n *
             C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
         (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
           C.betaArch.betaArch.formula.rademacher.main n +
-            C.betaArch.betaArch.formula.rademacher.remainder n) :=
+            C.betaArch.betaArch.formula.rademacher.remainder n)
+) :=
   P.2.2.2.2.2.2
 
 end AdvancedClaimsIIExactPromptObjective
@@ -45462,26 +45622,31 @@ namespace AdvancedClaimsIIPAdicPromptObjective
 theorem normalization_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) (n : Nat) :
-        IntCongruent
+    (
+    IntCongruent
       (PrimePower C.paperInstance.padic.face.normalization.p
         C.paperInstance.padic.face.normalization.k)
       (C.paperInstance.padic.face.normalization.normalized n)
-      (C.paperInstance.padic.face.normalization.raw n) :=
+      (C.paperInstance.padic.face.normalization.raw n)
+) :=
   P.1 n
 
 theorem overlap_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) (n : Nat) :
-        IntCongruent C.padicOverlap.M
+    (
+    IntCongruent C.padicOverlap.M
         (C.padicOverlap.left n) (C.padicOverlap.right n) /\
       IntCongruent (PrimePower C.padicOverlap.p C.padicOverlap.k)
-        (C.padicOverlap.left n) (C.padicOverlap.right n) :=
+        (C.padicOverlap.left n) (C.padicOverlap.right n)
+) :=
   P.2.1 n
 
 theorem mahler_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) (n : Nat) :
-        IntCongruent
+    (
+    IntCongruent
         (PrimePower C.paperInstance.padic.face.mahler.p
           C.paperInstance.padic.face.mahler.k)
         (C.paperInstance.padic.face.mahler.eval n)
@@ -45490,49 +45655,59 @@ theorem mahler_at
         Finset.sum Finset.univ
           (fun j : Fin C.paperInstance.extraction.concrete.mahler.length =>
             C.paperInstance.extraction.concrete.mahler.coeff j *
-              C.paperInstance.extraction.concrete.mahler.basis j n) :=
+              C.paperInstance.extraction.concrete.mahler.basis j n)
+) :=
   P.2.2.1 n
 
 theorem tail_zero_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C)
     (n : Nat) (hn : C.padicAnalyticRange.cutoff <= n) :
-        C.padicAnalyticRange.predicate n /\
-      C.padicAnalyticRange.tail n = 0 :=
+    (
+    C.padicAnalyticRange.predicate n /\
+      C.padicAnalyticRange.tail n = 0
+) :=
   P.2.2.2.1 n hn
 
 theorem face_tracking_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) :
-        Not (C.paperInstance.padic.lemma9Label = "") /\
+    (
+    Not (C.paperInstance.padic.lemma9Label = "") /\
       Not (C.paperInstance.padic.equationI3Label = "") /\
         Not (C.paperInstance.padic.equationI4Label = "") /\
           Not (C.paperInstance.padic.equationI5Label = "") /\
             C.paperInstance.padic.face.lemma9Label =
                 C.paperInstance.padic.lemma9Label /\
               C.paperInstance.padic.face.propositionI3Label =
-                C.paperInstance.padic.equationI3Label :=
+                C.paperInstance.padic.equationI3Label
+) :=
   P.2.2.2.2.1
 
 theorem denominator_data_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) :
-        Not (referenceT1DenominatorNonzero.denominator = 0) /\
+    (
+    Not (referenceT1DenominatorNonzero.denominator = 0) /\
       Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
-        Not (referenceT2SimpleDenominatorNonzero.denominator = 0) :=
+        Not (referenceT2SimpleDenominatorNonzero.denominator = 0)
+) :=
   P.2.2.2.2.2.1
 
 theorem chart_vectors_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) (n : Nat) :
-        FiniteCongruenceMod C.padicChart.p C.padicChart.k
-      (C.padicChart.chartLeft n) (C.padicChart.chartRight n) :=
+    (
+    FiniteCongruenceMod C.padicChart.p C.padicChart.k
+      (C.padicChart.chartLeft n) (C.padicChart.chartRight n)
+) :=
   P.2.2.2.2.2.2.1 n
 
 theorem mahler_table_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) (n : Nat) :
-        FiniteCongruenceMod
+    (
+    FiniteCongruenceMod
         C.paperInstance.extraction.concrete.mahlerBinomial.p
         C.paperInstance.extraction.concrete.mahlerBinomial.k
         (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
@@ -45541,21 +45716,26 @@ theorem mahler_table_at
         Finset.sum Finset.univ
           (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
             C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
-              mahlerBinomialBasis (j : Nat) n) :=
+              mahlerBinomialBasis (j : Nat) n)
+) :=
   P.2.2.2.2.2.2.2.1 n
 
 theorem analytic_range_predicate_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C)
     (n : Nat) (hn : C.padicAnalyticRange.cutoff <= n) :
-        C.padicAnalyticRange.predicate n :=
+    (
+    C.padicAnalyticRange.predicate n
+) :=
   P.2.2.2.2.2.2.2.2.1 n hn
 
 theorem obstruction_failure_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIPAdicPromptObjective C) :
-        C.sptKernel.sptFree.spt.obstruction.order = 1 /\
-      Not (C.sptKernel.sptFailure.spt.obstruction.order = 1) :=
+    (
+    C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+      Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)
+) :=
   P.2.2.2.2.2.2.2.2.2
 
 end AdvancedClaimsIIPAdicPromptObjective
@@ -45565,76 +45745,94 @@ namespace AdvancedClaimsIIEntropyPromptObjective
 theorem regression_cardy_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+    (
+    C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
       C.entropy.symbolic.ceffInterval.Contains C.entropy.symbolic.ceffHat /\
-        C.entropy.entropy.olsTable.rows.length = 5 :=
+        C.entropy.entropy.olsTable.rows.length = 5
+) :=
   P.1
 
 theorem rademacher_tail_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.entropy.alphaExtraction.cEqualsOne /\
+    (
+    C.entropy.entropy.alphaExtraction.cEqualsOne /\
       C.entropy.entropy.tailDominance.tailUpper <=
         C.entropy.entropy.tailDominance.dominanceThreshold *
-          C.entropy.entropy.tailDominance.mainLower :=
+          C.entropy.entropy.tailDominance.mainLower
+) :=
   P.2.1
 
 theorem entropy_cardy_wrapper_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.entropy.olsTable.alphaRow.interval.Contains
+    (
+    C.entropy.entropy.olsTable.alphaRow.interval.Contains
         C.entropy.entropy.olsTable.alphaRow.estimate /\
       C.entropy.entropy.olsTable.ceffRow.interval.Contains
         C.entropy.entropy.olsTable.ceffRow.estimate /\
-        C.entropy.entropy.paperTables.residualTable.rows.length = 16 :=
+        C.entropy.entropy.paperTables.residualTable.rows.length = 16
+) :=
   P.2.2.1
 
 theorem alpha_extraction_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat :=
+    (
+    C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat
+) :=
   P.2.2.2.1
 
 theorem degeneracy_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) (n : Nat) :
-        C.entropy.entropy.degeneracy.degeneracy n =
-      C.entropy.entropy.degeneracy.coefficient n :=
+    (
+    C.entropy.entropy.degeneracy.degeneracy n =
+      C.entropy.entropy.degeneracy.coefficient n
+) :=
   P.2.2.2.2.1 n
 
 theorem ols_interval_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.entropy.olsTable.rows.length = 5 /\
+    (
+    C.entropy.entropy.olsTable.rows.length = 5 /\
       C.entropy.entropy.olsTable.alphaRow.interval.Contains
         C.entropy.entropy.olsTable.alphaRow.estimate /\
         C.entropy.entropy.olsTable.ceffRow.interval.Contains
-          C.entropy.entropy.olsTable.ceffRow.estimate :=
+          C.entropy.entropy.olsTable.ceffRow.estimate
+) :=
   P.2.2.2.2.2.1
 
 theorem growth_stability_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.entropy.entropy.growthStability.spt.p =
+    (
+    C.entropy.entropy.growthStability.spt.p =
         C.entropy.entropy.growthStability.padic.p /\
       C.entropy.entropy.growthStability.spt.k =
         C.entropy.entropy.growthStability.padic.k /\
-        C.entropy.entropy.growthStability.obstructionOrder = 1 :=
+        C.entropy.entropy.growthStability.obstructionOrder = 1
+) :=
   P.2.2.2.2.2.2.1
 
 theorem reproducibility_schema_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.tables.paperTables.externalScript.rows.length = 16 /\
+    (
+    C.tables.paperTables.externalScript.rows.length = 16 /\
       forall row : ResidualTableRow,
         List.Mem row C.tables.paperTables.externalScript.rows ->
-          row.rtCheck.pass = true /\ row.rsCheck.pass = true :=
+          row.rtCheck.pass = true /\ row.rsCheck.pass = true
+) :=
   P.2.2.2.2.2.2.2.1
 
 theorem external_rows_at
     {C : AdvancedClaimsIICompletionCertificate}
     (P : AdvancedClaimsIIEntropyPromptObjective C) :
-        C.tables.paperTables.externalScript.rows.length = 16 :=
+    (
+    C.tables.paperTables.externalScript.rows.length = 16
+) :=
   P.2.2.2.2.2.2.2.2
 
 end AdvancedClaimsIIEntropyPromptObjective

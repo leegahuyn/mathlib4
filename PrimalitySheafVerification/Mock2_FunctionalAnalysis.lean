@@ -4356,7 +4356,7 @@ theorem etaSqrtFactor_continuous (γ : SL(2, ℤ)) :
       fun_prop
     change ContinuousAt (fun w : ℍ ↦
       Complex.sqrt (UpperHalfPlane.denom g w)) z
-    exact (Complex.continuousAt_sqrt (Or.inr him)).comp z hdenom
+    exact (Complex.continuousAt_sqrt (Or.inr him)).comp hdenom
 
 /-- The eta-normalized square-root phase before proving that it is constant. -/
 noncomputable def etaPhaseRatio (γ : SL(2, ℤ)) (z : ℍ) : ℂ :=

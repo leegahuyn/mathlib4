@@ -3271,7 +3271,7 @@ theorem quotientToAmbientHom_injective
     rw [Int.cast_sub, mul_sub, hxy, sub_self]
   have hz' :
       ((((quotientStep M N : ℕ) : ℤ) * (a - b) : ℤ) : ZMod N) = 0 := by
-    simpa only [map_zero] using hz
+    simpa only [Int.cast_mul, Int.cast_natCast] using hz
   have hdiv : (N : ℤ) ∣
       (quotientStep M N : ℤ) * (a - b) :=
     (ZMod.intCast_zmod_eq_zero_iff_dvd
@@ -4025,7 +4025,7 @@ theorem rightNaturalitySquare
                 ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
                   ZMod (Pk p k')) := by
             simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
-            ring
+            ring_nf
     _ = powerShiftHom M p k'
         (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
           ZMod (p ^ thicknessExponent M p k')) :=
@@ -4628,7 +4628,8 @@ theorem resolutionAtOne_exact (M : ℕ) (hM : M ≠ 0) :
   change integerMul M z = 0 at hz
   have hz0 : z = 0 := by
     apply integerMul_injective M hM
-    simpa only [map_zero] using hz
+    rw [map_zero]
+    exact hz
   subst z
   refine ⟨0, ?_⟩
   rfl
@@ -4649,8 +4650,8 @@ def freeResolutionD (M : ℕ) :
 theorem freeResolutionD_comp (M : ℕ) (n : ℕ) :
     freeResolutionD M (n + 1) ≫ freeResolutionD M n = 0 := by
   cases n with
-  | zero => exact zero_comp _
-  | succ n => exact zero_comp _
+  | zero => exact zero_comp
+  | succ n => exact zero_comp
 
 /-- The literal chain complex `⋯ → 0 → ℤ --M→ ℤ`. -/
 def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=

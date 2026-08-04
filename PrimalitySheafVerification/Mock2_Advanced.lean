@@ -1921,11 +1921,13 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm)
           ((Lp.compMeasurePreserving (⇑chart.coord) hcoord) F) = F
-    have hfun : (chart.coord ∘ chart.coord.symm) = id := by
-      funext x
-      exact chart.coord.apply_symm_apply x
-    rw [hfun] at hcomp
-    simpa only [Lp.compMeasurePreserving_id_apply] using hcomp.symm
+    calc
+      _ = Lp.compMeasurePreserving (chart.coord ∘ chart.coord.symm)
+            (hcoord.comp hsymm) F := hcomp.symm
+      _ = F := by
+        convert Lp.compMeasurePreserving_id_apply F using 1
+        funext x
+        exact chart.coord.apply_symm_apply x
   · apply LinearMap.ext
     intro u
     have hcomp :=
@@ -1934,11 +1936,13 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord) hcoord)
           ((Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm) u) = u
-    have hfun : (chart.coord.symm ∘ chart.coord) = id := by
-      funext x
-      exact chart.coord.symm_apply_apply x
-    rw [hfun] at hcomp
-    simpa only [Lp.compMeasurePreserving_id_apply] using hcomp.symm
+    calc
+      _ = Lp.compMeasurePreserving (chart.coord.symm ∘ chart.coord)
+            (hsymm.comp hcoord) u := hcomp.symm
+      _ = u := by
+        convert Lp.compMeasurePreserving_id_apply u using 1
+        funext x
+        exact chart.coord.symm_apply_apply x
 
 /-! ## Definitions 9 and 11: a kernel-family trivialization interface -/
 
