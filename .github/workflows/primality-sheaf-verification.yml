@@ -30,42 +30,22 @@ jobs:
           ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
 
-      - name: Apply deterministic repair layers
-        run: |
-          python3 scripts/apply_deterministic_repairs.py
-          python3 scripts/apply_spt1_timeout_repairs.py
-          python3 scripts/apply_forty_ninth_spt1_repairs.py
-          python3 scripts/apply_spt2_parse_repair.py
-          python3 scripts/apply_spt2_spt3_repairs.py
-          python3 scripts/apply_spt5_repairs.py
-          python3 scripts/apply_spt_remaining_repairs.py
-          python3 scripts/apply_spt_final_repairs.py
-          python3 scripts/apply_spt_closure_repairs.py
-          python3 scripts/apply_spt_terminal_repairs.py
-          python3 scripts/apply_mock1_repairs.py
-          python3 scripts/apply_mock1_second_repairs.py
-          python3 scripts/apply_mock1_advanced_repairs.py
-          python3 scripts/apply_mock1_advanced_second_repairs.py
-          python3 scripts/apply_mock2_scope_repairs.py
-          python3 scripts/apply_mock2_advanced_repairs.py
-          python3 scripts/apply_mock2_functional_analysis_repairs.py
-          python3 scripts/apply_second_pass_repairs.py
-          python3 scripts/apply_forty_first_idempotence_fix.py
-          python3 scripts/apply_post_second_pass_repairs.py
+      - name: Apply current unmaterialized repairs
+        run: python3 scripts/apply_current_repairs.py
 
-      - name: Materialize deterministic repairs into Lean sources
+      - name: Materialize current repairs into Lean sources
         if: github.event_name == 'push' && github.ref == 'refs/heads/fix/primality-sheaf-clean-build'
         shell: bash
         run: |
           set -euo pipefail
           if git diff --quiet -- PrimalitySheafVerification; then
-            echo 'Lean sources already contain every deterministic repair.'
+            echo 'Lean sources already contain every current repair.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PrimalitySheafVerification
-          git commit -m 'repair: materialize deterministic Lean source repairs [skip ci]'
+          git commit -m 'repair: materialize current Lean source repairs [skip ci]'
           git push origin HEAD:fix/primality-sheaf-clean-build
 
       - name: Set up Lean
