@@ -3939,8 +3939,8 @@ theorem gammaTwoHyperbolic_smul_I_im :
     (gammaTwoHyperbolic • UpperHalfPlane.I).im = (1 : ℝ) / 25 := by
   rw [ModularGroup.im_smul_eq_div_normSq]
   norm_num [gammaTwoHyperbolic, UpperHalfPlane.I, UpperHalfPlane.denom,
-    Matrix.SpecialLinearGroup.map, Matrix.SpecialLinearGroup.toGL,
-    Complex.normSq]
+    Matrix.SpecialLinearGroup.map, Matrix.SpecialLinearGroup.mapGL,
+    Matrix.SpecialLinearGroup.toGL, Complex.normSq]
 
 /-- Even the radius of the usual q-parameter is not invariant under this
 `Gamma(2)` element. -/

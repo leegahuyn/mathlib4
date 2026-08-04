@@ -4005,12 +4005,7 @@ theorem rightNaturalitySquare
                 (z : ZMod (Pk p k)) =
               (((((p ^ shiftExponent M p k : ℕ) : ℤ) * z : ℤ)) :
                 ZMod (Pk p k)) := by
-          change
-            (p : ZMod (Pk p k)) ^ shiftExponent M p k *
-                (z : ZMod (Pk p k)) =
-              (p : ZMod (Pk p k)) ^ shiftExponent M p k *
-                (z : ZMod (Pk p k))
-          rfl
+          simp only [Int.cast_mul, Int.cast_natCast, Nat.cast_pow]
         have hexp :
             p ^ shiftExponent M p k =
               p ^ shiftExponent M p k' *
@@ -4029,7 +4024,7 @@ theorem rightNaturalitySquare
                 ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
                   ZMod (Pk p k')) := by
             simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
-            ac_rfl
+            ring
     _ = powerShiftHom M p k'
         (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
           ZMod (p ^ thicknessExponent M p k')) :=
@@ -4544,6 +4539,10 @@ open CategoryTheory.MonoidalCategory
 /-- The tensor unit in `ModuleCat ℤ`, definitionally the free rank-one module
 `ℤ`. -/
 abbrev integerModule : ModuleCat ℤ := 𝟙_ (ModuleCat ℤ)
+
+/-- An explicit zero integer module used in categorical object positions. -/
+abbrev zeroIntegerModule : ModuleCat ℤ :=
+  ModuleCat.of ℤ (Fin 0 → ℤ)
 
 /-- `ZMod n` regarded as a module over `ℤ`. -/
 abbrev residueModule (n : ℕ) : ModuleCat ℤ := ModuleCat.of ℤ (ZMod n)
@@ -25967,4 +25966,3 @@ section AxiomAudit
 end AxiomAudit
 
 end Mock2
-

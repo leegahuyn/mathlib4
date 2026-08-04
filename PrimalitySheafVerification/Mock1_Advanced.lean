@@ -43769,17 +43769,26 @@ theorem exact_actual_inputs_at
 theorem padic_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    PAdicRequirementPayloadCertificate.denominator_data_at
-        C.pAdicRequirementPayload /\
-      (forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-          C.pAdicRequirementPayload n) /\
-        (forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-            C.pAdicRequirementPayload n) /\
-          (forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
-            PAdicRequirementPayloadCertificate.predicate_at
-              C.pAdicRequirementPayload n hn) /\
-            PAdicRequirementPayloadCertificate.obstruction_failure_at
-              C.pAdicRequirementPayload :=
+    (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+      Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+        Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+      (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+        (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+      (forall n,
+        FiniteCongruenceMod
+            C.paperInstance.extraction.concrete.mahlerBinomial.p
+            C.paperInstance.extraction.concrete.mahlerBinomial.k
+            (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+            (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+          C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                  mahlerBinomialBasis (j : Nat) n)) /\
+      (forall n, C.padicAnalyticRange.cutoff <= n ->
+        C.padicAnalyticRange.predicate n) /\
+      (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+        Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   And.intro A.denominator_clearing_data
     (And.intro A.chart_vectors_modulo_prime_power
       (And.intro A.mahler_table_interpolation_vector
@@ -43789,14 +43798,15 @@ theorem padic_actual_inputs_at
 theorem entropy_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (A : AdvancedClaimsIIActualInputAuditCertificate C) :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        C.entropyReproRequirementPayload /\
-      (forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-          C.entropyReproRequirementPayload n) /\
-        EntropyReproRequirementPayloadCertificate.ols_interval_at
-            C.entropyReproRequirementPayload /\
-          EntropyReproRequirementPayloadCertificate.external_rows_at
-            C.entropyReproRequirementPayload :=
+    C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+      (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+        C.entropy.entropy.degeneracy.coefficient n) /\
+      (C.entropy.entropy.olsTable.rows.length = 5 /\
+        C.entropy.entropy.olsTable.alphaRow.interval.Contains
+          C.entropy.entropy.olsTable.alphaRow.estimate /\
+        C.entropy.entropy.olsTable.ceffRow.interval.Contains
+          C.entropy.entropy.olsTable.ceffRow.estimate) /\
+      C.tables.paperTables.externalScript.rows.length = 16 :=
   And.intro A.actual_entropy_alpha_extraction
     (And.intro A.degeneracy_channel_instance
       (And.intro A.rational_ols_interval_table
@@ -43948,7 +43958,29 @@ theorem all_nodup :
 
 theorem mem_all (s : AdvancedClaimsIIObjectiveSection) :
     List.Mem s all := by
-  cases s <;> simp [all]
+  cases s with
+  | objectSchema => exact List.Mem.head _
+  | t1t5Core => exact List.Mem.tail _ (List.Mem.head _)
+  | sptEqualizerTorCrt => exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  | kernelCuspMultiplier =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  | exactCoefficientFormula =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))
+  | pAdicSection =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  | entropyCardyReproducibility =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  | paperDataInstance =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.head _)))))))
+  | finalAggregation =>
+      exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
 
 def requirements : AdvancedClaimsIIObjectiveSection ->
     List AdvancedClaimsIIRequirement
@@ -43972,7 +44004,7 @@ theorem requirements_nonempty
 theorem paper_data_requirement_mem :
     List.Mem AdvancedClaimsIIRequirement.paperObjectDataInstance
       (requirements paperDataInstance) := by
-  decide
+  exact List.Mem.head _
 
 end AdvancedClaimsIIObjectiveSection
 

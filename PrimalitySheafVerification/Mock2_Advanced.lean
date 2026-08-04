@@ -831,7 +831,7 @@ theorem denseRange_coreToTrial
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
   intro x hx
-  exact subset_closure hx
+  exact hx
 
 /-- We fix the convention that data are continuous complex-linear functionals in
 the trial argument. -/
@@ -1919,7 +1919,8 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm)
           ((Lp.compMeasurePreserving (⇑chart.coord) hcoord) F) = F
-    exact hcomp.symm.trans (Lp.compMeasurePreserving_id_apply F)
+    rw [← Lp.compMeasurePreserving_id_apply F]
+    simpa only [Function.comp_def, chart.coord.apply_symm_apply] using hcomp.symm
   · apply LinearMap.ext
     intro u
     have hcomp :=
@@ -1928,7 +1929,8 @@ noncomputable def CuspQChart.lpPushLinearIsometryEquiv
     change
       (Lp.compMeasurePreserving (⇑chart.coord) hcoord)
           ((Lp.compMeasurePreserving (⇑chart.coord.symm) hsymm) u) = u
-    exact hcomp.symm.trans (Lp.compMeasurePreserving_id_apply u)
+    rw [← Lp.compMeasurePreserving_id_apply u]
+    simpa only [Function.comp_def, chart.coord.symm_apply_apply] using hcomp.symm
 
 /-! ## Definitions 9 and 11: a kernel-family trivialization interface -/
 
@@ -5457,7 +5459,7 @@ theorem denseRange_coreToTrial
   change DenseRange (Set.inclusion M.core.le_topologicalClosure)
   rw [denseRange_inclusion_iff]
   intro x hx
-  exact subset_closure hx
+  exact hx
 
 /-- The sum of the three genuine graph-energy components. -/
 def Datum.graphEnergy
