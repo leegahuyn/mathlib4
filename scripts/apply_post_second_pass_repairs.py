@@ -24,6 +24,7 @@ from apply_twelfth_pass_repairs import main as repair_twelfth_pass
 from apply_twentieth_pass_fixed import main as repair_twentieth_pass
 from apply_twenty_first_pass_repairs import main as repair_twenty_first_pass
 from apply_twenty_second_pass_repairs import main as repair_twenty_second_pass
+from apply_twenty_third_pre_repairs import main as repair_twenty_third_pre_pass
 
 
 def main() -> int:
@@ -50,6 +51,7 @@ def main() -> int:
     repair_nineteenth_pass()
     repair_twentieth_pass()
     repair_twenty_first_pass()
+    repair_twenty_third_pre_pass()
     repair_twenty_second_pass()
     return 0
 
