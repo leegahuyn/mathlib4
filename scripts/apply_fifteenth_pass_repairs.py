@@ -30,6 +30,22 @@ noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
   idealCotangentEquivOfEqKX
     (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
     (quotientExtension_ker f).symm
+
+@[simp] lemma quotientSpanCotangentEquivKer_toCotangent
+    (f : K[X]) (x : Ideal.span ({f} : Set K[X])) :
+    quotientSpanCotangentEquivKer f
+        ((Ideal.span ({f} : Set K[X])).toCotangent x) =
+      (quotientExtension f).ker.toCotangent
+        ⟨x.1, (quotientExtension_ker f).symm ▸ x.2⟩ := by
+  let J : Ideal K[X] := (quotientExtension f).ker
+  let h : Ideal.span ({f} : Set K[X]) = J := (quotientExtension_ker f).symm
+  change idealCotangentEquivOfEqKX (Ideal.span ({f} : Set K[X])) J h
+      ((Ideal.span ({f} : Set K[X])).toCotangent x) =
+    J.toCotangent ⟨x.1, h ▸ x.2⟩
+  rw [idealCotangentEquivOfEqKX_toCotangent]
+  congr 1
+  apply Subtype.ext
+  rfl
 """
 
 OLD_PROOF = """  have hprincipal :
@@ -75,8 +91,8 @@ NEW_PROOF = """  have hprincipal :
   rw [hprincipal, hmap]
   apply Algebra.Extension.Cotangent.ext
   simp only [Algebra.Extension.Cotangent.val_of,
-    Algebra.Extension.Cotangent.val_mk, quotientSpanCotangentEquivKer]
-  rw [idealCotangentEquivOfEqKX_toCotangent]
+    Algebra.Extension.Cotangent.val_mk]
+  rw [quotientSpanCotangentEquivKer_toCotangent]
   congr 1
   apply Subtype.ext
   rfl
@@ -108,16 +124,16 @@ def main() -> int:
     if NEW_PROOF not in text:
         if OLD_PROOF in text:
             text = text.replace(OLD_PROOF, NEW_PROOF, 1)
-            print("Spt2 generator transport via cotangent extensionality: applied")
+            print("Spt2 generator transport via specialized cotangent lemma: applied")
             changed = True
         elif PREVIOUS_PROOF in text:
             text = text.replace(PREVIOUS_PROOF, NEW_PROOF, 1)
-            print("Spt2 generator transport via cotangent extensionality: applied")
+            print("Spt2 generator transport via specialized cotangent lemma: applied")
             changed = True
         else:
             raise RuntimeError("Spt2 generator proof anchor not found")
     else:
-        print("Spt2 generator transport via cotangent extensionality: already applied")
+        print("Spt2 generator transport via specialized cotangent lemma: already applied")
 
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
