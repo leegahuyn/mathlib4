@@ -52,6 +52,25 @@ def main() -> int:
     if n:
         text = text2; changed = True
 
+    section_lists = [
+        "objectSchemaRequirements",
+        "t1t5Requirements",
+        "sptRequirements",
+        "kernelRequirements",
+        "exactCoefficientRequirements",
+        "pAdicRequirements",
+        "entropyReproRequirements",
+        "finalInstanceRequirements",
+    ]
+    for name in section_lists:
+        old = f"  cases r <;>\n    simp [{name}, sectionOf] at h ⊢"
+        new = f"  cases r <;>\n    simp_all [{name}, sectionOf]"
+        if old in text:
+            text = text.replace(old, new, 1)
+            changed = True
+        elif new not in text:
+            raise SystemExit(f"expected section proof not found: {name}")
+
     if changed:
         PATH.write_text(text, encoding="utf-8", newline="\n")
     return 0
