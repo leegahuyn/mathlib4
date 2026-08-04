@@ -1,21 +1,13 @@
 name: Primality Sheaf Verification
 
 on:
-  push:
-    branches:
-      - fix/primality-sheaf-clean-build
-  pull_request:
-    paths:
-      - 'PrimalitySheafVerification/**'
-      - 'scripts/apply_*.py'
-      - '.github/workflows/primality-sheaf-verification.yml'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: primality-sheaf-${{ github.ref }}
+  group: primality-sheaf-verification-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,31 +16,10 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: Checkout repair branch
+      - name: Checkout triggering commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/primality-sheaf-clean-build
           fetch-depth: 1
-
-      - name: Apply current unmaterialized repairs
-        run: python3 scripts/apply_current_repairs.py
-
-      - name: Materialize current repairs into Lean sources
-        if: >-
-          (github.event_name == 'push' && github.ref == 'refs/heads/fix/primality-sheaf-clean-build') ||
-          (github.event_name == 'pull_request' && github.head_ref == 'fix/primality-sheaf-clean-build')
-        shell: bash
-        run: |
-          set -euo pipefail
-          if git diff --quiet -- PrimalitySheafVerification; then
-            echo 'Lean sources already contain every current repair.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add PrimalitySheafVerification
-          git commit -m 'repair: materialize current Lean source repairs [skip ci]'
-          git push origin HEAD:fix/primality-sheaf-clean-build
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
@@ -60,15 +31,16 @@ jobs:
       - name: Restore Mathlib compiled cache
         run: lake exe cache get
 
-      - name: Compile all 13 modules and collect logs
+      - name: Compile checked-in sources and collect logs
         id: module-build
         shell: bash
         run: |
           set +e
-          mkdir -p build-logs/repaired-sources
+          mkdir -p build-logs/checked-in-sources
           artifact_dir='.lake/build/lib/lean/PrimalitySheafVerification'
+          rm -rf "$artifact_dir"
           mkdir -p "$artifact_dir"
-          cp PrimalitySheafVerification/*.lean build-logs/repaired-sources/
+          cp PrimalitySheafVerification/*.lean build-logs/checked-in-sources/
           modules=(Spt1 Spt2 Spt3 Spt4 Spt5 Spt6 Spt7 Mock1 Mock1_Advanced Mock2 Mock2_Advanced Mock2_FunctionalAnalysis QYM)
           printf 'module,exit_code,status\n' > build-logs/module-summary.csv
           overall=0
@@ -91,7 +63,6 @@ jobs:
           echo "$aggregate_code" > build-logs/BuildAll.exit-code.txt
           find "$artifact_dir" -maxdepth 1 -type f \( -name '*.olean' -o -name '*.ilean' -o -name '*.olean.private' \) \
             -printf '%f,%s,%TY-%Tm-%TdT%TH:%TM:%TSZ\n' 2>/dev/null | sort > build-logs/artifact-report.csv || true
-          git diff -- PrimalitySheafVerification > build-logs/tested-repair.patch || true
           grep -R -nE '\bsorry\b|\badmit\b|^[[:space:]]*axiom\b|\bunsafe\b' \
             PrimalitySheafVerification/*.lean > build-logs/trust-audit.txt || true
           exit "$overall"
