@@ -4025,7 +4025,7 @@ theorem rightNaturalitySquare
                 ((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ) :
                   ZMod (Pk p k')) := by
             simp only [Nat.cast_mul, Int.cast_mul, Int.cast_natCast]
-            ac_rfl
+            ring_nf
     _ = powerShiftHom M p k'
         (((((p ^ (shiftExponent M p k - shiftExponent M p k') : ℕ) : ℤ) * z : ℤ)) :
           ZMod (p ^ thicknessExponent M p k')) :=
@@ -4625,11 +4625,13 @@ theorem resolutionAtOne_exact (M : ℕ) (hM : M ≠ 0) :
     (resolutionAtOne M).Exact := by
   rw [ShortComplex.moduleCat_exact_iff]
   intro z hz
+  change integerMul M z = 0 at hz
   have hz0 : z = 0 := by
     apply integerMul_injective M hM
     simpa using hz
   subst z
-  exact ⟨0, by simp [resolutionAtOne]⟩
+  refine ⟨0, ?_⟩
+  rfl
 
 /-- Objects of the standard two-term free resolution, in homological degrees
 `0`, `1`, and `≥ 2`. -/
@@ -4646,7 +4648,9 @@ def freeResolutionD (M : ℕ) :
 
 theorem freeResolutionD_comp (M : ℕ) (n : ℕ) :
     freeResolutionD M (n + 1) ≫ freeResolutionD M n = 0 := by
-  cases n <;> simp [freeResolutionD]
+  cases n with
+  | zero => exact zero_comp _ _
+  | succ n => exact zero_comp _ _
 
 /-- The literal chain complex `⋯ → 0 → ℤ --M→ ℤ`. -/
 def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=
@@ -4667,15 +4671,18 @@ def freeResolutionComplex (M : ℕ) : ChainComplex (ModuleCat ℤ) ℕ :=
 
 @[simp] theorem freeResolutionComplex_d_one_zero (M : ℕ) :
     (freeResolutionComplex M).d 1 0 = integerMul M := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change freeResolutionD M 0 = integerMul M
+  rfl
 
 @[simp] theorem freeResolutionComplex_d_two_one (M : ℕ) :
     (freeResolutionComplex M).d 2 1 = 0 := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change freeResolutionD M 1 = 0
+  rfl
 
 @[simp] theorem freeResolutionComplex_d_succ_two_succ (M n : ℕ) :
     (freeResolutionComplex M).d (n + 3) (n + 2) = 0 := by
-  simp [freeResolutionComplex, freeResolutionD]
+  change freeResolutionD M (n + 2) = 0
+  rfl
 
 /-- Every term is a free `ℤ`-module, including the zero terms in degree `≥ 2`. -/
 theorem freeResolutionX_free (n : ℕ) : Module.Free ℤ (freeResolutionX n) := by

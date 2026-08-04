@@ -44516,6 +44516,13 @@ structure AdvancedClaimsIIRequirementLeafLedger
 
 namespace AdvancedClaimsIIRequirementLeafLedger
 
+/-- Generated accessor declarations sometimes name an already proved theorem
+where Lean expects its underlying proposition.  This local coercion sends a
+proof of `P` only to the original proposition `P`; all fields still require a
+kernel-checked proof of exactly that proposition. -/
+local instance proofTermCoeSort (P : Prop) : CoeSort P Prop where
+  coe _ := P
+
 theorem object_claim_registry_at
     {C : AdvancedClaimsIICompletionCertificate}
     (L : AdvancedClaimsIIRequirementLeafLedger C)
