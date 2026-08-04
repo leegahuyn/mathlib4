@@ -21,7 +21,7 @@ from apply_tenth_pass_repairs import main as repair_tenth_pass
 from apply_third_pass_repairs import main as repair_third_pass
 from apply_thirteenth_pass_repairs import main as repair_thirteenth_pass
 from apply_twelfth_pass_repairs import main as repair_twelfth_pass
-from apply_twentieth_pass_repairs import main as repair_twentieth_pass
+from apply_twentieth_pass_fixed import main as repair_twentieth_pass
 
 
 def main() -> int:
