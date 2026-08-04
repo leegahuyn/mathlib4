@@ -128,10 +128,12 @@ def repair_mock1() -> None:
   fin_cases i <;>
     simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
       S4D6J12Matrix, S4D6J12MatrixEntry, S4D6J12Solve] <;>
-    first | ring | congr 1
+    try ring
+  all_goals
+    exact congrArg b (Fin.ext rfl)
 """
     text, did = replace_once(text, old, new,
-        "Mock1 normalize the symbolic D6/J12 right inverse indices")
+        "Mock1 close symbolic D6/J12 Fin proof irrelevance")
     changed |= did
 
     if changed:
