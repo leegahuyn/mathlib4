@@ -18,7 +18,14 @@ from apply_forty_third_mock2_advanced_repairs import (
 )
 from apply_forty_fifth_pass_repairs import main as repair_forty_fifth_pass
 from apply_forty_sixth_pass_repairs import main as repair_forty_sixth_pass
-from apply_forty_seventh_pass_repairs import main as repair_forty_seventh_pass
+from apply_forty_seventh_pass_repairs import (
+    repair_functional_analysis as repair_forty_seventh_functional_analysis,
+    repair_mock2 as repair_forty_seventh_mock2,
+    repair_mock2_advanced as repair_forty_seventh_mock2_advanced,
+)
+from apply_forty_eighth_mock1_targeting import (
+    main as repair_forty_eighth_mock1_targeting,
+)
 from apply_fourth_pass_repairs import main as repair_fourth_pass
 from apply_fourteenth_pass_repairs import main as repair_fourteenth_pass
 from apply_mock1_advanced_fifth_repairs import main as repair_mock1_advanced_fifth
@@ -114,7 +121,10 @@ def main() -> int:
     repair_forty_first_functional_analysis()
     repair_forty_fifth_pass()
     repair_forty_sixth_pass()
-    repair_forty_seventh_pass()
+    repair_forty_eighth_mock1_targeting()
+    repair_forty_seventh_mock2()
+    repair_forty_seventh_mock2_advanced()
+    repair_forty_seventh_functional_analysis()
     return 0
 
 
