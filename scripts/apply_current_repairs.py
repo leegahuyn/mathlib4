@@ -8,7 +8,7 @@ import apply_seventy_second_pass_repairs as pass72
 
 
 def main() -> int:
-    """Apply the retained repair chain and the next Lean repair wave."""
+    """Apply retained passes 67–70 and the corrected pass-71 wrapper."""
     pass67.main()
     pass68.main()
     pass69.main()
