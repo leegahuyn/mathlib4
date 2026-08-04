@@ -46613,40 +46613,7 @@ theorem entropy_mem_all
     List.Mem b all :=
   mem_all b
 
-end AdvancedClaimsIIPromptBullet
-
-structure AdvancedClaimsIIRequirementDispatchCertificate
-    (C : AdvancedClaimsIICompletionCertificate) : Prop where
-  leaf_ledger :
-    AdvancedClaimsIIRequirementLeafLedger C
-  requirement_covered :
-    forall r, List.Mem r C.requirements
-  leaf_statement :
-    forall r, AdvancedClaimsIIRequirement.leafStatement C r
-
-namespace AdvancedClaimsIIRequirementDispatchCertificate
-
-theorem leaf_ledger_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (D : AdvancedClaimsIIRequirementDispatchCertificate C) :
-    AdvancedClaimsIIRequirementLeafLedger C :=
-  D.leaf_ledger
-
-theorem requirement_covered_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (D : AdvancedClaimsIIRequirementDispatchCertificate C)
-    (r : AdvancedClaimsIIRequirement) :
-    List.Mem r C.requirements :=
-  D.requirement_covered r
-
-theorem leaf_statement_at
-    {C : AdvancedClaimsIICompletionCertificate}
-    (D : AdvancedClaimsIIRequirementDispatchCertificate C)
-    (r : AdvancedClaimsIIRequirement) :
-    AdvancedClaimsIIRequirement.leafStatement C r :=
-  D.leaf_statement r
-
-end AdvancedClaimsIIRequirementDispatchCertificate
+end AdvancedClaimsIIPromptBulletDispatchCertificate
 
 structure AdvancedClaimsIIClaimGroupLeafStatementCertificate
     (C : AdvancedClaimsIICompletionCertificate) : Prop where
