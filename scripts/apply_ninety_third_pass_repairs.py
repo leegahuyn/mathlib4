@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import apply_eighty_ninth_pass_repairs as pass89
 import apply_ninetieth_pass_repairs as pass90
 
 
-_original_replace_exact = pass90.replace_exact
+_original_pass89_replace_exact = pass89.replace_exact
+_original_pass90_replace_exact = pass90.replace_exact
 
 
 def _replace_exact_with_vertical_line_scope(
@@ -28,15 +30,17 @@ def _replace_exact_with_vertical_line_scope(
         raise RuntimeError(
             f"{label}: expected one match in complex_verticalLine_null, found {count}"
         )
-    return _original_replace_exact(text, old, new, expected, label)
+    return _original_pass89_replace_exact(text, old, new, expected, label)
 
 
 def main() -> int:
+    pass89.replace_exact = _replace_exact_with_vertical_line_scope
     pass90.replace_exact = _replace_exact_with_vertical_line_scope
     try:
         return pass90.main()
     finally:
-        pass90.replace_exact = _original_replace_exact
+        pass89.replace_exact = _original_pass89_replace_exact
+        pass90.replace_exact = _original_pass90_replace_exact
 
 
 if __name__ == "__main__":
