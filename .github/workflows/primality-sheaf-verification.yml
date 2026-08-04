@@ -34,6 +34,7 @@ jobs:
         run: |
           python3 scripts/apply_deterministic_repairs.py
           python3 scripts/apply_spt1_timeout_repairs.py
+          python3 scripts/apply_forty_ninth_spt1_repairs.py
           python3 scripts/apply_spt2_parse_repair.py
           python3 scripts/apply_spt2_spt3_repairs.py
           python3 scripts/apply_spt5_repairs.py
