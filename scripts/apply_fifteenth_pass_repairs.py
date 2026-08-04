@@ -44,8 +44,6 @@ noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
     J.toCotangent ⟨x.1, h ▸ x.2⟩
   rw [idealCotangentEquivOfEqKX_toCotangent]
   congr 1
-  apply Subtype.ext
-  rfl
 """
 
 OLD_PROOF = """  have hprincipal :
@@ -93,9 +91,6 @@ NEW_PROOF = """  have hprincipal :
   simp only [Algebra.Extension.Cotangent.val_of,
     Algebra.Extension.Cotangent.val_mk]
   rw [quotientSpanCotangentEquivKer_toCotangent]
-  congr 1
-  apply Subtype.ext
-  rfl
 """
 
 
