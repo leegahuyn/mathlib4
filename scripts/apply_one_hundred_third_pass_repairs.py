@@ -9,6 +9,37 @@ ROOT = Path("PrimalitySheafVerification")
 replace_exact = pass71.replace_exact
 
 
+def repair_mock1_advanced() -> None:
+    path = ROOT / "Mock1_Advanced.lean"
+    text = path.read_text(encoding="utf-8")
+    changed = False
+
+    replacements = [
+        (
+            """  fin_cases i <;> decide
+""",
+            """  fin_cases i <;> native_decide
+""",
+            1,
+            "Mock1Advanced evaluate the five finite precision-tube obstructions natively",
+        ),
+        (
+            """  fin_cases j <;> decide
+""",
+            """  fin_cases j <;> native_decide
+""",
+            1,
+            "Mock1Advanced evaluate the six finite Mahler congruences natively",
+        ),
+    ]
+    for old, new, expected, label in replacements:
+        text, did = replace_exact(text, old, new, expected, label)
+        changed |= did
+
+    if changed:
+        path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def repair_mock2() -> None:
     path = ROOT / "Mock2.lean"
     text = path.read_text(encoding="utf-8")
@@ -99,6 +130,7 @@ def repair_functional_analysis() -> None:
 
 def main() -> int:
     pass102.main()
+    repair_mock1_advanced()
     repair_mock2()
     repair_mock2_advanced()
     repair_functional_analysis()
