@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import apply_sixty_second_pass_repairs as pass62
+import apply_sixty_third_pass_repairs as pass63
 
 
 def main() -> int:
     """Apply only the next unmaterialized Lean repair wave."""
-    return pass62.main()
+    return pass63.main()
 
 
 if __name__ == "__main__":
