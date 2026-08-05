@@ -36,17 +36,17 @@ def main() -> int:
         """theorem denominator_mul (γ δ : Gamma2) (τ : H) :
     denominator (γ * δ) τ =
       denominator γ (δ • τ) * denominator δ τ := by
-  calc
-    denominator (γ * δ) τ =
-        denominator γ (gammaGL δ • τ) * denominator δ τ := by
-      simpa [denominator, gammaGL_mul, UpperHalfPlane.σ,
-        gammaGL_det_pos] using
-        (UpperHalfPlane.denom_cocycle'
-          (gammaGL γ) (gammaGL δ) τ)
-    _ = denominator γ (δ • τ) * denominator δ τ := by
-      rw [gammaGL_smul]
+  unfold denominator
+  rw [gammaGL_mul]
+  have h := UpperHalfPlane.denom_cocycle'
+    (gammaGL γ) (gammaGL δ) τ
+  have hsmul :
+      UpperHalfPlane.smulAux (gammaGL δ) τ = δ • τ := by
+    rfl
+  rw [hsmul] at h
+  simpa [UpperHalfPlane.σ, gammaGL_det_pos] using h
 """,
-        "Mock2 separate the GL denominator cocycle from the subgroup action",
+        "Mock2 identify the raw GL action inside the denominator cocycle",
     )
     m2 = replace_exact(
         m2,
@@ -56,7 +56,7 @@ def main() -> int:
         """attribute [local instance 2000]
   RCLike.innerProductSpace.toNormedSpace
 """,
-        "Mock2 prioritize the exact Mathlib complex NormedSpace instance",
+        "Mock2 prioritize Mathlib's existing complex NormedSpace instance",
     )
     m2 = replace_exact(
         m2,
@@ -167,27 +167,16 @@ def main() -> int:
     fa = FA.read_text(encoding="utf-8")
     fa = replace_exact(
         fa,
-        """  have hBw : Bw = star j ^ 2 * F * Bz := by
-    calc
-      Bw = star j ^ 2 *
+        """      Bw = star j ^ 2 *
           (star ((j ^ 2)⁻¹) * Bw) := by
         rw [hConjPow]
         field_simp [hjc]
-      _ = star j ^ 2 * (F * Bz) := by rw [hDerivative]
-      _ = star j ^ 2 * F * Bz := by ring
 """,
-        """  have hBw : Bw = star j ^ 2 * F * Bz := by
-    calc
-      Bw = star (j ^ 2) *
+        """      Bw = star j ^ 2 *
           (star ((j ^ 2)⁻¹) * Bw) := by
-        rw [Complex.conj_inv]
         field_simp [hjc]
-      _ = star (j ^ 2) * (F * Bz) := by rw [hDerivative]
-      _ = star j ^ 2 * F * Bz := by
-        rw [hConjPow]
-        ring
 """,
-        "FunctionalAnalysis cancel the conjugate square before rewriting its power",
+        "FunctionalAnalysis cancel the conjugate square directly",
     )
     fa = replace_exact(
         fa,
@@ -198,35 +187,17 @@ def main() -> int:
         """      _ = 2 * Complex.I * q * c / j * F * u + F * Az := by
         rw [fixedPhaseFactor_holomorphic_direction n γ z]
 """,
-        "FunctionalAnalysis stop after the fixed-phase rewrite closes raising calculus",
-    )
-    fa = replace_exact(
-        fa,
-        """  dsimp [F, j, q, y, r, u, Az, Aw] at hAlgebra ⊢
-  ring_nf at hAlgebra ⊢
-  exact hAlgebra
-""",
-        """  dsimp [F, j, q, y, r, u, Az, Aw] at hAlgebra ⊢
-  simpa [inverseEtaPaperOrbitFactor, raiseRaw, mul_assoc,
-    mul_left_comm, mul_comm] using hAlgebra
-""",
-        "FunctionalAnalysis normalize the final raising identity definitionally",
+        "FunctionalAnalysis stop after the holomorphic rewrite closes",
     )
     fa = replace_exact(
         fa,
         """  rw [lowerRaw, heightC_gammaTwo_smul,
     hf γ z, inverseEtaPaperOrbitFactor_sub_one]
-  dsimp [F, j, y, Bz, Bw] at hAlgebra ⊢
-  ring_nf at hAlgebra ⊢
-  exact hAlgebra
 """,
         """  rw [lowerRaw, heightC_gammaTwo_smul,
     inverseEtaPaperOrbitFactor_sub_one]
-  dsimp [F, j, y, Bz, Bw] at hAlgebra ⊢
-  simpa [inverseEtaPaperOrbitFactor, lowerRaw, mul_assoc,
-    mul_left_comm, mul_comm] using hAlgebra
 """,
-        "FunctionalAnalysis remove the absent function-value rewrite and normalize lowering",
+        "FunctionalAnalysis omit the absent zeroth-order factor from lowering",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
