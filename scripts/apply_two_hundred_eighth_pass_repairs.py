@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-M2 = ROOT / "PrimalitySheafVerification" / "Mock2.lean"
+M2A = ROOT / "PrimalitySheafVerification" / "Mock2_Advanced.lean"
+FA = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 
 
 def replace_exact(text: str, old: str, new: str, label: str) -> str:
@@ -15,44 +16,58 @@ def replace_exact(text: str, old: str, new: str, label: str) -> str:
 
 
 def main() -> int:
-    m2 = M2.read_text(encoding="utf-8")
-    m2 = replace_exact(
-        m2,
-        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  RCLike.innerProductSpace.toNormedSpace
+    m2a = M2A.read_text(encoding="utf-8")
+    m2a = replace_exact(
+        m2a,
+        """theorem isCompact_repTruncated (r : Gamma2Rep) (Y : ℝ) :
+    IsCompact (repTruncated r Y) := by
+  change IsCompact
+    ((Homeomorph.smul (repMatrix r) :
+        UpperHalfPlane ≃ₜ UpperHalfPlane) ⁻¹'
+      ModularGroup.truncatedFundamentalDomain Y)
+  exact
+    (Homeomorph.smul (repMatrix r) :
+      UpperHalfPlane ≃ₜ UpperHalfPlane).isCompact_preimage.mpr
+        (ModularGroup.isCompact_truncatedFundamentalDomain Y)
 """,
-        """attribute [-instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [instance 2000] RCLike.innerProductSpace.toNormedSpace
+        """theorem isCompact_repTruncated (r : Gamma2Rep) (Y : ℝ) :
+    IsCompact (repTruncated r Y) := by
+  let g : GL (Fin 2) ℝ :=
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ)
+  change IsCompact
+    ((Homeomorph.smul g : UpperHalfPlane ≃ₜ UpperHalfPlane) ⁻¹'
+      ModularGroup.truncatedFundamentalDomain Y)
+  exact
+    (Homeomorph.smul g : UpperHalfPlane ≃ₜ UpperHalfPlane).isCompact_preimage.mpr
+      (ModularGroup.isCompact_truncatedFundamentalDomain Y)
 """,
-        "Mock2 disable only the competing CStar NormedSpace projection",
+        "Mock2 Advanced express the compact pullback through the real GL action",
     )
-    m2 = replace_exact(
-        m2,
-        """theorem deckTangent_mul (γ δ : Gamma2) (τ : H) :
-    deckTangent (γ * δ) τ =
-      (deckTangent γ (δ • τ)).comp (deckTangent δ τ) := by
-  apply ContinuousLinearMap.ext
-  intro v
-  simp [deckDerivative_mul, mul_assoc]
-
-/-- A globally smooth choice of `(cτ+d)⁻¹ᐟ²`.  The square law records the
+    m2a = replace_exact(
+        m2a,
+        """    IsOpen U ∧
+    ContDiffOn ℝ ∞ curve U ∧
 """,
-        """theorem deckTangent_mul (γ δ : Gamma2) (τ : H) :
-    deckTangent (γ * δ) τ =
-      (deckTangent γ (δ • τ)).comp (deckTangent δ τ) := by
-  apply ContinuousLinearMap.ext
-  intro v
-  simp [deckDerivative_mul, mul_assoc]
-
-attribute [-instance] RCLike.innerProductSpace.toNormedSpace
-attribute [instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [instance] RCLike.innerProductSpace.toNormedSpace
-
-/-- A globally smooth choice of `(cτ+d)⁻¹ᐟ²`.  The square law records the
+        """    IsOpen U ∧
+    ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U ∧
 """,
-        "Mock2 restore the ambient NormedSpace instance priorities after deck calculus",
+        "Mock2 Advanced make the infinite differentiability order explicit",
     )
-    M2.write_text(m2, encoding="utf-8")
+    M2A.write_text(m2a, encoding="utf-8")
+
+    fa = FA.read_text(encoding="utf-8")
+    fa = replace_exact(
+        fa,
+        """        rw [← hConjPow]
+        field_simp [hjc]
+""",
+        """        rw [← hConjPow]
+        field_simp [hjc]
+        ring
+""",
+        "FunctionalAnalysis close the conjugate-square cancellation by commutativity",
+    )
+    FA.write_text(fa, encoding="utf-8")
     return 0
 
 
