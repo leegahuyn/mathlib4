@@ -23,7 +23,7 @@ def main() -> int:
         """attribute [local instance 2000]
   RCLike.innerProductSpace.toNormedSpace
 """,
-        """attribute [local -instance]
+        """local attribute [-instance]
   instNormedSpaceComplex_primalitySheafVerification
 """,
         "Mock2 disable the project-specific complex NormedSpace locally",
