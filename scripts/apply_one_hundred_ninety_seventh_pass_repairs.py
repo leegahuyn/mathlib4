@@ -62,6 +62,19 @@ def main() -> int:
     )
     m2 = replace_exact(
         m2,
+        """theorem gammaGL_det_pos (γ : Gamma2) :
+    0 < (gammaGL γ).det.val := by
+  simp [gammaGL]
+""",
+        """theorem gammaGL_det_pos (γ : Gamma2) :
+    0 < (gammaGL γ).det.val := by
+  rw [Matrix.GeneralLinearGroup.val_det_apply, gammaGL_matrix_det]
+  norm_num
+""",
+        "Mock2 derive positive determinant from determinant one",
+    )
+    m2 = replace_exact(
+        m2,
         """theorem denominator_mul (γ δ : Gamma2) (τ : H) :
     denominator (γ * δ) τ =
       denominator γ (δ • τ) * denominator δ τ := by
@@ -78,6 +91,35 @@ def main() -> int:
       (gammaGL γ) (gammaGL δ) τ)
 """,
         "Mock2 normalize the denominator cocycle through the subgroup action",
+    )
+    m2 = replace_exact(
+        m2,
+        """  symm
+  simpa [deckDerivative, denominator, one_div] using
+    (UpperHalfPlane.deriv_smul
+      (by simpa using gammaGL_det_pos γ) τ)
+""",
+        """  symm
+  simpa [deckDerivative, denominator, one_div] using
+    (UpperHalfPlane.deriv_smul (g := gammaGL γ)
+      (gammaGL_det_pos γ) τ)
+""",
+        "Mock2 pass determinant positivity directly to the deck derivative",
+    )
+    m2 = replace_exact(
+        m2,
+        """theorem deckDerivative_mul (γ δ : Gamma2) (τ : H) :
+    deckDerivative (γ * δ) τ =
+      deckDerivative γ (δ • τ) * deckDerivative δ τ := by
+  simp [deckDerivative, denominator_mul, mul_zpow]
+""",
+        """theorem deckDerivative_mul (γ δ : Gamma2) (τ : H) :
+    deckDerivative (γ * δ) τ =
+      deckDerivative γ (δ • τ) * deckDerivative δ τ := by
+  unfold deckDerivative
+  rw [denominator_mul, mul_zpow]
+""",
+        "Mock2 preserve the zpow product before simplification",
     )
     M2.write_text(m2, encoding="utf-8")
 
@@ -125,18 +167,21 @@ def main() -> int:
   convert (UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z) using 1 <;>
     simp [inverseEtaPaperOrbitDenom, g, hdet, one_div]
 """,
-        """  have hfun : gammaTwoMoebiusChart γ =
+        """  have hdetGL : g.det.val = 1 := by
+    rw [Matrix.GeneralLinearGroup.val_det_apply]
+    exact hdet
+  have hfun : gammaTwoMoebiusChart γ =
       fun w : ℂ => ((g • UpperHalfPlane.ofComplex w : ℍ) : ℂ) := by
     funext w
     rfl
-  rw [hfun]
-  have hraw := UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z
-  have hdetC : (g.val.det : ℂ) = 1 := by
-    exact_mod_cast hdet
-  rw [hdetC] at hraw
-  simpa [inverseEtaPaperOrbitDenom, g, one_div] using hraw
+  have hdenom : inverseEtaPaperOrbitDenom γ z =
+      UpperHalfPlane.denom g z := by
+    rfl
+  rw [hfun, hdenom]
+  simpa [one_div, hdetGL] using
+    (UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z)
 """,
-        "FunctionalAnalysis normalize the Mobius derivative determinant before conversion",
+        "FunctionalAnalysis normalize the determinant-one Mobius derivative",
     )
     fa = replace_exact(
         fa,
