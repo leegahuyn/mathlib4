@@ -21,8 +21,10 @@ def main() -> int:
         """attribute [-instance]
   instNormedSpaceComplex_primalitySheafVerification
 """,
-        "",
-        "Mock2 remove the incompatible local complex NormedSpace override",
+        """attribute [-instance] NonUnitalCStarAlgebra.toNormedSpace
+attribute [instance 2000] RCLike.innerProductSpace.toNormedSpace
+""",
+        "Mock2 select the canonical complex NormedSpace for deck calculus",
     )
     M2.write_text(m2, encoding="utf-8")
     return 0
