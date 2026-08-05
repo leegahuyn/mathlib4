@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+M2 = ROOT / "PrimalitySheafVerification" / "Mock2.lean"
 M2A = ROOT / "PrimalitySheafVerification" / "Mock2_Advanced.lean"
 FA = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 
@@ -16,6 +17,27 @@ def replace_exact(text: str, old: str, new: str, label: str) -> str:
 
 
 def main() -> int:
+    m2 = M2.read_text(encoding="utf-8")
+    m2 = replace_exact(
+        m2,
+        """  have hDelta :=
+    SlashInvariantForm.slash_action_eqn_SL''
+      CuspForm.discriminant
+      (CongruenceSubgroup.mem_Gamma_one γ.1) τ
+  simpa [etaValue, ModularForm.discriminant, denominator, gammaGL] using hDelta
+""",
+        """  have hmem :
+      gammaGL γ ∈ (Matrix.SpecialLinearGroup.mapGL ℝ).range := by
+    exact ⟨γ.1, rfl⟩
+  have hDelta :=
+    SlashInvariantForm.slash_action_eqn''
+      CuspForm.discriminant hmem τ
+  simpa [etaValue, ModularForm.discriminant, denominator, gammaGL] using hDelta
+""",
+        "Mock2 use the discriminant law on the full special-linear image",
+    )
+    M2.write_text(m2, encoding="utf-8")
+
     m2a = M2A.read_text(encoding="utf-8")
     m2a = replace_exact(
         m2a,
