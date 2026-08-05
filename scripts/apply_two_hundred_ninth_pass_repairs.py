@@ -18,16 +18,6 @@ def main() -> int:
     m2 = M2.read_text(encoding="utf-8")
     m2 = replace_exact(
         m2,
-        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  RCLike.innerProductSpace.toNormedSpace
-""",
-        """attribute [-instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [instance 2000] RCLike.innerProductSpace.toNormedSpace
-""",
-        "Mock2 select the canonical complex NormedSpace without an opaque wrapper",
-    )
-    m2 = replace_exact(
-        m2,
         """theorem deckTangent_mul (γ δ : Gamma2) (τ : H) :
     deckTangent (γ * δ) τ =
       (deckTangent γ (δ • τ)).comp (deckTangent δ τ) := by
