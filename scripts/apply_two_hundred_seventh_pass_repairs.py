@@ -22,9 +22,9 @@ def main() -> int:
   instNormedSpaceComplex_primalitySheafVerification
 """,
         """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  RCLike.innerProductSpace.toNormedSpace
+  (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
 """,
-        "Mock2 select the canonical complex NormedSpace locally",
+        "Mock2 derive the canonical complex NormedSpace from RCLike.innerProductSpace",
     )
     M2.write_text(m2, encoding="utf-8")
     return 0
