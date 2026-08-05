@@ -27,10 +27,10 @@ def main() -> int:
         """local attribute [-instance]
   instNormedSpaceComplex_primalitySheafVerification
 """,
-        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  RCLike.innerProductSpace.toNormedSpace
+        """attribute [-instance]
+  instNormedSpaceComplex_primalitySheafVerification
 """,
-        "Mock2 install the canonical complex NormedSpace locally",
+        "Mock2 remove the project-specific complex NormedSpace instance attribute",
     )
     M2.write_text(m2, encoding="utf-8")
 
@@ -101,10 +101,10 @@ def main() -> int:
   ⟨toSmoothQuotientCompactFunction⟩
 """,
         """noncomputable instance (n : ℤ) :
-    CoeTail (InverseEtaFixedPhaseCore n) SmoothQuotientCompactFunction :=
+    CoeOut (InverseEtaFixedPhaseCore n) SmoothQuotientCompactFunction :=
   ⟨toSmoothQuotientCompactFunction⟩
 """,
-        "FunctionalAnalysis use a tail coercion for the indexed stable core",
+        "FunctionalAnalysis use an output-directed coercion for the indexed stable core",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
