@@ -21,10 +21,10 @@ def main() -> int:
         """attribute [-instance]
   instNormedSpaceComplex_primalitySheafVerification
 """,
-        """attribute [-instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [instance 2000] RCLike.innerProductSpace.toNormedSpace
+        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
+  (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
 """,
-        "Mock2 select the canonical complex NormedSpace for deck calculus",
+        "Mock2 derive the canonical complex NormedSpace from RCLike.innerProductSpace",
     )
     M2.write_text(m2, encoding="utf-8")
     return 0
