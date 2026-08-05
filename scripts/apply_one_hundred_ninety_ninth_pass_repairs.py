@@ -61,61 +61,9 @@ def main() -> int:
 """,
         "Mock2 Advanced expose the first derivative in the second derivative coefficient",
     )
-    m2a = replace_exact(
-        m2a,
-        """inductive Gamma2Rep
-  | id
-  | t
-  | s
-  | ts
-  | stInv
-  | tstInv
-  deriving DecidableEq, Fintype, Repr
-""",
-        """inductive Gamma2Rep
-  | id
-  | t
-  | s
-  | ts
-  | stInv
-  | tstInv
-  deriving DecidableEq, Repr
-
-instance : Fintype Gamma2Rep where
-  elems := { .id, .t, .s, .ts, .stInv, .tstInv }
-  complete x := by
-    cases x <;> simp
-""",
-        "Mock2 Advanced provide an explicit six-element Fintype",
-    )
     M2A.write_text(m2a, encoding="utf-8")
 
     fa = FA.read_text(encoding="utf-8")
-    fa = replace_exact(
-        fa,
-        """  rw [dx_inverseEtaPaperOrbitFactor, dy_inverseEtaPaperOrbitFactor]
-  ring_nf
-  simp [Complex.I_sq]
-  <;> ring
-""",
-        """  rw [dx_inverseEtaPaperOrbitFactor, dy_inverseEtaPaperOrbitFactor]
-  ring_nf
-""",
-        "FunctionalAnalysis remove tactics after the antiholomorphic goal is closed",
-    )
-    fa = replace_exact(
-        fa,
-        """      _ = 2 * Complex.I * q * c * j * F * u +
-          F * j ^ 2 * Az := by
-        field_simp [hj]
-        ring
-""",
-        """      _ = 2 * Complex.I * q * c * j * F * u +
-          F * j ^ 2 * Az := by
-        field_simp [hj]
-""",
-        "FunctionalAnalysis remove the tactic after field_simp closes raising algebra",
-    )
     fa = replace_exact(
         fa,
         """      Bw = star j ^ 2 *
@@ -148,8 +96,9 @@ instance : Fintype Gamma2Rep where
 """,
         """      _ = 2 * Complex.I * q * c / j * F * u + F * Az := by
         rw [fixedPhaseFactor_holomorphic_direction n γ z]
+        simp only [q, c, j, F, Az]
 """,
-        "FunctionalAnalysis stop after the fixed-phase rewrite closes the goal",
+        "FunctionalAnalysis remove the tactic after the fixed-phase simplification closes",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
