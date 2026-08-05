@@ -8,10 +8,14 @@ M2A = ROOT / "PrimalitySheafVerification" / "Mock2_Advanced.lean"
 FA = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 
 
-def replace_exact(text: str, old: str, new: str, label: str, expected: int = 1) -> str:
+def replace_exact(
+    text: str, old: str, new: str, label: str, expected: int = 1
+) -> str:
     count = text.count(old)
     if count != expected:
-        raise RuntimeError(f"{label}: expected exactly {expected} match(es), found {count}")
+        raise RuntimeError(
+            f"{label}: expected exactly {expected} match(es), found {count}"
+        )
     print(f"{label}: applied {expected}")
     return text.replace(old, new, expected)
 
@@ -20,62 +24,79 @@ def main() -> int:
     m2 = M2.read_text(encoding="utf-8")
     m2 = replace_exact(
         m2,
-        "structure Proposition15FunctorBridgeCertificate : Prop where",
-        "structure Proposition15FunctorBridgeCertificate where",
-        "Mock2 make the Proposition 15 certificate data-valued",
+        """  abstract_prime_index_map_is_input :
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open),
+      X.balancedSheaf.Field U → ∀ p : PrimeIndex, X.PrimeProfile p
+""",
+        """  abstract_prime_index_map_is_input :
+    ∀ (X : BalancedQGaugeSheafCategory.{u, v} Open) (U : Open),
+      ∃ primeIndexMap :
+          X.balancedSheaf.Field U → ∀ p : PrimeIndex, X.PrimeProfile p,
+        primeIndexMap = X.primeIndexMap U
+""",
+        "Mock2 turn the Prop certificate data projection into an exact input witness",
     )
     m2 = replace_exact(
         m2,
-        "theorem proposition15_functorBridge_certificate :",
-        "noncomputable def proposition15_functorBridge_certificate :",
-        "Mock2 define rather than prove the data-valued Proposition 15 certificate",
+        """    { abstract_prime_index_map_is_input := fun X U => X.primeIndexMap U
+""",
+        """    { abstract_prime_index_map_is_input := fun X U =>
+        ⟨X.primeIndexMap U, rfl⟩
+""",
+        "Mock2 construct the exact prime-index input witness",
     )
     m2 = replace_exact(
         m2,
-        """def quotientMap (τ : H) : X :=
+        """/-- The canonical projection `π : ℍ → Γ(2) \\ ℍ`. -/
+def quotientMap (τ : H) : X :=
   Quotient.mk' τ
-""",
-        """def quotientMap (τ : H) : X :=
-  Definition11.quotientMk τ
-""",
-        "Mock2 reuse the explicit orbit quotient projection",
-    )
-    m2 = replace_exact(
-        m2,
-        """@[simp] theorem quotientMap_smul (γ : Gamma2) (τ : H) :
+
+@[simp] theorem quotientMap_smul (γ : Gamma2) (τ : H) :
     quotientMap (γ • τ) = quotientMap τ := by
   change Definition11.quotientMk (γ • τ) = Definition11.quotientMk τ
   exact Definition11.quotientMk_smul γ τ
-""",
-        """@[simp] theorem quotientMap_smul (γ : Gamma2) (τ : H) :
-    quotientMap (γ • τ) = quotientMap τ := by
-  simpa only [quotientMap] using Definition11.quotientMk_smul γ τ
-""",
-        "Mock2 prove quotient invariance through the reused projection",
-    )
-    m2 = replace_exact(
-        m2,
-        """def quotientMapContinuous : C(H, X) where
+
+/-- The quotient projection as a bundled continuous map. -/
+def quotientMapContinuous : C(H, X) where
   toFun := quotientMap
   continuous_toFun := continuous_quotient_mk'
 """,
-        """def quotientMapContinuous : C(H, X) where
+        """/-- The canonical projection `π : ℍ → Γ(2) \\ ℍ`. -/
+def quotientMap : H → X :=
+  Definition11.quotientMk
+
+@[simp] theorem quotientMap_smul (γ : Gamma2) (τ : H) :
+    quotientMap (γ • τ) = quotientMap τ := by
+  exact Definition11.quotientMk_smul γ τ
+
+/-- The quotient projection as a bundled continuous map. -/
+def quotientMapContinuous : C(H, X) where
   toFun := quotientMap
   continuous_toFun := by
-    simpa only [quotientMap, Definition11.quotientMk] using
-      (continuous_quot_mk :
-        Continuous (@Quot.mk H (MulAction.orbitRel Gamma2 H).r))
+    change Continuous (@Quotient.mk' H (MulAction.orbitRel Gamma2 H))
+    exact continuous_quotient_mk'
 """,
-        "Mock2 bundle continuity of the explicit Quot projection",
+        "Mock2 reuse the canonical orbit projection and its quotient topology",
     )
     M2.write_text(m2, encoding="utf-8")
 
     m2a = M2A.read_text(encoding="utf-8")
     m2a = replace_exact(
         m2a,
-        "    simpa [Real.sinh, ← Complex.ofReal_neg] using h\n",
-        "    simpa only [Complex.sinh_ofReal_re, Complex.exp_ofReal_re] using h\n",
-        "Mock2 Advanced normalize real parts of complex sinh and exp",
+        """theorem sinh_le_half_exp (x : ℝ) :
+    Real.sinh x ≤ Real.exp x / 2 := by
+  have hsinh :
+      2 * Real.sinh x = Real.exp x - Real.exp (-x) := by
+    have h := congrArg Complex.re (Complex.two_sinh (x : ℂ))
+    simpa [Real.sinh, ← Complex.ofReal_neg] using h
+  linarith [Real.exp_pos (-x)]
+""",
+        """theorem sinh_le_half_exp (x : ℝ) :
+    Real.sinh x ≤ Real.exp x / 2 := by
+  rw [Real.sinh_eq]
+  linarith [Real.exp_pos (-x)]
+""",
+        "Mock2 Advanced use the public real sinh exponential formula",
     )
     m2a = replace_exact(
         m2a,
@@ -86,12 +107,11 @@ def main() -> int:
 """,
         """theorem hasDerivAt_W (x : ℝ) :
     HasDerivAt W (firstDerivative x) x := by
-  have hinner :
-      HasDerivAt (fun y : ℝ => -y / 2) (-(1 : ℝ) / 2) x := by
-    convert ((hasDerivAt_id x).neg.div_const 2) using 1 <;> ring
-  simpa [W, firstDerivative, mul_comm] using hinner.exp
+  change HasDerivAt (fun y : ℝ => Real.exp (-y / 2))
+    (-(1 / 2) * Real.exp (-x / 2)) x
+  convert ((hasDerivAt_id x).neg.div_const 2).exp using 1 <;> ring
 """,
-        "Mock2 Advanced name the exact Whittaker inner derivative",
+        "Mock2 Advanced expose the Gaussian weight before differentiating",
     )
     m2a = replace_exact(
         m2a,
@@ -103,33 +123,71 @@ def main() -> int:
 """,
         """theorem hasDerivAt_firstDerivative (x : ℝ) :
     HasDerivAt firstDerivative (secondDerivative x) x := by
-  have hcoeff :
-      secondDerivative x = (-(1 : ℝ) / 2) * firstDerivative x := by
-    simp [firstDerivative, secondDerivative]
-    ring
-  rw [hcoeff]
-  simpa only [firstDerivative] using
-    (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2)
+  convert (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2) using 1 <;>
+    simp [firstDerivative, secondDerivative] <;> ring
 """,
-        "Mock2 Advanced separate the second-derivative coefficient identity",
+        "Mock2 Advanced normalize the second Gaussian derivative",
     )
     M2A.write_text(m2a, encoding="utf-8")
 
     fa = FA.read_text(encoding="utf-8")
     fa = replace_exact(
         fa,
-        """  simpa [gammaTwoMoebiusChart, gammaTwoMoebiusCoordinate,
+        """theorem gammaTwoMoebiusChart_hasStrictDerivAt
+    (γ : GammaTwoQuotientGeometry.GammaTwo) (z : ℍ) :
+    HasStrictDerivAt (gammaTwoMoebiusChart γ)
+      (1 / inverseEtaPaperOrbitDenom γ z ^ 2) (z : ℂ) := by
+  let g : GL (Fin 2) ℝ :=
+    (((γ : GammaTwoQuotientGeometry.GammaTwo) : SL(2, ℤ)) :
+      GL (Fin 2) ℝ)
+  have hdet : g.val.det = 1 := by
+    simpa [g] using inverseEtaPaperOrbit_det_eq_one γ
+  have hg : 0 < g.det.val := by
+    simpa [g] using inverseEtaPaperOrbit_det_pos γ
+  simpa [gammaTwoMoebiusChart, gammaTwoMoebiusCoordinate,
     inverseEtaPaperOrbitDenom, g, hdet, one_div] using
     (UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z)
 """,
-        """  have hdetC : (g.val.det : ℂ) = 1 := by
-    exact_mod_cast hdet
-  have hraw := UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z
-  rw [hdetC] at hraw
-  simpa [gammaTwoMoebiusChart, gammaTwoMoebiusCoordinate,
-    inverseEtaPaperOrbitDenom, g, one_div] using hraw
+        """theorem gammaTwoMoebiusChart_hasStrictDerivAt
+    (γ : GammaTwoQuotientGeometry.GammaTwo) (z : ℍ) :
+    HasStrictDerivAt (gammaTwoMoebiusChart γ)
+      (1 / inverseEtaPaperOrbitDenom γ z ^ 2) (z : ℂ) := by
+  let g : GL (Fin 2) ℝ :=
+    (((γ : GammaTwoQuotientGeometry.GammaTwo) : SL(2, ℤ)) :
+      GL (Fin 2) ℝ)
+  have hdet : g.val.det = 1 := by
+    simpa [g] using inverseEtaPaperOrbit_det_eq_one γ
+  have hg : 0 < g.det.val := by
+    simpa [g] using inverseEtaPaperOrbit_det_pos γ
+  have hfun : gammaTwoMoebiusChart γ =
+      fun w : ℂ => ((g • UpperHalfPlane.ofComplex w : ℍ) : ℂ) := by
+    funext w
+    rfl
+  rw [hfun]
+  convert (UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z) using 1 <;>
+    simp [inverseEtaPaperOrbitDenom, g, hdet, one_div]
 """,
-        "FunctionalAnalysis normalize the Möbius derivative numerator after casting",
+        "FunctionalAnalysis identify the Mobius chart with the GL action",
+    )
+    fa = replace_exact(
+        fa,
+        """  section : ∀ a : ℤ, core a →ₗ[ℂ] WeightSection (multiplier a)
+  section_apply : ∀ a (u : core a) z,
+    section a u z = (u : ℍ → ℂ) z
+""",
+        """  «section» : ∀ a : ℤ, core a →ₗ[ℂ] WeightSection (multiplier a)
+  section_apply : ∀ a (u : core a) z,
+    «section» a u z = (u : ℍ → ℂ) z
+""",
+        "FunctionalAnalysis escape the reserved section projection name",
+    )
+    fa = replace_exact(
+        fa,
+        """  exact (D.section a u).covariance γ z
+""",
+        """  exact (D.«section» a u).covariance γ z
+""",
+        "FunctionalAnalysis use the escaped section projection",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
