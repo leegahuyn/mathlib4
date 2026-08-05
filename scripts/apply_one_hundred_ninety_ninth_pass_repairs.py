@@ -52,14 +52,71 @@ def main() -> int:
     m2a = M2A.read_text(encoding="utf-8")
     m2a = replace_exact(
         m2a,
-        """  convert (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2) using 1
+        """theorem hasDerivAt_firstDerivative (x : ℝ) :
+    HasDerivAt firstDerivative (secondDerivative x) x := by
+  change HasDerivAt (fun y : ℝ => (-(1 : ℝ) / 2) * W y)
+    ((1 : ℝ) / 4 * W x) x
+  convert (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2) using 1
   ring
 """,
-        """  convert (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2) using 1
-  simp [firstDerivative]
-  <;> ring
+        """theorem hasDerivAt_firstDerivative (x : ℝ) :
+    HasDerivAt firstDerivative (secondDerivative x) x := by
+  have hcoeff :
+      (-(1 : ℝ) / 2) * (-(1 : ℝ) / 2) = (1 : ℝ) / 4 := by
+    norm_num
+  simpa [firstDerivative, secondDerivative, mul_assoc, hcoeff] using
+    (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2)
 """,
-        "Mock2 Advanced expose the first derivative in the second derivative coefficient",
+        "Mock2 Advanced normalize the exact second derivative coefficient",
+    )
+    m2a = replace_exact(
+        m2a,
+        """theorem isClosed_closedCell (r : Gamma2Rep) : IsClosed (closedCell r) := by
+  exact ModularGroup.isClosed_fd.preimage (continuous_const_smul _)
+
+/-- Every open cell is open because the modular action is continuous. -/
+theorem isOpen_openCell (r : Gamma2Rep) : IsOpen (openCell r) := by
+  exact ModularGroup.isOpen_fdo.preimage (continuous_const_smul _)
+""",
+        """theorem isClosed_closedCell (r : Gamma2Rep) : IsClosed (closedCell r) := by
+  apply ModularGroup.isClosed_fd.preimage
+  change Continuous (fun τ : UpperHalfPlane =>
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ) • τ)
+  exact continuous_const_smul _
+
+/-- Every open cell is open because the modular action is continuous. -/
+theorem isOpen_openCell (r : Gamma2Rep) : IsOpen (openCell r) := by
+  apply ModularGroup.isOpen_fdo.preimage
+  change Continuous (fun τ : UpperHalfPlane =>
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ) • τ)
+  exact continuous_const_smul _
+""",
+        "Mock2 Advanced expose the continuous GL action on each modular cell",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  have hs' :
+      (repMatrix s * (repMatrix r)⁻¹) • (repMatrix r • τ) ∈
+        ModularGroup.fdo := by
+    simpa [mul_smul] using hs
+""",
+        """  have hs' :
+      (repMatrix s * (repMatrix r)⁻¹) • (repMatrix r • τ) ∈
+        ModularGroup.fdo := by
+    change repMatrix s • τ ∈ ModularGroup.fdo at hs
+    simpa only [mul_smul, inv_smul_smul] using hs
+""",
+        "Mock2 Advanced normalize the cell intertwiner through the group action laws",
+    )
+    m2a = replace_exact(
+        m2a,
+        """theorem pairwise_disjoint_openCell :
+    Pairwise (Disjoint on openCell) := by
+""",
+        """theorem pairwise_disjoint_openCell :
+    Pairwise (fun r s => Disjoint (openCell r) (openCell s)) := by
+""",
+        "Mock2 Advanced replace the removed on combinator with an explicit predicate",
     )
     M2A.write_text(m2a, encoding="utf-8")
 
@@ -99,6 +156,19 @@ def main() -> int:
         simp only [q, c, j, F, Az]
 """,
         "FunctionalAnalysis remove the tactic after the fixed-phase simplification closes",
+    )
+    fa = replace_exact(
+        fa,
+        """  dsimp [F, j, q, y, r, u, Az, Aw] at hAlgebra ⊢
+  ring_nf at hAlgebra ⊢
+  exact hAlgebra
+""",
+        """  dsimp [F, j, q, y, r, u, Az, Aw] at hAlgebra ⊢
+  simp only [raiseRaw, inverseEtaPaperOrbitFactor] at hAlgebra ⊢
+  ring_nf at hAlgebra ⊢
+  exact hAlgebra
+""",
+        "FunctionalAnalysis expose the raw raising operator and total orbit factor",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
