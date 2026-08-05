@@ -4,6 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 M2 = ROOT / "PrimalitySheafVerification" / "Mock2.lean"
+FA = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 
 
 def replace_exact(text: str, old: str, new: str, label: str) -> str:
@@ -27,6 +28,23 @@ def main() -> int:
         "Mock2 disable the project-specific complex NormedSpace with valid syntax",
     )
     M2.write_text(text, encoding="utf-8")
+
+    fa = FA.read_text(encoding="utf-8")
+    fa = replace_exact(
+        fa,
+        """      Bw = star j ^ 2 *
+          (star ((j ^ 2)⁻¹) * Bw) := by
+        rw [star_inv, hConjPow]
+        field_simp [hjc]
+""",
+        """      Bw = star j ^ 2 *
+          (star ((j ^ 2)⁻¹) * Bw) := by
+        rw [← hConjPow]
+        field_simp [hjc]
+""",
+        "FunctionalAnalysis rewrite the outer conjugate power toward cancellation",
+    )
+    FA.write_text(fa, encoding="utf-8")
     return 0
 
 
