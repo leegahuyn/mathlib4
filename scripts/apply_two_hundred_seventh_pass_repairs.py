@@ -21,10 +21,8 @@ def main() -> int:
         """attribute [-instance]
   instNormedSpaceComplex_primalitySheafVerification
 """,
-        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
-""",
-        "Mock2 derive the canonical complex NormedSpace from RCLike.innerProductSpace",
+        "",
+        "Mock2 remove the incompatible local complex NormedSpace override",
     )
     M2.write_text(m2, encoding="utf-8")
     return 0
