@@ -4,18 +4,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 M2 = ROOT / "PrimalitySheafVerification" / "Mock2.lean"
+M2A = ROOT / "PrimalitySheafVerification" / "Mock2_Advanced.lean"
+FA = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 
 
-def replace_exact(
-    text: str, old: str, new: str, label: str, expected: int = 1
-) -> str:
+def replace_exact(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
-    if count != expected:
-        raise RuntimeError(
-            f"{label}: expected exactly {expected} match(es), found {count}"
-        )
-    print(f"{label}: applied {expected}")
-    return text.replace(old, new, expected)
+    if count != 1:
+        raise RuntimeError(f"{label}: expected exactly 1 match, found {count}")
+    print(f"{label}: applied 1")
+    return text.replace(old, new, 1)
 
 
 def main() -> int:
@@ -25,11 +23,13 @@ def main() -> int:
         """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
   (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
 """,
-        """attribute [-instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [-instance] NormedAlgebra.toNormedSpace
-attribute [instance 2000] InnerProductSpace.toNormedSpace
+        """section DeckCalculusCanonicalNormedSpace
+
+local instance (priority := 100000) canonicalNormedSpaceComplex :
+    NormedSpace ℂ ℂ :=
+  (RCLike.innerProductSpace : InnerProductSpace ℂ ℂ).toNormedSpace
 """,
-        "Mock2 select the canonical inner-product NormedSpace without an opaque wrapper",
+        "Mock2 isolate the canonical complex NormedSpace for deck calculus",
     )
     m2 = replace_exact(
         m2,
@@ -45,7 +45,7 @@ attribute [instance 2000] InnerProductSpace.toNormedSpace
   simpa [denominator] using
     (UpperHalfPlane.contMDiff_denom_zpow (gammaGL γ) (-2))
 """,
-        "Mock2 expose the negative-two denominator power in current normal form",
+        "Mock2 expose the negative-two denominator power in standard form",
     )
     m2 = replace_exact(
         m2,
@@ -65,16 +65,75 @@ attribute [instance 2000] InnerProductSpace.toNormedSpace
   intro v
   simp [deckDerivative_mul, mul_assoc]
 
-attribute [-instance] InnerProductSpace.toNormedSpace
-attribute [instance] NonUnitalCStarAlgebra.toNormedSpace
-attribute [instance] NormedAlgebra.toNormedSpace
-attribute [instance] InnerProductSpace.toNormedSpace
+end DeckCalculusCanonicalNormedSpace
 
 /-- A globally smooth choice of `(cτ+d)⁻¹ᐟ²`.  The square law records the
 """,
-        "Mock2 restore ambient NormedSpace priorities after deck calculus",
+        "Mock2 close the canonical deck-calculus instance scope",
     )
     M2.write_text(m2, encoding="utf-8")
+
+    m2a = M2A.read_text(encoding="utf-8")
+    m2a = replace_exact(
+        m2a,
+        """theorem hasDerivAt_modularLeftVerticalCurve (t : ℝ) :
+    HasDerivAt modularLeftVerticalCurve Complex.I t := by
+  unfold modularLeftVerticalCurve
+  convert
+    ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
+      (-(1 : ℝ) / 2 : ℂ)) using 1 <;>
+    simp [add_comm]
+""",
+        """theorem hasDerivAt_modularLeftVerticalCurve (t : ℝ) :
+    HasDerivAt modularLeftVerticalCurve Complex.I t := by
+  unfold modularLeftVerticalCurve
+  convert
+    (hasDerivAt_const t (-(1 : ℝ) / 2 : ℂ)).add
+      (((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal) using 1 <;>
+    simp
+""",
+        "Mock2 Advanced differentiate the left affine vertical curve",
+    )
+    m2a = replace_exact(
+        m2a,
+        """theorem hasDerivAt_modularRightVerticalCurve (t : ℝ) :
+    HasDerivAt modularRightVerticalCurve Complex.I t := by
+  unfold modularRightVerticalCurve
+  convert
+    ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
+      ((1 : ℝ) / 2 : ℂ)) using 1 <;>
+    simp [add_comm]
+""",
+        """theorem hasDerivAt_modularRightVerticalCurve (t : ℝ) :
+    HasDerivAt modularRightVerticalCurve Complex.I t := by
+  unfold modularRightVerticalCurve
+  convert
+    (hasDerivAt_const t ((1 : ℝ) / 2 : ℂ)).add
+      (((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal) using 1 <;>
+    simp
+""",
+        "Mock2 Advanced differentiate the right affine vertical curve",
+    )
+    M2A.write_text(m2a, encoding="utf-8")
+
+    fa = FA.read_text(encoding="utf-8")
+    fa = replace_exact(
+        fa,
+        """      Bw = star (j ^ 2) *
+          (star ((j ^ 2)⁻¹) * Bw) := by
+        rw [map_inv₀]
+        field_simp [hjc]
+""",
+        """      Bw = star (j ^ 2) *
+          (star ((j ^ 2)⁻¹) * Bw) := by
+        have hs : star (j ^ 2) ≠ 0 := by
+          simpa [map_pow] using pow_ne_zero 2 hjc
+        change Bw = star (j ^ 2) * (star (j ^ 2)⁻¹ * Bw)
+        rw [← mul_assoc, mul_inv_cancel₀ hs, one_mul]
+""",
+        "FunctionalAnalysis cancel the normalized conjugate inverse directly",
+    )
+    FA.write_text(fa, encoding="utf-8")
     return 0
 
 
