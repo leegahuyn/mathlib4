@@ -27,10 +27,11 @@ import apply_one_hundred_sixty_seventh_pass_repairs as pass167
 import apply_one_hundred_sixty_eighth_pass_repairs as pass168
 import apply_one_hundred_sixty_ninth_pass_repairs as pass169
 import apply_one_hundred_seventieth_pass_repairs as pass170
+import apply_one_hundred_seventy_first_pass_repairs as pass171
 
 
 def main() -> int:
-    """Apply retained passes 67–70 and the current pass-170 repair chain."""
+    """Apply retained passes 67–70 and the current pass-171 repair chain."""
     pass67.main(); pass68.main(); pass69.main(); pass70.main()
     for repair in (
         pass144.main, pass145.main, pass146.main, pass147.main,
@@ -38,7 +39,7 @@ def main() -> int:
         pass154.main, pass156.main, pass157.main, pass158.main,
         pass159.main, pass161.main, pass162.main, pass163.main,
         pass164.main, pass165.main, pass166.main, pass167.main,
-        pass168.main, pass169.main, pass170.main,
+        pass168.main, pass169.main, pass170.main, pass171.main,
     ):
         code = repair()
         if code != 0:
