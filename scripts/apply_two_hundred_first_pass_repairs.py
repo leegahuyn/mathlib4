@@ -23,10 +23,10 @@ def main() -> int:
         """attribute [local instance 2000]
   RCLike.innerProductSpace.toNormedSpace
 """,
-        """local instance (priority := 2000) : NormedSpace ℂ ℂ :=
-  RCLike.innerProductSpace.toNormedSpace
+        """attribute [local -instance]
+  instNormedSpaceComplex_primalitySheafVerification
 """,
-        "Mock2 install the standard complex NormedSpace at higher priority",
+        "Mock2 disable the project-specific complex NormedSpace locally",
     )
     m2 = replace_exact(
         m2,
