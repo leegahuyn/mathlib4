@@ -162,18 +162,6 @@ def main() -> int:
 """,
         "FunctionalAnalysis normalize the Frechet derivative determinant",
     )
-    fa = replace_exact(
-        fa,
-        """    (RealSmooth.contDiffAt_upperLift hf
-      ((((γ : GammaTwoQuotientGeometry.GammaTwo) : SL(2, ℤ)) • z)).
-        differentiableAt (by simp)
-""",
-        """    have hCont := RealSmooth.contDiffAt_upperLift hf
-      ((((γ : GammaTwoQuotientGeometry.GammaTwo) : SL(2, ℤ)) • z))
-    exact hCont.differentiableAt (by simp)
-""",
-        "FunctionalAnalysis split the outer differentiability field chain",
-    )
     FA.write_text(fa, encoding="utf-8")
     return 0
 
