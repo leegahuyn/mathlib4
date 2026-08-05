@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import apply_two_hundred_twenty_second_pass_repairs as pass222
+
 ROOT = Path(__file__).resolve().parents[1]
 M2 = ROOT / "PrimalitySheafVerification" / "Mock2.lean"
 M2A = ROOT / "PrimalitySheafVerification" / "Mock2_Advanced.lean"
@@ -95,7 +97,7 @@ private theorem lower_covariance_algebra
         "FunctionalAnalysis fix the scoped heartbeat command and raise its local budget",
     )
     FA.write_text(fa, encoding="utf-8")
-    return 0
+    return pass222.main()
 
 
 if __name__ == "__main__":
