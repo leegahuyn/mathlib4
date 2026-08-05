@@ -91,9 +91,19 @@ def repair_functional_analysis() -> None:
             "FunctionalAnalysis state quotient topological support explicitly",
         ),
         (
-            """  exact u.quotientCompact
+            """theorem inverseEtaRatioQuotient_hasCompactSupport
+    (u : SmoothCompactCore inverseEtaPaperCertificate) :
+    HasCompactSupport (inverseEtaRatioQuotient u) := by
+  change IsCompact (tsupport (inverseEtaRatioQuotient u))
+  rw [inverseEtaRatioQuotient_tsupport]
+  exact u.quotientCompact
 """,
-            """  exact SmoothCompactCore.quotientCompact u
+            """theorem inverseEtaRatioQuotient_hasCompactSupport
+    (u : SmoothCompactCore inverseEtaPaperCertificate) :
+    HasCompactSupport (inverseEtaRatioQuotient u) := by
+  change IsCompact (tsupport (inverseEtaRatioQuotient u))
+  rw [inverseEtaRatioQuotient_tsupport]
+  exact SmoothCompactCore.quotientCompact u
 """,
             1,
             "FunctionalAnalysis use the explicit quotient compactness theorem",
