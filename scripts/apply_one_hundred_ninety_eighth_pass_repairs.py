@@ -102,6 +102,74 @@ local instance : NormedSpace ℂ ℂ :=
 """,
         "Mock2 Advanced prove the Whittaker second derivative by constant multiplication",
     )
+    m2a = replace_exact(
+        m2a,
+        """inductive Gamma2Rep
+  | id
+  | t
+  | s
+  | ts
+  | stInv
+  | tstInv
+  deriving DecidableEq, Fintype, Repr
+""",
+        """inductive Gamma2Rep
+  | id
+  | t
+  | s
+  | ts
+  | stInv
+  | tstInv
+  deriving DecidableEq, Repr
+
+instance : Fintype Gamma2Rep where
+  elems := { .id, .t, .s, .ts, .stInv, .tstInv }
+  complete x := by cases x <;> simp
+""",
+        "Mock2 Advanced provide the six-element Fintype explicitly",
+    )
+    m2a = replace_exact(
+        m2a,
+        """theorem reducedRep_injective : Function.Injective reducedRep := by
+  intro r s hrs
+  have h00 := congrArg (fun A : ModTwoSpecialLinear => A 0 0) hrs
+  have h01 := congrArg (fun A : ModTwoSpecialLinear => A 0 1) hrs
+  have h10 := congrArg (fun A : ModTwoSpecialLinear => A 1 0) hrs
+  have h11 := congrArg (fun A : ModTwoSpecialLinear => A 1 1) hrs
+  cases r <;> cases s <;>
+    simp_all [reducedRep, repMatrix,
+      Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
+      ModularGroup.coe_T, ModularGroup.coe_T_inv, Matrix.mul_fin_two]
+""",
+        """theorem reducedRep_injective : Function.Injective reducedRep := by
+  decide
+""",
+        "Mock2 Advanced verify reduced representative injectivity finitely",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  rw [map_mul, map_inv]
+  change (reducedRep r)⁻¹ * modTwoReduction g = 1
+  rw [hr, inv_mul]
+""",
+        """  rw [map_mul, map_inv]
+  change (reducedRep r)⁻¹ * modTwoReduction g = 1
+  simpa [hr]
+""",
+        "Mock2 Advanced replace the removed inv_mul rewrite",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  rw [map_mul, map_inv]
+  change modTwoReduction g * (reducedRep r)⁻¹ = 1
+  rw [← hr, mul_inv]
+""",
+        """  rw [map_mul, map_inv]
+  change modTwoReduction g * (reducedRep r)⁻¹ = 1
+  simpa [← hr]
+""",
+        "Mock2 Advanced replace the removed mul_inv rewrite",
+    )
     M2A.write_text(m2a, encoding="utf-8")
 
     fa = FA.read_text(encoding="utf-8")
@@ -130,11 +198,11 @@ local instance : NormedSpace ℂ ℂ :=
   have hdenom : inverseEtaPaperOrbitDenom γ z =
       UpperHalfPlane.denom g z := by
     rfl
-  rw [hfun, hdenom]
-  simpa [one_div, hdetC] using
-    (UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z)
+  have hraw := UpperHalfPlane.hasStrictDerivAt_smul (g := g) hg z
+  rw [hdetC] at hraw
+  simpa [hfun, hdenom, one_div] using hraw
 """,
-        "FunctionalAnalysis cast the determinant-one identity into the derivative field",
+        "FunctionalAnalysis cast determinant one before normalizing the derivative",
     )
     fa = replace_exact(
         fa,
@@ -150,6 +218,31 @@ local instance : NormedSpace ℂ ℂ :=
     ring
 """,
         "FunctionalAnalysis expand real and imaginary parts of the denominator square",
+    )
+    fa = replace_exact(
+        fa,
+        """  rw [dx_inverseEtaPaperOrbitFactor, dy_inverseEtaPaperOrbitFactor]
+  ring_nf
+  simp [Complex.I_sq]
+  <;> ring
+""",
+        """  rw [dx_inverseEtaPaperOrbitFactor, dy_inverseEtaPaperOrbitFactor]
+  ring_nf
+""",
+        "FunctionalAnalysis remove tactics after the antiholomorphic goal closes",
+    )
+    fa = replace_exact(
+        fa,
+        """      _ = 2 * Complex.I * q * c * j * F * u +
+          F * j ^ 2 * Az := by
+        field_simp [hj]
+        ring
+""",
+        """      _ = 2 * Complex.I * q * c * j * F * u +
+          F * j ^ 2 * Az := by
+        field_simp [hj]
+""",
+        "FunctionalAnalysis remove the tactic after field_simp closes the goal",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
