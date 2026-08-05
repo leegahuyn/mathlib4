@@ -34,7 +34,9 @@ jobs:
           fetch-depth: 1
 
       - name: Apply current unmaterialized repairs
-        run: python3 scripts/apply_current_repairs.py
+        run: |
+          python3 scripts/apply_current_repairs.py
+          python3 scripts/apply_two_hundred_twenty_third_pass_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
