@@ -7,6 +7,7 @@ on:
       - 'PrimalitySheafVerification/Mock2.lean'
       - 'PrimalitySheafVerification/QYM.lean'
       - '.github/workflows/mock2-direct-source-ci.yml'
+      - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
@@ -36,6 +37,16 @@ jobs:
           logdir='build-logs/Mock2-direct'
           mkdir -p "$logdir"
           git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem standaloneZeroProfile_certificate' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem checklist_9_standalone_zeroProfile' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem canonicalZeroBridgeModel_certificate' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem certificate : Certificate where' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'theorem staticAcceptance_certificate' \
+            PrimalitySheafVerification/Mock2.lean
           cp PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
           cmp -s PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
           git rev-parse HEAD > "$logdir/head-sha.txt"
@@ -43,6 +54,7 @@ jobs:
             > "$logdir/blob-sha.txt"
           printf '%s\n' \
             'PASS: checked-in Mock2.lean selected directly' \
+            'PASS: public proof certificate declarations remain theorems' \
             'PASS: no repair script or source mutation executed' \
             > "$logdir/source-selection.txt"
 
