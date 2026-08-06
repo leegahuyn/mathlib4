@@ -1,4 +1,5 @@
 name: Primality Sheaf Repair Matrix
+# Mock2 is materialized; this run validates the checked-in source without runtime patching.
 
 on:
   pull_request:
