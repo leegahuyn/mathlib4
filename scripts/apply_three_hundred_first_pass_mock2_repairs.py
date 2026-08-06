@@ -36,7 +36,10 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         dummy_m2a = Path(tmp) / "Mock2_Advanced.lean"
         dummy_fa = Path(tmp) / "Mock2_FunctionalAnalysis.lean"
-        dummy_m2a.write_text("", encoding="utf-8")
+        dummy_m2a.write_text(
+            "".join(f"theorem dummyAlias{i} : _ := by trivial\n" for i in range(601)),
+            encoding="utf-8",
+        )
         dummy_fa.write_text("", encoding="utf-8")
 
         p287 = load("pass287_mock2", SCRIPTS / "apply_two_hundred_eighty_seventh_pass_repairs.py")
