@@ -86,7 +86,7 @@ jobs:
             python3 scripts/apply_two_hundred_ninety_fourth_pass_repairs.py
             python3 scripts/apply_two_hundred_ninety_fifth_pass_repairs.py
             python3 scripts/apply_two_hundred_ninety_seventh_pass_repairs.py
-            python3 scripts/apply_two_hundred_eighty_eighth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_eighth_pass_repairs.py
             python3 scripts/apply_two_hundred_ninety_ninth_pass_repairs.py
             python3 scripts/apply_three_hundredth_pass_repairs.py
             python3 scripts/apply_three_hundred_ninth_pass_repairs.py
