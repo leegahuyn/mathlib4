@@ -1,4 +1,4 @@
-name: Materialize Mock2 Advanced pass 312
+name: Materialize Mock2 Advanced pass 312 shell retry
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: materialize-mock2-advanced-pass-312
+  group: materialize-mock2-advanced-pass-312-shell
   cancel-in-progress: false
 
 jobs:
@@ -26,20 +26,21 @@ jobs:
       LOGDIR: build-logs/Mock2_Advanced-materialization
 
     steps:
-      - name: Checkout exact triggering commit
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-
-      - name: Verify branch and starting source
+      - name: Clone exact triggering commit without marketplace actions
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test "${GITHUB_REF_NAME}" = "${BRANCH}"
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test "${GITHUB_REF_NAME}" = "${BRANCH}"
           actual_blob="$(git hash-object "${TARGET}")"
-          echo "starting blob: ${actual_blob}"
+          echo "trigger_sha=${GITHUB_SHA}"
+          echo "starting_blob=${actual_blob}"
           test "${actual_blob}" = "${EXPECTED_START_BLOB}"
           mkdir -p "${LOGDIR}"
           printf '%s\n' \
@@ -47,7 +48,7 @@ jobs:
             "starting_blob=${actual_blob}" \
             > "${LOGDIR}/snapshot.txt"
 
-      - name: Apply pass 289 through pass 312 candidate repairs
+      - name: Apply pass 289 through pass 312 and isolate Advanced
         shell: bash
         run: |
           set -euo pipefail
@@ -75,21 +76,17 @@ jobs:
             fi
           done < <(git diff --name-only)
 
-          changed="$(git diff --name-only)"
-          printf 'changed paths after isolation:\n%s\n' "${changed}"
-          test "${changed}" = "${TARGET}"
+          test "$(git diff --name-only)" = "${TARGET}"
           git diff --check
-
           actual_sha="$(sha256sum "${TARGET}" | awk '{print $1}')"
           actual_lines="$(wc -l < "${TARGET}")"
-          echo "candidate sha256: ${actual_sha}"
-          echo "candidate lines: ${actual_lines}"
+          echo "candidate_sha256=${actual_sha}"
+          echo "candidate_lines=${actual_lines}"
           test "${actual_sha}" = "${EXPECTED_CANDIDATE_SHA256}"
           printf '%s\n' \
             "candidate_sha256=${actual_sha}" \
             "candidate_lines=${actual_lines}" \
             >> "${LOGDIR}/snapshot.txt"
-          cp "${TARGET}" "${LOGDIR}/candidate-source.lean"
 
       - name: Static forbidden-token gate
         shell: bash
@@ -99,8 +96,7 @@ jobs:
           from pathlib import Path
           import re
 
-          path = Path("PrimalitySheafVerification/Mock2_Advanced.lean")
-          src = path.read_text(encoding="utf-8")
+          src = Path("PrimalitySheafVerification/Mock2_Advanced.lean").read_text(encoding="utf-8")
           out = []
           i = 0
           block_depth = 0
@@ -161,24 +157,33 @@ jobs:
           }
           bad = False
           for name, pattern in checks.items():
-              matches = list(re.finditer(pattern, code))
-              print(f"{name}: {len(matches)}")
-              bad |= bool(matches)
+              count = len(list(re.finditer(pattern, code)))
+              print(f"{name}: {count}")
+              bad |= count != 0
           if block_depth or in_string:
-              raise SystemExit("unterminated comment or string in scanner")
+              raise SystemExit("unterminated comment or string")
           if bad:
               raise SystemExit("forbidden executable token detected")
           PY
 
-      - name: Set up Lean
-        uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
-        with:
-          build: false
-          test: false
-          lint: false
+      - name: Install pinned Lean toolchain without marketplace actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/elan" --version
+          "${HOME}/.elan/bin/lean" --version
+          "${HOME}/.elan/bin/lake" --version
 
       - name: Restore Mathlib cache
-        run: lake exe cache get
+        shell: bash
+        run: |
+          set -euo pipefail
+          "${HOME}/.elan/bin/lake" exe cache get
 
       - name: Compile candidate twice from deleted project artifacts
         shell: bash
@@ -187,7 +192,6 @@ jobs:
           outdir='.lake/build/lib/lean/PrimalitySheafVerification'
           mkdir -p "${outdir}" "${LOGDIR}"
           : > "${LOGDIR}/Mock2_Advanced.log"
-
           for pass in 1 2; do
             rm -f \
               "${outdir}/Mock2_Advanced.olean" \
@@ -196,7 +200,7 @@ jobs:
             echo "===== candidate clean compile ${pass}/2 =====" \
               | tee -a "${LOGDIR}/Mock2_Advanced.log"
             set +e
-            lake env lean "${TARGET}" \
+            "${HOME}/.elan/bin/lake" env lean "${TARGET}" \
               -o "${outdir}/Mock2_Advanced.olean" \
               -i "${outdir}/Mock2_Advanced.ilean" 2>&1 \
               | tee "${LOGDIR}/Mock2_Advanced-pass${pass}.log" \
@@ -211,27 +215,20 @@ jobs:
             ! grep -Eqi "maximum number of errors|PANIC|segmentation fault|stack overflow|missing object file|declaration uses 'sorry'|sorryAx" \
               "${LOGDIR}/Mock2_Advanced-pass${pass}.log"
           done
-
           sha256sum \
             "${TARGET}" \
             "${outdir}/Mock2_Advanced.olean" \
             "${outdir}/Mock2_Advanced.ilean" \
-            > "${LOGDIR}/sha256.txt"
-          cp "${outdir}/Mock2_Advanced.olean" "${LOGDIR}/Mock2_Advanced.olean"
-          cp "${outdir}/Mock2_Advanced.ilean" "${LOGDIR}/Mock2_Advanced.ilean"
-          echo 0 > "${LOGDIR}/exit-code.txt"
-          grep -c 'warning:' "${LOGDIR}/Mock2_Advanced-pass2.log" \
-            > "${LOGDIR}/warning-count.txt" || true
+            | tee "${LOGDIR}/sha256.txt"
 
-      - name: Commit only the verified candidate when branch head is unchanged
+      - name: Commit only the twice-verified Advanced source
         shell: bash
         run: |
           set -euo pipefail
           remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
-          echo "trigger head: ${GITHUB_SHA}"
-          echo "remote head:  ${remote_head}"
+          echo "trigger_head=${GITHUB_SHA}"
+          echo "remote_head=${remote_head}"
           test "${remote_head}" = "${GITHUB_SHA}"
-
           test "$(git diff --name-only)" = "${TARGET}"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -239,12 +236,3 @@ jobs:
           test "$(git diff --cached --name-only)" = "${TARGET}"
           git commit -m 'fix: materialize Mock2 Advanced pass 312 candidate'
           git push origin "HEAD:${BRANCH}"
-
-      - name: Upload verification evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: mock2-advanced-pass312-materialization
-          path: build-logs/Mock2_Advanced-materialization
-          if-no-files-found: warn
-          retention-days: 30
