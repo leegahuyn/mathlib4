@@ -1,0 +1,106 @@
+name: Materialize Primality Repairs
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/materialize-primality-repairs.yml'
+      - 'PrimalitySheafVerification/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-primality-repairs
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    if: ${{ !contains(github.event.head_commit.message, 'materialize current primality repairs') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/primality-sheaf-clean-build
+          fetch-depth: 1
+
+      - name: Apply accumulated deterministic repairs
+        run: |
+          python3 scripts/apply_current_repairs.py
+          python3 scripts/apply_two_hundred_twenty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_twenty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirtieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fortieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_forty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fiftieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_fifty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixtieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_sixty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_fourth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_fifth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_sixth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_seventh_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_eighth_pass_repairs.py
+          python3 scripts/apply_two_hundred_seventy_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_eightieth_pass_repairs.py
+          python3 scripts/apply_two_hundred_eighty_first_pass_repairs.py
+          python3 scripts/apply_two_hundred_eighty_second_pass_repairs.py
+          python3 scripts/apply_two_hundred_eighty_third_pass_repairs.py
+          python3 scripts/apply_two_hundred_eighty_fourth_pass_repairs.py
+
+      - name: Commit materialized Lean sources
+        shell: bash
+        run: |
+          if git diff --quiet -- PrimalitySheafVerification; then
+            echo 'No source changes to materialize.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification
+          git commit -m 'chore: materialize current primality repairs'
+          git push origin HEAD:fix/primality-sheaf-clean-build
