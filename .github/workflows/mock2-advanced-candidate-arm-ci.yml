@@ -1,6 +1,10 @@
 name: Mock2 Advanced pass 312 ARM candidate clean CI
 
 on:
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/mock2-advanced-candidate-arm-ci.yml'
   push:
     branches: [fix/primality-sheaf-clean-build]
     paths:
@@ -29,16 +33,17 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           git init .
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
           git checkout --detach FETCH_HEAD
-          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
           test "$(git hash-object "${TARGET}")" = "${EXPECTED_START_BLOB}"
           mkdir -p "${LOGDIR}"
-          printf '%s\n' "source_sha=${GITHUB_SHA}" \
+          printf '%s\n' "source_sha=${SOURCE_SHA}" \
             "starting_blob=${EXPECTED_START_BLOB}" > "${LOGDIR}/snapshot.txt"
 
       - name: Reproduce pass 312 candidate exactly
