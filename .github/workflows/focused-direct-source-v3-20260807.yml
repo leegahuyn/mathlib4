@@ -1,0 +1,113 @@
+name: Focused checked-in direct-source verification v3
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.ci/focused/focused_candidate_v3.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: focused-direct-source-v3
+  cancel-in-progress: false
+
+jobs:
+  direct-source:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 480
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      FOCUSED_BRANCH: fix/primality-sheaf-clean-build
+      FOCUSED_LOGDIR: /tmp/focused-proof/direct-v3
+      FOCUSED_CANDIDATE_MARKER: .ci/focused/focused_candidate_v3.json
+      FOCUSED_REPORT_OUT: /tmp/focused_direct_pass_v3.json
+      FOCUSED_BUNDLE_OUT: /tmp/focused-direct-v3-proof.tar.gz
+      FINAL_MARKER: .ci/focused/focused_direct_pass_v3.json
+
+    steps:
+      - name: Clone exact checked-in candidate head without checkout action
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test "$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')" = "${GITHUB_SHA}"
+          test -f "${FOCUSED_CANDIDATE_MARKER}"
+          git status --porcelain=v1 | tee /tmp/focused-direct-initial-status.txt
+          test ! -s /tmp/focused-direct-initial-status.txt
+
+      - name: Install exact Lean toolchain without setup action
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+
+      - name: Restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Verify all checked-in focused sources twice without repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/focused_direct_verify_20260807.sh
+
+      - name: Upload direct-source proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-direct-source-v3-${{ github.sha }}
+          path: /tmp/focused-direct-v3-proof.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish final focused PASS marker after artifact upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${FINAL_MARKER}")"
+          cp /tmp/focused_direct_pass_v3.json "${FINAL_MARKER}"
+          git diff --check
+          test "$(git status --porcelain=v1 | wc -l)" -eq 1
+          test "$(git status --porcelain=v1 | sed 's/^...//')" = "${FINAL_MARKER}"
+
+          verified_head="$(git rev-parse HEAD)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${FINAL_MARKER}"
+          test "$(git diff --cached --name-only)" = "${FINAL_MARKER}"
+          git commit -m 'ci: record focused checked-in direct-source PASS v3'
+
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          if [[ "${remote_head}" != "${verified_head}" ]]; then
+            git fetch origin "${BRANCH}"
+            critical="$(git diff --name-only "${verified_head}" "${remote_head}" | grep -E \
+              '^(PrimalitySheafVerification/(Mock2|Mock2_Advanced|Mock2_FunctionalAnalysis|Mock2_FunctionalAnalysis_Integrated|QYM)\.lean|\.ci/focused/focused_candidate_v3\.json|lean-toolchain|lakefile\.lean|lake-manifest\.json|scripts/(focused_direct_verify_20260807|focused_source_audit_20260807|generate_focused_axiom_audit_20260807)\.(py|sh))$' \
+              || true)"
+            if [[ -n "${critical}" ]]; then
+              printf '%s\n' "${critical}" >&2
+              echo 'A concurrent commit changed direct-source verification inputs; refusing a stale PASS marker.' >&2
+              exit 1
+            fi
+            git rebase "${remote_head}"
+          fi
+          git push origin "HEAD:${BRANCH}"
