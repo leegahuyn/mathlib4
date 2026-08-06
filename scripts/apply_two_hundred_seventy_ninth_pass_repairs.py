@@ -50,16 +50,15 @@ def main() -> int:
     )
     fa = replace_exact(
         fa,
-        "WithLp.norm_fst_le (Q.graphExtension x)",
-        "WithLp.norm_fst_le H₀ (Q.graphExtension x)",
-        "FunctionalAnalysis supply the outer first-coordinate type",
-        expected=2,
-    )
-    fa = replace_exact(
-        fa,
         "WithLp.norm_fst_le (Q.graphExtension x).snd",
         "WithLp.norm_fst_le HR (Q.graphExtension x).snd",
         "FunctionalAnalysis supply the inner first-coordinate type",
+    )
+    fa = replace_exact(
+        fa,
+        "WithLp.norm_fst_le (Q.graphExtension x)",
+        "WithLp.norm_fst_le H₀ (Q.graphExtension x)",
+        "FunctionalAnalysis supply the outer first-coordinate type",
     )
     fa = replace_exact(
         fa,
