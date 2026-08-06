@@ -93,7 +93,7 @@ def main() -> int:
           (∫ q, quotientInnerDensity M v u q ∂D.quotientMeasure) =
 """,
         "FunctionalAnalysis state Petersson conjugation with star",
-        expected=2,
+        expected=1,
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
