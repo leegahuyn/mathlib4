@@ -5,12 +5,12 @@ on:
     branches: [master]
     paths:
       - 'PrimalitySheafVerification/**'
-      - 'scripts/materialize_primality_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: primality-sheaf-matrix-${{ github.event.pull_request.head.sha || github.sha }}
@@ -18,9 +18,9 @@ concurrency:
 
 jobs:
   materialize:
-    name: Materialize accumulated source repairs
+    name: Materialize latest repaired sources
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     outputs:
       changed: ${{ steps.materialize.outputs.changed }}
     steps:
@@ -30,15 +30,27 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Apply and commit accumulated repairs
+      - name: Restore repaired sources from verified artifacts
         id: materialize
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if git log -1 --pretty=%s | grep -q 'materialize current primality repairs'; then
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          python3 scripts/materialize_primality_repairs.py
+          set -euo pipefail
+          while read -r artifact module; do
+            archive="/tmp/${module}.zip"
+            directory="/tmp/${module}"
+            gh api "/repos/leegahuyn/mathlib4/actions/artifacts/${artifact}/zip" > "$archive"
+            mkdir -p "$directory"
+            unzip -q "$archive" -d "$directory"
+            cp "$directory/repaired-source.lean" "PrimalitySheafVerification/${module}.lean"
+          done <<'EOF'
+          8960562824 Mock1_Advanced
+          8960474233 Mock2
+          8960469208 Mock2_Advanced
+          8960502958 Mock2_FunctionalAnalysis
+          EOF
+
           if git diff --quiet -- PrimalitySheafVerification; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
