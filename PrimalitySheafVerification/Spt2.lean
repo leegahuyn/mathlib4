@@ -379,10 +379,16 @@ noncomputable def quotientExtensionCotangentEquivKer (f : K[X]) :
   invFun x := Algebra.Extension.Cotangent.val x
   left_inv x := rfl
   right_inv x := rfl
-  map_add' x y := rfl
+  map_add' x y := by
+    apply Algebra.Extension.Cotangent.ext
+    rfl
   map_smul' r x := by
     ext
     simp [Algebra.Extension.Cotangent.val_smul'']
+
+@[simp] lemma quotientExtensionCotangentEquivKer_apply (f : K[X])
+    (x : (quotientExtension f).ker.Cotangent) :
+    quotientExtensionCotangentEquivKer f x = Algebra.Extension.Cotangent.of x := rfl
 
 noncomputable def quotientCotangentSpaceEquiv (f : K[X]) :
     (quotientExtension f).CotangentSpace ≃ₗ[K[X] ⧸ Ideal.span ({f} : Set K[X])]
@@ -395,11 +401,44 @@ noncomputable def quotientCotangentSpaceEquiv (f : K[X]) :
       (K[X] ⧸ Ideal.span ({f} : Set K[X]))
       (K[X] ⧸ Ideal.span ({f} : Set K[X])))
 
+noncomputable def idealCotangentEquivOfEqKX
+    (I J : Ideal K[X]) (h : I = J) : I.Cotangent ≃ₗ[K] J.Cotangent := by
+  subst J
+  exact LinearEquiv.refl K _
+
+@[simp] lemma idealCotangentEquivOfEqKX_toCotangent
+    (I J : Ideal K[X]) (h : I = J) (x : I) :
+    idealCotangentEquivOfEqKX I J h (I.toCotangent x) =
+      J.toCotangent (LinearEquiv.ofEq I J h x) := by
+  subst J
+  rfl
+
+noncomputable def quotientSpanCotangentEquivKer (f : K[X]) :
+    (Ideal.span ({f} : Set K[X])).Cotangent ≃ₗ[K]
+      (quotientExtension f).ker.Cotangent :=
+  idealCotangentEquivOfEqKX
+    (Ideal.span ({f} : Set K[X])) (quotientExtension f).ker
+    (quotientExtension_ker f).symm
+
+@[simp] lemma quotientSpanCotangentEquivKer_toCotangent
+    (f : K[X]) (x : Ideal.span ({f} : Set K[X])) :
+    quotientSpanCotangentEquivKer f
+        ((Ideal.span ({f} : Set K[X])).toCotangent x) =
+      (quotientExtension f).ker.toCotangent
+        ⟨x.1, (quotientExtension_ker f).symm ▸ x.2⟩ := by
+  let J : Ideal K[X] := (quotientExtension f).ker
+  let h : Ideal.span ({f} : Set K[X]) = J := (quotientExtension_ker f).symm
+  change idealCotangentEquivOfEqKX (Ideal.span ({f} : Set K[X])) J h
+      ((Ideal.span ({f} : Set K[X])).toCotangent x) =
+    J.toCotangent ⟨x.1, h ▸ x.2⟩
+  rw [idealCotangentEquivOfEqKX_toCotangent]
+  congr 1
+
 noncomputable def quotientConormalEquivForward (f : K[X]) (hf : f ≠ 0) :
     (K[X] ⧸ Ideal.span ({f} : Set K[X])) ≃ₗ[K]
       (quotientExtension f).Cotangent :=
   ((principalCotangentQuotEquiv (R := K[X]) (poly := f) hf).restrictScalars K).trans
-    (((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm).restrictScalars K).trans
+    ((quotientSpanCotangentEquivKer f).trans
       (quotientExtensionCotangentEquivKer f))
 
 noncomputable def derivativeMulLinearRaw (f : K[X]) :
@@ -419,9 +458,8 @@ lemma quotientConormalEquivForward_mk (f : K[X]) (hf : f ≠ 0) (a : K[X]) :
           K[X] ⧸ (Ideal.span ({f} : Set K[X]) : Ideal K[X])) =
       Algebra.Extension.Cotangent.mk
         (P := quotientExtension f)
-        ⟨a * f, by
-          rw [quotientExtension_ker]
-          exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ := by
+        ⟨a * f, (quotientExtension_ker f).symm ▸
+          Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ := by
   have hmap :
       principalCotangentQuotMap f
           (Submodule.Quotient.mk a :
@@ -434,22 +472,26 @@ lemma quotientConormalEquivForward_mk (f : K[X]) (hf : f ≠ 0) (a : K[X]) :
       ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
         (Ideal.span ({f} : Set K[X])).toCotangent
           ⟨a * f, Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩ at hmap
-  ext
+  have hprincipal :
+      principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) =
+        principalCotangentQuotMap f
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a) := rfl
   simp only [quotientConormalEquivForward, LinearEquiv.trans_apply,
-    LinearEquiv.restrictScalars_apply]
-  unfold principalCotangentQuotEquiv quotientExtensionCotangentEquivKer
-  change (Algebra.Extension.Cotangent.of
-      ((Ideal.cotangentEquivOfEq (quotientExtension_ker f).symm)
-        ((principalCotangentQuotMap f)
-          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a)))).val =
-    (Algebra.Extension.Cotangent.mk
+    LinearEquiv.restrictScalars_apply, quotientExtensionCotangentEquivKer_apply]
+  change Algebra.Extension.Cotangent.of
+      (quotientSpanCotangentEquivKer f
+        (principalCotangentQuotEquiv (R := K[X]) (poly := f) hf
+          ((Ideal.Quotient.mk (Ideal.span ({f} : Set K[X]))) a))) =
+    Algebra.Extension.Cotangent.mk
       (P := quotientExtension f)
-      ⟨a * f, by
-        rw [quotientExtension_ker]
-        exact Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩).val
-  rw [hmap]
-  simp [Algebra.Extension.Cotangent.val_mk, Algebra.Extension.Cotangent.val_of]
-  rfl
+      ⟨a * f, (quotientExtension_ker f).symm ▸
+        Ideal.mem_span_singleton'.mpr ⟨a, rfl⟩⟩
+  rw [hprincipal, hmap]
+  apply Algebra.Extension.Cotangent.ext
+  simp only [Algebra.Extension.Cotangent.val_of,
+    Algebra.Extension.Cotangent.val_mk]
+  rw [quotientSpanCotangentEquivKer_toCotangent]
 
 theorem quotientCotangentComplex_conj_mk (f : K[X]) (hf : f ≠ 0) (a : K[X]) :
     quotientCotangentSpaceEquiv f
@@ -1664,7 +1706,7 @@ noncomputable def principalAQH1ModelEquivExtensionH1
     ⟨(PrincipalUnivariateAQ.quotientConormalEquivForward f hf).symm y.1, by
       rw [LinearMap.mem_ker]
       rw [← principalAQH1Model_cotangentComplex_kernel_iff f hf]
-      simp⟩
+      simpa using y.property⟩
   left_inv x := by
     ext
     simp
@@ -1900,15 +1942,21 @@ noncomputable def kaehlerEquivJacobianQuotient (f : (ZMod p)[X]) :
           rw [TensorProduct.smul_tmul', smul_eq_mul, mul_one,
             show Ideal.Quotient.mk (Ideal.span {f}) a
                 = a • (1 : (ZMod p)[X] ⧸ Ideal.span {f}) from by
-              rw [← Ideal.Quotient.algebraMap_eq, Algebra.algebraMap_eq_smul_one],
+              change ((Ideal.Quotient.mk (Ideal.span {f}) a) :
+                (ZMod p)[X] ⧸ Ideal.span {f}) =
+                  ((Ideal.Quotient.mk (Ideal.span {f}) a) :
+                    (ZMod p)[X] ⧸ Ideal.span {f}) • 1
+              simpa [smul_eq_mul],
             TensorProduct.smul_tmul]
         rw [key]
         exact Submodule.smul_mem _ _ (Submodule.subset_span rfl)
     · rw [Submodule.span_le]
       intro x hx
       rw [Set.mem_singleton_iff] at hx; subst hx
-      rw [SetLike.mem_coe, LinearMap.mem_ker, KaehlerDifferential.mapBaseChange_tmul,
-        one_smul, KaehlerDifferential.map_D, Ideal.Quotient.algebraMap_eq, hf0, map_zero]
+      simp only [SetLike.mem_coe, LinearMap.mem_ker,
+        KaehlerDifferential.mapBaseChange_tmul,
+        KaehlerDifferential.map_D, Ideal.Quotient.algebraMap_eq, hf0, map_zero]
+      simp
   -- assemble
   have hmap : Submodule.map
       (tau : _ →ₗ[(ZMod p)[X] ⧸ Ideal.span {f}] _)
@@ -1918,7 +1966,6 @@ noncomputable def kaehlerEquivJacobianQuotient (f : (ZMod p)[X]) :
     rw [hker, Submodule.map_span, Set.image_singleton]
     simp only [LinearEquiv.coe_coe]
     rw [htau]
-    rfl
   exact ((LinearMap.quotKerEquivOfSurjective _
     (KaehlerDifferential.mapBaseChange_surjective (ZMod p) (ZMod p)[X]
       ((ZMod p)[X] ⧸ Ideal.span {f}) hsurj)).symm).trans
