@@ -1,0 +1,97 @@
+name: Phased focused v5 workflow preflight
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-*-v5-20260807.yml'
+      - '.github/workflows/focused-v5-*-20260807.yml'
+      - 'scripts/focused_*_v5_20260807.sh'
+      - 'scripts/*focused*v5*20260807.py'
+      - 'scripts/focused_source_audit_20260807.py'
+      - 'scripts/generate_axiom_audit_for_module_20260807.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phased-focused-v5-preflight
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Clone exact triggering snapshot
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+
+      - name: Python and shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/focused_source_audit_20260807.py \
+            scripts/generate_axiom_audit_for_module_20260807.py \
+            scripts/focused_v5_controller_20260807.py \
+            scripts/patch_focused_m2a_candidate_variants_v5_20260807.py \
+            scripts/patch_focused_fa_historical_fallback_v5_20260807.py \
+            scripts/patch_focused_qym_comprehensive_axiom_v5_20260807.py
+          bash -n scripts/focused_m2a_candidate_v5_20260807.sh
+          bash -n scripts/focused_m2a_direct_v5_20260807.sh
+          bash -n scripts/focused_fa_candidate_v5_20260807.sh
+          bash -n scripts/focused_fa_direct_v5_20260807.sh
+          bash -n scripts/focused_qym_direct_v5_20260807.sh
+          bash -n scripts/focused_axiom_audit_dispatch_20260807.sh
+          bash -n scripts/focused_environment_axiom_audit_20260807.sh
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- 1.7.7
+
+      - name: Validate official phased workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./actionlint \
+            .github/workflows/focused-m2a-candidate-v5-20260807.yml \
+            .github/workflows/focused-m2a-direct-v5-20260807.yml \
+            .github/workflows/focused-fa-candidate-v5-20260807.yml \
+            .github/workflows/focused-fa-direct-v5-20260807.yml \
+            .github/workflows/focused-qym-direct-v5-20260807.yml \
+            .github/workflows/focused-finalize-v5-20260807.yml \
+            .github/workflows/focused-v5-controller-20260807.yml \
+            .github/workflows/focused-v5-exclusive-queue-prune-20260807.yml
+
+      - name: Enforce phase ordering and no-repair direct workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq ".ci/focused/m2a_candidate_v5.json" \
+            .github/workflows/focused-m2a-direct-v5-20260807.yml
+          grep -Fq ".ci/focused/m2a_direct_pass_v5.json" \
+            .github/workflows/focused-fa-candidate-v5-20260807.yml
+          grep -Fq ".ci/focused/fa_candidate_v5.json" \
+            .github/workflows/focused-fa-direct-v5-20260807.yml
+          grep -Fq ".ci/focused/fa_direct_pass_v5.json" \
+            .github/workflows/focused-qym-direct-v5-20260807.yml
+          ! grep -E 'repair_mock2_advanced|apply_.*_pass_repairs' \
+            .github/workflows/focused-m2a-direct-v5-20260807.yml \
+            .github/workflows/focused-fa-direct-v5-20260807.yml \
+            .github/workflows/focused-qym-direct-v5-20260807.yml \
+            scripts/focused_m2a_direct_v5_20260807.sh \
+            scripts/focused_fa_direct_v5_20260807.sh \
+            scripts/focused_qym_direct_v5_20260807.sh
