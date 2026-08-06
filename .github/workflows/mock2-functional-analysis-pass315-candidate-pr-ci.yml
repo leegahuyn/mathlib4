@@ -19,8 +19,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: mock2-functional-analysis-pass315-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: mock2-functional-analysis-pass315-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   verify-candidate-and-integrated-boundary:
@@ -35,7 +35,7 @@ jobs:
       EXPECTED_ADVANCED_BASELINE_BLOB: 54bbfa432f1b8a6554d25104a0c29d4f41999984
       EXPECTED_FA_START_BLOB: 4eedc43d57f96b45897990bbeaada01ee0fd3b84
       EXPECTED_PRE313_SHA256: 7048e0cd364ff150a79b4696b08db0c3a29aa29dc252d623650818f59f6162ca
-      EXPECTED_CANDIDATE_SHA256: 231838a379d881125c2c9a50c0bf294880a6d742635f36656c5b301aacb38b62
+      EXPECTED_CANDIDATE_SHA256: 36258b062cf8caef1f07cb28111cf0d6293897515b0cc49565f177eb2195de69
       LOGDIR: build-logs/Mock2_FunctionalAnalysis-pass315-candidate
 
     steps:
