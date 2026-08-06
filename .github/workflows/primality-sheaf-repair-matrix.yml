@@ -43,6 +43,7 @@ jobs:
           python3 scripts/apply_two_hundred_twenty_seventh_pass_repairs.py
           python3 scripts/apply_two_hundred_twenty_eighth_pass_repairs.py
           python3 scripts/apply_two_hundred_twenty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_thirtieth_pass_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
