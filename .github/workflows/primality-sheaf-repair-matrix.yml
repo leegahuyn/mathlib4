@@ -16,7 +16,7 @@ on:
       - 'scripts/apply_two_hundred_ninety_eighth_pass_repairs.py'
       - 'scripts/apply_two_hundred_ninety_ninth_pass_repairs.py'
       - 'scripts/apply_three_hundredth_pass_repairs.py'
-      - 'scripts/apply_three_hundred_first_pass_mock2_repairs.py'
+      - 'scripts/apply_mock2_passes_286_to_288_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -55,7 +55,7 @@ jobs:
           logdir="build-logs/${module}"
           mkdir -p "$logdir"
           if [[ "$module" == 'Mock2' ]]; then
-            python3 scripts/apply_three_hundred_first_pass_mock2_repairs.py 2>&1 \
+            python3 scripts/apply_mock2_passes_286_to_288_repairs.py 2>&1 \
               | tee "$logdir/repair-application.log"
           else
             {
