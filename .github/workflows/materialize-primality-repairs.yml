@@ -1,4 +1,5 @@
 name: Materialize Mock2 Advanced pass 312 shell retry
+# Retriggered at the current branch head after a concurrent Matrix retry marker moved the ref.
 
 on:
   push:
