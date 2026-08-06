@@ -6,6 +6,7 @@ on:
     paths:
       - 'PrimalitySheafVerification/**'
       - 'scripts/apply_two_hundred_eighty_ninth_pass_repairs.py'
+      - 'scripts/apply_two_hundred_ninetieth_pass_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -33,8 +34,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Apply pass 289 candidate repairs
-        run: python3 scripts/apply_two_hundred_eighty_ninth_pass_repairs.py
+      - name: Apply current candidate repairs
+        run: |
+          python3 scripts/apply_two_hundred_eighty_ninth_pass_repairs.py
+          python3 scripts/apply_two_hundred_ninetieth_pass_repairs.py
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
