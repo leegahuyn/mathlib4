@@ -115,7 +115,6 @@ def main() -> int:
         Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical)
 """,
         "Mock2 proof-package Proposition 20 certificate",
-        expected=2,
     )
     text = replace_exact(
         text,
