@@ -8,6 +8,8 @@ on:
       - 'lakefile.lean'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'scripts/ci_mock2_advanced_pass316_v2.sh'
       - '.github/workflows/primality-sheaf-ci.yml'
   pull_request:
     branches: [master]
@@ -16,6 +18,8 @@ on:
       - 'lakefile.lean'
       - 'lake-manifest.json'
       - 'lean-toolchain'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'scripts/ci_mock2_advanced_pass316_v2.sh'
       - '.github/workflows/primality-sheaf-ci.yml'
   workflow_dispatch:
 
@@ -127,4 +131,13 @@ jobs:
 
       - name: Verify, materialize, or certify checked-in Advanced source
         shell: bash
-        run: bash scripts/ci_mock2_advanced_pass316.sh
+        run: bash scripts/ci_mock2_advanced_pass316_v2.sh
+
+      - name: Upload focused Advanced verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: focused-advanced-pass316-v2-${{ env.SOURCE_SHA }}
+          path: /tmp/focused-advanced-pass316-v2
+          if-no-files-found: warn
+          retention-days: 30
