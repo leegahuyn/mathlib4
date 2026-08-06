@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: mock2-advanced-pass312-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: mock2-advanced-pass312-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   verify-candidate:
