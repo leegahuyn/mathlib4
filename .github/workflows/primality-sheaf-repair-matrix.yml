@@ -19,6 +19,7 @@ on:
       - 'scripts/apply_three_hundredth_pass_repairs.py'
       - 'scripts/apply_three_hundred_ninth_pass_repairs.py'
       - 'scripts/apply_three_hundred_tenth_pass_repairs.py'
+      - 'scripts/apply_three_hundred_eleventh_pass_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -95,6 +96,7 @@ jobs:
               python3 scripts/apply_three_hundredth_pass_repairs.py
               python3 scripts/apply_three_hundred_ninth_pass_repairs.py
               python3 scripts/apply_three_hundred_tenth_pass_repairs.py
+              python3 scripts/apply_three_hundred_eleventh_pass_repairs.py
             } 2>&1 | tee "$logdir/repair-application.log"
           fi
           cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
