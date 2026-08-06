@@ -1,0 +1,59 @@
+name: Prune obsolete focused workflow queue entries
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-run-queue-prune-20260807.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: prune-obsolete-focused-runs
+  cancel-in-progress: true
+
+jobs:
+  prune:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Keep only the newest active run for each focused workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?branch=fix%2Fprimality-sheaf-clean-build&per_page=100" \
+            > /tmp/runs.json
+          python3 - <<'PY' > /tmp/cancel-ids.txt
+          import json
+          runs=json.load(open('/tmp/runs.json')).get('workflow_runs',[])
+          prefixes=(
+            'Focused ', 'Patch focused ', 'Patch comprehensive focused ',
+            'Patch alternate verified M2A', 'Consolidated focused ',
+            'Deterministic focused ', 'Normalize focused ', 'Fix focused '
+          )
+          active=[r for r in runs if r.get('status') in {'queued','in_progress','waiting','pending','requested'} and r.get('name','').startswith(prefixes)]
+          newest={}
+          for r in active:
+            name=r.get('name','')
+            if name not in newest or r.get('id',0)>newest[name].get('id',0):
+              newest[name]=r
+          for r in active:
+            if newest.get(r.get('name',''),{}).get('id') != r.get('id'):
+              print(r['id'])
+          PY
+          while read -r run_id; do
+            [[ -n "${run_id}" ]] || continue
+            curl -fsSL -X POST \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'Accept: application/vnd.github+json' \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
+              >/dev/null || true
+          done < /tmp/cancel-ids.txt
