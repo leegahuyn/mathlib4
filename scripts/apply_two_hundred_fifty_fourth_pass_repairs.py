@@ -39,10 +39,15 @@ instance gaugeGroupLieGroup : LieGroup GaugeModel ∞ GaugeGroup where
     m2a = M2A.read_text(encoding="utf-8")
     m2a = replace_exact(
         m2a,
-        "IntegralSpecialLinear",
-        "Matrix.SpecialLinearGroup (Fin 2) ℤ",
-        "Mock2 Advanced use the actual integral special-linear type",
-        expected=2,
+        """(ModularGroup.T ^ (2 : ℤ) : IntegralSpecialLinear)""",
+        """(ModularGroup.T ^ (2 : ℤ) : Matrix.SpecialLinearGroup (Fin 2) ℤ)""",
+        "Mock2 Advanced type the T-squared action by the actual SL2 type",
+    )
+    m2a = replace_exact(
+        m2a,
+        """(ModularGroup.S⁻¹ : IntegralSpecialLinear)""",
+        """(ModularGroup.S⁻¹ : Matrix.SpecialLinearGroup (Fin 2) ℤ)""",
+        "Mock2 Advanced type the inverse-S action by the actual SL2 type",
     )
     M2A.write_text(m2a, encoding="utf-8")
     return 0
