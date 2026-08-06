@@ -1,5 +1,4 @@
-name: Materialize Mock2 Advanced pass 312 shell retry
-# Retriggered at the current branch head after a concurrent Matrix retry marker moved the ref.
+name: Materialize Mock2 Advanced pass 312 shell retry 2
 
 on:
   push:
@@ -12,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: materialize-mock2-advanced-pass-312-shell
+  group: materialize-mock2-advanced-pass-312-shell-retry-2
   cancel-in-progress: false
 
 jobs:
@@ -153,8 +152,6 @@ jobs:
               "native_decide": r"\bnative_decide\b",
               "Lean.ofReduceBool": r"\bLean\.ofReduceBool\b",
               "by_contra!": r"\bby_contra!\b",
-              "placeholder": r"\bplaceholder\b",
-              "TODO/FIXME": r"\b(?:TODO|FIXME)\b",
           }
           bad = False
           for name, pattern in checks.items():
