@@ -110,7 +110,7 @@ def main() -> int:
         """  unfold SmoothCompactCoreGeometry.quotientTSupport
 """,
         "FunctionalAnalysis qualify the quotient support definition",
-        expected=1,
+        expected=2,
     )
     fa = replace_exact(
         fa,
