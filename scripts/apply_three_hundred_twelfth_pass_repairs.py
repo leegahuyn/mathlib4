@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# Retry marker: the previous pass-312 Matrix attempt never reached checkout or Lean
+# because GitHub Actions could not resolve pinned action downloads (HTTP 503).
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
