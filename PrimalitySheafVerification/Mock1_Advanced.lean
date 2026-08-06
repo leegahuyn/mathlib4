@@ -45891,6 +45891,301 @@ inductive AdvancedClaimsIIPromptBullet where
   | externalOutputSchemaRows
 deriving DecidableEq, Repr
 
+namespace AdvancedClaimsIIRequirement
+
+def leafStatement
+    (C : AdvancedClaimsIICompletionCertificate) :
+    AdvancedClaimsIIRequirement → Prop
+  | AdvancedClaimsIIRequirement.objectClaimRegistry =>
+      forall claim : RemainingAdvancedClaim,
+        List.Mem claim C.advanced.registry.requirements
+  | AdvancedClaimsIIRequirement.objectCoefficientSchema =>
+      forall n, C.advanced.objectSchema.coefficientAt n =
+        C.advanced.objectSchema.object.coeff n
+  | AdvancedClaimsIIRequirement.paperObjectDataInstance =>
+      C.paperInstance.extraction.concrete =
+        C.paperInstance.namedInstance.concrete /\
+      C.paperInstance.family =
+          C.paperInstance.namedInstance.family /\
+        C.paperInstance.family.objectName =
+            referenceMock1DepthOneObjectName /\
+          C.paperInstance.family.familyName =
+              referenceMock1DepthOneFamilyName /\
+            Not (C.paperInstance.family.sourceName = "")
+  | AdvancedClaimsIIRequirement.scalarJacobiDegeneracyRelation =>
+      forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+        C.advanced.degeneracyRelation.ellStar =
+          C.advanced.degeneracyRelation.scalarCoeff n
+  | AdvancedClaimsIIRequirement.principalPartRationalSolve =>
+      MatVecRat C.advanced.rationalSolve.matrix
+      C.advanced.rationalSolve.solution =
+        C.advanced.rationalSolve.rhs
+  | AdvancedClaimsIIRequirement.completionShadowHolomorphicConsequence =>
+      C.advanced.completionShadow.blockSum = 0 /\
+      forall x, C.advanced.completionShadow.shadow.xiFhat x = 0
+  | AdvancedClaimsIIRequirement.cuspTransportSkeleton =>
+      C.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+        C.advanced.cuspTransport.t4.transportFamily.transports.length /\
+      C.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
+        C.advanced.cuspTransport.t4.tailTracking.kernel.level
+  | AdvancedClaimsIIRequirement.appellLerchBlockFormula =>
+      List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+      List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+        C.advanced.appellLerch.uTauCoeff -
+            C.advanced.appellLerch.vTauCoeff = 0 /\
+          C.advanced.appellLerch.uConst -
+              C.advanced.appellLerch.vConst =
+            C.advanced.appellLerch.z0
+  | AdvancedClaimsIIRequirement.principalExponentFormula =>
+      C.advanced.exponentFormula.exponent =
+        paperPrincipalExponent C.advanced.exponentFormula.n
+          C.advanced.exponentFormula.ell
+          C.advanced.exponentFormula.m /\
+      C.advanced.exponentFormula.exponent < 0
+  | AdvancedClaimsIIRequirement.paperMatrixRhsSolution =>
+      MatVecRat C.advanced.rationalSolve.matrix
+      C.advanced.rationalSolve.solution =
+        C.advanced.rationalSolve.rhs
+  | AdvancedClaimsIIRequirement.fixedShadowUnaryThetaData =>
+      Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+      C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+        C.advanced.fixedShadow.nonzeroCase /\
+          Not (C.advanced.fixedShadow.scale = 0)
+  | AdvancedClaimsIIRequirement.insideOutsideQSeriesCertificate =>
+      forall n,     C.advanced.insideOutside.inside.coeff n =
+          C.advanced.insideOutside.outside.coeff n /\
+        C.advanced.insideOutside.outside.coeff n =
+          C.advanced.insideOutside.partialTheta.coeff n -
+            C.advanced.insideOutside.correction.coeff n
+  | AdvancedClaimsIIRequirement.natGcdLcmSkeleton =>
+      Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
+        C.sptKernel.sptFree.gcdLcm.M /\
+      Dvd.dvd C.sptKernel.sptFree.gcdLcm.gcdValue
+          C.sptKernel.sptFree.gcdLcm.primePower /\
+        Dvd.dvd C.sptKernel.sptFree.gcdLcm.M
+            C.sptKernel.sptFree.gcdLcm.lcmValue /\
+          Dvd.dvd C.sptKernel.sptFree.gcdLcm.primePower
+            C.sptKernel.sptFree.gcdLcm.lcmValue
+  | AdvancedClaimsIIRequirement.primewiseThicknessSkeleton =>
+      C.sptKernel.sptFree.thickness.failureThickness =
+        C.sptKernel.sptFree.thickness.thickness + 1 /\
+      0 < C.sptKernel.sptFree.thickness.thickness
+  | AdvancedClaimsIIRequirement.actualMpkValuationCertificate =>
+      Nat.Prime C.sptKernel.sptFree.valuation.p /\
+      Dvd.dvd
+          (C.sptKernel.sptFree.valuation.p ^
+            C.sptKernel.sptFree.valuation.vp)
+          C.sptKernel.sptFree.valuation.M /\
+        Not
+          (Dvd.dvd
+            (C.sptKernel.sptFree.valuation.p ^
+              (C.sptKernel.sptFree.valuation.vp + 1))
+            C.sptKernel.sptFree.valuation.M)
+  | AdvancedClaimsIIRequirement.obstructionFreeFailureThicknessPortfolio =>
+      C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+      Not (C.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+        C.sptKernel.sptFailure.failureThickness =
+          C.sptKernel.sptFailure.spt.obstruction.order
+  | AdvancedClaimsIIRequirement.baseChangeStabilityBoundary =>
+      Dvd.dvd
+      (Nat.lcm C.sptKernel.baseChange.target.M
+        (C.sptKernel.baseChange.target.p ^
+          C.sptKernel.baseChange.target.k))
+      (C.sptKernel.baseChange.mapEqualizer
+        C.sptKernel.baseChange.source.equalizerElement)
+  | AdvancedClaimsIIRequirement.kernelSelectionCertificateBoundary =>
+      C.sptKernel.kernelSelection.selectedModulus =
+        C.sptKernel.kernelSelection.level /\
+      C.sptKernel.kernelSelection.record.selection.selectedModulus =
+        C.sptKernel.kernelSelection.record.level
+  | AdvancedClaimsIIRequirement.finiteMultiplierPhaseMatchingCertificate =>
+      0 < C.sptKernel.multiplier.root.phases /\
+      C.sptKernel.multiplier.rows.length = 2 /\
+        forall row, List.Mem row C.sptKernel.multiplier.rows ->
+          row.computedValue = row.tableValue
+  | AdvancedClaimsIIRequirement.cuspConvergenceCertificateBoundary =>
+      C.sptKernel.cuspConvergence.boundary.passes = true /\
+      C.sptKernel.cuspConvergence.cutoff =
+        C.sptKernel.cuspConvergence.boundary.cutoff
+  | AdvancedClaimsIIRequirement.transportFamilyConnection =>
+      C.sptKernel.transport.transportFamily =
+        C.sptKernel.kernelCusp.transportFamily /\
+      C.sptKernel.transport.stacked.rowCount =
+        C.sptKernel.transport.transports.length
+  | AdvancedClaimsIIRequirement.kernelSelectionTableInput =>
+      Not (C.sptKernel.kernelSelection.sourceName = "") /\
+      C.sptKernel.kernelSelection.selectedModulus =
+          C.sptKernel.kernelSelection.level /\
+        C.sptKernel.kernelSelection.multiplierRows.length =
+          C.sptKernel.kernelSelection.level
+  | AdvancedClaimsIIRequirement.multiplierPhaseMatchingInput =>
+      C.sptKernel.multiplier.ts =
+        C.sptKernel.kernelCusp.phaseMatching /\
+      C.sptKernel.multiplier.rows.length = 2
+  | AdvancedClaimsIIRequirement.cuspConvergenceProofData =>
+      C.sptKernel.cuspConvergence.boundary =
+        C.sptKernel.kernelCusp.convergence /\
+      C.sptKernel.cuspConvergence.boundary.passes = true
+  | AdvancedClaimsIIRequirement.transportAcrossRelevantCusps =>
+      List.Mem infinityCuspLabel C.sptKernel.transport.relevantCusps /\
+      List.Mem zeroCuspLabel C.sptKernel.transport.relevantCusps /\
+        forall T, List.Mem T C.sptKernel.transport.transports ->
+          T.principal.rowCount = T.principal.order
+  | AdvancedClaimsIIRequirement.coefficientSeparationBoundary =>
+      forall n,     C.exact.exact.formula.coefficient n =
+        C.exact.exact.separation.scalarPart n +
+          C.exact.exact.separation.thetaPart n
+  | AdvancedClaimsIIRequirement.thetaCoefficientCharacterBoundary =>
+      Not (C.exact.thetaTable.rows = []) /\
+      C.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
+        C.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
+          C.exact.spectralInput.analyticBoundary.lValueTheoryAccepted
+  | AdvancedClaimsIIRequirement.spectralKloostermanExpansionBoundary =>
+      C.exact.spectralInput.finiteResidue.certifiedSum =
+        C.exact.spectralInput.spectral.kloostermanValue /\
+      forall n, C.exact.spectralInput.spectral.coefficient n =
+        C.exact.spectralInput.spectral.rademacher.main n +
+          C.exact.spectralInput.spectral.rademacher.remainder n
+  | AdvancedClaimsIIRequirement.localEulerDecompositionBoundary =>
+      C.exact.localRootLValueInput.localEuler.productValue = 1
+  | AdvancedClaimsIIRequirement.rootNumberFilterBoundary =>
+      C.exact.localRootLValueInput.rootFilter.allowed = true
+  | AdvancedClaimsIIRequirement.exactCoefficientFormulaBoundary =>
+      forall n,     C.exact.localRootLValueInput.formula.coefficient n =
+        C.exact.localRootLValueInput.formula.globalConstant *
+          C.exact.localRootLValueInput.formula.powerTerm n *
+            C.exact.localRootLValueInput.formula.centralLValue n *
+              C.exact.localRootLValueInput.formula.localEulerProduct n
+  | AdvancedClaimsIIRequirement.paperDataFormulaProofFields =>
+      (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+      (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+        C.betaArch.betaArch.scalarRecord.scalar *
+          (C.betaArch.betaArch.unfolding.mockCoeff n *
+            C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+        (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+          C.betaArch.betaArch.formula.rademacher.main n +
+            C.betaArch.betaArch.formula.rademacher.remainder n)
+  | AdvancedClaimsIIRequirement.padicNormalizationWrapper =>
+      forall n,     IntCongruent
+        (PrimePower C.paperInstance.padic.face.normalization.p
+          C.paperInstance.padic.face.normalization.k)
+        (C.paperInstance.padic.face.normalization.normalized n)
+        (C.paperInstance.padic.face.normalization.raw n)
+  | AdvancedClaimsIIRequirement.padicOverlapGluingWrapper =>
+      forall n,     IntCongruent C.padicOverlap.M
+          (C.padicOverlap.left n) (C.padicOverlap.right n) /\
+        IntCongruent (PrimePower C.padicOverlap.p C.padicOverlap.k)
+          (C.padicOverlap.left n) (C.padicOverlap.right n)
+  | AdvancedClaimsIIRequirement.mahlerInterpolationWrapper =>
+      forall n,     IntCongruent
+          (PrimePower C.paperInstance.padic.face.mahler.p
+            C.paperInstance.padic.face.mahler.k)
+          (C.paperInstance.padic.face.mahler.eval n)
+          (C.paperInstance.padic.face.mahler.target n) /\
+        C.paperInstance.extraction.concrete.mahler.eval n =
+          Finset.sum Finset.univ
+            (fun j : Fin C.paperInstance.extraction.concrete.mahler.length =>
+              C.paperInstance.extraction.concrete.mahler.coeff j *
+                C.paperInstance.extraction.concrete.mahler.basis j n)
+  | AdvancedClaimsIIRequirement.analyticRangeTailZeroWrapper =>
+      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
+            C.padicAnalyticRange.predicate n /\
+        C.padicAnalyticRange.tail n = 0
+  | AdvancedClaimsIIRequirement.globalPadicFaceTracking =>
+      Not (C.paperInstance.padic.lemma9Label = "") /\
+      Not (C.paperInstance.padic.equationI3Label = "") /\
+        Not (C.paperInstance.padic.equationI4Label = "") /\
+          Not (C.paperInstance.padic.equationI5Label = "") /\
+            C.paperInstance.padic.face.lemma9Label =
+                C.paperInstance.padic.lemma9Label /\
+              C.paperInstance.padic.face.propositionI3Label =
+                C.paperInstance.padic.equationI3Label
+  | AdvancedClaimsIIRequirement.denominatorClearingData =>
+      Not (referenceT1DenominatorNonzero.denominator = 0) /\
+      Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+        Not (referenceT2SimpleDenominatorNonzero.denominator = 0)
+  | AdvancedClaimsIIRequirement.chartVectorsModuloPrimePower =>
+      forall n,     FiniteCongruenceMod C.padicChart.p C.padicChart.k
+        (C.padicChart.chartLeft n) (C.padicChart.chartRight n)
+  | AdvancedClaimsIIRequirement.mahlerTableInterpolationVector =>
+      forall n,     FiniteCongruenceMod
+          C.paperInstance.extraction.concrete.mahlerBinomial.p
+          C.paperInstance.extraction.concrete.mahlerBinomial.k
+          (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+          (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+        C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+          Finset.sum Finset.univ
+            (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+              C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                mahlerBinomialBasis (j : Nat) n)
+  | AdvancedClaimsIIRequirement.analyticRangePredicate =>
+      forall n, (hn : C.padicAnalyticRange.cutoff <= n) ->
+            C.padicAnalyticRange.predicate n
+  | AdvancedClaimsIIRequirement.obstructionFailureCaseInstance =>
+      C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+      Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)
+  | AdvancedClaimsIIRequirement.regressionCardySkeleton =>
+      C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+      C.entropy.symbolic.ceffInterval.Contains C.entropy.symbolic.ceffHat /\
+        C.entropy.entropy.olsTable.rows.length = 5
+  | AdvancedClaimsIIRequirement.rademacherTailSkeleton =>
+      C.entropy.entropy.alphaExtraction.cEqualsOne /\
+      C.entropy.entropy.tailDominance.tailUpper <=
+        C.entropy.entropy.tailDominance.dominanceThreshold *
+          C.entropy.entropy.tailDominance.mainLower
+  | AdvancedClaimsIIRequirement.entropyCardyPaperWrapper =>
+      C.entropy.entropy.olsTable.alphaRow.interval.Contains
+        C.entropy.entropy.olsTable.alphaRow.estimate /\
+      C.entropy.entropy.olsTable.ceffRow.interval.Contains
+        C.entropy.entropy.olsTable.ceffRow.estimate /\
+        C.entropy.entropy.paperTables.residualTable.rows.length = 16
+  | AdvancedClaimsIIRequirement.actualEntropyAlphaExtraction =>
+      C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat
+  | AdvancedClaimsIIRequirement.degeneracyChannelInstance =>
+      forall n,     C.entropy.entropy.degeneracy.degeneracy n =
+        C.entropy.entropy.degeneracy.coefficient n
+  | AdvancedClaimsIIRequirement.rationalOlsIntervalTable =>
+      C.entropy.entropy.olsTable.rows.length = 5 /\
+      C.entropy.entropy.olsTable.alphaRow.interval.Contains
+        C.entropy.entropy.olsTable.alphaRow.estimate /\
+        C.entropy.entropy.olsTable.ceffRow.interval.Contains
+          C.entropy.entropy.olsTable.ceffRow.estimate
+  | AdvancedClaimsIIRequirement.growthStabilityUnderSptPadic =>
+      C.entropy.entropy.growthStability.spt.p =
+        C.entropy.entropy.growthStability.padic.p /\
+      C.entropy.entropy.growthStability.spt.k =
+        C.entropy.entropy.growthStability.padic.k /\
+        C.entropy.entropy.growthStability.obstructionOrder = 1
+  | AdvancedClaimsIIRequirement.reproducibilitySchemaValidator =>
+      C.tables.paperTables.externalScript.rows.length = 16 /\
+      forall row : ResidualTableRow,
+        List.Mem row C.tables.paperTables.externalScript.rows ->
+          row.rtCheck.pass = true /\ row.rsCheck.pass = true
+  | AdvancedClaimsIIRequirement.externalOutputSchemaRows =>
+      C.tables.paperTables.externalScript.rows.length = 16
+  | AdvancedClaimsIIRequirement.namedConcretePaperInstance =>
+      C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete
+  | AdvancedClaimsIIRequirement.concreteCertificateTheoremExtraction =>
+      C.paperInstance.extraction.concrete.paperObjectName =
+          C.paperInstance.extraction.concrete.object.name /\
+        C.paperInstance.extraction.concrete.principalPart.order = 1 /\
+          C.paperInstance.extraction.concrete.rationalOLS.alphaInterval.Contains
+            C.paperInstance.extraction.concrete.rationalOLS.alphaHat /\
+            C.paperInstance.extraction.concrete.rationalOLS.betaInterval.Contains
+              C.paperInstance.extraction.concrete.rationalOLS.betaHat
+  | AdvancedClaimsIIRequirement.advancedClaimsGlobalChecklist =>
+      AdvancedClaimsIIObjectiveCrosswalkCertificate C
+
+theorem leafStatement_of_ledger
+    {C : AdvancedClaimsIICompletionCertificate}
+    (L : AdvancedClaimsIIRequirementLeafLedger C)
+    (r : AdvancedClaimsIIRequirement) :
+    leafStatement C r := by
+  cases L
+  cases r <;> simp only [leafStatement] <;> assumption
+
+end AdvancedClaimsIIRequirement
+
 namespace AdvancedClaimsIIPromptBullet
 
 def all : List AdvancedClaimsIIPromptBullet :=
@@ -45958,7 +46253,58 @@ theorem all_nodup :
 theorem mem_all
     (b : AdvancedClaimsIIPromptBullet) :
     List.Mem b all := by
-  cases b <;> simp [all]
+  cases b
+  · exact List.Mem.head _
+  · exact List.Mem.tail _ (List.Mem.head _)
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))))))))))))))))))))))))))))))))))))))))))))))
+  · exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))))))))))))))))))))))))))))))))))))))))))))))))
 
 def requirementOf :
     AdvancedClaimsIIPromptBullet -> AdvancedClaimsIIRequirement
@@ -46065,6 +46411,13 @@ def requirementOf :
   | externalOutputSchemaRows =>
       AdvancedClaimsIIRequirement.externalOutputSchemaRows
 
+
+
+def statement
+    (C : AdvancedClaimsIICompletionCertificate)
+    (b : AdvancedClaimsIIPromptBullet) : Prop :=
+  AdvancedClaimsIIRequirement.leafStatement C (requirementOf b)
+
 theorem requirement_mem_all
     (b : AdvancedClaimsIIPromptBullet) :
     List.Mem (requirementOf b) AdvancedClaimsIIRequirement.all := by
@@ -46141,6 +46494,164 @@ def entropyBullets : List AdvancedClaimsIIPromptBullet :=
   , reproducibilitySchemaValidator
   , externalOutputSchemaRows
   ]
+
+theorem requirementOf_objectSchema_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b objectSchemaBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.objectSchemaRequirements := by
+  simp only [objectSchemaBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  cases h
+
+theorem requirementOf_t1t5_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b t1t5Bullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.t1t5Requirements := by
+  simp only [t1t5Bullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))
+  cases h
+
+theorem requirementOf_spt_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b sptBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.sptRequirements := by
+  simp only [sptBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  cases h
+
+theorem requirementOf_kernel_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b kernelBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.kernelRequirements := by
+  simp only [kernelBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))
+  cases h
+
+theorem requirementOf_exact_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b exactBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.exactCoefficientRequirements := by
+  simp only [exactBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))
+  cases h
+
+theorem requirementOf_pAdic_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b pAdicBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.pAdicRequirements := by
+  simp only [pAdicBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))))))
+  cases h
+
+theorem requirementOf_entropy_at
+    (b : AdvancedClaimsIIPromptBullet)
+    (h : List.Mem b entropyBullets) :
+    List.Mem (requirementOf b)
+      AdvancedClaimsIIRequirement.entropyReproRequirements := by
+  simp only [entropyBullets] at h
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inl rfl)
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))
+  rcases List.mem_cons.mp h with rfl | h
+  · exact List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl rfl)))))))))))))))))
+  cases h
 
 def groupedBullets : List AdvancedClaimsIIPromptBullet :=
   objectSchemaBullets ++
@@ -46613,7 +47124,1124 @@ theorem entropy_mem_all
     List.Mem b all :=
   mem_all b
 
-end AdvancedClaimsIIPromptBulletDispatchCertificate
+end AdvancedClaimsIIPromptBullet
+
+
+structure AdvancedClaimsIIRequirementDispatchCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  leaf_ledger :
+    AdvancedClaimsIIRequirementLeafLedger C
+  requirement_covered :
+    forall r, List.Mem r C.requirements
+  leaf_statement :
+    forall r, AdvancedClaimsIIRequirement.leafStatement C r
+
+namespace AdvancedClaimsIIRequirementDispatchCertificate
+
+theorem leaf_ledger_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (D : AdvancedClaimsIIRequirementDispatchCertificate C) :
+    AdvancedClaimsIIRequirementLeafLedger C :=
+  D.leaf_ledger
+
+theorem requirement_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (D : AdvancedClaimsIIRequirementDispatchCertificate C)
+    (r : AdvancedClaimsIIRequirement) :
+    List.Mem r C.requirements :=
+  D.requirement_covered r
+
+theorem leaf_statement_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (D : AdvancedClaimsIIRequirementDispatchCertificate C)
+    (r : AdvancedClaimsIIRequirement) :
+    AdvancedClaimsIIRequirement.leafStatement C r :=
+  D.leaf_statement r
+
+end AdvancedClaimsIIRequirementDispatchCertificate
+
+structure AdvancedClaimsIIPromptObjectiveAuditCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  leaf_ledger :
+    AdvancedClaimsIIRequirementLeafLedger C
+  objective_crosswalk :
+    AdvancedClaimsIIObjectiveCrosswalkCertificate C
+  requirements_complete :
+    forall r, List.Mem r C.requirements
+  object_schema :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectClaimRegistry /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectCoefficientSchema /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperObjectDataInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.scalarJacobiDegeneracyRelation
+  t1t5_core :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalPartRationalSolve /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.completionShadowHolomorphicConsequence /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspTransportSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.appellLerchBlockFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalExponentFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperMatrixRhsSolution /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.fixedShadowUnaryThetaData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.insideOutsideQSeriesCertificate
+  spt_equalizer_tor_crt :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.natGcdLcmSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.primewiseThicknessSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualMpkValuationCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFreeFailureThicknessPortfolio /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.baseChangeStabilityBoundary
+  kernel_cusp_multiplier :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.finiteMultiplierPhaseMatchingCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportFamilyConnection /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionTableInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.multiplierPhaseMatchingInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceProofData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportAcrossRelevantCusps
+  exact_coefficient_formula :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.coefficientSeparationBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.thetaCoefficientCharacterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.spectralKloostermanExpansionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.localEulerDecompositionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rootNumberFilterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.exactCoefficientFormulaBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperDataFormulaProofFields
+  p_adic_section :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicNormalizationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicOverlapGluingWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerInterpolationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangeTailZeroWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.globalPadicFaceTracking /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.denominatorClearingData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.chartVectorsModuloPrimePower /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerTableInterpolationVector /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangePredicate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFailureCaseInstance
+  entropy_cardy_reproducibility :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.regressionCardySkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rademacherTailSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.entropyCardyPaperWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualEntropyAlphaExtraction /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.degeneracyChannelInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rationalOlsIntervalTable /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.growthStabilityUnderSptPadic /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.reproducibilitySchemaValidator /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.externalOutputSchemaRows
+
+namespace AdvancedClaimsIIPromptObjectiveAuditCertificate
+
+theorem leaf_ledger_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirementLeafLedger C :=
+  A.leaf_ledger
+
+theorem objective_crosswalk_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIObjectiveCrosswalkCertificate C :=
+  A.objective_crosswalk
+
+theorem requirements_complete_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    forall r, List.Mem r C.requirements :=
+  A.requirements_complete
+
+theorem object_schema_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectClaimRegistry /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectCoefficientSchema /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperObjectDataInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.scalarJacobiDegeneracyRelation :=
+  A.object_schema
+
+theorem t1t5_core_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalPartRationalSolve /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.completionShadowHolomorphicConsequence /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspTransportSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.appellLerchBlockFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalExponentFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperMatrixRhsSolution /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.fixedShadowUnaryThetaData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.insideOutsideQSeriesCertificate :=
+  A.t1t5_core
+
+theorem spt_equalizer_tor_crt_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.natGcdLcmSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.primewiseThicknessSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualMpkValuationCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFreeFailureThicknessPortfolio /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.baseChangeStabilityBoundary :=
+  A.spt_equalizer_tor_crt
+
+theorem kernel_cusp_multiplier_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.finiteMultiplierPhaseMatchingCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportFamilyConnection /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionTableInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.multiplierPhaseMatchingInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceProofData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportAcrossRelevantCusps :=
+  A.kernel_cusp_multiplier
+
+theorem exact_coefficient_formula_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.coefficientSeparationBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.thetaCoefficientCharacterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.spectralKloostermanExpansionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.localEulerDecompositionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rootNumberFilterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.exactCoefficientFormulaBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperDataFormulaProofFields :=
+  A.exact_coefficient_formula
+
+theorem p_adic_section_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicNormalizationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicOverlapGluingWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerInterpolationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangeTailZeroWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.globalPadicFaceTracking /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.denominatorClearingData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.chartVectorsModuloPrimePower /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerTableInterpolationVector /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangePredicate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFailureCaseInstance :=
+  A.p_adic_section
+
+theorem entropy_cardy_reproducibility_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptObjectiveAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.regressionCardySkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rademacherTailSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.entropyCardyPaperWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualEntropyAlphaExtraction /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.degeneracyChannelInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rationalOlsIntervalTable /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.growthStabilityUnderSptPadic /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.reproducibilitySchemaValidator /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.externalOutputSchemaRows :=
+  A.entropy_cardy_reproducibility
+
+end AdvancedClaimsIIPromptObjectiveAuditCertificate
+
+structure AdvancedClaimsIIClaimGroupAuditCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  prompt_audit :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C
+  actual_input_audit :
+    AdvancedClaimsIIActualInputAuditCertificate C
+  object_schema_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectClaimRegistry /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectCoefficientSchema /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperObjectDataInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.scalarJacobiDegeneracyRelation
+  t1t5_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalPartRationalSolve /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.completionShadowHolomorphicConsequence /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspTransportSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.appellLerchBlockFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalExponentFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperMatrixRhsSolution /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.fixedShadowUnaryThetaData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.insideOutsideQSeriesCertificate
+  spt_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.natGcdLcmSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.primewiseThicknessSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualMpkValuationCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFreeFailureThicknessPortfolio /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.baseChangeStabilityBoundary
+  kernel_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.finiteMultiplierPhaseMatchingCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportFamilyConnection /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionTableInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.multiplierPhaseMatchingInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceProofData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportAcrossRelevantCusps
+  exact_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.coefficientSeparationBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.thetaCoefficientCharacterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.spectralKloostermanExpansionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.localEulerDecompositionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rootNumberFilterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.exactCoefficientFormulaBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperDataFormulaProofFields
+  padic_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicNormalizationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicOverlapGluingWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerInterpolationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangeTailZeroWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.globalPadicFaceTracking /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.denominatorClearingData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.chartVectorsModuloPrimePower /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerTableInterpolationVector /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangePredicate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFailureCaseInstance
+  entropy_group :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.regressionCardySkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rademacherTailSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.entropyCardyPaperWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualEntropyAlphaExtraction /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.degeneracyChannelInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rationalOlsIntervalTable /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.growthStabilityUnderSptPadic /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.reproducibilitySchemaValidator /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.externalOutputSchemaRows
+  object_schema_actual_inputs :
+    ((C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\ C.paperInstance.family = C.paperInstance.namedInstance.family /\ C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\ C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\ Not (C.paperInstance.family.sourceName = ""))) /\
+        (forall n, (C.advanced.degeneracyRelation.jacobiCoeff n C.advanced.degeneracyRelation.ellStar = C.advanced.degeneracyRelation.scalarCoeff n))
+  t1t5_actual_inputs :
+    ((List.Mem C.advanced.appellLerch.m referenceMock1MList /\ List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\ C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\ C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst = C.advanced.appellLerch.z0)) /\
+        ((C.advanced.exponentFormula.exponent = paperPrincipalExponent C.advanced.exponentFormula.n C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\ C.advanced.exponentFormula.exponent < 0)) /\
+        ((MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution = C.advanced.rationalSolve.rhs)) /\
+        ((Not (C.advanced.fixedShadow.thetaSymbol = "") /\ C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\ C.advanced.fixedShadow.nonzeroCase /\ Not (C.advanced.fixedShadow.scale = 0))) /\
+        (forall n, (C.advanced.insideOutside.inside.coeff n = C.advanced.insideOutside.outside.coeff n /\ C.advanced.insideOutside.outside.coeff n = C.advanced.insideOutside.partialTheta.coeff n - C.advanced.insideOutside.correction.coeff n))
+  spt_actual_valuation :
+    (Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M))
+  kernel_actual_inputs :
+    ((Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M))) /\
+        ((Not (C.sptKernel.kernelSelection.sourceName = "") /\ C.sptKernel.kernelSelection.selectedModulus = C.sptKernel.kernelSelection.level /\ C.sptKernel.kernelSelection.multiplierRows.length = C.sptKernel.kernelSelection.level)) /\
+        ((C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\ C.sptKernel.multiplier.rows.length = 2)) /\
+        ((C.sptKernel.cuspConvergence.boundary = C.sptKernel.kernelCusp.convergence /\ C.sptKernel.cuspConvergence.boundary.passes = true))
+  exact_actual_inputs :
+    ((forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.scalarRecord.scalar * (C.betaArch.betaArch.unfolding.mockCoeff n * C.betaArch.betaArch.unfolding.thetaCoeff n)) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.formula.rademacher.main n + C.betaArch.betaArch.formula.rademacher.remainder n))
+  padic_actual_inputs :
+    ((Not (referenceT1DenominatorNonzero.denominator = 0) /\ Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\ Not (referenceT2SimpleDenominatorNonzero.denominator = 0))) /\
+        (forall n, (FiniteCongruenceMod C.padicChart.p C.padicChart.k (C.padicChart.chartLeft n) (C.padicChart.chartRight n))) /\
+        (forall n, (FiniteCongruenceMod C.paperInstance.extraction.concrete.mahlerBinomial.p C.paperInstance.extraction.concrete.mahlerBinomial.k (C.paperInstance.extraction.concrete.mahlerBinomial.eval n) (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\ C.paperInstance.extraction.concrete.mahlerBinomial.eval n = Finset.sum Finset.univ (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length => C.paperInstance.extraction.concrete.mahlerBinomial.coeff j * mahlerBinomialBasis (j : Nat) n))) /\
+        (forall n, (hn : C.padicAnalyticRange.cutoff <= n) -> (C.padicAnalyticRange.predicate n)) /\
+        ((C.sptKernel.sptFree.spt.obstruction.order = 1 /\ Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)))
+  entropy_actual_inputs :
+    ((C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat)) /\
+        (forall n, (C.entropy.entropy.degeneracy.degeneracy n = C.entropy.entropy.degeneracy.coefficient n)) /\
+        ((C.entropy.entropy.olsTable.rows.length = 5 /\ C.entropy.entropy.olsTable.alphaRow.interval.Contains C.entropy.entropy.olsTable.alphaRow.estimate /\ C.entropy.entropy.olsTable.ceffRow.interval.Contains C.entropy.entropy.olsTable.ceffRow.estimate)) /\
+        ((C.tables.paperTables.externalScript.rows.length = 16))
+  object_schema_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
+      List.Mem r C.requirements
+  t1t5_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
+      List.Mem r C.requirements
+  spt_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
+      List.Mem r C.requirements
+  kernel_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
+      List.Mem r C.requirements
+  exact_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
+      List.Mem r C.requirements
+  padic_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
+      List.Mem r C.requirements
+  entropy_covered :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
+      List.Mem r C.requirements
+  object_schema_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.objectSchema
+  t1t5_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.t1t5
+  spt_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.spt
+  kernel_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.kernel
+  exact_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.exactCoefficient
+  padic_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.pAdic
+  entropy_route :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.entropyRepro
+  grouped_lengths :
+    AdvancedClaimsIIRequirement.objectSchemaRequirements.length = 4 /\
+      AdvancedClaimsIIRequirement.t1t5Requirements.length = 8 /\
+        AdvancedClaimsIIRequirement.sptRequirements.length = 5 /\
+          AdvancedClaimsIIRequirement.kernelRequirements.length = 8 /\
+            AdvancedClaimsIIRequirement.exactCoefficientRequirements.length = 7 /\
+              AdvancedClaimsIIRequirement.pAdicRequirements.length = 10 /\
+                AdvancedClaimsIIRequirement.entropyReproRequirements.length = 9
+
+namespace AdvancedClaimsIIClaimGroupAuditCertificate
+
+theorem prompt_audit_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
+  A.prompt_audit
+
+theorem actual_input_audit_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIActualInputAuditCertificate C :=
+  A.actual_input_audit
+
+theorem object_schema_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectClaimRegistry /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.objectCoefficientSchema /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperObjectDataInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.scalarJacobiDegeneracyRelation :=
+  A.object_schema_group
+
+theorem t1t5_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalPartRationalSolve /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.completionShadowHolomorphicConsequence /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspTransportSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.appellLerchBlockFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.principalExponentFormula /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperMatrixRhsSolution /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.fixedShadowUnaryThetaData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.insideOutsideQSeriesCertificate :=
+  A.t1t5_group
+
+theorem spt_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.natGcdLcmSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.primewiseThicknessSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualMpkValuationCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFreeFailureThicknessPortfolio /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.baseChangeStabilityBoundary :=
+  A.spt_group
+
+theorem kernel_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.finiteMultiplierPhaseMatchingCertificate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceCertificateBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportFamilyConnection /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.kernelSelectionTableInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.multiplierPhaseMatchingInput /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.cuspConvergenceProofData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.transportAcrossRelevantCusps :=
+  A.kernel_group
+
+theorem exact_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.coefficientSeparationBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.thetaCoefficientCharacterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.spectralKloostermanExpansionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.localEulerDecompositionBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rootNumberFilterBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.exactCoefficientFormulaBoundary /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.paperDataFormulaProofFields :=
+  A.exact_group
+
+theorem padic_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicNormalizationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.padicOverlapGluingWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerInterpolationWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangeTailZeroWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.globalPadicFaceTracking /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.denominatorClearingData /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.chartVectorsModuloPrimePower /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.mahlerTableInterpolationVector /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.analyticRangePredicate /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.obstructionFailureCaseInstance :=
+  A.padic_group
+
+theorem entropy_group_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.regressionCardySkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rademacherTailSkeleton /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.entropyCardyPaperWrapper /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.actualEntropyAlphaExtraction /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.degeneracyChannelInstance /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.rationalOlsIntervalTable /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.growthStabilityUnderSptPadic /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.reproducibilitySchemaValidator /\
+        AdvancedClaimsIIRequirement.leafStatement C
+          AdvancedClaimsIIRequirement.externalOutputSchemaRows :=
+  A.entropy_group
+
+theorem object_schema_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\ C.paperInstance.family = C.paperInstance.namedInstance.family /\ C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\ C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\ Not (C.paperInstance.family.sourceName = ""))) /\
+        (forall n, (C.advanced.degeneracyRelation.jacobiCoeff n C.advanced.degeneracyRelation.ellStar = C.advanced.degeneracyRelation.scalarCoeff n)) :=
+  A.object_schema_actual_inputs
+
+theorem t1t5_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((List.Mem C.advanced.appellLerch.m referenceMock1MList /\ List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\ C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\ C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst = C.advanced.appellLerch.z0)) /\
+        ((C.advanced.exponentFormula.exponent = paperPrincipalExponent C.advanced.exponentFormula.n C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\ C.advanced.exponentFormula.exponent < 0)) /\
+        ((MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution = C.advanced.rationalSolve.rhs)) /\
+        ((Not (C.advanced.fixedShadow.thetaSymbol = "") /\ C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\ C.advanced.fixedShadow.nonzeroCase /\ Not (C.advanced.fixedShadow.scale = 0))) /\
+        (forall n, (C.advanced.insideOutside.inside.coeff n = C.advanced.insideOutside.outside.coeff n /\ C.advanced.insideOutside.outside.coeff n = C.advanced.insideOutside.partialTheta.coeff n - C.advanced.insideOutside.correction.coeff n)) :=
+  A.t1t5_actual_inputs
+
+theorem spt_actual_valuation_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    (Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M)) :=
+  A.spt_actual_valuation
+
+theorem kernel_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M))) /\
+        ((Not (C.sptKernel.kernelSelection.sourceName = "") /\ C.sptKernel.kernelSelection.selectedModulus = C.sptKernel.kernelSelection.level /\ C.sptKernel.kernelSelection.multiplierRows.length = C.sptKernel.kernelSelection.level)) /\
+        ((C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\ C.sptKernel.multiplier.rows.length = 2)) /\
+        ((C.sptKernel.cuspConvergence.boundary = C.sptKernel.kernelCusp.convergence /\ C.sptKernel.cuspConvergence.boundary.passes = true)) :=
+  A.kernel_actual_inputs
+
+theorem exact_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.scalarRecord.scalar * (C.betaArch.betaArch.unfolding.mockCoeff n * C.betaArch.betaArch.unfolding.thetaCoeff n)) /\ (forall n, C.betaArch.betaArch.formula.normalizedCoeff n = C.betaArch.betaArch.formula.rademacher.main n + C.betaArch.betaArch.formula.rademacher.remainder n)) :=
+  A.exact_actual_inputs
+
+theorem padic_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((Not (referenceT1DenominatorNonzero.denominator = 0) /\ Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\ Not (referenceT2SimpleDenominatorNonzero.denominator = 0))) /\
+        (forall n, (FiniteCongruenceMod C.padicChart.p C.padicChart.k (C.padicChart.chartLeft n) (C.padicChart.chartRight n))) /\
+        (forall n, (FiniteCongruenceMod C.paperInstance.extraction.concrete.mahlerBinomial.p C.paperInstance.extraction.concrete.mahlerBinomial.k (C.paperInstance.extraction.concrete.mahlerBinomial.eval n) (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\ C.paperInstance.extraction.concrete.mahlerBinomial.eval n = Finset.sum Finset.univ (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length => C.paperInstance.extraction.concrete.mahlerBinomial.coeff j * mahlerBinomialBasis (j : Nat) n))) /\
+        (forall n, (hn : C.padicAnalyticRange.cutoff <= n) -> (C.padicAnalyticRange.predicate n)) /\
+        ((C.sptKernel.sptFree.spt.obstruction.order = 1 /\ Not (C.sptKernel.sptFailure.spt.obstruction.order = 1))) :=
+  A.padic_actual_inputs
+
+theorem entropy_actual_inputs_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    ((C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat)) /\
+        (forall n, (C.entropy.entropy.degeneracy.degeneracy n = C.entropy.entropy.degeneracy.coefficient n)) /\
+        ((C.entropy.entropy.olsTable.rows.length = 5 /\ C.entropy.entropy.olsTable.alphaRow.interval.Contains C.entropy.entropy.olsTable.alphaRow.estimate /\ C.entropy.entropy.olsTable.ceffRow.interval.Contains C.entropy.entropy.olsTable.ceffRow.estimate)) /\
+        ((C.tables.paperTables.externalScript.rows.length = 16)) :=
+  A.entropy_actual_inputs
+
+theorem object_schema_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
+      List.Mem r C.requirements :=
+  A.object_schema_covered
+
+theorem t1t5_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
+      List.Mem r C.requirements :=
+  A.t1t5_covered
+
+theorem spt_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
+      List.Mem r C.requirements :=
+  A.spt_covered
+
+theorem kernel_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
+      List.Mem r C.requirements :=
+  A.kernel_covered
+
+theorem exact_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
+      List.Mem r C.requirements :=
+  A.exact_covered
+
+theorem padic_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
+      List.Mem r C.requirements :=
+  A.padic_covered
+
+theorem entropy_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
+      List.Mem r C.requirements :=
+  A.entropy_covered
+
+theorem object_schema_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.objectSchema :=
+  A.object_schema_route
+
+theorem t1t5_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.t1t5 :=
+  A.t1t5_route
+
+theorem spt_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.spt :=
+  A.spt_route
+
+theorem kernel_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.kernel :=
+  A.kernel_route
+
+theorem exact_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.exactCoefficient :=
+  A.exact_route
+
+theorem padic_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.pAdic :=
+  A.padic_route
+
+theorem entropy_route_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
+      AdvancedClaimsIIRequirement.sectionOf r =
+        AdvancedClaimsIIRequirement.Section.entropyRepro :=
+  A.entropy_route
+
+theorem grouped_lengths_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIClaimGroupAuditCertificate C) :
+    AdvancedClaimsIIRequirement.objectSchemaRequirements.length = 4 /\
+      AdvancedClaimsIIRequirement.t1t5Requirements.length = 8 /\
+        AdvancedClaimsIIRequirement.sptRequirements.length = 5 /\
+          AdvancedClaimsIIRequirement.kernelRequirements.length = 8 /\
+            AdvancedClaimsIIRequirement.exactCoefficientRequirements.length = 7 /\
+              AdvancedClaimsIIRequirement.pAdicRequirements.length = 10 /\
+                AdvancedClaimsIIRequirement.entropyReproRequirements.length = 9 :=
+  A.grouped_lengths
+
+end AdvancedClaimsIIClaimGroupAuditCertificate
+
+structure AdvancedClaimsIIPromptBulletStatementCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  prompt_audit :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C
+  statement_at :
+    forall b : AdvancedClaimsIIPromptBullet,
+      AdvancedClaimsIIPromptBullet.statement C b
+
+namespace AdvancedClaimsIIPromptBulletStatementCertificate
+
+theorem prompt_audit_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletStatementCertificate C) :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
+  A.prompt_audit
+
+theorem statement_at_bullet
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletStatementCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet,
+      AdvancedClaimsIIPromptBullet.statement C b :=
+  A.statement_at
+
+end AdvancedClaimsIIPromptBulletStatementCertificate
+
+structure AdvancedClaimsIIPromptBulletCoverageCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  prompt_audit :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C
+  prompt_statement :
+    AdvancedClaimsIIPromptBulletStatementCertificate C
+  all_bullets_listed :
+    forall b : AdvancedClaimsIIPromptBullet, List.Mem b AdvancedClaimsIIPromptBullet.all
+  all_bullets_nodup :
+    AdvancedClaimsIIPromptBullet.all.Nodup
+  all_bullets_length :
+    AdvancedClaimsIIPromptBullet.all.length = 51
+  requirement_of_bullet_listed :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
+        AdvancedClaimsIIRequirement.all
+  requirement_of_bullet_covered :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b) C.requirements
+  requirement_of_bullet_has_leaf_statement :
+    forall b : AdvancedClaimsIIPromptBullet,
+      AdvancedClaimsIIRequirement.leafStatement C
+        (AdvancedClaimsIIPromptBullet.requirementOf b)
+
+namespace AdvancedClaimsIIPromptBulletCoverageCertificate
+
+theorem prompt_audit_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    AdvancedClaimsIIPromptObjectiveAuditCertificate C :=
+  A.prompt_audit
+
+theorem prompt_statement_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    AdvancedClaimsIIPromptBulletStatementCertificate C :=
+  A.prompt_statement
+
+theorem bullet_mem_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet, List.Mem b AdvancedClaimsIIPromptBullet.all :=
+  A.all_bullets_listed
+
+theorem bullet_nodup_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    AdvancedClaimsIIPromptBullet.all.Nodup :=
+  A.all_bullets_nodup
+
+theorem bullet_length_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    AdvancedClaimsIIPromptBullet.all.length = 51 :=
+  A.all_bullets_length
+
+theorem requirement_mem_all_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b)
+        AdvancedClaimsIIRequirement.all :=
+  A.requirement_of_bullet_listed
+
+theorem requirement_covered_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.requirementOf b) C.requirements :=
+  A.requirement_of_bullet_covered
+
+theorem leaf_statement_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletCoverageCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet,
+      AdvancedClaimsIIRequirement.leafStatement C
+        (AdvancedClaimsIIPromptBullet.requirementOf b) :=
+  A.requirement_of_bullet_has_leaf_statement
+
+end AdvancedClaimsIIPromptBulletCoverageCertificate
+
+structure AdvancedClaimsIIPromptBulletSectionCertificate
+    (C : AdvancedClaimsIICompletionCertificate) : Prop where
+  bullet_coverage :
+    AdvancedClaimsIIPromptBulletCoverageCertificate C
+  grouped_lengths :
+    AdvancedClaimsIIPromptBullet.objectSchemaBullets.length = 4 /\
+      AdvancedClaimsIIPromptBullet.t1t5Bullets.length = 8 /\
+        AdvancedClaimsIIPromptBullet.sptBullets.length = 5 /\
+          AdvancedClaimsIIPromptBullet.kernelBullets.length = 8 /\
+            AdvancedClaimsIIPromptBullet.exactBullets.length = 7 /\
+              AdvancedClaimsIIPromptBullet.pAdicBullets.length = 10 /\
+                AdvancedClaimsIIPromptBullet.entropyBullets.length = 9
+  grouped_eq_all :
+    AdvancedClaimsIIPromptBullet.groupedBullets = AdvancedClaimsIIPromptBullet.all
+  grouped_length :
+    AdvancedClaimsIIPromptBullet.groupedBullets.length = 51
+  grouped_nodup :
+    AdvancedClaimsIIPromptBullet.groupedBullets.Nodup
+  section_all_length :
+    AdvancedClaimsIIPromptBullet.Section.all.length = 7
+  section_all_nodup :
+    AdvancedClaimsIIPromptBullet.Section.all.Nodup
+  section_route_total :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.sectionOf b)
+        AdvancedClaimsIIPromptBullet.Section.all
+  route_object_schema :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.objectSchemaBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.objectSchema
+  route_t1t5 :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.t1t5Bullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.t1t5
+  route_spt :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.sptBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.spt
+  route_kernel :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.kernelBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.kernel
+  route_exact :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.exactBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.exactCoefficient
+  route_padic :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.pAdicBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.pAdic
+  route_entropy :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.entropyBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.entropyRepro
+
+namespace AdvancedClaimsIIPromptBulletSectionCertificate
+
+theorem bullet_coverage_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBulletCoverageCertificate C :=
+  A.bullet_coverage
+
+theorem grouped_lengths_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.objectSchemaBullets.length = 4 /\
+      AdvancedClaimsIIPromptBullet.t1t5Bullets.length = 8 /\
+        AdvancedClaimsIIPromptBullet.sptBullets.length = 5 /\
+          AdvancedClaimsIIPromptBullet.kernelBullets.length = 8 /\
+            AdvancedClaimsIIPromptBullet.exactBullets.length = 7 /\
+              AdvancedClaimsIIPromptBullet.pAdicBullets.length = 10 /\
+                AdvancedClaimsIIPromptBullet.entropyBullets.length = 9 :=
+  A.grouped_lengths
+
+theorem grouped_eq_all_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.groupedBullets = AdvancedClaimsIIPromptBullet.all :=
+  A.grouped_eq_all
+
+theorem grouped_length_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.groupedBullets.length = 51 :=
+  A.grouped_length
+
+theorem grouped_nodup_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.groupedBullets.Nodup :=
+  A.grouped_nodup
+
+theorem section_all_length_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.Section.all.length = 7 :=
+  A.section_all_length
+
+theorem section_all_nodup_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    AdvancedClaimsIIPromptBullet.Section.all.Nodup :=
+  A.section_all_nodup
+
+theorem section_route_total_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b : AdvancedClaimsIIPromptBullet,
+      List.Mem (AdvancedClaimsIIPromptBullet.sectionOf b)
+        AdvancedClaimsIIPromptBullet.Section.all :=
+  A.section_route_total
+
+theorem route_object_schema_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.objectSchemaBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.objectSchema :=
+  A.route_object_schema
+
+theorem route_t1t5_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.t1t5Bullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.t1t5 :=
+  A.route_t1t5
+
+theorem route_spt_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.sptBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.spt :=
+  A.route_spt
+
+theorem route_kernel_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.kernelBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.kernel :=
+  A.route_kernel
+
+theorem route_exact_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.exactBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.exactCoefficient :=
+  A.route_exact
+
+theorem route_padic_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.pAdicBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.pAdic :=
+  A.route_padic
+
+theorem route_entropy_at
+    {C : AdvancedClaimsIICompletionCertificate}
+    (A : AdvancedClaimsIIPromptBulletSectionCertificate C) :
+    forall b, List.Mem b AdvancedClaimsIIPromptBullet.entropyBullets ->
+      AdvancedClaimsIIPromptBullet.sectionOf b =
+        AdvancedClaimsIIPromptBullet.Section.entropyRepro :=
+  A.route_entropy
+
+end AdvancedClaimsIIPromptBulletSectionCertificate
 
 structure AdvancedClaimsIIClaimGroupLeafStatementCertificate
     (C : AdvancedClaimsIICompletionCertificate) : Prop where
@@ -47482,44 +49110,6 @@ def requirementDispatch
   leaf_statement :=
     AdvancedClaimsIIRequirement.leafStatement_of_ledger C.requirementLeafLedger
 
-def claimGroupLeafStatements
-    (C : AdvancedClaimsIICompletionCertificate) :
-    AdvancedClaimsIIClaimGroupLeafStatementCertificate C where
-  claim_group_audit := C.claimGroupAudit
-  dispatch := C.requirementDispatch
-  object_schema_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  t1t5_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  spt_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  kernel_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  exact_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  padic_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  entropy_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  final_instance_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  grouped_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  all_leaf := by
-    intro r h
-    exact C.requirementDispatch.leaf_statement_at r
-  grouped_eq_all :=
-    AdvancedClaimsIIRequirement.groupedRequirements_eq_all
-
 def promptObjectiveAudit
     (C : AdvancedClaimsIICompletionCertificate) :
     AdvancedClaimsIIPromptObjectiveAuditCertificate C where
@@ -47656,6 +49246,44 @@ def claimGroupAudit
             (And.intro AdvancedClaimsIIRequirement.grouped_lengths.2.2.2.2.1
               (And.intro AdvancedClaimsIIRequirement.grouped_lengths.2.2.2.2.2.1
                 AdvancedClaimsIIRequirement.grouped_lengths.2.2.2.2.2.2.1)))))
+
+def claimGroupLeafStatements
+    (C : AdvancedClaimsIICompletionCertificate) :
+    AdvancedClaimsIIClaimGroupLeafStatementCertificate C where
+  claim_group_audit := C.claimGroupAudit
+  dispatch := C.requirementDispatch
+  object_schema_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  t1t5_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  spt_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  kernel_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  exact_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  padic_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  entropy_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  final_instance_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  grouped_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  all_leaf := by
+    intro r h
+    exact C.requirementDispatch.leaf_statement_at r
+  grouped_eq_all :=
+    AdvancedClaimsIIRequirement.groupedRequirements_eq_all
 
 def promptBulletStatement
     (C : AdvancedClaimsIICompletionCertificate) :
@@ -48754,6 +50382,116 @@ theorem end_to_end_checklist_closure_at
 
 end AdvancedClaimsIICompletionCertificate
 
+def advancedClaimsII_objectActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+  C.paperInstance.family = C.paperInstance.namedInstance.family /\
+  C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+  C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+  Not (C.paperInstance.family.sourceName = "")) /\
+  (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+  C.advanced.degeneracyRelation.ellStar =
+  C.advanced.degeneracyRelation.scalarCoeff n)
+
+def advancedClaimsII_t1t5ActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+  List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+  C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+  C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+  C.advanced.appellLerch.z0) /\
+  (C.advanced.exponentFormula.exponent =
+  paperPrincipalExponent C.advanced.exponentFormula.n
+  C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+  C.advanced.exponentFormula.exponent < 0) /\
+  MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+  C.advanced.rationalSolve.rhs /\
+  (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+  C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+  C.advanced.fixedShadow.nonzeroCase /\
+  Not (C.advanced.fixedShadow.scale = 0)) /\
+  (forall n, C.advanced.insideOutside.inside.coeff n =
+  C.advanced.insideOutside.outside.coeff n /\
+  C.advanced.insideOutside.outside.coeff n =
+  C.advanced.insideOutside.partialTheta.coeff n -
+  C.advanced.insideOutside.correction.coeff n)
+
+def advancedClaimsII_sptActualValuationStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  Nat.Prime C.sptKernel.sptFree.valuation.p /\
+    Dvd.dvd
+      (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp)
+      C.sptKernel.sptFree.valuation.M /\
+    Not (Dvd.dvd
+      (C.sptKernel.sptFree.valuation.p ^
+        (C.sptKernel.sptFree.valuation.vp + 1))
+      C.sptKernel.sptFree.valuation.M)
+
+def advancedClaimsII_kernelActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+  C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+  C.sptKernel.sptFree.valuation.M /\
+  Not (C.sptKernel.sptFree.valuation.p ^
+  (C.sptKernel.sptFree.valuation.vp + 1) ∣
+  C.sptKernel.sptFree.valuation.M)) /\
+  (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+  C.sptKernel.kernelSelection.selectedModulus =
+  C.sptKernel.kernelSelection.level /\
+  C.sptKernel.kernelSelection.multiplierRows.length =
+  C.sptKernel.kernelSelection.level) /\
+  (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+  C.sptKernel.multiplier.rows.length = 2) /\
+  (C.sptKernel.cuspConvergence.boundary =
+  C.sptKernel.kernelCusp.convergence /\
+  C.sptKernel.cuspConvergence.boundary.passes = true)
+
+def advancedClaimsII_exactActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+  (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+  C.betaArch.betaArch.scalarRecord.scalar *
+  (C.betaArch.betaArch.unfolding.mockCoeff n *
+  C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+  (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+  C.betaArch.betaArch.formula.rademacher.main n +
+  C.betaArch.betaArch.formula.rademacher.remainder n)
+
+def advancedClaimsII_padicActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+  Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+  Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+  (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+  (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+  (forall n,
+  FiniteCongruenceMod
+  C.paperInstance.extraction.concrete.mahlerBinomial.p
+  C.paperInstance.extraction.concrete.mahlerBinomial.k
+  (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+  (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+  C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+  Finset.sum Finset.univ
+  (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+  C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+  mahlerBinomialBasis (j : Nat) n)) /\
+  (forall n, C.padicAnalyticRange.cutoff <= n ->
+  C.padicAnalyticRange.predicate n) /\
+  (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+  Not (C.sptKernel.sptFailure.spt.obstruction.order = 1))
+
+def advancedClaimsII_entropyActualStatement
+    (C : AdvancedClaimsIICompletionCertificate) : Prop :=
+  C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+  (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+  C.entropy.entropy.degeneracy.coefficient n) /\
+  (C.entropy.entropy.olsTable.rows.length = 5 /\
+  C.entropy.entropy.olsTable.alphaRow.interval.Contains
+  C.entropy.entropy.olsTable.alphaRow.estimate /\
+  C.entropy.entropy.olsTable.ceffRow.interval.Contains
+  C.entropy.entropy.olsTable.ceffRow.estimate) /\
+  C.tables.paperTables.externalScript.rows.length = 16
+
 structure AdvancedClaimsIISectionConcreteClosureCertificate
     (C : AdvancedClaimsIICompletionCertificate) : Prop where
   prompt_audit :
@@ -48769,8 +50507,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   object_prompt :
     AdvancedClaimsIIObjectSchemaPromptObjective C
   object_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_objectActualStatement C
   object_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
       List.Mem r C.requirements
@@ -48784,8 +50521,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   t1t5_prompt :
     AdvancedClaimsIIT1T5PromptObjective C
   t1t5_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_t1t5ActualStatement C
   t1t5_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
       List.Mem r C.requirements
@@ -48799,8 +50535,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   spt_prompt :
     AdvancedClaimsIISPTPromptObjective C
   spt_actual_valuation :
-    AdvancedClaimsIIClaimGroupAuditCertificate.spt_actual_valuation_at
-      C.claimGroupAudit
+    advancedClaimsII_sptActualValuationStatement C
   spt_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
       List.Mem r C.requirements
@@ -48814,8 +50549,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   kernel_prompt :
     AdvancedClaimsIIKernelPromptObjective C
   kernel_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_kernelActualStatement C
   kernel_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
       List.Mem r C.requirements
@@ -48829,8 +50563,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   exact_prompt :
     AdvancedClaimsIIExactPromptObjective C
   exact_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_exactActualStatement C
   exact_covered :
     forall r,
       List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
@@ -48847,8 +50580,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   padic_prompt :
     AdvancedClaimsIIPAdicPromptObjective C
   padic_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_padicActualStatement C
   padic_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
       List.Mem r C.requirements
@@ -48862,8 +50594,7 @@ structure AdvancedClaimsIISectionConcreteClosureCertificate
   entropy_prompt :
     AdvancedClaimsIIEntropyPromptObjective C
   entropy_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      C.actualInputAudit
+    advancedClaimsII_entropyActualStatement C
   entropy_covered :
     forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
       List.Mem r C.requirements
@@ -48904,8 +50635,7 @@ theorem object_prompt_at
 theorem object_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_objectActualStatement C :=
   S.object_actual
 
 theorem object_covered_at
@@ -48942,8 +50672,7 @@ theorem t1t5_prompt_at
 theorem t1t5_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_t1t5ActualStatement C :=
   S.t1t5_actual
 
 theorem t1t5_covered_at
@@ -48980,8 +50709,7 @@ theorem spt_prompt_at
 theorem spt_actual_valuation_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIClaimGroupAuditCertificate.spt_actual_valuation_at
-      C.claimGroupAudit :=
+    advancedClaimsII_sptActualValuationStatement C :=
   S.spt_actual_valuation
 
 theorem spt_covered_at
@@ -49018,8 +50746,7 @@ theorem kernel_prompt_at
 theorem kernel_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_kernelActualStatement C :=
   S.kernel_actual
 
 theorem kernel_covered_at
@@ -49056,8 +50783,7 @@ theorem exact_prompt_at
 theorem exact_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_exactActualStatement C :=
   S.exact_actual
 
 theorem exact_covered_at
@@ -49094,8 +50820,7 @@ theorem padic_prompt_at
 theorem padic_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_padicActualStatement C :=
   S.padic_actual
 
 theorem padic_covered_at
@@ -49132,8 +50857,7 @@ theorem entropy_prompt_at
 theorem entropy_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIISectionConcreteClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      C.actualInputAudit :=
+    advancedClaimsII_entropyActualStatement C :=
   S.entropy_actual
 
 theorem entropy_covered_at
@@ -49247,23 +50971,92 @@ structure AdvancedClaimsIIClaimwiseMathematicalClosureCertificate
   entropy_claims :
     AdvancedClaimsIIEntropyPromptObjective C
   object_schema_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      actual_input_audit
+        (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+          C.paperInstance.family = C.paperInstance.namedInstance.family /\
+            C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (C.paperInstance.family.sourceName = "")) /\
+          (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+            C.advanced.degeneracyRelation.ellStar =
+              C.advanced.degeneracyRelation.scalarCoeff n)
   t1t5_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      actual_input_audit
+        (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+            C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+              C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+                C.advanced.appellLerch.z0) /\
+          (C.advanced.exponentFormula.exponent =
+              paperPrincipalExponent C.advanced.exponentFormula.n
+                C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+            C.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+              C.advanced.rationalSolve.rhs /\
+              (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+                C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  C.advanced.fixedShadow.nonzeroCase /\
+                    Not (C.advanced.fixedShadow.scale = 0)) /\
+                (forall n, C.advanced.insideOutside.inside.coeff n =
+                    C.advanced.insideOutside.outside.coeff n /\
+                  C.advanced.insideOutside.outside.coeff n =
+                    C.advanced.insideOutside.partialTheta.coeff n -
+                      C.advanced.insideOutside.correction.coeff n)
   kernel_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      actual_input_audit
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+          C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+            C.sptKernel.sptFree.valuation.M /\
+          Not (C.sptKernel.sptFree.valuation.p ^
+            (C.sptKernel.sptFree.valuation.vp + 1) ∣
+              C.sptKernel.sptFree.valuation.M)) /\
+          (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+            C.sptKernel.kernelSelection.selectedModulus =
+              C.sptKernel.kernelSelection.level /\
+            C.sptKernel.kernelSelection.multiplierRows.length =
+              C.sptKernel.kernelSelection.level) /\
+          (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+            C.sptKernel.multiplier.rows.length = 2) /\
+          (C.sptKernel.cuspConvergence.boundary =
+              C.sptKernel.kernelCusp.convergence /\
+            C.sptKernel.cuspConvergence.boundary.passes = true)
   exact_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      actual_input_audit
+        (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.scalarRecord.scalar *
+              (C.betaArch.betaArch.unfolding.mockCoeff n *
+                C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.formula.rademacher.main n +
+              C.betaArch.betaArch.formula.rademacher.remainder n)
   padic_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      actual_input_audit
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+            (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                C.paperInstance.extraction.concrete.mahlerBinomial.p
+                C.paperInstance.extraction.concrete.mahlerBinomial.k
+                (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, C.padicAnalyticRange.cutoff <= n ->
+            C.padicAnalyticRange.predicate n) /\
+          (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (C.sptKernel.sptFailure.spt.obstruction.order = 1))
   entropy_actual_inputs :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      actual_input_audit
+        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+          (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+            C.entropy.entropy.degeneracy.coefficient n) /\
+          (C.entropy.entropy.olsTable.rows.length = 5 /\
+            C.entropy.entropy.olsTable.alphaRow.interval.Contains
+              C.entropy.entropy.olsTable.alphaRow.estimate /\
+            C.entropy.entropy.olsTable.ceffRow.interval.Contains
+              C.entropy.entropy.olsTable.ceffRow.estimate) /\
+          C.tables.paperTables.externalScript.rows.length = 16
   all_requirements_leaf :
     forall r : AdvancedClaimsIIRequirement,
       AdvancedClaimsIIRequirement.leafStatement C r
@@ -49369,43 +51162,112 @@ theorem entropy_claims_at
 theorem object_schema_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      K.actual_input_audit :=
+        (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+          C.paperInstance.family = C.paperInstance.namedInstance.family /\
+            C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (C.paperInstance.family.sourceName = "")) /\
+          (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+            C.advanced.degeneracyRelation.ellStar =
+              C.advanced.degeneracyRelation.scalarCoeff n) :=
   K.object_schema_actual_inputs
 
 theorem t1t5_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      K.actual_input_audit :=
+        (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+            C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+              C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+                C.advanced.appellLerch.z0) /\
+          (C.advanced.exponentFormula.exponent =
+              paperPrincipalExponent C.advanced.exponentFormula.n
+                C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+            C.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+              C.advanced.rationalSolve.rhs /\
+              (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+                C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  C.advanced.fixedShadow.nonzeroCase /\
+                    Not (C.advanced.fixedShadow.scale = 0)) /\
+                (forall n, C.advanced.insideOutside.inside.coeff n =
+                    C.advanced.insideOutside.outside.coeff n /\
+                  C.advanced.insideOutside.outside.coeff n =
+                    C.advanced.insideOutside.partialTheta.coeff n -
+                      C.advanced.insideOutside.correction.coeff n) :=
   K.t1t5_actual_inputs
 
 theorem kernel_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      K.actual_input_audit :=
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+          C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+            C.sptKernel.sptFree.valuation.M /\
+          Not (C.sptKernel.sptFree.valuation.p ^
+            (C.sptKernel.sptFree.valuation.vp + 1) ∣
+              C.sptKernel.sptFree.valuation.M)) /\
+          (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+            C.sptKernel.kernelSelection.selectedModulus =
+              C.sptKernel.kernelSelection.level /\
+            C.sptKernel.kernelSelection.multiplierRows.length =
+              C.sptKernel.kernelSelection.level) /\
+          (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+            C.sptKernel.multiplier.rows.length = 2) /\
+          (C.sptKernel.cuspConvergence.boundary =
+              C.sptKernel.kernelCusp.convergence /\
+            C.sptKernel.cuspConvergence.boundary.passes = true) :=
   K.kernel_actual_inputs
 
 theorem exact_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      K.actual_input_audit :=
+        (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.scalarRecord.scalar *
+              (C.betaArch.betaArch.unfolding.mockCoeff n *
+                C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.formula.rademacher.main n +
+              C.betaArch.betaArch.formula.rademacher.remainder n) :=
   K.exact_actual_inputs
 
 theorem padic_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      K.actual_input_audit :=
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+            (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                C.paperInstance.extraction.concrete.mahlerBinomial.p
+                C.paperInstance.extraction.concrete.mahlerBinomial.k
+                (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, C.padicAnalyticRange.cutoff <= n ->
+            C.padicAnalyticRange.predicate n) /\
+          (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   K.padic_actual_inputs
 
 theorem entropy_actual_inputs_at
     {C : AdvancedClaimsIICompletionCertificate}
     (K : AdvancedClaimsIIClaimwiseMathematicalClosureCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      K.actual_input_audit :=
+        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+          (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+            C.entropy.entropy.degeneracy.coefficient n) /\
+          (C.entropy.entropy.olsTable.rows.length = 5 /\
+            C.entropy.entropy.olsTable.alphaRow.interval.Contains
+              C.entropy.entropy.olsTable.alphaRow.estimate /\
+            C.entropy.entropy.olsTable.ceffRow.interval.Contains
+              C.entropy.entropy.olsTable.ceffRow.estimate) /\
+          C.tables.paperTables.externalScript.rows.length = 16 :=
   K.entropy_actual_inputs
 
 theorem requirement_leaf_at
@@ -49514,40 +51376,83 @@ structure AdvancedClaimsIIObjectiveCategorySpineCertificate
   object_prompt :
     AdvancedClaimsIIObjectSchemaPromptObjective C
   object_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      C.actualInputAudit
+        (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+          C.paperInstance.family = C.paperInstance.namedInstance.family /\
+            C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (C.paperInstance.family.sourceName = "")) /\
+          (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+            C.advanced.degeneracyRelation.ellStar =
+              C.advanced.degeneracyRelation.scalarCoeff n)
   object_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.objectSchemaRequirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
   t1t5_prompt :
     AdvancedClaimsIIT1T5PromptObjective C
   t1t5_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      C.actualInputAudit
+        (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+            C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+              C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+                C.advanced.appellLerch.z0) /\
+          (C.advanced.exponentFormula.exponent =
+              paperPrincipalExponent C.advanced.exponentFormula.n
+                C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+            C.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+              C.advanced.rationalSolve.rhs /\
+              (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+                C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  C.advanced.fixedShadow.nonzeroCase /\
+                    Not (C.advanced.fixedShadow.scale = 0)) /\
+                (forall n, C.advanced.insideOutside.inside.coeff n =
+                    C.advanced.insideOutside.outside.coeff n /\
+                  C.advanced.insideOutside.outside.coeff n =
+                    C.advanced.insideOutside.partialTheta.coeff n -
+                      C.advanced.insideOutside.correction.coeff n)
   t1t5_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.t1t5Requirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
   spt_prompt :
     AdvancedClaimsIISPTPromptObjective C
   spt_actual_valuation :
-    AdvancedClaimsIIClaimGroupAuditCertificate.spt_actual_valuation_at
-      C.claimGroupAudit
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M))
   spt_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.sptRequirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
   kernel_prompt :
     AdvancedClaimsIIKernelPromptObjective C
   kernel_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      C.actualInputAudit
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+          C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+            C.sptKernel.sptFree.valuation.M /\
+          Not (C.sptKernel.sptFree.valuation.p ^
+            (C.sptKernel.sptFree.valuation.vp + 1) ∣
+              C.sptKernel.sptFree.valuation.M)) /\
+          (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+            C.sptKernel.kernelSelection.selectedModulus =
+              C.sptKernel.kernelSelection.level /\
+            C.sptKernel.kernelSelection.multiplierRows.length =
+              C.sptKernel.kernelSelection.level) /\
+          (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+            C.sptKernel.multiplier.rows.length = 2) /\
+          (C.sptKernel.cuspConvergence.boundary =
+              C.sptKernel.kernelCusp.convergence /\
+            C.sptKernel.cuspConvergence.boundary.passes = true)
   kernel_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.kernelRequirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
   exact_prompt :
     AdvancedClaimsIIExactPromptObjective C
   exact_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      C.actualInputAudit
+        (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.scalarRecord.scalar *
+              (C.betaArch.betaArch.unfolding.mockCoeff n *
+                C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.formula.rademacher.main n +
+              C.betaArch.betaArch.formula.rademacher.remainder n)
   exact_leaf :
     forall r,
       List.Mem r AdvancedClaimsIIRequirement.exactCoefficientRequirements ->
@@ -49555,16 +51460,41 @@ structure AdvancedClaimsIIObjectiveCategorySpineCertificate
   padic_prompt :
     AdvancedClaimsIIPAdicPromptObjective C
   padic_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      C.actualInputAudit
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+            (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                C.paperInstance.extraction.concrete.mahlerBinomial.p
+                C.paperInstance.extraction.concrete.mahlerBinomial.k
+                (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, C.padicAnalyticRange.cutoff <= n ->
+            C.padicAnalyticRange.predicate n) /\
+          (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (C.sptKernel.sptFailure.spt.obstruction.order = 1))
   padic_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.pAdicRequirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
   entropy_prompt :
     AdvancedClaimsIIEntropyPromptObjective C
   entropy_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      C.actualInputAudit
+        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+          (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+            C.entropy.entropy.degeneracy.coefficient n) /\
+          (C.entropy.entropy.olsTable.rows.length = 5 /\
+            C.entropy.entropy.olsTable.alphaRow.interval.Contains
+              C.entropy.entropy.olsTable.alphaRow.estimate /\
+            C.entropy.entropy.olsTable.ceffRow.interval.Contains
+              C.entropy.entropy.olsTable.ceffRow.estimate) /\
+          C.tables.paperTables.externalScript.rows.length = 16
   entropy_leaf :
     forall r, List.Mem r AdvancedClaimsIIRequirement.entropyReproRequirements ->
       AdvancedClaimsIIRequirement.leafStatement C r
@@ -49642,8 +51572,14 @@ theorem object_prompt_at
 theorem object_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      C.actualInputAudit :=
+        (C.paperInstance.extraction.concrete = C.paperInstance.namedInstance.concrete /\
+          C.paperInstance.family = C.paperInstance.namedInstance.family /\
+            C.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              C.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (C.paperInstance.family.sourceName = "")) /\
+          (forall n, C.advanced.degeneracyRelation.jacobiCoeff n
+            C.advanced.degeneracyRelation.ellStar =
+              C.advanced.degeneracyRelation.scalarCoeff n) :=
   S.object_actual
 
 theorem object_leaf_at
@@ -49663,8 +51599,26 @@ theorem t1t5_prompt_at
 theorem t1t5_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      C.actualInputAudit :=
+        (List.Mem C.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem C.advanced.appellLerch.r referenceMock1RPhases /\
+            C.advanced.appellLerch.uTauCoeff - C.advanced.appellLerch.vTauCoeff = 0 /\
+              C.advanced.appellLerch.uConst - C.advanced.appellLerch.vConst =
+                C.advanced.appellLerch.z0) /\
+          (C.advanced.exponentFormula.exponent =
+              paperPrincipalExponent C.advanced.exponentFormula.n
+                C.advanced.exponentFormula.ell C.advanced.exponentFormula.m /\
+            C.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat C.advanced.rationalSolve.matrix C.advanced.rationalSolve.solution =
+              C.advanced.rationalSolve.rhs /\
+              (Not (C.advanced.fixedShadow.thetaSymbol = "") /\
+                C.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  C.advanced.fixedShadow.nonzeroCase /\
+                    Not (C.advanced.fixedShadow.scale = 0)) /\
+                (forall n, C.advanced.insideOutside.inside.coeff n =
+                    C.advanced.insideOutside.outside.coeff n /\
+                  C.advanced.insideOutside.outside.coeff n =
+                    C.advanced.insideOutside.partialTheta.coeff n -
+                      C.advanced.insideOutside.correction.coeff n) :=
   S.t1t5_actual
 
 theorem t1t5_leaf_at
@@ -49684,8 +51638,7 @@ theorem spt_prompt_at
 theorem spt_actual_valuation_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIClaimGroupAuditCertificate.spt_actual_valuation_at
-      C.claimGroupAudit :=
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\ Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp) C.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (C.sptKernel.sptFree.valuation.p ^ (C.sptKernel.sptFree.valuation.vp + 1)) C.sptKernel.sptFree.valuation.M)) :=
   S.spt_actual_valuation
 
 theorem spt_leaf_at
@@ -49705,8 +51658,22 @@ theorem kernel_prompt_at
 theorem kernel_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      C.actualInputAudit :=
+        (Nat.Prime C.sptKernel.sptFree.valuation.p /\
+          C.sptKernel.sptFree.valuation.p ^ C.sptKernel.sptFree.valuation.vp ∣
+            C.sptKernel.sptFree.valuation.M /\
+          Not (C.sptKernel.sptFree.valuation.p ^
+            (C.sptKernel.sptFree.valuation.vp + 1) ∣
+              C.sptKernel.sptFree.valuation.M)) /\
+          (Not (C.sptKernel.kernelSelection.sourceName = "") /\
+            C.sptKernel.kernelSelection.selectedModulus =
+              C.sptKernel.kernelSelection.level /\
+            C.sptKernel.kernelSelection.multiplierRows.length =
+              C.sptKernel.kernelSelection.level) /\
+          (C.sptKernel.multiplier.ts = C.sptKernel.kernelCusp.phaseMatching /\
+            C.sptKernel.multiplier.rows.length = 2) /\
+          (C.sptKernel.cuspConvergence.boundary =
+              C.sptKernel.kernelCusp.convergence /\
+            C.sptKernel.cuspConvergence.boundary.passes = true) :=
   S.kernel_actual
 
 theorem kernel_leaf_at
@@ -49726,8 +51693,14 @@ theorem exact_prompt_at
 theorem exact_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      C.actualInputAudit :=
+        (forall r : ExactCoefficientERequirement, List.Mem r C.exact.requirements) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.scalarRecord.scalar *
+              (C.betaArch.betaArch.unfolding.mockCoeff n *
+                C.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, C.betaArch.betaArch.formula.normalizedCoeff n =
+            C.betaArch.betaArch.formula.rademacher.main n +
+              C.betaArch.betaArch.formula.rademacher.remainder n) :=
   S.exact_actual
 
 theorem exact_leaf_at
@@ -49747,8 +51720,26 @@ theorem padic_prompt_at
 theorem padic_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      C.actualInputAudit :=
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod C.padicChart.p C.padicChart.k
+            (C.padicChart.chartLeft n) (C.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                C.paperInstance.extraction.concrete.mahlerBinomial.p
+                C.paperInstance.extraction.concrete.mahlerBinomial.k
+                (C.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (C.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              C.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin C.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    C.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, C.padicAnalyticRange.cutoff <= n ->
+            C.padicAnalyticRange.predicate n) /\
+          (C.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (C.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   S.padic_actual
 
 theorem padic_leaf_at
@@ -49768,8 +51759,15 @@ theorem entropy_prompt_at
 theorem entropy_actual_at
     {C : AdvancedClaimsIICompletionCertificate}
     (S : AdvancedClaimsIIObjectiveCategorySpineCertificate C) :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      C.actualInputAudit :=
+        C.entropy.symbolic.alphaInterval.Contains C.entropy.symbolic.alphaHat /\
+          (forall n, C.entropy.entropy.degeneracy.degeneracy n =
+            C.entropy.entropy.degeneracy.coefficient n) /\
+          (C.entropy.entropy.olsTable.rows.length = 5 /\
+            C.entropy.entropy.olsTable.alphaRow.interval.Contains
+              C.entropy.entropy.olsTable.alphaRow.estimate /\
+            C.entropy.entropy.olsTable.ceffRow.interval.Contains
+              C.entropy.entropy.olsTable.ceffRow.estimate) /\
+          C.tables.paperTables.externalScript.rows.length = 16 :=
   S.entropy_actual
 
 theorem entropy_leaf_at
@@ -52477,8 +54475,26 @@ theorem reference_advanced_claims_ii_claimwise_kernel :
   reference_advanced_claims_ii_claimwise_mathematical_closure.kernel_claims_at
 
 theorem reference_advanced_claims_ii_claimwise_actual_padic :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      reference_advanced_claims_ii_claimwise_mathematical_closure.actual_input_audit :=
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+            (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n ->
+            referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   reference_advanced_claims_ii_claimwise_mathematical_closure.padic_actual_inputs_at
 
 theorem reference_advanced_claims_ii_claimwise_all_leaf
@@ -52600,8 +54616,7 @@ theorem reference_advanced_claims_ii_atomic_object_registry
   reference_advanced_claims_ii_atomic_leaf_closure.leaf_ledger_at.object_claim_registry_at claim
 
 theorem reference_advanced_claims_ii_atomic_entropy_external_rows :
-    EntropyReproRequirementPayloadCertificate.external_rows_at
-      referenceAdvancedClaimsIICompletionCertificate.entropyReproRequirementPayload :=
+    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 :=
   reference_advanced_claims_ii_atomic_leaf_closure.leaf_ledger_at.external_output_schema_rows_at
 
 theorem reference_advanced_claims_ii_prompt_objective_audit :
@@ -52725,8 +54740,14 @@ theorem reference_advanced_claims_ii_section_concrete_closure :
   referenceAdvancedClaimsIICompletionCertificate.sectionConcreteClosure
 
 theorem reference_advanced_claims_ii_section_object_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.object_schema_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete = referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.family = referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = "")) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+              referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n) :=
   reference_advanced_claims_ii_section_concrete_closure.object_actual_at
 
 theorem reference_advanced_claims_ii_section_object_leaf
@@ -52737,8 +54758,26 @@ theorem reference_advanced_claims_ii_section_object_leaf
   reference_advanced_claims_ii_section_concrete_closure.object_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_t1t5_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.t1t5_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        (List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.r referenceMock1RPhases /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff - referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0 /\
+              referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst - referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+                referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0) /\
+          (referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent =
+              paperPrincipalExponent referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.n
+                referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.ell referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.m /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+              referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs /\
+              (Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase /\
+                    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0)) /\
+                (forall n, referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.inside.coeff n =
+                    referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n /\
+                  referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n =
+                    referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.partialTheta.coeff n -
+                      referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.correction.coeff n) :=
   reference_advanced_claims_ii_section_concrete_closure.t1t5_actual_at
 
 theorem reference_advanced_claims_ii_section_t1t5_leaf
@@ -52749,8 +54788,7 @@ theorem reference_advanced_claims_ii_section_t1t5_leaf
   reference_advanced_claims_ii_section_concrete_closure.t1t5_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_spt_actual :
-    AdvancedClaimsIIClaimGroupAuditCertificate.spt_actual_valuation_at
-      referenceAdvancedClaimsIICompletionCertificate.claimGroupAudit :=
+        (Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\ Dvd.dvd (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^ referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp) referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\ Not (Dvd.dvd (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^ (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1)) referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) :=
   reference_advanced_claims_ii_section_concrete_closure.spt_actual_valuation_at
 
 theorem reference_advanced_claims_ii_section_spt_leaf
@@ -52761,8 +54799,22 @@ theorem reference_advanced_claims_ii_section_spt_leaf
   reference_advanced_claims_ii_section_concrete_closure.spt_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_kernel_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.kernel_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        (Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^ referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp ∣
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+            (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1) ∣
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+          (Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.sourceName = "") /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.multiplierRows.length =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.ts = referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.phaseMatching /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.convergence /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true) :=
   reference_advanced_claims_ii_section_concrete_closure.kernel_actual_at
 
 theorem reference_advanced_claims_ii_section_kernel_leaf
@@ -52773,8 +54825,14 @@ theorem reference_advanced_claims_ii_section_kernel_leaf
   reference_advanced_claims_ii_section_concrete_closure.kernel_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_exact_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.exact_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n) :=
   reference_advanced_claims_ii_section_concrete_closure.exact_actual_at
 
 theorem reference_advanced_claims_ii_section_exact_leaf
@@ -52785,8 +54843,26 @@ theorem reference_advanced_claims_ii_section_exact_leaf
   reference_advanced_claims_ii_section_concrete_closure.exact_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_padic_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.padic_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+            (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+          (forall n,
+            FiniteCongruenceMod
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n ->
+            referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   reference_advanced_claims_ii_section_concrete_closure.padic_actual_at
 
 theorem reference_advanced_claims_ii_section_padic_leaf
@@ -52797,8 +54873,15 @@ theorem reference_advanced_claims_ii_section_padic_leaf
   reference_advanced_claims_ii_section_concrete_closure.padic_leaf_at r h
 
 theorem reference_advanced_claims_ii_section_entropy_actual :
-    AdvancedClaimsIIActualInputAuditCertificate.entropy_actual_inputs_at
-      referenceAdvancedClaimsIICompletionCertificate.actualInputAudit :=
+        referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n) /\
+          (referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+          referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 :=
   reference_advanced_claims_ii_section_concrete_closure.entropy_actual_at
 
 theorem reference_advanced_claims_ii_section_entropy_leaf
@@ -53187,66 +55270,102 @@ theorem reference_advanced_claims_ii_actual_input_audit :
   referenceAdvancedClaimsIICompletionCertificate.actualInputAudit
 
 theorem reference_advanced_claims_ii_actual_object_schema_inputs :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-        referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload /\
-      forall n, PaperDataInstancePayloadCertificate.scalar_jacobi_at
-        referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload n :=
+        (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete = referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.family = referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName = referenceMock1DepthOneObjectName /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName = referenceMock1DepthOneFamilyName /\
+                Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = "")) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+              referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n) :=
   reference_advanced_claims_ii_actual_input_audit.object_schema_actual_inputs_at
 
 theorem reference_advanced_claims_ii_actual_t1t5_inputs :
-    PaperDataInstancePayloadCertificate.appell_lerch_at
-        referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload /\
-      PaperDataInstancePayloadCertificate.principal_exponent_at
-          referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload /\
-        PaperDataInstancePayloadCertificate.matrix_solution_at
-            referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload /\
-          PaperDataInstancePayloadCertificate.fixed_shadow_at
-              referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload /\
-            forall n, PaperDataInstancePayloadCertificate.inside_outside_at
-              referenceAdvancedClaimsIICompletionCertificate.paperDataInstancePayload n :=
+        (List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.m referenceMock1MList /\
+          List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.r referenceMock1RPhases /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff - referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0 /\
+              referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst - referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+                referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0) /\
+          (referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent =
+              paperPrincipalExponent referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.n
+                referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.ell referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.m /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent < 0) /\
+            MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+              referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs /\
+              (Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+                  referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase /\
+                    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0)) /\
+                (forall n, referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.inside.coeff n =
+                    referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n /\
+                  referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n =
+                    referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.partialTheta.coeff n -
+                      referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.correction.coeff n) :=
   reference_advanced_claims_ii_actual_input_audit.t1t5_actual_inputs_at
 
 theorem reference_advanced_claims_ii_actual_kernel_inputs :
-    SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-        referenceAdvancedClaimsIICompletionCertificate.sptKernelRequirementPayload /\
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-          referenceAdvancedClaimsIICompletionCertificate.sptKernelRequirementPayload /\
-        SPTKernelRequirementPayloadCertificate.multiplier_input_at
-            referenceAdvancedClaimsIICompletionCertificate.sptKernelRequirementPayload /\
-          SPTKernelRequirementPayloadCertificate.cusp_input_at
-            referenceAdvancedClaimsIICompletionCertificate.sptKernelRequirementPayload :=
+        (Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^ referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp ∣
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+            (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1) ∣
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+          (Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.sourceName = "") /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.multiplierRows.length =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.ts = referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.phaseMatching /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.convergence /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true) :=
   reference_advanced_claims_ii_actual_input_audit.kernel_actual_inputs_at
 
 theorem reference_advanced_claims_ii_actual_exact_inputs :
-    ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-      referenceAdvancedClaimsIICompletionCertificate.exactCoefficientRequirementPayload :=
+        (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n) :=
   reference_advanced_claims_ii_actual_input_audit.exact_actual_inputs_at
 
 theorem reference_advanced_claims_ii_actual_padic_inputs :
-    PAdicRequirementPayloadCertificate.denominator_data_at
-        referenceAdvancedClaimsIICompletionCertificate.pAdicRequirementPayload /\
-      (forall n, PAdicRequirementPayloadCertificate.chart_vectors_at
-          referenceAdvancedClaimsIICompletionCertificate.pAdicRequirementPayload n) /\
-        (forall n, PAdicRequirementPayloadCertificate.mahler_table_at
-            referenceAdvancedClaimsIICompletionCertificate.pAdicRequirementPayload n) /\
+        (Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+          (forall n, FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+            (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
           (forall n,
-            (hn :
-              referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-            PAdicRequirementPayloadCertificate.predicate_at
-              referenceAdvancedClaimsIICompletionCertificate.pAdicRequirementPayload n hn) /\
-            PAdicRequirementPayloadCertificate.obstruction_failure_at
-              referenceAdvancedClaimsIICompletionCertificate.pAdicRequirementPayload :=
+            FiniteCongruenceMod
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+                (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+                Finset.sum Finset.univ
+                  (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                      mahlerBinomialBasis (j : Nat) n)) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n ->
+            referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n) /\
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   reference_advanced_claims_ii_actual_input_audit.padic_actual_inputs_at
 
 theorem reference_advanced_claims_ii_actual_entropy_inputs :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        referenceAdvancedClaimsIICompletionCertificate.entropyReproRequirementPayload /\
-      (forall n, EntropyReproRequirementPayloadCertificate.degeneracy_at
-          referenceAdvancedClaimsIICompletionCertificate.entropyReproRequirementPayload n) /\
-        EntropyReproRequirementPayloadCertificate.ols_interval_at
-            referenceAdvancedClaimsIICompletionCertificate.entropyReproRequirementPayload /\
-          EntropyReproRequirementPayloadCertificate.external_rows_at
-            referenceAdvancedClaimsIICompletionCertificate.entropyReproRequirementPayload :=
+        referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n) /\
+          (referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+          referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 :=
   reference_advanced_claims_ii_actual_input_audit.entropy_actual_inputs_at
 
 theorem reference_advanced_claims_ii_object_schema :
@@ -54385,210 +56504,278 @@ structure AdvancedClaimsIIReferenceAtomicChecklistCertificate : Prop where
     AdvancedClaimsIIActualInputAuditCertificate
       referenceAdvancedClaimsIICompletionCertificate
   remaining_registry_eq_all :
-    RemainingAdvancedClaimPayloadCertificate.claim_registry_eq_all_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all
   remaining_claim_covered :
     forall claim : RemainingAdvancedClaim,
-      RemainingAdvancedClaimPayloadCertificate.claim_registry_at
-        reference_advanced_claims_ii_remaining_claim_payload claim
+          List.Mem claim referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements
   remaining_object_coefficient :
     forall n : Nat,
-      RemainingAdvancedClaimPayloadCertificate.object_coefficient_schema_at
-        reference_advanced_claims_ii_remaining_claim_payload n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.coefficientAt n =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n
   remaining_scalar_flags :
-    RemainingAdvancedClaimPayloadCertificate.scalar_ellStar_zero_at
-        reference_advanced_claims_ii_remaining_claim_payload /\
-      RemainingAdvancedClaimPayloadCertificate.scalar_weights_two_sign_at
-          reference_advanced_claims_ii_remaining_claim_payload /\
-        RemainingAdvancedClaimPayloadCertificate.scalar_usesScalar_true_at
-          reference_advanced_claims_ii_remaining_claim_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar = 0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.weights = [1, 1]) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.usesScalar = true)
   remaining_scalar_relation :
     forall n : Nat,
-      RemainingAdvancedClaimPayloadCertificate.scalar_jacobi_at
-        reference_advanced_claims_ii_remaining_claim_payload n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n
   remaining_rational_solve_rows :
-    RemainingAdvancedClaimPayloadCertificate.rational_solve_matrix_rows_at
-        reference_advanced_claims_ii_remaining_claim_payload /\
-      RemainingAdvancedClaimPayloadCertificate.rational_solve_rhs_rows_at
-          reference_advanced_claims_ii_remaining_claim_payload /\
-        RemainingAdvancedClaimPayloadCertificate.rational_solve_solution_columns_at
-          reference_advanced_claims_ii_remaining_claim_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.columns)
   remaining_rational_solve :
-    RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs
   remaining_completion_shadow :
-    RemainingAdvancedClaimPayloadCertificate.completion_shadow_holomorphic_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.blockSum = 0 /\
+          forall x, referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.shadow.xiFhat x = 0
   remaining_cusp_transport :
-    RemainingAdvancedClaimPayloadCertificate.cusp_transport_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.transports.length /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.kernel.level
   remaining_appell_lerch :
-    RemainingAdvancedClaimPayloadCertificate.appell_lerch_block_formula_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff -
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0 /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0
   remaining_principal_exponent :
-    RemainingAdvancedClaimPayloadCertificate.principal_exponent_formula_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent =
+            paperPrincipalExponent referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.n
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.ell
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.m /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent < 0
   remaining_fixed_shadow :
-    RemainingAdvancedClaimPayloadCertificate.fixed_shadow_unary_theta_at
-      reference_advanced_claims_ii_remaining_claim_payload
+        Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0)
   remaining_inside_outside :
     forall n : Nat,
-      RemainingAdvancedClaimPayloadCertificate.inside_outside_qseries_at
-        reference_advanced_claims_ii_remaining_claim_payload n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.inside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.partialTheta.coeff n -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.correction.coeff n
   paper_registry_atoms :
-    PaperDataInstancePayloadCertificate.registry_eq_all_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.registry_name_nonempty_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.registry_source_nonempty_at
-          reference_advanced_claims_ii_paper_data_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.registryName = "")) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.sourceName = ""))
   paper_object_schema_atoms :
-    PaperDataInstancePayloadCertificate.schema_object_name_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.schema_family_object_name_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.schema_concrete_object_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.coefficient_schema_eq_object_schema_at
-            reference_advanced_claims_ii_paper_data_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.schema.objectName =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.name) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.family.objectName =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.name) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.concrete.object =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.coefficientSchema = referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema)
   paper_instance_atoms :
-    PaperDataInstancePayloadCertificate.paper_instance_concrete_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.paper_instance_family_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.paper_instance_object_name_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.paper_instance_family_name_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            PaperDataInstancePayloadCertificate.paper_instance_source_nonempty_at
-              reference_advanced_claims_ii_paper_data_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family = referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName = referenceMock1DepthOneObjectName) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName = referenceMock1DepthOneFamilyName) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = ""))
   paper_family_atoms :
-    PaperDataInstancePayloadCertificate.family_weight_numerator_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.family_weight_denominator_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.family_level_positive_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.family_qShift_zero_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            PaperDataInstancePayloadCertificate.family_working_cusp_at
-                reference_advanced_claims_ii_paper_data_payload /\
-              PaperDataInstancePayloadCertificate.family_transported_cusp_at
-                  reference_advanced_claims_ii_paper_data_payload /\
-                PaperDataInstancePayloadCertificate.family_z0_at
-                  reference_advanced_claims_ii_paper_data_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.weightNumerator = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.weightDenominator = 2) /\
+    (    0 < referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.level) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.qShift = 0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.workingCusp = infinityCuspLabel) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.transportedCusp = zeroCuspLabel) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.z0 = (-1 / 2 : Rat))
   paper_matrix_atoms :
-    PaperDataInstancePayloadCertificate.matrix_source_nonempty_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.matrix_rows_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.matrix_rhs_rows_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.matrix_solution_columns_at
-            reference_advanced_claims_ii_paper_data_payload
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.sourceName = "")) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.columns)
   paper_appell_atoms :
-    PaperDataInstancePayloadCertificate.appell_source_nonempty_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.appell_m_mem_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.appell_r_mem_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.appell_tauCoeff_diff_zero_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            PaperDataInstancePayloadCertificate.appell_constDiff_eq_z0_at
-              reference_advanced_claims_ii_paper_data_payload
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.sourceName = "")) /\
+    (    List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.m referenceMock1MList) /\
+    (    List.Mem referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.r referenceMock1RPhases) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff -
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst -
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0)
   paper_fixed_shadow_atoms :
-    PaperDataInstancePayloadCertificate.fixed_shadow_source_nonempty_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.fixed_shadow_symbol_nonempty_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.fixed_shadow_z0_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.fixed_shadow_nonzero_case_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            PaperDataInstancePayloadCertificate.fixed_shadow_scale_nonzero_at
-              reference_advanced_claims_ii_paper_data_payload
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.sourceName = "")) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "")) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0))
   spt_arithmetic_atoms :
-    SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-            reference_advanced_claims_ii_spt_kernel_payload
+    (    Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M /\
+          Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower /\
+            Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue /\
+              Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.failureThickness =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness + 1 /\
+          0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness) /\
+    (    Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          Dvd.dvd
+              (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp)
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+            Not
+              (Dvd.dvd
+                (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                  (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1))
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.failureThickness =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order)
   kernel_atoms :
-    SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-            reference_advanced_claims_ii_spt_kernel_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.selection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.level) /\
+    (    0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.root.phases /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2 /\
+            forall row, List.Mem row referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows ->
+              row.computedValue = row.tableValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.cutoff) /\
+    (    List.Mem infinityCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+          List.Mem zeroCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+            forall T, List.Mem T referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports ->
+              T.principal.rowCount = T.principal.order)
   exact_atoms :
-    ExactCoefficientRequirementPayloadCertificate.theta_character_at
-        reference_advanced_claims_ii_exact_coefficient_payload /\
-      ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-          reference_advanced_claims_ii_exact_coefficient_payload /\
-        ExactCoefficientRequirementPayloadCertificate.local_euler_at
-            reference_advanced_claims_ii_exact_coefficient_payload /\
-          ExactCoefficientRequirementPayloadCertificate.root_filter_at
-              reference_advanced_claims_ii_exact_coefficient_payload /\
-            ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-              reference_advanced_claims_ii_exact_coefficient_payload
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.exact.thetaTable.rows = []) /\
+          referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.lValueTheoryAccepted) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.finiteResidue.certifiedSum =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.kloostermanValue /\
+          forall n, referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.coefficient n =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.remainder n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.localEuler.productValue = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.rootFilter.allowed = true) /\
+    (    (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+            (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n))
   exact_coefficients :
     forall n : Nat,
-      ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        reference_advanced_claims_ii_exact_coefficient_payload n /\
-      ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-        reference_advanced_claims_ii_exact_coefficient_payload n /\
-      ExactCoefficientRequirementPayloadCertificate.beta_arch_formula_at
-        reference_advanced_claims_ii_exact_coefficient_payload n /\
-      ExactCoefficientRequirementPayloadCertificate.beta_arch_rademacher_at
-        reference_advanced_claims_ii_exact_coefficient_payload n
+      (    referenceAdvancedClaimsIICompletionCertificate.exact.exact.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.scalarPart n +
+            referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.thetaPart n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.globalConstant *
+            referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.powerTerm n *
+              referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.centralLValue n *
+                referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.localEulerProduct n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+          referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+            (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+          referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n)
   padic_atoms :
-    PAdicRequirementPayloadCertificate.face_tracking_at
-        reference_advanced_claims_ii_padic_payload /\
-      PAdicRequirementPayloadCertificate.denominator_data_at
-          reference_advanced_claims_ii_padic_payload /\
-        PAdicRequirementPayloadCertificate.obstruction_failure_at
-          reference_advanced_claims_ii_padic_payload
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label = "") /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI4Label = "") /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI5Label = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.lemma9Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label /\
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.propositionI3Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label) /\
+    (    Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1))
   padic_pointwise :
     forall n : Nat,
-      PAdicRequirementPayloadCertificate.normalization_at
-          reference_advanced_claims_ii_padic_payload n /\
-        PAdicRequirementPayloadCertificate.overlap_at
-            reference_advanced_claims_ii_padic_payload n /\
-          PAdicRequirementPayloadCertificate.mahler_at
-              reference_advanced_claims_ii_padic_payload n /\
-            PAdicRequirementPayloadCertificate.chart_vectors_at
-                reference_advanced_claims_ii_padic_payload n /\
-              PAdicRequirementPayloadCertificate.mahler_table_at
-                reference_advanced_claims_ii_padic_payload n
+      (    IntCongruent
+          (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.k)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.normalized n)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.raw n)) /\
+    (    IntCongruent referenceAdvancedClaimsIICompletionCertificate.padicOverlap.M
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n) /\
+          IntCongruent (PrimePower referenceAdvancedClaimsIICompletionCertificate.padicOverlap.p referenceAdvancedClaimsIICompletionCertificate.padicOverlap.k)
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n)) /\
+    (    IntCongruent
+            (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.p
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.k)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.coeff j *
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.basis j n)) /\
+    (    FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+          (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+    (    FiniteCongruenceMod
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                  mahlerBinomialBasis (j : Nat) n))
   padic_tail :
     forall n : Nat,
-      (hn :
-        referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-        PAdicRequirementPayloadCertificate.tail_zero_at
-          reference_advanced_claims_ii_padic_payload n hn
+      forall hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n,
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n /\
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.tail n = 0
   entropy_atoms :
-    EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        reference_advanced_claims_ii_entropy_payload /\
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-          reference_advanced_claims_ii_entropy_payload /\
-        EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-            reference_advanced_claims_ii_entropy_payload /\
-          EntropyReproRequirementPayloadCertificate.ols_interval_at
-              reference_advanced_claims_ii_entropy_payload /\
-            EntropyReproRequirementPayloadCertificate.growth_stability_at
-                reference_advanced_claims_ii_entropy_payload /\
-              EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-                reference_advanced_claims_ii_entropy_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffHat /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.alphaExtraction.cEqualsOne /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.tailUpper <=
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.dominanceThreshold *
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.mainLower) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.paperTables.residualTable.rows.length = 16) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.p =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.p /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.k =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.k /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.obstructionOrder = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 /\
+          forall row : ResidualTableRow,
+            List.Mem row referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows ->
+              row.rtCheck.pass = true /\ row.rsCheck.pass = true)
   entropy_degeneracy :
     forall n : Nat,
-      EntropyReproRequirementPayloadCertificate.degeneracy_at
-        reference_advanced_claims_ii_entropy_payload n
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n
   rlf_closure :
     AdvancedClaimsIIRlfEndToEndClosureCertificate
       referenceAdvancedClaimsIICompletionCertificate
@@ -54604,43 +56791,64 @@ theorem final_audit_at
 theorem remaining_object_coefficient_at
     (K : AdvancedClaimsIIReferenceAtomicChecklistCertificate)
     (n : Nat) :
-    RemainingAdvancedClaimPayloadCertificate.object_coefficient_schema_at
-      reference_advanced_claims_ii_remaining_claim_payload n :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.coefficientAt n =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n :=
   K.remaining_object_coefficient n
 
 theorem paper_registry_atoms_at
     (K : AdvancedClaimsIIReferenceAtomicChecklistCertificate) :
-    PaperDataInstancePayloadCertificate.registry_eq_all_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.registry_name_nonempty_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.registry_source_nonempty_at
-          reference_advanced_claims_ii_paper_data_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.registryName = "")) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.sourceName = "")) :=
   K.paper_registry_atoms
 
 theorem spt_arithmetic_atoms_at
     (K : AdvancedClaimsIIReferenceAtomicChecklistCertificate) :
-    SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-            reference_advanced_claims_ii_spt_kernel_payload :=
+    (    Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M /\
+          Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower /\
+            Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue /\
+              Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.failureThickness =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness + 1 /\
+          0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness) /\
+    (    Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          Dvd.dvd
+              (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp)
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+            Not
+              (Dvd.dvd
+                (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                  (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1))
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.failureThickness =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order) :=
   K.spt_arithmetic_atoms
 
 theorem exact_coefficients_at
     (K : AdvancedClaimsIIReferenceAtomicChecklistCertificate)
     (n : Nat) :
-    ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        reference_advanced_claims_ii_exact_coefficient_payload n /\
-      ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-          reference_advanced_claims_ii_exact_coefficient_payload n /\
-        ExactCoefficientRequirementPayloadCertificate.beta_arch_formula_at
-            reference_advanced_claims_ii_exact_coefficient_payload n /\
-          ExactCoefficientRequirementPayloadCertificate.beta_arch_rademacher_at
-            reference_advanced_claims_ii_exact_coefficient_payload n :=
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.exact.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.scalarPart n +
+            referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.thetaPart n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.globalConstant *
+            referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.powerTerm n *
+              referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.centralLValue n *
+                referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.localEulerProduct n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+          referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+            (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+          referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n) :=
   K.exact_coefficients n
 
 theorem padic_tail_at
@@ -54648,15 +56856,15 @@ theorem padic_tail_at
     (n : Nat)
     (hn :
       referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) :
-    PAdicRequirementPayloadCertificate.tail_zero_at
-      reference_advanced_claims_ii_padic_payload n hn :=
+        referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n /\
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.tail n = 0 :=
   K.padic_tail n hn
 
 theorem entropy_degeneracy_at
     (K : AdvancedClaimsIIReferenceAtomicChecklistCertificate)
     (n : Nat) :
-    EntropyReproRequirementPayloadCertificate.degeneracy_at
-      reference_advanced_claims_ii_entropy_payload n :=
+        referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n :=
   K.entropy_degeneracy n
 
 theorem rlf_closure_at
@@ -54666,127 +56874,6 @@ theorem rlf_closure_at
   K.rlf_closure
 
 end AdvancedClaimsIIReferenceAtomicChecklistCertificate
-
-theorem reference_advanced_claims_ii_reference_atomic_checklist :
-    AdvancedClaimsIIReferenceAtomicChecklistCertificate where
-  final_audit := reference_advanced_claims_ii_final_audit
-  leaf_ledger := reference_advanced_claims_ii_requirement_leaf_ledger
-  actual_inputs := reference_advanced_claims_ii_actual_input_audit
-  remaining_registry_eq_all :=
-    reference_remaining_claim_payload_claim_registry_eq_all
-  remaining_claim_covered := by
-    intro claim
-    exact reference_remaining_claim_payload_registry claim
-  remaining_object_coefficient := by
-    intro n
-    exact reference_remaining_claim_payload_object_coefficient n
-  remaining_scalar_flags := by
-    exact And.intro reference_remaining_claim_payload_scalar_ellStar_zero
-      (And.intro reference_remaining_claim_payload_scalar_weights_two_sign
-        reference_remaining_claim_payload_scalar_usesScalar_true)
-  remaining_scalar_relation := by
-    intro n
-    exact reference_remaining_claim_payload_scalar_jacobi n
-  remaining_rational_solve_rows := by
-    exact And.intro reference_remaining_claim_payload_rational_solve_matrix_rows
-      (And.intro reference_remaining_claim_payload_rational_solve_rhs_rows
-        reference_remaining_claim_payload_rational_solve_solution_columns)
-  remaining_rational_solve := reference_remaining_claim_payload_t1t5_core
-  remaining_completion_shadow := reference_remaining_claim_payload_completion_shadow
-  remaining_cusp_transport := reference_remaining_claim_payload_cusp_transport
-  remaining_appell_lerch := reference_remaining_claim_payload_appell_lerch
-  remaining_principal_exponent := reference_remaining_claim_payload_principal_exponent
-  remaining_fixed_shadow := reference_remaining_claim_payload_fixed_shadow
-  remaining_inside_outside := by
-    intro n
-    exact reference_remaining_claim_payload_inside_outside n
-  paper_registry_atoms := by
-    exact And.intro reference_paper_data_payload_registry_eq_all
-      (And.intro reference_paper_data_payload_registry_name_nonempty
-        reference_paper_data_payload_registry_source_nonempty)
-  paper_object_schema_atoms := by
-    exact And.intro reference_paper_data_payload_schema_object_name
-      (And.intro reference_paper_data_payload_schema_family_object_name
-        (And.intro reference_paper_data_payload_schema_concrete_object
-          reference_paper_data_payload_coefficient_schema_eq_object_schema))
-  paper_instance_atoms := by
-    exact And.intro reference_paper_data_payload_paper_instance_concrete
-      (And.intro reference_paper_data_payload_paper_instance_family
-        (And.intro reference_paper_data_payload_paper_instance_object_name
-          (And.intro reference_paper_data_payload_paper_instance_family_name
-            reference_paper_data_payload_paper_instance_source_nonempty)))
-  paper_family_atoms := by
-    exact And.intro reference_paper_data_payload_family_weight_numerator
-      (And.intro reference_paper_data_payload_family_weight_denominator
-        (And.intro reference_paper_data_payload_family_level_positive
-          (And.intro reference_paper_data_payload_family_qShift_zero
-            (And.intro reference_paper_data_payload_family_working_cusp
-              (And.intro reference_paper_data_payload_family_transported_cusp
-                reference_paper_data_payload_family_z0)))))
-  paper_matrix_atoms := by
-    exact And.intro reference_paper_data_payload_matrix_source_nonempty
-      (And.intro reference_paper_data_payload_matrix_rows
-        (And.intro reference_paper_data_payload_matrix_rhs_rows
-          reference_paper_data_payload_matrix_solution_columns))
-  paper_appell_atoms := by
-    exact And.intro reference_paper_data_payload_appell_source_nonempty
-      (And.intro reference_paper_data_payload_appell_m_mem
-        (And.intro reference_paper_data_payload_appell_r_mem
-          (And.intro reference_paper_data_payload_appell_tauCoeff_diff_zero
-            reference_paper_data_payload_appell_constDiff_eq_z0)))
-  paper_fixed_shadow_atoms := by
-    exact And.intro reference_paper_data_payload_fixed_shadow_source_nonempty
-      (And.intro reference_paper_data_payload_fixed_shadow_symbol_nonempty
-        (And.intro reference_paper_data_payload_fixed_shadow_z0
-          (And.intro reference_paper_data_payload_fixed_shadow_nonzero_case
-            reference_paper_data_payload_fixed_shadow_scale_nonzero)))
-  spt_arithmetic_atoms := by
-    exact And.intro reference_spt_kernel_payload_nat_gcd_lcm
-      (And.intro reference_spt_kernel_payload_primewise_thickness
-        (And.intro reference_spt_kernel_payload_valuation
-          reference_spt_kernel_payload_obstruction_failure))
-  kernel_atoms := by
-    exact And.intro reference_spt_kernel_payload_kernel_selection
-      (And.intro reference_spt_kernel_payload_multiplier_phase
-        (And.intro reference_spt_kernel_payload_cusp_convergence
-          reference_spt_kernel_payload_transport_across_cusps))
-  exact_atoms := by
-    exact And.intro reference_exact_payload_theta_character
-      (And.intro reference_exact_payload_spectral_kloosterman
-        (And.intro reference_exact_payload_local_euler
-          (And.intro reference_exact_payload_root_filter
-            reference_exact_payload_paper_formula_fields)))
-  exact_coefficients := by
-    intro n
-    exact And.intro (reference_exact_payload_coefficient_separation n)
-      (And.intro (reference_exact_payload_lvalue_formula n)
-        (And.intro (reference_exact_payload_beta_arch_formula n)
-          (reference_exact_payload_beta_arch_rademacher n)))
-  padic_atoms := by
-    exact And.intro reference_padic_payload_face_tracking
-      (And.intro reference_padic_payload_denominator
-        reference_padic_payload_obstruction_failure)
-  padic_pointwise := by
-    intro n
-    exact And.intro (reference_padic_payload_normalization n)
-      (And.intro (reference_padic_payload_overlap n)
-        (And.intro (reference_padic_payload_mahler n)
-          (And.intro (reference_padic_payload_chart_vectors n)
-            (reference_padic_payload_mahler_table n))))
-  padic_tail := by
-    intro n hn
-    exact reference_padic_payload_tail_zero n hn
-  entropy_atoms := by
-    exact And.intro reference_entropy_payload_regression_cardy
-      (And.intro reference_entropy_payload_rademacher_tail
-        (And.intro reference_entropy_payload_cardy_wrapper
-          (And.intro reference_entropy_payload_ols_interval
-            (And.intro reference_entropy_payload_growth
-              reference_entropy_payload_reproducibility))))
-  entropy_degeneracy := by
-    intro n
-    exact reference_entropy_payload_degeneracy n
-  rlf_closure := reference_advanced_claims_ii_rlf_end_to_end_closure
 
 theorem reference_advanced_claims_ii_coverage_matrix :
     AdvancedClaimsIIRequirementCoverageMatrix
@@ -56159,6 +58246,127 @@ theorem reference_advanced_claims_ii_final_concrete :
             referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.rationalOLS.betaHat :=
   reference_advanced_claims_ii_checklist.final_concrete_at
 
+theorem reference_advanced_claims_ii_reference_atomic_checklist :
+    AdvancedClaimsIIReferenceAtomicChecklistCertificate where
+  final_audit := reference_advanced_claims_ii_final_audit
+  leaf_ledger := reference_advanced_claims_ii_requirement_leaf_ledger
+  actual_inputs := reference_advanced_claims_ii_actual_input_audit
+  remaining_registry_eq_all :=
+    reference_remaining_claim_payload_claim_registry_eq_all
+  remaining_claim_covered := by
+    intro claim
+    exact reference_remaining_claim_payload_registry claim
+  remaining_object_coefficient := by
+    intro n
+    exact reference_remaining_claim_payload_object_coefficient n
+  remaining_scalar_flags := by
+    exact And.intro reference_remaining_claim_payload_scalar_ellStar_zero
+      (And.intro reference_remaining_claim_payload_scalar_weights_two_sign
+        reference_remaining_claim_payload_scalar_usesScalar_true)
+  remaining_scalar_relation := by
+    intro n
+    exact reference_remaining_claim_payload_scalar_jacobi n
+  remaining_rational_solve_rows := by
+    exact And.intro reference_remaining_claim_payload_rational_solve_matrix_rows
+      (And.intro reference_remaining_claim_payload_rational_solve_rhs_rows
+        reference_remaining_claim_payload_rational_solve_solution_columns)
+  remaining_rational_solve := reference_remaining_claim_payload_t1t5_core
+  remaining_completion_shadow := reference_remaining_claim_payload_completion_shadow
+  remaining_cusp_transport := reference_remaining_claim_payload_cusp_transport
+  remaining_appell_lerch := reference_remaining_claim_payload_appell_lerch
+  remaining_principal_exponent := reference_remaining_claim_payload_principal_exponent
+  remaining_fixed_shadow := reference_remaining_claim_payload_fixed_shadow
+  remaining_inside_outside := by
+    intro n
+    exact reference_remaining_claim_payload_inside_outside n
+  paper_registry_atoms := by
+    exact And.intro reference_paper_data_payload_registry_eq_all
+      (And.intro reference_paper_data_payload_registry_name_nonempty
+        reference_paper_data_payload_registry_source_nonempty)
+  paper_object_schema_atoms := by
+    exact And.intro reference_paper_data_payload_schema_object_name
+      (And.intro reference_paper_data_payload_schema_family_object_name
+        (And.intro reference_paper_data_payload_schema_concrete_object
+          reference_paper_data_payload_coefficient_schema_eq_object_schema))
+  paper_instance_atoms := by
+    exact And.intro reference_paper_data_payload_paper_instance_concrete
+      (And.intro reference_paper_data_payload_paper_instance_family
+        (And.intro reference_paper_data_payload_paper_instance_object_name
+          (And.intro reference_paper_data_payload_paper_instance_family_name
+            reference_paper_data_payload_paper_instance_source_nonempty)))
+  paper_family_atoms := by
+    exact And.intro reference_paper_data_payload_family_weight_numerator
+      (And.intro reference_paper_data_payload_family_weight_denominator
+        (And.intro reference_paper_data_payload_family_level_positive
+          (And.intro reference_paper_data_payload_family_qShift_zero
+            (And.intro reference_paper_data_payload_family_working_cusp
+              (And.intro reference_paper_data_payload_family_transported_cusp
+                reference_paper_data_payload_family_z0)))))
+  paper_matrix_atoms := by
+    exact And.intro reference_paper_data_payload_matrix_source_nonempty
+      (And.intro reference_paper_data_payload_matrix_rows
+        (And.intro reference_paper_data_payload_matrix_rhs_rows
+          reference_paper_data_payload_matrix_solution_columns))
+  paper_appell_atoms := by
+    exact And.intro reference_paper_data_payload_appell_source_nonempty
+      (And.intro reference_paper_data_payload_appell_m_mem
+        (And.intro reference_paper_data_payload_appell_r_mem
+          (And.intro reference_paper_data_payload_appell_tauCoeff_diff_zero
+            reference_paper_data_payload_appell_constDiff_eq_z0)))
+  paper_fixed_shadow_atoms := by
+    exact And.intro reference_paper_data_payload_fixed_shadow_source_nonempty
+      (And.intro reference_paper_data_payload_fixed_shadow_symbol_nonempty
+        (And.intro reference_paper_data_payload_fixed_shadow_z0
+          (And.intro reference_paper_data_payload_fixed_shadow_nonzero_case
+            reference_paper_data_payload_fixed_shadow_scale_nonzero)))
+  spt_arithmetic_atoms := by
+    exact And.intro reference_spt_kernel_payload_nat_gcd_lcm
+      (And.intro reference_spt_kernel_payload_primewise_thickness
+        (And.intro reference_spt_kernel_payload_valuation
+          reference_spt_kernel_payload_obstruction_failure))
+  kernel_atoms := by
+    exact And.intro reference_spt_kernel_payload_kernel_selection
+      (And.intro reference_spt_kernel_payload_multiplier_phase
+        (And.intro reference_spt_kernel_payload_cusp_convergence
+          reference_spt_kernel_payload_transport_across_cusps))
+  exact_atoms := by
+    exact And.intro reference_exact_payload_theta_character
+      (And.intro reference_exact_payload_spectral_kloosterman
+        (And.intro reference_exact_payload_local_euler
+          (And.intro reference_exact_payload_root_filter
+            reference_exact_payload_paper_formula_fields)))
+  exact_coefficients := by
+    intro n
+    exact And.intro (reference_exact_payload_coefficient_separation n)
+      (And.intro (reference_exact_payload_lvalue_formula n)
+        (And.intro (reference_exact_payload_beta_arch_formula n)
+          (reference_exact_payload_beta_arch_rademacher n)))
+  padic_atoms := by
+    exact And.intro reference_padic_payload_face_tracking
+      (And.intro reference_padic_payload_denominator
+        reference_padic_payload_obstruction_failure)
+  padic_pointwise := by
+    intro n
+    exact And.intro (reference_padic_payload_normalization n)
+      (And.intro (reference_padic_payload_overlap n)
+        (And.intro (reference_padic_payload_mahler n)
+          (And.intro (reference_padic_payload_chart_vectors n)
+            (reference_padic_payload_mahler_table n))))
+  padic_tail := by
+    intro n hn
+    exact reference_padic_payload_tail_zero n hn
+  entropy_atoms := by
+    exact And.intro reference_entropy_payload_regression_cardy
+      (And.intro reference_entropy_payload_rademacher_tail
+        (And.intro reference_entropy_payload_cardy_wrapper
+          (And.intro reference_entropy_payload_ols_interval
+            (And.intro reference_entropy_payload_growth
+              reference_entropy_payload_reproducibility))))
+  entropy_degeneracy := by
+    intro n
+    exact reference_entropy_payload_degeneracy n
+  rlf_closure := reference_advanced_claims_ii_rlf_end_to_end_closure
+
 /-!
 Formula-level prompt ledger.
 
@@ -56170,142 +58378,249 @@ mathematical proof fields.
 
 structure AdvancedClaimsIIFormulaLevelPromptLedgerCertificate : Prop where
   object_schema_payload :
-    PaperDataInstancePayloadCertificate.claim_registry_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      (forall claim : RemainingAdvancedClaim,
-        PaperDataInstancePayloadCertificate.claim_covered_at
-          reference_advanced_claims_ii_paper_data_payload claim) /\
-        RemainingAdvancedClaimPayloadCertificate.object_schema_concrete_at
-            reference_advanced_claims_ii_remaining_claim_payload /\
-          (forall n : Nat,
-            PaperDataInstancePayloadCertificate.object_coefficient_at
-              reference_advanced_claims_ii_paper_data_payload n) /\
-            PaperDataInstancePayloadCertificate.paper_object_instance_at
-                reference_advanced_claims_ii_paper_data_payload /\
-              (forall n : Nat,
-                PaperDataInstancePayloadCertificate.scalar_jacobi_at
-                  reference_advanced_claims_ii_paper_data_payload n)
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.registryName = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.sourceName = "")) /\
+    (forall claim : RemainingAdvancedClaim,
+          List.Mem claim referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.concrete = referenceAdvancedClaimsIICompletionCertificate.advanced.concrete) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.coefficientAt n =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
+                referenceMock1DepthOneObjectName /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
+                  referenceMock1DepthOneFamilyName /\
+                Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = "")) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n)
   t1t5_payload :
-    PaperDataInstancePayloadCertificate.matrix_solution_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.matrix_rows_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.matrix_rhs_rows_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.matrix_solution_columns_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-                reference_advanced_claims_ii_remaining_claim_payload /\
-              RemainingAdvancedClaimPayloadCertificate.completion_shadow_holomorphic_at
-                  reference_advanced_claims_ii_remaining_claim_payload /\
-                RemainingAdvancedClaimPayloadCertificate.cusp_transport_at
-                    reference_advanced_claims_ii_remaining_claim_payload /\
-                  RemainingAdvancedClaimPayloadCertificate.appell_lerch_block_formula_at
-                      reference_advanced_claims_ii_remaining_claim_payload /\
-                    RemainingAdvancedClaimPayloadCertificate.principal_exponent_formula_at
-                        reference_advanced_claims_ii_remaining_claim_payload /\
-                      RemainingAdvancedClaimPayloadCertificate.fixed_shadow_unary_theta_at
-                          reference_advanced_claims_ii_remaining_claim_payload /\
-                        (forall n : Nat,
-                          RemainingAdvancedClaimPayloadCertificate.inside_outside_qseries_at
-                            reference_advanced_claims_ii_remaining_claim_payload n)
+    (    MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.columns) /\
+    (    MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.blockSum = 0 /\
+          forall x, referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.shadow.xiFhat x = 0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.transports.length /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.kernel.level) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff -
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0 /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent =
+            paperPrincipalExponent referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.n
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.ell
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.m /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent < 0) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0)) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.inside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.partialTheta.coeff n -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.correction.coeff n)
   spt_payload :
-    SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-              reference_advanced_claims_ii_spt_kernel_payload /\
-            SPTKernelRequirementPayloadCertificate.base_change_at
-              reference_advanced_claims_ii_spt_kernel_payload
+    (    Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M /\
+          Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower /\
+            Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue /\
+              Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.failureThickness =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness + 1 /\
+          0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness) /\
+    (    Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          Dvd.dvd
+              (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp)
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+            Not
+              (Dvd.dvd
+                (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                  (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1))
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.failureThickness =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order) /\
+    (    Dvd.dvd
+          (Nat.lcm referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.M
+            (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.p ^
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.k))
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.mapEqualizer
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.source.equalizerElement))
   kernel_payload :
-    SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.transport_family_at
-              reference_advanced_claims_ii_spt_kernel_payload /\
-            SPTKernelRequirementPayloadCertificate.kernel_table_at
-                reference_advanced_claims_ii_spt_kernel_payload /\
-              SPTKernelRequirementPayloadCertificate.multiplier_input_at
-                  reference_advanced_claims_ii_spt_kernel_payload /\
-                SPTKernelRequirementPayloadCertificate.cusp_input_at
-                    reference_advanced_claims_ii_spt_kernel_payload /\
-                  SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-                    reference_advanced_claims_ii_spt_kernel_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.selection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.level) /\
+    (    0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.root.phases /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2 /\
+            forall row, List.Mem row referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows ->
+              row.computedValue = row.tableValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.cutoff) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transportFamily =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.transportFamily /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports.length) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.sourceName = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.multiplierRows.length =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.ts =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.phaseMatching /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.convergence /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true) /\
+    (    List.Mem infinityCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+          List.Mem zeroCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+            forall T, List.Mem T referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports ->
+              T.principal.rowCount = T.principal.order)
   exact_payload :
     (forall n : Nat,
-      ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        reference_advanced_claims_ii_exact_coefficient_payload n) /\
-      ExactCoefficientRequirementPayloadCertificate.theta_character_at
-          reference_advanced_claims_ii_exact_coefficient_payload /\
-        ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-            reference_advanced_claims_ii_exact_coefficient_payload /\
-          ExactCoefficientRequirementPayloadCertificate.local_euler_at
-              reference_advanced_claims_ii_exact_coefficient_payload /\
-            ExactCoefficientRequirementPayloadCertificate.root_filter_at
-                reference_advanced_claims_ii_exact_coefficient_payload /\
-              (forall n : Nat,
-                ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-                  reference_advanced_claims_ii_exact_coefficient_payload n) /\
-                ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-                  reference_advanced_claims_ii_exact_coefficient_payload
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.scalarPart n +
+            referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.thetaPart n) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.exact.thetaTable.rows = []) /\
+          referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.lValueTheoryAccepted) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.finiteResidue.certifiedSum =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.kloostermanValue /\
+          forall n, referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.coefficient n =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.remainder n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.localEuler.productValue = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.rootFilter.allowed = true) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.globalConstant *
+            referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.powerTerm n *
+              referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.centralLValue n *
+                referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.localEulerProduct n) /\
+    (    (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+            (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n))
   padic_payload :
     (forall n : Nat,
-      PAdicRequirementPayloadCertificate.normalization_at
-        reference_advanced_claims_ii_padic_payload n) /\
-      (forall n : Nat,
-        PAdicRequirementPayloadCertificate.overlap_at
-          reference_advanced_claims_ii_padic_payload n) /\
-        (forall n : Nat,
-          PAdicRequirementPayloadCertificate.mahler_at
-            reference_advanced_claims_ii_padic_payload n) /\
-          (forall n : Nat,
-            (hn :
-              referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-              PAdicRequirementPayloadCertificate.tail_zero_at
-                reference_advanced_claims_ii_padic_payload n hn) /\
-            PAdicRequirementPayloadCertificate.face_tracking_at
-                reference_advanced_claims_ii_padic_payload /\
-              PAdicRequirementPayloadCertificate.denominator_data_at
-                  reference_advanced_claims_ii_padic_payload /\
-                (forall n : Nat,
-                  PAdicRequirementPayloadCertificate.chart_vectors_at
-                    reference_advanced_claims_ii_padic_payload n) /\
-                  (forall n : Nat,
-                    PAdicRequirementPayloadCertificate.mahler_table_at
-                      reference_advanced_claims_ii_padic_payload n) /\
-                    (forall n : Nat,
-                      (hn :
-                        referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-                        PAdicRequirementPayloadCertificate.predicate_at
-                          reference_advanced_claims_ii_padic_payload n hn) /\
-                      PAdicRequirementPayloadCertificate.obstruction_failure_at
-                        reference_advanced_claims_ii_padic_payload
+          IntCongruent
+          (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.k)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.normalized n)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.raw n)) /\
+    (forall n : Nat,
+          IntCongruent referenceAdvancedClaimsIICompletionCertificate.padicOverlap.M
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n) /\
+          IntCongruent (PrimePower referenceAdvancedClaimsIICompletionCertificate.padicOverlap.p referenceAdvancedClaimsIICompletionCertificate.padicOverlap.k)
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n)) /\
+    (forall n : Nat,
+          IntCongruent
+            (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.p
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.k)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.coeff j *
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.basis j n)) /\
+    (forall n : Nat,
+      forall hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n,
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n /\
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.tail n = 0) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label = "") /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI4Label = "") /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI5Label = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.lemma9Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label /\
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.propositionI3Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label) /\
+    (    Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+    (forall n : Nat,
+          FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+          (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+    (forall n : Nat,
+          FiniteCongruenceMod
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                  mahlerBinomialBasis (j : Nat) n)) /\
+    (forall n : Nat,
+      forall hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n,
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1))
   entropy_payload :
-    EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        reference_advanced_claims_ii_entropy_payload /\
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-          reference_advanced_claims_ii_entropy_payload /\
-        EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-            reference_advanced_claims_ii_entropy_payload /\
-          EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-              reference_advanced_claims_ii_entropy_payload /\
-            (forall n : Nat,
-              EntropyReproRequirementPayloadCertificate.degeneracy_at
-                reference_advanced_claims_ii_entropy_payload n) /\
-              EntropyReproRequirementPayloadCertificate.ols_interval_at
-                  reference_advanced_claims_ii_entropy_payload /\
-                EntropyReproRequirementPayloadCertificate.growth_stability_at
-                    reference_advanced_claims_ii_entropy_payload /\
-                  EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-                      reference_advanced_claims_ii_entropy_payload /\
-                    EntropyReproRequirementPayloadCertificate.external_rows_at
-                      reference_advanced_claims_ii_entropy_payload
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffHat /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.alphaExtraction.cEqualsOne /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.tailUpper <=
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.dominanceThreshold *
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.mainLower) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.paperTables.residualTable.rows.length = 16) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.p =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.p /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.k =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.k /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.obstructionOrder = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 /\
+          forall row : ResidualTableRow,
+            List.Mem row referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows ->
+              row.rtCheck.pass = true /\ row.rsCheck.pass = true) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16)
   rlf_payload :
     AdvancedClaimsIIRlfEndToEndClosureCertificate
         referenceAdvancedClaimsIICompletionCertificate /\
@@ -56324,160 +58639,267 @@ namespace AdvancedClaimsIIFormulaLevelPromptLedgerCertificate
 
 theorem object_schema_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
-    PaperDataInstancePayloadCertificate.claim_registry_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      (forall claim : RemainingAdvancedClaim,
-        PaperDataInstancePayloadCertificate.claim_covered_at
-          reference_advanced_claims_ii_paper_data_payload claim) /\
-        RemainingAdvancedClaimPayloadCertificate.object_schema_concrete_at
-            reference_advanced_claims_ii_remaining_claim_payload /\
-          (forall n : Nat,
-            PaperDataInstancePayloadCertificate.object_coefficient_at
-              reference_advanced_claims_ii_paper_data_payload n) /\
-            PaperDataInstancePayloadCertificate.paper_object_instance_at
-                reference_advanced_claims_ii_paper_data_payload /\
-              (forall n : Nat,
-                PaperDataInstancePayloadCertificate.scalar_jacobi_at
-                  reference_advanced_claims_ii_paper_data_payload n) :=
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.registryName = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.sourceName = "")) /\
+    (forall claim : RemainingAdvancedClaim,
+          List.Mem claim referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.concrete = referenceAdvancedClaimsIICompletionCertificate.advanced.concrete) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.coefficientAt n =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
+                referenceMock1DepthOneObjectName /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
+                  referenceMock1DepthOneFamilyName /\
+                Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = "")) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n) :=
   L.object_schema_payload
 
 theorem t1t5_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
-    PaperDataInstancePayloadCertificate.matrix_solution_at
-        reference_advanced_claims_ii_paper_data_payload /\
-      PaperDataInstancePayloadCertificate.matrix_rows_at
-          reference_advanced_claims_ii_paper_data_payload /\
-        PaperDataInstancePayloadCertificate.matrix_rhs_rows_at
-            reference_advanced_claims_ii_paper_data_payload /\
-          PaperDataInstancePayloadCertificate.matrix_solution_columns_at
-              reference_advanced_claims_ii_paper_data_payload /\
-            RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-                reference_advanced_claims_ii_remaining_claim_payload /\
-              RemainingAdvancedClaimPayloadCertificate.completion_shadow_holomorphic_at
-                  reference_advanced_claims_ii_remaining_claim_payload /\
-                RemainingAdvancedClaimPayloadCertificate.cusp_transport_at
-                    reference_advanced_claims_ii_remaining_claim_payload /\
-                  RemainingAdvancedClaimPayloadCertificate.appell_lerch_block_formula_at
-                      reference_advanced_claims_ii_remaining_claim_payload /\
-                    RemainingAdvancedClaimPayloadCertificate.principal_exponent_formula_at
-                        reference_advanced_claims_ii_remaining_claim_payload /\
-                      RemainingAdvancedClaimPayloadCertificate.fixed_shadow_unary_theta_at
-                          reference_advanced_claims_ii_remaining_claim_payload /\
-                        (forall n : Nat,
-                          RemainingAdvancedClaimPayloadCertificate.inside_outside_qseries_at
-                            reference_advanced_claims_ii_remaining_claim_payload n) :=
+    (    MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.columns) /\
+    (    MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.blockSum = 0 /\
+          forall x, referenceAdvancedClaimsIICompletionCertificate.advanced.completionShadow.shadow.xiFhat x = 0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.transportFamily.transports.length /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.tail.tail.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.cuspTransport.t4.tailTracking.kernel.level) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uTauCoeff -
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vTauCoeff = 0 /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.uConst -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.vConst =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.appellLerch.z0) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent =
+            paperPrincipalExponent referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.n
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.ell
+              referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.m /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.exponentFormula.exponent < 0) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.thetaSymbol = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.z0 = (-1 / 2 : Rat) /\
+            referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.nonzeroCase /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.advanced.fixedShadow.scale = 0)) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.inside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n /\
+          referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.outside.coeff n =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.partialTheta.coeff n -
+              referenceAdvancedClaimsIICompletionCertificate.advanced.insideOutside.correction.coeff n) :=
   L.t1t5_payload
 
 theorem spt_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
-    SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-              reference_advanced_claims_ii_spt_kernel_payload /\
-            SPTKernelRequirementPayloadCertificate.base_change_at
-              reference_advanced_claims_ii_spt_kernel_payload :=
+    (    Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M /\
+          Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower /\
+            Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue /\
+              Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.failureThickness =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness + 1 /\
+          0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness) /\
+    (    Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          Dvd.dvd
+              (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp)
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+            Not
+              (Dvd.dvd
+                (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                  (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1))
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.failureThickness =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order) /\
+    (    Dvd.dvd
+          (Nat.lcm referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.M
+            (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.p ^
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.k))
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.mapEqualizer
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.source.equalizerElement)) :=
   L.spt_payload
 
 theorem kernel_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
-    SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.transport_family_at
-              reference_advanced_claims_ii_spt_kernel_payload /\
-            SPTKernelRequirementPayloadCertificate.kernel_table_at
-                reference_advanced_claims_ii_spt_kernel_payload /\
-              SPTKernelRequirementPayloadCertificate.multiplier_input_at
-                  reference_advanced_claims_ii_spt_kernel_payload /\
-                SPTKernelRequirementPayloadCertificate.cusp_input_at
-                    reference_advanced_claims_ii_spt_kernel_payload /\
-                  SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-                    reference_advanced_claims_ii_spt_kernel_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.selection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.level) /\
+    (    0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.root.phases /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2 /\
+            forall row, List.Mem row referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows ->
+              row.computedValue = row.tableValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.cutoff) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transportFamily =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.transportFamily /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports.length) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.sourceName = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.multiplierRows.length =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.ts =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.phaseMatching /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.convergence /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true) /\
+    (    List.Mem infinityCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+          List.Mem zeroCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+            forall T, List.Mem T referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports ->
+              T.principal.rowCount = T.principal.order) :=
   L.kernel_payload
 
 theorem exact_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
     (forall n : Nat,
-      ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        reference_advanced_claims_ii_exact_coefficient_payload n) /\
-      ExactCoefficientRequirementPayloadCertificate.theta_character_at
-          reference_advanced_claims_ii_exact_coefficient_payload /\
-        ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-            reference_advanced_claims_ii_exact_coefficient_payload /\
-          ExactCoefficientRequirementPayloadCertificate.local_euler_at
-              reference_advanced_claims_ii_exact_coefficient_payload /\
-            ExactCoefficientRequirementPayloadCertificate.root_filter_at
-                reference_advanced_claims_ii_exact_coefficient_payload /\
-              (forall n : Nat,
-                ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-                  reference_advanced_claims_ii_exact_coefficient_payload n) /\
-                ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-                  reference_advanced_claims_ii_exact_coefficient_payload :=
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.scalarPart n +
+            referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.thetaPart n) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.exact.thetaTable.rows = []) /\
+          referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.lValueTheoryAccepted) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.finiteResidue.certifiedSum =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.kloostermanValue /\
+          forall n, referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.coefficient n =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.remainder n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.localEuler.productValue = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.rootFilter.allowed = true) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.globalConstant *
+            referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.powerTerm n *
+              referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.centralLValue n *
+                referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.localEulerProduct n) /\
+    (    (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+            (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n)) :=
   L.exact_payload
 
 theorem padic_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
     (forall n : Nat,
-      PAdicRequirementPayloadCertificate.normalization_at
-        reference_advanced_claims_ii_padic_payload n) /\
-      (forall n : Nat,
-        PAdicRequirementPayloadCertificate.overlap_at
-          reference_advanced_claims_ii_padic_payload n) /\
-        (forall n : Nat,
-          PAdicRequirementPayloadCertificate.mahler_at
-            reference_advanced_claims_ii_padic_payload n) /\
-          (forall n : Nat,
-            (hn :
-              referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-              PAdicRequirementPayloadCertificate.tail_zero_at
-                reference_advanced_claims_ii_padic_payload n hn) /\
-            PAdicRequirementPayloadCertificate.face_tracking_at
-                reference_advanced_claims_ii_padic_payload /\
-              PAdicRequirementPayloadCertificate.denominator_data_at
-                  reference_advanced_claims_ii_padic_payload /\
-                (forall n : Nat,
-                  PAdicRequirementPayloadCertificate.chart_vectors_at
-                    reference_advanced_claims_ii_padic_payload n) /\
-                  (forall n : Nat,
-                    PAdicRequirementPayloadCertificate.mahler_table_at
-                      reference_advanced_claims_ii_padic_payload n) /\
-                    (forall n : Nat,
-                      (hn :
-                        referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) ->
-                        PAdicRequirementPayloadCertificate.predicate_at
-                          reference_advanced_claims_ii_padic_payload n hn) /\
-                      PAdicRequirementPayloadCertificate.obstruction_failure_at
-                        reference_advanced_claims_ii_padic_payload :=
+          IntCongruent
+          (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.k)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.normalized n)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.raw n)) /\
+    (forall n : Nat,
+          IntCongruent referenceAdvancedClaimsIICompletionCertificate.padicOverlap.M
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n) /\
+          IntCongruent (PrimePower referenceAdvancedClaimsIICompletionCertificate.padicOverlap.p referenceAdvancedClaimsIICompletionCertificate.padicOverlap.k)
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n)) /\
+    (forall n : Nat,
+          IntCongruent
+            (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.p
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.k)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.coeff j *
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.basis j n)) /\
+    (forall n : Nat,
+      forall hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n,
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n /\
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.tail n = 0) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label = "") /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI4Label = "") /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI5Label = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.lemma9Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label /\
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.propositionI3Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label) /\
+    (    Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+    (forall n : Nat,
+          FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+          (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+    (forall n : Nat,
+          FiniteCongruenceMod
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                  mahlerBinomialBasis (j : Nat) n)) /\
+    (forall n : Nat,
+      forall hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n,
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   L.padic_payload
 
 theorem entropy_payload_at
     (L : AdvancedClaimsIIFormulaLevelPromptLedgerCertificate) :
-    EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        reference_advanced_claims_ii_entropy_payload /\
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-          reference_advanced_claims_ii_entropy_payload /\
-        EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-            reference_advanced_claims_ii_entropy_payload /\
-          EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-              reference_advanced_claims_ii_entropy_payload /\
-            (forall n : Nat,
-              EntropyReproRequirementPayloadCertificate.degeneracy_at
-                reference_advanced_claims_ii_entropy_payload n) /\
-              EntropyReproRequirementPayloadCertificate.ols_interval_at
-                  reference_advanced_claims_ii_entropy_payload /\
-                EntropyReproRequirementPayloadCertificate.growth_stability_at
-                    reference_advanced_claims_ii_entropy_payload /\
-                  EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-                      reference_advanced_claims_ii_entropy_payload /\
-                    EntropyReproRequirementPayloadCertificate.external_rows_at
-                      reference_advanced_claims_ii_entropy_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffHat /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.alphaExtraction.cEqualsOne /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.tailUpper <=
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.dominanceThreshold *
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.mainLower) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.paperTables.residualTable.rows.length = 16) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat) /\
+    (forall n : Nat,
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.p =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.p /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.k =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.k /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.obstructionOrder = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 /\
+          forall row : ResidualTableRow,
+            List.Mem row referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows ->
+              row.rtCheck.pass = true /\ row.rsCheck.pass = true) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16) :=
   L.entropy_payload
 
 theorem rlf_payload_at
@@ -56579,61 +59001,70 @@ paper-data formula field from the final reference certificate.
 -/
 
 theorem reference_formula_level_prompt_object_registry :
-    PaperDataInstancePayloadCertificate.claim_registry_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements = RemainingAdvancedClaim.all /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.registryName = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.advanced.registry.sourceName = "") :=
   reference_paper_data_payload_registry
 
 theorem reference_formula_level_prompt_object_claim_covered
     (claim : RemainingAdvancedClaim) :
-    PaperDataInstancePayloadCertificate.claim_covered_at
-      reference_advanced_claims_ii_paper_data_payload claim :=
+        List.Mem claim referenceAdvancedClaimsIICompletionCertificate.advanced.registry.requirements :=
   reference_paper_data_payload_claim_covered claim
 
 theorem reference_formula_level_prompt_object_schema_concrete :
-    RemainingAdvancedClaimPayloadCertificate.object_schema_concrete_at
-      reference_advanced_claims_ii_remaining_claim_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.concrete = referenceAdvancedClaimsIICompletionCertificate.advanced.concrete :=
   reference_remaining_claim_payload_object_schema_concrete
 
 theorem reference_formula_level_prompt_object_coefficient
     (n : Nat) :
-    PaperDataInstancePayloadCertificate.object_coefficient_at
-      reference_advanced_claims_ii_paper_data_payload n :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.coefficientAt n =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.objectSchema.object.coeff n :=
   reference_paper_data_payload_object_coefficient n
 
 theorem reference_formula_level_prompt_paper_object_instance :
-    PaperDataInstancePayloadCertificate.paper_object_instance_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete =
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.concrete /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.family =
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.namedInstance.family /\
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.objectName =
+                referenceMock1DepthOneObjectName /\
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.familyName =
+                  referenceMock1DepthOneFamilyName /\
+                Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.family.sourceName = "") :=
   reference_paper_data_payload_object_instance
 
 theorem reference_formula_level_prompt_scalar_jacobi
     (n : Nat) :
-    PaperDataInstancePayloadCertificate.scalar_jacobi_at
-      reference_advanced_claims_ii_paper_data_payload n :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.jacobiCoeff n
+          referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.ellStar =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.degeneracyRelation.scalarCoeff n :=
   reference_paper_data_payload_scalar_jacobi n
 
 theorem reference_formula_level_prompt_matrix_solution :
-    PaperDataInstancePayloadCertificate.matrix_solution_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs :=
   reference_paper_data_payload_matrix_solution
 
 theorem reference_formula_level_prompt_matrix_rows :
-    PaperDataInstancePayloadCertificate.matrix_rows_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows :=
   reference_paper_data_payload_matrix_rows
 
 theorem reference_formula_level_prompt_matrix_rhs_rows :
-    PaperDataInstancePayloadCertificate.matrix_rhs_rows_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rows :=
   reference_paper_data_payload_matrix_rhs_rows
 
 theorem reference_formula_level_prompt_matrix_solution_columns :
-    PaperDataInstancePayloadCertificate.matrix_solution_columns_at
-      reference_advanced_claims_ii_paper_data_payload :=
+        referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution.length =
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.columns :=
   reference_paper_data_payload_matrix_solution_columns
 
 theorem reference_formula_level_prompt_principal_part_solve :
-    RemainingAdvancedClaimPayloadCertificate.principal_part_rational_solve_at
-      reference_advanced_claims_ii_remaining_claim_payload :=
+        MatVecRat referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.matrix
+          referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.solution =
+            referenceAdvancedClaimsIICompletionCertificate.advanced.rationalSolve.rhs :=
   reference_remaining_claim_payload_t1t5_core
 
 theorem reference_formula_level_prompt_completion_block_sum_zero :
@@ -56703,74 +59134,122 @@ theorem reference_formula_level_prompt_inside_outside
     (reference_remaining_claim_payload_outside_eq_partial_minus_correction n)
 
 theorem reference_formula_level_prompt_spt_arithmetic :
-    SPTKernelRequirementPayloadCertificate.nat_gcd_lcm_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.primewise_thickness_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.valuation_certificate_at
-            reference_advanced_claims_ii_spt_kernel_payload :=
+    (    Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M /\
+          Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.gcdValue
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower /\
+            Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.M
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue /\
+              Dvd.dvd referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.primePower
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.gcdLcm.lcmValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.failureThickness =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness + 1 /\
+          0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.thickness.thickness) /\
+    (    Nat.Prime referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p /\
+          Dvd.dvd
+              (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp)
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M /\
+            Not
+              (Dvd.dvd
+                (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.p ^
+                  (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.vp + 1))
+                referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.valuation.M)) :=
   And.intro reference_spt_kernel_payload_nat_gcd_lcm
     (And.intro reference_spt_kernel_payload_primewise_thickness
       reference_spt_kernel_payload_valuation)
 
 theorem reference_formula_level_prompt_spt_obstruction_base_change :
-    SPTKernelRequirementPayloadCertificate.obstruction_failure_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.base_change_at
-        reference_advanced_claims_ii_spt_kernel_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1) /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.failureThickness =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order) /\
+    (    Dvd.dvd
+          (Nat.lcm referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.M
+            (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.p ^
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.target.k))
+          (referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.mapEqualizer
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.baseChange.source.equalizerElement)) :=
   And.intro reference_spt_kernel_payload_obstruction_failure
     reference_spt_kernel_payload_base_change
 
 theorem reference_formula_level_prompt_kernel_selection_table :
-    SPTKernelRequirementPayloadCertificate.kernel_selection_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.kernel_table_at
-        reference_advanced_claims_ii_spt_kernel_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.selection.selectedModulus =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.record.level) /\
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.sourceName = "") /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.selectedModulus =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level /\
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.multiplierRows.length =
+              referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelSelection.level) :=
   And.intro reference_spt_kernel_payload_kernel_selection
     reference_spt_kernel_payload_kernel_table
 
 theorem reference_formula_level_prompt_multiplier_cusp_transport :
-    SPTKernelRequirementPayloadCertificate.multiplier_phase_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.cusp_convergence_at
-          reference_advanced_claims_ii_spt_kernel_payload /\
-        SPTKernelRequirementPayloadCertificate.transport_family_at
-            reference_advanced_claims_ii_spt_kernel_payload /\
-          SPTKernelRequirementPayloadCertificate.transport_across_cusps_at
-            reference_advanced_claims_ii_spt_kernel_payload :=
+    (    0 < referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.root.phases /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2 /\
+            forall row, List.Mem row referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows ->
+              row.computedValue = row.tableValue) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.cutoff =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.cutoff) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transportFamily =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.transportFamily /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.stacked.rowCount =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports.length) /\
+    (    List.Mem infinityCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+          List.Mem zeroCuspLabel referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.relevantCusps /\
+            forall T, List.Mem T referenceAdvancedClaimsIICompletionCertificate.sptKernel.transport.transports ->
+              T.principal.rowCount = T.principal.order) :=
   And.intro reference_spt_kernel_payload_multiplier_phase
     (And.intro reference_spt_kernel_payload_cusp_convergence
       (And.intro reference_spt_kernel_payload_transport_family
         reference_spt_kernel_payload_transport_across_cusps))
 
 theorem reference_formula_level_prompt_kernel_actual_inputs :
-    SPTKernelRequirementPayloadCertificate.multiplier_input_at
-        reference_advanced_claims_ii_spt_kernel_payload /\
-      SPTKernelRequirementPayloadCertificate.cusp_input_at
-        reference_advanced_claims_ii_spt_kernel_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.ts =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.phaseMatching /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.multiplier.rows.length = 2) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary =
+            referenceAdvancedClaimsIICompletionCertificate.sptKernel.kernelCusp.convergence /\
+          referenceAdvancedClaimsIICompletionCertificate.sptKernel.cuspConvergence.boundary.passes = true) :=
   And.intro reference_spt_kernel_payload_multiplier_input
     reference_spt_kernel_payload_cusp_input
 
 theorem reference_formula_level_prompt_exact_boundaries
     (n : Nat) :
-    ExactCoefficientRequirementPayloadCertificate.coefficient_separation_at
-        reference_advanced_claims_ii_exact_coefficient_payload n /\
-      ExactCoefficientRequirementPayloadCertificate.exact_formula_at
-        reference_advanced_claims_ii_exact_coefficient_payload n :=
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.exact.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.scalarPart n +
+            referenceAdvancedClaimsIICompletionCertificate.exact.exact.separation.thetaPart n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.coefficient n =
+          referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.globalConstant *
+            referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.powerTerm n *
+              referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.centralLValue n *
+                referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.formula.localEulerProduct n) :=
   And.intro (reference_exact_payload_coefficient_separation n)
     (reference_exact_payload_lvalue_formula n)
 
 theorem reference_formula_level_prompt_exact_global_inputs :
-    ExactCoefficientRequirementPayloadCertificate.theta_character_at
-        reference_advanced_claims_ii_exact_coefficient_payload /\
-      ExactCoefficientRequirementPayloadCertificate.spectral_kloosterman_at
-          reference_advanced_claims_ii_exact_coefficient_payload /\
-        ExactCoefficientRequirementPayloadCertificate.local_euler_at
-            reference_advanced_claims_ii_exact_coefficient_payload /\
-          ExactCoefficientRequirementPayloadCertificate.root_filter_at
-              reference_advanced_claims_ii_exact_coefficient_payload /\
-            ExactCoefficientRequirementPayloadCertificate.paper_formula_fields_at
-              reference_advanced_claims_ii_exact_coefficient_payload :=
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.exact.thetaTable.rows = []) /\
+          referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.kuznetsovAccepted /\
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.weilBoundAccepted /\
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.analyticBoundary.lValueTheoryAccepted) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.finiteResidue.certifiedSum =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.kloostermanValue /\
+          forall n, referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.coefficient n =
+            referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.main n +
+              referenceAdvancedClaimsIICompletionCertificate.exact.spectralInput.spectral.rademacher.remainder n) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.localEuler.productValue = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.exact.localRootLValueInput.rootFilter.allowed = true) /\
+    (    (forall r : ExactCoefficientERequirement, List.Mem r referenceAdvancedClaimsIICompletionCertificate.exact.requirements) /\
+          (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+            referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.scalarRecord.scalar *
+              (referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.mockCoeff n *
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.unfolding.thetaCoeff n)) /\
+            (forall n, referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.normalizedCoeff n =
+              referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.main n +
+                referenceAdvancedClaimsIICompletionCertificate.betaArch.betaArch.formula.rademacher.remainder n)) :=
   And.intro reference_exact_payload_theta_character
     (And.intro reference_exact_payload_spectral_kloosterman
       (And.intro reference_exact_payload_local_euler
@@ -56779,12 +59258,25 @@ theorem reference_formula_level_prompt_exact_global_inputs :
 
 theorem reference_formula_level_prompt_padic_pointwise
     (n : Nat) :
-    PAdicRequirementPayloadCertificate.normalization_at
-        reference_advanced_claims_ii_padic_payload n /\
-      PAdicRequirementPayloadCertificate.overlap_at
-          reference_advanced_claims_ii_padic_payload n /\
-        PAdicRequirementPayloadCertificate.mahler_at
-          reference_advanced_claims_ii_padic_payload n :=
+    (    IntCongruent
+          (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.k)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.normalized n)
+          (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.normalization.raw n)) /\
+    (    IntCongruent referenceAdvancedClaimsIICompletionCertificate.padicOverlap.M
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n) /\
+          IntCongruent (PrimePower referenceAdvancedClaimsIICompletionCertificate.padicOverlap.p referenceAdvancedClaimsIICompletionCertificate.padicOverlap.k)
+            (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.left n) (referenceAdvancedClaimsIICompletionCertificate.padicOverlap.right n)) /\
+    (    IntCongruent
+            (PrimePower referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.p
+              referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.k)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.mahler.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.coeff j *
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahler.basis j n)) :=
   And.intro (reference_padic_payload_normalization n)
     (And.intro (reference_padic_payload_overlap n)
       (reference_padic_payload_mahler n))
@@ -56793,58 +59285,85 @@ theorem reference_formula_level_prompt_padic_tail
     (n : Nat)
     (hn :
       referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n) :
-    PAdicRequirementPayloadCertificate.tail_zero_at
-      reference_advanced_claims_ii_padic_payload n hn :=
+        referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.predicate n /\
+          referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.tail n = 0 :=
   reference_padic_payload_tail_zero n hn
 
 theorem reference_formula_level_prompt_padic_actual_inputs
     (n : Nat) :
-    PAdicRequirementPayloadCertificate.chart_vectors_at
-        reference_advanced_claims_ii_padic_payload n /\
-      PAdicRequirementPayloadCertificate.mahler_table_at
-        reference_advanced_claims_ii_padic_payload n :=
+    (    FiniteCongruenceMod referenceAdvancedClaimsIICompletionCertificate.padicChart.p referenceAdvancedClaimsIICompletionCertificate.padicChart.k
+          (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartLeft n) (referenceAdvancedClaimsIICompletionCertificate.padicChart.chartRight n)) /\
+    (    FiniteCongruenceMod
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.p
+            referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.k
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n)
+            (referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.target n) /\
+          referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.eval n =
+            Finset.sum Finset.univ
+              (fun j : Fin referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.length =>
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.extraction.concrete.mahlerBinomial.coeff j *
+                  mahlerBinomialBasis (j : Nat) n)) :=
   And.intro (reference_padic_payload_chart_vectors n)
     (reference_padic_payload_mahler_table n)
 
 theorem reference_formula_level_prompt_padic_global :
-    PAdicRequirementPayloadCertificate.face_tracking_at
-        reference_advanced_claims_ii_padic_payload /\
-      PAdicRequirementPayloadCertificate.denominator_data_at
-          reference_advanced_claims_ii_padic_payload /\
-        PAdicRequirementPayloadCertificate.obstruction_failure_at
-          reference_advanced_claims_ii_padic_payload :=
+    (    Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label = "") /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label = "") /\
+            Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI4Label = "") /\
+              Not (referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI5Label = "") /\
+                referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.lemma9Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.lemma9Label /\
+                  referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.face.propositionI3Label =
+                    referenceAdvancedClaimsIICompletionCertificate.paperInstance.padic.equationI3Label) /\
+    (    Not (referenceT1DenominatorNonzero.denominator = 0) /\
+          Not (referenceT2LeadingDenominatorNonzero.denominator = 0) /\
+            Not (referenceT2SimpleDenominatorNonzero.denominator = 0)) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFree.spt.obstruction.order = 1 /\
+          Not (referenceAdvancedClaimsIICompletionCertificate.sptKernel.sptFailure.spt.obstruction.order = 1)) :=
   And.intro reference_padic_payload_face_tracking
     (And.intro reference_padic_payload_denominator
       reference_padic_payload_obstruction_failure)
 
 theorem reference_formula_level_prompt_entropy_core :
-    EntropyReproRequirementPayloadCertificate.regression_cardy_at
-        reference_advanced_claims_ii_entropy_payload /\
-      EntropyReproRequirementPayloadCertificate.rademacher_tail_at
-          reference_advanced_claims_ii_entropy_payload /\
-        EntropyReproRequirementPayloadCertificate.entropy_cardy_wrapper_at
-          reference_advanced_claims_ii_entropy_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.ceffHat /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.alphaExtraction.cEqualsOne /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.tailUpper <=
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.dominanceThreshold *
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.tailDominance.mainLower) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.paperTables.residualTable.rows.length = 16) :=
   And.intro reference_entropy_payload_regression_cardy
     (And.intro reference_entropy_payload_rademacher_tail
       reference_entropy_payload_cardy_wrapper)
 
 theorem reference_formula_level_prompt_entropy_pointwise
     (n : Nat) :
-    EntropyReproRequirementPayloadCertificate.degeneracy_at
-      reference_advanced_claims_ii_entropy_payload n :=
+        referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n :=
   reference_entropy_payload_degeneracy n
 
 theorem reference_formula_level_prompt_entropy_reproducibility :
-    EntropyReproRequirementPayloadCertificate.alpha_extraction_at
-        reference_advanced_claims_ii_entropy_payload /\
-      EntropyReproRequirementPayloadCertificate.ols_interval_at
-          reference_advanced_claims_ii_entropy_payload /\
-        EntropyReproRequirementPayloadCertificate.growth_stability_at
-            reference_advanced_claims_ii_entropy_payload /\
-          EntropyReproRequirementPayloadCertificate.reproducibility_schema_at
-              reference_advanced_claims_ii_entropy_payload /\
-            EntropyReproRequirementPayloadCertificate.external_rows_at
-              reference_advanced_claims_ii_entropy_payload :=
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaInterval.Contains referenceAdvancedClaimsIICompletionCertificate.entropy.symbolic.alphaHat) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.rows.length = 5 /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.interval.Contains
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.alphaRow.estimate /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.interval.Contains
+              referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.olsTable.ceffRow.estimate) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.p =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.p /\
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.spt.k =
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.padic.k /\
+            referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.growthStability.obstructionOrder = 1) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16 /\
+          forall row : ResidualTableRow,
+            List.Mem row referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows ->
+              row.rtCheck.pass = true /\ row.rsCheck.pass = true) /\
+    (    referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16) :=
   And.intro reference_entropy_payload_alpha_extraction
     (And.intro reference_entropy_payload_ols_interval
       (And.intro reference_entropy_payload_growth
@@ -57237,8 +59756,8 @@ structure AdvancedClaimsIIFormulaLevelMergeAuditCertificate : Prop where
     AdvancedClaimsIIEntropyStaticDetailStatement
   entropy_degeneracy :
     forall n : Nat,
-      EntropyReproRequirementPayloadCertificate.degeneracy_at
-        reference_advanced_claims_ii_entropy_payload n
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.degeneracy n =
+          referenceAdvancedClaimsIICompletionCertificate.entropy.entropy.degeneracy.coefficient n
   entropy_external_rows :
     referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows.length = 16
   entropy_external_row_rechecked :
@@ -59207,8 +61726,7 @@ theorem reference_advanced_claims_ii_rlf_full_mathematical_row :
   qseries_object_truncation_tail := by
     intro n
     exact And.intro
-      (AdvancedClaimsIIRlfFormulaProjectionCertificate.coeff_eq_object_at
-        reference_advanced_claims_ii_rlf_formula_projection n)
+      (reference_advanced_claims_ii_rlf_coeff_eq_object_at n)
       (And.intro
         (AdvancedClaimsIIRlfRademacherCoefficientMathCertificate.object_coeff_truncation_at
           reference_advanced_claims_ii_rlf_rademacher_coefficient_math n)
@@ -59217,8 +61735,7 @@ theorem reference_advanced_claims_ii_rlf_full_mathematical_row :
   coefficientAt_object_truncation_tail := by
     intro n
     exact And.intro
-      (AdvancedClaimsIIRlfFormulaProjectionCertificate.coefficientAt_eq_object_at
-        reference_advanced_claims_ii_rlf_formula_projection n)
+      (reference_advanced_claims_ii_rlf_coefficientAt_eq_object_at n)
       (And.intro
         (AdvancedClaimsIIRlfRademacherCoefficientMathCertificate.object_coeff_truncation_at
           reference_advanced_claims_ii_rlf_rademacher_coefficient_math n)
@@ -61675,11 +64192,19 @@ def AdvancedClaimsIIPaperI2MahlerCoefficient (j : Fin 6) : Int :=
   | 5 => 9
   | _ => 0
 
-def AdvancedClaimsIIPaperI2MahlerEval (n : Nat) : Int :=
+def AdvancedClaimsIIPaperI2MahlerRawEval (n : Nat) : Int :=
   Finset.sum Finset.univ
     (fun j : Fin 6 =>
       AdvancedClaimsIIPaperI2MahlerCoefficient j *
         mahlerBinomialBasis (j : Nat) n)
+
+def AdvancedClaimsIIPaperI2MahlerEval (n : Nat) : Int :=
+  AdvancedClaimsIIPaperI2MahlerRawEval n -
+    (PrimePower AdvancedClaimsIIPaperI2Prime
+      AdvancedClaimsIIPaperI2Precision : Int) *
+      (AdvancedClaimsIIPaperI2MahlerRawEval n /
+        (PrimePower AdvancedClaimsIIPaperI2Prime
+          AdvancedClaimsIIPaperI2Precision : Int))
 
 def AdvancedClaimsIIPaperI2InputTable : List Int :=
   [1, 5, 12, 8, 15, 0]
@@ -61699,16 +64224,16 @@ theorem advanced_claims_ii_paper_i2_parameters :
       AdvancedClaimsIIPaperI2Precision = 2 /\
         AdvancedClaimsIIPaperI2Modulus = 50 /\
           AdvancedClaimsIIPaperI2Cutoff = 5 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_prime_power :
     PrimePower AdvancedClaimsIIPaperI2Prime
       AdvancedClaimsIIPaperI2Precision = 25 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_denominator_positive :
     0 < AdvancedClaimsIIPaperI2Denominator := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_denominator_clears_at
     (n : Fin 6) :
@@ -61721,18 +64246,18 @@ theorem advanced_claims_ii_paper_i2_denominator_clears_at
 theorem advanced_claims_ii_paper_i2_input_table :
     (List.range 6).map AdvancedClaimsIIPaperI2NormalizedValue =
       AdvancedClaimsIIPaperI2InputTable := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_coefficient_table :
     List.ofFn AdvancedClaimsIIPaperI2MahlerCoefficient =
       AdvancedClaimsIIPaperI2CoefficientTable := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_interpolation_at
     (n : Fin 6) :
     AdvancedClaimsIIPaperI2MahlerEval (n : Nat) =
       AdvancedClaimsIIPaperI2NormalizedValue (n : Nat) := by
-  fin_cases n <;> native_decide
+  fin_cases n <;> decide
 
 theorem advanced_claims_ii_paper_i2_interpolation_congruent_at
     (n : Fin 6) :
@@ -61746,11 +64271,11 @@ theorem advanced_claims_ii_paper_i2_interpolation_congruent_at
 theorem advanced_claims_ii_paper_i2_interpolation_table :
     AdvancedClaimsIIPaperI2InterpolationTable =
       AdvancedClaimsIIPaperI2InputTable := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_extrapolation_table :
     AdvancedClaimsIIPaperI2ExtrapolationTable = [9, 1, 7, 14, 24] := by
-  native_decide
+  decide
 
 def referenceAdvancedClaimsIIPaperI2Normalization :
     PAdicNormalization where
@@ -61793,13 +64318,18 @@ def referenceAdvancedClaimsIIPaperI2MahlerBinomial :
   length := 6
   target := AdvancedClaimsIIPaperI2MahlerEval
   coeff := AdvancedClaimsIIPaperI2MahlerCoefficient
-  eval := AdvancedClaimsIIPaperI2MahlerEval
+  eval := AdvancedClaimsIIPaperI2MahlerRawEval
   eval_eq := by
     intro n
     rfl
   matches_target := by
     intro n
-    exact finiteCongruence_refl _ _ _
+    unfold FiniteCongruenceMod IntCongruent
+    refine ⟨AdvancedClaimsIIPaperI2MahlerRawEval n /
+      (PrimePower AdvancedClaimsIIPaperI2Prime
+        AdvancedClaimsIIPaperI2Precision : Int), ?_⟩
+    unfold AdvancedClaimsIIPaperI2MahlerEval
+    ring
 
 theorem advanced_claims_ii_paper_i2_overlap_modulus_at (n : Nat) :
     IntCongruent AdvancedClaimsIIPaperI2Modulus
@@ -61826,20 +64356,20 @@ theorem advanced_claims_ii_paper_i2_equalizer_modulus :
     Nat.lcm AdvancedClaimsIIPaperI2Modulus
       (PrimePower AdvancedClaimsIIPaperI2Prime
         AdvancedClaimsIIPaperI2Precision) = 50 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_obstruction_order :
     ObstructionOrder AdvancedClaimsIIPaperI2Modulus
       AdvancedClaimsIIPaperI2Prime
       AdvancedClaimsIIPaperI2Precision = 25 := by
-  native_decide
+  decide
 
 theorem advanced_claims_ii_paper_i2_obstruction_not_free :
     Not
       (ObstructionOrder AdvancedClaimsIIPaperI2Modulus
         AdvancedClaimsIIPaperI2Prime
         AdvancedClaimsIIPaperI2Precision = 1) := by
-  native_decide
+  decide
 
 def AdvancedClaimsIIPaperI2CertifiedRange (n : Nat) : Prop :=
   n <= AdvancedClaimsIIPaperI2Cutoff
@@ -61858,7 +64388,7 @@ theorem advanced_claims_ii_paper_i2_residual_zero_on_range
     AdvancedClaimsIIPaperI2InterpolationResidual n = 0 := by
   unfold AdvancedClaimsIIPaperI2CertifiedRange at hn
   unfold AdvancedClaimsIIPaperI2Cutoff at hn
-  interval_cases n <;> native_decide
+  interval_cases n <;> decide
 
 structure AdvancedClaimsIIPaperI2FiniteAnalyticRangeCertificate : Prop where
   cutoff :
@@ -62120,14 +64650,17 @@ def AdvancedClaimsIIPaperI2PrecisionRaisedMultiplier : Int :=
 
 theorem advanced_claims_ii_paper_i2_precision_raised_multiplier_value :
     AdvancedClaimsIIPaperI2PrecisionRaisedMultiplier = 5 := by
-  native_decide
+  norm_num [AdvancedClaimsIIPaperI2PrecisionRaisedMultiplier,
+    AdvancedClaimsIIPaperI2Prime, AdvancedClaimsIIPaperI2Precision]
 
 theorem advanced_claims_ii_paper_i2_precision_raised_unit_counterexample :
     Not
       (FiniteCongruenceMod AdvancedClaimsIIPaperI2Prime
         AdvancedClaimsIIPaperI2Precision
         (AdvancedClaimsIIPaperI2PrecisionRaisedMultiplier * 1) 1) := by
-  native_decide
+  norm_num [FiniteCongruenceMod, IntCongruent, PrimePower,
+    AdvancedClaimsIIPaperI2Prime, AdvancedClaimsIIPaperI2Precision,
+    AdvancedClaimsIIPaperI2PrecisionRaisedMultiplier]
 
 def AdvancedClaimsIIPaperI2ExtrapolatedIndex (i : Fin 5) : Nat :=
   (i : Nat) + 6
@@ -62160,7 +64693,17 @@ theorem advanced_claims_ii_paper_i2_extrapolated_not_in_precision_tube
     Not
       (AdvancedClaimsIIPaperI2PrecisionTube
         (AdvancedClaimsIIPaperI2ExtrapolatedValue i)) := by
-  fin_cases i <;> native_decide
+  fin_cases i <;>
+    norm_num [Nat.choose, Fin.sum_univ_succ, Finset.sum_range_succ,
+      AdvancedClaimsIIPaperI2PrecisionTube,
+      AdvancedClaimsIIPaperI2ExtrapolatedValue,
+      AdvancedClaimsIIPaperI2ExtrapolatedIndex,
+      AdvancedClaimsIIPaperI2MahlerEval,
+      AdvancedClaimsIIPaperI2MahlerRawEval,
+      AdvancedClaimsIIPaperI2MahlerCoefficient,
+      mahlerBinomialBasis, FiniteCongruenceMod, IntCongruent,
+      PrimePower, AdvancedClaimsIIPaperI2Prime,
+      AdvancedClaimsIIPaperI2Precision]
 
 theorem advanced_claims_ii_paper_i2_claimed_extrapolation_tube_false :
     Not
@@ -62230,7 +64773,8 @@ theorem advanced_claims_ii_paper_i2_input_manifest_incomplete :
     Not
       (AdvancedClaimsIIPaperI2InputManifest.Complete
         referenceAdvancedClaimsIIPaperI2InputManifest) := by
-  native_decide
+  simp [AdvancedClaimsIIPaperI2InputManifest.Complete,
+    referenceAdvancedClaimsIIPaperI2InputManifest]
 
 structure AdvancedClaimsIIPaperI2PAdicInputAuditCertificate : Prop where
   finite_certificate :
@@ -62382,7 +64926,9 @@ def AdvancedClaimsIIPaperI2MahlerMatrixUpperTriangular : Prop :=
 
 theorem advanced_claims_ii_paper_i2_mahler_matrix_lower_triangular :
     AdvancedClaimsIIPaperI2MahlerMatrixLowerTriangular := by
-  native_decide
+  intro n j h
+  unfold AdvancedClaimsIIPaperI2MahlerMatrixEntry
+  exact Nat.choose_eq_zero_of_lt h
 
 theorem advanced_claims_ii_paper_i2_mahler_matrix_above_diagonal_zero
     (n j : Fin 6)
@@ -62393,16 +64939,19 @@ theorem advanced_claims_ii_paper_i2_mahler_matrix_above_diagonal_zero
 theorem advanced_claims_ii_paper_i2_mahler_matrix_unit_diagonal :
     forall n : Fin 6,
       AdvancedClaimsIIPaperI2MahlerMatrixEntry n n = 1 := by
-  native_decide
+  intro n
+  simp [AdvancedClaimsIIPaperI2MahlerMatrixEntry]
 
 theorem advanced_claims_ii_paper_i2_mahler_matrix_below_diagonal_witness :
     AdvancedClaimsIIPaperI2MahlerMatrixEntry
       (1 : Fin 6) (0 : Fin 6) = 1 := by
-  native_decide
+  norm_num [AdvancedClaimsIIPaperI2MahlerMatrixEntry]
 
 theorem advanced_claims_ii_paper_i2_mahler_matrix_not_upper_triangular :
     Not AdvancedClaimsIIPaperI2MahlerMatrixUpperTriangular := by
-  native_decide
+  intro h
+  have hz := h (1 : Fin 6) (0 : Fin 6) (by norm_num)
+  norm_num [AdvancedClaimsIIPaperI2MahlerMatrixEntry] at hz
 
 def AdvancedClaimsIIPaperI2ForwardDifference (j : Nat) : Int :=
   Finset.sum (Finset.range (j + 1))
@@ -62433,7 +64982,14 @@ theorem advanced_claims_ii_paper_i2_coefficient_is_forward_difference_residue
     (j : Fin 6) :
     AdvancedClaimsIIPaperI2MahlerCoefficient j =
       AdvancedClaimsIIPaperI2ForwardDifferenceResidue j := by
-  fin_cases j <;> native_decide
+  fin_cases j <;>
+    norm_num [Nat.choose, Finset.sum_range_succ,
+      AdvancedClaimsIIPaperI2MahlerCoefficient,
+      AdvancedClaimsIIPaperI2ForwardDifferenceResidue,
+      AdvancedClaimsIIPaperI2ForwardDifference,
+      AdvancedClaimsIIPaperI2NormalizedValue,
+      PrimePower, AdvancedClaimsIIPaperI2Prime,
+      AdvancedClaimsIIPaperI2Precision]
 
 theorem advanced_claims_ii_paper_i2_coefficient_congruent_forward_difference
     (j : Fin 6) :
@@ -62441,7 +64997,13 @@ theorem advanced_claims_ii_paper_i2_coefficient_congruent_forward_difference
       AdvancedClaimsIIPaperI2Precision
       (AdvancedClaimsIIPaperI2MahlerCoefficient j)
       (AdvancedClaimsIIPaperI2ForwardDifference (j : Nat)) := by
-  fin_cases j <;> native_decide
+  fin_cases j <;>
+    norm_num [Nat.choose, Finset.sum_range_succ,
+      FiniteCongruenceMod, IntCongruent, PrimePower,
+      AdvancedClaimsIIPaperI2Prime, AdvancedClaimsIIPaperI2Precision,
+      AdvancedClaimsIIPaperI2MahlerCoefficient,
+      AdvancedClaimsIIPaperI2ForwardDifference,
+      AdvancedClaimsIIPaperI2NormalizedValue]
 
 def AdvancedClaimsIIPaperI2Table5ADifference (n : Fin 6) : Int :=
   AdvancedClaimsIIPaperI2MahlerEval (n : Nat) -
@@ -62468,7 +65030,8 @@ theorem advanced_claims_ii_paper_i2_table5a_mod25_at
 theorem advanced_claims_ii_paper_i2_table5b_difference_zero
     (n : Fin 6) :
     AdvancedClaimsIIPaperI2Table5BDifference n = 0 := by
-  rfl
+  simp [AdvancedClaimsIIPaperI2Table5BDifference,
+    referenceAdvancedClaimsIIPaperI2Overlap]
 
 theorem advanced_claims_ii_paper_i2_table5b_equalizer_at
     (n : Fin 6) :
@@ -63152,7 +65715,8 @@ theorem advanced_claims_ii_signed_pair_norm_lower_bound
     (h : a - b = target) :
     target ^ 2 / 2 <= a ^ 2 + b ^ 2 := by
   rw [advanced_claims_ii_signed_pair_norm_decomposition a b target h]
-  positivity
+  have hsq : 0 <= (a + b) ^ 2 := sq_nonneg (a + b)
+  linarith
 
 theorem advanced_claims_ii_signed_pair_half_split
     (target : Rat) :
@@ -63497,7 +66061,9 @@ theorem advanced_claims_ii_appell_lerch_ridge_total_negative (m : Nat) :
     AdvancedClaimsIIAppellLerchTotalExponent
         (AdvancedClaimsIIAppellLerchRidgeIndex m) m < 0 := by
   rw [advanced_claims_ii_appell_lerch_ridge_total_exponent]
-  positivity
+  have hm : (0 : Rat) <= (m : Rat) := by positivity
+  have hsq : (0 : Rat) <= (m : Rat) ^ 2 := sq_nonneg (m : Rat)
+  nlinarith
 
 def referenceAdvancedClaimsIIAppellLerchRidgeParameters : List Nat :=
   [1, 2, 3]
@@ -63849,15 +66415,35 @@ theorem advanced_claims_ii_paper_t3_block_admissible
     (hblock : List.Mem block referenceAdvancedClaimsIIPaperT3WeightedBlocks) :
     List.Mem block.m referenceMock1MList /\
       List.Mem block.r referenceMock1RPhases := by
-  simp only [referenceAdvancedClaimsIIPaperT3WeightedBlocks,
-    List.mem_cons, List.mem_singleton] at hblock
-  rcases hblock with hblock | hblock | hblock
-  · subst block
-    simp [referenceMock1MList, referenceMock1RPhases]
-  · subst block
-    simp [referenceMock1MList, referenceMock1RPhases]
-  · subst block
-    simp [referenceMock1MList, referenceMock1RPhases]
+  change List.Mem block
+    [ { m := 0, r := 0, coefficient := 1 }
+    , { m := 1, r := 0, coefficient := (-1 / 2 : Rat) }
+    , { m := 0, r := (1 / 2 : Rat), coefficient := (1 / 2 : Rat) } ] at hblock
+  cases hblock with
+  | head =>
+      exact And.intro
+        (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+            (List.Mem.head _)))))))
+        (List.Mem.head _)
+  | tail _ hblock =>
+      cases hblock with
+      | head =>
+          exact And.intro
+            (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+              (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+                (List.Mem.tail _ (List.Mem.tail _
+                  (List.Mem.head _)))))))))
+            (List.Mem.head _)
+      | tail _ hblock =>
+          cases hblock with
+          | head =>
+              exact And.intro
+                (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+                  (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _
+                    (List.Mem.head _)))))))
+                (List.Mem.tail _ (List.Mem.head _))
+          | tail _ hnil => cases hnil
 
 def referenceAdvancedClaimsIIPaperT3Block00 :
     AppellLerchBlockFormulaCertificate where
@@ -63981,15 +66567,19 @@ theorem advanced_claims_ii_paper_t3_declared_principal_terms_negative
     (term : AdvancedClaimsIIPaperT3DeclaredPrincipalTerm)
     (hterm : List.Mem term referenceAdvancedClaimsIIPaperT3DeclaredPrincipalTerms) :
     term.exponent < 0 := by
-  simp only [referenceAdvancedClaimsIIPaperT3DeclaredPrincipalTerms,
-    List.mem_cons, List.mem_singleton] at hterm
-  rcases hterm with hterm | hterm | hterm
-  · subst term
-    norm_num
-  · subst term
-    norm_num
-  · subst term
-    norm_num
+  change List.Mem term
+    [ { exponent := (-6439 / 4 : Rat), coefficient := (3 / 2 : Rat) }
+    , { exponent := (-6353 / 4 : Rat), coefficient := (3 / 2 : Rat) }
+    , { exponent := (-6281 / 4 : Rat), coefficient := (1 / 2 : Rat) } ] at hterm
+  cases hterm with
+  | head => norm_num
+  | tail _ hterm =>
+      cases hterm with
+      | head => norm_num
+      | tail _ hterm =>
+          cases hterm with
+          | head => norm_num
+          | tail _ hnil => cases hnil
 
 structure AdvancedClaimsIIPaperT3BlockPortfolioCertificate : Prop where
   weighted_blocks :
@@ -64204,15 +66794,22 @@ theorem advanced_claims_ii_paper_item1_one_cusp_ne_zero :
 theorem advanced_claims_ii_paper_item1_one_cusp_relevant :
     List.Mem advancedClaimsIIPaperItem1OneCuspLabel
       referenceAdvancedClaimsIIPaperItem1Cusps := by
-  simp [referenceAdvancedClaimsIIPaperItem1Cusps]
+  change List.Mem advancedClaimsIIPaperItem1OneCuspLabel
+    [infinityCuspLabel, zeroCuspLabel, advancedClaimsIIPaperItem1OneCuspLabel]
+  exact List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))
 
 theorem advanced_claims_ii_paper_item1_one_cusp_missing_from_model :
     Not
       (List.Mem advancedClaimsIIPaperItem1OneCuspLabel
         referenceTransportAcrossAllCuspsCertificate.relevantCusps) := by
-  simp [referenceTransportAcrossAllCuspsCertificate, referenceRelevantCusps,
-    advanced_claims_ii_paper_item1_one_cusp_ne_infinity,
-    advanced_claims_ii_paper_item1_one_cusp_ne_zero]
+  intro h
+  change List.Mem advancedClaimsIIPaperItem1OneCuspLabel
+    [infinityCuspLabel, zeroCuspLabel] at h
+  rcases List.mem_cons.mp h with hInf | hRest
+  · exact advanced_claims_ii_paper_item1_one_cusp_ne_infinity hInf
+  · have hZero : advancedClaimsIIPaperItem1OneCuspLabel = zeroCuspLabel :=
+      List.mem_singleton.mp hRest
+    exact advanced_claims_ii_paper_item1_one_cusp_ne_zero hZero
 
 noncomputable def referenceAdvancedClaimsIIPaperItem1KernelRecord :
     KernelSelectionRecord where
@@ -64892,7 +67489,8 @@ theorem advanced_claims_ii_paper_k_formula_manifest_incomplete :
     Not
       (AdvancedClaimsIIPaperKFormulaInputManifest.Complete
         referenceAdvancedClaimsIIPaperKFormulaInputManifest) := by
-  native_decide
+  simp [AdvancedClaimsIIPaperKFormulaInputManifest.Complete,
+    referenceAdvancedClaimsIIPaperKFormulaInputManifest]
 
 theorem advanced_claims_ii_exact_reference_coefficient_is_unit (n : Nat) :
     referenceExactCoefficient n = 1 := by
@@ -65670,7 +68268,9 @@ def referenceAdvancedClaimsIIRamanujanFPrefixCertificate :
   truncated := referenceAdvancedClaimsIIRamanujanFTruncatedQSeries
   prefix_eq := by
     intro n hn
-    simp [TruncatedQSeries.coefficientAt, hn,
+    have hn16 : n < 16 := by
+      simpa [referenceAdvancedClaimsIIRamanujanFTruncatedQSeries] using hn
+    simp [TruncatedQSeries.coefficientAt, hn16,
       referenceAdvancedClaimsIIRamanujanFTruncatedQSeries,
       referenceAdvancedClaimsIIRamanujanFQSeries]
 
@@ -66295,7 +68895,8 @@ theorem advanced_claims_ii_rlf_ramanujan_f_input_manifest_incomplete :
     Not
       (AdvancedClaimsIIRlfRamanujanFInputManifest.Complete
         referenceAdvancedClaimsIIRlfRamanujanFInputManifest) := by
-  native_decide
+  simp [AdvancedClaimsIIRlfRamanujanFInputManifest.Complete,
+    referenceAdvancedClaimsIIRlfRamanujanFInputManifest]
 
 structure AdvancedClaimsIIRlfRamanujanFConcreteFiniteBridgeCertificate : Prop where
   rlfCoefficientSkeleton :
@@ -66455,7 +69056,7 @@ theorem reference_advanced_claims_ii_rlf_ramanujan_f_concrete_finite_bridge :
     intro n
     exact referenceAdvancedClaimsIIRamanujanFScalarDegeneracy.scalar_slice_at_zero_at n
   finiteInsideOutside :=
-    advanced_claims_ii_ramanujan_f_finite_inside_outside_identity
+    advanced_claims_ii_ramanujan_finite_inside_outside_identity
   syntheticObjectKind :=
     advanced_claims_ii_rlf_synthetic_object_kind
   actualObjectKind :=
@@ -66899,7 +69500,11 @@ theorem advanced_claims_ii_ramanujan_f_padic_no_pointwise_worked_link :
           AdvancedClaimsIIPaperI2NormalizedValue (n : Nat)) := by
   intro h
   have h1 := h (1 : Fin 6)
-  native_decide at h1
+  change AdvancedClaimsIIRamanujanFPAdicResidueValue 1 =
+    AdvancedClaimsIIPaperI2NormalizedValue 1 at h1
+  have hw := advanced_claims_ii_ramanujan_f_padic_worked_table_witness
+  rw [hw.1, hw.2] at h1
+  norm_num at h1
 
 structure AdvancedClaimsIIRlfRamanujanFPAdicFiniteCertificate : Prop where
   actualObjectBridge :
@@ -67223,7 +69828,8 @@ theorem advanced_claims_ii_entropy_paper_input_manifest_incomplete :
     Not
       (AdvancedClaimsIIEntropyPaperInputManifest.Complete
         referenceAdvancedClaimsIIEntropyPaperInputManifest) := by
-  native_decide
+  simp [AdvancedClaimsIIEntropyPaperInputManifest.Complete,
+    referenceAdvancedClaimsIIEntropyPaperInputManifest]
 
 structure AdvancedClaimsIIEntropyPaperInputAuditCertificate : Prop where
   table6_finite :
@@ -67920,6 +70526,7 @@ def diagnosticMetadataRequirements : List AdvancedClaimsIIRequirement :=
 def aggregateRequirements : List AdvancedClaimsIIRequirement :=
   all.filter (fun r => decide (r.evidenceClass = .aggregate))
 
+set_option maxHeartbeats 800000 in
 theorem evidenceClass_exhaustive (r : AdvancedClaimsIIRequirement) :
     r.evidenceClass = .finiteExact /\
         List.Mem r finiteExactRequirements \/
@@ -67929,26 +70536,40 @@ theorem evidenceClass_exhaustive (r : AdvancedClaimsIIRequirement) :
             List.Mem r diagnosticMetadataRequirements \/
           r.evidenceClass = .aggregate /\
             List.Mem r aggregateRequirements := by
-  cases r <;>
-    simp [evidenceClass, finiteExactRequirements,
-      analyticBoundaryRequirements, diagnosticMetadataRequirements,
-      aggregateRequirements, all]
+  have hr : List.Mem r all := mem_all r
+  cases hclass : r.evidenceClass with
+  | finiteExact =>
+      exact Or.inl ⟨rfl, by
+        apply List.mem_filter.mpr
+        exact ⟨hr, by simp [hclass]⟩⟩
+  | analyticBoundary =>
+      exact Or.inr (Or.inl ⟨rfl, by
+        apply List.mem_filter.mpr
+        exact ⟨hr, by simp [hclass]⟩⟩)
+  | diagnosticMetadata =>
+      exact Or.inr (Or.inr (Or.inl ⟨rfl, by
+        apply List.mem_filter.mpr
+        exact ⟨hr, by simp [hclass]⟩⟩))
+  | aggregate =>
+      exact Or.inr (Or.inr (Or.inr ⟨rfl, by
+        apply List.mem_filter.mpr
+        exact ⟨hr, by simp [hclass]⟩⟩))
 
 theorem finiteExactRequirements_nonempty :
     Not (finiteExactRequirements = []) := by
-  native_decide
+  simp [finiteExactRequirements, all, evidenceClass]
 
 theorem analyticBoundaryRequirements_nonempty :
     Not (analyticBoundaryRequirements = []) := by
-  native_decide
+  simp [analyticBoundaryRequirements, all, evidenceClass]
 
 theorem diagnosticMetadataRequirements_nonempty :
     Not (diagnosticMetadataRequirements = []) := by
-  native_decide
+  simp [diagnosticMetadataRequirements, all, evidenceClass]
 
 theorem aggregateRequirements_nonempty :
     Not (aggregateRequirements = []) := by
-  native_decide
+  simp [aggregateRequirements, all, evidenceClass]
 
 end AdvancedClaimsIIRequirement
 
@@ -71160,7 +73781,8 @@ theorem advanced_claims_ii_ramanujan_f_paper_beta_excludes_legacy_slope :
     Not
       (referenceBetaInterval.Contains
         AdvancedClaimsIILegacyEntropyLogSlope) := by
-  native_decide
+  norm_num [RationalInterval.Contains, referenceBetaInterval,
+    closedRatInterval, AdvancedClaimsIILegacyEntropyLogSlope]
 
 structure AdvancedClaimsIIRamanujanFActualAbstractCertificate
     (ConvergesAt : CuspLabel -> Prop) where
@@ -71653,7 +74275,7 @@ theorem reference_advanced_claims_ii_ramanujan_f_legacy_model_isolation :
   entropyManifestIncomplete :=
     advanced_claims_ii_entropy_paper_input_manifest_incomplete
 
-structure AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary : Prop where
+structure AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary where
   finiteBridge :
     AdvancedClaimsIIRlfRamanujanFConcreteFiniteBridgeCertificate
   legacyIsolation :
@@ -71718,7 +74340,7 @@ structure AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary : Prop 
 
 namespace AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary
 
-theorem concrete_at
+def concrete_at
     (C : AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary)
     (ConvergesAt : CuspLabel -> Prop)
     (A : AdvancedClaimsIIRamanujanFActualAbstractCertificate ConvergesAt) :
@@ -71759,7 +74381,7 @@ theorem mathematical_payload_at
 
 end AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary
 
-theorem reference_advanced_claims_ii_ramanujan_f_actual_constructor_boundary :
+noncomputable def reference_advanced_claims_ii_ramanujan_f_actual_constructor_boundary :
     AdvancedClaimsIIRamanujanFActualCertificateConstructorBoundary where
   finiteBridge :=
     reference_advanced_claims_ii_rlf_ramanujan_f_concrete_finite_bridge
@@ -75193,7 +77815,7 @@ theorem reference_advanced_claims_ii_section_atom_projection
               (AdvancedClaimsIISectionFormulaStatementBridgeCertificate.padic_t1_denominator_nonzero_atom_at S)
               (And.intro
                 (AdvancedClaimsIISectionFormulaStatementBridgeCertificate.padic_t2_leading_denominator_nonzero_atom_at S)
-                (AdvancedClaimsIISectionFormulaStatementBridgeCertificate.padic_obstruction_failure_formula_at S)))))))
+                (AdvancedClaimsIISectionFormulaStatementBridgeCertificate.padic_obstruction_failure_formula_at S))))))
   entropy_atoms := by
     let S := reference_advanced_claims_ii_section_formula_statement_bridge n x hn row hrow
     exact And.intro
@@ -77207,7 +79829,7 @@ lemmas.
 -/
 
 structure AdvancedClaimsIIAbstractConcreteCertificationBridgeCertificate :
-    Prop where
+    Type where
   route :
     CertificateRoute Unit
   bundle :
@@ -77229,6 +79851,7 @@ structure AdvancedClaimsIIAbstractConcreteCertificationBridgeCertificate :
     AdvancedClaimsIIUnconditionalCertificationReadinessCertificate
   final_aggregation :
     AdvancedClaimsIIFinalTheoremAggregationCertificate
+      referenceAdvancedClaimsIICompletionCertificate
   rlf_enriched :
     AdvancedClaimsIIRlfEnrichedMathematicalContentCertificate
   route_is_reference :
@@ -77397,7 +80020,7 @@ theorem enriched_rlf_term_at
 
 end AdvancedClaimsIIAbstractConcreteCertificationBridgeCertificate
 
-theorem reference_advanced_claims_ii_abstract_concrete_certification_bridge :
+noncomputable def reference_advanced_claims_ii_abstract_concrete_certification_bridge :
     AdvancedClaimsIIAbstractConcreteCertificationBridgeCertificate where
   route := referenceCertificateRoute
   bundle := referenceCertificationBundle
@@ -77465,7 +80088,7 @@ theorem reference_advanced_claims_ii_abstract_concrete_certification_bridge :
     exact
       reference_advanced_claims_ii_rlf_enriched_mathematical_content.rademacher_term_row_at c
 
-structure AdvancedClaimsIISectionCertificationBridgeCertificate : Prop where
+structure AdvancedClaimsIISectionCertificationBridgeCertificate : Type where
   abstract_concrete_bridge :
     AdvancedClaimsIIAbstractConcreteCertificationBridgeCertificate
   named_prompt_group :
@@ -77637,7 +80260,7 @@ theorem every_prompt_at
 
 end AdvancedClaimsIISectionCertificationBridgeCertificate
 
-theorem reference_advanced_claims_ii_section_certification_bridge :
+noncomputable def reference_advanced_claims_ii_section_certification_bridge :
     AdvancedClaimsIISectionCertificationBridgeCertificate where
   abstract_concrete_bridge :=
     reference_advanced_claims_ii_abstract_concrete_certification_bridge
@@ -77704,7 +80327,7 @@ structure AdvancedClaimsIISectionLeafDischargeCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   section_certification :
     AdvancedClaimsIISectionCertificationBridgeCertificate
   section_formula :
@@ -77931,7 +80554,7 @@ theorem entropy_leaf_at
 
 end AdvancedClaimsIISectionLeafDischargeCertificate
 
-theorem reference_advanced_claims_ii_section_leaf_discharge
+noncomputable def reference_advanced_claims_ii_section_leaf_discharge
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -78020,7 +80643,7 @@ structure AdvancedClaimsIIObjectiveChecklistDischargeCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   prompt_inventory :
     AdvancedClaimsIIPromptBullet.all.length = 51 /\
       AdvancedClaimsIIRequirement.all.length = 54 /\
@@ -78246,7 +80869,7 @@ theorem objective_end_to_end_at
 
 end AdvancedClaimsIIObjectiveChecklistDischargeCertificate
 
-theorem reference_advanced_claims_ii_objective_checklist_discharge
+noncomputable def reference_advanced_claims_ii_objective_checklist_discharge
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -78739,7 +81362,7 @@ structure AdvancedClaimsIISectionwiseFormulaAtomicBridgeCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   objective_discharge :
     AdvancedClaimsIIObjectiveChecklistDischargeCertificate n x hn row hrow
   sectionwise_atomic :
@@ -78955,7 +81578,7 @@ theorem all_formula_atomic_at
 
 end AdvancedClaimsIISectionwiseFormulaAtomicBridgeCertificate
 
-theorem reference_advanced_claims_ii_sectionwise_formula_atomic_bridge
+noncomputable def reference_advanced_claims_ii_sectionwise_formula_atomic_bridge
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -79025,7 +81648,7 @@ structure AdvancedClaimsIIObjectiveFinalSynthesisCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   final_aggregation :
     AdvancedClaimsIIFinalTheoremAggregationCertificate
       referenceAdvancedClaimsIICompletionCertificate
@@ -79122,7 +81745,7 @@ theorem final_aggregation_at
       referenceAdvancedClaimsIICompletionCertificate :=
   C.final_aggregation
 
-theorem formula_atomic_bridge_at
+noncomputable def formula_atomic_bridge_at
     {n : Nat}
     {x : Unit}
     {hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n}
@@ -79234,7 +81857,7 @@ theorem rlf_end_to_end_at
 
 end AdvancedClaimsIIObjectiveFinalSynthesisCertificate
 
-theorem reference_advanced_claims_ii_objective_final_synthesis
+noncomputable def reference_advanced_claims_ii_objective_final_synthesis
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -79534,7 +82157,7 @@ structure AdvancedClaimsIIFormulaAtomicItemMatrixCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   final_synthesis :
     AdvancedClaimsIIObjectiveFinalSynthesisCertificate n x hn row hrow
   ledger :
@@ -79788,7 +82411,7 @@ theorem entropy_items_at
 
 end AdvancedClaimsIIFormulaAtomicItemMatrixCertificate
 
-theorem reference_advanced_claims_ii_formula_atomic_item_matrix
+noncomputable def reference_advanced_claims_ii_formula_atomic_item_matrix
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -80074,7 +82697,7 @@ structure AdvancedClaimsIIActualInputDataMatrixCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   final_synthesis :
     AdvancedClaimsIIObjectiveFinalSynthesisCertificate n x hn row hrow
   section_formula_bridge :
@@ -80362,7 +82985,7 @@ theorem section_data_payload_at
 
 end AdvancedClaimsIIActualInputDataMatrixCertificate
 
-theorem reference_advanced_claims_ii_actual_input_data_matrix
+noncomputable def reference_advanced_claims_ii_actual_input_data_matrix
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)
@@ -81139,7 +83762,7 @@ structure AdvancedClaimsIIMicrolocalCertificationReadinessCertificate
     (hrow :
       List.Mem row
         referenceAdvancedClaimsIICompletionCertificate.tables.paperTables.externalScript.rows) :
-    Prop where
+    Type where
   unconditional_readiness :
     AdvancedClaimsIIUnconditionalCertificationReadinessCertificate
   final_synthesis :
@@ -81257,7 +83880,7 @@ theorem unconditional_readiness_at
     AdvancedClaimsIIUnconditionalCertificationReadinessCertificate :=
   C.unconditional_readiness
 
-theorem final_synthesis_at
+noncomputable def final_synthesis_at
     {n : Nat}
     {x : Unit}
     {hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n}
@@ -81269,7 +83892,7 @@ theorem final_synthesis_at
     AdvancedClaimsIIObjectiveFinalSynthesisCertificate n x hn row hrow :=
   C.final_synthesis
 
-theorem actual_input_matrix_at
+noncomputable def actual_input_matrix_at
     {n : Nat}
     {x : Unit}
     {hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n}
@@ -81725,7 +84348,7 @@ theorem ramanujan_f_entropy_analytic_payload_at
     AdvancedClaimsIIRamanujanFEntropyAnalyticPayloadBoundary :=
   C.ramanujan_f_entropy_analytic_payload
 
-theorem ramanujan_f_actual_constructor_boundary_at
+noncomputable def ramanujan_f_actual_constructor_boundary_at
     {n : Nat}
     {x : Unit}
     {hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n}
@@ -81773,7 +84396,7 @@ theorem section_atom_projection_at
     AdvancedClaimsIISectionAtomProjectionCertificate n x hn row hrow :=
   C.section_atom_projection
 
-theorem formula_atomic_matrix_at
+noncomputable def formula_atomic_matrix_at
     {n : Nat}
     {x : Unit}
     {hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n}
@@ -81841,7 +84464,7 @@ theorem rlf_end_to_end_at
 
 end AdvancedClaimsIIMicrolocalCertificationReadinessCertificate
 
-theorem reference_advanced_claims_ii_microlocal_certification_readiness
+noncomputable def reference_advanced_claims_ii_microlocal_certification_readiness
     (n : Nat)
     (x : Unit)
     (hn : referenceAdvancedClaimsIICompletionCertificate.padicAnalyticRange.cutoff <= n)

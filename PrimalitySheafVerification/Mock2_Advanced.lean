@@ -125,6 +125,8 @@ open Filter InnerProductSpace MeasureTheory Set Topology
 
 namespace Mock2Adv
 
+universe uSheafX uSheafE uSheafF uSheafG
+
 noncomputable section
 
 /-! ## 0. Concrete modular base and branch-resolved automorphy -/
@@ -2278,15 +2280,15 @@ structure LinearPresheaf
 
 /-- Unique gluing for the concrete open-set presheaf model. -/
 structure IsLinearSheaf
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     (P : LinearPresheaf X E) : Prop where
-  locality : ∀ {ι : Type*} {U : TopologicalSpace.Opens X}
+  locality : ∀ {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s t : P.section U),
     (∀ i, P.restrict (hVU i) s = P.restrict (hVU i) t) → s = t
-  gluing : ∀ {ι : Type*} {U : TopologicalSpace.Opens X}
+  gluing : ∀ {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s : ∀ i, P.section (V i)),
@@ -2395,7 +2397,8 @@ universal factorization property within this concrete fixed-ambient category.  A
 concrete development must construct an inhabitant for its actual local-system and
 mock-data presheaves. -/
 structure QGaugeVariableSheaf
-    (X E F G : Type*) [TopologicalSpace X]
+    (X : Type uSheafX) (E : Type uSheafE)
+    (F : Type uSheafF) (G : Type uSheafG) [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     [AddCommGroup G] [Module ℂ G]
@@ -2403,33 +2406,34 @@ structure QGaugeVariableSheaf
   sheaf : LinearPresheaf X G
   sheaf_condition : IsLinearSheaf sheaf
   «include» : TensorPresheafMorphism L M sheaf
-  factor : ∀ {G' : Type*} [AddCommGroup G'] [Module ℂ G']
+  factor : ∀ {G' : Type uSheafG} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G'), IsLinearSheaf T →
       TensorPresheafMorphism L M T → LinearPresheafMorphism sheaf T
-  factor_include : ∀ {G' : Type*} [AddCommGroup G'] [Module ℂ G']
+  factor_include : ∀ {G' : Type uSheafG} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G') (hT : IsLinearSheaf T)
     (f : TensorPresheafMorphism L M T)
     (U : TopologicalSpace.Opens X) (s : TensorPresheafSection L M U),
-    (factor T hT f).app U («include».app U s) = f.app U s
-  factor_unique : ∀ {G' : Type*} [AddCommGroup G'] [Module ℂ G']
+    (factor (G' := G') T hT f).app U («include».app U s) = f.app U s
+  factor_unique : ∀ {G' : Type uSheafG} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G') (hT : IsLinearSheaf T)
     (f : TensorPresheafMorphism L M T)
     (g : LinearPresheafMorphism sheaf T),
     (∀ (U : TopologicalSpace.Opens X) (s : TensorPresheafSection L M U),
       g.app U («include».app U s) = f.app U s) →
-    g = factor T hT f
+    g = factor (G' := G') T hT f
 
 /-- The sheafification field is exposed in its standard existence-and-uniqueness
 form. -/
 theorem QGaugeVariableSheaf.factor_existsUnique
-    {X E F G : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE}
+    {F : Type uSheafF} {G : Type uSheafG} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     [AddCommGroup G] [Module ℂ G]
     {L : LinearPresheaf X E}
     {M : LinearPresheaf X F}
     (S : QGaugeVariableSheaf X E F G L M)
-    {G' : Type*} [AddCommGroup G'] [Module ℂ G']
+    {G' : Type uSheafG} [AddCommGroup G'] [Module ℂ G']
     (T : LinearPresheaf X G')
     (hT : IsLinearSheaf T)
     (f : TensorPresheafMorphism L M T) :
@@ -2437,7 +2441,7 @@ theorem QGaugeVariableSheaf.factor_existsUnique
       ∀ (U : TopologicalSpace.Opens X)
         (s : TensorPresheafSection L M U),
         g.app U (S.include.app U s) = f.app U s := by
-  refine ⟨S.factor T hT f, ?_, ?_⟩
+  refine ⟨S.factor (G' := G') T hT f, ?_, ?_⟩
   · intro U s
     exact S.factor_include T hT f U s
   · intro g hg
@@ -2760,13 +2764,14 @@ theorem balancedPresheafRestrict_comp
 /-- Locality for the objectwise equalizer.  Equality of balanced sections is
 detected in the source sheaf because the equalizer inclusion is injective. -/
 theorem balancedPresheafSection_locality
-    {X E F : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} {F : Type uSheafF}
+    [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     {P : LinearPresheaf X E} {Q : LinearPresheaf X F}
     (resIn resOut : LinearPresheafMorphism P Q)
     (hP : IsLinearSheaf P)
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s t : balancedPresheafSection resIn resOut U)
@@ -2775,7 +2780,7 @@ theorem balancedPresheafSection_locality
         balancedPresheafRestrict resIn resOut (hVU i) t) :
     s = t := by
   apply Subtype.ext
-  apply hP.locality V hVU hcover
+  apply hP.locality (ι := ι) (U := U) V hVU hcover
   intro i
   exact congrArg Subtype.val (hlocal i)
 
@@ -2784,13 +2789,14 @@ source sheaf supplies the underlying glued section.  Naturality makes the two
 images locally equal, and locality in the target sheaf promotes that equality
 to the whole open set. -/
 theorem balancedPresheafSection_gluing
-    {X E F : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} {F : Type uSheafF}
+    [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     {P : LinearPresheaf X E} {Q : LinearPresheaf X F}
     (resIn resOut : LinearPresheafMorphism P Q)
     (hP : IsLinearSheaf P) (hQ : IsLinearSheaf Q)
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s : ∀ i, balancedPresheafSection resIn resOut (V i))
@@ -2804,7 +2810,7 @@ theorem balancedPresheafSection_gluing
         P.restrict inf_le_right (s j : P.section (V j)) := by
     intro i j
     exact congrArg Subtype.val (hcompat i j)
-  obtain ⟨u, hu⟩ := hP.gluing V hVU hcover
+  obtain ⟨u, hu⟩ := hP.gluing (ι := ι) (U := U) V hVU hcover
     (fun i => (s i : P.section (V i))) hcompatP
   have huBalanced :
       resIn.app U u = resOut.app U u := by
@@ -2823,13 +2829,14 @@ theorem balancedPresheafSection_gluing
 equalizer theorem, stated directly for the nested submodule section type so no
 ambient-section coercion or noncanonical choice is hidden in the construction. -/
 theorem balancedPresheafSection_existsUnique_gluing
-    {X E F : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} {F : Type uSheafF}
+    [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     {P : LinearPresheaf X E} {Q : LinearPresheaf X F}
     (resIn resOut : LinearPresheafMorphism P Q)
     (hP : IsLinearSheaf P) (hQ : IsLinearSheaf Q)
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s : ∀ i, balancedPresheafSection resIn resOut (V i))
@@ -2849,19 +2856,19 @@ theorem balancedPresheafSection_existsUnique_gluing
 the same locality and compatible-gluing interface as `IsLinearSheaf`, specialized
 to the canonical nested equalizer submodules. -/
 structure IsBalancedPresheafSheaf
-    {X E F : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} {F : Type uSheafF} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     [AddCommGroup F] [Module ℂ F]
     {P : LinearPresheaf X E} {Q : LinearPresheaf X F}
     (resIn resOut : LinearPresheafMorphism P Q) : Prop where
-  locality : ∀ {ι : Type*} {U : TopologicalSpace.Opens X}
+  locality : ∀ {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s t : balancedPresheafSection resIn resOut U),
     (∀ i,
       balancedPresheafRestrict resIn resOut (hVU i) s =
         balancedPresheafRestrict resIn resOut (hVU i) t) → s = t
-  gluing : ∀ {ι : Type*} {U : TopologicalSpace.Opens X}
+  gluing : ∀ {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s : ∀ i, balancedPresheafSection resIn resOut (V i)),
@@ -3016,10 +3023,10 @@ theorem GaugeDescentMorphism.map_mem_qGaugeForms
 actions.  In a concrete bundle model, `transition` must additionally be proved to
 be conjugation by the transition cocycle. -/
 structure GaugeDescentSheaf
-    (X E : Type*) [TopologicalSpace X]
+    (X : Type uSheafX) (E : Type uSheafE) [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E] where
   forms : LinearPresheaf X E
-  sheaf_condition : IsLinearSheaf forms
+  sheaf_condition : IsLinearSheaf (X := X) (E := E) forms
   action : (U : TopologicalSpace.Opens X) →
     GaugeDescentAction (forms.section U)
   restriction : ∀ {U V : TopologicalSpace.Opens X} (hVU : V ≤ U),
@@ -3030,10 +3037,10 @@ structure GaugeDescentSheaf
 /-- Covariant gluing is a theorem: it follows from ordinary sheaf gluing and
 the fact that restrictions commute with both descent actions. -/
 theorem GaugeDescentSheaf.covariant_gluing
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     (D : GaugeDescentSheaf X E)
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
     (hcover : U ≤ ⨆ i, V i)
@@ -3098,10 +3105,10 @@ theorem GaugeDescentSheaf.covariant_gluing
 
 /-- Covariant gluing is unique because the underlying sheaf gluing is unique. -/
 theorem GaugeDescentSheaf.covariant_gluing_existsUnique
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
     (D : GaugeDescentSheaf X E)
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
     (hcover : U ≤ ⨆ i, V i)
@@ -3139,7 +3146,7 @@ theorem GaugeDescentSheaf.restrict_mem_qGaugeForms
 
 namespace TrivialBundleSectionSheaf
 
-variable {X Fiber : Type*} [TopologicalSpace X]
+variable {X : Type uSheafX} {Fiber : Type uSheafE} [TopologicalSpace X]
   [AddCommGroup Fiber] [Module ℂ Fiber]
 
 /-- Set-theoretic sections of the trivial bundle over `U`, represented by global
@@ -3158,27 +3165,39 @@ def sections (U : TopologicalSpace.Opens X) :
     simp [hf x hx]
 
 /-- Restriction is pointwise cutoff to the smaller open set. -/
-def restrict {U V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
-    sections U →ₗ[ℂ] sections V where
-  toFun f := ⟨fun x => if x ∈ V then (f : X → Fiber) x else 0,
-    by
-      intro x hx
-      simp [hx]⟩
-  map_add' f g := by
+noncomputable def restrict {U V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
+    sections (X := X) (Fiber := Fiber) U →ₗ[ℂ]
+      sections (X := X) (Fiber := Fiber) V := by
+  classical
+  refine
+    { toFun := fun f =>
+        ⟨fun x => if x ∈ V then (f : X → Fiber) x else 0,
+          by
+            intro x hx
+            simp [hx]⟩
+      map_add' := ?_
+      map_smul' := ?_ }
+  · intro f g
     apply Subtype.ext
     funext x
     by_cases hx : x ∈ V <;> simp [hx]
-  map_smul' c f := by
+  · intro c f
     apply Subtype.ext
     funext x
     by_cases hx : x ∈ V <;> simp [hx]
 
+local instance instDecidableMemOpens
+    (x : X) (U : TopologicalSpace.Opens X) : Decidable (x ∈ U) :=
+  Classical.propDecidable _
+
 @[simp]
 theorem restrict_apply
     {U V : TopologicalSpace.Opens X} (hVU : V ≤ U)
-    (f : sections U) (x : X) :
-    ((restrict hVU f : sections V) : X → Fiber) x =
-      if x ∈ V then (f : X → Fiber) x else 0 :=
+    (f : sections (X := X) (Fiber := Fiber) U) (x : X) :
+    ((TrivialBundleSectionSheaf.restrict (X := X) (Fiber := Fiber) hVU f :
+        sections (X := X) (Fiber := Fiber) V) : X → Fiber) x =
+      if x ∈ V then (f : X → Fiber) x else 0 := by
+  classical
   rfl
 
 /-- Zero extension loses no local data: supported global representatives are
@@ -3194,30 +3213,31 @@ noncomputable def sectionsEquivLocalFunctions
           by
             intro x hx
             simp [hx]⟩
-      left_inv := ?_
-      right_inv := ?_
-      map_add' := ?_
-      map_smul' := ?_ }
-  · intro f
-    apply Subtype.ext
-    funext x
-    by_cases hx : x ∈ U
-    · simp [hx]
-    · simp [hx, f.property x hx]
-  · intro g
-    funext x
-    simp [x.property]
-  · intro f g
-    funext x
-    rfl
-  · intro c f
-    funext x
-    rfl
+      left_inv := by
+        intro f
+        apply Subtype.ext
+        funext x
+        by_cases hx : x ∈ U
+        · simp [hx]
+        · simp [hx, f.property x hx]
+      right_inv := by
+        intro g
+        funext x
+        simp [x.property]
+      map_add' := by
+        intro f g
+        funext x
+        rfl
+      map_smul' := by
+        intro c f
+        funext x
+        rfl }
 
 /-- The concrete zero-extended trivial-bundle presheaf. -/
-def presheaf : LinearPresheaf X (X → Fiber) where
-  section := sections
-  restrict := fun {_ _} h => restrict h
+noncomputable def presheaf : LinearPresheaf X (X → Fiber) where
+  «section» := sections (X := X) (Fiber := Fiber)
+  restrict := fun {_ _} h =>
+    TrivialBundleSectionSheaf.restrict (X := X) (Fiber := Fiber) h
   restrict_id := by
     intro U s
     apply Subtype.ext
@@ -3239,6 +3259,7 @@ no sheaf law is passed as an input. -/
 theorem isLinearSheaf :
     IsLinearSheaf (presheaf (X := X) (Fiber := Fiber)) where
   locality := by
+    classical
     intro ι U V hVU hcover s t hlocal
     apply Subtype.ext
     funext x
@@ -3247,11 +3268,15 @@ theorem isLinearSheaf :
         TopologicalSpace.Opens.mem_iSup.mp (hcover hxU)
       have hvalue := congrArg
         (fun q : sections (V i) => (q : X → Fiber) x) (hlocal i)
-      simpa [presheaf, restrict, hxi] using hvalue
+      change
+        (if x ∈ V i then (s : X → Fiber) x else 0) =
+          (if x ∈ V i then (t : X → Fiber) x else 0) at hvalue
+      simpa only [hxi, if_pos] using hvalue
     · exact (s.property x hxU).trans (t.property x hxU).symm
   gluing := by
     classical
     intro ι U V hVU hcover s hcompat
+    change (i : ι) → sections (X := X) (Fiber := Fiber) (V i) at s
     choose index hindex using fun x : U =>
       TopologicalSpace.Opens.mem_iSup.mp (hcover x.property)
     let glued : X → Fiber := fun x =>
@@ -3276,11 +3301,25 @@ theorem isLinearSheaf :
         (hcompat j i)
       have hji :
           (s j : X → Fiber) x = (s i : X → Fiber) x := by
-        simpa [presheaf, restrict, hxj, hxi] using hvalue
-      simpa [presheaf, restrict, glued, hxi, hxU, j] using hji
+        change
+          ((TrivialBundleSectionSheaf.restrict
+              (X := X) (Fiber := Fiber) inf_le_left (s j) :
+              sections (X := X) (Fiber := Fiber) (V j ⊓ V i)) : X → Fiber) x =
+            ((TrivialBundleSectionSheaf.restrict
+              (X := X) (Fiber := Fiber) inf_le_right (s i) :
+              sections (X := X) (Fiber := Fiber) (V j ⊓ V i)) : X → Fiber) x
+          at hvalue
+        rw [restrict_apply, restrict_apply] at hvalue
+        simpa [hxj, hxi] using hvalue
+      change
+        (if x ∈ V i then glued x else 0) = (s i : X → Fiber) x
+      simp only [hxi, if_pos, glued, hxU, j]
+      exact hji
     · have hz : (s i : X → Fiber) x = 0 :=
         (s i).property x hxi
-      simpa [presheaf, restrict, hxi, hz]
+      change
+        (if x ∈ V i then glued x else 0) = (s i : X → Fiber) x
+      simpa only [hxi, if_false] using hz.symm
 
 /-- Trivial descent acts identically on every concrete section space. -/
 def trivialAction (U : TopologicalSpace.Opens X) :
@@ -3333,7 +3372,7 @@ theorem qGaugeForms_trivialAction (U : TopologicalSpace.Opens X) :
 
 /-- Concrete specialization of Proposition 16. -/
 theorem concrete_covariant_gluing_existsUnique
-    {ι : Type*} {U : TopologicalSpace.Opens X}
+    {ι : Type uSheafX} {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U) (hcover : U ≤ ⨆ i, V i)
     (s : ∀ i, qGaugeForms
@@ -3411,7 +3450,7 @@ theorem curvature_neg_expansion
     (C : CurvatureCalculus OneForm TwoForm) (A : OneForm) :
     curvature C (-A) =
       C.backgroundCurvature - C.d A + C.wedge A A := by
-  simp [curvature]
+  simp [curvature, sub_eq_add_neg]
 
 theorem curvature_smul_expansion
     {OneForm TwoForm : Type*}
@@ -3903,7 +3942,7 @@ theorem inv_denom_eq_denom_inv
     (UpperHalfPlane.denom_ne_zero
       (realMatrix γ) (gamma2Act γ⁻¹ τ))).mp
   rw [← denom_cocycle]
-  simpa only [mul_inv, realMatrix_one] using
+  simpa only [mul_inv_cancel, realMatrix_one] using
     (UpperHalfPlane.denom_one τ)
 
 /-- Identity element in the genuine square-root ambient. -/
@@ -3997,7 +4036,7 @@ instance : Group Element :=
       apply ext
       · simp only [matrix_mul, mul_assoc]
       · funext τ
-        simp only [sqrtFactor_mul, gamma2Act_mul, mul_assoc])
+        simp only [sqrtFactor_mul, matrix_mul, gamma2Act_mul, mul_assoc])
     (by
       intro a
       apply ext
@@ -4022,8 +4061,8 @@ theorem group_mul_assoc (a b c : Element) :
   mul_assoc a b c
 
 theorem group_inv_mul (a : Element) :
-    a⁻¹ * a = 1 :=
-  inv_mul a
+    a⁻¹ * a = 1 := by
+  simp
 
 /-- Forgetting the square-root branch is a genuine group homomorphism.  It is
 not claimed to be surjective and no section is supplied. -/
@@ -4074,8 +4113,8 @@ theorem sqrtFactor_eq_or_eq_neg_of_matrix_eq
       exact
         (sqrtFactor_pointwise_dichotomy_of_matrix_eq a b hab τ).resolve_left hne
     · intro hneg heq
-      apply b.sqrtFactor_ne_zero τ
-      exact CharZero.eq_neg_self_iff.mp (heq.symm.trans hneg)
+      exact (sqrtFactor_ne_zero b τ)
+        (CharZero.eq_neg_self_iff.mp (heq.symm.trans hneg))
   have hopen : IsOpen s := isClosed_compl_iff.mp <| by
     rw [hcompl]
     exact isClosed_eq a.continuous_sqrtFactor
@@ -4134,7 +4173,7 @@ theorem deckNeg_mul_sqrtFactor (a : Element) (τ : UpperHalfPlane) :
 @[simp]
 theorem deckNeg_mul_self : deckNeg * deckNeg = 1 := by
   apply ext
-  · simp only [matrix_mul, deckNeg_matrix, one_mul]
+  · simp only [matrix_mul, matrix_one, deckNeg_matrix, one_mul]
   · funext τ
     rw [deckNeg_mul_sqrtFactor, deckNeg_sqrtFactor,
       sqrtFactor_one]
@@ -4187,8 +4226,9 @@ is computed from the lower row of the concrete matrix `T²`. -/
 theorem denom_gamma2TranslationTwo (τ : UpperHalfPlane) :
     UpperHalfPlane.denom
         (GenuineGamma2Metaplectic.realMatrix gamma2TranslationTwo) τ = 1 := by
-  simp [GenuineGamma2Metaplectic.realMatrix, gamma2TranslationTwo,
-    UpperHalfPlane.denom, ModularGroup.coe_T_zpow]
+  norm_num [GenuineGamma2Metaplectic.realMatrix,
+    gamma2TranslationTwo, UpperHalfPlane.denom, pow_two,
+    Matrix.mul_apply, Fin.sum_univ_two]
 
 /-- The genuine square-root-compatible element over the concrete translation
 `T²`, with the constant square root of its denominator. -/
@@ -4248,6 +4288,8 @@ theorem negOne_mem_gamma2 :
     (-1 : Matrix.SpecialLinearGroup (Fin 2) ℤ) ∈ Gamma2 := by
   rw [CongruenceSubgroup.Gamma_mem]
   norm_num
+  change (-1 : ZMod 2) = 1
+  decide
 
 /-- The concrete central element `-I` of `Gamma(2)`. -/
 def gamma2NegOne : Gamma2Element :=
@@ -4394,10 +4436,10 @@ theorem im_mul_norm_pow_four_invariant
     (hu' : u' = (η : ℂ) * a.sqrtFactor τ * u) :
     (gamma2Act a.matrix τ).im * ‖u'‖ ^ 4 =
       τ.im * ‖u‖ ^ 4 := by
-  rw [a.im_gamma2Act_eq_div_norm_sqrtFactor_pow_four,
+  rw [im_gamma2Act_eq_div_norm_sqrtFactor_pow_four a,
     norm_covariantValue a η τ u u' hu']
   have hp : ‖a.sqrtFactor τ‖ ≠ 0 :=
-    norm_ne_zero_iff.mpr (a.sqrtFactor_ne_zero τ)
+    norm_ne_zero_iff.mpr (sqrtFactor_ne_zero a τ)
   have hp4 : ‖a.sqrtFactor τ‖ ^ 4 ≠ 0 := pow_ne_zero 4 hp
   calc
     τ.im / ‖a.sqrtFactor τ‖ ^ 4 *
@@ -4464,15 +4506,16 @@ theorem factor_ne_zero
     have hnorm : ‖(ν a : ℂ)‖ = 1 := Circle.norm_coe (ν a)
     rw [hzero, norm_zero] at hnorm
     norm_num at hnorm
-  exact mul_ne_zero hν (a.sqrtFactor_ne_zero τ)
+  exact mul_ne_zero hν (sqrtFactor_ne_zero a τ)
 
 /-- The genuine factor is continuous in the upper-half-plane variable. -/
 theorem continuous_factor
     (ν : Multiplier)
     (a : GenuineGamma2Metaplectic.Element) :
     Continuous (factor ν a) := by
-  simpa only [factor] using
-    (continuous_const.mul a.continuous_sqrtFactor)
+  change Continuous (fun τ : UpperHalfPlane =>
+    (ν a : ℂ) * a.sqrtFactor τ)
+  exact continuous_const.mul a.continuous_sqrtFactor
 
 /-- Exact cocycle law with the action convention used by `gamma2Act`. -/
 theorem factor_mul
@@ -4815,7 +4858,7 @@ theorem IsThetaCovariant.inv
   have hη : (η : ℂ) ≠ 0 := circle_coe_ne_zero η
   have hs :
       a.sqrtFactor (gamma2Act a.matrix⁻¹ τ) ≠ 0 :=
-    a.sqrtFactor_ne_zero (gamma2Act a.matrix⁻¹ τ)
+    sqrtFactor_ne_zero a (gamma2Act a.matrix⁻¹ τ)
   change
     ConcreteUnaryTheta.theta (gamma2Act a.matrix⁻¹ τ) =
       ((η⁻¹ : Circle) : ℂ) *
@@ -4889,7 +4932,7 @@ theorem translationTwo_isThetaCovariant :
 noncomputable def centralNegOnePhase : Circle := by
   refine ⟨-Complex.I, ?_⟩
   change -Complex.I ∈ Metric.sphere (0 : ℂ) 1
-  exact Metric.mem_sphere_zero_iff_norm.mpr (by
+  exact (mem_sphere_zero_iff_norm).mpr (by
     simp only [norm_neg, Complex.norm_I])
 
 @[simp]
@@ -4915,7 +4958,7 @@ theorem centralNegOne_isThetaCovariant :
 noncomputable def deckNegPhase : Circle := by
   refine ⟨(-1 : ℂ), ?_⟩
   change (-1 : ℂ) ∈ Metric.sphere (0 : ℂ) 1
-  exact Metric.mem_sphere_zero_iff_norm.mpr (by norm_num)
+  exact (mem_sphere_zero_iff_norm).mpr (by norm_num)
 
 @[simp]
 theorem deckNegPhase_coe : (deckNegPhase : ℂ) = -1 := rfl
@@ -4939,7 +4982,7 @@ theorem thetaPhase_unique_of_nonzero
   apply Circle.coe_injective
   have htail :
       a.sqrtFactor τ * ConcreteUnaryTheta.theta τ ≠ 0 :=
-    mul_ne_zero (a.sqrtFactor_ne_zero τ) hθ
+    mul_ne_zero (sqrtFactor_ne_zero a τ) hθ
   exact mul_right_cancel₀ htail (by
     simpa only [mul_assoc] using (hη τ).symm.trans (hξ τ))
 
@@ -4995,8 +5038,11 @@ theorem theta_nonzero_at_thetaNonzeroPoint :
             (1 - Real.exp
               (-Real.pi * thetaNonzeroPoint.im)) *
           Real.exp (-Real.pi * thetaNonzeroPoint.im) := by
-    simpa only [ConcreteUnaryTheta.theta] using
-      (norm_jacobiTheta_sub_one_le thetaNonzeroPoint.im_pos)
+    change
+      ‖jacobiTheta (thetaNonzeroPoint : ℂ) - 1‖ ≤
+        2 / (1 - Real.exp (-Real.pi * (thetaNonzeroPoint : ℂ).im)) *
+          Real.exp (-Real.pi * (thetaNonzeroPoint : ℂ).im)
+    exact norm_jacobiTheta_sub_one_le thetaNonzeroPoint.im_pos
   rw [exp_neg_pi_mul_thetaNonzeroPoint_im] at hbound
   have hlt :
       ‖ConcreteUnaryTheta.theta thetaNonzeroPoint - 1‖ < 1 :=
@@ -5013,7 +5059,10 @@ theorem thetaCovariantProjection_injective :
   have hbase :
       (p : GenuineGamma2Metaplectic.Element × Circle).1 =
         (q : GenuineGamma2Metaplectic.Element × Circle).1 := by
-    simpa only [thetaCovariantProjection] using hpq
+    change
+      (p : GenuineGamma2Metaplectic.Element × Circle).1 =
+        (q : GenuineGamma2Metaplectic.Element × Circle).1 at hpq
+    exact hpq
   have hq :
       IsThetaCovariant
         (p : GenuineGamma2Metaplectic.Element × Circle).1
@@ -5048,8 +5097,14 @@ theorem fullThetaCovariance_iff_projection_surjective :
     refine ⟨(p : GenuineGamma2Metaplectic.Element × Circle).2, ?_⟩
     have hbase :
         (p : GenuineGamma2Metaplectic.Element × Circle).1 = a := by
-      simpa only [thetaCovariantProjection] using hp
-    simpa only [hbase] using p.property
+      change (p : GenuineGamma2Metaplectic.Element × Circle).1 = a at hp
+      exact hp
+    have hpCov := p.property
+    change IsThetaCovariant
+      (p : GenuineGamma2Metaplectic.Element × Circle).1
+      (p : GenuineGamma2Metaplectic.Element × Circle).2 at hpCov
+    rw [← hbase]
+    exact hpCov
 
 theorem fullThetaCovariance_iff_projection_bijective :
     FullThetaCovariance ↔
@@ -5112,8 +5167,10 @@ theorem theta_isAutomorphic_of_fullCovariance
       (thetaMultiplierOfFullCovariance hfull τ₀ hθ)
       ConcreteUnaryTheta.theta := by
   intro a τ
-  simpa only [factor, thetaMultiplierOfFullCovariance] using
-    chosenThetaPhase_covariant hfull a τ
+  change ConcreteUnaryTheta.theta (gamma2Act a.matrix τ) =
+    (chosenThetaPhase hfull a : ℂ) * a.sqrtFactor τ *
+      ConcreteUnaryTheta.theta τ
+  exact chosenThetaPhase_covariant hfull a τ
 
 /-- The central value of the constructed theta character is forced, not
 chosen: it equals the explicit phase `-I`. -/
@@ -5209,12 +5266,12 @@ theorem factor_ne_zero
     factor ν a τ ≠ 0 := by
   exact mul_ne_zero
     (GenuineHalfWeightAutomorphy.circle_coe_ne_zero (ν a))
-    (inv_ne_zero (a.sqrtFactor_ne_zero τ))
+    (inv_ne_zero (sqrtFactor_ne_zero a τ))
 
 theorem continuous_factor (ν : Multiplier) (a : Element) :
     Continuous (factor ν a) := by
   exact continuous_const.mul
-    (a.continuous_sqrtFactor.inv₀ (a.sqrtFactor_ne_zero))
+    (a.continuous_sqrtFactor.inv₀ (sqrtFactor_ne_zero a))
 
 /-- Exact cocycle for the inverse-square-root convention. -/
 theorem factor_mul
@@ -5226,7 +5283,7 @@ theorem factor_mul
         (a.sqrtFactor (gamma2Act b.matrix τ) * b.sqrtFactor τ)⁻¹ =
       ((ν a : ℂ) * (a.sqrtFactor (gamma2Act b.matrix τ))⁻¹) *
         ((ν b : ℂ) * (b.sqrtFactor τ)⁻¹)
-  rw [map_mul, mul_inv_rev]
+  rw [map_mul, Circle.coe_mul, mul_inv_rev]
   ring
 
 /-- Pointwise inverse-half-weight automorphy. -/
@@ -5276,10 +5333,10 @@ theorem inv_im_mul_norm_pow_four_invariant
     (hu' : u' = (η : ℂ) * (a.sqrtFactor τ)⁻¹ * u) :
     (gamma2Act a.matrix τ).im⁻¹ * ‖u'‖ ^ 4 =
       τ.im⁻¹ * ‖u‖ ^ 4 := by
-  rw [a.im_gamma2Act_eq_div_norm_sqrtFactor_pow_four,
+  rw [im_gamma2Act_eq_div_norm_sqrtFactor_pow_four a,
     norm_covariantValue a η τ u u' hu']
   have hs : ‖a.sqrtFactor τ‖ ≠ 0 :=
-    norm_ne_zero_iff.mpr (a.sqrtFactor_ne_zero τ)
+    norm_ne_zero_iff.mpr (sqrtFactor_ne_zero a τ)
   have hy : τ.im ≠ 0 := τ.im_pos.ne'
   field_simp [hs, hy]
   <;> ring
@@ -5301,7 +5358,8 @@ theorem IsAutomorphic.density_invariant
     (hu : IsAutomorphic ν u) (a : Element) (τ : UpperHalfPlane) :
     density (gamma2Act a.matrix τ)
         (u (gamma2Act a.matrix τ)) = density τ (u τ) := by
-  exact density_invariant a (ν a) τ (u τ)
+  exact GenuineInverseHalfWeightAutomorphy.density_invariant
+    a (ν a) τ (u τ)
     (u (gamma2Act a.matrix τ)) <| by
       simpa only [factor] using hu a τ
 
@@ -5380,9 +5438,9 @@ structure Datum
   norm_sq_eq_energy : ∀ u,
     ‖u‖ ^ 2 = l2Energy u + raisingEnergy u + loweringEnergy u
   core_equivariant :
-    ∀ u ∈ core, IsAutomorphic ν (toFunction u)
+    ∀ u ∈ core, GenuineInverseHalfWeightAutomorphy.IsAutomorphic ν (toFunction u)
   ae_equivariant_closed :
-    IsClosed {u : H | IsAEAutomorphic ν μ (toFunction u)}
+    IsClosed {u : H | GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic ν μ (toFunction u)}
 
 /-- The genuine weighted automorphic Sobolev space is the closure of its
 smooth equivariant energy core. -/
@@ -5416,17 +5474,18 @@ theorem space_ae
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H]
     (M : Datum ν μ H) (u : space M) :
-    IsAEAutomorphic ν μ (M.toFunction (u : H)) := by
+    GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic ν μ (M.toFunction (u : H)) := by
   have hclosure :
       closure (↑M.core : Set H) ⊆
-        {v : H | IsAEAutomorphic ν μ (M.toFunction v)} :=
+        {v : H | GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic ν μ (M.toFunction v)} :=
     closure_minimal
       (by
         intro v hv
-        exact (M.core_equivariant v hv).isAE)
+        exact (M.core_equivariant v hv).isAE μ)
       M.ae_equivariant_closed
   apply hclosure
-  simpa only [Submodule.topologicalClosure_coe] using u.property
+  rw [← Submodule.topologicalClosure_coe]
+  exact u.property
 
 /-- Smooth compact-core test vectors. -/
 abbrev CoreTestSpace
@@ -5523,16 +5582,16 @@ def restrictDual
     {T V : Type*}
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (include : T →L[ℂ] V) (f : V →L[ℂ] ℂ) : T →L[ℂ] ℂ :=
-  f.comp include
+    (incl : T →L[ℂ] V) (f : V →L[ℂ] ℂ) : T →L[ℂ] ℂ :=
+  f.comp incl
 
 @[simp]
 theorem restrictDual_apply
     {T V : Type*}
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (include : T →L[ℂ] V) (f : V →L[ℂ] ℂ) (t : T) :
-    restrictDual include f t = f (include t) :=
+    (incl : T →L[ℂ] V) (f : V →L[ℂ] ℂ) (t : T) :
+    restrictDual incl f t = f (incl t) :=
   rfl
 
 /-- Restriction of distributions is functorial under composition of continuous
@@ -5567,12 +5626,12 @@ structure CompactTestInclusion
     (X T V : Type*) [TopologicalSpace X]
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V] where
-  include : T →L[ℂ] V
-  include_injective : Function.Injective include
+  «include» : T →L[ℂ] V
+  include_injective : Function.Injective «include»
   realization : V →ₗ[ℂ] (X → ℂ)
   testRealization : T →ₗ[ℂ] (X → ℂ)
   realization_include : ∀ t,
-    realization (include t) = testRealization t
+    realization («include» t) = testRealization t
   compact_support : ∀ t,
     HasCompactSupport (testRealization t)
 
@@ -5583,7 +5642,7 @@ theorem CompactTestInclusion.realization_include_apply
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V]
     (I : CompactTestInclusion X T V) (t : T) :
-    I.realization (I.include t) = I.testRealization t :=
+    I.realization (I.«include» t) = I.testRealization t :=
   I.realization_include t
 
 /-- **Corrected Lemma 1.1, distributional form.** Equality of the weak
@@ -5594,11 +5653,11 @@ theorem restrict_dual_equation
     {T V : Type*}
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (include : T →L[ℂ] V)
+    (incl : T →L[ℂ] V)
     {laplace potential rhs : V →L[ℂ] ℂ}
     (hweak : laplace + potential = rhs) :
-    restrictDual include (laplace + potential) = restrictDual include rhs :=
-  congrArg (fun g : V →L[ℂ] ℂ => g.comp include) hweak
+    restrictDual incl (laplace + potential) = restrictDual incl rhs :=
+  congrArg (fun g : V →L[ℂ] ℂ => g.comp incl) hweak
 
 /-- Compact-test specialization of corrected Lemma 1.1.  Compactness is
 proof-carrying data in `CompactTestInclusion`, while the distributional
@@ -5610,19 +5669,19 @@ theorem restrict_dual_equation_compact
     (I : CompactTestInclusion X T V)
     {laplace potential rhs : V →L[ℂ] ℂ}
     (hweak : laplace + potential = rhs) :
-    restrictDual I.include (laplace + potential) =
-      restrictDual I.include rhs :=
-  restrict_dual_equation I.include hweak
+    restrictDual I.«include» (laplace + potential) =
+      restrictDual I.«include» rhs :=
+  restrict_dual_equation I.«include» hweak
 
 theorem restricted_dual_pairing
     {T V : Type*}
     [NormedAddCommGroup T] [NormedSpace ℂ T]
     [NormedAddCommGroup V] [NormedSpace ℂ V]
-    (include : T →L[ℂ] V)
+    (incl : T →L[ℂ] V)
     {laplace potential rhs : V →L[ℂ] ℂ}
     (hweak : laplace + potential = rhs) (t : T) :
-    restrictDual include rhs t =
-      restrictDual include laplace t + restrictDual include potential t := by
+    restrictDual incl rhs t =
+      restrictDual incl laplace t + restrictDual incl potential t := by
   rw [← hweak]
   simp [restrictDual]
 
@@ -5718,16 +5777,16 @@ theorem restrict_distributional_equation_compactSupport
     (D : RegularDensityData X V laplace potential rhs)
     (hweak : laplace + potential = rhs) (t : T)
     (hkinetic_local : ∀ x,
-      I.testRealization t x = 0 → D.kinetic (I.include t) x = 0)
+      I.testRealization t x = 0 → D.kinetic (I.«include» t) x = 0)
     (hpotential_local : ∀ x,
       I.testRealization t x = 0 →
-        D.potentialDensity (I.include t) x = 0) :
+        D.potentialDensity (I.«include» t) x = 0) :
     IsCompact (tsupport (I.testRealization t)) ∧
-      rhs (I.include t) =
+      rhs (I.«include» t) =
         (∫ x in tsupport (I.testRealization t),
-          D.kinetic (I.include t) x ∂D.measure) +
+          D.kinetic (I.«include» t) x ∂D.measure) +
         (∫ x in tsupport (I.testRealization t),
-          D.potentialDensity (I.include t) x ∂D.measure) := by
+          D.potentialDensity (I.«include» t) x ∂D.measure) := by
   refine ⟨I.compact_support t, ?_⟩
   apply restrict_distributional_equation D hweak
   · intro x hx
@@ -5748,17 +5807,17 @@ theorem restrict_distributional_equation_compactSupport_of_product
     (hweak : laplace + potential = rhs) (t : T)
     (A B : X → ℂ)
     (hkinetic : ∀ x,
-      D.kinetic (I.include t) x =
+      D.kinetic (I.«include» t) x =
         A x * (starRingEnd ℂ) (I.testRealization t x))
     (hpotential : ∀ x,
-      D.potentialDensity (I.include t) x =
+      D.potentialDensity (I.«include» t) x =
         B x * (starRingEnd ℂ) (I.testRealization t x)) :
     IsCompact (tsupport (I.testRealization t)) ∧
-      rhs (I.include t) =
+      rhs (I.«include» t) =
         (∫ x in tsupport (I.testRealization t),
-          D.kinetic (I.include t) x ∂D.measure) +
+          D.kinetic (I.«include» t) x ∂D.measure) +
         (∫ x in tsupport (I.testRealization t),
-          D.potentialDensity (I.include t) x ∂D.measure) := by
+          D.potentialDensity (I.«include» t) x ∂D.measure) := by
   apply restrict_distributional_equation_compactSupport I D hweak t
   · intro x hx
     rw [hkinetic x]
@@ -5819,15 +5878,15 @@ structure SpectralMeasureData
   operatorDomain_le_formDomain : S.operator.domain ≤ formDomain
   measure : formDomain → Measure ℝ
   one_integrable : ∀ u, Integrable (fun _ : ℝ => (1 : ℝ)) (measure u)
-  id_integrable : ∀ u, Integrable (fun λ : ℝ => λ) (measure u)
+  id_integrable : ∀ u, Integrable (fun lam : ℝ => lam) (measure u)
   mass_eq_norm_sq : ∀ u,
     (∫ _ : ℝ, (1 : ℝ) ∂measure u) = ‖(u : H)‖ ^ 2
   energy_eq_operator : ∀ u : S.operator.domain,
-    (∫ λ : ℝ, λ ∂measure
+    (∫ lam : ℝ, lam ∂measure
       ⟨(u : H), operatorDomain_le_formDomain u.property⟩) =
       Complex.re (inner ℂ (S.operator u) (u : H))
   spectrum_nonnegative : ∀ u,
-    ∀ᵐ λ ∂measure u, 0 ≤ λ
+    ∀ᵐ lam ∂measure u, 0 ≤ lam
 
 /-- A positive spectral lower bound on an explicit reduced form domain.  The
 `excludedModes` field names the zero, residual, or continuous modes removed in
@@ -5844,13 +5903,13 @@ structure SpectralGapData
   gap : ℝ
   gap_pos : 0 < gap
   lower_bound : ∀ u : admissible,
-    ∀ᵐ λ ∂M.measure u.1, gap ≤ λ
+    ∀ᵐ lam ∂M.measure u.1, gap ≤ lam
 
 noncomputable def SpectralMeasureData.energy
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H] {S : NonnegativeSelfAdjointData H}
     (M : SpectralMeasureData S) (u : M.formDomain) : ℝ :=
-  ∫ λ : ℝ, λ ∂M.measure u
+  ∫ lam : ℝ, lam ∂M.measure u
 
 /-- A raising/lowering factorization of the quadratic form. -/
 structure RaisingLoweringData
@@ -6080,12 +6139,12 @@ theorem NonnegativeSelfAdjointData.form_nonnegative
 theorem gap_mul_integral_one_le_integral_id
     {μ : Measure ℝ} {gap : ℝ}
     (hone : Integrable (fun _ : ℝ => (1 : ℝ)) μ)
-    (hid : Integrable (fun λ : ℝ => λ) μ)
-    (hlower : ∀ᵐ λ ∂μ, gap ≤ λ) :
-    gap * (∫ _ : ℝ, (1 : ℝ) ∂μ) ≤ ∫ λ : ℝ, λ ∂μ := by
+    (hid : Integrable (fun lam : ℝ => lam) μ)
+    (hlower : ∀ᵐ lam ∂μ, gap ≤ lam) :
+    gap * (∫ _ : ℝ, (1 : ℝ) ∂μ) ≤ ∫ lam : ℝ, lam ∂μ := by
   rw [← integral_const_mul gap (fun _ : ℝ => (1 : ℝ))]
   exact integral_mono_ae (hone.const_mul gap) hid <|
-    hlower.mono fun λ hλ => by simpa using hλ
+    hlower.mono fun lam hlam => by simpa using hlam
 
 theorem spectral_gap_bound
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
@@ -6312,7 +6371,7 @@ theorem sqrt_gap_mul_norm_le
         (norm_nonneg (F.lowering u.1))]
 
 /-- Chosen-subspace version corresponding to the duplicate Lemma 2.1. -/
-theorem globalPoincare_sq_def2_1 := @globalPoincare_sq
+def globalPoincare_sq_def2_1 := @globalPoincare_sq
 
 end GlobalPoincare
 
@@ -6321,7 +6380,7 @@ namespace KloostermanTail
 /-- Convergence of modulus-ordered partial sums.  This is weaker and more faithful
 to Kuznetsov cancellation than absolute `Summable`. -/
 def HasOrderedSum (f : ℕ → ℂ) (z : ℂ) : Prop :=
-  Tendsto (fun N => ∑ n in Finset.range (N + 1), f n) atTop (𝓝 z)
+  Tendsto (fun N => Finset.sum (Finset.range (N + 1)) f) atTop (𝓝 z)
 
 /-- A modulus-ordered series has at most one value. -/
 theorem HasOrderedSum.unique
@@ -6330,7 +6389,7 @@ theorem HasOrderedSum.unique
   tendsto_nhds_unique hz hw
 
 def prefixSum (a : ℕ → ℂ) (N : ℕ) : ℂ :=
-  ∑ n in Finset.range (N + 1), a n
+  Finset.sum (Finset.range (N + 1)) a
 
 def abelRemainder (a b : ℕ → ℂ) (N : ℕ) : ℂ :=
   prefixSum a N * (b N - b (N + 1))
@@ -6341,15 +6400,25 @@ theorem prefixSum_succ (a : ℕ → ℂ) (N : ℕ) :
 
 /-- Finite Abel summation in the fixed modulus order. -/
 theorem finite_summation_by_parts (a b : ℕ → ℂ) (N : ℕ) :
-    (∑ n in Finset.range (N + 1), a n * b n) =
+    Finset.sum (Finset.range (N + 1)) (fun n => a n * b n) =
       prefixSum a N * b N +
-        ∑ n in Finset.range N, abelRemainder a b n := by
+        Finset.sum (Finset.range N) (abelRemainder a b) := by
   induction N with
   | zero => simp [prefixSum, abelRemainder]
   | succ N ih =>
       rw [Finset.sum_range_succ, ih, Finset.sum_range_succ,
         prefixSum_succ]
-      simp only [abelRemainder]
+      have hrem :
+          (Finset.range N).sum (abelRemainder a b) =
+            ∑ x ∈ Finset.range N,
+              (prefixSum a x * b x - prefixSum a x * b (1 + x)) := by
+        apply Finset.sum_congr rfl
+        intro x hx
+        unfold abelRemainder
+        rw [Nat.add_comm]
+        ring
+      rw [hrem]
+      unfold abelRemainder
       ring
 
 /-- The missing analytic input in the paper's Kloosterman proof: controlled
@@ -6388,7 +6457,7 @@ theorem AbelCancellationCertificate.hasOrderedSum
     HasOrderedSum (fun n => a n * b n) C.orderedValue := by
   have hremainder :
       Tendsto
-        (fun N => ∑ n in Finset.range N, abelRemainder a b n)
+        (fun N => Finset.sum (Finset.range N) (abelRemainder a b))
         atTop (𝓝 C.orderedValue) :=
     C.remainder_summable.hasSum.tendsto_sum_nat
   simpa [HasOrderedSum, AbelCancellationCertificate.orderedValue,
@@ -6458,8 +6527,8 @@ theorem pSeriesConstant_nonneg (δ : ℝ) :
 
 theorem pSeriesMajorant_summable {δ : ℝ} (hδ : 0 < δ) :
     Summable (pSeriesMajorant δ) := by
-  simpa only [pSeriesMajorant] using
-    (Real.summable_one_div_nat_add_rpow 1 (1 + δ)).2 (by linarith)
+  change Summable (fun n : ℕ => 1 / |(n : ℝ) + 1| ^ (1 + δ))
+  exact (Real.summable_one_div_nat_add_rpow 1 (1 + δ)).2 (by linarith)
 
 /-- A summable p-series bound for the Abel remainders bounds the value of the
 same original modulus-ordered series. -/
@@ -6490,7 +6559,7 @@ theorem orderedKernel_and_bound
 
 /-- **Corrected Lemma 2.2.** This paper duplicate is the same ordered Abel
 theorem, not a second absolute-convergence argument. -/
-theorem orderedKernel_and_bound_def2_2 := @orderedKernel_and_bound
+def orderedKernel_and_bound_def2_2 := @orderedKernel_and_bound
 
 /-- Optional absolute post-cancellation data.  The caller must put every
 dependence on `m`, `n`, and gcd factors into `scale`; this structure does not
@@ -6557,8 +6626,8 @@ def cuspPowerDensity (growth y : ℝ) : ℝ :=
 
 theorem basic_window_beta_one {α : ℝ} :
     basicGrowth α 1 < 1 ↔ α < -(1 / 2 : ℝ) := by
-  simp [basicGrowth]
-  linarith
+  unfold basicGrowth
+  constructor <;> intro h <;> linarith
 
 theorem eisensteinGrowth_eq_self {σ : ℝ} (hσ : 1 / 2 ≤ σ) :
     eisensteinGrowth σ = σ := by
@@ -6568,8 +6637,8 @@ theorem eisensteinGrowth_eq_self {σ : ℝ} (hσ : 1 / 2 ≤ σ) :
 theorem rankinSelberg_window_beta_one {α σ : ℝ} :
     rankinSelbergGrowth α 1 σ < 1 ↔
       α + eisensteinGrowth σ < -(1 / 2 : ℝ) := by
-  simp [rankinSelbergGrowth, basicGrowth]
-  linarith
+  unfold rankinSelbergGrowth basicGrowth
+  constructor <;> intro h <;> linarith
 
 /-- In the half-plane containing the usual Eisenstein line, the corrected
 Rankin--Selberg window has no hidden `max`: it is `α + σ < -1/2`. -/
@@ -6595,7 +6664,7 @@ theorem cuspPowerDensity_integrable_iff
   change
     IntegrableOn (fun y : ℝ => y ^ (growth - 2)) (Ioi Y) ↔ growth < 1
   rw [integrableOn_Ioi_rpow_iff hY]
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- A polynomial cusp bound.  For the paper's mock object this requires, at every
 cusp, a proof that the polar principal part is absent, subtracted, or regularized. -/
@@ -6658,7 +6727,13 @@ theorem cuspPowerDensity_integral_strip
   have h := cuspPowerDensity_integrableOn_strip
     (κ := κ) (Y := Y) (growth := growth) hY hgrowth
   rw [cuspStrip] at h ⊢
-  rw [setIntegral_prod _ h, setIntegral_const]
+  rw [setIntegral_prod _ h]
+  change
+    (∫ _x in Ioc 0 (Gamma2Cusp.width κ : ℝ),
+      ∫ y in Ioi Y, cuspPowerDensity growth y) =
+        (Gamma2Cusp.width κ : ℝ) *
+          ∫ y in Ioi Y, cuspPowerDensity growth y
+  rw [setIntegral_const]
   simp [Gamma2Cusp.width_eq_two]
 
 /-- The scalar density `y⁻²` for hyperbolic area, represented relative to
@@ -6939,7 +7014,7 @@ theorem basic_power_integrable_iff
       α + β < 1 / 2 := by
   rw [cuspPowerDensity_integrable_iff hY]
   unfold basicGrowth
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- Exact Eisenstein--Rankin--Selberg cusp window, including necessity. -/
 theorem rankinSelberg_power_integrable_iff
@@ -6949,7 +7024,7 @@ theorem rankinSelberg_power_integrable_iff
       α + β + eisensteinGrowth σ < 1 / 2 := by
   rw [cuspPowerDensity_integrable_iff hY]
   unfold rankinSelbergGrowth basicGrowth
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- Concrete counterexample to the PDF's implication from the bare `β = 1`
 window to convergence after inserting an Eisenstein factor: `α = -1` is in
@@ -6997,7 +7072,7 @@ theorem rankinSelberg_power_beta_one_integrable_iff_of_one_lt
       α + σ < -(1 / 2 : ℝ) := by
   rw [rankinSelberg_power_integrable_iff hY,
     eisensteinGrowth_eq_self (by linarith : 1 / 2 ≤ σ)]
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-! ### Near-zero audit of the cited Mock-I input
 
@@ -7016,7 +7091,7 @@ theorem nearZero_beta_one_integrable_iff
         (Ioo 0 Y) ↔
       -(1 / 2 : ℝ) < α := by
   rw [intervalIntegral.integrableOn_Ioo_rpow_iff hY]
-  linarith
+  constructor <;> intro h <;> linarith
 
 /-- Consequently, the range `α < -1/2` claimed in the cited Mock-I cusp
 calculation gives non-integrability at zero, not convergence. -/
@@ -7053,9 +7128,13 @@ theorem invGamma_tendsto_zero :
         (𝓝 0) (𝓝 0) := by
   have hcontinuous : Continuous (fun z : ℂ => (Complex.Gamma z)⁻¹) :=
     Complex.differentiable_one_div_Gamma.continuous
-  simpa using
+  have hzero : (Complex.Gamma (0 : ℂ))⁻¹ = 0 := by
+    simpa using
+      (Complex.one_div_Gamma_eq_self_mul_one_div_Gamma_add_one (0 : ℂ))
+  convert
     (hcontinuous.tendsto (0 : ℂ)).comp
       (Complex.continuous_ofReal.tendsto (0 : ℝ))
+    using 1 <;> simp [Function.comp_def, hzero]
 
 /-- Exact limit of the Mock-I normalization: it is zero, rather than the
 nonzero constant used later in that source. -/
@@ -7065,15 +7144,23 @@ theorem citedMockOneNormalization_tendsto_zero :
   have hpowR :
       Tendsto (fun ε : ℝ => (4 * Real.pi : ℝ) ^ (-ε))
         (𝓝 0) (𝓝 1) := by
-    simpa using
+    convert
       ((Real.continuous_const_rpow hbase).comp continuous_neg).tendsto 0
+      using 1 <;> simp [Function.comp_def]
   have hpowC :
       Tendsto
           (fun ε : ℝ => (((4 * Real.pi : ℝ) ^ (-ε) : ℝ) : ℂ))
           (𝓝 0) (𝓝 1) := by
-    simpa using
+    convert
       (Complex.continuous_ofReal.tendsto (1 : ℝ)).comp hpowR
-  simpa [citedMockOneNormalization] using
+      using 1 <;> rfl
+  change Tendsto
+    (fun ε : ℝ =>
+      ((((4 * Real.pi) ^ (-ε) : ℝ) : ℂ) *
+        (Complex.Gamma (ε : ℂ))⁻¹) *
+          (((2 * Real.pi) ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ))
+    (𝓝 0) (𝓝 0)
+  simpa using
     (hpowC.mul invGamma_tendsto_zero).mul_const
       (((2 * Real.pi) ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ)
 
@@ -7131,9 +7218,16 @@ theorem box_mul_box_eq_overlapIndicator (T x : ℝ) :
       (Icc (-T / 2) (T / 2) ∩
         Icc (x - T / 2) (x + T / 2)).indicator (fun _ => 1) := by
   funext t
-  by_cases ht : t ∈ Icc (-T / 2) (T / 2) <;>
-    by_cases hs : t ∈ Icc (x - T / 2) (x + T / 2) <;>
-    simp [box, ht, hs, sub_mem_centered_iff]
+  by_cases ht : t ∈ Icc (-T / 2) (T / 2)
+  · by_cases hs : t ∈ Icc (x - T / 2) (x + T / 2)
+    · have hsub : x - t ∈ Icc (-T / 2) (T / 2) :=
+        (sub_mem_centered_iff T x t).2 hs
+      simp [box, ht, hs, hsub]
+    · have hsub : x - t ∉ Icc (-T / 2) (T / 2) := by
+        intro h
+        exact hs ((sub_mem_centered_iff T x t).1 h)
+      simp [box, ht, hs, hsub]
+  · simp [box, ht]
 
 theorem box_convolution_eq_overlapVolume (T x : ℝ) :
     (box T ⋆ box T) x =
@@ -7154,15 +7248,21 @@ theorem overlapVolume_eq_profile (T x : ℝ) :
   rw [Icc_inter_Icc, Real.volume_real_Icc]
   unfold profile
   by_cases hx : x ≤ 0
-  · rw [sup_eq_left.mpr (by linarith),
-      inf_eq_right.mpr (by linarith), abs_of_nonpos hx, max_comm]
-    congr 1
-    ring
+  · calc
+      max (min (T / 2) (x + T / 2) - max (-T / 2) (x - T / 2)) 0 =
+          max 0 (min (T / 2) (x + T / 2) - max (-T / 2) (x - T / 2)) :=
+        max_comm _ _
+      _ = max 0 (T - |x|) := congrArg (fun y : ℝ => max 0 y) (by
+        rw [min_eq_right (by linarith), max_eq_left (by linarith), abs_of_nonpos hx]
+        ring)
   · have hx0 : 0 ≤ x := le_of_not_ge hx
-    rw [sup_eq_right.mpr (by linarith),
-      inf_eq_left.mpr (by linarith), abs_of_nonneg hx0, max_comm]
-    congr 1
-    ring
+    calc
+      max (min (T / 2) (x + T / 2) - max (-T / 2) (x - T / 2)) 0 =
+          max 0 (min (T / 2) (x + T / 2) - max (-T / 2) (x - T / 2)) :=
+        max_comm _ _
+      _ = max 0 (T - |x|) := congrArg (fun y : ℝ => max 0 y) (by
+        rw [min_eq_left (by linarith), max_eq_right (by linarith), abs_of_nonneg hx0]
+        ring)
 
 /-- Indicator convolution computation requested in Lemma 3.2. -/
 theorem box_convolution_eq_profile (T : ℝ) :
@@ -7211,12 +7311,13 @@ theorem tsupport_profile {T : ℝ} (hT : 0 < T) :
   rw [tsupport, support_profile hT, closure_Ioo (by linarith : -T ≠ T)]
 
 theorem continuous_profile (T : ℝ) : Continuous (profile T) := by
-  simpa [profile] using
-    continuous_const.max (continuous_const.sub continuous_abs)
+  change Continuous (fun t : ℝ => max 0 (T - |t|))
+  exact continuous_const.max (continuous_const.sub continuous_abs)
 
 theorem hasCompactSupport_profile {T : ℝ} (hT : 0 < T) :
     HasCompactSupport (profile T) := by
-  rw [hasCompactSupport_def, tsupport_profile hT]
+  change IsCompact (tsupport (profile T))
+  rw [tsupport_profile hT]
   exact isCompact_Icc
 
 theorem integrable_profile {T : ℝ} (hT : 0 < T) :
@@ -7228,7 +7329,7 @@ theorem profile_on_nonnegative
     {T t : ℝ} (ht : t ∈ Icc 0 T) :
     profile T t = T - t := by
   rw [profile_eq_sub_abs]
-  · exact abs_of_nonneg ht.1
+  · rw [abs_of_nonneg ht.1]
   · simpa [abs_of_nonneg ht.1] using ht.2
 
 theorem profile_on_nonpositive
@@ -7252,8 +7353,8 @@ theorem integral_profile_right {T : ℝ} (hT : 0 ≤ T) :
       simpa [uIcc_of_le hT] using ht
     _ = T ^ 2 / 2 := by
       rw [intervalIntegral.integral_sub intervalIntegrable_const
-        intervalIntegrable_id, intervalIntegral.integral_const,
-        intervalIntegral.integral_id]
+        intervalIntegral.intervalIntegrable_id, intervalIntegral.integral_const,
+        integral_id]
       simp only [smul_eq_mul]
       ring
 
@@ -7268,8 +7369,8 @@ theorem integral_profile_left {T : ℝ} (hT : 0 ≤ T) :
       simpa [uIcc_of_le (neg_nonpos.mpr hT)] using ht
     _ = T ^ 2 / 2 := by
       rw [intervalIntegral.integral_add intervalIntegrable_const
-        intervalIntegrable_id, intervalIntegral.integral_const,
-        intervalIntegral.integral_id]
+        intervalIntegral.intervalIntegrable_id, intervalIntegral.integral_const,
+        integral_id]
       simp only [smul_eq_mul]
       ring
 
@@ -7286,8 +7387,8 @@ theorem integral_profile {T : ℝ} (hT : 0 < T) :
     _ = (∫ t in (-T)..(0 : ℝ), profile T t) +
         ∫ t in (0 : ℝ)..T, profile T t :=
       (intervalIntegral.integral_add_adjacent_intervals
-        (continuous_profile T).intervalIntegrable
-        (continuous_profile T).intervalIntegrable).symm
+        ((continuous_profile T).intervalIntegrable (-T) 0)
+        ((continuous_profile T).intervalIntegrable 0 T)).symm
     _ = T ^ 2 := by
       rw [integral_profile_left hT.le, integral_profile_right hT.le]
       ring
@@ -7326,8 +7427,8 @@ theorem integral_profile_right_tail
       exact ⟨ha.trans ht.1, ht.2⟩
     _ = (T - a) ^ 2 / 2 := by
       rw [intervalIntegral.integral_sub intervalIntegrable_const
-        intervalIntegrable_id, intervalIntegral.integral_const,
-        intervalIntegral.integral_id]
+        intervalIntegral.intervalIntegrable_id, intervalIntegral.integral_const,
+        integral_id]
       simp only [smul_eq_mul]
       ring
 
@@ -7344,8 +7445,8 @@ theorem integral_profile_left_tail
       exact ⟨ht.1, ht.2.trans (neg_nonpos.mpr ha)⟩
     _ = (T - a) ^ 2 / 2 := by
       rw [intervalIntegral.integral_add intervalIntegrable_const
-        intervalIntegrable_id, intervalIntegral.integral_const,
-        intervalIntegral.integral_id]
+        intervalIntegral.intervalIntegrable_id, intervalIntegral.integral_const,
+        integral_id]
       simp only [smul_eq_mul]
       ring
 
@@ -7458,8 +7559,9 @@ private theorem integral_affine_mul_cexp
   have hu : ∀ x ∈ [[a, b]],
       HasDerivAt (fun y : ℝ => A + B * (y : ℂ)) B x := by
     intro x _
-    simpa only [mul_one] using
+    convert
       ((((hasDerivAt_id (x : ℂ)).const_mul B).comp_ofReal).const_add A)
+      using 1 <;> first | rfl | simp only [id_eq, mul_one]
   have hv : ∀ x ∈ [[a, b]],
       HasDerivAt
         (fun y : ℝ => Complex.exp (c * (y : ℂ)) / c)
@@ -7469,8 +7571,8 @@ private theorem integral_affine_mul_cexp
     rw [← mul_div_cancel_right₀
       (Complex.exp (c * (x : ℂ))) hc]
     apply ((Complex.hasDerivAt_exp _).comp x _).div_const c
-    simpa only [mul_one] using
-      ((hasDerivAt_id (x : ℂ)).const_mul c).comp_ofReal
+    convert ((hasDerivAt_id (x : ℂ)).const_mul c).comp_ofReal
+      using 1 <;> first | rfl | simp only [id_eq, mul_one]
   have hexp :
       IntervalIntegrable
         (fun x : ℝ => Complex.exp (c * (x : ℂ)))
@@ -7503,10 +7605,14 @@ private theorem integral_cexp_mul_profile
       rw [← support_profile hT]
       exact hp
     exact ⟨htIoo.1, htIoo.2.le⟩
+  have hphase : Continuous
+      (fun t : ℝ => Complex.exp (c * (t : ℂ))) := by fun_prop
+  have hprofile : Continuous (fun t : ℝ => (profile T t : ℂ)) :=
+    Complex.continuous_ofReal.comp (continuous_profile T)
   have hcontinuous : Continuous
       (fun t : ℝ =>
-        Complex.exp (c * (t : ℂ)) * (profile T t : ℂ)) := by
-    fun_prop
+        Complex.exp (c * (t : ℂ)) * (profile T t : ℂ)) :=
+    hphase.mul hprofile
   have hleft :
       (∫ t in (-T)..(0 : ℝ),
         Complex.exp (c * (t : ℂ)) * (profile T t : ℂ)) =
@@ -7514,6 +7620,8 @@ private theorem integral_cexp_mul_profile
         ((T : ℂ) + 1 * (t : ℂ)) * Complex.exp (c * (t : ℂ)) := by
     apply intervalIntegral.integral_congr
     intro t ht
+    change Complex.exp (c * (t : ℂ)) * (profile T t : ℂ) =
+      ((T : ℂ) + 1 * (t : ℂ)) * Complex.exp (c * (t : ℂ))
     rw [profile_on_nonpositive]
     · simp only [Complex.ofReal_add]
       ring
@@ -7525,6 +7633,8 @@ private theorem integral_cexp_mul_profile
         ((T : ℂ) + (-1) * (t : ℂ)) * Complex.exp (c * (t : ℂ)) := by
     apply intervalIntegral.integral_congr
     intro t ht
+    change Complex.exp (c * (t : ℂ)) * (profile T t : ℂ) =
+      ((T : ℂ) + (-1) * (t : ℂ)) * Complex.exp (c * (t : ℂ))
     rw [profile_on_nonnegative]
     · simp only [Complex.ofReal_sub]
       ring
@@ -7803,7 +7913,7 @@ theorem Convention.measure_ne_zero (K : Convention) :
   rcases K.normalizedKernel_nontrivial with ⟨x, hx, hnot⟩
   intro hzero
   apply hnot
-  rw [hzero]
+  rw [hzero, MeasureTheory.aeEq_iff]
   simp
 
 noncomputable def Convention.transform
@@ -7851,8 +7961,7 @@ theorem Convention.scaleNormalization_transform
     (f : ℝ → ℝ) (x : ℝ) :
     (K.scaleNormalization c hc).transform f x = c * K.transform f x := by
   rw [Convention.transform, Convention.transform]
-  simp only [Convention.scaleNormalization_normalizedKernel,
-    Convention.scaleNormalization]
+  simp_rw [Convention.scaleNormalization_normalizedKernel]
   change
     (∫ t, (f t : ℂ) * (c * K.normalizedKernel t x) ∂K.measure) =
       c * ∫ t, (f t : ℂ) * K.normalizedKernel t x ∂K.measure
@@ -7945,7 +8054,7 @@ The domination condition forces it to vanish wherever the tent vanishes. -/
 structure SmoothTentMember (T : ℝ) where
   function : ℝ → ℝ
   even : Function.Even function
-  smooth : ContDiff ℝ ∞ function
+  smooth : ContDiff ℝ (↑(⊤ : ℕ∞)) function
   compactSupport : HasCompactSupport function
   nonnegative : ∀ t, 0 ≤ function t
   le_profile : ∀ t, function t ≤ TentKernel.profile T t
@@ -7987,17 +8096,17 @@ theorem smoothTentBumpFunction_even
 
 theorem smoothTentBumpFunction_smooth
     (T : ℝ) (hT : 0 < T) :
-    ContDiff ℝ ∞ (smoothTentBumpFunction T hT) := by
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (smoothTentBumpFunction T hT) := by
   unfold smoothTentBumpFunction
-  exact contDiff_const.mul (smoothTentBump T hT).contDiff
+  exact contDiff_const.mul
+    ((smoothTentBump T hT).contDiff (n := (⊤ : ℕ∞)))
 
 theorem smoothTentBumpFunction_compactSupport
     (T : ℝ) (hT : 0 < T) :
     HasCompactSupport (smoothTentBumpFunction T hT) := by
-  simpa only [smoothTentBumpFunction, Pi.mul_apply] using
-    (HasCompactSupport.mul_left
-      (f := fun _ : ℝ => T / 2)
-      (smoothTentBump T hT).hasCompactSupport)
+  change HasCompactSupport
+    ((T / 2 : ℝ) • (fun t : ℝ => smoothTentBump T hT t))
+  exact (smoothTentBump T hT).hasCompactSupport.smul_left
 
 theorem smoothTentBumpFunction_nonnegative
     (T : ℝ) (hT : 0 < T) (t : ℝ) :
@@ -8128,7 +8237,7 @@ theorem narrowSmoothTentFunction_even
 
 theorem narrowSmoothTentFunction_smooth
     (T : ℝ) (hT : 0 < T) :
-    ContDiff ℝ ∞ (narrowSmoothTentFunction T hT) := by
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (narrowSmoothTentFunction T hT) := by
   simpa only [narrowSmoothTentFunction] using
     smoothTentBumpFunction_smooth (T / 2) (half_pos hT)
 
@@ -8176,7 +8285,7 @@ theorem smoothTentAutocorrelationRaw_even
 
 theorem smoothTentAutocorrelationRaw_smooth
     (T : ℝ) (hT : 0 < T) :
-    ContDiff ℝ ∞ (smoothTentAutocorrelationRaw T hT) := by
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (smoothTentAutocorrelationRaw T hT) := by
   unfold smoothTentAutocorrelationRaw
   exact (narrowSmoothTentFunction_compactSupport T hT).contDiff_convolution_left
     (ContinuousLinearMap.mul ℝ ℝ)
@@ -8226,15 +8335,24 @@ theorem smoothTentAutocorrelationRaw_pos_zero
     0 < smoothTentAutocorrelationRaw T hT 0 := by
   rw [smoothTentAutocorrelationRaw, MeasureTheory.convolution_def]
   simp only [ContinuousLinearMap.mul_apply', zero_sub]
-  simp_rw [narrowSmoothTentFunction_even T hT]
+  have heven :
+      (fun t : ℝ => narrowSmoothTentFunction T hT t *
+        narrowSmoothTentFunction T hT (-t)) =
+      (fun t : ℝ => narrowSmoothTentFunction T hT t *
+        narrowSmoothTentFunction T hT t) := by
+    funext t
+    rw [narrowSmoothTentFunction_even T hT t]
+  rw [heven]
   have hbcont : Continuous (narrowSmoothTentFunction T hT) :=
     (narrowSmoothTentFunction_smooth T hT).continuous
   have hbcomp : HasCompactSupport (narrowSmoothTentFunction T hT) :=
     narrowSmoothTentFunction_compactSupport T hT
   exact (hbcont.mul hbcont).integral_pos_of_hasCompactSupport_nonneg_nonzero
     (x := 0)
-    (by simpa only [Pi.mul_apply] using
-      (hbcomp.mul_right (f' := narrowSmoothTentFunction T hT)))
+    (by
+      change HasCompactSupport
+        (narrowSmoothTentFunction T hT * narrowSmoothTentFunction T hT)
+      exact hbcomp.mul_right (f' := narrowSmoothTentFunction T hT))
     (fun t => mul_nonneg
       (narrowSmoothTentFunction_nonnegative T hT t)
       (narrowSmoothTentFunction_nonnegative T hT t))
@@ -8268,12 +8386,8 @@ theorem fourier_smoothTentAutocorrelationRaw_eq_normSq
   have hbIntC : Integrable
       (fun x : ℝ => (narrowSmoothTentFunction T hT x : ℂ)) :=
     hbIntR.ofReal
-  have hbContC : Continuous
-      (fun x : ℝ => (narrowSmoothTentFunction T hT x : ℂ)) :=
-    Complex.continuous_ofReal.comp
-      (narrowSmoothTentFunction_smooth T hT).continuous
   rw [ofReal_smoothTentAutocorrelationRaw_eq T hT,
-    Real.fourier_mul_convolution_eq hbIntC hbIntC hbContC hbContC ξ]
+    Real.fourier_mul_convolution_eq hbIntC hbIntC ξ]
   let z : ℂ :=
     𝓕 (fun x : ℝ => (narrowSmoothTentFunction T hT x : ℂ)) ξ
   change z * z = (Complex.normSq z : ℂ)
@@ -8369,17 +8483,17 @@ theorem fourierPositiveSmoothTentFunction_even
 
 theorem fourierPositiveSmoothTentFunction_smooth
     (T : ℝ) (hT : 0 < T) :
-    ContDiff ℝ ∞ (fourierPositiveSmoothTentFunction T hT) := by
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (fourierPositiveSmoothTentFunction T hT) := by
   unfold fourierPositiveSmoothTentFunction
   exact contDiff_const.mul (smoothTentAutocorrelationRaw_smooth T hT)
 
 theorem fourierPositiveSmoothTentFunction_compactSupport
     (T : ℝ) (hT : 0 < T) :
     HasCompactSupport (fourierPositiveSmoothTentFunction T hT) := by
-  simpa only [fourierPositiveSmoothTentFunction, Pi.mul_apply] using
-    (HasCompactSupport.mul_left
-      (f := fun _ : ℝ => smoothTentAutocorrelationScale T hT)
-      (smoothTentAutocorrelationRaw_compactSupport T hT))
+  change HasCompactSupport
+    ((smoothTentAutocorrelationScale T hT) •
+      smoothTentAutocorrelationRaw T hT)
+  exact (smoothTentAutocorrelationRaw_compactSupport T hT).smul_left
 
 theorem fourierPositiveSmoothTentFunction_nonnegative
     (T : ℝ) (hT : 0 < T) (x : ℝ) :
@@ -8439,17 +8553,26 @@ theorem fourier_fourierPositiveSmoothTentFunction_eq
       ((smoothTentAutocorrelationScale T hT *
         Complex.normSq
           (𝓕 (fun x : ℝ => (narrowSmoothTentFunction T hT x : ℂ)) ξ) : ℝ) : ℂ) := by
-  have hfun :
-      (fun x : ℝ => (fourierPositiveSmoothTentFunction T hT x : ℂ)) =
-        (smoothTentAutocorrelationScale T hT : ℂ) •
-          (fun x : ℝ => (smoothTentAutocorrelationRaw T hT x : ℂ)) := by
-    funext x
-    simp only [fourierPositiveSmoothTentFunction, Pi.smul_apply,
-      smul_eq_mul, Complex.ofReal_mul]
-  rw [hfun, FourierTransform.fourier_smul]
-  simp only [Pi.smul_apply, smul_eq_mul]
-  rw [fourier_smoothTentAutocorrelationRaw_eq_normSq T hT ξ,
-    ← Complex.ofReal_mul]
+  rw [← TentKernel.normalizedFourier_eq_mathlib
+    (fun x : ℝ => (fourierPositiveSmoothTentFunction T hT x : ℂ)) ξ]
+  calc
+    TentKernel.normalizedFourier
+          (fun x : ℝ => (fourierPositiveSmoothTentFunction T hT x : ℂ)) ξ =
+        (smoothTentAutocorrelationScale T hT : ℂ) *
+          TentKernel.normalizedFourier
+            (fun x : ℝ => (smoothTentAutocorrelationRaw T hT x : ℂ)) ξ := by
+      simp only [TentKernel.normalizedFourier, fourierPositiveSmoothTentFunction,
+        Complex.ofReal_mul]
+      rw [← integral_const_mul]
+      apply integral_congr_ae
+      filter_upwards with x
+      ring
+    _ = ((smoothTentAutocorrelationScale T hT *
+          Complex.normSq
+            (𝓕 (fun x : ℝ => (narrowSmoothTentFunction T hT x : ℂ)) ξ) : ℝ) : ℂ) := by
+      rw [TentKernel.normalizedFourier_eq_mathlib,
+        fourier_smoothTentAutocorrelationRaw_eq_normSq T hT ξ,
+        Complex.ofReal_mul]
 
 /-- The explicit smooth autocorrelation test has real Fourier transform. -/
 theorem fourier_fourierPositiveSmoothTentFunction_im_eq_zero
@@ -8487,7 +8610,7 @@ autocorrelation, without postulating a paper-specific Kuznetsov kernel. -/
 theorem lemma34_smoothReplacement_correctedAndProved
     (T : ℝ) (hT : 0 < T) :
     Function.Even (fourierPositiveSmoothTentFunction T hT) ∧
-    ContDiff ℝ ∞ (fourierPositiveSmoothTentFunction T hT) ∧
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (fourierPositiveSmoothTentFunction T hT) ∧
     HasCompactSupport (fourierPositiveSmoothTentFunction T hT) ∧
     Function.support (fourierPositiveSmoothTentFunction T hT) ⊆
       Ioo (-(T / 2)) (T / 2) ∧
@@ -8583,7 +8706,7 @@ theorem fourierPositiveContinuousSpectralData_test_pos_zero
 
 def Convention.SmoothTransformIntegrable
     (K : Convention) (f : ℝ → ℝ) : Prop :=
-  Function.Even f ∧ ContDiff ℝ ∞ f ∧
+  Function.Even f ∧ ContDiff ℝ (↑(⊤ : ℕ∞)) f ∧
     HasCompactSupport f ∧ K.Admissible f
 
 /-- A `T`-independent normalized-kernel envelope.  Its single constant is
@@ -8630,8 +8753,9 @@ theorem profileBesselConvention_transform_one_at_one :
     profileBesselConvention.transform (fun _ : ℝ => 1) 1 = 1 := by
   simp only [Convention.transform, Convention.normalizedKernel,
     profileBesselConvention, one_mul]
-  rw [show besselEnvelope 1 = 1 by simp [besselEnvelope]]
-  simp only [Complex.ofReal_one, mul_one]
+  have hbessel : besselEnvelope 1 = 1 := by simp [besselEnvelope]
+  rw [hbessel]
+  simp only [Complex.ofReal_one, one_mul, mul_one]
   rw [integral_complex_ofReal,
     TentKernel.integral_profile (by norm_num)]
   norm_num
@@ -8662,12 +8786,19 @@ noncomputable def profileBesselUniformKernelEnvelope :
   constant_nonneg := zero_le_one
   normalizedKernel_aestronglyMeasurable := by
     intro x hx
+    simp only [profileBesselConvention, Convention.normalizedKernel, one_mul]
     change AEStronglyMeasurable
       (fun t : ℝ =>
         (TentKernel.profile 1 t : ℂ) * (besselEnvelope x : ℂ)) volume
-    exact
-      ((Complex.continuous_ofReal.comp
-        (TentKernel.continuous_profile 1)).mul continuous_const).aestronglyMeasurable
+    have hprofile : Integrable
+        (fun t : ℝ => (TentKernel.profile 1 t : ℂ)) volume :=
+      (TentKernel.integrable_profile (by norm_num)).ofReal
+    have hkernel : Integrable
+        (fun t : ℝ =>
+          (TentKernel.profile 1 t : ℂ) * (besselEnvelope x : ℂ)) volume := by
+      simpa only [mul_comm] using
+        hprofile.const_mul (besselEnvelope x : ℂ)
+    exact hkernel.aestronglyMeasurable
   normalizedKernel_bound := by
     intro x hx
     refine Filter.Eventually.of_forall ?_
@@ -8677,12 +8808,11 @@ noncomputable def profileBesselUniformKernelEnvelope :
     have hprofile1 : TentKernel.profile 1 t ≤ 1 := by
       simp [TentKernel.profile]
     have hbessel : 0 ≤ besselEnvelope x := besselEnvelope_nonneg x
-    change
-      ‖(TentKernel.profile 1 t : ℂ) * (besselEnvelope x : ℂ)‖ ≤
-        1 * besselEnvelope x
-    rw [norm_mul, Complex.norm_real, Complex.norm_real,
-      Real.norm_of_nonneg hprofile0, Real.norm_of_nonneg hbessel, one_mul]
-    exact mul_le_mul_of_nonneg_right hprofile1 hbessel
+    simp only [profileBesselConvention, Convention.normalizedKernel, one_mul,
+      norm_mul, Complex.norm_real, Real.norm_of_nonneg hprofile0,
+      Real.norm_of_nonneg hbessel]
+    simpa only [one_mul] using
+      (mul_le_mul_of_nonneg_right hprofile1 hbessel)
 
 theorem UniformKernelEnvelope.smoothTent_integrable
     {K : Convention} (U : UniformKernelEnvelope K)
@@ -8832,7 +8962,7 @@ theorem profileBesselConvention_sameTestCertificate
       ‖profileBesselConvention.transform
           (fourierPositiveSmoothTentFunction T hT) x‖ ≤
         T ^ 2 * besselEnvelope x := by
-  simpa using
+  simpa [profileBesselUniformKernelEnvelope] using
     (profileBesselUniformKernelEnvelope.autocorrelationFourierPositiveSmoothTent_localFloorAndKernelEnvelope
       hT hx)
 
@@ -9029,8 +9159,8 @@ theorem gamma2CuspBoundaryPoint_one :
 points. -/
 theorem gamma2CuspBoundaryPoint_injective :
     Function.Injective gamma2CuspBoundaryPoint := by
-  intro κ λ h
-  cases κ <;> cases λ <;> simp_all
+  intro κ lam h
+  cases κ <;> cases lam <;> simp_all
 
 /-- The full subgroup of `Gamma(2)` fixing the labelled boundary point. -/
 noncomputable def gamma2CuspStabilizer
@@ -9042,19 +9172,19 @@ noncomputable def gamma2CuspStabilizer
 
 /-- A representative after applying the two chosen cusp scalings. -/
 def scaledRepresentative
-    (κ λ : Gamma2Cusp) (γ : Gamma2Element) :
+    (κ lam : Gamma2Cusp) (γ : Gamma2Element) :
     Matrix.SpecialLinearGroup (Fin 2) ℤ :=
   (Gamma2Cusp.scalingMatrix κ)⁻¹ *
     (γ : Matrix.SpecialLinearGroup (Fin 2) ℤ) *
-    Gamma2Cusp.scalingMatrix λ
+    Gamma2Cusp.scalingMatrix lam
 
 def scaledLowerLeft
-    (κ λ : Gamma2Cusp) (γ : Gamma2Element) : ℤ :=
-  scaledRepresentative κ λ γ 1 0
+    (κ lam : Gamma2Cusp) (γ : Gamma2Element) : ℤ :=
+  scaledRepresentative κ lam γ 1 0
 
 def scaledLowerRight
-    (κ λ : Gamma2Cusp) (γ : Gamma2Element) : ℤ :=
-  scaledRepresentative κ λ γ 1 1
+    (κ lam : Gamma2Cusp) (γ : Gamma2Element) : ℤ :=
+  scaledRepresentative κ lam γ 1 1
 
 /-! ### The geometric modulus really descends
 
@@ -9120,11 +9250,11 @@ theorem scaledLowerLeft_self_eq_zero_of_mem_stabilizer
 /-- Scaling a double-coset product factors into the two self-cusp conjugates
 and the original cusp-pair representative. -/
 theorem scaledRepresentative_mul_factorization
-    (κ λ : Gamma2Cusp) (a γ b : Gamma2Element) :
-    scaledRepresentative κ λ (a * γ * b) =
+    (κ lam : Gamma2Cusp) (a γ b : Gamma2Element) :
+    scaledRepresentative κ lam (a * γ * b) =
       scaledRepresentative κ κ a *
-        scaledRepresentative κ λ γ *
-          scaledRepresentative λ λ b := by
+        scaledRepresentative κ lam γ *
+          scaledRepresentative lam lam b := by
   have hab :
       (((a * γ * b : Gamma2Element) :
           Matrix.SpecialLinearGroup (Fin 2) ℤ)) =
@@ -9163,44 +9293,46 @@ theorem natAbs_lowerLeft_invariant_of_triangular_mul
       L.1 1 1 * G.1 1 0 * R.1 0 0
     simp only [Matrix.mul_apply, Fin.sum_univ_two, hL, hR,
       zero_mul, zero_add, mul_zero, add_zero]
-  rw [hentry]
-  apply Int.natAbs_eq_iff_mul_self_eq.mpr
-  calc
-    (L 1 1 * G 1 0 * R 0 0) *
-        (L 1 1 * G 1 0 * R 0 0) =
-        (L 1 1 * L 1 1) * (G 1 0 * G 1 0) *
-          (R 0 0 * R 0 0) := by ring
-    _ = G 1 0 * G 1 0 := by rw [hLsq, hRsq]; ring
+  rw [hentry, Int.natAbs_mul, Int.natAbs_mul]
+  have hnatLsq : Int.natAbs (L 1 1) * Int.natAbs (L 1 1) = 1 := by
+    simpa only [Int.natAbs_mul, Int.natAbs_one] using congrArg Int.natAbs hLsq
+  have hnatRsq : Int.natAbs (R 0 0) * Int.natAbs (R 0 0) = 1 := by
+    simpa only [Int.natAbs_mul, Int.natAbs_one] using congrArg Int.natAbs hRsq
+  have hnatL : Int.natAbs (L 1 1) = 1 := by
+    exact Nat.dvd_one.mp ⟨Int.natAbs (L 1 1), hnatLsq.symm⟩
+  have hnatR : Int.natAbs (R 0 0) = 1 := by
+    exact Nat.dvd_one.mp ⟨Int.natAbs (R 0 0), hnatRsq.symm⟩
+  simp [hnatL, hnatR]
 
 /-- The absolute scaled lower-left modulus is an actual invariant of the full
 cusp-pair double-coset relation. -/
 theorem natAbs_scaledLowerLeft_eq_of_doubleCoset
-    (κ λ : Gamma2Cusp) (γ δ : Gamma2Element)
+    (κ lam : Gamma2Cusp) (γ δ : Gamma2Element)
     (h : DoubleCoset.setoid
       (gamma2CuspStabilizer κ : Set Gamma2Element)
-      (gamma2CuspStabilizer λ : Set Gamma2Element) γ δ) :
-    Int.natAbs (scaledLowerLeft κ λ γ) =
-      Int.natAbs (scaledLowerLeft κ λ δ) := by
+      (gamma2CuspStabilizer lam : Set Gamma2Element) γ δ) :
+    Int.natAbs (scaledLowerLeft κ lam γ) =
+      Int.natAbs (scaledLowerLeft κ lam δ) := by
   rcases (DoubleCoset.rel_iff.mp h) with
     ⟨a, ha, b, hb, rfl⟩
   change
-    Int.natAbs (scaledRepresentative κ λ γ 1 0) =
-      Int.natAbs (scaledRepresentative κ λ (a * γ * b) 1 0)
+    Int.natAbs (scaledRepresentative κ lam γ 1 0) =
+      Int.natAbs (scaledRepresentative κ lam (a * γ * b) 1 0)
   rw [scaledRepresentative_mul_factorization]
   exact
     (natAbs_lowerLeft_invariant_of_triangular_mul
       (scaledRepresentative κ κ a)
-      (scaledRepresentative κ λ γ)
-      (scaledRepresentative λ λ b)
+      (scaledRepresentative κ lam γ)
+      (scaledRepresentative lam lam b)
       (scaledLowerLeft_self_eq_zero_of_mem_stabilizer κ a ha)
-      (scaledLowerLeft_self_eq_zero_of_mem_stabilizer λ b hb)).symm
+      (scaledLowerLeft_self_eq_zero_of_mem_stabilizer lam b hb)).symm
 
 /-- The genuine full-stabilizer cusp-pair double quotient. -/
 abbrev Gamma2CuspPairClass
-    (κ λ : Gamma2Cusp) : Type :=
+    (κ lam : Gamma2Cusp) : Type :=
   DoubleCoset.Quotient
     (gamma2CuspStabilizer κ : Set Gamma2Element)
-    (gamma2CuspStabilizer λ : Set Gamma2Element)
+    (gamma2CuspStabilizer lam : Set Gamma2Element)
 
 /-- Data proving that the absolute modulus and the complete unit-norm
 multiplier/phase summand descend to the full cusp-pair double quotient.
@@ -9212,31 +9344,31 @@ frequencies. -/
 structure Gamma2CuspPairKernel where
   shiftedFrequency : Gamma2Cusp → ℕ → ℚ
   representativeTerm :
-    (κ λ : Gamma2Cusp) → ℚ → ℚ → Gamma2Element → ℂ
+    (κ lam : Gamma2Cusp) → ℚ → ℚ → Gamma2Element → ℂ
   /-- Excludes the zero-kernel toy model: a multiplier times an additive phase
   has unit complex norm before summation. -/
-  representativeTerm_norm_one : ∀ κ λ m n γ,
-    ‖representativeTerm κ λ
+  representativeTerm_norm_one : ∀ κ lam m n γ,
+    ‖representativeTerm κ lam
         (shiftedFrequency κ m)
-        (shiftedFrequency λ n) γ‖ = 1
+        (shiftedFrequency lam n) γ‖ = 1
   modulus_respects_doubleCoset :
-    ∀ κ λ γ δ,
+    ∀ κ lam γ δ,
       DoubleCoset.setoid
           (gamma2CuspStabilizer κ : Set Gamma2Element)
-          (gamma2CuspStabilizer λ : Set Gamma2Element) γ δ →
-        Int.natAbs (scaledLowerLeft κ λ γ) =
-          Int.natAbs (scaledLowerLeft κ λ δ)
+          (gamma2CuspStabilizer lam : Set Gamma2Element) γ δ →
+        Int.natAbs (scaledLowerLeft κ lam γ) =
+          Int.natAbs (scaledLowerLeft κ lam δ)
   term_respects_doubleCoset :
-    ∀ κ λ m n γ δ,
+    ∀ κ lam m n γ δ,
       DoubleCoset.setoid
           (gamma2CuspStabilizer κ : Set Gamma2Element)
-          (gamma2CuspStabilizer λ : Set Gamma2Element) γ δ →
-        representativeTerm κ λ
+          (gamma2CuspStabilizer lam : Set Gamma2Element) γ δ →
+        representativeTerm κ lam
             (shiftedFrequency κ m)
-            (shiftedFrequency λ n) γ =
-        representativeTerm κ λ
+            (shiftedFrequency lam n) γ =
+        representativeTerm κ lam
             (shiftedFrequency κ m)
-            (shiftedFrequency λ n) δ
+            (shiftedFrequency lam n) δ
 
 /-- A nonzero constant-unit witness that the concrete geometric modulus and a
 unit-norm term can simultaneously descend to every cusp-pair quotient.
@@ -9248,74 +9380,74 @@ def constantUnitGamma2CuspPairKernel : Gamma2CuspPairKernel where
   shiftedFrequency := fun _ m => (m : ℚ)
   representativeTerm := fun _ _ _ _ _ => 1
   representativeTerm_norm_one := by
-    intro κ λ m n γ
+    intro κ lam m n γ
     simp
   modulus_respects_doubleCoset := by
-    intro κ λ γ δ h
-    exact natAbs_scaledLowerLeft_eq_of_doubleCoset κ λ γ δ h
+    intro κ lam γ δ h
+    exact natAbs_scaledLowerLeft_eq_of_doubleCoset κ lam γ δ h
   term_respects_doubleCoset := by
-    intro κ λ m n γ δ h
+    intro κ lam m n γ δ h
     rfl
 
 /-- The absolute lower-left modulus descends to the double quotient. -/
 noncomputable def gamma2CuspPairModulus
     (D : Gamma2CuspPairKernel)
-    (κ λ : Gamma2Cusp)
-    (q : Gamma2CuspPairClass κ λ) : ℕ :=
+    (κ lam : Gamma2Cusp)
+    (q : Gamma2CuspPairClass κ lam) : ℕ :=
   Quotient.liftOn' q
-    (fun γ => Int.natAbs (scaledLowerLeft κ λ γ))
+    (fun γ => Int.natAbs (scaledLowerLeft κ lam γ))
     (fun γ δ h =>
-      D.modulus_respects_doubleCoset κ λ γ δ h)
+      D.modulus_respects_doubleCoset κ lam γ δ h)
 
 /-- The complete shifted-frequency summand descends to the double quotient. -/
 noncomputable def gamma2CuspPairTerm
     (D : Gamma2CuspPairKernel)
-    (κ λ : Gamma2Cusp) (m n : ℕ)
-    (q : Gamma2CuspPairClass κ λ) : ℂ :=
+    (κ lam : Gamma2Cusp) (m n : ℕ)
+    (q : Gamma2CuspPairClass κ lam) : ℂ :=
   Quotient.liftOn' q
     (fun γ =>
-      D.representativeTerm κ λ
+      D.representativeTerm κ lam
         (D.shiftedFrequency κ m)
-        (D.shiftedFrequency λ n) γ)
+        (D.shiftedFrequency lam n) γ)
     (fun γ δ h =>
-      D.term_respects_doubleCoset κ λ m n γ δ h)
+      D.term_respects_doubleCoset κ lam m n γ δ h)
 
 /-- The descended double-coset summand still has unit norm. -/
 theorem norm_gamma2CuspPairTerm
     (D : Gamma2CuspPairKernel)
-    (κ λ : Gamma2Cusp) (m n : ℕ)
-    (q : Gamma2CuspPairClass κ λ) :
-    ‖gamma2CuspPairTerm D κ λ m n q‖ = 1 := by
+    (κ lam : Gamma2Cusp) (m n : ℕ)
+    (q : Gamma2CuspPairClass κ lam) :
+    ‖gamma2CuspPairTerm D κ lam m n q‖ = 1 := by
   refine Quotient.inductionOn' q ?_
   intro γ
   change
-    ‖D.representativeTerm κ λ
+    ‖D.representativeTerm κ lam
         (D.shiftedFrequency κ m)
-        (D.shiftedFrequency λ n) γ‖ = 1
-  exact D.representativeTerm_norm_one κ λ m n γ
+        (D.shiftedFrequency lam n) γ‖ = 1
+  exact D.representativeTerm_norm_one κ lam m n γ
 
 /-- The actual double-coset fiber at positive indexed modulus `c + 1`. -/
 def Gamma2CuspPairFiber
     (D : Gamma2CuspPairKernel)
-    (κ λ : Gamma2Cusp) (c : ℕ) : Type :=
-  {q : Gamma2CuspPairClass κ λ //
-    gamma2CuspPairModulus D κ λ q = modulus c}
+    (κ lam : Gamma2Cusp) (c : ℕ) : Type :=
+  {q : Gamma2CuspPairClass κ lam //
+    gamma2CuspPairModulus D κ lam q = modulus c}
 
 /-- Finiteness of every positive-modulus quotient fiber is explicit data. -/
 structure Gamma2CuspPairFiniteData
     (D : Gamma2CuspPairKernel) where
   fiberFintype :
-    ∀ κ λ c, Fintype (Gamma2CuspPairFiber D κ λ c)
+    ∀ κ lam c, Fintype (Gamma2CuspPairFiber D κ lam c)
 
 /-- The finite sum over the genuine positive-modulus double-coset fiber. -/
 noncomputable def gamma2CuspPairFiniteSum
     (D : Gamma2CuspPairKernel)
     (F : Gamma2CuspPairFiniteData D)
-    (κ λ : Gamma2Cusp) (m n c : ℕ) : ℂ :=
-  letI : Fintype (Gamma2CuspPairFiber D κ λ c) :=
-    F.fiberFintype κ λ c
-  ∑ q : Gamma2CuspPairFiber D κ λ c,
-    gamma2CuspPairTerm D κ λ m n q.val
+    (κ lam : Gamma2Cusp) (m n c : ℕ) : ℂ :=
+  letI : Fintype (Gamma2CuspPairFiber D κ lam c) :=
+    F.fiberFintype κ lam c
+  ∑ q : Gamma2CuspPairFiber D κ lam c,
+    gamma2CuspPairTerm D κ lam m n q.val
 
 /-- The classical Kuznetsov argument `4π√(mn)/c`, with a positive indexed
 modulus. -/
@@ -9748,7 +9880,7 @@ theorem twistedSummand_cancellingMultiplierPhase
 reduced residues, embedded in `ℂ`. -/
 theorem twistedKloostermanSum_cancellingMultiplierPhase
     {c : ℕ} [NeZero c] (m n : ℤ) :
-    twistedKloostermanSum (cancellingMultiplierPhase m n) m n =
+    twistedKloostermanSum (cancellingMultiplierPhase (c := c) m n) m n =
       (Fintype.card (UnitResidue c) : ℂ) := by
   simp [twistedKloostermanSum]
 
@@ -9756,7 +9888,7 @@ theorem twistedKloostermanSum_cancellingMultiplierPhase
 all circle-valued multiplier phases. -/
 theorem norm_twistedKloostermanSum_cancellingMultiplierPhase
     {c : ℕ} [NeZero c] (m n : ℤ) :
-    ‖twistedKloostermanSum (cancellingMultiplierPhase m n) m n‖ =
+    ‖twistedKloostermanSum (cancellingMultiplierPhase (c := c) m n) m n‖ =
       (Fintype.card (UnitResidue c) : ℝ) := by
   rw [twistedKloostermanSum_cancellingMultiplierPhase]
   simp
@@ -9795,7 +9927,7 @@ integral itself, even up to a null set, as a constant "truncation". -/
 structure ProperMeasurableExhaustion
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
     extends MeasurableExhaustion X where
-  finite_measure : ∀ n, μ (set n) ≠ (⊤ : ℝ≥0∞)
+  finite_measure : ∀ n, μ (set n) ≠ (⊤ : ENNReal)
   proper_set : ∀ n, set n ≠ (Set.univ : Set X)
   positive_complement : ∀ n, 0 < μ ((set n)ᶜ)
 
@@ -10088,7 +10220,7 @@ structure RankinSelbergMassFamily
   /-- Cusp Fourier coefficients in the chosen Eisenstein normalization. -/
   cuspCoefficient : Gamma2Cusp → ℕ → ℝ → ℂ
   rawScatteringMeasure : Gamma2Cusp → Measure ℝ
-  scatteringNormalization : ℝ≥0
+  scatteringNormalization : NNReal
   scatteringNormalization_pos : 0 < scatteringNormalization
   /-- The normalized positive scattering/Plancherel measure at each cusp. -/
   scatteringMeasure : Gamma2Cusp → Measure ℝ
@@ -10294,7 +10426,10 @@ theorem rankinSelbergTruncatedMass_eq
   rw [← R.scatteringMeasure_eq κ, hμ κ]
   apply integral_congr_ae
   exact Eventually.of_forall fun t => by
-    rw [hF m t, hρ κ m t]
+    simpa only using congrArg
+      (fun a => a * Complex.normSq (R.cuspCoefficient κ m t)) (hF m t) |>.trans
+        (congrArg
+          (fun a => D.test t * Complex.normSq a) (hρ κ m t))
 
 /-- Proof data for a finite-stage Rankin--Selberg unfolding.  The geometric
 integrand is first decomposed into an actual finite sum of integrable terms;
@@ -10669,7 +10804,7 @@ theorem UniformMajorant.sum_integral_interchange
     (B : UniformMajorant μ f) (m : ℕ) :
     (∑' i, ∫ x, f m i x ∂μ) =
       ∫ x, ∑' i, f m i x ∂μ :=
-  sum_integral_interchange (B.integrable m)
+  Interchange.sum_integral_interchange (B.integrable m)
     (B.summable_integral_norm m)
 
 /-- A uniform majorant explicitly linked to the kernels occurring in a product
@@ -10758,7 +10893,9 @@ theorem kernel_ne_zero (m i : ℕ) (x : ℝ) :
 
 theorem kernel_integrable (m i : ℕ) :
     Integrable (kernel m i) (Measure.dirac (0 : ℝ)) := by
-  exact integrable_dirac (by simp [kernel])
+  apply integrable_dirac
+  simp [kernel]
+  exact pos_iff_ne_zero.mpr (pow_ne_zero i (by norm_num))
 
 /-- The kernel itself is an `m`-independent summable majorant. -/
 noncomputable def uniformMajorant :
@@ -10826,7 +10963,9 @@ theorem not_hMass_of_tendsto_mass_zero
   rintro ⟨m₀, hε, _, hlower⟩
   have hlt : ∀ᶠ m in atTop, massFunctional D m < ε :=
     (tendsto_order.1 h0).2 ε hε
-  filter_upwards [hlt, eventually_ge_atTop m₀] with m hm_lt hm_ge
+  have hex : ∃ m, massFunctional D m < ε ∧ m₀ ≤ m :=
+    (hlt.and (eventually_ge_atTop m₀)).exists
+  rcases hex with ⟨m, hm_lt, hm_ge⟩
   exact (not_lt_of_ge (hlower m hm_ge)) hm_lt
 
 /-- On a boundary layer of width `δ`, the normalized average of the raw tent
@@ -10878,7 +11017,7 @@ structure LebesgueData (D : ContinuousSpectralData) where
     IntegrableOn
       (fun t => Complex.normSq (D.coefficient κ m t))
       (window κ) (D.spectralMeasure κ)
-  densityFloor : ℝ≥0
+  densityFloor : NNReal
   densityFloor_pos : 0 < densityFloor
   spectral_dominates_dt : ∀ κ,
     densityFloor • volume.restrict (window κ) ≤
@@ -10914,7 +11053,7 @@ structure ActiveSetData (D : ContinuousSpectralData) where
   activeSet : Set ℝ
   activeSet_measurable : MeasurableSet activeSet
   activeSet_subset : activeSet ⊆ window activeCusp
-  activeSet_finite : volume activeSet ≠ (⊤ : ℝ≥0∞)
+  activeSet_finite : volume activeSet ≠ (⊤ : ENNReal)
   activeSet_positive : 0 < volume.real activeSet
   coefficientFloor : ℝ
   coefficientFloor_pos : 0 < coefficientFloor
@@ -10960,6 +11099,8 @@ theorem ActiveSetData.lower_rawActivity
       (∫ t in A.window A.activeCusp, f A.activeCusp t) ≤
         ∑ κ : Gamma2Cusp, ∫ t in A.window κ, f κ t := by
     exact Finset.single_le_sum
+      (f := fun κ : Gamma2Cusp =>
+        ∫ t in A.window κ, f κ t)
       (fun κ _ => integral_nonneg fun t =>
         Complex.normSq_nonneg (D.coefficient κ m t))
       (Finset.mem_univ A.activeCusp)
@@ -10993,7 +11134,7 @@ def LebesgueData.ofActiveSet
       IntegrableOn
         (fun t => Complex.normSq (D.coefficient κ m t))
         (B.window κ) (D.spectralMeasure κ))
-    {densityFloor : ℝ≥0} (densityFloor_pos : 0 < densityFloor)
+    {densityFloor : NNReal} (densityFloor_pos : 0 < densityFloor)
     (spectral_dominates_dt : ∀ κ,
       densityFloor • volume.restrict (B.window κ) ≤
         (D.spectralMeasure κ).restrict (B.window κ)) :
@@ -11014,7 +11155,7 @@ def LebesgueData.ofActiveSet
   threshold_pos := B.threshold_pos
   lowerLebesgueActivity := by
     intro m hm
-    simpa [rawWindowActivity] using B.lower_rawActivity m hm
+    simpa [rawActivityForWindow] using B.lower_rawActivity m hm
 
 theorem LebesgueData.densityFloor_mul_rawActivityAtCusp_le_spectral
     {D : ContinuousSpectralData} (A : LebesgueData D)
@@ -11084,7 +11225,7 @@ def Data.ofActiveSet
       IntegrableOn
         (fun t => Complex.normSq (D.coefficient κ m t))
         (B.window κ) (D.spectralMeasure κ))
-    {densityFloor : ℝ≥0} (densityFloor_pos : 0 < densityFloor)
+    {densityFloor : NNReal} (densityFloor_pos : 0 < densityFloor)
     (spectral_dominates_dt : ∀ κ,
       densityFloor • volume.restrict (B.window κ) ≤
         (D.spectralMeasure κ).restrict (B.window κ)) :
@@ -11230,7 +11371,7 @@ theorem massConditionAt_ofActiveSet
       IntegrableOn
         (fun t => Complex.normSq (D.coefficient κ m t))
         (B.window κ) (D.spectralMeasure κ))
-    {densityFloor : ℝ≥0} (densityFloor_pos : 0 < densityFloor)
+    {densityFloor : NNReal} (densityFloor_pos : 0 < densityFloor)
     (spectral_dominates_dt : ∀ κ,
       densityFloor • volume.restrict (B.window κ) ≤
         (D.spectralMeasure κ).restrict (B.window κ)) :
@@ -11254,7 +11395,7 @@ theorem hMass_ofActiveSet
       IntegrableOn
         (fun t => Complex.normSq (D.coefficient κ m t))
         (B.window κ) (D.spectralMeasure κ))
-    {densityFloor : ℝ≥0} (densityFloor_pos : 0 < densityFloor)
+    {densityFloor : NNReal} (densityFloor_pos : 0 < densityFloor)
     (spectral_dominates_dt : ∀ κ,
       densityFloor • volume.restrict (B.window κ) ≤
         (D.spectralMeasure κ).restrict (B.window κ)) :
@@ -11286,7 +11427,7 @@ variable {G X : Type*} [Group G] [MulAction G X]
 invariant subset upstairs.  This models the paper's `π⁻¹(U)` domains directly. -/
 def preimageOfInvariantMap
     {Q : Type*} (π : X → Q)
-    (hπ : ∀ g x, π (g • x) = π x)
+    (hπ : ∀ (g : G) (x : X), π (g • x) = π x)
     (V : Set Q) :
     InvariantSubset G X where
   carrier := π ⁻¹' V
@@ -11300,7 +11441,7 @@ def preimageOfInvariantMap
 preimages, with no additional covariance certificate. -/
 theorem preimageOfInvariantMap_mono
     {Q : Type*} (π : X → Q)
-    (hπ : ∀ g x, π (g • x) = π x)
+    (hπ : ∀ (g : G) (x : X), π (g • x) = π x)
     {V U : Set Q} (hVU : V ⊆ U) :
     (preimageOfInvariantMap π hπ V).carrier ⊆
       (preimageOfInvariantMap π hπ U).carrier :=
@@ -11573,7 +11714,8 @@ theorem GaugeDescentMorphism.coe_onCovariantForms
     [AddCommGroup F] [Module ℂ F]
     {D : GaugeDescentAction E} {D' : GaugeDescentAction F}
     (f : GaugeDescentMorphism D D') (A : qGaugeForms D) :
-    ((f.onCovariantForms A : qGaugeForms D') : F) = f.map (A : E) :=
+    ((GaugeDescentMorphism.onCovariantForms f A : qGaugeForms D') : F) =
+      f.map (A : E) :=
   rfl
 
 /-- Restriction on the covariant submodules. -/
@@ -11583,7 +11725,7 @@ def GaugeDescentSheaf.qGaugeRestrict
     (D : GaugeDescentSheaf X E)
     {U V : TopologicalSpace.Opens X} (hVU : V ≤ U) :
     qGaugeForms (D.action U) →ₗ[ℂ] qGaugeForms (D.action V) :=
-  (D.restriction hVU).onCovariantForms
+  GaugeDescentMorphism.onCovariantForms (D.restriction hVU)
 
 @[simp]
 theorem GaugeDescentSheaf.coe_qGaugeRestrict
@@ -11592,8 +11734,8 @@ theorem GaugeDescentSheaf.coe_qGaugeRestrict
     (D : GaugeDescentSheaf X E)
     {U V : TopologicalSpace.Opens X} (hVU : V ≤ U)
     (A : qGaugeForms (D.action U)) :
-    ((D.qGaugeRestrict hVU A : qGaugeForms (D.action V)) :
-      D.forms.section V) =
+    ((GaugeDescentSheaf.qGaugeRestrict D hVU A :
+        qGaugeForms (D.action V)) : D.forms.section V) =
       D.forms.restrict hVU (A : D.forms.section U) := by
   change (D.restriction hVU).map (A : D.forms.section U) = _
   rw [D.restriction_eq hVU]
@@ -11605,9 +11747,9 @@ theorem GaugeDescentSheaf.qGaugeRestrict_id
     (D : GaugeDescentSheaf X E)
     (U : TopologicalSpace.Opens X)
     (A : qGaugeForms (D.action U)) :
-    D.qGaugeRestrict (le_refl U) A = A := by
+    GaugeDescentSheaf.qGaugeRestrict D (le_refl U) A = A := by
   apply Subtype.ext
-  rw [D.coe_qGaugeRestrict]
+  rw [GaugeDescentSheaf.coe_qGaugeRestrict D]
   simpa using D.forms.restrict_id U (A : D.forms.section U)
 
 /-- Sheaf-level composition consequence.  Covariance membership is supplied by
@@ -11620,10 +11762,11 @@ theorem GaugeDescentSheaf.qGaugeRestrict_comp
     {U V W : TopologicalSpace.Opens X}
     (hVU : V ≤ U) (hWV : W ≤ V)
     (A : qGaugeForms (D.action U)) :
-    D.qGaugeRestrict hWV (D.qGaugeRestrict hVU A) =
-      D.qGaugeRestrict (hWV.trans hVU) A := by
+    GaugeDescentSheaf.qGaugeRestrict D hWV
+        (GaugeDescentSheaf.qGaugeRestrict D hVU A) =
+      GaugeDescentSheaf.qGaugeRestrict D (hWV.trans hVU) A := by
   apply Subtype.ext
-  simp only [D.coe_qGaugeRestrict]
+  simp only [GaugeDescentSheaf.coe_qGaugeRestrict D]
   simpa using D.forms.restrict_comp hVU hWV
     (A : D.forms.section U)
 
@@ -11704,7 +11847,7 @@ theorem dualNorm_eq_sSup_nonzeroRatio
         subst v
         simpa using hvnorm
       refine ⟨v, hvzero, ?_⟩
-      rw [hvnorm, div_one]
+      simpa only [hvnorm, div_one]
   rw [hsets, dualNorm_eq_sSup_unitSphere f]
 
 /-- Every nonzero-vector ratio is bounded by the operator norm. -/
@@ -11754,14 +11897,15 @@ theorem setIntegral_eq_compactCoreTruncation
     ∃ Y : ℝ,
       (∫ x in F, density x ∂mu) =
         ∫ x in truncatedFundamentalDomain F Y, density x ∂mu := by
-  obtain ⟨Y, hKY⟩ := hK.exists_truncationHeight hKF
+  obtain ⟨Y, hKY⟩ :=
+    Mock2Adv.IsCompact.exists_truncationHeight hK hKF
   refine ⟨Y, ?_⟩
   exact setIntegral_eq_variableTruncation
     mu F (truncatedFundamentalDomain F)
-    (fun _ : PUnit => density) (fun _ => Y)
+    (fun _ : Unit => density) (fun _ => Y)
     (fun _ => truncatedFundamentalDomain_subset F Y)
     (fun _ x hx => hsupport x (fun hxK => hx (hKY hxK)))
-    PUnit.unit
+    Unit.unit
 
 /-- A fixed truncation cannot replace the whole integral without a support
 hypothesis.  The one-point measure gives a concrete counterexample. -/
@@ -11785,11 +11929,11 @@ theorem spectralSide_lower_of_mass
     ε ≤ total := by
   linarith
 
-/-- A real parameterization `λ = 1/4 + t²` cannot represent an exceptional
+/-- A real parameterization `lam = 1/4 + t²` cannot represent an exceptional
 eigenvalue below `1/4`. -/
 theorem no_real_spectralParameter_below_quarter
-    {λ : ℝ} (hλ : λ < 1 / 4) :
-    ¬ ∃ t : ℝ, λ = 1 / 4 + t ^ 2 := by
+    {lam : ℝ} (hlam : lam < 1 / 4) :
+    ¬ ∃ t : ℝ, lam = 1 / 4 + t ^ 2 := by
   rintro ⟨t, rfl⟩
   nlinarith [sq_nonneg t]
 
@@ -11814,7 +11958,8 @@ theorem fixedLower_polynomialUpper_consistent :
   · intro m
     norm_num
   · intro m
-    linarith [Nat.cast_nonneg m]
+    have hm : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
+    linarith
   · intro m
     rfl
 
@@ -11993,8 +12138,12 @@ theorem not_differentiableAt_profile_zero
   have hsub : DifferentiableAt ℝ (fun t : ℝ => T - |t|) 0 :=
     (h.hasDerivAt.congr_of_eventuallyEq heq.symm).differentiableAt
   apply not_differentiableAt_abs_zero
-  simpa only [sub_sub_cancel_left] using
+  have hdiff :
+      DifferentiableAt ℝ (fun t : ℝ => T - (T - |t|)) 0 :=
     (differentiableAt_const (c := T)).sub hsub
+  convert hdiff using 1
+  funext t
+  ring
 
 /-- No strictly positive floor exists on the full topological support of the
 tent, since the tent vanishes at both boundary points. -/
@@ -12213,7 +12362,7 @@ theorem complement_nonneg
   apply tsum_nonneg
   intro i
   by_cases hi : i = i₀
-  · simp only [hi, if_true]
+  · simp [hi]
   · simpa only [hi, if_false] using hf i
 
 /-- Every term of a summable nonnegative real series is bounded by its total
@@ -12298,10 +12447,11 @@ theorem SeriesKuznetsovSpectralIdentity.selectedMode_add_mass_le_spectralSide
       K.spectralSide m := by
   rw [K.spectral_decomposition m, mul_add,
     K.continuous_identification m]
-  exact add_le_add_right
-    (mul_le_mul_of_nonneg_left
-      (K.discreteSeries.term_le_contribution j₀ m) N.factor_pos.le)
-    (massFunctional D m)
+  simpa only [add_comm] using
+    (add_le_add_right
+      (mul_le_mul_of_nonneg_left
+        (K.discreteSeries.term_le_contribution j₀ m) N.factor_pos.le)
+      (massFunctional D m))
 
 /-- Forget only the construction of the discrete term.  Its required
 nonnegativity is discharged by `DiscreteSpectralSeries.contribution_nonneg`. -/
@@ -12525,7 +12675,8 @@ theorem eventual_power_bounds_incompatible
     False := by
   have hdominates :=
     SpectralMassGap.nat_rpow_eventually_dominates hA hB hab
-  filter_upwards [hdominates, hlower, hupper] with m hdom hmLower hmUpper
+  obtain ⟨m, hdom, hmLower, hmUpper⟩ :=
+    (hdominates.and (hlower.and hupper)).exists
   exact (not_lt_of_ge (hmLower.trans hmUpper)) hdom
 
 /-- A coefficient lower-growth estimate and the mass condition combine
@@ -12552,20 +12703,20 @@ geometric upper estimate with a strictly smaller exponent.  No conclusion is
 extracted from positivity alone. -/
 theorem spectralGap_of_powerSeparation
     {D : ContinuousSpectralData}
-    {ε A B a b λ base : ℝ} {m₀ : ℕ}
+    {ε A B a b lam base : ℝ} {m₀ : ℕ}
     (hMass : MassConditionAt D ε m₀)
     (hA : 0 < A) (hB : 0 ≤ B) (hab : b < a)
     (discrete spectral : ℕ → ℝ)
     (hspectral : ∀ m,
       spectral m = discrete m + massFunctional D m)
-    (hbad_implies_growth : λ < base + ε →
+    (hbad_implies_growth : lam < base + ε →
       ∀ᶠ m : ℕ in atTop,
         A * (m : ℝ) ^ a ≤ discrete m)
     (hgeometric : ∀ᶠ m : ℕ in atTop,
       spectral m ≤ B * (m : ℝ) ^ b) :
-    base + ε ≤ λ := by
+    base + ε ≤ lam := by
   by_contra hgap
-  have hbad : λ < base + ε := lt_of_not_ge hgap
+  have hbad : lam < base + ε := lt_of_not_ge hgap
   have hwithMass :=
     eventual_spectral_lower_of_discreteGrowth_and_mass
       hMass discrete spectral hspectral (hbad_implies_growth hbad)
@@ -12581,18 +12732,18 @@ theorem spectralGap_of_powerSeparation
 /-- Quarter-base specialization matching the numerical form of Proposition 2. -/
 theorem spectralGap_aboveQuarter_of_powerSeparation
     {D : ContinuousSpectralData}
-    {ε A B a b λ : ℝ} {m₀ : ℕ}
+    {ε A B a b lam : ℝ} {m₀ : ℕ}
     (hMass : MassConditionAt D ε m₀)
     (hA : 0 < A) (hB : 0 ≤ B) (hab : b < a)
     (discrete spectral : ℕ → ℝ)
     (hspectral : ∀ m,
       spectral m = discrete m + massFunctional D m)
-    (hbad_implies_growth : λ < 1 / 4 + ε →
+    (hbad_implies_growth : lam < 1 / 4 + ε →
       ∀ᶠ m : ℕ in atTop,
         A * (m : ℝ) ^ a ≤ discrete m)
     (hgeometric : ∀ᶠ m : ℕ in atTop,
       spectral m ≤ B * (m : ℝ) ^ b) :
-    1 / 4 + ε ≤ λ :=
+    1 / 4 + ε ≤ lam :=
   spectralGap_of_powerSeparation (base := 1 / 4)
     hMass hA hB hab discrete spectral hspectral
       hbad_implies_growth hgeometric
@@ -12607,7 +12758,7 @@ indispensable. -/
 theorem proposition2_threeInputSkeleton_countermodel :
     ∃ (R L : ℂ → ℂ) (D : ContinuousSpectralData)
       (discrete spectral geometric polynomialUpper : ℕ → ℝ)
-      (λ ε : ℝ),
+      (lam ε : ℝ),
       GlobalPoincare.PoincareEstimate R L 1 ∧
       HMass D ε ∧
       (∀ m, 0 ≤ discrete m) ∧
@@ -12615,7 +12766,7 @@ theorem proposition2_threeInputSkeleton_countermodel :
       (∀ m, spectral m = geometric m) ∧
       (∀ m, |geometric m| ≤ polynomialUpper m) ∧
       (∀ m, polynomialUpper m = (m : ℝ) + 3) ∧
-      λ < 1 / 4 + ε := by
+      lam < 1 / 4 + ε := by
   refine ⟨id, (fun _ => 0), PositiveMassCriterion.unitCoefficientDiracData,
     (fun _ => 0), (fun _ => 3), (fun _ => 3),
     (fun m => (m : ℝ) + 3), 0, 1, ?_,
@@ -12702,7 +12853,7 @@ theorem exists_positiveVolume_activityInterval
     ∃ δ c : ℝ, 0 < δ ∧ 0 < c ∧
       Ioo (-δ) δ ⊆
         spectralActivitySet (smoothVolumeUnitData T hT) κ m ∧
-      (1 : ℝ≥0) • volume.restrict (Ioo (-δ) δ) =
+      (1 : NNReal) • volume.restrict (Ioo (-δ) δ) =
         ((smoothVolumeUnitData T hT).spectralMeasure κ).restrict
           (Ioo (-δ) δ) := by
   obtain ⟨δ, c, hδ, hc, hfloor⟩ :=
@@ -12718,7 +12869,8 @@ theorem exists_positiveVolume_activityInterval
       KuznetsovInterface.fourierPositiveSmoothTentFunction T hT t ≠ 0 ∧
         (1 : ℂ) ≠ 0
     exact ⟨hpositive.ne', one_ne_zero⟩
-  · simp
+  · rw [smoothVolumeUnitData_spectralMeasure]
+    simp
 
 /-- The active spectral set in the volume model has strictly positive measure
 for every cusp and every index. -/
@@ -12813,7 +12965,7 @@ theorem propositions3to7_sameSmoothTest_completeCertificate
         (massFunctional (smoothVolumeUnitData T hT) 0) 1 ∧
       (Function.Even
           (KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
-        ContDiff ℝ ∞
+        ContDiff ℝ (↑(⊤ : ℕ∞))
           (KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
         HasCompactSupport
           (KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
@@ -12913,6 +13065,7 @@ theorem discreteSeries_term_pos (m : ℕ) :
 selected-mode inequality, rather than from a stored conclusion-shaped field. -/
 theorem discreteSeries_contribution_pos (m : ℕ) :
     0 < discreteSeries.contribution m := by
+  classical
   exact (discreteSeries_term_pos m).trans_le
     (discreteSeries.term_le_contribution (0 : Fin 1) m)
 
@@ -12967,9 +13120,16 @@ closed spectral side.  This is the nontrivial one-mode form of (3.9). -/
 theorem selectedMode_add_mass_le_spectralSide (m : ℕ) :
     spectralData.test 0 + massFunctional spectralData m ≤
       seriesIdentity.spectralSide m := by
-  simpa only [normalization_factor, one_mul, discreteSeries_term] using
-    (seriesIdentity.selectedMode_add_mass_le_spectralSide
-      (0 : Fin 1) m)
+  classical
+  have h := seriesIdentity.selectedMode_add_mass_le_spectralSide
+    (0 : Fin 1) m
+  have hterm :
+      seriesIdentity.discreteSeries.term (0 : Fin 1) m =
+        spectralData.test 0 := by
+    change discreteSeries.term (0 : Fin 1) m = spectralData.test 0
+    exact discreteSeries_term m
+  rw [hterm, normalization_factor, one_mul] at h
+  exact h
 
 /-- **Closed corrected Corollary 3.3.**  No spectral datum, normalization, mass
 condition, or trace identity remains as an input: all are the concrete objects
@@ -13015,20 +13175,20 @@ possibly empty block. -/
 theorem exists_pointwise_of_meanSquareBlock
     {α : Type*} (s : Finset α) (hs : s.Nonempty)
     (energy : α → ℝ) (L : ℝ)
-    (hmean : L * (s.card : ℝ) ≤ ∑ i in s, energy i) :
+    (hmean : L * (s.card : ℝ) ≤ ∑ i ∈ s, energy i) :
     ∃ i ∈ s, L ≤ energy i := by
   classical
   by_contra hnone
   have hlt : ∀ i ∈ s, energy i < L := by
     intro i hi
     exact lt_of_not_ge (fun hLi => hnone ⟨i, hi, hLi⟩)
-  have hsum : (∑ i in s, energy i) < ∑ _i in s, L := by
+  have hsum : (∑ i ∈ s, energy i) < ∑ _i ∈ s, L := by
     apply Finset.sum_lt_sum
     · intro i hi
       exact (hlt i hi).le
     · rcases hs with ⟨i, hi⟩
       exact ⟨i, hi, hlt i hi⟩
-  have hconst : (∑ _i in s, L) = (s.card : ℝ) * L := by
+  have hconst : (∑ _i ∈ s, L) = (s.card : ℝ) * L := by
     simp
   rw [hconst] at hsum
   exact (not_lt_of_ge hmean) (by simpa [mul_comm] using hsum)
@@ -13042,9 +13202,9 @@ theorem exists_injective_pointwiseMeanSquareSelection
     (hdisjoint : Set.Pairwise Set.univ fun i j =>
       Disjoint (blocks i) (blocks j))
     (coefficient floor : ℕ → ℝ)
-    (hmean : ∀ k,
+    (hmean : ∀ k : ℕ,
       floor k * ((blocks k).card : ℝ) ≤
-        ∑ m in blocks k, coefficient m ^ 2) :
+        ∑ m ∈ blocks k, coefficient m ^ 2) :
     ∃ g : ℕ → ℕ,
       Function.Injective g ∧
         ∀ k, g k ∈ blocks k ∧
@@ -13073,9 +13233,9 @@ theorem exists_injective_powerLowerSelection
     (hdisjoint : Set.Pairwise Set.univ fun i j =>
       Disjoint (blocks i) (blocks j))
     (coefficient : ℕ → ℝ) (A a : ℝ)
-    (hmean : ∀ k,
+    (hmean : ∀ k : ℕ,
       (A * (k : ℝ) ^ a) * ((blocks k).card : ℝ) ≤
-        ∑ m in blocks k, coefficient m ^ 2) :
+        ∑ m ∈ blocks k, coefficient m ^ 2) :
     ∃ g : ℕ → ℕ,
       Function.Injective g ∧
         ∀ k, g k ∈ blocks k ∧
@@ -13093,11 +13253,11 @@ theorem exists_injective_powerLowerSelection_withLinearIndexBounds
     (hdisjoint : Set.Pairwise Set.univ fun i j =>
       Disjoint (blocks i) (blocks j))
     (coefficient : ℕ → ℝ) (A a : ℝ) (C D : ℕ)
-    (hindex : ∀ k m, m ∈ blocks k →
+    (hindex : ∀ (k m : ℕ), m ∈ blocks k →
       k ≤ m ∧ m ≤ C * k + D)
-    (hmean : ∀ k,
+    (hmean : ∀ k : ℕ,
       (A * (k : ℝ) ^ a) * ((blocks k).card : ℝ) ≤
-        ∑ m in blocks k, coefficient m ^ 2) :
+        ∑ m ∈ blocks k, coefficient m ^ 2) :
     ∃ g : ℕ → ℕ,
       Function.Injective g ∧
         ∀ k,
@@ -13130,8 +13290,8 @@ theorem linearIndexUpper_absorbAdditiveConstant
 indices. -/
 theorem linearIndexBounds_isTheta
     (g : ℕ → ℕ) (C D : ℕ)
-    (hlower : ∀ k, k ≤ g k)
-    (hupper : ∀ k, g k ≤ C * k + D) :
+    (hlower : ∀ k : ℕ, k ≤ g k)
+    (hupper : ∀ k : ℕ, g k ≤ C * k + D) :
     Asymptotics.IsTheta Filter.atTop
       (fun k : ℕ => (g k : ℝ)) (fun k : ℕ => (k : ℝ)) := by
   refine Asymptotics.IsBigO.antisymm ?_ ?_
@@ -13156,8 +13316,8 @@ theorem reindexedPowerLower_eventually
     (g : ℕ → ℕ) (coefficient : ℕ → ℝ)
     (A a : ℝ) (C D : ℕ)
     (hA : 0 ≤ A) (ha : 0 ≤ a) (hCD : 0 < C + D)
-    (hupper : ∀ k, g k ≤ C * k + D)
-    (hlower : ∀ k,
+    (hupper : ∀ k : ℕ, g k ≤ C * k + D)
+    (hlower : ∀ k : ℕ,
       A * (k : ℝ) ^ a ≤ coefficient (g k) ^ 2) :
     ∀ᶠ k in Filter.atTop,
       (A / (((C + D : ℕ) : ℝ) ^ a)) * ((g k : ℝ) ^ a) ≤
@@ -13196,7 +13356,7 @@ localization constant. -/
 theorem linearLocalizationConstant_pos
     (blocks : ℕ → Finset ℕ) (hne : ∀ k, (blocks k).Nonempty)
     (C D : ℕ)
-    (hindex : ∀ k m, m ∈ blocks k →
+    (hindex : ∀ (k m : ℕ), m ∈ blocks k →
       k ≤ m ∧ m ≤ C * k + D) :
     0 < C + D := by
   rcases hne 1 with ⟨m, hm⟩
@@ -13215,11 +13375,11 @@ theorem exists_injective_powerLowerSelection_withAsymptotics
       Disjoint (blocks i) (blocks j))
     (coefficient : ℕ → ℝ) (A a : ℝ) (C D : ℕ)
     (hA : 0 < A) (ha : 0 ≤ a)
-    (hindex : ∀ k m, m ∈ blocks k →
+    (hindex : ∀ (k m : ℕ), m ∈ blocks k →
       k ≤ m ∧ m ≤ C * k + D)
-    (hmean : ∀ k,
+    (hmean : ∀ k : ℕ,
       (A * (k : ℝ) ^ a) * ((blocks k).card : ℝ) ≤
-        ∑ m in blocks k, coefficient m ^ 2) :
+        ∑ m ∈ blocks k, coefficient m ^ 2) :
     ∃ g : ℕ → ℕ,
       Function.Injective g ∧
       Asymptotics.IsTheta Filter.atTop
@@ -13276,13 +13436,14 @@ theorem pointwiseLowerGrowth
   calc
     testFloor * coefficientFloor * growth m + ε =
         testFloor * (coefficientFloor * growth m) + ε := by ring
-    _ ≤ testValue * (coefficientFloor * growth m) + ε :=
-      add_le_add_right (mul_le_mul_of_nonneg_right htest hcg) ε
-    _ ≤ testValue * coefficient m ^ 2 + ε :=
-      add_le_add_right
-        (mul_le_mul_of_nonneg_left (hcoefficient m hm) htestValue) ε
-    _ ≤ testValue * coefficient m ^ 2 + error m :=
-      add_le_add_left (hmass m) _
+    _ ≤ testValue * (coefficientFloor * growth m) + ε := by
+      nlinarith [mul_le_mul_of_nonneg_right htest hcg]
+    _ ≤ testValue * coefficient m ^ 2 + ε := by
+      simpa only [add_comm] using
+        (add_le_add_right
+          (mul_le_mul_of_nonneg_left (hcoefficient m hm) htestValue) ε)
+    _ ≤ testValue * coefficient m ^ 2 + error m := by
+      nlinarith [hmass m]
     _ = spectral m := (hdecomp m).symm
 
 /-- Positive activity may have finite support; it cannot be upgraded to
@@ -13407,8 +13568,10 @@ theorem finitePart_fixed (P : SplitProjection R J) (φ : J) :
 theorem finitePart_polarPart (P : SplitProjection R J) (φ : J) :
     P.finitePart (P.polarPart φ) = 0 := by
   change P.toLinearMap (φ - P.toLinearMap φ) = 0
-  rw [map_sub, LinearMap.congr_fun P.idempotent φ]
-  exact sub_self _
+  rw [map_sub]
+  have hidem := LinearMap.congr_fun P.idempotent φ
+  change P.toLinearMap (P.toLinearMap φ) = P.toLinearMap φ at hidem
+  rw [hidem, sub_self]
 
 theorem polarPart_mem_ker (P : SplitProjection R J) (φ : J) :
     P.polarPart φ ∈ LinearMap.ker P.toLinearMap := by
@@ -13430,8 +13593,8 @@ theorem decomposition_unique
     rw [← hsum, map_add, hfinite, hpolar, add_zero]
   constructor
   · exact hselected.symm
-  · rw [polarPart, ← hsum, ← hselected]
-    abel
+  · rw [polarPart, hselected]
+    exact (eq_sub_iff_add_eq).2 (by simpa [add_comm] using hsum)
 
 /-- Explicit product model: the first summand is finite and the second is
 polar.  This is a concrete unconditional inhabitant of the repaired splitting
@@ -13498,6 +13661,12 @@ theorem not_CitedDampingInequality :
     ¬ CitedDampingInequality := by
   intro h
   have hbad := h 1 4 (by norm_num) (by norm_num)
+  have hsqrt4 : Real.sqrt (((4 : ℕ) : ℝ)) = 2 := by
+    calc
+      Real.sqrt (((4 : ℕ) : ℝ)) = Real.sqrt ((2 : ℝ) ^ 2) := by norm_num
+      _ = |(2 : ℝ)| := Real.sqrt_sq_eq_abs 2
+      _ = 2 := abs_of_nonneg (by norm_num)
+  rw [hsqrt4] at hbad
   norm_num at hbad
 
 /-- The exact inequality has the opposite direction from the one printed in
@@ -13535,7 +13704,7 @@ Rademacher partial energy. -/
 theorem partialEnergy_le_total
     (a : ℕ → ℝ) (ha : ∀ n, 0 ≤ a n)
     (hs : Summable a) (N : ℕ) :
-    (∑ n in Finset.range (N + 1), a n) ≤ ∑' n, a n :=
+    (∑ n ∈ Finset.range (N + 1), a n) ≤ ∑' n, a n :=
   hs.sum_le_tsum (Finset.range (N + 1)) (fun n _ => ha n)
 
 /-- A summable nonnegative scalar majorant gives a uniform graph-norm bound for
@@ -13547,11 +13716,11 @@ theorem norm_partialSum_le_totalMajorant
     (hmajorant_nonneg : ∀ n, 0 ≤ majorant n)
     (hterm : ∀ n, ‖term n‖ ≤ majorant n)
     (N : ℕ) :
-    ‖∑ n in Finset.range N, term n‖ ≤ ∑' n, majorant n := by
+    ‖∑ n ∈ Finset.range N, term n‖ ≤ ∑' n, majorant n := by
   calc
-    ‖∑ n in Finset.range N, term n‖
-        ≤ ∑ n in Finset.range N, ‖term n‖ := norm_sum_le _ _
-    _ ≤ ∑ n in Finset.range N, majorant n :=
+    ‖∑ n ∈ Finset.range N, term n‖
+        ≤ ∑ n ∈ Finset.range N, ‖term n‖ := norm_sum_le _ _
+    _ ≤ ∑ n ∈ Finset.range N, majorant n :=
       Finset.sum_le_sum (fun n _ => hterm n)
     _ ≤ ∑' n, majorant n :=
       hmajorant.sum_le_tsum (Finset.range N)
@@ -13687,8 +13856,7 @@ theorem sqrtGrowth_le_halfLinear_add_constant
   have htwoR : 0 < 2 * r := mul_pos (by norm_num) hr
   have hmul :
       (A * Real.sqrt x) * (2 * r) ≤ r ^ 2 * x + A ^ 2 := by
-    rw [← hsqrt_sq]
-    nlinarith [sq_nonneg (r * Real.sqrt x - A)]
+    nlinarith [sq_nonneg (r * Real.sqrt x - A), hsqrt_sq]
   have hdiv :
       A * Real.sqrt x ≤ (r ^ 2 * x + A ^ 2) / (2 * r) :=
     (le_div_iff₀ htwoR).2 hmul
@@ -13840,6 +14008,9 @@ theorem isPreconnected_openComplexAnnulus
           (Set.Ioo r R ×ˢ Metric.sphere (0 : ℂ) 1)) =
         openComplexAnnulus r R := by
     rw [Set.image_prod]
+    change
+      Set.Ioo r R • Metric.sphere (0 : ℂ) 1 =
+        openComplexAnnulus r R
     simpa [openComplexAnnulus] using
       (Ioo_smul_sphere_zero
         (E := ℂ) (a := r) (b := R) (r := 1) hr one_pos)
@@ -14123,8 +14294,9 @@ theorem analyticOn_exteriorPullback
       (exteriorVariableDomain r R) := by
     intro q hq
     exact ⟨q, hq, rfl⟩
-  simpa [exteriorPullback, Function.comp_def] using
-    hG.comp hinv hmaps
+  change AnalyticOn ℂ (fun q : ℂ => G q⁻¹)
+    (AnalyticContinuation.openComplexAnnulus r R)
+  exact hG.comp hinv hmaps
 
 /-- Completed agreement on an accumulating sample determines equality of the
 analytic inside core and the pulled-back exterior germ on the whole annulus.
@@ -14158,7 +14330,8 @@ theorem analyticOn_dictionaryCore
     AnalyticOn ℂ (dictionaryCore Psi S) A := by
   have htwo : AnalyticOn ℂ (fun q : ℂ ↦ (2 : ℂ) * Psi q) A :=
     analyticOn_const.mul hPsi
-  simpa [dictionaryCore] using htwo.sub hS
+  change AnalyticOn ℂ (fun q : ℂ => 2 * Psi q - S q) A
+  exact htwo.sub hS
 
 /-- The actual analytic-continuation step: agreement of the exterior pullback
 and dictionary core on an accumulating sample determines their equality on the
@@ -14315,22 +14488,24 @@ theorem inside_analytic :
 theorem exterior_analytic :
     AnalyticOn ℂ exterior
       (exteriorVariableDomain innerRadius outerRadius) := by
-  simpa only [exterior] using
-    (analyticOn_id : AnalyticOn ℂ (fun w : ℂ ↦ w)
-      (exteriorVariableDomain innerRadius outerRadius))
+  change AnalyticOn ℂ (fun w : ℂ => w)
+    (exteriorVariableDomain innerRadius outerRadius)
+  exact analyticOn_id
 
 theorem psi_analytic :
     AnalyticOn ℂ psi sample := by
-  simpa only [psi, inside] using inside_analytic
+  change AnalyticOn ℂ (fun q : ℂ => q⁻¹) sample
+  exact inside_analytic
 
 theorem shadow_analytic :
     AnalyticOn ℂ shadow sample := by
-  simpa only [shadow, inside] using inside_analytic
+  change AnalyticOn ℂ (fun q : ℂ => q⁻¹) sample
+  exact inside_analytic
 
 theorem correction_analytic :
     AnalyticOn ℂ correction sample := by
-  simpa only [correction] using
-    ((analyticOn_id : AnalyticOn ℂ (fun q : ℂ ↦ q) sample).pow 2)
+  change AnalyticOn ℂ (fun q : ℂ => q ^ 2) sample
+  exact (analyticOn_id : AnalyticOn ℂ (fun q : ℂ => q) sample).pow 2
 
 theorem correction_ne_zero_at_basePoint : correction basePoint ≠ 0 := by
   norm_num [correction, basePoint]
@@ -14619,11 +14794,24 @@ def QLocalSystem.connectionOfTrivialization
       map_add' := by
         intro s t
         funext r
-        simp
+        have hfun :
+            (fun q => L.trivialization q ((s + t) q)) =
+              (fun q => L.trivialization q (s q)) +
+                (fun q => L.trivialization q (t q)) := by
+          funext q
+          simp
+        rw [hfun, map_add]
+        simpa only [Pi.add_apply, map_add]
       map_smul' := by
         intro c s
         funext r
-        simp }
+        have hfun :
+            (fun q => L.trivialization q ((c • s) q)) =
+              c • (fun q => L.trivialization q (s q)) := by
+          funext q
+          simp
+        rw [hfun, map_smul]
+        simpa only [Pi.smul_apply, RingHom.id_apply, map_smul] }
   leibniz := by
     intro f s
     funext r
@@ -14662,7 +14850,7 @@ theorem QLocalSystem.connectionOfTrivialization_compatible
     [AddCommGroup Model] [Module ℂ Model]
     (L : QLocalSystem V Model) (D : RadialDerivation)
     (C : AlgebraicRadialConnection D Model) :
-    (L.connectionOfTrivialization D C).TrivializationCompatible C := by
+    (QLocalSystem.connectionOfTrivialization L D C).TrivializationCompatible C := by
   intro s r
   exact LinearEquiv.apply_symm_apply (L.trivialization r) _
 
@@ -14678,12 +14866,16 @@ theorem DependentRadialConnection.eq_of_trivializationCompatible
     (hA : A.TrivializationCompatible C)
     (hB : B.TrivializationCompatible C) :
     A = B := by
-  apply DependentRadialConnection.ext
-  apply LinearMap.ext
-  intro s
-  funext r
-  apply (L.trivialization r).injective
-  exact (hA s r).trans (hB s r).symm
+  have hnabla : A.nabla = B.nabla := by
+    apply LinearMap.ext
+    intro s
+    funext r
+    apply (L.trivialization r).injective
+    exact (hA s r).trans (hB s r).symm
+  cases A
+  cases B
+  cases hnabla
+  rfl
 
 /-- **Corrected Proposition 14.** A constant-rank kernel family with a chosen
 trivialization and a chosen model connection has a uniquely determined pulled-
@@ -14696,9 +14888,10 @@ theorem QLocalSystem.connectionOfTrivialization_unique
     (C : AlgebraicRadialConnection D Model)
     (A : DependentRadialConnection L D)
     (hA : A.TrivializationCompatible C) :
-    A = L.connectionOfTrivialization D C :=
-  A.eq_of_trivializationCompatible (L.connectionOfTrivialization D C)
-    hA (L.connectionOfTrivialization_compatible D C)
+    A = QLocalSystem.connectionOfTrivialization L D C :=
+  DependentRadialConnection.eq_of_trivializationCompatible A
+    (QLocalSystem.connectionOfTrivialization L D C)
+    hA (QLocalSystem.connectionOfTrivialization_compatible L D C)
 
 /-- The zero derivation on radial scalar functions. -/
 def zeroRadialDerivation : RadialDerivation where
@@ -14764,7 +14957,8 @@ theorem QLocalSystem.transport_unique_of_trivialization
     (hT : ∀ x,
       L.trivialization s (T x) = L.trivialization r x) :
     T = L.transport r s := by
-  ext x
+  apply LinearEquiv.ext
+  intro x
   apply (L.trivialization s).injective
   rw [hT x]
   simp [QLocalSystem.transport]
@@ -14982,7 +15176,8 @@ theorem EffectiveActionDecomposition.flat_minimizer_massless_of_vacuum
     (hmin : ∀ B, D.action A ≤ D.action B) :
     D.mass A = 0 ∧ D.remainder A = 0 :=
   flat_minimizer_mass_remainder_zero D hmass hremainder A A₀ hflat
-    (D.action_eq_zero_of_flat_vacuum hflat₀ hmass₀ hremainder₀) hmin
+    (EffectiveActionDecomposition.action_eq_zero_of_flat_vacuum
+      D hflat₀ hmass₀ hremainder₀) hmin
 
 end FlatMinimizer
 
@@ -15005,9 +15200,9 @@ def CompatibleGaugeFamily
 /-- The sheaf law identifies every compatible local family with a unique
 global covariant field. -/
 theorem compatibleGaugeFamily_existsUniqueGlobal
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
-    {ι : Type*} (D : GaugeDescentSheaf X E)
+    {ι : Type uSheafX} (D : GaugeDescentSheaf X E)
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
@@ -15016,8 +15211,10 @@ theorem compatibleGaugeFamily_existsUniqueGlobal
     ∃! u : qGaugeForms (D.action U), ∀ i,
       D.forms.restrict (hVU i)
           (u : D.forms.section U) =
-        (s.1 i : D.forms.section (V i)) :=
-  D.covariant_gluing_existsUnique V hVU hcover s.1 s.2
+        (s.1 i : D.forms.section (V i)) := by
+  simpa only using
+    D.covariant_gluing_existsUnique (ι := ι) (U := U)
+      V hVU hcover (fun i => s.1 i) (fun i j => s.2 i j)
 
 /-- Restriction of a global covariant gauge form to a compatible family on a
 cover. -/
@@ -15068,9 +15265,9 @@ theorem coe_restrictionToCompatibleGaugeFamily_apply
 
 /-- Locality makes restriction to a cover injective. -/
 theorem restrictionToCompatibleGaugeFamily_injective
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
-    {ι : Type*} (D : GaugeDescentSheaf X E)
+    {ι : Type uSheafX} (D : GaugeDescentSheaf X E)
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
@@ -15087,9 +15284,9 @@ theorem restrictionToCompatibleGaugeFamily_injective
 
 /-- Unique gauge gluing makes restriction to a cover surjective. -/
 theorem restrictionToCompatibleGaugeFamily_surjective
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
-    {ι : Type*} (D : GaugeDescentSheaf X E)
+    {ι : Type uSheafX} (D : GaugeDescentSheaf X E)
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
@@ -15107,9 +15304,9 @@ theorem restrictionToCompatibleGaugeFamily_surjective
 /-- Restriction to an open cover is bijective onto compatible covariant
 families. -/
 theorem restrictionToCompatibleGaugeFamily_bijective
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
-    {ι : Type*} (D : GaugeDescentSheaf X E)
+    {ι : Type uSheafX} (D : GaugeDescentSheaf X E)
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
@@ -15121,9 +15318,9 @@ theorem restrictionToCompatibleGaugeFamily_bijective
 /-- **Corrected Proposition 20.** Global covariant sections are exactly
 compatible local covariant sections on the cover. -/
 noncomputable def globalGaugeFormsEquivCompatibleGaugeFamily
-    {X E : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {E : Type uSheafE} [TopologicalSpace X]
     [AddCommGroup E] [Module ℂ E]
-    {ι : Type*} (D : GaugeDescentSheaf X E)
+    {ι : Type uSheafX} (D : GaugeDescentSheaf X E)
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
     (hVU : ∀ i, V i ≤ U)
@@ -15136,7 +15333,8 @@ noncomputable def globalGaugeFormsEquivCompatibleGaugeFamily
 /-- Concrete Proposition 20 for the directly constructed trivial-bundle gauge
 sheaf. -/
 noncomputable def trivialBundleGlobalSectionsEquivCompatibleGaugeFamily
-    {X Fiber ι : Type*} [TopologicalSpace X]
+    {X : Type uSheafX} {Fiber : Type uSheafE}
+    {ι : Type uSheafX} [TopologicalSpace X]
     [AddCommGroup Fiber] [Module ℂ Fiber]
     {U : TopologicalSpace.Opens X}
     (V : ι → TopologicalSpace.Opens X)
@@ -15269,7 +15467,15 @@ def crtObstructionMap (M N : ℕ) :
       ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N)) x.2
   map_zero' := by simp
   map_add' x y := by
-    dsimp
+    change
+      ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N))
+          (x.1 + y.1) -
+        ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N))
+          (x.2 + y.2) =
+      (ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N)) x.1 -
+        ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N)) x.2) +
+      (ZMod.castHom (Nat.gcd_dvd_left M N) (ZMod (Nat.gcd M N)) y.1 -
+        ZMod.castHom (Nat.gcd_dvd_right M N) (ZMod (Nat.gcd M N)) y.2)
     rw [map_add, map_add]
     abel
 
@@ -15293,7 +15499,13 @@ theorem comparisonMap_crtObstructionMap_exact (M N : ℕ) :
     obtain ⟨zb, rfl⟩ := ZMod.intCast_surjective b
     have hzero :
         ((za - zb : ℤ) : ZMod (Nat.gcd M N)) = 0 := by
-      simpa [crtObstructionMap] using h
+      change
+        (ZMod.cast (za : ZMod M) : ZMod (Nat.gcd M N)) -
+          (ZMod.cast (zb : ZMod N) : ZMod (Nat.gcd M N)) = 0 at h
+      rw [ZMod.cast_intCast (Nat.gcd_dvd_left M N),
+        ZMod.cast_intCast (Nat.gcd_dvd_right M N)] at h
+      rw [Int.cast_sub]
+      exact h
     have hdvd : (Nat.gcd M N : ℤ) ∣ za - zb :=
       (ZMod.intCast_zmod_eq_zero_iff_dvd
         (za - zb) (Nat.gcd M N)).mp hzero
@@ -15321,8 +15533,14 @@ theorem comparisonMap_crtObstructionMap_exact (M N : ℕ) :
     refine ⟨z, ?_⟩
     rw [comparisonMap_apply]
     exact Prod.ext hzM hzN
-  · rintro ⟨z, rfl⟩
-    simp [crtObstructionMap]
+  · rintro ⟨z, hz⟩
+    rw [← hz]
+    change
+      (ZMod.cast (z : ZMod M) : ZMod (Nat.gcd M N)) -
+        (ZMod.cast (z : ZMod N) : ZMod (Nat.gcd M N)) = 0
+    rw [ZMod.cast_intCast (Nat.gcd_dvd_left M N),
+      ZMod.cast_intCast (Nat.gcd_dvd_right M N)]
+    exact sub_self _
 
 /-- The terminal generalized-CRT obstruction map is surjective, including for
 degenerate moduli. -/
@@ -15396,6 +15614,7 @@ theorem cyclicResolutionAugmentation_surjective (M : ℕ) :
   ZMod.intCast_surjective
 
 open CategoryTheory CategoryTheory.Limits CategoryTheory.MonoidalCategory
+open scoped ZeroObject
 
 /-- The zero tail used by the two-term free complex. -/
 def cyclicFreeSuccessor {X₀ X₁ : ModuleCat ℤ} (f : X₁ ⟶ X₀) :
@@ -15417,7 +15636,7 @@ theorem cyclicFreeComplex_d_one_zero (N : ℕ) :
 @[simp]
 theorem cyclicFreeComplex_d_succ_succ (N n : ℕ) :
     (cyclicFreeComplex N).d (n + 2) (n + 1) = 0 := by
-  simp [cyclicFreeComplex, ChainComplex.mk'_d, cyclicFreeSuccessor]
+  simp [cyclicFreeComplex, ChainComplex.mk'_d, cyclicFreeSuccessor] <;> rfl
 
 theorem cyclicFreeComplex_isZero_succ_succ (N n : ℕ) :
     IsZero ((cyclicFreeComplex N).X (n + 2)) := by
@@ -15433,8 +15652,10 @@ theorem cyclicFreeComplex_d_comp_augmentation (N : ℕ) :
         (cyclicResolutionAugmentation N).toIntLinearMap = 0 := by
   rw [cyclicFreeComplex_d_one_zero]
   apply ModuleCat.hom_ext
-  ext z
-  simp [cyclicResolutionDifferential, cyclicResolutionAugmentation]
+  ext
+  change cyclicResolutionAugmentation N
+      (cyclicResolutionDifferential N 1) = 0
+  exact (cyclicResolution_exact N _).2 ⟨1, rfl⟩
 
 /-- Augmentation of the explicit free complex to the cyclic module. -/
 noncomputable def cyclicFreeAugmentation (N : ℕ) :
@@ -15451,7 +15672,8 @@ theorem cyclicFreeAugmentation_f_zero (N : ℕ) :
     (cyclicFreeAugmentation N).f 0 =
       ModuleCat.ofHom
         (cyclicResolutionAugmentation N).toIntLinearMap := by
-  simp [cyclicFreeAugmentation]
+  unfold cyclicFreeAugmentation
+  rfl
 
 /-- The degree-zero short complex underlying the cyclic presentation. -/
 def cyclicPresentationShortComplex (N : ℕ) :
@@ -15467,13 +15689,14 @@ def cyclicPresentationShortComplex (N : ℕ) :
 theorem cyclicPresentationShortComplex_exact (N : ℕ) :
     (cyclicPresentationShortComplex N).Exact := by
   apply (ShortComplex.moduleCat_exact_iff _).2
-  simpa [cyclicPresentationShortComplex] using cyclicResolution_exact N
+  intro z hz
+  exact (cyclicResolution_exact N z).1 hz
 
 theorem cyclicPresentationShortComplex_epi (N : ℕ) :
     Epi (cyclicPresentationShortComplex N).g := by
   apply (ModuleCat.epi_iff_surjective _).2
-  simpa [cyclicPresentationShortComplex] using
-    cyclicResolutionAugmentation_surjective N
+  intro z
+  exact cyclicResolutionAugmentation_surjective N z
 
 theorem cyclicFreeComplex_exactAt_succ
     (N : ℕ) (hN : N ≠ 0) (n : ℕ) :
@@ -15485,17 +15708,18 @@ theorem cyclicFreeComplex_exactAt_succ
       apply
         (ShortComplex.exact_iff_mono _
           (cyclicFreeComplex_d_succ_succ N 0)).2
-      rw [cyclicFreeComplex_d_one_zero,
-        ModuleCat.mono_iff_injective]
-      simpa using cyclicResolutionDifferential_injective N hN
+      change Mono ((cyclicFreeComplex N).d 1 0)
+      rw [cyclicFreeComplex_d_one_zero]
+      exact (ModuleCat.mono_iff_injective _).2
+        (cyclicResolutionDifferential_injective N hN)
   | succ n =>
       rw [HomologicalComplex.exactAt_iff' _ (n + 3) (n + 2) (n + 1)
         (by simp) (by simp)]
       exact ShortComplex.exact_of_isZero_X₂ _
         (cyclicFreeComplex_isZero_succ_succ N n)
 
-theorem intRankOne_projective : Projective (ModuleCat.of ℤ ℤ) :=
-  ModuleCat.projective_of_free (Basis.singleton (Fin 1) ℤ)
+theorem intRankOne_projective : Projective (ModuleCat.of ℤ ℤ) := by
+  infer_instance
 
 theorem cyclicFreeComplex_projective (N n : ℕ) :
     Projective ((cyclicFreeComplex N).X n) := by
@@ -15512,8 +15736,12 @@ theorem cyclicFreeAugmentation_quasiIsoAt_zero (N : ℕ) :
       ⟨cyclicPresentationShortComplex_exact N,
         cyclicPresentationShortComplex_epi N⟩
     exact ShortComplex.isoMk (Iso.refl _) (Iso.refl _) (Iso.refl _)
-      (by simp [cyclicPresentationShortComplex])
-      (by simp [cyclicPresentationShortComplex])
+      (by
+        simp only [Category.id_comp, Category.comp_id]
+        exact (cyclicFreeComplex_d_one_zero N).symm)
+      (by
+        simp only [Category.id_comp, Category.comp_id]
+        exact (cyclicFreeAugmentation_f_zero N).symm)
   all_goals rfl
 
 theorem cyclicFreeAugmentation_quasiIsoAt_succ
@@ -15531,7 +15759,9 @@ noncomputable def cyclicProjectiveResolution
   complex := cyclicFreeComplex N
   projective := cyclicFreeComplex_projective N
   π := cyclicFreeAugmentation N
-  quasiIso := fun n => by
+  quasiIso := by
+    rw [quasiIso_iff]
+    intro n
     cases n with
     | zero => exact cyclicFreeAugmentation_quasiIsoAt_zero N
     | succ n => exact cyclicFreeAugmentation_quasiIsoAt_succ N hN n
@@ -15662,8 +15892,14 @@ theorem tensorCyclicShortComplex_g_eq_zsmul_id (M N : ℕ) :
   change
     (cyclicTensorFunctor M).map ((cyclicFreeComplex N).d 1 0) = _
   rw [cyclicFreeComplex_d_one_zero,
-    cyclicResolutionDifferential_morphism_eq_zsmul_id,
-    Functor.map_zsmul, Functor.map_id]
+    cyclicResolutionDifferential_morphism_eq_zsmul_id]
+  change
+    (cyclicTensorFunctor M).map
+        ((N : ℤ) • 𝟙 (ModuleCat.of ℤ ℤ)) =
+      (N : ℤ) • 𝟙 ((cyclicTensorFunctor M).obj (ModuleCat.of ℤ ℤ))
+  rw [Functor.map_zsmul]
+  exact congrArg (fun f => (N : ℤ) • f)
+    ((cyclicTensorFunctor M).map_id (ModuleCat.of ℤ ℤ))
 
 /-- The right unitor intertwines the mapped differential and concrete
 `N`-multiplication. -/
@@ -15673,8 +15909,13 @@ theorem tensorCyclicShortComplex_g_unitor_comm (M N : ℕ) :
       (tensorCyclicRightUnitor M).hom ≫
         ModuleCat.ofHom (cyclicNsmulLinearMap N M) := by
   rw [tensorCyclicShortComplex_g_eq_zsmul_id,
-    cyclicNsmul_morphism_eq_zsmul_id,
-    Preadditive.zsmul_comp, Category.id_comp,
+    cyclicNsmul_morphism_eq_zsmul_id]
+  change
+    ((N : ℤ) • 𝟙 ((cyclicTensorFunctor M).obj (ModuleCat.of ℤ ℤ))) ≫
+        (tensorCyclicRightUnitor M).hom =
+      (tensorCyclicRightUnitor M).hom ≫
+        ((N : ℤ) • 𝟙 (ModuleCat.of ℤ (ZMod M)))
+  rw [Preadditive.zsmul_comp, Category.id_comp,
     Preadditive.comp_zsmul, Category.comp_id]
 
 /-- Transport kernels through a conjugating linear equivalence. -/
@@ -15709,9 +15950,15 @@ def cyclicNsmulKernelLinearEquiv (N M : ℕ) :
     LinearMap.ker (cyclicNsmulLinearMap N M) ≃ₗ[ℤ]
       CyclicTorOneModel N M where
   toFun x := ⟨x, by
-    simpa [cyclicNsmulLinearMap, CyclicTorOneModel] using x.property⟩
+    have hx := x.property
+    change cyclicNsmulLinearMap N M x = 0 at hx
+    change N • (x : ZMod M) = 0
+    exact hx⟩
   invFun x := ⟨x, by
-    simpa [cyclicNsmulLinearMap, CyclicTorOneModel] using x.property⟩
+    have hx := x.property
+    change N • (x : ZMod M) = 0 at hx
+    change cyclicNsmulLinearMap N M x = 0
+    exact hx⟩
   left_inv _ := rfl
   right_inv _ := rfl
   map_add' _ _ := rfl
@@ -16010,7 +16257,8 @@ theorem unitIntervalDensity_integrable :
 @[simp]
 theorem integral_unitIntervalDensity :
     (∫ x : ℝ, unitIntervalDensity x) = 1 := by
-  rw [unitIntervalDensity, integral_indicator measurableSet_Ioc]
+  change (∫ x : ℝ, (Ioc (0 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x) = 1
+  rw [integral_indicator measurableSet_Ioc]
   simp [Real.volume_Ioc]
 
 /-- Restriction of the smooth test to one proper spectral stage. -/
@@ -16026,7 +16274,10 @@ theorem stageTest_integrable (T : ℝ) (hT : 0 < T) (n : ℕ) :
 theorem integral_stageTest (T : ℝ) (hT : 0 < T) (n : ℕ) :
     (∫ t : ℝ, stageTest T hT n t) =
       ∫ t in Icc (-(n : ℝ)) (n : ℝ), smoothTest T hT t := by
-  rw [stageTest, integral_indicator measurableSet_Icc]
+  change
+    (∫ t : ℝ, (Icc (-(n : ℝ)) (n : ℝ)).indicator
+      (smoothTest T hT) t) = _
+  rw [integral_indicator measurableSet_Icc]
 
 /-- A concrete nonzero Rankin--Selberg mass family.  The geometric extraction
 is the sum of the three identical cusp densities. -/
@@ -16117,7 +16368,8 @@ noncomputable def finiteUnfolding (T : ℝ) (hT : 0 < T) :
   spectral_identification := by
     intro n m
     rw [truncatedMass_eq_three_mul T hT n m]
-    simp [symmetricRealExhaustion, Gamma2Cusp.card_eq, nsmul_eq_mul]
+    simp [rankinSelbergFamily, symmetricRealExhaustion,
+      Gamma2Cusp.card_eq, nsmul_eq_mul]
 
 /-- The finite-stage identity contains a nonempty three-cusp sum. -/
 theorem finiteIdentity (T : ℝ) (hT : 0 < T) (n m : ℕ) :
@@ -16164,8 +16416,13 @@ noncomputable def productUnfolding (T : ℝ) (hT : 0 < T) :
       (ι := PUnit) (rankinSelbergFamily T hT) (spectralData T hT) where
   geometric := symmetricRealExhaustion
   spectral := fun _ => symmetricRealExhaustion
-  geometric_sFinite := inferInstance
-  spectral_sFinite := fun _ => inferInstance
+  geometric_sFinite := by
+    change SFinite (volume : Measure ℝ)
+    infer_instance
+  spectral_sFinite := by
+    intro k
+    change SFinite (volume : Measure ℝ)
+    infer_instance
   auxiliaryWeight_identification := rankinSelbergFamily_massTest T hT
   coefficient_identification := rankinSelbergFamily_coefficient T hT
   scattering_identification := rankinSelbergFamily_scatteringMeasure T hT
@@ -16177,40 +16434,40 @@ noncomputable def productUnfolding (T : ℝ) (hT : 0 < T) :
   geometric_identification := by
     intro n m
     rw [geometricStage_eq_three_mul T hT n m]
-    simp [productKernel_iterated_geometric, Gamma2Cusp.card_eq,
+    simp [rankinSelbergFamily, spectralData,
+      productKernel_iterated_geometric, Gamma2Cusp.card_eq,
       nsmul_eq_mul]
   spectral_identification := by
     intro n m
     rw [truncatedMass_eq_three_mul T hT n m]
-    simp [productKernel_iterated_spectral, Gamma2Cusp.card_eq,
+    simp [rankinSelbergFamily, spectralData,
+      productKernel_iterated_spectral, Gamma2Cusp.card_eq,
       nsmul_eq_mul]
 
 /-- The explicit product finite identity is derived through Mathlib's Fubini
 theorem by `ProductFiniteTruncatedUnfolding.finiteIdentity`. -/
 theorem productFiniteIdentity (T : ℝ) (hT : 0 < T) (n m : ℕ) :
-    (∫ x in (productUnfolding T hT).geometric.set n,
+    (∫ x in (productUnfolding.{0} T hT).geometric.set n,
       (rankinSelbergFamily T hT).extractedMassIntegrand m x
         ∂(rankinSelbergFamily T hT).measure) =
       truncatedMassFunctional (spectralData T hT)
-        (fun k => ((productUnfolding T hT).spectral k).toMeasurableExhaustion)
+        (fun k => ((productUnfolding.{0} T hT).spectral k).toMeasurableExhaustion)
         m n :=
-  (productUnfolding T hT).finiteIdentity n m
+  (productUnfolding.{0} T hT).finiteIdentity n m
 
 /-- Global corrected Lemma 3.5 through the explicit product/Fubini route. -/
 theorem productUnfolding_to_mass (T : ℝ) (hT : 0 < T) (m : ℕ) :
     (rankinSelbergFamily T hT).extractedMass m =
       massFunctional (spectralData T hT) m :=
-  MassUnfolding.product_unfolding_to_mass (productUnfolding T hT) m
+  MassUnfolding.product_unfolding_to_mass (productUnfolding.{0} T hT) m
 
 /-- The product kernel is genuinely nonzero already at the first stage. -/
 theorem productKernel_pos_at_center (T : ℝ) (hT : 0 < T)
     (m : ℕ) (k : Gamma2Cusp) :
     0 < productKernel T hT 1 m k PUnit.unit (1 / 2) 0 := by
-  have hx : (1 / 2 : ℝ) ∈ Ioc 0 1 := by norm_num
+  have hx : (2 : ℝ)⁻¹ ∈ Ioc 0 1 := by norm_num
   have ht : (0 : ℝ) ∈ Icc (-(1 : ℝ)) 1 := by norm_num
-  rw [productKernel, unitIntervalDensity, Set.indicator_of_mem hx,
-    stageTest, Set.indicator_of_mem ht, one_mul]
-  exact
+  simpa [productKernel, unitIntervalDensity, hx, stageTest, ht, smoothTest] using
     KuznetsovInterface.fourierPositiveSmoothTentFunction_pos_zero T hT
 
 /-- Corrected Lemma 3.7 is strictly positive in this model, not merely
@@ -16244,15 +16501,17 @@ namespace GreenIdentityRepair
 that quantity.  This is the scalar leaf used when the raising and lowering
 factorizations are averaged. -/
 theorem eq_average_of_eq_of_eq
-    {R : Type*} [LinearOrderedField R]
+    {R : Type*} [Field R] [LinearOrder R] [IsStrictOrderedRing R]
     {x a b : R} (ha : x = a) (hb : x = b) :
     x = (a + b) / 2 := by
-  linarith
+  subst a
+  subst b
+  ring
 
 /-- Correct averaging of the raising and lowering Green identities.  The
 factor `1/2` applies to both energy terms and both boundary terms. -/
 theorem average_factorization_identity
-    {R : Type*} [LinearOrderedField R]
+    {R : Type*} [Field R] [LinearOrder R] [IsStrictOrderedRing R]
     {laplace raisingEnergy loweringEnergy
       raisingBoundary loweringBoundary : R}
     (hraising : laplace = -raisingEnergy + raisingBoundary)
@@ -16283,15 +16542,24 @@ theorem average_factorization_without_half_counterexample :
 
 /-- Exact boundary-sign equivalence in an ordered ring. -/
 theorem energy_add_boundary_eq_rhs_iff
-    {R : Type*} [LinearOrderedRing R]
+    {R : Type*} [Ring R] [LinearOrder R] [IsStrictOrderedRing R]
     {energy boundary rhs : R} :
     energy + boundary = rhs ↔ energy = rhs - boundary := by
-  constructor <;> intro h <;> linarith
+  constructor
+  · intro h
+    calc
+      energy = (energy + boundary) - boundary := by simp
+      _ = rhs - boundary := congrArg (fun t : R => t - boundary) h
+  · intro h
+    calc
+      energy + boundary = (rhs - boundary) + boundary :=
+        congrArg (fun t : R => t + boundary) h
+      _ = rhs := by simp
 
 /-- Moving the boundary contribution to the right-hand side introduces a
 minus sign. -/
 theorem energy_eq_rhs_sub_boundary
-    {R : Type*} [LinearOrderedRing R]
+    {R : Type*} [Ring R] [LinearOrder R] [IsStrictOrderedRing R]
     {energy boundary rhs : R}
     (hidentity : energy + boundary = rhs) :
     energy = rhs - boundary :=
@@ -16349,8 +16617,7 @@ theorem norm_le_inv_mul_of_coercive_bound
   · have hsolutionPos : 0 < solutionNorm :=
       lt_of_le_of_ne hsolution (Ne.symm hzero)
     have hlinear : coercivity * solutionNorm ≤ rhsNorm := by
-      exact (mul_le_mul_right hsolutionPos).mp (by
-        simpa [mul_assoc] using hbound)
+      nlinarith [hbound]
     have hdiv : solutionNorm ≤ rhsNorm / coercivity := by
       apply (le_div_iff₀ hcoercivity).2
       simpa [mul_comm] using hlinear
@@ -16425,12 +16692,15 @@ theorem integral_mode (k : ℤ) :
       Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
     have hc : (k : ℂ) * Real.pi * Complex.I ≠ 0 :=
       mul_ne_zero (mul_ne_zero hkC hpi) Complex.I_ne_zero
-    rw [mode, integral_exp_mul_complex hc]
+    unfold mode
+    rw [integral_exp_mul_complex hc]
     have hexp :
         Complex.exp
             (((k : ℂ) * Real.pi * Complex.I) * (2 : ℝ)) = 1 := by
+      have htwo : (((2 : ℝ) : ℂ)) = (2 : ℂ) := by norm_num
+      rw [htwo]
       rw [show
-        ((k : ℂ) * Real.pi * Complex.I) * (2 : ℝ) =
+        ((k : ℂ) * Real.pi * Complex.I) * (2 : ℂ) =
           (k : ℂ) * (2 * Real.pi * Complex.I) by ring]
       exact Complex.exp_int_mul_two_pi_mul_I k
     rw [hexp]
@@ -16445,7 +16715,7 @@ theorem integral_frequencyDifference (m n : ℤ) :
 /-- A finite Fourier polynomial on a width-two horocycle. -/
 noncomputable def finitePolynomial
     (s : Finset ℤ) (a : ℤ → ℂ) (x : ℝ) : ℂ :=
-  ∑ k in s, a k * mode k x
+  ∑ k ∈ s, a k * mode k x
 
 /-- Every width-two Fourier mode is continuous in the horocycle variable. -/
 theorem continuous_mode (k : ℤ) : Continuous (mode k) := by
@@ -16465,19 +16735,32 @@ theorem continuous_finitePolynomial
 /-- Conjugating one mode and multiplying by another produces the difference
 frequency required by `integral_frequencyDifference`. -/
 theorem conj_mode_mul_mode (m n : ℤ) (x : ℝ) :
-    Complex.conj (mode n x) * mode m x = mode (m - n) x := by
+    star (mode n x) * mode m x = mode (m - n) x := by
   simp only [mode]
-  rw [← Complex.exp_conj, ← Complex.exp_add]
+  have hstar :
+      star (Complex.exp ((n : ℂ) * Real.pi * Complex.I * (x : ℂ))) =
+        Complex.exp
+          (star ((n : ℂ) * Real.pi * Complex.I * (x : ℂ))) := by
+    simpa using
+      (Complex.exp_conj
+        ((n : ℂ) * Real.pi * Complex.I * (x : ℂ))).symm
+  have harg :
+      star ((n : ℂ) * Real.pi * Complex.I * (x : ℂ)) =
+        -((n : ℂ) * Real.pi * Complex.I * (x : ℂ)) := by
+    change (starRingEnd ℂ)
+      ((n : ℂ) * Real.pi * Complex.I * (x : ℂ)) =
+        -((n : ℂ) * Real.pi * Complex.I * (x : ℂ))
+    rw [map_mul, map_mul]
+    simp <;> ring
+  rw [hstar, harg, ← Complex.exp_add]
   congr 1
-  simp only [map_mul, ← Complex.ofReal_intCast, Complex.conj_ofReal,
-    Complex.conj_I]
   push_cast
   ring
 
 /-- One matrix coefficient in the finite norm-square expansion. -/
 noncomputable def crossTerm
     (a : ℤ → ℂ) (n m : ℤ) (x : ℝ) : ℂ :=
-  Complex.conj (a n) * a m * mode (m - n) x
+  star (a n) * a m * mode (m - n) x
 
 /-- Every cross term is continuous, hence interval-integrable. -/
 theorem continuous_crossTerm
@@ -16495,7 +16778,7 @@ theorem intervalIntegrable_crossTerm
 theorem integral_crossTerm
     (a : ℤ → ℂ) (n m : ℤ) :
     (∫ x : ℝ in (0 : ℝ)..2, crossTerm a n m x) =
-      Complex.conj (a n) * a m *
+      star (a n) * a m *
         (if m = n then (2 : ℂ) else 0) := by
   unfold crossTerm
   rw [intervalIntegral.integral_const_mul,
@@ -16505,9 +16788,14 @@ theorem integral_crossTerm
 polynomial. -/
 theorem conj_finitePolynomial_mul_finitePolynomial
     (s : Finset ℤ) (a : ℤ → ℂ) (x : ℝ) :
-    Complex.conj (finitePolynomial s a x) * finitePolynomial s a x =
-      ∑ n in s, ∑ m in s, crossTerm a n m x := by
-  simp only [finitePolynomial, map_sum, map_mul]
+    star (finitePolynomial s a x) * finitePolynomial s a x =
+      ∑ n ∈ s, ∑ m ∈ s, crossTerm a n m x := by
+  unfold finitePolynomial
+  change
+    (starRingEnd ℂ) (∑ k ∈ s, a k * mode k x) *
+        (∑ k ∈ s, a k * mode k x) = _
+  rw [map_sum]
+  simp only [map_mul]
   rw [Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro n hn
@@ -16516,39 +16804,39 @@ theorem conj_finitePolynomial_mul_finitePolynomial
   intro m hm
   unfold crossTerm
   calc
-    (Complex.conj (a n) * Complex.conj (mode n x)) *
+    (star (a n) * star (mode n x)) *
           (a m * mode m x) =
-        (Complex.conj (a n) * a m) *
-          (Complex.conj (mode n x) * mode m x) := by ring
-    _ = Complex.conj (a n) * a m * mode (m - n) x := by
+        (star (a n) * a m) *
+          (star (mode n x) * mode m x) := by ring
+    _ = star (a n) * a m * mode (m - n) x := by
       rw [conj_mode_mul_mode]
 
 /-- Termwise integration of the finite double sum. -/
 theorem integral_crossTerm_sum
     (s : Finset ℤ) (a : ℤ → ℂ) :
     (∫ x : ℝ in (0 : ℝ)..2,
-        ∑ n in s, ∑ m in s, crossTerm a n m x) =
-      ∑ n in s, ∑ m in s,
-        Complex.conj (a n) * a m *
+        ∑ n ∈ s, ∑ m ∈ s, crossTerm a n m x) =
+      ∑ n ∈ s, ∑ m ∈ s,
+        star (a n) * a m *
           (if m = n then (2 : ℂ) else 0) := by
   calc
     (∫ x : ℝ in (0 : ℝ)..2,
-        ∑ n in s, ∑ m in s, crossTerm a n m x) =
-        ∑ n in s,
-          ∫ x : ℝ in (0 : ℝ)..2, ∑ m in s, crossTerm a n m x := by
+        ∑ n ∈ s, ∑ m ∈ s, crossTerm a n m x) =
+        ∑ n ∈ s,
+          ∫ x : ℝ in (0 : ℝ)..2, ∑ m ∈ s, crossTerm a n m x := by
       apply intervalIntegral.integral_finset_sum
       intro n hn
       exact (continuous_finset_sum s fun m _ =>
         continuous_crossTerm a n m).intervalIntegrable 0 2
-    _ = ∑ n in s, ∑ m in s,
+    _ = ∑ n ∈ s, ∑ m ∈ s,
         ∫ x : ℝ in (0 : ℝ)..2, crossTerm a n m x := by
       apply Finset.sum_congr rfl
       intro n hn
       apply intervalIntegral.integral_finset_sum
       intro m hm
       exact intervalIntegrable_crossTerm a n m
-    _ = ∑ n in s, ∑ m in s,
-        Complex.conj (a n) * a m *
+    _ = ∑ n ∈ s, ∑ m ∈ s,
+        star (a n) * a m *
           (if m = n then (2 : ℂ) else 0) := by
       apply Finset.sum_congr rfl
       intro n hn
@@ -16560,47 +16848,47 @@ theorem integral_crossTerm_sum
 Hermitian square. -/
 theorem integratedCrossTerms_eq_diagonal
     (s : Finset ℤ) (a : ℤ → ℂ) :
-    (∑ n in s, ∑ m in s,
-        Complex.conj (a n) * a m *
+    (∑ n ∈ s, ∑ m ∈ s,
+        star (a n) * a m *
           (if m = n then (2 : ℂ) else 0)) =
-      ∑ n in s, (2 : ℂ) * (Complex.normSq (a n) : ℂ) := by
+      ∑ n ∈ s, (2 : ℂ) * (Complex.normSq (a n) : ℂ) := by
   apply Finset.sum_congr rfl
   intro n hn
   calc
-    (∑ m in s,
-        Complex.conj (a n) * a m *
+    (∑ m ∈ s,
+        star (a n) * a m *
           (if m = n then (2 : ℂ) else 0)) =
-        Complex.conj (a n) * a n *
+        star (a n) * a n *
           (if n = n then (2 : ℂ) else 0) := by
       apply Finset.sum_eq_single_of_mem n hn
       intro m hm hmn
       simp [hmn]
-    _ = Complex.conj (a n) * a n * 2 := by simp
+    _ = star (a n) * a n * 2 := by simp
     _ = (2 : ℂ) * (Complex.normSq (a n) : ℂ) := by
       rw [Complex.normSq_eq_conj_mul_self]
-      ring
+      ac_rfl
 
 /-- Complex-valued finite Parseval identity. -/
 theorem integral_conj_mul_finitePolynomial
     (s : Finset ℤ) (a : ℤ → ℂ) :
     (∫ x : ℝ in (0 : ℝ)..2,
-        Complex.conj (finitePolynomial s a x) *
+        star (finitePolynomial s a x) *
           finitePolynomial s a x) =
-      ∑ k in s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) := by
+      ∑ k ∈ s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) := by
   calc
     (∫ x : ℝ in (0 : ℝ)..2,
-        Complex.conj (finitePolynomial s a x) *
+        star (finitePolynomial s a x) *
           finitePolynomial s a x) =
         ∫ x : ℝ in (0 : ℝ)..2,
-          ∑ n in s, ∑ m in s, crossTerm a n m x := by
+          ∑ n ∈ s, ∑ m ∈ s, crossTerm a n m x := by
       apply intervalIntegral.integral_congr
       intro x hx
       exact conj_finitePolynomial_mul_finitePolynomial s a x
-    _ = ∑ n in s, ∑ m in s,
-        Complex.conj (a n) * a m *
+    _ = ∑ n ∈ s, ∑ m ∈ s,
+        star (a n) * a m *
           (if m = n then (2 : ℂ) else 0) :=
       integral_crossTerm_sum s a
-    _ = ∑ k in s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) :=
+    _ = ∑ k ∈ s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) :=
       integratedCrossTerms_eq_diagonal s a
 
 /-- Real norm-square form of finite Parseval on a width-two horocycle. -/
@@ -16608,7 +16896,7 @@ theorem integral_normSq_finitePolynomial
     (s : Finset ℤ) (a : ℤ → ℂ) :
     (∫ x : ℝ in (0 : ℝ)..2,
         Complex.normSq (finitePolynomial s a x)) =
-      2 * ∑ k in s, Complex.normSq (a k) := by
+      2 * ∑ k ∈ s, Complex.normSq (a k) := by
   apply Complex.ofReal_injective
   calc
     ((∫ x : ℝ in (0 : ℝ)..2,
@@ -16617,14 +16905,14 @@ theorem integral_normSq_finitePolynomial
           (Complex.normSq (finitePolynomial s a x) : ℂ) :=
       intervalIntegral.integral_ofReal.symm
     _ = ∫ x : ℝ in (0 : ℝ)..2,
-        Complex.conj (finitePolynomial s a x) *
+        star (finitePolynomial s a x) *
           finitePolynomial s a x := by
       apply intervalIntegral.integral_congr
       intro x hx
       exact Complex.normSq_eq_conj_mul_self
-    _ = ∑ k in s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) :=
+    _ = ∑ k ∈ s, (2 : ℂ) * (Complex.normSq (a k) : ℂ) :=
       integral_conj_mul_finitePolynomial s a
-    _ = ((2 * ∑ k in s, Complex.normSq (a k) : ℝ) : ℂ) := by
+    _ = ((2 * ∑ k ∈ s, Complex.normSq (a k) : ℝ) : ℂ) := by
       push_cast
       rw [Finset.mul_sum]
 
@@ -16633,7 +16921,7 @@ theorem integral_norm_sq_finitePolynomial
     (s : Finset ℤ) (a : ℤ → ℂ) :
     (∫ x : ℝ in (0 : ℝ)..2,
         ‖finitePolynomial s a x‖ ^ 2) =
-      2 * ∑ k in s, ‖a k‖ ^ 2 := by
+      2 * ∑ k ∈ s, ‖a k‖ ^ 2 := by
   simpa only [Complex.normSq_eq_norm_sq] using
     integral_normSq_finitePolynomial s a
 
@@ -16807,7 +17095,11 @@ theorem denseRange_graphCoreToGraphSobolev
     (D : CoreOperators (V := V) (H0 := H0) (HR := HR) (HL := HL)) :
     DenseRange (graphCoreToGraphSobolev D) := by
   change DenseRange (Set.inclusion (graphCore_le_graphSobolev D))
-  simpa [-SetLike.coe_sort_coe]
+  rw [denseRange_inclusion_iff]
+  · intro x hx
+    exact hx
+  · intro x hx
+    exact graphCore_le_graphSobolev D hx
 
 /-- The exact graph-energy identity specialized to the operators in `D`. -/
 theorem algebraicCore_graphEnergy
@@ -17090,7 +17382,7 @@ def graphCompletionEquivClosureDomain
       (H0 := H0) (HR := HR) (HL := HL)).injective
     apply Prod.ext
     · simp [closureDomainToGraphCompletion,
-        graphCompletionToClosureDomain]
+        graphCompletionToClosureDomain, graphCoordinateEquiv]
     · simp only [closureDomainToGraphCompletion, LinearMap.coe_mk,
         AddHom.coe_mk, closureDomainGraphPoint_snd]
       exact ((LinearPMap.image_iff
@@ -17114,7 +17406,8 @@ theorem graphCompletion_vertical_eq_zero
     T.closure.graph_fst_eq_zero_snd hz' hz0
   apply (graphCoordinateEquiv
     (H0 := H0) (HR := HR) (HL := HL)).injective
-  simp [hz0, hsnd]
+  change (z.fst, z.snd) = (0, 0)
+  exact Prod.ext hz0 hsnd
 
 /-- Hence the value coordinate faithfully determines a completed graph
 vector. -/
@@ -17235,9 +17528,10 @@ theorem norm_valueProjection_le
     (T : H0 →ₗ.[ℂ] DerivativeAmbient (HR := HR) (HL := HL))
     (u : graphCompletion T) :
     ‖valueProjection T u‖ ≤ ‖u‖ := by
-  apply (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-  rw [graphCompletion_norm_sq T u]
-  positivity
+  nlinarith [graphCompletion_norm_sq T u,
+    sq_nonneg ‖raisingProjection T u‖,
+    sq_nonneg ‖loweringProjection T u‖,
+    norm_nonneg (valueProjection T u), norm_nonneg u]
 
 /-- The ambient Hilbert vector `f` defines the actual continuous data
 functional `u ↦ ⟪f, u₀⟫` on the completed graph space. -/
@@ -17317,15 +17611,21 @@ theorem CommonCoreOperators.denseRange_valueProjection_jointPMap
   apply D.dense_core.mono
   intro x hx
   let xd : D.jointPMap.domain :=
-    ⟨x, by simpa only [CommonCoreOperators.jointPMap_domain] using hx⟩
+    ⟨x, by
+      rw [CommonCoreOperators.jointPMap_domain]
+      exact hx⟩
   let z : GraphAmbient (H0 := H0) (HR := HR) (HL := HL) :=
-    (x, D.jointPMap xd)
+    (graphCoordinateEquiv
+      (H0 := H0) (HR := HR) (HL := HL)).symm
+        (x, D.jointPMap xd)
   have hz : z ∈ transportedGraph D.jointPMap := by
-    change (x, D.jointPMap xd) ∈ D.jointPMap.graph
-    exact D.jointPMap.mem_graph xd
+    apply (mem_transportedGraph_iff D.jointPMap z).2
+    simpa [z, graphCoordinateEquiv] using D.jointPMap.mem_graph xd
   let uz : graphCompletion D.jointPMap :=
     ⟨z, (transportedGraph D.jointPMap).le_topologicalClosure hz⟩
-  exact ⟨uz, rfl⟩
+  refine ⟨uz, ?_⟩
+  change z.fst = x
+  simp [z, graphCoordinateEquiv]
 
 /-- The concrete `H₀ → V'` map attached to a dense common graph core is
 injective. -/
@@ -17660,14 +17960,32 @@ def unitaryLowering
 @[simp]
 theorem unitaryRaising_zero (k : ℝ) (τ : UpperHalfPlane) :
     unitaryRaising k (fun _ => 0) τ = 0 := by
-  simp [unitaryRaising, partialX, partialY, realDifferential,
-    localExtension]
+  have hzero :
+      fderiv ℝ (localExtension (fun _ : UpperHalfPlane => (0 : ℂ)))
+        (τ : ℂ) = 0 := by
+    have hfun : localExtension (fun _ : UpperHalfPlane => (0 : ℂ)) =
+        fun _ : ℂ => (0 : ℂ) := by
+      rfl
+    rw [hfun]
+    simp
+  unfold unitaryRaising partialX partialY realDifferential
+  rw [hzero]
+  simp
 
 @[simp]
 theorem unitaryLowering_zero (k : ℝ) (τ : UpperHalfPlane) :
     unitaryLowering k (fun _ => 0) τ = 0 := by
-  simp [unitaryLowering, partialX, partialY, realDifferential,
-    localExtension]
+  have hzero :
+      fderiv ℝ (localExtension (fun _ : UpperHalfPlane => (0 : ℂ)))
+        (τ : ℂ) = 0 := by
+    have hfun : localExtension (fun _ : UpperHalfPlane => (0 : ℂ)) =
+        fun _ : ℂ => (0 : ℂ) := by
+      rfl
+    rw [hfun]
+    simp
+  unfold unitaryLowering partialX partialY realDifferential
+  rw [hzero]
+  simp
 
 end CorrectedLemmas.PointwiseMaass
 
@@ -17688,7 +18006,7 @@ noncomputable def besselIHalf (x : ℝ) : ℝ :=
 /-- The elementary exponential upper bound for the hyperbolic sine. -/
 theorem sinh_le_half_exp (x : ℝ) :
     Real.sinh x ≤ Real.exp x / 2 := by
-  change (Real.exp x - Real.exp (-x)) / 2 ≤ Real.exp x / 2
+  rw [Real.sinh_eq]
   linarith [Real.exp_pos (-x)]
 
 /-- Positivity of the exact half-order kernel on its analytic domain. -/
@@ -17734,7 +18052,9 @@ absolute convergence of the displayed modulus series. -/
 theorem not_summable_criticalModulusEnvelope
     {A : ℝ} (hA : A ≠ 0) :
     ¬ Summable (criticalModulusEnvelope A) := by
-  simpa only [criticalModulusEnvelope, sub_zero] using
+  change ¬ Summable
+    (fun n : ℕ => A * (1 / |(n : ℝ) + 1| ^ (1 : ℝ)))
+  simpa only [sub_zero] using
     (CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_one
       (A := A) (ε := 0) hA (le_refl 0))
 
@@ -17758,7 +18078,8 @@ theorem no_uniformConstant_absorbs_quarterPower :
     CorrectedLemmas.CorrectedPropositions.SpectralMassGap.rpow_eventually_dominates
       (A := (1 : ℝ)) (B := C) (a := (1 / 2 : ℝ)) (b := (1 / 4 : ℝ))
       (by norm_num) hC_nonneg (by norm_num)
-  filter_upwards [hdom, eventually_ge_atTop (1 : ℝ)] with x hx hx1
+  obtain ⟨x, hx, hx1⟩ :=
+    (hdom.and (eventually_ge_atTop (1 : ℝ))).exists
   have hupper := hC x hx1
   have hlower : C * x ^ (1 / 4 : ℝ) < x ^ (1 / 2 : ℝ) := by
     simpa only [one_mul] using hx
@@ -17784,6 +18105,9 @@ theorem positiveModulus_pos (c : ℕ) : 0 < positiveModulus c := by
 theorem positiveModulus_cast_pos (c : ℕ) :
     0 < (positiveModulus c : ℝ) := by
   exact_mod_cast positiveModulus_pos c
+
+instance positiveModulus_neZero (c : ℕ) : NeZero (positiveModulus c) :=
+  ⟨Nat.ne_of_gt (positiveModulus_pos c)⟩
 
 /-- A multiplier is supplied independently at each positive modulus.  This is
 input data, not a bundled assertion about any infinite coefficient. -/
@@ -17864,21 +18188,21 @@ noncomputable def rademacherTerm
 positive moduli `1, ..., C`. -/
 noncomputable def coefficientTruncation
     (χ : MultiplierFamily) (m n : ℤ) (A : ℝ) (C : ℕ) : ℂ :=
-  ∑ c in Finset.range C, rademacherTerm χ m n A c
+  ∑ c ∈ Finset.range C, rademacherTerm χ m n A c
 
 /-- The tuned finite main part selects precisely the terms with both
 `c < C` and `c < tune`. -/
 noncomputable def tunedFiniteMainPart
     (χ : MultiplierFamily) (m n : ℤ) (A : ℝ)
     (tune C : ℕ) : ℂ :=
-  ∑ c in (Finset.range C).filter (fun c => c < tune),
+  ∑ c ∈ (Finset.range C).filter (fun c => c < tune),
     rademacherTerm χ m n A c
 
 /-- The complementary finite tail inside the same cutoff. -/
 noncomputable def tunedFiniteTail
     (χ : MultiplierFamily) (m n : ℤ) (A : ℝ)
     (tune C : ℕ) : ℂ :=
-  ∑ c in (Finset.range C).filter (fun c => ¬ c < tune),
+  ∑ c ∈ (Finset.range C).filter (fun c => ¬ c < tune),
     rademacherTerm χ m n A c
 
 @[simp]
@@ -17965,17 +18289,17 @@ theorem norm_rademacherTerm_le_card_besselEnvelope
 theorem norm_coefficientTruncation_le_sum_card_besselEnvelope
     (χ : MultiplierFamily) (m n : ℤ) {A : ℝ} (hA : 0 ≤ A) (C : ℕ) :
     ‖coefficientTruncation χ m n A C‖ ≤
-      ∑ c in Finset.range C,
+      ∑ c ∈ Finset.range C,
         besselEnvelopeWeight A c *
           (Fintype.card
             (ConcreteTwistedKloosterman.UnitResidue
               (positiveModulus c)) : ℝ) := by
   unfold coefficientTruncation
   calc
-    ‖∑ c in Finset.range C, rademacherTerm χ m n A c‖ ≤
-        ∑ c in Finset.range C, ‖rademacherTerm χ m n A c‖ :=
+    ‖∑ c ∈ Finset.range C, rademacherTerm χ m n A c‖ ≤
+        ∑ c ∈ Finset.range C, ‖rademacherTerm χ m n A c‖ :=
       norm_sum_le _ _
-    _ ≤ ∑ c in Finset.range C,
+    _ ≤ ∑ c ∈ Finset.range C,
         besselEnvelopeWeight A c *
           (Fintype.card
             (ConcreteTwistedKloosterman.UnitResidue
@@ -18078,8 +18402,11 @@ theorem W_nonneg (x : ℝ) : 0 ≤ W x :=
 /-- Direct chain-rule proof of the first derivative. -/
 theorem hasDerivAt_W (x : ℝ) :
     HasDerivAt W (firstDerivative x) x := by
-  unfold W firstDerivative
-  convert ((hasDerivAt_id x).neg.div_const 2).exp using 1 <;> ring
+  unfold firstDerivative
+  convert ((hasDerivAt_id x).neg.div_const 2).exp using 1
+  · funext y
+    simp [W, div_eq_mul_inv]
+  · simp [W, div_eq_mul_inv, mul_comm]
 
 @[simp]
 theorem deriv_W (x : ℝ) :
@@ -18090,9 +18417,14 @@ theorem deriv_W (x : ℝ) :
 derivative. -/
 theorem hasDerivAt_firstDerivative (x : ℝ) :
     HasDerivAt firstDerivative (secondDerivative x) x := by
-  unfold firstDerivative secondDerivative
-  convert (hasDerivAt_W x).const_mul (-(1 : ℝ) / 2) using 1 <;>
-    simp only [firstDerivative] <;> ring
+  let c : ℝ := -(1 : ℝ) / 2
+  have hcoeff : c * firstDerivative x = secondDerivative x := by
+    dsimp [c, firstDerivative, secondDerivative]
+    ring
+  change HasDerivAt (fun y : ℝ => c * W y) (secondDerivative x) x
+  have h := (hasDerivAt_W x).const_mul c
+  rw [hcoeff] at h
+  exact h
 
 @[simp]
 theorem deriv_firstDerivative (x : ℝ) :
@@ -18339,7 +18671,11 @@ inductive Gamma2Rep
   | ts
   | stInv
   | tstInv
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Gamma2Rep where
+  elems := { .id, .t, .s, .ts, .stInv, .tstInv }
+  complete x := by cases x <;> simp
 
 /-- The integral determinant-one matrix group.  `ModularGroup` is Mathlib's
 namespace for distinguished matrices and fundamental-domain theorems, not the
@@ -18416,15 +18752,7 @@ theorem modTwoReduction_neg_one :
 /-- The six reduced matrices are pairwise distinct.  All four entries are
 retained in the proof so that no projective `±1` identification is hidden. -/
 theorem reducedRep_injective : Function.Injective reducedRep := by
-  intro r s hrs
-  have h00 := congrArg (fun A : ModTwoSpecialLinear => A 0 0) hrs
-  have h01 := congrArg (fun A : ModTwoSpecialLinear => A 0 1) hrs
-  have h10 := congrArg (fun A : ModTwoSpecialLinear => A 1 0) hrs
-  have h11 := congrArg (fun A : ModTwoSpecialLinear => A 1 1) hrs
-  cases r <;> cases s <;>
-    simp_all [reducedRep, repMatrix,
-      Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
-      ModularGroup.coe_T, ModularGroup.coe_T_inv, Matrix.mul_fin_two]
+  decide
 
 /-- Direct finite count of `SL₂(F₂)`.  The subtype contains exactly the six
 two-by-two matrices over `ZMod 2` whose determinant is one. -/
@@ -18479,7 +18807,7 @@ theorem exists_rep_inv_mul_mem_gamma2 (g : IntegralSpecialLinear) :
   refine ⟨r, (mem_gamma2_iff_modTwoReduction_eq_one _).2 ?_⟩
   rw [map_mul, map_inv]
   change (reducedRep r)⁻¹ * modTwoReduction g = 1
-  rw [hr, inv_mul]
+  simpa [hr]
 
 /-- Equivalent right-factor decomposition of every integral modular matrix. -/
 theorem exists_rep_mul_gamma2 (g : IntegralSpecialLinear) :
@@ -18498,7 +18826,7 @@ theorem exists_mul_rep_inv_mem_gamma2 (g : IntegralSpecialLinear) :
   refine ⟨r, (mem_gamma2_iff_modTwoReduction_eq_one _).2 ?_⟩
   rw [map_mul, map_inv]
   change modTwoReduction g * (reducedRep r)⁻¹ = 1
-  rw [← hr, mul_inv]
+  simpa [← hr]
 
 /-- Equivalent left-factor decomposition of every integral modular matrix. -/
 theorem exists_gamma2_mul_rep (g : IntegralSpecialLinear) :
@@ -18527,11 +18855,17 @@ theorem mem_openCell_iff (r : Gamma2Rep) (τ : UpperHalfPlane) :
 
 /-- Every closed cell is closed because the modular action is continuous. -/
 theorem isClosed_closedCell (r : Gamma2Rep) : IsClosed (closedCell r) := by
-  exact ModularGroup.isClosed_fd.preimage (continuous_const_smul _)
+  apply ModularGroup.isClosed_fd.preimage
+  change Continuous (fun τ : UpperHalfPlane =>
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ) • τ)
+  exact continuous_const_smul _
 
 /-- Every open cell is open because the modular action is continuous. -/
 theorem isOpen_openCell (r : Gamma2Rep) : IsOpen (openCell r) := by
-  exact ModularGroup.isOpen_fdo.preimage (continuous_const_smul _)
+  apply ModularGroup.isOpen_fdo.preimage
+  change Continuous (fun τ : UpperHalfPlane =>
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ) • τ)
+  exact continuous_const_smul _
 
 /-- Distinct mod-two labels have disjoint open modular cells.  The level-one
 interior uniqueness theorem leaves only the central matrices `±1`; both reduce
@@ -18542,7 +18876,8 @@ theorem disjoint_openCell_of_ne {r s : Gamma2Rep} (hrs : r ≠ s) :
   have hs' :
       (repMatrix s * (repMatrix r)⁻¹) • (repMatrix r • τ) ∈
         ModularGroup.fdo := by
-    simpa [mul_smul] using hs
+    change repMatrix s • τ ∈ ModularGroup.fdo at hs
+    simpa only [mul_smul, inv_smul_smul] using hs
   have hcentral :
       repMatrix s * (repMatrix r)⁻¹ = 1 ∨
         repMatrix s * (repMatrix r)⁻¹ = -1 :=
@@ -18559,7 +18894,7 @@ theorem disjoint_openCell_of_ne {r s : Gamma2Rep} (hrs : r ≠ s) :
 
 /-- The six open cells are pairwise disjoint as labelled subsets. -/
 theorem pairwise_disjoint_openCell :
-    Pairwise (Disjoint on openCell) := by
+    Pairwise (fun r s => Disjoint (openCell r) (openCell s)) := by
   intro r s hrs
   exact disjoint_openCell_of_ne hrs
 
@@ -18596,9 +18931,13 @@ theorem eq_of_mem_openPolygon_of_gamma2_smul_eq
     (mem_openCell_iff s y).mp hsCell
   let g : IntegralSpecialLinear :=
     repMatrix s * γ.1 * (repMatrix r)⁻¹
+  have hγ' :
+      (((γ.1 : IntegralSpecialLinear) : GL (Fin 2) ℝ) • x) = y := by
+    change (γ.1 : IntegralSpecialLinear) • x = y at hγ
+    simpa only [ModularGroup.sl_moeb] using hγ
   have htransport :
       g • (repMatrix r • x) = repMatrix s • y := by
-    simp [g, mul_smul, hγ]
+    simp [g, mul_smul, hγ']
   have hg : g • (repMatrix r • x) ∈ ModularGroup.fdo := by
     rw [htransport]
     exact hs
@@ -18613,7 +18952,9 @@ theorem eq_of_mem_openPolygon_of_gamma2_smul_eq
     ModularGroup.eq_smul_self_of_mem_fdo_mem_fdo hr hg
   rw [htransport] at hfundamental
   subst s
-  exact (Homeomorph.smul (repMatrix r)).injective hfundamental
+  have hcancel := congrArg
+    (fun z : UpperHalfPlane => (repMatrix r)⁻¹ • z) hfundamental
+  simpa [← mul_smul] using hcancel
 
 /-- A finite union of the six closed cells is closed. -/
 theorem isClosed_closedPolygon : IsClosed closedPolygon := by
@@ -18752,15 +19093,15 @@ theorem repMatrix_stInv_im (τ : UpperHalfPlane) :
   rw [repMatrix_stInv]
   change ((ModularGroup.S * ModularGroup.T⁻¹) • τ).im =
     (((ModularGroup.T * ModularGroup.S)⁻¹) • τ).im
-  rw [mul_inv_rev, ModularGroup.S_inv, mul_smul,
+  simp only [mul_inv_rev, ModularGroup.S_inv, mul_smul,
     ModularGroup.SL_neg_smul]
 
 @[simp]
 theorem repMatrix_tstInv_im (τ : UpperHalfPlane) :
     (repMatrix .tstInv • τ).im = cuspHeight .one τ := by
-  rw [repMatrix_tstInv, ← mul_assoc, mul_smul,
+  rw [repMatrix_tstInv, mul_assoc, mul_smul,
     ModularGroup.im_T_smul]
-  simpa only [repMatrix_stInv, mul_smul] using repMatrix_stInv_im τ
+  simpa only [repMatrix_stInv] using repMatrix_stInv_im τ
 
 /-- Exact height identity for all six representatives. -/
 @[simp]
@@ -18865,7 +19206,8 @@ theorem fd_normSq_le_im_sq_add_quarter
       0 ≤ ((1 / 2 : ℝ) - z.re) * ((1 / 2 : ℝ) + z.re) :=
     mul_nonneg (sub_nonneg.mpr hreUpper) (by linarith)
   rw [Complex.normSq_apply]
-  nlinarith
+  simp only [UpperHalfPlane.coe_re, UpperHalfPlane.coe_im]
+  nlinarith [hprod]
 
 /-- Upper bound for the cusp-one denominator on `fd`. -/
 theorem fd_normSq_sub_one_le_im_sq_add_nine_quarters
@@ -18888,6 +19230,7 @@ theorem fd_normSq_sub_one_le_im_sq_add_nine_quarters
 theorem im_sq_le_normSq (z : UpperHalfPlane) :
     z.im ^ 2 ≤ Complex.normSq (z : ℂ) := by
   rw [Complex.normSq_apply]
+  simp only [UpperHalfPlane.coe_re, UpperHalfPlane.coe_im]
   nlinarith [sq_nonneg z.re]
 
 /-- The same lower bound for the cusp-one denominator. -/
@@ -19069,14 +19412,14 @@ theorem mem_repTruncated_iff (r : Gamma2Rep) (Y : ℝ)
 is a homeomorphism. -/
 theorem isCompact_repTruncated (r : Gamma2Rep) (Y : ℝ) :
     IsCompact (repTruncated r Y) := by
+  let g : GL (Fin 2) ℝ :=
+    ((repMatrix r : IntegralSpecialLinear) : GL (Fin 2) ℝ)
   change IsCompact
-    ((Homeomorph.smul (repMatrix r) :
-        UpperHalfPlane ≃ₜ UpperHalfPlane) ⁻¹'
+    ((Homeomorph.smul g : UpperHalfPlane ≃ₜ UpperHalfPlane) ⁻¹'
       ModularGroup.truncatedFundamentalDomain Y)
   exact
-    (Homeomorph.smul (repMatrix r) :
-      UpperHalfPlane ≃ₜ UpperHalfPlane).isCompact_preimage.mpr
-        (ModularGroup.isCompact_truncatedFundamentalDomain Y)
+    (Homeomorph.smul g : UpperHalfPlane ≃ₜ UpperHalfPlane).isCompact_preimage.mpr
+      (ModularGroup.isCompact_truncatedFundamentalDomain Y)
 
 /-- A finite compact carrier containing the desired simultaneous truncation. -/
 def compactTruncationCarrier (Y : ℝ) : Set UpperHalfPlane :=
@@ -19126,7 +19469,7 @@ derivative never vanishes on that domain. -/
 def IsRegularSmoothCurvePiece (C : Set ℂ) : Prop :=
   ∃ (U : Set ℝ) (curve tangent : ℝ → ℂ),
     IsOpen U ∧
-    ContDiffOn ℝ ∞ curve U ∧
+    ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U ∧
     (∀ t ∈ U,
       HasDerivWithinAt curve (tangent t) U t ∧ tangent t ≠ 0) ∧
     C ⊆ curve '' U
@@ -19209,6 +19552,11 @@ theorem coe_frontier_fd_subset_arc_union_vertical :
         lt_of_le_of_ne hfd.2 hre
       exact (hnfdo ⟨hnorm', hre'⟩).elim
 
+section StandardComplexRealNormedSpace
+
+attribute [-instance] instInnerProductSpaceRealComplex
+attribute [instance 2000] NormedSpace.complexToReal
+
 /-- Global affine parametrization of the left vertical line. -/
 def modularLeftVerticalCurve (t : ℝ) : ℂ :=
   (-(1 : ℝ) / 2 : ℂ) + Complex.I * (t : ℂ)
@@ -19219,25 +19567,37 @@ def modularRightVerticalCurve (t : ℝ) : ℂ :=
 
 theorem hasDerivAt_modularLeftVerticalCurve (t : ℝ) :
     HasDerivAt modularLeftVerticalCurve Complex.I t := by
-  simpa [modularLeftVerticalCurve] using
-    ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
-      (-(1 : ℝ) / 2 : ℂ))
+  unfold modularLeftVerticalCurve
+  change HasDerivAt
+    ((fun _ : ℝ => (-(1 : ℝ) / 2 : ℂ)) +
+      fun y : ℝ => Complex.I * (y : ℂ)) Complex.I t
+  simpa only [id_eq, zero_add, mul_one] using
+    (hasDerivAt_const t (-(1 : ℝ) / 2 : ℂ)).add
+      (((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal)
 
 theorem hasDerivAt_modularRightVerticalCurve (t : ℝ) :
     HasDerivAt modularRightVerticalCurve Complex.I t := by
-  simpa [modularRightVerticalCurve] using
-    ((((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal).const_add
-      ((1 : ℝ) / 2 : ℂ))
+  unfold modularRightVerticalCurve
+  change HasDerivAt
+    ((fun _ : ℝ => ((1 : ℝ) / 2 : ℂ)) +
+      fun y : ℝ => Complex.I * (y : ℂ)) Complex.I t
+  simpa only [id_eq, zero_add, mul_one] using
+    (hasDerivAt_const t ((1 : ℝ) / 2 : ℂ)).add
+      (((hasDerivAt_id (t : ℂ)).const_mul Complex.I).comp_ofReal)
 
 theorem contDiff_modularLeftVerticalCurve :
-    ContDiff ℝ ∞ modularLeftVerticalCurve := by
-  unfold modularLeftVerticalCurve
-  fun_prop
+    ContDiff ℝ (↑(⊤ : ℕ∞)) modularLeftVerticalCurve := by
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    (fun x : ℝ => (-(1 : ℝ) / 2 : ℂ) + Complex.I * (x : ℂ))
+  exact contDiff_const.add
+    (contDiff_const.mul Complex.ofRealCLM.contDiff)
 
 theorem contDiff_modularRightVerticalCurve :
-    ContDiff ℝ ∞ modularRightVerticalCurve := by
-  unfold modularRightVerticalCurve
-  fun_prop
+    ContDiff ℝ (↑(⊤ : ℕ∞)) modularRightVerticalCurve := by
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    (fun x : ℝ => ((1 : ℝ) / 2 : ℂ) + Complex.I * (x : ℂ))
+  exact contDiff_const.add
+    (contDiff_const.mul Complex.ofRealCLM.contDiff)
 
 /-- The left vertical ray is carried by a globally regular affine line. -/
 theorem isRegularSmoothCurvePiece_modularLeftVerticalBoundary :
@@ -19279,18 +19639,21 @@ def modularUnitCircleTangent (t : ℝ) : ℂ :=
 
 theorem hasDerivAt_modularUnitCircleCurve (t : ℝ) :
     HasDerivAt modularUnitCircleCurve (modularUnitCircleTangent t) t := by
-  simpa [modularUnitCircleCurve, modularUnitCircleTangent] using
-    (((Complex.hasDerivAt_exp ((t : ℂ) * Complex.I)).comp
-      (t : ℂ) (hasDerivAt_mul_const Complex.I)).comp_ofReal)
+  change HasDerivAt
+    (fun y : ℝ => Complex.exp ((y : ℂ) * Complex.I))
+    (Complex.exp ((t : ℂ) * Complex.I) * Complex.I) t
+  exact (((Complex.hasDerivAt_exp ((t : ℂ) * Complex.I)).comp
+    (t : ℂ) (hasDerivAt_mul_const Complex.I)).comp_ofReal)
 
 theorem modularUnitCircleTangent_ne_zero (t : ℝ) :
     modularUnitCircleTangent t ≠ 0 :=
   mul_ne_zero (Complex.exp_ne_zero _) Complex.I_ne_zero
 
 theorem contDiff_modularUnitCircleCurve :
-    ContDiff ℝ ∞ modularUnitCircleCurve := by
-  unfold modularUnitCircleCurve
-  fun_prop
+    ContDiff ℝ (↑(⊤ : ℕ∞)) modularUnitCircleCurve := by
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    (fun t : ℝ => Complex.exp ((t : ℂ) * Complex.I))
+  exact (Complex.ofRealCLM.contDiff.mul contDiff_const).cexp
 
 @[simp]
 theorem normSq_modularUnitCircleCurve (t : ℝ) :
@@ -19336,7 +19699,13 @@ inductive ModularBoundaryPiece
   | arc
   | left
   | right
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype ModularBoundaryPiece where
+  elems := {.arc, .left, .right}
+  complete := by
+    intro x
+    cases x <;> simp
 
 def modularBoundaryPieceSet : ModularBoundaryPiece → Set ℂ
   | .arc => modularArcBoundary
@@ -19406,7 +19775,8 @@ theorem mem_trimmedCurveDomain_iff
 upper-half-plane trim is itself open. -/
 theorem isOpen_trimmedCurveDomain
     {U : Set ℝ} {curve : ℝ → ℂ}
-    (hU : IsOpen U) (hcurve : ContDiffOn ℝ ∞ curve U) :
+    (hU : IsOpen U)
+    (hcurve : ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U) :
     IsOpen (trimmedCurveDomain U curve) := by
   rw [isOpen_iff_mem_nhds]
   rintro t ⟨htU, htH⟩
@@ -19445,18 +19815,21 @@ noncomputable def modularCurveTangent
 theorem contDiffOn_modularCurve_trimmed
     (g : IntegralSpecialLinear)
     {U : Set ℝ} {curve : ℝ → ℂ}
-    (hcurve : ContDiffOn ℝ ∞ curve U) :
-    ContDiffOn ℝ ∞ (modularCurve g curve)
+    (hcurve : ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U) :
+    ContDiffOn ℝ (↑(⊤ : ℕ∞)) (modularCurve g curve)
       (trimmedCurveDomain U curve) := by
   intro t ht
   have houter :
-      ContDiffAt ℝ ∞ (ambientModularAction g) (curve t) := by
-    simpa [ambientModularAction,
-      UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+      ContDiffAt ℝ (↑(⊤ : ℕ∞)) (ambientModularAction g) (curve t) := by
+    change ContDiffAt ℝ (↑(⊤ : ℕ∞))
+      (fun z : ℂ =>
+        ((realGL g • UpperHalfPlane.ofComplex z : UpperHalfPlane) : ℂ))
+      (curve t)
+    simpa [UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
       ((UpperHalfPlane.analyticAt_smul
           (g := realGL g) (realGL_det_pos g)
           (UpperHalfPlane.ofComplex (curve t))).contDiffAt.restrict_scalars ℝ)
-  simpa [modularCurve, Function.comp_def] using
+  simpa [trimmedCurveDomain, modularCurve, Function.comp_def] using
     houter.comp_contDiffWithinAt t
       ((hcurve t ht.1).mono Set.inter_subset_left)
 
@@ -19473,12 +19846,17 @@ theorem hasDerivWithinAt_modularCurve
       HasFDerivAt (ambientModularAction g)
         (UpperHalfPlane.smulFDeriv (realGL g) (curve t))
         (curve t) := by
-    simpa [ambientModularAction,
-      UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+    change HasFDerivAt
+      (fun z : ℂ =>
+        ((realGL g • UpperHalfPlane.ofComplex z : UpperHalfPlane) : ℂ))
+      (UpperHalfPlane.smulFDeriv (realGL g) (curve t))
+      (curve t)
+    simpa [UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
       ((UpperHalfPlane.hasStrictFDerivAt_smul
           (realGL g) (UpperHalfPlane.ofComplex (curve t))).hasFDerivAt)
-  simpa [modularCurve, modularCurveTangent, Function.comp_def] using
-    houter.comp_hasDerivWithinAt
+  simpa [trimmedCurveDomain, modularCurve, modularCurveTangent,
+      Function.comp_def] using
+    houter.comp_hasDerivWithinAt t
       (hderiv.mono Set.inter_subset_left)
 
 /-- The Möbius derivative has no kernel at an upper-half-plane point, hence it
@@ -19493,11 +19871,12 @@ theorem modularCurveTangent_ne_zero
     simpa [UpperHalfPlane.ofComplex_apply_of_im_pos htH] using
       (UpperHalfPlane.denom_ne_zero (realGL g)
         (UpperHalfPlane.ofComplex (curve t)))
+  have hdet : ((realGL g).det.val : ℂ) ≠ 0 := by
+    exact_mod_cast (ne_of_gt (realGL_det_pos g))
   have hfactor :
       (realGL g).det.val /
           UpperHalfPlane.denom (realGL g) (curve t) ^ 2 ≠ 0 :=
-    div_ne_zero (ne_of_gt (realGL_det_pos g))
-      (pow_ne_zero 2 hdenom)
+    div_ne_zero hdet (pow_ne_zero 2 hdenom)
   simpa [modularCurveTangent, UpperHalfPlane.smulFDeriv,
     UpperHalfPlane.σ, realGL_det_pos g, smul_eq_mul] using
       (mul_ne_zero htangent hfactor)
@@ -19541,11 +19920,14 @@ theorem HasPiecewiseSmoothBoundary.preimage_integral_smul
     fun i => (hregular i).modularImage g⁻¹, ?_⟩
   rintro z ⟨τ, hτfrontier, rfl⟩
   have hbase : g • τ ∈ frontier s := by
+    let gR : GL (Fin 2) ℝ := realGL g
     have hpre :
-        τ ∈ (fun w : UpperHalfPlane => g • w) ⁻¹' frontier s := by
-      rw [(Homeomorph.smul g).preimage_frontier s]
-      exact hτfrontier
-    exact hpre
+        τ ∈ (fun w : UpperHalfPlane => gR • w) ⁻¹' frontier s := by
+      change τ ∈ ⇑(Homeomorph.smul gR) ⁻¹' frontier s
+      rw [(Homeomorph.smul gR).preimage_frontier s]
+      change τ ∈ frontier ((fun w : UpperHalfPlane => gR • w) ⁻¹' s)
+      simpa [gR, realGL_smul] using hτfrontier
+    simpa [gR, realGL_smul] using hpre
   have hcovered :
       ((g • τ : UpperHalfPlane) : ℂ) ∈ ⋃ i, piece i :=
     hcover ⟨g • τ, hbase, rfl⟩
@@ -19579,12 +19961,21 @@ theorem coe_frontier_closedCell_subset_boundaryPieces
       ⋃ i : ModularBoundaryPiece, closedCellBoundaryPiece r i := by
   rintro z ⟨τ, hτfrontier, rfl⟩
   have hbase : repMatrix r • τ ∈ frontier ModularGroup.fd := by
+    let gR : GL (Fin 2) ℝ := realGL (repMatrix r)
     have hpre :
-        τ ∈ (fun w : UpperHalfPlane => repMatrix r • w) ⁻¹'
+        τ ∈ (fun w : UpperHalfPlane => gR • w) ⁻¹'
           frontier ModularGroup.fd := by
-      rw [(Homeomorph.smul (repMatrix r)).preimage_frontier ModularGroup.fd]
-      exact hτfrontier
-    exact hpre
+      change τ ∈ ⇑(Homeomorph.smul gR) ⁻¹' frontier ModularGroup.fd
+      rw [(Homeomorph.smul gR).preimage_frontier ModularGroup.fd]
+      change τ ∈ frontier
+        ((fun w : UpperHalfPlane => gR • w) ⁻¹' ModularGroup.fd)
+      have hclosed :
+          τ ∈ frontier
+            ((fun w : UpperHalfPlane => repMatrix r • w) ⁻¹'
+              ModularGroup.fd) := by
+        simpa [closedCell] using hτfrontier
+      simpa [gR, realGL_smul] using hclosed
+    simpa [gR, realGL_smul] using hpre
   have hstandard := coe_frontier_fd_subset_arc_union_vertical
     ⟨repMatrix r • τ, hbase, rfl⟩
   rw [modularVerticalBoundary_eq_left_union_right] at hstandard
@@ -19753,8 +20144,9 @@ theorem range_cuspLevelCurve (κ : Gamma2Cusp) (Y : ℝ)
 theorem cuspHeightLevel_eq_empty_of_nonpos
     (κ : Gamma2Cusp) {Y : ℝ} (hY : Y ≤ 0) :
     cuspHeightLevel κ Y = ∅ := by
-  apply Set.eq_empty_iff_forall_not_mem.mpr
-  intro τ hτ
+  ext τ
+  simp only [Set.mem_empty_iff_false, iff_false]
+  intro hτ
   change cuspHeight κ τ = Y at hτ
   exact (not_lt_of_ge hY) (hτ ▸ cuspHeight_pos κ τ)
 
@@ -19789,7 +20181,7 @@ theorem cuspZeroAmbientCurve_eq_neg_inv (Y x : ℝ) :
 theorem cuspOneAmbientCurve_eq_one_sub_inv (Y x : ℝ) :
     cuspOneAmbientCurve Y x =
       1 - (cuspHorizontalAmbientCurve Y x)⁻¹ := by
-  simp [cuspOneAmbientCurve]
+  simp [cuspOneAmbientCurve, sub_eq_add_neg]
 
 /-- Positive imaginary part is the only input needed to rule out the pole of
 the two finite-cusp parametrizations. -/
@@ -19803,48 +20195,71 @@ theorem cuspHorizontalAmbientCurve_ne_zero {Y : ℝ} (hY : 0 < Y)
 
 theorem hasDerivAt_cuspHorizontalAmbientCurve (Y x : ℝ) :
     HasDerivAt (cuspHorizontalAmbientCurve Y) 1 x := by
-  simpa [cuspHorizontalAmbientCurve] using
-    (((hasDerivAt_id (x : ℂ)).comp_ofReal).add_const
-      ((Y : ℂ) * Complex.I))
+  have hreal : HasDerivAt (⇑Complex.ofRealCLM) 1 x :=
+    (Complex.ofRealCLM.hasFDerivAt (x := x)).hasDerivAt
+  have hfun : (⇑Complex.ofRealCLM : ℝ → ℂ) =
+      (fun t : ℝ => (t : ℂ)) := by
+    funext t
+    rfl
+  rw [hfun] at hreal
+  change HasDerivAt
+    (fun t : ℝ => (t : ℂ) + (Y : ℂ) * Complex.I) 1 x
+  exact hreal.add_const ((Y : ℂ) * Complex.I)
 
 theorem contDiff_cuspHorizontalAmbientCurve (Y : ℝ) :
-    ContDiff ℝ ∞ (cuspHorizontalAmbientCurve Y) := by
-  unfold cuspHorizontalAmbientCurve
-  fun_prop
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (cuspHorizontalAmbientCurve Y) := by
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    (fun x : ℝ => (x : ℂ) + (Y : ℂ) * Complex.I)
+  simpa [Complex.ofRealCLM_apply] using
+    Complex.ofRealCLM.contDiff.add contDiff_const
 
 /-- Exact tangent formula for the cusp at zero. -/
 theorem hasDerivAt_cuspZeroAmbientCurve {Y : ℝ} (hY : 0 < Y)
     (x : ℝ) :
     HasDerivAt (cuspZeroAmbientCurve Y)
       (cuspFiniteAmbientTangent Y x) x := by
-  have hneg :
-      HasDerivAt (fun t : ℝ => -cuspHorizontalAmbientCurve Y t) (-1) x :=
-    (hasDerivAt_cuspHorizontalAmbientCurve Y x).neg
-  have hne : -cuspHorizontalAmbientCurve Y x ≠ 0 :=
-    neg_ne_zero.mpr (cuspHorizontalAmbientCurve_ne_zero hY x)
-  simpa [cuspZeroAmbientCurve, cuspFiniteAmbientTangent] using hneg.inv hne
+  have haff :
+      HasDerivAt
+        (fun z : ℂ => -(z + (Y : ℂ) * Complex.I))
+        (-1) (x : ℂ) :=
+    (((hasDerivAt_id (x : ℂ)).add_const
+      ((Y : ℂ) * Complex.I)).neg)
+  have hne : -((x : ℂ) + (Y : ℂ) * Complex.I) ≠ 0 := by
+    exact neg_ne_zero.mpr (cuspHorizontalAmbientCurve_ne_zero hY x)
+  convert (haff.inv hne).comp_ofReal using 1
+  · funext y
+    unfold cuspZeroAmbientCurve cuspHorizontalAmbientCurve
+    congr 1
+  · unfold cuspFiniteAmbientTangent cuspHorizontalAmbientCurve
+    ring_nf
 
 /-- Exact tangent formula for the cusp at one. -/
 theorem hasDerivAt_cuspOneAmbientCurve {Y : ℝ} (hY : 0 < Y)
     (x : ℝ) :
     HasDerivAt (cuspOneAmbientCurve Y)
       (cuspFiniteAmbientTangent Y x) x := by
-  simpa [cuspOneAmbientCurve, cuspZeroAmbientCurve] using
-    (hasDerivAt_cuspZeroAmbientCurve hY x).const_add (1 : ℂ)
+  change HasDerivAt
+    ((fun _ : ℝ => (1 : ℂ)) + cuspZeroAmbientCurve Y)
+      (cuspFiniteAmbientTangent Y x) x
+  simpa only [zero_add] using
+    (hasDerivAt_const x (1 : ℂ)).add
+      (hasDerivAt_cuspZeroAmbientCurve hY x)
 
 theorem contDiff_cuspZeroAmbientCurve {Y : ℝ} (hY : 0 < Y) :
-    ContDiff ℝ ∞ (cuspZeroAmbientCurve Y) := by
-  have hneg : ContDiff ℝ ∞
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (cuspZeroAmbientCurve Y) := by
+  have hneg : ContDiff ℝ (↑(⊤ : ℕ∞))
       (fun x : ℝ => -cuspHorizontalAmbientCurve Y x) :=
     (contDiff_cuspHorizontalAmbientCurve Y).neg
-  simpa [cuspZeroAmbientCurve] using
-    hneg.inv (fun x => neg_ne_zero.mpr
-      (cuspHorizontalAmbientCurve_ne_zero hY x))
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    (fun x : ℝ => (-cuspHorizontalAmbientCurve Y x)⁻¹)
+  exact hneg.inv (fun x => neg_ne_zero.mpr
+    (cuspHorizontalAmbientCurve_ne_zero hY x))
 
 theorem contDiff_cuspOneAmbientCurve {Y : ℝ} (hY : 0 < Y) :
-    ContDiff ℝ ∞ (cuspOneAmbientCurve Y) := by
-  simpa [cuspOneAmbientCurve, cuspZeroAmbientCurve] using
-    (contDiff_cuspZeroAmbientCurve hY).const_add (1 : ℂ)
+    ContDiff ℝ (↑(⊤ : ℕ∞)) (cuspOneAmbientCurve Y) := by
+  change ContDiff ℝ (↑(⊤ : ℕ∞))
+    ((fun _ : ℝ => (1 : ℂ)) + cuspZeroAmbientCurve Y)
+  exact contDiff_const.add (contDiff_cuspZeroAmbientCurve hY)
 
 theorem cuspFiniteAmbientTangent_ne_zero {Y : ℝ} (hY : 0 < Y)
     (x : ℝ) : cuspFiniteAmbientTangent Y x ≠ 0 := by
@@ -19865,7 +20280,8 @@ theorem coe_cuspLevelCurve_infinity (Y : ℝ) (hY : 0 < Y)
     (x : ℝ) :
     ((cuspLevelCurve .infinity Y hY x : UpperHalfPlane) : ℂ) =
       cuspHorizontalAmbientCurve Y x := by
-  simp [cuspLevelCurve, Gamma2Cusp.scalingMatrix]
+  simp [cuspLevelCurve, Gamma2Cusp.scalingMatrix,
+    cuspHorizontalAmbientCurve]
 
 /-- At zero the selected scaling matrix acts by `w ↦ -w⁻¹`. -/
 theorem coe_cuspLevelCurve_zero (Y : ℝ) (hY : 0 < Y) (x : ℝ) :
@@ -19913,7 +20329,7 @@ theorem isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_pos
           exists_cuspLevelCurve_eq_of_mem .infinity Y hY hτ
         refine ⟨x, Set.mem_univ _, ?_⟩
         rw [← hx]
-        exact coe_cuspLevelCurve_infinity Y hY x
+        exact (coe_cuspLevelCurve_infinity Y hY x).symm
   | zero =>
       refine ⟨Set.univ, cuspZeroAmbientCurve Y,
         cuspFiniteAmbientTangent Y, isOpen_univ,
@@ -19926,7 +20342,7 @@ theorem isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_pos
           exists_cuspLevelCurve_eq_of_mem .zero Y hY hτ
         refine ⟨x, Set.mem_univ _, ?_⟩
         rw [← hx]
-        exact coe_cuspLevelCurve_zero Y hY x
+        exact (coe_cuspLevelCurve_zero Y hY x).symm
   | one =>
       refine ⟨Set.univ, cuspOneAmbientCurve Y,
         cuspFiniteAmbientTangent Y, isOpen_univ,
@@ -19939,7 +20355,7 @@ theorem isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_pos
           exists_cuspLevelCurve_eq_of_mem .one Y hY hτ
         refine ⟨x, Set.mem_univ _, ?_⟩
         rw [← hx]
-        exact coe_cuspLevelCurve_one Y hY x
+        exact (coe_cuspLevelCurve_one Y hY x).symm
 
 /-- Nonpositive height levels are empty, hence regular curve pieces. -/
 theorem isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_nonpos
@@ -20109,13 +20525,15 @@ structure ConcreteGamma2TruncationCertificate : Prop where
       (CongruenceSubgroup.conjGL Gamma2 (Gamma2Cusp.scalingMatrix κ) :
         Subgroup (Matrix.GeneralLinearGroup (Fin 2) ℝ)) = 2
   strict_horoballs_pairwise_disjoint :
-    Pairwise (Disjoint on strictCuspHoroball)
+    Pairwise fun κ₁ κ₂ =>
+      Disjoint (strictCuspHoroball κ₁) (strictCuspHoroball κ₂)
   six_representatives : Fintype.card Gamma2Rep = 6
   six_cosets : Function.Bijective reducedRep
   closed_polygon : IsClosed closedPolygon
   orbit_coverage : ∀ τ : UpperHalfPlane,
     ∃ γ : Gamma2Element, γ • τ ∈ closedPolygon
-  open_cells_pairwise_disjoint : Pairwise (Disjoint on openCell)
+  open_cells_pairwise_disjoint : Pairwise fun r₁ r₂ =>
+    Disjoint (openCell r₁) (openCell r₂)
   interior_orbit_unique : ∀ {x y : UpperHalfPlane},
     x ∈ openPolygon → y ∈ openPolygon →
       ∀ γ : Gamma2Element, γ • x = y → x = y
@@ -20152,6 +20570,12 @@ def concreteGamma2TruncationCertificate :
   truncation_piecewise_smooth :=
     hasPiecewiseSmoothBoundary_truncatedFundamentalDomain_closedPolygon
   exhaustion := iUnion_truncatedFundamentalDomain closedPolygon
+
+attribute [-instance] NormedSpace.complexToReal
+attribute [instance] instInnerProductSpaceRealComplex
+attribute [instance 900] NormedSpace.complexToReal
+
+end StandardComplexRealNormedSpace
 
 end CorrectedLemmas.Gamma2SixCellPolygon
 
@@ -20192,7 +20616,7 @@ theorem generatorZ_mem : generatorZ ∈ generated :=
 
 /-- Every standard generator is an actual element of `Gamma(2)`. -/
 theorem generated_le_gamma2 : generated ≤ Gamma2 := by
-  apply Subgroup.closure_le.2
+  apply (Subgroup.closure_le Gamma2).2
   intro g hg
   simp only [standardGeneratorSet, Set.mem_insert_iff,
     Set.mem_singleton_iff] at hg
@@ -20220,14 +20644,14 @@ theorem left_S_rep_decomposition
         norm_num [repMatrix, generatorA,
           Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | s =>
       refine ⟨.id, generatorZ, generatorZ_mem, ?_⟩
       ext i j
       fin_cases i <;> fin_cases j <;>
         norm_num [repMatrix, generatorZ,
           Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
-          Matrix.mul_fin_two]
+          pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | ts =>
       refine ⟨.tstInv, generatorA * generatorB * generatorZ,
         generated.mul_mem (generated.mul_mem generatorA_mem generatorB_mem)
@@ -20237,7 +20661,7 @@ theorem left_S_rep_decomposition
         norm_num [repMatrix, generatorA, generatorB, generatorZ,
           Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | stInv =>
       refine ⟨.t, generatorZ * generatorA⁻¹,
         generated.mul_mem generatorZ_mem (generated.inv_mem generatorA_mem), ?_⟩
@@ -20248,7 +20672,7 @@ theorem left_S_rep_decomposition
           Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two,
           ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | tstInv =>
       refine ⟨.ts, generatorB⁻¹ * generatorA⁻¹,
         generated.mul_mem (generated.inv_mem generatorB_mem)
@@ -20260,7 +20684,7 @@ theorem left_S_rep_decomposition
           Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two,
           ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
 
 /-- Six finite `T`-transitions for the residue representatives. -/
 theorem left_T_rep_decomposition
@@ -20278,7 +20702,7 @@ theorem left_T_rep_decomposition
       fin_cases i <;> fin_cases j <;>
         norm_num [repMatrix, generatorA,
           Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_T,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | s =>
       refine ⟨.ts, 1, Subgroup.one_mem generated, ?_⟩
       simp [repMatrix]
@@ -20289,7 +20713,7 @@ theorem left_T_rep_decomposition
         norm_num [repMatrix, generatorA, generatorB,
           Matrix.SpecialLinearGroup.coe_mul, ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
   | stInv =>
       refine ⟨.tstInv, 1, Subgroup.one_mem generated, ?_⟩
       simp [repMatrix, mul_assoc]
@@ -20305,7 +20729,7 @@ theorem left_T_rep_decomposition
           Matrix.SpecialLinearGroup.coe_inv, Matrix.adjugate_fin_two,
           ModularGroup.coe_S,
           ModularGroup.coe_T, ModularGroup.coe_T_inv,
-          ModularGroup.coe_T_zpow, Matrix.mul_fin_two]
+          ModularGroup.coe_T_zpow, pow_two, Matrix.mul_fin_two, Matrix.vecMul, dotProduct, Fin.sum_univ_two]
 
 /-- Every integral determinant-one matrix is one of the six residue
 representatives followed by an element generated by `A`, `B`, and `Z`. -/
@@ -20319,27 +20743,21 @@ theorem exists_rep_mul_generated (g : G) :
       subst g
       exact ⟨.id, 1, Subgroup.one_mem generated, by simp⟩
   | hS g ih =>
+      change G at g
       obtain ⟨r, h, hh, hg⟩ := ih
       obtain ⟨r', k, hk, htransition⟩ :=
         left_S_rep_decomposition r
       refine ⟨r', k * h, generated.mul_mem hk hh, ?_⟩
-      calc
-        ModularGroup.S • g = ModularGroup.S * g := rfl
-        _ = ModularGroup.S * (repMatrix r * h) := by rw [hg]
-        _ = (ModularGroup.S * repMatrix r) * h := by rw [mul_assoc]
-        _ = (repMatrix r' * k) * h := by rw [htransition]
-        _ = repMatrix r' * (k * h) := by rw [mul_assoc]
+      change ModularGroup.S * g = repMatrix r' * (k * h)
+      rw [hg, ← mul_assoc, htransition, mul_assoc]
   | hT g ih =>
+      change G at g
       obtain ⟨r, h, hh, hg⟩ := ih
       obtain ⟨r', k, hk, htransition⟩ :=
         left_T_rep_decomposition r
       refine ⟨r', k * h, generated.mul_mem hk hh, ?_⟩
-      calc
-        ModularGroup.T • g = ModularGroup.T * g := rfl
-        _ = ModularGroup.T * (repMatrix r * h) := by rw [hg]
-        _ = (ModularGroup.T * repMatrix r) * h := by rw [mul_assoc]
-        _ = (repMatrix r' * k) * h := by rw [htransition]
-        _ = repMatrix r' * (k * h) := by rw [mul_assoc]
+      change ModularGroup.T * g = repMatrix r' * (k * h)
+      rw [hg, ← mul_assoc, htransition, mul_assoc]
 
 /-- Every matrix in the principal congruence subgroup lies in the generated
 subgroup. -/
@@ -20412,6 +20830,9 @@ theorem secondBase_mem_slitPlane (τ : UpperHalfPlane) :
   exact neg_I_mul_mem_slitPlane τ
 
 theorem continuous_transformedPoint : Continuous transformedPoint := by
+  change Continuous (fun τ : UpperHalfPlane =>
+    (((ModularGroup.T ^ (2 : ℤ) : Matrix.SpecialLinearGroup (Fin 2) ℤ) : GL (Fin 2) ℝ) •
+      (((ModularGroup.S⁻¹ : Matrix.SpecialLinearGroup (Fin 2) ℤ) : GL (Fin 2) ℝ) • τ)))
   exact (continuous_const_smul _).comp (continuous_const_smul _)
 
 theorem continuous_firstBase : Continuous firstBase := by
@@ -20466,7 +20887,7 @@ theorem firstBase_mul_secondBase (τ : UpperHalfPlane) :
     UpperHalfPlane.modular_S_smul, UpperHalfPlane.coe_mk, inv_neg]
   rw [mul_mul_mul_comm, neg_mul_neg, Complex.I_mul_I, neg_one_mul]
   field_simp [hτ]
-  ring
+  simpa [mul_comm, sub_eq_add_neg]
 
 theorem factor_sq (τ : UpperHalfPlane) :
     factor τ ^ (2 : ℕ) = 1 - 2 * (τ : ℂ) := by
@@ -20483,7 +20904,7 @@ theorem denom_zeroTranslation (τ : UpperHalfPlane) :
     UpperHalfPlane.denom, Matrix.SpecialLinearGroup.coe_mul,
     ModularGroup.S_inv, ModularGroup.coe_S, ModularGroup.coe_T_zpow,
     Matrix.mul_fin_two]
-  ring
+  norm_num [pow_two, Matrix.mul_apply, Fin.sum_univ_two] <;> ring_nf
 
 /-- The zero-cusp parabolic action is the literal composition
 `S ∘ T² ∘ S⁻¹`. -/
@@ -20570,10 +20991,14 @@ theorem theta_zeroCuspLift_covariance (τ : UpperHalfPlane) :
         ConcreteUnaryTheta.theta (ModularGroup.S⁻¹ • τ) := by
     simpa using
       (ConcreteUnaryTheta.theta_T_sq (ModularGroup.S⁻¹ • τ))
+  have hT' :
+      ConcreteUnaryTheta.theta (transformedPoint τ) =
+        ConcreteUnaryTheta.theta (ModularGroup.S⁻¹ • τ) := by
+    simpa [transformedPoint] using hT
   have hSinv : ModularGroup.S⁻¹ • τ = ModularGroup.S • τ := by
     rw [ModularGroup.S_inv, ModularGroup.SL_neg_smul]
   rw [zeroCuspLift_matrix, zeroTranslation_act,
-    ConcreteUnaryTheta.theta_S, hT, hSinv,
+    ConcreteUnaryTheta.theta_S, hT', hSinv,
     ConcreteUnaryTheta.theta_S, zeroCuspLift_sqrtFactor]
   simp only [factor, firstBase, secondBase, transformedPoint]
   ring
@@ -20662,7 +21087,8 @@ theorem generatorZ_mem_projectedMatrices :
 
 theorem generated_le_projectedMatrices :
     Gamma2Generation.generated ≤ thetaCovariantProjectedMatrices := by
-  apply Subgroup.closure_le.2
+  unfold Gamma2Generation.generated
+  rw [Subgroup.closure_le]
   intro g hg
   simp only [Gamma2Generation.standardGeneratorSet,
     Set.mem_insert_iff, Set.mem_singleton_iff] at hg
@@ -20737,7 +21163,8 @@ noncomputable def standardThetaMultiplier : Multiplier :=
   thetaMultiplier fullThetaCovariance
 
 theorem standardTheta_isAutomorphic :
-    IsAutomorphic standardThetaMultiplier ConcreteUnaryTheta.theta :=
+    GenuineHalfWeightAutomorphy.IsAutomorphic
+      standardThetaMultiplier ConcreteUnaryTheta.theta :=
   theta_isAutomorphic fullThetaCovariance
 
 theorem standardThetaMultiplier_central_value :
@@ -20790,8 +21217,14 @@ theorem mk_isAutomorphicClass_iff
         ν hyperbolicMeasure u := by
   simp only [IsAutomorphicClass, pullback, factorClass,
     AEEqFun.compMeasurePreserving_mk, AEEqFun.mk_mul_mk,
-    AEEqFun.mk_eq_mk, GenuineHalfWeightAutomorphy.IsAEAutomorphic,
-    Function.comp_apply, Pi.mul_apply]
+    AEEqFun.mk_eq_mk, GenuineHalfWeightAutomorphy.IsAEAutomorphic]
+  constructor
+  · intro h a
+    filter_upwards [h a] with τ hτ
+    exact hτ
+  · intro h a
+    filter_upwards [h a] with τ hτ
+    exact hτ
 
 /-- Canonical representative form of the quotient automorphy law. -/
 theorem isAutomorphicClass_iff_representative
@@ -20812,12 +21245,16 @@ theorem pullback_add (a : Element) (u v : Section) :
   refine AEEqFun.induction_on₂ u v ?_
   intro f hf g hg
   simp [pullback, Function.comp_def]
+  filter_upwards with x
+  rfl
 
 theorem pullback_smul (a : Element) (c : ℂ) (u : Section) :
     pullback a (c • u) = c • pullback a u := by
   refine AEEqFun.induction_on u ?_
   intro f hf
   simp [pullback, Function.comp_def]
+  filter_upwards with x
+  rfl
 
 /-- Pointwise multiplication on `L⁰` commutes with constant complex
 scalars. -/
@@ -20835,7 +21272,12 @@ theorem mul_const_smul (j u : Section) (c : ℂ) :
 theorem isAutomorphicClass_zero (ν : Multiplier) :
     IsAutomorphicClass ν (0 : Section) := by
   intro a
-  rw [pullback_zero, mul_zero]
+  rw [pullback_zero]
+  refine AEEqFun.induction_on (factorClass ν a) ?_
+  intro f hf
+  simp only [AEEqFun.zero_def, AEEqFun.mk_mul_mk, AEEqFun.mk_eq_mk]
+  filter_upwards with x
+  simp
 
 theorem IsAutomorphicClass.add
     {ν : Multiplier} {u v : Section}
@@ -20843,7 +21285,16 @@ theorem IsAutomorphicClass.add
     (hv : IsAutomorphicClass ν v) :
     IsAutomorphicClass ν (u + v) := by
   intro a
-  rw [pullback_add, hu a, hv a, mul_add]
+  rw [pullback_add, hu a, hv a]
+  refine AEEqFun.induction_on₂ (factorClass ν a) u ?_
+  intro f hf g hg
+  refine AEEqFun.induction_on v ?_
+  intro k hk
+  simp only [AEEqFun.mk_add_mk, AEEqFun.mk_mul_mk,
+    AEEqFun.mk_eq_mk]
+  filter_upwards with x
+  change f x * g x + f x * k x = f x * (g x + k x)
+  ring
 
 theorem IsAutomorphicClass.smul
     {ν : Multiplier} {u : Section}
@@ -20867,8 +21318,11 @@ theorem IsAutomorphicClass.eq_zero_of_bad_central_phase
   have hmatrix :
       ThetaGeneratorLift.centralNegOneLift.matrix =
         ThetaGeneratorLift.gamma2NegOne := rfl
-  filter_upwards [hcentral, AEEqFun.coeFn_zero] with τ hτ hzero
-  rw [hzero]
+  have hz :
+      ((0 : Section) : UpperHalfPlane → ℂ) =ᵐ[hyperbolicMeasure] 0 :=
+    AEEqFun.coeFn_zero
+  filter_upwards [hcentral, hz] with τ hτ hzτ
+  rw [hzτ]
   have hfixed :
       u τ =
         GenuineHalfWeightAutomorphy.factor ν
@@ -20893,8 +21347,9 @@ theorem continuous_concreteTheta :
     Continuous ConcreteUnaryTheta.theta := by
   rw [continuous_iff_continuousAt]
   intro τ
-  simpa [ConcreteUnaryTheta.theta, Function.comp_def] using
-    (continuousAt_jacobiTheta τ.im_pos).comp τ
+  change ContinuousAt (fun x : UpperHalfPlane => jacobiTheta (x : ℂ)) τ
+  exact
+    (continuousAt_jacobiTheta τ.im_pos).comp
       UpperHalfPlane.continuous_coe.continuousAt
 
 /-- The concrete unary theta section in the hyperbolic a.e. quotient. -/
@@ -20943,8 +21398,14 @@ theorem mk_isAutomorphicClass_iff
   simp only [IsAutomorphicClass, pullback, factorClass,
     AEEqFun.compMeasurePreserving_mk, AEEqFun.mk_mul_mk,
     AEEqFun.mk_eq_mk,
-    GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic,
-    Function.comp_apply, Pi.mul_apply]
+    GenuineInverseHalfWeightAutomorphy.IsAEAutomorphic]
+  constructor
+  · intro h a
+    filter_upwards [h a] with τ hτ
+    simpa only [Function.comp_apply, Pi.mul_apply] using hτ
+  · intro h a
+    filter_upwards [h a] with τ hτ
+    simpa only [Function.comp_apply, Pi.mul_apply] using hτ
 
 /-- Canonical representative form of inverse-weight quotient automorphy. -/
 theorem isAutomorphicClass_iff_representative
@@ -20965,12 +21426,16 @@ theorem pullback_add (a : Element) (u v : Section) :
   refine AEEqFun.induction_on₂ u v ?_
   intro f hf g hg
   simp [pullback, Function.comp_def]
+  filter_upwards with x
+  rfl
 
 theorem pullback_smul (a : Element) (c : ℂ) (u : Section) :
     pullback a (c • u) = c • pullback a u := by
   refine AEEqFun.induction_on u ?_
   intro f hf
   simp [pullback, Function.comp_def]
+  filter_upwards with x
+  rfl
 
 theorem mul_const_smul (j u : Section) (c : ℂ) :
     j * (c • u) = c • (j * u) := by
@@ -20986,7 +21451,12 @@ theorem mul_const_smul (j u : Section) (c : ℂ) :
 theorem isAutomorphicClass_zero (ν : Multiplier) :
     IsAutomorphicClass ν (0 : Section) := by
   intro a
-  rw [pullback_zero, mul_zero]
+  rw [pullback_zero]
+  refine AEEqFun.induction_on (factorClass ν a) ?_
+  intro f hf
+  simp only [AEEqFun.zero_def, AEEqFun.mk_mul_mk, AEEqFun.mk_eq_mk]
+  filter_upwards with x
+  simp
 
 theorem IsAutomorphicClass.add
     {ν : Multiplier} {u v : Section}
@@ -20994,7 +21464,16 @@ theorem IsAutomorphicClass.add
     (hv : IsAutomorphicClass ν v) :
     IsAutomorphicClass ν (u + v) := by
   intro a
-  rw [pullback_add, hu a, hv a, mul_add]
+  rw [pullback_add, hu a, hv a]
+  refine AEEqFun.induction_on₂ (factorClass ν a) u ?_
+  intro f hf g hg
+  refine AEEqFun.induction_on v ?_
+  intro k hk
+  simp only [AEEqFun.mk_add_mk, AEEqFun.mk_mul_mk,
+    AEEqFun.mk_eq_mk]
+  filter_upwards with x
+  change f x * g x + f x * k x = f x * (g x + k x)
+  ring
 
 theorem IsAutomorphicClass.smul
     {ν : Multiplier} {u : Section}
@@ -21018,8 +21497,11 @@ theorem IsAutomorphicClass.eq_zero_of_bad_central_phase
   have hmatrix :
       ThetaGeneratorLift.centralNegOneLift.matrix =
         ThetaGeneratorLift.gamma2NegOne := rfl
-  filter_upwards [hcentral, AEEqFun.coeFn_zero] with τ hτ hzero
-  rw [hzero]
+  have hz :
+      ((0 : Section) : UpperHalfPlane → ℂ) =ᵐ[hyperbolicMeasure] 0 :=
+    AEEqFun.coeFn_zero
+  filter_upwards [hcentral, hz] with τ hτ hzτ
+  rw [hzτ]
   have hfixed :
       u τ =
         GenuineInverseHalfWeightAutomorphy.factor ν
@@ -21092,7 +21574,7 @@ theorem global_aeEq_of_fundamental_aeEq
       ∀ᵐ τ ∂hyperbolicMeasure,
         τ ∈ fundamentalRegion → u τ = v τ := by
     exact (ae_restrict_iff' measurableSet_fundamentalRegion).1 <| by
-      simpa only [fundamentalMeasure] using hfund
+      simpa only [fundamentalMeasure, Filter.EventuallyEq] using hfund
   have hmatrix : ∀ γ : Gamma2Element,
       ∀ᵐ τ ∂hyperbolicMeasure,
         gamma2Act γ τ ∈ fundamentalRegion → u τ = v τ := by
@@ -21108,6 +21590,23 @@ theorem global_aeEq_of_fundamental_aeEq
     have heq := hregion hmem
     rw [huτ, hvτ] at heq
     exact mul_left_cancel₀ (hj γ τ) heq
+  let encodeMatrix : Matrix (Fin 2) (Fin 2) ℤ → ℤ × ℤ × ℤ × ℤ :=
+    fun A => (A 0 0, A 0 1, A 1 0, A 1 1)
+  have encodeMatrix_injective : Function.Injective encodeMatrix := by
+    intro A B h
+    ext i j
+    fin_cases i <;> fin_cases j
+    · exact congrArg (fun t => t.1) h
+    · exact congrArg (fun t => t.2.1) h
+    · exact congrArg (fun t => t.2.2.1) h
+    · exact congrArg (fun t => t.2.2.2) h
+  letI : Countable Gamma2Element :=
+    (show Function.Injective
+        (fun γ : Gamma2Element => encodeMatrix γ.1.1) by
+      intro γ δ h
+      apply Subtype.ext
+      apply Subtype.ext
+      exact encodeMatrix_injective h).countable
   have hall :
       ∀ᵐ τ ∂hyperbolicMeasure, ∀ γ : Gamma2Element,
         gamma2Act γ τ ∈ fundamentalRegion → u τ = v τ := by
@@ -21121,13 +21620,13 @@ theorem global_aeEq_of_fundamental_aeEq
 
 /-- Concrete Hilbert carrier for the positive-square-root convention. -/
 abbrev PositiveL2Carrier : Type :=
-  MeasureTheory.Lp ℂ (2 : ℝ≥0∞) fundamentalMeasure
+  MeasureTheory.Lp ℂ 2 fundamentalMeasure
 
 /-- Concrete Hilbert carrier for the inverse-square-root convention.  It is
 definitionally the same `L²` carrier; the convention enters through the
 normalizing multiplier and automorphy predicate. -/
 abbrev InverseL2Carrier : Type :=
-  MeasureTheory.Lp ℂ (2 : ℝ≥0∞) fundamentalMeasure
+  MeasureTheory.Lp ℂ 2 fundamentalMeasure
 
 /-- Positive-convention Petersson normalizer `y^(1/4)`, written without a
 complex branch. -/
@@ -21150,7 +21649,7 @@ theorem positivePeterssonQuarter_ne_zero (τ : UpperHalfPlane) :
 theorem norm_positivePeterssonQuarter (τ : UpperHalfPlane) :
     ‖positivePeterssonQuarter τ‖ =
       Real.sqrt (Real.sqrt τ.im) := by
-  rw [positivePeterssonQuarter, Complex.norm_real,
+  simp [positivePeterssonQuarter, Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _)]
 
 /-- Exact conversion of the positive-convention Petersson density into an
@@ -21268,7 +21767,8 @@ theorem integrableOn_fdHeightMajorant_Ioi :
       (by norm_num) (by norm_num)
   refine (hzero.add hhalf).congr_fun ?_ measurableSet_Ioi
   intro y hy
-  exact (fdHeightMajorant_eq_cuspPowerDensity_add hy).symm
+  have hy0 : 0 < y := lt_trans (by norm_num) hy
+  exact (fdHeightMajorant_eq_cuspPowerDensity_add hy0).symm
 
 /-- Product integrability on the fixed-width real rectangle. -/
 theorem integrableOn_fdHeightMajorant_rectangle :
@@ -21317,8 +21817,14 @@ theorem integrableOn_fdHeightMajorant_fd_comap :
       (s := UpperHalfPlane.coe '' ModularGroup.fd)
       (f := fun z : ℂ => fdHeightMajorant z.im)
       (Set.image_subset_range _ _)).1 hc
-  simpa only [Function.comp_apply,
-    Set.preimage_image_eq _ UpperHalfPlane.coe_injective] using h
+  rw [Set.preimage_image_eq _ UpperHalfPlane.coe_injective] at h
+  have hfun :
+      ((fun z : ℂ => fdHeightMajorant z.im) ∘ UpperHalfPlane.coe) =
+        (fun x : UpperHalfPlane => fdHeightMajorant ((x : ℂ).im)) := by
+    funext x
+    rfl
+  rw [hfun] at h
+  exact h
 
 /-- The height envelope `1 + sqrt y` is integrable on `fd` for hyperbolic
 measure. -/
@@ -21326,23 +21832,25 @@ theorem integrableOn_one_add_sqrt_im_fd :
     IntegrableOn (fun τ : UpperHalfPlane => 1 + Real.sqrt τ.im)
       ModularGroup.fd hyperbolicMeasure := by
   have hd : Continuous (fun z : UpperHalfPlane =>
-      (1 / ⟨z.im, z.im_pos.le⟩ : ℝ≥0) ^ 2) := by
+      (1 / NNReal.mk z.im z.im_pos.le : NNReal) ^ 2) := by
     refine .pow (.div₀ continuous_const ?_ ?_) _
     · exact UpperHalfPlane.continuous_im.subtype_mk _
     · exact fun z => NNReal.ne_iff.mp z.im_ne_zero
   rw [IntegrableOn, hyperbolicMeasure_def,
-    Measure.restrict_withDensity ModularGroup.isClosed_fd.measurableSet,
+    MeasureTheory.restrict_withDensity ModularGroup.isClosed_fd.measurableSet,
     integrable_withDensity_iff_integrable_smul hd.measurable]
   change IntegrableOn
     (fun τ : UpperHalfPlane =>
-      ((1 / ⟨τ.im, τ.im_pos.le⟩ : ℝ≥0) ^ 2) •
+      ((1 / NNReal.mk τ.im τ.im_pos.le : NNReal) ^ 2) •
         (1 + Real.sqrt τ.im))
     ModularGroup.fd (volume.comap UpperHalfPlane.coe)
   refine integrableOn_fdHeightMajorant_fd_comap.congr_fun ?_
     ModularGroup.isClosed_fd.measurableSet
   intro τ hτ
-  simp only [fdHeightMajorant, NNReal.smul_def, NNReal.coe_pow,
-    NNReal.coe_inv, NNReal.coe_mk] <;> ring
+  change
+    (1 + Real.sqrt τ.im) * (1 / τ.im) ^ 2 =
+      (1 / τ.im) ^ 2 * (1 + Real.sqrt τ.im)
+  ring
 
 /-- A rational bound for the inverse square root of the height on `fd`. -/
 theorem inv_sqrt_im_le_two_of_mem_fd {τ : UpperHalfPlane}
@@ -21406,9 +21914,10 @@ theorem integrableOn_directPositiveTheta_sq_fd :
     ModularGroup.isClosed_fd.measurableSet] with τ hτ
   have hbound := positiveThetaDensity_le_nine_one_add_sqrt τ hτ
   rw [← norm_positivePeterssonQuarter_mul_sq] at hbound
-  simpa only [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _),
-    abs_of_nonneg (mul_nonneg (by norm_num)
-      (add_nonneg zero_le_one (Real.sqrt_nonneg _)))] using hbound
+  simpa only [Real.norm_eq_abs,
+    abs_of_nonneg
+      (sq_nonneg ‖positivePeterssonQuarter τ * ConcreteUnaryTheta.theta τ‖)]
+    using hbound
 
 /-- Unconditional `L²` membership of directly normalized theta on the standard
 cell. -/
@@ -21416,7 +21925,7 @@ theorem directPositiveTheta_memLp_fd :
     MemLp
       (fun τ : UpperHalfPlane =>
         positivePeterssonQuarter τ * ConcreteUnaryTheta.theta τ)
-      (2 : ℝ≥0∞) (hyperbolicMeasure.restrict ModularGroup.fd) := by
+      2 (hyperbolicMeasure.restrict ModularGroup.fd) := by
   exact (memLp_two_iff_integrable_sq_norm
     directPositiveTheta_aestronglyMeasurable_fd).2
       integrableOn_directPositiveTheta_sq_fd
@@ -21447,7 +21956,7 @@ theorem positiveNormalized_standardThetaClass_memLp_fd :
     MemLp
       (positiveNormalizedRepresentative
         GenuineAEAutomorphicSections.standardThetaClass)
-      (2 : ℝ≥0∞) (hyperbolicMeasure.restrict ModularGroup.fd) :=
+      2 (hyperbolicMeasure.restrict ModularGroup.fd) :=
   MemLp.ae_eq positiveNormalized_standardThetaClass_aeEq_fd.symm
     directPositiveTheta_memLp_fd
 
@@ -21468,8 +21977,15 @@ theorem integralMatrixAction_measurePreserving
 /-- The same modular action is a measurable embedding. -/
 theorem integralMatrixAction_measurableEmbedding
     (g : Gamma2SixCellPolygon.IntegralSpecialLinear) :
-    MeasurableEmbedding (fun τ : UpperHalfPlane => g • τ) :=
-  (Homeomorph.smul g).measurableEmbedding
+    MeasurableEmbedding (fun τ : UpperHalfPlane => g • τ) := by
+  change MeasurableEmbedding
+    ⇑(Homeomorph.smul
+      ((Matrix.SpecialLinearGroup.mapGL
+        (n := Fin 2) (R := ℤ) ℝ) g))
+  exact
+    (Homeomorph.smul
+      ((Matrix.SpecialLinearGroup.mapGL
+        (n := Fin 2) (R := ℤ) ℝ) g)).measurableEmbedding
 
 /-- Pull an arbitrary real density back from a six-cell representative to the
 standard modular domain. -/
@@ -21509,7 +22025,10 @@ theorem integrableOn_closedCell_of_pullback_majorant
         (Gamma2SixCellPolygon.repMatrix r)⁻¹)
     have hc' :
         AEStronglyMeasurable (cellPullback ρ r) hyperbolicMeasure := by
-      simpa [cellPullback, Function.comp_def] using hc
+      change AEStronglyMeasurable
+        (fun x => ρ ((Gamma2SixCellPolygon.repMatrix r)⁻¹ • x))
+        hyperbolicMeasure
+      exact hc
     exact hc'.mono_measure Measure.restrict_le_self
   · filter_upwards
       [self_mem_ae_restrict ModularGroup.isClosed_fd.measurableSet]
@@ -21564,7 +22083,7 @@ theorem memLp_two_fundamentalMeasure_of_pullback_majorants
     (hM : ∀ r, IntegrableOn (M r) ModularGroup.fd hyperbolicMeasure)
     (hle : ∀ r z, z ∈ ModularGroup.fd →
       ‖f ((Gamma2SixCellPolygon.repMatrix r)⁻¹ • z)‖ ^ 2 ≤ M r z) :
-    MemLp f (2 : ℝ≥0∞) fundamentalMeasure := by
+    MemLp f 2 fundamentalMeasure := by
   have hfFund := hf.mono_measure fundamentalMeasure_le_hyperbolicMeasure
   apply (memLp_two_iff_integrable_sq_norm hfFund).2
   apply integrable_fundamentalMeasure_of_pullback_majorants
@@ -21634,7 +22153,7 @@ theorem directPositiveTheta_memLp_fundamentalMeasure :
     MemLp
       (fun τ : UpperHalfPlane =>
         positivePeterssonQuarter τ * ConcreteUnaryTheta.theta τ)
-      (2 : ℝ≥0∞) fundamentalMeasure := by
+      2 fundamentalMeasure := by
   apply memLp_two_fundamentalMeasure_of_pullback_majorants
     (f := fun τ : UpperHalfPlane =>
       positivePeterssonQuarter τ * ConcreteUnaryTheta.theta τ)
@@ -21670,7 +22189,7 @@ theorem positiveNormalized_standardThetaClass_memLp_fundamentalMeasure :
     MemLp
       (positiveNormalizedRepresentative
         GenuineAEAutomorphicSections.standardThetaClass)
-      (2 : ℝ≥0∞) fundamentalMeasure :=
+      2 fundamentalMeasure :=
   MemLp.ae_eq
     positiveNormalized_standardThetaClass_aeEq_fundamentalMeasure.symm
     directPositiveTheta_memLp_fundamentalMeasure
@@ -21761,14 +22280,14 @@ theorem inverseNormalizedRepresentative_smul
 convention. -/
 def IsPositiveFundamentalL2
     (u : GenuineAEAutomorphicSections.Section) : Prop :=
-  MemLp (positiveNormalizedRepresentative u) (2 : ℝ≥0∞)
+  MemLp (positiveNormalizedRepresentative u) 2
     fundamentalMeasure
 
 /-- Square-integrability over the explicit polygon in the inverse
 convention. -/
 def IsInverseFundamentalL2
     (u : GenuineInverseAEAutomorphicSections.Section) : Prop :=
-  MemLp (inverseNormalizedRepresentative u) (2 : ℝ≥0∞)
+  MemLp (inverseNormalizedRepresentative u) 2
     fundamentalMeasure
 
 /-- The concrete standard theta class satisfies the positive weighted `L²`
@@ -21790,14 +22309,14 @@ theorem IsPositiveFundamentalL2.add
     (hv : IsPositiveFundamentalL2 v) :
     IsPositiveFundamentalL2 (u + v) :=
   MemLp.ae_eq (positiveNormalizedRepresentative_add u v).symm
-    (hu.add hv)
+    (MemLp.add hu hv)
 
 theorem IsPositiveFundamentalL2.const_smul
     {u : GenuineAEAutomorphicSections.Section}
     (hu : IsPositiveFundamentalL2 u) (c : ℂ) :
     IsPositiveFundamentalL2 (c • u) :=
   MemLp.ae_eq (positiveNormalizedRepresentative_smul c u).symm
-    (hu.const_smul c)
+    (MemLp.const_smul hu c)
 
 @[simp]
 theorem isInverseFundamentalL2_zero :
@@ -21811,14 +22330,14 @@ theorem IsInverseFundamentalL2.add
     (hv : IsInverseFundamentalL2 v) :
     IsInverseFundamentalL2 (u + v) :=
   MemLp.ae_eq (inverseNormalizedRepresentative_add u v).symm
-    (hu.add hv)
+    (MemLp.add hu hv)
 
 theorem IsInverseFundamentalL2.const_smul
     {u : GenuineInverseAEAutomorphicSections.Section}
     (hu : IsInverseFundamentalL2 u) (c : ℂ) :
     IsInverseFundamentalL2 (c • u) :=
   MemLp.ae_eq (inverseNormalizedRepresentative_smul c u).symm
-    (hu.const_smul c)
+    (MemLp.const_smul hu c)
 
 /-- Actual complex-linear carrier of positive-weight automorphic polygon-`L²`
 classes. -/
@@ -21971,7 +22490,7 @@ theorem norm_positiveToLp
     (hu : IsPositiveFundamentalL2 u) :
     ‖positiveToLp u hu‖ =
       ENNReal.toReal
-        (eLpNorm (positiveNormalizedRepresentative u) (2 : ℝ≥0∞)
+        (eLpNorm (positiveNormalizedRepresentative u) 2
           fundamentalMeasure) := by
   simpa only [positiveToLp] using
     (MeasureTheory.Lp.norm_toLp
@@ -21983,7 +22502,7 @@ theorem norm_inverseToLp
     (hu : IsInverseFundamentalL2 u) :
     ‖inverseToLp u hu‖ =
       ENNReal.toReal
-        (eLpNorm (inverseNormalizedRepresentative u) (2 : ℝ≥0∞)
+        (eLpNorm (inverseNormalizedRepresentative u) 2
           fundamentalMeasure) := by
   simpa only [inverseToLp] using
     (MeasureTheory.Lp.norm_toLp
@@ -22016,7 +22535,7 @@ noncomputable def positiveRealizationLinear
         MemLp.toLp (positiveNormalizedRepresentative u.1) u.2.2 +
           MemLp.toLp (positiveNormalizedRepresentative v.1) v.2.2
     exact
-      (MemLp.toLp_congr (u + v).2.2 (u.2.2.add v.2.2)
+      (MemLp.toLp_congr (u + v).2.2 (MeasureTheory.MemLp.add u.2.2 v.2.2)
         (positiveNormalizedRepresentative_add u.1 v.1)).trans
         (MemLp.toLp_add u.2.2 v.2.2)
   map_smul' c u := by
@@ -22025,7 +22544,7 @@ noncomputable def positiveRealizationLinear
           (c • u).2.2 =
         c • MemLp.toLp (positiveNormalizedRepresentative u.1) u.2.2
     exact
-      (MemLp.toLp_congr (c • u).2.2 (u.2.2.const_smul c)
+      (MemLp.toLp_congr (c • u).2.2 (MeasureTheory.MemLp.const_smul u.2.2 c)
         (positiveNormalizedRepresentative_smul c u.1)).trans
         (MemLp.toLp_const_smul c u.2.2)
 
@@ -22041,7 +22560,7 @@ noncomputable def inverseRealizationLinear
         MemLp.toLp (inverseNormalizedRepresentative u.1) u.2.2 +
           MemLp.toLp (inverseNormalizedRepresentative v.1) v.2.2
     exact
-      (MemLp.toLp_congr (u + v).2.2 (u.2.2.add v.2.2)
+      (MemLp.toLp_congr (u + v).2.2 (MeasureTheory.MemLp.add u.2.2 v.2.2)
         (inverseNormalizedRepresentative_add u.1 v.1)).trans
         (MemLp.toLp_add u.2.2 v.2.2)
   map_smul' c u := by
@@ -22050,7 +22569,7 @@ noncomputable def inverseRealizationLinear
           (c • u).2.2 =
         c • MemLp.toLp (inverseNormalizedRepresentative u.1) u.2.2
     exact
-      (MemLp.toLp_congr (c • u).2.2 (u.2.2.const_smul c)
+      (MemLp.toLp_congr (c • u).2.2 (MeasureTheory.MemLp.const_smul u.2.2 c)
         (inverseNormalizedRepresentative_smul c u.1)).trans
         (MemLp.toLp_const_smul c u.2.2)
 
@@ -22220,19 +22739,19 @@ theorem inverseRealizationLinear_injective
 its actual restricted weighted-`L²` certificate. -/
 structure PositiveAutomorphicL2Section
     (ν : GenuineHalfWeightAutomorphy.Multiplier) where
-  section : GenuineAEAutomorphicSections.Section
+  «section» : GenuineAEAutomorphicSections.Section
   automorphic :
-    GenuineAEAutomorphicSections.IsAutomorphicClass ν section
-  squareIntegrable : IsPositiveFundamentalL2 section
+    GenuineAEAutomorphicSections.IsAutomorphicClass ν «section»
+  squareIntegrable : IsPositiveFundamentalL2 «section»
 
 /-- Representative-independent inverse-half-weight automorphy together with
 its actual restricted weighted-`L²` certificate. -/
 structure InverseAutomorphicL2Section
     (ν : GenuineInverseHalfWeightAutomorphy.Multiplier) where
-  section : GenuineInverseAEAutomorphicSections.Section
+  «section» : GenuineInverseAEAutomorphicSections.Section
   automorphic :
-    GenuineInverseAEAutomorphicSections.IsAutomorphicClass ν section
-  squareIntegrable : IsInverseFundamentalL2 section
+    GenuineInverseAEAutomorphicSections.IsAutomorphicClass ν «section»
+  squareIntegrable : IsInverseFundamentalL2 «section»
 
 /-- The original proof record and the new positive linear carrier have the
 same underlying mathematical data. -/
@@ -22240,7 +22759,7 @@ def positiveAutomorphicL2SectionEquiv
     (ν : GenuineHalfWeightAutomorphy.Multiplier) :
     PositiveAutomorphicL2Section ν ≃
       ↥(positiveAutomorphicL2Submodule ν) where
-  toFun u := ⟨u.section, u.automorphic, u.squareIntegrable⟩
+  toFun u := ⟨u.«section», u.automorphic, u.squareIntegrable⟩
   invFun u := ⟨u.1, u.2.1, u.2.2⟩
   left_inv u := by
     cases u
@@ -22254,7 +22773,7 @@ def inverseAutomorphicL2SectionEquiv
     (ν : GenuineInverseHalfWeightAutomorphy.Multiplier) :
     InverseAutomorphicL2Section ν ≃
       ↥(inverseAutomorphicL2Submodule ν) where
-  toFun u := ⟨u.section, u.automorphic, u.squareIntegrable⟩
+  toFun u := ⟨u.«section», u.automorphic, u.squareIntegrable⟩
   invFun u := ⟨u.1, u.2.1, u.2.2⟩
   left_inv u := by
     cases u
@@ -22268,7 +22787,7 @@ namespace PositiveAutomorphicL2Section
 noncomputable def realization
     {ν : GenuineHalfWeightAutomorphy.Multiplier}
     (u : PositiveAutomorphicL2Section ν) : PositiveL2Carrier :=
-  positiveToLp u.section u.squareIntegrable
+  positiveToLp u.«section» u.squareIntegrable
 
 @[simp]
 theorem realization_eq_linear
@@ -22292,9 +22811,9 @@ theorem coeFn_realization
     {ν : GenuineHalfWeightAutomorphy.Multiplier}
     (u : PositiveAutomorphicL2Section ν) :
     (u.realization : UpperHalfPlane → ℂ) =ᵐ[fundamentalMeasure]
-      positiveNormalizedRepresentative u.section := by
+      positiveNormalizedRepresentative u.«section» := by
   simpa only [realization] using
-    coeFn_positiveToLp u.section u.squareIntegrable
+    coeFn_positiveToLp u.«section» u.squareIntegrable
 
 @[simp]
 theorem norm_realization
@@ -22302,10 +22821,10 @@ theorem norm_realization
     (u : PositiveAutomorphicL2Section ν) :
     ‖u.realization‖ =
       ENNReal.toReal
-        (eLpNorm (positiveNormalizedRepresentative u.section)
-          (2 : ℝ≥0∞) fundamentalMeasure) := by
+        (eLpNorm (positiveNormalizedRepresentative u.«section»)
+          2 fundamentalMeasure) := by
   simpa only [realization] using
-    norm_positiveToLp u.section u.squareIntegrable
+    norm_positiveToLp u.«section» u.squareIntegrable
 
 end PositiveAutomorphicL2Section
 
@@ -22314,7 +22833,7 @@ namespace InverseAutomorphicL2Section
 noncomputable def realization
     {ν : GenuineInverseHalfWeightAutomorphy.Multiplier}
     (u : InverseAutomorphicL2Section ν) : InverseL2Carrier :=
-  inverseToLp u.section u.squareIntegrable
+  inverseToLp u.«section» u.squareIntegrable
 
 @[simp]
 theorem realization_eq_linear
@@ -22338,9 +22857,9 @@ theorem coeFn_realization
     {ν : GenuineInverseHalfWeightAutomorphy.Multiplier}
     (u : InverseAutomorphicL2Section ν) :
     (u.realization : UpperHalfPlane → ℂ) =ᵐ[fundamentalMeasure]
-      inverseNormalizedRepresentative u.section := by
+      inverseNormalizedRepresentative u.«section» := by
   simpa only [realization] using
-    coeFn_inverseToLp u.section u.squareIntegrable
+    coeFn_inverseToLp u.«section» u.squareIntegrable
 
 @[simp]
 theorem norm_realization
@@ -22348,10 +22867,10 @@ theorem norm_realization
     (u : InverseAutomorphicL2Section ν) :
     ‖u.realization‖ =
       ENNReal.toReal
-        (eLpNorm (inverseNormalizedRepresentative u.section)
-          (2 : ℝ≥0∞) fundamentalMeasure) := by
+        (eLpNorm (inverseNormalizedRepresentative u.«section»)
+          2 fundamentalMeasure) := by
   simpa only [realization] using
-    norm_inverseToLp u.section u.squareIntegrable
+    norm_inverseToLp u.«section» u.squareIntegrable
 
 end InverseAutomorphicL2Section
 
@@ -23772,7 +24291,7 @@ noncomputable def unitCuspSpectralMeasure :
 /-- A different positive measure normalization on the same labelled cusps. -/
 noncomputable def doubledCuspSpectralMeasure :
     Gamma2Cusp → Measure ℝ :=
-  fun κ => (2 : ℝ≥0∞) • unitCuspSpectralMeasure κ
+  fun κ => 2 • unitCuspSpectralMeasure κ
 
 @[simp]
 theorem unitCuspSpectralMeasure_singleton_zero (κ : Gamma2Cusp) :
@@ -26649,7 +27168,7 @@ theorem lemma36_concreteIntegralOfSum_eq_two_proved :=
 theorem lemma36_compactSupportErratum :=
   CorrectedLemmas.Interchange.constant_arithmetic_series_not_summable
 
-theorem lemma37_nonnegativity_proved := @massFunctional_nonneg
+def lemma37_nonnegativity_proved := @massFunctional_nonneg
 
 theorem lemma37_unfolded_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.product_unfolded_mass_nonnegative
@@ -26761,7 +27280,7 @@ def ClaimEvidence : Claim → Prop
       ∀ (T : ℝ) (hT : 0 < T),
         Function.Even
             (CorrectedLemmas.KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
-          ContDiff ℝ ∞
+          ContDiff ℝ (↑(⊤ : ℕ∞))
             (CorrectedLemmas.KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
           HasCompactSupport
             (CorrectedLemmas.KuznetsovInterface.fourierPositiveSmoothTentFunction T hT) ∧
@@ -26914,7 +27433,7 @@ theorem proposition1_unitSphere_correctedAndProved :=
 theorem proposition1_nonzeroRatio_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.dualNorm_eq_sSup_nonzeroRatio
 
-theorem proposition1_holder_proved := @norm_dualPairing_le
+def proposition1_holder_proved := @norm_dualPairing_le
 
 theorem proposition1_variableTruncation_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.setIntegral_eq_variableTruncation
@@ -27335,7 +27854,7 @@ def ClaimEvidence : Claim → Prop
   | .proposition2 =>
       ∃ (R L : ℂ → ℂ) (D : ContinuousSpectralData)
         (discrete spectral geometric polynomialUpper : ℕ → ℝ)
-        (λ ε : ℝ),
+        (lam ε : ℝ),
         CorrectedLemmas.GlobalPoincare.PoincareEstimate R L 1 ∧
         HMass D ε ∧
         (∀ m, 0 ≤ discrete m) ∧
@@ -27343,7 +27862,7 @@ def ClaimEvidence : Claim → Prop
         (∀ m, spectral m = geometric m) ∧
         (∀ m, |geometric m| ≤ polynomialUpper m) ∧
         (∀ m, polynomialUpper m = (m : ℝ) + 3) ∧
-        λ < 1 / 4 + ε
+        lam < 1 / 4 + ε
   | .proposition3 =>
       ∃ (T : ℝ) (hT : 0 < T),
         MassConditionAt
@@ -27379,7 +27898,7 @@ def ClaimEvidence : Claim → Prop
         (∀ k m, m ∈ blocks k → k ≤ m ∧ m ≤ C * k + D) →
         (∀ k,
           (A * (k : ℝ) ^ a) * ((blocks k).card : ℝ) ≤
-            ∑ m in blocks k, coefficient m ^ 2) →
+            ∑ m ∈ blocks k, coefficient m ^ 2) →
         ∃ g : ℕ → ℕ,
           Function.Injective g ∧
           Asymptotics.IsTheta Filter.atTop
