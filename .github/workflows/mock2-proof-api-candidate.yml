@@ -1,13 +1,10 @@
-name: Mock2 Proof API Candidate CI
+name: Mock2 Proof API Direct CI
 
 on:
   pull_request:
     branches: [master]
     paths:
-      - 'scripts/apply_three_hundred_fifth_pass_mock2_repairs.py'
-      - 'scripts/apply_three_hundred_sixth_pass_mock2_repairs.py'
-      - 'scripts/apply_three_hundred_seventh_pass_mock2_repairs.py'
-      - 'scripts/apply_three_hundred_eighth_pass_mock2_repairs.py'
+      - 'PrimalitySheafVerification/Mock2.lean'
       - '.github/workflows/mock2-proof-api-candidate.yml'
   workflow_dispatch:
 
@@ -15,12 +12,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: mock2-proof-api-candidate-${{ github.event.pull_request.number || github.ref }}
+  group: mock2-proof-api-direct-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
-    name: Mock2 proof API candidate
+    name: Mock2 proof API direct
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -30,15 +27,19 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Restore proof-level certificate declarations
+      - name: Select checked-in proof-level declarations without mutation
         shell: bash
         run: |
           set -euo pipefail
           logdir='build-logs/Mock2-proof-api'
           mkdir -p "$logdir"
-          python3 scripts/apply_three_hundred_eighth_pass_mock2_repairs.py 2>&1 \
-            | tee "$logdir/repair-application.log"
-          cp PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
+          grep -Fq '(M N : ℕ) (hM : M ≠ 0) : Prop where' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'PaperElementaryModel D) : Prop where' \
+            PrimalitySheafVerification/Mock2.lean
+          grep -Fq 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop where' \
+            PrimalitySheafVerification/Mock2.lean
           grep -Fq 'theorem standaloneZeroProfile_certificate' \
             PrimalitySheafVerification/Mock2.lean
           grep -Fq 'theorem checklist_9_standalone_zeroProfile' \
@@ -49,6 +50,12 @@ jobs:
             PrimalitySheafVerification/Mock2.lean
           grep -Fq 'theorem staticAcceptance_certificate' \
             PrimalitySheafVerification/Mock2.lean
+          cp PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          cmp -s PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
+          printf '%s\n' \
+            'PASS: proof-level Mock2 declarations selected from checked-in source' \
+            'PASS: no repair script or source mutation executed' \
+            > "$logdir/source-selection.txt"
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
@@ -60,7 +67,7 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Compile full Mock2 proof API candidate
+      - name: Compile checked-in Mock2 proof API
         shell: bash
         run: |
           set +e
@@ -90,11 +97,11 @@ jobs:
           fi
           exit "$code"
 
-      - name: Upload candidate artifact
+      - name: Upload direct proof API artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: mock2-proof-api-candidate
+          name: mock2-proof-api-direct
           path: build-logs/Mock2-proof-api
           if-no-files-found: error
           retention-days: 30
