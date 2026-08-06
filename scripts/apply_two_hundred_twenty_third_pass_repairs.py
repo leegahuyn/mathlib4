@@ -27,7 +27,7 @@ def main() -> int:
         """noncomputable local instance gaugeLieGroupMinSmoothness :
     LieGroup I_G (minSmoothness ℂ 3) G :=
   LieGroup.of_le (I := I_G) (G := G)
-    (n := minSmoothness ℂ 3) (m := ∞) le_top
+    (m := minSmoothness ℂ 3) (n := ∞) le_top
 """,
         "Mock2 pin the source and target smoothness orders in LieGroup.of_le",
     )
@@ -93,6 +93,46 @@ abbrev OneFormValue := ℂ →L[ℂ] GaugeLieAlgebra I_G G
 """,
         "Mock2 Advanced supply the chain-rule basepoint and unfold the trim",
     )
+    m2a = replace_exact(
+        m2a,
+        """  have hbase : g • τ ∈ frontier s := by
+    have hpre :
+        τ ∈ (fun w : UpperHalfPlane => g • w) ⁻¹' frontier s := by
+      rw [(Homeomorph.smul g).preimage_frontier s]
+      exact hτfrontier
+    exact hpre
+""",
+        """  have hbase : g • τ ∈ frontier s := by
+    let gR : GL (Fin 2) ℝ := realGL g
+    have hpre :
+        τ ∈ (fun w : UpperHalfPlane => gR • w) ⁻¹' frontier s := by
+      rw [(Homeomorph.smul gR).preimage_frontier s]
+      simpa [gR, realGL_smul] using hτfrontier
+    simpa [gR, realGL_smul] using hpre
+""",
+        "Mock2 Advanced use the real GL homeomorphism for frontier transport",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  have hbase : repMatrix r • τ ∈ frontier ModularGroup.fd := by
+    have hpre :
+        τ ∈ (fun w : UpperHalfPlane => repMatrix r • w) ⁻¹'
+          frontier ModularGroup.fd := by
+      rw [(Homeomorph.smul (repMatrix r)).preimage_frontier ModularGroup.fd]
+      exact hτfrontier
+    exact hpre
+""",
+        """  have hbase : repMatrix r • τ ∈ frontier ModularGroup.fd := by
+    let gR : GL (Fin 2) ℝ := realGL (repMatrix r)
+    have hpre :
+        τ ∈ (fun w : UpperHalfPlane => gR • w) ⁻¹'
+          frontier ModularGroup.fd := by
+      rw [(Homeomorph.smul gR).preimage_frontier ModularGroup.fd]
+      simpa [gR, realGL_smul] using hτfrontier
+    simpa [gR, realGL_smul] using hpre
+""",
+        "Mock2 Advanced use the real GL homeomorphism for closed-cell frontier transport",
+    )
     M2A.write_text(m2a, encoding="utf-8")
 
     fa = FA.read_text(encoding="utf-8")
@@ -122,6 +162,44 @@ abbrev OneFormValue := ℂ →L[ℂ] GaugeLieAlgebra I_G G
         """def upperPlaneOpen : TopologicalSpace.Opens ℂ :=
 """,
         "FunctionalAnalysis qualify the open-set type",
+    )
+    fa = replace_exact(
+        fa,
+        """  simpa [rpowScale, Function.comp_def] using
+    Complex.ofRealCLM.contDiff.contDiffAt.comp w hp
+""",
+        """  change ContDiffAt ℝ ∞
+    (fun z : ℂ => ((z.im ^ p : ℝ) : ℂ)) w
+  exact Complex.ofRealCLM.contDiff.contDiffAt.comp w hp
+""",
+        "FunctionalAnalysis expose the real height power before smoothness composition",
+    )
+    fa = replace_exact(
+        fa,
+        """  have h := congrArg (fun L : ℂ →L[ℝ] ℂ => L ξ) hc.fderiv
+  simpa [rpowScale, Function.comp_def,
+    ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply,
+    Complex.imCLM_apply, smul_eq_mul, mul_assoc] using h
+""",
+        """  have h := congrArg (fun L : ℂ →L[ℝ] ℂ => L ξ) hc.fderiv
+  change fderiv ℝ (fun z : ℂ => ((z.im ^ p : ℝ) : ℂ)) w ξ = _
+  simpa [Function.comp_def, ContinuousLinearMap.comp_apply,
+    Complex.ofRealCLM_apply, Complex.imCLM_apply, smul_eq_mul,
+    mul_assoc] using h
+""",
+        "FunctionalAnalysis expose the real height power in its derivative formula",
+    )
+    fa = replace_exact(
+        fa,
+        """  rw [fderiv_mul
+    (rpowScale_contDiffAt_of_im_pos p hw).differentiableAt (by simp)
+    ((u.contDiff.differentiable (by simp)) w)]
+""",
+        """  rw [fderiv_mul
+    ((rpowScale_contDiffAt_of_im_pos p hw).differentiableAt (by simp))
+    ((u.contDiff.differentiable (by simp)) w)]
+""",
+        "FunctionalAnalysis apply the nonzero smoothness order before fderiv_mul",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
