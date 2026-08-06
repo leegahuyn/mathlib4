@@ -1,0 +1,58 @@
+name: Materialize Mock2 checked-in source
+
+on:
+  push:
+    branches:
+      - fix/primality-sheaf-clean-build
+    paths:
+      - 'scripts/materialize_mock2.trigger'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-mock2-checked-source
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout work branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/primality-sheaf-clean-build
+          fetch-depth: 0
+
+      - name: Materialize the verified Mock2 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_mock2_passes_286_to_288_repairs.py
+          python3 scripts/apply_three_hundred_second_pass_mock2_repairs.py
+          python3 scripts/apply_three_hundred_third_pass_mock2_repairs.py
+          python3 scripts/apply_three_hundred_fourth_pass_mock2_repairs.py
+
+          changed="$(git diff --name-only)"
+          if [[ "$changed" != 'PrimalitySheafVerification/Mock2.lean' ]]; then
+            echo "Unexpected changed paths:" >&2
+            printf '%s\n' "$changed" >&2
+            exit 1
+          fi
+
+          git diff --check
+          actual_sha="$(sha256sum PrimalitySheafVerification/Mock2.lean | awk '{print $1}')"
+          expected_sha='2c227f816c364f316a83cfc2617f7e26175a6d840f4ac82cb7b83458fa5b16d3'
+          echo "Mock2 candidate SHA-256: $actual_sha"
+          test "$actual_sha" = "$expected_sha"
+
+      - name: Commit checked-in Mock2 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2.lean
+          git commit -m 'fix: make Mock2 compile directly from checked-in source'
+          git push origin HEAD:fix/primality-sheaf-clean-build
