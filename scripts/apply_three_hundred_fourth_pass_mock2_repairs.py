@@ -40,7 +40,7 @@ def main() -> int:
     (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Type where
 """,
         """structure PaperElementaryConclusions
-    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Type 1 where
+    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Type 2 where
 """,
         "Mock2 paper conclusions universe",
     )
@@ -57,7 +57,7 @@ structure Certificate : Type 1 where
     text = replace_exact(
         text,
         "structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type where",
-        "structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 1 where",
+        "structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where",
         "Mock2 static acceptance universe",
     )
     M2.write_text(text, encoding="utf-8")
