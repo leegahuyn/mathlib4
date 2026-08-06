@@ -59,13 +59,11 @@ def main() -> int:
     m2 = replace_exact(
         m2,
         """  have hneg :
-      scalarSolution 1 quarterRadius =
-        -scalarSolution 1 quarterRadius := by
+      scalarSolution 1 quarterRadius = -scalarSolution 1 quarterRadius := by
     simpa using hvalue
 """,
         """  have hneg :
-      scalarSolution 1 quarterRadius =
-        -scalarSolution 1 quarterRadius := by
+      scalarSolution 1 quarterRadius = -scalarSolution 1 quarterRadius := by
     simpa [scalarSolution] using hvalue
 """,
         "Mock2 normalize the radius-independent scalar solution",
