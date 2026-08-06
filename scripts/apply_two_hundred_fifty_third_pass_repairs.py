@@ -150,7 +150,7 @@ def main() -> int:
     fa = replace_in_block(
         fa,
         "theorem heightSq_mul_fixedPhaseGreenFlux_divergence",
-        "/-- The displayed Green defect",
+        "/-- The concrete divergence is integrable",
         "  field_simp [heightC_ne_zero z]\n  <;> ring\n",
         "  unfold fixedPhaseGreenScale\n  field_simp [heightC_ne_zero z]\n  <;> ring_nf\n",
         1,
