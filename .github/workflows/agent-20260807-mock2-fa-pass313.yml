@@ -1,0 +1,231 @@
+name: Agent action-free Mock2 FunctionalAnalysis pass 313
+
+on:
+  push:
+    branches:
+      - fix/primality-sheaf-clean-build
+    paths:
+      - '.github/workflows/agent-20260807-mock2-fa-pass313.yml'
+      - 'scripts/apply_three_hundred_thirteenth_pass_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agent-action-free-mock2-fa-pass313
+  cancel-in-progress: false
+
+jobs:
+  verify-and-materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      TARGET: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      EXPECTED_START_BLOB: 4eedc43d57f96b45897990bbeaada01ee0fd3b84
+      REPAIR_BASE: 2d302e76b0793f6d3c70f530b503064800f38bf3
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Fetch exact triggering commit without checkout action
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir repo
+          cd repo
+          git init
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git fetch --depth=1 origin "${REPAIR_BASE}"
+          git checkout --detach "${GITHUB_SHA}"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+
+      - name: Reconstruct the pass 313 candidate in an isolated worktree
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          current_blob="$(git hash-object "${TARGET}")"
+          echo "checked-in starting blob=${current_blob}"
+
+          git worktree add --detach /tmp/fa-repair-base "${REPAIR_BASE}"
+          cp scripts/apply_three_hundred_thirteenth_pass_repairs.py \
+            /tmp/fa-repair-base/scripts/apply_three_hundred_thirteenth_pass_repairs.py
+          cd /tmp/fa-repair-base
+          {
+            python3 scripts/apply_two_hundred_eighty_ninth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninetieth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_first_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_second_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_third_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_fourth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_fifth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_seventh_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_eighth_pass_repairs.py
+            python3 scripts/apply_two_hundred_ninety_ninth_pass_repairs.py
+            python3 scripts/apply_three_hundredth_pass_repairs.py
+            python3 scripts/apply_three_hundred_ninth_pass_repairs.py
+            python3 scripts/apply_three_hundred_tenth_pass_repairs.py
+            python3 scripts/apply_three_hundred_eleventh_pass_repairs.py
+            python3 scripts/apply_three_hundred_thirteenth_pass_repairs.py
+          } 2>&1 | tee /tmp/mock2-fa-pass313-repair-application.log
+
+          candidate_sha="$(sha256sum "${TARGET}" | awk '{print $1}')"
+          candidate_lines="$(wc -l < "${TARGET}")"
+          echo "candidate sha256=${candidate_sha}"
+          echo "candidate lines=${candidate_lines}"
+          cp "${TARGET}" /tmp/Mock2_FunctionalAnalysis.pass313.lean
+
+          cd "${GITHUB_WORKSPACE}/repo"
+          checked_in_sha="$(sha256sum "${TARGET}" | awk '{print $1}')"
+          if [[ "${checked_in_sha}" != "${candidate_sha}" ]]; then
+            test "${current_blob}" = "${EXPECTED_START_BLOB}"
+            cp /tmp/Mock2_FunctionalAnalysis.pass313.lean "${TARGET}"
+          else
+            echo 'PASS: checked-in source already equals the reconstructed candidate.'
+          fi
+          test "$(sha256sum "${TARGET}" | awk '{print $1}')" = "${candidate_sha}"
+          changed="$(git diff --name-only HEAD)"
+          if [[ -n "${changed}" ]]; then
+            test "${changed}" = "${TARGET}"
+          fi
+          git diff --check
+
+      - name: Static trust gate
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          src = path.read_text(encoding='utf-8')
+          out = []
+          i = 0
+          depth = 0
+          in_string = False
+          escaped = False
+          while i < len(src):
+              if depth:
+                  if src.startswith('/-', i):
+                      depth += 1; out.extend('  '); i += 2
+                  elif src.startswith('-/', i):
+                      depth -= 1; out.extend('  '); i += 2
+                  else:
+                      out.append('\n' if src[i] == '\n' else ' '); i += 1
+                  continue
+              if in_string:
+                  ch = src[i]
+                  out.append('\n' if ch == '\n' else ' ')
+                  if escaped: escaped = False
+                  elif ch == '\\': escaped = True
+                  elif ch == '"': in_string = False
+                  i += 1
+                  continue
+              if src.startswith('/-', i):
+                  depth = 1; out.extend('  '); i += 2
+              elif src.startswith('--', i):
+                  while i < len(src) and src[i] != '\n':
+                      out.append(' '); i += 1
+              elif src[i] == '"':
+                  in_string = True; out.append(' '); i += 1
+              else:
+                  out.append(src[i]); i += 1
+          if depth or in_string:
+              raise SystemExit('unterminated comment or string')
+          code = ''.join(out)
+          checks = {
+              'sorry': r'\bsorry\b',
+              'admit': r'\badmit\b',
+              'line_start_axiom': r'(?m)^\s*axiom\b',
+              'unsafe': r'\bunsafe\b',
+              'native_decide': r'\bnative_decide\b',
+              'Lean.ofReduceBool': r'\bLean\.ofReduceBool\b',
+              'by_contra!': r'\bby_contra!\b',
+              'placeholder': r'\bplaceholder\b',
+          }
+          bad = False
+          for name, pattern in checks.items():
+              count = len(re.findall(pattern, code))
+              print(f'{name}: {count}')
+              bad |= count != 0
+          if bad:
+              raise SystemExit('forbidden executable token detected')
+          PY
+
+      - name: Install exact Lean toolchain without setup action
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 -sSf \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          "$HOME/.elan/bin/elan" toolchain install "$(cat lean-toolchain)"
+          "$HOME/.elan/bin/lean" --version
+
+      - name: Restore Mathlib cache
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake exe cache get
+
+      - name: Compile candidate twice from deleted project artifacts
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p "${outdir}"
+          for pass in 1 2; do
+            rm -f \
+              "${outdir}/Mock2_FunctionalAnalysis.olean" \
+              "${outdir}/Mock2_FunctionalAnalysis.ilean" \
+              "${outdir}/Mock2_FunctionalAnalysis.olean.private"
+            echo "===== Mock2_FunctionalAnalysis clean compile ${pass}/2 ====="
+            set +e
+            lake env lean "${TARGET}" \
+              -o "${outdir}/Mock2_FunctionalAnalysis.olean" \
+              -i "${outdir}/Mock2_FunctionalAnalysis.ilean" 2>&1 \
+              | tee "/tmp/Mock2_FunctionalAnalysis-pass${pass}.log"
+            code=${PIPESTATUS[0]}
+            set -e
+            echo "exit_code=${code}"
+            test "${code}" -eq 0
+            test -s "${outdir}/Mock2_FunctionalAnalysis.olean"
+            test -s "${outdir}/Mock2_FunctionalAnalysis.ilean"
+            test "$(grep -c 'error:' "/tmp/Mock2_FunctionalAnalysis-pass${pass}.log" || true)" -eq 0
+            ! grep -Eqi "maximum number of errors|PANIC|segmentation fault|stack overflow|missing object file|declaration uses 'sorry'|sorryAx" \
+              "/tmp/Mock2_FunctionalAnalysis-pass${pass}.log"
+          done
+          sha256sum "${TARGET}" \
+            "${outdir}/Mock2_FunctionalAnalysis.olean" \
+            "${outdir}/Mock2_FunctionalAnalysis.ilean"
+
+      - name: Commit only the verified source when the branch head is unchanged
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- "${TARGET}"; then
+            echo 'PASS: checked-in FunctionalAnalysis source is already verified.'
+            exit 0
+          fi
+          test "$(git diff --name-only HEAD)" = "${TARGET}"
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          echo "trigger head=${GITHUB_SHA}"
+          echo "remote head=${remote_head}"
+          test "${remote_head}" = "${GITHUB_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${TARGET}"
+          test "$(git diff --cached --name-only)" = "${TARGET}"
+          git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 313 candidate'
+          git push origin "HEAD:${BRANCH}"
