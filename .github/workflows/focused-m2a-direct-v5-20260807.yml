@@ -1,0 +1,144 @@
+name: Focused phased Mock2 Advanced direct-source v5
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.ci/focused/m2a_candidate_v5.json'
+      - '.ci/focused/m2a_direct_v5_retry.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: focused-phased-m2a-direct-v5
+  cancel-in-progress: false
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 300
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      LOGDIR: /tmp/focused-proof/m2a-direct-v5
+      CANDIDATE: .ci/focused/m2a_candidate_v5.json
+      REPORT_OUT: /tmp/m2a_direct_pass_v5.json
+      BUNDLE: /tmp/m2a-direct-v5-proof.tar.gz
+      PASS_MARKER: .ci/focused/m2a_direct_pass_v5.json
+
+    steps:
+      - name: Clone exact materialized candidate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          test -f "${CANDIDATE}"
+          git status --porcelain=v1 | tee /tmp/m2a-direct-v5-initial.txt
+          test ! -s /tmp/m2a-direct-v5-initial.txt
+          python3 -m py_compile scripts/focused_source_audit_20260807.py scripts/generate_axiom_audit_for_module_20260807.py
+          bash -n scripts/focused_m2a_direct_v5_20260807.sh
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Verify checked-in Mock2 and Mock2 Advanced twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export FOCUSED_LOGDIR="${LOGDIR}"
+          export FOCUSED_CANDIDATE_MARKER="${CANDIDATE}"
+          export FOCUSED_REPORT_OUT="${REPORT_OUT}"
+          export FOCUSED_BUNDLE_OUT="${BUNDLE}"
+          bash scripts/focused_m2a_direct_v5_20260807.sh
+
+      - name: Upload mandatory M2A direct proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: focused-m2a-direct-v5-${{ github.sha }}
+          path: /tmp/m2a-direct-v5-proof.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish M2A direct PASS marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${PASS_MARKER}")"
+          cp "${REPORT_OUT}" "${PASS_MARKER}"
+          git diff --check
+          test "$(git status --porcelain=v1 | wc -l)" -eq 1
+          test "$(git status --porcelain=v1 | sed 's/^...//')" = "${PASS_MARKER}"
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${PASS_MARKER}"; git commit -m 'ci: record Mock2 Advanced direct-source PASS v5'
+          remote="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          if [[ "$remote" != "${GITHUB_SHA}" ]]; then
+            git fetch origin "${BRANCH}"
+            critical="$(git diff --name-only "${GITHUB_SHA}" "$remote" | grep -E \
+              '^(PrimalitySheafVerification/(Mock2|Mock2_Advanced)\.lean|\.ci/focused/m2a_candidate_v5\.json|lean-toolchain|lakefile\.lean|lake-manifest\.json|scripts/(focused_m2a_direct_v5_20260807|focused_source_audit_20260807|generate_axiom_audit_for_module_20260807)\.(py|sh))$' || true)"
+            [[ -z "$critical" ]] || { printf '%s\n' "$critical" >&2; exit 1; }
+            git rebase "$remote"
+          fi
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Record M2A direct failure
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          d=Path('/tmp/focused-proof/m2a-direct-v5')
+          def read(n):
+            p=d/n; return p.read_text(errors='replace')[:20000] if p.exists() else None
+          x={'status':'FAIL','phase':'M2A-direct-v5','trigger_sha':os.environ.get('GITHUB_SHA'),
+             'workflow_run':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",
+             'first_failure':read('first-failure.env'),'axiom_tail':read('axiom-audit.log'),
+             'errors':{p.name:p.read_text(errors='replace')[:20000] for p in d.glob('*.first-ten-errors.txt')}}
+          Path('/tmp/m2a_direct_v5_failure.json').write_text(json.dumps(x,indent=2)+'\n')
+          PY
+          rm -rf /tmp/m2a-direct-v5-failure
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/m2a-direct-v5-failure
+          cd /tmp/m2a-direct-v5-failure
+          p=.ci/focused/m2a_direct_v5_failure.json; mkdir -p "$(dirname "$p")"; cp /tmp/m2a_direct_v5_failure.json "$p"
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$p"; git diff --cached --quiet && exit 0
+          git commit -m 'ci: record M2A direct v5 failure'; git push origin "HEAD:${BRANCH}" || true
+
+      - name: Queue bounded M2A direct retry
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/m2a-direct-v5-retry
+          git clone --branch "${BRANCH}" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/m2a-direct-v5-retry
+          cd /tmp/m2a-direct-v5-retry
+          p=.ci/focused/m2a_direct_v5_retry.txt; mkdir -p "$(dirname "$p")"
+          n=0; [[ -f "$p" ]] && n="$(cat "$p")"; [[ "$n" =~ ^[0-9]+$ ]] || n=0
+          [[ "$n" -ge 2 ]] && exit 0
+          n=$((n+1)); echo "$n" > "$p"
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$p"; git commit -m "ci: retry M2A direct v5 (${n}/2)"; git push origin "HEAD:${BRANCH}" || true
