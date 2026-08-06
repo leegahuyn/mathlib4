@@ -1,5 +1,6 @@
 name: Primality Sheaf Repair Matrix
 # Mock2 is materialized with proof-level certificate theorems; no runtime patch is allowed.
+# Pass 311 retry after a hosted-runner action-download outage.
 
 on:
   pull_request:
