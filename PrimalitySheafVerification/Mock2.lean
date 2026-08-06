@@ -22920,7 +22920,7 @@ end ShEq
 profile is not encoded in this object; a clearly labelled zero-residue model
 is constructed separately below. -/
 structure ShP (X : Type u) [TopologicalSpace X] where
-  sheaf : QGaugePresheaf (Opens X)
+  sheaf : QGaugePresheaf.{u, v} (Opens X)
   isSheaf : IsSheafLike (QGaugePresheaf.toPresheafLike sheaf)
 
 namespace ShP
