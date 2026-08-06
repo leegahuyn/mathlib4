@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'PrimalitySheafVerification/**'
+      - 'scripts/apply_two_hundred_eighty_fifth_pass_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -50,6 +51,7 @@ jobs:
           8960469208 Mock2_Advanced
           8960502958 Mock2_FunctionalAnalysis
           EOF
+          python3 scripts/apply_two_hundred_eighty_fifth_pass_repairs.py
 
           if git diff --quiet -- PrimalitySheafVerification; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
