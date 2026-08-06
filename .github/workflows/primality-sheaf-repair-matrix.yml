@@ -5,19 +5,55 @@ on:
     branches: [master]
     paths:
       - 'PrimalitySheafVerification/**'
+      - 'scripts/materialize_primality_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: primality-sheaf-matrix-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
+  materialize:
+    name: Materialize accumulated source repairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      changed: ${{ steps.materialize.outputs.changed }}
+    steps:
+      - name: Checkout triggering head commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Apply and commit accumulated repairs
+        id: materialize
+        shell: bash
+        run: |
+          if git log -1 --pretty=%s | grep -q 'materialize current primality repairs'; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 scripts/materialize_primality_repairs.py
+          if git diff --quiet -- PrimalitySheafVerification; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification
+          git commit -m 'chore: materialize current primality repairs'
+          git push origin HEAD:fix/primality-sheaf-clean-build
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+
   repair:
     name: Check ${{ matrix.module }}
+    needs: materialize
+    if: needs.materialize.outputs.changed == 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     strategy:
