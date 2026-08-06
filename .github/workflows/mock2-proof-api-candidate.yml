@@ -7,6 +7,7 @@ on:
       - 'scripts/apply_three_hundred_fifth_pass_mock2_repairs.py'
       - 'scripts/apply_three_hundred_sixth_pass_mock2_repairs.py'
       - 'scripts/apply_three_hundred_seventh_pass_mock2_repairs.py'
+      - 'scripts/apply_three_hundred_eighth_pass_mock2_repairs.py'
       - '.github/workflows/mock2-proof-api-candidate.yml'
   workflow_dispatch:
 
@@ -35,7 +36,7 @@ jobs:
           set -euo pipefail
           logdir='build-logs/Mock2-proof-api'
           mkdir -p "$logdir"
-          python3 scripts/apply_three_hundred_seventh_pass_mock2_repairs.py 2>&1 \
+          python3 scripts/apply_three_hundred_eighth_pass_mock2_repairs.py 2>&1 \
             | tee "$logdir/repair-application.log"
           cp PrimalitySheafVerification/Mock2.lean "$logdir/repaired-source.lean"
           grep -Fq 'theorem standaloneZeroProfile_certificate' \
