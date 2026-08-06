@@ -21656,7 +21656,8 @@ theorem gamma2_does_not_send_infinity_to_zero (g : Gamma2) :
           (Matrix.SpecialLinearGroup.mapGL (n := Fin 2) (R := ℤ) ℝ g.1) 1 0 ≠ 0 :=
       div_ne_zero ha hc
     rw [OnePoint.smul_infty_eq_ite, if_neg hc]
-    simpa only [OnePoint.some_eq_iff] using hdiv
+    intro h
+    exact hdiv (OnePoint.coe_injective h)
 
 theorem no_gamma2_sends_infinity_to_zero :
     ¬ ∃ g : Gamma2,
@@ -21766,10 +21767,10 @@ def verticalSolution (r : RadiusBase) :
   let u : twoComponentAnalyticData.domain :=
     ⟨WithLp.toLp 2 ((0 : ℂ), (1 : ℂ)), by simp [twoComponentAnalyticData]⟩
   refine ⟨u, ?_⟩
-  change twoComponentAnalyticData.totalOperator u = 0
+  change firstCoordinateOperator u + 0 = 0
+  simp only [add_zero]
   apply WithLp.ofLp_injective 2
-  simp [AnalyticData.totalOperator, twoComponentAnalyticData,
-    firstCoordinateOperator, u]
+  ext <;> simp [firstCoordinateOperator, u]
 
 theorem verticalSolution_ne_zero (r : RadiusBase) :
     verticalSolution r ≠ 0 := by
@@ -22652,7 +22653,7 @@ open scoped Manifold ContDiff
 abbrev ConcreteGaugeGroup := ℂˣ
 
 /-- `ℂˣ` is an open complex manifold modelled on `ℂ`. -/
-abbrev ConcreteGaugeModel : ModelWithCorners ℂ ℂ ℂ := 𝓘(ℂ)
+noncomputable abbrev ConcreteGaugeModel : ModelWithCorners ℂ ℂ ℂ := 𝓘(ℂ)
 
 /-- One proposition containing the fully instantiated certificates for every
 checklist item from §4.6 through §5.3, together with the nonzero analytic data
@@ -22770,8 +22771,8 @@ abbrev Opens (X : Type u) [TopologicalSpace X] := TopologicalSpace.Opens X
 /-- Precise standalone meaning of `Sh(Eq)`: an ambient sheaf, a boundary
 sheaf, two restriction morphisms, and their pointwise equalizer. -/
 structure ShEq (X : Type u) [TopologicalSpace X] where
-  ambient : QGaugePresheaf (Opens X)
-  boundary : QGaugePresheaf (Opens X)
+  ambient : QGaugePresheaf.{u, v} (Opens X)
+  boundary : QGaugePresheaf.{u, v} (Opens X)
   resIn : QGaugePresheaf.Morphism ambient boundary
   resOut : QGaugePresheaf.Morphism ambient boundary
   ambient_isSheaf :
