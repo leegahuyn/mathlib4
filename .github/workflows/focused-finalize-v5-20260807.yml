@@ -1,0 +1,108 @@
+name: Finalize phased focused direct-source PASS v5
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.ci/focused/focused_direct_pass_v5.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: finalize-phased-focused-v5
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      MARKER: .ci/focused/focused_direct_pass_v5.json
+      REPORT: .ci/focused/focused_final_report_v5.md
+
+    steps:
+      - name: Clone and validate final PASS
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          python3 - "${MARKER}" <<'PY'
+          import json,sys
+          x=json.load(open(sys.argv[1])); assert x['overall_focused_status']=='PASS'; assert x['runtime_source_repair'] is False; assert x['source_mutation_during_verification'] is False
+          assert x['clean_pass_1']==0 and x['clean_pass_2']==0 and x['error_count']==0 and x['missing_project_object_files']==0
+          assert x['forbidden_tokens']==0 and x['sorry']==0 and x['admit']==0 and x['sorryAx']==0 and x['unsafe']==0 and x['native_decide']==0 and x['Lean.ofReduceBool']==0
+          assert x['nonstandard_axioms']==[] and x['theorem_statements_changed'] is False and x['assumptions_changed'] is False and x['mock2_regression']=='PASS'
+          assert x['m2a_direct_phase']['status']=='PASS' and x['functional_analysis_direct_phase']['status']=='PASS'
+          PY
+          curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/7" -o /tmp/pr7-v5.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pr7-v5.json')); assert p['state']=='open' and p['draft'] is True and p['merged_at'] is None; assert p['head']['ref']=='fix/primality-sheaf-clean-build' and p['base']['ref']=='master'
+          PY
+
+      - name: Generate persistent v5 report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "${MARKER}" "${REPORT}" <<'PY'
+          from pathlib import Path
+          import json,sys
+          x=json.load(open(sys.argv[1])); lines=['# Phased focused direct-source PASS v5','',f"- Final verified commit: `{x['verified_commit']}`",f"- Base master SHA: `{x['base_master_sha']}`",f"- Workflow run: {x['workflow_run']}",'- PR #7: open, draft, unmerged','- Runtime source repair in final CI: no','- Both clean passes: exit `0`','- Lean errors: `0`','- Missing project objects: `0`','- Forbidden proof escapes and `sorryAx`: `0`',f"- Observed axioms: `{', '.join(x['observed_axioms'])}`",'- Nonstandard/user axioms: `0`','- Theorem conclusions changed: no','- Assumptions added: no','- Mock2 regression: PASS','','## Ordered phase evidence','',f"- M2A direct phase run: {x['m2a_direct_phase'].get('workflow_run')}",f"- FunctionalAnalysis direct phase run: {x['functional_analysis_direct_phase'].get('workflow_run')}",f"- QYM final direct phase run: {x['workflow_run']}",'','## Source and object hashes','','| Module | Source SHA-256 | `.olean` SHA-256 | `.ilean` SHA-256 | Warnings (two passes) |','|---|---|---|---|---:|']
+          for m in ['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis_Integrated','Mock2_FunctionalAnalysis','QYM']:
+            s=x['sources'][m]; a=x['artifacts'][m]; lines.append(f"| `{m}` | `{s['sha256']}` | `{a['olean_sha256']}` | `{a['ilean_sha256']}` | {s['warnings_across_two_passes']} |")
+          lines += ['','## Boundary integrity','',f"- Integrated boundary: {x['integrated_boundary']}",f"- QYM certificate boundary: {x['qym_conditional_certificate_boundary']}",'','The 13-root clean sequence, `BuildAll`, second clean sequence, and 15 final audits were not started by this focused finalizer.']
+          Path(sys.argv[2]).write_text('\n'.join(lines)+'\n')
+          PY
+          git diff --check
+
+      - name: Commit report and preserve draft state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${REPORT}"; git commit -m 'docs: record phased focused direct-source PASS v5'
+          remote="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          if [[ "$remote" != "${GITHUB_SHA}" ]]; then git fetch origin "${BRANCH}"; git rebase "$remote"; fi
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Update PR milestone text without merging
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pr7-v5.json')); marker='## Phased focused M2A / FunctionalAnalysis / QYM PASS v5'
+          section='''## Phased focused M2A / FunctionalAnalysis / QYM PASS v5
+
+- `Mock2_Advanced` was first materialized and then passed a separate no-repair direct-source workflow.
+- Only after that marker, substantive `Mock2_FunctionalAnalysis_Integrated` and the historical compatibility entry passed their separate no-repair direct workflow.
+- Only after the FA marker, `QYM` and the full focused dependency graph passed two clean direct-source sequences.
+- Errors, missing project objects, forbidden proof escapes, `sorryAx`, and nonstandard axioms: `0`.
+- Observed axioms: `propext`, `Classical.choice`, `Quot.sound` only.
+- Persistent report: `.ci/focused/focused_final_report_v5.md`
+
+PR #7 remains draft and unmerged. The 13-module and BuildAll phase remains separate.
+'''
+          body=p.get('body') or ''
+          body=(body.split(marker,1)[0].rstrip()+'\n\n'+section) if marker in body else (body.rstrip()+'\n\n'+section)
+          open('/tmp/pr7-v5-update.json','w').write(json.dumps({'body':body}))
+          PY
+          curl -fsSL -X PATCH -H "Authorization: Bearer ${GH_TOKEN}" -H 'Accept: application/vnd.github+json' -H 'Content-Type: application/json' --data-binary @/tmp/pr7-v5-update.json \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/7" -o /tmp/pr7-v5-updated.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pr7-v5-updated.json')); assert p['state']=='open' and p['draft'] is True and p['merged_at'] is None
+          PY
