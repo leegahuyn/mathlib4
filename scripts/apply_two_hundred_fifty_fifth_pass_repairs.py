@@ -67,7 +67,7 @@ instance gaugeGroupLieGroup : LieGroup GaugeModel ∞ GaugeGroup where
         """  · simp [cuspFiniteAmbientTangent, cuspHorizontalAmbientCurve,
       one_div, inv_neg, pow_two]
 """,
-        """  · rw [show -(Y : ℂ) * Complex.I + -(x : ℂ) =
+        """  · rw [show -((Y : ℂ) * Complex.I) + -(x : ℂ) =
         -((x : ℂ) + (Y : ℂ) * Complex.I) by ring, inv_neg]
     ring
 """,
@@ -78,11 +78,11 @@ instance gaugeGroupLieGroup : LieGroup GaugeModel ∞ GaugeGroup where
         """  field_simp [hτ]
   ring_nf
 
- theorem factor_sq""",
+theorem factor_sq""",
         """  field_simp [hτ]
   ring
 
- theorem factor_sq""",
+theorem factor_sq""",
         "Mock2 Advanced close the first-base product by commutative ring normalization",
     )
     m2a = replace_exact(
