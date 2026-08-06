@@ -23400,7 +23400,7 @@ def actualTarget : ShP ActualBase := F.obj actualSource
 certifies every displayed theorem below, while deliberately not identifying
 the supplement with the paper's analytic `Sh(P)` category. -/
 structure StandaloneZeroProfileCertificate
-    (M N : ℕ) (hM : M ≠ 0) : Type 1 where
+    (M N : ℕ) (hM : M ≠ 0) : Prop where
   definition14_source_is_actual :
     definition14Source.balancedSheaf =
       Definition14Boundary.EqSheaf
@@ -23438,10 +23438,10 @@ structure StandaloneZeroProfileCertificate
           (S.balancedSheaf.res hUV s) p
   source_equalizer_universal :
     ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
-      IsLimit (sourceEqualizerFork S U)
+      Nonempty (IsLimit (sourceEqualizerFork S U))
   target_equalizer_universal :
     ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
-      IsLimit (targetEqualizerFork S U)
+      Nonempty (IsLimit (targetEqualizerFork S U))
   functor_identity : ∀ S : ShEq.{0, 0} ActualBase, F.map (𝟙 S) = 𝟙 (F.obj S)
   functor_composition :
     ∀ {S T R : ShEq.{0, 0} ActualBase} (f : S ⟶ T) (g : T ⟶ R),
@@ -23461,7 +23461,7 @@ structure StandaloneZeroProfileCertificate
         (X := ActualBase) M N hM).hom.app S =
         (Tor1ZDerivedComparison.mathlibTor1ZIsoCyclicModel M N hM).hom
 
-noncomputable def standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
+theorem standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
     StandaloneZeroProfileCertificate M N hM where
   definition14_source_is_actual := definition14Source_balancedSheaf
   definition14_source_isSheaf := definition14Source_balanced_isSheaf
@@ -23472,8 +23472,10 @@ noncomputable def standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
   profile_is_canonical := fun S U s p =>
     ZeroPrimeLocalProfileModel.existsUnique_normalized (F.obj S) U s p
   profile_restriction_natural := F_zeroProfile_restrict_model
-  source_equalizer_universal := sourceEqualizerForkIsLimit
-  target_equalizer_universal := targetEqualizerForkIsLimit
+  source_equalizer_universal := fun S U =>
+    ⟨sourceEqualizerForkIsLimit S U⟩
+  target_equalizer_universal := fun S U =>
+    ⟨targetEqualizerForkIsLimit S U⟩
   functor_identity := fun S => F.map_id S
   functor_composition := fun f g => F.map_comp f g
   actual_global_source := ⟨actualGlobalAqEquivSource⟩
@@ -23486,7 +23488,7 @@ noncomputable def standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
 
 /-- Empty-context arithmetic instance of the standalone supplement: `M=N=2`.
 The theorem name does not claim the missing paper-category identification. -/
-noncomputable def checklist_9_standalone_zeroProfile :
+theorem checklist_9_standalone_zeroProfile :
     StandaloneZeroProfileCertificate 2 2 (by norm_num) :=
   standaloneZeroProfile_certificate 2 2 (by norm_num)
 
@@ -23949,7 +23951,7 @@ only constructed objects; none of these conclusion fields is an input to
 `canonicalZeroBridgeModel`.  Fields carrying the zero bridge are named
 accordingly; the actual paper theorems are recorded separately and universally. -/
 structure PaperElementaryConclusions
-    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Type 2 where
+    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Prop where
   qLocalSystem_is_actual :
     P.qLocalSystem = Definition11.Lq Definition11.scalarAnalyticData
   mockSheaf_is_actual :
@@ -24006,8 +24008,9 @@ structure PaperElementaryConclusions
       (Proposition20ActualQGaugeSpecialization.Aq (⊤ : Opens) ≃
         P.balancedSource.balancedSheaf.Field (⊤ : Opens))
   proposition20_certificate :
-    Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
-      Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical
+    Nonempty
+      (Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
+        Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical)
   proposition15_standalone_certificate :
     Proposition15ActualFunctor.StandaloneZeroProfileCertificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -24057,7 +24060,7 @@ structure PaperElementaryConclusions
 together with the universal actual Proposition-19 theorem, the standalone
 Proposition-15 supplement, the canonical-cover Proposition-20 certificate,
 and the actual Proposition-21 certificate. -/
-noncomputable def canonicalZeroBridgeModel_certificate (D : PaperElementaryInputData) :
+theorem canonicalZeroBridgeModel_certificate (D : PaperElementaryInputData) :
     PaperElementaryConclusions D (canonicalZeroBridgeModel D) where
   qLocalSystem_is_actual := rfl
   mockSheaf_is_actual := rfl
@@ -24082,7 +24085,7 @@ noncomputable def canonicalZeroBridgeModel_certificate (D : PaperElementaryInput
   proposition20_global_source :=
     ⟨Proposition15ActualFunctor.actualGlobalAqEquivSource⟩
   proposition20_certificate :=
-    Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional
+    ⟨Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional⟩
   proposition15_standalone_certificate :=
     Proposition15ActualFunctor.standaloneZeroProfile_certificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -24498,7 +24501,7 @@ theorem paperTrace_items_nodup :
   decide
 
 /-- Machine-checkable certificate for the required paper map. -/
-structure Certificate : Type 1 where
+structure Certificate : Prop where
   row_identity : ∀ i : PaperItem, (traceRow i).item = i
   classifications_are_total : ∀ i : PaperItem,
     classification i = .complete ∨
@@ -24521,7 +24524,7 @@ structure Certificate : Type 1 where
   proposition20_geometry_boundary_visible :
     classification .proposition20 = .paperAssumption
 
-noncomputable def certificate : Certificate where
+theorem certificate : Certificate where
   row_identity := traceRow_item
   classifications_are_total := classification_total
   all_builds_deferred_as_requested := traceRow_build
@@ -24541,7 +24544,7 @@ end PaperMap
 /-- All proof-level acceptance items that can be certified without executing
 the user's deferred full-file build.  Compilation status and emitted axiom
 output are intentionally not represented as proved propositions here. -/
-structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where
+structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop where
   definitions11_to16_and_lemma61 : UnconditionalSection46To53.Certificate
   definition12_uses_genuine_tensor :
     Definition12Tensor.FullCertificate Definition11.scalarAnalyticData
@@ -24551,8 +24554,9 @@ structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 wh
   definition18_and_proposition19_actual :
     ActualDefinition18Proposition19InterfaceCertificate D.mu D.inner
   proposition20_canonicalCover_zeroModel :
-    Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
-      Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical
+    Nonempty
+      (Proposition20ActualQGaugeSpecialization.ActualProposition20Certificate
+        Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover.canonical)
   proposition15_constructed_standalone_functor :
     Proposition15ActualFunctor.StandaloneZeroProfileCertificate
       D.M (Pk D.p D.k) D.M_ne_zero
@@ -24572,7 +24576,7 @@ structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 wh
       (PaperMap.traceRow i).build = .deferredToUser
 
 /-- Proof-only final bundle.  No build command is invoked by this theorem. -/
-noncomputable def staticAcceptance_certificate (D : PaperElementaryInputData) :
+theorem staticAcceptance_certificate (D : PaperElementaryInputData) :
     StaticAcceptanceCertificate D where
   definitions11_to16_and_lemma61 :=
     UnconditionalSection46To53.checklist_4_6_through_5_3_unconditional
@@ -24584,7 +24588,7 @@ noncomputable def staticAcceptance_certificate (D : PaperElementaryInputData) :
   definition18_and_proposition19_actual :=
     checklist_7_P1_unconditional D.mu D.inner
   proposition20_canonicalCover_zeroModel :=
-    Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional
+    ⟨Proposition20ActualQGaugeSpecialization.checklist_8_P1_unconditional⟩
   proposition15_constructed_standalone_functor :=
     Proposition15ActualFunctor.standaloneZeroProfile_certificate
       D.M (Pk D.p D.k) D.M_ne_zero
