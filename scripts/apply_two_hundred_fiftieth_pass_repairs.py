@@ -100,27 +100,10 @@ def main() -> int:
     )
     m2a = replace_exact(
         m2a,
-        """  | hS g ih =>
-      change G at g
-      obtain ⟨r, h, hh, hg⟩ := ih
-""",
-        """  | hS ih g =>
-      change G at g
-      obtain ⟨r, h, hh, hg⟩ := ih
-""",
-        "Mock2 Advanced align the S induction branch argument order",
-    )
-    m2a = replace_exact(
-        m2a,
-        """  | hT g ih =>
-      change G at g
-      obtain ⟨r, h, hh, hg⟩ := ih
-""",
-        """  | hT ih g =>
-      change G at g
-      obtain ⟨r, h, hh, hg⟩ := ih
-""",
-        "Mock2 Advanced align the T induction branch argument order",
+        "change G at g ih",
+        "change G at g",
+        "Mock2 Advanced retype only the fixed-determinant branch matrix",
+        expected=2,
     )
     M2A.write_text(m2a, encoding="utf-8")
 
