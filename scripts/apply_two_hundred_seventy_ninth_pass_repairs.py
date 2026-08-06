@@ -53,6 +53,7 @@ def main() -> int:
         "WithLp.norm_fst_le (Q.graphExtension x)",
         "WithLp.norm_fst_le H₀ (Q.graphExtension x)",
         "FunctionalAnalysis supply the outer first-coordinate type",
+        expected=2,
     )
     fa = replace_exact(
         fa,
