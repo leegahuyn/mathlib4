@@ -5,7 +5,6 @@ on:
     branches: [master]
     paths:
       - 'PrimalitySheafVerification/**'
-      - 'scripts/apply_*.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -18,7 +17,7 @@ concurrency:
 
 jobs:
   repair:
-    name: Repair ${{ matrix.module }}
+    name: Check ${{ matrix.module }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     strategy:
@@ -33,72 +32,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Apply current unmaterialized repairs
-        run: |
-          python3 scripts/apply_current_repairs.py
-          python3 scripts/apply_two_hundred_twenty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_twenty_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirtieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_thirty_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fortieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_forty_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fiftieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_fifty_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixtieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_sixty_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_fourth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_fifth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_sixth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_seventh_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_eighth_pass_repairs.py
-          python3 scripts/apply_two_hundred_seventy_ninth_pass_repairs.py
-          python3 scripts/apply_two_hundred_eightieth_pass_repairs.py
-          python3 scripts/apply_two_hundred_eighty_first_pass_repairs.py
-          python3 scripts/apply_two_hundred_eighty_second_pass_repairs.py
-          python3 scripts/apply_two_hundred_eighty_third_pass_repairs.py
-          python3 scripts/apply_two_hundred_eighty_fourth_pass_repairs.py
-
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
         with:
@@ -109,13 +42,13 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Compile
+      - name: Compile checked-in source
         shell: bash
         run: |
           set +e
           module='${{ matrix.module }}'
           mkdir -p "build-logs/${module}" '.lake/build/lib/lean/PrimalitySheafVerification'
-          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/repaired-source.lean"
+          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/checked-in-source.lean"
           lake env lean "PrimalitySheafVerification/${module}.lean" \
             -o ".lake/build/lib/lean/PrimalitySheafVerification/${module}.olean" \
             -i ".lake/build/lib/lean/PrimalitySheafVerification/${module}.ilean" 2>&1 \
@@ -128,7 +61,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: repair-${{ matrix.module }}
+          name: check-${{ matrix.module }}
           path: build-logs/${{ matrix.module }}
           if-no-files-found: error
           retention-days: 30
