@@ -1,0 +1,79 @@
+name: Focused v3 workflow and script preflight
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/focused-v3-preflight-20260807.yml'
+      - '.github/workflows/focused-candidate-pipeline-v3-20260807.yml'
+      - '.github/workflows/focused-direct-source-v3-20260807.yml'
+      - 'scripts/focused_*_20260807.py'
+      - 'scripts/focused_*_20260807.sh'
+      - 'scripts/run_focused_*_20260807.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: focused-v3-preflight
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Clone exact triggering commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+
+      - name: Python and shell syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/focused_source_audit_20260807.py \
+            scripts/generate_focused_axiom_audit_20260807.py \
+            scripts/patch_focused_v3_start_guard_20260807.py \
+            scripts/patch_focused_v3_failure_artifacts_20260807.py
+          bash -n scripts/focused_materialize_pipeline_20260807.sh
+          bash -n scripts/focused_direct_verify_20260807.sh
+          bash -n scripts/run_focused_candidate_v3_20260807.sh
+          bash -n scripts/run_focused_direct_v3_20260807.sh
+
+      - name: Install and run actionlint
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- 1.7.7
+          ./actionlint \
+            .github/workflows/focused-candidate-pipeline-v3-20260807.yml \
+            .github/workflows/focused-direct-source-v3-20260807.yml \
+            .github/workflows/focused-v3-start-guard-patch-20260807.yml \
+            .github/workflows/focused-v3-failure-artifact-patch-20260807.yml
+
+      - name: Static policy checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -F 'focused_materialize_pipeline_20260807.sh' \
+            .github/workflows/focused-direct-source-v3-20260807.yml
+          grep -F 'focused_direct_verify_20260807.sh' \
+            scripts/run_focused_direct_v3_20260807.sh
+          grep -F 'if: always()' \
+            .github/workflows/focused-candidate-pipeline-v3-20260807.yml
+          grep -F 'if: always()' \
+            .github/workflows/focused-direct-source-v3-20260807.yml
+          ! grep -R -E '\b(sorry|admit|native_decide|Lean\.ofReduceBool)\b' \
+            scripts/focused_materialize_pipeline_20260807.sh \
+            scripts/focused_direct_verify_20260807.sh
