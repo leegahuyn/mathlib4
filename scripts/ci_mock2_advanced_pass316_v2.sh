@@ -222,8 +222,8 @@ for pass in 1 2; do
 done
 
 for module in Mock2 Mock2_Advanced; do
-  cp "${OUTDIR}/${module}.olean" "${LOGDIR}/artifacts/${module}.olean"
-  cp "${OUTDIR}/${module}.ilean" "${LOGDIR}/artifacts/${module}.ilean"
+  cp "${OUTDIR}/${module}.olean" "${LOGDIR}/artifacts/candidate-${module}.olean"
+  cp "${OUTDIR}/${module}.ilean" "${LOGDIR}/artifacts/candidate-${module}.ilean"
 done
 
 if [[ "${source_mode}" = 'candidate-repair' ]]; then
@@ -237,25 +237,78 @@ sha256sum "${MOCK2}" "${TARGET}" \
   "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
   "${LOGDIR}/logs/Mock2-pass1.log" "${LOGDIR}/logs/Mock2-pass2.log" \
   "${LOGDIR}/logs/Mock2_Advanced-pass1.log" "${LOGDIR}/logs/Mock2_Advanced-pass2.log" \
-  | tee "${LOGDIR}/provenance-sha256.txt"
-printf '%s\n' "utc_compiled=$(date -u +%FT%TZ)" >> "${LOGDIR}/snapshot.txt"
+  | tee "${LOGDIR}/candidate-provenance-sha256.txt"
+printf '%s\n' "utc_candidate_compiled=$(date -u +%FT%TZ)" >> "${LOGDIR}/snapshot.txt"
 
 if [[ "${source_mode}" = 'candidate-repair' ]]; then
   remote_head="$(git ls-remote origin "refs/heads/${SOURCE_BRANCH}" | awk '{print $1}')"
   echo "trigger_head=${SOURCE_SHA}"
-  echo "remote_head=${remote_head}"
+  echo "remote_head_before_local_commit=${remote_head}"
   test "${remote_head}" = "${SOURCE_SHA}"
+
   git config user.name 'github-actions[bot]'
   git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
   git add "${TARGET}"
   test "$(git diff --cached --name-only)" = "${TARGET}"
   git commit -m 'fix: materialize Mock2 Advanced pass 316 verified source'
+  materialized_sha="$(git rev-parse HEAD)"
+  git diff --exit-code
+  test "$(git hash-object "${TARGET}")" = "${actual_blob}"
+  printf '%s\n' \
+    "materialized_local_commit=${materialized_sha}" \
+    "runtime_repair_for_direct_validation=0" \
+    | tee -a "${LOGDIR}/snapshot.txt"
+
+  for pass in direct1 direct2; do
+    compile_module Mock2 "${pass}"
+    compile_module Mock2_Advanced "${pass}"
+  done
+
+  for module in Mock2 Mock2_Advanced; do
+    cp "${OUTDIR}/${module}.olean" "${LOGDIR}/artifacts/${module}.olean"
+    cp "${OUTDIR}/${module}.ilean" "${LOGDIR}/artifacts/${module}.ilean"
+  done
+
+  sha256sum "${MOCK2}" "${TARGET}" \
+    "${OUTDIR}/Mock2.olean" "${OUTDIR}/Mock2.ilean" \
+    "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
+    "${LOGDIR}/logs/Mock2-passdirect1.log" "${LOGDIR}/logs/Mock2-passdirect2.log" \
+    "${LOGDIR}/logs/Mock2_Advanced-passdirect1.log" \
+    "${LOGDIR}/logs/Mock2_Advanced-passdirect2.log" \
+    | tee "${LOGDIR}/provenance-sha256.txt"
+
+  cat > "${LOGDIR}/direct-source-proof.txt" <<EOF2
+Mock2 Advanced checked-in direct-source proof before push
+commit=${materialized_sha}
+trigger_commit=${SOURCE_SHA}
+workflow_run=${GITHUB_RUN_ID}
+workflow_attempt=${GITHUB_RUN_ATTEMPT}
+source_blob=${actual_blob}
+source_sha256=${actual_sha}
+runtime_repair_for_direct_validation=0
+Mock2_clean_passes=0,0
+Mock2_Advanced_clean_passes=0,0
+EOF2
+
+  remote_head="$(git ls-remote origin "refs/heads/${SOURCE_BRANCH}" | awk '{print $1}')"
+  echo "remote_head_before_push=${remote_head}"
+  test "${remote_head}" = "${SOURCE_SHA}"
   git push origin "HEAD:${SOURCE_BRANCH}"
+  printf '%s\n' \
+    "materialized_pushed_commit=${materialized_sha}" \
+    "utc_direct_compiled=$(date -u +%FT%TZ)" \
+    | tee -a "${LOGDIR}/snapshot.txt"
   exit 0
 fi
 
+for module in Mock2 Mock2_Advanced; do
+  cp "${OUTDIR}/${module}.olean" "${LOGDIR}/artifacts/${module}.olean"
+  cp "${OUTDIR}/${module}.ilean" "${LOGDIR}/artifacts/${module}.ilean"
+done
+mv "${LOGDIR}/candidate-provenance-sha256.txt" "${LOGDIR}/provenance-sha256.txt"
+printf '%s\n' "utc_direct_compiled=$(date -u +%FT%TZ)" >> "${LOGDIR}/snapshot.txt"
 cat > "${LOGDIR}/direct-source-proof.txt" <<EOF2
-Mock2 Advanced direct-source proof
+Mock2 Advanced checked-in direct-source proof
 commit=${SOURCE_SHA}
 workflow_run=${GITHUB_RUN_ID}
 workflow_attempt=${GITHUB_RUN_ATTEMPT}
