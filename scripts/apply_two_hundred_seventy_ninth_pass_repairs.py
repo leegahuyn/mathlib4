@@ -71,7 +71,6 @@ def main() -> int:
         "WithLp.norm_snd_le (Q.graphExtension x)",
         "WithLp.norm_snd_le H₀ (Q.graphExtension x)",
         "FunctionalAnalysis supply the outer second-coordinate type",
-        expected=2,
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
