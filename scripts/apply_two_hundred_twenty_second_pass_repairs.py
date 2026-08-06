@@ -34,6 +34,64 @@ variable (G : Type*) [Group G] [TopologicalSpace G] [ChartedSpace H_G G]
 """,
         "Mock2 make the gauge group an explicit parameter after the model",
     )
+    m2 = replace_exact(
+        m2,
+        """variable [IsManifold I_G ∞ G] [LieGroup I_G ∞ G]
+
+/-- The Lie algebra `𝔤 = T₁G` of the selected complex Lie group. -/
+abbrev GaugeLieAlgebra := GroupLieAlgebra I_G G
+
+/-- The inferred Mathlib Lie-algebra structure on `T₁G`, exposed as named
+data for auditing. -/
+noncomputable def gaugeLieAlgebraStructure :
+    LieAlgebra ℂ (GaugeLieAlgebra I_G G) :=
+  inferInstance
+
+/- `TangentSpace` deliberately hides the model-space norm from typeclass
+inference.  In this section we use the fixed chart model `E_G`, so install the
+transported normed structures locally rather than adding assumptions to the
+public API. -/
+noncomputable local instance gaugeLieAlgebraNormedAddCommGroup :
+    NormedAddCommGroup (GaugeLieAlgebra I_G G) := by
+  change NormedAddCommGroup E_G
+  infer_instance
+
+noncomputable local instance gaugeLieAlgebraNormedSpace :
+    NormedSpace ℂ (GaugeLieAlgebra I_G G) := by
+  change NormedSpace ℂ E_G
+  infer_instance
+""",
+        """variable [IsManifold I_G ∞ G] [LieGroup I_G ∞ G]
+
+noncomputable local instance gaugeLieGroupMinSmoothness :
+    LieGroup I_G (minSmoothness ℂ 3) G :=
+  LieGroup.of_le le_top
+
+/-- The Lie algebra `𝔤 = T₁G` of the selected complex Lie group. -/
+abbrev GaugeLieAlgebra := GroupLieAlgebra I_G G
+
+/- `TangentSpace` deliberately hides the model-space norm from typeclass
+inference.  In this section we use the fixed chart model `E_G`, so install the
+transported normed structures locally rather than adding assumptions to the
+public API. -/
+noncomputable local instance gaugeLieAlgebraNormedAddCommGroup :
+    NormedAddCommGroup (GaugeLieAlgebra I_G G) := by
+  change NormedAddCommGroup E_G
+  infer_instance
+
+noncomputable local instance gaugeLieAlgebraNormedSpace :
+    NormedSpace ℂ (GaugeLieAlgebra I_G G) := by
+  change NormedSpace ℂ E_G
+  infer_instance
+
+/-- The inferred Mathlib Lie-algebra structure on `T₁G`, exposed as named
+data for auditing. -/
+noncomputable def gaugeLieAlgebraStructure :
+    LieAlgebra ℂ (GaugeLieAlgebra I_G G) :=
+  inferInstance
+""",
+        "Mock2 install the exact smoothness instance required by GroupLieAlgebra",
+    )
     M2.write_text(m2, encoding="utf-8")
 
     m2a = M2A.read_text(encoding="utf-8")
@@ -59,6 +117,101 @@ instance : Fintype ModularBoundaryPiece where
 """,
         "Mock2 Advanced define the three boundary pieces by an explicit Fintype",
     )
+    m2a = replace_exact(
+        m2a,
+        """theorem isOpen_trimmedCurveDomain
+    {U : Set ℝ} {curve : ℝ → ℂ}
+    (hU : IsOpen U) (hcurve : ContDiffOn ℝ ∞ curve U) :
+    IsOpen (trimmedCurveDomain U curve) := by
+""",
+        """theorem isOpen_trimmedCurveDomain
+    {U : Set ℝ} {curve : ℝ → ℂ}
+    (hU : IsOpen U)
+    (hcurve : ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U) :
+    IsOpen (trimmedCurveDomain U curve) := by
+""",
+        "Mock2 Advanced spell out infinite differentiability on the trimmed domain",
+    )
+    m2a = replace_exact(
+        m2a,
+        """theorem contDiffOn_modularCurve_trimmed
+    (g : IntegralSpecialLinear)
+    {U : Set ℝ} {curve : ℝ → ℂ}
+    (hcurve : ContDiffOn ℝ ∞ curve U) :
+    ContDiffOn ℝ ∞ (modularCurve g curve)
+      (trimmedCurveDomain U curve) := by
+  intro t ht
+  have houter :
+      ContDiffAt ℝ ∞ (ambientModularAction g) (curve t) := by
+    simpa [ambientModularAction,
+      UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+      ((UpperHalfPlane.analyticAt_smul
+          (g := realGL g) (realGL_det_pos g)
+          (UpperHalfPlane.ofComplex (curve t))).contDiffAt.restrict_scalars ℝ)
+""",
+        """theorem contDiffOn_modularCurve_trimmed
+    (g : IntegralSpecialLinear)
+    {U : Set ℝ} {curve : ℝ → ℂ}
+    (hcurve : ContDiffOn ℝ (↑(⊤ : ℕ∞)) curve U) :
+    ContDiffOn ℝ (↑(⊤ : ℕ∞)) (modularCurve g curve)
+      (trimmedCurveDomain U curve) := by
+  intro t ht
+  have houter :
+      ContDiffAt ℝ (↑(⊤ : ℕ∞)) (ambientModularAction g) (curve t) := by
+    change ContDiffAt ℝ (↑(⊤ : ℕ∞))
+      (fun z : ℂ =>
+        ((realGL g • UpperHalfPlane.ofComplex z : UpperHalfPlane) : ℂ))
+      (curve t)
+    simpa [UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+      ((UpperHalfPlane.analyticAt_smul
+          (g := realGL g) (realGL_det_pos g)
+          (UpperHalfPlane.ofComplex (curve t))).contDiffAt.restrict_scalars ℝ)
+""",
+        "Mock2 Advanced expose the ambient modular action in the smoothness proof",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  have houter :
+      HasFDerivAt (ambientModularAction g)
+        (UpperHalfPlane.smulFDeriv (realGL g) (curve t))
+        (curve t) := by
+    simpa [ambientModularAction,
+      UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+      ((UpperHalfPlane.hasStrictFDerivAt_smul
+          (realGL g) (UpperHalfPlane.ofComplex (curve t))).hasFDerivAt)
+""",
+        """  have houter :
+      HasFDerivAt (ambientModularAction g)
+        (UpperHalfPlane.smulFDeriv (realGL g) (curve t))
+        (curve t) := by
+    change HasFDerivAt
+      (fun z : ℂ =>
+        ((realGL g • UpperHalfPlane.ofComplex z : UpperHalfPlane) : ℂ))
+      (UpperHalfPlane.smulFDeriv (realGL g) (curve t))
+      (curve t)
+    simpa [UpperHalfPlane.ofComplex_apply_of_im_pos ht.2] using
+      ((UpperHalfPlane.hasStrictFDerivAt_smul
+          (realGL g) (UpperHalfPlane.ofComplex (curve t))).hasFDerivAt)
+""",
+        "Mock2 Advanced expose the ambient modular action in the derivative proof",
+    )
+    m2a = replace_exact(
+        m2a,
+        """  have hfactor :
+      (realGL g).det.val /
+          UpperHalfPlane.denom (realGL g) (curve t) ^ 2 ≠ 0 :=
+    div_ne_zero (ne_of_gt (realGL_det_pos g))
+      (pow_ne_zero 2 hdenom)
+""",
+        """  have hdet : ((realGL g).det.val : ℂ) ≠ 0 := by
+    exact_mod_cast (ne_of_gt (realGL_det_pos g))
+  have hfactor :
+      (realGL g).det.val /
+          UpperHalfPlane.denom (realGL g) (curve t) ^ 2 ≠ 0 :=
+    div_ne_zero hdet (pow_ne_zero 2 hdenom)
+""",
+        "Mock2 Advanced coerce the positive real determinant before using div_ne_zero",
+    )
     M2A.write_text(m2a, encoding="utf-8")
 
     fa = FA.read_text(encoding="utf-8")
@@ -73,7 +226,9 @@ instance : Fintype ModularBoundaryPiece where
 """,
         """        have hstarInv :
             star ((j ^ 2)⁻¹) = (star (j ^ 2))⁻¹ := by
-          simp only [map_inv₀]
+          change (starRingEnd ℂ) ((j ^ 2)⁻¹) =
+            ((starRingEnd ℂ) (j ^ 2))⁻¹
+          rw [map_inv₀]
         calc
           Bw = 1 * Bw := by rw [one_mul]
           _ = (star (j ^ 2) * (star (j ^ 2))⁻¹) * Bw :=
@@ -83,7 +238,7 @@ instance : Fintype ModularBoundaryPiece where
           _ = star (j ^ 2) * (star ((j ^ 2)⁻¹) * Bw) := by
             rw [hstarInv]
 """,
-        "FunctionalAnalysis distinguish star of an inverse from inverse of a star",
+        "FunctionalAnalysis prove star-map preservation of inverse explicitly",
     )
     FA.write_text(fa, encoding="utf-8")
     return 0
