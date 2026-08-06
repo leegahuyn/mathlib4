@@ -1,5 +1,5 @@
 name: Primality Sheaf Repair Matrix
-# Mock2 is materialized; this run validates the checked-in source without runtime patching.
+# Mock2 is materialized with proof-level certificate theorems; no runtime patch is allowed.
 
 on:
   pull_request:
@@ -56,15 +56,26 @@ jobs:
           mkdir -p "$logdir"
           if [[ "$module" == 'Mock2' ]]; then
             grep -Fq 'def sourceResInType' PrimalitySheafVerification/Mock2.lean
-            grep -Fq '(M N : ℕ) (hM : M ≠ 0) : Type 1 where' \
+            grep -Fq '(M N : ℕ) (hM : M ≠ 0) : Prop where' \
               PrimalitySheafVerification/Mock2.lean
-            grep -Fq 'PaperElementaryModel D) : Type 2 where' \
+            grep -Fq 'PaperElementaryModel D) : Prop where' \
               PrimalitySheafVerification/Mock2.lean
-            grep -Fq 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where' \
+            grep -Fq 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop where' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'theorem standaloneZeroProfile_certificate' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'theorem checklist_9_standalone_zeroProfile' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'theorem canonicalZeroBridgeModel_certificate' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'theorem certificate : Certificate where' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'theorem staticAcceptance_certificate' \
               PrimalitySheafVerification/Mock2.lean
             git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
             printf '%s\n' \
               'PASS: checked-in Mock2 source selected directly' \
+              'PASS: public proof certificate declarations remain theorems' \
               'PASS: no Mock2 repair script or runtime source mutation executed' \
               | tee "$logdir/repair-application.log"
           else
