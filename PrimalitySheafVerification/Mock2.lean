@@ -23143,44 +23143,55 @@ theorem F_map_zeroProfile_natural_model
 
 variable {X : Type u} [TopologicalSpace X]
 
+/-- The two evaluated restriction maps as morphisms in the category of types. -/
+def sourceResInType (S : ShEq X) (U : Opens X) :
+    S.ambient.Field U ⟶ S.boundary.Field U :=
+  ↾(S.resIn.app U)
+
+def sourceResOutType (S : ShEq X) (U : Opens X) :
+    S.ambient.Field U ⟶ S.boundary.Field U :=
+  ↾(S.resOut.app U)
+
 theorem sourceInclusion_condition (S : ShEq X) (U : Opens X) :
-    (fun e : S.balancedSheaf.Field U => e.1) ≫ S.resIn.app U =
-      (fun e : S.balancedSheaf.Field U => e.1) ≫ S.resOut.app U := by
-  funext e
+    ↾(fun e : S.balancedSheaf.Field U => e.1) ≫ sourceResInType S U =
+      ↾(fun e : S.balancedSheaf.Field U => e.1) ≫ sourceResOutType S U := by
+  apply ConcreteCategory.hom_ext
+  intro e
   exact e.2
 
 def sourceEqualizerFork (S : ShEq X) (U : Opens X) :
-    Fork (S.resIn.app U) (S.resOut.app U) :=
-  Fork.ofι (fun e : S.balancedSheaf.Field U => e.1)
+    Fork (sourceResInType S U) (sourceResOutType S U) :=
+  Fork.ofι (↾(fun e : S.balancedSheaf.Field U => e.1))
     (sourceInclusion_condition S U)
 
 theorem competingFork_condition (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) (x : T.pt) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) (x : T.pt) :
     S.resIn.app U (T.ι x) = S.resOut.app U (T.ι x) := by
-  have h := congrArg
-    (fun k : T.pt ⟶ S.boundary.Field U => k x) T.condition
-  simpa only [Function.comp_apply] using h
+  have h := ConcreteCategory.congr_hom T.condition x
+  simpa [sourceResInType, sourceResOutType] using h
 
 def sourceEqualizerLift (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     T.pt ⟶ S.balancedSheaf.Field U :=
-  fun x => ⟨T.ι x, competingFork_condition S U T x⟩
+  ↾(fun x => ⟨T.ι x, competingFork_condition S U T x⟩)
 
 theorem sourceEqualizerLift_fac (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     sourceEqualizerLift S U T ≫ (sourceEqualizerFork S U).ι = T.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   rfl
 
 theorem sourceEqualizerLift_unique (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U))
+    (T : Fork (sourceResInType S U) (sourceResOutType S U))
     (m : T.pt ⟶ S.balancedSheaf.Field U)
     (hm : m ≫ (sourceEqualizerFork S U).ι = T.ι) :
     m = sourceEqualizerLift S U T := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply Subtype.ext
-  have h := congrArg (fun k : T.pt ⟶ S.ambient.Field U => k x) hm
-  simpa only [Function.comp_apply] using h
+  change ((m ≫ (sourceEqualizerFork S U).ι) x) = T.ι x
+  exact ConcreteCategory.congr_hom hm x
 
 def sourceEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
     IsLimit (sourceEqualizerFork S U) := by
@@ -23192,30 +23203,32 @@ def sourceEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
 /-- The target fork is rebuilt from `F.obj S`; its point is the constructed
 target sheaf rather than a copied profile datum. -/
 def targetEqualizerFork (S : ShEq X) (U : Opens X) :
-    Fork (S.resIn.app U) (S.resOut.app U) :=
-  Fork.ofι (fun e : (F.obj S).sheaf.Field U => e.1)
+    Fork (sourceResInType S U) (sourceResOutType S U) :=
+  Fork.ofι (↾(fun e : (F.obj S).sheaf.Field U => e.1))
     (sourceInclusion_condition S U)
 
 def targetEqualizerLift (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     T.pt ⟶ (F.obj S).sheaf.Field U :=
-  fun x => ⟨T.ι x, competingFork_condition S U T x⟩
+  ↾(fun x => ⟨T.ι x, competingFork_condition S U T x⟩)
 
 theorem targetEqualizerLift_fac (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U)) :
+    (T : Fork (sourceResInType S U) (sourceResOutType S U)) :
     targetEqualizerLift S U T ≫ (targetEqualizerFork S U).ι = T.ι := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   rfl
 
 theorem targetEqualizerLift_unique (S : ShEq X) (U : Opens X)
-    (T : Fork (S.resIn.app U) (S.resOut.app U))
+    (T : Fork (sourceResInType S U) (sourceResOutType S U))
     (m : T.pt ⟶ (F.obj S).sheaf.Field U)
     (hm : m ≫ (targetEqualizerFork S U).ι = T.ι) :
     m = targetEqualizerLift S U T := by
-  funext x
+  apply ConcreteCategory.hom_ext
+  intro x
   apply Subtype.ext
-  have h := congrArg (fun k : T.pt ⟶ S.ambient.Field U => k x) hm
-  simpa only [Function.comp_apply] using h
+  change ((m ≫ (targetEqualizerFork S U).ι) x) = T.ι x
+  exact ConcreteCategory.congr_hom hm x
 
 /-- The target fork has the equalizer universal property.  This is deliberately
 not named `PreservesLimit`: `F` is a functor between the standalone sheaf
@@ -23229,9 +23242,9 @@ def targetEqualizerForkIsLimit (S : ShEq X) (U : Opens X) :
 
 noncomputable def targetEqualizerIso (S : ShEq X) (U : Opens X) :
     (F.obj S).sheaf.Field U ≅
-      equalizer (S.resIn.app U) (S.resOut.app U) :=
+      equalizer (sourceResInType S U) (sourceResOutType S U) :=
   IsLimit.conePointUniqueUpToIso (targetEqualizerForkIsLimit S U)
-    (limit.isLimit (parallelPair (S.resIn.app U) (S.resOut.app U)))
+    (limit.isLimit (parallelPair (sourceResInType S U) (sourceResOutType S U)))
 
 /-! ### Fixed-parameter constant derived-Tor comparison model -/
 
@@ -23331,7 +23344,7 @@ abbrev ActualOpens := Proposition20ActualQGaugeSpecialization.Opens
 /-- The concrete Proposition 16 q-gauge sheaf presented as the equalizer of
 its two identity maps.  This is a genuine `Sh(Eq)` object and does not require
 new boundary assumptions. -/
-def actualSource : ShEq ActualBase where
+def actualSource : ShEq.{0, 0} ActualBase where
   ambient := Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf
   boundary := Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf
   resIn := QGaugePresheaf.Morphism.id _
@@ -23377,8 +23390,7 @@ noncomputable def proposition20KernelEquivActualSource
     (C : Proposition20ActualQGaugeSpecialization.AdaptedGeometryCover) :
     Proposition20ActualQGaugeSpecialization.Equation613Kernel C ≃
       actualSource.balancedSheaf.Field (⊤ : ActualOpens) :=
-  (Proposition20ActualQGaugeSpecialization.
-      proposition20ActualGlobalEquivKernel C).symm.trans
+  (Proposition20ActualQGaugeSpecialization.proposition20ActualGlobalEquivKernel C).symm.trans
     actualGlobalAqEquivSource
 
 /-- The concrete target object produced from actual q-gauge fields. -/
@@ -23388,7 +23400,7 @@ def actualTarget : ShP ActualBase := F.obj actualSource
 certifies every displayed theorem below, while deliberately not identifying
 the supplement with the paper's analytic `Sh(P)` category. -/
 structure StandaloneZeroProfileCertificate
-    (M N : ℕ) (hM : M ≠ 0) : Prop where
+    (M N : ℕ) (hM : M ≠ 0) : Type 1 where
   definition14_source_is_actual :
     definition14Source.balancedSheaf =
       Definition14Boundary.EqSheaf
@@ -23403,21 +23415,21 @@ structure StandaloneZeroProfileCertificate
       ZeroPrimeLocalProfileModel.localSpectralProfile
         definition14Target U s p = (s, 0)
   source_is_balanced_equalizer :
-    ∀ S : ShEq ActualBase,
+    ∀ S : ShEq.{0, 0} ActualBase,
       S.balancedSheaf =
         QGaugePresheaf.balancedEqualizerSheaf S.resIn S.resOut
   profile_is_constructed :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens)
       (s : S.balancedSheaf.Field U) (p : PrimeIndex),
       ZeroPrimeLocalProfileModel.localSpectralProfile
         (F.obj S) U s p = (s, 0)
   profile_is_canonical :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens)
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens)
       (s : S.balancedSheaf.Field U) (p : PrimeIndex),
       ∃! x : ZeroPrimeLocalProfileModel.Carrier (F.obj S) U p,
         x.1 = s ∧ x.2 = 0
   profile_restriction_natural :
-    ∀ (S : ShEq ActualBase) {U V : ActualOpens} (hUV : U ≤ V)
+    ∀ (S : ShEq.{0, 0} ActualBase) {U V : ActualOpens} (hUV : U ≤ V)
       (s : S.balancedSheaf.Field V) (p : PrimeIndex),
       ZeroPrimeLocalProfileModel.restrict (F.obj S) hUV p
           (ZeroPrimeLocalProfileModel.localSpectralProfile
@@ -23425,14 +23437,14 @@ structure StandaloneZeroProfileCertificate
         ZeroPrimeLocalProfileModel.localSpectralProfile (F.obj S) U
           (S.balancedSheaf.res hUV s) p
   source_equalizer_universal :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens),
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
       IsLimit (sourceEqualizerFork S U)
   target_equalizer_universal :
-    ∀ (S : ShEq ActualBase) (U : ActualOpens),
+    ∀ (S : ShEq.{0, 0} ActualBase) (U : ActualOpens),
       IsLimit (targetEqualizerFork S U)
-  functor_identity : ∀ S : ShEq ActualBase, F.map (𝟙 S) = 𝟙 (F.obj S)
+  functor_identity : ∀ S : ShEq.{0, 0} ActualBase, F.map (𝟙 S) = 𝟙 (F.obj S)
   functor_composition :
-    ∀ {S T R : ShEq ActualBase} (f : S ⟶ T) (g : T ⟶ R),
+    ∀ {S T R : ShEq.{0, 0} ActualBase} (f : S ⟶ T) (g : T ⟶ R),
       F.map (f ≫ g) = F.map f ≫ F.map g
   actual_global_source :
     Nonempty
@@ -23440,15 +23452,16 @@ structure StandaloneZeroProfileCertificate
         actualSource.balancedSheaf.Field (⊤ : ActualOpens))
   constant_derived_tor_comparison_model :
     Nonempty
-      (constantSourceTorFunctor_model (X := ActualBase) M N ≅
-        F ⋙ constantTargetTorFunctor_model (X := ActualBase) M N)
+      (constantSourceTorFunctor_model.{0, 0} (X := ActualBase) M N ≅
+        F.{0, 0} ⋙
+          constantTargetTorFunctor_model.{0, 0} (X := ActualBase) M N)
   tor_component_is_resolution_comparison :
-    ∀ S : ShEq ActualBase,
-      (constantTorComparisonIso_model
+    ∀ S : ShEq.{0, 0} ActualBase,
+      (constantTorComparisonIso_model.{0, 0}
         (X := ActualBase) M N hM).hom.app S =
         (Tor1ZDerivedComparison.mathlibTor1ZIsoCyclicModel M N hM).hom
 
-theorem standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
+noncomputable def standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
     StandaloneZeroProfileCertificate M N hM where
   definition14_source_is_actual := definition14Source_balancedSheaf
   definition14_source_isSheaf := definition14Source_balanced_isSheaf
@@ -23465,13 +23478,15 @@ theorem standaloneZeroProfile_certificate (M N : ℕ) (hM : M ≠ 0) :
   functor_composition := fun f g => F.map_comp f g
   actual_global_source := ⟨actualGlobalAqEquivSource⟩
   constant_derived_tor_comparison_model :=
-    ⟨constantTorComparisonIso_model (X := ActualBase) M N hM⟩
+    ⟨constantTorComparisonIso_model.{0, 0}
+      (X := ActualBase) M N hM⟩
   tor_component_is_resolution_comparison :=
-    constantTorComparisonIso_model_hom_app (X := ActualBase) M N hM
+    constantTorComparisonIso_model_hom_app.{0, 0}
+      (X := ActualBase) M N hM
 
 /-- Empty-context arithmetic instance of the standalone supplement: `M=N=2`.
 The theorem name does not claim the missing paper-category identification. -/
-theorem checklist_9_standalone_zeroProfile :
+noncomputable def checklist_9_standalone_zeroProfile :
     StandaloneZeroProfileCertificate 2 2 (by norm_num) :=
   standaloneZeroProfile_certificate 2 2 (by norm_num)
 
@@ -23540,14 +23555,14 @@ is sent to the exact zero solution of equation (6.2). -/
 def tensorToActualQGauge_zeroModel :
     QGaugePresheaf.Morphism tensorGaugePresheafOverX_zeroModel
       Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf where
-  app := fun U _ => (0 : Proposition20ActualQGaugeSpecialization.Aq U)
+  app := fun U _ => Proposition20ActualQGaugeSpecialization.aqZero U
   naturality := by
     intro U V hUV s
     exact Proposition20ActualQGaugeSpecialization.aqRes_zero hUV
 
 @[simp] theorem tensorToActualQGauge_zeroModel_apply (U : Opens)
     (s : tensorGaugePresheafOverX_zeroModel.Field U) :
-    tensorToActualQGauge_zeroModel.app U s = 0 :=
+    tensorToActualQGauge_zeroModel.app U s = Proposition20ActualQGaugeSpecialization.aqZero U :=
   rfl
 
 theorem tensorToActualQGauge_zeroModel_natural
@@ -23564,7 +23579,7 @@ theorem tensorToActualQGauge_zeroModel_unique
     (f : QGaugePresheaf.Morphism tensorGaugePresheafOverX_zeroModel
       Proposition20ActualQGaugeSpecialization.actualQGaugePresheaf)
     (hf : ∀ (U : Opens) (s : tensorGaugePresheafOverX_zeroModel.Field U),
-      f.app U s = 0) :
+      f.app U s = Proposition20ActualQGaugeSpecialization.aqZero U) :
     f = tensorToActualQGauge_zeroModel := by
   apply QGaugePresheaf.Morphism.ext
   intro U s
@@ -23588,7 +23603,7 @@ namespace TensorToModularQGaugeBridge
 /-- Paper-relevant nontriviality is additional data not supplied by the text. -/
 def Nontrivial (B : TensorToModularQGaugeBridge) : Prop :=
   ∃ (U : Opens) (s : ActualTensorGlobal),
-    B.comparison.app U (B.realizeGlobal U s) ≠ 0
+    B.comparison.app U (B.realizeGlobal U s) ≠ Proposition20ActualQGaugeSpecialization.aqZero U
 
 /-- Canonical degenerate witness, retained only to prove the interface is
 inhabited. -/
@@ -23672,9 +23687,17 @@ theorem qGaugeToConnection_zeroModel_curvature_eq_zero
         (qGaugeToConnection_zeroModel A) = 0 := by
   apply LocallyConstant.ext
   intro x
-  simp [qGaugeToConnection_zeroModel,
-    Proposition17And18FinalSpecialization.connectionCurvature,
-    Proposition17And18FinalSpecialization.curvature_apply]
+  change
+    PolynomialMatrixDifferentialForms.matrixDifferential
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1) +
+        PolynomialMatrixDifferentialForms.matrixWedge
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1)
+          (0 : Proposition17And18FinalSpecialization.FormFibre 1) = 0
+  rw [PolynomialMatrixDifferentialForms.matrixDifferential_zero]
+  apply Matrix.ext
+  intro i j
+  apply PolynomialMatrixDifferentialForms.ChartForm.ext <;>
+    simp [PolynomialMatrixDifferentialForms.matrixWedge, Fin.sum_univ_two]
 
 /-- Exact additional datum needed to identify a modular q-gauge one-form with
 the polynomial-matrix DGA component used by the concrete curvature model.  The
@@ -23926,7 +23949,7 @@ only constructed objects; none of these conclusion fields is an input to
 `canonicalZeroBridgeModel`.  Fields carrying the zero bridge are named
 accordingly; the actual paper theorems are recorded separately and universally. -/
 structure PaperElementaryConclusions
-    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Prop where
+    (D : PaperElementaryInputData) (P : PaperElementaryModel D) : Type 2 where
   qLocalSystem_is_actual :
     P.qLocalSystem = Definition11.Lq Definition11.scalarAnalyticData
   mockSheaf_is_actual :
@@ -24034,7 +24057,7 @@ structure PaperElementaryConclusions
 together with the universal actual Proposition-19 theorem, the standalone
 Proposition-15 supplement, the canonical-cover Proposition-20 certificate,
 and the actual Proposition-21 certificate. -/
-theorem canonicalZeroBridgeModel_certificate (D : PaperElementaryInputData) :
+noncomputable def canonicalZeroBridgeModel_certificate (D : PaperElementaryInputData) :
     PaperElementaryConclusions D (canonicalZeroBridgeModel D) where
   qLocalSystem_is_actual := rfl
   mockSheaf_is_actual := rfl
@@ -24475,7 +24498,7 @@ theorem paperTrace_items_nodup :
   decide
 
 /-- Machine-checkable certificate for the required paper map. -/
-structure Certificate : Prop where
+structure Certificate : Type 1 where
   row_identity : ∀ i : PaperItem, (traceRow i).item = i
   classifications_are_total : ∀ i : PaperItem,
     classification i = .complete ∨
@@ -24498,7 +24521,7 @@ structure Certificate : Prop where
   proposition20_geometry_boundary_visible :
     classification .proposition20 = .paperAssumption
 
-theorem certificate : Certificate where
+noncomputable def certificate : Certificate where
   row_identity := traceRow_item
   classifications_are_total := classification_total
   all_builds_deferred_as_requested := traceRow_build
@@ -24518,7 +24541,7 @@ end PaperMap
 /-- All proof-level acceptance items that can be certified without executing
 the user's deferred full-file build.  Compilation status and emitted axiom
 output are intentionally not represented as proved propositions here. -/
-structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop where
+structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where
   definitions11_to16_and_lemma61 : UnconditionalSection46To53.Certificate
   definition12_uses_genuine_tensor :
     Definition12Tensor.FullCertificate Definition11.scalarAnalyticData
@@ -24549,7 +24572,7 @@ structure StaticAcceptanceCertificate (D : PaperElementaryInputData) : Prop wher
       (PaperMap.traceRow i).build = .deferredToUser
 
 /-- Proof-only final bundle.  No build command is invoked by this theorem. -/
-theorem staticAcceptance_certificate (D : PaperElementaryInputData) :
+noncomputable def staticAcceptance_certificate (D : PaperElementaryInputData) :
     StaticAcceptanceCertificate D where
   definitions11_to16_and_lemma61 :=
     UnconditionalSection46To53.checklist_4_6_through_5_3_unconditional
