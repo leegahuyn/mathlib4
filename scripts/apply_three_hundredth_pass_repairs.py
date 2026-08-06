@@ -45,18 +45,8 @@ instance : Fintype Requirement where
 theorem requirement_count : Fintype.card Requirement = 50 := by
   decide
 """,
-        "Mock2 Advanced Section 7 requirement count",
-    )
-    text = replace_exact(
-        text,
-        """theorem requirement_count : Fintype.card Requirement = 50 := by
-  native_decide
-""",
-        """set_option maxRecDepth 10000 in
-theorem requirement_count : Fintype.card Requirement = 50 := by
-  decide
-""",
-        "Mock2 Advanced P0 requirement count without native_decide",
+        "Mock2 Advanced requirement counts",
+        expected=2,
     )
     text = replace_exact(
         text,
