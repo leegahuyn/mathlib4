@@ -1,0 +1,65 @@
+name: Materialize pass 286 Mock2 repair
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/materialize-pass-286-mock2.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: materialize-pass-286-mock2
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/primality-sheaf-clean-build
+          fetch-depth: 1
+
+      - name: Materialize explicit ShP field universe
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('PrimalitySheafVerification/Mock2.lean')
+          text = path.read_text(encoding='utf-8')
+          old = '''structure ShP (X : Type u) [TopologicalSpace X] where
+            sheaf : QGaugePresheaf (Opens X)
+            isSheaf : IsSheafLike (QGaugePresheaf.toPresheafLike sheaf)
+          '''
+          new = '''structure ShP (X : Type u) [TopologicalSpace X] where
+            sheaf : QGaugePresheaf.{u, v} (Opens X)
+            isSheaf : IsSheafLike (QGaugePresheaf.toPresheafLike sheaf)
+          '''
+          if old in text:
+              if text.count(old) != 1:
+                  raise SystemExit(f'expected one ShP block, found {text.count(old)}')
+              path.write_text(text.replace(old, new), encoding='utf-8')
+              print('materialized Mock2 ShP universe repair')
+          elif new in text:
+              print('Mock2 ShP universe repair already materialized')
+          else:
+              raise SystemExit('Mock2 ShP block did not match the audited source')
+          PY
+
+      - name: Commit checked-in Lean source
+        shell: bash
+        run: |
+          if git diff --quiet -- PrimalitySheafVerification/Mock2.lean; then
+            echo 'No source change required.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/Mock2.lean
+          git commit -m 'fix: expose Mock2 ShP section universe'
+          git push origin HEAD:fix/primality-sheaf-clean-build
