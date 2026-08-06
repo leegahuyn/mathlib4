@@ -17,10 +17,6 @@ on:
       - 'scripts/apply_two_hundred_ninety_eighth_pass_repairs.py'
       - 'scripts/apply_two_hundred_ninety_ninth_pass_repairs.py'
       - 'scripts/apply_three_hundredth_pass_repairs.py'
-      - 'scripts/apply_mock2_passes_286_to_288_repairs.py'
-      - 'scripts/apply_three_hundred_second_pass_mock2_repairs.py'
-      - 'scripts/apply_three_hundred_third_pass_mock2_repairs.py'
-      - 'scripts/apply_three_hundred_fourth_pass_mock2_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -51,7 +47,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
-      - name: Apply current candidate repairs
+      - name: Prepare source under test
         shell: bash
         run: |
           set -euo pipefail
@@ -59,20 +55,18 @@ jobs:
           logdir="build-logs/${module}"
           mkdir -p "$logdir"
           if [[ "$module" == 'Mock2' ]]; then
-            if grep -q '^def sourceResInType ' PrimalitySheafVerification/Mock2.lean \
-                && grep -q 'StandaloneZeroProfileCertificate' PrimalitySheafVerification/Mock2.lean \
-                && grep -q '(M N : ℕ) (hM : M ≠ 0) : Type 1 where' PrimalitySheafVerification/Mock2.lean \
-                && grep -q 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where' PrimalitySheafVerification/Mock2.lean; then
-              echo '[mock2-repair] checked-in Mock2 source is already materialized; runtime repair skipped' \
-                | tee "$logdir/repair-application.log"
-            else
-              {
-                python3 scripts/apply_mock2_passes_286_to_288_repairs.py
-                python3 scripts/apply_three_hundred_second_pass_mock2_repairs.py
-                python3 scripts/apply_three_hundred_third_pass_mock2_repairs.py
-                python3 scripts/apply_three_hundred_fourth_pass_mock2_repairs.py
-              } 2>&1 | tee "$logdir/repair-application.log"
-            fi
+            grep -Fq 'def sourceResInType' PrimalitySheafVerification/Mock2.lean
+            grep -Fq '(M N : ℕ) (hM : M ≠ 0) : Type 1 where' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'PaperElementaryModel D) : Type 2 where' \
+              PrimalitySheafVerification/Mock2.lean
+            grep -Fq 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where' \
+              PrimalitySheafVerification/Mock2.lean
+            git diff --exit-code -- PrimalitySheafVerification/Mock2.lean
+            printf '%s\n' \
+              'PASS: checked-in Mock2 source selected directly' \
+              'PASS: no Mock2 repair script or runtime source mutation executed' \
+              | tee "$logdir/repair-application.log"
           else
             {
               python3 scripts/apply_two_hundred_eighty_ninth_pass_repairs.py
@@ -88,6 +82,8 @@ jobs:
               python3 scripts/apply_three_hundredth_pass_repairs.py
             } 2>&1 | tee "$logdir/repair-application.log"
           fi
+          cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
+          cmp -s "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
 
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
@@ -99,7 +95,7 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Compile current candidate from clean project artifacts
+      - name: Compile checked-in source from clean project artifacts
         shell: bash
         run: |
           set +e
@@ -107,7 +103,6 @@ jobs:
           outdir='.lake/build/lib/lean/PrimalitySheafVerification'
           logdir="build-logs/${module}"
           mkdir -p "$logdir" "$outdir"
-          cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
           : > "$logdir/${module}.log"
 
           passes=1
@@ -120,7 +115,7 @@ jobs:
               "$outdir/${module}.olean" \
               "$outdir/${module}.ilean" \
               "$outdir/${module}.olean.private"
-            echo "===== ${module} clean compile pass ${pass}/${passes} =====" \
+            echo "===== ${module} direct clean compile pass ${pass}/${passes} =====" \
               | tee -a "$logdir/${module}.log"
             lake env lean "PrimalitySheafVerification/${module}.lean" \
               -o "$outdir/${module}.olean" \
@@ -135,18 +130,24 @@ jobs:
             fi
           done
 
-          test -f "$outdir/${module}.olean"
-          test -f "$outdir/${module}.ilean"
+          test -s "$outdir/${module}.olean"
+          test -s "$outdir/${module}.ilean"
           sha256sum \
             "PrimalitySheafVerification/${module}.lean" \
             "$outdir/${module}.olean" \
             "$outdir/${module}.ilean" \
             > "$logdir/sha256.txt"
-          find "$outdir" -maxdepth 1 -type f -name "${module}.*lean" -printf '%f\n' \
-            | sort > "$logdir/generated-artifacts.txt"
+          cp "$outdir/${module}.olean" "$logdir/${module}.olean"
+          cp "$outdir/${module}.ilean" "$logdir/${module}.ilean"
+          printf '%s\n' "${module}.olean" "${module}.ilean" \
+            > "$logdir/generated-artifacts.txt"
+          grep -c 'error:' "$logdir/${module}-pass${passes}.log" \
+            > "$logdir/error-count.txt" || true
+          grep -c 'warning:' "$logdir/${module}-pass${passes}.log" \
+            > "$logdir/warning-count.txt" || true
           echo 0 > "$logdir/exit-code.txt"
 
-      - name: Upload log
+      - name: Upload log and generated artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
