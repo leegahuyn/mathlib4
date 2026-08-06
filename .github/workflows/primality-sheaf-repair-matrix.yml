@@ -58,12 +58,20 @@ jobs:
           logdir="build-logs/${module}"
           mkdir -p "$logdir"
           if [[ "$module" == 'Mock2' ]]; then
-            {
-              python3 scripts/apply_mock2_passes_286_to_288_repairs.py
-              python3 scripts/apply_three_hundred_second_pass_mock2_repairs.py
-              python3 scripts/apply_three_hundred_third_pass_mock2_repairs.py
-              python3 scripts/apply_three_hundred_fourth_pass_mock2_repairs.py
-            } 2>&1 | tee "$logdir/repair-application.log"
+            if grep -q '^def sourceResInType ' PrimalitySheafVerification/Mock2.lean \
+                && grep -q 'StandaloneZeroProfileCertificate' PrimalitySheafVerification/Mock2.lean \
+                && grep -q '(M N : ℕ) (hM : M ≠ 0) : Type 1 where' PrimalitySheafVerification/Mock2.lean \
+                && grep -q 'StaticAcceptanceCertificate (D : PaperElementaryInputData) : Type 2 where' PrimalitySheafVerification/Mock2.lean; then
+              echo '[mock2-repair] checked-in Mock2 source is already materialized; runtime repair skipped' \
+                | tee "$logdir/repair-application.log"
+            else
+              {
+                python3 scripts/apply_mock2_passes_286_to_288_repairs.py
+                python3 scripts/apply_three_hundred_second_pass_mock2_repairs.py
+                python3 scripts/apply_three_hundred_third_pass_mock2_repairs.py
+                python3 scripts/apply_three_hundred_fourth_pass_mock2_repairs.py
+              } 2>&1 | tee "$logdir/repair-application.log"
+            fi
           else
             {
               python3 scripts/apply_two_hundred_eighty_ninth_pass_repairs.py
@@ -98,18 +106,44 @@ jobs:
           outdir='.lake/build/lib/lean/PrimalitySheafVerification'
           logdir="build-logs/${module}"
           mkdir -p "$logdir" "$outdir"
-          rm -f \
+          cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
+          : > "$logdir/${module}.log"
+
+          passes=1
+          if [[ "$module" == 'Mock2' ]]; then
+            passes=2
+          fi
+
+          for pass in $(seq 1 "$passes"); do
+            rm -f \
+              "$outdir/${module}.olean" \
+              "$outdir/${module}.ilean" \
+              "$outdir/${module}.olean.private"
+            echo "===== ${module} clean compile pass ${pass}/${passes} =====" \
+              | tee -a "$logdir/${module}.log"
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "$outdir/${module}.olean" \
+              -i "$outdir/${module}.ilean" 2>&1 \
+              | tee "$logdir/${module}-pass${pass}.log" \
+              | tee -a "$logdir/${module}.log"
+            code=${PIPESTATUS[0]}
+            echo "$code" > "$logdir/exit-code-pass${pass}.txt"
+            if [[ "$code" -ne 0 ]]; then
+              echo "$code" > "$logdir/exit-code.txt"
+              exit "$code"
+            fi
+          done
+
+          test -f "$outdir/${module}.olean"
+          test -f "$outdir/${module}.ilean"
+          sha256sum \
+            "PrimalitySheafVerification/${module}.lean" \
             "$outdir/${module}.olean" \
             "$outdir/${module}.ilean" \
-            "$outdir/${module}.olean.private"
-          cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
-          lake env lean "PrimalitySheafVerification/${module}.lean" \
-            -o "$outdir/${module}.olean" \
-            -i "$outdir/${module}.ilean" 2>&1 \
-            | tee "$logdir/${module}.log"
-          code=${PIPESTATUS[0]}
-          echo "$code" > "$logdir/exit-code.txt"
-          exit "$code"
+            > "$logdir/sha256.txt"
+          find "$outdir" -maxdepth 1 -type f -name "${module}.*lean" -printf '%f\n' \
+            | sort > "$logdir/generated-artifacts.txt"
+          echo 0 > "$logdir/exit-code.txt"
 
       - name: Upload log
         if: always()
