@@ -34,7 +34,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [Mock2_Advanced, Mock2_FunctionalAnalysis]
+        module:
+          - Mock2
+          - Mock2_Advanced
+          - Mock2_FunctionalAnalysis
 
     steps:
       - name: Checkout triggering head commit
@@ -67,19 +70,25 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Compile current candidate
+      - name: Compile current candidate from clean project artifacts
         shell: bash
         run: |
           set +e
           module='${{ matrix.module }}'
-          mkdir -p "build-logs/${module}" '.lake/build/lib/lean/PrimalitySheafVerification'
-          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/repaired-source.lean"
+          outdir='.lake/build/lib/lean/PrimalitySheafVerification'
+          logdir="build-logs/${module}"
+          mkdir -p "$logdir" "$outdir"
+          rm -f \
+            "$outdir/${module}.olean" \
+            "$outdir/${module}.ilean" \
+            "$outdir/${module}.olean.private"
+          cp "PrimalitySheafVerification/${module}.lean" "$logdir/repaired-source.lean"
           lake env lean "PrimalitySheafVerification/${module}.lean" \
-            -o ".lake/build/lib/lean/PrimalitySheafVerification/${module}.olean" \
-            -i ".lake/build/lib/lean/PrimalitySheafVerification/${module}.ilean" 2>&1 \
-            | tee "build-logs/${module}/${module}.log"
+            -o "$outdir/${module}.olean" \
+            -i "$outdir/${module}.ilean" 2>&1 \
+            | tee "$logdir/${module}.log"
           code=${PIPESTATUS[0]}
-          echo "$code" > "build-logs/${module}/exit-code.txt"
+          echo "$code" > "$logdir/exit-code.txt"
           exit "$code"
 
       - name: Upload log
