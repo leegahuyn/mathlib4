@@ -1,13 +1,19 @@
 name: Primality Sheaf Verification
 
 on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/**'
+      - '.github/workflows/primality-sheaf-verification.yml'
+      - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: primality-sheaf-verification-${{ github.ref }}
+  group: primality-sheaf-verification-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -19,6 +25,7 @@ jobs:
       - name: Checkout triggering commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
       - name: Set up Lean
