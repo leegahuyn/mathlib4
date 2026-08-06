@@ -6,14 +6,13 @@ on:
     paths:
       - 'PrimalitySheafVerification/**'
       - '.github/workflows/primality-sheaf-verification.yml'
-      - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: primality-sheaf-verification-${{ github.event.pull_request.head.sha || github.sha }}
+  group: primality-sheaf-verification-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
