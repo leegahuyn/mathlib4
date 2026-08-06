@@ -34,6 +34,7 @@ def main() -> int:
   rfl
 """,
         "Mock2 Advanced close pullback additivity pointwise",
+        expected=2,
     )
     m2a = replace_exact(
         m2a,
@@ -52,6 +53,7 @@ def main() -> int:
   rfl
 """,
         "Mock2 Advanced close pullback scalar compatibility pointwise",
+        expected=2,
     )
     m2a = replace_exact(
         m2a,
@@ -69,6 +71,7 @@ theorem isAutomorphicClass_zero (ν : Multiplier) :
   exact (mul_zero (factorClass ν a)).symm
 """,
         "Mock2 Advanced orient the zero automorphy equation explicitly",
+        expected=2,
     )
     M2A.write_text(m2a, encoding="utf-8")
 
