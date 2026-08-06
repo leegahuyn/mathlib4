@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - 'PrimalitySheafVerification/**'
+      - 'scripts/apply_two_hundred_eighty_sixth_pass_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -17,7 +18,7 @@ concurrency:
 
 jobs:
   repair:
-    name: Check ${{ matrix.module }}
+    name: Repair ${{ matrix.module }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     strategy:
@@ -32,6 +33,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
 
+      - name: Apply pass 286 candidate repairs
+        run: python3 scripts/apply_two_hundred_eighty_sixth_pass_repairs.py
+
       - name: Set up Lean
         uses: leanprover/lean-action@38fbc41a8c28c4cbaec22d7f7de508ec2e7c0dd9
         with:
@@ -42,13 +46,13 @@ jobs:
       - name: Restore Mathlib cache
         run: lake exe cache get
 
-      - name: Compile checked-in source
+      - name: Compile pass 286 candidate
         shell: bash
         run: |
           set +e
           module='${{ matrix.module }}'
           mkdir -p "build-logs/${module}" '.lake/build/lib/lean/PrimalitySheafVerification'
-          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/checked-in-source.lean"
+          cp "PrimalitySheafVerification/${module}.lean" "build-logs/${module}/repaired-source.lean"
           lake env lean "PrimalitySheafVerification/${module}.lean" \
             -o ".lake/build/lib/lean/PrimalitySheafVerification/${module}.olean" \
             -i ".lake/build/lib/lean/PrimalitySheafVerification/${module}.ilean" 2>&1 \
@@ -61,7 +65,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: check-${{ matrix.module }}
+          name: repair-${{ matrix.module }}
           path: build-logs/${{ matrix.module }}
           if-no-files-found: error
           retention-days: 30
