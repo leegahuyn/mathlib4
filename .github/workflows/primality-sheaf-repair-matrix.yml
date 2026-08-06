@@ -19,6 +19,7 @@ on:
       - 'scripts/apply_mock2_passes_286_to_288_repairs.py'
       - 'scripts/apply_three_hundred_second_pass_mock2_repairs.py'
       - 'scripts/apply_three_hundred_third_pass_mock2_repairs.py'
+      - 'scripts/apply_three_hundred_fourth_pass_mock2_repairs.py'
       - '.github/workflows/primality-sheaf-repair-matrix.yml'
   workflow_dispatch:
 
@@ -61,6 +62,7 @@ jobs:
               python3 scripts/apply_mock2_passes_286_to_288_repairs.py
               python3 scripts/apply_three_hundred_second_pass_mock2_repairs.py
               python3 scripts/apply_three_hundred_third_pass_mock2_repairs.py
+              python3 scripts/apply_three_hundred_fourth_pass_mock2_repairs.py
             } 2>&1 | tee "$logdir/repair-application.log"
           else
             {
