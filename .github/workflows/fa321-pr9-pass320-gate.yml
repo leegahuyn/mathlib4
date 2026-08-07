@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   verify-pass320-derived-fa-and-qym:
-    runs-on: macos-14
+    runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -37,13 +37,10 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Install GNU coreutils, exact Lean toolchain, and Mathlib cache
+      - name: Install exact Lean toolchain and restore Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
-          brew list coreutils >/dev/null 2>&1 || brew install coreutils
-          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${PATH}"
-          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "${GITHUB_PATH}"
           curl --retry 5 --retry-all-errors --fail --silent --show-error \
             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             -o /tmp/elan-init.sh
@@ -60,7 +57,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
+          export PATH="${HOME}/.elan/bin:${PATH}"
           bash scripts/ci_fa319_qym.sh
 
       - name: Upload PASS 320 derived evidence
