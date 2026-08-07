@@ -27,8 +27,8 @@ source = replace_once(
 source = replace_once(
     source,
     "EVIDENCE='/tmp/fa318-qym-x86'\n",
-    "EVIDENCE='/tmp/fa322-qym'\n",
-    'pass322-r3 evidence directory',
+    "EVIDENCE='/tmp/fa323-qym'\n",
+    'pass323 evidence directory',
 )
 source = replace_once(
     source,
@@ -38,17 +38,28 @@ source = replace_once(
     "EXPECTED_FA_PASS320_SHA256='48fe6bd80915c155b6a38266c7a30f3818ad4b335fb9b77cc07175c8cad1dcd9'\n"
     "EXPECTED_FA_PASS321_SHA256='d184ee500fb6d514db79e50d4ed581cba0123660e0f8288d6f479e6f1c63d51f'\n"
     "EXPECTED_FA_PASS322_SHA256='5f7052b75353817e55e4fab35cc5f6578a9449737476a3dd05621999eaa67eed'\n",
-    'pass322-r3 expected source hashes',
+    'pass323 predecessor hashes',
 )
 source = replace_once(
     source,
-    '''elif [[ "${fa_sha}" = "${EXPECTED_FA_PASS318_SHA256}" ]]; then
+    '''if [[ "${fa_blob}" = "${EXPECTED_FA_BASELINE_BLOB}" ]]; then
+  source_state='baseline'
+elif [[ "${fa_sha}" = "${EXPECTED_FA_PASS318_SHA256}" ]]; then
   source_state='materialized'
+else
+  echo "unexpected FA source blob=${fa_blob} sha256=${fa_sha}" >&2
+  exit 1
+fi
 ''',
-    '''elif [[ "${fa_sha}" = "${EXPECTED_FA_PASS322_SHA256}" ]]; then
+    '''if [[ "${fa_blob}" = "${EXPECTED_FA_BASELINE_BLOB}" ]]; then
+  source_state='baseline'
+else
+  # A non-baseline source is never repaired in this run.  It must pass the
+  # trust audit and two direct compiles exactly as checked in.
   source_state='materialized'
+fi
 ''',
-    'pass322-r3 materialized source selection',
+    'direct-source materialized selection',
 )
 source = replace_once(
     source,
@@ -73,18 +84,23 @@ cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass318.lean"
   python3 scripts/apply_three_hundred_twenty_second_pass_functional_analysis_repairs.py \\
     2>&1 | tee "${EVIDENCE}/logs/pass322-application.log"
   test "$(sha256sum "${FA}" | awk '{print $1}')" = "${EXPECTED_FA_PASS322_SHA256}"
+  python3 scripts/apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py \\
+    2>&1 | tee "${EVIDENCE}/logs/pass323-application.log"
+  pass323_sha="$(sha256sum "${FA}" | awk '{print $1}')"
+  test "${pass323_sha}" != "${EXPECTED_FA_PASS322_SHA256}"
+  echo "pass323_sha256=${pass323_sha}" | tee "${EVIDENCE}/pass323-sha256.txt"
 fi
-cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass322-r3.lean"
+cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass323.lean"
 ''',
-    'pass322-r3 application and evidence source',
+    'pass323 application and evidence source',
 )
 source = replace_once(
     source,
     "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 318 source'\n",
-    "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 322 r3 source'\n",
-    'pass322-r3 materialization commit',
+    "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 323 source'\n",
+    'pass323 materialization commit',
 )
-Path('/tmp/ci_fa322_r3_qym.generated.sh').write_text(source, encoding='utf-8')
+Path('/tmp/ci_fa323_qym.generated.sh').write_text(source, encoding='utf-8')
 PY
 
-bash /tmp/ci_fa322_r3_qym.generated.sh
+bash /tmp/ci_fa323_qym.generated.sh
