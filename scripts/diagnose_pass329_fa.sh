@@ -7,12 +7,12 @@ python3 - <<'PY'
 from pathlib import Path
 source = Path('scripts/diagnose_pass328_fa.sh').read_text(encoding='utf-8')
 
-def repl(old: str, new: str, label: str) -> None:
+def repl(old: str, new: str, label: str, expected: int = 1) -> None:
     global source
     count = source.count(old)
-    print(f'{label}: expected=1 actual={count}')
-    if count != 1:
-        raise SystemExit(f'{label}: expected one occurrence, found {count}')
+    print(f'{label}: expected={expected} actual={count}')
+    if count != expected:
+        raise SystemExit(f'{label}: expected {expected} occurrence(s), found {count}')
     source = source.replace(old, new)
 
 repl("EVIDENCE='/tmp/diagnose-pass328-fa'", "EVIDENCE='/tmp/diagnose-pass329-fa'", 'evidence dir')
@@ -27,7 +27,12 @@ repl(
     'pass329 chain',
 )
 repl('Mock2_FunctionalAnalysis-pass328.lean', 'Mock2_FunctionalAnalysis-pass329.lean', 'source name')
-repl('Mock2_FunctionalAnalysis-pass328.log', 'Mock2_FunctionalAnalysis-pass329.log', 'log name occurrences')
+repl(
+    'Mock2_FunctionalAnalysis-pass328.log',
+    'Mock2_FunctionalAnalysis-pass329.log',
+    'log name occurrences',
+    expected=6,
+)
 Path('/tmp/diagnose_pass329_fa.generated.sh').write_text(source, encoding='utf-8')
 PY
 bash -n /tmp/diagnose_pass329_fa.generated.sh
