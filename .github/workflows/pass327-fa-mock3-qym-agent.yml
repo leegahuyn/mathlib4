@@ -1,3 +1,4 @@
+# Single authoritative repair loop for PR #9. Re-triggered after PASS 334.
 name: PASS 327 FA Mock3 QYM repair agent
 
 on:
