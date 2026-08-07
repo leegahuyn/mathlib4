@@ -5,6 +5,9 @@ BRANCH='ci/fa319-isolated-20260807'
 STATE='build-logs/pass327-agent-state.json'
 SUCCESS='build-logs/pass327-targets-pass.json'
 EVIDENCE='/tmp/pass327-repair-agent'
+FA='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+PASS333_SHA='8c0b0797155d3ae4f8f05b2d38d36552a629c900b8e990aba1ff44b666b72e45'
+PASS334_SHA='7a179ce46bcb210dbd8cbf30a19aeb7da65ffed24709a8844bf4a244a8e65de5'
 mkdir -p "${EVIDENCE}"
 
 export PATH="${HOME}/.elan/bin:${PATH}"
@@ -26,35 +29,34 @@ if [[ -f "${SUCCESS}" ]]; then
   exit 0
 fi
 
-# On the first run only, recover and compare the exact candidates attached to
-# PASS 327.  Exit 20 means the best honest FA candidate is left in the working
-# tree for the repair agent; zero means the four requested targets already pass.
+# Start the autonomous repair loop from the newest deterministic source chain,
+# not from the historical PASS 320 artifact.  The diagnostic driver leaves the
+# reconstructed PASS 333 source in the working tree even though its compile is
+# expected to return nonzero; PASS 334 is then applied and hash-verified.
 if [[ ! -f "${STATE}" ]]; then
   set +e
-  bash scripts/ci_pass327_fa_qym_recovery.sh \
-    > >(tee "${EVIDENCE}/pass327-recovery.log") 2>&1
-  recovery_rc=$?
+  bash scripts/diagnose_pass333_fa.sh \
+    > >(tee "${EVIDENCE}/pass333-reconstruction.log") 2>&1
+  pass333_compile_rc=$?
   set -e
-  echo "recovery_exit=${recovery_rc}" | tee -a "${EVIDENCE}/orchestrator-provenance.txt"
-  case "${recovery_rc}" in
-    0)
-      echo 'PASS 327 recovery itself completed the requested target gate.' \
-        | tee "${EVIDENCE}/status.txt"
-      exit 0
-      ;;
-    20)
-      ;;
-    *)
-      echo "PASS 327 recovery failed before producing a valid FA frontier (rc=${recovery_rc})." \
-        | tee "${EVIDENCE}/status.txt"
-      exit "${recovery_rc}"
-      ;;
-  esac
+  pass333_actual="$(sha256sum "${FA}" | awk '{print $1}')"
+  printf '%s\n' \
+    "pass333_compile_exit=${pass333_compile_rc}" \
+    "pass333_source_sha256=${pass333_actual}" \
+    | tee -a "${EVIDENCE}/orchestrator-provenance.txt"
+  test "${pass333_actual}" = "${PASS333_SHA}"
+
+  python3 scripts/apply_three_hundred_thirty_fourth_pass_functional_analysis_repairs.py \
+    2>&1 | tee "${EVIDENCE}/pass334-apply.log"
+  pass334_actual="$(sha256sum "${FA}" | awk '{print $1}')"
+  echo "pass334_source_sha256=${pass334_actual}" \
+    | tee -a "${EVIDENCE}/orchestrator-provenance.txt"
+  test "${pass334_actual}" = "${PASS334_SHA}"
 fi
 
 # The agent only accepts a patch after a fresh direct compile demonstrates a
-# smaller error frontier or a later first error.  It checkpoints honest progress
-# to PR #9 and returns 20 when another run is required.
+# smaller error frontier or a later first error. It also rejects theorem-header
+# changes and every forbidden proof escape before checkpointing progress.
 set +e
 python3 scripts/pass327_lean_repair_agent.py \
   --max-rounds-per-target 28 --minutes 315 \
@@ -64,8 +66,6 @@ set -e
 
 echo "agent_exit=${agent_rc}" | tee -a "${EVIDENCE}/orchestrator-provenance.txt"
 
-# Commit any local checkpoint created by the agent.  The state-file push is the
-# explicit resume trigger.  No final-source PASS is claimed by a checkpoint.
 git config user.name 'github-actions[bot]'
 git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 if ! git diff --quiet || ! git diff --cached --quiet; then
@@ -76,7 +76,7 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
     build-logs/pass327-targets-pass.json 2>/dev/null || true
   find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 \
     | xargs -0 -r git add
-  git diff --cached --quiet || git commit -m 'wip: checkpoint PASS 327 FA Mock3 QYM repair'
+  git diff --cached --quiet || git commit -m 'wip: checkpoint PASS 334 FA Mock3 QYM repair'
 fi
 
 new_head="$(git rev-parse HEAD)"
@@ -89,15 +89,15 @@ fi
 case "${agent_rc}" in
   0)
     test -f "${SUCCESS}"
-    echo 'PASS_327_FA_MOCK3_QYM_COMPLETE' | tee "${EVIDENCE}/status.txt"
+    echo 'PASS_334_FA_MOCK3_QYM_COMPLETE' | tee "${EVIDENCE}/status.txt"
     exit 0
     ;;
   20)
-    echo 'PASS_327_REPAIR_CHECKPOINT_PUSHED' | tee "${EVIDENCE}/status.txt"
+    echo 'PASS_334_REPAIR_CHECKPOINT_PUSHED' | tee "${EVIDENCE}/status.txt"
     exit 0
     ;;
   *)
-    echo "PASS_327_AGENT_FAILED rc=${agent_rc}" | tee "${EVIDENCE}/status.txt"
+    echo "PASS_334_AGENT_FAILED rc=${agent_rc}" | tee "${EVIDENCE}/status.txt"
     exit "${agent_rc}"
     ;;
 esac
