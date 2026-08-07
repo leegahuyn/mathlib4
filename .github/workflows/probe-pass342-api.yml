@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/probe-pass342-api.yml'
       - 'scripts/probe_pass342_api.sh'
+      - 'scripts/probe_pass342_addgroup.sh'
   workflow_dispatch:
 
 permissions:
@@ -42,12 +43,12 @@ jobs:
           elan toolchain install "$(cat lean-toolchain)"
           lake exe cache get
 
-      - name: Compile PASS 342 API probes
+      - name: Compile PASS 342 API and AddCommGroup probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/probe_pass342_api.sh
+          bash scripts/probe_pass342_addgroup.sh
 
       - name: Upload API probe evidence
         if: always()
