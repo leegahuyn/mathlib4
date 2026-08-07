@@ -5,8 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
-EXPECTED_INPUT_SHA256 = "9377a1c2b13cae183c95e3006b8974e6e1e6772471cbe269a6bb8dd7f3b367c1"
-EXPECTED_OUTPUT_SHA256 = "25e3933619507b63d90858a6c8efd0b705bf9defbad1d502da6aec598e3245c3"
+EXPECTED_INPUT_SHA256 = "b6bbe2d8a656573150b4dbaf8ecbe8f640b10e13cccd834dacc8b0404223e6bf"
+EXPECTED_OUTPUT_SHA256 = "8c0b0797155d3ae4f8f05b2d38d36552a629c900b8e990aba1ff44b666b72e45"
 
 
 def digest(text: str) -> str:
