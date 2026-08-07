@@ -1,0 +1,75 @@
+name: Priority atomic Advanced FunctionalAnalysis QYM repair
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/priority-m2a-fa-qym-atomic.yml'
+      - 'scripts/priority_m2a_fa_qym_atomic.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: priority-m2a-fa-qym-atomic
+  cancel-in-progress: false
+
+jobs:
+  atomic-repair:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      GITHUB_TOKEN: ${{ github.token }}
+      LOGDIR: /tmp/priority-m2a-fa-qym-atomic
+
+    steps:
+      - name: Clone exact latest branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "refs/heads/${BRANCH}"
+          git checkout -B "${BRANCH}" FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${LOGDIR}/logs"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lean" --version | tee "${LOGDIR}/lean-version.txt"
+          "${HOME}/.elan/bin/lake" --version | tee "${LOGDIR}/lake-version.txt"
+          "${HOME}/.elan/bin/lake" exe cache get 2>&1 | tee "${LOGDIR}/logs/cache-get.log"
+
+      - name: Verify all dependencies and atomically materialize final sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/priority_m2a_fa_qym_atomic.sh
+
+      - name: Print complete focused evidence
+        if: always()
+        shell: bash
+        run: |
+          set -u
+          test -d "${LOGDIR}" || exit 0
+          find "${LOGDIR}" -maxdepth 2 -type f -printf '%P\n' | sort
+          test -f "${LOGDIR}/snapshot.txt" && cat "${LOGDIR}/snapshot.txt"
+          test -f "${LOGDIR}/summary.csv" && cat "${LOGDIR}/summary.csv"
+          for failure in "${LOGDIR}"/*-failure.txt; do
+            test -e "${failure}" || continue
+            echo "===== ${failure} ====="
+            cat "${failure}"
+          done
