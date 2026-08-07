@@ -1,22 +1,7 @@
 name: Diagnose PASS 339 FunctionalAnalysis macOS 15
 
+# Historical PASS 339 evidence; manual reruns only.
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/diagnose-pass339-fa-macos15.yml'
-      - 'scripts/diagnose_pass339_fa.sh'
-      - 'scripts/apply_*_pass*_repairs.py'
-      - 'scripts/fa316_driver.py'
-      - 'scripts/fa316_payload/**'
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/diagnose-pass339-fa-macos15.yml'
-      - 'scripts/diagnose_pass339_fa.sh'
-      - 'scripts/apply_*_pass*_repairs.py'
-      - 'scripts/fa316_driver.py'
-      - 'scripts/fa316_payload/**'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +9,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass339-fa-macos15-${{ github.event.pull_request.head.sha || github.sha }}
+  group: diagnose-pass339-fa-macos15
   cancel-in-progress: true
 
 jobs:
@@ -32,7 +17,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 180
     env:
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_SHA: ${{ github.sha }}
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
