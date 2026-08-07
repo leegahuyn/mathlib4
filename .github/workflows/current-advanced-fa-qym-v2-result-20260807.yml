@@ -1,0 +1,86 @@
+name: Record current Advanced FA QYM result
+
+on:
+  workflow_run:
+    workflows: ['Current Advanced PASS then FA Integrated QYM']
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: record-current-advanced-fa-qym-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  record:
+    if: github.event.workflow_run.head_branch == 'ci/fa319-isolated-20260807'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout PR 9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Download artifact and produce compact result
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v2-artifact.zip /tmp/v2-unpacked
+          mkdir -p /tmp/v2-unpacked build-logs
+          artifact_id="$(gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts" \
+            --jq '.artifacts[] | select(.name | startswith("current-advanced-fa-qym-v2-")) | .id' \
+            | head -1)"
+          if [[ -n "${artifact_id}" ]]; then
+            gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" \
+              > /tmp/v2-artifact.zip
+            unzip -q /tmp/v2-artifact.zip -d /tmp/v2-unpacked
+          fi
+          result='build-logs/current-advanced-fa-qym-v2-latest.txt'
+          printf '%s\n' \
+            "run_id=${RUN_ID}" \
+            "head_sha=${RUN_HEAD_SHA}" \
+            "conclusion=${RUN_CONCLUSION}" \
+            "recorded_utc=$(date -u +%FT%TZ)" > "${result}"
+          for item in compile-summary.csv fa-followup-selection.txt status.txt snapshot.txt; do
+            if [[ -f "/tmp/v2-unpacked/${item}" ]]; then
+              echo "--- ${item} ---" >> "${result}"
+              cat "/tmp/v2-unpacked/${item}" >> "${result}"
+            fi
+          done
+          for summary in /tmp/v2-unpacked/logs/*.summary.txt; do
+            [[ -f "${summary}" ]] || continue
+            echo "--- $(basename "${summary}") ---" >> "${result}"
+            sed -n '1,320p' "${summary}" >> "${result}"
+          done
+          if [[ "${RUN_CONCLUSION}" = success ]]; then
+            cp "${result}" build-logs/current-advanced-fa-qym-v2-success.txt
+            rm -f build-logs/current-advanced-fa-qym-v2-failure.txt
+          else
+            cp "${result}" build-logs/current-advanced-fa-qym-v2-failure.txt
+            rm -f build-logs/current-advanced-fa-qym-v2-success.txt
+          fi
+
+      - name: Commit result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/current-advanced-fa-qym-v2-*.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'ci: record current Advanced FunctionalAnalysis QYM result'
+          git pull --rebase origin ci/fa319-isolated-20260807
+          git push origin HEAD:ci/fa319-isolated-20260807
