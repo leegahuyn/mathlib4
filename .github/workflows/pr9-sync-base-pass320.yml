@@ -1,0 +1,106 @@
+name: PR9 sync latest base while preserving pass320
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-sync-base-pass320.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pr9-sync-base-pass320
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR9 branch with history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge latest repair base into PR9 only
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_branch='ci/fa319-isolated-20260807'
+          base_branch='fix/primality-sheaf-clean-build'
+
+          test "$(git branch --show-current)" = "${head_branch}"
+          git fetch --no-tags origin \
+            "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
+
+          if git merge-base --is-ancestor "origin/${base_branch}" HEAD; then
+            echo 'PR9 already contains the latest base.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          set +e
+          git merge --no-ff --no-commit "origin/${base_branch}"
+          merge_code=$?
+          set -e
+
+          if [[ "${merge_code}" -ne 0 ]]; then
+            mapfile -t conflicts < <(git diff --name-only --diff-filter=U)
+            test "${#conflicts[@]}" -gt 0
+            printf 'conflict: %s\n' "${conflicts[@]}"
+
+            for path in "${conflicts[@]}"; do
+              case "${path}" in
+                .github/workflows/*320*|scripts/*320*|scripts/*three_hundred_twentieth*)
+                  git checkout --ours -- "${path}"
+                  ;;
+                *)
+                  git checkout --theirs -- "${path}"
+                  ;;
+              esac
+              git add -- "${path}"
+            done
+          fi
+
+          test -z "$(git diff --name-only --diff-filter=U)"
+          git diff --check --cached
+
+          if git diff --cached --quiet; then
+            git merge --abort || true
+            echo 'No synchronized change to commit.'
+            exit 0
+          fi
+
+          git commit -m 'merge: sync PR9 with latest pass320 repair base'
+          git push origin "HEAD:${head_branch}"
+
+      - name: Validate preserved pass320 infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          candidates = list(Path('.github/workflows').glob('*320*.yml'))
+          candidates += [Path('.github/workflows/pr9-sync-base-pass320.yml')]
+          for path in sorted(set(candidates)):
+              yaml.safe_load(path.read_text(encoding='utf-8'))
+              print(f'YAML OK: {path}')
+          PY
+
+          while IFS= read -r script; do
+            bash -n "${script}"
+            echo "bash -n OK: ${script}"
+          done < <(find scripts -maxdepth 1 -type f \
+            \( -iname '*320*.sh' -o -iname '*three_hundred_twentieth*.sh' \) \
+            -print | sort)
