@@ -1,0 +1,71 @@
+name: PASS 327 PR9 first-three continuation
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pass327-pr9-first-three-continuation.yml'
+      - 'scripts/ci_fa321_qym.sh'
+      - 'scripts/ci_fa318_qym.sh'
+      - 'scripts/fa316_driver.py'
+      - 'scripts/fa316_payload/**'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pass327-pr9-first-three-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  advanced-fa-qym:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      SOURCE_SHA: ${{ github.sha }}
+      SOURCE_BRANCH: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout exact PR9 branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 64
+          persist-credentials: true
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Verify Advanced, repair and verify FunctionalAnalysis, then verify Integrated and QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/ci_fa321_qym.sh
+
+      - name: Upload PASS 327 continuation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass327-pr9-first-three-${{ env.SOURCE_SHA }}
+          path: /tmp/fa324-qym
+          if-no-files-found: warn
+          retention-days: 90
