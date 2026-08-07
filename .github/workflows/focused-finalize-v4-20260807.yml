@@ -161,14 +161,6 @@ jobs:
           marker='## Focused M2A / FunctionalAnalysis / QYM direct-source PASS v4'
           section='''## Focused M2A / FunctionalAnalysis / QYM direct-source PASS v4
 
-- Checked-in `Mock2_Advanced`, substantive `Mock2_FunctionalAnalysis_Integrated`, compatibility `Mock2_FunctionalAnalysis`, and `QYM` compiled twice from deleted project artifacts.
-- Both direct-source passes exited `0`; Lean error count and missing-project-object count were `0`.
-- No runtime source repair was used in final CI.
-- `sorry`, `admit`, `sorryAx`, new global/user axioms, `unsafe`, `native_decide`, and `Lean.ofReduceBool` were absent.
-- Only `propext`, `Classical.choice`, and `Quot.sound` were observed.
-- Mock2 regression remained PASS.
-- Persistent report: `.ci/focused/focused_final_report_v4.md`
-
 The PR remains draft and unmerged. The 13-module/BuildAll/final-audit phase has not been started by this focused finalizer.
 '''
           body=pr.get('body') or ''
