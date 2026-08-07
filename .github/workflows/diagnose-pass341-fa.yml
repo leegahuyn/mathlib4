@@ -7,12 +7,6 @@ on:
       - '.github/workflows/diagnose-pass341-fa.yml'
       - 'scripts/diagnose_pass341_fa.sh'
       - 'scripts/fa341_repair.py'
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/diagnose-pass341-fa.yml'
-      - 'scripts/diagnose_pass341_fa.sh'
-      - 'scripts/fa341_repair.py'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +22,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_SHA: ${{ github.sha }}
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
