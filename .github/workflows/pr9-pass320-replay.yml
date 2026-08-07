@@ -1,0 +1,62 @@
+name: PR9 PASS 320 FunctionalAnalysis and QYM replay
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-pass320-replay.yml'
+      - 'scripts/pr9_replay_pass320_fa_qym.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pr9-pass320-fa-qym
+  cancel-in-progress: false
+
+jobs:
+  verify-and-materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout exact PR9 branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install exact Lean toolchain and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Replay only PASS 320 evidence and verify FA then QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/pr9_replay_pass320_fa_qym.sh
+
+      - name: Upload PASS 320 replay evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-pass320-fa-qym-${{ github.sha }}
+          path: /tmp/pr9-pass320-replay
+          if-no-files-found: warn
+          retention-days: 30
