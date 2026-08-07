@@ -19652,15 +19652,14 @@ open FixedPhasePeterssonCoordinates
 subtype. Keep one canonical additive/module instance family for every orbit
 index so graph-coordinate structures and completion constructions elaborate
 coherently throughout this namespace. -/
-noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
-    AddCommGroup (InverseEtaFixedPhaseCore n) := by
-  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact Module.addCommMonoidToAddCommGroup ℂ
-
 noncomputable local instance fixedPhaseGraphCoreModule (n : ℤ) :
     Module ℂ (InverseEtaFixedPhaseCore n) := by
   change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
   exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
 
 /-- The three concrete shifted Petersson coordinates on the canonical
 fixed-phase differential core. -/
@@ -22314,15 +22313,14 @@ open DefinitionOneSobolev.FixedPhaseGraphCompletion
 subtype. Keep one canonical additive/module instance family for every orbit
 index so subtraction of core-valued linear maps and finite-sum APIs elaborate
 coherently throughout the density section. -/
-noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
-    AddCommGroup (InverseEtaFixedPhaseCore n) := by
-  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact Module.addCommMonoidToAddCommGroup ℂ
-
 noncomputable local instance fixedPhaseDensityCoreModule (n : ℤ) :
     Module ℂ (InverseEtaFixedPhaseCore n) := by
   change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
   exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
 
 /-- Forget the bundled covariance of a smooth compact weight section while
 retaining its actual function, real smoothness, and quotient-compact support. -/
