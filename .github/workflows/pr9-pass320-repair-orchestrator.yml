@@ -1,0 +1,96 @@
+name: PR9 PASS 320 branch repair orchestrator
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-pass320-repair-orchestrator.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: pr9-pass320-fa-qym
+  cancel-in-progress: true
+
+jobs:
+  synchronize-repair-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout exact PR9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Guard PR9 as open, draft, and unmerged
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "/repos/${GITHUB_REPOSITORY}/pulls/9" > /tmp/pr9-state.json
+          python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pr9-state.json', encoding='utf-8'))
+          print({
+              'state': p.get('state'),
+              'draft': p.get('draft'),
+              'merged': p.get('merged'),
+              'head': p.get('head', {}).get('ref'),
+              'base': p.get('base', {}).get('ref'),
+          })
+          assert p.get('state') == 'open', p
+          assert p.get('draft') is True, p
+          assert p.get('merged') is False, p
+          assert p.get('head', {}).get('ref') == 'ci/fa319-isolated-20260807', p
+          assert p.get('base', {}).get('ref') == 'fix/primality-sheaf-clean-build', p
+          PY
+
+      - name: Synchronize latest PASS 320 repair base into PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/pr9_sync_base_pass320_v2.sh
+
+      - name: Install exact Lean toolchain and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Replay exact PASS 320 and verify FA then Integrated then QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/pr9_pass320_entrypoint.sh
+
+      - name: Upload complete PR9 branch-repair evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-pass320-branch-repair-${{ github.sha }}
+          path: |
+            /tmp/pr9-state.json
+            /tmp/pr9-pass320-replay
+            build-logs/pr9-branch-sync-status.txt
+            build-logs/pr9-pass320-latest-status.txt
+          if-no-files-found: warn
+          retention-days: 30
