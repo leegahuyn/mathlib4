@@ -31,8 +31,20 @@ def main() -> int:
         "      KernelEvidence (@p07_typedCurvature_correctedAndProved.{0, 0, 0, 0})\n",
         "Mock2 Advanced P0 typed-curvature evidence universes",
     )
+    text = replace_once(
+        text,
+        "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved)\n",
+        "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved.{0, 0})\n",
+        "Mock2 Advanced Section7 uniform-majorant evidence universes",
+    )
+    text = replace_once(
+        text,
+        "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved)\n",
+        "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved.{0})\n",
+        "Mock2 Advanced P0 automorphic-series evidence universe",
+    )
     TARGET.write_text(text, encoding="utf-8")
-    print("[pass314] Mock2_Advanced P0 evidence universes repaired")
+    print("[pass314] Mock2_Advanced remaining evidence universes repaired")
     return 0
 
 
