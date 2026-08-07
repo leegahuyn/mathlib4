@@ -1,0 +1,101 @@
+name: Isolated PASS 339 FunctionalAnalysis Ubuntu verification
+
+on:
+  push:
+    branches: [verify/fa338-ubuntu-20260808]
+    paths:
+      - '.github/workflows/verify-fa339-ubuntu-isolated.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: isolated-fa339-ubuntu-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout exact verification head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 160
+          persist-credentials: true
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass339-fa/logs
+          lean --version | tee /tmp/diagnose-pass339-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass339-fa/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass339-fa/logs/cache-get.log
+
+      - name: Reconstruct and compile PASS 339 FA
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          set +e
+          bash scripts/diagnose_pass339_fa.sh
+          code=$?
+          set -e
+          echo "${code}" > /tmp/diagnose-pass339-fa/workflow-exit-code.txt
+          exit 0
+
+      - name: Record compact PASS 339 result
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          result='build-logs/isolated-fa339-ubuntu-latest.txt'
+          printf '%s\n' \
+            "trigger_sha=${GITHUB_SHA}" \
+            "recorded_utc=$(date -u +%FT%TZ)" > "${result}"
+          if [[ -f /tmp/diagnose-pass339-fa/summary.txt ]]; then
+            echo '--- summary.txt ---' >> "${result}"
+            cat /tmp/diagnose-pass339-fa/summary.txt >> "${result}"
+          fi
+          if [[ -f /tmp/diagnose-pass339-fa/workflow-exit-code.txt ]]; then
+            printf 'workflow_exit_code=%s\n' \
+              "$(cat /tmp/diagnose-pass339-fa/workflow-exit-code.txt)" >> "${result}"
+          fi
+          if [[ -f /tmp/diagnose-pass339-fa/logs/failure-summary.txt ]]; then
+            echo '--- failure-summary.txt (first 520 lines) ---' >> "${result}"
+            sed -n '1,520p' /tmp/diagnose-pass339-fa/logs/failure-summary.txt >> "${result}"
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${result}"
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record isolated PASS 339 FunctionalAnalysis result'
+            git push origin HEAD:verify/fa338-ubuntu-20260808
+          fi
+
+      - name: Upload PASS 339 isolated diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolated-fa339-ubuntu-${{ github.sha }}
+          path: /tmp/diagnose-pass339-fa
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Preserve actual Lean conclusion
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          code="$(cat /tmp/diagnose-pass339-fa/workflow-exit-code.txt 2>/dev/null || echo 99)"
+          exit "${code}"
