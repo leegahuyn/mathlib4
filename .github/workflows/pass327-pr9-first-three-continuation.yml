@@ -1,17 +1,6 @@
 name: PASS 327 PR9 first-three continuation
 
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/pass327-pr9-first-three-continuation.yml'
-      - 'scripts/pass327_pr9_first_three.sh'
-      - 'scripts/fa316_driver.py'
-      - 'scripts/fa316_payload/**'
-      - 'scripts/apply_*_pass*_repairs.py'
-      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
-      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
-      - 'PrimalitySheafVerification/QYM.lean'
   pull_request:
     branches: [fix/primality-sheaf-clean-build]
     paths:
