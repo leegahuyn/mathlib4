@@ -1,0 +1,327 @@
+exit_code=1
+error_count=20
+warning_count=253
+first_error=/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:20602:2: error: Type mismatch: After simplification, term
+last_error=/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24263:50: error: unsolved goals
+--- first diagnostics ---
+956:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:20602:2: error: Type mismatch: After simplification, term
+984:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:21484:13: error: Type mismatch
+995:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:22305:31: error: Application type mismatch: The argument
+1004:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:22335:2: error: Type mismatch: After simplification, term
+1033:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:22999:18: error: unsolved goals
+1052:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23006:19: error: unsolved goals
+1063:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23034:18: error: unsolved goals
+1082:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23041:19: error: unsolved goals
+1185:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23299:2: error: 'change' tactic failed, pattern
+1191:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23317:2: error: 'change' tactic failed, pattern
+1219:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23736:4: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+1234:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23928:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+1273:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23939:2: error: Type mismatch: After simplification, term
+1282:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23959:4: error: Type mismatch: After simplification, term
+1298:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23965:4: error: Type mismatch: After simplification, term
+1309:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24004:2: error: Type mismatch: After simplification, term
+1318:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24089:2: error: Type mismatch: After simplification, term
+1324:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24121:2: error: Type mismatch: After simplification, term
+1339:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24241:64: error: unsolved goals
+1357:/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24263:50: error: unsolved goals
+--- log tail ---
+      ↑↑(cuspPartitionPieceSmoothQuotient N) z * ↑↑v.toSmoothQuotientCompactFunction z =
+    ↑↑↑(invariantCutoffTimesOrbitSection n (cuspPartitionPieceSmoothQuotient N) ⋯
+                ((InverseEtaFixedPhaseCore.toWeightSection n) u) ⋯)
+        z +
+      ↑↑↑(invariantCutoffTimesOrbitSection n (cuspPartitionPieceSmoothQuotient N) ⋯
+                ((InverseEtaFixedPhaseCore.toWeightSection n) v) ⋯)
+        z
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23041:19: error: unsolved goals
+N : ℕ
+n : ℤ
+c : ℂ
+u : InverseEtaFixedPhaseCore n
+z : ℍ
+⊢ ↑↑(cuspPartitionPieceSmoothQuotient N) z * c * ↑↑u.toSmoothQuotientCompactFunction z =
+    c *
+      ↑↑↑(invariantCutoffTimesOrbitSection n (cuspPartitionPieceSmoothQuotient N) ⋯
+                ((InverseEtaFixedPhaseCore.toWeightSection n) u) ⋯)
+        z
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23076:2: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  HSub (InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore (n + 1))
+    (InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore (n + 1)) ?m.62
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23084:2: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  HSub (InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore (n - 1))
+    (InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore (n - 1)) ?m.62
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23097:13: warning: declaration uses `sorry`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23089:8: warning: declaration uses `sorry`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23097:40: warning: This simp argument is unused:
+  LinearMap.sub_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [raiseCuspCutoffCommutator, LinearMap.comp_apply, Pi.sub_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23098:4: warning: This simp argument is unused:
+  LinearMap.comp_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply, Pi.sub_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23098:26: warning: This simp argument is unused:
+  Pi.sub_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply, LinearMap.comp_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23099:2: warning: 'change
+  raiseRaw (paperOrbitExponent n) (upstairsCuspCutoff N * (u : SmoothQuotientCompactFunction)) z -
+      upstairsCuspCutoff N z * raiseRaw (paperOrbitExponent n) (u : SmoothQuotientCompactFunction) z =
+    _' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23106:2: warning: 'rw [raiseRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N) (u : SmoothQuotientCompactFunction).1.2]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23108:2: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23106:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23108:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23119:13: warning: declaration uses `sorry`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23111:8: warning: declaration uses `sorry`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23119:40: warning: This simp argument is unused:
+  LinearMap.sub_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [lowerCuspCutoffCommutator, LinearMap.comp_apply, Pi.sub_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23120:4: warning: This simp argument is unused:
+  LinearMap.comp_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply, Pi.sub_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23120:26: warning: This simp argument is unused:
+  Pi.sub_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply, LinearMap.comp_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23121:2: warning: 'change
+  lowerRaw (paperOrbitExponent n) (upstairsCuspCutoff N * (u : SmoothQuotientCompactFunction)) z -
+      upstairsCuspCutoff N z * lowerRaw (paperOrbitExponent n) (u : SmoothQuotientCompactFunction) z =
+    _' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23128:2: warning: 'rw [lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N) (u : SmoothQuotientCompactFunction).1.2]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23130:2: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23128:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23130:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23299:2: error: 'change' tactic failed, pattern
+  (InverseEtaFixedPhaseCore.raise n) ((cuspCutoffOperator M n) u) -
+      (cuspCutoffOperator M (n + 1)) ((InverseEtaFixedPhaseCore.raise n) u) =
+    0
+is not definitionally equal to target
+  (raiseCuspCutoffCommutator M n) u = 0
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23317:2: error: 'change' tactic failed, pattern
+  (InverseEtaFixedPhaseCore.lower n) ((cuspCutoffOperator M n) u) -
+      (cuspCutoffOperator M (n - 1)) ((InverseEtaFixedPhaseCore.lower n) u) =
+    0
+is not definitionally equal to target
+  (lowerCuspCutoffCommutator M n) u = 0
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23343:29: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23345:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23732:6: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Module ℂ (InverseEtaFixedPhaseCore 0)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23734:9: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Module ℂ (InverseEtaFixedPhaseCore 0)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23734:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23736:4: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23803:5: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  ContinuousInv₀ { r // 0 ≤ r }
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23896:10: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23896:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23928:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑↑(hyperbolicDensity z) * ↑(weightFiberScale (-paperOrbitExponent n) z)
+in the target expression
+  ↑(z.im ^ euclideanGaugeExponent n) *
+      (↑(z.im ^ euclideanGaugeExponent n) *
+        ⟪↑(SmoothCompactWeightCore.toSection u.toSmoothCore) z,
+          ↑(SmoothCompactWeightCore.toSection v.toSmoothCore) z⟫_ℂ) =
+    ↑(hyperbolicDensity z) •
+      (↑((InvariantFiberMetric.weightFiberMetric (OrbitMultiplier n)).scale z) *
+          star (↑(SmoothCompactWeightCore.toSection u.toSmoothCore) z) *
+        ↑(SmoothCompactWeightCore.toSection v.toSmoothCore) z)
+
+n : ℤ
+u v : OrbitPeterssonCore n
+z : ℍ
+hScale :
+  ↑(z.im ^ euclideanGaugeExponent n) ^ 2 = ↑↑(hyperbolicDensity z) * ↑(weightFiberScale (-paperOrbitExponent n) z)
+⊢ ↑(z.im ^ euclideanGaugeExponent n) *
+      (↑(z.im ^ euclideanGaugeExponent n) *
+        ⟪↑(SmoothCompactWeightCore.toSection u.toSmoothCore) z,
+          ↑(SmoothCompactWeightCore.toSection v.toSmoothCore) z⟫_ℂ) =
+    ↑(hyperbolicDensity z) •
+      (↑((InvariantFiberMetric.weightFiberMetric (OrbitMultiplier n)).scale z) *
+          star (↑(SmoothCompactWeightCore.toSection u.toSmoothCore) z) *
+        ↑(SmoothCompactWeightCore.toSection v.toSmoothCore) z)
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23926:13: warning: This simp argument is unused:
+  map_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.conj_ofReal, NNReal.smul_def, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23927:4: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [map_mul, Complex.conj_ofReal, NNReal.smul_def]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23939:2: error: Type mismatch: After simplification, term
+  hre
+ has type
+  (⟪orbitEuclideanGauge n u z, orbitEuclideanGauge n u z⟫_ℂ).re =
+    ↑(hyperbolicDensity z) *
+      (InvariantFiberMetric.weightFiberMetric (OrbitMultiplier n)).pointwiseNormSq
+        (SmoothCompactWeightCore.toSection u.toSmoothCore) z
+but is expected to have type
+  ‖orbitEuclideanGauge n u z‖ ^ 2 = ↑(hyperbolicDensity z) * upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore z
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23959:4: error: Type mismatch: After simplification, term
+  Integrable.re hHyperbolic
+ has type
+  Integrable
+    (fun x =>
+      RCLike.re
+        ↑((InvariantFiberMetric.weightFiberMetric (OrbitMultiplier n)).pointwiseNormSq
+            (SmoothCompactWeightCore.toSection u.toSmoothCore) x))
+    (hyperbolicMeasure.restrict chosenGammaTwoFundamentalDomain.carrier)
+but is expected to have type
+  IntegrableOn
+    (fun z =>
+      RCLike.re
+        ↑((InvariantFiberMetric.weightFiberMetric (OrbitMultiplier n)).pointwiseNormSq
+            (SmoothCompactWeightCore.toSection u.toSmoothCore) z))
+    chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:23965:4: error: Type mismatch: After simplification, term
+  hNormHyperbolicRe
+ has type
+  @IntegrableOn ℍ ℝ UpperHalfPlane.instMeasurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    SeminormedAddGroup.toContinuousENorm
+    (fun z => RCLike.re ↑(upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore z))
+    chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure
+but is expected to have type
+  @IntegrableOn ℍ ℝ UpperHalfPlane.instMeasurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    SeminormedAddGroup.toContinuousENorm (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
+    chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24004:2: error: Type mismatch: After simplification, term
+  MemLp.coeFn_toLp (orbitEuclideanGauge_memLp n u)
+ has type
+  @Filter.EventuallyEq ℍ ℂ (ae chosenEuclideanCarrierMeasure) (↑↑(MemLp.toLp (orbitEuclideanGauge n u) ⋯))
+    (orbitEuclideanGauge n u)
+but is expected to have type
+  @Filter.EventuallyEq ℍ ℂ (ae chosenEuclideanCarrierMeasure)
+    (↑↑({ toFun := fun u => MemLp.toLp (orbitEuclideanGauge n u) ⋯, map_add' := ⋯, map_smul' := ⋯ } u))
+    (orbitEuclideanGauge n u)
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24089:2: error: Type mismatch: After simplification, term
+  LinearIsometry.norm_map (orbitPeterssonCoreEuclideanIsometry n) u
+ has type
+  @Eq ℝ ‖((orbitPeterssonCoreToEuclideanL2 n).isometryOfInner ⋯) u‖ ‖u‖
+but is expected to have type
+  @Eq ℝ ‖(orbitPeterssonCoreToEuclideanL2 n) u‖ ‖u‖
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24121:2: error: Type mismatch: After simplification, term
+  coeFn_orbitPeterssonCoreToEuclideanL2 n ((coreEmbedding n) u)
+ has type
+  @Filter.EventuallyEq ℍ ℂ (ae chosenEuclideanCarrierMeasure)
+    (↑↑((orbitPeterssonCoreToEuclideanL2 n) ((coreEmbedding n) u))) (orbitEuclideanGauge n ((coreEmbedding n) u))
+but is expected to have type
+  @Filter.EventuallyEq ℍ ℂ (ae chosenEuclideanCarrierMeasure)
+    ↑↑((orbitPeterssonCoreToEuclideanL2 n) ((coreEmbedding n) u)) fun z =>
+    ↑(z.im ^ euclideanGaugeExponent n) * ↑↑u.toSmoothQuotientCompactFunction z
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24241:64: error: unsolved goals
+n : ℤ
+u : InverseEtaFixedPhaseCore n
+z : ℍ
+hz : heightC z ≠ 0
+⊢ ↑(z.im ^ euclideanGaugeExponent n) * heightC z * Complex.I * dx (↑↑u.toSmoothQuotientCompactFunction) z +
+        ↑(z.im ^ euclideanGaugeExponent n) * heightC z * dy (↑↑u.toSmoothQuotientCompactFunction) z +
+      ↑(z.im ^ euclideanGaugeExponent n) * ↑(2 + euclideanGaugeExponent n * 2) * ↑↑u.toSmoothQuotientCompactFunction z =
+    ↑(z.im ^ euclideanGaugeExponent n) * heightC z * Complex.I * dx (↑↑u.toSmoothQuotientCompactFunction) z +
+          ↑(z.im ^ euclideanGaugeExponent n) * heightC z * dy (↑↑u.toSmoothQuotientCompactFunction) z +
+        ↑(z.im ^ euclideanGaugeExponent n) * ↑↑u.toSmoothQuotientCompactFunction z * ↑(euclideanGaugeExponent n) +
+      ↑(z.im ^ euclideanGaugeExponent n) * ↑↑u.toSmoothQuotientCompactFunction z * ↑(2 + euclideanGaugeExponent n)
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean:24263:50: error: unsolved goals
+n : ℤ
+v : InverseEtaFixedPhaseCore (n + 1)
+z : ℍ
+hz : heightC z ≠ 0
+⊢ -(↑(z.im ^ euclideanGaugeExponent n) * heightC z ^ 2 * Complex.I * dx (↑↑v.toSmoothQuotientCompactFunction) z) +
+      ↑(z.im ^ euclideanGaugeExponent n) * heightC z ^ 2 * dy (↑↑v.toSmoothQuotientCompactFunction) z =
+    -(↑(z.im ^ euclideanGaugeExponent n) * heightC z ^ 2 * Complex.I * dx (↑↑v.toSmoothQuotientCompactFunction) z) +
+          ↑(z.im ^ euclideanGaugeExponent n) * heightC z ^ 2 * dy (↑↑v.toSmoothQuotientCompactFunction) z +
+        ↑(1 + euclideanGaugeExponent n) * ↑(z.im ^ (1 + euclideanGaugeExponent n)) *
+          ↑↑v.toSmoothQuotientCompactFunction z -
+      ↑(1 + euclideanGaugeExponent n) * ↑↑v.toSmoothQuotientCompactFunction z * ↑(z.im ^ euclideanGaugeExponent (1 + n))
