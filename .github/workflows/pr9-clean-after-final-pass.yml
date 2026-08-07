@@ -1,0 +1,133 @@
+name: PR9 clean temporary infrastructure after final PASS
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-clean-after-final-pass.yml'
+      - 'build-logs/PR9_BRANCH_FIXED_PASS320_FA_QYM'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr9-clean-after-final-pass
+  cancel-in-progress: false
+
+jobs:
+  clean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout PR9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Remove only temporary PR9 infrastructure after PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass='build-logs/PR9_BRANCH_FIXED_PASS320_FA_QYM'
+          status='build-logs/pr9-final-branch-health.txt'
+          if [[ ! -e "${pass}" ]] || ! grep -q '^result=PASS$' "${status}"; then
+            echo 'Final checked-in-source PASS is not present; preserving all repair evidence.'
+            exit 0
+          fi
+
+          base='fix/primality-sheaf-clean-build'
+          branch='ci/fa319-isolated-20260807'
+          git fetch --no-tags origin "+refs/heads/${base}:refs/remotes/origin/${base}"
+
+          temporary=(
+            .github/workflows/pr9-sync-base-pass320.yml
+            .github/workflows/pr9-pass320-replay.yml
+            .github/workflows/pr9-pass320-replay-v2.yml
+            .github/workflows/pr9-sync-base-pass320-v2.yml
+            .github/workflows/pr9-pass320-repair-orchestrator.yml
+            .github/workflows/pr9-exact-pass320-fa-qym.yml
+            .github/workflows/pr9-record-exact-pass320-result.yml
+            .github/workflows/pr9-exact-pass320-fa-qym-v2.yml
+            .github/workflows/pr9-record-exact-pass320-result-v2.yml
+            .github/workflows/pr9-prune-obsolete-and-dispatch.yml
+            .github/workflows/pr9-exact-pass320-fa-qym-stable.yml
+            .github/workflows/pr9-exact-pass320-fa-qym-stable-v2.yml
+            .github/workflows/pr9-resilient-pass320-final.yml
+            .github/workflows/pr9-supervise-final-pass320.yml
+            .github/workflows/pr9-comment-pass320-result-v2.yml
+            .github/workflows/pr9-adaptive-post320-fa-qym.yml
+            .github/workflows/pr9-publish-adaptive-status.yml
+            .github/workflows/pr9-pass320-artifact-fallback.yml
+            .github/workflows/pr9-final-branch-health.yml
+            .github/workflows/pr9-clean-after-final-pass.yml
+            scripts/pr9_replay_pass320_fa_qym.sh
+            scripts/pr9_pass320_entrypoint.sh
+            scripts/pr9_sync_base_pass320_v2.sh
+            scripts/pr9_apply_exact_pass320_and_qym.sh
+            scripts/pr9_apply_exact_pass320_resilient.sh
+            scripts/pr9_resilient_pass320_entrypoint.sh
+            scripts/pr9_adaptive_post320_fa_qym.sh
+            scripts/pr9_adaptive_post320_entrypoint.sh
+            scripts/pr9_pass320_artifact_fallback.sh
+            scripts/pr9_final_branch_health.sh
+          )
+
+          for path in "${temporary[@]}"; do
+            if git cat-file -e "origin/${base}:${path}" 2>/dev/null; then
+              git checkout "origin/${base}" -- "${path}"
+            elif [[ -e "${path}" ]]; then
+              git rm -f -- "${path}"
+            fi
+          done
+
+          # Earlier isolated runner files are restored to the current base when
+          # they belong to the base, rather than being deleted in PR9.
+          for path in \
+            .github/workflows/fa319-qym-x86.yml \
+            .github/workflows/fa319-qym-arm.yml \
+            .github/workflows/fa319-qym-macos.yml; do
+            if git cat-file -e "origin/${base}:${path}" 2>/dev/null; then
+              git checkout "origin/${base}" -- "${path}"
+            fi
+          done
+
+          mkdir -p build-logs
+          {
+            echo "utc=$(date -u +%FT%TZ)"
+            echo 'cleanup=PASS-only temporary infrastructure removed'
+            echo "verified_health_status=${status}"
+            echo "verified_source_head=$(git rev-parse HEAD)"
+            echo "base_head=$(git rev-parse origin/${base})"
+          } > build-logs/pr9-post-pass-cleanup.txt
+          git add -A
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: remove temporary PR9 repair infrastructure after direct-source PASS'
+            git push origin "HEAD:${branch}"
+          fi
+
+          body='/tmp/pr9-clean-pass-comment.md'
+          {
+            echo '<!-- pr9-post-pass-cleanup -->'
+            echo '## PR #9 post-PASS cleanup'
+            echo
+            echo '- Final checked-in-source health gate was PASS.'
+            echo '- Temporary PR9 repair workflows and drivers were removed.'
+            echo '- Base-owned workflow files were restored from `fix/primality-sheaf-clean-build`.'
+            echo '- Verified FA source and final audit/build evidence were retained.'
+            echo '- PR remains draft and unmerged.'
+          } > "${body}"
+          existing="$(gh api "/repos/${GITHUB_REPOSITORY}/issues/9/comments?per_page=100" --jq '.[] | select(.body | contains("<!-- pr9-post-pass-cleanup -->")) | .id' | tail -1)"
+          if [[ -n "${existing}" ]]; then
+            gh api --method PATCH "/repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -F body=@"${body}" >/dev/null
+          else
+            gh api --method POST "/repos/${GITHUB_REPOSITORY}/issues/9/comments" -F body=@"${body}" >/dev/null
+          fi
