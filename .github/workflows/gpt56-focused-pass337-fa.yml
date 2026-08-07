@@ -1,19 +1,20 @@
 name: GPT-5.6 focused PASS 337 FunctionalAnalysis
 
 on:
-  push:
-    branches: [fix/pr9-fa-gpt56-isolated-20260808]
+  pull_request:
+    branches: [ci/fa319-isolated-20260807]
     paths:
       - '.github/workflows/gpt56-focused-pass337-fa.yml'
       - 'scripts/gpt56_diagnose_pass337_fa.sh'
+      - 'scripts/apply_three_hundred_thirty_seventh_pass_functional_analysis_repairs.py'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 concurrency:
-  group: gpt56-focused-pass337-fa
+  group: gpt56-focused-pass337-fa-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -24,9 +25,9 @@ jobs:
       - name: Checkout exact isolated head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 160
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Install coreutils, pinned Lean, and Mathlib cache
         shell: bash
@@ -47,73 +48,17 @@ jobs:
           lake exe cache get
 
       - name: Reconstruct and compile focused PASS 337 FA
-        id: diagnostic
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
           bash scripts/gpt56_diagnose_pass337_fa.sh
-          rc=$?
-          set -e
-          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
-          exit 0
 
       - name: Upload focused PASS 337 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: gpt56-focused-pass337-fa-${{ github.sha }}
+          name: gpt56-focused-pass337-fa-${{ github.event.pull_request.head.sha || github.sha }}
           path: /tmp/gpt56-focused-pass337-fa
           if-no-files-found: error
           retention-days: 90
-
-      - name: Publish focused result
-        if: always()
-        shell: bash
-        env:
-          DIAGNOSTIC_EXIT_CODE: ${{ steps.diagnostic.outputs.exit_code }}
-        run: |
-          set -euo pipefail
-          evidence='/tmp/gpt56-focused-pass337-fa'
-          mkdir -p build-logs
-          report='build-logs/gpt56-focused-pass337-latest.txt'
-          {
-            echo "run_id=${GITHUB_RUN_ID}"
-            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
-            echo "tested_sha=${GITHUB_SHA}"
-            echo "diagnostic_exit_code=${DIAGNOSTIC_EXIT_CODE:-missing}"
-            echo "utc=$(date -u +%FT%TZ)"
-            echo
-            echo '--- summary ---'
-            if [[ -f "${evidence}/summary.txt" ]]; then
-              cat "${evidence}/summary.txt"
-            else
-              echo 'summary missing'
-            fi
-            echo
-            echo '--- repair hashes (tail) ---'
-            if [[ -f "${evidence}/repair-source-sha256.csv" ]]; then
-              tail -14 "${evidence}/repair-source-sha256.csv"
-            fi
-            echo
-            echo '--- first and last error context ---'
-            if [[ -f "${evidence}/logs/failure-summary.txt" ]]; then
-              head -360 "${evidence}/logs/failure-summary.txt"
-            else
-              echo 'failure summary missing'
-            fi
-          } > "${report}"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "${report}"
-          git diff --cached --quiet || git commit -m 'ci: record focused PASS 337 FA result'
-          git push origin "HEAD:fix/pr9-fa-gpt56-isolated-20260808"
-
-      - name: Enforce focused diagnostic result
-        if: always()
-        shell: bash
-        env:
-          DIAGNOSTIC_EXIT_CODE: ${{ steps.diagnostic.outputs.exit_code }}
-        run: |
-          test -n "${DIAGNOSTIC_EXIT_CODE:-}"
-          exit "${DIAGNOSTIC_EXIT_CODE}"
