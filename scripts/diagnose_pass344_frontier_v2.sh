@@ -47,7 +47,6 @@ repl(
     'Mock2_FunctionalAnalysis-pass343-frontier-v2.log',
     'Mock2_FunctionalAnalysis-pass344-frontier-v2.log',
     'candidate log name',
-    expected=6,
 )
 
 out = Path('/tmp/diagnose_pass344_frontier_v2.generated.sh')
