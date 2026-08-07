@@ -1,0 +1,70 @@
+name: PASS 320 derived FunctionalAnalysis and QYM gate
+
+on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'scripts/ci_fa319_qym.sh'
+      - 'scripts/ci_fa321_qym.sh'
+      - 'scripts/apply_three_hundred_twenty_first_pass_functional_analysis_repairs.py'
+      - '.github/workflows/fa321-pr9-pass320-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa321-pr9-pass320-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  verify-pass320-derived-fa-and-qym:
+    runs-on: macos-15
+    timeout-minutes: 360
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Install GNU coreutils, exact Lean toolchain, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list coreutils >/dev/null 2>&1 || brew install coreutils
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${PATH}"
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "${GITHUB_PATH}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          sha256sum --version | head -1
+          lake exe cache get
+
+      - name: Compile PASS 320 derived FunctionalAnalysis before QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
+          bash scripts/ci_fa319_qym.sh
+
+      - name: Upload PASS 320 derived evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa321-pr9-pass320-${{ env.SOURCE_SHA }}
+          path: /tmp/fa321-qym
+          if-no-files-found: warn
+          retention-days: 30
