@@ -1,0 +1,80 @@
+name: Adaptive Mock2 Advanced materialization v3
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'scripts/adaptive_mock2_advanced_universe_repair_v3.py'
+      - 'scripts/ci_adaptive_mock2_advanced_v2.sh'
+      - 'scripts/apply_*_pass_mock2_advanced_repairs.py'
+      - 'scripts/apply_*_pass_repairs.py'
+      - '.github/workflows/adaptive-mock2-advanced-materialize-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: adaptive-mock2-advanced-materialize-v3
+  cancel-in-progress: false
+
+jobs:
+  verify-and-materialize:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      SOURCE_SHA: ${{ github.sha }}
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Clone exact branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+
+      - name: Install exact Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Run body-scoped bounded repair and materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          sed \
+            -e 's#adaptive_mock2_advanced_universe_repair_v2.py#adaptive_mock2_advanced_universe_repair_v3.py#g' \
+            -e 's#/tmp/adaptive-mock2-advanced-v2#/tmp/adaptive-mock2-advanced-v3#g' \
+            -e 's#seq 1 48#seq 1 64#g' \
+            scripts/ci_adaptive_mock2_advanced_v2.sh \
+            > /tmp/ci_adaptive_mock2_advanced_v3.sh
+          bash /tmp/ci_adaptive_mock2_advanced_v3.sh
+
+      - name: Upload verification evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: adaptive-mock2-advanced-v3-${{ env.SOURCE_SHA }}
+          path: /tmp/adaptive-mock2-advanced-v3
+          if-no-files-found: warn
+          retention-days: 30
