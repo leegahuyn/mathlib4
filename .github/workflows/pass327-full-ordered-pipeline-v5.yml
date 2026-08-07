@@ -1,26 +1,9 @@
 name: PASS 327 complete ordered pipeline v5
 
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
     paths:
-      - 'scripts/ci_pass327_full_order_v3.sh'
-      - 'scripts/ci_pass327_full_order_v5.sh'
-      - 'scripts/ci_pass327_fa_qym_recovery.sh'
-      - 'scripts/pass327_lean_repair_agent.py'
-      - 'scripts/post_priority_lean_repair_agent.py'
-      - 'scripts/final_dependency_repair_agent.py'
-      - 'scripts/primality_final_local_gate.sh'
-      - 'scripts/primality_final_local_gate_v2.sh'
-      - 'scripts/generate_spt5_whole_file_audit.py'
-      - 'scripts/install_primality_official_ci.py'
-      - 'build-logs/pass327-agent-state.json'
-      - 'build-logs/pass327-targets-pass.json'
-      - 'build-logs/post-priority-agent-state.json'
-      - 'build-logs/mock1-family-pass.json'
-      - 'build-logs/final-dependency-agent-state.json'
-      - 'build-logs/final-dependency-repair-pass.json'
-      - 'build-logs/final-local-gate-pass.json'
       - '.github/workflows/pass327-full-ordered-pipeline-v5.yml'
   workflow_dispatch:
 
@@ -32,7 +15,7 @@ permissions:
 
 concurrency:
   group: pass327-complete-ordered-pipeline-v5
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   ordered-repair-and-finalization:
@@ -46,7 +29,7 @@ jobs:
       - name: Checkout exact PR9 pipeline head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 160
           persist-credentials: true
 
@@ -91,7 +74,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: pass327-complete-ordered-v5-${{ github.sha }}
+          name: pass327-complete-ordered-v5-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             /tmp/pass327-full-order-v3
             /tmp/pass327-repair-agent
