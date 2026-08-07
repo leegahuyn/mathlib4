@@ -1,15 +1,7 @@
 name: Diagnose PASS 339 FunctionalAnalysis on PR
 
+# Historical PASS 339 evidence; manual reruns only.
 on:
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/diagnose-pass339-fa-pr.yml'
-      - 'scripts/diagnose_pass339_fa.sh'
-      - 'scripts/diagnose_pass328_fa.sh'
-      - 'scripts/apply_*_pass*_repairs.py'
-      - 'scripts/fa316_driver.py'
-      - 'scripts/fa316_payload/**'
   workflow_dispatch:
 
 permissions:
@@ -17,7 +9,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass339-fa-pr-${{ github.event.pull_request.head.sha || github.sha }}
+  group: diagnose-pass339-fa-pr
   cancel-in-progress: true
 
 jobs:
@@ -26,12 +18,11 @@ jobs:
     timeout-minutes: 240
     env:
       EVIDENCE: /tmp/diagnose-pass339-fa
-
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 220
           persist-credentials: false
 
@@ -62,7 +53,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: diagnose-pass339-fa-pr-${{ github.event.pull_request.head.sha || github.sha }}
+          name: diagnose-pass339-fa-pr-${{ github.sha }}
           path: /tmp/diagnose-pass339-fa
           if-no-files-found: error
           retention-days: 90
