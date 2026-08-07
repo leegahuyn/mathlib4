@@ -1,11 +1,8 @@
 name: PR9 queue cleanup v6
 
-# Non-destructive cleanup only. Never delete or rewrite repository workflow files.
+# Manual-only, non-destructive cleanup. It must never cancel active repair runs
+# merely because the draft PR head changed.
 on:
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/pass327-pr9-isolate-to-v6.yml'
   workflow_dispatch:
 
 permissions:
@@ -38,4 +35,4 @@ jobs:
                   "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
                   >/dev/null 2>&1 || true
               done
-          echo 'Queue cleanup complete; no workflow/source files were modified.'
+          echo 'Manual queue cleanup complete; no workflow/source files were modified.'
