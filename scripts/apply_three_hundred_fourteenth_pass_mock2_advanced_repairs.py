@@ -43,6 +43,18 @@ def main() -> int:
         "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved.{0})\n",
         "Mock2 Advanced P0 automorphic-series evidence universe",
     )
+    text = replace_once(
+        text,
+        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible)\n",
+        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible.{0, 0})\n",
+        "Mock2 Advanced Section7 trivialization-compatible evidence universes",
+    )
+    text = replace_once(
+        text,
+        "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved)\n",
+        "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved.{0, 0})\n",
+        "Mock2 Advanced P0 compact-embedding evidence universes",
+    )
     TARGET.write_text(text, encoding="utf-8")
     print("[pass314] Mock2_Advanced remaining evidence universes repaired")
     return 0
