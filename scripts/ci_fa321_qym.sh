@@ -27,8 +27,8 @@ source = replace_once(
 source = replace_once(
     source,
     "EVIDENCE='/tmp/fa318-qym-x86'\n",
-    "EVIDENCE='/tmp/fa323-qym'\n",
-    'pass323 evidence directory',
+    "EVIDENCE='/tmp/fa324-qym'\n",
+    'pass324 evidence directory',
 )
 source = replace_once(
     source,
@@ -37,8 +37,10 @@ source = replace_once(
     "EXPECTED_FA_PASS319_SHA256='171588d37133a6494727645474dadad3f80828bdcf8a1ce5b8fd72b77d4d3c0a'\n"
     "EXPECTED_FA_PASS320_SHA256='48fe6bd80915c155b6a38266c7a30f3818ad4b335fb9b77cc07175c8cad1dcd9'\n"
     "EXPECTED_FA_PASS321_SHA256='d184ee500fb6d514db79e50d4ed581cba0123660e0f8288d6f479e6f1c63d51f'\n"
-    "EXPECTED_FA_PASS322_SHA256='5f7052b75353817e55e4fab35cc5f6578a9449737476a3dd05621999eaa67eed'\n",
-    'pass323 predecessor hashes',
+    "EXPECTED_FA_PASS322_SHA256='5f7052b75353817e55e4fab35cc5f6578a9449737476a3dd05621999eaa67eed'\n"
+    "EXPECTED_FA_PASS323_SHA256='41a542e802bbb2b05e56f81ae5b94c045cde75b14b140b679cc4ed70e156b960'\n"
+    "EXPECTED_FA_PASS324_SHA256='cbe40f444a0fd843f89f87608b5f962cad774375d5daadf124b62ab155165350'\n",
+    'pass324 expected source hashes',
 )
 source = replace_once(
     source,
@@ -86,21 +88,22 @@ cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass318.lean"
   test "$(sha256sum "${FA}" | awk '{print $1}')" = "${EXPECTED_FA_PASS322_SHA256}"
   python3 scripts/apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py \\
     2>&1 | tee "${EVIDENCE}/logs/pass323-application.log"
-  pass323_sha="$(sha256sum "${FA}" | awk '{print $1}')"
-  test "${pass323_sha}" != "${EXPECTED_FA_PASS322_SHA256}"
-  echo "pass323_sha256=${pass323_sha}" | tee "${EVIDENCE}/pass323-sha256.txt"
+  test "$(sha256sum "${FA}" | awk '{print $1}')" = "${EXPECTED_FA_PASS323_SHA256}"
+  python3 scripts/apply_three_hundred_twenty_fourth_pass_functional_analysis_repairs.py \\
+    2>&1 | tee "${EVIDENCE}/logs/pass324-application.log"
+  test "$(sha256sum "${FA}" | awk '{print $1}')" = "${EXPECTED_FA_PASS324_SHA256}"
 fi
-cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass323.lean"
+cp "${FA}" "${EVIDENCE}/source/Mock2_FunctionalAnalysis.pass324.lean"
 ''',
-    'pass323 application and evidence source',
+    'pass324 application and evidence source',
 )
 source = replace_once(
     source,
     "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 318 source'\n",
-    "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 323 source'\n",
-    'pass323 materialization commit',
+    "  git commit -m 'fix: materialize Mock2 FunctionalAnalysis pass 324 source'\n",
+    'pass324 materialization commit',
 )
-Path('/tmp/ci_fa323_qym.generated.sh').write_text(source, encoding='utf-8')
+Path('/tmp/ci_fa324_qym.generated.sh').write_text(source, encoding='utf-8')
 PY
 
-bash /tmp/ci_fa323_qym.generated.sh
+bash /tmp/ci_fa324_qym.generated.sh
