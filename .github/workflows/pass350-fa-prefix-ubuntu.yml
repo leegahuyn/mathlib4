@@ -47,19 +47,38 @@ jobs:
           from pathlib import Path
           path = Path('scripts/diagnose_pass341_fa.sh')
           text = path.read_text(encoding='utf-8')
-          marker = 'rm -f "${OUTDIR}/Mock2_FunctionalAnalysis.olean"'
-          pos = text.find(marker)
-          print(f'compile marker offset={pos}')
-          if pos < 0:
-              raise SystemExit('could not locate the direct compile marker')
-          text = text[:pos] + '''cp "${FA}" /tmp/Mock2_FunctionalAnalysis-pass350.lean
-          exit 0
+          open_marker = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
           '''
+          close_marker = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          open_count = text.count(open_marker)
+          close_count = text.count(close_marker)
+          print(f'compile wrapper markers: open={open_count} close={close_count}')
+          if open_count != 1 or close_count != 1:
+              raise SystemExit('could not locate the direct compile command exactly')
+          text = text.replace(
+              open_marker,
+              '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''',
+          )
+          text = text.replace(
+              close_marker,
+              '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''',
+          )
           path.write_text(text, encoding='utf-8')
           PY
           export PATH="${HOME}/.elan/bin:${PATH}"
           bash scripts/diagnose_pass350_fa.sh
-          test -s /tmp/Mock2_FunctionalAnalysis-pass350.lean
+          source_file='/tmp/diagnose-pass350-fa/source/Mock2_FunctionalAnalysis-pass350.lean'
+          test -s "${source_file}"
+          cp "${source_file}" /tmp/Mock2_FunctionalAnalysis-pass350.lean
           sha256sum /tmp/Mock2_FunctionalAnalysis-pass350.lean
           head -n 24743 /tmp/Mock2_FunctionalAnalysis-pass350.lean > \
             /tmp/Mock2_FunctionalAnalysis-pass350-prefix.lean
