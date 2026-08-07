@@ -1,18 +1,7 @@
 name: Diagnose PASS 340 FunctionalAnalysis
 
+# PASS 340 evidence is preserved; new automatic work continues at PASS 341.
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/diagnose-pass340-fa.yml'
-      - 'scripts/diagnose_pass340_fa.sh'
-      - 'scripts/fa340_repair.py'
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/diagnose-pass340-fa.yml'
-      - 'scripts/diagnose_pass340_fa.sh'
-      - 'scripts/fa340_repair.py'
   workflow_dispatch:
 
 permissions:
@@ -20,7 +9,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass340-fa-${{ github.event.pull_request.head.sha || github.sha }}
+  group: diagnose-pass340-fa
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_SHA: ${{ github.sha }}
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
