@@ -22641,14 +22641,22 @@ theorem denseRange_positiveRangeToClosedL2
     DenseRange (positiveRangeToClosedL2 ν) := by
   change DenseRange
     (Set.inclusion (positiveL2Range ν).le_topologicalClosure)
-  simpa [-SetLike.coe_sort_coe]
+  rw [denseRange_inclusion_iff]
+  · intro x hx
+    exact hx
+  · intro x hx
+    exact (positiveL2Range ν).le_topologicalClosure hx
 
 theorem denseRange_inverseRangeToClosedL2
     (ν : GenuineInverseHalfWeightAutomorphy.Multiplier) :
     DenseRange (inverseRangeToClosedL2 ν) := by
   change DenseRange
     (Set.inclusion (inverseL2Range ν).le_topologicalClosure)
-  simpa [-SetLike.coe_sort_coe]
+  rw [denseRange_inclusion_iff]
+  · intro x hx
+    exact hx
+  · intro x hx
+    exact (inverseL2Range ν).le_topologicalClosure hx
 
 /-- Restriction to the closed six-cell polygon is faithful on global positive
 automorphic classes.  Closed-polygon orbit coverage and countability of the
@@ -23126,9 +23134,9 @@ theorem pairAction_integralFirstColumn
       integralFirstColumn (γ.1 * g) := by
   apply Prod.ext
   · simp [pairAction, integralFirstColumn,
-      Matrix.SpecialLinearGroup.coe_mul, Matrix.mul_fin_two]
+      Matrix.SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
   · simp [pairAction, integralFirstColumn,
-      Matrix.SpecialLinearGroup.coe_mul, Matrix.mul_fin_two]
+      Matrix.SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
 
 /-- The first column of each of the six representatives is exactly the scaling
 column selected by `repColumnCusp`.  The separate height selector `repCusp`
@@ -23238,7 +23246,9 @@ def partialSum (f : ℕ → E) (N : ℕ) : E :=
 /-- A summable series is the limit of its canonical finite truncations. -/
 theorem partialSum_tendsto_tsum {f : ℕ → E} (hf : Summable f) :
     Tendsto (partialSum f) atTop (𝓝 (∑' n, f n)) := by
-  simpa only [partialSum] using hf.hasSum.tendsto_sum_nat
+  change Tendsto (fun N => ∑ n ∈ Finset.range N, f n)
+    atTop (𝓝 (∑' n, f n))
+  exact hf.hasSum.tendsto_sum_nat
 
 /-- Hence finite truncations form a Cauchy sequence before the infinite object
 is used in any subsequent equality. -/
@@ -23261,8 +23271,10 @@ theorem tsum_sub_partialSum_tendsto_zero
     {f : ℕ → E} (hf : Summable f) :
     Tendsto (fun N => (∑' n, f n) - partialSum f N)
       atTop (𝓝 0) := by
+  have hconst : Tendsto (fun _ : ℕ => ∑' n, f n)
+      atTop (𝓝 (∑' n, f n)) := tendsto_const_nhds
   simpa only [sub_self] using
-    (tendsto_const_nhds.sub (partialSum_tendsto_tsum hf))
+    hconst.sub (partialSum_tendsto_tsum hf)
 
 /-- Finite truncation commutes with every linear map, without continuity or
 limit arguments. -/
@@ -23330,7 +23342,7 @@ noncomputable def realPartInnerFunctional (x : E) : E →L[ℝ] ℝ :=
 
 @[simp]
 theorem realPartInnerFunctional_apply (x y : E) :
-    realPartInnerFunctional x y = (⟨x, y⟩_ℂ).re := by
+    realPartInnerFunctional x y = (⟪x, y⟫_ℂ).re := by
   rfl
 
 /-- The bounded real bilinear form associated with a bounded complex-linear
@@ -23342,8 +23354,8 @@ noncomputable def realBilinearForm (A : E →L[ℂ] E) :
 
 @[simp]
 theorem realBilinearForm_apply (A : E →L[ℂ] E) (u v : E) :
-    realBilinearForm A u v = (⟨A u, v⟩_ℂ).re := by
-  change ⟨A u, v⟩_ℝ = (⟨A u, v⟩_ℂ).re
+    realBilinearForm A u v = (⟪A u, v⟫_ℂ).re := by
+  change ⟪A u, v⟫_ℝ = (⟪A u, v⟫_ℂ).re
   exact real_inner_eq_re_inner ℂ (A u) v
 
 /-- Each continuous functional obtained by fixing the first variable is
@@ -23358,7 +23370,7 @@ theorem realBilinearForm_apply_eq_realPartInnerFunctional
 for the explicitly constructed form. -/
 theorem realBilinearForm_isCoercive
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re) :
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re) :
     IsCoercive (realBilinearForm A) := by
   refine ⟨c, hc, ?_⟩
   intro u
@@ -23368,7 +23380,7 @@ theorem realBilinearForm_isCoercive
 its explicit coercivity estimate. -/
 noncomputable def laxMilgramEquiv
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re) :
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re) :
     E ≃L[ℝ] E :=
   (realBilinearForm_isCoercive A hc hA).continuousLinearEquivOfBilin
 
@@ -23376,45 +23388,45 @@ noncomputable def laxMilgramEquiv
 in the original complex inner product. -/
 theorem laxMilgramEquiv_inner_apply
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re)
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re)
     (u v : E) :
-    ⟨laxMilgramEquiv A hc hA u, v⟩_ℝ =
-      (⟨A u, v⟩_ℂ).re := by
+    ⟪laxMilgramEquiv A hc hA u, v⟫_ℝ =
+      (⟪A u, v⟫_ℂ).re := by
   calc
-    ⟨laxMilgramEquiv A hc hA u, v⟩_ℝ =
+    ⟪laxMilgramEquiv A hc hA u, v⟫_ℝ =
         realBilinearForm A u v :=
       (realBilinearForm_isCoercive A hc hA).continuousLinearEquivOfBilin_apply u v
-    _ = (⟨A u, v⟩_ℂ).re := realBilinearForm_apply A u v
+    _ = (⟪A u, v⟫_ℂ).re := realBilinearForm_apply A u v
 
 /-- The Lax--Milgram map is the underlying real operator of `A`, proved from
 the characterizing inner-product identity rather than stored in the
 definition. -/
 theorem laxMilgramEquiv_apply_eq_operator
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re)
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re)
     (u : E) :
     laxMilgramEquiv A hc hA u = A u := by
   apply ext_inner_right ℝ
   intro v
   calc
-    ⟨laxMilgramEquiv A hc hA u, v⟩_ℝ =
-        (⟨A u, v⟩_ℂ).re :=
+    ⟪laxMilgramEquiv A hc hA u, v⟫_ℝ =
+        (⟪A u, v⟫_ℂ).re :=
       laxMilgramEquiv_inner_apply A hc hA u v
-    _ = ⟨A u, v⟩_ℝ :=
+    _ = ⟪A u, v⟫_ℝ :=
       (real_inner_eq_re_inner ℂ (A u) v).symm
 
 /-- The sharp lower estimate inherited from the stated coercivity constant. -/
 theorem c_mul_norm_le_norm_laxMilgramEquiv
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re)
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re)
     (u : E) :
     c * ‖u‖ ≤ ‖laxMilgramEquiv A hc hA u‖ := by
   by_cases hu : 0 < ‖u‖
   · refine (mul_le_mul_iff_left₀ hu).mp ?_
     calc
-      c * ‖u‖ * ‖u‖ ≤ (⟨A u, u⟩_ℂ).re := by
+      c * ‖u‖ * ‖u‖ ≤ (⟪A u, u⟫_ℂ).re := by
         simpa only [pow_two, mul_assoc] using hA u
-      _ = ⟨laxMilgramEquiv A hc hA u, u⟩_ℝ :=
+      _ = ⟪laxMilgramEquiv A hc hA u, u⟫_ℝ :=
         (laxMilgramEquiv_inner_apply A hc hA u u).symm
       _ ≤ ‖laxMilgramEquiv A hc hA u‖ * ‖u‖ :=
         real_inner_le_norm _ _
@@ -23424,7 +23436,7 @@ theorem c_mul_norm_le_norm_laxMilgramEquiv
 /-- The corresponding a priori bound for the inverse solution operator. -/
 theorem norm_laxMilgramEquiv_symm_le
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re)
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re)
     (f : E) :
     ‖(laxMilgramEquiv A hc hA).symm f‖ ≤ ‖f‖ / c := by
   apply (le_div_iff₀ hc).2
@@ -23436,9 +23448,9 @@ theorem norm_laxMilgramEquiv_symm_le
 visible in the theorem statement. -/
 theorem exists_laxMilgramEquiv_with_estimates
     (A : E →L[ℂ] E) {c : ℝ} (hc : 0 < c)
-    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟨A u, u⟩_ℂ).re) :
+    (hA : ∀ u : E, c * ‖u‖ ^ 2 ≤ (⟪A u, u⟫_ℂ).re) :
     ∃ e : E ≃L[ℝ] E,
-      (∀ u v, ⟨e u, v⟩_ℝ = (⟨A u, v⟩_ℂ).re) ∧
+      (∀ u v, ⟪e u, v⟫_ℝ = (⟪A u, v⟫_ℂ).re) ∧
       (∀ u, c * ‖u‖ ≤ ‖e u‖) ∧
       (∀ f, ‖e.symm f‖ ≤ ‖f‖ / c) := by
   refine ⟨laxMilgramEquiv A hc hA, ?_, ?_, ?_⟩
@@ -23455,7 +23467,7 @@ topology in Mathlib.  In complex rank one, however, evaluation twice at `1`
 is a canonical complex-linear equivalence with `ℂ`.  We use that equivalence
 to transport the ordinary `C^∞` notion, rather than postulating a topology on
 algebraic linear maps.  The continuous-linear refinement below is literally a
-`ContDiff ℂ ∞` map into nested continuous endomorphisms and forgets to the same
+`ContDiff ℂ ⊤` map into nested continuous endomorphisms and forgets to the same
 algebraic form.
 -/
 
@@ -23485,7 +23497,7 @@ theorem coordinate_lsmul :
 endomorphism-valued one-form.  Since `coordinate` is a linear equivalence,
 this is precisely the transported `C^∞` structure from `ℂ`. -/
 def IsSmooth (A : ℂ → AlgebraicValue) : Prop :=
-  ContDiff ℂ ∞ (fun z => coordinate (A z))
+  ContDiff ℂ ⊤ (fun z => coordinate (A z))
 
 /-- The actual complex submodule of smooth algebraic
 `End(ℂ)`-valued one-forms on the complex line. -/
@@ -23493,13 +23505,18 @@ def smoothForms : Submodule ℂ (ℂ → AlgebraicValue) where
   carrier := {A | IsSmooth A}
   zero_mem' := by
     simpa [IsSmooth] using
-      (contDiff_const : ContDiff ℂ ∞ (fun _ : ℂ => (0 : ℂ)))
+      (contDiff_const : ContDiff ℂ ⊤ (fun _ : ℂ => (0 : ℂ)))
   add_mem' := by
     intro A B hA hB
-    simpa only [IsSmooth, Pi.add_apply, map_add] using hA.add hB
+    change ContDiff ℂ ⊤ (fun z => coordinate (A z)) at hA
+    change ContDiff ℂ ⊤ (fun z => coordinate (B z)) at hB
+    change ContDiff ℂ ⊤ (fun z => coordinate ((A + B) z))
+    simpa only [Pi.add_apply, map_add] using hA.add hB
   smul_mem' := by
     intro c A hA
-    simpa only [IsSmooth, Pi.smul_apply, map_smul] using hA.const_smul c
+    change ContDiff ℂ ⊤ (fun z => coordinate (A z)) at hA
+    change ContDiff ℂ ⊤ (fun z => coordinate ((c • A) z))
+    simpa only [Pi.smul_apply, map_smul] using hA.const_smul c
 
 theorem zero_isSmooth : IsSmooth (0 : ℂ → AlgebraicValue) :=
   smoothForms.zero_mem
@@ -23526,10 +23543,10 @@ theorem scalarMultiplicationForm_apply (z v w : ℂ) :
 
 theorem scalarMultiplicationForm_isSmooth :
     IsSmooth scalarMultiplicationForm := by
-  change ContDiff ℂ ∞
+  change ContDiff ℂ ⊤
     (fun _ : ℂ => coordinate (LinearMap.lsmul ℂ ℂ))
   simpa only [coordinate_lsmul] using
-    (contDiff_const : ContDiff ℂ ∞ (fun _ : ℂ => (1 : ℂ)))
+    (contDiff_const : ContDiff ℂ ⊤ (fun _ : ℂ => (1 : ℂ)))
 
 theorem scalarMultiplicationForm_mem_smoothForms :
     scalarMultiplicationForm ∈ smoothForms :=
@@ -23562,32 +23579,37 @@ theorem scalarMultiplicationSmoothForm_ne_zero :
 /-- Continuous rank-one endomorphism-valued one-form values. -/
 abbrev ContinuousValue : Type := ℂ →L[ℂ] (ℂ →L[ℂ] ℂ)
 
-/-- The literal `ContDiff ℂ ∞` submodule in the normed continuous-linear
+/-- The literal `ContDiff ℂ ⊤` submodule in the normed continuous-linear
 realization. -/
 def smoothContinuousForms : Submodule ℂ (ℂ → ContinuousValue) where
-  carrier := {A | ContDiff ℂ ∞ A}
+  carrier := {A | ContDiff ℂ ⊤ A}
   zero_mem' := by
-    simpa using
-      (contDiff_const : ContDiff ℂ ∞ (fun _ : ℂ => (0 : ContinuousValue)))
+    change ContDiff ℂ ⊤ (fun _ : ℂ => (0 : ContinuousValue))
+    exact contDiff_const
   add_mem' := by
     intro A B hA hB
-    simpa only [Pi.add_apply] using hA.add hB
+    change ContDiff ℂ ⊤ A at hA
+    change ContDiff ℂ ⊤ B at hB
+    change ContDiff ℂ ⊤ (fun z => A z + B z)
+    exact hA.add hB
   smul_mem' := by
     intro c A hA
-    simpa only [Pi.smul_apply] using hA.const_smul c
+    change ContDiff ℂ ⊤ A at hA
+    change ContDiff ℂ ⊤ (fun z => c • A z)
+    exact hA.const_smul c
 
 theorem continuous_zero_contDiff :
-    ContDiff ℂ ∞ (0 : ℂ → ContinuousValue) :=
+    ContDiff ℂ ⊤ (0 : ℂ → ContinuousValue) :=
   smoothContinuousForms.zero_mem
 
 theorem continuous_add_contDiff {A B : ℂ → ContinuousValue}
-    (hA : ContDiff ℂ ∞ A) (hB : ContDiff ℂ ∞ B) :
-    ContDiff ℂ ∞ (A + B) :=
+    (hA : ContDiff ℂ ⊤ A) (hB : ContDiff ℂ ⊤ B) :
+    ContDiff ℂ ⊤ (A + B) :=
   smoothContinuousForms.add_mem hA hB
 
 theorem continuous_smul_contDiff (c : ℂ) {A : ℂ → ContinuousValue}
-    (hA : ContDiff ℂ ∞ A) :
-    ContDiff ℂ ∞ (c • A) :=
+    (hA : ContDiff ℂ ⊤ A) :
+    ContDiff ℂ ⊤ (c • A) :=
   smoothContinuousForms.smul_mem c hA
 
 /-- Scalar multiplication as a nested continuous linear map. -/
@@ -23599,7 +23621,7 @@ def continuousScalarMultiplicationForm : ℂ → ContinuousValue :=
   fun _ => continuousScalarMultiplicationValue
 
 theorem continuousScalarMultiplicationForm_contDiff :
-    ContDiff ℂ ∞ continuousScalarMultiplicationForm :=
+    ContDiff ℂ ⊤ continuousScalarMultiplicationForm :=
   contDiff_const
 
 theorem continuousScalarMultiplicationForm_mem_smoothContinuousForms :
@@ -23625,12 +23647,10 @@ theorem continuousScalarMultiplicationForm_ne_zero :
 /-- Forget continuity in both linear-map layers. -/
 def forgetContinuousValue (A : ContinuousValue) : AlgebraicValue where
   toFun v := (A v).toLinearMap
-  map_add' v w := by
-    ext x
-    simp
-  map_smul' c v := by
-    ext x
-    simp
+  map_add' v w :=
+    congrArg ContinuousLinearMap.toLinearMap (A.map_add v w)
+  map_smul' c v :=
+    congrArg ContinuousLinearMap.toLinearMap (A.map_smul c v)
 
 @[simp]
 theorem forgetContinuousValue_apply (A : ContinuousValue) (v w : ℂ) :
@@ -23684,6 +23704,10 @@ family gives an exact counterexample. -/
 
 namespace CorrectedLemmas.ScatteringDensityErratum
 
+/- Use Mathlib's canonical restriction-of-scalars normed-space structure
+throughout the real-parameter derivative calculation. -/
+attribute [local instance 10000] NormedSpace.complexToReal
+
 noncomputable def scalarUnitaryScattering (t : ℝ) : ℂ :=
   Complex.exp (Complex.I * (t : ℂ))
 
@@ -23697,14 +23721,11 @@ theorem hasDerivAt_scalarUnitaryScattering (t : ℝ) :
   have hinner :
       HasDerivAt (fun z : ℂ => Complex.I * z) Complex.I (t : ℂ) :=
     hasDerivAt_const_mul Complex.I
-  have hcomplex :
-      HasDerivAt
-        (fun z : ℂ => Complex.exp (Complex.I * z))
-        (Complex.I * Complex.exp (Complex.I * (t : ℂ))) (t : ℂ) := by
-    simpa only [mul_comm] using
-      (Complex.hasDerivAt_exp (Complex.I * (t : ℂ))).comp (t : ℂ) hinner
-  simpa only [scalarUnitaryScattering, scalarUnitaryDerivative] using
-    hcomplex.comp_ofReal
+  have hcomplex := hinner.cexp
+  change HasDerivAt
+    (fun y : ℝ => Complex.exp (Complex.I * (y : ℂ)))
+    (Complex.I * Complex.exp (Complex.I * (t : ℂ))) t
+  simpa [mul_comm] using hcomplex.comp_ofReal
 
 theorem norm_scalarUnitaryScattering (t : ℝ) :
     ‖scalarUnitaryScattering t‖ = 1 := by
@@ -23976,6 +23997,14 @@ theorem prototype_ne_zero : prototype ≠ 0 := by
   have h := congrFun hzero 0
   norm_num [prototype] at h
 
+namespace Function
+
+/-- Compatibility predicate for an everywhere constant function. -/
+def Constant {α β : Type*} (f : α → β) : Prop :=
+  ∀ x y, f x = f y
+
+end Function
+
 theorem prototype_nonconstant : ¬ Function.Constant prototype := by
   intro hconstant
   have h := hconstant 0 1
@@ -24066,8 +24095,8 @@ theorem outside_tsum_eq (w : ℂ) :
 
 theorem correction_hasDerivAt (q : ℂ) :
     HasDerivAt correctionValue 1 q := by
-  simpa [correctionValue] using
-    (hasDerivAt_const q (2 : ℂ)).add (hasDerivAt_id q)
+  change HasDerivAt (fun z : ℂ => (2 : ℂ) + z) 1 q
+  simpa using (hasDerivAt_id q).const_add (2 : ℂ)
 
 theorem correctionValue_differentiable : Differentiable ℂ correctionValue := by
   intro q
@@ -24078,8 +24107,8 @@ theorem correctionValue_at_zero : correctionValue 0 = 2 := by
   simp [correctionValue]
 
 theorem prototype_differentiable : Differentiable ℂ prototype := by
-  simpa [prototype] using
-    (differentiable_id.add (differentiable_const (1 : ℂ)))
+  unfold prototype
+  fun_prop
 
 theorem insideDomain_open : IsOpen insideDomain := by
   exact Metric.isOpen_ball
@@ -24345,7 +24374,13 @@ inductive Disposition
   | proved
   | correctedAndProved
   | removedWithErratum
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Disposition where
+  elems := {.proved, .correctedAndProved, .removedWithErratum}
+  complete := by
+    intro x
+    cases x <;> simp
 
 inductive Claim
   | item1_pp3_4
@@ -24365,7 +24400,30 @@ inductive Claim
   | equations4_30_to_4_32
   | equation5_1
   | equations6_1_to_6_18
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems := {
+    .item1_pp3_4,
+    .equations1_1_to_1_16,
+    .quotedQ2A_to_Q2F,
+    .equations1_17_to_1_24,
+    .equations1_26_to_1_30,
+    .equations1_31_to_1_33,
+    .equations2_1_to_2_4,
+    .pages23_to_25,
+    .equations3_1_to_3_6,
+    .equations3_7_to_3_19,
+    .equations3_20_to_3_26,
+    .equations4_1_to_4_9,
+    .equations4_10_to_4_27,
+    .equations4_28_to_4_29,
+    .equations4_30_to_4_32,
+    .equation5_1,
+    .equations6_1_to_6_18}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- Paper-specific constructions that may not be hidden behind the word
 "quoted" or behind a field whose type is already the desired conclusion. -/
@@ -24453,7 +24511,7 @@ def dependencies : Claim → List Dependency
         .smoothAutomorphicGaugeSheaf]
 
 theorem dependencies_nonempty (c : Claim) :
-    (dependencies c).Nonempty := by
+    dependencies c ≠ [] := by
   cases c <;> simp [dependencies]
 
 /-- Disposition of each *entire literal bundled block*.  Every block contains
@@ -24647,55 +24705,55 @@ theorem claimEvidence (c : Claim) : ClaimEvidence c := by
 
 /-! ### Genuine Item-1 and Q2.E leaves -/
 
-theorem item1_standardTheta_T2_proved :=
+noncomputable def item1_standardTheta_T2_proved :=
   @ConcreteUnaryTheta.theta_T_sq
 
-theorem item1_standardTheta_gamma2Translation_proved :=
+noncomputable def item1_standardTheta_gamma2Translation_proved :=
   @ConcreteUnaryTheta.theta_gamma2TranslationTwo
 
-theorem item1_standardTheta_S_proved :=
+noncomputable def item1_standardTheta_S_proved :=
   @ConcreteUnaryTheta.theta_S
 
-theorem item1_standardThetaSeries_proved :=
+noncomputable def item1_standardThetaSeries_proved :=
   @ConcreteUnaryTheta.theta_eq_tsum_nat
 
-theorem item1_standardThetaSummable_proved :=
+noncomputable def item1_standardThetaSummable_proved :=
   @ConcreteUnaryTheta.theta_tail_summable
 
-theorem item1_standardThetaSharpGaussianBound_proved :=
+noncomputable def item1_standardThetaSharpGaussianBound_proved :=
   @ConcreteUnaryTheta.norm_theta_le_one_add_inv_sqrt_im
 
-theorem item1_standardThetaSixCellDensityMajorant_proved :=
+noncomputable def item1_standardThetaSixCellDensityMajorant_proved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveThetaDensity_pullback_le_on_fd
 
-theorem item1_standardThetaFundamentalMemLp_proved :=
+noncomputable def item1_standardThetaFundamentalMemLp_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.positiveNormalized_standardThetaClass_memLp_fundamentalMeasure
 
-theorem item1_standardThetaPositiveAutomorphicL2_proved :=
+noncomputable def item1_standardThetaPositiveAutomorphicL2_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.standardThetaClass_mem_positiveAutomorphicL2Submodule
 
-theorem item1_standardThetaDecay_proved :=
+noncomputable def item1_standardThetaDecay_proved :=
   ConcreteUnaryTheta.theta_sub_one_exponentialDecay
 
-theorem item1_unitaryMultiplierCancellation_correctedAndProved :=
+noncomputable def item1_unitaryMultiplierCancellation_correctedAndProved :=
   @hermitianContraction_invariant_of_sameMultiplier
 
-theorem item1_genuineSquareRootFactorNonvanishing_proved :=
+noncomputable def item1_genuineSquareRootFactorNonvanishing_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.sqrtFactor_ne_zero
 
-theorem item1_genuineDenominatorCocycle_proved :=
+noncomputable def item1_genuineDenominatorCocycle_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.denom_cocycle
 
-theorem item1_genuineFiberGlobalSignDichotomy_proved :=
+noncomputable def item1_genuineFiberGlobalSignDichotomy_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.sqrtFactor_eq_or_eq_neg_of_projection_eq
 
-theorem item1_genuineFiberTwoSheetClassification_proved :=
+noncomputable def item1_genuineFiberTwoSheetClassification_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.eq_or_eq_deckNeg_mul_of_projection_eq
 
-theorem item1_gamma2StandardGenerators_proved :=
+noncomputable def item1_gamma2StandardGenerators_proved :=
   CorrectedLemmas.Gamma2Generation.gamma2_eq_closure_standard_generators
 
-theorem item1_weightHalfPeterssonDensityInvariance_correctedAndProved :=
+noncomputable def item1_weightHalfPeterssonDensityInvariance_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightDensity.density_invariant
 
 noncomputable def item1_thetaCovariantSubmonoid_constructed :=
@@ -24704,622 +24762,622 @@ noncomputable def item1_thetaCovariantSubmonoid_constructed :=
 noncomputable def item1_thetaCovariantSubgroup_constructed :=
   CorrectedLemmas.GenuineHalfWeightAutomorphy.thetaCovariantSubgroup
 
-theorem item1_translationTwoThetaPair_proved :=
+noncomputable def item1_translationTwoThetaPair_proved :=
   CorrectedLemmas.GenuineHalfWeightAutomorphy.translationTwo_pair_mem_thetaCovariantSubmonoid
 
-theorem item1_centralNegOneThetaPair_proved :=
+noncomputable def item1_centralNegOneThetaPair_proved :=
   CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_pair_mem_thetaCovariantSubmonoid
 
-theorem item1_thetaPhaseUnique_of_nonzero_proved :=
+noncomputable def item1_thetaPhaseUnique_of_nonzero_proved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.thetaPhase_unique_of_nonzero
 
-theorem item1_explicitThetaNonzeroPoint_proved :=
+noncomputable def item1_explicitThetaNonzeroPoint_proved :=
   CorrectedLemmas.GenuineHalfWeightAutomorphy.theta_nonzero_at_thetaNonzeroPoint
 
-theorem item1_fullCovarianceBuildsCharacter_correctedAndProved :=
+noncomputable def item1_fullCovarianceBuildsCharacter_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.theta_isAutomorphic
 
-theorem item1_fullThetaCovariance_proved :=
+noncomputable def item1_fullThetaCovariance_proved :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.fullThetaCovariance
 
 noncomputable def item1_standardThetaMultiplier_constructed :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.standardThetaMultiplier
 
-theorem item1_standardThetaGenuineAutomorphy_proved :=
+noncomputable def item1_standardThetaGenuineAutomorphy_proved :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.standardTheta_isAutomorphic
 
-theorem item1_nonunitaryCancellationErratum :=
+noncomputable def item1_nonunitaryCancellationErratum :=
   sameMultiplierScalarCancellation_requires_unitarity
 
-theorem item1_genuineMetaplecticDenomCocycle_proved :=
+noncomputable def item1_genuineMetaplecticDenomCocycle_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.denom_cocycle
 
-theorem item1_genuineMetaplecticFactorNonzero_proved :=
+noncomputable def item1_genuineMetaplecticFactorNonzero_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.sqrtFactor_ne_zero
 
-theorem item1_genuineMetaplecticNormSquare_proved :=
+noncomputable def item1_genuineMetaplecticNormSquare_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.norm_sqrtFactor_sq
 
-theorem item1_genuineMetaplecticNormSqDenom_proved :=
+noncomputable def item1_genuineMetaplecticNormSqDenom_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.normSq_denom_eq_norm_sqrtFactor_pow_four
 
-theorem item1_genuineMetaplecticHeightTransform_proved :=
+noncomputable def item1_genuineMetaplecticHeightTransform_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.im_gamma2Act_eq_div_norm_sqrtFactor_pow_four
 
-theorem item1_genuineMetaplecticMulClosure_proved :=
+noncomputable def item1_genuineMetaplecticMulClosure_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.mul_sqrtFactor_sq
 
-theorem item1_genuineMetaplecticInvClosure_proved :=
+noncomputable def item1_genuineMetaplecticInvClosure_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.inv_sqrtFactor_sq
 
-theorem item1_genuineMetaplecticGroupAssociativity_proved :=
+noncomputable def item1_genuineMetaplecticGroupAssociativity_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.group_mul_assoc
 
-theorem item1_genuineMetaplecticGroupInverse_proved :=
+noncomputable def item1_genuineMetaplecticGroupInverse_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.group_inv_mul
 
-theorem item1_genuineMetaplecticProjectionCocycle_proved :=
+noncomputable def item1_genuineMetaplecticProjectionCocycle_proved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.projection_preserves_mul
 
-theorem item1_thetaGeneratorDenominator_proved :=
+noncomputable def item1_thetaGeneratorDenominator_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.denom_gamma2TranslationTwo
 
-theorem item1_thetaGeneratorProjection_proved :=
+noncomputable def item1_thetaGeneratorProjection_proved :=
   CorrectedLemmas.ThetaGeneratorLift.translationTwoLift_projection
 
-theorem item1_thetaGeneratorFactorNonzero_proved :=
+noncomputable def item1_thetaGeneratorFactorNonzero_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.translationTwoLift_sqrtFactor_ne_zero
 
-theorem item1_thetaGeneratorFactorNorm_proved :=
+noncomputable def item1_thetaGeneratorFactorNorm_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.norm_translationTwoLift_sqrtFactor
 
-theorem item1_thetaGeneratorCovariance_proved :=
+noncomputable def item1_thetaGeneratorCovariance_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.theta_translationTwoLift_covariance
 
-theorem item1_centralNegOneMembership_proved :=
+noncomputable def item1_centralNegOneMembership_proved :=
   CorrectedLemmas.ThetaGeneratorLift.negOne_mem_gamma2
 
-theorem item1_centralNegOneProjection_proved :=
+noncomputable def item1_centralNegOneProjection_proved :=
   CorrectedLemmas.ThetaGeneratorLift.centralNegOneLift_projection
 
-theorem item1_centralNegOneFactorNorm_proved :=
+noncomputable def item1_centralNegOneFactorNorm_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.norm_centralNegOneLift_sqrtFactor
 
-theorem item1_centralNegOneSquareObstruction_proved :=
+noncomputable def item1_centralNegOneSquareObstruction_proved :=
   @CorrectedLemmas.ThetaGeneratorLift.square_ne_one_of_projection_negOne
 
-theorem item1_globalHomomorphicLiftNonSplitErratum :=
+noncomputable def item1_globalHomomorphicLiftNonSplitErratum :=
   CorrectedLemmas.ThetaGeneratorLift.no_groupHom_section_of_genuine_projection
 
-theorem q2E_mellinGammaIntegral_proved :=
+noncomputable def q2E_mellinGammaIntegral_proved :=
   @ConcreteMellinGamma.integral_beta_sub_two
 
-theorem q2F_betaOneEndpointErratum :=
+noncomputable def q2F_betaOneEndpointErratum :=
   @CorrectedLemmas.CuspConvergence.inversePower_not_integrable_nearZero
 
 /-! ### Weak PDE, spectral, arithmetic, and mass leaves -/
 
-theorem equations1_1_to_1_2_distributionalRestriction_correctedAndProved :=
+noncomputable def equations1_1_to_1_2_distributionalRestriction_correctedAndProved :=
   @CorrectedLemmas.StartingIntegralIdentity.restrict_distributional_equation_compactSupport_of_product
 
-theorem equation1_6_averageFactor_correctedAndProved :=
+noncomputable def equation1_6_averageFactor_correctedAndProved :=
   @CorrectedLemmas.GreenIdentityRepair.average_factorization_identity
 
-theorem equation1_6_missingHalfErratum :=
+noncomputable def equation1_6_missingHalfErratum :=
   CorrectedLemmas.GreenIdentityRepair.average_factorization_without_half_counterexample
 
-theorem equations1_7_to_1_8_boundarySign_correctedAndProved :=
+noncomputable def equations1_7_to_1_8_boundarySign_correctedAndProved :=
   @CorrectedLemmas.GreenIdentityRepair.energy_add_boundary_eq_rhs_iff
 
-theorem equations1_7_to_1_8_plusBoundaryErratum :=
+noncomputable def equations1_7_to_1_8_plusBoundaryErratum :=
   CorrectedLemmas.GreenIdentityRepair.paper_plusBoundaryRewrite_counterexample
 
-theorem equations1_13_to_1_16_realLaxMilgram_proved :=
+noncomputable def equations1_13_to_1_16_realLaxMilgram_proved :=
   @FunctionalAnalysis.lax_milgram
 
-theorem equations1_13_to_1_16_complexRealForm_constructedAndProved :=
+noncomputable def equations1_13_to_1_16_complexRealForm_constructedAndProved :=
   @CorrectedLemmas.ComplexRealLaxMilgram.realBilinearForm_apply_eq_realPartInnerFunctional
 
-theorem equations1_13_to_1_16_complexCoercivity_toReal_proved :=
+noncomputable def equations1_13_to_1_16_complexCoercivity_toReal_proved :=
   @CorrectedLemmas.ComplexRealLaxMilgram.realBilinearForm_isCoercive
 
-theorem equations1_13_to_1_16_complexRealLaxMilgramOperator_proved :=
+noncomputable def equations1_13_to_1_16_complexRealLaxMilgramOperator_proved :=
   @CorrectedLemmas.ComplexRealLaxMilgram.laxMilgramEquiv_apply_eq_operator
 
-theorem equations1_13_to_1_16_complexRealLaxMilgramEstimates_proved :=
+noncomputable def equations1_13_to_1_16_complexRealLaxMilgramEstimates_proved :=
   @CorrectedLemmas.ComplexRealLaxMilgram.exists_laxMilgramEquiv_with_estimates
 
-theorem equations1_14_to_1_15_shiftedCoercivity_correctedAndProved :=
+noncomputable def equations1_14_to_1_15_shiftedCoercivity_correctedAndProved :=
   @CorrectedLemmas.WeakVariationalRepair.shiftedCoercive_of_garding
 
-theorem equations1_1_to_1_16_graphNormConstructedAndProved :=
+noncomputable def equations1_1_to_1_16_graphNormConstructedAndProved :=
   @CorrectedLemmas.ConcreteGraphCompletion.graphMap_norm_sq
 
-theorem equations1_1_to_1_16_graphCoreDenseAndProved :=
+noncomputable def equations1_1_to_1_16_graphCoreDenseAndProved :=
   @CorrectedLemmas.ConcreteGraphCompletion.denseRange_graphCoreToGraphSobolev
 
-theorem equations1_1_to_1_16_inverseDensityErratum :=
+noncomputable def equations1_1_to_1_16_inverseDensityErratum :=
   CorrectedLemmas.ZeroCuspThetaLift.inverseHalfWeight_plainNorm_not_invariant
 
-theorem equations1_1_to_1_16_leftMaassFactorizationErratum :=
+noncomputable def equations1_1_to_1_16_leftMaassFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_left_factorization_fails_at_height
 
-theorem equations1_1_to_1_16_rightMaassFactorizationErratum :=
+noncomputable def equations1_1_to_1_16_rightMaassFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_right_factorization_fails_at_height
 
-theorem equations1_1_to_1_16_unitaryAdjoint_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_unitaryAdjoint_correctedAndProved :=
   @CorrectedLemmas.MaassJetAudit.formalAdjointUnitaryRaise_eq_negUnitaryLower
 
-theorem equations1_1_to_1_16_graphClosure_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_graphClosure_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.graphCompletion_eq_transportedClosureGraph
 
-theorem equations1_1_to_1_16_automorphicL2LinearCarrier_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_automorphicL2LinearCarrier_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear
 
-theorem equations1_1_to_1_16_automorphicL2CompleteClosure_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_automorphicL2CompleteClosure_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.isComplete_positiveClosedL2Space
 
-theorem equations1_1_to_1_16_polygonRealizationFaithful_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_polygonRealizationFaithful_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear_injective
 
-theorem equations1_1_to_1_16_standardThetaSharpGaussianBound_proved :=
+noncomputable def equations1_1_to_1_16_standardThetaSharpGaussianBound_proved :=
   @ConcreteUnaryTheta.norm_theta_le_one_add_inv_sqrt_im
 
-theorem equations1_1_to_1_16_fdHeightEnvelopeIntegrable_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_fdHeightEnvelopeIntegrable_correctedAndProved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.integrableOn_one_add_sqrt_im_fd
 
-theorem equations1_1_to_1_16_standardThetaFundamentalMemLp_proved :=
+noncomputable def equations1_1_to_1_16_standardThetaFundamentalMemLp_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.positiveNormalized_standardThetaClass_memLp_fundamentalMeasure
 
-theorem equations1_1_to_1_16_standardThetaPositiveAutomorphicL2_proved :=
+noncomputable def equations1_1_to_1_16_standardThetaPositiveAutomorphicL2_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.standardThetaClass_mem_positiveAutomorphicL2Submodule
 
-theorem equations1_1_to_1_16_positiveCentralPhase_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_positiveCentralPhase_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem equations1_1_to_1_16_inverseCentralPhase_correctedAndProved :=
+noncomputable def equations1_1_to_1_16_inverseCentralPhase_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem equations1_1_to_1_16_inverseStandardThetaSectorErratum :=
+noncomputable def equations1_1_to_1_16_inverseStandardThetaSectorErratum :=
   CorrectedLemmas.GenuineSixCellWeightedL2.inverseStandardThetaAutomorphicL2Submodule_eq_bot
 
 /-! Concrete Definition 3 leaves used by the compact-core/truncation block. -/
 
-theorem definition3_cuspHeightInfinityFormula_proved :=
+noncomputable def definition3_cuspHeightInfinityFormula_proved :=
   @cuspHeight_infinity
 
-theorem definition3_cuspHeightZeroFormula_proved :=
+noncomputable def definition3_cuspHeightZeroFormula_proved :=
   @cuspHeight_zero
 
-theorem definition3_cuspHeightOneFormula_proved :=
+noncomputable def definition3_cuspHeightOneFormula_proved :=
   @cuspHeight_one
 
-theorem definition3_heightOneHoroballsPairwiseDisjoint_proved :=
+noncomputable def definition3_heightOneHoroballsPairwiseDisjoint_proved :=
   pairwise_disjoint_strictCuspHoroball
 
-theorem definition3_closedTruncation_proved :=
+noncomputable def definition3_closedTruncation_proved :=
   @isClosed_truncatedFundamentalDomain
 
-theorem definition3_sixCellRepCuspHeight_proved :=
+noncomputable def definition3_sixCellRepCuspHeight_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.repMatrix_im_eq_cuspHeight
 
-theorem definition3_sixCellPullbackHeightEnvelope_proved :=
+noncomputable def definition3_sixCellPullbackHeightEnvelope_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.pullbackHeight_sqrt_envelope_on_fd
 
-theorem definition3_sixCellCompactCarrier_proved :=
+noncomputable def definition3_sixCellCompactCarrier_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isCompact_compactTruncationCarrier
 
-theorem definition3_sixCellTruncationCompact_proved :=
+noncomputable def definition3_sixCellTruncationCompact_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isCompact_truncatedFundamentalDomain_closedPolygon
 
-theorem definition3_sixCellTruncationBoundaryCover_proved :=
+noncomputable def definition3_sixCellTruncationBoundaryCover_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.frontier_truncatedFundamentalDomain_closedPolygon_subset
 
-theorem definition3_positiveCuspLevelRange_proved :=
+noncomputable def definition3_positiveCuspLevelRange_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.range_cuspLevelCurve
 
-theorem definition3_nonpositiveCuspLevelEmpty_proved :=
+noncomputable def definition3_nonpositiveCuspLevelEmpty_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.cuspHeightLevel_eq_empty_of_nonpos
 
-theorem definition3_positiveCuspLevelRegular_proved :=
+noncomputable def definition3_positiveCuspLevelRegular_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_pos
 
-theorem definition3_allCuspLevelsRegular_proved :=
+noncomputable def definition3_allCuspLevelsRegular_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isRegularSmoothCurvePiece_coe_cuspHeightLevel
 
-theorem definition3_sixOpenCellsPairwiseDisjoint_proved :=
+noncomputable def definition3_sixOpenCellsPairwiseDisjoint_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.pairwise_disjoint_openCell
 
-theorem definition3_sixCellInteriorOrbitUnique_proved :=
+noncomputable def definition3_sixCellInteriorOrbitUnique_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.eq_of_mem_openPolygon_of_gamma2_smul_eq
 
-theorem definition3_standardFdPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_standardFdPiecewiseSmoothBoundary_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_fd
 
-theorem definition3_modularBoundaryTransfer_proved :=
+noncomputable def definition3_modularBoundaryTransfer_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.HasPiecewiseSmoothBoundary.preimage_integral_smul
 
-theorem definition3_eachClosedCellPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_eachClosedCellPiecewiseSmoothBoundary_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_closedCell
 
-theorem definition3_truncatedPolygonPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_truncatedPolygonPiecewiseSmoothBoundary_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_truncatedFundamentalDomain_closedPolygon
 
-theorem equations1_14_to_1_16_unshiftedCoercivity_correctedAndProved :=
+noncomputable def equations1_14_to_1_16_unshiftedCoercivity_correctedAndProved :=
   @CorrectedLemmas.WeakVariationalRepair.unshiftedCoercive_of_nonpositive_negativePart
 
-theorem equation1_16_aprioriEstimate_correctedAndProved :=
+noncomputable def equation1_16_aprioriEstimate_correctedAndProved :=
   @CorrectedLemmas.WeakVariationalRepair.norm_le_inv_mul_of_coercive_bound
 
-theorem equation1_16_undoShiftErratum :=
+noncomputable def equation1_16_undoShiftErratum :=
   CorrectedLemmas.WeakVariationalRepair.undoShift_false
 
-theorem equations1_17_to_1_24_reducedPoincare_correctedAndProved :=
+noncomputable def equations1_17_to_1_24_reducedPoincare_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.halfWeightAutomorphic_globalPoincare_sobolevEnergy_sq_of_orthogonal
 
-theorem equations1_17_to_1_24_zeroModeErratum :=
+noncomputable def equations1_17_to_1_24_zeroModeErratum :=
   CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
 
-theorem equations1_26_to_1_30_firstDivergentTailErratum :=
+noncomputable def equations1_26_to_1_30_firstDivergentTailErratum :=
   @CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_one
 
-theorem equations1_26_to_1_30_secondDivergentTailErratum :=
+noncomputable def equations1_26_to_1_30_secondDivergentTailErratum :=
   @CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_half
 
-theorem equations1_26_to_1_30_halfOrderBesselPositivity_proved :=
+noncomputable def equations1_26_to_1_30_halfOrderBesselPositivity_proved :=
   @CorrectedLemmas.HalfOrderBessel.besselIHalf_pos
 
-theorem equations1_26_to_1_30_halfOrderBesselEnvelope_proved :=
+noncomputable def equations1_26_to_1_30_halfOrderBesselEnvelope_proved :=
   @CorrectedLemmas.HalfOrderBessel.besselIHalf_le_expEnvelope
 
-theorem equations1_26_to_1_30_criticalExponentErratum :=
+noncomputable def equations1_26_to_1_30_criticalExponentErratum :=
   @CorrectedLemmas.HalfOrderBessel.not_summable_criticalModulusEnvelope
 
-theorem equations1_26_to_1_30_positiveDecayMargin_proved :=
+noncomputable def equations1_26_to_1_30_positiveDecayMargin_proved :=
   @CorrectedLemmas.HalfOrderBessel.summable_with_positiveMargin
 
-theorem equations1_26_to_1_30_quarterPowerAbsorptionErratum :=
+noncomputable def equations1_26_to_1_30_quarterPowerAbsorptionErratum :=
   CorrectedLemmas.HalfOrderBessel.no_uniformConstant_absorbs_quarterPower
 
 /-! The unconditional finite arithmetic leaf used before any analytic
 Kuznetsov cancellation input. -/
 
-theorem section7E_unitRightInverse_proved :=
+noncomputable def section7E_unitRightInverse_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.residue_mul_inverseResidue
 
-theorem section7E_unitLeftInverse_proved :=
+noncomputable def section7E_unitLeftInverse_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.inverseResidue_mul_residue
 
-theorem section7E_intrinsicLiftIdentification_proved :=
+noncomputable def section7E_intrinsicLiftIdentification_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.phaseResidue_eq_of_lifts
 
-theorem section7E_representativeIndependence_proved :=
+noncomputable def section7E_representativeIndependence_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.additivePhase_lift_independent
 
-theorem section7E_multiplierUnitNorm_proved :=
+noncomputable def section7E_multiplierUnitNorm_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.norm_multiplierPhase
 
-theorem section7E_summandUnitNorm_proved :=
+noncomputable def section7E_summandUnitNorm_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.norm_twistedSummand
 
-theorem section7E_trivialCardinalityBound_proved :=
+noncomputable def section7E_trivialCardinalityBound_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.norm_twistedKloostermanSum_le_card
 
-theorem section7E_modulusOneNormalization_proved :=
+noncomputable def section7E_modulusOneNormalization_proved :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.twistedKloostermanSum_trivialMultiplier_modulus_one
 
-theorem section7E_cancellingMultiplierSaturatesCardinalityErratum :=
+noncomputable def section7E_cancellingMultiplierSaturatesCardinalityErratum :=
   @CorrectedLemmas.ConcreteTwistedKloosterman.norm_twistedKloostermanSum_cancellingMultiplierPhase
 
-theorem section7E_criticalTailCannotSupplyKuznetsovLimitErratum :=
+noncomputable def section7E_criticalTailCannotSupplyKuznetsovLimitErratum :=
   @CorrectedLemmas.ConcreteRademacherTruncation.criticalPointwiseControl_does_not_imply_summable
 
-theorem section7B_fullSpaceLaplacianGapErratum :=
+noncomputable def section7B_fullSpaceLaplacianGapErratum :=
   CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
 
-theorem section7C_coefficientLimitNeedsSummabilityErratum :=
+noncomputable def section7C_coefficientLimitNeedsSummabilityErratum :=
   @CorrectedLemmas.ConcreteRademacherTruncation.criticalPointwiseControl_does_not_imply_summable
 
-theorem equations1_31_to_1_33_threeInputGapErratum :=
+noncomputable def equations1_31_to_1_33_threeInputGapErratum :=
   CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.proposition2_threeInputSkeleton_countermodel
 
-theorem pages23_to_25_realResolventPoleErratum :=
+noncomputable def pages23_to_25_realResolventPoleErratum :=
   @CorrectedLemmas.MassUnfolding.rankinSelbergResolventDenominator_eq_zero_at_real_pole
 
-theorem pages23_to_25_unitarityDoesNotGiveStrictPositiveDensityErratum :=
+noncomputable def pages23_to_25_unitarityDoesNotGiveStrictPositiveDensityErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.constantUnitary_logDerivative_zero
 
-theorem pages23_to_25_scalarLogDerivativeNonrealErratum :=
+noncomputable def pages23_to_25_scalarLogDerivativeNonrealErratum :=
   CorrectedLemmas.ScatteringDensityErratum.unitarity_does_not_imply_positiveLogDerivative
 
-theorem pages23_to_25_correctedScalarLogDensity_eq_one_proved :=
+noncomputable def pages23_to_25_correctedScalarLogDensity_eq_one_proved :=
   @CorrectedLemmas.ScatteringDensityErratum.correctedScalarLogDensity_eq_one
 
-theorem pages23_to_25_correctedScalarLogDensity_nonneg_proved :=
+noncomputable def pages23_to_25_correctedScalarLogDensity_nonneg_proved :=
   @CorrectedLemmas.ScatteringDensityErratum.correctedScalarLogDensity_nonneg
 
-theorem pages23_to_25_correctedScalarLogDensity_pos_proved :=
+noncomputable def pages23_to_25_correctedScalarLogDensity_pos_proved :=
   @CorrectedLemmas.ScatteringDensityErratum.correctedScalarLogDensity_pos
 
-theorem pages23_to_25_positiveTestDoesNotGiveUniformMassErratum :=
+noncomputable def pages23_to_25_positiveTestDoesNotGiveUniformMassErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.not_hMass_zeroCoefficientFourierPositiveData
 
-theorem pages23_to_25_cuspEisensteinNormalizationUnderdeterminedErratum :=
+noncomputable def pages23_to_25_cuspEisensteinNormalizationUnderdeterminedErratum :=
   CorrectedLemmas.CuspSpectralNormalizationErratum.unitCuspSeed_ne_doubledCuspSeed
 
-theorem pages23_to_25_positiveMeasureNormalizationUnderdeterminedErratum :=
+noncomputable def pages23_to_25_positiveMeasureNormalizationUnderdeterminedErratum :=
   CorrectedLemmas.CuspSpectralNormalizationErratum.unitCuspSpectralMeasure_ne_doubled
 
-theorem pages23_to_25_cuspAndMeasureNormalizationAmbiguityErratum :=
+noncomputable def pages23_to_25_cuspAndMeasureNormalizationAmbiguityErratum :=
   CorrectedLemmas.CuspSpectralNormalizationErratum.cuspIndexing_and_positivity_do_not_fix_normalization
 
-theorem pages23_to_25_uniformActivityCannotBeEliminatedErratum :=
+noncomputable def pages23_to_25_uniformActivityCannotBeEliminatedErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.not_hMass_zeroCoefficientFourierPositiveData
 
 /-! ### Tent, localization, lower activity, and growth leaves -/
 
-theorem equations3_1_to_3_6_tentConvolution_proved :=
+noncomputable def equations3_1_to_3_6_tentConvolution_proved :=
   @CorrectedLemmas.TentKernel.box_convolution_eq_profile
 
-theorem equations3_1_to_3_6_tentFourierPositivity_proved :=
+noncomputable def equations3_1_to_3_6_tentFourierPositivity_proved :=
   @CorrectedLemmas.TentKernel.lemma32_correctedAndProved
 
-theorem equations3_1_to_3_6_tentLocalization_proved :=
+noncomputable def equations3_1_to_3_6_tentLocalization_proved :=
   @CorrectedLemmas.TentKernel.lemma33_correctedAndProved
 
-theorem equations3_1_to_3_6_transformNormalizationScales_proved :=
+noncomputable def equations3_1_to_3_6_transformNormalizationScales_proved :=
   @CorrectedLemmas.KuznetsovInterface.Convention.scaleNormalization_transform
 
-theorem equations3_1_to_3_6_unspecifiedNormalizationErratum :=
+noncomputable def equations3_1_to_3_6_unspecifiedNormalizationErratum :=
   CorrectedLemmas.KuznetsovInterface.normalization_choice_changes_transform
 
-theorem equations3_7_to_3_19_selectedTermDecomposition_proved :=
+noncomputable def equations3_7_to_3_19_selectedTermDecomposition_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.contribution_eq_term_add_complementary
 
-theorem equations3_7_to_3_19_remainingModes_nonnegative_proved :=
+noncomputable def equations3_7_to_3_19_remainingModes_nonnegative_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.complementaryContribution_nonneg
 
-theorem equations3_7_to_3_19_selectedModeIsolation_proved :=
+noncomputable def equations3_7_to_3_19_selectedModeIsolation_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.term_le_contribution
 
-theorem equations3_7_to_3_19_selectedModePlusMassIsolation_proved :=
+noncomputable def equations3_7_to_3_19_selectedModePlusMassIsolation_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.SeriesKuznetsovSpectralIdentity.selectedMode_add_mass_le_spectralSide
 
-theorem equations3_7_to_3_19_singleActivityBlockErratum :=
+noncomputable def equations3_7_to_3_19_singleActivityBlockErratum :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.positiveActivity_not_infinite
 
-theorem equations3_7_to_3_19_powerComparisonErratum :=
+noncomputable def equations3_7_to_3_19_powerComparisonErratum :=
   @CorrectedLemmas.CorrectedPropositions.StepThree.noTraceComparison_of_infinite_powerGap
 
-theorem equations3_20_to_3_26_parallelEnergy_zero_proved :=
+noncomputable def equations3_20_to_3_26_parallelEnergy_zero_proved :=
   @CorrectedLemmas.MockConnectionErratum.parallelDerivative_normSq_eq_zero
 
-theorem equations3_20_to_3_26_positiveShadowErratum :=
+noncomputable def equations3_20_to_3_26_positiveShadowErratum :=
   @CorrectedLemmas.MockConnectionErratum.parallelEnergy_ne_positiveShadow
 
-theorem equations3_20_to_3_26_boundarySign_correctedAndProved :=
+noncomputable def equations3_20_to_3_26_boundarySign_correctedAndProved :=
   @CorrectedLemmas.MockConnectionErratum.boundary_eq_neg_shadow_of_parallel
 
-theorem equations3_20_to_3_26_zeroBoundaryErratum :=
+noncomputable def equations3_20_to_3_26_zeroBoundaryErratum :=
   @CorrectedLemmas.MockConnectionErratum.no_zeroBoundary_positiveShadow
 
 /-! ### q-series, cusp coordinates, gauge covariance, and Tor leaves -/
 
-theorem equations4_10_to_4_27_dampingDirectionErratum :=
+noncomputable def equations4_10_to_4_27_dampingDirectionErratum :=
   CorrectedLemmas.CorrectedPropositions.RademacherControl.not_CitedDampingInequality
 
-theorem equations4_10_to_4_27_correctedDampingDirection_proved :=
+noncomputable def equations4_10_to_4_27_correctedDampingDirection_proved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingInequality
 
-theorem equations4_10_to_4_27_correctedExponentDirection_proved :=
+noncomputable def equations4_10_to_4_27_correctedExponentDirection_proved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingExponentDirection
 
-theorem equation4_17_widthTwoModeIntegral_proved :=
+noncomputable def equation4_17_widthTwoModeIntegral_proved :=
   @CorrectedLemmas.WidthTwoFourier.integral_mode
 
-theorem equation4_17_widthTwoOrthogonality_proved :=
+noncomputable def equation4_17_widthTwoOrthogonality_proved :=
   @CorrectedLemmas.WidthTwoFourier.integral_frequencyDifference
 
-theorem equation4_17_widthTwoFiniteHermitianParseval_proved :=
+noncomputable def equation4_17_widthTwoFiniteHermitianParseval_proved :=
   @CorrectedLemmas.WidthTwoFourier.integral_conj_mul_finitePolynomial
 
-theorem equation4_17_widthTwoFiniteNormSqParseval_proved :=
+noncomputable def equation4_17_widthTwoFiniteNormSqParseval_proved :=
   @CorrectedLemmas.WidthTwoFourier.integral_normSq_finitePolynomial
 
-theorem equation4_17_widthTwoFiniteParseval_proved :=
+noncomputable def equation4_17_widthTwoFiniteParseval_proved :=
   @CorrectedLemmas.WidthTwoFourier.integral_norm_sq_finitePolynomial
 
-theorem equations4_10_to_4_27_fixedHeightSqrtAbsorption_correctedAndProved :=
+noncomputable def equations4_10_to_4_27_fixedHeightSqrtAbsorption_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FixedCuspHeightRademacher.sqrtGrowth_le_halfLinear_add_constant
 
-theorem equations4_10_to_4_27_fixedHeightSummability_correctedAndProved :=
+noncomputable def equations4_10_to_4_27_fixedHeightSummability_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FixedCuspHeightRademacher.summable_pow_mul_exp_sqrtGrowth_sub_linear
 
-theorem equations4_10_to_4_27_firstDerivativeWeight_correctedAndProved :=
+noncomputable def equations4_10_to_4_27_firstDerivativeWeight_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FixedCuspHeightRademacher.summable_firstDerivativeEnergyWeight
 
-theorem equations4_10_to_4_27_secondDerivativeWeight_correctedAndProved :=
+noncomputable def equations4_10_to_4_27_secondDerivativeWeight_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FixedCuspHeightRademacher.summable_secondDerivativeEnergyWeight
 
-theorem section7C_positiveModulusKloostermanBound_proved :=
+noncomputable def section7C_positiveModulusKloostermanBound_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.norm_positiveModulusKloosterman_le_card
 
-theorem section7C_coefficientTruncationZero_proved :=
+noncomputable def section7C_coefficientTruncationZero_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.coefficientTruncation_zero
 
-theorem section7C_coefficientTruncationSuccDifference_proved :=
+noncomputable def section7C_coefficientTruncationSuccDifference_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.coefficientTruncation_succ_sub
 
-theorem section7C_tunedFiniteMainTailDecomposition_proved :=
+noncomputable def section7C_tunedFiniteMainTailDecomposition_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.coefficientTruncation_eq_tunedMain_add_finiteTail
 
-theorem section7C_termCardinalityBesselEnvelope_proved :=
+noncomputable def section7C_termCardinalityBesselEnvelope_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.norm_rademacherTerm_le_card_besselEnvelope
 
-theorem section7C_finiteCoefficientEnvelope_proved :=
+noncomputable def section7C_finiteCoefficientEnvelope_proved :=
   @CorrectedLemmas.ConcreteRademacherTruncation.norm_coefficientTruncation_le_sum_card_besselEnvelope
 
-theorem section7C_criticalPointwiseEnvelopeErratum :=
+noncomputable def section7C_criticalPointwiseEnvelopeErratum :=
   @CorrectedLemmas.ConcreteRademacherTruncation.criticalPointwiseControl_does_not_imply_summable
 
-theorem section7D_halfOrderWhittakerPositivity_proved :=
+noncomputable def section7D_halfOrderWhittakerPositivity_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.W_pos
 
-theorem section7D_halfOrderWhittakerFirstDerivative_proved :=
+noncomputable def section7D_halfOrderWhittakerFirstDerivative_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.deriv_W
 
-theorem section7D_halfOrderWhittakerSecondDerivative_proved :=
+noncomputable def section7D_halfOrderWhittakerSecondDerivative_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.deriv_deriv_W
 
-theorem section7D_halfOrderWhittakerODE_proved :=
+noncomputable def section7D_halfOrderWhittakerODE_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.whittakerODE_fixedParameters
 
-theorem section7D_halfOrderWhittakerSimplifiedODE_proved :=
+noncomputable def section7D_halfOrderWhittakerSimplifiedODE_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.whittakerODE_fixedParameters_simplified
 
-theorem section7D_scaledWhittakerPositivity_proved :=
+noncomputable def section7D_scaledWhittakerPositivity_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.scaledKernel_pos
 
-theorem section7D_scaledWhittakerDecay_proved :=
+noncomputable def section7D_scaledWhittakerDecay_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.scaledKernel_tendsto_zero_atTop
 
-theorem section7D_scaledWhittakerIntegrability_proved :=
+noncomputable def section7D_scaledWhittakerIntegrability_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.integrableOn_scaledKernel_Ioi
 
-theorem section7D_scaledWhittakerIntegral_proved :=
+noncomputable def section7D_scaledWhittakerIntegral_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.integral_scaledKernel_Ioi
 
-theorem section7D_scaledWhittakerPositiveHalfLineMass_proved :=
+noncomputable def section7D_scaledWhittakerPositiveHalfLineMass_proved :=
   @CorrectedLemmas.HalfOrderWhittaker.integral_scaledKernel_Ioi_zero
 
-theorem section7C_finiteTruncationsConverge_proved :=
+noncomputable def section7C_finiteTruncationsConverge_proved :=
   @CorrectedLemmas.FiniteSeriesConstruction.partialSum_tendsto_tsum
 
-theorem section7C_finiteTruncationsCauchy_proved :=
+noncomputable def section7C_finiteTruncationsCauchy_proved :=
   @CorrectedLemmas.FiniteSeriesConstruction.partialSum_cauchySeq
 
-theorem section7C_quantitativeTailBound_proved :=
+noncomputable def section7C_quantitativeTailBound_proved :=
   @CorrectedLemmas.FiniteSeriesConstruction.norm_tsum_sub_partialSum_le_tail
 
-theorem section7C_operatorPassesToLimit_proved :=
+noncomputable def section7C_operatorPassesToLimit_proved :=
   @CorrectedLemmas.FiniteSeriesConstruction.continuousLinearMap_tsum
 
-theorem section7F_uniformMajorantConvergence_proved :=
+noncomputable def section7F_uniformMajorantConvergence_proved :=
   @CorrectedLemmas.FiniteSeriesConstruction.tendstoUniformlyOn_partialSum
 
-theorem section7I_scalingColumnsComputed_proved :=
+noncomputable def section7I_scalingColumnsComputed_proved :=
   CorrectedLemmas.Gamma2CuspParity.scalingFirstColumn_one
 
-theorem section7I_scalingColumnsPrimitive_proved :=
+noncomputable def section7I_scalingColumnsPrimitive_proved :=
   @CorrectedLemmas.Gamma2CuspParity.scalingFirstColumn_isCoprime
 
-theorem section7I_threeNonzeroParityClasses_proved :=
+noncomputable def section7I_threeNonzeroParityClasses_proved :=
   CorrectedLemmas.Gamma2CuspParity.standardNonzeroParity_bijective
 
-theorem section7I_uniqueParityClassifier_proved :=
+noncomputable def section7I_uniqueParityClassifier_proved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_standardParity
 
-theorem section7I_primitiveColumnParityNonzero_proved :=
+noncomputable def section7I_primitiveColumnParityNonzero_proved :=
   @CorrectedLemmas.Gamma2CuspParity.reducePair_ne_zero_of_isCoprime
 
-theorem section7I_primitiveColumnClassifier_proved :=
+noncomputable def section7I_primitiveColumnClassifier_proved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_standardParity_of_isCoprime
 
-theorem section7I_primitiveColumnOrbitClassification_proved :=
+noncomputable def section7I_primitiveColumnOrbitClassification_proved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_gamma2_cuspOrbit_of_isCoprime
 
-theorem section7I_gamma2ParityInvariant_proved :=
+noncomputable def section7I_gamma2ParityInvariant_proved :=
   @CorrectedLemmas.Gamma2CuspParity.reducePair_pairAction
 
-theorem section7I_signedCuspRepresentativeSeparation_proved :=
+noncomputable def section7I_signedCuspRepresentativeSeparation_proved :=
   @CorrectedLemmas.Gamma2CuspParity.scalingFirstColumn_signedRelated_implies_sameCusp
 
-theorem equations4_28_to_4_29_qLaplacianIntertwining_correctedAndProved :=
+noncomputable def equations4_28_to_4_29_qLaplacianIntertwining_correctedAndProved :=
   @qLaplacian_intertwines
 
-theorem equations4_28_to_4_29_measureTransport_proved :=
+noncomputable def equations4_28_to_4_29_measureTransport_proved :=
   @CuspQChart.integral_transformedMeasure
 
-theorem equations4_28_to_4_29_qParamRealPeriod_proved :=
+noncomputable def equations4_28_to_4_29_qParamRealPeriod_proved :=
   @CorrectedLemmas.CuspQStabilizer.qParam_add_real_period
 
-theorem equations4_28_to_4_29_cuspTranslationMembership_proved :=
+noncomputable def equations4_28_to_4_29_cuspTranslationMembership_proved :=
   @CorrectedLemmas.CuspQStabilizer.translationMatrix_mem_gamma2
 
-theorem equations4_28_to_4_29_scaledCuspTranslation_proved :=
+noncomputable def equations4_28_to_4_29_scaledCuspTranslation_proved :=
   @CorrectedLemmas.CuspQStabilizer.scaledCoordinate_translationElement_eq_vadd_two
 
-theorem equations4_28_to_4_29_cuspQStabilizerInvariance_proved :=
+noncomputable def equations4_28_to_4_29_cuspQStabilizerInvariance_proved :=
   @CorrectedLemmas.CuspQStabilizer.cuspQCoordinate_translationElement
 
-theorem equations4_1_to_4_9_prototypeUnderdeterminedErratum :=
+noncomputable def equations4_1_to_4_9_prototypeUnderdeterminedErratum :=
   @CorrectedLemmas.MockPrototypeUnderspecification.positiveRadius_does_not_determinePrototype
 
-theorem equations4_1_to_4_9_additiveSplittingNotUniqueErratum :=
+noncomputable def equations4_1_to_4_9_additiveSplittingNotUniqueErratum :=
   CorrectedLemmas.CorrectedPropositions.JacobiDictionary.additiveSplitting_not_unique
 
-theorem equations4_30_to_4_32_eichlerKernelAmbiguity_correctedAndProved :=
+noncomputable def equations4_30_to_4_32_eichlerKernelAmbiguity_correctedAndProved :=
   @CorrectedLemmas.MockPrototypeUnderspecification.correction_not_unique_of_nonzero_kernel
 
-theorem equations4_30_to_4_32_concreteCorrectionNonuniquenessErratum :=
+noncomputable def equations4_30_to_4_32_concreteCorrectionNonuniquenessErratum :=
   @CorrectedLemmas.MockPrototypeUnderspecification.modelShadowEquation_has_distinctCorrections
 
-theorem equation5_1_noSameUpperHalfPlaneExterior_proved :=
+noncomputable def equation5_1_noSameUpperHalfPlaneExterior_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.no_upperHalfPlane_exterior_q_region
 
-theorem equation5_1_missingInsideCompatibilityErratum :=
+noncomputable def equation5_1_missingInsideCompatibilityErratum :=
   CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.dictionaryRelation_does_not_force_insideCompatibility
 
-theorem equation5_1_annularMatching_correctedAndProved :=
+noncomputable def equation5_1_annularMatching_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.correctedTheorem5_1_annularMatching
 
-theorem equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved :=
+noncomputable def equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.connectionCurvature_variableGauge
 
-theorem equations6_1_to_6_18_actualCyclicTorGcd_correctedAndProved :=
+noncomputable def equations6_1_to_6_18_actualCyclicTorGcd_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.actualCyclicTorOneIsoGcd_exists
 
-theorem section7J_smoothEndValuedOneForms_zero_proved :=
+noncomputable def section7J_smoothEndValuedOneForms_zero_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.zero_isSmooth
 
-theorem section7J_smoothEndValuedOneForms_add_proved :=
+noncomputable def section7J_smoothEndValuedOneForms_add_proved :=
   @CorrectedLemmas.SmoothEndValuedOneForms.add_isSmooth
 
-theorem section7J_smoothEndValuedOneForms_smul_proved :=
+noncomputable def section7J_smoothEndValuedOneForms_smul_proved :=
   @CorrectedLemmas.SmoothEndValuedOneForms.smul_isSmooth
 
-theorem section7J_literalContDiffEndValuedOneForms_add_proved :=
+noncomputable def section7J_literalContDiffEndValuedOneForms_add_proved :=
   @CorrectedLemmas.SmoothEndValuedOneForms.continuous_add_contDiff
 
-theorem section7J_literalContDiffEndValuedOneForms_smul_proved :=
+noncomputable def section7J_literalContDiffEndValuedOneForms_smul_proved :=
   @CorrectedLemmas.SmoothEndValuedOneForms.continuous_smul_contDiff
 
-theorem section7J_scalarMultiplicationForm_smooth_proved :=
+noncomputable def section7J_scalarMultiplicationForm_smooth_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.scalarMultiplicationForm_isSmooth
 
-theorem section7J_scalarMultiplicationForm_nonzero_proved :=
+noncomputable def section7J_scalarMultiplicationForm_nonzero_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.scalarMultiplicationForm_ne_zero
 
-theorem section7J_continuousScalarMultiplicationForm_contDiff_proved :=
+noncomputable def section7J_continuousScalarMultiplicationForm_contDiff_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.continuousScalarMultiplicationForm_contDiff
 
-theorem section7J_continuousScalarMultiplicationForm_mem_smoothSubmodule_proved :=
+noncomputable def section7J_continuousScalarMultiplicationForm_mem_smoothSubmodule_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.continuousScalarMultiplicationForm_mem_smoothContinuousForms
 
-theorem section7J_continuousScalarMultiplicationForm_nonzero_proved :=
+noncomputable def section7J_continuousScalarMultiplicationForm_nonzero_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.continuousScalarMultiplicationForm_ne_zero
 
-theorem section7J_continuousFormForgetsToLinearMapLsmul_proved :=
+noncomputable def section7J_continuousFormForgetsToLinearMapLsmul_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.forgetContinuousScalarMultiplicationValue
 
-theorem section7J_scalarMultiplicationForm_covariant_proved :=
+noncomputable def section7J_scalarMultiplicationForm_covariant_proved :=
   CorrectedLemmas.SmoothEndValuedOneForms.scalarMultiplicationSmoothForm_isGaugeCovariant
 
 /-- Exactness of the explicit two-modulus CRT complex, including the leading
 injectivity and terminal surjectivity statements.  Unlike a certificate
 record, all four fields of this conjunction are derived from the concrete
 integer maps. -/
-theorem equations6_1_to_6_18_generalizedCRTExactPackage_correctedAndProved :=
+noncomputable def equations6_1_to_6_18_generalizedCRTExactPackage_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.generalizedCRT_exactPackage
 
 end UnnumberedFormulaLedger
@@ -25400,7 +25458,15 @@ inductive Requirement
   | J_smoothEndomorphismValuedFormsInstance
   | J_lightweightRestrictionGluingSheaf
   | J_explicitCyclicResolutionAndTor
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+set_option maxHeartbeats 1000000 in
+set_option maxRecDepth 10000 in
+instance : Fintype Requirement where
+  elems := {.A_fixedGamma2AutomorphyFactor, .A_cocycleAndNonvanishing, .A_thetaGeneratorLink, .A_pairLiftWithoutHiddenBranch, .A_concreteGamma2LiftFinal, .B_equivariantFunctionsAndDomainIntegral, .B_graphNormCompletion, .B_weakOperatorFromForm, .B_abstractSpectralGap, .B_concreteGamma2LaplacianFinal, .C_finiteTruncations, .C_cauchyTailAndLimit, .C_coefficientFormulaIdentification, .C_finiteChecksNotInfiniteProof, .C_rademacherDerivativeTailFinal, .D_halfOrderClosedForms, .D_fixedWhittakerAnalysis, .D_normalizedKuznetsovTransform, .D_smoothAdmissibleTestFamily, .D_numericDecayExponent, .E_zmodFiniteTwistedSum, .E_unitInverseAndLiftIndependence, .E_finiteRegressionTests, .E_trivialFiniteBound, .E_squareRootCancellation, .E_truncatedKuznetsovAndLimits, .E_abstractKloostermanBoundIntermediateOnly, .F_finiteCutoffsFirst, .F_separateLimitTheorems, .F_majorantAtEveryInterchange, .F_noCompactSupportShortcut, .F_betaOneForbiddenWithoutRegularization, .G_cuspIndexedEisenstein, .G_maassSelbergPositiveMeasure, .G_positivePlancherelBeforeScatteringTrace, .G_uniformActivityDecomposition, .G_noMassPackageInFinalTheorem, .H_fixedPrototypeAndRadius, .H_eichlerShadowHarmonicityModularity, .H_independentExteriorGerm, .H_formalVersusAnalyticIdentity, .H_directFixedPrototypeIdentity, .I_stabilizerWellDefinedQCoordinate, .I_scalingMatrixOverlap, .I_constantRankKernelAndConnection, .I_radialBoundaryOrGermMatching, .J_abstractDifferentialGaugeCovariance, .J_smoothEndomorphismValuedFormsInstance, .J_lightweightRestrictionGluingSheaf, .J_explicitCyclicResolutionAndTor}
+  complete := by
+    intro x
+    cases x <;> simp
 
 inductive Disposition
   | proved
@@ -25528,18 +25594,19 @@ theorem terminal (r : Requirement) :
       disposition r = .removedWithErratum := by
   cases r <;> simp [disposition]
 
+set_option maxRecDepth 10000 in
 theorem requirement_count : Fintype.card Requirement = 50 := by
   decide
 
 /-- An abstract cancellation package is retained only as an intermediate API:
 the exported result is an implication from the complete, explicit
 `CancellationData`, not an unconditional paper-specific Kuznetsov estimate. -/
-theorem E_abstractKloostermanBoundIntermediateOnly_correctedAndProved :=
+noncomputable def E_abstractKloostermanBoundIntermediateOnly_correctedAndProved :=
   @CorrectedLemmas.KuznetsovKloosterman.orderedKloosterman_and_bound
 
 /-- The normalization is now an explicit convention and rescaling is tracked
 by an exact theorem instead of being silently absorbed into a constant. -/
-theorem D_normalizedKuznetsovTransform_correctedAndProved :=
+noncomputable def D_normalizedKuznetsovTransform_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.Convention.scaleNormalization_transform
 
 theorem A_genuineFactorCocycleAndNonvanishing_proved :
@@ -25562,13 +25629,13 @@ theorem A_translationAndCentralThetaPairs_proved :
   ⟨CorrectedLemmas.GenuineHalfWeightAutomorphy.translationTwo_pair_mem_thetaCovariantSubmonoid,
     CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_pair_mem_thetaCovariantSubmonoid⟩
 
-theorem A_fullCovarianceBuildsThetaCharacter_correctedAndProved :=
+noncomputable def A_fullCovarianceBuildsThetaCharacter_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.theta_isAutomorphic
 
-theorem A_gamma2StandardGenerators_proved :=
+noncomputable def A_gamma2StandardGenerators_proved :=
   CorrectedLemmas.Gamma2Generation.gamma2_eq_closure_standard_generators
 
-theorem A_globalGenuineThetaMultiplier_proved :=
+noncomputable def A_globalGenuineThetaMultiplier_proved :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.standardTheta_isAutomorphic
 
 theorem no_unresolved (r : Requirement) :
@@ -25592,6 +25659,8 @@ theorem KernelEvidence.sound {P : Prop} {proof : P}
     (_ : KernelEvidence proof) : P :=
   proof
 
+universe uSection7LaxMilgram uSection7GapH uSection7GapHR uSection7GapHL
+
 /-- Exact theorem-level evidence for all fifty strategy rows.  Corrected rows
 name a proved replacement theorem; removed rows name only their decisive
 counterexample or obstruction.  There is deliberately no wildcard branch. -/
@@ -25613,13 +25682,13 @@ def RequirementEvidence : Requirement → Prop
         (@UnnumberedFormulaLedger.item1_weightHalfPeterssonDensityInvariance_correctedAndProved)
   | .B_graphNormCompletion =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.equations1_1_to_1_16_graphCoreDenseAndProved)
+        (@UnnumberedFormulaLedger.equations1_1_to_1_16_graphCoreDenseAndProved.{0, 0, 0, 0})
   | .B_weakOperatorFromForm =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.equations1_13_to_1_16_complexRealLaxMilgramOperator_proved)
+        (@UnnumberedFormulaLedger.equations1_13_to_1_16_complexRealLaxMilgramOperator_proved.{uSection7LaxMilgram})
   | .B_abstractSpectralGap =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.equations1_17_to_1_24_reducedPoincare_correctedAndProved)
+        (@UnnumberedFormulaLedger.equations1_17_to_1_24_reducedPoincare_correctedAndProved.{uSection7GapH, uSection7GapHR, uSection7GapHL})
   | .B_concreteGamma2LaplacianFinal =>
       KernelEvidence CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
   | .C_finiteTruncations =>
@@ -25627,11 +25696,11 @@ def RequirementEvidence : Requirement → Prop
         (@UnnumberedFormulaLedger.section7C_coefficientTruncationSuccDifference_proved)
   | .C_cauchyTailAndLimit =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.section7C_finiteTruncationsCauchy_proved)
+        (@UnnumberedFormulaLedger.section7C_finiteTruncationsCauchy_proved.{0})
   | .C_coefficientFormulaIdentification =>
       KernelEvidence
         (CorrectedLemmas.HalfOrderBessel.not_summable_criticalModulusEnvelope
-          (by norm_num))
+          (A := 1) (by norm_num))
   | .C_finiteChecksNotInfiniteProof =>
       KernelEvidence
         (@UnnumberedFormulaLedger.section7C_criticalPointwiseEnvelopeErratum)
@@ -25673,12 +25742,12 @@ def RequirementEvidence : Requirement → Prop
         (@UnnumberedFormulaLedger.section7C_coefficientTruncationSuccDifference_proved)
   | .F_separateLimitTheorems =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.section7C_finiteTruncationsConverge_proved)
+        (@UnnumberedFormulaLedger.section7C_finiteTruncationsConverge_proved.{0})
   | .F_majorantAtEveryInterchange =>
-      KernelEvidence (@UnnumberedFormulaLedger.section7C_quantitativeTailBound_proved)
+      KernelEvidence (@UnnumberedFormulaLedger.section7C_quantitativeTailBound_proved.{0})
   | .F_noCompactSupportShortcut =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved)
+        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved.{0, 0})
   | .F_betaOneForbiddenWithoutRegularization =>
       KernelEvidence (@UnnumberedFormulaLedger.q2F_betaOneEndpointErratum)
   | .G_cuspIndexedEisenstein =>
@@ -25718,24 +25787,24 @@ def RequirementEvidence : Requirement → Prop
         (@UnnumberedFormulaLedger.equations4_28_to_4_29_scaledCuspTranslation_proved)
   | .I_constantRankKernelAndConnection =>
       KernelEvidence
-        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible)
+        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible.{0, 0})
   | .I_radialBoundaryOrGermMatching =>
       KernelEvidence
-        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization)
+        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization.{0, 0})
   | .J_abstractDifferentialGaugeCovariance =>
       KernelEvidence
-        (@UnnumberedFormulaLedger.equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved)
+        (@UnnumberedFormulaLedger.equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved.{0, 0})
   | .J_smoothEndomorphismValuedFormsInstance =>
       KernelEvidence
         UnnumberedFormulaLedger.section7J_scalarMultiplicationForm_covariant_proved
   | .J_lightweightRestrictionGluingSheaf =>
-      KernelEvidence (@balancedPresheafSection_existsUnique_gluing)
+      KernelEvidence (@balancedPresheafSection_existsUnique_gluing.{0, 0, 0})
   | .J_explicitCyclicResolutionAndTor =>
       KernelEvidence
         (@UnnumberedFormulaLedger.equations6_1_to_6_18_generalizedCRTExactPackage_correctedAndProved)
 
 theorem requirementEvidence (r : Requirement) : RequirementEvidence r := by
-  cases r <;> exact KernelEvidence.certify _
+  cases r <;> exact KernelEvidence.intro
 
 /-- Every strategy A--J has at least one represented requirement. -/
 theorem strategy_surjective : Function.Surjective strategy := by
@@ -25828,12 +25897,26 @@ inductive Requirement
   | p09_tensorSectionNotPair
   | p09_equalizerUsesSheafMorphisms
   | p09_missingFunctorTargetRemoved
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+set_option maxHeartbeats 1000000 in
+set_option maxRecDepth 10000 in
+instance : Fintype Requirement where
+  elems := {.p01_sameMultiplierNeedsDualOrUnitary, .p01_metaplecticSquareRootCocycle, .p01_equivariantSectionModel, .p01_aeEquivarianceCompletion, .p01_complexDualPairingConvention, .p02_distributionalLaplacian, .p02_potentialFormHypotheses, .p02_boundaryTraceNeedsGeometry, .p02_fixedTruncationNeedsSupport, .p02_shiftedDoesNotSolveUnshifted, .p03_mellinRequiresRealPartAboveOne, .p03_betaOneLogDivergence, .p03_eisensteinFactorChangesCuspWindow, .p04_tailExponentOneDiverges, .p04_tailExponentHalfDiverges, .p04_indexPowerNotUniformConstant, .p04_pointwiseWeilInsufficient, .p04_kuznetsovAdmissibilityExplicit, .p04_smoothTentReplacement, .p05_continuousMassNormalizationFixed, .p05_unitarityNotPositiveDensity, .p05_positivePlancherelDefinedFirst, .p05_nonnegativeTestNotUniformMass, .p05_uniformMockActivityMissing, .p05_unconditionalLabelsMatchDependencies, .p06_exceptionalParameterNotReal, .p06_poincareNotCoefficientNonvanishing, .p06_stripParsevalNotGlobalNorm, .p06_oneActiveBlockNotInfinite, .p06_fixedLowerCompatibleGrowingUpper, .p06_quantitativeComparisonReplacement, .p07_parallelMockEnergyZero, .p07_curvatureBidegreeTyped, .p07_rademacherDampingDirection, .p07_fourierTruncationAutomorphy, .p07_h1BoundedNotStronglyPrecompact, .p08_qCoordinateIsCuspLocal, .p08_cuspScalingAndWidth, .p08_outsideVariableSeparateDomain, .p08_unitCircleIsBoundary, .p08_kernelBundleNeedsTrivialization, .p08_flatConnectionNotCanonical, .p08_gamma2CuspsDistinctOrbits, .p08_localContinuationClaimsRewritten, .p09_curvatureTermsSameType, .p09_endomorphismValuedGaugePotential, .p09_halfWeightTwistNeedsBackgroundConnection, .p09_tensorSectionNotPair, .p09_equalizerUsesSheafMorphisms, .p09_missingFunctorTargetRemoved}
+  complete := by
+    intro x
+    cases x <;> simp
 
 inductive Disposition
   | correctedAndProved
   | removedWithErratum
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Disposition where
+  elems := {.correctedAndProved, .removedWithErratum}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- Terminal, proof-accurate disposition of every P0 repair row. -/
 def disposition : Requirement -> Disposition
@@ -25888,6 +25971,7 @@ def disposition : Requirement -> Disposition
   | .p09_equalizerUsesSheafMorphisms => .correctedAndProved
   | .p09_missingFunctorTargetRemoved => .removedWithErratum
 
+set_option maxRecDepth 10000 in
 theorem requirement_count : Fintype.card Requirement = 50 := by
   decide
 
@@ -25904,256 +25988,256 @@ theorem no_unresolved (r : Requirement) :
 /-! Concrete corrected leaves.  These aliases make the principal P0 repairs
 auditable without pretending that a generic leaf constructs omitted PDF data. -/
 
-theorem p01_multiplierCancellation_correctedAndProved :=
+noncomputable def p01_multiplierCancellation_correctedAndProved :=
   @hermitianContraction_invariant
 
-theorem p01_metaplecticCocycle_correctedAndProved :=
+noncomputable def p01_metaplecticCocycle_correctedAndProved :=
   @CorrectedLemmas.GenuineGamma2Metaplectic.denom_cocycle
 
-theorem p01_aeCompletion_correctedAndProved :=
+noncomputable def p01_aeCompletion_correctedAndProved :=
   @weightedAutomorphicSobolev_ae
 
-theorem p01_genuineMultiplierCocycle_correctedAndProved :=
+noncomputable def p01_genuineMultiplierCocycle_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.factor_mul
 
-theorem p01_literalInverseHalfWeightCocycle_correctedAndProved :=
+noncomputable def p01_literalInverseHalfWeightCocycle_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.factor_mul
 
-theorem p01_inverseHalfWeightDensity_correctedAndProved :=
+noncomputable def p01_inverseHalfWeightDensity_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.density_invariant
 
-theorem p01_plainDensityObstruction_correctedAndProved :=
+noncomputable def p01_plainDensityObstruction_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.sqrtFactor_norm_inv_eq_one_of_plainNormInvariant
 
-theorem p01_inverseRepresentativeIndependentAutomorphy_correctedAndProved :=
+noncomputable def p01_inverseRepresentativeIndependentAutomorphy_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseAEAutomorphicSections.mk_isAutomorphicClass_iff
 
-theorem p01_concretePlainDensityCounterexample_proved :=
+noncomputable def p01_concretePlainDensityCounterexample_proved :=
   CorrectedLemmas.ZeroCuspThetaLift.inverseHalfWeight_plainNorm_not_invariant
 
-theorem p01_positivePolygonL2Density_correctedAndProved :=
+noncomputable def p01_positivePolygonL2Density_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.norm_positivePeterssonQuarter_mul_sq
 
-theorem p01_inversePolygonL2Density_correctedAndProved :=
+noncomputable def p01_inversePolygonL2Density_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.norm_inversePeterssonQuarter_mul_sq
 
-theorem p01_positiveAutomorphicL2LinearCarrier_correctedAndProved :=
+noncomputable def p01_positiveAutomorphicL2LinearCarrier_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear
 
-theorem p01_inverseAutomorphicL2LinearCarrier_correctedAndProved :=
+noncomputable def p01_inverseAutomorphicL2LinearCarrier_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.inverseRealizationLinear
 
-theorem p01_positiveAutomorphicL2HilbertClosure_correctedAndProved :=
+noncomputable def p01_positiveAutomorphicL2HilbertClosure_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.isComplete_positiveClosedL2Space
 
-theorem p01_inverseAutomorphicL2HilbertClosure_correctedAndProved :=
+noncomputable def p01_inverseAutomorphicL2HilbertClosure_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.isComplete_inverseClosedL2Space
 
-theorem p01_positivePolygonRealizationFaithful_correctedAndProved :=
+noncomputable def p01_positivePolygonRealizationFaithful_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear_injective
 
-theorem p01_inversePolygonRealizationFaithful_correctedAndProved :=
+noncomputable def p01_inversePolygonRealizationFaithful_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.inverseRealizationLinear_injective
 
-theorem p01_genuineAECompletion_correctedAndProved :=
+noncomputable def p01_genuineAECompletion_correctedAndProved :=
   @CorrectedLemmas.GenuineWeightedSobolev.space_ae
 
-theorem p01_representativeIndependentAutomorphy_correctedAndProved :=
+noncomputable def p01_representativeIndependentAutomorphy_correctedAndProved :=
   @CorrectedLemmas.GenuineAEAutomorphicSections.mk_isAutomorphicClass_iff
 
-theorem p01_standardThetaAEClassAutomorphic_proved :=
+noncomputable def p01_standardThetaAEClassAutomorphic_proved :=
   CorrectedLemmas.GenuineAEAutomorphicSections.standardThetaClass_isAutomorphic
 
-theorem p01_closableGraphValueEmbedding_correctedAndProved :=
+noncomputable def p01_closableGraphValueEmbedding_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.valueProjection_injective
 
-theorem p01_graphCompletionIsClosureGraph_correctedAndProved :=
+noncomputable def p01_graphCompletionIsClosureGraph_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.graphCompletion_eq_transportedClosureGraph
 
-theorem p01_ambientL2ToDataPairing_correctedAndProved :=
+noncomputable def p01_ambientL2ToDataPairing_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.norm_ambientToData_apply_le
 
-theorem p01_ambientL2ToDataAntiLinear_correctedAndProved :=
+noncomputable def p01_ambientL2ToDataAntiLinear_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.ambientToData_smul
 
-theorem p01_ambientL2ToDataInjective_correctedAndProved :=
+noncomputable def p01_ambientL2ToDataInjective_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.CommonCoreOperators.ambientToData_injective
 
-theorem p01_paperMaassLeftFactorizationErratum :=
+noncomputable def p01_paperMaassLeftFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_left_factorization_fails_at_height
 
-theorem p01_paperMaassRightFactorizationErratum :=
+noncomputable def p01_paperMaassRightFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_right_factorization_fails_at_height
 
-theorem p01_unweightedMaassAdjointErratum :=
+noncomputable def p01_unweightedMaassAdjointErratum :=
   CorrectedLemmas.MaassJetAudit.unweighted_adjoint_claim_fails_at_constant
 
-theorem p01_unitaryMaassAdjoint_correctedAndProved :=
+noncomputable def p01_unitaryMaassAdjoint_correctedAndProved :=
   @CorrectedLemmas.MaassJetAudit.formalAdjointUnitaryRaise_eq_negUnitaryLower
 
-theorem p01_formalAdjointImpliesClosable_correctedAndProved :=
+noncomputable def p01_formalAdjointImpliesClosable_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.isClosable_of_formalAdjoint_dense
 
-theorem p01_centralPhaseNecessity_correctedAndProved :=
+noncomputable def p01_centralPhaseNecessity_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_multiplier_value_of_nonzero
 
-theorem p01_positiveCentralFactorConvention_correctedAndProved :=
+noncomputable def p01_positiveCentralFactorConvention_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem p01_inverseCentralFactorConvention_correctedAndProved :=
+noncomputable def p01_inverseCentralFactorConvention_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem p01_trivialGenuineMultiplierZeroSector_proved :=
+noncomputable def p01_trivialGenuineMultiplierZeroSector_proved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.isAutomorphic_one_iff_eq_zero
 
-theorem p01_standardThetaMultiplierConstructed_proved :=
+noncomputable def p01_standardThetaMultiplierConstructed_proved :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.standardTheta_isAutomorphic
 
-theorem p01_standardThetaSharpGaussianBound_proved :=
+noncomputable def p01_standardThetaSharpGaussianBound_proved :=
   @ConcreteUnaryTheta.norm_theta_le_one_add_inv_sqrt_im
 
-theorem p01_sixCellPullbackHeightEnvelope_proved :=
+noncomputable def p01_sixCellPullbackHeightEnvelope_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.pullbackHeight_sqrt_envelope_on_fd
 
-theorem p01_fdHeightEnvelopeIntegrable_correctedAndProved :=
+noncomputable def p01_fdHeightEnvelopeIntegrable_correctedAndProved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.integrableOn_one_add_sqrt_im_fd
 
-theorem p01_standardThetaSixCellDensityMajorant_proved :=
+noncomputable def p01_standardThetaSixCellDensityMajorant_proved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveThetaDensity_pullback_le_on_fd
 
-theorem p01_standardThetaFundamentalMemLp_proved :=
+noncomputable def p01_standardThetaFundamentalMemLp_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.positiveNormalized_standardThetaClass_memLp_fundamentalMeasure
 
-theorem p01_standardThetaPositiveAutomorphicL2_proved :=
+noncomputable def p01_standardThetaPositiveAutomorphicL2_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.standardThetaClass_mem_positiveAutomorphicL2Submodule
 
-theorem p01_inverseStandardThetaSectorErratum :=
+noncomputable def p01_inverseStandardThetaSectorErratum :=
   CorrectedLemmas.GenuineSixCellWeightedL2.inverseStandardThetaAutomorphicL2Submodule_eq_bot
 
-theorem p01_dualConvention_correctedAndProved :=
+noncomputable def p01_dualConvention_correctedAndProved :=
   @existsUnique_rieszRepresentative
 
-theorem p02_distributionalRestriction_correctedAndProved :=
+noncomputable def p02_distributionalRestriction_correctedAndProved :=
   @CorrectedLemmas.StartingIntegralIdentity.restrict_distributional_equation_compactSupport_of_product
 
-theorem p02_gardingShift_correctedAndProved :=
+noncomputable def p02_gardingShift_correctedAndProved :=
   @CorrectedLemmas.WeakVariationalRepair.shiftedCoercive_of_garding
 
-theorem p02_supportSensitiveTruncation_correctedAndProved :=
+noncomputable def p02_supportSensitiveTruncation_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.setIntegral_eq_compactCoreTruncation
 
-theorem p02_unshiftedCoercivity_correctedAndProved :=
+noncomputable def p02_unshiftedCoercivity_correctedAndProved :=
   @CorrectedLemmas.WeakVariationalRepair.unshiftedCoercive_of_nonpositive_negativePart
 
-theorem p03_mellinHalfPlane_correctedAndProved :=
+noncomputable def p03_mellinHalfPlane_correctedAndProved :=
   @ConcreteMellinGamma.integral_beta_sub_two
 
-theorem p03_betaOneLogDivergence_correctedAndProved :=
+noncomputable def p03_betaOneLogDivergence_correctedAndProved :=
   @CorrectedLemmas.CuspConvergence.inversePower_not_integrable_nearZero
 
-theorem p03_eisensteinCuspWindow_correctedAndProved :=
+noncomputable def p03_eisensteinCuspWindow_correctedAndProved :=
   @CorrectedLemmas.CuspConvergence.rankinSelberg_power_integrable_iff
 
-theorem p04_smoothKuznetsovTest_correctedAndProved :=
+noncomputable def p04_smoothKuznetsovTest_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.lemma34_smoothReplacement_correctedAndProved
 
-theorem p04_tailExponentOneDivergence_correctedAndProved :=
+noncomputable def p04_tailExponentOneDivergence_correctedAndProved :=
   @CorrectedLemmas.KloostermanTail.not_summable_paper_tail_one
 
-theorem p04_tailExponentHalfDivergence_correctedAndProved :=
+noncomputable def p04_tailExponentHalfDivergence_correctedAndProved :=
   @CorrectedLemmas.KloostermanTail.not_summable_paper_tail_half
 
-theorem p04_noUniformQuarterPowerAbsorption_correctedAndProved :=
+noncomputable def p04_noUniformQuarterPowerAbsorption_correctedAndProved :=
   CorrectedLemmas.HalfOrderBessel.no_uniformConstant_absorbs_quarterPower
 
-theorem p04_criticalEnvelopeDivergence_correctedAndProved :=
+noncomputable def p04_criticalEnvelopeDivergence_correctedAndProved :=
   @CorrectedLemmas.HalfOrderBessel.not_summable_criticalModulusEnvelope
 
-theorem p04_positiveMarginSummability_correctedAndProved :=
+noncomputable def p04_positiveMarginSummability_correctedAndProved :=
   @CorrectedLemmas.HalfOrderBessel.summable_with_positiveMargin
 
-theorem p05_positiveMassDefinition_correctedAndProved :=
+noncomputable def p05_positiveMassDefinition_correctedAndProved :=
   @massFunctional_nonneg
 
-theorem p05_unitarityInsufficiency_correctedAndProved :=
+noncomputable def p05_unitarityInsufficiency_correctedAndProved :=
   CorrectedLemmas.ScatteringDensityErratum.unitarity_does_not_imply_positiveLogDerivative
 
-theorem p05_correctedScalarDensityPositive_correctedAndProved :=
+noncomputable def p05_correctedScalarDensityPositive_correctedAndProved :=
   @CorrectedLemmas.ScatteringDensityErratum.correctedScalarLogDensity_pos
 
-theorem p05_concreteNonnegativeTestMass_correctedAndProved :=
+noncomputable def p05_concreteNonnegativeTestMass_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.hMass_smoothVolumeUnitData
 
-theorem p06_exceptionalParameter_correctedAndProved :=
+noncomputable def p06_exceptionalParameter_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.SpectralMassGap.no_real_spectralParameter_below_quarter
 
-theorem p06_widthTwoParseval_correctedAndProved :=
+noncomputable def p06_widthTwoParseval_correctedAndProved :=
   @CorrectedLemmas.WidthTwoFourier.integral_norm_sq_finitePolynomial
 
-theorem p06_poincareCoefficientNonimplication_correctedAndProved :=
+noncomputable def p06_poincareCoefficientNonimplication_correctedAndProved :=
   CorrectedLemmas.CorrectedPropositions.SpectralMassGap.poincare_does_not_force_coefficient_activity
 
-theorem p06_oneBlockNonimplication_correctedAndProved :=
+noncomputable def p06_oneBlockNonimplication_correctedAndProved :=
   CorrectedLemmas.CorrectedPropositions.LowerGrowth.positiveActivity_not_infinite
 
-theorem p06_fixedLowerGrowingUpperConsistency_correctedAndProved :=
+noncomputable def p06_fixedLowerGrowingUpperConsistency_correctedAndProved :=
   CorrectedLemmas.CorrectedPropositions.SpectralMassGap.fixedLower_polynomialUpper_consistent
 
-theorem p06_powerSeparatedContradiction_correctedAndProved :=
+noncomputable def p06_powerSeparatedContradiction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.StepThree.noTraceComparison_of_infinite_powerGap
 
-theorem p07_typedCurvature_correctedAndProved :=
+noncomputable def p07_typedCurvature_correctedAndProved :=
   @CurvatureMorphism.map_curvature
 
-theorem p07_parallelMockEnergyZero_correctedAndProved :=
+noncomputable def p07_parallelMockEnergyZero_correctedAndProved :=
   @CorrectedLemmas.MockConnectionErratum.parallelDerivative_normSq_eq_zero
 
-theorem p07_parallelBoundarySign_correctedAndProved :=
+noncomputable def p07_parallelBoundarySign_correctedAndProved :=
   @CorrectedLemmas.MockConnectionErratum.boundary_eq_neg_shadow_of_parallel
 
-theorem p07_rademacherDampingDirection_correctedAndProved :=
+noncomputable def p07_rademacherDampingDirection_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingInequality
 
-theorem p07_rademacherExponentDirection_correctedAndProved :=
+noncomputable def p07_rademacherExponentDirection_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingExponentDirection
 
-theorem p07_automorphicSeriesLimit_correctedAndProved :=
+noncomputable def p07_automorphicSeriesLimit_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.rademacherSeries_converges_in_H1_and_isAEAutomorphic
 
-theorem p07_compactEmbeddingReplacement_correctedAndProved :=
+noncomputable def p07_compactEmbeddingReplacement_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.strongCompactness_of_compactEmbedding
 
-theorem p08_localQCoordinate_correctedAndProved :=
+noncomputable def p08_localQCoordinate_correctedAndProved :=
   @norm_cuspQCoordinate_lt_one
 
-theorem p08_cuspChartELpNormTransport_correctedAndProved :=
+noncomputable def p08_cuspChartELpNormTransport_correctedAndProved :=
   @CuspQChart.eLpNorm_pushFunction
 
-theorem p08_cuspChartMemLpTransport_correctedAndProved :=
+noncomputable def p08_cuspChartMemLpTransport_correctedAndProved :=
   @CuspQChart.memLp_pushFunction_iff
 
-theorem p08_scalingWidth_correctedAndProved :=
+noncomputable def p08_scalingWidth_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CuspTransport.scalingMatrix_conjugation_and_width
 
-theorem p08_gamma2CuspOrbitClassification_correctedAndProved :=
+noncomputable def p08_gamma2CuspOrbitClassification_correctedAndProved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_gamma2_cuspOrbit_of_isCoprime
 
-theorem p08_exteriorPullbackAnalytic_correctedAndProved :=
+noncomputable def p08_exteriorPullbackAnalytic_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.analyticOn_exteriorPullback
 
-theorem p08_chosenConnectionCompatible_correctedAndProved :=
+noncomputable def p08_chosenConnectionCompatible_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible
 
-theorem p08_chosenConnectionUnique_correctedAndProved :=
+noncomputable def p08_chosenConnectionUnique_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_unique
 
-theorem p08_trivializedTransport_correctedAndProved :=
+noncomputable def p08_trivializedTransport_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization
 
-theorem p09_tensorRestriction_correctedAndProved :=
+noncomputable def p09_tensorRestriction_correctedAndProved :=
   @tensorPresheafRestrict_tmul
 
-theorem p09_equalizer_correctedAndProved :=
+noncomputable def p09_equalizer_correctedAndProved :=
   @balancedEqualizerInclusion_comp_lift
 
 /-! Every P0 row is tied to a kernel theorem, including corrected rows.
@@ -26174,6 +26258,8 @@ theorem KernelEvidence.sound {P : Prop} {proof : P}
     (_ : KernelEvidence proof) : P :=
   proof
 
+universe uP0Riesz uP0StartX uP0StartT uP0StartV
+
 /-- Exact theorem-level evidence for all fifty P0 rows.  Corrected rows point
 to the named corrected theorem; removed rows point only to their decisive
 counterexample or obstruction.  There is deliberately no wildcard branch. -/
@@ -26185,18 +26271,18 @@ def RequirementEvidence : Requirement -> Prop
   | .p01_equivariantSectionModel =>
       KernelEvidence (@p01_standardThetaMultiplierConstructed_proved)
   | .p01_aeEquivarianceCompletion =>
-      KernelEvidence (@p01_genuineAECompletion_correctedAndProved)
+      KernelEvidence (@p01_genuineAECompletion_correctedAndProved.{0})
   | .p01_complexDualPairingConvention =>
-      KernelEvidence (@p01_dualConvention_correctedAndProved)
+      KernelEvidence (@p01_dualConvention_correctedAndProved.{uP0Riesz})
   | .p02_distributionalLaplacian =>
-      KernelEvidence (@p02_distributionalRestriction_correctedAndProved)
+      KernelEvidence (@p02_distributionalRestriction_correctedAndProved.{uP0StartX, uP0StartT, uP0StartV})
   | .p02_potentialFormHypotheses =>
       KernelEvidence (@p02_gardingShift_correctedAndProved)
   | .p02_boundaryTraceNeedsGeometry =>
       KernelEvidence
         CorrectedLemmas.GreenIdentityRepair.paper_plusBoundaryRewrite_counterexample
   | .p02_fixedTruncationNeedsSupport =>
-      KernelEvidence (@p02_supportSensitiveTruncation_correctedAndProved)
+      KernelEvidence (@p02_supportSensitiveTruncation_correctedAndProved.{0})
   | .p02_shiftedDoesNotSolveUnshifted =>
       KernelEvidence (@p02_unshiftedCoercivity_correctedAndProved)
   | .p03_mellinRequiresRealPartAboveOne =>
@@ -26246,15 +26332,15 @@ def RequirementEvidence : Requirement -> Prop
   | .p06_quantitativeComparisonReplacement =>
       KernelEvidence (@p06_powerSeparatedContradiction_correctedAndProved)
   | .p07_parallelMockEnergyZero =>
-      KernelEvidence (@p07_parallelMockEnergyZero_correctedAndProved)
+      KernelEvidence (@p07_parallelMockEnergyZero_correctedAndProved.{0})
   | .p07_curvatureBidegreeTyped =>
-      KernelEvidence (@p07_typedCurvature_correctedAndProved)
+      KernelEvidence (@p07_typedCurvature_correctedAndProved.{0, 0, 0, 0})
   | .p07_rademacherDampingDirection =>
       KernelEvidence (@p07_rademacherDampingDirection_correctedAndProved)
   | .p07_fourierTruncationAutomorphy =>
-      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved)
+      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved.{0})
   | .p07_h1BoundedNotStronglyPrecompact =>
-      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved)
+      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved.{0, 0})
   | .p08_qCoordinateIsCuspLocal =>
       KernelEvidence (@p08_localQCoordinate_correctedAndProved)
   | .p08_cuspScalingAndWidth =>
@@ -26265,7 +26351,7 @@ def RequirementEvidence : Requirement -> Prop
       KernelEvidence
         (@CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.no_upperHalfPlane_exterior_q_region)
   | .p08_kernelBundleNeedsTrivialization =>
-      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved)
+      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved.{0, 0})
   | .p08_flatConnectionNotCanonical =>
       KernelEvidence
         CorrectedLemmas.CorrectedPropositions.FlatQTransport.zeroRadialConnection_ne_identityRadialConnection
@@ -26275,22 +26361,22 @@ def RequirementEvidence : Requirement -> Prop
       KernelEvidence
         (@CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.correctedTheorem5_1_annularMatching)
   | .p09_curvatureTermsSameType =>
-      KernelEvidence (@curvature_add_expansion)
+      KernelEvidence (@curvature_add_expansion.{0, 0})
   | .p09_endomorphismValuedGaugePotential =>
       KernelEvidence
         CorrectedLemmas.SmoothEndValuedOneForms.scalarMultiplicationSmoothForm_isGaugeCovariant
   | .p09_halfWeightTwistNeedsBackgroundConnection =>
-      KernelEvidence (@curvature_zero)
+      KernelEvidence (@curvature_zero.{0, 0})
   | .p09_tensorSectionNotPair =>
-      KernelEvidence (@p09_tensorRestriction_correctedAndProved)
+      KernelEvidence (@p09_tensorRestriction_correctedAndProved.{0, 0, 0})
   | .p09_equalizerUsesSheafMorphisms =>
-      KernelEvidence (@p09_equalizer_correctedAndProved)
+      KernelEvidence (@p09_equalizer_correctedAndProved.{0, 0, 0})
   | .p09_missingFunctorTargetRemoved =>
       KernelEvidence
-        CorrectedLemmas.CorrectedPropositions.SheafBridge.noUniversalObjectMap
+        CorrectedLemmas.CorrectedPropositions.SheafBridge.noUniversalObjectMap.{0}
 
 theorem requirementEvidence (r : Requirement) : RequirementEvidence r := by
-  cases r <;> exact KernelEvidence.certify _
+  cases r <;> exact KernelEvidence.intro
 
 end P0RepairLedger
 
@@ -26326,7 +26412,13 @@ inductive Claim
   | definition16
   | definition17
   | definition18
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems := {.definition1, .definition2, .definition3, .definition4, .definition5, .definition6, .definition7, .definition8, .definition9, .definition10, .definition11, .definition12, .definition13, .definition14, .definition15, .definition16, .definition17, .definition18}
+  complete := by
+    intro x
+    cases x <;> simp
 
 inductive Disposition
   | proved
@@ -26362,150 +26454,150 @@ theorem exhaustive (c : Claim) :
 
 /-! ### Kernel declarations attached to corrected and erratum leaves -/
 
-theorem definition1_graphNorm_correctedAndProved :=
+noncomputable def definition1_graphNorm_correctedAndProved :=
   @CorrectedLemmas.ConcreteGraphCompletion.graphMap_norm_sq
 
-theorem definition1_denseCore_correctedAndProved :=
+noncomputable def definition1_denseCore_correctedAndProved :=
   @CorrectedLemmas.ConcreteGraphCompletion.denseRange_graphCoreToGraphSobolev
 
-theorem definition1_genuineFactorCocycle_correctedAndProved :=
+noncomputable def definition1_genuineFactorCocycle_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.factor_mul
 
-theorem definition1_literalInverseFactorCocycle_correctedAndProved :=
+noncomputable def definition1_literalInverseFactorCocycle_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.factor_mul
 
-theorem definition1_inverseWeightDensityInvariant_correctedAndProved :=
+noncomputable def definition1_inverseWeightDensityInvariant_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.density_invariant
 
-theorem definition1_plainDensityObstruction_correctedAndProved :=
+noncomputable def definition1_plainDensityObstruction_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.sqrtFactor_norm_inv_eq_one_of_plainNormInvariant
 
-theorem definition1_inverseRepresentativeIndependentAutomorphy_correctedAndProved :=
+noncomputable def definition1_inverseRepresentativeIndependentAutomorphy_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseAEAutomorphicSections.mk_isAutomorphicClass_iff
 
-theorem definition1_concretePlainDensityCounterexample_proved :=
+noncomputable def definition1_concretePlainDensityCounterexample_proved :=
   CorrectedLemmas.ZeroCuspThetaLift.inverseHalfWeight_plainNorm_not_invariant
 
-theorem definition1_positivePolygonL2Density_correctedAndProved :=
+noncomputable def definition1_positivePolygonL2Density_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.norm_positivePeterssonQuarter_mul_sq
 
-theorem definition1_inversePolygonL2Density_correctedAndProved :=
+noncomputable def definition1_inversePolygonL2Density_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.norm_inversePeterssonQuarter_mul_sq
 
-theorem definition1_positivePolygonLpRealization_correctedAndProved :=
+noncomputable def definition1_positivePolygonLpRealization_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.coeFn_positiveToLp
 
-theorem definition1_inversePolygonLpRealization_correctedAndProved :=
+noncomputable def definition1_inversePolygonLpRealization_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.coeFn_inverseToLp
 
-theorem definition1_positiveAutomorphicL2Submodule_correctedAndProved :=
+noncomputable def definition1_positiveAutomorphicL2Submodule_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.mem_positiveAutomorphicL2Submodule
 
-theorem definition1_inverseAutomorphicL2Submodule_correctedAndProved :=
+noncomputable def definition1_inverseAutomorphicL2Submodule_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.mem_inverseAutomorphicL2Submodule
 
-theorem definition1_positiveAutomorphicL2LinearRealization_correctedAndProved :=
+noncomputable def definition1_positiveAutomorphicL2LinearRealization_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear
 
-theorem definition1_inverseAutomorphicL2LinearRealization_correctedAndProved :=
+noncomputable def definition1_inverseAutomorphicL2LinearRealization_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.inverseRealizationLinear
 
-theorem definition1_positiveAutomorphicL2CompleteClosure_correctedAndProved :=
+noncomputable def definition1_positiveAutomorphicL2CompleteClosure_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.isComplete_positiveClosedL2Space
 
-theorem definition1_inverseAutomorphicL2CompleteClosure_correctedAndProved :=
+noncomputable def definition1_inverseAutomorphicL2CompleteClosure_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.isComplete_inverseClosedL2Space
 
-theorem definition1_positivePolygonRealizationInjective_correctedAndProved :=
+noncomputable def definition1_positivePolygonRealizationInjective_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveRealizationLinear_injective
 
-theorem definition1_inversePolygonRealizationInjective_correctedAndProved :=
+noncomputable def definition1_inversePolygonRealizationInjective_correctedAndProved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.inverseRealizationLinear_injective
 
-theorem definition1_genuineAECompletion_correctedAndProved :=
+noncomputable def definition1_genuineAECompletion_correctedAndProved :=
   @CorrectedLemmas.GenuineWeightedSobolev.space_ae
 
-theorem definition1_representativeIndependentAutomorphy_correctedAndProved :=
+noncomputable def definition1_representativeIndependentAutomorphy_correctedAndProved :=
   @CorrectedLemmas.GenuineAEAutomorphicSections.mk_isAutomorphicClass_iff
 
-theorem definition1_standardThetaAEClassAutomorphic_proved :=
+noncomputable def definition1_standardThetaAEClassAutomorphic_proved :=
   CorrectedLemmas.GenuineAEAutomorphicSections.standardThetaClass_isAutomorphic
 
-theorem definition1_closableGraphValueEmbedding_correctedAndProved :=
+noncomputable def definition1_closableGraphValueEmbedding_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.valueProjection_injective
 
-theorem definition1_graphCompletionIsClosureGraph_correctedAndProved :=
+noncomputable def definition1_graphCompletionIsClosureGraph_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.graphCompletion_eq_transportedClosureGraph
 
-theorem definition1_graphCompletionClosureDomain_correctedAndProved :=
+noncomputable def definition1_graphCompletionClosureDomain_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.mem_graphCompletion_iff_closureDomain
 
-theorem definition1_paperMaassLeftFactorizationErratum :=
+noncomputable def definition1_paperMaassLeftFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_left_factorization_fails_at_height
 
-theorem definition1_paperMaassRightFactorizationErratum :=
+noncomputable def definition1_paperMaassRightFactorizationErratum :=
   CorrectedLemmas.MaassJetAudit.paper_right_factorization_fails_at_height
 
-theorem definition1_unweightedMaassAdjointErratum :=
+noncomputable def definition1_unweightedMaassAdjointErratum :=
   CorrectedLemmas.MaassJetAudit.unweighted_adjoint_claim_fails_at_constant
 
-theorem definition1_unitaryMaassAdjoint_correctedAndProved :=
+noncomputable def definition1_unitaryMaassAdjoint_correctedAndProved :=
   @CorrectedLemmas.MaassJetAudit.formalAdjointUnitaryRaise_eq_negUnitaryLower
 
-theorem definition1_completedGraphNorm_correctedAndProved :=
+noncomputable def definition1_completedGraphNorm_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.graphCompletion_norm_sq
 
-theorem definition1_formalAdjointImpliesClosable_correctedAndProved :=
+noncomputable def definition1_formalAdjointImpliesClosable_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.isClosable_of_formalAdjoint_dense
 
-theorem definition1_genuineCoreDense_correctedAndProved :=
+noncomputable def definition1_genuineCoreDense_correctedAndProved :=
   @CorrectedLemmas.GenuineWeightedSobolev.denseRange_coreToTrial
 
-theorem definition1_centralMultiplierCompatibilityNecessary_proved :=
+noncomputable def definition1_centralMultiplierCompatibilityNecessary_proved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_multiplier_value_of_nonzero
 
-theorem definition1_positiveCentralPhase_correctedAndProved :=
+noncomputable def definition1_positiveCentralPhase_correctedAndProved :=
   @CorrectedLemmas.GenuineHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem definition1_inverseCentralPhase_correctedAndProved :=
+noncomputable def definition1_inverseCentralPhase_correctedAndProved :=
   @CorrectedLemmas.GenuineInverseHalfWeightAutomorphy.centralNegOne_factor_eq_one_iff
 
-theorem definition1_standardThetaMultiplierConstructed_proved :=
+noncomputable def definition1_standardThetaMultiplierConstructed_proved :=
   CorrectedLemmas.GenuineGlobalThetaMultiplier.standardTheta_isAutomorphic
 
-theorem definition1_standardThetaSharpGaussianBound_proved :=
+noncomputable def definition1_standardThetaSharpGaussianBound_proved :=
   @ConcreteUnaryTheta.norm_theta_le_one_add_inv_sqrt_im
 
-theorem definition1_fdHeightEnvelopeIntegrable_correctedAndProved :=
+noncomputable def definition1_fdHeightEnvelopeIntegrable_correctedAndProved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.integrableOn_one_add_sqrt_im_fd
 
-theorem definition1_standardThetaSixCellDensityMajorant_proved :=
+noncomputable def definition1_standardThetaSixCellDensityMajorant_proved :=
   @CorrectedLemmas.GenuineSixCellWeightedL2.positiveThetaDensity_pullback_le_on_fd
 
-theorem definition1_standardThetaFundamentalMemLp_proved :=
+noncomputable def definition1_standardThetaFundamentalMemLp_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.positiveNormalized_standardThetaClass_memLp_fundamentalMeasure
 
-theorem definition1_standardThetaPositiveAutomorphicL2_proved :=
+noncomputable def definition1_standardThetaPositiveAutomorphicL2_proved :=
   CorrectedLemmas.GenuineSixCellWeightedL2.standardThetaClass_mem_positiveAutomorphicL2Submodule
 
-theorem definition1_inverseStandardThetaSectorErratum :=
+noncomputable def definition1_inverseStandardThetaSectorErratum :=
   CorrectedLemmas.GenuineSixCellWeightedL2.inverseStandardThetaAutomorphicL2Submodule_eq_bot
 
-theorem definition2_rieszPairing_correctedAndProved :=
+noncomputable def definition2_rieszPairing_correctedAndProved :=
   @existsUnique_rieszRepresentative
 
-theorem definition2_ambientL2ToGraphDual_correctedAndProved :=
+noncomputable def definition2_ambientL2ToGraphDual_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.norm_ambientToData_apply_le
 
-theorem definition2_ambientL2ToGraphAntiDual_correctedAndProved :=
+noncomputable def definition2_ambientL2ToGraphAntiDual_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.ambientToData_smul
 
-theorem definition2_ambientL2ToGraphDualInjective_correctedAndProved :=
+noncomputable def definition2_ambientL2ToGraphDualInjective_correctedAndProved :=
   @CorrectedLemmas.ClosableGraphBridge.CommonCoreOperators.ambientToData_injective
 
-theorem definition3_threeCuspLabels_proved := Gamma2Cusp.card_eq
+noncomputable def definition3_threeCuspLabels_proved := Gamma2Cusp.card_eq
 
-theorem definition3_widthTwo_proved :=
+noncomputable def definition3_widthTwo_proved :=
   @Gamma2Cusp.strictWidth_scaling_conjugate_eq_width
 
 theorem definition3_cuspHeightFormulas_proved :
@@ -26519,79 +26611,79 @@ theorem definition3_cuspHeightFormulas_proved :
         τ.im / Complex.normSq ((τ : ℂ) - 1)) :=
   ⟨cuspHeight_infinity, cuspHeight_zero, cuspHeight_one⟩
 
-theorem definition3_heightOneHoroballsPairwiseDisjoint_proved :=
+noncomputable def definition3_heightOneHoroballsPairwiseDisjoint_proved :=
   pairwise_disjoint_strictCuspHoroball
 
-theorem definition3_closedTruncation_proved :=
+noncomputable def definition3_closedTruncation_proved :=
   @isClosed_truncatedFundamentalDomain
 
-theorem definition3_exhaustion_proved :=
+noncomputable def definition3_exhaustion_proved :=
   @iUnion_truncatedFundamentalDomain
 
-theorem definition3_primitiveParityClassification_proved :=
+noncomputable def definition3_primitiveParityClassification_proved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_standardParity_of_isCoprime
 
-theorem definition3_primitiveColumnOrbitClassification_proved :=
+noncomputable def definition3_primitiveColumnOrbitClassification_proved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_gamma2_cuspOrbit_of_isCoprime
 
-theorem definition3_sixCellRepresentativeCount_proved :=
+noncomputable def definition3_sixCellRepresentativeCount_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.card_gamma2Rep
 
-theorem definition3_sixCellClosedPolygon_closed_proved :=
+noncomputable def definition3_sixCellClosedPolygon_closed_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.isClosed_closedPolygon
 
-theorem definition3_sixCellOpenPolygon_open_proved :=
+noncomputable def definition3_sixCellOpenPolygon_open_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.isOpen_openPolygon
 
-theorem definition3_sixOpenCellsPairwiseDisjoint_proved :=
+noncomputable def definition3_sixOpenCellsPairwiseDisjoint_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.pairwise_disjoint_openCell
 
-theorem definition3_sixCellInteriorOrbitUnique_proved :=
+noncomputable def definition3_sixCellInteriorOrbitUnique_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.eq_of_mem_openPolygon_of_gamma2_smul_eq
 
-theorem definition3_standardFdPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_standardFdPiecewiseSmoothBoundary_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_fd
 
-theorem definition3_modularBoundaryTransfer_proved :=
+noncomputable def definition3_modularBoundaryTransfer_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.HasPiecewiseSmoothBoundary.preimage_integral_smul
 
-theorem definition3_eachClosedCellPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_eachClosedCellPiecewiseSmoothBoundary_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_closedCell
 
-theorem definition3_truncatedPolygonPiecewiseSmoothBoundary_proved :=
+noncomputable def definition3_truncatedPolygonPiecewiseSmoothBoundary_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.hasPiecewiseSmoothBoundary_truncatedFundamentalDomain_closedPolygon
 
-theorem definition3_sixCosetReduction_bijective_proved :=
+noncomputable def definition3_sixCosetReduction_bijective_proved :=
   CorrectedLemmas.Gamma2SixCellPolygon.reducedRep_bijective
 
-theorem definition3_sixCellOrbitCoverage_proved :=
+noncomputable def definition3_sixCellOrbitCoverage_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.exists_gamma2_smul_mem_closedPolygon
 
-theorem definition3_sixCellRepCuspHeight_proved :=
+noncomputable def definition3_sixCellRepCuspHeight_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.repMatrix_im_eq_cuspHeight
 
-theorem definition3_sixCellPullbackHeightEnvelope_proved :=
+noncomputable def definition3_sixCellPullbackHeightEnvelope_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.pullbackHeight_sqrt_envelope_on_fd
 
-theorem definition3_sixCellCompactCarrier_proved :=
+noncomputable def definition3_sixCellCompactCarrier_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isCompact_compactTruncationCarrier
 
-theorem definition3_sixCellTruncationCompact_proved :=
+noncomputable def definition3_sixCellTruncationCompact_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isCompact_truncatedFundamentalDomain_closedPolygon
 
-theorem definition3_sixCellTruncationBoundaryCover_proved :=
+noncomputable def definition3_sixCellTruncationBoundaryCover_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.frontier_truncatedFundamentalDomain_closedPolygon_subset
 
-theorem definition3_positiveCuspLevelRange_proved :=
+noncomputable def definition3_positiveCuspLevelRange_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.range_cuspLevelCurve
 
-theorem definition3_nonpositiveCuspLevelEmpty_proved :=
+noncomputable def definition3_nonpositiveCuspLevelEmpty_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.cuspHeightLevel_eq_empty_of_nonpos
 
-theorem definition3_positiveCuspLevelRegular_proved :=
+noncomputable def definition3_positiveCuspLevelRegular_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isRegularSmoothCurvePiece_coe_cuspHeightLevel_of_pos
 
-theorem definition3_allCuspLevelsRegular_proved :=
+noncomputable def definition3_allCuspLevelsRegular_proved :=
   @CorrectedLemmas.Gamma2SixCellPolygon.isRegularSmoothCurvePiece_coe_cuspHeightLevel
 
 /-- The complete corrected Definition 3 certificate adds both the finite
@@ -26627,37 +26719,37 @@ theorem definition3_unspecifiedPolygonErratum :
     ∃ F G : Set UpperHalfPlane, F ≠ G := by
   exact ⟨∅, Set.univ, Set.empty_ne_univ⟩
 
-theorem definition4_uniformMassPredicate_proved :=
+noncomputable def definition4_uniformMassPredicate_proved :=
   @HMass.exists_eventual_positive
 
-theorem definition5_integrableDomain_correctedAndProved :=
+noncomputable def definition5_integrableDomain_correctedAndProved :=
   @RankinSelbergDomain.integrable
 
-theorem definition5_halfPlane_correctedAndProved :=
+noncomputable def definition5_halfPlane_correctedAndProved :=
   @RankinSelbergDomain.re_gt_one
 
-theorem definition6_positiveCuspMass_correctedAndProved :=
+noncomputable def definition6_positiveCuspMass_correctedAndProved :=
   @massFunctional_nonneg
 
-theorem definition7_massConditionPositive_proved :=
+noncomputable def definition7_massConditionPositive_proved :=
   @MassConditionAt.mass_pos
 
-theorem definition8_intertwining_correctedAndProved :=
+noncomputable def definition8_intertwining_correctedAndProved :=
   @qLaplacian_intertwines
 
-theorem definition8_inverseIntertwining_correctedAndProved :=
+noncomputable def definition8_inverseIntertwining_correctedAndProved :=
   @qLaplacian_pull_intertwines
 
-theorem definition8_eLpNormTransport_correctedAndProved :=
+noncomputable def definition8_eLpNormTransport_correctedAndProved :=
   @CuspQChart.eLpNorm_pushFunction
 
-theorem definition8_memLpTransport_correctedAndProved :=
+noncomputable def definition8_memLpTransport_correctedAndProved :=
   @CuspQChart.memLp_pushFunction_iff
 
-theorem definition9_transportIdentity_correctedAndProved :=
+noncomputable def definition9_transportIdentity_correctedAndProved :=
   @QLocalSystem.transport_refl
 
-theorem definition9_transportComposition_correctedAndProved :=
+noncomputable def definition9_transportComposition_correctedAndProved :=
   @QLocalSystem.transport_trans
 
 def definition9_fiberEquivModel_correctedAndProved :=
@@ -26666,76 +26758,76 @@ def definition9_fiberEquivModel_correctedAndProved :=
 def definition9_fiberEquivFiber_correctedAndProved :=
   @QLocalSystem.fiberEquivFiber
 
-theorem definition9_fiberEquivFiberIsTransport_correctedAndProved :=
+noncomputable def definition9_fiberEquivFiberIsTransport_correctedAndProved :=
   @QLocalSystem.fiberEquivFiber_eq_transport
 
-theorem definition9_fiberFinrankConstancy_correctedAndProved :=
+noncomputable def definition9_fiberFinrankConstancy_correctedAndProved :=
   @QLocalSystem.finrank_fiber_eq_fiber
 
 def definition9_flatSectionsEquivModel_correctedAndProved :=
   @QLocalSystem.flatSectionsEquivModel
 
-theorem definition9_flatSectionsModelEvaluation_correctedAndProved :=
+noncomputable def definition9_flatSectionsModelEvaluation_correctedAndProved :=
   @QLocalSystem.flatSectionsEquivModel_apply
 
-theorem definition9_flatSectionsFinrank_correctedAndProved :=
+noncomputable def definition9_flatSectionsFinrank_correctedAndProved :=
   @QLocalSystem.finrank_flatSections_eq_model
 
-theorem definition10_unspecifiedPrototypeErratum :=
+noncomputable def definition10_unspecifiedPrototypeErratum :=
   @CorrectedLemmas.MockPrototypeUnderspecification.positiveRadius_does_not_determinePrototype
 
-theorem definition10_fixedLaurentModel_insideHasSum_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_insideHasSum_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.inside_hasSum
 
-theorem definition10_fixedLaurentModel_correctionHasSum_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_correctionHasSum_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.correction_hasSum
 
-theorem definition10_fixedLaurentModel_outsideHasSum_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_outsideHasSum_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.outside_hasSum
 
-theorem definition10_fixedLaurentModel_prototypeNonconstant_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_prototypeNonconstant_correctedAndProved :=
   CorrectedLemmas.FixedDefinition10Model.prototype_nonconstant
 
-theorem definition10_fixedLaurentModel_prototypeNonzero_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_prototypeNonzero_correctedAndProved :=
   CorrectedLemmas.FixedDefinition10Model.prototype_ne_zero
 
-theorem definition10_fixedLaurentModel_overlapNonempty_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_overlapNonempty_correctedAndProved :=
   CorrectedLemmas.FixedDefinition10Model.overlap_nonempty
 
-theorem definition10_fixedLaurentModel_outsideVariableMem_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_outsideVariableMem_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.outsideVariable_mem
 
-theorem definition10_fixedLaurentModel_variableInverse_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_variableInverse_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.variable_inverse
 
-theorem definition10_fixedLaurentModel_dictionary_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_dictionary_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.dictionary_identity
 
-theorem definition10_fixedLaurentModel_insideOutside_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_insideOutside_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.inside_outside_identity
 
-theorem definition10_fixedLaurentModel_matchInsideOutside_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_matchInsideOutside_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.fixedMatch_inside_eq_outside
 
-theorem definition10_fixedLaurentModel_matchDictionary_correctedAndProved :=
+noncomputable def definition10_fixedLaurentModel_matchDictionary_correctedAndProved :=
   @CorrectedLemmas.FixedDefinition10Model.fixedMatch_inside_dictionary
 
-theorem definition11_duplicateTransport_correctedAndProved :=
+noncomputable def definition11_duplicateTransport_correctedAndProved :=
   @QLocalSystem.transport_back
 
 def definition11_duplicateFiberModel_correctedAndProved :=
   @QLocalSystem.fiberEquivModel
 
-theorem definition11_duplicateFiberConstancy_correctedAndProved :=
+noncomputable def definition11_duplicateFiberConstancy_correctedAndProved :=
   @QLocalSystem.finrank_fiber_eq_fiber
 
 def definition11_duplicateFlatSectionsModel_correctedAndProved :=
   @QLocalSystem.flatSectionsEquivModel
 
-theorem definition12_sheafificationUniversalProperty_correctedAndProved :=
+noncomputable def definition12_sheafificationUniversalProperty_correctedAndProved :=
   @QGaugeVariableSheaf.factor_existsUnique
 
-theorem definition13_tensorLeibniz_correctedAndProved
+noncomputable def definition13_tensorLeibniz_correctedAndProved
     {L M : Type*}
     [AddCommGroup L] [Module ℂ L]
     [AddCommGroup M] [Module ℂ M]
@@ -26745,25 +26837,25 @@ theorem definition13_tensorLeibniz_correctedAndProved
     (C : AlgebraicTensorRadialConnection D nablaL nablaM) :=
   C.pure_tensor_rule
 
-theorem definition14_equalizerUniversalProperty_proved :=
+noncomputable def definition14_equalizerUniversalProperty_proved :=
   @balancedEqualizerLift_unique
 
-theorem definition14_restrictionStable_proved :=
+noncomputable def definition14_restrictionStable_proved :=
   @balancedPresheafSection_restrict
 
-theorem definition14_equalizerSheaf_proved :=
+noncomputable def definition14_equalizerSheaf_proved :=
   @balancedPresheaf_isSheaf
 
-theorem definition14_uniqueGluing_proved :=
+noncomputable def definition14_uniqueGluing_proved :=
   @balancedPresheafSection_existsUnique_gluing
 
-theorem definition15_covariantSubmodule_correctedAndProved :=
+noncomputable def definition15_covariantSubmodule_correctedAndProved :=
   @qGaugeForms_eq_iInf_ker
 
-theorem definition15_concreteSmoothForm_correctedAndProved :=
+noncomputable def definition15_concreteSmoothForm_correctedAndProved :=
   CorrectedLemmas.SmoothEndValuedOneForms.scalarMultiplicationSmoothForm_isGaugeCovariant
 
-theorem definition16_curvatureNaturality_correctedAndProved :=
+noncomputable def definition16_curvatureNaturality_correctedAndProved :=
   @CurvatureMorphism.map_curvature
 
 theorem definition17_duplicateCurvature_correctedAndProved
@@ -26773,10 +26865,10 @@ theorem definition17_duplicateCurvature_correctedAndProved
     (C : CurvatureCalculus OneForm TwoForm) (A : OneForm) :
     qCurvature C A = curvature C A := rfl
 
-theorem definition18_exactMassDecomposition_correctedAndProved :=
+noncomputable def definition18_exactMassDecomposition_correctedAndProved :=
   @EffectiveActionDecomposition.mass_eq
 
-theorem definition18_flatRestriction_correctedAndProved :=
+noncomputable def definition18_flatRestriction_correctedAndProved :=
   @CurvatureMorphism.map_mem_flatSector
 
 /-- Proof-producing kernel evidence for every Definition 1--18 row.  Corrected
@@ -26863,13 +26955,13 @@ def ClaimEvidence : Claim → Prop
           (L : QLocalSystem V Model) (r s : RadialBase),
         Module.finrank ℂ (L.fiber r) = Module.finrank ℂ (L.fiber s)
   | .definition12 =>
-      ∀ {X E F G : Type*} [TopologicalSpace X]
+      ∀ {X E F : Type*} {G G' : Type uSheafG} [TopologicalSpace X]
           [AddCommGroup E] [Module ℂ E]
           [AddCommGroup F] [Module ℂ F]
           [AddCommGroup G] [Module ℂ G]
           {L : LinearPresheaf X E} {M : LinearPresheaf X F}
           (S : QGaugeVariableSheaf X E F G L M)
-          {G' : Type*} [AddCommGroup G'] [Module ℂ G']
+          [AddCommGroup G'] [Module ℂ G']
           (T : LinearPresheaf X G') (hT : IsLinearSheaf T)
           (f : TensorPresheafMorphism L M T),
         ∃! g : LinearPresheafMorphism S.sheaf T,
@@ -26934,34 +27026,64 @@ def ClaimEvidence : Claim → Prop
 theorem claimEvidence (c : Claim) : ClaimEvidence c := by
   cases c with
   | definition1 =>
+      simp only [ClaimEvidence]
       exact ⟨
         CorrectedLemmas.ZeroCuspThetaLift.inverseHalfWeight_plainNorm_not_invariant,
         CorrectedLemmas.GenuineSixCellWeightedL2.inverseStandardThetaAutomorphicL2Submodule_eq_bot,
         CorrectedLemmas.GenuineSixCellWeightedL2.standardThetaClass_mem_positiveAutomorphicL2Submodule⟩
-  | definition2 => exact existsUnique_rieszRepresentative
-  | definition3 => exact definition3_complete_correctedAndProved
-  | definition4 => exact fun h => h.exists_eventual_positive
+  | definition2 =>
+      simp only [ClaimEvidence]
+      exact existsUnique_rieszRepresentative
+  | definition3 =>
+      simp only [ClaimEvidence]
+      exact definition3_complete_correctedAndProved
+  | definition4 =>
+      simp only [ClaimEvidence]
+      exact fun h => h.exists_eventual_positive
   | definition5 =>
+      simp only [ClaimEvidence]
       exact fun p => ⟨p.re_gt_one, p.integrable⟩
-  | definition6 => exact massFunctional_nonneg
-  | definition7 => exact fun h hm => h.mass_pos hm
+  | definition6 =>
+      simp only [ClaimEvidence]
+      exact massFunctional_nonneg
+  | definition7 =>
+      simp only [ClaimEvidence]
+      exact fun h hm => h.mass_pos hm
   | definition8 =>
+      simp only [ClaimEvidence]
       exact ⟨qLaplacian_intertwines, qLaplacian_pull_intertwines,
         CuspQChart.memLp_pushFunction_iff⟩
   | definition9 =>
+      simp only [ClaimEvidence]
       exact ⟨QLocalSystem.transport_trans,
         fun L r => ⟨L.flatSectionsEquivModel r⟩⟩
-  | definition10 => exact definition10_unspecifiedPrototypeErratum 1 (by norm_num)
+  | definition10 =>
+      simp only [ClaimEvidence]
+      exact definition10_unspecifiedPrototypeErratum 1 (by norm_num)
   | definition11 =>
+      simp only [ClaimEvidence]
       exact ⟨QLocalSystem.transport_back, QLocalSystem.finrank_fiber_eq_fiber⟩
-  | definition12 => exact QGaugeVariableSheaf.factor_existsUnique
-  | definition13 => exact fun C => C.pure_tensor_rule
+  | definition12 =>
+      simp only [ClaimEvidence]
+      exact fun S _ _ T hT f => QGaugeVariableSheaf.factor_existsUnique S T hT f
+  | definition13 =>
+      simp only [ClaimEvidence]
+      exact fun C => C.pure_tensor_rule
   | definition14 =>
+      simp only [ClaimEvidence]
       exact ⟨mem_balancedEqualizerAt_iff, balancedPresheaf_isSheaf⟩
-  | definition15 => exact qGaugeForms_eq_iInf_ker
-  | definition16 => exact CurvatureMorphism.map_curvature
-  | definition17 => exact definition17_duplicateCurvature_correctedAndProved
-  | definition18 => exact EffectiveActionDecomposition.mass_eq
+  | definition15 =>
+      simp only [ClaimEvidence]
+      exact qGaugeForms_eq_iInf_ker
+  | definition16 =>
+      simp only [ClaimEvidence]
+      exact CurvatureMorphism.map_curvature
+  | definition17 =>
+      simp only [ClaimEvidence]
+      exact definition17_duplicateCurvature_correctedAndProved
+  | definition18 =>
+      simp only [ClaimEvidence]
+      exact EffectiveActionDecomposition.mass_eq
 
 end Section51Closure
 
@@ -27004,7 +27126,13 @@ inductive Claim
   | lemma37
   | lemma38
   | lemma61
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems := {.lemma11, .lemma12, .lemma13, .lemma21, .lemma22, .lemma31, .lemma32, .lemma33, .lemma34, .lemma35, .lemma36, .lemma37, .lemma38, .lemma61}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- Terminal disposition of every row in checklist Section 5.2. -/
 def claimDisposition : Claim → Disposition
@@ -27063,67 +27191,67 @@ theorem not_every_literal_claim_is_proved :
 
 /-! ### Kernel evidence attached to the ledger rows -/
 
-theorem lemma11_distributional_correctedAndProved :=
+noncomputable def lemma11_distributional_correctedAndProved :=
   @CorrectedLemmas.StartingIntegralIdentity.restrict_dual_equation_compact
 
-theorem lemma11_regularCorollary_correctedAndProved :=
+noncomputable def lemma11_regularCorollary_correctedAndProved :=
   @CorrectedLemmas.StartingIntegralIdentity.restrict_distributional_equation_compactSupport_of_product
 
-theorem lemma12_abstractGap_correctedAndProved :=
+noncomputable def lemma12_abstractGap_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.globalPoincare_sq
 
-theorem lemma12_genuineGroupGap_correctedAndProved :=
+noncomputable def lemma12_genuineGroupGap_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.genuineHalfWeightAutomorphic_globalPoincare_sq
 
-theorem lemma12_genuineOrthogonalGap_correctedAndProved :=
+noncomputable def lemma12_genuineOrthogonalGap_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.genuineHalfWeightAutomorphic_globalPoincare_sobolevEnergy_sq_of_orthogonal
 
-theorem lemma12_zeroModeErratum :=
+noncomputable def lemma12_zeroModeErratum :=
   CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
 
-theorem lemma13_orderedAbel_correctedAndProved :=
+noncomputable def lemma13_orderedAbel_correctedAndProved :=
   @CorrectedLemmas.KloostermanTail.orderedKernel_and_bound
 
-theorem lemma13_divergentTailErratum :=
+noncomputable def lemma13_divergentTailErratum :=
   @CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_one
 
-theorem lemma13_variableFactorErratum :=
+noncomputable def lemma13_variableFactorErratum :=
   CorrectedLemmas.KuznetsovKloosterman.natCast_unbounded
 
-theorem lemma21_duplicate_correctedAndProved :=
+noncomputable def lemma21_duplicate_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.globalPoincare_sq_def2_1
 
-theorem lemma21_genuineDuplicate_correctedAndProved :=
+noncomputable def lemma21_genuineDuplicate_correctedAndProved :=
   @CorrectedLemmas.GlobalPoincare.genuineHalfWeightAutomorphic_globalPoincare_sq
 
-theorem lemma22_orderedAbel_correctedAndProved :=
+noncomputable def lemma22_orderedAbel_correctedAndProved :=
   @CorrectedLemmas.KloostermanTail.orderedKernel_and_bound_def2_2
 
-theorem lemma22_divergentTailErratum :=
+noncomputable def lemma22_divergentTailErratum :=
   @CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_half
 
-theorem lemma22_gcdFactorErratum :=
+noncomputable def lemma22_gcdFactorErratum :=
   @CorrectedLemmas.KuznetsovKloosterman.pairGcd_unbounded
 
-theorem lemma31_localPower_correctedAndProved :=
+noncomputable def lemma31_localPower_correctedAndProved :=
   @CorrectedLemmas.CuspConvergence.rankinSelberg_power_beta_one_integrable_iff_of_one_lt
 
-theorem lemma31_rankinSelbergInferenceErratum :=
+noncomputable def lemma31_rankinSelbergInferenceErratum :=
   CorrectedLemmas.CuspConvergence.not_CitedLemma31RankinSelbergInference
 
-theorem lemma32_proved :=
+noncomputable def lemma32_proved :=
   @CorrectedLemmas.TentKernel.lemma32_correctedAndProved
 
-theorem lemma33_proved :=
+noncomputable def lemma33_proved :=
   @CorrectedLemmas.TentKernel.lemma33_correctedAndProved
 
-theorem lemma34_smoothReplacement_correctedAndProved :=
+noncomputable def lemma34_smoothReplacement_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.lemma34_smoothReplacement_correctedAndProved
 
-theorem lemma34_abstractTransform_correctedAndProved :=
+noncomputable def lemma34_abstractTransform_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.UniformKernelEnvelope.autocorrelationFourierPositiveSmoothTent_admissibleAndBound
 
-theorem lemma35_finiteLimit_correctedAndProved :=
+noncomputable def lemma35_finiteLimit_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.product_unfolding_to_mass
 
 noncomputable def lemma35_concreteFiniteUnfolding_constructed :=
@@ -27132,78 +27260,78 @@ noncomputable def lemma35_concreteFiniteUnfolding_constructed :=
 noncomputable def lemma35_concreteProductUnfolding_constructed :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.productUnfolding
 
-theorem lemma35_concreteFiniteIdentity_correctedAndProved :=
+noncomputable def lemma35_concreteFiniteIdentity_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.finiteIdentity
 
-theorem lemma35_concreteProductFubini_correctedAndProved :=
+noncomputable def lemma35_concreteProductFubini_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.productFiniteIdentity
 
-theorem lemma35_concreteUnfoldingToMass_correctedAndProved :=
+noncomputable def lemma35_concreteUnfoldingToMass_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.productUnfolding_to_mass
 
-theorem lemma35_parameterRangeErratum :=
+noncomputable def lemma35_parameterRangeErratum :=
   CorrectedLemmas.MassUnfolding.not_all_re_gt_one_resolvents_poleFree
 
-theorem lemma35_normalizationNecessity :=
+noncomputable def lemma35_normalizationNecessity :=
   @CorrectedLemmas.MassUnfolding.mass_identification_normalization_unique
 
-theorem lemma36_uniformMajorant_correctedAndProved :=
+noncomputable def lemma36_uniformMajorant_correctedAndProved :=
   @CorrectedLemmas.Interchange.UniformMajorant.sum_integral_interchange
 
 noncomputable def lemma36_concreteGeometricUniformMajorant :=
   CorrectedLemmas.Interchange.ConcreteGeometricMajorant.uniformMajorant
 
-theorem lemma36_concreteTermsNonzero_proved :=
+noncomputable def lemma36_concreteTermsNonzero_proved :=
   @CorrectedLemmas.Interchange.ConcreteGeometricMajorant.kernel_ne_zero
 
-theorem lemma36_concreteInterchange_correctedAndProved :=
+noncomputable def lemma36_concreteInterchange_correctedAndProved :=
   @CorrectedLemmas.Interchange.ConcreteGeometricMajorant.tsum_integral_eq_integral_tsum
 
-theorem lemma36_concreteSumOfIntegrals_eq_two_proved :=
+noncomputable def lemma36_concreteSumOfIntegrals_eq_two_proved :=
   @CorrectedLemmas.Interchange.ConcreteGeometricMajorant.tsum_integral_eq_two
 
-theorem lemma36_concreteIntegralOfSum_eq_two_proved :=
+noncomputable def lemma36_concreteIntegralOfSum_eq_two_proved :=
   @CorrectedLemmas.Interchange.ConcreteGeometricMajorant.integral_tsum_eq_two
 
-theorem lemma36_compactSupportErratum :=
+noncomputable def lemma36_compactSupportErratum :=
   CorrectedLemmas.Interchange.constant_arithmetic_series_not_summable
 
 def lemma37_nonnegativity_proved := @massFunctional_nonneg
 
-theorem lemma37_unfolded_correctedAndProved :=
+noncomputable def lemma37_unfolded_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.product_unfolded_mass_nonnegative
 
-theorem lemma37_concreteExtractedMassPositive_correctedAndProved :=
+noncomputable def lemma37_concreteExtractedMassPositive_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.extractedMass_pos
 
-theorem lemma37_concreteExtractedMassNonnegative_correctedAndProved :=
+noncomputable def lemma37_concreteExtractedMassNonnegative_correctedAndProved :=
   @CorrectedLemmas.MassUnfolding.ConcreteSmoothVolumeUnfolding.extractedMass_nonnegative
 
-theorem lemma37_identificationObstruction :=
+noncomputable def lemma37_identificationObstruction :=
   @CorrectedLemmas.MassUnfolding.not_nonempty_toMassCertificate_of_negative
 
-theorem lemma38_activeSet_correctedAndProved :=
+noncomputable def lemma38_activeSet_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.massConditionAt_ofActiveSet
 
-theorem lemma38_activeSetHMass_correctedAndProved :=
+noncomputable def lemma38_activeSetHMass_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.hMass_ofActiveSet
 
 /-- A fully concrete non-atomic realization of corrected Lemma 3.8: the test is
 the explicit Fourier-positive smooth autocorrelation, every cusp carries
 Lebesgue spectral measure, and every spectral coefficient is one. -/
-theorem lemma38_smoothVolumeHMass_concreteModel_proved :=
+noncomputable def lemma38_smoothVolumeHMass_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.hMass_smoothVolumeUnitData
 
-theorem lemma38_decayErratum :=
+noncomputable def lemma38_decayErratum :=
   @CorrectedLemmas.UniformActivity.not_hMass_of_tendsto_mass_zero
 
-theorem lemma38_boundaryLayerErratum :=
+noncomputable def lemma38_boundaryLayerErratum :=
   @CorrectedLemmas.UniformActivity.normalized_right_tail_profile_average
 
-theorem lemma61_preimage_proved :=
+noncomputable def lemma61_preimage_proved :=
   @CorrectedLemmas.RestrictionStability.InvariantSubset.preimageOfInvariantMap_mono
 
-theorem lemma61_covariance_proved :=
+noncomputable def lemma61_covariance_proved :=
   @CorrectedLemmas.RestrictionStability.HalfWeightEquivariantSection.restriction_covariance
 
 /-! ### Proof-producing evidence for every removed Lemma 1.1--6.1 row
@@ -27247,11 +27375,11 @@ def ClaimEvidence : Claim → Prop
           A * (1 / |(n : ℝ) + 1| ^ ((1 / 2 : ℝ) - ε)))
   | .lemma31 =>
       (∀ {Y α σ : ℝ}, 0 < Y → 1 < σ →
-        IntegrableOn
+        (IntegrableOn
             (CorrectedLemmas.CuspConvergence.cuspPowerDensity
               (CorrectedLemmas.CuspConvergence.rankinSelbergGrowth α 1 σ))
             (Ioi Y) ↔
-          α + σ < -(1 / 2 : ℝ)) ∧
+          α + σ < -(1 / 2 : ℝ))) ∧
         ¬ CorrectedLemmas.CuspConvergence.CitedLemma31RankinSelbergInference
   | .lemma32 =>
       ∀ (T : ℝ), 0 < T →
@@ -27311,7 +27439,7 @@ def ClaimEvidence : Claim → Prop
             (CorrectedLemmas.MassUnfolding.RankinSelbergToMassCertificate R D)
   | .lemma38 =>
       ∀ (D : ContinuousSpectralData)
-          (h0 : Tendsto (massFunctional D) atTop (𝒩 0)) (ε : ℝ),
+          (h0 : Tendsto (massFunctional D) atTop (𝓝 0)) (ε : ℝ),
         ¬ HMass D ε
   | .lemma61 =>
       ∀ (J : HalfWeightAutomorphyFactor)
@@ -27331,22 +27459,50 @@ def ClaimEvidence : Claim → Prop
               s hVU).1 x
 
 theorem claimEvidence (c : Claim) : ClaimEvidence c := by
-  cases c <;> simp only [ClaimEvidence]
-  all_goals first
-    | exact lemma11_distributional_correctedAndProved
-    | exact CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
-    | exact CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_one
-    | exact CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_half
-    | exact ⟨lemma31_localPower_correctedAndProved,
+  cases c with
+  | lemma11 =>
+      simp only [ClaimEvidence]
+      exact lemma11_distributional_correctedAndProved
+  | lemma12 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
+  | lemma13 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_one
+  | lemma21 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.GlobalPoincare.unqualifiedPoincareSchema_false
+  | lemma22 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.KloostermanTail.not_summable_nonzero_mul_paper_tail_half
+  | lemma31 =>
+      simp only [ClaimEvidence]
+      exact ⟨@lemma31_localPower_correctedAndProved,
         lemma31_rankinSelbergInferenceErratum⟩
-    | exact lemma32_proved
-    | exact lemma33_proved
-    | exact lemma34_smoothReplacement_correctedAndProved
-    | exact CorrectedLemmas.MassUnfolding.not_all_re_gt_one_resolvents_poleFree
-    | exact CorrectedLemmas.Interchange.constant_arithmetic_series_not_summable
-    | exact CorrectedLemmas.MassUnfolding.not_nonempty_toMassCertificate_of_negative
-    | exact CorrectedLemmas.UniformActivity.not_hMass_of_tendsto_mass_zero
-    | exact lemma61_covariance_proved
+  | lemma32 =>
+      simp only [ClaimEvidence]
+      exact @lemma32_proved
+  | lemma33 =>
+      simp only [ClaimEvidence]
+      exact @lemma33_proved
+  | lemma34 =>
+      simp only [ClaimEvidence]
+      exact lemma34_smoothReplacement_correctedAndProved
+  | lemma35 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.MassUnfolding.not_all_re_gt_one_resolvents_poleFree
+  | lemma36 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.Interchange.constant_arithmetic_series_not_summable
+  | lemma37 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.MassUnfolding.not_nonempty_toMassCertificate_of_negative
+  | lemma38 =>
+      simp only [ClaimEvidence]
+      exact CorrectedLemmas.UniformActivity.not_hMass_of_tendsto_mass_zero
+  | lemma61 =>
+      simp only [ClaimEvidence]
+      exact @lemma61_covariance_proved
 
 end Section52Closure
 
@@ -27384,7 +27540,13 @@ inductive Claim
   | proposition19
   | proposition20
   | proposition21
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems := {.proposition1, .proposition2, .proposition3, .proposition4, .proposition5, .proposition6, .proposition7, .proposition8, .proposition9, .proposition10, .proposition11, .proposition12, .proposition13, .proposition14, .proposition15, .proposition16, .proposition17, .proposition18, .proposition19, .proposition20, .proposition21}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- Terminal disposition of every row in checklist Section 5.3. -/
 def claimDisposition : Claim → Section52Closure.Disposition
@@ -27424,198 +27586,198 @@ theorem exhaustive (c : Claim) :
 
 /-! ### Kernel evidence attached to all twenty-one rows -/
 
-theorem proposition1_closedBall_correctedAndProved :=
+noncomputable def proposition1_closedBall_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.dualNorm_eq_sSup_closedUnitBall
 
-theorem proposition1_unitSphere_correctedAndProved :=
+noncomputable def proposition1_unitSphere_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.dualNorm_eq_sSup_unitSphere
 
-theorem proposition1_nonzeroRatio_correctedAndProved :=
+noncomputable def proposition1_nonzeroRatio_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.dualNorm_eq_sSup_nonzeroRatio
 
 def proposition1_holder_proved := @norm_dualPairing_le
 
-theorem proposition1_variableTruncation_correctedAndProved :=
+noncomputable def proposition1_variableTruncation_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.setIntegral_eq_variableTruncation
 
-theorem proposition1_cuspHeightContinuous_proved :=
+noncomputable def proposition1_cuspHeightContinuous_proved :=
   continuous_cuspHeight
 
-theorem proposition1_compactCoreTruncation_correctedAndProved :=
+noncomputable def proposition1_compactCoreTruncation_correctedAndProved :=
   @IsCompact.exists_truncationHeight
 
-theorem proposition1_compactCoreIntegral_correctedAndProved :=
+noncomputable def proposition1_compactCoreIntegral_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.DualNorm.setIntegral_eq_compactCoreTruncation
 
-theorem proposition1_fixedTruncationErratum :=
+noncomputable def proposition1_fixedTruncationErratum :=
   CorrectedLemmas.CorrectedPropositions.DualNorm.fixedTruncation_withoutSupport_false
 
-theorem proposition2_validSpectralLeaf :=
+noncomputable def proposition2_validSpectralLeaf :=
   @CorrectedLemmas.CorrectedPropositions.SpectralMassGap.spectralSide_lower_of_mass
 
-theorem proposition2_exceptionalParameterErratum :=
+noncomputable def proposition2_exceptionalParameterErratum :=
   @CorrectedLemmas.CorrectedPropositions.SpectralMassGap.no_real_spectralParameter_below_quarter
 
-theorem proposition2_coefficientErratum :=
+noncomputable def proposition2_coefficientErratum :=
   CorrectedLemmas.CorrectedPropositions.SpectralMassGap.poincare_does_not_force_coefficient_activity
 
-theorem proposition2_growthDirectionErratum :=
+noncomputable def proposition2_growthDirectionErratum :=
   CorrectedLemmas.CorrectedPropositions.SpectralMassGap.fixedLower_polynomialUpper_consistent
 
-theorem proposition2_powerBounds_incompatible_correctedAndProved :=
+noncomputable def proposition2_powerBounds_incompatible_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.eventual_power_bounds_incompatible
 
-theorem proposition2_massAddedLower_correctedAndProved :=
+noncomputable def proposition2_massAddedLower_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.eventual_spectral_lower_of_discreteGrowth_and_mass
 
-theorem proposition2_quarterGapCriterion_correctedAndProved :=
+noncomputable def proposition2_quarterGapCriterion_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.spectralGap_aboveQuarter_of_powerSeparation
 
-theorem proposition2_threeInputInsufficiencyErratum :=
+noncomputable def proposition2_threeInputInsufficiencyErratum :=
   CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.proposition2_threeInputSkeleton_countermodel
 
-theorem proposition3_zeroCoefficientErratum :=
+noncomputable def proposition3_zeroCoefficientErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.not_hMass_zeroCoefficientFourierPositiveData
 
-theorem proposition3_unitaryDerivativeErratum :=
+noncomputable def proposition3_unitaryDerivativeErratum :=
   CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.constantUnitary_logDerivative_zero
 
-theorem proposition3_activeSet_correctedAndProved :=
+noncomputable def proposition3_activeSet_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.massConditionAt_ofActiveSet
 
-theorem proposition3_hMass_correctedAndProved :=
+noncomputable def proposition3_hMass_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.hMass_ofActiveSet
 
-theorem proposition3_smoothVolumeMassCondition_concreteModel_proved :=
+noncomputable def proposition3_smoothVolumeMassCondition_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.massConditionAt_smoothVolumeUnitData
 
-theorem proposition4_duplicateErratum :=
+noncomputable def proposition4_duplicateErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.not_hMass_zeroCoefficientFourierPositiveData
 
-theorem proposition4_duplicate_correctedAndProved :=
+noncomputable def proposition4_duplicate_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.massConditionAt_ofActiveSet
 
-theorem proposition4_hMass_duplicate_correctedAndProved :=
+noncomputable def proposition4_hMass_duplicate_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.hMass_ofActiveSet
 
-theorem proposition4_smoothVolumeMassCondition_duplicateConcreteModel_proved :=
+noncomputable def proposition4_smoothVolumeMassCondition_duplicateConcreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.massConditionAt_smoothVolumeUnitData
 
-theorem proposition5_rawTentErratum :=
+noncomputable def proposition5_rawTentErratum :=
   @CorrectedLemmas.CorrectedPropositions.CommonTestFamily.not_differentiableAt_profile_zero
 
-theorem proposition5_stepOne_proved :=
+noncomputable def proposition5_stepOne_proved :=
   @CorrectedLemmas.TentKernel.lemma32_correctedAndProved
 
-theorem proposition5_localization_proved :=
+noncomputable def proposition5_localization_proved :=
   @CorrectedLemmas.TentKernel.lemma33_correctedAndProved
 
-theorem proposition5_smoothTest_correctedAndProved :=
+noncomputable def proposition5_smoothTest_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.lemma34_smoothReplacement_correctedAndProved
 
-theorem proposition5_transform_correctedAndProved :=
+noncomputable def proposition5_transform_correctedAndProved :=
   @CorrectedLemmas.KuznetsovInterface.UniformKernelEnvelope.autocorrelationFourierPositiveSmoothTent_admissibleAndBound
 
-theorem proposition5_sameFamily_localFloorAndKernelEnvelope :=
+noncomputable def proposition5_sameFamily_localFloorAndKernelEnvelope :=
   @CorrectedLemmas.KuznetsovInterface.UniformKernelEnvelope.autocorrelationFourierPositiveSmoothTent_localFloorAndKernelEnvelope
 
-theorem proposition5_concreteConvention_sameTestCertificate :=
+noncomputable def proposition5_concreteConvention_sameTestCertificate :=
   @CorrectedLemmas.KuznetsovInterface.profileBesselConvention_sameTestCertificate
 
-theorem proposition5_concreteMassAndTransform_sameTest_proved :=
+noncomputable def proposition5_concreteMassAndTransform_sameTest_proved :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.sameSmoothTest_massAndTransformCertificate
 
-theorem proposition5_smoothVolumeSameTest_completeConcreteModel_proved :=
+noncomputable def proposition5_smoothVolumeSameTest_completeConcreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.propositions3to7_sameSmoothTest_completeCertificate
 
-theorem proposition6_supportFloorErratum :=
+noncomputable def proposition6_supportFloorErratum :=
   @CorrectedLemmas.CorrectedPropositions.CommonTestFamily.no_positive_profile_floor_on_tsupport
 
-theorem proposition6_activeSet_correctedAndProved :=
+noncomputable def proposition6_activeSet_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.massConditionAt_ofActiveSet
 
-theorem proposition6_positiveVolumeActivity_concreteModel_proved :=
+noncomputable def proposition6_positiveVolumeActivity_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.exists_positiveVolume_activityInterval
 
-theorem proposition6_positiveMass_concreteModel_proved :=
+noncomputable def proposition6_positiveMass_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.massFunctional_smoothVolumeUnitData_pos
 
-theorem proposition7_ofActiveSet_proved :=
+noncomputable def proposition7_ofActiveSet_proved :=
   @CorrectedLemmas.UniformActivity.hMass_ofActiveSet
 
 /-- The theorem itself is unconditional as an implication with every analytic
 hypothesis visible; the legacy alias above records that it does not instantiate
 the paper's missing Mock-I activity input. -/
-theorem proposition7_activeSetCriterion_correctedAndProved :=
+noncomputable def proposition7_activeSetCriterion_correctedAndProved :=
   @CorrectedLemmas.UniformActivity.hMass_ofActiveSet
 
-theorem proposition7_fullSpectral_ofMassCondition :=
+noncomputable def proposition7_fullSpectral_ofMassCondition :=
   @CorrectedLemmas.CorrectedPropositions.CommonTestFamily.fullSpectral_lower_of_massCondition
 
-theorem proposition7_unconditionalErratum :=
+noncomputable def proposition7_unconditionalErratum :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.not_hMass_zeroCoefficientFourierPositiveData
 
-theorem proposition7_concretePositiveModel_proved :=
+noncomputable def proposition7_concretePositiveModel_proved :=
   CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.hMass_unitCoefficientDiracData
 
-theorem proposition7_sameSmoothTest_concreteHMass_proved :=
+noncomputable def proposition7_sameSmoothTest_concreteHMass_proved :=
   @CorrectedLemmas.CorrectedPropositions.PositiveMassCriterion.hMass_unitCoefficientFourierPositiveDiracData
 
-theorem proposition7_smoothVolumeHMass_concreteModel_proved :=
+noncomputable def proposition7_smoothVolumeHMass_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.hMass_smoothVolumeUnitData
 
-theorem proposition7_smoothVolumeFullSpectralLower_concreteModel_proved :=
+noncomputable def proposition7_smoothVolumeFullSpectralLower_concreteModel_proved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.fullSpectral_lower_smoothVolumeUnitData
 
-theorem proposition8_pointwise_correctedAndProved :=
+noncomputable def proposition8_pointwise_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.pointwiseLowerGrowth
 
-theorem proposition8_meanSquareExtraction_correctedAndProved :=
+noncomputable def proposition8_meanSquareExtraction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.exists_injective_pointwiseMeanSquareSelection
 
-theorem proposition8_powerProfile_correctedAndProved :=
+noncomputable def proposition8_powerProfile_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.exists_injective_powerLowerSelection
 
-theorem proposition8_linearIndexAsymptotic_correctedAndProved :=
+noncomputable def proposition8_linearIndexAsymptotic_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.exists_injective_powerLowerSelection_withLinearIndexBounds
 
-theorem proposition8_selectedIndex_isTheta_correctedAndProved :=
+noncomputable def proposition8_selectedIndex_isTheta_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.linearIndexBounds_isTheta
 
-theorem proposition8_reindexedPowerLower_correctedAndProved :=
+noncomputable def proposition8_reindexedPowerLower_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.reindexedPowerLower_eventually
 
-theorem proposition8_fullAsymptoticExtraction_correctedAndProved :=
+noncomputable def proposition8_fullAsymptoticExtraction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.LowerGrowth.exists_injective_powerLowerSelection_withAsymptotics
 
-theorem proposition8_infiniteExtractionErratum :=
+noncomputable def proposition8_infiniteExtractionErratum :=
   CorrectedLemmas.CorrectedPropositions.LowerGrowth.positiveActivity_not_infinite
 
-theorem proposition9_exponentComparison_correctedAndProved :=
+noncomputable def proposition9_exponentComparison_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.SpectralMassGap.nat_rpow_eventually_dominates
 
-theorem proposition9_contradictionLeaf :=
+noncomputable def proposition9_contradictionLeaf :=
   @CorrectedLemmas.CorrectedPropositions.StepThree.comparisonContradiction
 
-theorem proposition9_powerGapContradiction_correctedAndProved :=
+noncomputable def proposition9_powerGapContradiction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.StepThree.noTraceComparison_of_infinite_powerGap
 
-theorem proposition9_growthDirectionErratum :=
+noncomputable def proposition9_growthDirectionErratum :=
   CorrectedLemmas.CorrectedPropositions.SpectralMassGap.fixedLower_polynomialUpper_consistent
 
-theorem proposition10_bareAdditiveSplittingInsufficient :=
+noncomputable def proposition10_bareAdditiveSplittingInsufficient :=
   CorrectedLemmas.CorrectedPropositions.JacobiDictionary.additiveSplitting_not_unique
 
-theorem proposition10_dictionaryUniqueness :=
+noncomputable def proposition10_dictionaryUniqueness :=
   @CorrectedLemmas.CorrectedPropositions.JacobiDictionary.outsideDictionary_uniqueOn
 
-theorem proposition10_projectedSplitting_exists_correctedAndProved :=
+noncomputable def proposition10_projectedSplitting_exists_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.JacobiDictionary.SplitProjection.finitePart_add_polarPart
 
-theorem proposition10_projectedSplitting_unique_correctedAndProved :=
+noncomputable def proposition10_projectedSplitting_unique_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.JacobiDictionary.SplitProjection.decomposition_unique
 
-theorem proposition10_explicitProductSplitting_proved :=
+noncomputable def proposition10_explicitProductSplitting_proved :=
   @CorrectedLemmas.CorrectedPropositions.JacobiDictionary.SplitProjection.product_recovers_both_components
 
 /-- Terminal corrected Proposition 10.  A concrete product projection supplies
@@ -27648,113 +27810,113 @@ theorem proposition10_explicitProjectedSplitting_complete_correctedAndProved :
       CorrectedLemmas.CorrectedPropositions.JacobiDictionary.SplitProjection.product_recovers_both_components
         (R := ℂ) (A := ℂ) (B := ℂ) a b
 
-theorem proposition11_dampingErratum :=
+noncomputable def proposition11_dampingErratum :=
   CorrectedLemmas.CorrectedPropositions.RademacherControl.not_CitedDampingInequality
 
-theorem proposition11_correctedDampingDirection_correctedAndProved :=
+noncomputable def proposition11_correctedDampingDirection_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingInequality
 
-theorem proposition11_correctedExponentDirection_correctedAndProved :=
+noncomputable def proposition11_correctedExponentDirection_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.correctedDampingExponentDirection
 
-theorem proposition11_partialEnergy_correctedAndProved :=
+noncomputable def proposition11_partialEnergy_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.partialEnergy_le_total
 
-theorem proposition11_graphNormPartialSum_correctedAndProved :=
+noncomputable def proposition11_graphNormPartialSum_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.norm_partialSum_le_totalMajorant
 
-theorem proposition11_H1Series_correctedAndProved :=
+noncomputable def proposition11_H1Series_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.rademacherSeries_converges_in_H1_and_isAEAutomorphic
 
-theorem proposition11_compactEmbedding_correctedAndProved :=
+noncomputable def proposition11_compactEmbedding_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.strongCompactness_of_compactEmbedding
 
-theorem proposition11_precompactnessErratum :=
+noncomputable def proposition11_precompactnessErratum :=
   @CorrectedLemmas.CorrectedPropositions.RademacherControl.separatedSequence_not_relativelyCompact
 
-theorem proposition12_tautologyErratum :=
+noncomputable def proposition12_tautologyErratum :=
   @CorrectedLemmas.CorrectedPropositions.JacobiDictionary.tautologicalDictionary
 
-theorem proposition12_storedMatch_uniqueness :=
+noncomputable def proposition12_storedMatch_uniqueness :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticContinuation.continuation_uniqueOnOverlap
 
-theorem proposition12_analyticContinuationUniqueness_correctedAndProved :=
+noncomputable def proposition12_analyticContinuationUniqueness_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.AnalyticContinuation.AnnularKernelContinuation.eqOn_of_accumulation
 
-theorem proposition13_groupOrbitErratum :=
+noncomputable def proposition13_groupOrbitErratum :=
   CorrectedLemmas.CorrectedPropositions.CuspTransport.not_CitedCuspClaim
 
-theorem proposition13_scaling_correctedAndProved :=
+noncomputable def proposition13_scaling_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CuspTransport.scalingMatrix_conjugation_and_width
 
-theorem proposition13_ambientScalingTransport_correctedAndProved :=
+noncomputable def proposition13_ambientScalingTransport_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CuspTransport.ambientScalingMatrix_transportCertificate
 
 /-- Corrected Proposition 13: primitive integral columns are classified by
 exactly one of the three genuine `Gamma(2)` cusp orbits.  This is the
 unconditional replacement for the PDF's false assertion that the three cusp
 representatives lie in one orbit. -/
-theorem proposition13_threeCuspOrbitClassification_correctedAndProved :=
+noncomputable def proposition13_threeCuspOrbitClassification_correctedAndProved :=
   @CorrectedLemmas.Gamma2CuspParity.existsUnique_gamma2_cuspOrbit_of_isCoprime
 
-theorem proposition14_trivializedTransport_correctedAndProved :=
+noncomputable def proposition14_trivializedTransport_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization
 
-theorem proposition14_connectionConstruction_correctedAndProved :=
+noncomputable def proposition14_connectionConstruction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible
 
-theorem proposition14_connectionUniqueness_correctedAndProved :=
+noncomputable def proposition14_connectionUniqueness_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_unique
 
-theorem proposition14_noncanonicalErratum :=
+noncomputable def proposition14_noncanonicalErratum :=
   CorrectedLemmas.CorrectedPropositions.FlatQTransport.scalarEndomorphismSpace_not_subsingleton
 
-theorem proposition14_connectionNonuniquenessErratum :=
+noncomputable def proposition14_connectionNonuniquenessErratum :=
   CorrectedLemmas.CorrectedPropositions.FlatQTransport.zeroRadialConnection_ne_identityRadialConnection
 
-theorem proposition15_missingTargetObstruction :=
+noncomputable def proposition15_missingTargetObstruction :=
   CorrectedLemmas.CorrectedPropositions.SheafBridge.noUniversalObjectMap
 
-theorem proposition16_covariantGluing_fromSheafCondition :=
+noncomputable def proposition16_covariantGluing_fromSheafCondition :=
   @GaugeDescentSheaf.covariant_gluing_existsUnique
 
-theorem proposition16_trivialBundleSheaf_proved :=
+noncomputable def proposition16_trivialBundleSheaf_proved :=
   @TrivialBundleSectionSheaf.isLinearSheaf
 
 noncomputable def proposition16_trivialBundleLocalSectionsEquiv :=
   @TrivialBundleSectionSheaf.sectionsEquivLocalFunctions
 
-theorem proposition16_concreteGaugeGluing_proved :=
+noncomputable def proposition16_concreteGaugeGluing_proved :=
   @TrivialBundleSectionSheaf.concrete_covariant_gluing_existsUnique
 
-theorem proposition17_curvatureRestriction_correctedAndProved :=
+noncomputable def proposition17_curvatureRestriction_correctedAndProved :=
   @CurvatureMorphism.map_curvature
 
-theorem proposition17_operatorGaugeCovariance_correctedAndProved :=
+noncomputable def proposition17_operatorGaugeCovariance_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.operatorCurvature_conjugate
 
-theorem proposition17_variableGaugeCovariance_correctedAndProved :=
+noncomputable def proposition17_variableGaugeCovariance_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.connectionCurvature_variableGauge
 
-theorem proposition17_inhomogeneousTermErratum :=
+noncomputable def proposition17_inhomogeneousTermErratum :=
   CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.exists_nonzero_gaugeDerivativeTerm
 
-theorem proposition18_duplicate_correctedAndProved :=
+noncomputable def proposition18_duplicate_correctedAndProved :=
   @CurvatureMorphism.map_curvature
 
-theorem proposition18_variableGauge_duplicate_correctedAndProved :=
+noncomputable def proposition18_variableGauge_duplicate_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.connectionCurvature_variableGauge
 
-theorem proposition18_inhomogeneousTermErratum :=
+noncomputable def proposition18_inhomogeneousTermErratum :=
   CorrectedLemmas.CorrectedPropositions.OperatorGaugeCurvature.exists_nonzero_gaugeDerivativeTerm
 
-theorem proposition19_flatMassless_correctedAndProved :=
+noncomputable def proposition19_flatMassless_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.FlatMinimizer.EffectiveActionDecomposition.flat_minimizer_massless_of_vacuum
 
-theorem proposition20_equalizer_correctedAndProved :=
+noncomputable def proposition20_equalizer_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalEqualizer.compatibleGaugeFamily_existsUniqueGlobal
 
-theorem proposition20_restrictionBijection_correctedAndProved :=
+noncomputable def proposition20_restrictionBijection_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalEqualizer.restrictionToCompatibleGaugeFamily_bijective
 
 noncomputable def proposition20_globalSectionsEquiv_correctedAndProved :=
@@ -27763,34 +27925,34 @@ noncomputable def proposition20_globalSectionsEquiv_correctedAndProved :=
 noncomputable def proposition20_trivialBundleGlobalSectionsEquiv_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalEqualizer.trivialBundleGlobalSectionsEquivCompatibleGaugeFamily
 
-theorem proposition21_lcmKernel_proved :=
+noncomputable def proposition21_lcmKernel_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.comparisonMap_ker
 
-theorem proposition21_lcmLeftExact_proved :=
+noncomputable def proposition21_lcmLeftExact_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.lcmMultiplicationMap_comparisonMap_exact
 
-theorem proposition21_lcmLeftInjective_correctedAndProved :=
+noncomputable def proposition21_lcmLeftInjective_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.lcmMultiplicationMap_injective
 
-theorem proposition21_generalizedCRT_proved :=
+noncomputable def proposition21_generalizedCRT_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.compatible_iff_exists_crt
 
-theorem proposition21_crtExact_proved :=
+noncomputable def proposition21_crtExact_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.comparisonMap_crtObstructionMap_exact
 
-theorem proposition21_crtObstruction_surjective_proved :=
+noncomputable def proposition21_crtObstruction_surjective_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.crtObstructionMap_surjective
 
-theorem proposition21_cyclicPresentation_exact_proved :=
+noncomputable def proposition21_cyclicPresentation_exact_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicResolution_exact
 
-theorem proposition21_cyclicPresentation_injective_correctedAndProved :=
+noncomputable def proposition21_cyclicPresentation_injective_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicResolutionDifferential_injective
 
-theorem proposition21_cyclicPresentation_surjective_proved :=
+noncomputable def proposition21_cyclicPresentation_surjective_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicResolutionAugmentation_surjective
 
-theorem proposition21_cyclicFreeComplex_projective_proved :=
+noncomputable def proposition21_cyclicFreeComplex_projective_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicFreeComplex_projective
 
 noncomputable def proposition21_explicitProjectiveResolution_constructed :=
@@ -27802,16 +27964,16 @@ noncomputable def proposition21_actualTorIsoTensorHomology_constructed :=
 noncomputable def proposition21_actualTorIsoSecondKernel_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.actualCyclicTorOneIsoSecondKernel
 
-theorem proposition21_actualTorComparison_inhabited :=
+noncomputable def proposition21_actualTorComparison_inhabited :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.actualCyclicTorOneSecondKernelComparison_of_ne_zero
 
-theorem proposition21_zeroModulusErratum :=
+noncomputable def proposition21_zeroModulusErratum :=
   CorrectedLemmas.CorrectedPropositions.CRTTorBridge.noCyclicTorOneModelEquiv_zeroModulus
 
-theorem proposition21_cyclicKernel_cardinality_proved :=
+noncomputable def proposition21_cyclicKernel_cardinality_proved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.natCard_cyclicTorOneModel
 
-theorem proposition21_cyclicKernel_addEquiv_correctedAndProved :=
+noncomputable def proposition21_cyclicKernel_addEquiv_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicTorOneModel_existsAddEquiv
 
 noncomputable def proposition21_rawKernelOrientationSwap :=
@@ -27823,16 +27985,16 @@ noncomputable def proposition21_secondVariableRawKernelClassification :=
 noncomputable def proposition21_actualTorBridge_ofExplicitComparison :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.actualCyclicTorOneIsoGcd_ofComparison
 
-theorem proposition21_actualTorGcd_correctedAndProved :=
+noncomputable def proposition21_actualTorGcd_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.actualCyclicTorOneIsoGcd_exists
 
-theorem proposition21_zeroResolvedModulusErratum :=
+noncomputable def proposition21_zeroResolvedModulusErratum :=
   CorrectedLemmas.CorrectedPropositions.CRTTorBridge.cyclicTorOneModel_zero_resolved
 
-theorem proposition21_primePowerModel_correctedAndProved :=
+noncomputable def proposition21_primePowerModel_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.primePowerCyclicTorOneModel_existsAddEquiv
 
-theorem proposition21_actualPrimePowerTor_correctedAndProved :=
+noncomputable def proposition21_actualPrimePowerTor_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.CRTTorBridge.primePowerActualCyclicTorOneIsoGcd_exists
 
 /-! ### Proof-producing evidence for every terminal Proposition row
@@ -27896,7 +28058,7 @@ def ClaimEvidence : Claim → Prop
         (coefficient : ℕ → ℝ) (A a : ℝ) (C D : ℕ),
         0 < A → 0 ≤ a →
         (∀ k m, m ∈ blocks k → k ≤ m ∧ m ≤ C * k + D) →
-        (∀ k,
+        (∀ k : ℕ,
           (A * (k : ℝ) ^ a) * ((blocks k).card : ℝ) ≤
             ∑ m ∈ blocks k, coefficient m ^ 2) →
         ∃ g : ℕ → ℕ,
@@ -27961,14 +28123,14 @@ def ClaimEvidence : Claim → Prop
       ∀ {V Model : Type*}
         [AddCommGroup V] [Module ℂ V]
         [AddCommGroup Model] [Module ℂ Model]
-        (L : CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem V Model)
-        (D : CorrectedLemmas.CorrectedPropositions.FlatQTransport.RadialDerivation)
-        (C : CorrectedLemmas.CorrectedPropositions.FlatQTransport.AlgebraicRadialConnection D Model)
+        (L : QLocalSystem V Model)
+        (D : RadialDerivation)
+        (C : AlgebraicRadialConnection D Model)
         (A : CorrectedLemmas.CorrectedPropositions.FlatQTransport.DependentRadialConnection L D),
         A.TrivializationCompatible C →
-          A = L.connectionOfTrivialization D C
+          A = CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization L D C
   | .proposition15 =>
-      ¬ Nonempty (PUnit → Empty)
+      ¬ Nonempty (PUnit.{0} → Empty)
   | .proposition16 =>
       ∀ {X Fiber : Type*} [TopologicalSpace X]
         [AddCommGroup Fiber] [Module ℂ Fiber],
@@ -28008,9 +28170,9 @@ def ClaimEvidence : Claim → Prop
           (∀ B, D.action A ≤ D.action B) →
           D.mass A = 0 ∧ D.remainder A = 0
   | .proposition20 =>
-      ∀ {X E : Type*} [TopologicalSpace X]
+      ∀ {X : Type uSheafX} {E : Type*} [TopologicalSpace X]
         [AddCommGroup E] [Module ℂ E]
-        {ι : Type*}
+        {ι : Type uSheafX}
         (D : GaugeDescentSheaf X E)
         {U : TopologicalSpace.Opens X}
         (V : ι → TopologicalSpace.Opens X)
@@ -28029,63 +28191,85 @@ def ClaimEvidence : Claim → Prop
 theorem claimEvidence (c : Claim) : ClaimEvidence c := by
   cases c with
   | proposition1 =>
-      exact proposition1_closedBall_correctedAndProved
+      simp only [ClaimEvidence]
+      exact fun f =>
+        CorrectedLemmas.CorrectedPropositions.DualNorm.dualNorm_eq_sSup_closedUnitBall f
   | proposition2 =>
+      simp only [ClaimEvidence]
       exact proposition2_threeInputInsufficiencyErratum
   | proposition3 =>
-      refine ⟨1, by norm_num, ?_⟩
-      exact
+      simp only [ClaimEvidence]
+      exact ⟨1, by norm_num,
         CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.massConditionAt_smoothVolumeUnitData
-          1 (by norm_num)
+          1 (by norm_num)⟩
   | proposition4 =>
-      refine ⟨1, by norm_num, ?_⟩
-      exact
+      simp only [ClaimEvidence]
+      exact ⟨1, by norm_num,
         CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.hMass_smoothVolumeUnitData
-          1 (by norm_num)
+          1 (by norm_num)⟩
   | proposition5 =>
+      simp only [ClaimEvidence]
       exact CorrectedLemmas.KuznetsovInterface.fourierPositiveSmoothTentFamily_nonempty
   | proposition6 =>
-      refine ⟨1, by norm_num, ?_⟩
-      intro m
-      exact
+      simp only [ClaimEvidence]
+      exact ⟨1, by norm_num, fun m =>
         CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.massFunctional_smoothVolumeUnitData_pos
-          1 (by norm_num) m
+          1 (by norm_num) m⟩
   | proposition7 =>
-      refine ⟨1, by norm_num, ?_⟩
-      exact
+      simp only [ClaimEvidence]
+      exact ⟨1, by norm_num,
         CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.hMass_smoothVolumeUnitData
-          1 (by norm_num)
+          1 (by norm_num)⟩
   | proposition8 =>
+      simp only [ClaimEvidence]
       exact proposition8_fullAsymptoticExtraction_correctedAndProved
   | proposition9 =>
+      simp only [ClaimEvidence]
       exact proposition9_powerGapContradiction_correctedAndProved
   | proposition10 =>
+      simp only [ClaimEvidence]
       exact proposition10_explicitProjectedSplitting_complete_correctedAndProved
   | proposition11 =>
+      simp only [ClaimEvidence]
       exact proposition11_H1Series_correctedAndProved
   | proposition12 =>
+      simp only [ClaimEvidence]
       exact proposition12_analyticContinuationUniqueness_correctedAndProved
   | proposition13 =>
+      simp only [ClaimEvidence]
       exact proposition13_threeCuspOrbitClassification_correctedAndProved
   | proposition14 =>
+      simp only [ClaimEvidence]
       exact proposition14_connectionUniqueness_correctedAndProved
   | proposition15 =>
+      simp only [ClaimEvidence]
       exact proposition15_missingTargetObstruction
   | proposition16 =>
+      simp only [ClaimEvidence]
       exact proposition16_trivialBundleSheaf_proved
   | proposition17 =>
+      simp only [ClaimEvidence]
       exact proposition17_variableGaugeCovariance_correctedAndProved
   | proposition18 =>
+      simp only [ClaimEvidence]
       exact proposition18_variableGauge_duplicate_correctedAndProved
   | proposition19 =>
+      simp only [ClaimEvidence]
       exact proposition19_flatMassless_correctedAndProved
   | proposition20 =>
-      exact proposition20_restrictionBijection_correctedAndProved
+      simp only [ClaimEvidence]
+      exact @proposition20_restrictionBijection_correctedAndProved
   | proposition21 =>
+      simp only [ClaimEvidence]
       exact proposition21_actualTorGcd_correctedAndProved
 
-theorem proposition1_claimEvidence_proved : ClaimEvidence .proposition1 :=
-  claimEvidence .proposition1
+universe u53P1H u53P11H u53P14V u53P14Model
+  u53P16X u53P16Fiber u53P17R u53P17V u53P18R u53P18V
+  u53P19OneForm u53P19TwoForm u53P20X u53P20E
+
+theorem proposition1_claimEvidence_proved :
+    ClaimEvidence.{u53P1H, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition1 :=
+  claimEvidence.{u53P1H, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition1
 
 theorem proposition2_claimEvidence_proved : ClaimEvidence .proposition2 :=
   claimEvidence .proposition2
@@ -28114,35 +28298,43 @@ theorem proposition9_claimEvidence_proved : ClaimEvidence .proposition9 :=
 theorem proposition10_claimEvidence_proved : ClaimEvidence .proposition10 :=
   claimEvidence .proposition10
 
-theorem proposition11_claimEvidence_proved : ClaimEvidence .proposition11 :=
-  claimEvidence .proposition11
+theorem proposition11_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, 0, 0, u53P11H, 0, 0, 0, 0, 0, 0, 0} .proposition11 :=
+  claimEvidence.{0, 0, 0, 0, 0, 0, u53P11H, 0, 0, 0, 0, 0, 0, 0} .proposition11
 
-theorem proposition12_claimEvidence_proved : ClaimEvidence .proposition12 :=
-  claimEvidence .proposition12
+theorem proposition12_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition12 :=
+  claimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition12
 
 theorem proposition13_claimEvidence_proved : ClaimEvidence .proposition13 :=
   claimEvidence .proposition13
 
-theorem proposition14_claimEvidence_proved : ClaimEvidence .proposition14 :=
-  claimEvidence .proposition14
+theorem proposition14_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, 0, 0, 0, u53P14V, u53P14Model, 0, 0, 0, 0, 0} .proposition14 :=
+  claimEvidence.{0, 0, 0, 0, 0, 0, 0, u53P14V, u53P14Model, 0, 0, 0, 0, 0} .proposition14
 
 theorem proposition15_claimEvidence_proved : ClaimEvidence .proposition15 :=
   claimEvidence .proposition15
 
-theorem proposition16_claimEvidence_proved : ClaimEvidence .proposition16 :=
-  claimEvidence .proposition16
+theorem proposition16_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, u53P16X, u53P16Fiber, 0, 0, 0} .proposition16 :=
+  claimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, u53P16X, u53P16Fiber, 0, 0, 0} .proposition16
 
-theorem proposition17_claimEvidence_proved : ClaimEvidence .proposition17 :=
-  claimEvidence .proposition17
+theorem proposition17_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, u53P17R, u53P17V, 0} .proposition17 :=
+  claimEvidence.{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, u53P17R, u53P17V, 0} .proposition17
 
-theorem proposition18_claimEvidence_proved : ClaimEvidence .proposition18 :=
-  claimEvidence .proposition18
+theorem proposition18_claimEvidence_proved :
+    ClaimEvidence.{0, u53P18R, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, u53P18V} .proposition18 :=
+  claimEvidence.{0, u53P18R, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, u53P18V} .proposition18
 
-theorem proposition19_claimEvidence_proved : ClaimEvidence .proposition19 :=
-  claimEvidence .proposition19
+theorem proposition19_claimEvidence_proved :
+    ClaimEvidence.{0, 0, u53P19OneForm, u53P19TwoForm, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition19 :=
+  claimEvidence.{0, 0, u53P19OneForm, u53P19TwoForm, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} .proposition19
 
-theorem proposition20_claimEvidence_proved : ClaimEvidence .proposition20 :=
-  claimEvidence .proposition20
+theorem proposition20_claimEvidence_proved :
+    ClaimEvidence.{0, 0, 0, 0, u53P20X, u53P20E, 0, 0, 0, 0, 0, 0, 0, 0} .proposition20 :=
+  claimEvidence.{0, 0, 0, 0, u53P20X, u53P20E, 0, 0, 0, 0, 0, 0, 0, 0} .proposition20
 
 theorem proposition21_claimEvidence_proved : ClaimEvidence .proposition21 :=
   claimEvidence .proposition21
@@ -28169,7 +28361,13 @@ inductive Claim
   | corollary32
   | corollary33
   | theorem51
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems := {.corollary31, .corollary32, .corollary33, .theorem51}
+  complete := by
+    intro x
+    cases x <;> simp
 
 def claimDisposition : Claim → Section52Closure.Disposition
   | .corollary31 => .correctedAndProved
@@ -28187,22 +28385,22 @@ theorem exhaustive (c : Claim) :
 
 /-! ### Corollaries 3.1 and 3.2 -/
 
-theorem corollary31_eventualContinuousMassLower_correctedAndProved :=
+noncomputable def corollary31_eventualContinuousMassLower_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary31_eventualContinuousMassLower
 
-theorem corollary31_eventualContinuousMassPositive_correctedAndProved :=
+noncomputable def corollary31_eventualContinuousMassPositive_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary31_eventualContinuousMassPositive
 
 /-- A positive continuous-mass model can coexist with a parameter below the
 paper's advertised quarter threshold, so the corrected corollary is not renamed
 as an eigenvalue gap theorem. -/
-theorem corollary31_eigenvalueGapNameErratum :=
+noncomputable def corollary31_eigenvalueGapNameErratum :=
   CorrectedLemmas.CorrectedPropositions.AnalyticP2P7Completion.proposition2_threeInputSkeleton_countermodel
 
-theorem corollary32_uniformContinuousMassLower_correctedAndProved :=
+noncomputable def corollary32_uniformContinuousMassLower_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary32_uniformContinuousMassLower_atIndex
 
-theorem corollary32_eventualContinuousMassLower_correctedAndProved :=
+noncomputable def corollary32_eventualContinuousMassLower_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary32_eventualContinuousMassLower
 
 /-! ### Corollary 3.3 -/
@@ -28210,60 +28408,60 @@ theorem corollary32_eventualContinuousMassLower_correctedAndProved :=
 noncomputable def corollary33_rankinSelbergContinuousNormalization :=
   CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.rankinSelbergPlancherelNormalization
 
-theorem corollary33_discreteTerm_nonnegative_proved :=
+noncomputable def corollary33_discreteTerm_nonnegative_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.term_nonneg
 
-theorem corollary33_discreteSum_converges_proved :=
+noncomputable def corollary33_discreteSum_converges_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.contribution_hasSum
 
-theorem corollary33_discreteSum_nonnegative_proved :=
+noncomputable def corollary33_discreteSum_nonnegative_proved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.DiscreteSpectralSeries.contribution_nonneg
 
-theorem corollary33_normalizedInsertion_correctedAndProved :=
+noncomputable def corollary33_normalizedInsertion_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary33_insertionIntoNormalizedSpectralSum
 
-theorem corollary33_rankinSelbergInsertion_correctedAndProved :=
+noncomputable def corollary33_rankinSelbergInsertion_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary33_rankinSelbergPlancherelNormalization
 
-theorem corollary33_summableDiscreteInsertion_correctedAndProved :=
+noncomputable def corollary33_summableDiscreteInsertion_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary33_ofDiscreteSpectralSeries
 
-theorem corollary33_ofUniformActivity_correctedAndProved :=
+noncomputable def corollary33_ofUniformActivity_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.Section54CorollaryRepair.corollary33_ofUniformActivity
 
 /-! ### Corrected Theorem 5.1 -/
 
-theorem theorem51_sameCorrectionCancellation_proved :=
+noncomputable def theorem51_sameCorrectionCancellation_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.insideCompletion_eq_outsideCompletion_iff
 
-theorem theorem51_sameCorrectionSetCancellation_proved :=
+noncomputable def theorem51_sameCorrectionSetCancellation_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.insideCompletion_eqOn_outsideCompletion_iff
 
-theorem theorem51_insideDictionaryCompatibilityNecessary_proved :=
+noncomputable def theorem51_insideDictionaryCompatibilityNecessary_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.insideDictionaryCompatibility_of_completedMatching_of_dictionary
 
-theorem theorem51_missingInsideDictionaryErratum :=
+noncomputable def theorem51_missingInsideDictionaryErratum :=
   CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.dictionaryRelation_does_not_force_insideCompatibility
 
-theorem theorem51_noUpperHalfPlaneExteriorRegion_proved :=
+noncomputable def theorem51_noUpperHalfPlaneExteriorRegion_proved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.no_upperHalfPlane_exterior_q_region
 
-theorem theorem51_radialBoundednessErratum :=
+noncomputable def theorem51_radialBoundednessErratum :=
   CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.holomorphic_boundedAlongRadialSegments_not_force_zero
 
-theorem theorem51_exteriorPullbackAnalytic_correctedAndProved :=
+noncomputable def theorem51_exteriorPullbackAnalytic_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.analyticOn_exteriorPullback
 
-theorem theorem51_coreContinuation_correctedAndProved :=
+noncomputable def theorem51_coreContinuation_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.core_eqOn_annulus_of_completed_sample
 
-theorem theorem51_annularDictionaryContinuation_correctedAndProved :=
+noncomputable def theorem51_annularDictionaryContinuation_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.dictionary_eqOn_annulus_of_accumulation
 
-theorem theorem51_boundaryRestriction_correctedAndProved :=
+noncomputable def theorem51_boundaryRestriction_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.boundaryValue_eq_of_eqOn_openComplexAnnulus
 
-theorem theorem51_annularMatching_correctedAndProved :=
+noncomputable def theorem51_annularMatching_correctedAndProved :=
   @CorrectedLemmas.CorrectedPropositions.GlobalUnitCircleMatching.correctedTheorem5_1_annularMatching
 
 /-! ### Proof-producing evidence for all four Section 5.4 rows
@@ -28535,13 +28733,29 @@ inductive Claim
   | lemma (c : Section52Closure.Claim)
   | proposition (c : Section53Closure.Claim)
   | finalClaim (c : Section54Closure.Claim)
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Claim where
+  elems :=
+    (Finset.univ.image Claim.definition) ∪
+      (Finset.univ.image Claim.«lemma») ∪
+      (Finset.univ.image Claim.proposition) ∪
+      (Finset.univ.image Claim.finalClaim)
+  complete := by
+    intro x
+    cases x <;> simp
 
 inductive Disposition
   | proved
   | correctedAndProved
   | removedWithErratum
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype Disposition where
+  elems := {.proved, .correctedAndProved, .removedWithErratum}
+  complete := by
+    intro x
+    cases x <;> simp
 
 def ofSection51Disposition :
     Section51Closure.Disposition → Disposition
@@ -28557,7 +28771,7 @@ def ofSection52Disposition :
 
 def claimDisposition : Claim → Disposition
   | .definition c => ofSection51Disposition (Section51Closure.claimDisposition c)
-  | .lemma c => ofSection52Disposition (Section52Closure.claimDisposition c)
+  | .«lemma» c => ofSection52Disposition (Section52Closure.claimDisposition c)
   | .proposition c => ofSection52Disposition (Section53Closure.claimDisposition c)
   | .finalClaim c => ofSection52Disposition (Section54Closure.claimDisposition c)
 
@@ -28573,6 +28787,7 @@ theorem proposition_count : Fintype.card Section53Closure.Claim = 21 := by
 theorem finalClaim_count : Fintype.card Section54Closure.Claim = 4 := by
   decide
 
+set_option maxRecDepth 10000 in
 theorem namedClaim_count : Fintype.card Claim = 57 := by
   decide
 
@@ -28586,7 +28801,7 @@ theorem exhaustive (c : Claim) :
   | definition c =>
       cases c <;> simp [claimDisposition, ofSection51Disposition,
         Section51Closure.claimDisposition]
-  | lemma c =>
+  | «lemma» c =>
       cases c <;> simp [claimDisposition, ofSection52Disposition,
         Section52Closure.claimDisposition]
   | proposition c =>
@@ -28596,20 +28811,24 @@ theorem exhaustive (c : Claim) :
       cases c <;> simp [claimDisposition, ofSection52Disposition,
         Section54Closure.claimDisposition]
 
+universe
+  uGlobal51_1 uGlobal51_2 uGlobal51_3 uGlobal51_4 uGlobal51_5 uGlobal51_6 uGlobal51_7 uGlobal51_8 uGlobal51_9 uGlobal51_10 uGlobal51_11 uGlobal51_12 uGlobal51_13 uGlobal51_14 uGlobal51_15 uGlobal51_16 uGlobal51_17 uGlobal51_18 uGlobal51_19 uGlobal51_20 uGlobal51_21 uGlobal51_22 uGlobal51_23 uGlobal51_24 uGlobal51_25 uGlobal51_26 uGlobal51_27 uGlobal51_28 uGlobal51_29 uGlobal51_30 uGlobal51_31 uGlobal52_1 uGlobal52_2 uGlobal52_3 uGlobal52_4 uGlobal53_1 uGlobal53_2 uGlobal53_3 uGlobal53_4 uGlobal53_5 uGlobal53_6 uGlobal53_7 uGlobal53_8 uGlobal53_9 uGlobal53_10 uGlobal53_11 uGlobal53_12 uGlobal53_13 uGlobal53_14
+
 /-- The semantic evidence family for all 57 named rows.  This is stronger than
 `exhaustive`: it delegates each row to its section's proof-producing statement
 rather than merely checking a disposition tag. -/
 def ClaimEvidence : Claim → Prop
-  | .definition c => Section51Closure.ClaimEvidence c
-  | .lemma c => Section52Closure.ClaimEvidence c
-  | .proposition c => Section53Closure.ClaimEvidence c
+  | .definition c => Section51Closure.ClaimEvidence.{uGlobal51_1, uGlobal51_2, uGlobal51_3, uGlobal51_4, uGlobal51_5, uGlobal51_6, uGlobal51_7, uGlobal51_8, uGlobal51_9, uGlobal51_10, uGlobal51_11, uGlobal51_12, uGlobal51_13, uGlobal51_14, uGlobal51_15, uGlobal51_16, uGlobal51_17, uGlobal51_18, uGlobal51_19, uGlobal51_20, uGlobal51_21, uGlobal51_22, uGlobal51_23, uGlobal51_24, uGlobal51_25, uGlobal51_26, uGlobal51_27, uGlobal51_28, uGlobal51_29, uGlobal51_30, uGlobal51_31} c
+  | .«lemma» c => Section52Closure.ClaimEvidence.{uGlobal52_1, uGlobal52_2, uGlobal52_3, uGlobal52_4} c
+  | .proposition c => Section53Closure.ClaimEvidence.{uGlobal53_1, uGlobal53_2, uGlobal53_3, uGlobal53_4, uGlobal53_5, uGlobal53_6, uGlobal53_7, uGlobal53_8, uGlobal53_9, uGlobal53_10, uGlobal53_11, uGlobal53_12, uGlobal53_13, uGlobal53_14} c
   | .finalClaim c => Section54Closure.ClaimEvidence c
 
-theorem claimEvidence (c : Claim) : ClaimEvidence c := by
+theorem claimEvidence (c : Claim) :
+    ClaimEvidence.{uGlobal51_1, uGlobal51_2, uGlobal51_3, uGlobal51_4, uGlobal51_5, uGlobal51_6, uGlobal51_7, uGlobal51_8, uGlobal51_9, uGlobal51_10, uGlobal51_11, uGlobal51_12, uGlobal51_13, uGlobal51_14, uGlobal51_15, uGlobal51_16, uGlobal51_17, uGlobal51_18, uGlobal51_19, uGlobal51_20, uGlobal51_21, uGlobal51_22, uGlobal51_23, uGlobal51_24, uGlobal51_25, uGlobal51_26, uGlobal51_27, uGlobal51_28, uGlobal51_29, uGlobal51_30, uGlobal51_31, uGlobal52_1, uGlobal52_2, uGlobal52_3, uGlobal52_4, uGlobal53_1, uGlobal53_2, uGlobal53_3, uGlobal53_4, uGlobal53_5, uGlobal53_6, uGlobal53_7, uGlobal53_8, uGlobal53_9, uGlobal53_10, uGlobal53_11, uGlobal53_12, uGlobal53_13, uGlobal53_14} c := by
   cases c with
-  | definition c => exact Section51Closure.claimEvidence c
-  | lemma c => exact Section52Closure.claimEvidence c
-  | proposition c => exact Section53Closure.claimEvidence c
+  | definition c => exact Section51Closure.claimEvidence.{uGlobal51_1, uGlobal51_2, uGlobal51_3, uGlobal51_4, uGlobal51_5, uGlobal51_6, uGlobal51_7, uGlobal51_8, uGlobal51_9, uGlobal51_10, uGlobal51_11, uGlobal51_12, uGlobal51_13, uGlobal51_14, uGlobal51_15, uGlobal51_16, uGlobal51_17, uGlobal51_18, uGlobal51_19, uGlobal51_20, uGlobal51_21, uGlobal51_22, uGlobal51_23, uGlobal51_24, uGlobal51_25, uGlobal51_26, uGlobal51_27, uGlobal51_28, uGlobal51_29, uGlobal51_30, uGlobal51_31} c
+  | «lemma» c => exact Section52Closure.claimEvidence.{uGlobal52_1, uGlobal52_2, uGlobal52_3, uGlobal52_4} c
+  | proposition c => exact Section53Closure.claimEvidence.{uGlobal53_1, uGlobal53_2, uGlobal53_3, uGlobal53_4, uGlobal53_5, uGlobal53_6, uGlobal53_7, uGlobal53_8, uGlobal53_9, uGlobal53_10, uGlobal53_11, uGlobal53_12, uGlobal53_13, uGlobal53_14} c
   | finalClaim c => exact Section54Closure.claimEvidence c
 
 end GlobalNamedClaimClosure
@@ -28644,6 +28863,7 @@ def IsTerminal : Item → Prop
       P0RepairLedger.disposition r = .correctedAndProved ∨
         P0RepairLedger.disposition r = .removedWithErratum
 
+set_option maxRecDepth 10000 in
 theorem item_count : Fintype.card Item = 174 := by
   decide
 
@@ -28656,24 +28876,29 @@ theorem terminal (i : Item) : IsTerminal i := by
       · exact Section7WorkaroundLedger.terminal r
       · exact P0RepairLedger.terminal r
 
+universe
+  uChecklistGlobal_1 uChecklistGlobal_2 uChecklistGlobal_3 uChecklistGlobal_4 uChecklistGlobal_5 uChecklistGlobal_6 uChecklistGlobal_7 uChecklistGlobal_8 uChecklistGlobal_9 uChecklistGlobal_10 uChecklistGlobal_11 uChecklistGlobal_12 uChecklistGlobal_13 uChecklistGlobal_14 uChecklistGlobal_15 uChecklistGlobal_16 uChecklistGlobal_17 uChecklistGlobal_18 uChecklistGlobal_19 uChecklistGlobal_20 uChecklistGlobal_21 uChecklistGlobal_22 uChecklistGlobal_23 uChecklistGlobal_24 uChecklistGlobal_25 uChecklistGlobal_26 uChecklistGlobal_27 uChecklistGlobal_28 uChecklistGlobal_29 uChecklistGlobal_30 uChecklistGlobal_31 uChecklistGlobal_32 uChecklistGlobal_33 uChecklistGlobal_34 uChecklistGlobal_35 uChecklistGlobal_36 uChecklistGlobal_37 uChecklistGlobal_38 uChecklistGlobal_39 uChecklistGlobal_40 uChecklistGlobal_41 uChecklistGlobal_42 uChecklistGlobal_43 uChecklistGlobal_44 uChecklistGlobal_45 uChecklistGlobal_46 uChecklistGlobal_47 uChecklistGlobal_48 uChecklistGlobal_49 uChecklistSection7_1 uChecklistSection7_2 uChecklistSection7_3 uChecklistSection7_4 uChecklistP0_1 uChecklistP0_2 uChecklistP0_3 uChecklistP0_4
+
 /-- Semantic evidence for every one of the 174 checklist rows.  Unlike
 `IsTerminal`, this family delegates to the proof-producing statement selected
 by the corresponding ledger. -/
 def Evidence : Item → Prop
-  | Sum.inl c => GlobalNamedClaimClosure.ClaimEvidence c
+  | Sum.inl c => GlobalNamedClaimClosure.ClaimEvidence.{uChecklistGlobal_1, uChecklistGlobal_2, uChecklistGlobal_3, uChecklistGlobal_4, uChecklistGlobal_5, uChecklistGlobal_6, uChecklistGlobal_7, uChecklistGlobal_8, uChecklistGlobal_9, uChecklistGlobal_10, uChecklistGlobal_11, uChecklistGlobal_12, uChecklistGlobal_13, uChecklistGlobal_14, uChecklistGlobal_15, uChecklistGlobal_16, uChecklistGlobal_17, uChecklistGlobal_18, uChecklistGlobal_19, uChecklistGlobal_20, uChecklistGlobal_21, uChecklistGlobal_22, uChecklistGlobal_23, uChecklistGlobal_24, uChecklistGlobal_25, uChecklistGlobal_26, uChecklistGlobal_27, uChecklistGlobal_28, uChecklistGlobal_29, uChecklistGlobal_30, uChecklistGlobal_31, uChecklistGlobal_32, uChecklistGlobal_33, uChecklistGlobal_34, uChecklistGlobal_35, uChecklistGlobal_36, uChecklistGlobal_37, uChecklistGlobal_38, uChecklistGlobal_39, uChecklistGlobal_40, uChecklistGlobal_41, uChecklistGlobal_42, uChecklistGlobal_43, uChecklistGlobal_44, uChecklistGlobal_45, uChecklistGlobal_46, uChecklistGlobal_47, uChecklistGlobal_48, uChecklistGlobal_49} c
   | Sum.inr (Sum.inl c) => UnnumberedFormulaLedger.ClaimEvidence c
   | Sum.inr (Sum.inr (Sum.inl r)) =>
-      Section7WorkaroundLedger.RequirementEvidence r
-  | Sum.inr (Sum.inr (Sum.inr r)) => P0RepairLedger.RequirementEvidence r
+      Section7WorkaroundLedger.RequirementEvidence.{uChecklistSection7_1, uChecklistSection7_2, uChecklistSection7_3, uChecklistSection7_4} r
+  | Sum.inr (Sum.inr (Sum.inr r)) =>
+      P0RepairLedger.RequirementEvidence.{uChecklistP0_1, uChecklistP0_2, uChecklistP0_3, uChecklistP0_4} r
 
-theorem evidence (i : Item) : Evidence i := by
+theorem evidence (i : Item) :
+    Evidence.{uChecklistGlobal_1, uChecklistGlobal_2, uChecklistGlobal_3, uChecklistGlobal_4, uChecklistGlobal_5, uChecklistGlobal_6, uChecklistGlobal_7, uChecklistGlobal_8, uChecklistGlobal_9, uChecklistGlobal_10, uChecklistGlobal_11, uChecklistGlobal_12, uChecklistGlobal_13, uChecklistGlobal_14, uChecklistGlobal_15, uChecklistGlobal_16, uChecklistGlobal_17, uChecklistGlobal_18, uChecklistGlobal_19, uChecklistGlobal_20, uChecklistGlobal_21, uChecklistGlobal_22, uChecklistGlobal_23, uChecklistGlobal_24, uChecklistGlobal_25, uChecklistGlobal_26, uChecklistGlobal_27, uChecklistGlobal_28, uChecklistGlobal_29, uChecklistGlobal_30, uChecklistGlobal_31, uChecklistGlobal_32, uChecklistGlobal_33, uChecklistGlobal_34, uChecklistGlobal_35, uChecklistGlobal_36, uChecklistGlobal_37, uChecklistGlobal_38, uChecklistGlobal_39, uChecklistGlobal_40, uChecklistGlobal_41, uChecklistGlobal_42, uChecklistGlobal_43, uChecklistGlobal_44, uChecklistGlobal_45, uChecklistGlobal_46, uChecklistGlobal_47, uChecklistGlobal_48, uChecklistGlobal_49, uChecklistSection7_1, uChecklistSection7_2, uChecklistSection7_3, uChecklistSection7_4, uChecklistP0_1, uChecklistP0_2, uChecklistP0_3, uChecklistP0_4} i := by
   rcases i with c | c
-  · exact GlobalNamedClaimClosure.claimEvidence c
+  · exact GlobalNamedClaimClosure.claimEvidence.{uChecklistGlobal_1, uChecklistGlobal_2, uChecklistGlobal_3, uChecklistGlobal_4, uChecklistGlobal_5, uChecklistGlobal_6, uChecklistGlobal_7, uChecklistGlobal_8, uChecklistGlobal_9, uChecklistGlobal_10, uChecklistGlobal_11, uChecklistGlobal_12, uChecklistGlobal_13, uChecklistGlobal_14, uChecklistGlobal_15, uChecklistGlobal_16, uChecklistGlobal_17, uChecklistGlobal_18, uChecklistGlobal_19, uChecklistGlobal_20, uChecklistGlobal_21, uChecklistGlobal_22, uChecklistGlobal_23, uChecklistGlobal_24, uChecklistGlobal_25, uChecklistGlobal_26, uChecklistGlobal_27, uChecklistGlobal_28, uChecklistGlobal_29, uChecklistGlobal_30, uChecklistGlobal_31, uChecklistGlobal_32, uChecklistGlobal_33, uChecklistGlobal_34, uChecklistGlobal_35, uChecklistGlobal_36, uChecklistGlobal_37, uChecklistGlobal_38, uChecklistGlobal_39, uChecklistGlobal_40, uChecklistGlobal_41, uChecklistGlobal_42, uChecklistGlobal_43, uChecklistGlobal_44, uChecklistGlobal_45, uChecklistGlobal_46, uChecklistGlobal_47, uChecklistGlobal_48, uChecklistGlobal_49} c
   · rcases c with c | r
     · exact UnnumberedFormulaLedger.claimEvidence c
     · rcases r with r | r
-      · exact Section7WorkaroundLedger.requirementEvidence r
-      · exact P0RepairLedger.requirementEvidence r
+      · exact Section7WorkaroundLedger.requirementEvidence.{uChecklistSection7_1, uChecklistSection7_2, uChecklistSection7_3, uChecklistSection7_4} r
+      · exact P0RepairLedger.requirementEvidence.{uChecklistP0_1, uChecklistP0_2, uChecklistP0_3, uChecklistP0_4} r
 
 end GlobalChecklistClosure
 
@@ -28696,20 +28921,26 @@ inductive LiteralClaim
   | kloostermanTailHalf
   | rademacherDamping
   | gamma2CuspOrbit
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype LiteralClaim where
+  elems := {.nearZeroPowerWindow, .kloostermanTailOne, .kloostermanTailHalf, .rademacherDamping, .gamma2CuspOrbit}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- Exact proposition represented by each directly contradicted literal claim. -/
 def literalStatement : LiteralClaim -> Prop
   | .nearZeroPowerWindow =>
-      Forall fun alpha : Real => alpha < -(1 / 2 : Real) ->
+      ∀ alpha : Real, alpha < -(1 / 2 : Real) ->
         IntegrableOn
           (fun y : Real => y ^ (alpha - (1 / 2 : Real))) (Set.Ioo 0 1)
   | .kloostermanTailOne =>
-      Forall fun epsilon : Real => 0 < epsilon ->
+      ∀ epsilon : Real, 0 < epsilon ->
         Summable (fun n : Nat =>
           1 / abs ((n : Real) + 1) ^ (1 - epsilon))
   | .kloostermanTailHalf =>
-      Forall fun epsilon : Real => 0 < epsilon ->
+      ∀ epsilon : Real, 0 < epsilon ->
         Summable (fun n : Nat =>
           1 / abs ((n : Real) + 1) ^ ((1 / 2 : Real) - epsilon))
   | .rademacherDamping =>
@@ -28749,7 +28980,7 @@ theorem literalClaim_count : Fintype.card LiteralClaim = 5 := by
 
 /-- Simultaneous proof of the five directly represented literal claims. -/
 def AllLiteralClaims : Prop :=
-  Forall fun c : LiteralClaim => literalStatement c
+  ∀ c : LiteralClaim, literalStatement c
 
 /-- The directly represented literal claims cannot all be certified in a
 consistent Lean environment. -/
@@ -28765,12 +28996,18 @@ inductive ExtractedObligation
   | rankinSelbergUniversalPowerModel
   | resolventHalfPlanePoleFree
   | sameChartExterior
-  deriving DecidableEq, Fintype, Repr
+  deriving DecidableEq, Repr
+
+instance : Fintype ExtractedObligation where
+  elems := {.rankinSelbergUniversalPowerModel, .resolventHalfPlanePoleFree, .sameChartExterior}
+  complete := by
+    intro x
+    cases x <;> simp
 
 /-- The paper's global symbol `q = exp(2*pi*i*tau)`, kept distinct from the
 width-two local cusp coordinate used elsewhere in this file. -/
 noncomputable def paperQ (tau : UpperHalfPlane) : Complex :=
-  Function.Periodic.qParam (1 : Real) (tau : Complex)
+  Function.Periodic.qParam (1 : Nat) (tau : Complex)
 
 theorem norm_paperQ_lt_one (tau : UpperHalfPlane) :
     norm (paperQ tau) < 1 := by
@@ -28780,10 +29017,10 @@ def obligationStatement : ExtractedObligation -> Prop
   | .rankinSelbergUniversalPowerModel =>
       CorrectedLemmas.CuspConvergence.CitedLemma31RankinSelbergInference
   | .resolventHalfPlanePoleFree =>
-      Forall fun s : Complex => 1 < s.re -> Forall fun t : Real =>
+      ∀ s : Complex, 1 < s.re -> ∀ t : Real,
         CorrectedLemmas.MassUnfolding.rankinSelbergResolventDenominator s t ≠ 0
   | .sameChartExterior =>
-      Exists fun tau : UpperHalfPlane =>
+      ∃ tau : UpperHalfPlane,
         1 < norm (paperQ tau)
 
 theorem obligationRefutation (c : ExtractedObligation) :
@@ -28801,7 +29038,7 @@ theorem extractedObligation_count : Fintype.card ExtractedObligation = 3 := by
   decide
 
 def AllExtractedObligations : Prop :=
-  Forall fun c : ExtractedObligation => obligationStatement c
+  ∀ c : ExtractedObligation, obligationStatement c
 
 theorem no_simultaneous_extractedObligations :
     Not AllExtractedObligations := by
@@ -31676,5 +31913,7 @@ spectral series. -/
 #print axioms GlobalChecklistClosure.evidence
 
 end AxiomAudit
+
+end
 
 end Mock2Adv
