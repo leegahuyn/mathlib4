@@ -1,60 +1,43 @@
-name: PR9 resilient exact PASS 320 FA and QYM
+name: PR9 PASS324 FunctionalAnalysis Integrated QYM gate
 
 on:
   push:
     branches: [ci/fa319-isolated-20260807]
     paths:
       - '.github/workflows/pr9-exact-pass320-fa-qym-stable-v2.yml'
-      - 'scripts/pr9_apply_exact_pass320_resilient.sh'
-      - 'scripts/pr9_apply_exact_pass320_and_qym.sh'
+      - 'scripts/ci_fa319_qym.sh'
+      - 'scripts/ci_fa321_qym.sh'
+      - 'scripts/apply_three_hundred_twenty_first_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_second_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_fourth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
 
 permissions:
   contents: write
   actions: read
-  pull-requests: read
 
 concurrency:
-  group: pr9-stable-exact-pass320
+  group: pr9-pass324-fa-integrated-qym
   cancel-in-progress: true
 
 jobs:
-  exact-pass320:
+  verify-pass324:
     runs-on: ubuntu-24.04
     timeout-minutes: 720
     env:
-      GITHUB_TOKEN: ${{ github.token }}
-      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ github.sha }}
+      SOURCE_BRANCH: ci/fa319-isolated-20260807
 
     steps:
-      - name: Checkout PR9 branch
+      - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ci/fa319-isolated-20260807
-          fetch-depth: 0
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
           persist-credentials: true
 
-      - name: Guard open unmerged draft PR9
-        shell: bash
-        run: |
-          set -euo pipefail
-          gh api "/repos/${GITHUB_REPOSITORY}/pulls/9" > /tmp/pr9-resilient-state.json
-          python3 - <<'PY'
-          import json
-          p=json.load(open('/tmp/pr9-resilient-state.json',encoding='utf-8'))
-          assert p['state']=='open', p
-          assert p['merged'] is False, p
-          assert p['draft'] is True, p
-          assert p['head']['ref']=='ci/fa319-isolated-20260807', p
-          assert p['base']['ref']=='fix/primality-sheaf-clean-build', p
-          PY
-
-      - name: Synchronize latest base
-        shell: bash
-        run: |
-          set -euo pipefail
-          bash scripts/pr9_sync_base_pass320_v2.sh
-
-      - name: Install Lean and Mathlib cache
+      - name: Install exact Lean toolchain and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -63,27 +46,25 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           export PATH="${HOME}/.elan/bin:${PATH}"
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
           elan toolchain install "$(cat lean-toolchain)"
           lean --version
           lake --version
+          sha256sum --version | head -1
           lake exe cache get
 
-      - name: Reconstruct PASS 320 and verify FA Integrated QYM twice
+      - name: Apply PASS320 through PASS324 and compile FA Integrated QYM twice
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/pr9_apply_exact_pass320_resilient.sh
+          bash scripts/ci_fa319_qym.sh
 
-      - name: Upload resilient PASS 320 evidence
+      - name: Upload PASS324 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: pr9-resilient-pass320-${{ github.run_id }}
-          path: |
-            /tmp/pr9-resilient-state.json
-            /tmp/pr9-exact-pass320
-            /tmp/pr9-pass320-remote-recovery
-            build-logs/pr9-branch-sync-status.txt
+          name: pr9-pass324-fa-integrated-qym-${{ env.SOURCE_SHA }}
+          path: /tmp/fa324-qym
           if-no-files-found: warn
           retention-days: 30
