@@ -12,12 +12,12 @@ permissions:
   actions: read
 
 concurrency:
-  group: isolated-fa318-qym-${{ github.sha }}
+  group: isolated-fa318-qym
   cancel-in-progress: true
 
 jobs:
   verify:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
 
     steps:
