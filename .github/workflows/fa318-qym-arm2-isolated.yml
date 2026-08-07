@@ -71,3 +71,5 @@ jobs:
           path: /tmp/fa318-qym-x86
           if-no-files-found: warn
           retention-days: 30
+
+# second push trigger after workflow registration
