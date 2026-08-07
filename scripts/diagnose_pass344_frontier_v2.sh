@@ -37,7 +37,6 @@ repl(
     '/tmp/diagnose-pass343-v2-current-advanced.lean',
     '/tmp/diagnose-pass344-v2-current-advanced.lean',
     'Advanced temporary source',
-    expected=2,
 )
 repl(
     'Mock2_FunctionalAnalysis-pass343-frontier-v2.lean',
