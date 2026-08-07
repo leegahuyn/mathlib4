@@ -2,10 +2,11 @@
 set -euo pipefail
 
 OUT='/tmp/pass342-api-probe'
+rm -rf "${OUT}"
 mkdir -p "${OUT}"
 
 cat > /tmp/Pass342NNRealA.lean <<'LEAN'
-import PrimalitySheafVerification.Mock2_Advanced
+import Mathlib
 
 open MeasureTheory Set Function Topology
 
@@ -18,7 +19,7 @@ example : Continuous probeHyperbolicDensityA := by
 LEAN
 
 cat > /tmp/Pass342NNRealB.lean <<'LEAN'
-import PrimalitySheafVerification.Mock2_Advanced
+import Mathlib
 
 open MeasureTheory Set Function Topology
 
@@ -30,27 +31,20 @@ example : Continuous probeHyperbolicDensityB := by
 LEAN
 
 cat > /tmp/Pass342Instance.lean <<'LEAN'
-import PrimalitySheafVerification.Mock2_Advanced
+import Mathlib
 
-namespace Mock2FA.PaperCorrections.AutomorphicSobolev
-open HalfWeightDifferentialOperators
+noncomputable abbrev ProbeCore := (⊤ : Submodule ℂ ℂ)
 
-noncomputable local instance probeCoreAddCommGroup (n : ℤ) :
-    AddCommGroup (InverseEtaFixedPhaseCore n) := by
-  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact inferInstanceAs
-    (AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n))
+noncomputable local instance probeCoreAddCommGroup : AddCommGroup ProbeCore := by
+  change AddCommGroup ↥(⊤ : Submodule ℂ ℂ)
+  exact inferInstanceAs (AddCommGroup ↥(⊤ : Submodule ℂ ℂ))
 
-noncomputable local instance probeCoreModule (n : ℤ) :
-    Module ℂ (InverseEtaFixedPhaseCore n) := by
-  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact inferInstanceAs
-    (Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n))
+noncomputable local instance probeCoreModule : Module ℂ ProbeCore := by
+  change Module ℂ ↥(⊤ : Submodule ℂ ℂ)
+  exact inferInstanceAs (Module ℂ ↥(⊤ : Submodule ℂ ℂ))
 
-#synth AddCommGroup (InverseEtaFixedPhaseCore 0)
-#synth Module ℂ (InverseEtaFixedPhaseCore 0)
-
-end Mock2FA.PaperCorrections.AutomorphicSobolev
+#synth AddCommGroup ProbeCore
+#synth Module ℂ ProbeCore
 LEAN
 
 printf 'probe,exit_code,error_count\n' > "${OUT}/summary.csv"
@@ -64,5 +58,4 @@ for probe in Pass342NNRealA Pass342NNRealB Pass342Instance; do
   cp "/tmp/${probe}.lean" "${OUT}/"
 done
 cat "${OUT}/summary.csv"
-# The probe job itself succeeds so every candidate log is uploaded.
 exit 0
