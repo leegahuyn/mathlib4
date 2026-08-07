@@ -48,7 +48,7 @@ noncomputable def probeStableAddSubgroup (n : ℤ) :
   neg_mem' := by
     intro x hx
     have h := (inverseEtaFixedPhaseStableCoreSubmodule n).smul_mem (-1 : ℂ) hx
-    simpa using h
+    simpa only [neg_one_smul] using h
 
 noncomputable local instance probeStableAddCommGroup (n : ℤ) :
     AddCommGroup (InverseEtaFixedPhaseCore n) := by
