@@ -1,4 +1,4 @@
-name: GPT-5.6 isolated PASS 336 FA Integrated QYM gate
+name: GPT-5.6 isolated PASS 337 FA Integrated QYM gate
 
 on:
   push:
@@ -6,7 +6,9 @@ on:
     paths:
       - '.github/workflows/gpt56-pr9-fa-qym-isolated.yml'
       - 'scripts/gpt56_isolated_pass336_gate.sh'
+      - 'scripts/gpt56_isolated_pass337_gate.sh'
       - 'scripts/apply_three_hundred_thirty_sixth_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_thirty_seventh_pass_functional_analysis_repairs.py'
   workflow_dispatch:
 
 permissions:
@@ -47,13 +49,13 @@ jobs:
           sha256sum --version | head -1
           lake exe cache get
 
-      - name: Reconstruct PASS 336 and verify FA Integrated QYM
+      - name: Reconstruct PASS 337 and verify FA Integrated QYM
         id: gate
         shell: bash
         run: |
           set +e
           export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
-          bash scripts/gpt56_isolated_pass336_gate.sh
+          bash scripts/gpt56_isolated_pass337_gate.sh
           rc=$?
           set -e
           echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
@@ -63,8 +65,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: gpt56-pass336-fa-integrated-qym-${{ github.sha }}
-          path: /tmp/gpt56-pass336-gate
+          name: gpt56-pass337-fa-integrated-qym-${{ github.sha }}
+          path: /tmp/gpt56-pass337-gate
           if-no-files-found: error
           retention-days: 90
 
@@ -76,7 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build-logs
-          report='build-logs/gpt56-pass336-latest.txt'
+          report='build-logs/gpt56-pass337-latest.txt'
           {
             echo "run_id=${GITHUB_RUN_ID}"
             echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
@@ -84,30 +86,30 @@ jobs:
             echo "gate_exit_code=${GATE_EXIT_CODE:-missing}"
             echo "utc=$(date -u +%FT%TZ)"
             echo
-            if [[ -f /tmp/gpt56-pass336-gate/status.txt ]]; then
-              cat /tmp/gpt56-pass336-gate/status.txt
+            if [[ -f /tmp/gpt56-pass337-gate/status.txt ]]; then
+              cat /tmp/gpt56-pass337-gate/status.txt
             else
               echo 'status file missing'
             fi
             echo
             echo '--- compile summary ---'
-            if [[ -f /tmp/gpt56-pass336-gate/compile-summary.csv ]]; then
-              cat /tmp/gpt56-pass336-gate/compile-summary.csv
+            if [[ -f /tmp/gpt56-pass337-gate/compile-summary.csv ]]; then
+              cat /tmp/gpt56-pass337-gate/compile-summary.csv
             fi
             echo
             echo '--- candidate hash ---'
-            if [[ -f /tmp/gpt56-pass336-gate/candidate-sha256.txt ]]; then
-              cat /tmp/gpt56-pass336-gate/candidate-sha256.txt
+            if [[ -f /tmp/gpt56-pass337-gate/candidate-sha256.txt ]]; then
+              cat /tmp/gpt56-pass337-gate/candidate-sha256.txt
             fi
             echo
             echo '--- first failure context ---'
             failure=''
             for candidate in \
-              /tmp/gpt56-pass336-gate/FA-failure-context.txt \
-              /tmp/gpt56-pass336-gate/Integrated-failure-context.txt \
-              /tmp/gpt56-pass336-gate/QYM-failure-context.txt \
-              /tmp/gpt56-pass336-gate/Advanced-failure-context.txt \
-              /tmp/gpt56-pass336-gate/Mock2-failure-context.txt; do
+              /tmp/gpt56-pass337-gate/FA-failure-context.txt \
+              /tmp/gpt56-pass337-gate/Integrated-failure-context.txt \
+              /tmp/gpt56-pass337-gate/QYM-failure-context.txt \
+              /tmp/gpt56-pass337-gate/Advanced-failure-context.txt \
+              /tmp/gpt56-pass337-gate/Mock2-failure-context.txt; do
               if [[ -s "${candidate}" ]]; then
                 failure="${candidate}"
                 break
@@ -122,7 +124,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "${report}"
-          git diff --cached --quiet || git commit -m 'ci: record isolated PASS 336 gate result'
+          git diff --cached --quiet || git commit -m 'ci: record isolated PASS 337 gate result'
           git push origin "HEAD:fix/pr9-fa-gpt56-isolated-20260808"
 
       - name: Enforce gate result
