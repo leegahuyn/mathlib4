@@ -1,10 +1,8 @@
 name: PASS 327 complete ordered pipeline v6
 
+# Historical full-pipeline driver. Manual only while the focused PASS 339+
+# FunctionalAnalysis frontier is being repaired.
 on:
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/pass327-full-ordered-pipeline-v6.yml'
   workflow_dispatch:
 
 permissions:
@@ -26,10 +24,10 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
 
     steps:
-      - name: Checkout exact PR9 pipeline head
+      - name: Checkout exact workflow head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 160
           persist-credentials: true
 
@@ -74,7 +72,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: pass327-complete-ordered-v6-${{ github.event.pull_request.head.sha || github.sha }}
+          name: pass327-complete-ordered-v6-${{ github.sha }}
           path: |
             /tmp/pass327-full-order-v3
             /tmp/pass327-repair-agent
