@@ -8,6 +8,13 @@ on:
       - 'scripts/diagnose_pass342_frontier_v3.sh'
       - 'scripts/fa342_repair_v2.py'
       - 'scripts/fa342_repair.py'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/diagnose-pass342-frontier-v3.yml'
+      - 'scripts/diagnose_pass342_frontier_v3.sh'
+      - 'scripts/fa342_repair_v2.py'
+      - 'scripts/fa342_repair.py'
   workflow_dispatch:
 
 permissions:
@@ -15,18 +22,20 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass342-frontier-v3
+  group: diagnose-pass342-frontier-v3-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   frontier:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 320
           persist-credentials: false
 
@@ -56,7 +65,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: diagnose-pass342-frontier-v3-${{ github.sha }}
+          name: diagnose-pass342-frontier-v3-${{ env.SOURCE_SHA }}
           path: /tmp/diagnose-pass342-frontier-v3
           if-no-files-found: error
           retention-days: 90
