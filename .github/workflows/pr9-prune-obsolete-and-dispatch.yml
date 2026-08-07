@@ -1,0 +1,97 @@
+name: PR9 prune obsolete workflows and dispatch stable PASS 320
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-prune-obsolete-and-dispatch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: pr9-prune-obsolete-workflows
+  cancel-in-progress: false
+
+jobs:
+  prune-dispatch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout PR9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Remove obsolete competing PR9 workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch='ci/fa319-isolated-20260807'
+          obsolete=(
+            '.github/workflows/fa319-qym-x86.yml'
+            '.github/workflows/fa319-qym-arm.yml'
+            '.github/workflows/fa319-qym-macos.yml'
+            '.github/workflows/pr9-sync-base-pass320.yml'
+            '.github/workflows/pr9-sync-base-pass320-v2.yml'
+            '.github/workflows/pr9-pass320-replay.yml'
+            '.github/workflows/pr9-pass320-replay-v2.yml'
+            '.github/workflows/pr9-pass320-repair-orchestrator.yml'
+            '.github/workflows/pr9-exact-pass320-fa-qym.yml'
+            '.github/workflows/pr9-record-exact-pass320-result.yml'
+            'scripts/pr9_replay_pass320_fa_qym.sh'
+            'scripts/pr9_pass320_entrypoint.sh'
+            '.github/workflows/pr9-prune-obsolete-and-dispatch.yml'
+          )
+          removed=0
+          for path in "${obsolete[@]}"; do
+            if [[ -e "${path}" ]]; then
+              git rm -f -- "${path}"
+              removed=$((removed + 1))
+            fi
+          done
+          mkdir -p build-logs
+          {
+            echo "utc=$(date -u +%FT%TZ)"
+            echo "removed=${removed}"
+            echo 'kept=.github/workflows/pr9-exact-pass320-fa-qym-v2.yml'
+            echo 'kept=.github/workflows/pr9-record-exact-pass320-result-v2.yml'
+            echo 'kept=scripts/pr9_sync_base_pass320_v2.sh'
+            echo 'kept=scripts/pr9_apply_exact_pass320_and_qym.sh'
+          } > build-logs/pr9-workflow-prune-status.txt
+          git add build-logs/pr9-workflow-prune-status.txt
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'ci: retain only stable PR9 PASS 320 verifier'
+          git push origin "HEAD:${branch}"
+
+      - name: Dispatch stable exact PASS 320 verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if gh workflow view pr9-exact-pass320-fa-qym-v2.yml >/dev/null 2>&1; then
+              gh workflow run pr9-exact-pass320-fa-qym-v2.yml \
+                --ref ci/fa319-isolated-20260807
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'stable PASS 320 workflow did not become visible' >&2
+          exit 1
+
+      - name: Upload pruning evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-workflow-prune-${{ github.sha }}
+          path: build-logs/pr9-workflow-prune-status.txt
+          if-no-files-found: warn
+          retention-days: 30
