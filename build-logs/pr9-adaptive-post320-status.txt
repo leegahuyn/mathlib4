@@ -1,0 +1,16 @@
+utc=2026-08-07T12:31:11Z
+conclusion=failure
+exit_code=1
+authority_run=31159696948
+authority_job=92827136991
+
+--- status ---
+adaptive repair exhausted; applied=0
+
+--- repair chain ---
+no hash-chained FunctionalAnalysis repair script for 5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620
+
+--- compile summary ---
+stage,exit_code,error_count,warning_count,source_sha256
+
+--- first errors ---
