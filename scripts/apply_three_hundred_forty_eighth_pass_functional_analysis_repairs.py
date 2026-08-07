@@ -33,8 +33,16 @@ def main() -> int:
     if start < 0 or end < 0:
         raise RuntimeError("could not locate the double-adjoint theorem block")
     old = text[start:end]
-    if old.count("gᗮᗮ") != 2 or old.count("gᗮ") != 4:
-        raise RuntimeError("unexpected orthogonal-notation shape in double-adjoint theorem")
+    required = [
+        "g.adjoint.adjoint = gᗮᗮ := by",
+        "(Submodule.mem_orthogonal (K := gᗮ)",
+        "_ = g.topologicalClosure := g.orthogonal_orthogonal_eq_closure",
+    ]
+    for marker in required:
+        if marker not in old:
+            raise RuntimeError(
+                f"unexpected double-adjoint theorem shape; missing marker: {marker}"
+            )
 
     new = """theorem submodule_adjoint_adjoint_eq_topologicalClosure
     (g : Submodule ℂ (E × F)) :
