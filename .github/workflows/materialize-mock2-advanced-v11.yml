@@ -1,0 +1,254 @@
+name: Materialize locally verified Mock2 Advanced v11
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'scripts/solve_mock2_advanced_universes_v11.py'
+      - 'scripts/apply_*_pass_mock2_advanced_repairs.py'
+      - 'scripts/apply_*_pass_repairs.py'
+      - '.github/workflows/materialize-mock2-advanced-v11.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: materialize-mock2-advanced-v11
+  cancel-in-progress: false
+
+jobs:
+  verify-and-materialize:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 720
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      SOURCE_SHA: ${{ github.sha }}
+      MOCK2: PrimalitySheafVerification/Mock2.lean
+      TARGET: PrimalitySheafVerification/Mock2_Advanced.lean
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      LOGDIR: /tmp/materialize-mock2-advanced-v11
+      SOLVER_LOGDIR: /tmp/mock2-advanced-solver-v11
+
+    steps:
+      - name: Clone exact branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+          mkdir -p "${OUTDIR}" "${LOGDIR}/logs" "${LOGDIR}/source" \
+            "${LOGDIR}/artifacts" "${SOLVER_LOGDIR}"
+          cp "${TARGET}" "${LOGDIR}/source/Mock2_Advanced-before.lean"
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "branch=${BRANCH}" \
+            "source_sha=${SOURCE_SHA}" \
+            "source_blob=$(git hash-object "${TARGET}")" \
+            "source_sha256=$(sha256sum "${TARGET}" | awk '{print $1}')" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/snapshot.txt"
+
+      - name: Install exact Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee "${LOGDIR}/lean-version.txt"
+          lake --version | tee "${LOGDIR}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${LOGDIR}/"
+          lake exe cache get 2>&1 | tee "${LOGDIR}/logs/cache-get.log"
+
+      - name: Reproduce the locally verified source and compile twice
+        id: repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          echo 'stage,exit_code,error_count,warning_count' > "${LOGDIR}/compile-summary.csv"
+
+          compile_one() {
+            local path="$1" label="$2" module log code errors warnings
+            module="$(basename "${path}" .lean)"
+            log="${LOGDIR}/logs/${label}.log"
+            rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" \
+              "${OUTDIR}/${module}.olean.private"
+            set +e
+            lake env lean "${path}" -o "${OUTDIR}/${module}.olean" \
+              -i "${OUTDIR}/${module}.ilean" >"${log}" 2>&1
+            code=$?
+            set -e
+            errors="$(grep -c 'error:' "${log}" || true)"
+            warnings="$(grep -c 'warning:' "${log}" || true)"
+            printf '%s,%s,%s,%s\n' "${label}" "${code}" "${errors}" "${warnings}" \
+              >> "${LOGDIR}/compile-summary.csv"
+            echo "${code}" > "${LOGDIR}/${label}.exit-code.txt"
+            if [[ "${code}" -eq 0 ]]; then
+              test "${errors}" -eq 0
+              test -s "${OUTDIR}/${module}.olean"
+              test -s "${OUTDIR}/${module}.ilean"
+              if grep -Eqi \
+                "maximum number of errors|missing object file|sorryAx|declaration uses 'sorry'|PANIC|segmentation fault|stack overflow" \
+                "${log}"; then
+                return 90
+              fi
+            fi
+            return "${code}"
+          }
+
+          audit_source() {
+            python3 - "$1" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          source = Path(sys.argv[1]).read_text(encoding='utf-8')
+          output=[]; index=0; depth=0; string=False; escaped=False
+          while index < len(source):
+              if depth:
+                  if source.startswith('/-', index): depth += 1; output.extend('  '); index += 2
+                  elif source.startswith('-/', index): depth -= 1; output.extend('  '); index += 2
+                  else: output.append('\n' if source[index] == '\n' else ' '); index += 1
+              elif string:
+                  character=source[index]; output.append('\n' if character == '\n' else ' ')
+                  if escaped: escaped=False
+                  elif character == '\\': escaped=True
+                  elif character == '"': string=False
+                  index += 1
+              elif source.startswith('/-', index): depth=1; output.extend('  '); index += 2
+              elif source.startswith('--', index):
+                  while index < len(source) and source[index] != '\n': output.append(' '); index += 1
+              elif source[index] == '"': string=True; output.append(' '); index += 1
+              else: output.append(source[index]); index += 1
+          if depth or string: raise SystemExit('unterminated comment or string')
+          code=''.join(output)
+          checks={
+              'sorry':r'\bsorry\b',
+              'admit':r'\badmit\b',
+              'global_axiom':r'(?m)^\s*axiom\b',
+              'unsafe':r'\bunsafe\b',
+              'native_decide':r'\bnative_decide\b',
+              'Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+          }
+          bad=False
+          for name, pattern in checks.items():
+              count=len(re.findall(pattern, code)); print(f'{name}={count}'); bad |= count != 0
+          if bad: raise SystemExit(1)
+          PY
+          }
+
+          audit_source "${MOCK2}" | tee "${LOGDIR}/Mock2-trust-audit.txt"
+          compile_one "${MOCK2}" Mock2-regression
+
+          set +e
+          compile_one "${TARGET}" Advanced-checked-in-direct1
+          direct_code=$?
+          set -e
+          if [[ "${direct_code}" -eq 0 ]]; then
+            compile_one "${TARGET}" Advanced-checked-in-direct2
+            audit_source "${TARGET}" | tee "${LOGDIR}/Mock2_Advanced-trust-audit.txt"
+            cp "${TARGET}" "${LOGDIR}/source/Mock2_Advanced-verified.lean"
+            cp "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
+              "${LOGDIR}/artifacts/"
+            echo 'materialize=false' >> "${GITHUB_OUTPUT}"
+            echo 'checked-in source already passes twice' | tee "${LOGDIR}/status.txt"
+            exit 0
+          fi
+
+          git restore --source=HEAD --worktree -- "${TARGET}"
+          scripts=(
+            apply_two_hundred_eighty_ninth_pass_repairs.py
+            apply_two_hundred_ninetieth_pass_repairs.py
+            apply_two_hundred_ninety_first_pass_repairs.py
+            apply_two_hundred_ninety_second_pass_repairs.py
+            apply_two_hundred_ninety_third_pass_repairs.py
+            apply_two_hundred_ninety_fourth_pass_repairs.py
+            apply_two_hundred_ninety_fifth_pass_repairs.py
+            apply_two_hundred_ninety_seventh_pass_repairs.py
+            apply_two_hundred_ninety_eighth_pass_repairs.py
+            apply_two_hundred_ninety_ninth_pass_repairs.py
+            apply_three_hundredth_pass_repairs.py
+            apply_three_hundred_ninth_pass_repairs.py
+            apply_three_hundred_tenth_pass_repairs.py
+            apply_three_hundred_eleventh_pass_repairs.py
+            apply_three_hundred_twelfth_pass_repairs.py
+            apply_three_hundred_thirteenth_pass_mock2_advanced_repairs.py
+            apply_three_hundred_fourteenth_pass_mock2_advanced_repairs.py
+          )
+          : > "${LOGDIR}/logs/known-repair-application.log"
+          for script in "${scripts[@]}"; do
+            echo "===== ${script} =====" | tee -a "${LOGDIR}/logs/known-repair-application.log"
+            python3 "scripts/${script}" 2>&1 | tee -a "${LOGDIR}/logs/known-repair-application.log"
+          done
+
+          while IFS= read -r changed; do
+            if [[ -n "${changed}" && "${changed}" != "${TARGET}" ]]; then
+              git restore --source=HEAD --worktree -- "${changed}"
+            fi
+          done < <(git diff --name-only)
+          test "$(git diff --name-only)" = "${TARGET}"
+          git diff --check
+
+          MOCK2_ADVANCED_SOLVER_LOGDIR="${SOLVER_LOGDIR}" \
+            python3 scripts/solve_mock2_advanced_universes_v11.py
+          test -f "${SOLVER_LOGDIR}/SUCCESS"
+          git diff --check
+          test "$(git diff --name-only)" = "${TARGET}"
+
+          audit_source "${TARGET}" | tee "${LOGDIR}/Mock2_Advanced-candidate-trust-audit.txt"
+          cp "${TARGET}" "${LOGDIR}/source/Mock2_Advanced-candidate.lean"
+          compile_one "${MOCK2}" Mock2-regression-after-solver
+          compile_one "${TARGET}" Advanced-candidate-clean1
+          compile_one "${TARGET}" Advanced-candidate-clean2
+
+          sha256sum "${MOCK2}" "${TARGET}" \
+            "${OUTDIR}/Mock2.olean" "${OUTDIR}/Mock2.ilean" \
+            "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
+            | tee "${LOGDIR}/provenance-sha256.txt"
+          cp "${OUTDIR}/Mock2_Advanced.olean" "${OUTDIR}/Mock2_Advanced.ilean" \
+            "${LOGDIR}/artifacts/"
+          echo 'materialize=true' >> "${GITHUB_OUTPUT}"
+          echo 'locally verified solver candidate passed twice' | tee "${LOGDIR}/status.txt"
+
+      - name: Commit only the verified Mock2 Advanced source
+        if: steps.repair.outputs.materialize == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only)" = "${TARGET}"
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          printf '%s\n' "trigger_head=${SOURCE_SHA}" "remote_head=${remote_head}" \
+            | tee "${LOGDIR}/materialization.txt"
+          test "${remote_head}" = "${SOURCE_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${TARGET}"
+          test "$(git diff --cached --name-only)" = "${TARGET}"
+          git commit -m 'fix: materialize locally verified Mock2 Advanced source'
+          git push origin "HEAD:${BRANCH}"
+
+      - name: Upload locally verified solver evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: materialize-mock2-advanced-v11-${{ env.SOURCE_SHA }}
+          path: |
+            /tmp/materialize-mock2-advanced-v11
+            /tmp/mock2-advanced-solver-v11
+          if-no-files-found: warn
+          retention-days: 30
