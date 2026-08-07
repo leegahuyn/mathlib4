@@ -1,10 +1,13 @@
 name: Materialize PASS 341 source candidate
 
+# Current repaired driver: PASS 341 module-before-additive-group ordering.
 on:
   push:
     branches: [fix/fa341-final-isolated-20260808]
     paths:
       - '.github/workflows/materialize-pass341-source.yml'
+      - 'scripts/diagnose_pass341_fa.sh'
+      - 'scripts/apply_three_hundred_forty_first_pass_functional_analysis_repairs.py'
   workflow_dispatch:
 
 permissions:
