@@ -5,6 +5,10 @@ on:
     branches: [verify/fa318-qym-arm2-20260807]
     paths:
       - '.github/workflows/fa318-qym-arm2-isolated.yml'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/fa318-qym-arm2-isolated.yml'
   workflow_dispatch:
 
 permissions:
@@ -12,19 +16,21 @@ permissions:
   actions: read
 
 concurrency:
-  group: isolated-fa318-qym-arm2
+  group: isolated-fa318-qym-arm2-${{ github.event_name }}-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout exact isolated head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 1
 
       - name: Install exact Lean toolchain and restore Mathlib cache
@@ -67,9 +73,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: isolated-fa318-qym-arm2-${{ github.sha }}
+          name: isolated-fa318-qym-arm2-${{ env.SOURCE_SHA }}
           path: /tmp/fa318-qym-x86
           if-no-files-found: warn
           retention-days: 30
-
-# second push trigger after workflow registration
