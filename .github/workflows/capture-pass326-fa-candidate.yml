@@ -1,14 +1,6 @@
 name: Capture PASS 326 FunctionalAnalysis candidate
 
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/capture-pass326-fa-candidate.yml'
-      - 'scripts/capture_pass326_fa_candidate.sh'
-      - 'scripts/apply_*_pass*_repairs.py'
-      - 'scripts/fa316_driver.py'
-      - 'scripts/fa316_payload/**'
   pull_request:
     branches: [fix/primality-sheaf-clean-build]
     paths:
@@ -21,8 +13,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: capture-pass326-fa-candidate-${{ github.event.pull_request.head.sha || github.sha }}
-  cancel-in-progress: true
+  group: capture-pass326-fa-candidate-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   capture:
