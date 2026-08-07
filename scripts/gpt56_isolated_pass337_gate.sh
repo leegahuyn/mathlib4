@@ -20,6 +20,11 @@ def replace_exact(old: str, new: str, label: str, expected: int = 1) -> None:
 
 
 replace_exact(
+    "EVIDENCE='/tmp/gpt56-pass336-gate'",
+    "EVIDENCE='/tmp/gpt56-pass337-gate'",
+    'PASS 337 evidence directory',
+)
+replace_exact(
     "EXPECTED_FA_SHA256='204acd949c17f55013487819b215886ae5c1c5fb4d125d4683871f8fb94847ad'",
     "EXPECTED_FA_SHA256='a1019626213bcd9792a1d6f8a19412b9d85d14ff94a2994b444d194e1c8d6128'",
     'PASS 337 expected source hash',
