@@ -1,0 +1,112 @@
+name: PR9 record exact PASS 320 result
+
+on:
+  workflow_run:
+    workflows: ['PR9 exact PASS 320 FA and QYM']
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pr9-record-exact-pass320-result
+  cancel-in-progress: false
+
+jobs:
+  record:
+    if: github.event.workflow_run.head_branch == 'ci/fa319-isolated-20260807'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout latest PR9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download exact run evidence and write status
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id='${{ github.event.workflow_run.id }}'
+          conclusion='${{ github.event.workflow_run.conclusion }}'
+          head_sha='${{ github.event.workflow_run.head_sha }}'
+          status='build-logs/pr9-exact-pass320-run-status.txt'
+          tmp='/tmp/pr9-exact-pass320-result'
+          mkdir -p "${tmp}" build-logs
+
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+            > "${tmp}/jobs.json"
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" \
+            > "${tmp}/artifacts.json"
+
+          python3 - "${tmp}/artifacts.json" > "${tmp}/artifact-ids.tsv" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1],encoding='utf-8'))
+          for a in p.get('artifacts',[]):
+              if not a.get('expired'):
+                  print(f"{a['id']}\t{a['name']}")
+          PY
+
+          while IFS=$'\t' read -r aid name; do
+            [[ -n "${aid}" ]] || continue
+            safe="$(printf '%s' "${name}" | tr -c 'A-Za-z0-9._-' '_')"
+            mkdir -p "${tmp}/${aid}-${safe}"
+            gh api "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${aid}/zip" \
+              > "${tmp}/${aid}-${safe}.zip"
+            unzip -q "${tmp}/${aid}-${safe}.zip" -d "${tmp}/${aid}-${safe}"
+          done < "${tmp}/artifact-ids.tsv"
+
+          {
+            echo "utc=$(date -u +%FT%TZ)"
+            echo "workflow_run_id=${run_id}"
+            echo "workflow_head_sha=${head_sha}"
+            echo "conclusion=${conclusion}"
+            echo "authority_run=31159696948"
+            echo "authority_job=92827136991"
+            echo
+            echo '--- jobs ---'
+            python3 - "${tmp}/jobs.json" <<'PY'
+          import json,sys
+          p=json.load(open(sys.argv[1],encoding='utf-8'))
+          for j in p.get('jobs',[]):
+              print(f"job={j['id']} name={j['name']} status={j['status']} conclusion={j['conclusion']}")
+              for s in j.get('steps',[]):
+                  print(f"  step={s['number']} name={s['name']} conclusion={s['conclusion']}")
+          PY
+            echo
+            echo '--- compile summaries ---'
+            find "${tmp}" -type f -name 'compile-summary.csv' -print -exec cat {} \; || true
+            echo
+            echo '--- repair hashes ---'
+            find "${tmp}" -type f -name 'repair-hashes.txt' -print -exec cat {} \; || true
+            echo
+            echo '--- first error groups ---'
+            find "${tmp}" -type f \( -name '*.errors.txt' -o -name '*.tail.txt' \) -print0 \
+              | sort -z \
+              | while IFS= read -r -d '' f; do
+                  echo "===== ${f} ====="
+                  sed -n '1,180p' "${f}"
+                done
+          } > "${status}"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${status}"
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: record PR9 exact PASS 320 ${conclusion}"
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+
+      - name: Upload recorder evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-exact-pass320-result-${{ github.event.workflow_run.id }}
+          path: /tmp/pr9-exact-pass320-result
+          if-no-files-found: warn
+          retention-days: 30
