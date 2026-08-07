@@ -1,0 +1,8 @@
+run_id=31209626106
+tested_sha=9229e54152d8d7a324538bb3785b32d7966d70f7
+exit_code=1
+error_header_count=0
+warning_count=0
+--- diagnostics ---
+PrimalitySheafVerification/Pass343HyperbolicProbe.lean:23:7: error(lean.unknownIdentifier): Unknown identifier `hyperbolicMeasure_def`
+PrimalitySheafVerification/Pass343HyperbolicProbe.lean:29:4: error(lean.unknownIdentifier): Unknown identifier `hyperbolicMeasure_def`
