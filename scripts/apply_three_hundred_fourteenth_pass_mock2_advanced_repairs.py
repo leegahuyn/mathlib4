@@ -91,6 +91,11 @@ def main() -> int:
             "      KernelEvidence (@p09_equalizer_correctedAndProved.{0, 0, 0})\n",
             "Mock2 Advanced P0 equalizer evidence universes",
         ),
+        (
+            "        CorrectedLemmas.CorrectedPropositions.SheafBridge.noUniversalObjectMap\n",
+            "        CorrectedLemmas.CorrectedPropositions.SheafBridge.noUniversalObjectMap.{0}\n",
+            "Mock2 Advanced P0 missing-target obstruction universe",
+        ),
     ]
     for old, new, label in replacements:
         text = replace_once(text, old, new, label)
