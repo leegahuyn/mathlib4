@@ -1,0 +1,101 @@
+name: Priority final direct Advanced FunctionalAnalysis QYM gate
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/priority-m2a-fa-qym-final-direct.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  final-direct:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      LOGDIR: /tmp/priority-final-direct
+
+    steps:
+      - name: Clone exact latest branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: fix/primality-sheaf-clean-build
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "refs/heads/${BRANCH}"
+          git checkout --detach FETCH_HEAD
+          mkdir -p "${OUTDIR}" "${LOGDIR}/logs"
+          printf '%s\n' \
+            "head=$(git rev-parse HEAD)" \
+            "utc=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/snapshot.txt"
+
+      - name: Install pinned Lean and restore cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lean" --version
+          "${HOME}/.elan/bin/lake" exe cache get 2>&1 | tee "${LOGDIR}/logs/cache-get.log"
+
+      - name: Compile checked-in sources twice in dependency order
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          modules=(
+            Mock2
+            Mock2_Advanced
+            Mock2_FunctionalAnalysis
+            Mock2_FunctionalAnalysis_Integrated
+            QYM
+          )
+          echo 'module,pass,exit_code,error_count,warning_count' > "${LOGDIR}/summary.csv"
+          for pass in 1 2; do
+            for module in "${modules[@]}"; do
+              log="${LOGDIR}/logs/${module}-pass${pass}.log"
+              rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" \
+                "${OUTDIR}/${module}.olean.private"
+              set +e
+              lake env lean "PrimalitySheafVerification/${module}.lean" \
+                -o "${OUTDIR}/${module}.olean" \
+                -i "${OUTDIR}/${module}.ilean" \
+                >"${log}" 2>&1
+              code=$?
+              set -e
+              errors="$(grep -c 'error:' "${log}" || true)"
+              warnings="$(grep -c 'warning:' "${log}" || true)"
+              printf '%s,%s,%s,%s,%s\n' \
+                "${module}" "${pass}" "${code}" "${errors}" "${warnings}" \
+                | tee -a "${LOGDIR}/summary.csv"
+              if [[ "${code}" -ne 0 || "${errors}" -ne 0 ]]; then
+                echo "FAILED: ${module} pass ${pass}"
+                grep -n 'error:' "${log}" | head -30 || true
+                grep -n 'error:' "${log}" | tail -1 || true
+                tail -260 "${log}" || true
+                exit 1
+              fi
+              test -s "${OUTDIR}/${module}.olean"
+              test -s "${OUTDIR}/${module}.ilean"
+              if grep -Eqi \
+                "maximum number of errors|missing object file|declaration uses 'sorry'|sorryAx|PANIC|segmentation fault|stack overflow" \
+                "${log}"; then
+                grep -nEi \
+                  "maximum number of errors|missing object file|declaration uses 'sorry'|sorryAx|PANIC|segmentation fault|stack overflow" \
+                  "${log}" || true
+                exit 1
+              fi
+              echo "PASS: ${module} pass ${pass}"
+            done
+          done
