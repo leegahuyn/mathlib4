@@ -1,0 +1,55 @@
+name: Install simplified PrimalitySheaf official CI once
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/install-simplified-primality-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: install-simplified-primality-ci-once
+  cancel-in-progress: true
+
+jobs:
+  install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      SOURCE_SHA: ${{ github.sha }}
+      OFFICIAL: .github/workflows/primality-sheaf-ci.yml
+      TEMPLATE: scripts/primality-sheaf-ci.official.yml
+      SELF: .github/workflows/install-simplified-primality-ci.yml
+
+    steps:
+      - name: Replace official workflow and delete this installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+
+          cp "${TEMPLATE}" "${OFFICIAL}"
+          git rm "${TEMPLATE}" "${SELF}"
+          git add "${OFFICIAL}" scripts/primality_workflow_audit.py
+          git diff --cached --check
+
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          "$(go env GOPATH)/bin/actionlint" "${OFFICIAL}"
+          python3 scripts/primality_workflow_audit.py
+
+          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "${remote_head}" = "${SOURCE_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'ci: simplify final PrimalitySheaf workflow'
+          git push origin "HEAD:${BRANCH}"
