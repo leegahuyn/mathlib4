@@ -1,0 +1,60 @@
+name: Diagnose PASS 328 FunctionalAnalysis
+
+on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/diagnose-pass328-fa.yml'
+      - 'scripts/diagnose_pass328_fa.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: diagnose-pass328-fa-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout exact PR9 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 64
+          persist-credentials: false
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass328-fa/logs
+          lean --version | tee /tmp/diagnose-pass328-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass328-fa/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass328-fa/logs/cache-get.log
+
+      - name: Reconstruct and compile PASS 328 FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass328_fa.sh
+
+      - name: Upload PASS 328 diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: diagnose-pass328-fa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: /tmp/diagnose-pass328-fa
+          if-no-files-found: error
+          retention-days: 90
