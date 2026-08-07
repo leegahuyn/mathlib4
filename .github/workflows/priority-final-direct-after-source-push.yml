@@ -1,0 +1,159 @@
+name: Priority direct gate after source materialization
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/priority-final-direct-after-source-push.yml'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: priority-final-direct-after-source-push
+  cancel-in-progress: false
+
+jobs:
+  verify-and-record:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      LOGDIR: /tmp/priority-final-direct-after-source-push
+      RESULT: build-logs/priority-modules-direct-result.txt
+
+    steps:
+      - name: Clone exact latest branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "refs/heads/${BRANCH}"
+          git checkout -B "${BRANCH}" FETCH_HEAD
+          mkdir -p "${OUTDIR}" "${LOGDIR}/logs" "$(dirname "${RESULT}")"
+          printf '%s\n' \
+            "head=$(git rev-parse HEAD)" \
+            "utc_started=$(date -u +%FT%TZ)" \
+            | tee "${LOGDIR}/snapshot.txt"
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lean" --version | tee "${LOGDIR}/lean-version.txt"
+          "${HOME}/.elan/bin/lake" --version | tee "${LOGDIR}/lake-version.txt"
+          "${HOME}/.elan/bin/lake" exe cache get 2>&1 | tee "${LOGDIR}/logs/cache-get.log"
+
+      - name: Compile checked-in priority sources twice
+        id: compile
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          modules=(
+            Mock2
+            Mock2_Advanced
+            Mock2_FunctionalAnalysis
+            Mock2_FunctionalAnalysis_Integrated
+            QYM
+          )
+          echo 'module,pass,exit_code,error_count,warning_count' > "${LOGDIR}/summary.csv"
+          overall=0
+          failed_module=''
+          failed_pass=''
+          for pass in 1 2; do
+            for module in "${modules[@]}"; do
+              log="${LOGDIR}/logs/${module}-pass${pass}.log"
+              rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" \
+                "${OUTDIR}/${module}.olean.private"
+              lake env lean "PrimalitySheafVerification/${module}.lean" \
+                -o "${OUTDIR}/${module}.olean" -i "${OUTDIR}/${module}.ilean" \
+                >"${log}" 2>&1
+              code=$?
+              errors="$(grep -c 'error:' "${log}" || true)"
+              warnings="$(grep -c 'warning:' "${log}" || true)"
+              printf '%s,%s,%s,%s,%s\n' \
+                "${module}" "${pass}" "${code}" "${errors}" "${warnings}" \
+                | tee -a "${LOGDIR}/summary.csv"
+              bad_log=0
+              grep -Eqi \
+                "maximum number of errors|missing object file|declaration uses 'sorry'|sorryAx|PANIC|segmentation fault|stack overflow" \
+                "${log}" && bad_log=1
+              if [[ "${code}" -ne 0 || "${errors}" -ne 0 || "${bad_log}" -ne 0 || \
+                    ! -s "${OUTDIR}/${module}.olean" || ! -s "${OUTDIR}/${module}.ilean" ]]; then
+                overall=1
+                failed_module="${module}"
+                failed_pass="${pass}"
+                {
+                  echo "FAILED: ${module} pass ${pass}"
+                  echo "exit_code=${code}"
+                  echo "error_count=${errors}"
+                  grep -n 'error:' "${log}" | head -40 || true
+                  grep -n 'error:' "${log}" | tail -1 || true
+                  tail -300 "${log}" || true
+                } | tee "${LOGDIR}/failure.txt"
+                break 2
+              fi
+              echo "PASS: ${module} pass ${pass}"
+            done
+          done
+          {
+            echo "head=$(git rev-parse HEAD)"
+            echo "utc=$(date -u +%FT%TZ)"
+            echo "runtime_repair_scripts=0"
+            echo "overall_exit=${overall}"
+            echo "failed_module=${failed_module}"
+            echo "failed_pass=${failed_pass}"
+            cat "${LOGDIR}/summary.csv"
+          } > "${RESULT}"
+          echo "overall=${overall}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Commit machine-readable direct result
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${RESULT}"
+          if git diff --cached --quiet; then
+            echo 'Result file is unchanged.'
+          else
+            git commit -m 'ci: record priority direct-source result'
+            for attempt in 1 2 3; do
+              remote="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+              parent="$(git rev-parse HEAD^)"
+              if [[ "${remote}" = "${parent}" ]]; then
+                git push origin "HEAD:${BRANCH}"
+                break
+              fi
+              git fetch --depth=20 origin "refs/heads/${BRANCH}"
+              git rebase FETCH_HEAD
+              if [[ "${attempt}" -eq 3 ]]; then
+                git push origin "HEAD:${BRANCH}"
+              fi
+            done
+          fi
+
+      - name: Enforce direct-source success
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.compile.outputs.overall }}" = '0'
