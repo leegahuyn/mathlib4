@@ -18,7 +18,7 @@ def repl(old: str, new: str, label: str, expected: int = 1) -> None:
 repl("EVIDENCE='/tmp/diagnose-pass328-fa'", "EVIDENCE='/tmp/diagnose-pass333-fa'", 'evidence dir')
 repl(
     "EXPECTED_SHA256='f39bad641a544d23c59871b91d3e3eb677cf8fca25e0bf49c10d28d48503b576'",
-    "EXPECTED_SHA256='25e3933619507b63d90858a6c8efd0b705bf9defbad1d502da6aec598e3245c3'",
+    "EXPECTED_SHA256='8c0b0797155d3ae4f8f05b2d38d36552a629c900b8e990aba1ff44b666b72e45'",
     'expected hash',
 )
 repl(
