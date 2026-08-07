@@ -1,1 +1,0 @@
-Trigger marker for the latest-head completion supervisor. Removed by green-only cleanup.
