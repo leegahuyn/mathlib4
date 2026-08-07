@@ -24,7 +24,7 @@ repl(
     'pass343 chain',
 )
 repl('Mock2_FunctionalAnalysis-pass342.lean', 'Mock2_FunctionalAnalysis-pass343.lean', 'source name')
-repl('Mock2_FunctionalAnalysis-pass342.log', 'Mock2_FunctionalAnalysis-pass343.log', 'log name', expected=6)
+repl('Mock2_FunctionalAnalysis-pass342.log', 'Mock2_FunctionalAnalysis-pass343.log', 'log name')
 Path('/tmp/diagnose_pass343_fa.generated.sh').write_text(source, encoding='utf-8')
 PY
 bash -n /tmp/diagnose_pass343_fa.generated.sh
