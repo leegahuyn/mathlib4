@@ -31,10 +31,45 @@ def main() -> int:
 
     text = replace_required(
         text,
-        "  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)",
-        "  exact Module.addCommMonoidToAddCommGroup ℂ",
-        "FunctionalAnalysis derive stable-core additive groups from complex modules",
-        expected=2,
+        """noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseGraphCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)""",
+        """noncomputable local instance fixedPhaseGraphCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ""",
+        "FunctionalAnalysis order graph-core module before additive group",
+    )
+    text = replace_required(
+        text,
+        """noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseDensityCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)""",
+        """noncomputable local instance fixedPhaseDensityCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ""",
+        "FunctionalAnalysis order density-core module before additive group",
     )
     text = replace_required(
         text,
@@ -77,7 +112,7 @@ def main() -> int:
     output_sha = digest(text)
     print(f"output_sha256={output_sha}")
     TARGET.write_text(text, encoding="utf-8")
-    print("[pass341] FunctionalAnalysis module, covariance, zero-norm, and commutator roots repaired")
+    print("[pass341] FunctionalAnalysis module-order, covariance, zero-norm, and commutator roots repaired")
     return 0
 
 
