@@ -12,6 +12,17 @@ on:
       - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
       - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
       - 'PrimalitySheafVerification/QYM.lean'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass327-pr9-first-three-continuation.yml'
+      - 'scripts/pass327_pr9_first_three.sh'
+      - 'scripts/fa316_driver.py'
+      - 'scripts/fa316_payload/**'
+      - 'scripts/apply_*_pass*_repairs.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
   workflow_dispatch:
 
 permissions:
@@ -19,7 +30,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: pass327-pr9-first-three
+  group: pass327-pr9-first-three-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -27,7 +38,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 720
     env:
-      SOURCE_SHA: ${{ github.sha }}
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       TARGET_BRANCH: ci/fa319-isolated-20260807
       EVIDENCE: /tmp/pass327-pr9-first-three
 
