@@ -1,41 +1,30 @@
-name: Isolate PR9 to complete ordered PASS 327 v5
+name: PR9 queue cleanup v5 (manual only)
 
+# Safety: this workflow is intentionally manual-only.  It does not rewrite or
+# delete any repository workflow files.  PR #9 source/history must remain intact
+# while FunctionalAnalysis / Integrated / QYM are repaired.
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/pass327-pr9-isolate-to-v5.yml'
+  workflow_dispatch:
 
 permissions:
   actions: write
-  contents: write
+  contents: read
 
 concurrency:
-  group: pass327-pr9-isolate-to-v5
+  group: pass327-pr9-safe-queue-cleanup-v5
   cancel-in-progress: false
 
 jobs:
-  isolate-and-start-v5:
+  cleanup-queued-runs:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout exact isolation head
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 8
-          persist-credentials: true
-
-      - name: Cancel prior PR9 runs, retain v5 only, and relaunch
+      - name: Cancel stale PR9 branch runs without changing source
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ci/fa319-isolated-20260807
         run: |
           set -euo pipefail
-          trigger_head="$(git rev-parse HEAD)"
-          remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
-          test "${remote_head}" = "${trigger_head}"
-
           gh api --paginate \
             "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${BRANCH}&per_page=100" \
             --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "pending") | .id' \
@@ -48,15 +37,4 @@ jobs:
                   >/dev/null 2>&1 || true
               done
 
-          keep='.github/workflows/pass327-full-ordered-pipeline-v5.yml'
-          test -s "${keep}"
-          cp "${keep}" /tmp/pass327-full-ordered-pipeline-v5.yml
-          find .github/workflows -maxdepth 1 -type f -delete
-          cp /tmp/pass327-full-ordered-pipeline-v5.yml "${keep}"
-          printf '\n# PR9 isolated v5 launch at %s.\n' "$(date -u +%FT%TZ)" >> "${keep}"
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'ci: run only the complete ordered PASS 327 v5 pipeline on PR9'
-          git push origin "HEAD:${BRANCH}"
+          echo 'Queue cleanup complete; no workflow/source files were modified.'
