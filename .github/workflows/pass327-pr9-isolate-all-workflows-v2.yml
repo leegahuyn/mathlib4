@@ -60,3 +60,5 @@ jobs:
           git add -A
           git commit -m 'ci: isolate PR9 to one exact PASS 327 repair workflow'
           git push origin "HEAD:${BRANCH}"
+
+# Manual relaunch requested by the active repair session on 2026-08-08 KST.
