@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   verify-pass320-derived-fa-and-qym:
-    runs-on: macos-15
+    runs-on: macos-14
     timeout-minutes: 360
     env:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
