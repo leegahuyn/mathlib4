@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/pass327-pr9-first-three-continuation.yml'
       - 'scripts/pass327_pr9_first_three.sh'
+      - 'scripts/pass327_pr9_first_three_v2.sh'
       - 'scripts/fa316_driver.py'
       - 'scripts/fa316_payload/**'
       - 'scripts/apply_*_pass*_repairs.py'
@@ -61,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/pass327_pr9_first_three.sh
+          bash scripts/pass327_pr9_first_three_v2.sh
 
       - name: Upload PASS 327 continuation evidence
         if: always()
