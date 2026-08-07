@@ -1,0 +1,67 @@
+name: FunctionalAnalysis pass320 and QYM isolated v2
+
+on:
+  push:
+    branches: [ci/fa320-isolated-v2-20260807]
+    paths:
+      - '.github/workflows/fa320-qym-isolated-v2.yml'
+      - 'scripts/ci_fa320_qym_isolated_v2.sh'
+      - 'scripts/apply_three_hundred_twentieth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa320-qym-isolated-v2
+  cancel-in-progress: true
+
+jobs:
+  verify-materialize-qym:
+    runs-on: macos-15
+    timeout-minutes: 360
+    env:
+      SOURCE_BRANCH: ci/fa320-isolated-v2-20260807
+
+    steps:
+      - name: Checkout exact isolated head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Install GNU coreutils, exact Lean toolchain, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list coreutils >/dev/null 2>&1 || brew install coreutils
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${PATH}"
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "${GITHUB_PATH}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Verify pass320, materialize FunctionalAnalysis, then compile Integrated and QYM
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
+          bash scripts/ci_fa320_qym_isolated_v2.sh
+
+      - name: Upload pass320 and QYM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa320-qym-isolated-v2-${{ github.sha }}
+          path: /tmp/fa320-qym-isolated-v2
+          if-no-files-found: warn
+          retention-days: 30
