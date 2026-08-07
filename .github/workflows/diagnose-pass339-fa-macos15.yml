@@ -1,0 +1,65 @@
+name: Diagnose PASS 339 FunctionalAnalysis macOS 15
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/diagnose-pass339-fa-macos15.yml'
+      - 'scripts/diagnose_pass339_fa.sh'
+      - 'scripts/apply_three_hundred_thirty_ninth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: diagnose-pass339-fa-macos15-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - name: Checkout exact PR9 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 160
+          persist-credentials: false
+
+      - name: Install coreutils, pinned Lean, and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew list coreutils >/dev/null 2>&1 || brew install coreutils
+          echo "$(brew --prefix coreutils)/libexec/gnubin" >> "${GITHUB_PATH}"
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${PATH}"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass339-fa/logs
+          lean --version | tee /tmp/diagnose-pass339-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass339-fa/lake-version.txt
+          sha256sum --version | head -1 | tee /tmp/diagnose-pass339-fa/sha256sum-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass339-fa/logs/cache-get.log
+
+      - name: Reconstruct and compile PASS 339 FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass339_fa.sh
+
+      - name: Upload PASS 339 diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: diagnose-pass339-fa-macos15-${{ github.sha }}
+          path: /tmp/diagnose-pass339-fa
+          if-no-files-found: error
+          retention-days: 90
