@@ -1,12 +1,8 @@
-name: Diagnose PASS 341 FunctionalAnalysis
+name: Diagnose PASS 341 FunctionalAnalysis full
 
+# Full 1000-error compile retained for manual confirmation. Iterative repair
+# commits use the smaller frontier workflow until the first-error chain is clean.
 on:
-  pull_request:
-    branches: [fix/primality-sheaf-clean-build]
-    paths:
-      - '.github/workflows/diagnose-pass341-fa.yml'
-      - 'scripts/diagnose_pass341_fa.sh'
-      - 'scripts/fa341_repair.py'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +10,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass341-fa-${{ github.event.pull_request.head.sha || github.sha }}
+  group: diagnose-pass341-fa-full
   cancel-in-progress: true
 
 jobs:
@@ -22,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
-      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_SHA: ${{ github.sha }}
     steps:
       - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
