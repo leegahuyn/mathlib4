@@ -25,48 +25,75 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 def main() -> int:
     text = TARGET.read_text(encoding="utf-8")
-    text = replace_once(
-        text,
-        "      KernelEvidence (@p07_typedCurvature_correctedAndProved)\n",
-        "      KernelEvidence (@p07_typedCurvature_correctedAndProved.{0, 0, 0, 0})\n",
-        "Mock2 Advanced P0 typed-curvature evidence universes",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved)\n",
-        "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved.{0, 0})\n",
-        "Mock2 Advanced Section7 uniform-majorant evidence universes",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved)\n",
-        "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved.{0})\n",
-        "Mock2 Advanced P0 automorphic-series evidence universe",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible)\n",
-        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible.{0, 0})\n",
-        "Mock2 Advanced Section7 trivialization-compatible evidence universes",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved)\n",
-        "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved.{0, 0})\n",
-        "Mock2 Advanced P0 compact-embedding evidence universes",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization)\n",
-        "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization.{0, 0})\n",
-        "Mock2 Advanced Section7 transport evidence universes",
-    )
-    text = replace_once(
-        text,
-        "      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved)\n",
-        "      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved.{0, 0})\n",
-        "Mock2 Advanced P0 chosen-connection evidence universes",
-    )
+    replacements = [
+        (
+            "      KernelEvidence (@p07_typedCurvature_correctedAndProved)\n",
+            "      KernelEvidence (@p07_typedCurvature_correctedAndProved.{0, 0, 0, 0})\n",
+            "Mock2 Advanced P0 typed-curvature evidence universes",
+        ),
+        (
+            "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved)\n",
+            "      KernelEvidence\n        (@UnnumberedFormulaLedger.section7F_uniformMajorantConvergence_proved.{0, 0})\n",
+            "Mock2 Advanced Section7 uniform-majorant evidence universes",
+        ),
+        (
+            "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved)\n",
+            "      KernelEvidence (@p07_automorphicSeriesLimit_correctedAndProved.{0})\n",
+            "Mock2 Advanced P0 automorphic-series evidence universe",
+        ),
+        (
+            "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible)\n",
+            "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.connectionOfTrivialization_compatible.{0, 0})\n",
+            "Mock2 Advanced Section7 trivialization-compatible evidence universes",
+        ),
+        (
+            "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved)\n",
+            "      KernelEvidence (@p07_compactEmbeddingReplacement_correctedAndProved.{0, 0})\n",
+            "Mock2 Advanced P0 compact-embedding evidence universes",
+        ),
+        (
+            "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization)\n",
+            "      KernelEvidence\n        (@CorrectedLemmas.CorrectedPropositions.FlatQTransport.QLocalSystem.transport_unique_of_trivialization.{0, 0})\n",
+            "Mock2 Advanced Section7 transport evidence universes",
+        ),
+        (
+            "      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved)\n",
+            "      KernelEvidence (@p08_chosenConnectionCompatible_correctedAndProved.{0, 0})\n",
+            "Mock2 Advanced P0 chosen-connection evidence universes",
+        ),
+        (
+            "      KernelEvidence\n        (@UnnumberedFormulaLedger.equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved)\n",
+            "      KernelEvidence\n        (@UnnumberedFormulaLedger.equations6_1_to_6_18_variableGaugeCovariance_correctedAndProved.{0, 0})\n",
+            "Mock2 Advanced Section7 variable-gauge evidence universes",
+        ),
+        (
+            "      KernelEvidence (@balancedPresheafSection_existsUnique_gluing)\n",
+            "      KernelEvidence (@balancedPresheafSection_existsUnique_gluing.{0, 0, 0})\n",
+            "Mock2 Advanced Section7 balanced-gluing evidence universes",
+        ),
+        (
+            "      KernelEvidence (@curvature_add_expansion)\n",
+            "      KernelEvidence (@curvature_add_expansion.{0, 0})\n",
+            "Mock2 Advanced P0 curvature-add evidence universes",
+        ),
+        (
+            "      KernelEvidence (@curvature_zero)\n",
+            "      KernelEvidence (@curvature_zero.{0, 0})\n",
+            "Mock2 Advanced P0 curvature-zero evidence universes",
+        ),
+        (
+            "      KernelEvidence (@p09_tensorRestriction_correctedAndProved)\n",
+            "      KernelEvidence (@p09_tensorRestriction_correctedAndProved.{0, 0, 0})\n",
+            "Mock2 Advanced P0 tensor-restriction evidence universes",
+        ),
+        (
+            "      KernelEvidence (@p09_equalizer_correctedAndProved)\n",
+            "      KernelEvidence (@p09_equalizer_correctedAndProved.{0, 0, 0})\n",
+            "Mock2 Advanced P0 equalizer evidence universes",
+        ),
+    ]
+    for old, new, label in replacements:
+        text = replace_once(text, old, new, label)
     TARGET.write_text(text, encoding="utf-8")
     print("[pass314] Mock2_Advanced remaining evidence universes repaired")
     return 0
