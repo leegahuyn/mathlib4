@@ -1,0 +1,82 @@
+name: PrimalitySheaf completion supervisor v3
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - 'scripts/orchestrate_primality_completion.sh'
+      - '.github/workflows/primality-completion-supervisor-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: primality-completion-supervisor-v3
+  cancel-in-progress: true
+
+jobs:
+  complete-latest-head:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 720
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      SOURCE_SHA: ${{ github.sha }}
+      PR_NUMBER: '7'
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Clone exact branch head
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${SOURCE_SHA}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+
+      - name: Install exact Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Complete the first unfinished stage from the exact latest head
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/orchestrate_primality_completion.sh
+
+      - name: Upload supervisor evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: primality-completion-supervisor-v3-${{ env.SOURCE_SHA }}
+          path: |
+            /tmp/primality-completion-orchestrator
+            /tmp/adaptive-mock2-advanced-orchestrated
+            /tmp/materialize-mock2-functional-analysis
+            /tmp/primality-orchestrator-full-gate
+            /tmp/primality-finalizer-validation
+            /tmp/primality-finalizer
+          if-no-files-found: warn
+          retention-days: 30
