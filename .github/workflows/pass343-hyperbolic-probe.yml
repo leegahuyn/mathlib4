@@ -1,0 +1,102 @@
+name: PASS 343 hyperbolic-density probe
+
+on:
+  push:
+    branches: [probe/fa343-hyperbolic-20260808]
+    paths:
+      - '.github/workflows/pass343-hyperbolic-probe.yml'
+      - 'PrimalitySheafVerification/Pass343HyperbolicProbe.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pass343-hyperbolic-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact probe head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/pass343-hyperbolic-probe
+          lean --version | tee /tmp/pass343-hyperbolic-probe/lean-version.txt
+          lake --version | tee /tmp/pass343-hyperbolic-probe/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/pass343-hyperbolic-probe/cache-get.log
+
+      - name: Compile hyperbolic-density probe
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean PrimalitySheafVerification/Pass343HyperbolicProbe.lean \
+            > /tmp/pass343-hyperbolic-probe/compile.log 2>&1
+          rc=$?
+          set -e
+          errors="$(grep -c 'error:' /tmp/pass343-hyperbolic-probe/compile.log || true)"
+          warnings="$(grep -c 'warning:' /tmp/pass343-hyperbolic-probe/compile.log || true)"
+          printf '%s\n' \
+            "exit_code=${rc}" \
+            "error_header_count=${errors}" \
+            "warning_count=${warnings}" \
+            > /tmp/pass343-hyperbolic-probe/summary.txt
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Publish probe result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          report=build-logs/pass343-hyperbolic-probe-latest.txt
+          {
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "tested_sha=${GITHUB_SHA}"
+            cat /tmp/pass343-hyperbolic-probe/summary.txt
+            echo '--- diagnostics ---'
+            cat /tmp/pass343-hyperbolic-probe/compile.log
+          } > "${report}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${report}"
+          git diff --cached --quiet || git commit -m 'ci: record PASS 343 hyperbolic probe result'
+          git push origin HEAD:probe/fa343-hyperbolic-20260808
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass343-hyperbolic-probe-${{ github.sha }}
+          path: /tmp/pass343-hyperbolic-probe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce probe result
+        if: always()
+        shell: bash
+        env:
+          COMPILE_EXIT_CODE: ${{ steps.compile.outputs.exit_code }}
+        run: |
+          test -n "${COMPILE_EXIT_CODE:-}"
+          exit "${COMPILE_EXIT_CODE}"
