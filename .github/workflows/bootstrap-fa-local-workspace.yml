@@ -1,0 +1,90 @@
+name: Bootstrap FA local Lean workspace
+
+on:
+  push:
+    branches: [bootstrap/fa-local-workspace-20260808]
+    paths:
+      - '.github/workflows/bootstrap-fa-local-workspace.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: bootstrap-fa-local-workspace
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact bootstrap head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 500
+          persist-credentials: false
+
+      - name: Install pinned Lean and full cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Materialize the exact PASS 350 source and object frontier
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass350_fa.sh
+          rc=$?
+          set -e
+          echo "PASS350 diagnostic exit=${rc}"
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test -s PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+
+      - name: Package relocatable Lean runtime and cached workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fa-bootstrap
+          du -sh "${HOME}/.elan" .lake . || true
+          tar --zstd -cf /tmp/fa-bootstrap/fa-local-elan.tar.zst \
+            -C "${HOME}" .elan
+          tar --zstd -cf /tmp/fa-bootstrap/fa-local-workspace.tar.zst \
+            --exclude='./.git' \
+            --exclude='./build-logs/candidates' \
+            .
+          sha256sum /tmp/fa-bootstrap/*.tar.zst | \
+            tee /tmp/fa-bootstrap/SHA256SUMS.txt
+          du -h /tmp/fa-bootstrap/*
+
+      - name: Upload cached mathlib workspace
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-${{ github.sha }}
+          path: /tmp/fa-bootstrap/fa-local-workspace.tar.zst
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Upload relocatable Lean runtime
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-elan-${{ github.sha }}
+          path: |
+            /tmp/fa-bootstrap/fa-local-elan.tar.zst
+            /tmp/fa-bootstrap/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
