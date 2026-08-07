@@ -21,7 +21,8 @@ EXPECTED_FA_PASS316_SHA256='ac23d9918a1daf9b534345ec4ef7eb382d081514c52bfb0dceda
 
 mkdir -p "${EVIDENCE}/logs" "${EVIDENCE}/source" "${EVIDENCE}/artifacts" "${OUTDIR}"
 SOURCE_SHA="$(git rev-parse HEAD)"
-test "${GITHUB_REF_NAME:-${BRANCH}}" = "${BRANCH}"
+SOURCE_BRANCH="${SOURCE_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}}"
+test "${SOURCE_BRANCH}" = "${BRANCH}"
 test "$(git hash-object "${MOCK2}")" = "${EXPECTED_MOCK2_BLOB}"
 test "$(git hash-object "${ADVANCED}")" = "${EXPECTED_ADVANCED_BLOB}"
 test "$(sha256sum "${ADVANCED}" | awk '{print $1}')" = "${EXPECTED_ADVANCED_SHA256}"
@@ -38,6 +39,7 @@ else
 fi
 printf '%s\n' \
   "source_sha=${SOURCE_SHA}" \
+  "source_branch=${SOURCE_BRANCH}" \
   "source_state=${source_state}" \
   "fa_start_blob=${fa_blob}" \
   "fa_start_sha256=${fa_sha}" \
