@@ -1,5 +1,6 @@
 name: PASS 327 PR9 first-three continuation
 
+# Current authority: PASS 327 controller run 31160331279.
 on:
   pull_request:
     branches: [fix/primality-sheaf-clean-build]
