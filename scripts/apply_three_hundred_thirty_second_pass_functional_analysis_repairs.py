@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
 EXPECTED_INPUT_SHA256 = "674037f3e75131b8b64d583fc2d8210f264ddc814324ee84ea276166ccaeddf5"
-EXPECTED_OUTPUT_SHA256 = "9377a1c2b13cae183c95e3006b8974e6e1e6772471cbe269a6bb8dd7f3b367c1"
+EXPECTED_OUTPUT_SHA256 = "b6bbe2d8a656573150b4dbaf8ecbe8f640b10e13cccd834dacc8b0404223e6bf"
 
 
 def digest(text: str) -> str:
@@ -33,43 +33,10 @@ def main() -> int:
             f"unexpected pass332 input sha256: {input_sha}; expected {EXPECTED_INPUT_SHA256}"
         )
 
+    # PASS331's direct compiler run no longer reports the earlier fixed-phase
+    # algebra-instance failure, so do not reintroduce local instances here.
+    # Keep PASS332 limited to four independently observed first-frontier errors.
     replacements = [
-        (
-            """namespace FixedPhaseGraphCompletion
-
-open HalfIntegralMultiplier HalfWeightDifferentialOperators
-  GammaTwoQuotientGeometry
-open WeightCorePetersson WeightCorePetersson.PeterssonCoreSpace
-open FixedPhasePeterssonCoordinates
-
-/-- The three concrete shifted Petersson coordinates on the canonical
-fixed-phase differential core. -/
-""",
-            """namespace FixedPhaseGraphCompletion
-
-open HalfIntegralMultiplier HalfWeightDifferentialOperators
-  GammaTwoQuotientGeometry
-open WeightCorePetersson WeightCorePetersson.PeterssonCoreSpace
-open FixedPhasePeterssonCoordinates
-
-/-- `InverseEtaFixedPhaseCore` is an opaque abbreviation of a `Submodule`
-subtype here, so expose the inherited algebra instances without asking typeclass
-search to solve the instance currently being defined. -/
-noncomputable local instance fixedPhaseCoreAddCommGroup (n : ℤ) :
-    AddCommGroup (InverseEtaFixedPhaseCore n) := by
-  change AddCommGroup ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
-
-noncomputable local instance fixedPhaseCoreModule (n : ℤ) :
-    Module ℂ (InverseEtaFixedPhaseCore n) := by
-  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
-  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
-
-/-- The three concrete shifted Petersson coordinates on the canonical
-fixed-phase differential core. -/
-""",
-            "FunctionalAnalysis explicit fixed-phase subtype algebra instances",
-        ),
         (
             """  simpa only [compactInverseEtaOrbitZeroSmoothQuotient,
     inverseEtaPaperOrbitFactor,
@@ -141,7 +108,7 @@ fixed-phase differential core. -/
             f"unexpected pass332 output sha256: {output_sha}; expected {EXPECTED_OUTPUT_SHA256}"
         )
     TARGET.write_text(text, encoding="utf-8")
-    print("[pass332] FunctionalAnalysis algebra-instance and first type frontier repaired")
+    print("[pass332] FunctionalAnalysis first observed type frontier repaired")
     return 0
 
 
