@@ -1,12 +1,13 @@
-name: GPT-5.6 focused PASS 337 FunctionalAnalysis
+name: GPT-5.6 focused PASS 339 FunctionalAnalysis
 
 on:
-  pull_request:
-    branches: [ci/fa319-isolated-20260807]
+  push:
+    branches: [fix/pr9-fa-gpt56-isolated-20260808]
     paths:
       - '.github/workflows/gpt56-focused-pass337-fa.yml'
-      - 'scripts/gpt56_diagnose_pass337_fa.sh'
-      - 'scripts/apply_three_hundred_thirty_seventh_pass_functional_analysis_repairs.py'
+      - 'scripts/gpt56_diagnose_pass339_fa.sh'
+      - 'scripts/apply_three_hundred_thirty_eighth_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_thirty_ninth_pass_functional_analysis_repairs.py'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +15,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: gpt56-focused-pass337-fa-${{ github.event.pull_request.number || github.run_id }}
+  group: gpt56-focused-pass339-fa
   cancel-in-progress: true
 
 jobs:
@@ -25,7 +26,7 @@ jobs:
       - name: Checkout exact isolated head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 160
           persist-credentials: false
 
@@ -47,18 +48,18 @@ jobs:
           sha256sum --version | head -1
           lake exe cache get
 
-      - name: Reconstruct and compile focused PASS 337 FA
+      - name: Reconstruct and compile focused PASS 339 FA
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
-          bash scripts/gpt56_diagnose_pass337_fa.sh
+          bash scripts/gpt56_diagnose_pass339_fa.sh
 
-      - name: Upload focused PASS 337 evidence
+      - name: Upload focused PASS 339 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: gpt56-focused-pass337-fa-${{ github.event.pull_request.head.sha || github.sha }}
-          path: /tmp/gpt56-focused-pass337-fa
+          name: gpt56-focused-pass339-fa-${{ github.sha }}
+          path: /tmp/gpt56-focused-pass339-fa
           if-no-files-found: error
           retention-days: 90
