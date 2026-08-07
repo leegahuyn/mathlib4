@@ -1,13 +1,6 @@
 name: Diagnose PASS 342 FunctionalAnalysis frontier v3
 
 on:
-  push:
-    branches: [ci/fa319-isolated-20260807]
-    paths:
-      - '.github/workflows/diagnose-pass342-frontier-v3.yml'
-      - 'scripts/diagnose_pass342_frontier_v3.sh'
-      - 'scripts/fa342_repair_v2.py'
-      - 'scripts/fa342_repair.py'
   pull_request:
     branches: [fix/primality-sheaf-clean-build]
     paths:
@@ -22,7 +15,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: diagnose-pass342-frontier-v3-${{ github.event.pull_request.head.sha || github.sha }}
+  group: diagnose-pass342-frontier-v3-pr-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
