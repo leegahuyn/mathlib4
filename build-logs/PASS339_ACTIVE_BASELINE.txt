@@ -1,0 +1,3 @@
+PASS 339 is the active repair baseline.
+Required order: Mock2_FunctionalAnalysis twice, Mock2_FunctionalAnalysis_Integrated and any Mock3 module twice, then QYM twice.
+No later phase may start before this gate succeeds.
