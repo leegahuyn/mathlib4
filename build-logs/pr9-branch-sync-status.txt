@@ -1,10 +1,10 @@
-utc=2026-08-07T12:11:52Z
+utc=2026-08-07T12:20:36Z
 head_branch=ci/fa319-isolated-20260807
 base_branch=fix/primality-sheaf-clean-build
-before_head=3c9bcd408dbae97c34713f258eb7018ee99ee592
+before_head=39b66f0028e632b3ee4d8e2fd15ac4ee0bfc933f
 base_head=dc4094b8a6fe003f71c81b2db7609f3abcb4ff35
-before_left_right=0	17
+before_left_right=0	31
 sync_result=already-current
 conflict_count=0
-worktree_head=3c9bcd408dbae97c34713f258eb7018ee99ee592
+worktree_head=39b66f0028e632b3ee4d8e2fd15ac4ee0bfc933f
 unmerged_count=0
