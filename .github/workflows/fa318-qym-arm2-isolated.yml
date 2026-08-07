@@ -1,0 +1,73 @@
+name: Isolated ARM2 FunctionalAnalysis pass318 and QYM
+
+on:
+  push:
+    branches: [verify/fa318-qym-arm2-20260807]
+    paths:
+      - '.github/workflows/fa318-qym-arm2-isolated.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: isolated-fa318-qym-arm2
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout exact isolated head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Install exact Lean toolchain and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Reconstruct pass318 and compile FA, Integrated, and QYM without materialization
+        shell: bash
+        env:
+          SOURCE_BRANCH: fix/primality-sheaf-clean-build
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          cp scripts/ci_fa318_qym.sh /tmp/ci_fa318_qym_isolated.sh
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('/tmp/ci_fa318_qym_isolated.sh')
+          text = path.read_text(encoding='utf-8')
+          old = '''if [[ "${source_state}" = 'baseline' ]]; then
+            remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"'''
+          new = '''if false; then
+            remote_head="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one materialization block, found {text.count(old)}')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+          bash /tmp/ci_fa318_qym_isolated.sh
+
+      - name: Upload isolated pass318 and QYM evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolated-fa318-qym-arm2-${{ github.sha }}
+          path: /tmp/fa318-qym-x86
+          if-no-files-found: warn
+          retention-days: 30
