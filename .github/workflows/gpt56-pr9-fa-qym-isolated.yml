@@ -1,8 +1,8 @@
 name: GPT-5.6 isolated PASS 336 FA Integrated QYM gate
 
 on:
-  pull_request:
-    branches: [ci/fa319-isolated-20260807]
+  push:
+    branches: [fix/pr9-fa-gpt56-isolated-20260808]
     paths:
       - '.github/workflows/gpt56-pr9-fa-qym-isolated.yml'
       - 'scripts/gpt56_isolated_pass336_gate.sh'
@@ -10,11 +10,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 concurrency:
-  group: gpt56-pr9-fa-qym-${{ github.event.pull_request.number || github.run_id }}
+  group: gpt56-pr9-fa-qym-isolated
   cancel-in-progress: true
 
 jobs:
@@ -25,9 +25,9 @@ jobs:
       - name: Checkout exact isolated head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 160
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Install coreutils, pinned Lean, and Mathlib cache
         shell: bash
@@ -48,17 +48,88 @@ jobs:
           lake exe cache get
 
       - name: Reconstruct PASS 336 and verify FA Integrated QYM
+        id: gate
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           export PATH="$(brew --prefix coreutils)/libexec/gnubin:${HOME}/.elan/bin:${PATH}"
           bash scripts/gpt56_isolated_pass336_gate.sh
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
 
       - name: Upload complete isolated evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: gpt56-pass336-fa-integrated-qym-${{ github.event.pull_request.head.sha || github.sha }}
+          name: gpt56-pass336-fa-integrated-qym-${{ github.sha }}
           path: /tmp/gpt56-pass336-gate
           if-no-files-found: error
           retention-days: 90
+
+      - name: Publish concise result to isolated branch
+        if: always()
+        shell: bash
+        env:
+          GATE_EXIT_CODE: ${{ steps.gate.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          report='build-logs/gpt56-pass336-latest.txt'
+          {
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "tested_sha=${GITHUB_SHA}"
+            echo "gate_exit_code=${GATE_EXIT_CODE:-missing}"
+            echo "utc=$(date -u +%FT%TZ)"
+            echo
+            if [[ -f /tmp/gpt56-pass336-gate/status.txt ]]; then
+              cat /tmp/gpt56-pass336-gate/status.txt
+            else
+              echo 'status file missing'
+            fi
+            echo
+            echo '--- compile summary ---'
+            if [[ -f /tmp/gpt56-pass336-gate/compile-summary.csv ]]; then
+              cat /tmp/gpt56-pass336-gate/compile-summary.csv
+            fi
+            echo
+            echo '--- candidate hash ---'
+            if [[ -f /tmp/gpt56-pass336-gate/candidate-sha256.txt ]]; then
+              cat /tmp/gpt56-pass336-gate/candidate-sha256.txt
+            fi
+            echo
+            echo '--- first failure context ---'
+            failure=''
+            for candidate in \
+              /tmp/gpt56-pass336-gate/FA-failure-context.txt \
+              /tmp/gpt56-pass336-gate/Integrated-failure-context.txt \
+              /tmp/gpt56-pass336-gate/QYM-failure-context.txt \
+              /tmp/gpt56-pass336-gate/Advanced-failure-context.txt \
+              /tmp/gpt56-pass336-gate/Mock2-failure-context.txt; do
+              if [[ -s "${candidate}" ]]; then
+                failure="${candidate}"
+                break
+              fi
+            done
+            if [[ -n "${failure}" ]]; then
+              head -260 "${failure}"
+            else
+              echo 'none'
+            fi
+          } > "${report}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${report}"
+          git diff --cached --quiet || git commit -m 'ci: record isolated PASS 336 gate result'
+          git push origin "HEAD:fix/pr9-fa-gpt56-isolated-20260808"
+
+      - name: Enforce gate result
+        if: always()
+        shell: bash
+        env:
+          GATE_EXIT_CODE: ${{ steps.gate.outputs.exit_code }}
+        run: |
+          test -n "${GATE_EXIT_CODE:-}"
+          exit "${GATE_EXIT_CODE}"
