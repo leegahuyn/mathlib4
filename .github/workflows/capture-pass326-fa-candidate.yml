@@ -1,0 +1,52 @@
+name: Capture PASS 326 FunctionalAnalysis candidate
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/capture-pass326-fa-candidate.yml'
+      - 'scripts/capture_pass326_fa_candidate.sh'
+      - 'scripts/apply_*_pass*_repairs.py'
+      - 'scripts/fa316_driver.py'
+      - 'scripts/fa316_payload/**'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/capture-pass326-fa-candidate.yml'
+      - 'scripts/capture_pass326_fa_candidate.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: capture-pass326-fa-candidate-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact PR9 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 64
+          persist-credentials: false
+
+      - name: Reconstruct exact PASS 326 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash scripts/capture_pass326_fa_candidate.sh
+
+      - name: Upload exact PASS 326 source
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass326-fa-candidate-${{ github.event.pull_request.head.sha || github.sha }}
+          path: /tmp/capture-pass326-fa-candidate
+          if-no-files-found: error
+          retention-days: 90
