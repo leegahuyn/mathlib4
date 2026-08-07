@@ -6,8 +6,10 @@ on:
     paths:
       - 'scripts/ci_fa319_qym.sh'
       - 'scripts/ci_fa321_qym.sh'
+      - 'scripts/apply_three_hundred_twentieth_pass_functional_analysis_repairs.py'
       - 'scripts/apply_three_hundred_twenty_first_pass_functional_analysis_repairs.py'
       - 'scripts/apply_three_hundred_twenty_second_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py'
       - '.github/workflows/fa321-pr9-pass320-gate.yml'
   workflow_dispatch:
 
@@ -16,7 +18,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa322-pr9-pass320-${{ github.event.pull_request.head.sha || github.sha }}
+  group: fa323-pr9-pass320
   cancel-in-progress: true
 
 jobs:
@@ -65,7 +67,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa322-pr9-pass320-${{ env.SOURCE_SHA }}
-          path: /tmp/fa322-qym
+          name: fa323-pr9-pass320-${{ env.SOURCE_SHA }}
+          path: /tmp/fa323-qym
           if-no-files-found: warn
           retention-days: 30
