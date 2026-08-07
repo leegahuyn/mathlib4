@@ -11,6 +11,16 @@ on:
       - 'scripts/fa316_payload/**'
       - 'scripts/ci_fa316_qym.sh'
       - '.github/workflows/fa316-qym-x86.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - 'scripts/fa316_driver.py'
+      - 'scripts/fa316_payload/**'
+      - 'scripts/ci_fa316_qym.sh'
+      - '.github/workflows/fa316-qym-x86.yml'
   workflow_dispatch:
 
 permissions:
@@ -18,18 +28,21 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa316-qym-x86-${{ github.ref }}
+  group: fa316-qym-x86-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   verify-materialize-qym:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
+    env:
+      CHECKOUT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
     steps:
       - name: Checkout exact branch head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.CHECKOUT_SHA }}
           fetch-depth: 1
           persist-credentials: true
 
@@ -49,7 +62,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa316-qym-x86-${{ github.sha }}
+          name: fa316-qym-x86-${{ env.CHECKOUT_SHA }}
           path: /tmp/fa316-qym-x86
           if-no-files-found: warn
           retention-days: 30
