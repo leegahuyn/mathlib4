@@ -1,9 +1,12 @@
-name: PR9 queue cleanup v5 (manual only)
+name: PR9 queue cleanup v5
 
-# Safety: this workflow is intentionally manual-only.  It does not rewrite or
-# delete any repository workflow files.  PR #9 source/history must remain intact
-# while FunctionalAnalysis / Integrated / QYM are repaired.
+# One-shot non-destructive queue cleanup. It cancels stale PR9 branch runs but
+# never rewrites Lean source or other workflow files.
 on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass327-pr9-isolate-to-v5.yml'
   workflow_dispatch:
 
 permissions:
@@ -36,5 +39,4 @@ jobs:
                   "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
                   >/dev/null 2>&1 || true
               done
-
           echo 'Queue cleanup complete; no workflow/source files were modified.'
