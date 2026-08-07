@@ -35,8 +35,8 @@ source = replace_once(
 source = replace_once(
     source,
     'scripts, then apply every available FA pass through PASS324. PASS327 is the',
-    'scripts, then apply every available FA pass through PASS329. PASS327 is the',
-    'PASS 329 driver repair-chain comment',
+    'scripts, then apply every available FA pass through PASS330. PASS327 is the',
+    'PASS 330 driver repair-chain comment',
 )
 source = replace_once(
     source,
@@ -49,15 +49,16 @@ source = replace_once(
     apply_three_hundred_twenty_sixth_pass_functional_analysis_repairs.py \\
     apply_three_hundred_twenty_seventh_pass_functional_analysis_repairs.py \\
     apply_three_hundred_twenty_eighth_pass_functional_analysis_repairs.py \\
-    apply_three_hundred_twenty_ninth_pass_functional_analysis_repairs.py; do
+    apply_three_hundred_twenty_ninth_pass_functional_analysis_repairs.py \\
+    apply_three_hundred_thirtieth_pass_functional_analysis_repairs.py; do
 ''',
-    'PASS 325-329 repair-chain insertion',
+    'PASS 325-330 repair-chain insertion',
 )
 source = replace_once(
     source,
     "  fa_mode='pass324-repaired-and-split'\n",
-    "  fa_mode='pass329-repaired-and-split'\n",
-    'PASS 329 verified-mode label',
+    "  fa_mode='pass330-repaired-and-split'\n",
+    'PASS 330 verified-mode label',
 )
 
 out = Path('/tmp/pass327_pr9_first_three_v2.generated.sh')
