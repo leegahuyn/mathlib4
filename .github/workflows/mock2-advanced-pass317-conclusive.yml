@@ -1,0 +1,198 @@
+name: Mock2 Advanced pass 317 conclusive gate
+
+on:
+  push:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/mock2-advanced-pass317-conclusive.yml'
+      - 'scripts/apply_three_hundred_seventeenth_pass_mock2_advanced_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: mock2-advanced-pass317-conclusive
+  cancel-in-progress: true
+
+jobs:
+  verify-materialize-record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: fix/primality-sheaf-clean-build
+      TARGET: PrimalitySheafVerification/Mock2_Advanced.lean
+      MOCK2: PrimalitySheafVerification/Mock2.lean
+      OUTDIR: .lake/build/lib/lean/PrimalitySheafVerification
+      LOGDIR: /tmp/mock2-advanced-pass317-conclusive
+      RESULT: build-logs/mock2-advanced-pass317-result.txt
+
+    steps:
+      - name: Clone latest branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git checkout -B "${BRANCH}" FETCH_HEAD
+          mkdir -p "${OUTDIR}" "${LOGDIR}" "$(dirname "${RESULT}")"
+
+      - name: Install Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          "${HOME}/.elan/bin/lake" exe cache get
+
+      - name: Build pass 317 candidate and compile twice
+        id: verify
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          cp "${TARGET}" "${LOGDIR}/before.lean"
+          candidate_mode='checked-in'
+
+          compile() {
+            local module="$1" label="$2" log code errors
+            log="${LOGDIR}/${label}.log"
+            rm -f "${OUTDIR}/${module}.olean" "${OUTDIR}/${module}.ilean" "${OUTDIR}/${module}.olean.private"
+            lake env lean "PrimalitySheafVerification/${module}.lean" \
+              -o "${OUTDIR}/${module}.olean" -i "${OUTDIR}/${module}.ilean" \
+              >"${log}" 2>&1
+            code=$?
+            errors="$(grep -c 'error:' "${log}" || true)"
+            printf '%s,%s,%s\n' "${label}" "${code}" "${errors}" >> "${LOGDIR}/summary.csv"
+            [[ "${code}" -eq 0 && "${errors}" -eq 0 && -s "${OUTDIR}/${module}.olean" && -s "${OUTDIR}/${module}.ilean" ]]
+          }
+
+          echo 'stage,exit_code,error_count' > "${LOGDIR}/summary.csv"
+          if ! compile Mock2_Advanced checked-in-probe; then
+            candidate_mode='pass317'
+            git restore --source=HEAD --worktree -- "${TARGET}"
+            scripts=(
+              apply_two_hundred_eighty_ninth_pass_repairs.py
+              apply_two_hundred_ninetieth_pass_repairs.py
+              apply_two_hundred_ninety_first_pass_repairs.py
+              apply_two_hundred_ninety_second_pass_repairs.py
+              apply_two_hundred_ninety_third_pass_repairs.py
+              apply_two_hundred_ninety_fourth_pass_repairs.py
+              apply_two_hundred_ninety_fifth_pass_repairs.py
+              apply_two_hundred_ninety_seventh_pass_repairs.py
+              apply_two_hundred_ninety_eighth_pass_repairs.py
+              apply_two_hundred_ninety_ninth_pass_repairs.py
+              apply_three_hundredth_pass_repairs.py
+              apply_three_hundred_ninth_pass_repairs.py
+              apply_three_hundred_tenth_pass_repairs.py
+              apply_three_hundred_eleventh_pass_repairs.py
+              apply_three_hundred_twelfth_pass_repairs.py
+              apply_three_hundred_thirteenth_pass_mock2_advanced_repairs.py
+              apply_three_hundred_fourteenth_pass_mock2_advanced_repairs.py
+              apply_three_hundred_seventeenth_pass_mock2_advanced_repairs.py
+            )
+            for script in "${scripts[@]}"; do
+              python3 "scripts/${script}"
+            done >"${LOGDIR}/repair.log" 2>&1
+            while IFS= read -r changed; do
+              [[ -z "${changed}" || "${changed}" = "${TARGET}" ]] || git restore --source=HEAD --worktree -- "${changed}"
+            done < <(git diff --name-only)
+          fi
+
+          cp "${TARGET}" "${LOGDIR}/candidate.lean"
+          overall=0
+          compile Mock2 mock2-pass1 || overall=1
+          compile Mock2_Advanced advanced-pass1 || overall=1
+          if [[ "${overall}" -eq 0 ]]; then
+            compile Mock2 mock2-pass2 || overall=1
+            compile Mock2_Advanced advanced-pass2 || overall=1
+          fi
+          echo "overall=${overall}" >> "${GITHUB_OUTPUT}"
+          echo "candidate_mode=${candidate_mode}" >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "utc=$(date -u +%FT%TZ)"
+            echo "start_head=$(git rev-parse HEAD)"
+            echo "candidate_mode=${candidate_mode}"
+            echo "overall=${overall}"
+            echo "candidate_sha256=$(sha256sum "${TARGET}" | awk '{print $1}')"
+            cat "${LOGDIR}/summary.csv"
+            if [[ "${overall}" -ne 0 ]]; then
+              echo '--- first remaining errors ---'
+              for log in "${LOGDIR}"/advanced-pass1.log "${LOGDIR}"/advanced-pass2.log; do
+                [[ -f "${log}" ]] || continue
+                grep -n 'error:' "${log}" | head -80 || true
+                grep -n 'error:' "${log}" | tail -1 || true
+                tail -500 "${log}" || true
+              done
+            else
+              echo 'status=PASS'
+              echo 'runtime_repair_during_final_direct=0'
+            fi
+          } > /tmp/mock2-advanced-pass317-result.txt
+          exit 0
+
+      - name: Commit verified candidate source
+        if: steps.verify.outputs.overall == '0' && steps.verify.outputs.candidate_mode == 'pass317'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${TARGET}"
+          test "$(git diff --cached --name-only)" = "${TARGET}"
+          git commit -m 'fix: materialize Mock2 Advanced pass 317 candidate'
+          for attempt in 1 2 3; do
+            remote="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+            parent="$(git rev-parse HEAD^)"
+            if [[ "${remote}" = "${parent}" ]]; then
+              git push origin "HEAD:${BRANCH}"
+              break
+            fi
+            git fetch --depth=50 origin "refs/heads/${BRANCH}"
+            git rebase FETCH_HEAD
+            if [[ "${attempt}" -eq 3 ]]; then git push origin "HEAD:${BRANCH}"; fi
+          done
+
+      - name: Commit complete pass 317 result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --depth=50 origin "refs/heads/${BRANCH}"
+          git reset --hard FETCH_HEAD
+          mkdir -p "$(dirname "${RESULT}")"
+          cp /tmp/mock2-advanced-pass317-result.txt "${RESULT}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${RESULT}"
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record Mock2 Advanced pass 317 result'
+            for attempt in 1 2 3; do
+              remote="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+              parent="$(git rev-parse HEAD^)"
+              if [[ "${remote}" = "${parent}" ]]; then
+                git push origin "HEAD:${BRANCH}"
+                break
+              fi
+              git fetch --depth=50 origin "refs/heads/${BRANCH}"
+              git rebase FETCH_HEAD
+              if [[ "${attempt}" -eq 3 ]]; then git push origin "HEAD:${BRANCH}"; fi
+            done
+          fi
+
+      - name: Enforce PASS
+        shell: bash
+        run: |
+          set -euo pipefail
+          test '${{ steps.verify.outputs.overall }}' = '0'
