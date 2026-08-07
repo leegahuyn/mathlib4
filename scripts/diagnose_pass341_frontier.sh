@@ -41,7 +41,7 @@ repl(
   fa341_repair.py; do""",
     'pass341 chain',
 )
-repl('-DmaxErrors=1000', '-DmaxErrors=25', 'frontier maxErrors')
+repl('-DmaxErrors=2000', '-DmaxErrors=25', 'frontier maxErrors')
 repl('Mock2_FunctionalAnalysis-pass328.lean', 'Mock2_FunctionalAnalysis-pass341-frontier.lean', 'source name')
 repl('Mock2_FunctionalAnalysis-pass328.log', 'Mock2_FunctionalAnalysis-pass341-frontier.log', 'log name', expected=6)
 Path('/tmp/diagnose_pass341_frontier.generated.sh').write_text(source, encoding='utf-8')
