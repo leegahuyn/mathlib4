@@ -1,0 +1,105 @@
+name: Isolated PASS 339 prefix verification
+
+on:
+  push:
+    branches: [verify/fa338-ubuntu-20260808]
+    paths:
+      - '.github/workflows/verify-fa339-prefix-ubuntu.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  verify-prefix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact verification head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 180
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Reconstruct PASS 339 and compile early prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/reconstruct_pass339_fa.sh
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8')
+          marker = '/-! #### Compact Hermitian test transposes -/'
+          if marker not in src:
+              raise SystemExit('prefix marker not found')
+          prefix = src.split(marker, 1)[0]
+          Path('/tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean').write_text(prefix, encoding='utf-8')
+          print('prefix_lines=', len(prefix.splitlines()))
+          PY
+          mkdir -p /tmp/fa339-prefix
+          set +e
+          lake env lean -DmaxErrors=500 /tmp/Mock2_FunctionalAnalysis-pass339-prefix.lean \
+            > /tmp/fa339-prefix/compile.log 2>&1
+          code=$?
+          set -e
+          errors="$(grep -c 'error:' /tmp/fa339-prefix/compile.log || true)"
+          warnings="$(grep -c 'warning:' /tmp/fa339-prefix/compile.log || true)"
+          first="$(grep -m1 'error:' /tmp/fa339-prefix/compile.log || true)"
+          last="$(grep 'error:' /tmp/fa339-prefix/compile.log | tail -1 || true)"
+          printf '%s\n' \
+            "exit_code=${code}" \
+            "error_count=${errors}" \
+            "warning_count=${warnings}" \
+            "first_error=${first}" \
+            "last_error=${last}" \
+            > /tmp/fa339-prefix/summary.txt
+
+      - name: Persist compact prefix result
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          result='build-logs/isolated-fa339-prefix-latest.txt'
+          cat /tmp/fa339-prefix/summary.txt > "${result}"
+          echo '--- first diagnostics ---' >> "${result}"
+          grep -n 'error:' /tmp/fa339-prefix/compile.log | head -120 >> "${result}" || true
+          echo '--- log tail ---' >> "${result}"
+          tail -300 /tmp/fa339-prefix/compile.log >> "${result}" || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "${result}"
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record isolated PASS 339 prefix result'
+            git push origin HEAD:verify/fa338-ubuntu-20260808
+          fi
+
+      - name: Upload prefix evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: isolated-fa339-prefix-${{ github.sha }}
+          path: /tmp/fa339-prefix
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve prefix conclusion
+        if: always()
+        shell: bash
+        run: |
+          code="$(sed -n 's/^exit_code=//p' /tmp/fa339-prefix/summary.txt 2>/dev/null || echo 99)"
+          exit "${code}"
