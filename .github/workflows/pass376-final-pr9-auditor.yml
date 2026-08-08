@@ -1,0 +1,246 @@
+name: PASS 376 authoritative PR9 FA Mock3 QYM auditor
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-v2-20260809]
+    paths:
+      - '.github/workflows/pass376-final-pr9-auditor.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: pass376-v2-fa-mock3-qym-long-repair
+  cancel-in-progress: false
+
+jobs:
+  audit-and-promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout latest repair checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Require successful ordered repair state
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          test -s build-logs/pass376-v2-state.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          assert state['success'] is True
+          assert state['targets'][0].endswith('Mock2_FunctionalAnalysis.lean')
+          assert state['targets'][-1].endswith('QYM.lean')
+          for target in state['targets']:
+              item=state['final_validations'][target]
+              assert item['trust'] is True
+              assert item['verified_sha_matches'] is True
+          PY
+
+      - name: Save exact verified target bytes and hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/verified/PrimalitySheafVerification /tmp/verified/build-logs
+          python3 - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          dest=Path('/tmp/verified/PrimalitySheafVerification')
+          hashes=[]
+          for target in state['targets']:
+              src=Path(target)
+              assert src.is_file()
+              actual=hashlib.sha256(src.read_bytes()).hexdigest()
+              assert actual == state['final_validations'][target]['sha256']
+              shutil.copy2(src,dest/src.name)
+              hashes.append(f'{target} sha256={actual}')
+          Path('/tmp/verified/target-sha256.txt').write_text('\n'.join(hashes)+'\n')
+          PY
+          cp build-logs/pass376-v2-state.json \
+             build-logs/pass376-v2-baseline.json \
+             build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+             /tmp/verified/build-logs/
+
+      - name: Install exact bytes on latest PR9 head
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin ci/fa319-isolated-20260807
+          git checkout -B ci/fa319-isolated-20260807 origin/ci/fa319-isolated-20260807
+          cp /tmp/verified/PrimalitySheafVerification/* PrimalitySheafVerification/
+          mkdir -p build-logs
+          cp /tmp/verified/build-logs/* build-logs/
+          cp /tmp/verified/target-sha256.txt build-logs/pass376-target-sha256.txt
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/pass376-lean-version.txt
+          lake --version | tee /tmp/pass376-lake-version.txt
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+
+      - name: Audit forbidden executable tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          forbidden=re.compile(
+              r'\b(?:sorry|admit|native_decide)\b|Lean\.ofReduceBool|'
+              r'(?m)^\s*(?:unsafe\s+|axiom\s+)'
+          )
+          def strip(text):
+              out=[]; i=0; depth=0; line=False; string=False; esc=False
+              while i < len(text):
+                  c=text[i]; n=text[i+1] if i+1 < len(text) else ''
+                  if line:
+                      if c=='\n': line=False; out.append('\n')
+                      else: out.append(' ')
+                      i+=1; continue
+                  if depth:
+                      if c=='/' and n=='-': depth+=1; out.extend('  '); i+=2
+                      elif c=='-' and n=='/': depth-=1; out.extend('  '); i+=2
+                      else: out.append('\n' if c=='\n' else ' '); i+=1
+                      continue
+                  if string:
+                      out.append('\n' if c=='\n' else ' ')
+                      if esc: esc=False
+                      elif c=='\\': esc=True
+                      elif c=='"': string=False
+                      i+=1; continue
+                  if c=='-' and n=='-': line=True; out.extend('  '); i+=2
+                  elif c=='/' and n=='-': depth=1; out.extend('  '); i+=2
+                  elif c=='"': string=True; out.append(' '); i+=1
+                  else: out.append(c); i+=1
+              return ''.join(out)
+          for target in state['targets']:
+              match=forbidden.search(strip(Path(target).read_text()))
+              if match:
+                  raise SystemExit(f'{target}: forbidden token {match.group(0)!r}')
+          PY
+
+      - name: Compile every target twice in required order
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t targets < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          print('\n'.join(state['targets']))
+          PY
+          )
+          out='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p /tmp/pass376-pr9-final-audit
+          : > /tmp/pass376-pr9-final-audit/results.tsv
+          for target in "${targets[@]}"; do
+            stem="$(basename "${target}" .lean)"
+            for run in 1 2; do
+              rm -f "${out}/${stem}.olean" "${out}/${stem}.ilean" \
+                    "${out}/${stem}.olean.hash" "${out}/${stem}.ilean.hash"
+              start="$(date +%s)"
+              set +e
+              lake env lean -DmaxErrors=2000 "${target}" \
+                > "/tmp/pass376-pr9-final-audit/${stem}-run${run}.log" 2>&1
+              rc=$?
+              set -e
+              elapsed=$(( $(date +%s) - start ))
+              errors="$(grep -c 'error:' "/tmp/pass376-pr9-final-audit/${stem}-run${run}.log" || true)"
+              printf '%s\t%s\t%s\t%s\t%s\n' \
+                "${target}" "${run}" "${rc}" "${errors}" "${elapsed}" \
+                | tee -a /tmp/pass376-pr9-final-audit/results.tsv
+              test "${rc}" -eq 0
+              test "${errors}" -eq 0
+              test -s "${out}/${stem}.olean"
+              test -s "${out}/${stem}.ilean"
+            done
+          done
+
+      - name: Commit audited target set to PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/pass376-pr9-final-audit/results.tsv \
+             build-logs/pass376-pr9-final-results.tsv
+          cp /tmp/pass376-lean-version.txt build-logs/pass376-lean-version.txt
+          cp /tmp/pass376-lake-version.txt build-logs/pass376-lake-version.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean \
+                  build-logs/pass376-v2-state.json \
+                  build-logs/pass376-v2-baseline.json \
+                  build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+                  build-logs/pass376-target-sha256.txt \
+                  build-logs/pass376-pr9-final-results.tsv \
+                  build-logs/pass376-lean-version.txt \
+                  build-logs/pass376-lake-version.txt
+          while IFS= read -r -d '' file; do git add "${file}"; done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0
+          )
+          if test -f PrimalitySheafVerification/QYM.lean; then
+            git add PrimalitySheafVerification/QYM.lean
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: pass FA Integrated Mock3 QYM twice on PR9'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+
+      - name: Comment authoritative evidence on PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          {
+            echo '## PASS 376 authoritative FA / Integrated / Mock3 / QYM result'
+            echo
+            echo "Verified PR #9 head: \`${head_sha}\`"
+            echo
+            echo 'Each required target compiled twice from its checked-in source with exit code 0, zero Lean errors, and regenerated `.olean` / `.ilean` files, in the required order.'
+            echo
+            echo '```text'
+            cat build-logs/pass376-pr9-final-results.tsv
+            echo '```'
+            echo
+            echo 'Forbidden executable-token audit: PASS.'
+            echo 'PR remains draft and unmerged; no automatic merge was performed.'
+          } > /tmp/pass376-pr-comment.md
+          gh pr comment 9 --repo leegahuyn/mathlib4 --body-file /tmp/pass376-pr-comment.md
+
+      - name: Upload authoritative audit evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-authoritative-pr9-audit-${{ github.sha }}
+          path: |
+            /tmp/pass376-pr9-final-audit
+            /tmp/pass376-pr-comment.md
+            build-logs/pass376-v2-state.json
+            build-logs/pass376-target-sha256.txt
+            build-logs/pass376-pr9-final-results.tsv
+            build-logs/pass376-lean-version.txt
+            build-logs/pass376-lake-version.txt
+          if-no-files-found: error
+          retention-days: 90
