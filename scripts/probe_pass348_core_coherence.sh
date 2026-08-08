@@ -2,9 +2,10 @@
 set -euo pipefail
 
 OUT='/tmp/probe-pass348-core-coherence'
+WORK='build-logs/_pass348-core-coherence'
 FA='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
 OLEAN='.lake/build/lib/lean/PrimalitySheafVerification'
-mkdir -p "${OUT}/logs" "${OUT}/source" "${OLEAN}"
+mkdir -p "${OUT}/logs" "${OUT}/source" "${WORK}" "${OLEAN}"
 
 # Reconstruct the authoritative PASS 347 candidate. Its expected compile failure
 # is irrelevant here; the resulting source remains available for the probes.
@@ -21,7 +22,8 @@ python3 - <<'PY'
 from pathlib import Path
 
 source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8')
-out = Path('/tmp/probe-pass348-core-coherence/source')
+out = Path('build-logs/_pass348-core-coherence')
+out.mkdir(parents=True, exist_ok=True)
 
 old_coordinates = '''/-- The three concrete shifted Petersson coordinates on the canonical
 fixed-phase differential core. -/
@@ -124,17 +126,18 @@ PY
 printf 'probe,exit_code,error_count,first_error\n' > "${OUT}/summary.csv"
 for probe in parent-priority minimal-priority; do
   log="${OUT}/logs/${probe}.log"
-  rm -f "${OLEAN}/Mock2_FunctionalAnalysis.olean" \
+  cp "${WORK}/${probe}.lean" "${OUT}/source/${probe}.lean"
+  rm -f "${OUTDIR:-${OLEAN}}/Mock2_FunctionalAnalysis.olean" \
     "${OLEAN}/Mock2_FunctionalAnalysis.ilean" \
     "${OLEAN}/Mock2_FunctionalAnalysis.olean.private"
   set +e
-  lake env lean -DmaxErrors=1 "${OUT}/source/${probe}.lean" \
+  lake env lean -DmaxErrors=1 "${WORK}/${probe}.lean" \
     -o "${OLEAN}/Mock2_FunctionalAnalysis.olean" \
     -i "${OLEAN}/Mock2_FunctionalAnalysis.ilean" \
     > "${log}" 2>&1
   rc=$?
   set -e
-  errors="$(grep -c 'error:' "${log}" || true)"
+  errors="$(grep -cE 'error(:|\()' "${log}" || true)"
   first="$(grep -m1 -E ':[0-9]+:[0-9]+: error' "${log}" | tr ',' ';' || true)"
   printf '%s,%s,%s,%s\n' "${probe}" "${rc}" "${errors}" "${first}" \
     >> "${OUT}/summary.csv"
