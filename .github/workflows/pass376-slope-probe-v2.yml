@@ -66,3 +66,5 @@ jobs:
         run: |
           test -n "${PROBE_EXIT_CODE:-}"
           exit "${PROBE_EXIT_CODE}"
+
+# retrigger after slope normalization 2026-08-09
