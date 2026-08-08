@@ -1,0 +1,326 @@
+name: PASS 377 constrained FA Mock3 QYM repair loop
+
+on:
+  push:
+    branches: [fix/fa377-llm-loop-20260809]
+    paths:
+      - '.github/workflows/fa377-constrained-repair-loop.yml'
+      - 'scripts/lean_repair_loop_v377.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa377-constrained-repair-loop
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      MODEL_CANDIDATES: openai/gpt-5,openai/gpt-4.1,openai/gpt-4o
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout exact repair-loop head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 900
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Ensure a line-addressable PASS 376 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          fa='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          current_size=$(wc -c < "${fa}")
+          current_sha=$(sha256sum "${fa}" | cut -d' ' -f1)
+          echo "current_size=${current_size} current_sha=${current_sha}"
+          if [[ "${current_sha}" == '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4' ]] || \
+             [[ "${current_size}" -gt 500000 ]]; then
+            echo 'Using the checked-in full FunctionalAnalysis source.'
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          open_marker = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          '''
+          close_marker = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          if text.count(open_marker) != 1 or text.count(close_marker) != 1:
+              raise SystemExit('could not locate the PASS 341 direct compile command exactly')
+          text = text.replace(open_marker, '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''')
+          text = text.replace(close_marker, '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''')
+          path.write_text(text, encoding='utf-8')
+          PY
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass358_fa.sh
+          source_file='/tmp/diagnose-pass358-fa/source/Mock2_FunctionalAnalysis-pass358.lean'
+          test -s "${source_file}"
+          cp "${source_file}" "${fa}"
+          python3 scripts/apply_pass375c_candidate.py
+          python3 scripts/apply_three_hundred_seventy_sixth_pass_functional_analysis_repairs.py
+          test "$(sha256sum "${fa}" | cut -d' ' -f1)" = \
+            '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+
+      - name: Repair Mock2 FunctionalAnalysis first
+        id: fa_repair
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/lean_repair_loop_v377.py \
+            --target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --iterations 8 --attempts-per-iteration 3
+          rc=$?
+          set -e
+          echo "agent_exit=${rc}" >> "${GITHUB_OUTPUT}"
+          test -f /tmp/lean-repair-v377/Mock2_FunctionalAnalysis/status.json
+          cat /tmp/lean-repair-v377/Mock2_FunctionalAnalysis/status.json
+
+      - name: Verify FA twice from deleted project artifacts
+        id: fa_twice
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          target='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          artifact_base='.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis'
+          mkdir -p /tmp/fa377-verification
+          final_rc=0
+          for run in 1 2; do
+            rm -f "${artifact_base}.olean" "${artifact_base}.ilean"
+            lake env lean -DmaxErrors=300 "${target}" \
+              > "/tmp/fa377-verification/Mock2_FunctionalAnalysis-run${run}.log" 2>&1
+            rc=$?
+            echo "run=${run} exit=${rc}" | tee -a /tmp/fa377-verification/fa-status.txt
+            if [[ ${rc} -ne 0 ]]; then final_rc=${rc}; break; fi
+            test -s "${artifact_base}.olean" || final_rc=91
+            test -s "${artifact_base}.ilean" || final_rc=92
+            if [[ ${final_rc} -ne 0 ]]; then break; fi
+          done
+          set -e
+          echo "exit_code=${final_rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Repair and verify Integrated, actual Mock3 bridges, and QYM in order
+        id: downstream
+        if: steps.fa_twice.outputs.exit_code == '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p /tmp/fa377-verification/downstream
+          targets=('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean')
+          while IFS= read -r file; do targets+=("${file}"); done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' \
+              ! -name '*backup*' ! -name '*candidate*' ! -name '*probe*' | sort
+          )
+          targets+=('PrimalitySheafVerification/QYM.lean')
+          overall=0
+          for target in "${targets[@]}"; do
+            [[ -f "${target}" ]] || { echo "missing target ${target}"; overall=70; break; }
+            stem=$(basename "${target}" .lean)
+            artifact_base=".lake/build/lib/lean/PrimalitySheafVerification/${stem}"
+            verify_target() {
+              local ok=0
+              for run in 1 2; do
+                rm -f "${artifact_base}.olean" "${artifact_base}.ilean"
+                lake env lean -DmaxErrors=300 "${target}" \
+                  > "/tmp/fa377-verification/downstream/${stem}-run${run}.log" 2>&1
+                local rc=$?
+                echo "target=${target} run=${run} exit=${rc}" \
+                  | tee -a /tmp/fa377-verification/downstream/status.txt
+                if [[ ${rc} -ne 0 ]]; then ok=${rc}; break; fi
+                test -s "${artifact_base}.olean" || { ok=91; break; }
+                test -s "${artifact_base}.ilean" || { ok=92; break; }
+              done
+              return ${ok}
+            }
+            verify_target
+            rc=$?
+            if [[ ${rc} -ne 0 ]]; then
+              python3 scripts/lean_repair_loop_v377.py \
+                --target "${target}" --iterations 6 --attempts-per-iteration 3
+              agent_rc=$?
+              echo "target=${target} repair_agent_exit=${agent_rc}" \
+                | tee -a /tmp/fa377-verification/downstream/status.txt
+              verify_target
+              rc=$?
+            fi
+            if [[ ${rc} -ne 0 ]]; then overall=${rc}; break; fi
+          done
+          set -e
+          echo "exit_code=${overall}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Audit forbidden proof escapes in all priority sources
+        id: trust
+        shell: bash
+        run: |
+          set +e
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files = [
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'),
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),
+          ]
+          files += sorted(Path('PrimalitySheafVerification').glob('Mock3*.lean'))
+          files += [Path('PrimalitySheafVerification/QYM.lean')]
+          forbidden = [
+              r'\bsorry\b', r'\badmit\b', r'^\s*axiom\b', r'\bunsafe\b',
+              r'\bnative_decide\b', r'\bLean\.ofReduceBool\b'
+          ]
+          bad = []
+          for path in files:
+              if not path.exists():
+                  bad.append(f'missing:{path}')
+                  continue
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(r'/\*.*?\*/', '', text, flags=re.S)
+              text = re.sub(r'--[^\n]*', '', text)
+              text = re.sub(r'"(?:\\.|[^"\\])*"', '""', text)
+              for pat in forbidden:
+                  if re.search(pat, text, flags=re.M):
+                      bad.append(f'{path}:{pat}')
+          if bad:
+              print('\n'.join(bad))
+              raise SystemExit(1)
+          PY
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Write authoritative run status
+        if: always()
+        shell: bash
+        env:
+          FA_EXIT: ${{ steps.fa_twice.outputs.exit_code }}
+          DOWNSTREAM_EXIT: ${{ steps.downstream.outputs.exit_code }}
+          TRUST_EXIT: ${{ steps.trust.outputs.exit_code }}
+          AGENT_EXIT: ${{ steps.fa_repair.outputs.agent_exit }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          files = [
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'),
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),
+          ]
+          files += sorted(Path('PrimalitySheafVerification').glob('Mock3*.lean'))
+          files += [Path('PrimalitySheafVerification/QYM.lean')]
+          payload = {
+              'workflow_run_id': os.environ.get('GITHUB_RUN_ID'),
+              'head_sha': os.environ.get('GITHUB_SHA'),
+              'fa_agent_exit': os.environ.get('AGENT_EXIT', ''),
+              'fa_twice_exit': os.environ.get('FA_EXIT', ''),
+              'downstream_twice_exit': os.environ.get('DOWNSTREAM_EXIT', ''),
+              'trust_exit': os.environ.get('TRUST_EXIT', ''),
+              'sources': {},
+          }
+          for path in files:
+              if path.exists():
+                  payload['sources'][str(path)] = hashlib.sha256(path.read_bytes()).hexdigest()
+          payload['all_required_2x_pass'] = (
+              payload['fa_twice_exit'] == '0'
+              and payload['downstream_twice_exit'] == '0'
+              and payload['trust_exit'] == '0'
+          )
+          out = Path('build-logs/FA_MOCK3_QYM_CURRENT_STATUS.json')
+          out.write_text(json.dumps(payload, indent=2), encoding='utf-8')
+          if payload['all_required_2x_pass']:
+              Path('build-logs/FA_MOCK3_QYM_2X_PASS.json').write_text(
+                  json.dumps(payload, indent=2), encoding='utf-8'
+              )
+          print(json.dumps(payload, indent=2))
+          PY
+
+      - name: Upload all repair and compiler evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa377-repair-loop-${{ github.sha }}
+          path: |
+            /tmp/lean-repair-v377
+            /tmp/fa377-verification
+            build-logs/FA_MOCK3_QYM_CURRENT_STATUS.json
+            build-logs/FA_MOCK3_QYM_2X_PASS.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Commit source progress and evidence without merging
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            'PrimalitySheafVerification/Mock3*.lean' \
+            PrimalitySheafVerification/QYM.lean \
+            build-logs/FA_MOCK3_QYM_CURRENT_STATUS.json
+          if [[ -f build-logs/FA_MOCK3_QYM_2X_PASS.json ]]; then
+            git add build-logs/FA_MOCK3_QYM_2X_PASS.json
+          fi
+          if git diff --cached --quiet; then
+            echo 'No checked-in source or status change.'
+            exit 0
+          fi
+          if [[ -f build-logs/FA_MOCK3_QYM_2X_PASS.json ]]; then
+            message='fix: record FA Integrated Mock3 QYM two-pass success'
+          else
+            message='fix: advance FA-first constrained repair frontier'
+          fi
+          git commit -m "${message}"
+          git push origin HEAD:fix/fa377-llm-loop-20260809
+
+      - name: Enforce required ordering result
+        if: always()
+        shell: bash
+        env:
+          FA_EXIT: ${{ steps.fa_twice.outputs.exit_code }}
+          DOWNSTREAM_EXIT: ${{ steps.downstream.outputs.exit_code }}
+          TRUST_EXIT: ${{ steps.trust.outputs.exit_code }}
+        run: |
+          test "${FA_EXIT:-1}" = '0'
+          test "${DOWNSTREAM_EXIT:-1}" = '0'
+          test "${TRUST_EXIT:-1}" = '0'
