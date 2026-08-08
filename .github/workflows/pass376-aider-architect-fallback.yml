@@ -1,0 +1,322 @@
+name: PASS 376 Aider architect editor fallback
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-v2-20260809]
+    paths:
+      - '.github/workflows/pass376-aider-architect-fallback.yml'
+      - 'scripts/pass376_aider_architect_cycle.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+  pull-requests: write
+
+concurrency:
+  group: pass376-v2-fa-mock3-qym-long-repair
+  cancel-in-progress: false
+
+jobs:
+  architect-repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ github.token }}
+      OPENAI_API_KEY: ${{ github.token }}
+      OPENAI_API_BASE: https://models.github.ai/inference
+    steps:
+      - name: Checkout latest checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 2800
+          persist-credentials: true
+
+      - name: Detect completed gate
+        id: gate
+        shell: bash
+        run: |
+          if test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+            echo 'complete=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'complete=false' >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Install Lean, cache, Aider, and model CLI
+        if: steps.gate.outputs.complete != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          python3 -m pip install --upgrade pip
+          python3 -m pip install 'aider-chat>=0.86,<1.0'
+          aider --version
+          set +e
+          gh extension install github/gh-models
+          gh models --help
+          exit 0
+
+      - name: Run architect editor cycles
+        if: steps.gate.outputs.complete != 'true'
+        id: repair
+        shell: bash
+        run: |
+          set +e
+          mkdir -p /tmp/pass376-architect build-logs
+          previous=21
+          if test -f build-logs/pass376-v2-cycle.txt; then
+            previous="$(cat build-logs/pass376-v2-cycle.txt)"
+            case "${previous}" in
+              ''|*[!0-9]*) previous=21 ;;
+            esac
+          fi
+          start=$((previous + 1))
+          stop=$((start + 1))
+          final_rc=2
+          cycle="${start}"
+
+          checkpoint() {
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add build-logs/pass376-v2-state.json \
+                    build-logs/pass376-v2-baseline.json \
+                    build-logs/pass376-v2-cycle.txt \
+                    build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+                    PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+                    2>/dev/null || true
+            if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean; then
+              git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            fi
+            while IFS= read -r -d '' file; do git add "${file}"; done < <(
+              find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0
+            )
+            if test -f PrimalitySheafVerification/QYM.lean; then
+              git add PrimalitySheafVerification/QYM.lean
+            fi
+            if ! git diff --cached --quiet; then
+              if test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+                git commit -m "fix: verify ordered FA Mock3 QYM gate in architect cycle ${cycle}"
+              else
+                git commit -m "wip: Aider architect PASS376 cycle ${cycle}"
+              fi
+              git push origin HEAD:fix/fa376-autorepair-v2-20260809
+            fi
+          }
+
+          while test "${cycle}" -le "${stop}"; do
+            echo "${cycle}" > build-logs/pass376-v2-cycle.txt
+            python3 scripts/pass376_multitarget_agent_v3.py \
+              --cycle "${cycle}" --budget-seconds 900 \
+              > "/tmp/pass376-architect/core-before-${cycle}.log" 2>&1
+            before_rc=$?
+            cat "/tmp/pass376-architect/core-before-${cycle}.log"
+            checkpoint
+            if test "${before_rc}" = '0' && test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+              final_rc=0
+              break
+            fi
+
+            python3 scripts/pass376_aider_architect_cycle.py \
+              --cycle "${cycle}" --timeout-seconds 4200 \
+              > "/tmp/pass376-architect/architect-${cycle}.log" 2>&1
+            architect_rc=$?
+            cat "/tmp/pass376-architect/architect-${cycle}.log"
+            checkpoint
+
+            python3 scripts/pass376_multitarget_agent_v3.py \
+              --cycle "${cycle}" --budget-seconds 900 \
+              > "/tmp/pass376-architect/core-after-${cycle}.log" 2>&1
+            after_rc=$?
+            cat "/tmp/pass376-architect/core-after-${cycle}.log"
+            checkpoint
+            if test "${after_rc}" = '0' && test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+              final_rc=0
+              break
+            fi
+            final_rc="${after_rc}"
+            cycle=$((cycle + 1))
+          done
+          set -e
+          echo "exit_code=${final_rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload architect evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-aider-architect-${{ github.sha }}
+          path: |
+            /tmp/pass376-architect
+            build-logs/pass376-aider
+            build-logs/pass376-v2
+            build-logs/pass376-v2-state.json
+            build-logs/pass376-v2-baseline.json
+            build-logs/pass376-v2-cycle.txt
+            build-logs/pass376-fa-mock3-qym-2x-pass.txt
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce ordered result
+        if: always()
+        shell: bash
+        env:
+          ALREADY_COMPLETE: ${{ steps.gate.outputs.complete }}
+          FINAL_EXIT_CODE: ${{ steps.repair.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          if test "${ALREADY_COMPLETE:-false}" = 'true'; then
+            test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+            exit 0
+          fi
+          test -n "${FINAL_EXIT_CODE:-}"
+          test "${FINAL_EXIT_CODE}" = '0'
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+
+  promote-audit-comment:
+    needs: architect-repair
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Checkout latest successful checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 3200
+          persist-credentials: true
+
+      - name: Save verified target bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          python3 - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          assert state['success'] is True
+          dest=Path('/tmp/verified/PrimalitySheafVerification'); dest.mkdir(parents=True)
+          hashes=[]
+          for target in state['targets']:
+              src=Path(target); item=state['final_validations'][target]
+              assert item['trust'] is True and item['verified_sha_matches'] is True
+              actual=hashlib.sha256(src.read_bytes()).hexdigest(); assert actual==item['sha256']
+              shutil.copy2(src,dest/src.name); hashes.append(f'{target} sha256={actual}')
+          Path('/tmp/verified/target-sha256.txt').write_text('\n'.join(hashes)+'\n')
+          PY
+          mkdir -p /tmp/verified/build-logs
+          cp build-logs/pass376-v2-state.json build-logs/pass376-v2-baseline.json \
+             build-logs/pass376-fa-mock3-qym-2x-pass.txt /tmp/verified/build-logs/
+
+      - name: Install verified targets on current PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin ci/fa319-isolated-20260807
+          git checkout -B ci/fa319-isolated-20260807 origin/ci/fa319-isolated-20260807
+          cp /tmp/verified/PrimalitySheafVerification/* PrimalitySheafVerification/
+          mkdir -p build-logs
+          cp /tmp/verified/build-logs/* build-logs/
+          cp /tmp/verified/target-sha256.txt build-logs/pass376-target-sha256.txt
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/pass376-lean-version.txt
+          lake --version | tee /tmp/pass376-lake-version.txt
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+
+      - name: Revalidate each promoted target twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t targets < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          print('\n'.join(json.loads(Path('build-logs/pass376-v2-state.json').read_text())['targets']))
+          PY
+          )
+          out='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p /tmp/pass376-pr9-architect-audit
+          : > /tmp/pass376-pr9-architect-audit/results.tsv
+          for target in "${targets[@]}"; do
+            stem="$(basename "${target}" .lean)"
+            for run in 1 2; do
+              rm -f "${out}/${stem}.olean" "${out}/${stem}.ilean" \
+                    "${out}/${stem}.olean.hash" "${out}/${stem}.ilean.hash"
+              start="$(date +%s)"; set +e
+              lake env lean -DmaxErrors=2000 "${target}" \
+                > "/tmp/pass376-pr9-architect-audit/${stem}-run${run}.log" 2>&1
+              rc=$?; set -e
+              elapsed=$(( $(date +%s) - start ))
+              errors="$(grep -c 'error:' "/tmp/pass376-pr9-architect-audit/${stem}-run${run}.log" || true)"
+              printf '%s\t%s\t%s\t%s\t%s\n' "${target}" "${run}" "${rc}" "${errors}" "${elapsed}" \
+                | tee -a /tmp/pass376-pr9-architect-audit/results.tsv
+              test "${rc}" -eq 0; test "${errors}" -eq 0
+              test -s "${out}/${stem}.olean"; test -s "${out}/${stem}.ilean"
+            done
+          done
+
+      - name: Commit and comment PR9 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/pass376-pr9-architect-audit/results.tsv build-logs/pass376-pr9-final-results.tsv
+          cp /tmp/pass376-lean-version.txt build-logs/pass376-lean-version.txt
+          cp /tmp/pass376-lake-version.txt build-logs/pass376-lake-version.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean \
+                  build-logs/pass376-v2-state.json build-logs/pass376-v2-baseline.json \
+                  build-logs/pass376-fa-mock3-qym-2x-pass.txt build-logs/pass376-target-sha256.txt \
+                  build-logs/pass376-pr9-final-results.tsv build-logs/pass376-lean-version.txt \
+                  build-logs/pass376-lake-version.txt
+          while IFS= read -r -d '' file; do git add "${file}"; done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0
+          )
+          test ! -f PrimalitySheafVerification/QYM.lean || git add PrimalitySheafVerification/QYM.lean
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: pass FA Integrated Mock3 QYM twice on PR9'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+          head_sha="$(git rev-parse HEAD)"
+          {
+            echo '## PASS 376 authoritative FA / Integrated / Mock3 / QYM result'
+            echo; echo "Verified PR #9 head: \`${head_sha}\`"; echo
+            echo 'All required targets compiled twice from checked-in source with exit code 0, zero Lean errors, and regenerated `.olean` / `.ilean`, in the requested order.'
+            echo; echo '```text'; cat build-logs/pass376-pr9-final-results.tsv; echo '```'
+            echo; echo 'PR remains draft and unmerged. No automatic merge was performed.'
+          } > /tmp/pass376-pr-comment.md
+          gh pr comment 9 --repo leegahuyn/mathlib4 --body-file /tmp/pass376-pr-comment.md
+
+      - name: Upload final architect audit
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-architect-pr9-audit-${{ github.sha }}
+          path: |
+            /tmp/pass376-pr9-architect-audit
+            /tmp/pass376-pr-comment.md
+            build-logs/pass376-v2-state.json
+            build-logs/pass376-pr9-final-results.tsv
+          if-no-files-found: error
+          retention-days: 90
