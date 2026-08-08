@@ -1,0 +1,76 @@
+name: PASS 387 assign strict priority issue to Copilot coding agent
+
+on:
+  push:
+    branches: [fix/fa387-self-chaining-repair-20260809]
+    paths:
+      - '.github/workflows/pass387-assign-copilot-agent.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  assign:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Locate the strict-priority repair issue
+        id: issue
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          issue=$(gh issue list --repo "${GITHUB_REPOSITORY}" --state open \
+            --search 'in:title "Agent task: finish FA"' --json number,title \
+            --jq 'sort_by(.number) | last | .number // empty')
+          test -n "${issue}"
+          echo "number=${issue}" >> "${GITHUB_OUTPUT}"
+          echo "issue=${issue}"
+
+      - name: Try supported Copilot coding-agent assignee names
+        id: assign
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          set +e
+          mkdir -p /tmp/pass387-copilot
+          success=0
+          for assignee in 'copilot-swe-agent[bot]' 'copilot'; do
+            echo "trying assignee=${assignee}" | tee -a /tmp/pass387-copilot/status.txt
+            gh issue edit "${ISSUE_NUMBER}" --repo "${GITHUB_REPOSITORY}" \
+              --add-assignee "${assignee}" \
+              >> /tmp/pass387-copilot/status.txt 2>&1
+            rc=$?
+            echo "assignee=${assignee} exit=${rc}" | tee -a /tmp/pass387-copilot/status.txt
+            if [[ ${rc} -eq 0 ]]; then success=1; break; fi
+          done
+          set -e
+          echo "success=${success}" >> "${GITHUB_OUTPUT}"
+          cat /tmp/pass387-copilot/status.txt
+          exit 0
+
+      - name: Preserve the assignment result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass387-copilot-assignment-${{ github.sha }}
+          path: /tmp/pass387-copilot
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Do not fail the Lean repair chain when Copilot assignment is unavailable
+        if: always()
+        shell: bash
+        env:
+          ASSIGNED: ${{ steps.assign.outputs.success }}
+        run: |
+          if [[ "${ASSIGNED:-0}" == '1' ]]; then
+            echo 'Copilot coding agent assigned successfully.'
+          else
+            echo 'Copilot coding-agent assignment is unavailable for this repository/account; PASS 387 self-chain remains active.'
+          fi
