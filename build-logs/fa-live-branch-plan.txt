@@ -1,0 +1,3 @@
+branch=fix/fa-live-n-pass-20260808
+seed=fix/fa359-final-isolated-20260808
+order=FA_2x -> Integrated/Mock3_2x -> QYM_2x
