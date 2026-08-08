@@ -1,0 +1,3 @@
+Retrigger the PASS 376 first independent error-cluster probe.
+Baseline source SHA-256: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+Accept only candidates that compile or move the first Lean error forward without changing public theorem statements.
