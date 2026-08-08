@@ -13,6 +13,42 @@ example (r : ℝ) (a b c : ℂ) :
   rw [Complex.real_smul]
   ring
 
+example (j : ℂ) (m : ℕ) :
+    (j ^ (2 : ℕ)) ^ m = j ^ ((2 : ℤ) * (m : ℤ)) := by
+  calc
+    (j ^ (2 : ℕ)) ^ m = j ^ (2 * m) := (pow_mul j 2 m).symm
+    _ = j ^ ((2 : ℤ) * (m : ℤ)) := by
+      rw [show (2 : ℤ) * (m : ℤ) = ((2 * m : ℕ) : ℤ) by omega]
+      exact (zpow_ofNat j (2 * m)).symm
+
+example (j : ℂ) (m : ℕ) :
+    (j ^ (-2 : ℤ)) ^ (m + 1) =
+      j ^ ((2 : ℤ) * Int.negSucc m) := by
+  calc
+    (j ^ (-2 : ℤ)) ^ (m + 1) =
+        (j ^ (-2 : ℤ)) ^ (((m + 1 : ℕ) : ℤ)) := by
+      exact (zpow_ofNat (j ^ (-2 : ℤ)) (m + 1)).symm
+    _ = j ^ ((-2 : ℤ) * ((m + 1 : ℕ) : ℤ)) :=
+      (zpow_mul j (-2 : ℤ) (((m + 1 : ℕ) : ℤ))).symm
+    _ = j ^ ((2 : ℤ) * Int.negSucc m) := by
+      congr 1 <;> omega
+
+example (j y p : ℂ) (hj : j ≠ 0) :
+    (y / (Complex.normSq j : ℂ)) ^ (2 : ℕ) *
+        star (j ^ (2 : ℕ) * p) =
+      j ^ (-2 : ℤ) * (y ^ (2 : ℕ) * star p) := by
+  have hjc : star j ≠ 0 := by
+    intro h
+    apply hj
+    have := congrArg star h
+    simpa using this
+  simp only [← starRingEnd_apply, map_mul, map_pow]
+  rw [show (Complex.normSq j : ℂ) = star j * j by
+    exact Complex.normSq_eq_conj_mul_self]
+  simp only [zpow_negSucc, zpow_ofNat]
+  field_simp [hj, hjc]
+  <;> ring
+
 example (g : Submodule ℂ (E × F)) :
     g.adjoint.adjoint = g.topologicalClosure := by
   let e : (E × F) ≃L[ℂ] WithLp 2 (E × F) :=
