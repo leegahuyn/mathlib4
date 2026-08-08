@@ -1,0 +1,28 @@
+GitHub Models CLI extension allows you to experiment with AI models from the command line.
+
+To see a list of all available commands, run `gh models help`. To run the extension in
+interactive mode, run `gh models run`. This will prompt you to select a model and then
+enter a prompt. The extension will then return a response from the model.
+
+For more information about what you can do with GitHub Models extension, see the manual
+at https://github.com/github/gh-models/blob/main/README.md.
+
+ℹ︎ Azure hosted. AI powered, can make mistakes. Not intended for production/sensitive data.
+For more information, see https://github.com/github/gh-models
+
+Usage:
+  gh models [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  eval        Evaluate prompts using test data and evaluators
+  generate    Generate tests and evaluations for prompts
+  help        Help about any command
+  list        List available models
+  run         Run inference with the specified model
+  view        View details about a model
+
+Flags:
+  -h, --help   help for models
+
+Use "gh models [command] --help" for more information about a command.

@@ -1,0 +1,23 @@
+{
+  "catalog": {
+    "error": "HTTPError: HTTP Error 410: Gone"
+  },
+  "inference": [
+    {
+      "model": "openai/gpt-4.1",
+      "http_status": 410,
+      "error_body": "{\"error\":{\"code\":\"github_models_retirement_brownout\",\"message\":\"GitHub Models is temporarily unavailable as part of a scheduled retirement brownout.\"}}\n"
+    },
+    {
+      "model": "openai/gpt-4o",
+      "http_status": 410,
+      "error_body": "{\"error\":{\"code\":\"github_models_retirement_brownout\",\"message\":\"GitHub Models is temporarily unavailable as part of a scheduled retirement brownout.\"}}\n"
+    }
+  ],
+  "selected_model": null,
+  "rest_ok": false,
+  "gh_models_cli": {
+    "install_exit": 0,
+    "help_exit": 0
+  }
+}
