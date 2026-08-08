@@ -1,0 +1,132 @@
+name: FA v5 serialized status collector
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa-live-v5-tournament-20260808
+    paths:
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - '.fa-v5-seeded'
+      - '.fa-v5-kick'
+      - '.github/workflows/fa-live-v5-tournament.yml'
+      - '.github/workflows/fa-live-v5-status.yml'
+      - 'scripts/github_models_fa_tournament_agent.py'
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: persistent-fa-v5-tournament
+  cancel-in-progress: false
+
+jobs:
+  status:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout latest tournament branch after queued repairs
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa-live-v5-tournament-20260808
+          fetch-depth: 950
+          persist-credentials: true
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get > /tmp/fa-v5-status-cache.log 2>&1
+
+      - name: Compile latest source and record exact frontier
+        id: compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          src='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          set +e
+          lake env lean -DmaxErrors=5 "${src}" > /tmp/fa-v5-status-first.log 2>&1
+          first_rc=$?
+          set -e
+          second_rc=99
+          if [[ ${first_rc} -eq 0 ]]; then
+            set +e
+            lake env lean -DmaxErrors=2000 "${src}" > /tmp/fa-v5-status-second.log 2>&1
+            second_rc=$?
+            set -e
+          fi
+          first_error="$(grep -m1 -E '\.lean:[0-9]+:[0-9]+:.*error' /tmp/fa-v5-status-first.log || true)"
+          errors_json="$(grep -E '\.lean:[0-9]+:[0-9]+:.*error' /tmp/fa-v5-status-first.log | head -5 | python3 -c 'import json,sys; print(json.dumps([x.rstrip("\n") for x in sys.stdin]))')"
+          python3 - <<PY
+          import hashlib, json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          src = Path('${src}')
+          final = Path('build-logs/FINAL_FA_MOCK3_QYM_2X_PASS.json')
+          payload = {
+              'checked_at_utc': datetime.now(timezone.utc).isoformat(),
+              'branch': 'fix/fa-live-v5-tournament-20260808',
+              'head_sha': os.popen('git rev-parse HEAD').read().strip(),
+              'source_sha256': hashlib.sha256(src.read_bytes()).hexdigest(),
+              'fa_first_exit': int('${first_rc}'),
+              'fa_second_exit': int('${second_rc}'),
+              'first_error': '''${first_error}''',
+              'first_five_errors': json.loads('''${errors_json}'''),
+              'final_three_stage_marker': final.exists(),
+          }
+          if final.exists():
+              payload['final_marker'] = json.loads(final.read_text(encoding='utf-8'))
+          out = Path('build-logs/FA_V5_STATUS.json')
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding='utf-8')
+          PY
+          echo "first_rc=${first_rc}" >> "${GITHUB_OUTPUT}"
+          echo "second_rc=${second_rc}" >> "${GITHUB_OUTPUT}"
+          cat build-logs/FA_V5_STATUS.json
+
+      - name: Commit concise status without retriggering repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/FA_V5_STATUS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(fa): record latest tournament frontier'
+            git push origin HEAD:fix/fa-live-v5-tournament-20260808
+          fi
+
+      - name: Comment PR 9 only after strict final PASS
+        if: steps.compile.outputs.first_rc == '0' && steps.compile.outputs.second_rc == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ -s build-logs/FINAL_FA_MOCK3_QYM_2X_PASS.json ]]; then
+            gh pr comment 9 --repo leegahuyn/mathlib4 --body-file build-logs/FINAL_FA_MOCK3_QYM_2X_PASS.json
+          fi
+
+      - name: Upload status logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-v5-status-${{ github.sha }}
+          path: |
+            build-logs/FA_V5_STATUS.json
+            build-logs/FINAL_FA_MOCK3_QYM_2X_PASS.json
+            /tmp/fa-v5-status-first.log
+            /tmp/fa-v5-status-second.log
+            /tmp/fa-v5-status-cache.log
+          if-no-files-found: warn
+          retention-days: 90
