@@ -1,0 +1,7 @@
+agent_exit_code=1
+source_sha256=5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620
+error_headers=0
+first_error_line=None
+complete=False
+state={}
+best_metric={}
