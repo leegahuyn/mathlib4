@@ -1,0 +1,3 @@
+Retrigger requested from PASS 376 baseline.
+Required order: Mock2_FunctionalAnalysis 2x PASS, then Integrated/Mock3 2x PASS, then QYM 2x PASS.
+No theorem weakening, sorry/admit/global axiom/unsafe/native_decide/Lean.ofReduceBool.
