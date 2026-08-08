@@ -1,0 +1,104 @@
+name: PASS 387 publish live priority-chain status to PR9
+
+on:
+  push:
+    branches: [fix/fa387-self-chaining-repair-20260809]
+    paths:
+      - '.github/workflows/pass387-live-status.yml'
+      - 'build-logs/PASS387_CHAIN_STATE.json'
+      - 'build-logs/FA_MOCK3_QYM_2X_PASS.json'
+      - 'build-logs/PASS387_PROMOTION.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pass387-live-status
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Build one authoritative live-status body
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          marker='<!-- PASS387-LIVE-STATUS -->'
+          state_path=Path('build-logs/PASS387_CHAIN_STATE.json')
+          final_path=Path('build-logs/FA_MOCK3_QYM_2X_PASS.json')
+          promotion_path=Path('build-logs/PASS387_PROMOTION.json')
+          state={}
+          if state_path.exists():
+              try: state=json.loads(state_path.read_text())
+              except Exception: state={'parse_error':True}
+          final={}
+          if final_path.exists():
+              try: final=json.loads(final_path.read_text())
+              except Exception: final={'parse_error':True}
+          promotion={}
+          if promotion_path.exists():
+              try: promotion=json.loads(promotion_path.read_text())
+              except Exception: promotion={'parse_error':True}
+          all_pass=(
+              final.get('status')=='SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS'
+              and promotion.get('pass') is True
+          )
+          hashes=state.get('source_hashes',{})
+          rows='\n'.join(f'- `{path}`: `{digest}`' for path,digest in hashes.items()) or '- 아직 기록 없음'
+          body=f'''{marker}
+          ## PASS 387 live priority-chain status
+
+          - Repair branch: `fix/fa387-self-chaining-repair-20260809`
+          - Current head: `{os.environ.get('GITHUB_SHA','')}`
+          - Cycle: `{state.get('cycle','')}`
+          - Target before this cycle: `{state.get('before_target','')}`
+          - First failing target after this cycle: `{state.get('after_target','')}`
+          - Declaration agent exit: `{state.get('declaration_exit','')}`
+          - Full-source fallback exit: `{state.get('fallback_exit','')}`
+          - All required targets 2× PASS: `{'YES' if all_pass else 'NO'}`
+          - PR9 independently promoted: `{'YES' if promotion.get('pass') is True else 'NO'}`
+
+          Required order remains:
+          `Mock2_FunctionalAnalysis 2× → Integrated/actual Mock3 2× → QYM 2×`.
+
+          ### Current source SHA-256
+          {rows}
+
+          No automatic merge is permitted; PR #9 remains draft until later project-wide work is separately completed.
+          '''
+          Path('/tmp/pass387-live-status.md').write_text('\n'.join(line.strip() for line in body.splitlines())+'\n')
+          PY
+          cat /tmp/pass387-live-status.md
+
+      - name: Create or update the single live-status comment
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          marker='<!-- PASS387-LIVE-STATUS -->'
+          comment_id=$(gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/issues/9/comments?per_page=100" \
+            --jq ".[] | select(.body | contains(\"${marker}\")) | .id" \
+            | head -n 1 || true)
+          body=$(cat /tmp/pass387-live-status.md)
+          if [[ -n "${comment_id}" ]]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" \
+              -f body="${body}" >/dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/9/comments" \
+              -f body="${body}" >/dev/null
+          fi
