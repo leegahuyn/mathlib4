@@ -41,7 +41,7 @@ example (g : Submodule ℂ (E × F)) :
         (Submodule.mem_adjoint_iff g.adjoint (x₀, x₁)).mp
           hx y.snd (-y.fst) hAdj
       simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply,
-        WithLp.prod_inner_apply, WithLp.ofLp_toLp,
+        WithLp.prod_inner_apply, WithLp.ofLp_fst, WithLp.ofLp_snd,
         inner_neg_left] at hDouble ⊢
       linear_combination -hDouble
     · intro hx
@@ -59,7 +59,7 @@ example (g : Submodule ℂ (E × F)) :
         (Submodule.mem_orthogonal G.orthogonal (e (x₀, x₁))).mp
           hx (e (-d, c)) hOrth
       simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply,
-        WithLp.prod_inner_apply, WithLp.ofLp_toLp,
+        WithLp.prod_inner_apply, WithLp.ofLp_fst, WithLp.ofLp_snd,
         inner_neg_left] at hDouble
       linear_combination -hDouble
   rw [hmem, G.orthogonal_orthogonal_eq_closure]
@@ -68,7 +68,11 @@ example (g : Submodule ℂ (E × F)) :
   rw [Submodule.topologicalClosure_coe, Submodule.topologicalClosure_coe]
   change e (x₀, x₁) ∈ closure (e '' (g : Set (E × F))) ↔
     (x₀, x₁) ∈ closure (g : Set (E × F))
-  rw [← e.toHomeomorph.image_closure]
+  have himage :
+      e '' closure (g : Set (E × F)) =
+        closure (e '' (g : Set (E × F))) := by
+    simpa only using e.toHomeomorph.image_closure (g : Set (E × F))
+  rw [← himage]
   constructor
   · rintro ⟨y, hy, hxy⟩
     have : y = (x₀, x₁) := e.injective hxy
