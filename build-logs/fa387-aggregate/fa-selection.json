@@ -1,0 +1,11 @@
+{
+  "selected": "checked-in-baseline",
+  "metric": {
+    "exit_code": 1,
+    "errors": 92,
+    "first_line": 18908,
+    "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620"
+  },
+  "candidate_count": 1,
+  "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620"
+}
