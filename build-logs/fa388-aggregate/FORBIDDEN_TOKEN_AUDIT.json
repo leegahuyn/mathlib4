@@ -1,0 +1,26 @@
+{
+  "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "PrimalitySheafVerification/QYM.lean": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  }
+}

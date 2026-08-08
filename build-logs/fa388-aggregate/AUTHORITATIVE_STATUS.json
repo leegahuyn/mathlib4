@@ -1,0 +1,19 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "reason": "RuntimeError(\"Mock2_FunctionalAnalysis.lean direct run 1 failed: {'exit_code': 1, 'errors': 140, 'first_line': 18908, 'source_sha256': '5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620'}\")",
+  "metric": {
+    "exit_code": 1,
+    "errors": 140,
+    "first_line": 18908,
+    "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620"
+  },
+  "verify_exit_code": "2",
+  "marker_exists": false,
+  "authoritative_complete": false,
+  "sources": {
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439",
+    "PrimalitySheafVerification/QYM.lean": "698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0"
+  }
+}
