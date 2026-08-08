@@ -1,0 +1,22 @@
+{
+  "checked_at_utc": "2026-08-08T11:08:57.074349+00:00",
+  "branch": "fix/fa-live-v6-tournament-20260808",
+  "head_sha": "564df782499c4f3699ad61ac26d5a492bdd70ca4",
+  "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+  "fa_first_exit": 1,
+  "fa_second_exit": 99,
+  "first_error": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18907:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+  "first_ten_errors": [
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18907:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18908:4: error: Type mismatch: After simplification, term",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18913:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18914:4: error: Type mismatch: After simplification, term",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18919:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18920:4: error: Type mismatch: After simplification, term",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18952:8: error: typeclass instance problem is stuck",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18957:2: error: Type mismatch",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18969:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18973:40: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+  ],
+  "final_three_stage_marker": false
+}
