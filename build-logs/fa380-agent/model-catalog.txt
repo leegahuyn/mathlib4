@@ -1,0 +1,10 @@
+Error: unexpected response from the server: 410 Gone
+{"error":{"code":"github_models_retirement_brownout","message":"GitHub Models is temporarily unavailable as part of a scheduled retirement brownout."}}
+
+
+Usage:
+  gh models list [flags]
+
+Flags:
+  -h, --help   help for list
+
