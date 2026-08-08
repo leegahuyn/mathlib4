@@ -1,0 +1,160 @@
+name: PASS 376 final status recorder
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-v2-20260809]
+    paths:
+      - '.github/workflows/pass376-final-status-recorder.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: pass376-v2-fa-mock3-qym-long-repair
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout latest shared checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 3400
+          persist-credentials: true
+
+      - name: Detect success
+        id: gate
+        shell: bash
+        run: |
+          if test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+            echo 'success=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'success=false' >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Install Lean and cache for failure frontier
+        if: steps.gate.outputs.success != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+
+      - name: Compile and summarize the final failure frontier
+        if: steps.gate.outputs.success != 'true'
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build-logs/pass376-final
+          active="$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          state_path=Path('build-logs/pass376-v2-state.json')
+          if state_path.exists():
+              state=json.loads(state_path.read_text())
+              print(state.get('active_target') or 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          else:
+              print('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          PY
+          )"
+          lake env lean -DmaxErrors=40 "${active}" \
+            > build-logs/pass376-final/final-frontier.log 2>&1
+          rc=$?
+          set -e
+          python3 - <<'PY'
+          import hashlib,json,re
+          from pathlib import Path
+          state_path=Path('build-logs/pass376-v2-state.json')
+          state=json.loads(state_path.read_text()) if state_path.exists() else {}
+          active=state.get('active_target') or 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          source=Path(active)
+          log=Path('build-logs/pass376-final/final-frontier.log').read_text(errors='replace')
+          errors=[]
+          for match in re.finditer(r'([^\n]*\.lean):(\d+):(\d+): error:([^\n]*)',log):
+              errors.append({
+                  'file':match.group(1),'line':int(match.group(2)),'column':int(match.group(3)),
+                  'message':match.group(4).strip()})
+              if len(errors)>=20: break
+          payload={
+              'status':'INCOMPLETE',
+              'active_target':active,
+              'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest() if source.exists() else None,
+              'cycle':state.get('last_cycle') or state.get('completed_cycle'),
+              'verified':state.get('verified',{}),
+              'frontier':state.get('frontier'),
+              'errors':errors,
+          }
+          Path('build-logs/pass376-final/status.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2))
+          lines=['# PASS 376 final status: INCOMPLETE','',f"Active target: `{active}`",
+                 f"Source SHA-256: `{payload['source_sha256']}`",'', '## First compiler errors','']
+          for item in errors:
+              lines.append(f"- `{item['line']}:{item['column']}` — {item['message']}")
+          Path('build-logs/pass376-final/status.md').write_text('\n'.join(lines)+'\n')
+          PY
+          echo "compiler_exit_code=${rc}" >> build-logs/pass376-final/status.env
+
+      - name: Commit final diagnostic status
+        if: steps.gate.outputs.success != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/pass376-final
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: record final PASS376 failure frontier'
+            git push origin HEAD:fix/fa376-autorepair-v2-20260809
+          fi
+
+      - name: Comment success evidence
+        if: steps.gate.outputs.success == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          body='build-logs/pass376-fa-mock3-qym-2x-pass.txt'
+          {
+            echo '## PASS 376 ordered target gate succeeded'
+            echo
+            cat "${body}"
+            echo
+            echo 'The separate PR9 auditor is the authority for final source-level two-pass evidence.'
+          } > /tmp/pass376-status-comment.md
+          gh pr comment 9 --repo leegahuyn/mathlib4 --body-file /tmp/pass376-status-comment.md
+
+      - name: Comment final failure frontier
+        if: steps.gate.outputs.success != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            cat build-logs/pass376-final/status.md
+            echo
+            echo 'The repair branch preserved every compiler-advancing patch and did not promote an unverified source to PR #9.'
+            echo 'PR remains draft and unmerged.'
+          } > /tmp/pass376-status-comment.md
+          gh pr comment 9 --repo leegahuyn/mathlib4 --body-file /tmp/pass376-status-comment.md
+
+      - name: Upload final status evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-final-status-${{ github.sha }}
+          path: |
+            build-logs/pass376-final
+            build-logs/pass376-fa-mock3-qym-2x-pass.txt
+            /tmp/pass376-status-comment.md
+          if-no-files-found: warn
+          retention-days: 90
