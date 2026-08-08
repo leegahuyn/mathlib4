@@ -7,6 +7,8 @@ open UpperHalfPlane MeasureTheory
 #check @RCLike.inner_apply
 #check @Matrix.SpecialLinearGroup.toGL
 #check @Matrix.SpecialLinearGroup.mapGL
+#check UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff
+#check @MeasurableEmbedding.memLp_map_measure_iff
 
 example (g : Matrix.SpecialLinearGroup (Fin 2) ℝ) (z : ℍ) :
     g • z = Matrix.SpecialLinearGroup.toGL g • z := by
@@ -25,20 +27,28 @@ example {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
     g.orthogonal.orthogonal = g.topologicalClosure := by
   exact @Submodule.orthogonal_orthogonal_eq_closure ℂ E _ _ _ g _
 
+example {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H] :
+    ‖(0 : ContinuousSesquilinearForm H)‖ = 0 :=
+  (norm_zero : ‖(0 : ContinuousSesquilinearForm H)‖ = 0)
+
 noncomputable def exactHyperbolicDensityProbe (z : ℍ) : NNReal :=
-  (1 / (⟨z.im, z.im_pos.le⟩ : NNReal)) ^ 2
+  ((1 : NNReal) / NNReal.mk z.im z.im_pos.le) ^ 2
 
 example : Continuous exactHyperbolicDensityProbe := by
-  simpa only [exactHyperbolicDensityProbe] using
-    ((continuous_const.div₀
-      (UpperHalfPlane.continuous_im.subtype_mk _)
-      (fun z => NNReal.ne_iff.mp z.im_ne_zero)).pow 2)
+  have hOne : Continuous (fun _ : ℍ => (1 : NNReal)) := continuous_const
+  have hIm : Continuous (fun z : ℍ => NNReal.mk z.im z.im_pos.le) :=
+    UpperHalfPlane.continuous_im.subtype_mk _
+  exact (hOne.div₀ hIm (fun z hz => by
+    apply z.im_ne_zero
+    have hcoe := congrArg (fun x : NNReal => (x : ℝ)) hz
+    simpa using hcoe)).pow 2
 
-noncomputable abbrev upperEuclideanMeasureProbe : Measure ℍ :=
-  volume.comap UpperHalfPlane.coe
+example (z : ℍ) :
+    exactHyperbolicDensityProbe z =
+      ((1 : NNReal) / NNReal.mk z.im z.im_pos.le) ^ 2 :=
+  rfl
 
-example :
-    hyperbolicMeasure =
-      upperEuclideanMeasureProbe.withDensity fun z => exactHyperbolicDensityProbe z := by
-  simpa only [upperEuclideanMeasureProbe, exactHyperbolicDensityProbe] using
-    hyperbolicMeasure_def
+example (s t : Set ℍ) :
+    {z : ℍ | ¬(z ∈ s → z ∈ t)} = s \ t := by
+  ext z
+  simp
