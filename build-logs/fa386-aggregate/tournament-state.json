@@ -1,0 +1,17 @@
+{
+  "candidate_count": 1,
+  "compiled_count": 1,
+  "best": {
+    "sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+    "label": "current-branch-source",
+    "ref": "HEAD",
+    "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "accepted_for_compile": "true",
+    "local_path": "/tmp/fa386-tournament/candidates/candidate-0001-5f2d7615aaad.lean",
+    "exit_code": 1,
+    "errors": 116,
+    "first_line": 18908,
+    "log_path": "/tmp/fa386-tournament/logs/5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620.log"
+  },
+  "complete_fa": false
+}
