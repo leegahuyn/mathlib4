@@ -95,12 +95,102 @@ jobs:
              /tmp/fa-chunks/fa-local-workspace.tar.zst
           ls -lh /tmp/fa-chunks
 
-      - name: Upload all chunks separately
+      - name: Upload checksums
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa-local-chunks-${{ github.sha }}
-          path: /tmp/fa-chunks
+          name: fa-local-chunks-checksums-${{ github.sha }}
+          path: /tmp/fa-chunks/SHA256SUMS.txt
           if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Upload elan part 00
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-elan-part-00-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-elan.part-00
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload elan part 01
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-elan-part-01-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-elan.part-01
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload elan part 02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-elan-part-02-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-elan.part-02
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Upload workspace part 00
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-00-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-00
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 01
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-01-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-01
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-02-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-02
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 03
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-03-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-03
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 04
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-04-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-04
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 05
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-05-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-05
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 06
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-06-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-06
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload workspace part 07 when present
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-local-workspace-part-07-${{ github.sha }}
+          path: /tmp/fa-chunks/fa-local-workspace.part-07
+          if-no-files-found: ignore
           retention-days: 14
           compression-level: 0
 
