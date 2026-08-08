@@ -31,6 +31,5 @@ example (j y p : ℂ) (hj : j ≠ 0) :
   rw [hstarMul, hstarPow]
   rw [show (Complex.normSq j : ℂ) = star j * j by
     exact Complex.normSq_eq_conj_mul_self]
-  simp only [zpow_negSucc, zpow_ofNat]
   field_simp [hj, hjc]
   <;> ring
