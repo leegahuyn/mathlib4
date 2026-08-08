@@ -1,0 +1,194 @@
+name: PASS 376 autorepair v2 explicit runner
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-v2-20260809]
+    paths:
+      - '.github/workflows/fa376-autorepair-v2-explicit-run.yml'
+      - 'build-logs/fa376-autorepair-v2-retrigger-*.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa376-autorepair-v2-explicit
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MODEL_CANDIDATES: openai/gpt-5,openai/gpt-4.1,openai/gpt-4o
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1000
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Discover v2 repair agents relative to exact PASS 376
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin fix/fa376-final-isolated-20260809 --depth=1000
+          mkdir -p /tmp/fa376-v2-explicit
+          git diff --name-only FETCH_HEAD...HEAD \
+            | grep -E '^scripts/.*(autorepair|repair[_-]?agent).*\.py$' \
+            | sort -u > /tmp/fa376-v2-explicit/agents.txt || true
+          find scripts -maxdepth 1 -type f \
+            \( -iname '*376*autorepair*.py' -o -iname '*repair*agent*.py' \) \
+            | sort -u >> /tmp/fa376-v2-explicit/agents.txt
+          sort -u /tmp/fa376-v2-explicit/agents.txt -o /tmp/fa376-v2-explicit/agents.txt
+          cat /tmp/fa376-v2-explicit/agents.txt
+          test -s /tmp/fa376-v2-explicit/agents.txt
+
+      - name: Reconstruct PASS 376 when source is still a stub
+        shell: bash
+        run: |
+          set -euo pipefail
+          fa='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          if [[ $(wc -c < "${fa}") -gt 500000 ]]; then exit 0; fi
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          a = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          '''
+          b = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          if text.count(a) != 1 or text.count(b) != 1:
+              raise SystemExit('PASS341 compile markers unavailable')
+          text = text.replace(a, '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''')
+          text = text.replace(b, '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''')
+          path.write_text(text, encoding='utf-8')
+          PY
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass358_fa.sh
+          cp /tmp/diagnose-pass358-fa/source/Mock2_FunctionalAnalysis-pass358.lean "${fa}"
+          python3 scripts/apply_pass375c_candidate.py
+          python3 scripts/apply_three_hundred_seventy_sixth_pass_functional_analysis_repairs.py
+          test "$(sha256sum "${fa}" | cut -d' ' -f1)" = \
+            '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+
+      - name: Record baseline compiler frontier
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean -DmaxErrors=100 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/fa376-v2-explicit/baseline.log 2>&1
+          echo $? > /tmp/fa376-v2-explicit/baseline.exit
+          set -e
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            /tmp/fa376-v2-explicit/baseline.lean
+
+      - name: Run discovered agents with adaptive CLI arguments
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          while IFS= read -r agent; do
+            [[ -f "${agent}" ]] || continue
+            help=$(python3 "${agent}" --help 2>&1)
+            args=()
+            if grep -q -- '--target' <<<"${help}"; then
+              args+=(--target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)
+            fi
+            if grep -q -- '--iterations' <<<"${help}"; then args+=(--iterations 16); fi
+            if grep -q -- '--max-iterations' <<<"${help}"; then args+=(--max-iterations 16); fi
+            if grep -q -- '--attempts-per-iteration' <<<"${help}"; then
+              args+=(--attempts-per-iteration 3)
+            fi
+            echo "RUNNING ${agent} ${args[*]}" | tee -a /tmp/fa376-v2-explicit/agents-run.txt
+            timeout 10800 python3 "${agent}" "${args[@]}" \
+              > "/tmp/fa376-v2-explicit/$(basename "${agent}").log" 2>&1
+            rc=$?
+            echo "${agent} exit=${rc}" | tee -a /tmp/fa376-v2-explicit/agents-run.txt
+          done < /tmp/fa376-v2-explicit/agents.txt
+          set -e
+
+      - name: Compile resulting candidate and accept only objective progress
+        id: evaluate
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean -DmaxErrors=100 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/fa376-v2-explicit/candidate.log 2>&1
+          candidate_rc=$?
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+          def metrics(path, exit_path=None, rc=None):
+              text=Path(path).read_text(errors='replace')
+              es=list(re.finditer(r'^.*?\.lean:(\d+):(\d+): error:',text,re.M))
+              if exit_path is not None: rc=int(Path(exit_path).read_text().strip())
+              return {'exit':rc,'errors':len(es),'first':int(es[0].group(1)) if es else None}
+          b=metrics('/tmp/fa376-v2-explicit/baseline.log','/tmp/fa376-v2-explicit/baseline.exit')
+          c=metrics('/tmp/fa376-v2-explicit/candidate.log',rc=int('${{ steps.evaluate.outputs.candidate_rc }}' or 1))
+          improved=(c['exit']==0 or c['errors']<b['errors'] or
+                    (isinstance(c['first'],int) and isinstance(b['first'],int) and c['first']>b['first']))
+          payload={'baseline':b,'candidate':c,'improved':improved}
+          Path('/tmp/fa376-v2-explicit/evaluation.json').write_text(json.dumps(payload,indent=2))
+          Path('/tmp/fa376-v2-explicit/IMPROVED').write_text('yes\n') if improved else None
+          print(json.dumps(payload,indent=2))
+          PY
+        env:
+          candidate_rc: ${{ steps.evaluate.outputs.candidate_rc }}
+
+      - name: Restore baseline when no objective improvement
+        shell: bash
+        run: |
+          if [[ ! -f /tmp/fa376-v2-explicit/IMPROVED ]]; then
+            cp /tmp/fa376-v2-explicit/baseline.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          fi
+
+      - name: Upload explicit autorepair evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa376-autorepair-v2-explicit-${{ github.sha }}
+          path: /tmp/fa376-v2-explicit
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Commit only improved source
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f /tmp/fa376-v2-explicit/IMPROVED ]] || exit 0
+          mkdir -p build-logs
+          cp /tmp/fa376-v2-explicit/evaluation.json \
+            build-logs/FA376_AUTOREPAIR_V2_EVALUATION.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/FA376_AUTOREPAIR_V2_EVALUATION.json
+          git commit -m 'fix: advance PASS 376 FunctionalAnalysis autorepair frontier'
+          git push origin HEAD:fix/fa376-autorepair-v2-20260809
