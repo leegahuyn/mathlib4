@@ -1,0 +1,273 @@
+name: PASS 376 v3 reduction-aware fallback
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-v2-20260809]
+    paths:
+      - '.github/workflows/pass376-v3-reduction-fallback.yml'
+      - 'scripts/pass376_multitarget_agent_v3.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: pass376-v2-fa-mock3-qym-long-repair
+  cancel-in-progress: false
+
+jobs:
+  fallback-repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout latest shared checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 1500
+          persist-credentials: true
+
+      - name: Detect completed gate
+        id: gate
+        shell: bash
+        run: |
+          if test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+            echo 'complete=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'complete=false' >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Install Lean, cache, and model CLI
+        if: steps.gate.outputs.complete != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          set +e
+          gh extension install github/gh-models
+          gh models --help
+          exit 0
+
+      - name: Run reduction-aware fallback cycles
+        if: steps.gate.outputs.complete != 'true'
+        id: cycles
+        shell: bash
+        run: |
+          set +e
+          mkdir -p /tmp/pass376-v3 build-logs
+          previous=14
+          if test -f build-logs/pass376-v2-cycle.txt; then
+            previous="$(cat build-logs/pass376-v2-cycle.txt)"
+            case "${previous}" in
+              ''|*[!0-9]*) previous=14 ;;
+            esac
+          fi
+          start=$((previous + 1))
+          stop=$((start + 3))
+          final_rc=2
+          cycle="${start}"
+          while test "${cycle}" -le "${stop}"; do
+            echo "${cycle}" > build-logs/pass376-v2-cycle.txt
+            python3 scripts/pass376_multitarget_agent_v3.py \
+              --cycle "${cycle}" --budget-seconds 3900 \
+              > "/tmp/pass376-v3/cycle-${cycle}.log" 2>&1
+            rc=$?
+            cat "/tmp/pass376-v3/cycle-${cycle}.log"
+
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add build-logs/pass376-v2-state.json \
+                    build-logs/pass376-v2-baseline.json \
+                    build-logs/pass376-v2-cycle.txt \
+                    build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+                    PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+                    2>/dev/null || true
+            if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean; then
+              git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            fi
+            while IFS= read -r -d '' file; do git add "${file}"; done < <(
+              find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0
+            )
+            if test -f PrimalitySheafVerification/QYM.lean; then
+              git add PrimalitySheafVerification/QYM.lean
+            fi
+            if ! git diff --cached --quiet; then
+              if test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+                git commit -m "fix: verify ordered FA Mock3 QYM gate in fallback ${cycle}"
+              else
+                git commit -m "wip: reduction-aware PASS376 repair cycle ${cycle}"
+              fi
+              git push origin HEAD:fix/fa376-autorepair-v2-20260809
+            fi
+
+            if test "${rc}" = '0' && test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt; then
+              final_rc=0
+              break
+            fi
+            final_rc="${rc}"
+            cycle=$((cycle + 1))
+          done
+          set -e
+          echo "exit_code=${final_rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload fallback evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-v3-reduction-aware-${{ github.sha }}
+          path: |
+            /tmp/pass376-v3
+            build-logs/pass376-v2
+            build-logs/pass376-v2-state.json
+            build-logs/pass376-v2-baseline.json
+            build-logs/pass376-v2-cycle.txt
+            build-logs/pass376-fa-mock3-qym-2x-pass.txt
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce ordered result
+        if: always()
+        shell: bash
+        env:
+          ALREADY_COMPLETE: ${{ steps.gate.outputs.complete }}
+          FINAL_EXIT_CODE: ${{ steps.cycles.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          if test "${ALREADY_COMPLETE:-false}" = 'true'; then
+            test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+            exit 0
+          fi
+          test -n "${FINAL_EXIT_CODE:-}"
+          test "${FINAL_EXIT_CODE}" = '0'
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+
+  promote-to-pr9:
+    needs: fallback-repair
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout latest verified checkpoint
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa376-autorepair-v2-20260809
+          fetch-depth: 1800
+          persist-credentials: true
+
+      - name: Save verified target set
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          state=json.loads(Path('build-logs/pass376-v2-state.json').read_text())
+          assert state['success'] is True
+          for target in state['targets']:
+              item=state['final_validations'][target]
+              assert item['trust'] is True and item['verified_sha_matches'] is True
+          PY
+          mkdir -p /tmp/verified/PrimalitySheafVerification /tmp/verified/build-logs
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean \
+             /tmp/verified/PrimalitySheafVerification/
+          cp PrimalitySheafVerification/Mock3*.lean \
+             /tmp/verified/PrimalitySheafVerification/ 2>/dev/null || true
+          cp PrimalitySheafVerification/QYM.lean \
+             /tmp/verified/PrimalitySheafVerification/ 2>/dev/null || true
+          cp build-logs/pass376-v2-state.json \
+             build-logs/pass376-v2-baseline.json \
+             build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+             /tmp/verified/build-logs/
+
+      - name: Switch to current PR9 and install targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin ci/fa319-isolated-20260807
+          git checkout -B ci/fa319-isolated-20260807 origin/ci/fa319-isolated-20260807
+          cp /tmp/verified/PrimalitySheafVerification/* PrimalitySheafVerification/
+          mkdir -p build-logs
+          cp /tmp/verified/build-logs/* build-logs/
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+
+      - name: Revalidate targets twice on PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t targets < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          print('\n'.join(json.loads(Path('build-logs/pass376-v2-state.json').read_text())['targets']))
+          PY
+          )
+          out='.lake/build/lib/lean/PrimalitySheafVerification'
+          mkdir -p /tmp/pr9-recheck
+          for target in "${targets[@]}"; do
+            stem="$(basename "${target}" .lean)"
+            for run in 1 2; do
+              rm -f "${out}/${stem}.olean" "${out}/${stem}.ilean" \
+                    "${out}/${stem}.olean.hash" "${out}/${stem}.ilean.hash"
+              lake env lean -DmaxErrors=2000 "${target}" \
+                > "/tmp/pr9-recheck/${stem}-run${run}.log" 2>&1
+              test -s "${out}/${stem}.olean"
+              test -s "${out}/${stem}.ilean"
+            done
+          done
+
+      - name: Commit verified source to PR9 without merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis*.lean \
+                  build-logs/pass376-v2-state.json \
+                  build-logs/pass376-v2-baseline.json \
+                  build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          while IFS= read -r -d '' file; do git add "${file}"; done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0
+          )
+          if test -f PrimalitySheafVerification/QYM.lean; then
+            git add PrimalitySheafVerification/QYM.lean
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: materialize verified FA Integrated Mock3 QYM two-pass source'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass376-v3-pr9-recheck-${{ github.sha }}
+          path: /tmp/pr9-recheck
+          if-no-files-found: error
+          retention-days: 90
