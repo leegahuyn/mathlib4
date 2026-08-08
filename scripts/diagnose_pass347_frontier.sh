@@ -28,10 +28,13 @@ repl(
     "EXPECTED_SHA256='c980501c4a7f0f6582c5d67ec7fa08c7af37ffd6aa3335a3724928f94c2de03f'",
     'PASS 347 output hash',
 )
+new_chain = (
+    '  fa346_global_neg_repair.py ' + chr(92) + '\n' +
+    '  fa347_frontier_repair.py; do'
+)
 repl(
     '  fa346_global_neg_repair.py; do',
-    '  fa346_global_neg_repair.py \\
-  fa347_frontier_repair.py; do',
+    new_chain,
     'PASS 347 chain',
 )
 repl(
