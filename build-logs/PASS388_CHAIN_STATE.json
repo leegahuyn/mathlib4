@@ -1,0 +1,48 @@
+{
+  "cycle": 1,
+  "workflow_run_id": "31284108890",
+  "workflow_head": "744cc9a2110b69f3ab4cf0e8dd77092d480db2a2",
+  "before_target": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "after_target": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "selection": {
+    "all_pass": false,
+    "selected_target": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "chain": [
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "PrimalitySheafVerification/QYM.lean"
+    ],
+    "verified": [
+      {
+        "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "pass": false,
+        "runs": [
+          {
+            "path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "module": "PrimalitySheafVerification.Mock2_FunctionalAnalysis",
+            "label": "run1",
+            "exit_code": 1,
+            "error_headers": 92,
+            "first_error_line": 18908,
+            "first_error_col": 4,
+            "first_error_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+            "elapsed_seconds": 138.81,
+            "log": "/tmp/pass378/Mock2_FunctionalAnalysis-run1.log"
+          }
+        ]
+      }
+    ]
+  },
+  "declaration_exit": "1",
+  "fallback_exit": "",
+  "promotion_exit": "",
+  "promotion": {},
+  "source_hashes": {
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439",
+    "PrimalitySheafVerification/QYM.lean": "698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0"
+  },
+  "all_required_2x_pass": false
+}
