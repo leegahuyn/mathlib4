@@ -68,11 +68,7 @@ example (g : Submodule ℂ (E × F)) :
   rw [Submodule.topologicalClosure_coe, Submodule.topologicalClosure_coe]
   change e (x₀, x₁) ∈ closure (e '' (g : Set (E × F))) ↔
     (x₀, x₁) ∈ closure (g : Set (E × F))
-  have himage :
-      e '' closure (g : Set (E × F)) =
-        closure (e '' (g : Set (E × F))) := by
-    simpa only using e.toHomeomorph.image_closure (g : Set (E × F))
-  rw [← himage]
+  rw [← e.image_closure]
   constructor
   · rintro ⟨y, hy, hxy⟩
     have : y = (x₀, x₁) := e.injective hxy
