@@ -25,7 +25,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       BRANCH: ci/fa319-isolated-20260807
     steps:
-      - name: Keep only the PASS 348 frontier
+      - name: Keep only the PASS 349 frontier
         shell: bash
         run: |
           set -euo pipefail
@@ -38,7 +38,7 @@ jobs:
                 [[ "${run_id}" = "${GITHUB_RUN_ID}" ]] && continue
                 keep=false
                 case "${run_name}" in
-                  'Diagnose PASS 348 FunctionalAnalysis frontier'|\
+                  'Diagnose PASS 349 FunctionalAnalysis frontier'|\
                   'PR9 focused queue cleanup v7')
                     keep=true
                     ;;
