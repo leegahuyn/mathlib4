@@ -1,0 +1,17 @@
+{
+  "checked_at_utc": "2026-08-08T11:02:05.293472+00:00",
+  "branch": "fix/fa-live-v5-tournament-20260808",
+  "head_sha": "6441b1b68ca18b1f2440431bd318c197f7ef4b36",
+  "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+  "fa_first_exit": 1,
+  "fa_second_exit": 99,
+  "first_error": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18907:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+  "first_five_errors": [
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18907:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18908:4: error: Type mismatch: After simplification, term",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18913:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18914:4: error: Type mismatch: After simplification, term",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18919:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class"
+  ],
+  "final_three_stage_marker": false
+}
