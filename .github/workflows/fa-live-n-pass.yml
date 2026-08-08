@@ -1,0 +1,253 @@
+name: Persistent FA N-pass chain then Mock3 QYM
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa-live-n-pass-20260808
+    paths:
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - '.fa-live-seeded'
+      - '.github/workflows/fa-live-n-pass.yml'
+      - 'scripts/fa_live_step.py'
+      - 'scripts/fa_live_statement_fingerprint.py'
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: persistent-fa-n-pass
+  cancel-in-progress: false
+
+jobs:
+  step:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout live branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa-live-n-pass-20260808
+          fetch-depth: 800
+          persist-credentials: true
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa-live-lean-version.txt
+          lake --version | tee /tmp/fa-live-lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/fa-live-cache.log
+
+      - name: Seed checked-in source from PASS 359 candidate
+        id: seed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f .fa-live-seeded ]]; then
+            echo 'seeded=true' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf /tmp/diagnose-pass359-fa
+          set +e
+          bash scripts/diagnose_pass359_fa.sh > /tmp/fa-live-seed.log 2>&1
+          set -e
+          source_file='/tmp/diagnose-pass359-fa/source/Mock2_FunctionalAnalysis-pass359.lean'
+          test -s "${source_file}"
+          cp "${source_file}" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 scripts/fa_live_statement_fingerprint.py \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --write .fa-live-statements.json > /tmp/fa-live-fingerprint.log
+          printf 'PASS359 seed materialized\n' > .fa-live-seeded
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            .fa-live-seeded .fa-live-statements.json
+          git commit -m 'fix(fa): materialize PASS 359 seed for persistent N-pass chain'
+          git push origin HEAD:fix/fa-live-n-pass-20260808
+          echo 'seeded=false' >> "${GITHUB_OUTPUT}"
+
+      - name: Stop seed run after triggering next commit
+        if: steps.seed.outputs.seeded == 'false'
+        shell: bash
+        run: exit 0
+
+      - name: Run one deterministic kernel-gated step
+        if: steps.seed.outputs.seeded == 'true'
+        id: deterministic
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa_live_step.py --materialize-progress \
+            > /tmp/fa-live-step.log 2>&1
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          cat build-logs/fa-live-step/state.json || true
+          exit 0
+
+      - name: Use model agent when deterministic step is stuck
+        if: steps.seed.outputs.seeded == 'true' && steps.deterministic.outputs.exit_code == '5'
+        id: model
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/github_models_fa_agent.py \
+            --seed PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --rounds 1 --attempts 3 --materialize-on-pass \
+            > /tmp/fa-live-model.log 2>&1
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          # Preserve a model-accepted one-declaration advance even when the one-round run returns round-limit.
+          if [[ -s build-logs/fa-model-agent/working.lean ]]; then
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          state_path = Path('build-logs/fa-model-agent/state.json')
+          if state_path.exists():
+              state = json.loads(state_path.read_text())
+              history = state.get('history', [])
+              if history and history[-1].get('accepted_attempt'):
+                  Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').write_text(
+                      Path('build-logs/fa-model-agent/working.lean').read_text(), encoding='utf-8')
+          PY
+          fi
+          exit 0
+
+      - name: Guard immutable public statements and forbidden tokens
+        if: steps.seed.outputs.seeded == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa_live_statement_fingerprint.py \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --compare .fa-live-statements.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          text = path.read_text(encoding='utf-8')
+          text = re.sub(r'/-.*?-/', '', text, flags=re.S)
+          text = re.sub(r'--.*$', '', text, flags=re.M)
+          forbidden = re.compile(
+              r'(?m)^\s*(?:sorry|admit)\b|(?m)^\s*axiom\b|(?m)^\s*unsafe\b|'
+              r'\bnative_decide\b|\bLean\.ofReduceBool\b'
+          )
+          match = forbidden.search(text)
+          if match:
+              raise SystemExit(f'forbidden token: {match.group(0)!r}')
+          PY
+
+      - name: Determine and persist outcome
+        if: steps.seed.outputs.seeded == 'true'
+        id: persist
+        shell: bash
+        env:
+          DET_RC: ${{ steps.deterministic.outputs.exit_code }}
+          MODEL_RC: ${{ steps.model.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p /tmp/fa-live-evidence
+          cp -r build-logs/fa-live-step /tmp/fa-live-evidence/ 2>/dev/null || true
+          cp -r build-logs/fa-model-agent /tmp/fa-live-evidence/ 2>/dev/null || true
+          cp /tmp/fa-live-step.log /tmp/fa-live-evidence/ 2>/dev/null || true
+          cp /tmp/fa-live-model.log /tmp/fa-live-evidence/ 2>/dev/null || true
+
+          set +e
+          lake env lean -DmaxErrors=1 \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/fa-live-evidence/current.log 2>&1
+          current_rc=$?
+          set -e
+          echo "current_rc=${current_rc}" >> "${GITHUB_OUTPUT}"
+
+          if [[ ${current_rc} -eq 0 ]]; then
+            set +e
+            lake env lean -DmaxErrors=2000 \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              > /tmp/fa-live-evidence/current-second.log 2>&1
+            second_rc=$?
+            set -e
+            echo "second_rc=${second_rc}" >> "${GITHUB_OUTPUT}"
+            if [[ ${second_rc} -eq 0 ]]; then
+              echo 'fa_pass=true' >> "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+          fi
+          echo 'fa_pass=false' >> "${GITHUB_OUTPUT}"
+
+          if git diff --quiet -- PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; then
+            echo 'No kernel-verified forward source change was produced.' >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          first_error="$(grep -m1 -E '\.lean:[0-9]+:[0-9]+:.*error' /tmp/fa-live-evidence/current.log || true)"
+          printf '%s\n' "${first_error}" > .fa-live-frontier.txt
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean .fa-live-frontier.txt
+          git commit -m "fix(fa): advance persistent frontier"
+          git push origin HEAD:fix/fa-live-n-pass-20260808
+
+      - name: Verify Integrated Mock3 and QYM twice after FA PASS
+        if: steps.persist.outputs.fa_pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          root='.lake/build/lib/lean/PrimalitySheafVerification'
+          logs='/tmp/fa-live-final'
+          mkdir -p "${root}" "${logs}"
+          compile_twice() {
+            local src="$1" base out
+            base="$(basename "${src}" .lean)"
+            out="${root}/${base}"
+            for n in 1 2; do
+              rm -f "${out}.olean" "${out}.ilean"
+              lake env lean -DmaxErrors=2000 -o "${out}.olean" -i "${out}.ilean" "${src}" \
+                > "${logs}/${base}-${n}.log" 2>&1
+              test -s "${out}.olean" && test -s "${out}.ilean"
+              ! grep -n 'error:' "${logs}/${base}-${n}.log"
+            done
+          }
+          compile_twice PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mapfile -t middle < <({
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock2_FunctionalAnalysis_Integrated*.lean'
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean'
+          } | sort -u)
+          test ${#middle[@]} -gt 0
+          for src in "${middle[@]}"; do compile_twice "${src}"; done
+          mapfile -t qym < <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'QYM*.lean' | sort)
+          test ${#qym[@]} -gt 0
+          for src in "${qym[@]}"; do compile_twice "${src}"; done
+          printf 'FA_2X_PASS\nINTEGRATED_MOCK3_2X_PASS\nQYM_2X_PASS\n' > "${logs}/FINAL_PASS.txt"
+
+      - name: Upload live-chain evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-live-n-pass-${{ github.sha }}
+          path: |
+            /tmp/fa-live-evidence
+            /tmp/fa-live-final
+            /tmp/fa-live-lean-version.txt
+            /tmp/fa-live-lake-version.txt
+            /tmp/fa-live-cache.log
+            /tmp/fa-live-seed.log
+            .fa-live-frontier.txt
+          if-no-files-found: warn
+          retention-days: 90
