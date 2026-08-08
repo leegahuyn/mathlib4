@@ -1,0 +1,172 @@
+name: Model-assisted FA then Mock3 QYM 2x
+
+on:
+  push:
+    branches:
+      - fix/fa359-final-isolated-20260808
+    paths:
+      - '.github/workflows/fa-model-agent-to-mock3-qym.yml'
+      - 'scripts/github_models_fa_agent.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: model-assisted-fa-mock3-qym
+  cancel-in-progress: false
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa359-final-isolated-20260808
+          fetch-depth: 700
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/model-agent-lean-version.txt
+          lake --version | tee /tmp/model-agent-lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/model-agent-cache.log
+
+      - name: Reconstruct PASS 359 seed
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf /tmp/diagnose-pass359-fa
+          set +e
+          bash scripts/diagnose_pass359_fa.sh > /tmp/model-agent-pass359.log 2>&1
+          set -e
+          seed='/tmp/diagnose-pass359-fa/source/Mock2_FunctionalAnalysis-pass359.lean'
+          if [[ ! -s "${seed}" ]]; then
+            seed='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          fi
+          cp "${seed}" /tmp/model-agent-seed.lean
+          sha256sum /tmp/model-agent-seed.lean | tee /tmp/model-agent-seed.sha256
+
+      - name: Run model-assisted kernel gate
+        id: agent
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/github_models_fa_agent.py \
+            --seed /tmp/model-agent-seed.lean \
+            --rounds 36 \
+            --attempts 3 \
+            --materialize-on-pass \
+            > /tmp/fa-model-agent.stdout 2>&1
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          tail -400 /tmp/fa-model-agent.stdout || true
+          cat build-logs/fa-model-agent/state.json || true
+          exit 0
+
+      - name: Upload model-agent evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-model-agent-${{ github.sha }}
+          path: |
+            /tmp/model-agent-lean-version.txt
+            /tmp/model-agent-lake-version.txt
+            /tmp/model-agent-cache.log
+            /tmp/model-agent-pass359.log
+            /tmp/model-agent-seed.sha256
+            /tmp/fa-model-agent.stdout
+            build-logs/fa-model-agent
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Require two-run FA PASS
+        shell: bash
+        env:
+          AGENT_RC: ${{ steps.agent.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          test "${AGENT_RC}" = 0
+          test -s build-logs/fa-model-agent/Mock2_FunctionalAnalysis.PASS.lean
+          cmp -s build-logs/fa-model-agent/Mock2_FunctionalAnalysis.PASS.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+
+      - name: Direct-source ordered verification twice
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          root='.lake/build/lib/lean/PrimalitySheafVerification'
+          logs='/tmp/model-ordered-pass'
+          mkdir -p "${root}" "${logs}"
+
+          compile_twice() {
+            local src="$1"
+            local base
+            base="$(basename "${src}" .lean)"
+            local out="${root}/${base}"
+            for n in 1 2; do
+              rm -f "${out}.olean" "${out}.ilean"
+              lake env lean -DmaxErrors=2000 \
+                -o "${out}.olean" -i "${out}.ilean" "${src}" \
+                > "${logs}/${base}-${n}.log" 2>&1
+              test -s "${out}.olean"
+              test -s "${out}.ilean"
+              ! grep -n 'error:' "${logs}/${base}-${n}.log"
+            done
+          }
+
+          # Strict order: FA, Integrated/Mock3, QYM.
+          compile_twice PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mapfile -t middle < <(
+            {
+              find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock2_FunctionalAnalysis_Integrated*.lean'
+              find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean'
+            } | sort -u
+          )
+          test ${#middle[@]} -gt 0
+          for src in "${middle[@]}"; do compile_twice "${src}"; done
+          mapfile -t qym < <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'QYM*.lean' | sort)
+          test ${#qym[@]} -gt 0
+          for src in "${qym[@]}"; do compile_twice "${src}"; done
+          printf 'FA_2X_PASS\nINTEGRATED_MOCK3_2X_PASS\nQYM_2X_PASS\n' \
+            > "${logs}/FINAL_PASS.txt"
+
+      - name: Upload ordered PASS evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: model-ordered-fa-mock3-qym-${{ github.sha }}
+          path: /tmp/model-ordered-pass
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Commit verified FA source only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: materialize verified FA source before Mock3 QYM'
+            git push origin HEAD:fix/fa359-final-isolated-20260808
+          fi
