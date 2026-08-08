@@ -1,0 +1,174 @@
+name: Probe GitHub Models backend for FA repair
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - probe/fa-model-backends-20260808
+    paths:
+      - '.github/workflows/fa-model-backend-probe.yml'
+      - '.fa-model-probe-kick'
+
+permissions:
+  contents: write
+  models: read
+
+concurrency:
+  group: fa-model-backend-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: probe/fa-model-backends-20260808
+          fetch-depth: 10
+          persist-credentials: true
+
+      - name: Probe catalog and REST inference
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          python3 - <<'PY'
+          import json, os, urllib.error, urllib.request
+          from pathlib import Path
+
+          token = os.environ['GITHUB_TOKEN']
+          headers = {
+              'Authorization': f'Bearer {token}',
+              'Accept': 'application/json',
+              'X-GitHub-Api-Version': '2022-11-28',
+          }
+          result = {'catalog': {}, 'inference': [], 'selected_model': None, 'rest_ok': False}
+          ids = []
+          try:
+              request = urllib.request.Request(
+                  'https://models.github.ai/catalog/models', method='GET', headers=headers)
+              with urllib.request.urlopen(request, timeout=120) as response:
+                  payload = json.loads(response.read().decode('utf-8'))
+                  result['catalog']['http_status'] = response.status
+              entries = payload if isinstance(payload, list) else payload.get('models', [])
+              for entry in entries:
+                  if isinstance(entry, dict):
+                      model_id = entry.get('id') or entry.get('name') or entry.get('model')
+                      if isinstance(model_id, str):
+                          ids.append(model_id)
+              result['catalog']['count'] = len(ids)
+              result['catalog']['ids'] = ids
+          except Exception as exc:
+              result['catalog']['error'] = f'{type(exc).__name__}: {exc}'
+
+          preferred = [
+              'openai/gpt-5.2-codex', 'openai/gpt-5.1-codex-max',
+              'openai/gpt-5.1-codex', 'openai/gpt-5.3', 'openai/gpt-5.2',
+              'openai/gpt-5.1', 'openai/gpt-5', 'anthropic/claude-opus-4.6',
+              'anthropic/claude-opus-4.5', 'anthropic/claude-opus-4.1',
+              'anthropic/claude-sonnet-4.6', 'anthropic/claude-sonnet-4.5',
+              'openai/gpt-4.1', 'openai/gpt-4o',
+          ]
+          available = []
+          for candidate in preferred:
+              if candidate in ids and candidate not in available:
+                  available.append(candidate)
+          for model_id in ids:
+              low = model_id.lower()
+              if any(term in low for term in ('gpt-5', 'claude-opus', 'claude-sonnet', 'gpt-4.1')):
+                  if model_id not in available:
+                      available.append(model_id)
+          if not available:
+              available = preferred[-2:]
+
+          endpoint = 'https://models.github.ai/inference/chat/completions'
+          for model in available[:8]:
+              payload = json.dumps({
+                  'model': model,
+                  'temperature': 0,
+                  'max_tokens': 100,
+                  'messages': [
+                      {'role': 'system', 'content': 'Return exactly the word OK.'},
+                      {'role': 'user', 'content': 'Backend probe.'},
+                  ],
+              }).encode('utf-8')
+              request = urllib.request.Request(
+                  endpoint,
+                  data=payload,
+                  method='POST',
+                  headers={**headers, 'Content-Type': 'application/json'},
+              )
+              record = {'model': model}
+              try:
+                  with urllib.request.urlopen(request, timeout=180) as response:
+                      data = json.loads(response.read().decode('utf-8'))
+                      record['http_status'] = response.status
+                  record['content'] = data['choices'][0]['message']['content']
+                  record['ok'] = True
+                  result['inference'].append(record)
+                  result['selected_model'] = model
+                  result['rest_ok'] = True
+                  break
+              except urllib.error.HTTPError as exc:
+                  record['http_status'] = exc.code
+                  record['error_body'] = exc.read().decode('utf-8', 'replace')[:1000]
+              except Exception as exc:
+                  record['error'] = f'{type(exc).__name__}: {exc}'
+              result['inference'].append(record)
+
+          Path('build-logs/github-models-backend.json').write_text(
+              json.dumps(result, indent=2, ensure_ascii=False), encoding='utf-8')
+          print(json.dumps(result, indent=2, ensure_ascii=False))
+          PY
+
+      - name: Probe gh-models CLI without making it authoritative
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh extension install github/gh-models > build-logs/gh-models-install.log 2>&1
+          install_rc=$?
+          if [[ ${install_rc} -eq 0 ]]; then
+            gh models --help > build-logs/gh-models-help.log 2>&1
+            help_rc=$?
+          else
+            help_rc=99
+          fi
+          python3 - <<PY
+          import json
+          from pathlib import Path
+          path = Path('build-logs/github-models-backend.json')
+          data = json.loads(path.read_text())
+          data['gh_models_cli'] = {
+              'install_exit': int('${install_rc}'),
+              'help_exit': int('${help_rc}'),
+          }
+          path.write_text(json.dumps(data, indent=2), encoding='utf-8')
+          PY
+          exit 0
+
+      - name: Commit backend result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/github-models-backend.json \
+            build-logs/gh-models-install.log build-logs/gh-models-help.log
+          if ! git diff --cached --quiet; then
+            git commit -m 'test: record GitHub Models backend probe'
+            git push origin HEAD:probe/fa-model-backends-20260808
+          fi
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-model-backend-${{ github.sha }}
+          path: build-logs
+          if-no-files-found: error
+          retention-days: 30
