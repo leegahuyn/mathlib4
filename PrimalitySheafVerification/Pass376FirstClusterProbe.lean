@@ -19,7 +19,6 @@ example (t : ℝ) : HasDerivAt probeLeftParam Complex.I t := by
   filter_upwards [self_mem_nhdsWithin] with s hs
   simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs
   dsimp [probeLeftParam]
-  rw [Complex.real_smul]
   push_cast
   field_simp [hs]
   ring
@@ -31,7 +30,6 @@ example (t : ℝ) : HasDerivAt probeRightParam Complex.I t := by
   filter_upwards [self_mem_nhdsWithin] with s hs
   simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs
   dsimp [probeRightParam]
-  rw [Complex.real_smul]
   push_cast
   field_simp [hs]
   ring
@@ -41,4 +39,8 @@ example (t : ℝ) :
         (((-t / (4 * Real.sqrt (1 - t ^ 2 / 4)) : ℝ) : ℂ) * Complex.I)) =
       ({ re := 1 / 2
          im := -t / (4 * Real.sqrt (1 - t ^ 2 / 4)) } : ℂ) := by
-  apply Complex.ext <;> simp
+  apply Complex.ext <;>
+    simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re,
+      Complex.ofReal_im, Complex.mul_re, Complex.mul_im,
+      Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
+      sub_zero, add_zero, zero_add]
