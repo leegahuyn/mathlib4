@@ -12,6 +12,10 @@ permissions:
   contents: read
   actions: read
 
+concurrency:
+  group: pass355-double-adjoint-probe
+  cancel-in-progress: true
+
 jobs:
   probe:
     runs-on: ubuntu-24.04
