@@ -26,7 +26,7 @@ jobs:
       BRANCH: ci/fa319-isolated-20260807
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Keep only PASS 346 and the corrected instance probe
+      - name: Keep only PASS 347 FunctionalAnalysis frontier
         shell: bash
         run: |
           set -euo pipefail
@@ -40,8 +40,7 @@ jobs:
                 keep=false
                 if [[ "${run_sha}" = "${HEAD_SHA}" ]]; then
                   case "${run_name}" in
-                    'Diagnose PASS 346 global-instance FunctionalAnalysis frontier'|\
-                    'Probe PASS 344 fixed-phase core instances v2'|\
+                    'Diagnose PASS 347 FunctionalAnalysis frontier'|\
                     'PR9 focused queue cleanup v7')
                       keep=true
                       ;;
