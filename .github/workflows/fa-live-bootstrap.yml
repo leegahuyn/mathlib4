@@ -1,0 +1,23 @@
+name: Bootstrap persistent FA live branch
+
+on:
+  push:
+    branches:
+      - fix/fa-live-n-pass-20260808
+    paths:
+      - '.github/workflows/fa-live-bootstrap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - run: echo persistent-live-branch-bootstrapped
