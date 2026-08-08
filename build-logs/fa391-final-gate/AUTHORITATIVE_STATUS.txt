@@ -1,0 +1,8 @@
+authoritative_complete=false
+gate_exit_code=4
+stage=Mock2.lean
+marker_exists=false
+promoted_head=
+failing_module=Mock2.lean
+failing_exit_code=0
+failing_error_headers=0

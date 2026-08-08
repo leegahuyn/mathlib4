@@ -1,0 +1,41 @@
+[
+  {
+    "module": "Mock2_FunctionalAnalysis.lean",
+    "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+    "counts": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "pass": true
+  },
+  {
+    "module": "Mock2_FunctionalAnalysis_Integrated.lean",
+    "source_sha256": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439",
+    "counts": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "pass": true
+  },
+  {
+    "module": "QYM.lean",
+    "source_sha256": "698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0",
+    "counts": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "pass": true
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "complete": false,
+  "stage": "Mock2.lean",
+  "kind": "prerequisite",
+  "result": {
+    "module": "Mock2.lean",
+    "label": "prereq-Mock2",
+    "exit_code": 0,
+    "error_headers": 0,
+    "olean": false,
+    "ilean": false,
+    "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+    "log": "build-logs/fa391-final-gate/prereq-Mock2.log"
+  },
+  "results": [
+    {
+      "module": "Mock2.lean",
+      "label": "prereq-Mock2",
+      "exit_code": 0,
+      "error_headers": 0,
+      "olean": false,
+      "ilean": false,
+      "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+      "log": "build-logs/fa391-final-gate/prereq-Mock2.log"
+    }
+  ],
+  "gate_exit_code": "4",
+  "marker_exists": false,
+  "promoted_head": "",
+  "authoritative_complete": false
+}
