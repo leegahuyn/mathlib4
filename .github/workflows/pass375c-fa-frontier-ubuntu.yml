@@ -1,0 +1,133 @@
+name: PASS 375c FunctionalAnalysis frontier Ubuntu
+
+on:
+  push:
+    branches: [fix/fa375c-remote-20260808]
+    paths:
+      - '.github/workflows/pass375c-fa-frontier-ubuntu.yml'
+      - 'scripts/apply_pass375c_candidate.py'
+      - 'scripts/pass375c/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fa375c-frontier-ubuntu
+  cancel-in-progress: true
+
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact PASS 375c head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 700
+          persist-credentials: false
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/pass375c/logs /tmp/pass375c/source
+          lean --version | tee /tmp/pass375c/lean-version.txt
+          lake --version | tee /tmp/pass375c/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/pass375c/logs/cache-get.log
+
+      - name: Reconstruct PASS 358 without compiling it
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          open_marker = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          '''
+          close_marker = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          if text.count(open_marker) != 1 or text.count(close_marker) != 1:
+              raise SystemExit('could not locate the PASS 341 direct compile command exactly')
+          text = text.replace(open_marker, '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''')
+          text = text.replace(close_marker, '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''')
+          path.write_text(text, encoding='utf-8')
+          PY
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass358_fa.sh
+          source_file='/tmp/diagnose-pass358-fa/source/Mock2_FunctionalAnalysis-pass358.lean'
+          test -s "${source_file}"
+          cp "${source_file}" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)" = \
+            '8fd20f88c43060d392bab969c91a84b7c0bb08657af7728752a77c5f3c57c6c6'
+
+      - name: Apply cumulative PASS 375c candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_pass375c_candidate.py | tee /tmp/pass375c/logs/apply.log
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | \
+            tee /tmp/pass375c/source-sha256.txt
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            /tmp/pass375c/source/Mock2_FunctionalAnalysis-pass375c.lean
+
+      - name: Compile PASS 375c frontier
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean -DmaxErrors=200 \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/pass375c/logs/Mock2_FunctionalAnalysis-pass375c.log 2>&1
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          grep -n 'error:' /tmp/pass375c/logs/Mock2_FunctionalAnalysis-pass375c.log \
+            > /tmp/pass375c/logs/errors.txt || true
+          grep -n 'warning:' /tmp/pass375c/logs/Mock2_FunctionalAnalysis-pass375c.log \
+            > /tmp/pass375c/logs/warnings.txt || true
+          tail -1200 /tmp/pass375c/logs/Mock2_FunctionalAnalysis-pass375c.log \
+            > /tmp/pass375c/logs/tail.txt || true
+          {
+            echo "source_sha256=$(cut -d' ' -f1 /tmp/pass375c/source-sha256.txt)"
+            echo "exit_code=${rc}"
+            echo "error_header_count=$(wc -l < /tmp/pass375c/logs/errors.txt)"
+            echo "warning_count=$(wc -l < /tmp/pass375c/logs/warnings.txt)"
+          } | tee /tmp/pass375c/summary.txt
+          exit 0
+
+      - name: Upload PASS 375c diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass375c-fa-frontier-${{ github.sha }}
+          path: /tmp/pass375c
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce PASS 375c result
+        if: always()
+        shell: bash
+        env:
+          COMPILE_EXIT_CODE: ${{ steps.compile.outputs.exit_code }}
+        run: |
+          test -n "${COMPILE_EXIT_CODE:-}"
+          exit "${COMPILE_EXIT_CODE}"
