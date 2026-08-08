@@ -1,0 +1,89 @@
+name: PASS 358 FunctionalAnalysis frontier Ubuntu
+
+on:
+  push:
+    branches: [fix/fa358-final-isolated-20260808]
+    paths:
+      - '.github/workflows/pass358-fa-frontier-ubuntu.yml'
+      - 'scripts/diagnose_pass358_fa.sh'
+      - 'scripts/apply_three_hundred_fifty_eighth_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fa358-frontier-ubuntu
+  cancel-in-progress: true
+
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact PASS 358 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 760
+          persist-credentials: false
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass358-fa/logs
+          lean --version | tee /tmp/diagnose-pass358-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass358-fa/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass358-fa/logs/cache-get.log
+
+      - name: Limit diagnostics to first 100 errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          old = '-DmaxErrors=2000'
+          if text.count(old) != 1:
+              raise SystemExit('expected exactly one maxErrors setting')
+          path.write_text(text.replace(old, '-DmaxErrors=100'), encoding='utf-8')
+          PY
+
+      - name: Compile PASS 358 frontier
+        id: diagnostic
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass358_fa.sh
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload PASS 358 frontier diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass358-fa-frontier-${{ github.sha }}
+          path: /tmp/diagnose-pass358-fa
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce PASS 358 frontier result
+        if: always()
+        shell: bash
+        env:
+          DIAGNOSTIC_EXIT_CODE: ${{ steps.diagnostic.outputs.exit_code }}
+        run: |
+          test -n "${DIAGNOSTIC_EXIT_CODE:-}"
+          exit "${DIAGNOSTIC_EXIT_CODE}"
