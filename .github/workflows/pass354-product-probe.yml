@@ -1,0 +1,63 @@
+name: PASS 354 product Hilbert instance probe
+
+on:
+  push:
+    branches: [probe/fa354-product-inner-20260808]
+    paths:
+      - '.github/workflows/pass354-product-probe.yml'
+      - 'PrimalitySheafVerification/Pass354ProductProbe.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+      - name: Compile product probe
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean -DmaxErrors=100 PrimalitySheafVerification/Pass354ProductProbe.lean \
+            > /tmp/pass354-product-probe.log 2>&1
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          cat /tmp/pass354-product-probe.log
+          exit 0
+      - name: Upload probe log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass354-product-probe-${{ github.sha }}
+          path: /tmp/pass354-product-probe.log
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce probe
+        if: always()
+        shell: bash
+        env:
+          PROBE_EXIT_CODE: ${{ steps.compile.outputs.exit_code }}
+        run: |
+          test -n "${PROBE_EXIT_CODE:-}"
+          exit "${PROBE_EXIT_CODE}"
