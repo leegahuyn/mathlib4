@@ -1,0 +1,64 @@
+name: Probe PASS 344 fixed-phase core instances v2
+
+on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/probe-pass344-core-instances-v2.yml'
+      - 'scripts/probe_pass344_core_instances_v2.sh'
+      - 'scripts/diagnose_pass344_frontier_v2.sh'
+      - 'scripts/fa344_frontier_v2_repair.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: probe-pass344-core-instances-v2-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Checkout exact PR9 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 440
+          persist-credentials: false
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/probe-pass344-core-instances-v2/logs
+          lean --version | tee /tmp/probe-pass344-core-instances-v2/lean-version.txt
+          lake --version | tee /tmp/probe-pass344-core-instances-v2/lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/probe-pass344-core-instances-v2/logs/cache-get.log
+
+      - name: Run robust fixed-phase instance probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/probe_pass344_core_instances_v2.sh
+
+      - name: Upload robust probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: probe-pass344-core-instances-v2-${{ env.SOURCE_SHA }}
+          path: /tmp/probe-pass344-core-instances-v2
+          if-no-files-found: error
+          retention-days: 90
