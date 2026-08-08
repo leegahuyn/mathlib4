@@ -4,6 +4,10 @@ open Set
 
 noncomputable section
 
+section CanonicalCalculusInstances
+
+local attribute [-instance] Real.instAddCommGroup Complex.addCommGroup Semiring.toModule
+
 noncomputable def probeLeftParam (t : ℝ) : ℂ :=
   (((-(1 / 2 : ℝ)) : ℂ) +
     ((Real.sqrt 3 / 2 + t : ℝ) : ℂ) * Complex.I)
@@ -23,7 +27,8 @@ example (t : Set.Ici (0 : ℝ)) :
       (hasDerivAt_const (t : ℝ) (Real.sqrt 3 / 2)).add
         (hasDerivAt_id (t : ℝ))
   unfold probeLeftParam
-  exact hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+  simpa only [zero_add, one_mul] using
+    hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
 
 set_option backward.isDefEq.respectTransparency false in
 example (t : Set.Ici (0 : ℝ)) :
@@ -36,4 +41,14 @@ example (t : Set.Ici (0 : ℝ)) :
       (hasDerivAt_const (t : ℝ) (Real.sqrt 3 / 2)).add
         (hasDerivAt_id (t : ℝ))
   unfold probeRightParam
-  exact hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+  simpa only [zero_add, one_mul] using
+    hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+
+example (t : ℝ) :
+    (((1 / 2 : ℝ) : ℂ) +
+        (((-t / (4 * Real.sqrt (1 - t ^ 2 / 4)) : ℝ) : ℂ) * Complex.I)) =
+      ({ re := 1 / 2
+         im := -t / (4 * Real.sqrt (1 - t ^ 2 / 4)) } : ℂ) := by
+  apply Complex.ext <;> simp
+
+end CanonicalCalculusInstances
