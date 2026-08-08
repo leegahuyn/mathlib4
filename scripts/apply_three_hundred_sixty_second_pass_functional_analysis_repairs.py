@@ -1,0 +1,48 @@
+from __future__ import annotations
+
+import base64
+from hashlib import sha256
+from pathlib import Path
+import subprocess
+import zlib
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET = ROOT / "PrimalitySheafVerification" / "Mock2_FunctionalAnalysis.lean"
+EXPECTED_INPUT_SHA256 = "f694e78260b73e1e6d22ebfd36208d7507791b930b6d69098eeab0f62e206e13"
+EXPECTED_OUTPUT_SHA256 = "597921554eb3ad343faf3463d8368c22f496fef4fe638877f5d280ed1a4468d9"
+PATCH_ZLIB_BASE64 = "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"
+
+
+def file_sha256(path: Path) -> str:
+    return sha256(path.read_bytes()).hexdigest()
+
+
+def main() -> int:
+    before = file_sha256(TARGET)
+    print(f"input_sha256={before}")
+    if before == EXPECTED_OUTPUT_SHA256:
+        print("[pass362] already applied")
+        return 0
+    if before != EXPECTED_INPUT_SHA256:
+        raise RuntimeError(
+            f"unexpected pass362 input sha256: {before}; expected {EXPECTED_INPUT_SHA256}"
+        )
+    patch = zlib.decompress(base64.b64decode(PATCH_ZLIB_BASE64))
+    subprocess.run(
+        ["git", "apply", "--whitespace=nowarn", "-"],
+        cwd=ROOT,
+        input=patch,
+        check=True,
+    )
+    after = file_sha256(TARGET)
+    print(f"output_sha256={after}")
+    if after != EXPECTED_OUTPUT_SHA256:
+        raise RuntimeError(
+            f"unexpected pass362 output sha256: {after}; expected {EXPECTED_OUTPUT_SHA256}"
+        )
+    print("[pass362] FunctionalAnalysis dependent lowering transport normalized")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
