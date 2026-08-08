@@ -1,0 +1,13 @@
+{
+  "status": "baseline-trust-audit-failed",
+  "audit": {
+    "pass": false,
+    "violations": {
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": [
+        "\\bsorry\\b",
+        "\\badmit\\b",
+        "\\bunsafe\\b"
+      ]
+    }
+  }
+}
