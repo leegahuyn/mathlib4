@@ -1,224 +1,50 @@
 from __future__ import annotations
 
+from base64 import b64decode
 from hashlib import sha256
+import json
 from pathlib import Path
+from zlib import decompress
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / 'PrimalitySheafVerification' / 'Mock2_FunctionalAnalysis.lean'
 EXPECTED_INPUT_SHA256 = 'be21e702089c0de8f9a5a4e5c1af8eb0963869cf93271c469d0516e55caa6fd5'
 EXPECTED_OUTPUT_SHA256 = 'c980501c4a7f0f6582c5d67ec7fa08c7af37ffd6aa3335a3724928f94c2de03f'
+PAYLOAD = '''eNrlVs1u20YQfpWBL6FamtAfJcVACgSq7RiwHTd2T7JArMiltcj+0MtdKfIpCIICvfURgqBv0PfoQ+hJOkuRFGXYiQtfCvQy4M/MNzPf7MzsZNJ5OWz3fJSdrj/Zk0rGSmTWkBmnkNAUYqV0wiQxNAdPwgGsP//ZgoNXMFtdyz1/D4BTc4LfXyfJWAlxrJXNwDuRC6pzemjIEftAk4s5yelYaQrSGZeWAOwRtR0wuevoTCUWg1t//vRsNyVU5YB+ILGBX6wyjErzhvEZ1Wa8JSAQ72tIj3e3f5w7TxOW0+TeR66WVN/7ihjTqT/ptgdh6G/kBDHnZEFh/jo2TCHPtSOAv/+C9cevcAevwPPw5QAuT72uX1Sitfm1WxGAnImMwOSYCEGulqpK6ZgqQY1eBTfljyt1edp9Rwmfgs2ZvGl49Z5uHOXCchfmXasE0EuYrH/7o0pn2kh5UKQ8KlJuVuaCZFS/1TNmjrAKSpcRwXysFpV5J+x1fCd7hbnzEiuZGyKxTJhxbMY2z64I45Fxgt5Gd1QrH6TSonisI+n2hm1/I/8v5GOynSLlXkn+SX7yAP3IN9EMKfWheD+z3LCMM/pgSXqdHvKIsl+CIuxjTYnz40fotGA5x54ogzXqyEqwzW59zD4oOgwkeDFWeWyNStO3GDXB0wLn+N22YL9B4oNaVQzed73Yik9BsogkyQuMcvFAqUFJvoJJqTWt/5EZ5Q0EV6YXEBepfgPCqfngZJTb2bRB88jR3O8+ieb959BczKzn07z/bZorL/8xmsOuozncnOaGUXEqxnWqbjvhlsRkfbhgAWJEJMv4qoE07Duk4eA+UpH4v0HqhQ6pFw6eHFPD1k05lN0nR7G1HblZjfJlYVssx+36CzK1RJmwxfrTR7wlSMOkVTaPioHcHGW/Zngs3hCeXnAiadBQZcKla1YZjcR7iFpNqxSPKw7dn+D83E25QNKIpWmA8d8FTET46sY5juCo3qf9YQeJQhnWPeLlcwyzhEAfznYDkKk8cLeI379AG1KtRMM5fMfp1mHYdg7DTukwnhN5Q8G6jA9tzFlCiTyjJLd1IxZRxXOVU1nNeOzMhAgc8oT/rARhMoiJ1jhv4fp6J6pq9mOfyfFGpYV7qV0rbS4wG/RSIUowg0ihRSQt59FubHUmI7z+Odnf1hrOqDjNAkJxjW7rfsS4oTo4XGC8lnC+ClQapUrjI9Q1K/quAg4L4EFdE53ybaU99CCcH7htBbjI9dZwMPI3clITUPJLxMztxEtUf0czTXPHnWELN7VvYQk/4ABZlsRMp9N/AERRh2c='''
 
 
 def digest(text: str) -> str:
     return sha256(text.encode('utf-8')).hexdigest()
 
 
-def replace_exact(text: str, old: str, new: str, label: str, expected: int = 1) -> str:
-    count = text.count(old)
-    print(f'{label}: expected={expected} actual={count}')
-    if count != expected:
-        raise RuntimeError(f'{label}: expected {expected}, found {count}')
-    return text.replace(old, new)
-
-
 def main() -> None:
     text = TARGET.read_text(encoding='utf-8')
-    got = digest(text)
-    print(f'input_sha256={got}')
-    if got == EXPECTED_OUTPUT_SHA256:
+    input_sha = digest(text)
+    print(f'input_sha256={input_sha}')
+    if input_sha == EXPECTED_OUTPUT_SHA256:
         print('[pass347] already applied')
         return
-    if got != EXPECTED_INPUT_SHA256:
-        raise RuntimeError(f'unexpected input hash {got}')
+    if input_sha != EXPECTED_INPUT_SHA256:
+        raise RuntimeError(
+            f'unexpected pass347 input sha256: {input_sha}; '
+            f'expected {EXPECTED_INPUT_SHA256}'
+        )
 
-    text = replace_exact(text, '''noncomputable def coordinates (n : ℤ) :
-    QuotientHilbertCoordinates
-      (InverseEtaFixedPhaseCore n)
-      (OrbitPeterssonHilbert n)
-      (OrbitPeterssonHilbert (n + 1))
-      (OrbitPeterssonHilbert (n - 1)) where
-  base := l2Coordinate n
-  raised := raisedCoordinate n
-  lowered := loweredCoordinate n''', '''noncomputable def coordinates (n : ℤ) := by
-  letI : AddCommGroup (InverseEtaFixedPhaseCore n) :=
-    inverseEtaFixedPhaseCoreAddCommGroup n
-  letI : Module ℂ (InverseEtaFixedPhaseCore n) :=
-    inverseEtaFixedPhaseCoreModule n
-  exact QuotientHilbertCoordinates.mk
-    (l2Coordinate n) (raisedCoordinate n) (loweredCoordinate n)''',
-        'infer fixed-phase coordinate structure under coherent instances')
-
-    text = replace_exact(text, '''theorem compactInverseEtaOrbitZeroSmoothQuotient_covariant :
-    IsInverseEtaPaperOrbitCovariant 0
-      compactInverseEtaOrbitZeroSmoothQuotient := by
-  intro γ z
-  have hCov :=
-    SmoothCompactWeightCore.covariance
-      compactInverseEtaOrbitZeroWeightCore γ z
-  simpa only [compactInverseEtaOrbitZeroSmoothQuotient,
-    inverseEtaPaperOrbitFactor,
-    GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul] using hCov''', '''theorem compactInverseEtaOrbitZeroSmoothQuotient_covariant :
-    IsInverseEtaPaperOrbitCovariant 0
-      compactInverseEtaOrbitZeroSmoothQuotient := by
-  intro γ z
-  have hCov :=
-    SmoothCompactWeightCore.covariance
-      compactInverseEtaOrbitZeroWeightCore γ z
-  have hAction :
-      γ • z = ((γ : SL(2, ℤ)) • z) := by
-    simpa [GammaTwoQuotientGeometry.gammaTwoToSL2Real] using
-      (GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul γ z)
-  rw [← hAction]
-  simpa only [compactInverseEtaOrbitZeroSmoothQuotient,
-    inverseEtaPaperOrbitFactor] using hCov''',
-        'transport orbit-zero covariance to the integral action')
-
-    text = replace_exact(text, '''theorem constantCompactCuspTail_tail_norm_eq_zero
-    (C : ContinuousSesquilinearForm H) (hC : IsCompactOperator C) (n : ℕ) :
-    ‖(constantCompactCuspTail C hC).truncation n - C‖ = 0 := by
-  apply norm_eq_zero.mpr
-  exact constantCompactCuspTail_tail_eq_zero C hC n''', '''theorem constantCompactCuspTail_tail_norm_eq_zero
-    (C : ContinuousSesquilinearForm H) (hC : IsCompactOperator C) (n : ℕ) :
-    ‖(constantCompactCuspTail C hC).truncation n - C‖ = 0 := by
-  rw [constantCompactCuspTail_tail_eq_zero, norm_zero]''',
-        'rewrite the exact compact tail before taking its norm')
-
-    text = replace_exact(text, '''theorem rawOfSmoothCompactWeightCore_covariant (n : ℤ)
-    (u : SmoothCompactWeightCore (OrbitMultiplier n)) :
-    IsInverseEtaPaperOrbitCovariant n
-      (rawOfSmoothCompactWeightCore n u) := by
-  intro γ z
-  have hCov := SmoothCompactWeightCore.covariance u γ z
-  simpa only [rawOfSmoothCompactWeightCore,
-    IsInverseEtaPaperOrbitCovariant, OrbitMultiplier,
-    GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul] using hCov''', '''theorem rawOfSmoothCompactWeightCore_covariant (n : ℤ)
-    (u : SmoothCompactWeightCore (OrbitMultiplier n)) :
-    IsInverseEtaPaperOrbitCovariant n
-      (rawOfSmoothCompactWeightCore n u) := by
-  intro γ z
-  have hCov := SmoothCompactWeightCore.covariance u γ z
-  have hAction :
-      γ • z = ((γ : SL(2, ℤ)) • z) := by
-    simpa [GammaTwoQuotientGeometry.gammaTwoToSL2Real] using
-      (GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul γ z)
-  rw [← hAction]
-  simpa only [rawOfSmoothCompactWeightCore,
-    IsInverseEtaPaperOrbitCovariant, OrbitMultiplier] using hCov''',
-        'transport general covariance to the integral action')
-
-    text = replace_exact(text, '''noncomputable def raiseCuspCutoffCommutator (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore (n + 1) :=
-  (InverseEtaFixedPhaseCore.raise n).comp (cuspCutoffOperator N n) -
-    (cuspCutoffOperator N (n + 1)).comp
-      (InverseEtaFixedPhaseCore.raise n)''', '''noncomputable def raiseCuspCutoffCommutator (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore (n + 1) where
-  toFun u :=
-    InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u) -
-      cuspCutoffOperator N (n + 1) (InverseEtaFixedPhaseCore.raise n u)
-  map_add' u v := by
-    simp only [map_add]
-    abel
-  map_smul' c u := by
-    simp only [map_smul, smul_sub]''',
-        'construct the raising cutoff commutator pointwise')
-
-    text = replace_exact(text, '''noncomputable def lowerCuspCutoffCommutator (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore (n - 1) :=
-  (InverseEtaFixedPhaseCore.lower n).comp (cuspCutoffOperator N n) -
-    (cuspCutoffOperator N (n - 1)).comp
-      (InverseEtaFixedPhaseCore.lower n)''', '''noncomputable def lowerCuspCutoffCommutator (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore (n - 1) where
-  toFun u :=
-    InverseEtaFixedPhaseCore.lower n (cuspCutoffOperator N n u) -
-      cuspCutoffOperator N (n - 1) (InverseEtaFixedPhaseCore.lower n u)
-  map_add' u v := by
-    simp only [map_add]
-    abel
-  map_smul' c u := by
-    simp only [map_smul, smul_sub]''',
-        'construct the lowering cutoff commutator pointwise')
-
-    text = replace_exact(text, '''  simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply,
-    LinearMap.comp_apply, Pi.sub_apply]''', '''  simp only [raiseCuspCutoffCommutator, Pi.sub_apply]''',
-        'unfold pointwise raising commutator')
-    text = replace_exact(text, '''  simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply,
-    LinearMap.comp_apply]''', '''  simp only [raiseCuspCutoffCommutator]''',
-        'unfold eventually-zero raising commutator')
-    text = replace_exact(text, '''  simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply,
-    LinearMap.comp_apply, Pi.sub_apply]''', '''  simp only [lowerCuspCutoffCommutator, Pi.sub_apply]''',
-        'unfold pointwise lowering commutator')
-    text = replace_exact(text, '''  simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply,
-    LinearMap.comp_apply]''', '''  simp only [lowerCuspCutoffCommutator]''',
-        'unfold eventually-zero lowering commutator')
-
-    text = replace_exact(text, '''theorem hyperbolicDensity_continuous :
-    Continuous hyperbolicDensity := by
-  unfold hyperbolicDensity
-  refine .pow (.div₀ continuous_const ?_ ?_) _
-  · exact UpperHalfPlane.continuous_im.subtype_mk _
-  · exact fun z => NNReal.ne_iff.mp z.im_ne_zero''', '''theorem hyperbolicDensity_continuous :
-    Continuous hyperbolicDensity := by
-  unfold hyperbolicDensity
-  exact
-    (.pow (.div₀ continuous_const
-      (UpperHalfPlane.continuous_im.subtype_mk _)
-      (fun z => NNReal.ne_iff.mp z.im_ne_zero)) _)''',
-        'use the fully typed hyperbolic density continuity proof')
-
-    text = replace_exact(text, '''theorem hyperbolicDensity_ne_zero (z : ℍ) :
-    (hyperbolicDensity z : ℝ≥0∞) ≠ 0 := by
-  apply ENNReal.coe_ne_zero.mpr
-  exact pow_ne_zero 2 <|
-    div_ne_zero one_ne_zero
-      (NNReal.ne_iff.mp z.im_ne_zero)''', '''theorem hyperbolicDensity_ne_zero (z : ℍ) :
-    (hyperbolicDensity z : ℝ≥0∞) ≠ 0 := by
-  apply ENNReal.coe_ne_zero.mpr
-  exact pow_ne_zero 2 <|
-    div_ne_zero one_ne_zero
-      (show NNReal.mk z.im z.im_pos.le ≠ 0 from
-        NNReal.ne_iff.mp z.im_ne_zero)''',
-        'type the positive NNReal denominator explicitly')
-
-    text = replace_exact(text, '''  have hnot : ∀ᵐ z ∂upperEuclideanMeasure,
-      z ∉ chosenGammaTwoFundamentalDomain.carrier \
-        gammaTwoOpenCarrier := by
-    rw [ae_iff]
-    simpa using chosenCarrier_diff_open_null_upperEuclidean''', '''  have hnot : ∀ᵐ z ∂upperEuclideanMeasure,
-      z ∉ chosenGammaTwoFundamentalDomain.carrier \
-        gammaTwoOpenCarrier := by
-    rw [ae_iff]
-    change upperEuclideanMeasure
-      (chosenGammaTwoFundamentalDomain.carrier \
-        gammaTwoOpenCarrier) = 0
-    exact chosenCarrier_diff_open_null_upperEuclidean''',
-        'keep the set-difference carrier definitionally aligned')
-
-    text = replace_exact(text, '''  exact (Lp.memLp q).star.congr <|
-    Filter.Eventually.of_forall fun z => by
-      rw [Function.comp_apply, ambientStarRepresentative_apply]
-      rfl''', '''  exact MemLp.ae_eq
-    (Filter.Eventually.of_forall fun z => by
-      rw [Function.comp_apply, ambientStarRepresentative_apply]
-      rfl)
-    (Lp.memLp q).star''',
-        'transport starred Lp membership by almost-everywhere equality')
-
-    text = replace_exact(text, '''      exact hw <| by
-        rw [image_eq_zero_of_notMem_tsupport hwv, mul_zero]''', '''      exact hw <| by
-        change ambientStarRepresentative n q w * v w = 0
-        rw [image_eq_zero_of_notMem_tsupport hwv, mul_zero]''',
-        'expose the ambient integral integrand before rewriting')
-
-    out = digest(text)
-    print(f'output_sha256={out}')
-    if out != EXPECTED_OUTPUT_SHA256:
-        raise RuntimeError(f'unexpected output hash {out}')
-    TARGET.write_text(text, encoding='utf-8')
-    print('[pass347] coordinate instances, covariance, commutators, density, and measure API repaired')
+    lines = text.splitlines(keepends=True)
+    operations = json.loads(decompress(b64decode(PAYLOAD)).decode('utf-8'))
+    print(f'line_operations={len(operations)}')
+    for start, stop, replacement in reversed(operations):
+        lines[start:stop] = replacement
+    output = ''.join(lines)
+    output_sha = digest(output)
+    print(f'output_sha256={output_sha}')
+    if output_sha != EXPECTED_OUTPUT_SHA256:
+        raise RuntimeError(
+            f'unexpected pass347 output sha256: {output_sha}; '
+            f'expected {EXPECTED_OUTPUT_SHA256}'
+        )
+    TARGET.write_text(output, encoding='utf-8')
+    print('[pass347] deterministic line-index frontier repairs applied')
 
 
 if __name__ == '__main__':
