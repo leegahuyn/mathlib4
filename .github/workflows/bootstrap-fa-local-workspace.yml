@@ -88,3 +88,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
+
+      - name: Emit the bootstrap run id after preserving artifacts
+        if: always()
+        shell: bash
+        run: |
+          echo "bootstrap_run_id=${GITHUB_RUN_ID}"
+          echo "Artifacts have already been uploaded; fail deliberately so the run id is emailed."
+          exit 1
