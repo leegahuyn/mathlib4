@@ -1,0 +1,112 @@
+name: PASS 377 FunctionalAnalysis instance-frontier probe
+
+on:
+  push:
+    branches: [fix/fa377-instance-probe-20260809]
+    paths:
+      - '.github/workflows/pass377-instance-probe.yml'
+      - 'scripts/pass377_instance_probe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pass377-instance-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact PASS 377 probe head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 800
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Reconstruct exact PASS 376 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          open_marker = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          '''
+          close_marker = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          if text.count(open_marker) != 1 or text.count(close_marker) != 1:
+              raise SystemExit('could not locate the PASS 341 direct compile command exactly')
+          text = text.replace(open_marker, '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''')
+          text = text.replace(close_marker, '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''')
+          path.write_text(text, encoding='utf-8')
+          PY
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass358_fa.sh
+          source_file='/tmp/diagnose-pass358-fa/source/Mock2_FunctionalAnalysis-pass358.lean'
+          test -s "${source_file}"
+          cp "${source_file}" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 scripts/apply_pass375c_candidate.py
+          python3 scripts/apply_three_hundred_seventy_sixth_pass_functional_analysis_repairs.py
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)" = \
+            '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+
+      - name: Run PASS 377 candidate comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/pass377_instance_probe.py
+
+      - name: Upload PASS 377 probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass377-instance-probe-${{ github.sha }}
+          path: /tmp/pass377
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Commit only an objectively improved candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f /tmp/pass377/IMPROVED.txt ]]; then
+            echo 'No candidate advanced the compiler frontier; nothing will be committed.'
+            exit 0
+          fi
+          mkdir -p build-logs
+          cp /tmp/pass377/summary.json build-logs/PASS377_INSTANCE_PROBE_SUMMARY.json
+          cp /tmp/pass377/IMPROVED.txt build-logs/PASS377_IMPROVED.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/PASS377_INSTANCE_PROBE_SUMMARY.json \
+            build-logs/PASS377_IMPROVED.txt
+          git commit -m 'fix: advance FunctionalAnalysis instance frontier to PASS 377'
+          git push origin HEAD:fix/fa377-instance-probe-20260809
