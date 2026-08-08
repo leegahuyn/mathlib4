@@ -1,0 +1,98 @@
+name: Promote verified PASS 376 source to PR9
+
+on:
+  push:
+    branches: [fix/fa376-autorepair-20260809]
+    paths:
+      - 'build-logs/pass376-fa-mock3-qym-2x-pass.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: promote-pass376-to-pr9
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout verified repair head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1000
+          persist-credentials: true
+
+      - name: Require verified success marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          test -s build-logs/pass376-autorepair-summary.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          status=json.loads(Path('build-logs/pass376-autorepair-summary.json').read_text())
+          assert status['success'] is True
+          assert status['fa_two_pass'] is True
+          assert status['downstream_two_pass'] is True
+          assert status['trust_gate']['ok'] is True
+          PY
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+
+      - name: Recheck exact verified source twice before promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          out='.lake/build/lib/lean/PrimalitySheafVerification'
+          for run in 1 2; do
+            rm -f "${out}/Mock2_FunctionalAnalysis.olean" \
+                  "${out}/Mock2_FunctionalAnalysis.ilean" \
+                  "${out}/Mock2_FunctionalAnalysis.olean.hash" \
+                  "${out}/Mock2_FunctionalAnalysis.ilean.hash"
+            lake env lean -DmaxErrors=2000 \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              > "/tmp/promote-fa-run${run}.log" 2>&1
+          done
+
+      - name: Promote only the verified FA source to PR9 head
+        shell: bash
+        run: |
+          set -euo pipefail
+          verified='/tmp/Mock2_FunctionalAnalysis.verified.lean'
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "${verified}"
+          marker='/tmp/pass376-fa-mock3-qym-2x-pass.txt'
+          summary='/tmp/pass376-autorepair-summary.json'
+          cp build-logs/pass376-fa-mock3-qym-2x-pass.txt "${marker}"
+          cp build-logs/pass376-autorepair-summary.json "${summary}"
+          git fetch origin ci/fa319-isolated-20260807
+          git checkout -B ci/fa319-isolated-20260807 origin/ci/fa319-isolated-20260807
+          cp "${verified}" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mkdir -p build-logs
+          cp "${marker}" build-logs/pass376-fa-mock3-qym-2x-pass.txt
+          cp "${summary}" build-logs/pass376-autorepair-summary.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+                  build-logs/pass376-fa-mock3-qym-2x-pass.txt \
+                  build-logs/pass376-autorepair-summary.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: materialize verified FA Mock3 QYM two-pass source'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
