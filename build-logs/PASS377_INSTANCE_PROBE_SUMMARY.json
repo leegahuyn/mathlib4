@@ -1,0 +1,79 @@
+{
+  "baseline_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "baseline": {
+    "label": "baseline",
+    "returncode": 1,
+    "error_headers": 23,
+    "first_error_line": 31725,
+    "first_error_col": 2,
+    "first_error_message": "Type mismatch: After simplification, term",
+    "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "log": "/tmp/pass377/baseline.log"
+  },
+  "results": [
+    {
+      "label": "baseline",
+      "returncode": 1,
+      "error_headers": 23,
+      "first_error_line": 31725,
+      "first_error_col": 2,
+      "first_error_message": "Type mismatch: After simplification, term",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "log": "/tmp/pass377/baseline.log"
+    },
+    {
+      "label": "global_canonical_add",
+      "returncode": 1,
+      "error_headers": 23,
+      "first_error_line": 31725,
+      "first_error_col": 2,
+      "first_error_message": "Type mismatch: After simplification, term",
+      "source_sha256": "eb1b86784412434392683793d3ccc6b247a32a4e2915e5bc81f24f15524f91cb",
+      "log": "/tmp/pass377/global_canonical_add.log"
+    },
+    {
+      "label": "local_canonical_add",
+      "returncode": 1,
+      "error_headers": 23,
+      "first_error_line": 31726,
+      "first_error_col": 2,
+      "first_error_message": "Type mismatch: After simplification, term",
+      "source_sha256": "9ab53b1f8e21a290c9c040279ddd586e4f9466579ab36a2b4157c813eef6d9fd",
+      "log": "/tmp/pass377/local_canonical_add.log"
+    },
+    {
+      "label": "local_legacy_add",
+      "returncode": 1,
+      "error_headers": 23,
+      "first_error_line": 31726,
+      "first_error_col": 2,
+      "first_error_message": "Type mismatch: After simplification, term",
+      "source_sha256": "ede6b580b4eba0641861346065caf0ee56f0870c03aa32858c898d66a70778ad",
+      "log": "/tmp/pass377/local_legacy_add.log"
+    },
+    {
+      "label": "local_canonical_add_module",
+      "returncode": 1,
+      "error_headers": 22,
+      "first_error_line": 31723,
+      "first_error_col": 4,
+      "first_error_message": "synthesized type class instance is not definitionally equal to expression inferred by typing rules, synthesized",
+      "source_sha256": "c5735c796ac991df0a578beaa4364347ce9fd9f9ad4d8d4e98e92dfff4bead88",
+      "log": "/tmp/pass377/local_canonical_add_module.log"
+    }
+  ],
+  "best": {
+    "label": "local_canonical_add",
+    "returncode": 1,
+    "error_headers": 23,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_message": "Type mismatch: After simplification, term",
+    "source_sha256": "9ab53b1f8e21a290c9c040279ddd586e4f9466579ab36a2b4157c813eef6d9fd",
+    "log": "/tmp/pass377/local_canonical_add.log"
+  },
+  "accepted": [
+    "local_canonical_add",
+    "local_legacy_add"
+  ]
+}
