@@ -24,9 +24,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       BRANCH: ci/fa319-isolated-20260807
-      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Keep only PASS 347 FunctionalAnalysis frontier
+      - name: Keep only the PASS 348 coherence probe
         shell: bash
         run: |
           set -euo pipefail
@@ -38,14 +37,12 @@ jobs:
                 [[ -n "${run_id}" ]] || continue
                 [[ "${run_id}" = "${GITHUB_RUN_ID}" ]] && continue
                 keep=false
-                if [[ "${run_sha}" = "${HEAD_SHA}" ]]; then
-                  case "${run_name}" in
-                    'Diagnose PASS 347 FunctionalAnalysis frontier'|\
-                    'PR9 focused queue cleanup v7')
-                      keep=true
-                      ;;
-                  esac
-                fi
+                case "${run_name}" in
+                  'Probe PASS 348 fixed-core coherence'|\
+                  'PR9 focused queue cleanup v7')
+                    keep=true
+                    ;;
+                esac
                 if [[ "${keep}" = true ]]; then
                   echo "preserve ${run_id} | ${run_name} | ${run_sha}"
                   continue
