@@ -1,8 +1,12 @@
-name: PR9 queue cleanup v6
+name: PR9 focused queue cleanup v7
 
-# Manual-only, non-destructive cleanup. It must never cancel active repair runs
-# merely because the draft PR head changed.
+# Non-destructive Actions cleanup. Repository files and source history are not
+# rewritten; only obsolete queued/running jobs on the PR9 branch are cancelled.
 on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass327-pr9-isolate-to-v6.yml'
   workflow_dispatch:
 
 permissions:
@@ -10,29 +14,46 @@ permissions:
   contents: read
 
 concurrency:
-  group: pass327-pr9-safe-queue-cleanup-v6
-  cancel-in-progress: false
+  group: pr9-focused-queue-cleanup-v7
+  cancel-in-progress: true
 
 jobs:
-  cleanup-queued-runs:
-    runs-on: ubuntu-24.04
+  cleanup-obsolete-runs:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ci/fa319-isolated-20260807
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Cancel stale PR9 branch runs without changing repository files
+      - name: Keep only the current PASS 345 frontier and instance probe
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BRANCH: ci/fa319-isolated-20260807
         run: |
           set -euo pipefail
           gh api --paginate \
             "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${BRANCH}&per_page=100" \
-            --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "pending") | .id' \
+            --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "pending") | [.id, .name, .head_sha] | @tsv' \
             | sort -u \
-            | while IFS= read -r run_id; do
+            | while IFS=$'\t' read -r run_id run_name run_sha; do
                 [[ -n "${run_id}" ]] || continue
                 [[ "${run_id}" = "${GITHUB_RUN_ID}" ]] && continue
-                gh api -X POST \
-                  "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
-                  >/dev/null 2>&1 || true
+                keep=false
+                if [[ "${run_sha}" = "${HEAD_SHA}" ]]; then
+                  case "${run_name}" in
+                    'Diagnose PASS 345 global-instance FunctionalAnalysis frontier'|\
+                    'Probe PASS 344 fixed-phase core instances v2'|\
+                    'PR9 focused queue cleanup v7')
+                      keep=true
+                      ;;
+                  esac
+                fi
+                if [[ "${keep}" = true ]]; then
+                  echo "preserve ${run_id} | ${run_name} | ${run_sha}"
+                  continue
+                fi
+                if gh api -X POST \
+                    "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
+                    >/dev/null 2>&1; then
+                  echo "cancelled ${run_id} | ${run_name} | ${run_sha}"
+                fi
               done
-          echo 'Manual queue cleanup complete; no workflow/source files were modified.'
