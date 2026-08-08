@@ -52,7 +52,7 @@ repl(
     '/tmp/diagnose_pass345_global_frontier.generated.sh',
     '/tmp/diagnose_pass346_global_frontier.generated.sh',
     'generated wrapper path',
-    expected=2,
+    expected=3,
 )
 
 out = Path('/tmp/diagnose_pass346_global_frontier.generated.sh')
