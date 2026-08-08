@@ -1,0 +1,204 @@
+name: PASS 380 diversified FunctionalAnalysis frontier agent
+
+on:
+  push:
+    branches:
+      - fix/fa380-catalog-agent-20260809
+    paths:
+      - '.github/workflows/fa380-catalog-frontier-agent.yml'
+      - 'scripts/fa379_single_frontier_agent.py'
+      - 'scripts/fa378_competitive_agent.py'
+      - 'scripts/fa377_iterative_agent.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa380-catalog-frontier-agent
+  cancel-in-progress: false
+
+jobs:
+  diversified-frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact PASS 380 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1200
+          persist-credentials: true
+
+      - name: Install Lean, cache, and GitHub Models CLI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          gh extension install github/gh-models --force || true
+          gh models list > /tmp/fa380-model-catalog.txt 2>&1 || true
+
+      - name: Run diversified single-frontier competition
+        id: agent
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FA379_MAX_ROUNDS: '12'
+          FA379_MODELS: 'openai/gpt-5,openai/gpt-4.1,openai/gpt-4o,xai/grok-3,deepseek/DeepSeek-V3-0324,mistral-ai/Mistral-Large-2411,meta/Llama-4-Scout-17B-16E-Instruct,microsoft/Phi-4'
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa379_single_frontier_agent.py \
+            > /tmp/fa380-console.log 2>&1
+          rc=$?
+          set -e
+          cat /tmp/fa380-console.log
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Create persistent PASS 380 summary
+        if: always()
+        shell: bash
+        env:
+          AGENT_EXIT_CODE: ${{ steps.agent.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          dir=build-logs/fa380-agent
+          source_dir=build-logs/fa379-agent
+          mkdir -p "${dir}"
+          cp /tmp/fa380-console.log "${dir}/console.log"
+          cp /tmp/fa380-model-catalog.txt "${dir}/model-catalog.txt" 2>/dev/null || true
+          test -d "${source_dir}" && cp -a "${source_dir}/." "${dir}/" || true
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re,hashlib
+          d=Path('build-logs/fa380-agent')
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          state=json.loads((d/'state.json').read_text()) if (d/'state.json').exists() else {}
+          metric=json.loads((d/'best-metric.json').read_text()) if (d/'best-metric.json').exists() else {}
+          logs=sorted(d.glob('round-*-frontier.log'),key=lambda p:p.stat().st_mtime_ns)
+          latest=logs[-1] if logs else d/'baseline-one.log'
+          text=latest.read_text(errors='replace') if latest.exists() else ''
+          errors=re.findall(r'[^\n:]*Mock2_FunctionalAnalysis[^\n:]*\.lean:(\d+):(\d+):\s*error:',text)
+          summary={
+            'agent_exit_code':'${{ steps.agent.outputs.exit_code }}',
+            'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),
+            'state':state,'best_metric':metric,
+            'frontier_error_headers':len(errors),
+            'first_error_line':int(errors[0][0]) if errors else None,
+            'complete':(d/'ALL_REQUIRED_TARGETS_2X_PASS').exists(),
+          }
+          (d/'persistent-summary.json').write_text(json.dumps(summary,indent=2))
+          (d/'persistent-summary.txt').write_text('\n'.join([
+            f"agent_exit_code={summary['agent_exit_code']}",
+            f"source_sha256={summary['source_sha256']}",
+            f"frontier_error_headers={summary['frontier_error_headers']}",
+            f"first_error_line={summary['first_error_line']}",
+            f"complete={summary['complete']}",
+            f"state={json.dumps(state,sort_keys=True)}",
+            f"best_metric={json.dumps(metric,sort_keys=True)}",
+          ])+'\n')
+          PY
+
+      - name: Audit forbidden executable tokens
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          t=p.read_text(); out=[]; i=0; depth=0; string=False; esc=False
+          while i<len(t):
+            if depth:
+              if t.startswith('/-',i): depth+=1; out.extend('  '); i+=2; continue
+              if t.startswith('-/',i): depth-=1; out.extend('  '); i+=2; continue
+              out.append('\n' if t[i]=='\n' else ' '); i+=1; continue
+            if string:
+              ch=t[i]; out.append('\n' if ch=='\n' else ' ')
+              if esc: esc=False
+              elif ch=='\\': esc=True
+              elif ch=='"': string=False
+              i+=1; continue
+            if t.startswith('/-',i): depth=1; out.extend('  '); i+=2; continue
+            if t.startswith('--',i):
+              while i<len(t) and t[i]!='\n': out.append(' '); i+=1
+              continue
+            if t[i]=='"': string=True; out.append(' '); i+=1; continue
+            out.append(t[i]); i+=1
+          code=''.join(out)
+          pats={'sorry':r'\bsorry\b','admit':r'\badmit\b','axiom':r'(?m)^\s*(?:public\s+)?axiom\b','unsafe':r'(?m)^\s*unsafe\b','native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b'}
+          counts={k:len(re.findall(v,code)) for k,v in pats.items()}
+          Path('build-logs/fa380-agent/forbidden-token-audit.txt').write_text('\n'.join(f'{k}={v}' for k,v in counts.items())+'\n')
+          if any(counts.values()): raise SystemExit(counts)
+          PY
+
+      - name: Persist best source or diagnosis
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          source_changed=0
+          git diff --quiet -- PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean || source_changed=1
+          complete=0
+          test -f build-logs/fa380-agent/ALL_REQUIRED_TARGETS_2X_PASS && complete=1
+          git add build-logs/fa380-agent/persistent-summary.json \
+                  build-logs/fa380-agent/persistent-summary.txt \
+                  build-logs/fa380-agent/forbidden-token-audit.txt \
+                  build-logs/fa380-agent/model-catalog.txt
+          for path in build-logs/fa380-agent/state.json \
+                      build-logs/fa380-agent/best-metric.json \
+                      build-logs/fa380-agent/history.json \
+                      build-logs/fa380-agent/ALL_REQUIRED_TARGETS_2X_PASS; do
+            test -f "${path}" && git add "${path}"
+          done
+          if test "${source_changed}" -eq 1 || test "${complete}" -eq 1; then
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          fi
+          git diff --cached --quiet && exit 0
+          if test "${complete}" -eq 1; then
+            msg='fix: obtain ordered FA Integrated Mock3 QYM 2x PASS'
+          elif test "${source_changed}" -eq 1; then
+            msg='fix: advance PASS 380 diversified FA frontier'
+          else
+            msg='ci: record stalled PASS 380 catalog diagnosis'
+          fi
+          git commit -m "${msg}"
+          git push origin HEAD:fix/fa380-catalog-agent-20260809
+
+      - name: Upload PASS 380 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa380-catalog-agent-${{ github.sha }}
+          path: |
+            build-logs/fa380-agent
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual result
+        if: always()
+        shell: bash
+        env:
+          AGENT_EXIT_CODE: ${{ steps.agent.outputs.exit_code }}
+        run: |
+          test -n "${AGENT_EXIT_CODE:-}"
+          exit "${AGENT_EXIT_CODE}"
