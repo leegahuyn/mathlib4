@@ -1,0 +1,39 @@
+name: PASS 376 slope probe v3
+
+on:
+  push:
+    branches: [probe/fa376-first-cluster-20260809]
+    paths:
+      - '.github/workflows/pass376-slope-probe-v3.yml'
+      - 'PrimalitySheafVerification/Pass376FirstClusterProbe.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+      - name: Compile normalized slope probe
+        shell: bash
+        run: |
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          lake env lean -DmaxErrors=100 \
+            PrimalitySheafVerification/Pass376FirstClusterProbe.lean
