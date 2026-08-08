@@ -1,0 +1,70 @@
+name: PASS 387 cancel obsolete experimental repair runs
+
+on:
+  push:
+    branches: [fix/fa387-self-chaining-repair-20260809]
+    paths:
+      - '.github/workflows/pass387-cancel-obsolete-runs.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cancel-obsolete:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Cancel only superseded PASS 379-386 experiments
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          obsolete_names=(
+            'PASS 379 blocking FA Mock3 QYM loop'
+            'PASS 380 blocking FA Mock3 QYM CLI fallback loop'
+            'PASS 381 exhaustive instance repair and blocking loop'
+            'PASS 382 global instance probe and blocking loop'
+            'PASS 383 watch verified FA Mock3 QYM marker and promote to PR9'
+            'PASS 384 declaration-level FA and ordered blocking loop'
+            'PASS 385 compiler-ranked race supervisor and repair loop'
+            'PASS 386 collect verified FA Mock3 QYM winner and promote to PR9'
+          )
+          mkdir -p /tmp/pass387-cancel
+          gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?status=in_progress&per_page=100" \
+            > /tmp/pass387-cancel/in_progress.json
+          gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?status=queued&per_page=100" \
+            > /tmp/pass387-cancel/queued.json
+          python3 - <<'PY' > /tmp/pass387-cancel/cancel_ids.txt
+          import json
+          from pathlib import Path
+          names={
+            'PASS 379 blocking FA Mock3 QYM loop',
+            'PASS 380 blocking FA Mock3 QYM CLI fallback loop',
+            'PASS 381 exhaustive instance repair and blocking loop',
+            'PASS 382 global instance probe and blocking loop',
+            'PASS 383 watch verified FA Mock3 QYM marker and promote to PR9',
+            'PASS 384 declaration-level FA and ordered blocking loop',
+            'PASS 385 compiler-ranked race supervisor and repair loop',
+            'PASS 386 collect verified FA Mock3 QYM winner and promote to PR9',
+          }
+          seen=set()
+          for path in (Path('/tmp/pass387-cancel/in_progress.json'),Path('/tmp/pass387-cancel/queued.json')):
+              data=json.loads(path.read_text())
+              pages=data if isinstance(data,list) else [data]
+              for page in pages:
+                  for run in page.get('workflow_runs',[]):
+                      if run.get('name') in names and run.get('id') not in seen:
+                          seen.add(run['id'])
+                          print(run['id'])
+          PY
+          while IFS= read -r run_id; do
+            [[ -n "${run_id}" ]] || continue
+            if [[ "${run_id}" == "${GITHUB_RUN_ID}" ]]; then continue; fi
+            echo "cancelling superseded run ${run_id}"
+            gh api --method POST \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+          done < /tmp/pass387-cancel/cancel_ids.txt
