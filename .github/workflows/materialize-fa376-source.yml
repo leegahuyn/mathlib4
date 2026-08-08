@@ -1,0 +1,117 @@
+name: Materialize PASS 376 FunctionalAnalysis source
+
+on:
+  push:
+    branches: [materialized/fa376-source-20260809]
+    paths:
+      - '.github/workflows/materialize-fa376-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: materialize-fa376-source
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout exact materialization head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 800
+          persist-credentials: true
+
+      - name: Reconstruct PASS 358 without compiling it
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/diagnose_pass341_fa.sh')
+          text = path.read_text(encoding='utf-8')
+          open_marker = '''set +e
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          '''
+          close_marker = '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          code=$?
+          '''
+          if text.count(open_marker) != 1 or text.count(close_marker) != 1:
+              raise SystemExit('could not locate the PASS 341 direct compile command exactly')
+          text = text.replace(open_marker, '''set +e
+          if false; then
+          lake env lean -DmaxErrors=2000 "${FA}" \\
+          ''')
+          text = text.replace(close_marker, '''  > "${EVIDENCE}/logs/Mock2_FunctionalAnalysis-pass341.log" 2>&1
+          fi
+          code=0
+          ''')
+          path.write_text(text, encoding='utf-8')
+          PY
+          bash scripts/diagnose_pass358_fa.sh
+          source_file='/tmp/diagnose-pass358-fa/source/Mock2_FunctionalAnalysis-pass358.lean'
+          test -s "${source_file}"
+          cp "${source_file}" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)" = \
+            '8fd20f88c43060d392bab969c91a84b7c0bb08657af7728752a77c5f3c57c6c6'
+
+      - name: Apply cumulative PASS 375c and PASS 376
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_pass375c_candidate.py
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)" = \
+            'd2e1b383b9e60fd18607094ce104679cd604e8c90ffc0261d8a877e700b99b8e'
+          python3 scripts/apply_three_hundred_seventy_sixth_pass_functional_analysis_repairs.py
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)" = \
+            '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+
+      - name: Verify trust constraints
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          text = p.read_text(encoding='utf-8')
+          stripped = re.sub(r'/\*.*?\*/', '', text, flags=re.S)
+          stripped = re.sub(r'--.*', '', stripped)
+          forbidden = [
+              r'\bsorry\b', r'\badmit\b', r'^\s*axiom\b', r'\bunsafe\b',
+              r'\bnative_decide\b', r'\bLean\.ofReduceBool\b'
+          ]
+          hits = [pat for pat in forbidden if re.search(pat, stripped, flags=re.M)]
+          if hits:
+              raise SystemExit(f'forbidden executable token(s): {hits}')
+          PY
+
+      - name: Commit exact PASS 376 source and manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          cat > build-logs/PASS376_MATERIALIZED.txt <<'EOF'
+          PASS=376
+          SOURCE_SHA256=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+          BASELINE_RUN_ID=31267332510
+          BASELINE_JOB_ID=93127500189
+          BASELINE_EXIT_CODE=1
+          BASELINE_ERROR_HEADER_COUNT=214
+          PURPOSE=line-addressable diagnostic source only; not a PASS claim
+          EOF
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/PASS376_MATERIALIZED.txt
+          if git diff --cached --quiet; then
+            echo 'PASS 376 source already materialized'
+            exit 0
+          fi
+          git commit -m 'ci: materialize exact PASS 376 FunctionalAnalysis source'
+          git push origin HEAD:materialized/fa376-source-20260809
