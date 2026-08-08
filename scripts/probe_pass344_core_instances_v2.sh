@@ -3,8 +3,10 @@ set -euo pipefail
 
 FA='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
 OUT='/tmp/probe-pass344-core-instances-v2'
+WORK='build-logs/_pass344-core-instance-probes-v2'
 OLEAN='.lake/build/lib/lean/PrimalitySheafVerification'
-mkdir -p "${OUT}/logs" "${OLEAN}"
+rm -rf "${WORK}"
+mkdir -p "${OUT}/logs" "${OUT}/source" "${WORK}" "${OLEAN}"
 
 set +e
 bash scripts/diagnose_pass344_frontier_v2.sh \
@@ -21,7 +23,8 @@ python3 - <<'PY'
 from pathlib import Path
 
 source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8')
-out = Path('/tmp/probe-pass344-core-instances-v2')
+work = Path('build-logs/_pass344-core-instance-probes-v2')
+out = Path('/tmp/probe-pass344-core-instances-v2/source')
 coordinates = '''/-- The three concrete shifted Petersson coordinates on the canonical
 fixed-phase differential core. -/
 '''
@@ -32,6 +35,8 @@ if count != 1:
 
 
 def write(name: str, text: str) -> None:
+    path = work / f'{name}.lean'
+    path.write_text(text, encoding='utf-8')
     (out / f'{name}.lean').write_text(text, encoding='utf-8')
 
 current_probe = '''set_option diagnostics true in
@@ -179,7 +184,7 @@ for probe in current-local minimal-axioms explicit-letI; do
     "${OLEAN}/Mock2_FunctionalAnalysis.ilean" \
     "${OLEAN}/Mock2_FunctionalAnalysis.olean.private"
   set +e
-  lake env lean -DmaxErrors=1 "${OUT}/${probe}.lean" \
+  lake env lean -DmaxErrors=1 "${WORK}/${probe}.lean" \
     -o "${OLEAN}/Mock2_FunctionalAnalysis.olean" \
     -i "${OLEAN}/Mock2_FunctionalAnalysis.ilean" \
     > "${log}" 2>&1
@@ -191,4 +196,5 @@ for probe in current-local minimal-axioms explicit-letI; do
     >> "${OUT}/summary.csv"
 done
 cat "${OUT}/summary.csv"
+rm -rf "${WORK}"
 exit 0
