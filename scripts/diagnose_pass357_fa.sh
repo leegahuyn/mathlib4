@@ -20,8 +20,8 @@ def repl(old: str, new: str, label: str, expected: int = 1) -> None:
 repl("EVIDENCE='/tmp/diagnose-pass356-fa'", "EVIDENCE='/tmp/diagnose-pass357-fa'", 'evidence dir')
 repl(
     '  apply_three_hundred_fifty_sixth_pass_functional_analysis_repairs.py; do',
-    '  apply_three_hundred_fifty_sixth_pass_functional_analysis_repairs.py \\\n  apply_three_hundred_fifty_seventh_pass_functional_analysis_repairs.py; do',
-    'pass357 chain',
+    '  apply_three_hundred_fifty_sixth_pass_functional_analysis_repairs.py \\\n  apply_three_hundred_fifty_seventh_pass_functional_analysis_repairs.py \\\n  apply_three_hundred_fifty_seventh_pass_functional_analysis_repairs_r2.py; do',
+    'pass357-r2 chain',
 )
 repl('Mock2_FunctionalAnalysis-pass356.lean', 'Mock2_FunctionalAnalysis-pass357.lean', 'source name')
 repl('Mock2_FunctionalAnalysis-pass356.log', 'Mock2_FunctionalAnalysis-pass357.log', 'log name')
