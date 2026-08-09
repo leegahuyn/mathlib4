@@ -1,0 +1,89 @@
+name: PASS 405 independent beam PASS 389 repair
+
+on:
+  push:
+    branches: [fix/fa376-final-isolated-20260809]
+    paths: ['.github/workflows/pass405-independent-beam-pass389.yml']
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+  models: read
+
+concurrency:
+  group: pass405-independent-beam-pass389
+  cancel-in-progress: false
+
+jobs:
+  beam:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1000
+          persist-credentials: true
+      - name: Import PASS 389 agents from PR9
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin ci/fa319-isolated-20260807
+          for file in \
+            pass389_priority_repair_agent.py \
+            pass389_beam_repair_agent.py \
+            pass389_prepare_dependencies.sh; do
+            git show FETCH_HEAD:scripts/${file} > scripts/${file}
+          done
+          chmod +x scripts/pass389_prepare_dependencies.sh
+          python3 -m py_compile scripts/pass389_priority_repair_agent.py scripts/pass389_beam_repair_agent.py
+      - name: Install Lean, cache, and project dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+          bash scripts/pass389_prepare_dependencies.sh | tee /tmp/pass405-dependencies.log
+      - name: Run independent beam repair
+        id: repair
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MODELS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PASS389_EVIDENCE: /tmp/pass405-beam
+          PASS389_CHAIN_BRANCH: fix/fa405-pass389-independent-beam-20260809
+          PASS389_PR9_BRANCH: ci/fa319-isolated-20260807
+          PASS389_MODELS: openai/gpt-5-mini,openai/gpt-4.1,deepseek/DeepSeek-V3-0324,xai/grok-3-mini
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/pass389_beam_repair_agent.py 2>&1 | tee /tmp/pass405-beam-driver.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          mkdir -p /tmp/pass405-beam
+          cp /tmp/pass405-beam-driver.log /tmp/pass405-beam/driver.log
+          cp /tmp/pass405-dependencies.log /tmp/pass405-beam/dependencies.log
+          cp build-logs/pass389-priority-state.json /tmp/pass405-beam/state.json 2>/dev/null || true
+          cp build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json /tmp/pass405-beam/final-marker.json 2>/dev/null || true
+          exit 0
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass405-independent-beam-${{ github.sha }}
+          path: /tmp/pass405-beam
+          if-no-files-found: error
+          retention-days: 90
+      - if: always()
+        shell: bash
+        env:
+          RC: ${{ steps.repair.outputs.exit_code }}
+        run: |
+          test -n "${RC:-}"
+          exit "${RC}"
