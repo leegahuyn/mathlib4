@@ -1,0 +1,263 @@
+name: PASS 391 FunctionalAnalysis completion coherence and ordered two-pass gate
+
+on:
+  push:
+    branches:
+      - fix/fa391-completion-coherence-20260809
+    paths:
+      - '.github/workflows/pass391-completion-coherence.yml'
+      - 'scripts/apply_three_hundred_ninety_first_pass_functional_analysis_repairs.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pass391-completion-coherence
+  cancel-in-progress: true
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact PASS 391 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa391-completion-coherence-20260809
+          fetch-depth: 3000
+          persist-credentials: true
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          mkdir -p /tmp/pass391/logs /tmp/pass391/source /tmp/pass391/status
+
+      - name: Apply hash-fixed PASS 391 repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_three_hundred_ninety_first_pass_functional_analysis_repairs.py | \
+            tee /tmp/pass391/logs/apply-pass391.log
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | \
+            tee /tmp/pass391/source/Mock2_FunctionalAnalysis.sha256
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            /tmp/pass391/source/Mock2_FunctionalAnalysis-pass391.lean
+
+      - name: Compile FunctionalAnalysis direct source run 1
+        id: fa1
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.{olean,ilean}
+          lake env lean -DmaxErrors=250 \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/pass391/logs/Mock2_FunctionalAnalysis-run1.log 2>&1
+          rc=$?
+          set -e
+          grep -n 'error:' /tmp/pass391/logs/Mock2_FunctionalAnalysis-run1.log \
+            > /tmp/pass391/logs/Mock2_FunctionalAnalysis-run1-errors.txt || true
+          first=$(sed -nE 's#.*Mock2_FunctionalAnalysis\.lean:([0-9]+):[0-9]+: error:.*#\1#p' \
+            /tmp/pass391/logs/Mock2_FunctionalAnalysis-run1.log | head -1)
+          errors=$(wc -l < /tmp/pass391/logs/Mock2_FunctionalAnalysis-run1-errors.txt)
+          {
+            echo "exit_code=${rc}"
+            echo "error_header_count=${errors}"
+            echo "first_error_line=${first:-none}"
+          } | tee /tmp/pass391/status/fa-run1.txt
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Compile FunctionalAnalysis direct source run 2
+        id: fa2
+        if: steps.fa1.outputs.exit_code == '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.{olean,ilean}
+          lake env lean -DmaxErrors=250 \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/pass391/logs/Mock2_FunctionalAnalysis-run2.log 2>&1
+          rc=$?
+          set -e
+          grep -n 'error:' /tmp/pass391/logs/Mock2_FunctionalAnalysis-run2.log \
+            > /tmp/pass391/logs/Mock2_FunctionalAnalysis-run2-errors.txt || true
+          first=$(sed -nE 's#.*Mock2_FunctionalAnalysis\.lean:([0-9]+):[0-9]+: error:.*#\1#p' \
+            /tmp/pass391/logs/Mock2_FunctionalAnalysis-run2.log | head -1)
+          errors=$(wc -l < /tmp/pass391/logs/Mock2_FunctionalAnalysis-run2-errors.txt)
+          {
+            echo "exit_code=${rc}"
+            echo "error_header_count=${errors}"
+            echo "first_error_line=${first:-none}"
+          } | tee /tmp/pass391/status/fa-run2.txt
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Verify Integrated actual Mock3 bridges and QYM twice in order
+        id: downstream
+        if: steps.fa1.outputs.exit_code == '0' && steps.fa2.outputs.exit_code == '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          overall=0
+          targets=(PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean)
+          while IFS= read -r p; do targets+=("${p}"); done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort
+          )
+          targets+=(PrimalitySheafVerification/QYM.lean)
+          : > /tmp/pass391/status/downstream.txt
+          for file in "${targets[@]}"; do
+            stem=$(basename "${file}" .lean)
+            for run in 1 2; do
+              rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                    ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              lake env lean -DmaxErrors=250 "${file}" \
+                > "/tmp/pass391/logs/${stem}-run${run}.log" 2>&1
+              rc=$?
+              errors=$(grep -c 'error:' "/tmp/pass391/logs/${stem}-run${run}.log" || true)
+              printf '%s run=%s exit_code=%s errors=%s\n' \
+                "${file}" "${run}" "${rc}" "${errors}" | \
+                tee -a /tmp/pass391/status/downstream.txt
+              if [ "${rc}" -ne 0 ] || [ "${errors}" -ne 0 ]; then
+                overall=1
+                break 2
+              fi
+              test -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" || overall=1
+              test -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean" || overall=1
+              if [ "${overall}" -ne 0 ]; then break 2; fi
+            done
+          done
+          echo "exit_code=${overall}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Generate authoritative PASS 391 status and audit
+        if: always()
+        shell: bash
+        env:
+          FA1: ${{ steps.fa1.outputs.exit_code }}
+          FA2: ${{ steps.fa2.outputs.exit_code }}
+          DOWNSTREAM: ${{ steps.downstream.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+          root = Path('/tmp/pass391')
+          fa1 = os.environ.get('FA1', '')
+          fa2 = os.environ.get('FA2', '')
+          downstream = os.environ.get('DOWNSTREAM', '')
+          complete = fa1 == '0' and fa2 == '0' and downstream == '0'
+          targets = [
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'),
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),
+              *sorted(Path('PrimalitySheafVerification').glob('Mock3*.lean')),
+              Path('PrimalitySheafVerification/QYM.lean'),
+          ]
+          patterns = {
+              'sorry': r'\bsorry\b',
+              'admit': r'\badmit\b',
+              'global_axiom': r'(?m)^\s*(?:public\s+)?axiom\b',
+              'unsafe': r'(?m)^\s*unsafe\b',
+              'native_decide': r'\bnative_decide\b',
+              'Lean.ofReduceBool': r'\bLean\.ofReduceBool\b',
+          }
+          def strip(text: str) -> str:
+              out=[]; i=0; depth=0; string=False; escape=False
+              while i < len(text):
+                  if depth:
+                      if text.startswith('/-', i): depth += 1; out.extend('  '); i += 2; continue
+                      if text.startswith('-/', i): depth -= 1; out.extend('  '); i += 2; continue
+                      out.append('\n' if text[i] == '\n' else ' '); i += 1; continue
+                  if string:
+                      c=text[i]; out.append('\n' if c == '\n' else ' ')
+                      if escape: escape=False
+                      elif c == '\\': escape=True
+                      elif c == '"': string=False
+                      i += 1; continue
+                  if text.startswith('/-', i): depth=1; out.extend('  '); i += 2; continue
+                  if text.startswith('--', i):
+                      while i < len(text) and text[i] != '\n': out.append(' '); i += 1
+                      continue
+                  if text[i] == '"': string=True; out.append(' '); i += 1; continue
+                  out.append(text[i]); i += 1
+              return ''.join(out)
+          audit = {}
+          for p in targets:
+              if p.exists():
+                  clean = strip(p.read_text())
+                  audit[str(p)] = {k: len(re.findall(v, clean)) for k, v in patterns.items()}
+          bad = {p: counts for p, counts in audit.items() if any(counts.values())}
+          if bad:
+              complete = False
+          status = {
+              'complete': complete,
+              'stage': 'complete' if complete else ('Mock2_FunctionalAnalysis' if fa1 != '0' or fa2 != '0' else 'Integrated-Mock3-QYM'),
+              'fa_run1_exit': fa1,
+              'fa_run2_exit': fa2,
+              'downstream_exit': downstream,
+              'source_sha256': hashlib.sha256(targets[0].read_bytes()).hexdigest(),
+              'sources': {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in targets if p.exists()},
+              'audit': audit,
+          }
+          (root / 'status' / 'AUTHORITATIVE_STATUS.json').write_text(json.dumps(status, indent=2))
+          (root / 'status' / 'AUTHORITATIVE_STATUS.txt').write_text(
+              '\n'.join(f'{k}={v}' for k, v in status.items() if k not in {'sources', 'audit'}) + '\n'
+          )
+          if complete:
+              (root / 'status' / 'ALL_REQUIRED_TARGETS_2X_PASS').write_text('PASS\n')
+          PY
+          cat /tmp/pass391/status/AUTHORITATIVE_STATUS.txt
+
+      - name: Commit materialized PASS 391 candidate and compact status
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/pass391
+          cp /tmp/pass391/status/AUTHORITATIVE_STATUS.json build-logs/pass391/
+          cp /tmp/pass391/status/AUTHORITATIVE_STATUS.txt build-logs/pass391/
+          cp /tmp/pass391/status/fa-run1.txt build-logs/pass391/ || true
+          cp /tmp/pass391/status/fa-run2.txt build-logs/pass391/ || true
+          cp /tmp/pass391/status/downstream.txt build-logs/pass391/ || true
+          cp /tmp/pass391/status/ALL_REQUIRED_TARGETS_2X_PASS build-logs/pass391/ || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean build-logs/pass391
+          git diff --cached --quiet && exit 0
+          if test -f build-logs/pass391/ALL_REQUIRED_TARGETS_2X_PASS; then
+            msg='fix: obtain ordered FA Integrated Mock3 QYM 2x PASS at PASS391'
+          else
+            msg='fix: materialize PASS391 completion coherence candidate'
+          fi
+          git commit -m "${msg}"
+          git push origin HEAD:fix/fa391-completion-coherence-20260809
+
+      - name: Upload complete PASS 391 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass391-completion-coherence-${{ github.sha }}
+          path: /tmp/pass391
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce ordered final result
+        if: always()
+        shell: bash
+        run: |
+          test -f /tmp/pass391/status/ALL_REQUIRED_TARGETS_2X_PASS
