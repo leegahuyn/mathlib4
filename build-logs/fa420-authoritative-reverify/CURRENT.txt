@@ -1,0 +1,11 @@
+verified=True
+source_sha256=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+Mock2_exit=0
+Mock2_Advanced_exit=0
+FA_exit=1
+FA_first_error_line=31725
+FA_first_error_col=2
+FA_captured_errors=1270
+minimum_required_frontier=31725
+repairs_applied=0
+authority=direct Lean compile metric
