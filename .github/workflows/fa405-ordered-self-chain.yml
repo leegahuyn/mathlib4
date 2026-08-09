@@ -1,0 +1,157 @@
+name: PASS 405 ordered self-chain FA Mock3 QYM solver
+
+on:
+  push:
+    branches: [fix/fa405-ordered-self-chain-20260809]
+    paths:
+      - '.github/workflows/fa405-ordered-self-chain.yml'
+      - '.fa405-cycle'
+      - 'scripts/fa405_ordered_self_chain.py'
+      - 'scripts/fa401_extended_frontier.py'
+      - 'scripts/fa394_tournament_solver.py'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/promote_priority_verified_to_pr9.sh'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+  pull-requests: write
+
+concurrency:
+  group: fa405-ordered-self-chain
+  cancel-in-progress: false
+
+jobs:
+  solve-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Checkout exact PASS 405 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa405-ordered-self-chain-20260809
+          fetch-depth: 2200
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, GitHub CLI, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run ordered repair and two-pass gate
+        id: solver
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FA405_ROUNDS: '24'
+          FA405_CANDIDATES: '8'
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs/fa405-ordered-self-chain
+          python3 scripts/fa405_ordered_self_chain.py \
+            2>&1 | tee build-logs/fa405-ordered-self-chain.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "solver_exit_code=${rc}" > build-logs/fa405-ordered-self-chain.exit.txt
+
+      - name: Persist accepted progress and schedule next bounded cycle
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          current=0
+          test -f .fa405-cycle && current=$(cat .fa405-cycle)
+          marker=build-logs/fa405-ordered-self-chain/ALL_REQUIRED_TARGETS_2X_PASS
+          if test -f "$marker"; then
+            echo "$current" > .fa405-cycle
+          elif test "$current" -lt 16; then
+            echo $((current + 1)) > .fa405-cycle
+          fi
+          git add .fa405-cycle
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+          git add PrimalitySheafVerification/QYM.lean
+          for p in PrimalitySheafVerification/Mock3*.lean; do test -e "$p" && git add "$p"; done
+          for p in \
+            build-logs/fa405-ordered-self-chain/STATE.json \
+            build-logs/fa405-ordered-self-chain/FINAL_STATUS.json \
+            build-logs/fa405-ordered-self-chain/ALL_REQUIRED_TARGETS_2X_PASS \
+            build-logs/fa405-ordered-self-chain/preflight-recovery.json; do
+            test -f "$p" && git add "$p" || true
+          done
+          if ! git diff --cached --quiet; then
+            if test -f "$marker"; then
+              msg='fix: obtain PASS 405 FA Integrated Mock3 QYM 2x PASS'
+            else
+              msg="fix: continue PASS 405 ordered repair cycle $((current + 1))"
+            fi
+            git commit -m "$msg"
+            git push origin HEAD:fix/fa405-ordered-self-chain-20260809
+          fi
+
+      - name: Promote only independently verified success to PR9
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker=build-logs/fa405-ordered-self-chain/ALL_REQUIRED_TARGETS_2X_PASS
+          test -f "$marker" || exit 0
+          bash scripts/promote_priority_verified_to_pr9.sh \
+            build-logs/fa405-ordered-self-chain/FINAL_STATUS.json \
+            "$marker"
+
+      - name: Upload PASS 405 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa405-ordered-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            .fa405-cycle
+            build-logs/fa405-ordered-self-chain
+            build-logs/fa405-ordered-self-chain.console.log
+            build-logs/fa405-ordered-self-chain.exit.txt
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce result only at terminal cycle or success
+        if: always()
+        shell: bash
+        env:
+          SOLVER_EXIT_CODE: ${{ steps.solver.outputs.exit_code }}
+        run: |
+          test -n "${SOLVER_EXIT_CODE:-}"
+          if test -f build-logs/fa405-ordered-self-chain/ALL_REQUIRED_TARGETS_2X_PASS; then
+            exit 0
+          fi
+          current=0
+          test -f .fa405-cycle && current=$(cat .fa405-cycle)
+          if test "$current" -ge 16; then
+            exit "${SOLVER_EXIT_CODE}"
+          fi
+          exit 0
