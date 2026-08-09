@@ -1,1 +1,2 @@
 From exact PASS376, preserve exactly 60453 lines. Apply PASS417, then fix the FixedPhaseHorocycleTrace measurable-space scope, UpperHalfPlane structure APIs, pointwise trace addition, literal MemLp representative, cusp-tail field projection/indentation, and Lp zero representative. Compile prerequisites first and promote only for literal first error >31725 or exit 0.
+Retry after correcting the authoritative PASS417 output SHA guard to f2c05569e7875bfc8aa15d00097712e1331363a76c553b502bc902bd564626db.
