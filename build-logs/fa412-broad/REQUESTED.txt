@@ -1,0 +1,1 @@
+Run the broad deterministic candidate from the exact PASS376 SHA. Compile Mock2 and Mock2_Advanced first, then FA. Commit the source only if FA exits 0 or its first error is strictly later than 31725; otherwise preserve candidate and logs as evidence only.
