@@ -1,0 +1,1 @@
+Restore PASS376 run 31267332510 artifact 9024606745, verify Mock2_FunctionalAnalysis.lean SHA256 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4, seal immutable checked-in champion, and reproduce direct compile frontier >=31725 before any repair.
