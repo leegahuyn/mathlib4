@@ -1,0 +1,1 @@
+Trigger FA420 after the workflow file is already present. Authority: exact artifact SHA and direct Lean compile metric.
