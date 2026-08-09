@@ -1,0 +1,131 @@
+name: PASS 397 direct operator-norm definition proof
+
+on:
+  push:
+    branches:
+      - probe/fa397-direct-opnorm-definition-20260809
+    paths:
+      - '.github/workflows/fa397-direct-opnorm-definition.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 3000
+          persist-credentials: false
+
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Replace the three opNorm proofs without changing instances
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fa397/logs /tmp/fa397/source
+          python3 - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          expected='5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620'
+          before=sha256(p.read_bytes()).hexdigest()
+          if before != expected:
+              raise SystemExit((before,expected))
+          text=p.read_text()
+          rows=[
+            ('base','norm_baseExtension_le'),
+            ('raise','norm_raiseExtension_le'),
+            ('lower','norm_lowerExtension_le'),
+          ]
+          for name, pointwise in rows:
+              old=f'''theorem norm_{name}Extension_le_one : ‖Q.{name}Extension‖ ≤ 1 := by
+            letI : NormedSpace ℂ Q.SobolevCompletion :=
+              UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
+            exact Q.{name}Extension.opNorm_le_bound zero_le_one fun x => by
+              simpa only [one_mul] using Q.{pointwise} x
+          '''
+              new=f'''theorem norm_{name}Extension_le_one : ‖Q.{name}Extension‖ ≤ 1 := by
+            rw [ContinuousLinearMap.norm_def]
+            apply csInf_le
+            · exact ⟨0, fun _ h => h.1⟩
+            · exact ⟨zero_le_one, fun x => by
+                simpa only [one_mul] using Q.{pointwise} x⟩
+          '''
+              count=text.count(old)
+              print(name, 'expected=1 actual=',count)
+              if count != 1:
+                  raise SystemExit(f'{name}: {count}')
+              text=text.replace(old,new)
+          p.write_text(text)
+          after=sha256(p.read_bytes()).hexdigest()
+          print('input_sha256='+before)
+          print('output_sha256='+after)
+          Path('/tmp/fa397/source/source-sha256.txt').write_text(after+'\n')
+          Path('/tmp/fa397/source/Mock2_FunctionalAnalysis-pass397.lean').write_bytes(p.read_bytes())
+          PY
+
+      - name: Compile full FunctionalAnalysis candidate
+        id: compile
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.{olean,ilean}
+          lake env lean -DmaxErrors=250 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > /tmp/fa397/logs/compile.log 2>&1
+          rc=$?
+          set -e
+          grep -n 'error:' /tmp/fa397/logs/compile.log > /tmp/fa397/logs/errors.txt || true
+          grep -n 'warning:' /tmp/fa397/logs/compile.log > /tmp/fa397/logs/warnings.txt || true
+          first=$(sed -nE 's#.*Mock2_FunctionalAnalysis\.lean:([0-9]+):[0-9]+: error:.*#\1#p' /tmp/fa397/logs/compile.log | head -1)
+          last=$(sed -nE 's#.*Mock2_FunctionalAnalysis\.lean:([0-9]+):[0-9]+: error:.*#\1#p' /tmp/fa397/logs/compile.log | tail -1)
+          errors=$(wc -l < /tmp/fa397/logs/errors.txt)
+          warnings=$(wc -l < /tmp/fa397/logs/warnings.txt)
+          {
+            echo "exit_code=${rc}"
+            echo "error_header_count=${errors}"
+            echo "warning_count=${warnings}"
+            echo "first_error_line=${first:-none}"
+            echo "last_error_line=${last:-none}"
+          } | tee /tmp/fa397/summary.txt
+          tail -1600 /tmp/fa397/logs/compile.log > /tmp/fa397/logs/tail.txt || true
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Upload PASS 397 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa397-direct-opnorm-${{ github.sha }}
+          path: /tmp/fa397
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce result
+        if: always()
+        shell: bash
+        env:
+          EXIT_CODE: ${{ steps.compile.outputs.exit_code }}
+        run: |
+          test -n "${EXIT_CODE:-}"
+          exit "${EXIT_CODE}"
