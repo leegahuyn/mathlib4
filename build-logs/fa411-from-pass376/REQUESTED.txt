@@ -1,0 +1,1 @@
+Apply only the audited high-confidence repairs at the reproduced PASS376 frontier, compile Mock2 and Mock2_Advanced to exit 0, compile Mock2_FunctionalAnalysis directly, and promote the source only when FA exits 0 or its first error is strictly later than 31725. Regression candidates must remain evidence-only.
