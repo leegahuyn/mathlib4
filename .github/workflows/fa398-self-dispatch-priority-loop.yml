@@ -1,0 +1,226 @@
+name: PASS 398 self-dispatch FA Integrated Mock3 QYM priority loop
+
+on:
+  push:
+    branches:
+      - fix/fa398-self-dispatch-priority-loop-20260809
+    paths:
+      - '.github/workflows/fa398-self-dispatch-priority-loop.yml'
+      - 'scripts/fa398_self_dispatch_agent.py'
+      - 'scripts/fa397_canonical_dependency_agent.py'
+      - 'scripts/fa394_error_window_agent.py'
+      - 'scripts/fa391_targeted_priority_agent_v2.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+    inputs:
+      cycle:
+        description: autonomous repair cycle
+        required: false
+        default: '1'
+
+permissions:
+  contents: write
+  actions: write
+  models: read
+
+concurrency:
+  group: fa398-self-dispatch-priority-loop
+  cancel-in-progress: false
+
+jobs:
+  repair-cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout latest PASS 398 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa398-self-dispatch-priority-loop-20260809
+          fetch-depth: 4000
+          persist-credentials: true
+
+      - name: Resolve cycle and rotate models
+        id: cycle
+        shell: bash
+        env:
+          DISPATCH_CYCLE: ${{ inputs.cycle }}
+        run: |
+          set -euo pipefail
+          cycle="${DISPATCH_CYCLE:-}"
+          if ! [[ "${cycle}" =~ ^[0-9]+$ ]] || test "${cycle}" -lt 1; then cycle=1; fi
+          slot=$((cycle % 4))
+          case "${slot}" in
+            0) models='openai/gpt-5,openai/o4-mini,openai/gpt-4.1' ;;
+            1) models='openai/o4-mini,openai/gpt-5,openai/gpt-4.1' ;;
+            2) models='openai/gpt-4.1,openai/gpt-5,openai/o4-mini' ;;
+            3) models='openai/gpt-5,openai/gpt-4.1,openai/o4-mini' ;;
+          esac
+          echo "cycle=${cycle}" | tee -a "${GITHUB_OUTPUT}"
+          echo "next_cycle=$((cycle + 1))" | tee -a "${GITHUB_OUTPUT}"
+          echo "models=${models}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install pinned Lean, ripgrep, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Run one bounded strict-order repair cycle
+        id: agent
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FA398_CYCLE: ${{ steps.cycle.outputs.cycle }}
+          FA391_MODELS: ${{ steps.cycle.outputs.models }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf /tmp/fa397-candidates
+          python3 scripts/fa398_self_dispatch_agent.py \
+            --rounds 5 \
+            --models-per-round 3 \
+            > /tmp/fa398-console.log 2>&1
+          rc=$?
+          set -e
+          cat /tmp/fa398-console.log
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          if test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS; then
+            echo 'complete=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'complete=false' >> "${GITHUB_OUTPUT}"
+          fi
+          exit 0
+
+      - name: Record cycle metadata
+        if: always()
+        shell: bash
+        env:
+          CYCLE: ${{ steps.cycle.outputs.cycle }}
+          AGENT_EXIT: ${{ steps.agent.outputs.exit_code }}
+          COMPLETE: ${{ steps.agent.outputs.complete }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/fa398-loop
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source_status = Path('build-logs/fa391-targeted/AUTHORITATIVE_STATUS.json')
+          source = json.loads(source_status.read_text()) if source_status.exists() else {}
+          data = {
+              'cycle': int(os.environ['CYCLE']),
+              'agent_exit_code': int(os.environ.get('AGENT_EXIT') or 1),
+              'complete': os.environ.get('COMPLETE') == 'true',
+              'source_status': source,
+          }
+          Path('build-logs/fa398-loop/CURRENT.json').write_text(json.dumps(data, indent=2) + '\n')
+          Path('build-logs/fa398-loop/CYCLE').write_text(str(data['cycle']) + '\n')
+          PY
+
+      - name: Commit source progress and compact state
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+          git add PrimalitySheafVerification/QYM.lean
+          for p in PrimalitySheafVerification/Mock3*.lean; do test -e "${p}" && git add "${p}" || true; done
+          for p in \
+            build-logs/fa391-targeted/AUTHORITATIVE_STATUS.json \
+            build-logs/fa391-targeted/AUTHORITATIVE_STATUS.txt \
+            build-logs/fa391-targeted/state.json \
+            build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS \
+            build-logs/fa398-loop/CURRENT.json \
+            build-logs/fa398-loop/CYCLE; do
+            test -e "${p}" && git add "${p}" || true
+          done
+          if ! git diff --cached --quiet; then
+            if test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS; then
+              msg="fix: obtain PASS 398 cycle ${{ steps.cycle.outputs.cycle }} priority 2x PASS"
+            else
+              msg="fix: preserve PASS 398 cycle ${{ steps.cycle.outputs.cycle }} frontier"
+            fi
+            git commit -m "${msg}"
+            git push origin HEAD:fix/fa398-self-dispatch-priority-loop-20260809
+          fi
+
+      - name: Upload complete cycle diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa398-cycle-${{ steps.cycle.outputs.cycle }}-${{ github.sha }}
+          path: |
+            /tmp/fa398-console.log
+            /tmp/fa397-candidates
+            build-logs/fa391-targeted
+            build-logs/fa398-loop
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Dispatch next repair cycle when incomplete
+        if: always() && steps.agent.outputs.complete != 'true' && fromJSON(steps.cycle.outputs.cycle) < 40
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT_CYCLE: ${{ steps.cycle.outputs.next_cycle }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.request
+          repo = os.environ['GITHUB_REPOSITORY']
+          url = f"https://api.github.com/repos/{repo}/actions/workflows/fa398-self-dispatch-priority-loop.yml/dispatches"
+          body = json.dumps({
+              'ref': 'fix/fa398-self-dispatch-priority-loop-20260809',
+              'inputs': {'cycle': os.environ['NEXT_CYCLE']},
+          }).encode()
+          req = urllib.request.Request(
+              url,
+              data=body,
+              method='POST',
+              headers={
+                  'Authorization': f"Bearer {os.environ['GH_TOKEN']}",
+                  'Accept': 'application/vnd.github+json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                  'Content-Type': 'application/json',
+              },
+          )
+          with urllib.request.urlopen(req, timeout=60) as response:
+              assert response.status == 204, response.status
+          PY
+
+      - name: Enforce final status
+        if: always()
+        shell: bash
+        env:
+          COMPLETE: ${{ steps.agent.outputs.complete }}
+          CYCLE: ${{ steps.cycle.outputs.cycle }}
+        run: |
+          if test "${COMPLETE:-false}" = true; then
+            test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS
+            exit 0
+          fi
+          echo "PASS 398 cycle ${CYCLE} incomplete; next cycle dispatched if below limit" >&2
+          exit 1
