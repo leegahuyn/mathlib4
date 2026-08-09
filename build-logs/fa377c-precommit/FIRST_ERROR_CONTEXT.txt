@@ -1,0 +1,65 @@
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31696:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31724:2: error: Type mismatch: After simplification, term
+  hcomp
+ has type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+but is expected to have type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (actualEdgeAmbientParam e)
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32005:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32034:79: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.circularArc)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32040:79: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.circularArc)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32078:87: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.leftVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32083:85: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.leftVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32103:88: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.rightVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32108:86: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.rightVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32124:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32125:38: warning: Variable name `hInv` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hInv
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32126:16: warning: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.modularCircularArcAmbient_hasDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.modularTileEdgeAmbientParam_hasDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.actualEdgeAmbientParam_hasDerivAt' depends on axioms: [propext,
+ sorryAx,
