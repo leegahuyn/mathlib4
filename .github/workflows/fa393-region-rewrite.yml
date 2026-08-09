@@ -1,0 +1,118 @@
+name: PASS 393 region rewrite then ordered two-pass gate
+
+on:
+  push:
+    branches:
+      - fix/fa393-region-rewrite-v2-20260809
+    paths:
+      - '.github/workflows/fa393-region-rewrite.yml'
+      - 'scripts/fa393_region_rewrite.py'
+      - 'scripts/fa391_targeted_priority_agent_v2.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa393-region-rewrite
+  cancel-in-progress: false
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout PASS 393 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa393-region-rewrite-v2-20260809
+          fetch-depth: 3400
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Rewrite failing instance region and run ordered repair
+        id: agent
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FA391_MODELS: 'openai/gpt-5,openai/o4-mini,openai/gpt-4.1,xai/grok-3,deepseek/DeepSeek-V3-0324,mistral-ai/Mistral-Large-2411'
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa393-region-rewrite build-logs/fa391-targeted
+          python3 scripts/fa393_region_rewrite.py > /tmp/fa393-console.log 2>&1
+          rc=$?
+          set -e
+          cat /tmp/fa393-console.log
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Commit best PASS 393 source and evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+          git add PrimalitySheafVerification/QYM.lean
+          for p in PrimalitySheafVerification/Mock3*.lean; do test -e "${p}" && git add "${p}" || true; done
+          test -d build-logs/fa393-region-rewrite && git add build-logs/fa393-region-rewrite || true
+          test -d build-logs/fa391-targeted && git add build-logs/fa391-targeted || true
+          git diff --cached --quiet && exit 0
+          if test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS; then
+            msg='fix: obtain PASS 393 FA Integrated Mock3 QYM 2x PASS'
+          else
+            msg='fix: preserve best PASS 393 region frontier'
+          fi
+          git commit -m "${msg}"
+          git push origin HEAD:fix/fa393-region-rewrite-v2-20260809
+
+      - name: Upload PASS 393 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa393-region-rewrite-${{ github.sha }}
+          path: |
+            /tmp/fa393-console.log
+            build-logs/fa393-region-rewrite
+            build-logs/fa391-targeted
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce ordered two-pass completion
+        if: always()
+        shell: bash
+        env:
+          AGENT_EXIT_CODE: ${{ steps.agent.outputs.exit_code }}
+        run: |
+          test -n "${AGENT_EXIT_CODE:-}"
+          test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS
+          exit "${AGENT_EXIT_CODE}"
