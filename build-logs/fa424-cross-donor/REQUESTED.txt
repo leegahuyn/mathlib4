@@ -1,0 +1,1 @@
+2026-08-10 continuation request: select latest direct-verified champion (prefer SHA 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0), run cross-donor tournament, and promote only strict direct Lean CLI improvement.
