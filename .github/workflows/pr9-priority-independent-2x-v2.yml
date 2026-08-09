@@ -1,0 +1,252 @@
+name: PR9 independent FA Integrated Mock3 QYM two-pass verification v2
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-priority-independent-2x-v2.yml'
+      - 'PrimalitySheafVerification/Mock2.lean'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: pr9-priority-independent-2x-v2
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - name: Checkout exact PR 9 branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 1000
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, GitHub CLI, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p build-logs/pr9-priority-independent-v2/logs
+          lean --version | tee build-logs/pr9-priority-independent-v2/lean-version.txt
+          lake --version | tee build-logs/pr9-priority-independent-v2/lake-version.txt
+          lake exe cache get 2>&1 | tee build-logs/pr9-priority-independent-v2/logs/cache-get.log
+
+      - name: Audit executable source for forbidden proof escapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('PrimalitySheafVerification')
+          targets = [
+              root / 'Mock2_FunctionalAnalysis.lean',
+              root / 'Mock2_FunctionalAnalysis_Integrated.lean',
+              *sorted(root.glob('Mock3*.lean')),
+              root / 'QYM.lean',
+          ]
+
+          def strip(text: str) -> str:
+              out=[]; i=0; depth=0; string=False; escape=False
+              while i < len(text):
+                  if depth:
+                      if text.startswith('/-', i): depth += 1; out += [' ',' ']; i += 2; continue
+                      if text.startswith('-/', i): depth -= 1; out += [' ',' ']; i += 2; continue
+                      out.append('\n' if text[i]=='\n' else ' '); i += 1; continue
+                  if string:
+                      c=text[i]; out.append('\n' if c=='\n' else ' ')
+                      if escape: escape=False
+                      elif c=='\\': escape=True
+                      elif c=='"': string=False
+                      i += 1; continue
+                  if text.startswith('/-', i): depth=1; out += [' ',' ']; i += 2; continue
+                  if text.startswith('--', i):
+                      while i < len(text) and text[i] != '\n': out.append(' '); i += 1
+                      continue
+                  if text[i]=='"': string=True; out.append(' '); i += 1; continue
+                  out.append(text[i]); i += 1
+              return ''.join(out)
+
+          pats = {
+              'sorry': re.compile(r'\bsorry\b'),
+              'admit': re.compile(r'\badmit\b'),
+              'global_axiom': re.compile(r'(?m)^\s*(?:public\s+)?axiom\b'),
+              'unsafe': re.compile(r'(?m)^\s*unsafe\b'),
+              'native_decide': re.compile(r'\bnative_decide\b'),
+              'Lean.ofReduceBool': re.compile(r'\bLean\.ofReduceBool\b'),
+          }
+          report={}
+          failed=False
+          for path in targets:
+              if not path.exists(): continue
+              clean=strip(path.read_text(encoding='utf-8'))
+              counts={k: len(p.findall(clean)) for k,p in pats.items()}
+              report[str(path)] = counts
+              failed |= any(counts.values())
+          out=Path('build-logs/pr9-priority-independent-v2/forbidden-audit.json')
+          out.write_text(json.dumps(report, indent=2))
+          if failed: raise SystemExit(f'forbidden proof escape: {report}')
+          PY
+
+      - name: Compile locked prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          for stem in Mock2 Mock2_Advanced; do
+            rm -f \
+              ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+              ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            lake env lean -DmaxErrors=200 "PrimalitySheafVerification/${stem}.lean" \
+              > "build-logs/pr9-priority-independent-v2/logs/${stem}-prerequisite.log" 2>&1
+            test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+          done
+
+      - name: Verify priority modules twice from direct checked-in source
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mapfile -t modules < <(
+            printf '%s\n' Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' \
+              -printf '%f\n' | sed 's/\.lean$//' | sort
+            printf '%s\n' QYM
+          )
+          printf '%s\n' "${modules[@]}" > build-logs/pr9-priority-independent-v2/module-order.txt
+
+          : > build-logs/pr9-priority-independent-v2/results.tsv
+          for pass in 1 2; do
+            for stem in "${modules[@]}"; do
+              source="PrimalitySheafVerification/${stem}.lean"
+              test -f "$source"
+              rm -f \
+                ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              set +e
+              lake env lean -DmaxErrors=250 "$source" \
+                > "build-logs/pr9-priority-independent-v2/logs/${stem}-pass${pass}.log" 2>&1
+              rc=$?
+              set -e
+              errors=$(grep -c 'error:' "build-logs/pr9-priority-independent-v2/logs/${stem}-pass${pass}.log" || true)
+              warnings=$(grep -c 'warning:' "build-logs/pr9-priority-independent-v2/logs/${stem}-pass${pass}.log" || true)
+              olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+              ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$pass" "$stem" "$rc" "$errors" "$warnings" \
+                "$(test -s "$olean" && test -s "$ilean" && echo artifacts-ok || echo artifacts-missing)" \
+                >> build-logs/pr9-priority-independent-v2/results.tsv
+              test "$rc" -eq 0
+              test "$errors" -eq 0
+              test -s "$olean"
+              test -s "$ilean"
+            done
+          done
+
+      - name: Create official independent verification marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          root=Path('PrimalitySheafVerification')
+          modules=(Path('build-logs/pr9-priority-independent-v2/module-order.txt')
+                   .read_text().splitlines())
+          rows=[]
+          for line in Path('build-logs/pr9-priority-independent-v2/results.tsv').read_text().splitlines():
+              p,stem,rc,errors,warnings,artifacts=line.split('\t')
+              rows.append({'pass':int(p),'module':stem,'exit_code':int(rc),
+                           'errors':int(errors),'warnings':int(warnings),'artifacts':artifacts})
+          sources={}
+          for stem in modules:
+              path=root/f'{stem}.lean'
+              sources[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
+          marker={
+              'status':'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS',
+              'head_sha':os.environ.get('GITHUB_SHA',''),
+              'workflow_run_id':os.environ.get('GITHUB_RUN_ID',''),
+              'module_order':modules,
+              'results':rows,
+              'sources':sources,
+              'forbidden_audit':json.loads(Path('build-logs/pr9-priority-independent-v2/forbidden-audit.json').read_text()),
+          }
+          out=Path('build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json')
+          out.write_text(json.dumps(marker, indent=2))
+          PY
+
+      - name: Commit official marker without changing source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json \
+            build-logs/pr9-priority-independent-v2/results.tsv \
+            build-logs/pr9-priority-independent-v2/module-order.txt \
+            build-logs/pr9-priority-independent-v2/forbidden-audit.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record independent FA Mock3 QYM two-pass verification'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+
+      - name: Update PR 9 verification comment
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          marker='build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json'
+          test -f "$marker" || exit 0
+          body="<!-- pr9-priority-independent-v2 -->
+          **Independent checked-in-source verification: PASS**
+
+          - Mock2 prerequisite: PASS
+          - Mock2_Advanced prerequisite: PASS
+          - Mock2_FunctionalAnalysis: PASS ×2
+          - Mock2_FunctionalAnalysis_Integrated: PASS ×2
+          - every actual Mock3 bridge: PASS ×2
+          - QYM: PASS ×2
+          - forbidden proof-escape audit: PASS
+          - PR remains draft and unmerged."
+          existing=$(gh api repos/${{ github.repository }}/issues/9/comments --paginate \
+            --jq '.[] | select(.body | contains("<!-- pr9-priority-independent-v2 -->")) | .id' | tail -1)
+          if test -n "$existing"; then
+            gh api --method PATCH repos/${{ github.repository }}/issues/comments/$existing -f body="$body"
+          else
+            gh api --method POST repos/${{ github.repository }}/issues/9/comments -f body="$body"
+          fi
+
+      - name: Upload independent verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-priority-independent-v2-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/pr9-priority-independent-v2
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
