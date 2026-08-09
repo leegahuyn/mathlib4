@@ -1,0 +1,39 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "fa_run1_exit": "1",
+  "fa_run2_exit": "",
+  "downstream_exit": "",
+  "source_sha256": "fd3ef32488c4d7de11f7adac75dd9a04ec48734277fc071e6e99662bc48790d9",
+  "sources": {
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": "fd3ef32488c4d7de11f7adac75dd9a04ec48734277fc071e6e99662bc48790d9",
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439",
+    "PrimalitySheafVerification/QYM.lean": "698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0"
+  },
+  "audit": {
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "PrimalitySheafVerification/QYM.lean": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    }
+  }
+}

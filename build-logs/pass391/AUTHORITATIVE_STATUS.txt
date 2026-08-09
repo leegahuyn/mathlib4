@@ -1,0 +1,6 @@
+complete=False
+stage=Mock2_FunctionalAnalysis
+fa_run1_exit=1
+fa_run2_exit=
+downstream_exit=
+source_sha256=fd3ef32488c4d7de11f7adac75dd9a04ec48734277fc071e6e99662bc48790d9

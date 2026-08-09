@@ -18902,20 +18902,14 @@ theorem norm_lowerExtension_le (x : Q.SobolevCompletion) :
     _ = ‖x‖ := Q.graphExtension_norm x
 
 theorem norm_baseExtension_le_one : ‖Q.baseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
   exact Q.baseExtension.opNorm_le_bound zero_le_one fun x => by
     simpa only [one_mul] using Q.norm_baseExtension_le x
 
 theorem norm_raiseExtension_le_one : ‖Q.raiseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
   exact Q.raiseExtension.opNorm_le_bound zero_le_one fun x => by
     simpa only [one_mul] using Q.norm_raiseExtension_le x
 
 theorem norm_lowerExtension_le_one : ‖Q.lowerExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
   exact Q.lowerExtension.opNorm_le_bound zero_le_one fun x => by
     simpa only [one_mul] using Q.norm_lowerExtension_le x
 
@@ -18946,15 +18940,14 @@ theorem completion_norm_sq (x : Q.SobolevCompletion) :
 
 /-- Trial-first weak energy operator on the Hilbert completion. -/
 noncomputable def completionEnergyOperator :
-    WeakAntiOperator Q.SobolevCompletion := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact innerSLFlip ℂ
+    WeakAntiOperator Q.SobolevCompletion :=
+  innerSLFlip ℂ
 
 @[simp]
 theorem completionEnergyOperator_apply (u v : Q.SobolevCompletion) :
-    Q.completionEnergyOperator u v = ⟪v, u⟫_ℂ :=
-  innerSLFlip_apply_apply ℂ u v
+    Q.completionEnergyOperator u v = ⟪v, u⟫_ℂ := by
+  change innerSLFlip ℂ u v = ⟪v, u⟫_ℂ
+  exact innerSLFlip_apply_apply ℂ u v
 
 /-- On the dense raw core, the canonical completion pairing is exactly the
 previously defined graph energy form, with the trial-first argument order of
@@ -18964,9 +18957,9 @@ theorem completionEnergyOperator_sectionCoreMap (u v : V) :
     Q.completionEnergyOperator (Q.sectionCoreMap u) (Q.sectionCoreMap v) =
       Q.energyForm v u := by
   rw [Q.completionEnergyOperator_apply]
-  change ⟪Q.coreEmbedding (Q.toGraphRange v),
-      Q.coreEmbedding (Q.toGraphRange u)⟫_ℂ = Q.energyForm v u
-  rw [Q.coreEmbedding.inner_map_map, Q.inner_toGraphRange]
+  change ⟪(Q.toGraphRange v : Q.SobolevCompletion),
+      (Q.toGraphRange u : Q.SobolevCompletion)⟫_ℂ = Q.energyForm v u
+  rw [UniformSpace.Completion.inner_coe, Q.inner_toGraphRange]
 
 theorem completionEnergyOperator_self_eq_zero_iff (u : Q.SobolevCompletion) :
     Q.completionEnergyOperator u u = 0 ↔ u = 0 := by
@@ -18984,12 +18977,14 @@ theorem completionEnergyOperator_coercive :
 theorem completionEnergyOperator_injective :
     Function.Injective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_injective
+    (V := Q.SobolevCompletion)
     1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
 
 /-- Every bounded anti-linear functional has a completed energy solution. -/
 theorem completionEnergyOperator_surjective :
     Function.Surjective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_surjective
+    (V := Q.SobolevCompletion)
     1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
 
 /-- The completed energy operator is bijective. -/
@@ -19003,12 +18998,15 @@ noncomputable def completionEnergyEquiv :
     Q.SobolevCompletion ≃L[ℂ]
       StrongAntiDual Q.SobolevCompletion :=
   FredholmBypass.coerciveFormEquiv
+    (V := Q.SobolevCompletion)
     1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
 
 @[simp]
 theorem completionEnergyEquiv_apply (u : Q.SobolevCompletion) :
-    Q.completionEnergyEquiv u = Q.completionEnergyOperator u :=
-  rfl
+    Q.completionEnergyEquiv u = Q.completionEnergyOperator u := by
+  exact FredholmBypass.coerciveFormEquiv_apply
+    (V := Q.SobolevCompletion)
+    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive u
 
 /-- Canonical completed solution for an anti-dual right-hand side. -/
 noncomputable def solveCompletionEnergy
@@ -19020,8 +19018,7 @@ noncomputable def solveCompletionEnergy
 theorem completionEnergyOperator_solveCompletionEnergy
     (F : StrongAntiDual Q.SobolevCompletion) :
     Q.completionEnergyOperator (Q.solveCompletionEnergy F) = F := by
-  change Q.completionEnergyEquiv
-    (Q.completionEnergyEquiv.symm F) = F
+  rw [← Q.completionEnergyEquiv_apply]
   exact Q.completionEnergyEquiv.apply_symm_apply F
 
 theorem solveCompletionEnergy_unique
@@ -19046,6 +19043,7 @@ theorem solveCompletionEnergy_norm_le
     ‖Q.solveCompletionEnergy F‖ ≤ ‖F‖ := by
   simpa [solveCompletionEnergy, completionEnergyEquiv] using
     (FredholmBypass.coerciveFormEquiv_symm_norm_le
+      (V := Q.SobolevCompletion)
       1 Q.completionEnergyOperator
       Q.completionEnergyOperator_coercive F)
 
