@@ -1,0 +1,1 @@
+Use Lean LSP only to screen same-height historical declaration candidates. Every promotion must be replayed by direct Lean CLI compile and strictly beat the checked-in champion. Final success still requires FA x2, Integrated x2, every Mock3 x2, and QYM x2.
