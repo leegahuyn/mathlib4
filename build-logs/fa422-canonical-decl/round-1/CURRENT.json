@@ -1,0 +1,392 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "starting_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "final_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "immutable_floor_first_error": 31725,
+  "statement_policy": "declaration header manifest unchanged; only proof bodies may vary",
+  "promotion_policy": "direct CLI exit 0, or raw first error later and genuinely later declaration; same-declaration movement requires same file height",
+  "lsp_policy": "screening only; never promotion authority",
+  "prerequisites": {
+    "Mock2": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2-run1.log"
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2_Advanced-run1.log"
+    }
+  },
+  "any_promotion": true,
+  "final_fa_metric": {
+    "exit_code": 1,
+    "errors": 501,
+    "first_line": 31726,
+    "first_col": 2,
+    "first_message": "Type mismatch: After simplification, term",
+    "artifacts_ok": false,
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "log_path": "build-logs/fa413-strict-transplant/fa422-final-authoritative.log"
+  },
+  "final_error_decl_index": 2658,
+  "frontiers": [
+    {
+      "frontier": 1,
+      "current_declaration_index": 2658,
+      "current_declaration": {
+        "start": 31712,
+        "end": 31732,
+        "kind": "theorem",
+        "name": "actualEdgeAmbientParam_hasDerivAt",
+        "header": "theorem actualEdgeAmbientParam_hasDerivAt (e : GammaTwoActualPolygonEdge) (t : modularTileEdgeParameterSet e.2) : HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) (t : Real)"
+      },
+      "candidate_count": 7,
+      "promoted": true,
+      "champion_after": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-003.log"
+      },
+      "tested": [
+        {
+          "number": 1,
+          "label": "fixed-height:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py",
+          "sha256": "9a3dc35e87ccdaa1bb01332db0b42391544499d3861e30c5a5bf7eb6359a7786",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31724,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31724,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "9a3dc35e87ccdaa1bb01332db0b42391544499d3861e30c5a5bf7eb6359a7786",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-001.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 2,
+          "label": "fixed-height:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]",
+          "sha256": "1d44f6efccda7473b7f29f72575c559867926ec58d67f6b9c620e2911c9606b2",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 31722,
+            "first_col": 46,
+            "first_message": "Application type mismatch: The argument\n  hbase\nhas type\n  HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  @HasFDerivAt.comp_hasDerivAt_of_eq \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace ?m.46 ?m.47 hbase",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31723,
+            "first_col": 4,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "1d44f6efccda7473b7f29f72575c559867926ec58d67f6b9c620e2911c9606b2",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-002.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 3,
+          "label": "fixed-height:history:46f9d61fc8c736b66e45e2d72b362edc11f8b069:fix: advance FunctionalAnalysis instance frontier to PASS 377",
+          "sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": true,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-003.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": true
+        }
+      ]
+    },
+    {
+      "frontier": 2,
+      "current_declaration_index": 2658,
+      "current_declaration": {
+        "start": 31712,
+        "end": 31732,
+        "kind": "theorem",
+        "name": "actualEdgeAmbientParam_hasDerivAt",
+        "header": "theorem actualEdgeAmbientParam_hasDerivAt (e : GammaTwoActualPolygonEdge) (t : modularTileEdgeParameterSet e.2) : HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) (t : Real)"
+      },
+      "candidate_count": 8,
+      "promoted": false,
+      "champion_after": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 31726,
+        "first_col": 2,
+        "first_message": "Type mismatch: After simplification, term",
+        "artifacts_ok": false,
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-003.log"
+      },
+      "tested": [
+        {
+          "number": 1,
+          "label": "fixed-height:origin/fix/fa412-broad-from-pass376-20260809",
+          "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31725,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31725,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-001.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 2,
+          "label": "fixed-height:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py",
+          "sha256": "9a3dc35e87ccdaa1bb01332db0b42391544499d3861e30c5a5bf7eb6359a7786",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31724,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31724,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "9a3dc35e87ccdaa1bb01332db0b42391544499d3861e30c5a5bf7eb6359a7786",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-002.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 3,
+          "label": "fixed-height:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]",
+          "sha256": "1d44f6efccda7473b7f29f72575c559867926ec58d67f6b9c620e2911c9606b2",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 31722,
+            "first_col": 46,
+            "first_message": "Application type mismatch: The argument\n  hbase\nhas type\n  HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  @HasFDerivAt.comp_hasDerivAt_of_eq \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace ?m.46 ?m.47 hbase",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31723,
+            "first_col": 4,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "1d44f6efccda7473b7f29f72575c559867926ec58d67f6b9c620e2911c9606b2",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-003.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 4,
+          "label": "fixed-height:generic:remove-local-complex-addcommgroup",
+          "sha256": "38b473d7288809977e2a37de07e3bd1f85f8a0f0a0a8e5f7400fb43e75ca30c4",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31725,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31725,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "38b473d7288809977e2a37de07e3bd1f85f8a0f0a0a8e5f7400fb43e75ca30c4",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-004.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 5,
+          "label": "fixed-height:generic:replace-legacy-complex-addcommgroup",
+          "sha256": "49ef5e5f76da62ce301841965a0e80ee33d174150b59f3e0873b933d0ec4f2cd",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "49ef5e5f76da62ce301841965a0e80ee33d174150b59f3e0873b933d0ec4f2cd",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-005.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 6,
+          "label": "variable-height-body:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py",
+          "sha256": "0decd667cbb9972b48b350dd7e5daa86417ec0dd9866c72a140eeaea82a2bdc6",
+          "line_count": 60452,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31724,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31724,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "0decd667cbb9972b48b350dd7e5daa86417ec0dd9866c72a140eeaea82a2bdc6",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-006.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 7,
+          "label": "variable-height-body:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]",
+          "sha256": "64118db3d6eeb7e50911e4d6e5952aaba555db181abac6d1feaca1964aa91351",
+          "line_count": 60452,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 31722,
+            "first_col": 46,
+            "first_message": "Application type mismatch: The argument\n  hbase\nhas type\n  HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  @HasFDerivAt.comp_hasDerivAt_of_eq \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace ?m.46 ?m.47 hbase",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31723,
+            "first_col": 4,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "64118db3d6eeb7e50911e4d6e5952aaba555db181abac6d1feaca1964aa91351",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-007.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 8,
+          "label": "variable-height-body:history:46f9d61fc8c736b66e45e2d72b362edc11f8b069:fix: advance FunctionalAnalysis instance frontier to PASS 377",
+          "sha256": "9ab53b1f8e21a290c9c040279ddd586e4f9466579ab36a2b4157c813eef6d9fd",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "9ab53b1f8e21a290c9c040279ddd586e4f9466579ab36a2b4157c813eef6d9fd",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-008.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        }
+      ]
+    }
+  ],
+  "forbidden_token_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "two_pass": {},
+  "downstream_failure": null
+}
