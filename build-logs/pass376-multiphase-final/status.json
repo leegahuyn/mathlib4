@@ -1,0 +1,249 @@
+{
+  "status": "INCOMPLETE",
+  "active_target": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+  "cycle": null,
+  "state": {},
+  "errors": [
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18908,
+      "column": 4,
+      "message": "Type mismatch: After simplification, term"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18914,
+      "column": 4,
+      "message": "Type mismatch: After simplification, term"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18920,
+      "column": 4,
+      "message": "Type mismatch: After simplification, term"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18952,
+      "column": 8,
+      "message": "typeclass instance problem is stuck"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18957,
+      "column": 2,
+      "message": "Type mismatch"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18969,
+      "column": 6,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18973,
+      "column": 40,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18981,
+      "column": 4,
+      "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18986,
+      "column": 2,
+      "message": "Type mismatch"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 18992,
+      "column": 2,
+      "message": "Type mismatch"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19005,
+      "column": 2,
+      "message": "Type mismatch"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19008,
+      "column": 0,
+      "message": "Not a definitional equality: the left-hand side"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19011,
+      "column": 2,
+      "message": "Type mismatch"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19023,
+      "column": 2,
+      "message": "'change' tactic failed, pattern"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19047,
+      "column": 2,
+      "message": "(deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19222,
+      "column": 7,
+      "message": "Application type mismatch: The argument"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19223,
+      "column": 2,
+      "message": "Type mismatch: After simplification, term"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19245,
+      "column": 6,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19228,
+      "column": 20,
+      "message": "unsolved goals"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19346,
+      "column": 37,
+      "message": "Invalid field notation: Function `graphRange_le` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19353,
+      "column": 2,
+      "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19357,
+      "column": 15,
+      "message": "Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19365,
+      "column": 20,
+      "message": "Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19368,
+      "column": 5,
+      "message": "Invalid field notation: Function `denseRange_graphRange_iff_completion_surjective` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19372,
+      "column": 20,
+      "message": "Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19440,
+      "column": 5,
+      "message": "invalid binder annotation, type is not a class instance"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19616,
+      "column": 37,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19621,
+      "column": 49,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19622,
+      "column": 9,
+      "message": "Invalid argument: Variable `coreMap` is not a proposition or let-declaration"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19626,
+      "column": 56,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19626,
+      "column": 70,
+      "message": "unsolved goals"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19634,
+      "column": 20,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19653,
+      "column": 5,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19666,
+      "column": 5,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19670,
+      "column": 13,
+      "message": "Invalid argument: Variable `coreMap` is not a proposition or let-declaration"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19678,
+      "column": 4,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19683,
+      "column": 4,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19688,
+      "column": 4,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19696,
+      "column": 4,
+      "message": "Function expected at"
+    },
+    {
+      "file": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "line": 19697,
+      "column": 9,
+      "message": "Invalid argument: Variable `baseExtension` is not a proposition or let-declaration"
+    }
+  ]
+}
