@@ -1,0 +1,36 @@
+{
+  "complete": false,
+  "baseline": {
+    "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "first_error_line": 31725,
+    "direct_reverify_run_id": 31319355275,
+    "direct_reverify_job_id": 93259721048
+  },
+  "candidate_source_sha256": "c500aeef3f920bd8451f0c2926c9cc8e63d87f2b39bb24f982f338b7f33370a8",
+  "expected_candidate_source_sha256": "c500aeef3f920bd8451f0c2926c9cc8e63d87f2b39bb24f982f338b7f33370a8",
+  "repairs_applied": 11,
+  "results": {
+    "Mock2": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_FunctionalAnalysis": {
+      "exit_code": 1,
+      "error_headers": 601,
+      "first_error_line": 31724,
+      "first_error_col": 2
+    }
+  },
+  "metric_improved": false,
+  "promoted": false,
+  "authority": "actual direct Lean compile metric",
+  "promotion_rule": "FA exit 0, otherwise first_error_line strictly greater than 31725; prerequisites must exit 0"
+}
