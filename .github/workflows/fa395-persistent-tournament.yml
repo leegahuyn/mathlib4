@@ -1,0 +1,227 @@
+name: PASS 395 persistent tournament FA Mock3 QYM solver
+
+on:
+  push:
+    branches: [fix/fa395-persistent-tournament-20260809]
+    paths:
+      - '.github/workflows/fa395-persistent-tournament.yml'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/fa394_tournament_solver.py'
+      - 'scripts/fa395_persistent_tournament.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  models: read
+  pull-requests: write
+
+concurrency:
+  group: fa395-persistent-tournament
+  cancel-in-progress: false
+
+jobs:
+  persistent-cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout latest persistent branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa395-persistent-tournament-20260809
+          fetch-depth: 1000
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, GitHub CLI, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Run one persistent tournament cycle
+        id: cycle
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs/fa395-persistent
+          python3 scripts/fa395_persistent_tournament.py \
+            --max-cycles 16 \
+            --max-errors 220 \
+            2>&1 | tee build-logs/fa395-persistent.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "cycle_exit_code=${rc}" > build-logs/fa395-persistent.exit.txt
+
+      - name: Commit source progress and persistent state
+        if: always()
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          git add \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            build-logs/fa395-persistent/STATE.json \
+            build-logs/fa395-persistent/NEXT_ACTION.json \
+            build-logs/fa395-persistent/FINAL_STATUS.json
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | \
+            xargs -0 -r git add
+          test ! -f build-logs/fa395-persistent/ALL_REQUIRED_TARGETS_2X_PASS || \
+            git add build-logs/fa395-persistent/ALL_REQUIRED_TARGETS_2X_PASS
+          find build-logs/fa395-persistent -type f \
+            \( -name history.json -o -name baseline-selection.json \
+            -o -name FINAL_FORBIDDEN_AUDIT.json \) -print0 2>/dev/null | \
+            xargs -0 -r git add
+
+          if git diff --cached --quiet; then
+            echo 'committed=0' >> "${GITHUB_OUTPUT}"
+          else
+            cycle=$(python3 -c "import json; print(json.load(open('build-logs/fa395-persistent/STATE.json'))['cycle'])")
+            git commit -m "fix: advance PASS 395 persistent cycle ${cycle}"
+            git push origin HEAD:fix/fa395-persistent-tournament-20260809
+            echo 'committed=1' >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Promote only fully verified sources to PR 9
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='build-logs/fa395-persistent/ALL_REQUIRED_TARGETS_2X_PASS'
+          test -f "$marker" || exit 0
+          grep -qx 'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS' "$marker"
+
+          git fetch origin ci/fa319-isolated-20260807
+          remote_sha=$(git rev-parse FETCH_HEAD)
+          tmp=$(mktemp -d)
+          git worktree add --detach "$tmp" "$remote_sha"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$tmp/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            "$tmp/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean"
+          cp PrimalitySheafVerification/QYM.lean \
+            "$tmp/PrimalitySheafVerification/QYM.lean"
+          while IFS= read -r f; do cp "$f" "$tmp/$f"; done < \
+            <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort)
+          mkdir -p "$tmp/build-logs"
+          cp build-logs/fa395-persistent/FINAL_STATUS.json \
+            "$tmp/build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json"
+
+          cd "$tmp"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | \
+            xargs -0 -r git add
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: promote verified PASS 395 FA Mock3 QYM sources'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+          cd -
+          git worktree remove "$tmp" --force
+
+      - name: Dispatch next persistent cycle when required
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          next='build-logs/fa395-persistent/NEXT_ACTION.json'
+          test -f "$next" || exit 0
+          dispatch=$(python3 -c "import json; print(str(json.load(open('$next')).get('dispatch', False)).lower())")
+          if test "$dispatch" = true; then
+            sleep 20
+            gh api \
+              --method POST \
+              repos/${{ github.repository }}/actions/workflows/fa395-persistent-tournament.yml/dispatches \
+              -f ref=fix/fa395-persistent-tournament-20260809
+          fi
+
+      - name: Publish one PR 9 progress comment
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          status='build-logs/fa395-persistent/FINAL_STATUS.json'
+          state='build-logs/fa395-persistent/STATE.json'
+          test -f "$status" || exit 0
+          cycle=$(python3 -c "import json; print(json.load(open('$state')).get('cycle','?'))")
+          stage=$(python3 -c "import json; print(json.load(open('$status')).get('stage','unknown'))")
+          complete=$(python3 -c "import json; print(str(json.load(open('$status')).get('complete',False)).lower())")
+          reason=$(python3 -c "import json; print(json.load(open('$status')).get('reason',''))")
+          body="<!-- fa395-live-status -->
+          **PASS 395 persistent status**
+
+          - completed cycles: \`${cycle}\`
+          - current stage: \`${stage}\`
+          - all required targets 2× PASS: \`${complete}\`
+          - current reason: \`${reason}\`
+          - required order: FA 2× → Integrated/actual Mock3 2× → QYM 2×
+          - PR remains draft and unmerged."
+          existing=$(gh api repos/${{ github.repository }}/issues/9/comments --paginate \
+            --jq '.[] | select(.body | contains("<!-- fa395-live-status -->")) | .id' | tail -1)
+          if test -n "$existing"; then
+            gh api --method PATCH repos/${{ github.repository }}/issues/comments/$existing -f body="$body"
+          else
+            gh api --method POST repos/${{ github.repository }}/issues/9/comments -f body="$body"
+          fi
+
+      - name: Upload complete persistent-cycle evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa395-persistent-cycle-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa395-persistent
+            build-logs/fa395-persistent.console.log
+            build-logs/fa395-persistent.exit.txt
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce final result only when no next cycle remains
+        if: always()
+        shell: bash
+        env:
+          CYCLE_EXIT_CODE: ${{ steps.cycle.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          next='build-logs/fa395-persistent/NEXT_ACTION.json'
+          if test -f "$next"; then
+            dispatch=$(python3 -c "import json; print(str(json.load(open('$next')).get('dispatch', False)).lower())")
+            if test "$dispatch" = true; then
+              echo 'Next persistent cycle dispatched; this run records progress.'
+              exit 0
+            fi
+          fi
+          test -n "${CYCLE_EXIT_CODE:-}"
+          exit "${CYCLE_EXIT_CODE}"
