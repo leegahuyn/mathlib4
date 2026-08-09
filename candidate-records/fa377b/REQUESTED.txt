@@ -1,0 +1,1 @@
+Run exact 11-edit FA377b candidate from authoritative PASS376 champion and enforce strict direct-compile promotion.
