@@ -2556,7 +2556,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31696:2: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31725:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31724:2: error: Type mismatch: After simplification, term
   hcomp
  has type
   @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup
@@ -2564,16 +2564,50 @@ PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31725:2: error: Type mi
     (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))
     ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
 but is expected to have type
-  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ actualEdgeCanonicalComplexAddCommGroup
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup
     instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
     (actualEdgeAmbientParam e)
     ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32005:6: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32051:6: warning: try 'simp' instead of 'simpa'
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32034:79: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.circularArc)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32040:79: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.circularArc)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32078:87: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.leftVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32083:85: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.leftVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32103:88: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.rightVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32108:86: error(lean.invalidField): Invalid field `paired`: The environment does not contain `Prod.paired`, so it is not possible to project the field `paired` from an expression
+  (q, GammaTwoModularTileEdge.rightVerticalSegment)
+of type
+  GammaTwoRightCoset × GammaTwoModularTileEdge
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32124:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32125:38: warning: Variable name `hInv` is not explicitly referenced.
 
-Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hInv
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32126:16: warning: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.modularCircularArcAmbient_hasDerivAt' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
@@ -2614,15 +2648,19 @@ Note: This linter can be disabled with `set_option linter.unnecessarySimpa false
  sorryAx,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32747:12: warning: `MeasureTheory.setIntegral_eq_of_subset_of_forall_diff_eq_zero` has been deprecated: Use `MeasureTheory.setIntegral_eq_of_subset_of_forall_sdiff_eq_zero` instead
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32922:12: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32595:5: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32752:12: warning: `MeasureTheory.setIntegral_eq_of_subset_of_forall_diff_eq_zero` has been deprecated: Use `MeasureTheory.setIntegral_eq_of_subset_of_forall_sdiff_eq_zero` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32927:12: warning: This simp argument is unused:
   orientedFluxParameterIntegral
 
 Hint: Omit it from the simp argument list.
   [apply] simp [fluxOneFormValue, hPiola.1, hPiola.2]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32954:12: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32959:12: warning: This simp argument is unused:
   orientedFluxParameterIntegral
 
 Hint: Omit it from the simp argument list.
@@ -2633,6 +2671,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.selectedHalfOpenTile_ae_eq_openTile' depends on axioms: [propext,
+ sorryAx,
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonBaseHeight_zero' depends on axioms: [propext,
@@ -2650,13 +2689,20 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonPiolaTruncation_and_top_zero' depends on axioms: [propext,
  Classical.choice,
  Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33068:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  MeasurableConstSMul SL(2, ℤ) ℍ
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola' depends on axioms: [propext,
+ sorryAx,
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integrableOn_selectedPiola_closedTruncation_of_chosenCarrier' depends on axioms: [propext,
+ sorryAx,
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight' depends on axioms: [propext,
+ sorryAx,
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.gammaTwoPairedPolygonFluxStokes' depends on axioms: [propext,
@@ -2695,204 +2741,124 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
  sorryAx,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33552:4: error: Type mismatch
-  Continuous.subtype_mk hcomplex ?m.80
-has type
-  Continuous fun x => ⟨↑x + ↑(gammaTwoCuspLevel Y) * Complex.I, ⋯⟩
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33679:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33687:2: error: Type mismatch: After simplification, term
+  ContinuousOn.integrableOn_Icc (Continuous.continuousOn (Continuous.pow (Continuous.norm hf) 2))
+ has type
+  @IntegrableOn ℝ ℝ this PseudoMetricSpace.toUniformSpace.toTopologicalSpace SeminormedAddGroup.toContinuousENorm
+    ((fun x => ‖f x‖) ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
 but is expected to have type
-  Continuous fun t => { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33558:6: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
-  ?a1 = ?a2
-with the goal
-  { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ } =
-    { coe := { re := t, im := gammaTwoCuspLevel Y }, coe_im_pos := ⋯ }
+  @IntegrableOn ℝ ℝ Real.measureSpace.toMeasurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    SeminormedAddGroup.toContinuousENorm (fun x => ‖f x‖ ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33815:13: error: Function expected at
+  hZero Z hYZ (gammaTwoSelectedHorocycleParam q Z t)
+    ⟨selectedHorocycleParam_mem_closedCarrier q Z ht, selectedHorocycleParam_mem_threeCuspBoundary q Z t⟩
+but this term has type
+  ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Z t) = 0 ∧
+    0 (gammaTwoSelectedHorocycleParam q Z t) = 0
 
-Note: The full type of `@Subtype.ext` is
-  ∀ {α : Sort ?u.53} {p : α → Prop} {a1 a2 : { x // p x }}, ↑a1 = ↑a2 → a1 = a2
-
+Note: Expected a function because this term is being applied to the argument
+  simp
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33809:50: error: unsolved goals
+n : ℤ
+u : InverseEtaFixedPhaseCore n
+Y₀ : ℝ
+hY₀ : 1 < Y₀
+hZero :
+  ∀ (Z : ℝ),
+    Y₀ < Z →
+      ∀ z ∈ gammaTwoClosedTileCarrier ∩ gammaTwoThreeCuspHorocycleBoundary Z,
+        ↑↑u.toSmoothQuotientCompactFunction z = 0 ∧ 0 z = 0
+Z : ℝ
+hYZ : Y₀ < Z
 q : GammaTwoRightCoset
-Y : ℝ
-hcomplex : Continuous fun t => ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I
-hbase' : Continuous fun t => { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ }
 t : ℝ
-⊢ { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ } =
-    { coe := { re := t, im := gammaTwoCuspLevel Y }, coe_im_pos := ⋯ }
+ht : t ∈ Icc (-(1 / 2)) (1 / 2)
+⊢ selectedCuspRestrictionRepresentative n q Z u t = 0 t
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33854:2: error: Type mismatch: After simplification, term
+  Eq.trans htrace hrep
+ has type
+  ↑↑((selectedCuspCoreTrace n q Z) u) t = 0
+but is expected to have type
+  ↑↑((selectedCuspCoreTrace n q Z) u) t = ↑↑0 t
 Try this:
   [apply] ring_nf
   
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33624:57: error: unsolved goals
-n : ℤ
-q : GammaTwoRightCoset
-Y : ℝ
-u v : InverseEtaFixedPhaseCore n
-t : ℝ
-⊢ ↑(selectedCuspTraceWeight n q Y t) * ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) +
-      ↑(selectedCuspTraceWeight n q Y t) * ↑↑v.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) =
-    (selectedCuspRestrictionRepresentative n q Y u + selectedCuspRestrictionRepresentative n q Y v) t
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33675:2: error: Type mismatch: After simplification, term
-  ContinuousOn.integrableOn_Icc (Continuous.continuousOn (Continuous.pow (Continuous.norm hf) 2))
- has type
-  @IntegrableOn ℝ ℝ Real.measurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
-    SeminormedAddGroup.toContinuousENorm ((fun x => ‖f x‖) ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
-but is expected to have type
-  @IntegrableOn ℝ ℝ Real.measureSpace.toMeasurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
-    SeminormedAddGroup.toContinuousENorm (fun x => ‖f x‖ ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33703:2: error: Type mismatch: After simplification, term
-  MemLp.coeFn_toLp (selectedCuspRestrictionRepresentative_memLp n q Y u)
- has type
-  @EventuallyEq ℝ ℂ (ae selectedHorocycleParameterMeasure)
-    (↑↑(MemLp.toLp (selectedCuspRestrictionRepresentative n q Y u) ⋯)) (selectedCuspRestrictionRepresentative n q Y u)
-but is expected to have type
-  @EventuallyEq ℝ ℂ (ae selectedHorocycleParameterMeasure)
-    (↑↑({ toFun := fun u => MemLp.toLp (selectedCuspRestrictionRepresentative n q Y u) ⋯, map_add' := ⋯,
-            map_smul' := ⋯ }
-          u))
-    (selectedCuspRestrictionRepresentative n q Y u)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33794:9: error: Function expected at
-  fixedPhaseCore_hasZeroThreeCuspTail n u
-but this term has type
-  HasZeroThreeCuspTail (↑↑u.toSmoothQuotientCompactFunction) 0
-
-Note: Expected a function because this term is being applied to the argument
-  .eventually_zero_on_horocycleBoundary
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33796:4: error: Tactic `rcases` failed: `x✝ : ?m.18` is not an inductive datatype
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33817:9: error: Function expected at
-  fixedPhaseCore_hasZeroThreeCuspTail n u
-but this term has type
-  HasZeroThreeCuspTail (↑↑u.toSmoothQuotientCompactFunction) 0
-
-Note: Expected a function because this term is being applied to the argument
-  .eventually_zero_on_horocycleBoundary
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33819:4: error: Tactic `rcases` failed: `x✝ : ?m.47` is not an inductive datatype
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33840:2: error: Type mismatch: After simplification, term
-  Eq.trans htrace hrep
- has type
-  ↑↑((selectedCuspCoreTrace n q Z) u) t = 0
-but is expected to have type
-  ↑↑((selectedCuspCoreTrace n q Z) u) t = ↑0 t
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33891:2: error: Type mismatch: After simplification, term
-  HasDerivAt.deriv hprod
- has type
-  deriv (id * fun x => ‖f x‖ ^ 2) y = ‖f y‖ ^ 2 + id y * (2 * ⟪f y, deriv f y⟫_ℝ)
-but is expected to have type
-  deriv (fun r => r * ‖f r‖ ^ 2) y = ‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33907:6: error(lean.unknownIdentifier): Unknown identifier `abs_add`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33915:23: error: unsolved goals
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33902:48: error: unsolved goals
+case e'_2
 f : ℝ → ℂ
 hf : Differentiable ℝ f
 y : ℝ
-hy : 0 ≤ y
-hinner : |⟪f y, deriv f y⟫_ℝ| ≤ ‖f y‖ * ‖deriv f y‖
-⊢ 0 ≤ ?m.431
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33932:4: error: Type mismatch: After simplification, term
-  IsCompact.mul (HasCompactSupport.norm hcompact) (HasCompactSupport.norm hcompact)
- has type
-  IsCompact ((tsupport fun x => ‖f x‖) * tsupport fun x => ‖f x‖)
-but is expected to have type
-  HasCompactSupport fun y => ‖f y‖ * ‖f y‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33935:4: error: Type mismatch: After simplification, term
-  IsCompact.mul (HasCompactSupport.norm (HasCompactSupport.deriv hcompact))
-    (HasCompactSupport.norm (HasCompactSupport.deriv hcompact))
- has type
-  IsCompact ((tsupport fun x => ‖deriv f x‖) * tsupport fun x => ‖deriv f x‖)
-but is expected to have type
-  HasCompactSupport fun y => ‖deriv f y‖ * ‖deriv f y‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33938:4: error: Type mismatch: After simplification, term
-  HasCompactSupport.mul_left hnormSq
- has type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace instMulZeroClassOfSemiring.toZero
-    ((fun y => y) * fun y => ‖f y‖ ^ 2)
-but is expected to have type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y => y * ‖f y‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33942:4: error: Type mismatch: After simplification, term
-  HasCompactSupport.mul_left hnormSq
- has type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace instMulZeroClassOfSemiring.toZero
-    ((fun _y => 2) * fun y => ‖f y‖ ^ 2)
-but is expected to have type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y => 2 * ‖f y‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33946:4: error: Type mismatch: After simplification, term
-  HasCompactSupport.mul_left hderivNormSq
- has type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace instMulZeroClassOfSemiring.toZero
-    ((fun y => y ^ 2) * fun y => ‖deriv f y‖ ^ 2)
-but is expected to have type
-  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y =>
-    y ^ 2 * ‖deriv f y‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33979:50: error: Application type mismatch: The argument
-  hy
-has type
-  y ∈ Ioi H
-but is expected to have type
-  0 < y
-in the application
-  le_of_lt hy
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33984:41: error: Application type mismatch: The argument
-  sq_nonneg ?m.1026
-has type
-  @OfNat.ofNat ?m.1020 0 (@Zero.toOfNat0 ?m.1020 instMulZeroClassOfSemiring.toZero) ≤ ?m.1026 ^ 2
-but is expected to have type
-  @OfNat.ofNat ?m.1015 0 (@Zero.toOfNat0 ?m.1015 SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.toZero) ≤ ?m.1018
-in the application
-  abs_of_nonneg (sq_nonneg ?m.1026)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33982:36: error: unsolved goals
+hnorm : HasDerivAt (fun x => ‖f x‖ ^ 2) (2 * ⟪f y, deriv f y⟫_ℝ) y
+hprod : HasDerivAt (id * fun x => ‖f x‖ ^ 2) (1 * ‖f y‖ ^ 2 + id y * (2 * ⟪f y, deriv f y⟫_ℝ)) y
+⊢ deriv (fun r => r * ‖f r‖ ^ 2) y = deriv (id * fun x => ‖f x‖ ^ 2) y
+
+case e'_3
 f : ℝ → ℂ
-hf : ContDiff ℝ 1 f
-hcompact : HasCompactSupport f
-H : ℝ
-hH : 1 ≤ H
-weighted : ℝ → ℝ := fun y => y * ‖f y‖ ^ 2
-energy : ℝ → ℝ := fun y => 2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2
-hnormSq : HasCompactSupport fun y => ‖f y‖ ^ 2
-hderivNormSq : HasCompactSupport fun y => ‖deriv f y‖ ^ 2
-hweightedCompact : HasCompactSupport weighted
-hfirstCompact : HasCompactSupport fun y => 2 * ‖f y‖ ^ 2
-hsecondCompact : HasCompactSupport fun y => y ^ 2 * ‖deriv f y‖ ^ 2
-henergyCompact : HasCompactSupport energy
-hweightedSmooth : ContDiff ℝ 1 weighted
-henergyContinuous : Continuous energy
-hderivWeightedIntegrable : Integrable (fun y => ‖deriv weighted y‖) volume
-henergyIntegrable : Integrable energy volume
-hFTC : ‖weighted H‖ ≤ ∫ (y : ℝ) in Ioi H, ‖deriv weighted y‖
-hmono : ∫ (y : ℝ) in Ioi H, ‖deriv weighted y‖ ≤ ∫ (y : ℝ) in Ioi H, energy y
-hH0 : 0 ≤ H
-⊢ H * ‖f H‖ ^ 2 = H * |‖f H‖ ^ 2|
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34048:4: error: Type mismatch
-  norm_deriv_normSq_le_energy
-    (ContDiff.differentiable hf
-      (Mathlib.Meta.NormNum.isNat_eq_false (Mathlib.Meta.NormNum.isNat_ofNat ℕ∞ω Nat.cast_one)
-        (Mathlib.Meta.NormNum.isNat_ofNat ℕ∞ω Nat.cast_zero) (Eq.refl false)))
-    r
+hf : Differentiable ℝ f
+y : ℝ
+hnorm : HasDerivAt (fun x => ‖f x‖ ^ 2) (2 * ⟪f y, deriv f y⟫_ℝ) y
+hprod : HasDerivAt (id * fun x => ‖f x‖ ^ 2) (1 * ‖f y‖ ^ 2 + id y * (2 * ⟪f y, deriv f y⟫_ℝ)) y
+⊢ ‖f y‖ ^ 2 + y * ⟪f y, deriv f y⟫_ℝ * 2 = ‖f y‖ ^ 2 + ⟪f y, deriv f y⟫_ℝ * id y * 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33927:6: error: Type mismatch
+  add_le_add_left (mul_le_mul_of_nonneg_left hinner hy) ?m.431
 has type
-  ‖deriv (fun s => ‖f s‖ ^ 2) r‖ ≤ ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2
+  y * |⟪f y, deriv f y⟫_ℝ| + ?m.431 ≤ y * (‖f y‖ * ‖deriv f y‖) + ?m.431
 but is expected to have type
-  ‖‖deriv g r‖‖ ≤ ‖‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34066:52: error: Application type mismatch: The argument
-  sq_nonneg ?m.659
+  ‖f y‖ ^ 2 + 2 * y * |⟪f y, deriv f y⟫_ℝ| ≤ ‖f y‖ ^ 2 + 2 * y * (‖f y‖ * ‖deriv f y‖)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33945:4: error: Type mismatch: After simplification, term
+  HasCompactSupport.comp_left (HasCompactSupport.norm hcompact)
+    (Mathlib.Meta.NormNum.isNat_eq_true
+      (Mathlib.Meta.NormNum.isNat_pow (Eq.refl HPow.hPow) (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero)
+        (Mathlib.Meta.NormNum.isNat_ofNat ℕ (Eq.refl 2)) Mathlib.Meta.NormNum.zero_natPow)
+      (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero))
+ has type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero
+    ((fun x => x ^ 2) ∘ fun x => ‖f x‖)
+but is expected to have type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y => ‖f y‖ ^ 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33949:4: error: Type mismatch: After simplification, term
+  HasCompactSupport.comp_left (HasCompactSupport.norm (HasCompactSupport.deriv hcompact))
+    (Mathlib.Meta.NormNum.isNat_eq_true
+      (Mathlib.Meta.NormNum.isNat_pow (Eq.refl HPow.hPow) (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero)
+        (Mathlib.Meta.NormNum.isNat_ofNat ℕ (Eq.refl 2)) Mathlib.Meta.NormNum.zero_natPow)
+      (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero))
+ has type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero
+    ((fun x => x ^ 2) ∘ fun x => ‖deriv f x‖)
+but is expected to have type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y => ‖deriv f y‖ ^ 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34074:20: error: Application type mismatch: The argument
+  add_nonneg ?m.360 ?m.368
 has type
-  @OfNat.ofNat ?m.653 0 (@Zero.toOfNat0 ?m.653 instMulZeroClassOfSemiring.toZero) ≤ ?m.659 ^ 2
+  @OfNat.ofNat ?m.347 0 (@Zero.toOfNat0 ?m.347 AddZeroClass.toAddZero.toZero) ≤ ?m.351 + ?m.352
 but is expected to have type
-  @OfNat.ofNat ?m.648 0 (@Zero.toOfNat0 ?m.648 SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.toZero) ≤ ?m.651
+  @OfNat.ofNat ?m.342 0 (@Zero.toOfNat0 ?m.342 SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.toZero) ≤ ?m.345
 in the application
-  abs_of_nonneg (sq_nonneg ?m.659)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34065:27: error: unsolved goals
-f : ℝ → ℂ
-hf : ContDiff ℝ 1 f
-r₀ : ℝ
-hzero : Tendsto f atTop (𝓝 0)
-henergy : IntegrableOn (fun r => ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2) (Ioi r₀) volume
-g : ℝ → ℝ := fun r => ‖f r‖ ^ 2
-hgSmooth : ContDiff ℝ 1 g
-hgDerivMeasurable : AEStronglyMeasurable (fun r => ‖deriv g r‖) (volume.restrict (Ioi r₀))
-hgDerivIntegrable : IntegrableOn (fun r => ‖deriv g r‖) (Ioi r₀) volume
-hgDerivIntegrable' : IntegrableOn (deriv g) (Ioi r₀) volume
-hgzero : Tendsto g atTop (𝓝 0)
-hFTC : ∫ (r : ℝ) in Ioi r₀, deriv g r = -g r₀
-⊢ ‖f r₀‖ ^ 2 = |‖f r₀‖ ^ 2|
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34164:8: error: Type mismatch
+  abs_of_nonneg (add_nonneg ?m.360 ?m.368)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34072:4: error: Type mismatch: After simplification, term
+  hpoint
+ has type
+  |deriv (fun s => ‖f s‖ ^ 2) r| ≤ ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2
+but is expected to have type
+  |(|deriv (fun r => ‖f r‖ ^ 2) r|)| ≤ |‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2|
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34190:8: error: Type mismatch
   add_le_add_right (norm_add_le ?m.285 ?m.286) ?m.287
 has type
   ?m.287 + ‖?m.285 + ?m.286‖ ≤ ?m.287 + (‖?m.285‖ + ‖?m.286‖)
@@ -2905,7 +2871,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34225:44: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34251:44: error: unsolved goals
 n : ℤ
 u : InverseEtaFixedPhaseCore n
 z : ℍ
@@ -2927,12 +2893,12 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34261:67: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34287:67: error: unsolved goals
 n : ℤ
 f : ℍ → ℂ
 z : ℍ
 ⊢ heightC z * dx f z = -(heightC z * dx f z * Complex.I ^ 2)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34306:48: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34332:48: error: unsolved goals
 n : ℤ
 f : ℍ → ℂ
 z : ℍ
@@ -2940,8 +2906,8 @@ R : ℂ := euclideanRaiseGauge n f z
 L : ℂ := euclideanLowerFromSuccGauge (n - 1) f z
 c : ℂ := ↑(2 * (euclideanGaugeExponent n + 1))
 ⊢ ‖2 * (euclideanGaugeExponent n + 1)‖ = |2 * (euclideanGaugeExponent n + 1)|
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34310:52: error(lean.unknownIdentifier): Unknown identifier `norm_ofNat`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34301:51: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34336:52: error(lean.unknownIdentifier): Unknown identifier `norm_ofNat`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34327:51: error: unsolved goals
 n : ℤ
 f : ℍ → ℂ
 z : ℍ
@@ -2950,7 +2916,7 @@ L : ℂ := euclideanLowerFromSuccGauge (n - 1) f z
 c : ℂ := ↑(2 * (euclideanGaugeExponent n + 1))
 hc : ‖c‖ = euclideanHorizontalDrift n
 ⊢ 1 / ‖2‖ * ‖R - L - c * f z‖ ≤ (‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖) / 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34346:53: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34372:53: error: Application type mismatch: The argument
   z
 has type
   ℂ
@@ -2958,7 +2924,7 @@ but is expected to have type
   ℍ
 in the application
   heightC_ne_zero z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34347:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34373:2: error: Type mismatch: After simplification, term
   ContDiffOn.mul hnum hdenInv
  has type
   ContDiffOn ℝ ∞
@@ -2966,7 +2932,7 @@ PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34347:2: error: Type mi
     UpperHalfPlane.upperHalfPlaneSet
 but is expected to have type
   RealSmooth (selectedCosetConformalScaleC q)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34360:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34386:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) (gammaTwoCosetRep q)) • z).im
 in the target expression
   ↑(gammaTwoCosetRep q • z).im / ↑z.im =
@@ -2994,7 +2960,7 @@ him :
           (UpperHalfPlane.denom
             (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) (gammaTwoCosetRep q)))
             ↑z))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34372:53: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34398:53: error: Application type mismatch: The argument
   w
 has type
   ℂ
@@ -3002,7 +2968,7 @@ but is expected to have type
   ℍ
 in the application
   heightC_ne_zero w
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34402:53: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34428:53: error: Application type mismatch: The argument
   w
 has type
   ℂ
@@ -3010,13 +2976,13 @@ but is expected to have type
   ℍ
 in the application
   heightC_ne_zero w
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34404:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34430:4: error: Type mismatch: After simplification, term
   dy_comp_selectedCosetAction q realSmooth_heightC z
  has type
   dy (fun w => heightC (selectedCosetAction q w)) z = 0 + selectedCosetA q z
 but is expected to have type
   dy (fun w => heightC (selectedCosetAction q w)) z = selectedCosetA q z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34407:53: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34433:53: error: unsolved goals
 q : GammaTwoRightCoset
 z : ℍ
 N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
@@ -3031,7 +2997,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34397:56: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34423:56: error: unsolved goals
 q : GammaTwoRightCoset
 z : ℍ
 N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
@@ -3045,7 +3011,7 @@ hz : heightC z ≠ 0
 ⊢ selectedCosetA q z * heightC z - heightC (selectedCosetAction q z) =
     selectedCosetA q z * heightC z -
       heightC z * ((fun w => heightC (selectedCosetAction q w)) * fun w => (heightC w)⁻¹) z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34450:25: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34476:25: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |1 / Complex.normSq (selectedCosetDenom q z)|
 in the target expression
   ‖1 /
@@ -3073,22 +3039,22 @@ hnorm : 0 < ‖selectedCosetDenom q z‖
             (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) (gammaTwoCosetRep q)))
             ↑z ^
           2‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34459:65: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34485:65: error: unsolved goals
 q : GammaTwoRightCoset
 z : ℍ
 ⊢ ‖(selectedCosetDerivative q z).re‖ = |(selectedCosetDerivative q z).re|
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34469:65: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34495:65: error: unsolved goals
 q : GammaTwoRightCoset
 z : ℍ
 ⊢ ‖(selectedCosetDerivative q z).im‖ = |(selectedCosetDerivative q z).im|
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34494:6: error: Type mismatch
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34520:6: error: Type mismatch
   add_le_add_right (norm_selectedCosetA_le_scale q z) ?m.74
 has type
   ?m.74 + ‖selectedCosetA q z‖ ≤ ?m.74 + ‖selectedCosetConformalScaleC q z‖
 but is expected to have type
   ‖selectedCosetA q z‖ + ‖selectedCosetConformalScaleC q z‖ ≤
     ‖selectedCosetConformalScaleC q z‖ + ‖selectedCosetConformalScaleC q z‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34519:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34545:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   dx (selectedCosetConformalScaleC q * fun z => f (selectedCosetAction q z)) ?z
 in the target expression
   dx (selectedCosetUnitaryPullback q f) z =
@@ -3104,7 +3070,7 @@ z : ℍ
     dx (selectedCosetConformalScaleC q) z * f (selectedCosetAction q z) +
       selectedCosetConformalScaleC q z *
         (selectedCosetA q z * dx f (selectedCosetAction q z) + selectedCosetB q z * dy f (selectedCosetAction q z))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34533:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34559:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   dy (selectedCosetConformalScaleC q * fun z => f (selectedCosetAction q z)) ?z
 in the target expression
   dy (selectedCosetUnitaryPullback q f) z =
@@ -3120,7 +3086,7 @@ z : ℍ
     dy (selectedCosetConformalScaleC q) z * f (selectedCosetAction q z) +
       selectedCosetConformalScaleC q z *
         (-selectedCosetB q z * dx f (selectedCosetAction q z) + selectedCosetA q z * dy f (selectedCosetAction q z))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34551:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34577:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   heightC ?z * dy (selectedCosetConformalScaleC ?q) ?z
 in the target expression
   heightC z *
@@ -3144,19 +3110,19 @@ z : ℍ
     (selectedCosetA q z - selectedCosetConformalScaleC q z) * f (selectedCosetAction q z) -
         selectedCosetB q z * (heightC (selectedCosetAction q z) * dx f (selectedCosetAction q z)) +
       selectedCosetA q z * (heightC (selectedCosetAction q z) * dy f (selectedCosetAction q z))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34588:23: error: Type mismatch
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34614:23: error: Type mismatch
   add_le_add_right hA ?m.146
 has type
   ?m.146 + ‖A‖ ≤ ?m.146 + ‖S‖
 but is expected to have type
   ‖A‖ + ‖S‖ ≤ ‖S‖ + ‖S‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34598:10: error: Type mismatch
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34624:10: error: Type mismatch
   add_le_add_right (norm_sub_le ?m.472 ?m.473) ?m.474
 has type
   ?m.474 + ‖?m.472 - ?m.473‖ ≤ ?m.474 + (‖?m.472‖ + ‖?m.473‖)
 but is expected to have type
   ‖(A - S) * F - B * Fx‖ + ‖A * Fy‖ ≤ ‖(A - S) * F‖ + ‖B * Fx‖ + ‖A * Fy‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34599:51: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34625:51: error: unsolved goals
 q : GammaTwoRightCoset
 f : ℍ → ℂ
 hf : RealSmooth f
@@ -3172,8 +3138,8 @@ hB : ‖B‖ ≤ ‖S‖
 hAS : ‖A - S‖ ≤ 2 * ‖S‖
 ⊢ ‖A - S‖ * ‖F‖ + ‖B‖ * (‖heightC (selectedCosetAction q z)‖ * ‖dx f (selectedCosetAction q z)‖) + ‖A * Fy‖ =
     ‖A - S‖ * ‖F‖ + ‖B‖ * (‖heightC (selectedCosetAction q z)‖ * ‖dx f (selectedCosetAction q z)‖) + ‖A‖ * ‖Fy‖
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34651:2: error: failed to prove positivity/nonnegativity/nonzeroness
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34710:29: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34677:2: error: failed to prove positivity/nonnegativity/nonzeroness
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34736:29: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |z.im ^ ?m.214|
 in the target expression
   (‖z.im ^ euclideanGaugeExponent n‖ * ‖↑↑u.toSmoothQuotientCompactFunction z‖) ^ 2 =
@@ -3192,7 +3158,7 @@ hz : 0 < z.im
 hs : 0 < s
 ⊢ (‖z.im ^ euclideanGaugeExponent n‖ * ‖↑↑u.toSmoothQuotientCompactFunction z‖) ^ 2 =
     (z.im ^ euclideanGaugeExponent n) ^ 2 * ‖↑↑u.toSmoothQuotientCompactFunction z‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34724:35: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34750:35: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |s|
 in the target expression
   H * (‖s‖ * ‖fixedPhaseEuclideanGauge n u z‖) ^ 2 =
@@ -3216,7 +3182,7 @@ hDensity : ↑(hyperbolicDensity z) = (1 / z.im) ^ 2
 hsFormula : s = z.im / H
 ⊢ H * (‖s‖ * ‖fixedPhaseEuclideanGauge n u z‖) ^ 2 =
     weightFiberScale (-paperOrbitExponent n) z / H * ‖↑↑u.toSmoothQuotientCompactFunction z‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34741:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34767:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |selectedCuspTraceWeight n q Y t|
 in the target expression
   ‖selectedCuspTraceWeight n q Y t‖ ^ 2 = selectedCuspTraceWeightSq n q Y t
@@ -3227,36 +3193,36 @@ Y : ℝ
 u : InverseEtaFixedPhaseCore n
 t : ℝ
 ⊢ ‖selectedCuspTraceWeight n q Y t‖ ^ 2 = selectedCuspTraceWeightSq n q Y t
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34760:8: error: typeclass instance problem is stuck
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34786:8: error: typeclass instance problem is stuck
   InnerProductSpace ?m.45 ↥SelectedHorocycleL2
 
 Note: Lean will not try to resolve this typeclass instance problem because the first and third type arguments to `InnerProductSpace` are metavariables. These arguments must be fully determined before Lean will try to resolve the typeclass.
 
 Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34824:4: error: `fun_prop` was unable to prove `ContDiff ℝ ∞ fun r => { re := t, im := Real.exp r }`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34850:4: error: `fun_prop` was unable to prove `ContDiff ℝ ∞ fun r => { re := t, im := Real.exp r }`
 
 Issues:
   No theorems found for `Complex.mk` in order to prove `ContDiff ℝ ∞ fun r1 => { re := t, im := r1 }`
   No theorems found for `Complex.mk` in order to prove `ContDiff ℝ ∞ fun r => { re := t, im := Real.exp r }`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34828:19: error(lean.unknownIdentifier): Unknown constant `Complex.mk_im`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34828:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34854:19: error(lean.unknownIdentifier): Unknown constant `Complex.mk_im`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34854:4: error: Type mismatch: After simplification, term
   Real.exp_pos r
  has type
   0 < Real.exp r
 but is expected to have type
   { re := t, im := Real.exp r } ∈ UpperHalfPlane.upperHalfPlaneSet
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34848:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34874:4: error: Type mismatch: After simplification, term
   HasDerivAt.add hRe hIm
  has type
   HasDerivAt ((fun x => ↑t) + fun y => Complex.I * ↑(Real.exp y)) (0 + Complex.I * ↑(Real.exp r)) r
 but is expected to have type
   HasDerivAt (fun s => ↑t + Complex.I * ↑(Real.exp s)) (Complex.I * ↑(Real.exp r)) r
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34859:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34885:2: error: 'change' tactic failed, pattern
   d1 f z (Complex.I * ↑(Real.exp r)) = heightC z * dy f z
 is not definitionally equal to target
   (fderiv ℝ (upperLift f) ↑z ∘SL ContinuousLinearMap.toSpanSingleton ℝ (Complex.I * ↑(Real.exp r))) 1 =
     heightC (logHeightBasePoint t r) * dy f (logHeightBasePoint t r)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34879:4: error: `fun_prop` was unable to prove `ContDiff ℝ 1 fun r => ↑(Real.exp (r / 2))`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34905:4: error: `fun_prop` was unable to prove `ContDiff ℝ 1 fun r => ↑(Real.exp (r / 2))`
 
 Issues:
   No theorems found for `Complex.ofReal` in order to prove `ContDiff ℝ 1 fun r0 => ↑r0`
@@ -3273,7 +3239,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34902:54: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34928:54: error: unsolved goals
 case e'_8
 n : ℤ
 q : GammaTwoRightCoset
@@ -3282,7 +3248,7 @@ t r : ℝ
 h : ℍ → ℂ := selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
 hh : RealSmooth h
 ⊢ (fun s => ↑(Real.exp (s * (1 / 2)))) = fun y => ↑((Real.exp ∘ fun x => id x * (1 / 2)) y)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34916:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34942:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   deriv ((fun s => ↑(Real.exp (s / 2))) * fun s => h (logHeightBasePoint t s)) r
 in the target expression
   deriv (fun s => ↑(Real.exp (s / 2)) * h (logHeightBasePoint t s)) r =
@@ -3310,7 +3276,7 @@ hProduct :
       (1 / 2 * selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) (logHeightBasePoint t r) +
         heightC (logHeightBasePoint t r) *
           dy (selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)) (logHeightBasePoint t r))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34967:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34993:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |Real.exp (r / 2)|
 in the target expression
   ‖Real.exp (r / 2)‖ *
@@ -3352,7 +3318,7 @@ hOuter :
           ‖euclideanRaiseGauge n (fixedPhaseEuclideanGauge n u) (selectedCosetAction q (logHeightBasePoint t r))‖ +
         ‖euclideanLowerFromSuccGauge (n - 1) (fixedPhaseEuclideanGauge n u)
             (selectedCosetAction q (logHeightBasePoint t r))‖)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34983:4: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35009:4: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
   ?a1 = ?a2
 with the goal
   logHeightBasePoint t (Real.log H) = { coe := { re := t, im := H }, coe_im_pos := hH }
@@ -3368,7 +3334,7 @@ t : ℝ
 H : ℝ := gammaTwoCuspLevel Y
 hH : 0 < H
 ⊢ logHeightBasePoint t (Real.log H) = { coe := { re := t, im := H }, coe_im_pos := hH }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34977:52: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35003:52: error: unsolved goals
 n : ℤ
 q : GammaTwoRightCoset
 Y : ℝ
@@ -3382,7 +3348,7 @@ htarget : selectedCosetAction q (logHeightBasePoint t (Real.log H)) = gammaTwoSe
       fixedPhaseEuclideanGauge n u (gammaTwoSelectedHorocycleParam q Y t) =
     ↑(gammaTwoSelectedHorocycleParam q Y t).im / ↑(gammaTwoCuspLevel Y) *
       fixedPhaseEuclideanGauge n u (gammaTwoSelectedHorocycleParam q Y t)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34993:45: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35019:45: warning: This simp argument is unused:
   Real.exp_log hH
 
 Hint: Omit it from the simp argument list.
@@ -3395,7 +3361,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35014:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35040:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |Real.exp ?m.158|
 in the target expression
   (‖Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)‖ * ‖selectedCuspPulledEuclideanGauge n q Y u t‖) ^ 2 =
@@ -3411,7 +3377,7 @@ hH : 0 < H
 hExp : Real.exp (Real.log H / 2) ^ 2 = H
 ⊢ (‖Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)‖ * ‖selectedCuspPulledEuclideanGauge n q Y u t‖) ^ 2 =
     gammaTwoCuspLevel Y * ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35051:8: error: Tactic `rewrite` failed: motive is not type correct:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35077:8: error: Tactic `rewrite` failed: motive is not type correct:
   fun _a =>
     gammaTwoCosetRep q • { coe := { re := t, im := _a }, coe_im_pos := ⋯ } =
       gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
@@ -3447,7 +3413,7 @@ hExpOne : 1 ≤ Real.exp r
 hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
 ⊢ gammaTwoCosetRep q • { coe := { re := t, im := gammaTwoCuspLevel (Real.exp r) }, coe_im_pos := ⋯ } =
     gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35036:64: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35062:64: error: unsolved goals
 n : ℤ
 q : GammaTwoRightCoset
 u : InverseEtaFixedPhaseCore n
@@ -3468,7 +3434,7 @@ hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
 hpoint : gammaTwoSelectedHorocycleParam q (Real.exp r) t = selectedCosetAction q (logHeightBasePoint t r)
 hu0 : ↑↑u.toSmoothQuotientCompactFunction (selectedCosetAction q (logHeightBasePoint t r)) = 0
 ⊢ 0 = 0 r
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35114:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35140:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
   ?a1 = ?a2
 with the goal
   selectedHeightBasePoint t y = { coe := { re := t, im := y }, coe_im_pos := hy }
@@ -3479,7 +3445,7 @@ Note: The full type of `@Subtype.ext` is
 t y : ℝ
 hy : 0 < y
 ⊢ selectedHeightBasePoint t y = { coe := { re := t, im := y }, coe_im_pos := hy }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35121:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35147:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
   ?a1 = ?a2
 with the goal
   selectedHeightBasePoint t (Real.exp r) = logHeightBasePoint t r
@@ -3489,7 +3455,7 @@ Note: The full type of `@Subtype.ext` is
 
 t r : ℝ
 ⊢ selectedHeightBasePoint t (Real.exp r) = logHeightBasePoint t r
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35173:37: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35199:37: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   |Real.exp ?m.225|
 in the target expression
   (‖Real.exp (r / 2)‖ * ‖selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) (logHeightBasePoint t r)‖) ^ 2 =
@@ -3518,16 +3484,16 @@ hExp : e ^ 2 = Real.exp r
 hPullNorm : ‖selectedCosetUnitaryPullback q f z‖ = S * F
 ⊢ (‖Real.exp (r / 2)‖ * ‖selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) (logHeightBasePoint t r)‖) ^ 2 =
     Real.exp r * S ^ 2 * F ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35198:8: error: No goals to be solved
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35229:10: error(lean.unknownIdentifier): Unknown identifier `continuous_subtype_mk`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35230:4: error: No goals to be solved
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35255:4: error: `fun_prop` was unable to prove `Continuous fun p =>
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35224:8: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35255:10: error(lean.unknownIdentifier): Unknown identifier `continuous_subtype_mk`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35256:4: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35281:4: error: `fun_prop` was unable to prove `Continuous fun p =>
   ↑(Real.exp (p.2 / 2)) *
     (1 / 2 * h (logHeightBasePoint p.1 p.2) + heightC (logHeightBasePoint p.1 p.2) * dy h (logHeightBasePoint p.1 p.2))`
 
 Issues:
   No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x0 => selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) x0`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35281:8: error: Tactic `rewrite` failed: motive is not type correct:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35307:8: error: Tactic `rewrite` failed: motive is not type correct:
   fun _a =>
     gammaTwoCosetRep q • { coe := { re := t, im := _a }, coe_im_pos := ⋯ } =
       gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
@@ -3564,13 +3530,13 @@ hExpOne : 1 ≤ Real.exp r
 hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
 ⊢ gammaTwoCosetRep q • { coe := { re := t, im := gammaTwoCuspLevel (Real.exp r) }, coe_im_pos := ⋯ } =
     gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35401:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35427:2: error: 'change' tactic failed, pattern
   ∫ (p : ℝ × ℝ), selectedLogHeightEnergyDensity n q u p ∂μ.prod ν =
     ∫ (t : ℝ), ∫ (r : ℝ), selectedLogHeightEnergyDensity n q u (t, r) ∂ν ∂μ
 is not definitionally equal to target
   ∫ (p : ℝ × ℝ) in Icc (-(1 / 2)) (1 / 2) ×ˢ Ioi r₀, selectedLogHeightEnergyDensity n q u p ∂volume.prod volume =
     ∫ (t : ℝ) in Icc (-(1 / 2)) (1 / 2), ∫ (r : ℝ) in Ioi r₀, selectedLogHeightEnergyDensity n q u (t, r)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35425:6: error: `fun_prop` was unable to prove `Continuous fun t =>
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35451:6: error: `fun_prop` was unable to prove `Continuous fun t =>
   ‖↑(Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)) *
         selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
           (logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y)))‖ ^
@@ -3580,8 +3546,8 @@ Issues:
   No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x2 => selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) x2`
   No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x =>
   selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u) (logHeightBasePoint x (Real.log (gammaTwoCuspLevel Y)))`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35458:2: error: failed to prove positivity/nonnegativity/nonzeroness
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35485:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35484:2: error: failed to prove positivity/nonnegativity/nonzeroness
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35511:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   euclideanRaiseGauge n (fixedPhaseEuclideanGauge n u) ?z
 in the target expression
   (have z := selectedHeightBasePoint (t, y).1 (t, y).2;
@@ -3623,13 +3589,13 @@ t y : ℝ
           ‖fixedPhaseEuclideanGauge (n - 1) ((InverseEtaFixedPhaseCore.lower n) u)
                 (selectedCosetAction q (selectedHeightBasePoint t y))‖ ^
             2)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35495:8: error: typeclass instance problem is stuck
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35521:8: error: typeclass instance problem is stuck
   InnerProductSpace ?m.45 ↥(OrbitEuclideanL2 m)
 
 Note: Lean will not try to resolve this typeclass instance problem because the first and third type arguments to `InnerProductSpace` are metavariables. These arguments must be fully determined before Lean will try to resolve the typeclass.
 
 Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35560:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35586:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ∫ (a : ℍ),
     ((fun x => ?m.113 * ‖fixedPhaseEuclideanGauge n u x‖ ^ 2) + fun x =>
           ?m.129 * ‖fixedPhaseEuclideanGauge (n + 1) ((InverseEtaFixedPhaseCore.raise n) u) x‖ ^ 2)
@@ -3663,15 +3629,15 @@ hLower :
             2 ∂chosenEuclideanCarrierMeasure =
     logHeightTraceBaseCoeff n * ‖(l2Coordinate n) u‖ ^ 2 + 3 * ‖(raisedCoordinate n) u‖ ^ 2 +
       3 * ‖(loweredCoordinate n) u‖ ^ 2
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35575:8: error: `fun_prop` was unable to prove `ContinuousOn (Complex.mk t) (Ioi 0)`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35601:8: error: `fun_prop` was unable to prove `ContinuousOn (Complex.mk t) (Ioi 0)`
 
 Issues:
   No theorems found for `Complex.mk` in order to prove `ContinuousOn (fun im => { re := t, im := im }) (Ioi 0)`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35577:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35603:2: error: 'change' tactic failed, pattern
   0 < { re := t, im := y }.im
 is not definitionally equal to target
   { re := t, im := y } ∈ UpperHalfPlane.ofComplex.source
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35653:8: error: Tactic `rewrite` failed: motive is not type correct:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35679:8: error: Tactic `rewrite` failed: motive is not type correct:
   fun _a =>
     gammaTwoCosetRep q • { coe := { re := t, im := y }, coe_im_pos := hyPos } =
       gammaTwoCosetRep q • { coe := { re := t, im := _a }, coe_im_pos := ⋯ }
@@ -3732,7 +3698,7 @@ hyPos : 0 < y
 hlevel : gammaTwoCuspLevel y = y
 ⊢ gammaTwoCosetRep q • { coe := { re := t, im := y }, coe_im_pos := hyPos } =
     gammaTwoCosetRep q • { coe := { re := t, im := gammaTwoCuspLevel y }, coe_im_pos := ⋯ }
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35732:32: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35758:32: error: unsolved goals
 n : ℤ
 q : GammaTwoRightCoset
 u : InverseEtaFixedPhaseCore n
@@ -3749,28 +3715,28 @@ hExpEventually : ∀ᶠ (r : ℝ) in atTop, B < Real.exp r
 r : ℝ
 hr : B < Real.exp r
 ⊢ 0 = 0 r
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35830:8: error: `fun_prop` was unable to prove `ContinuousOn (fun p => { re := p.1, im := p.2 }) (univ ×ˢ Ioi 0)`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35856:8: error: `fun_prop` was unable to prove `ContinuousOn (fun p => { re := p.1, im := p.2 }) (univ ×ˢ Ioi 0)`
 
 Issues:
   No theorems found for `Complex.mk` in order to prove `ContinuousOn (fun p => { re := p.1, im := p.2 }) (univ ×ˢ Ioi 0)`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35832:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35858:2: error: 'change' tactic failed, pattern
   0 < { re := p.1, im := p.2 }.im
 is not definitionally equal to target
   (fun p => { re := p.1, im := p.2 }) p ∈ UpperHalfPlane.ofComplex.source
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35957:2: error: 'change' tactic failed, pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35983:2: error: 'change' tactic failed, pattern
   ∫ (p : ℝ × ℝ), selectedHeightGraphDensity n q u p ∂μ.prod ν =
     ∫ (t : ℝ), ∫ (y : ℝ), selectedHeightGraphDensity n q u (t, y) ∂ν ∂μ
 is not definitionally equal to target
   ∫ (p : ℝ × ℝ) in Icc (-(1 / 2)) (1 / 2) ×ˢ Ioi H, selectedHeightGraphDensity n q u p ∂volume.prod volume =
     ∫ (t : ℝ) in Icc (-(1 / 2)) (1 / 2), ∫ (y : ℝ) in Ioi H, selectedHeightGraphDensity n q u (t, y)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36025:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36051:4: error: Type mismatch: After simplification, term
   hp
  has type
   p ∈ Icc (-(1 / 2)) (1 / 2) ×ˢ Ioi H
 but is expected to have type
   { coe := { re := p.1, im := p.2 }, coe_im_pos := ⋯ }.re ∈ Icc (-(1 / 2)) (1 / 2) ∧
     H < { coe := { re := p.1, im := p.2 }, coe_im_pos := ⋯ }.im
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36026:2: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36052:2: error: unsolved goals
 case h₂.a
 H : ℝ
 hH : 0 < H
@@ -3784,7 +3750,7 @@ hH : 0 < H
 z : ℍ
 hz : z.re ∈ Icc (-(1 / 2)) (1 / 2) ∧ H < z.im
 ⊢ z.im = (↑z).im
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36044:4: error: linarith failed to find a contradiction
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36070:4: error: linarith failed to find a contradiction
 case left
 H : ℝ
 hH : 1 ≤ H
@@ -3794,13 +3760,13 @@ hy : 1 < z.im
 a✝ : (↑z).re * (↑z).re + (↑z).im * (↑z).im < 1
 ⊢ False
 failed
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36111:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36137:2: error: Type mismatch: After simplification, term
   fixedPhaseEuclideanGraphDensity_integrable n u
  has type
   Integrable (fixedPhaseEuclideanGraphDensity n u) chosenEuclideanCarrierMeasure
 but is expected to have type
   Integrable (ambientFixedPhaseEuclideanGraphDensity n u ∘ UpperHalfPlane.coe) chosenEuclideanCarrierMeasure
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36184:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36210:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   selectedCosetAmbientMap ?q ↑?z
 in the target expression
   G ↑z =
@@ -3827,19 +3793,19 @@ _hz : z ∈ selectedBaseCuspStrip H
         |(UpperHalfPlane.smulFDeriv (selectedCosetGL q) x).det| •
           ambientFixedPhaseEuclideanGraphDensity n u (selectedCosetAmbientMap q x))
       ↑z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36313:6: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36339:6: error(lean.synthInstanceFailed): failed to synthesize instance of type class
   AddCommGroup (InverseEtaFixedPhaseCore n)
 
 Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36416:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36442:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
   AddCommGroup (InverseEtaFixedPhaseCore n)
 
 Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36432:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36458:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
   AddCommGroup (InverseEtaFixedPhaseCore n)
 
 Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36449:45: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36475:45: error: Application type mismatch: The argument
   coreMap n
 has type
   @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ) (InverseEtaFixedPhaseCore n)
@@ -3852,23 +3818,23 @@ but is expected to have type
     NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.27 UniformSpace.Completion.instModule
 in the application
   LinearMap.extendOfNorm ?m.33 (coreMap n)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36458:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36484:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36468:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36494:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36475:5: error: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36501:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36532:8: error: No goals to be solved
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36673:4: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36558:8: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36699:4: error: Application type mismatch: The argument
   Tendsto.mul_const ‖x‖ (completedSelectedCuspTraceFamily_opNorm_tendsto_zero n q C hC hEstimate hCZero)
 has type
   Tendsto (fun x_1 => ‖completedSelectedCuspTraceFamily n q C hC hEstimate x_1‖ * ‖x‖) atTop (𝓝 (0 * ‖x‖))
@@ -3878,14 +3844,13 @@ in the application
   squeeze_zero (fun Y => norm_nonneg ((completedSelectedCuspTraceFamily n q C hC hEstimate Y) x))
     (fun Y => ContinuousLinearMap.le_opNorm (completedSelectedCuspTraceFamily n q C hC hEstimate Y) x)
     (Tendsto.mul_const ‖x‖ (completedSelectedCuspTraceFamily_opNorm_tendsto_zero n q C hC hEstimate hCZero))
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36734:14: error: typeclass instance problem is stuck
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:36760:14: error: typeclass instance problem is stuck
   InnerProductSpace ?m.61 F
 
 Note: Lean will not try to resolve this typeclass instance problem because the first and third type arguments to `InnerProductSpace` are metavariables. These arguments must be fully determined before Lean will try to resolve the typeclass.
 
 Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
 'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.gammaTwoSelectedHorocycleParam_continuous' depends on axioms: [propext,
- sorryAx,
  Classical.choice,
  Quot.sound]
 'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCuspRestrictionRepresentative_memLp' depends on axioms: [propext,
@@ -3950,7 +3915,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37035:133: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37061:133: error: unsolved goals
 n : ℤ
 u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)
 v : PhysicalLocalL2.AmbientTestCore
@@ -3977,7 +3942,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37063:141: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37089:141: error: unsolved goals
 n : ℤ
 u : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n
 v : PhysicalLocalL2.AmbientTestCore
@@ -3999,7 +3964,7 @@ hv : PhysicalLocalL2.fixedPhaseEuclideanGauge n u z = v ↑z
     -(Complex.I * (HalfWeightCompactCoordinateGreen.dx v) ↑z * ↑(↑z).im) -
         (HalfWeightCompactCoordinateGreen.dy v) ↑z * ↑(↑z).im -
       ↑(2 + PhysicalLocalL2.euclideanGaugeExponent n) * v ↑z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37069:4: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37095:4: warning: This simp argument is unused:
   add_apply
 
 Hint: Omit it from the simp argument list.
@@ -4009,7 +3974,7 @@ Hint: Omit it from the simp argument list.
     Real.rpow_one, HalfWeightDifferentialOperators.heightC, smul_eq_mul]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37127:13: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37153:13: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n)
           ((l2Coordinate n) ((HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n) u)))
     z
@@ -4047,7 +4012,7 @@ hzOpen : z ∈ GammaTwoQuotientGeometry.gammaTwoOpenCarrier
               ((l2Coordinate n) ((HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n) u))))
       z =
     ↑↑(PhysicalLocalL2.ambientTestCoreToCarrierL2 n (PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37159:13: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37185:13: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1))
           ((l2Coordinate (n + 1)) ((HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n) u)))
     z
@@ -4085,13 +4050,13 @@ hzOpen : z ∈ GammaTwoQuotientGeometry.gammaTwoOpenCarrier
               ((l2Coordinate (n + 1)) ((HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n) u))))
       z =
     ↑↑(PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37202:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37228:4: error: Type mismatch: After simplification, term
   hFormal
  has type
   ⟪p.2, (l2Coordinate (n + 1)) u⟫_ℂ = ⟪p.1, ↑(-physicalLowerFromSucc n) ((l2CoreRangeEquiv (n + 1)) u)⟫_ℂ
 but is expected to have type
   ⟪p.2, (l2Coordinate (n + 1)) u⟫_ℂ = ⟪p.1, -(lowerFromSuccCoordinate n) u⟫_ℂ
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37250:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37276:4: error: Type mismatch: After simplification, term
   hFormal
  has type
   ⟪p.2, (l2Coordinate n) u⟫_ℂ = ⟪p.1, ↑(-physicalRaise n) ((l2CoreRangeEquiv n) u)⟫_ℂ
@@ -4142,13 +4107,13 @@ but is expected to have type
  sorryAx,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37569:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37595:4: error: Type mismatch: After simplification, term
   h
  has type
   @Eq ℍ (gamma • gammaTwoKernelTestPoint) gammaTwoKernelTestPoint
 but is expected to have type
   @Eq ℍ (↑gamma • gammaTwoKernelTestPoint) gammaTwoKernelTestPoint
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37604:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37630:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   inverseEtaPaperOrbitDenom gammaTwoCentralNegOne ?z
 in the target expression
   1 *
@@ -4167,14 +4132,14 @@ heven : (-1) ^ (2 * m) = 1
           ↑z ^
         (2 * m) =
     1
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37680:46: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37706:46: warning: This simp argument is unused:
   Function.comp_def
 
 Hint: Omit it from the simp argument list.
   [apply] simp [upperLift, gammaTwoPeriodizationSeed, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37699:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37725:4: error: Type mismatch: After simplification, term
   gammaTwoMoebiusCoordinate_realSmooth gamma
  has type
   @ContDiffOn ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup
@@ -4185,12 +4150,12 @@ but is expected to have type
   @ContDiffOn ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup
     instInnerProductSpaceRealComplex.toNormedSpace ℂ Complex.instNormedAddCommGroup
     instInnerProductSpaceRealComplex.toNormedSpace ∞ (gammaTwoMoebiusChart gamma) UpperHalfPlane.upperHalfPlaneSet
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37721:53: error(lean.invalidField): Invalid field `comp_gammaTwo_smul`: The environment does not contain `Function.comp_gammaTwo_smul`, so it is not possible to project the field `comp_gammaTwo_smul` from an expression
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37747:53: error(lean.invalidField): Invalid field `comp_gammaTwo_smul`: The environment does not contain `Function.comp_gammaTwo_smul`, so it is not possible to project the field `comp_gammaTwo_smul` from an expression
   inverseEtaPaperOrbitFactor_realSmooth m gamma
 of type
   ∀ x ∈ UpperHalfPlane.upperHalfPlaneSet,
     ContDiffWithinAt ℝ ∞ (upperLift (inverseEtaPaperOrbitFactor m gamma)) UpperHalfPlane.upperHalfPlaneSet x
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37730:53: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37756:53: error: unsolved goals
 m : ℤ
 v : AmbientTestCore
 gamma : ↥GammaTwo
@@ -4209,7 +4174,7 @@ hzero : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) = 0
           (-euclideanGaugeExponent m) =
         0 ∨
       v ↑((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) = 0
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37739:26: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37765:26: error: Application type mismatch: The argument
   hseed
 has type
   gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) ≠ 0
@@ -4217,7 +4182,7 @@ of sort `Prop` but is expected to have type
   ?m.80 → ?m.81
 of sort `Type (max ?u.64 ?u.65)` in the application
   subset_tsupport hseed
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37740:2: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37766:2: error: unsolved goals
 case refine_2
 m : ℤ
 v : AmbientTestCore
@@ -4226,14 +4191,14 @@ z : ℍ
 hz : z ∈ support (gammaTwoPeriodizationTerm m v gamma)
 hseed : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) ≠ 0
 ⊢ gamma • (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z = z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37733:37: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37759:37: warning: This simp argument is unused:
   hzero
 
 Hint: Omit it from the simp argument list.
   [apply] simp [gammaTwoPeriodizationTerm]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37776:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37802:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ?m.166 ∈ htfinite.toFinset
 in the target expression
   i ∈ ↑I
@@ -4259,13 +4224,13 @@ hxU : x ∈ U
 i : iota
 hi : i ∈ support fun i => f i x
 ⊢ i ∈ ↑I
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37803:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37829:2: error: Type mismatch: After simplification, term
   RealSmooth.const_complex_smul (1 / 2) hsum
  has type
   RealSmooth (2⁻¹ • fun z => ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma z)
 but is expected to have type
   RealSmooth (gammaTwoPoincarePeriodization m v)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37826:4: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37852:4: error: Type mismatch: After simplification, term
   factor_mul (inverseEtaPaperOrbitMultiplier GammaTwo m) delta gamma (↑gamma⁻¹ • z)
  has type
   (inverseEtaPaperOrbitMultiplier GammaTwo m).factor (delta * gamma) (↑gamma⁻¹ • z) =
@@ -4281,7 +4246,7 @@ Try this:
   The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
     
   Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37840:47: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37866:47: error: unsolved goals
 m : ℤ
 v : AmbientTestCore
 delta : ↥GammaTwo
@@ -4293,7 +4258,7 @@ hreindex :
         ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma z) *
       (1 / 2) =
     (inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta z * gammaTwoPoincarePeriodization m v z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37877:59: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37903:59: error: Application type mismatch: The argument
   hterm
 has type
   ¬gammaTwoPeriodizationTerm m v gamma z = 0
@@ -4301,19 +4266,19 @@ of sort `Prop` but is expected to have type
   ↥GammaTwo
 of sort `Type` in the application
   support_gammaTwoPeriodizationTerm_subset m v hterm
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37897:4: error: Type mismatch
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37923:4: error: Type mismatch
   gammaTwoQuotientMk_gamma_smul gamma x
 has type
   gammaTwoQuotientMk (gamma • x) = gammaTwoQuotientMk x
 but is expected to have type
   gammaTwoQuotientMk x = gammaTwoQuotientMk ((fun x => gamma • x) x)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37935:41: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37961:41: error: unsolved goals
 m : ℤ
 v : AmbientTestCore
 z : ℍ
 ⊢ ModularForm.eta ↑z / ModularForm.eta ↑z * (-1) ^ (2 * m) * (↑(z.im ^ (-euclideanGaugeExponent m)) * v ↑z) =
     ↑(z.im ^ (-euclideanGaugeExponent m)) * v ↑z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37951:53: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37977:53: error: unsolved goals
 m : ℤ
 v : AmbientTestCore
 hv : tsupport ⇑v ⊆ ambientGammaTwoOpenCarrier
@@ -4334,7 +4299,7 @@ hzero : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) = 0
           (-euclideanGaugeExponent m) =
         0 ∨
       v ↑((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) = 0
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37961:26: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37987:26: error: Application type mismatch: The argument
   hseed
 has type
   gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) ≠ 0
@@ -4342,7 +4307,7 @@ of sort `Prop` but is expected to have type
   ?m.91 → ?m.92
 of sort `Type (max ?u.79 ?u.80)` in the application
   subset_tsupport hseed
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37966:52: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37992:52: error: unsolved goals
 m : ℤ
 v : AmbientTestCore
 hv : tsupport ⇑v ⊆ ambientGammaTwoOpenCarrier
@@ -4355,20 +4320,20 @@ hxK : ↑gamma⁻¹ • z ∈ gammaTwoPeriodizationSeedSupport m v
 hxOpen : ↑gamma⁻¹ • z ∈ gammaTwoOpenCarrier
 a : GammaTwoEffective := gammaTwoEffectiveElement gamma
 ⊢ gamma • (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z = z
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37977:2: error: Type mismatch: After simplification, term
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38003:2: error: Type mismatch: After simplification, term
   hkernel
  has type
   gamma = 1 ∨ gamma = gammaTwoCentralNegOne
 but is expected to have type
   gamma ∈ ↑{1, gammaTwoCentralNegOne}
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37954:37: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37980:37: warning: This simp argument is unused:
   hzero
 
 Hint: Omit it from the simp argument list.
   [apply] simp [gammaTwoPeriodizationTerm]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37991:8: warning: This simp argument is unused:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38017:8: warning: This simp argument is unused:
   gammaTwoCentralNegOne_ne_one
 
 Hint: Omit it from the simp argument list.
@@ -4395,12 +4360,12 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
  sorryAx,
  Classical.choice,
  Quot.sound]
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38105:8: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38109:11: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38117:13: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38120:10: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38122:23: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38168:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38131:8: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38135:11: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38143:13: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38146:10: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38148:23: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38194:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   ‖Real.smoothTransition ?m.108‖
 in the target expression
   ‖upstairsCuspCutoffReal N z‖ ≤ 1
@@ -4416,12 +4381,12 @@ hzBase :
   ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)) z =
     PhysicalLocalL2.fixedPhaseEuclideanGauge n u z
 ⊢ ‖upstairsCuspCutoffReal N z‖ ≤ 1
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38155:33: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38181:33: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38192:48: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38218:48: error: Application type mismatch: The argument
   l2Coordinate n
 has type
   @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ)
@@ -4436,26 +4401,26 @@ but is expected to have type
     NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.23 UniformSpace.Completion.instModule
 in the application
   LinearMap.extendOfNorm ?m.29 (l2Coordinate n)
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38199:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38225:35: error: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38209:7: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38235:7: error: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38217:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38243:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
 
 Note: Use `set_option maxHeartbeats <num>` to set the limit.
 
 Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38262:19: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38264:19: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38267:17: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38270:21: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38297:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38288:19: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38290:19: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38293:17: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38296:21: error(lean.unknownIdentifier): Unknown identifier `SmoothQuotientCompactFunction`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38323:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
   (peterssonCuspCutoff ?N ?n) ((l2Coordinate ?n) ?u)
 in the target expression
   ⟪↑(peterssonCuspCutoff N n) ((l2Coordinate n) u), (l2Coordinate n) v⟫_ℂ =
@@ -4467,14 +4432,14 @@ x y : OrbitPeterssonHilbert n
 u v : HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n
 ⊢ ⟪↑(peterssonCuspCutoff N n) ((l2Coordinate n) u), (l2Coordinate n) v⟫_ℂ =
     ⟪(l2Coordinate n) u, ↑(peterssonCuspCutoff N n) ((l2Coordinate n) v)⟫_ℂ
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38314:66: error: Type mismatch
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38340:66: error: Type mismatch
   ε / 2
 has type
   ℝ
 of sort `Type` but is expected to have type
   0 < ?m.26
 of sort `Prop`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38374:4: error: Function expected at
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38400:4: error: Function expected at
   RealSmooth
 but this term has type
   ?m.1
@@ -4483,7 +4448,7 @@ Note: Expected a function because this term is being applied to the argument
   (raiseCuspEuclideanCommutatorCoefficient N)
 
 Hint: The identifier `RealSmooth` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38379:4: error: Function expected at
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38405:4: error: Function expected at
   RealSmooth
 but this term has type
   ?m.1
@@ -4492,7 +4457,7 @@ Note: Expected a function because this term is being applied to the argument
   (lowerCuspEuclideanCommutatorCoefficient N)
 
 Hint: The identifier `RealSmooth` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38380:32: error: Application type mismatch: The argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38406:32: error: Application type mismatch: The argument
   heightC_ne_zero
 has type
   ∀ (z : ℍ), heightC z ≠ 0
@@ -4500,7 +4465,7 @@ but is expected to have type
   ∀ x ∈ UpperHalfPlane.upperHalfPlaneSet, SmoothCompactCoreGeometry.upperLift heightC x ≠ 0
 in the application
   ContDiffOn.inv realSmooth_heightC heightC_ne_zero
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38384:4: error: Function expected at
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38410:4: error: Function expected at
   HasQuotientCompactSupport
 but this term has type
   ?m.1
@@ -4509,12 +4474,12 @@ Note: Expected a function because this term is being applied to the argument
   (raiseCuspEuclideanCommutatorCoefficient N)
 
 Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38387:44: error(lean.invalidField): Invalid field `raiseRaw`: The environment does not contain `Function.raiseRaw`, so it is not possible to project the field `raiseRaw` from an expression
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38413:44: error(lean.invalidField): Invalid field `raiseRaw`: The environment does not contain `Function.raiseRaw`, so it is not possible to project the field `raiseRaw` from an expression
   upstairsCuspCutoff_quotientCompact N
 of type
   ?m.12 ≤ 𝓟 (SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N)) →
     ∃ x ∈ SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N), ClusterPt x ?m.12
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38390:4: error: Function expected at
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38416:4: error: Function expected at
   HasQuotientCompactSupport
 but this term has type
   ?m.1
@@ -4523,12 +4488,12 @@ Note: Expected a function because this term is being applied to the argument
   (lowerCuspEuclideanCommutatorCoefficient N)
 
 Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38393:44: error(lean.invalidField): Invalid field `lowerRaw`: The environment does not contain `Function.lowerRaw`, so it is not possible to project the field `lowerRaw` from an expression
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38419:44: error(lean.invalidField): Invalid field `lowerRaw`: The environment does not contain `Function.lowerRaw`, so it is not possible to project the field `lowerRaw` from an expression
   upstairsCuspCutoff_quotientCompact N
 of type
   ?m.12 ≤ 𝓟 (SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N)) →
     ∃ x ∈ SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N), ClusterPt x ?m.12
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38402:16: error: Function expected at
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38428:16: error: Function expected at
   HasQuotientCompactSupport
 but this term has type
   ?m.1
@@ -4537,11 +4502,11 @@ Note: Expected a function because this term is being applied to the argument
   f
 
 Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38407:29: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38410:7: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38419:39: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38423:52: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38420:2: error: unsolved goals
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38433:29: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38436:7: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38445:39: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38449:52: error: Invalid `⟨...⟩` notation: The expected type of this term could not be determined
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38446:2: error: unsolved goals
 case neg
 x✝ : Sort u_1
 HasQuotientCompactSupport : x✝
@@ -4555,16 +4520,76 @@ z : ℍ
 hzCarrier : z ∈ gammaTwoClosedTileCarrier
 hz : f z = 0
 ⊢ 0 ≤ 0
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38432:7: error: don't know how to synthesize implicit argument `HasQuotientCompactSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38458:7: error: don't know how to synthesize implicit argument `HasQuotientCompactSupport`
   @raiseCuspEuclideanCommutatorCoefficient_quotientCompact (?m.13 N) (?m.14 N) N
 context:
 N : ℕ
 ⊢ ?m.13 N
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38432:7: error: don't know how to synthesize implicit argument
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38458:7: error: don't know how to synthesize implicit argument
   @raiseCuspEuclideanCommutatorCoefficient_quotientCompact (?m.13 N) (?m.14 N) N
 context:
 N : ℕ
 ⊢ Sort ?u.9
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38434:8: warning: declaration uses `sorry`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38441:8: warning: declaration uses `sorry`
-PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38456:7: error: maximum number of errors (160; from option `maxErrors`) reached, exiting
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38460:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38467:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38482:7: error: don't know how to synthesize implicit argument `HasQuotientCompactSupport`
+  @lowerCuspEuclideanCommutatorCoefficient_quotientCompact (?m.13 N) (?m.14 N) N
+context:
+N : ℕ
+⊢ ?m.13 N
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38482:7: error: don't know how to synthesize implicit argument
+  @lowerCuspEuclideanCommutatorCoefficient_quotientCompact (?m.13 N) (?m.14 N) N
+context:
+N : ℕ
+⊢ Sort ?u.9
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38484:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38491:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38506:6: error(lean.unknownIdentifier): Unknown identifier `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent_pred`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38505:141: error: unsolved goals
+n : ℤ
+z : ℍ
+⊢ ↑(z.im ^ PhysicalLocalL2.euclideanGaugeExponent (n - 1)) =
+    (heightC z)⁻¹ * ↑(z.im ^ PhysicalLocalL2.euclideanGaugeExponent n)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38568:20: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)) z
+in the target expression
+  ‖PhysicalLocalL2.fixedPhaseEuclideanGauge m v z‖ ≤
+    ‖↑↑(↑C • (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)) z‖
+
+m n : ℤ
+v : InverseEtaFixedPhaseCore m
+u : InverseEtaFixedPhaseCore n
+c : ℍ → ℂ
+C : ℝ
+hC : 0 ≤ C
+hGauge :
+  ∀ (z : ℍ), PhysicalLocalL2.fixedPhaseEuclideanGauge m v z = c z * PhysicalLocalL2.fixedPhaseEuclideanGauge n u z
+hBound : ∀ z ∈ gammaTwoClosedTileCarrier, ‖c z‖ ≤ C
+z : ℍ
+hzTarget :
+  ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m) ((l2Coordinate m) v)) z =
+    PhysicalLocalL2.fixedPhaseEuclideanGauge m v z
+hzSource :
+  ↑↑((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)) z =
+    PhysicalLocalL2.fixedPhaseEuclideanGauge n u z
+hzOpen : z ∈ gammaTwoOpenCarrier
+⊢ ‖PhysicalLocalL2.fixedPhaseEuclideanGauge m v z‖ ≤
+    ‖↑↑(↑C • (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)) z‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38577:40: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |C|
+in the target expression
+  ‖C‖ * ‖(PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)‖ =
+    C * ‖(PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)‖
+
+m n : ℤ
+v : InverseEtaFixedPhaseCore m
+u : InverseEtaFixedPhaseCore n
+c : ℍ → ℂ
+C : ℝ
+hC : 0 ≤ C
+hGauge :
+  ∀ (z : ℍ), PhysicalLocalL2.fixedPhaseEuclideanGauge m v z = c z * PhysicalLocalL2.fixedPhaseEuclideanGauge n u z
+hBound : ∀ z ∈ gammaTwoClosedTileCarrier, ‖c z‖ ≤ C
+⊢ ‖C‖ * ‖(PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)‖ =
+    C * ‖(PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n) ((l2Coordinate n) u)‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38627:4: error: maximum number of errors (160; from option `maxErrors`) reached, exiting

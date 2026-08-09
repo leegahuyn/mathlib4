@@ -31669,7 +31669,7 @@ theorem modularTileEdgeAmbientVelocity_eq
   | rightVerticalSegment => rfl
 
 /-! #### Selected-coset actual edges -/
-section actualEdgeCanonicalDerivative
+
 /-- Ambient formula for an actual edge obtained from a selected right-coset
 representative. -/
 noncomputable def actualEdgeAmbientParam
@@ -31708,14 +31708,13 @@ theorem actualEdgeNativeVelocity_eq_selectedDerivative_mul
   unfold actualEdgeNativeVelocity
   exact selectedCoset_smulFDeriv_apply e.1
     (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)
-noncomputable local instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup
+
 /-- The Mobius-composed actual edge has the declared native tangent. -/
 theorem actualEdgeAmbientParam_hasDerivAt
     (e : GammaTwoActualPolygonEdge)
     (t : modularTileEdgeParameterSet e.2) :
     HasDerivAt (actualEdgeAmbientParam e)
       (actualEdgeNativeVelocity e t) (t : Real) := by
-  -- Statement and chain rule share the declaration-scoped canonical instance.
   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
   have houter :=
     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
@@ -31724,7 +31723,7 @@ theorem actualEdgeAmbientParam_hasDerivAt
     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
   simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
     Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
-end actualEdgeCanonicalDerivative
+
 /-! #### Native tangent compatibility under the actual side pairing -/
 
 /-- The subtype pairing is multiplication of the real parameter by the
@@ -32032,26 +32031,26 @@ theorem nativeActualEdgeFluxIntegral_paired_circular
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     (T : Real) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired =
       (-1 : Complex) *
         nativeActualEdgeFluxIntegral T X Y
           (q, GammaTwoModularTileEdge.circularArc) := by
   change
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
       (-1 : Complex) *
         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
           (q, GammaTwoModularTileEdge.circularArc) t)
   calc
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-          (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) (-t) := by
+          ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired (-t) := by
       symm
       simpa using
         (intervalIntegral.integral_comp_neg
           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
-            (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t)
+            ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t)
           (a := (-1 : Real)) (b := (1 : Real)))
     _ = ∫ t in (-1 : Real)..1,
         -nativeActualEdgeFluxIntegrand X Y
@@ -32076,12 +32075,12 @@ theorem nativeActualEdgeFluxIntegral_paired_left
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.leftVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
+      ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.leftVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -32101,12 +32100,12 @@ theorem nativeActualEdgeFluxIntegral_paired_right
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.rightVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
+      ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.rightVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -32383,7 +32382,8 @@ theorem nativeOrientedActualEdgeContribution_left
     GammaTwoModularTileEdge.orientationSign, Int.cast_neg,
     Int.cast_one, neg_mul]
   rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]
-  simp
+  ring
+
 /-- Explicit enumeration of the three base-edge labels. -/
 theorem sum_modularTileEdges_eq_three
     (B : GammaTwoModularTileEdge → Complex) :
@@ -32552,10 +32552,15 @@ namespace GammaTwoGlobalStokesBridge
 
 open MeasureTheory Set Function Topology Filter
 open scoped Pointwise Interval
-open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
-open GammaTwoOrientedBoundaryIntegral HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-local instance gammaTwoGlobalStokesBridgeMeasurableConstSMul : MeasurableConstSMul SL(2, ℤ) ℍ where measurable_const_smul g := (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable
-local instance gammaTwoGlobalStokesBridgeInvariantMeasure : SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure where measure_preimage_smul g s hs := by change volume ((fun z : ℍ => ((g : GL (Fin 2) ℝ) • z)) ⁻¹' s) = volume s; exact SMulInvariantMeasure.measure_preimage_smul _ hs
+open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
+open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
+open GammaTwoOrientedBoundaryIntegral
+open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+
+local instance gammaTwoGlobalStokesBridgeMeasurableConstSMul :
+    MeasurableConstSMul SL(2, ℤ) ℍ where
+  measurable_const_smul g :=
+    (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable
 
 /-! #### A. The selected open and half-open tiles agree almost everywhere -/
 
@@ -33018,7 +33023,7 @@ open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
 open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
 open GammaTwoOrientedBoundaryIntegral GammaTwoGlobalStokesBridge
 open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-local instance gammaTwoGlobalStokesCompositionMeasurableConstSMul : MeasurableConstSMul SL(2, ℤ) ℍ where measurable_const_smul g := (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable
+
 /-- Integrability counterpart of the selected-coset Bochner Jacobian
 identity.  This is Mathlib's actual change-of-variables equivalence for the
 Möbius map, not a consequence inferred from equality of two integrals. -/
@@ -33549,13 +33554,13 @@ theorem gammaTwoSelectedHorocycleParam_continuous
       (⟨(t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I,
         lt_of_lt_of_le zero_lt_one
           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
-    hcomplex.subtype_mk _
+    hcomplex.upperHalfPlaneMk _
   have hbase : Continuous (fun t : ℝ =>
       (⟨Complex.mk t (gammaTwoCuspLevel Y),
         lt_of_lt_of_le zero_lt_one
           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
     hbase'.congr (fun t => by
-      apply Subtype.ext
+      apply UpperHalfPlane.ext
       apply Complex.ext <;> simp)
   exact (continuous_sl2z_smul (gammaTwoCosetRep q)).comp hbase
 
@@ -33628,8 +33633,14 @@ theorem selectedCuspRestrictionRepresentative_add
         (((u : SmoothQuotientCompactFunction)
           (gammaTwoSelectedHorocycleParam q Y t)) +
          ((v : SmoothQuotientCompactFunction)
-          (gammaTwoSelectedHorocycleParam q Y t))) = _
-  ring
+          (gammaTwoSelectedHorocycleParam q Y t))) =
+      (selectedCuspTraceWeight n q Y t : ℂ) *
+          ((u : SmoothQuotientCompactFunction)
+            (gammaTwoSelectedHorocycleParam q Y t)) +
+        (selectedCuspTraceWeight n q Y t : ℂ) *
+          ((v : SmoothQuotientCompactFunction)
+            (gammaTwoSelectedHorocycleParam q Y t))
+  exact mul_add _ _ _
 
 @[simp]
 theorem selectedCuspRestrictionRepresentative_smul
@@ -33665,6 +33676,7 @@ theorem selectedCuspRestrictionRepresentative_memLp
     (u : InverseEtaFixedPhaseCore n) :
     MemLp (selectedCuspRestrictionRepresentative n q Y u) 2
       selectedHorocycleParameterMeasure := by
+  letI : MeasurableSpace ℝ := Real.measureSpace.toMeasurableSpace
   let f := selectedCuspRestrictionRepresentative n q Y u
   have hf : Continuous f :=
     selectedCuspRestrictionRepresentative_continuous n q Y u
@@ -33700,9 +33712,13 @@ theorem coeFn_selectedCuspCoreTrace
     ⇑(selectedCuspCoreTrace n q Y u) =ᵐ[
       selectedHorocycleParameterMeasure]
         selectedCuspRestrictionRepresentative n q Y u := by
-  simpa only [selectedCuspCoreTrace] using
-    MemLp.coeFn_toLp
-      (selectedCuspRestrictionRepresentative_memLp n q Y u)
+  change
+    ⇑((selectedCuspRestrictionRepresentative_memLp n q Y u).toLp
+      (selectedCuspRestrictionRepresentative n q Y u)) =ᵐ[
+        selectedHorocycleParameterMeasure]
+      selectedCuspRestrictionRepresentative n q Y u
+  exact MemLp.coeFn_toLp
+    (selectedCuspRestrictionRepresentative_memLp n q Y u)
 
 /-! #### C. Exact compact-support tail, including all corners -/
 
@@ -33791,8 +33807,7 @@ theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
         selectedCuspRestrictionRepresentative n q Z u =ᵐ[
           selectedHorocycleParameterMeasure] 0 := by
-  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u)
-      .eventually_zero_on_horocycleBoundary with
+  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
     ⟨Y₀, hY₀, hZero⟩
   refine ⟨Y₀, hY₀, ?_⟩
   intro Z hYZ q
@@ -33814,8 +33829,7 @@ theorem fixedPhaseCore_eventually_selectedCuspSection_eq_zero
         ∀ t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
           ((u : SmoothQuotientCompactFunction)
             (gammaTwoSelectedHorocycleParam q Z t)) = 0 := by
-  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u)
-      .eventually_zero_on_horocycleBoundary with
+  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
     ⟨Y₀, hY₀, hZero⟩
   refine ⟨Y₀, hY₀, ?_⟩
   intro Z hYZ q t ht
@@ -33837,7 +33851,7 @@ theorem fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero
   apply MeasureTheory.Lp.ext
   filter_upwards [coeFn_selectedCuspCoreTrace n q Z u,
     hZero Z hYZ q] with t htrace hrep
-  simpa using htrace.trans hrep
+  simpa only [Pi.zero_apply] using htrace.trans hrep
 
 /-- The existing compact-core Green flux theorem is the bilinear boundary
 counterpart of the individual trace vanishing theorem above. -/
@@ -33888,7 +33902,7 @@ theorem deriv_height_mul_normSq
       ‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ := by
   have hnorm := (hf y).hasDerivAt.norm_sq
   have hprod := (hasDerivAt_id y).mul hnorm
-  simpa only [one_mul] using hprod.deriv
+  convert hprod.deriv using 1 <;> ring
 
 /-- Pointwise Young inequality for the preceding derivative.  On the positive
 height axis it costs exactly two copies of the base density and one copy of
@@ -33904,15 +33918,14 @@ theorem norm_deriv_height_mul_normSq_le
   calc
     |‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ| ≤
         |‖f y‖ ^ 2| + |2 * y * ⟪f y, deriv f y⟫_ℝ| :=
-      abs_add _ _
+      abs_add_le _ _
     _ = ‖f y‖ ^ 2 + (2 * y) * |⟪f y, deriv f y⟫_ℝ| := by
       rw [abs_of_nonneg (sq_nonneg _), abs_mul,
         abs_of_nonneg (mul_nonneg (by norm_num) hy)]
     _ ≤ ‖f y‖ ^ 2 + (2 * y) *
         (‖f y‖ * ‖deriv f y‖) := by
       exact add_le_add_left
-        (mul_le_mul_of_nonneg_left hinner
-          (mul_nonneg (by norm_num) hy)) _
+        (mul_le_mul_of_nonneg_left hinner (by positivity)) _
     _ ≤ 2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2 := by
       nlinarith [sq_nonneg (‖f y‖ - y * ‖deriv f y‖)]
 
@@ -33929,22 +33942,29 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
   let energy : ℝ → ℝ := fun y =>
     2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2
   have hnormSq : HasCompactSupport (fun y : ℝ => ‖f y‖ ^ 2) := by
-    simpa only [pow_two] using hcompact.norm.mul hcompact.norm
+    simpa only [Function.comp_apply] using
+      hcompact.norm.comp_left (g := fun x : ℝ => x ^ 2) (by norm_num)
   have hderivNormSq :
       HasCompactSupport (fun y : ℝ => ‖deriv f y‖ ^ 2) := by
-    simpa only [pow_two] using
-      hcompact.deriv.norm.mul hcompact.deriv.norm
+    simpa only [Function.comp_apply] using
+      hcompact.deriv.norm.comp_left (g := fun x : ℝ => x ^ 2) (by norm_num)
   have hweightedCompact : HasCompactSupport weighted := by
-    simpa only [weighted, Pi.mul_apply] using
-      hnormSq.mul_left (f := fun y : ℝ => y)
+    apply hnormSq.mono
+    intro y hy hzero
+    apply hy
+    simp only [weighted, hzero, mul_zero]
   have hfirstCompact :
       HasCompactSupport (fun y : ℝ => 2 * ‖f y‖ ^ 2) := by
-    simpa only [Pi.mul_apply] using
-      hnormSq.mul_left (f := fun _y : ℝ => (2 : ℝ))
+    apply hnormSq.mono
+    intro y hy hzero
+    apply hy
+    simp only [hzero, mul_zero]
   have hsecondCompact :
       HasCompactSupport (fun y : ℝ => y ^ 2 * ‖deriv f y‖ ^ 2) := by
-    simpa only [Pi.mul_apply] using
-      hderivNormSq.mul_left (f := fun y : ℝ => y ^ 2)
+    apply hderivNormSq.mono
+    intro y hy hzero
+    apply hy
+    simp only [hzero, mul_zero]
   have henergyCompact : HasCompactSupport energy := by
     exact hfirstCompact.add hsecondCompact
   have hweightedSmooth : ContDiff ℝ 1 weighted := by
@@ -33976,12 +33996,14 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
       henergyIntegrable.integrableOn measurableSet_Ioi
     intro y hy
     exact norm_deriv_height_mul_normSq_le
-      (hf.differentiable (by norm_num)) (le_of_lt hy)
+      (hf.differentiable (by norm_num))
+      ((zero_le_one.trans hH).trans (le_of_lt hy))
   have hH0 : 0 ≤ H := zero_le_one.trans hH
   calc
     H * ‖f H‖ ^ 2 = ‖weighted H‖ := by
-      simp only [weighted, Real.norm_eq_abs, abs_mul,
-        abs_of_nonneg hH0, abs_of_nonneg (sq_nonneg _)]
+      rw [show weighted H = H * ‖f H‖ ^ 2 by rfl,
+        Real.norm_eq_abs,
+        abs_of_nonneg (mul_nonneg hH0 (sq_nonneg _))]
     _ ≤ ∫ y in Set.Ioi H, ‖deriv weighted y‖ := hFTC
     _ ≤ ∫ y in Set.Ioi H, energy y := hmono
 
@@ -34045,8 +34067,11 @@ theorem tendsto_zero_normSq_le_energy_Ioi
       (Set.Ioi r₀) := by
     apply Integrable.mono henergy hgDerivMeasurable
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
-    exact norm_deriv_normSq_le_energy
+    have hpoint := norm_deriv_normSq_le_energy
       (hf.differentiable (by norm_num)) r
+    simpa only [g, Real.norm_eq_abs,
+      abs_of_nonneg (norm_nonneg _),
+      abs_of_nonneg (add_nonneg (sq_nonneg _) (sq_nonneg _))] using hpoint
   have hgDerivIntegrable' : IntegrableOn (deriv g) (Set.Ioi r₀) := by
     apply (integrable_norm_iff
       ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).mono_measure Measure.restrict_le_self)).mp
@@ -34063,7 +34088,8 @@ theorem tendsto_zero_normSq_le_energy_Ioi
         hgDerivIntegrable' hgzero
   calc
     ‖f r₀‖ ^ 2 = ‖g r₀‖ := by
-      simp only [g, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+      rw [show g r₀ = ‖f r₀‖ ^ 2 by rfl,
+        Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
     _ = ‖∫ r in Set.Ioi r₀, deriv g r‖ := by
       rw [hFTC, norm_neg]
     _ ≤ ∫ r in Set.Ioi r₀, ‖deriv g r‖ :=
@@ -60002,7 +60028,6 @@ theorem finset_graph_snd_eq_of_sum_fst_eq
     simpa only [Prod.fst_sum, Prod.fst_mk] using hx
   have hSnd := T.mem_graph_snd_inj' hPair hp hFst
   simpa only [Prod.snd_sum, Prod.snd_mk] using hSnd
-
 /-- A convergent sequence in the physical raising graph has its limit in the
 closed opposite maximal-adjoint graph. -/
 theorem raising_limit_mem_oppositeMaximalGraph
@@ -60022,7 +60047,6 @@ theorem raising_limit_mem_oppositeMaximalGraph
     LinearPMap.le_graph_of_le
       (raise_le_negativeLower_adjoint
         (physicalGreenIdentityAt_unconditional n)) (hq j)
-
 /-- Lowering counterpart of `raising_limit_mem_oppositeMaximalGraph`. -/
 theorem lowering_limit_mem_oppositeMaximalGraph
     (n : ℤ) (q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))
@@ -60041,9 +60065,7 @@ theorem lowering_limit_mem_oppositeMaximalGraph
     LinearPMap.le_graph_of_le
       (lower_le_negativeRaise_adjoint
         (physicalGreenIdentityAt_unconditional n)) (hq j)
-
 /-! ### One localized chart, with its global base limit identified -/
-
 /-- One quotient-compatible scalar chart localization of a compact raising
 maximal-graph vector admits a physical core graph sequence.  Its base limit
 is the literal completed invariant scalar multiplier, and the whole limit
@@ -60105,7 +60127,6 @@ theorem exists_localizedRaisingGraphSequence
       phi hphi p.1 x q v hqModel hx hvMultiplier
   refine ⟨q, x, y, hqGraph, hx, hy, hxIdentified, ?_⟩
   exact raising_limit_mem_oppositeMaximalGraph n q x y hqGraph hx hy
-
 /-- Lowering version of `exists_localizedRaisingGraphSequence`. -/
 theorem exists_localizedLoweringGraphSequence
     (n : ℤ) (z₀ : ℍ)
@@ -60164,9 +60185,7 @@ theorem exists_localizedLoweringGraphSequence
       phi hphi p.1 x q v hqModel hx hvMultiplier
   refine ⟨q, x, y, hqGraph, hx, hy, hxIdentified, ?_⟩
   exact lowering_limit_mem_oppositeMaximalGraph n q x y hqGraph hx hy
-
 /-! ### Finite quotient-compatible gluing -/
-
 /-- Two compactly supported completed Petersson vectors admit one common
 literal compact carrier, obtained by taking the union of their selected
 carriers.  The finite quotient localization can therefore be chosen once for
@@ -60193,7 +60212,6 @@ theorem exists_commonCompactCarrierSupport
   · filter_upwards [hyK] with z hz
     intro hzUnion
     exact hz (fun hzKy ↦ hzUnion (Or.inr hzKy))
-
 /-- The finite localization identity, rewritten over the attached finite
 index type used for dependent local choices. -/
 theorem effectiveScalarSmoothQuotient_sum_attach_eq_one
@@ -60217,7 +60235,6 @@ theorem effectiveScalarSmoothQuotient_sum_attach_eq_one
           effectiveScalarPoincarePeriodization (theta i) z := by
             exact Finset.sum_attach t _
     _ = 1 := hsum z hz
-
 /-- The attached family of completed invariant scalar multipliers exactly
 reconstructs every vector essentially supported on the compact carrier. -/
 theorem finiteQuotientLocalization_base_reconstruction
@@ -60239,7 +60256,6 @@ theorem finiteQuotientLocalization_base_reconstruction
     (fun i : {x // x ∈ t} ↦ effectiveScalarSmoothQuotient (theta i))
     (fun i ↦ effectiveScalarSmoothQuotient_invariant (theta i))
     (fun z hz ↦ effectiveScalarSmoothQuotient_sum_attach_eq_one hsum hz)
-
 /-- The compact weak raising maximal graph is unconditionally regularized by
 the actual physical raising core. -/
 theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
@@ -60308,7 +60324,6 @@ theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
       · simpa only [Prod.fst_sum, Prod.fst_mk] using hxSum
       · simpa only [Prod.snd_sum, Prod.snd_mk] using hySum
     simpa only [hTarget] using hSum
-
 /-- The compact weak lowering maximal graph is unconditionally regularized
 by the actual physical lowering core. -/
 theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
@@ -60379,9 +60394,7 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
       · simpa only [Prod.fst_sum, Prod.fst_mk] using hxSum
       · simpa only [Prod.snd_sum, Prod.snd_mk] using hySum
     simpa only [hTarget] using hSum
-
 /-! ### Public strong cross-adjoint endpoint -/
-
 /-- The full strong raising/lowering cross-adjoint theorem, now with every
 periodization, cutoff, and compact Friedrichs input discharged internally. -/
 theorem strongCrossAdjointAt_unconditional (n : ℤ) :
@@ -60392,12 +60405,9 @@ theorem strongCrossAdjointAt_unconditional (n : ℤ) :
       (raisingCompactFriedrichsPeriodizationAt_unconditional n)
       (FixedPhaseIntrinsicAdjointCutoff.loweringInvariantCutoffGraphControlAt_unconditional n)
       (loweringCompactFriedrichsPeriodizationAt_unconditional n)
-
 end
 end FixedPhaseReducedChartFriedrichs
-
 namespace AxiomAuditP3FinalUnconditionalFriedrichs
-
 #print axioms FixedPhaseReducedChartFriedrichs.finset_graph_snd_eq_of_sum_fst_eq
 #print axioms FixedPhaseReducedChartFriedrichs.exists_localizedRaisingGraphSequence
 #print axioms FixedPhaseReducedChartFriedrichs.exists_localizedLoweringGraphSequence
@@ -60406,26 +60416,21 @@ namespace AxiomAuditP3FinalUnconditionalFriedrichs
 #print axioms FixedPhaseReducedChartFriedrichs.raisingCompactFriedrichsPeriodizationAt_unconditional
 #print axioms FixedPhaseReducedChartFriedrichs.loweringCompactFriedrichsPeriodizationAt_unconditional
 #print axioms FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional
-
 end AxiomAuditP3FinalUnconditionalFriedrichs
 end Mock2FA.PaperCorrections.AutomorphicSobolev
 /-!
 P4 unconditional endpoint activation.
-
 The six analytic bridge lemmas from
 `P4_Joint_Graph_Norm_Closure_Fragment.lean` already occur earlier in this
 integrated source.  Only the two endpoints below are new: they discharge the
 two adjacent strong cross-adjoint inputs using the unconditional P3 theorem,
 without redeclaring the existing bridge lemmas.
 -/
-
 namespace Mock2FA.PaperCorrections.AutomorphicSobolev
 namespace FixedPhaseJointGraphNormClosure
-
 open DefinitionOneSobolev
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open IndependentWeightedWeakSobolev
-
 /-- The one same-sequence three-coordinate density theorem, with both
 adjacent component essential-core theorems discharged by the reduced-chart
 Friedrichs construction. -/
@@ -60434,20 +60439,15 @@ theorem jointGraphCoreDensityAt_unconditional (n : ℤ) :
   jointGraphCoreDensityAt_of_strongCrossAdjoints n
     (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional n)
     (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional (n + 1))
-
 /-- Canonical isometric identification of the independently defined weak
 Sobolev space with the completion of the literal smooth joint graph. -/
 noncomputable def graphCompletionEquivWeightedWeak_unconditional (n : ℤ) :
     SuccessorGraphCompletion n ≃ₗᵢ[ℂ] WeightedWeakSobolev n :=
   graphCompletionEquivWeightedWeak n
     (jointGraphCoreDensityAt_unconditional n)
-
 end FixedPhaseJointGraphNormClosure
-
 namespace AxiomAuditP4JointGraphNormUnconditional
-
 #print axioms FixedPhaseJointGraphNormClosure.jointGraphCoreDensityAt_unconditional
 #print axioms FixedPhaseJointGraphNormClosure.graphCompletionEquivWeightedWeak_unconditional
-
 end AxiomAuditP4JointGraphNormUnconditional
 end Mock2FA.PaperCorrections.AutomorphicSobolev
