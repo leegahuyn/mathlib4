@@ -1,6 +1,6 @@
 complete=False
 stage=Mock2_FunctionalAnalysis
-any_promotion=True
+any_promotion=False
 fa_exit=1
 fa_errors=501
 fa_first=31726:2
