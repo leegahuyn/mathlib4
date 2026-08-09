@@ -1,0 +1,157 @@
+name: PASS 401 reusable priority repair stage v2
+
+on:
+  workflow_call:
+    inputs:
+      stage:
+        required: true
+        type: number
+    outputs:
+      complete:
+        description: whether every required priority target has direct-source 2x PASS
+        value: ${{ jobs.stage.outputs.complete }}
+      stage:
+        description: completed stage number
+        value: ${{ jobs.stage.outputs.stage }}
+
+permissions:
+  contents: write
+  actions: write
+  models: read
+
+jobs:
+  stage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    outputs:
+      complete: ${{ steps.result.outputs.complete }}
+      stage: ${{ steps.result.outputs.stage }}
+    steps:
+      - name: Checkout latest PASS 401 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa401-chained-jobs-20260809
+          fetch-depth: 5000
+          persist-credentials: true
+
+      - name: Resolve stage configuration
+        id: config
+        shell: bash
+        env:
+          STAGE: ${{ inputs.stage }}
+        run: |
+          set -euo pipefail
+          stage="${STAGE}"
+          printf -v stage_pad '%02d' "${stage}"
+          slot=$((stage % 3))
+          case "${slot}" in
+            0) models='openai/gpt-5,openai/o4-mini,openai/gpt-4.1' ;;
+            1) models='openai/o4-mini,openai/gpt-4.1,openai/gpt-5' ;;
+            2) models='openai/gpt-4.1,openai/gpt-5,openai/o4-mini' ;;
+          esac
+          echo "stage_pad=${stage_pad}" >> "${GITHUB_OUTPUT}"
+          echo "models=${models}" >> "${GITHUB_OUTPUT}"
+
+      - name: Install pinned Lean, ripgrep, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Run bounded stage repair in strict module order
+        id: agent
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FA401_STAGE: ${{ inputs.stage }}
+          FA400_CYCLE: ${{ inputs.stage }}
+          FA399_CYCLE: ${{ inputs.stage }}
+          FA391_MODELS: ${{ steps.config.outputs.models }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf /tmp/fa397-candidates
+          python3 scripts/fa401_chained_stage_agent.py \
+            --rounds 3 \
+            --models-per-round 3 \
+            > "/tmp/fa401-stage-${{ inputs.stage }}.log" 2>&1
+          rc=$?
+          set -e
+          cat "/tmp/fa401-stage-${{ inputs.stage }}.log"
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Commit stage source progress and compact evidence
+        if: always()
+        shell: bash
+        env:
+          STAGE_PAD: ${{ steps.config.outputs.stage_pad }}
+          STAGE: ${{ inputs.stage }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+          git add PrimalitySheafVerification/QYM.lean
+          for p in PrimalitySheafVerification/Mock3*.lean; do test -e "${p}" && git add "${p}" || true; done
+          for p in \
+            build-logs/fa391-targeted/AUTHORITATIVE_STATUS.json \
+            build-logs/fa391-targeted/AUTHORITATIVE_STATUS.txt \
+            build-logs/fa391-targeted/state.json \
+            build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS \
+            build-logs/fa399-harvest-combinator/CURRENT.json \
+            build-logs/fa401-chain/CURRENT.json \
+            build-logs/fa401-chain/LAST_COMBINATOR_SOURCE_SHA256 \
+            "build-logs/fa401-chain/stage-${STAGE_PAD}.json"; do
+            test -e "${p}" && git add "${p}" || true
+          done
+          if ! git diff --cached --quiet; then
+            if test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS; then
+              msg="fix: obtain PASS 401 stage ${STAGE} priority 2x PASS"
+            else
+              msg="fix: preserve PASS 401 stage ${STAGE} frontier"
+            fi
+            git commit -m "${msg}"
+            git push origin HEAD:fix/fa401-chained-jobs-20260809
+          fi
+
+      - name: Upload complete stage diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa401-stage-${{ inputs.stage }}-${{ github.sha }}
+          path: |
+            /tmp/fa401-stage-${{ inputs.stage }}.log
+            /tmp/fa397-candidates
+            build-logs/fa399-harvest-combinator
+            build-logs/fa401-chain
+            build-logs/fa391-targeted
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+            PrimalitySheafVerification/Mock3*.lean
+            PrimalitySheafVerification/QYM.lean
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Publish reusable-stage result
+        id: result
+        if: always()
+        shell: bash
+        run: |
+          echo 'stage=${{ inputs.stage }}' >> "${GITHUB_OUTPUT}"
+          if test -f build-logs/fa391-targeted/ALL_REQUIRED_TARGETS_2X_PASS; then
+            echo 'complete=true' >> "${GITHUB_OUTPUT}"
+          else
+            echo 'complete=false' >> "${GITHUB_OUTPUT}"
+          fi
