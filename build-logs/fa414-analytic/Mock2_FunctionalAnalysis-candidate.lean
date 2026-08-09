@@ -31713,8 +31713,9 @@ theorem actualEdgeNativeVelocity_eq_selectedDerivative_mul
 theorem actualEdgeAmbientParam_hasDerivAt
     (e : GammaTwoActualPolygonEdge)
     (t : modularTileEdgeParameterSet e.2) :
-    HasDerivAt (actualEdgeAmbientParam e)
-      (actualEdgeNativeVelocity e t) (t : Real) := by
+    @HasDerivAt ℝ _ ℂ Complex.instNormedAddCommGroup.toAddCommGroup _ _ _
+      (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) (t : Real) := by
+  -- Pin the theorem statement to the canonical complex additive structure.
   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
   have houter :=
     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
@@ -32031,26 +32032,26 @@ theorem nativeActualEdgeFluxIntegral_paired_circular
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     (T : Real) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired =
+        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) =
       (-1 : Complex) *
         nativeActualEdgeFluxIntegral T X Y
           (q, GammaTwoModularTileEdge.circularArc) := by
   change
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
+        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
       (-1 : Complex) *
         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
           (q, GammaTwoModularTileEdge.circularArc) t)
   calc
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
+        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-          ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired (-t) := by
+          (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) (-t) := by
       symm
       simpa using
         (intervalIntegral.integral_comp_neg
           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
-            ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t)
+            (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t)
           (a := (-1 : Real)) (b := (1 : Real)))
     _ = ∫ t in (-1 : Real)..1,
         -nativeActualEdgeFluxIntegrand X Y
@@ -32075,12 +32076,12 @@ theorem nativeActualEdgeFluxIntegral_paired_left
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired =
+        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.leftVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
+      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.leftVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -32100,12 +32101,12 @@ theorem nativeActualEdgeFluxIntegral_paired_right
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired =
+        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.rightVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
+      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.rightVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -32381,8 +32382,7 @@ theorem nativeOrientedActualEdgeContribution_left
     GammaTwoActualPolygonEdge.orientationSign,
     GammaTwoModularTileEdge.orientationSign, Int.cast_neg,
     Int.cast_one, neg_mul]
-  rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]
-  ring
+  rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]; ring
 
 /-- Explicit enumeration of the three base-edge labels. -/
 theorem sum_modularTileEdges_eq_three
@@ -60405,12 +60405,9 @@ theorem strongCrossAdjointAt_unconditional (n : ℤ) :
       (raisingCompactFriedrichsPeriodizationAt_unconditional n)
       (FixedPhaseIntrinsicAdjointCutoff.loweringInvariantCutoffGraphControlAt_unconditional n)
       (loweringCompactFriedrichsPeriodizationAt_unconditional n)
-
 end
 end FixedPhaseReducedChartFriedrichs
-
 namespace AxiomAuditP3FinalUnconditionalFriedrichs
-
 #print axioms FixedPhaseReducedChartFriedrichs.finset_graph_snd_eq_of_sum_fst_eq
 #print axioms FixedPhaseReducedChartFriedrichs.exists_localizedRaisingGraphSequence
 #print axioms FixedPhaseReducedChartFriedrichs.exists_localizedLoweringGraphSequence
@@ -60419,26 +60416,21 @@ namespace AxiomAuditP3FinalUnconditionalFriedrichs
 #print axioms FixedPhaseReducedChartFriedrichs.raisingCompactFriedrichsPeriodizationAt_unconditional
 #print axioms FixedPhaseReducedChartFriedrichs.loweringCompactFriedrichsPeriodizationAt_unconditional
 #print axioms FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional
-
 end AxiomAuditP3FinalUnconditionalFriedrichs
 end Mock2FA.PaperCorrections.AutomorphicSobolev
 /-!
 P4 unconditional endpoint activation.
-
 The six analytic bridge lemmas from
 `P4_Joint_Graph_Norm_Closure_Fragment.lean` already occur earlier in this
 integrated source.  Only the two endpoints below are new: they discharge the
 two adjacent strong cross-adjoint inputs using the unconditional P3 theorem,
 without redeclaring the existing bridge lemmas.
 -/
-
 namespace Mock2FA.PaperCorrections.AutomorphicSobolev
 namespace FixedPhaseJointGraphNormClosure
-
 open DefinitionOneSobolev
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open IndependentWeightedWeakSobolev
-
 /-- The one same-sequence three-coordinate density theorem, with both
 adjacent component essential-core theorems discharged by the reduced-chart
 Friedrichs construction. -/
@@ -60447,20 +60439,15 @@ theorem jointGraphCoreDensityAt_unconditional (n : ℤ) :
   jointGraphCoreDensityAt_of_strongCrossAdjoints n
     (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional n)
     (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional (n + 1))
-
 /-- Canonical isometric identification of the independently defined weak
 Sobolev space with the completion of the literal smooth joint graph. -/
 noncomputable def graphCompletionEquivWeightedWeak_unconditional (n : ℤ) :
     SuccessorGraphCompletion n ≃ₗᵢ[ℂ] WeightedWeakSobolev n :=
   graphCompletionEquivWeightedWeak n
     (jointGraphCoreDensityAt_unconditional n)
-
 end FixedPhaseJointGraphNormClosure
-
 namespace AxiomAuditP4JointGraphNormUnconditional
-
 #print axioms FixedPhaseJointGraphNormClosure.jointGraphCoreDensityAt_unconditional
 #print axioms FixedPhaseJointGraphNormClosure.graphCompletionEquivWeightedWeak_unconditional
-
 end AxiomAuditP4JointGraphNormUnconditional
 end Mock2FA.PaperCorrections.AutomorphicSobolev
