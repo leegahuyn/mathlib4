@@ -1,0 +1,1 @@
+Run line-preserving derivative-wrapper unfold candidate from exact PASS376 champion. Authority: direct Lean compile; promote only on exit 0 or literal first_error_line > 31725.
