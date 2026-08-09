@@ -18781,6 +18781,13 @@ theorem norm_sectionCoreMap_sq (u : V) :
 
 variable [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL]
 
+/-- Keep every declaration in the completed-graph section on the canonical
+`UniformSpace.Completion` normed-space instance.  This prevents elaboration
+from alternating between the direct completion instance and the normed-space
+parent projected from the completion inner-product instance. -/
+local instance completionNormedSpace : NormedSpace ℂ Q.SobolevCompletion :=
+  UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
+
 /-- Isometric closure of the graph range inside the Hilbert direct sum. -/
 noncomputable def graphExtension :
     Q.SobolevCompletion →L[ℂ] EnergyTarget H₀ HR HL :=
@@ -18941,7 +18948,8 @@ theorem completion_norm_sq (x : Q.SobolevCompletion) :
 /-- Trial-first weak energy operator on the Hilbert completion. -/
 noncomputable def completionEnergyOperator :
     WeakAntiOperator Q.SobolevCompletion :=
-  innerSLFlip ℂ
+  (innerSLFlip ℂ :
+    Q.SobolevCompletion →L[ℂ] StrongAntiDual Q.SobolevCompletion)
 
 @[simp]
 theorem completionEnergyOperator_apply (u v : Q.SobolevCompletion) :

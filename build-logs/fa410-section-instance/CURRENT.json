@@ -1,0 +1,36 @@
+{
+  "complete": false,
+  "stage": "ordered FA Integrated Mock3 QYM 2x gate",
+  "summary_exit": {
+    "Mock2": 0,
+    "Mock2_Advanced": 0,
+    "FA_run1": 1,
+    "FA_run2": 125,
+    "Integrated_run1": 125,
+    "Integrated_run2": 125,
+    "Mock3_all_2x": 125,
+    "QYM_run1": 125,
+    "QYM_run2": 125
+  },
+  "fa_source_sha256": "460654605e9d895caa2c78ad9aa9540d6bf729fe2c1f7892c9d004a2c4b75600",
+  "runs": {
+    "Mock2-run1": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": 0,
+      "first_col": 0
+    },
+    "Mock2_Advanced-run1": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": 0,
+      "first_col": 0
+    },
+    "Mock2_FunctionalAnalysis-run1": {
+      "exit_code": 1,
+      "errors": 501,
+      "first_line": 18788,
+      "first_col": 15
+    }
+  }
+}
