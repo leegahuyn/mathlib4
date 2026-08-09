@@ -1,0 +1,63 @@
+{
+  "cycle": 2,
+  "agent_exit_code": 1,
+  "complete": false,
+  "source_status": {
+    "complete": false,
+    "required_order": [
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean",
+      "PrimalitySheafVerification/QYM.lean"
+    ],
+    "modules": [
+      {
+        "module": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+        "status": "FAIL",
+        "result": {
+          "exit_code": 1,
+          "errors": 78,
+          "first_line": 18908,
+          "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+          "elapsed_seconds": 138.52,
+          "log": "build-logs/fa391-targeted/logs/Mock2_FunctionalAnalysis-baseline.log",
+          "olean": "build-logs/fa391-targeted/compiled/Mock2-FunctionalAnalysis-baseline.olean",
+          "ilean": "build-logs/fa391-targeted/compiled/Mock2-FunctionalAnalysis-baseline.ilean",
+          "artifacts_exist": false
+        },
+        "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620"
+      }
+    ],
+    "stage": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "forbidden_token_audit": {
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": {
+        "sorry": 0,
+        "admit": 0,
+        "global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": {
+        "sorry": 0,
+        "admit": 0,
+        "global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "PrimalitySheafVerification/QYM.lean": {
+        "sorry": 0,
+        "admit": 0,
+        "global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      }
+    },
+    "source_sha256": {
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+      "PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean": "a77f9e67980ec35b0d7b4d1624c10ec68051f575468d3b74859e6cf30e3e0439",
+      "PrimalitySheafVerification/QYM.lean": "698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0"
+    }
+  }
+}
