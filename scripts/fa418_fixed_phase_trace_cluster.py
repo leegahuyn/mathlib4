@@ -3,7 +3,7 @@ import hashlib
 
 path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
 text = path.read_text(encoding='utf-8')
-expected = '53b5cd8cfb5be38214f918269515a40621e6340eba93e9fc5b90a081375c120a'
+expected = 'f2c05569e7875bfc8aa15d00097712e1331363a76c553b502bc902bd564626db'
 actual = hashlib.sha256(text.encode()).hexdigest()
 if actual != expected:
     raise SystemExit(f'unexpected PASS417 input sha256: {actual}')
