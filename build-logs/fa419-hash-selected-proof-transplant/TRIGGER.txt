@@ -1,0 +1,1 @@
+Trigger after the SHA-selected restoration workflow is present. Baseline source remains immutable unless a direct compile metric strictly improves.
