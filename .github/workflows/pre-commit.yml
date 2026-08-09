@@ -3,28 +3,87 @@ name: Run pre-commit and in-place update PR on push
 on:
   push:
     branches-ignore:
-      # ignore tmp branches used by bors
       - 'staging.tmp*'
       - 'trying.tmp*'
       - 'staging*.tmp'
       - 'nolints'
-      # ignore staging and trying branches used by bors, these are handled by bors.yml
       - 'staging'
       - 'trying'
-      - 'ci-dev/**' # ignore branches meant for experiments
+      - 'ci-dev/**'
       - 'master'
   pull_request:
 
-# extracted from https://pre-commit.ci/lite
+permissions:
+  actions: read
+  contents: write
+
 jobs:
   main:
-    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build'
+    if: >-
+      github.head_ref != 'fix/primality-sheaf-clean-build' &&
+      github.ref_name != 'fix/primality-sheaf-clean-build' &&
+      github.head_ref != 'candidate/fa377c-precommit-runner-20260810' &&
+      github.ref_name != 'candidate/fa377c-precommit-runner-20260810'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
       with:
         python-version: 3.x
-    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43 # v1.1.0
+    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
+    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43
       if: always()
+
+  fa377-direct:
+    if: github.ref_name == 'candidate/fa377c-precommit-runner-20260810'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout immutable-champion candidate branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: candidate/fa377c-precommit-runner-20260810
+          fetch-depth: 1800
+          persist-credentials: true
+
+      - name: Apply exact FA377 repair and direct-compile Mock2 Mock2_Advanced FA
+        shell: bash
+        run: bash scripts/fa377_direct_ci.sh
+
+      - name: Commit source only on strict direct-compile improvement
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa377c-precommit
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if test -f "$d/PROMOTED"; then
+            first=$(python3 -c "import json; print(json.load(open('$d/CURRENT.json'))['results']['Mock2_FunctionalAnalysis']['first_error_line'])")
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$d"
+            msg="fix: promote FA377c frontier beyond 31725 to ${first} [skip ci]"
+          else
+            git restore PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            git add "$d"
+            msg='evidence: reject FA377c regression; retain PASS376 champion [skip ci]'
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "$msg"
+            git push origin HEAD:candidate/fa377c-precommit-runner-20260810
+          fi
+
+      - name: Upload FA377c direct-compile evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa377c-precommit-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/fa377c-precommit
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce strict champion improvement
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/fa377c-precommit/FINAL_EXIT
+          exit "$(cat build-logs/fa377c-precommit/FINAL_EXIT)"
