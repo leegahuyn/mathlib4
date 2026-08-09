@@ -3,28 +3,108 @@ name: Run pre-commit and in-place update PR on push
 on:
   push:
     branches-ignore:
-      # ignore tmp branches used by bors
       - 'staging.tmp*'
       - 'trying.tmp*'
       - 'staging*.tmp'
       - 'nolints'
-      # ignore staging and trying branches used by bors, these are handled by bors.yml
       - 'staging'
       - 'trying'
-      - 'ci-dev/**' # ignore branches meant for experiments
+      - 'ci-dev/**'
       - 'master'
   pull_request:
 
-# extracted from https://pre-commit.ci/lite
+permissions:
+  actions: read
+  contents: write
+
 jobs:
   main:
-    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build'
+    if: >-
+      github.head_ref != 'fix/primality-sheaf-clean-build' &&
+      github.ref_name != 'fix/primality-sheaf-clean-build' &&
+      github.head_ref != 'fix/fa425-instance-transport-controller-20260810' &&
+      github.ref_name != 'fix/fa425-instance-transport-controller-20260810'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
       with:
         python-version: 3.x
-    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43 # v1.1.0
+    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
+    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43
       if: always()
+
+  fa425-direct:
+    if: github.ref_name == 'fix/fa425-instance-transport-controller-20260810'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - name: Checkout verified 31726 source and FA425 solver
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa425-instance-transport-controller-20260810
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Run diagnostics and direct-CLI instance-transport tournament
+        shell: bash
+        run: bash scripts/fa425_precommit_ci.sh
+
+      - name: Commit only direct-CLI-authorized source and concise evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa425-instance-transport
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test -s "$d/VERIFIED_SUMMARY.json"
+          test -s "$d/CURRENT.json"
+          if test -f "$d/PROMOTED" || test -f "$d/COMPLETE"; then
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          else
+            git restore PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          fi
+          git add "$d/CURRENT.json" "$d/CURRENT.txt" \
+            "$d/VERIFIED_SUMMARY.json" "$d/VERIFIED_SUMMARY.txt" \
+            "$d/FINAL_EXIT" "$d/diagnostics" \
+            "$d/before-source-sha256.txt" "$d/after-source-sha256.txt" \
+            "$d/before-line-count.txt" "$d/after-line-count.txt" \
+            "$d/solver-exit.txt"
+          test ! -f "$d/FIRST_ERROR_CONTEXT.txt" || git add "$d/FIRST_ERROR_CONTEXT.txt"
+          test ! -f "$d/ALL_REQUIRED_TARGETS_2X_PASS" || git add "$d/ALL_REQUIRED_TARGETS_2X_PASS"
+          find "$d" -maxdepth 1 -type f -name 'frontier-*-PROMOTED.txt' -print0 | xargs -0 -r git add
+          test ! -f "$d/PROMOTED" || git add "$d/PROMOTED"
+          test ! -f "$d/COMPLETE" || git add "$d/COMPLETE"
+          test ! -f "$d/NO_IMPROVEMENT" || git add "$d/NO_IMPROVEMENT"
+          if git diff --cached --quiet; then exit 0; fi
+          if test -f "$d/COMPLETE"; then
+            msg='fix: obtain authoritative FA Integrated Mock3 QYM 2x PASS [skip ci]'
+          elif test -f "$d/PROMOTED"; then
+            first=$(python3 -c "import json; print(json.load(open('$d/VERIFIED_SUMMARY.json'))['FA_first_actual_error_line'])")
+            sha=$(python3 -c "import json; print(json.load(open('$d/VERIFIED_SUMMARY.json'))['final_source_sha256'][:12])")
+            msg="fix: promote direct-CLI FA frontier to ${first} sha ${sha} [skip ci]"
+          else
+            msg='ci: record FA425 no-improvement direct evidence [skip ci]'
+          fi
+          git commit -m "$msg"
+          git push origin HEAD:fix/fa425-instance-transport-controller-20260810
+
+      - name: Upload complete FA425 direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa425-precommit-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa425-instance-transport
+            build-logs/fa422-canonical-decl
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual final chain result
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/fa425-instance-transport/FINAL_EXIT
+          exit "$(cat build-logs/fa425-instance-transport/FINAL_EXIT)"
