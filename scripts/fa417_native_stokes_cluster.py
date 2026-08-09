@@ -1,101 +1,20 @@
 from pathlib import Path
-import hashlib
+import base64, hashlib, subprocess, zlib
 
-path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
-text = path.read_text(encoding='utf-8')
-expected = '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
-actual = hashlib.sha256(text.encode()).hexdigest()
-if actual != expected:
-    raise SystemExit(f'unexpected PASS376 champion input sha256: {actual}')
-
-repairs = 0
-
-def replace_once(old: str, new: str, label: str) -> None:
-    global text, repairs
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f'{label}: expected once, found {count}')
-    text = text.replace(old, new)
-    repairs += 1
-
-# Isolate the target derivative theorem and elaborate both its statement and
-# proof under the same canonical (noncomputable) additive structure.
-replace_once(
-    '/-! #### Selected-coset actual edges -/\n\n/-- Ambient formula for an actual edge obtained from a selected right-coset\n',
-    '/-! #### Selected-coset actual edges -/\nsection actualEdgeCanonicalDerivative\n/-- Ambient formula for an actual edge obtained from a selected right-coset\n',
-    'open derivative instance scope')
-replace_once(
-    '  exact selectedCoset_smulFDeriv_apply e.1\n    (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)\n\n/-- The Mobius-composed actual edge has the declared native tangent. -/\n',
-    '  exact selectedCoset_smulFDeriv_apply e.1\n    (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)\nnoncomputable local instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n/-- The Mobius-composed actual edge has the declared native tangent. -/\n',
-    'canonical derivative instance')
-replace_once(
-    '  letI : AddCommGroup Complex := Complex.addCommGroup\n  have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t\n',
-    '  -- Statement and chain rule share the declaration-scoped canonical instance.\n  have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t\n',
-    'remove legacy proof-local instance')
-replace_once(
-    '  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,\n    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp\n\n/-! #### Native tangent compatibility under the actual side pairing -/\n',
-    '  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,\n    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp\nend actualEdgeCanonicalDerivative\n/-! #### Native tangent compatibility under the actual side pairing -/\n',
-    'close derivative instance scope')
-
-# Pairing is a function application. Parenthesize the complete paired edge.
-for edge, expected_count in {
-    'circularArc': 5,
-    'leftVerticalSegment': 2,
-    'rightVerticalSegment': 2,
-}.items():
-    old = ('GammaTwoActualPolygonEdge.paired '
-           f'((q, GammaTwoModularTileEdge.{edge}) : GammaTwoActualPolygonEdge)')
-    new = ('(GammaTwoActualPolygonEdge.paired '
-           f'((q, GammaTwoModularTileEdge.{edge}) : GammaTwoActualPolygonEdge))')
-    count = text.count(old)
-    if count != expected_count:
-        raise SystemExit(f'{edge}: expected {expected_count}, found {count}')
-    text = text.replace(old, new)
-    repairs += count
-
-replace_once(
-    '  rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]\n\n/-- Explicit enumeration of the three base-edge labels. -/\n',
-    '  rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]\n  simp\n/-- Explicit enumeration of the three base-edge labels. -/\n',
-    'native left-edge scalar closure')
-
-# Add exactly the action interfaces needed by the global Stokes namespaces,
-# using already-proved continuous Möbius action and GL-invariant volume.
-replace_once(
-'''open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
-open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
-open GammaTwoOrientedBoundaryIntegral
-open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-''',
-'''open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
-open GammaTwoOrientedBoundaryIntegral HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-local instance gammaTwoGlobalStokesBridgeMeasurableConstSMul : MeasurableConstSMul SL(2, ℤ) ℍ where measurable_const_smul g := (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable
-local instance gammaTwoGlobalStokesBridgeInvariantMeasure : SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure where measure_preimage_smul g s hs := by change volume ((fun z : ℍ => ((g : GL (Fin 2) ℝ) • z)) ⁻¹' s) = volume s; exact SMulInvariantMeasure.measure_preimage_smul _ hs
-''',
-    'global Stokes action instances')
-
-replace_once(
-    '        (show z ∈ {w : ℍ | w.im ≤ H} from le_of_not_gt hHigh)⟩\n',
-    '        (show z.im ≤ H from le_of_not_gt hHigh)⟩\n',
-    'closed truncation height membership')
-
-replace_once(
-'''open GammaTwoOrientedBoundaryIntegral GammaTwoGlobalStokesBridge
-open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-
-/-- Integrability counterpart of the selected-coset Bochner Jacobian
-''',
-'''open GammaTwoOrientedBoundaryIntegral GammaTwoGlobalStokesBridge
-open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
-local instance gammaTwoGlobalStokesCompositionMeasurableConstSMul : MeasurableConstSMul SL(2, ℤ) ℍ where measurable_const_smul g := (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable
-/-- Integrability counterpart of the selected-coset Bochner Jacobian
-''',
-    'composition-support measurable action')
-
-line_count = len(text.splitlines())
-if line_count != 60453:
-    raise SystemExit(f'line-count drift: {line_count}, expected 60453')
-path.write_text(text, encoding='utf-8')
-print('input_sha256=' + actual)
-print('output_sha256=' + hashlib.sha256(text.encode()).hexdigest())
-print('lines=' + str(line_count))
-print('repairs=' + str(repairs))
+path = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+expected_input = "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4"
+expected_output = "7c8cc3a0002b8e23de3230767278a46f0e718dabce2269f153908bbc75e4447d"
+actual = hashlib.sha256(path.read_bytes()).hexdigest()
+if actual != expected_input:
+    raise SystemExit(f"unexpected input sha256: {actual}")
+patch = zlib.decompress(base64.b64decode("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"))
+proc = subprocess.run(["patch", "--batch", "--forward", "-p0"], input=patch, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+if proc.returncode != 0:
+    raise SystemExit(proc.stdout.decode("utf-8", errors="replace"))
+output = hashlib.sha256(path.read_bytes()).hexdigest()
+lines = len(path.read_text(encoding="utf-8").splitlines())
+if output != expected_output or lines != 60453:
+    raise SystemExit(f"unexpected output: sha={output} lines={lines}")
+print("input_sha256=" + actual)
+print("output_sha256=" + output)
+print("lines=" + str(lines))
