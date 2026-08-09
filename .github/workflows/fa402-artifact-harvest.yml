@@ -1,0 +1,81 @@
+name: PASS 402 harvest historical FA candidates
+
+on:
+  push:
+    branches:
+      - fix/fa402-artifact-harvest-20260809
+    paths:
+      - '.start-pass402'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa402-artifact-harvest
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout PASS 402 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa402-artifact-harvest-20260809
+          fetch-depth: 5000
+          persist-credentials: true
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Download, audit, and compile historical FA source candidates
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa402-artifact-harvest /tmp/fa397-candidates
+          python3 scripts/fa402_artifact_harvester.py > /tmp/fa402-console.log 2>&1
+          cat /tmp/fa402-console.log
+
+      - name: Commit best historical candidate and selection manifest
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test -f build-logs/fa402-artifact-harvest/selection.json && git add build-logs/fa402-artifact-harvest/selection.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: preserve best PASS 402 historical FA candidate'
+            git push origin HEAD:fix/fa402-artifact-harvest-20260809
+          fi
+
+      - name: Upload PASS 402 harvest evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa402-artifact-harvest-${{ github.sha }}
+          path: |
+            /tmp/fa402-console.log
+            build-logs/fa402-artifact-harvest
+            /tmp/fa397-candidates
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
