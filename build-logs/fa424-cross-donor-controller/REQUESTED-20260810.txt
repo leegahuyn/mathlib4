@@ -1,0 +1,1 @@
+Re-run FA424 from latest direct-verified champion; preserve strict direct Lean promotion and checked-in source only.
