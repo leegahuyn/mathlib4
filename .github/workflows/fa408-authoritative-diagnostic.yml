@@ -62,7 +62,7 @@ jobs:
             lake env lean \
               -DmaxErrors="$max_errors" \
               -DwarningAsError=false \
-              -o="$olean" -i="$ilean" "$src" \
+              -o "$olean" -i "$ilean" "$src" \
               > "$d/${stem}.log" 2>&1
             local rc=$?
             printf '%s' "$rc" > "$d/${stem}.exit"
