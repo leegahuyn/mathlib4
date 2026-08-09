@@ -1,0 +1,217 @@
+name: PASS 420 evidence-selecting autonomous FA controller
+
+on:
+  push:
+    branches:
+      - fix/fa420-evidence-controller-20260809
+    paths:
+      - '.github/workflows/pass420-evidence-controller.yml'
+      - 'scripts/fa420_select_verified_champion.py'
+      - 'scripts/fa420_select_verified_champion_v2.py'
+      - 'build-logs/fa420-evidence-controller/REQUESTED.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: pass420-evidence-controller
+  cancel-in-progress: false
+
+jobs:
+  select-repair-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    env:
+      BRANCH_NAME: fix/fa420-evidence-controller-20260809
+      FA418_MAX_FRONTIERS: '64'
+      FA418_MAX_CANDIDATES: '150'
+      MAX_ROUNDS: '8'
+    steps:
+      - name: Checkout latest controller head with full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa420-evidence-controller-20260809
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Determine controller round
+        id: round
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=build-logs/fa420-evidence-controller/ROUND.txt
+          test -s "$f" && current=$(cat "$f") || current=0
+          next=$((current+1))
+          echo "round=${next}" >> "$GITHUB_OUTPUT"
+          echo "evidence-controller round ${next}/${MAX_ROUNDS}"
+
+      - name: Select highest evidence-backed candidate and replay direct Lean metric
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa420_select_verified_champion_v2.py \
+            > /tmp/fa420-selection.log 2>&1
+          cat /tmp/fa420-selection.log
+
+      - name: Continue from selected checked-in source with deadlock-safe LSP screening
+        id: repair
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          before=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)
+          python3 scripts/fa419_lsp_fixed_tournament.py > /tmp/fa420-repair.log 2>&1
+          rc=$?
+          after=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | cut -d' ' -f1)
+          set -e
+          cat /tmp/fa420-repair.log
+          echo "exit_code=${rc}" >> "$GITHUB_OUTPUT"
+          test "$before" = "$after" && changed=false || changed=true
+          echo "repair_source_changed=${changed}" >> "$GITHUB_OUTPUT"
+          echo "selected_sha=${before}" >> "$GITHUB_OUTPUT"
+          echo "final_sha=${after}" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Consolidate and validate controller evidence
+        if: always()
+        id: status
+        shell: bash
+        env:
+          ROUND: ${{ steps.round.outputs.round }}
+        run: |
+          set -euo pipefail
+          src=build-logs/fa418-lsp-strict
+          dst=build-logs/fa420-evidence-controller
+          test -s "$dst/SELECTED.json"
+          test -s "$dst/SELECTED.txt"
+          test -s "$src/CURRENT.json"
+          test -s "$src/CURRENT.txt"
+          mkdir -p "$dst/round-${ROUND}"
+          cp "$src/CURRENT.json" "$dst/CURRENT.json"
+          cp "$src/CURRENT.txt" "$dst/CURRENT.txt"
+          cp "$dst/SELECTED.json" "$dst/round-${ROUND}/SELECTED.json"
+          cp "$dst/SELECTED.txt" "$dst/round-${ROUND}/SELECTED.txt"
+          cp "$src/CURRENT.json" "$dst/round-${ROUND}/CURRENT.json"
+          cp "$src/CURRENT.txt" "$dst/round-${ROUND}/CURRENT.txt"
+          cp /tmp/fa420-selection.log "$dst/round-${ROUND}/selection.log"
+          cp /tmp/fa420-repair.log "$dst/round-${ROUND}/repair.log"
+          test ! -f "$src/FIRST_ERROR_CONTEXT.txt" || cp "$src/FIRST_ERROR_CONTEXT.txt" "$dst/FIRST_ERROR_CONTEXT.txt"
+          test ! -f "$src/lean-lsp.stderr.log" || cp "$src/lean-lsp.stderr.log" "$dst/round-${ROUND}/lean-lsp.stderr.log"
+          find "$src" -maxdepth 1 -type f -name 'frontier-*-PROMOTED.txt' -exec cp {} "$dst/" \;
+          test ! -f "$src/ALL_REQUIRED_TARGETS_2X_PASS" || cp "$src/ALL_REQUIRED_TARGETS_2X_PASS" "$dst/ALL_REQUIRED_TARGETS_2X_PASS"
+          printf '%s' "$ROUND" > "$dst/ROUND.txt"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          root=Path('.')
+          src_path=root/'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          status=json.loads((root/'build-logs/fa420-evidence-controller/CURRENT.json').read_text())
+          metric=status['final_fa_metric']
+          complete=bool(status['complete'])
+          actual=hashlib.sha256(src_path.read_bytes()).hexdigest()
+          reported=metric.get('source_sha256')
+          if reported != actual:
+              raise SystemExit(f'final source/evidence SHA mismatch: {reported} != {actual}')
+          if not complete:
+              line=metric.get('first_line')
+              if not isinstance(line,int) or line < 31725:
+                  raise SystemExit(f'authoritative CLI regression below PASS376: {line}')
+          if any(status['forbidden_token_audit'].values()):
+              raise SystemExit(f"forbidden token audit failed: {status['forbidden_token_audit']}")
+          if status['screening_policy'] != 'LSP screens candidates; only direct CLI Lean compile may promote':
+              raise SystemExit('direct CLI authority policy missing')
+          with Path(os.environ['GITHUB_OUTPUT']).open('a',encoding='utf-8') as f:
+              f.write(f"complete={'true' if complete else 'false'}\n")
+              f.write(f"any_promotion={'true' if status['any_promotion'] else 'false'}\n")
+              f.write(f"first_error={metric.get('first_line')}\n")
+              f.write(f"source_sha={actual}\n")
+          PY
+
+      - name: Commit only verified checked-in source and concise evidence
+        if: always()
+        shell: bash
+        env:
+          COMPLETE: ${{ steps.status.outputs.complete }}
+          ROUND: ${{ steps.round.outputs.round }}
+          REPAIR_CHANGED: ${{ steps.repair.outputs.repair_source_changed }}
+        run: |
+          set -euo pipefail
+          d=build-logs/fa420-evidence-controller
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$d/SELECTED.json" "$d/SELECTED.txt" \
+            "$d/CURRENT.json" "$d/CURRENT.txt" "$d/ROUND.txt"
+          test ! -f "$d/FIRST_ERROR_CONTEXT.txt" || git add "$d/FIRST_ERROR_CONTEXT.txt"
+          test ! -f "$d/ALL_REQUIRED_TARGETS_2X_PASS" || git add "$d/ALL_REQUIRED_TARGETS_2X_PASS"
+          find "$d" -maxdepth 1 -type f -name 'frontier-*-PROMOTED.txt' -print0 | xargs -0 -r git add
+          git add "$d/round-${ROUND}/SELECTED.json" "$d/round-${ROUND}/SELECTED.txt" \
+            "$d/round-${ROUND}/CURRENT.json" "$d/round-${ROUND}/CURRENT.txt"
+          if git diff --cached --quiet; then exit 0; fi
+          if test "${COMPLETE:-false}" = true; then
+            msg="fix: obtain authoritative FA Integrated Mock3 QYM 2x PASS in controller round ${ROUND} [skip ci]"
+          elif test "${REPAIR_CHANGED:-false}" = true; then
+            msg="fix: promote direct-CLI-authorized FA controller champion round ${ROUND} [skip ci]"
+          else
+            msg="ci: record FA420 controller round ${ROUND} evidence [skip ci]"
+          fi
+          git commit -m "$msg"
+          git push origin HEAD:fix/fa420-evidence-controller-20260809
+
+      - name: Dispatch next controller round after any checked-in source advancement
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMPLETE: ${{ steps.status.outputs.complete }}
+          ROUND: ${{ steps.round.outputs.round }}
+          REPAIR_CHANGED: ${{ steps.repair.outputs.repair_source_changed }}
+          SELECTED_SHA: ${{ steps.repair.outputs.selected_sha }}
+          FINAL_SHA: ${{ steps.repair.outputs.final_sha }}
+        run: |
+          set -euo pipefail
+          test "${COMPLETE:-false}" != true || exit 0
+          advanced=false
+          test "${REPAIR_CHANGED:-false}" = true && advanced=true
+          test "${SELECTED_SHA:-}" = "${FINAL_SHA:-}" || advanced=true
+          test "$advanced" = true || exit 0
+          test "${ROUND}" -lt "${MAX_ROUNDS}" || exit 0
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/pass420-evidence-controller.yml/dispatches" \
+            -f ref=fix/fa420-evidence-controller-20260809
+
+      - name: Upload complete selector, LSP, and direct CLI evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass420-controller-round-${{ steps.round.outputs.round }}-${{ github.run_id }}
+          path: |
+            build-logs/fa420-evidence-controller
+            build-logs/fa418-lsp-strict
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual final two-pass result
+        if: always()
+        env:
+          COMPLETE: ${{ steps.status.outputs.complete }}
+        shell: bash
+        run: |
+          test "${COMPLETE:-false}" = true
