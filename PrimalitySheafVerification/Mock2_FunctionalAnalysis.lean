@@ -19220,6 +19220,9 @@ theorem precomp_graph {U : Type*} [AddCommGroup U] [Module ℂ U]
 
 end QuotientHilbertCoordinates
 
+
+open QuotientHilbertCoordinates
+
 /-! #### Completion of an isometric core inclusion -/
 
 variable {E F : Type*}
@@ -19243,7 +19246,10 @@ theorem energyCompletionMap_coe (f : E →ₗᵢ[ℂ] F) (x : E) :
   exact ContinuousLinearMap.extend_eq _
     (UniformSpace.Completion.denseRange_coe :
       DenseRange ((↑) : E → UniformSpace.Completion E))
-    (by simpa using UniformSpace.Completion.isUniformInducing_coe E) x
+    (by
+      simpa using
+        (UniformSpace.Completion.isUniformInducing_coe E :
+          IsUniformInducing ((↑) : E → UniformSpace.Completion E))) x
 
 theorem energyCompletionMap_norm (f : E →ₗᵢ[ℂ] F)
     (x : UniformSpace.Completion E) :
@@ -19433,8 +19439,8 @@ noncomputable def completionInclusion :
 
 /-- The two completions coincide only after proving graph-density. -/
 theorem denseRange_graphRange_iff_completion_surjective :
-    DenseRange I.graphRangeIsometry ↔
-      Function.Surjective I.completionInclusion := by
+    DenseRange (graphRangeIsometry Qc Qs I) ↔
+      Function.Surjective (completionInclusion Qc Qs I) := by
   simpa only [completionInclusion] using
     denseRange_iff_surjective_energyCompletionIsometry
       (E := Qc.GraphRange) (F := Qs.GraphRange)
@@ -19443,15 +19449,16 @@ theorem denseRange_graphRange_iff_completion_surjective :
 /-- Once graph density is supplied, the page-4 and page-12 completions are
 canonically linearly isometric. -/
 noncomputable def completionEquiv
-    (h : DenseRange I.graphRangeIsometry) :
+    (h : DenseRange (graphRangeIsometry Qc Qs I)) :
     Qc.SobolevCompletion ≃ₗᵢ[ℂ] Qs.SobolevCompletion :=
   LinearIsometryEquiv.ofSurjective (completionInclusion Qc Qs I)
     ((denseRange_graphRange_iff_completion_surjective Qc Qs I).mp h)
 
 @[simp]
 theorem completionEquiv_apply
-    (h : DenseRange I.graphRangeIsometry) (x : Qc.SobolevCompletion) :
-    I.completionEquiv h x = I.completionInclusion x := by
+    (h : DenseRange (graphRangeIsometry Qc Qs I))
+    (x : Qc.SobolevCompletion) :
+    completionEquiv Qc Qs I h x = completionInclusion Qc Qs I x := by
   rfl
 
 end CompatibleCoreInclusion
@@ -19517,9 +19524,9 @@ noncomputable def ofCompactlySupportedL2
     (mu₀ : MeasureTheory.Measure X₀)
     (muR : MeasureTheory.Measure XR)
     (muL : MeasureTheory.Measure XL)
-    [IsFiniteMeasureOnCompacts mu₀]
-    [IsFiniteMeasureOnCompacts muR]
-    [IsFiniteMeasureOnCompacts muL]
+    [hmu₀ : MeasureTheory.IsFiniteMeasureOnCompacts mu₀]
+    [hmuR : MeasureTheory.IsFiniteMeasureOnCompacts muR]
+    [hmuL : MeasureTheory.IsFiniteMeasureOnCompacts muL]
     [mu₀.IsOpenPosMeasure]
     (baseModel : D.core a →ₗ[ℂ]
       CompactlySupportedContinuousMap X₀ ℂ)
@@ -19558,7 +19565,7 @@ theorem coordinates_raised (u : D.core a) :
 theorem coordinates_lowered (u : D.core a) :
     J.coordinates.lowered u = J.lowered (D.lowerCore a u) := rfl
 
-theorem coordinates_energyDefinite : J.coordinates.EnergyDefinite :=
+theorem coordinates_energyDefinite : EnergyDefinite J.coordinates :=
   energyDefinite_of_base_injective J.coordinates J.base_injective
 
 end ThreeWeightHilbertRealization
@@ -19584,7 +19591,7 @@ theorem paperFourCoordinates_energyDefinite
     (J : ThreeWeightHilbertRealization
       A.toExponentIndexedDifferentialCore paperDisplayedExponentIndex
       H₀ HR HL) :
-    (paperFourCoordinates A J).EnergyDefinite :=
+    EnergyDefinite (paperFourCoordinates A J) :=
   energyDefinite_of_base_injective (paperFourCoordinates A J)
     (J.base_injective.comp A.halfCoreEquiv.symm.injective)
 
@@ -19699,7 +19706,7 @@ theorem coordinates_energyDefinite (n : ℤ) :
 
 /-- Hilbert completion of the actual fixed-phase graph
 `(u, R_n u, L_n u)`. -/
-abbrev GraphSobolevCompletion (n : ℤ) :=
+noncomputable abbrev GraphSobolevCompletion (n : ℤ) : Type :=
   (coordinates n).SobolevCompletion
 
 /- Re-export only the canonical completion structures needed to reveal the
@@ -19878,7 +19885,7 @@ abbrev PaperPageTwelveGraphSpace (n : ℤ) := GraphSobolevCompletion n
 
 /-- The two corrected manuscript spaces are canonically and isometrically
 identical.  No density or closability assumption is used here. -/
-def pageFourHOneEquivPageTwelveGraph (n : ℤ) :
+noncomputable def pageFourHOneEquivPageTwelveGraph (n : ℤ) :
     PaperPageFourHOne n ≃ₗᵢ[ℂ] PaperPageTwelveGraphSpace n :=
   LinearIsometryEquiv.refl ℂ (GraphSobolevCompletion n)
 
@@ -20551,7 +20558,7 @@ noncomputable def compactInverseEtaOrbitZeroWeightCore :
 
 @[simp]
 theorem compactInverseEtaPaperCore_apply (z : ℍ) :
-    compactInverseEtaPaperCore.toSection z =
+    SmoothCompactCore.toSection compactInverseEtaPaperCore z =
       upstairsCoreCutoff z * inverseEtaSection z :=
   rfl
 
@@ -20875,21 +20882,6 @@ pre-inner-product core on the smooth compact section space. -/
 
 /-- Cauchy--Schwarz for the actual potential integral, in its squared form.
 This proof uses only positivity and Hermitian symmetry of that integral. -/
-
-noncomputable def potentialPreInnerProductCore
-    (D : GammaTwoFundamentalDomain) :
-    PreInnerProductSpace.Core ℂ (SmoothCompactWeightCore M) where
-  inner := potentialForm M D
-  conj_inner_symm := potentialForm_conj_symm M D
-  re_inner_nonneg := fun u => by
-    rw [potentialForm_self_eq_ofReal_energy, Complex.ofReal_re]
-    exact potentialEnergy_nonneg M D u
-  add_left := potentialForm_add_left M D
-  smul_left := fun u v c => potentialForm_smul_left M D c u v
-
-/-- Cauchy--Schwarz for the actual potential integral, in its squared form.
-This proof uses only positivity and Hermitian symmetry of that integral. -/
-
 theorem potentialForm_norm_sq_le_energy_mul_energy
     (D : GammaTwoFundamentalDomain)
     (u v : SmoothCompactWeightCore M) :
@@ -21320,7 +21312,7 @@ end FixedPhaseGraphPotential
 
 /-- The negative part is identically zero, so its relative form bound is
 exactly zero (and in particular strictly below one). -/
-def negativePart (q : GammaTwoQuotient) : ℝ :=
+noncomputable def negativePart (q : GammaTwoQuotient) : ℝ :=
   max (-potential q) 0
 
 @[simp]
@@ -22354,7 +22346,8 @@ noncomputable def rawOfSmoothCompactWeightCore (n : ℤ)
 @[simp]
 theorem rawOfSmoothCompactWeightCore_apply (n : ℤ)
     (u : SmoothCompactWeightCore (OrbitMultiplier n)) (z : ℍ) :
-    (rawOfSmoothCompactWeightCore n u : ℍ → ℂ) z = u.toSection z :=
+    (rawOfSmoothCompactWeightCore n u : ℍ → ℂ) z =
+      SmoothCompactWeightCore.toSection u z :=
   rfl
 
 /-- The forgotten raw function has precisely the fixed-phase covariance at
@@ -22389,7 +22382,8 @@ noncomputable def ofSmoothCompactWeightCore (n : ℤ)
 theorem ofSmoothCompactWeightCore_apply (n : ℤ)
     (u : SmoothCompactWeightCore (OrbitMultiplier n)) (z : ℍ) :
     ((ofSmoothCompactWeightCore n u : InverseEtaFixedPhaseCore n) :
-        SmoothQuotientCompactFunction) z = u.toSection z :=
+        SmoothQuotientCompactFunction) z =
+      SmoothCompactWeightCore.toSection u z :=
   rfl
 
 /-- The inverse construction is complex-linear. -/
@@ -23696,7 +23690,7 @@ noncomputable def potentialShellCoreZero (N : ℕ) :
 theorem potentialShellCoreZero_apply (N : ℕ) (z : ℍ) :
     ((potentialShellCoreZero N : InverseEtaFixedPhaseCore 0) :
         SmoothQuotientCompactFunction) z =
-      upstairsPotentialShell N z * inverseEtaSection z := by
+      upstairsPotentialShell N z * inverseEtaPaperOrbitZeroSeedSection z := by
   rfl
 
 theorem potentialShellCoreZero_at_point_ne_zero (N : ℕ) :
@@ -23866,12 +23860,12 @@ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open HalfIntegralMultiplier SmoothCompactCoreGeometry
 
 /-- Euclidean area on the upper half-plane, before insertion of `y⁻²`. -/
-abbrev upperEuclideanMeasure : Measure ℍ :=
+noncomputable abbrev upperEuclideanMeasure : Measure ℍ :=
   volume.comap UpperHalfPlane.coe
 
 /-- The nowhere-zero Radon--Nikodym density which turns Euclidean area into
 hyperbolic area. -/
-noncomputable def hyperbolicDensity (z : ℍ) : ℝ≥0 :=
+noncomputable def hyperbolicDensity (z : ℍ) : NNReal :=
   ((1 : NNReal) / NNReal.mk z.im z.im_pos.le) ^ 2
 
 @[simp]
@@ -23900,17 +23894,17 @@ theorem hyperbolicMeasure_eq_euclidean_withDensity :
     hyperbolicMeasure_def
 
 /-- Euclidean area restricted to the actual chosen closed carrier. -/
-abbrev chosenEuclideanCarrierMeasure : Measure ℍ :=
+noncomputable abbrev chosenEuclideanCarrierMeasure : Measure ℍ :=
   upperEuclideanMeasure.restrict
     chosenGammaTwoFundamentalDomain.carrier
 
 /-- The concrete scalar `L²` space in which local distributions are tested. -/
-abbrev OrbitEuclideanL2 (_n : ℤ) :=
+noncomputable abbrev OrbitEuclideanL2 (_n : ℤ) :=
   MeasureTheory.Lp ℂ 2 chosenEuclideanCarrierMeasure
 
 /-- Exponent of the Euclidean gauge.  The `-1` is precisely the square root
 of the hyperbolic density `y⁻²`. -/
-def euclideanGaugeExponent (n : ℤ) : ℝ :=
+noncomputable def euclideanGaugeExponent (n : ℤ) : ℝ :=
   ((paperOrbitExponent n : ℤ) : ℝ) / 4 - 1
 
 /-- Euclidean-gauge representative of a Petersson compact-core vector. -/
@@ -24570,17 +24564,19 @@ theorem localizeStar_euclideanRaiseGauge (n : ℤ)
     (f : ℍ → ℂ) (hf : RealSmooth f) (v : AmbientTestCore) :
     HalfWeightCompactCoordinateGreen.localizeLeft
         (fun z => star (euclideanRaiseGauge n f z))
-        (euclideanRaiseGauge_realSmooth n hf).conj v =
+        (RealSmooth.conj (euclideanRaiseGauge_realSmooth n hf)) v =
       (-Complex.I) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (dx (fun z => star (f z))) hf.conj.dx
+            (dx (fun z => star (f z)))
+            (RealSmooth.dx (RealSmooth.conj hf))
             (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (dy (fun z => star (f z))) hf.conj.dy
+          (dy (fun z => star (f z)))
+          (RealSmooth.dy (RealSmooth.conj hf))
           (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         ((euclideanGaugeExponent n + 2 : ℝ) : ℂ) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (fun z => star (f z)) hf.conj v := by
+            (fun z => star (f z)) (RealSmooth.conj hf) v := by
   apply TestFunction.ext
   intro w
   by_cases hw : 0 < w.im
@@ -24611,17 +24607,19 @@ theorem localizeStar_euclideanLowerFromSuccGauge (n : ℤ)
     (f : ℍ → ℂ) (hf : RealSmooth f) (v : AmbientTestCore) :
     HalfWeightCompactCoordinateGreen.localizeLeft
         (fun z => star (euclideanLowerFromSuccGauge n f z))
-        (euclideanLowerFromSuccGauge_realSmooth n hf).conj v =
+        (RealSmooth.conj (euclideanLowerFromSuccGauge_realSmooth n hf)) v =
       Complex.I •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (dx (fun z => star (f z))) hf.conj.dx
+            (dx (fun z => star (f z)))
+            (RealSmooth.dx (RealSmooth.conj hf))
             (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (dy (fun z => star (f z))) hf.conj.dy
+          (dy (fun z => star (f z)))
+          (RealSmooth.dy (RealSmooth.conj hf))
           (HalfWeightCompactCoordinateGreen.rpowMul 1 v) -
         ((euclideanGaugeExponent n + 1 : ℝ) : ℂ) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (fun z => star (f z)) hf.conj v := by
+            (fun z => star (f z)) (RealSmooth.conj hf) v := by
   apply TestFunction.ext
   intro w
   by_cases hw : 0 < w.im
@@ -24743,7 +24741,7 @@ theorem ambientGammaTwoOpenCarrier_subset_upperPlaneOpen :
   exact z.im_pos
 
 /-- Euclidean area restricted to the image of the chosen carrier. -/
-abbrev ambientChosenEuclideanMeasure : Measure ℂ :=
+noncomputable abbrev ambientChosenEuclideanMeasure : Measure ℂ :=
   (volume : Measure ℂ).restrict ambientChosenCarrier
 
 /-- The concrete carrier measure is transported exactly to restricted planar
@@ -25583,18 +25581,18 @@ theorem physicalGreenIdentity_of_pairedPolygon
 
 theorem physicalRaise_core_ambient_test_identity (n : ℤ)
     (x : LinearMap.range (l2Coordinate n))
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (physicalRaise n x))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (x : OrbitPeterssonHilbert n))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n
-          (PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
   simpa only [physicalRaise_apply, raisedCoordinate_apply,
     l2Coordinate_l2CoreRangeEquiv_symm] using
       Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.inner_embedded_raise_test n
@@ -25602,18 +25600,18 @@ theorem physicalRaise_core_ambient_test_identity (n : ℤ)
 
 theorem physicalLowerFromSucc_core_ambient_test_identity (n : ℤ)
     (x : LinearMap.range (l2Coordinate (n + 1)))
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (physicalLowerFromSucc n x))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (x : OrbitPeterssonHilbert (n + 1)))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
-          (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
   simpa only [physicalLowerFromSucc_apply,
     lowerFromSuccCoordinate_apply,
     l2Coordinate_l2CoreRangeEquiv_symm] using
@@ -27481,12 +27479,7 @@ private theorem transportedCoordinateLowered_eq_reindexed
 /-- The three actual coordinates at source index `n+1`, transported only in
 its lowering target across `(n+1)-1=n`. -/
 noncomputable def successorGraphCoordinates (n : ℤ) :
-    DefinitionOneSobolev.QuotientHilbertCoordinates
-      (InverseEtaFixedPhaseCore (n + 1))
-      (OrbitPeterssonHilbert (n + 1))
-      (OrbitPeterssonHilbert ((n + 1) + 1))
-      (OrbitPeterssonHilbert n) where
-  base :=
+    successorCoordinateType n n :=
   transportSuccessorCoordinates n (n + 1 - 1) (successorIndexEq n)
     (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1))
 
@@ -27519,10 +27512,8 @@ theorem successorGraphCoordinates_lowered (n : ℤ)
 coordinate package transported across the displayed integer identity. -/
 theorem successorGraphCoordinates_eq_coordinates (n : ℤ) :
     successorGraphCoordinates n =
-      (by
-        simpa only [add_sub_cancel_right] using
-          (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
-            (n + 1))) :=
+      transportSuccessorCoordinates n (n + 1 - 1) (successorIndexEq n)
+        (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1)) :=
   rfl
 
 /-- Every raw successor graph vector belongs to the genuine physical joint
@@ -27554,7 +27545,7 @@ theorem successorGraphCoordinates_jointlyClosable (n : ℤ) :
 
 /-- Remove the outer `WithLp 2` wrapper from a successor graph vector.  This
 is a continuous linear equivalence, so it transports closures exactly. -/
-def successorGraphUnwrap (n : ℤ) :
+noncomputable def successorGraphUnwrap (n : ℤ) :
     DefinitionOneSobolev.EnergyTarget
         (OrbitPeterssonHilbert (n + 1))
         (OrbitPeterssonHilbert ((n + 1) + 1))
@@ -28334,8 +28325,9 @@ disjoint.  The only full-modular elements carrying one interior point of the
 standard tile to another are the central elements `±1`, and both belong to
 `Gamma(2)`; hence they cannot connect two distinct right cosets. -/
 theorem gammaTwoOpenTiles_pairwiseDisjoint :
-    Pairwise (Disjoint on fun q : GammaTwoRightCoset =>
-      gammaTwoCosetRep q • ModularGroup.fdo) := by
+    Pairwise (fun q₁ q₂ : GammaTwoRightCoset =>
+      Disjoint (gammaTwoCosetRep q₁ • ModularGroup.fdo)
+        (gammaTwoCosetRep q₂ • ModularGroup.fdo)) := by
   intro q₁ q₂ hq
   rw [Set.disjoint_left]
   intro z hz₁ hz₂
@@ -28462,7 +28454,7 @@ open HalfWeightDifferentialOperators
 
 /-- The nonnegative density `y⁻²` used in Mathlib's upper-half-plane
 volume, before coercion to `ℝ≥0∞`. -/
-def hyperbolicDensityNNReal (z : ℍ) : ℝ≥0 :=
+noncomputable def hyperbolicDensityNNReal (z : ℍ) : NNReal :=
   (1 / NNReal.mk z.im z.im_pos.le : NNReal) ^ 2
 
 theorem hyperbolicDensityNNReal_continuous :
@@ -28632,7 +28624,7 @@ height.  This is the bridge needed to apply upper-half-plane smoothness to
 the real-product coordinate lift, including all four boundary faces. -/
 theorem curvedTileRectangleMap_snd_pos
     {H : ℝ} (hH : 1 < H) {p : ℝ × ℝ}
-    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) :
+    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) :
     0 < (curvedTileRectangleMap H p).2 := by
   have hx : p.1 ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) :=
     ⟨hp.1.1, hp.2.1⟩
@@ -28680,7 +28672,7 @@ determines `t`. -/
 theorem curvedTileRectangleMap_injOn
     {H : ℝ} (hH : 1 < H) :
     Set.InjOn (curvedTileRectangleMap H)
-      (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) := by
+      (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) := by
   intro p hp q hq hpq
   have hx : p.1 = q.1 := by
     simpa only [curvedTileRectangleMap] using congrArg Prod.fst hpq
@@ -28699,7 +28691,7 @@ theorem curvedTileRectangleMap_injOn
 theorem curvedTileRectangleMap_image
     {H : ℝ} (hH : 1 < H) :
     curvedTileRectangleMap H ''
-        Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1) =
+        Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1) =
       modularCurvedTileTruncation H := by
   apply Set.Subset.antisymm
   · rintro p ⟨q, hq, rfl⟩
@@ -28828,7 +28820,7 @@ literally the same truncated modular tile. -/
 theorem curvedTileRectangleMap_image_eq_realProd_modularTile
     {H : ℝ} (hH : 1 < H) :
     curvedTileRectangleMap H ''
-        Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1) =
+        Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1) =
       Complex.measurableEquivRealProd ''
         (UpperHalfPlane.coe '' modularClosedTileTruncation H) := by
   rw [curvedTileRectangleMap_image hH,
@@ -28947,7 +28939,7 @@ theorem hasDerivAt_curvedTileJacobian
 theorem abs_det_curvedTileRectangleFDeriv
     {H : ℝ} (hH : 1 < H)
     {p : ℝ × ℝ}
-    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) :
+    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) :
     |(curvedTileRectangleFDeriv H p).det| =
       curvedTileJacobian H p.1 := by
   rw [det_curvedTileRectangleFDeriv, abs_of_pos]
@@ -28964,7 +28956,7 @@ theorem integral_modularCurvedTileTruncation_eq_rectangle
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (H : ℝ) (hH : 1 < H) (f : ℝ × ℝ → E) :
     (∫ p in modularCurvedTileTruncation H, f p) =
-      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         curvedTileJacobian H q.1 • f (curvedTileRectangleMap H q) := by
   rw [← curvedTileRectangleMap_image hH]
   rw [MeasureTheory.integral_image_eq_integral_abs_det_fderiv_smul
@@ -29135,7 +29127,7 @@ theorem integrableOn_modularCurvedTile_iff_rectangle
       IntegrableOn
         (fun q => curvedTileJacobian H q.1 •
           f (curvedTileRectangleMap H q))
-        (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+        (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
         (volume : Measure (ℝ × ℝ)) := by
   rw [← curvedTileRectangleMap_image hH]
   rw [MeasureTheory.integrableOn_image_iff_integrableOn_abs_det_fderiv_smul
@@ -29162,7 +29154,7 @@ theorem integrableOn_heightSq_modularClosedTile_iff_rectangle
       IntegrableOn
         (fun q => curvedTileJacobian H q.1 •
           realProdLift f (curvedTileRectangleMap H q))
-        (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+        (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
         (volume : Measure (ℝ × ℝ)) := by
   calc
     IntegrableOn (fun z => heightC z ^ 2 * f z)
@@ -29203,7 +29195,7 @@ theorem setIntegral_heightSq_mul_modularClosedTile_eq_rectangle
     (H : ℝ) (hH : 1 < H) (f : ℍ → ℂ) :
     (∫ z in modularClosedTileTruncation H,
         heightC z ^ 2 * f z ∂hyperbolicMeasure) =
-      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         curvedTileJacobian H q.1 •
           upperLift f
             (Complex.measurableEquivRealProd.symm
@@ -29646,19 +29638,19 @@ theorem integral_rectangle_piola_divergence_eq_boundary
     (X Y : ℝ × ℝ → ℂ)
     (DX DY : ℝ × ℝ → (ℝ × ℝ) →L[ℝ] ℂ)
     (hX : ∀ q ∈
-      Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       HasFDerivAt X (DX (curvedTileRectangleMap H q))
         (curvedTileRectangleMap H q))
     (hY : ∀ q ∈
-      Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       HasFDerivAt Y (DY (curvedTileRectangleMap H q))
         (curvedTileRectangleMap H q))
     (hInt : IntegrableOn
       (fun q => (curvedTileJacobian H q.1 : ℂ) *
         (DX (curvedTileRectangleMap H q) (1, 0) +
           DY (curvedTileRectangleMap H q) (0, 1)))
-      (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))) :
-    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))) :
+    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       (curvedTileJacobian H q.1 : ℂ) *
         (DX (curvedTileRectangleMap H q) (1, 0) +
           DY (curvedTileRectangleMap H q) (0, 1))) =
@@ -30003,13 +29995,13 @@ theorem selectedCosetGL_det_pos (q : GammaTwoRightCoset) :
   simp [selectedCosetGL]
 
 /-- The chosen Möbius action as a map of the upper half-plane. -/
-def selectedCosetAction (q : GammaTwoRightCoset) (z : ℍ) : ℍ :=
+noncomputable def selectedCosetAction (q : GammaTwoRightCoset) (z : ℍ) : ℍ :=
   gammaTwoCosetRep q • z
 
 /-- Ambient complex coordinate of the chosen action.  The use of
 `ofComplex` agrees with the genuine action on the open upper half-plane and
 makes the Mathlib Jacobian theorem directly applicable. -/
-def selectedCosetAmbientMap (q : GammaTwoRightCoset) (w : ℂ) : ℂ :=
+noncomputable def selectedCosetAmbientMap (q : GammaTwoRightCoset) (w : ℂ) : ℂ :=
   ((selectedCosetGL q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)
 
 @[simp]
@@ -30019,7 +30011,7 @@ theorem selectedCosetAmbientMap_coe (q : GammaTwoRightCoset) (z : ℍ) :
   simp [selectedCosetAmbientMap, selectedCosetAction, selectedCosetGL]
 
 /-- The affine denominator `c z + d` of the selected representative. -/
-def selectedCosetDenom (q : GammaTwoRightCoset) (z : ℍ) : ℂ :=
+noncomputable def selectedCosetDenom (q : GammaTwoRightCoset) (z : ℍ) : ℂ :=
   UpperHalfPlane.denom (selectedCosetGL q) z
 
 theorem selectedCosetDenom_ne_zero (q : GammaTwoRightCoset) (z : ℍ) :
@@ -30032,7 +30024,7 @@ noncomputable def selectedCosetDerivative
   1 / selectedCosetDenom q z ^ 2
 
 /-- The lower-left matrix entry, in the complex coefficient field. -/
-def selectedCosetLowerLeft (q : GammaTwoRightCoset) : ℂ :=
+noncomputable def selectedCosetLowerLeft (q : GammaTwoRightCoset) : ℂ :=
   (((selectedCosetGL q) 1 0 : ℝ) : ℂ)
 
 /-- The real Jacobian used by Mathlib's change-of-variables theorem. -/
@@ -31257,7 +31249,7 @@ structure ComplexPathPiece where
 
 namespace ComplexPathPiece
 
-def symm (p : ComplexPathPiece) : ComplexPathPiece where
+noncomputable def symm (p : ComplexPathPiece) : ComplexPathPiece where
   source := p.target
   target := p.source
   path := p.path.symm
@@ -31281,7 +31273,7 @@ noncomputable def fluxIntegral (X Y : ℍ → ℂ)
     (C : ComplexBoundaryChain) : ℂ :=
   (C.map fun p => p.fluxIntegral X Y).sum
 
-def reverse (C : ComplexBoundaryChain) : ComplexBoundaryChain :=
+noncomputable def reverse (C : ComplexBoundaryChain) : ComplexBoundaryChain :=
   (C.map ComplexPathPiece.symm).reverse
 
 @[simp]

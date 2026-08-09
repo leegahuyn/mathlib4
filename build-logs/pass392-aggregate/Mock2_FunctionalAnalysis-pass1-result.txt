@@ -1,0 +1,829 @@
+module=Mock2_FunctionalAnalysis
+run=pass1
+exit_code=1
+error_count=261
+warning_count=347
+first_line=210
+first_errors:
+931:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:22610:14: error: type expected, got
+933:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:22610:27: error: expected token
+967:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23501:15: error: type expected, got
+969:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23501:28: error: expected token
+1005:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24057:42: error: expected token
+1134:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24767:30: error: expected token
+1136:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24822:33: error: expected token
+1137:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24836:33: error: expected token
+1138:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24844:33: error: expected token
+1160:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25165:60: error: unsolved goals
+2185:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27435:15: error: Application type mismatch: The argument
+2193:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27441:12: error: Application type mismatch: The argument
+2201:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27449:10: error: Application type mismatch: The argument
+2210:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27473:46: error: unsolved goals
+2283:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27968:37: error: unsolved goals
+2332:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28484:50: error: expected token
+2545:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30061:17: error: expected token
+2554:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30088:17: error: type expected, got
+2556:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30088:30: error: expected token
+2704:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31730:4: error: Application type mismatch: The argument
+2712:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31729:45: error: Application type mismatch: The argument
+2722:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31796:2: error: Type mismatch: After simplification, term
+2728:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31816:4: error: Application type mismatch: The argument
+2736:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31815:45: error: Application type mismatch: The argument
+2800:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32367:2: error: 'change' tactic failed, pattern
+2807:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32379:2: error: 'change' tactic failed, pattern
+2812:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32391:2: error: 'change' tactic failed, pattern
+2866:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32695:2: error: unsolved goals
+2886:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32698:2: error: unsolved goals
+2901:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32760:24: error: Application type mismatch: The argument
+2913:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32846:49: error: Tactic `rcases` failed: `x✝ : ?m.102` is not an inductive datatype
+2932:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32987:49: error: Tactic `rcases` failed: `x✝ : ?m.143` is not an inductive datatype
+2958:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33049:59: error: Invalid field notation: Identifier or numeral expected
+2963:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33108:12: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+2986:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33227:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+3010:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33317:49: error: Tactic `rcases` failed: `x✝ : ?m.120` is not an inductive datatype
+3015:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33350:49: error: Tactic `rcases` failed: `x✝ : ?m.12` is not an inductive datatype
+3064:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33531:5: error: unknown namespace `PhysicalLocalL2`
+3067:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33555:4: error: `fun_prop` was unable to prove `Continuous fun t => { coe := { re := t, im := gammaTwoCuspLevel Y }, coe_im_pos := ⋯ }`
+3071:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33620:57: error: unsolved goals
+3096:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33629:59: error: unsolved goals
+3114:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33656:2: error: Type mismatch: After simplification, term
+3120:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33672:4: error: Type mismatch: After simplification, term
+3130:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33774:9: error: Function expected at
+3137:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33776:4: error: Tactic `rcases` failed: `x✝ : ?m.19` is not an inductive datatype
+3138:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33797:9: error: Function expected at
+3145:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33799:4: error: Tactic `rcases` failed: `x✝ : ?m.48` is not an inductive datatype
+3146:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33820:2: error: Type mismatch: After simplification, term
+3152:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33871:2: error: Type mismatch: After simplification, term
+3159:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33895:23: error: unsolved goals
+3166:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33912:4: error: Type mismatch: After simplification, term
+3172:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33915:4: error: Type mismatch: After simplification, term
+3179:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33918:4: error: Type mismatch: After simplification, term
+3186:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33922:4: error: Type mismatch: After simplification, term
+3193:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33926:4: error: Type mismatch: After simplification, term
+3201:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33939:47: error: Invalid field notation: Identifier or numeral expected
+3202:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33960:50: error: Application type mismatch: The argument
+3210:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33965:41: error: Application type mismatch: The argument
+3218:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33963:36: error: unsolved goals
+3240:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34024:61: error: Invalid field notation: Identifier or numeral expected
+3241:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34030:4: error: Type mismatch
+3251:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34034:59: error: Invalid field notation: Identifier or numeral expected
+3252:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34049:52: error: Application type mismatch: The argument
+3260:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34048:27: error: unsolved goals
+3274:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34147:8: error: Type mismatch
+3281:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34171:4: error: Function expected at
+3290:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34172:6: error: Function expected at
+3300:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34172:38: error: unsolved goals
+3305:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34182:4: error: Function expected at
+3314:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34183:8: error: Function expected at
+3323:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34185:9: error: Tactic `unfold` failed: Local variable `euclideanRaiseGauge` has no definition
+3324:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34196:9: error: Function expected at
+3333:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34197:10: error: Function expected at
+3342:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34197:60: error: unsolved goals
+3388:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34205:4: error: Function expected at
+3397:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34207:6: error: Function expected at
+3407:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34208:44: error: unsolved goals
+3416:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34228:4: error: Function expected at
+3425:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34229:8: error: Function expected at
+3434:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34231:15: error: Function expected at
+last_errors:
+5323:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38139:5: error: Function expected at
+5333:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38188:25: error: Function expected at
+5342:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38201:7: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+5347:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38209:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+5352:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38218:11: error: Function expected at
+5361:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38218:11: error: Function expected at
+5370:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38219:13: error: Function expected at
+5379:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38220:34: error: Function expected at
+5389:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38278:47: error: unsolved goals
+5396:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38308:66: error: Type mismatch
+5403:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38368:4: error: Function expected at
+5412:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38373:4: error: Function expected at
+5421:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38374:32: error: Application type mismatch: The argument
+5429:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38378:4: error: Function expected at
+5443:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38384:4: error: Function expected at
+5457:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38396:16: error: Function expected at
+5466:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38400:4: error: Application type mismatch: The argument
+5476:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38398:51: error: unsolved goals
+5487:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38436:26: error: typeclass instance problem is stuck
+5495:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38460:26: error: typeclass instance problem is stuck
+5502:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38473:71: error: unsolved goals
+5507:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38519:23: error: typeclass instance problem is stuck
+5515:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38595:4: error: Application type mismatch: The argument
+5528:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38602:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+5533:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38612:4: error: Application type mismatch: The argument
+5546:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38619:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+5556:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38643:2: error: 'change' tactic failed, pattern
+5567:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38697:4: error: Application type mismatch: The argument
+5580:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38705:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+5590:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38765:63: error: unsolved goals
+5598:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38802:38: error: unsolved goals
+5607:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38894:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+5622:Full error:
+5631:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38901:17: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+5648:Full error:
+5658:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38954:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+5673:Full error:
+5682:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38963:17: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+5703:Full error:
+5712:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38997:6: error: maximum number of errors (400; from option `maxErrors`) reached, exiting
+tail:
+z : ℍ
+heven : (-1) ^ (2 * m) = 1
+⊢ 1 *
+      UpperHalfPlane.denom
+          (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gammaTwoCentralNegOne))
+          ↑z ^
+        (2 * m) =
+    1
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37601:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37602:4: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37604:6: error(lean.unknownIdentifier): Unknown identifier `euclideanGaugeExponent`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37608:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37613:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37615:17: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Neg ℕ
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37615:18: error: Function expected at
+  euclideanGaugeExponent
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  m
+
+Hint: The identifier `euclideanGaugeExponent` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37621:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37626:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37632:12: error(lean.unknownIdentifier): Unknown identifier `euclideanGaugeExponent`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37637:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37638:56: error: unsolved goals
+m : ℤ
+v : sorry
+⊢ IsCompact (UpperHalfPlane.coe '' gammaTwoPeriodizationSeedSupport m v)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37656:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37658:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.ambientGammaTwoOpenCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37661:9: error(lean.unknownIdentifier): Unknown identifier `coe_mem_ambientGammaTwoOpenCarrier_iff`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37662:2: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37665:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37669:8: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37687:16: error: type expected, got
+  (ContDiffOn ℝ : WithTop ℕ∞ → (?m.46 → ?m.49) → Set ?m.46 → Prop)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37687:29: error: expected token
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37700:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37708:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37711:52: error: Invalid field notation: Identifier or numeral expected
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37717:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37722:53: error: unsolved goals
+m : ℤ
+v : sorry
+gamma : ↥GammaTwo
+z : ℍ
+hz : z ∈ support (gammaTwoPeriodizationTerm m v gamma)
+hzero : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) = 0
+⊢ ((ModularForm.eta
+            ↑((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) =
+          0 ∨
+        ModularForm.eta ↑z = 0) ∨
+      inverseEtaPaperOrbitDenom gamma
+            ((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) ^
+          (2 * m) =
+        0) ∨
+    gammaTwoPeriodizationSeed m v
+        ((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) =
+      0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37732:2: error: unsolved goals
+case refine_2
+m : ℤ
+v : sorry
+gamma : ↥GammaTwo
+z : ℍ
+hz : z ∈ support (gammaTwoPeriodizationTerm m v gamma)
+hseed : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) ≠ 0
+⊢ gamma • (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z = z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37725:10: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37725:37: warning: This simp argument is unused:
+  hzero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [gammaTwoPeriodizationTerm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37735:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37757:48: error(lean.unknownIdentifier): Unknown identifier `𝒩`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37750:40: error: unsolved goals
+iota : Type u_1
+f : iota → ℍ → ℂ
+hlocal : LocallyFinite fun i => support (f i)
+hsmooth : ∀ (i : iota), RealSmooth (f i)
+w : ℂ
+hw : w ∈ UpperHalfPlane.upperHalfPlaneSet
+z : ℍ := { coe := w, coe_im_pos := hw }
+t : Set ℍ
+htnhds : t ∈ 𝓝 z
+htfinite : {i | ((fun i => support (f i)) i ∩ t).Nonempty}.Finite
+U : Set ℍ
+hUt : U ⊆ t
+hUopen : IsOpen U
+hzU : z ∈ U
+I : Finset iota := htfinite.toFinset
+⊢ ContDiffWithinAt ℝ (↑⊤) (upperLift fun z => ∑ᶠ (i : iota), f i z) UpperHalfPlane.upperHalfPlaneSet w
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37771:25: error: expected token
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37782:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37787:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37795:2: error: Type mismatch: After simplification, term
+  RealSmooth.const_complex_smul (1 / 2) hsum
+ has type
+  RealSmooth (2⁻¹ • fun z => ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma z)
+but is expected to have type
+  RealSmooth (gammaTwoPoincarePeriodization m v)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37795:9: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37801:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37818:4: error: Type mismatch: After simplification, term
+  factor_mul (inverseEtaPaperOrbitMultiplier GammaTwo m) delta gamma (↑gamma⁻¹ • z)
+ has type
+  (inverseEtaPaperOrbitMultiplier GammaTwo m).factor (delta * gamma) (↑gamma⁻¹ • z) =
+    (inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta (↑gamma • ↑gamma⁻¹ • z) *
+      (inverseEtaPaperOrbitMultiplier GammaTwo m).factor gamma (↑gamma⁻¹ • z)
+but is expected to have type
+  (inverseEtaPaperOrbitMultiplier GammaTwo m).factor (delta * gamma) (↑gamma⁻¹ • z) =
+    (inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta z *
+      (inverseEtaPaperOrbitMultiplier GammaTwo m).factor gamma (↑gamma⁻¹ • z)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37828:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37832:47: error: unsolved goals
+m : ℤ
+v : sorry
+delta : ↥GammaTwo
+z : ℍ
+hreindex :
+  ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma (↑delta • z) =
+    ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v (delta * gamma) (↑delta • z)
+⊢ ((inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta z *
+        ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma z) *
+      (1 / 2) =
+    (inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta z * gammaTwoPoincarePeriodization m v z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37846:6: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37857:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37869:59: error: Application type mismatch: The argument
+  hterm
+has type
+  ¬gammaTwoPeriodizationTerm m v gamma z = 0
+of sort `Prop` but is expected to have type
+  ↥GammaTwo
+of sort `Type` in the application
+  support_gammaTwoPeriodizationTerm_subset m v hterm
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37871:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37874:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37889:4: error: Type mismatch
+  gammaTwoQuotientMk_gamma_smul gamma x
+has type
+  gammaTwoQuotientMk (gamma • x) = gammaTwoQuotientMk x
+but is expected to have type
+  gammaTwoQuotientMk x = gammaTwoQuotientMk ((fun x => gamma • x) x)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37895:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37902:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37909:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37918:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37921:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37925:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37927:41: error: unsolved goals
+m : ℤ
+v : sorry
+z : ℍ
+⊢ ModularForm.eta ↑z / ModularForm.eta ↑z * (-1) ^ (2 * m) * gammaTwoPeriodizationSeed m v z =
+    gammaTwoPeriodizationSeed m v z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37928:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37933:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37935:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.ambientGammaTwoOpenCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37943:53: error: unsolved goals
+m : ℤ
+v : sorry
+hv : tsupport sorry ⊆ sorry
+z : ℍ
+hz : z ∈ gammaTwoOpenCarrier
+gamma : ↥GammaTwo
+hgamma : gamma ∈ support fun gamma => gammaTwoPeriodizationTerm m v gamma z
+hzero : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) = 0
+⊢ ((ModularForm.eta
+            ↑((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) =
+          0 ∨
+        ModularForm.eta ↑z = 0) ∨
+      inverseEtaPaperOrbitDenom gamma
+            ((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) ^
+          (2 * m) =
+        0) ∨
+    gammaTwoPeriodizationSeed m v
+        ((Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z) =
+      0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37956:4: error(lean.unknownIdentifier): Unknown identifier `gammaTwoPeriodizationSeedSupport_subset_openCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37958:52: error: unsolved goals
+m : ℤ
+v : sorry
+hv : tsupport sorry ⊆ sorry
+z : ℍ
+hz : z ∈ gammaTwoOpenCarrier
+gamma : ↥GammaTwo
+hgamma : gamma ∈ support fun gamma => gammaTwoPeriodizationTerm m v gamma z
+hseed : gammaTwoPeriodizationSeed m v (↑gamma⁻¹ • z) ≠ 0
+hxK : ↑gamma⁻¹ • z ∈ gammaTwoPeriodizationSeedSupport m v
+hxOpen : ↑gamma⁻¹ • z ∈ gammaTwoOpenCarrier
+a : GammaTwoEffective := gammaTwoEffectiveElement gamma
+⊢ gamma • (Matrix.SpecialLinearGroup.toGL ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ)) ↑gamma))⁻¹ • z = z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37969:2: error: Type mismatch: After simplification, term
+  hkernel
+ has type
+  gamma = 1 ∨ gamma = gammaTwoCentralNegOne
+but is expected to have type
+  gamma ∈ ↑{1, gammaTwoCentralNegOne}
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37946:10: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37946:37: warning: This simp argument is unused:
+  hzero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [gammaTwoPeriodizationTerm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37974:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37976:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.ambientGammaTwoOpenCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37982:5: error(lean.unknownIdentifier): Unknown identifier `support_periodizationIndex_at_openCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37979:41: error: unsolved goals
+m : ℤ
+v : sorry
+hv : tsupport sorry ⊆ sorry
+z : ℍ
+hz : z ∈ gammaTwoOpenCarrier
+⊢ 1 / 2 * ∑ᶠ (gamma : ↥GammaTwo), gammaTwoPeriodizationTerm m v gamma z = gammaTwoPeriodizationSeed m v z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37989:17: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.AmbientTestCore`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37991:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.ambientGammaTwoOpenCarrier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37993:4: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37995:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.fixedPhaseEuclideanGauge_apply`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:37994:62: error: unsolved goals
+m : ℤ
+v : sorry
+hv : tsupport sorry ⊆ sorry
+z : ℍ
+hz : z ∈ gammaTwoOpenCarrier
+⊢ sorry = sorry
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38019:8: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_periodized_eq_ambientTest`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute.gammaTwoPoincarePeriodization_covariance' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute.gammaTwoPoincarePeriodization_quotientCompact' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute.ambientTestPhysicalGaugePeriodizationAt_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute.raisingMaximalAdjointWeakMaassIdentificationAt_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreRoute.loweringMaximalAdjointWeakMaassIdentificationAt_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38078:5: error: unknown namespace `DefinitionOneSobolev.GammaTwoQuotientGeometry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38092:17: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38124:4: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38129:25: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38130:4: error: Function expected at
+  peterssonCuspCutoffCoreMap
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  N
+
+Hint: The identifier `peterssonCuspCutoffCoreMap` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38138:25: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38139:5: error: Function expected at
+  peterssonCuspCutoffCoreMap
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  N
+
+Hint: The identifier `peterssonCuspCutoffCoreMap` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38184:3: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoffCoreMap`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38188:25: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38201:7: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38209:5: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38218:11: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38218:11: error: Function expected at
+  InverseEtaFixedPhaseCore
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `InverseEtaFixedPhaseCore` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38219:13: error: Function expected at
+  peterssonCuspCutoffCoreMap
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  N
+
+Hint: The identifier `peterssonCuspCutoffCoreMap` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38220:34: error: Function expected at
+  peterssonCuspCutoffCoreMap
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  N
+
+Hint: The identifier `peterssonCuspCutoffCoreMap` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38291:6: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38278:47: error: unsolved goals
+N : ℕ
+n : ℤ
+x y : OrbitPeterssonHilbert n
+u v : ↥(HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
+⊢ ⟪↑(peterssonCuspCutoff N n) ((l2Coordinate n) u), (l2Coordinate n) v⟫_ℂ =
+    ⟪(l2Coordinate n) u, ↑(peterssonCuspCutoff N n) ((l2Coordinate n) v)⟫_ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38308:66: error: Type mismatch
+  ε / 2
+has type
+  ℝ
+of sort `Type` but is expected to have type
+  0 < ?m.26
+of sort `Prop`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38368:4: error: Function expected at
+  RealSmooth
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  (raiseCuspEuclideanCommutatorCoefficient N)
+
+Hint: The identifier `RealSmooth` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38373:4: error: Function expected at
+  RealSmooth
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  (lowerCuspEuclideanCommutatorCoefficient N)
+
+Hint: The identifier `RealSmooth` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38374:32: error: Application type mismatch: The argument
+  heightC_ne_zero
+has type
+  ∀ (z : ℍ), heightC z ≠ 0
+but is expected to have type
+  ∀ x ∈ UpperHalfPlane.upperHalfPlaneSet, SmoothCompactCoreGeometry.upperLift heightC x ≠ 0
+in the application
+  ContDiffOn.inv realSmooth_heightC heightC_ne_zero
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38378:4: error: Function expected at
+  HasQuotientCompactSupport
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  (raiseCuspEuclideanCommutatorCoefficient N)
+
+Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38381:44: error(lean.invalidField): Invalid field `raiseRaw`: The environment does not contain `Function.raiseRaw`, so it is not possible to project the field `raiseRaw` from an expression
+  upstairsCuspCutoff_quotientCompact N
+of type
+  ?m.12 ≤ 𝓟 (SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N)) →
+    ∃ x ∈ SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N), ClusterPt x ?m.12
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38384:4: error: Function expected at
+  HasQuotientCompactSupport
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  (lowerCuspEuclideanCommutatorCoefficient N)
+
+Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38387:44: error(lean.invalidField): Invalid field `lowerRaw`: The environment does not contain `Function.lowerRaw`, so it is not possible to project the field `lowerRaw` from an expression
+  upstairsCuspCutoff_quotientCompact N
+of type
+  ?m.12 ≤ 𝓟 (SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N)) →
+    ∃ x ∈ SmoothCompactCoreGeometry.quotientTSupport (upstairsCuspCutoff N), ClusterPt x ?m.12
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38396:16: error: Function expected at
+  HasQuotientCompactSupport
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  f
+
+Hint: The identifier `HasQuotientCompactSupport` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38400:4: error: Application type mismatch: The argument
+  gammaTwoClosedTileCarrier
+has type
+  γ✝
+of sort `Type u_2` but is expected to have type
+  Set ℍ
+of sort `Type` in the application
+  Inter.inter gammaTwoClosedTileCarrier
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38401:6: error(lean.unknownIdentifier): Unknown identifier `gammaTwoQuotientMk`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38401:29: error(lean.unknownIdentifier): Unknown identifier `quotientTSupport`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38398:51: error: unsolved goals
+x✝ : Sort u_1
+HasQuotientCompactSupport : x✝
+γ✝ : Type u_2
+gammaTwoClosedTileCarrier : γ✝
+f : ℍ → ℂ
+hf : Continuous f
+hCompact : sorry
+⊢ ∃ C, 0 ≤ C ∧ ∀ z ∈ gammaTwoClosedTileCarrier, ‖f z‖ ≤ C
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38424:5: error(lean.unknownIdentifier): Unknown identifier `exists_closedCarrier_norm_bound_of_quotientCompact`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38431:5: error(lean.unknownIdentifier): Unknown identifier `exists_closedCarrier_norm_bound_of_quotientCompact`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38436:26: error: typeclass instance problem is stuck
+  Membership ℍ ?m.1
+
+Note: Lean will not try to resolve this typeclass instance problem because the second type argument to `Membership` is a metavariable. This argument must be fully determined before Lean will try to resolve the typeclass.
+
+Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38448:5: error(lean.unknownIdentifier): Unknown identifier `exists_closedCarrier_norm_bound_of_quotientCompact`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38455:5: error(lean.unknownIdentifier): Unknown identifier `exists_closedCarrier_norm_bound_of_quotientCompact`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38460:26: error: typeclass instance problem is stuck
+  Membership ℍ ?m.1
+
+Note: Lean will not try to resolve this typeclass instance problem because the second type argument to `Membership` is a metavariable. This argument must be fully determined before Lean will try to resolve the typeclass.
+
+Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38474:6: error(lean.unknownIdentifier): Unknown identifier `PhysicalLocalL2.euclideanGaugeExponent_pred`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38473:71: error: unsolved goals
+n : ℤ
+z : ℍ
+⊢ ↑(z.im ^ PhysicalLocalL2.euclideanGaugeExponent (n - 1)) =
+    (heightC z)⁻¹ * ↑(z.im ^ PhysicalLocalL2.euclideanGaugeExponent n)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38519:23: error: typeclass instance problem is stuck
+  Membership ℍ ?m.1
+
+Note: Lean will not try to resolve this typeclass instance problem because the second type argument to `Membership` is a metavariable. This argument must be fully determined before Lean will try to resolve the typeclass.
+
+Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38561:8: error(lean.unknownIdentifier): Unknown identifier `norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38581:8: error(lean.unknownIdentifier): Unknown identifier `norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38595:4: error: Application type mismatch: The argument
+  l2Coordinate n
+has type
+  @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ) (↥(InverseEtaFixedPhaseCore n))
+    (OrbitPeterssonHilbert n) (InverseEtaFixedPhaseCore n).addCommMonoid
+    UniformSpace.Completion.instAddCommGroup.toAddCommMonoid (InverseEtaFixedPhaseCore n).module
+    UniformSpace.Completion.instModule
+but is expected to have type
+  @LinearMap ℂ ℂ DivisionRing.toDivisionSemiring.toSemiring DivisionRing.toDivisionSemiring.toSemiring (RingHom.id ℂ)
+    ?m.20 (OrbitPeterssonHilbert n) AddCommGroup.toAddCommMonoid
+    NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.29 UniformSpace.Completion.instModule
+in the application
+  LinearMap.extendOfNorm ?m.35 (l2Coordinate n)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38602:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38612:4: error: Application type mismatch: The argument
+  l2Coordinate n
+has type
+  @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ) (↥(InverseEtaFixedPhaseCore n))
+    (OrbitPeterssonHilbert n) (InverseEtaFixedPhaseCore n).addCommMonoid
+    UniformSpace.Completion.instAddCommGroup.toAddCommMonoid (InverseEtaFixedPhaseCore n).module
+    UniformSpace.Completion.instModule
+but is expected to have type
+  @LinearMap ℂ ℂ DivisionRing.toDivisionSemiring.toSemiring DivisionRing.toDivisionSemiring.toSemiring (RingHom.id ℂ)
+    ?m.20 (OrbitPeterssonHilbert n) AddCommGroup.toAddCommMonoid
+    NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.29 UniformSpace.Completion.instModule
+in the application
+  LinearMap.extendOfNorm ?m.35 (l2Coordinate n)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38619:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38631:2: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  HSub (↥(InverseEtaFixedPhaseCore (n + 1)) →ₗ[ℂ] ↥(InverseEtaFixedPhaseCore n))
+    (↥(InverseEtaFixedPhaseCore (n + 1)) →ₗ[ℂ] ↥(InverseEtaFixedPhaseCore n)) ?m.62
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38643:2: error: 'change' tactic failed, pattern
+  lowerRaw (paperOrbitExponent (n + 1))
+        (upstairsCuspCutoff N * ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u)) z -
+      upstairsCuspCutoff N z *
+        lowerRaw (paperOrbitExponent (n + 1)) (↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u)) z =
+    ?m.81
+is not definitionally equal to target
+  ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction ((lowerFromSuccCuspCutoffCommutator N n) u)) z =
+    (-Complex.I * heightC z ^ 2 * dx (upstairsCuspCutoff N) z + heightC z ^ 2 * dy (upstairsCuspCutoff N) z) *
+      ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38684:8: error(lean.unknownIdentifier): Unknown identifier `norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38697:4: error: Application type mismatch: The argument
+  l2Coordinate (n + 1)
+has type
+  @LinearMap ℂ ℂ Complex.instSemiring Complex.instSemiring (RingHom.id ℂ) (↥(InverseEtaFixedPhaseCore (n + 1)))
+    (OrbitPeterssonHilbert (n + 1)) (InverseEtaFixedPhaseCore (n + 1)).addCommMonoid
+    UniformSpace.Completion.instAddCommGroup.toAddCommMonoid (InverseEtaFixedPhaseCore (n + 1)).module
+    UniformSpace.Completion.instModule
+but is expected to have type
+  @LinearMap ℂ ℂ DivisionRing.toDivisionSemiring.toSemiring DivisionRing.toDivisionSemiring.toSemiring (RingHom.id ℂ)
+    ?m.20 (OrbitPeterssonHilbert (n + 1)) AddCommGroup.toAddCommMonoid
+    NormedAddCommGroup.toSeminormedAddCommGroup.toAddCommMonoid ?m.29 UniformSpace.Completion.instModule
+in the application
+  LinearMap.extendOfNorm ?m.35 (l2Coordinate (n + 1))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38705:35: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38744:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  HSub ↥(InverseEtaFixedPhaseCore n) ↥(InverseEtaFixedPhaseCore n) ?m.85
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38767:4: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38765:63: error: unsolved goals
+N : ℕ
+n : ℤ
+u : ↥(InverseEtaFixedPhaseCore n)
+⊢ (l2Coordinate (n + 1)) ((InverseEtaFixedPhaseCore.raise n) ((cuspCutoffOperator N n) u)) =
+    (peterssonCuspCutoff N (n + 1)) ((l2Coordinate (n + 1)) ((InverseEtaFixedPhaseCore.raise n) u)) +
+      (raisePeterssonCuspCommutator N n) ((l2Coordinate n) u)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38804:4: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38802:38: error: unsolved goals
+N : ℕ
+n : ℤ
+u : ↥(InverseEtaFixedPhaseCore (n + 1))
+⊢ (l2Coordinate n) ((InverseEtaFixedPhaseCore.lowerFromSucc n) ((cuspCutoffOperator N (n + 1)) u)) =
+    (peterssonCuspCutoff N n) ((l2Coordinate n) ((InverseEtaFixedPhaseCore.lowerFromSucc n) u)) +
+      (lowerFromSuccPeterssonCuspCommutator N n) ((l2Coordinate (n + 1)) u)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38851:7: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38886:14: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38894:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(-?f) ?x
+in the target expression
+  (peterssonCuspCutoff N (n + 1)) (↑(-physicalRaise n) x) = (peterssonCuspCutoff N (n + 1)) (-(raisedCoordinate n) u)
+
+N : ℕ
+n : ℤ
+x : ↥(l2Coordinate n).range
+u : ↥(InverseEtaFixedPhaseCore n) := (l2CoreRangeEquiv n).symm x
+xCut : ↥(l2Coordinate n).range := ⟨(peterssonCuspCutoff N n) ↑x, ⋯⟩
+hx : (l2Coordinate n) u = ↑x
+hxCut : xCut = (l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u)
+⊢ (peterssonCuspCutoff N (n + 1)) (↑(-physicalRaise n) x) = (peterssonCuspCutoff N (n + 1)) (-(raisedCoordinate n) u)
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    x
+  has type
+    ↥(l2Coordinate n).range
+  but is expected to have type
+    ↥(-physicalRaise n).domain
+  in the application
+    ↑(-physicalRaise n) x
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38901:17: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(-?f) ?x
+in the target expression
+  -(raisedCoordinate n) ((cuspCutoffOperator N n) u) + (raisePeterssonCuspCommutator N n) ((l2Coordinate n) u) =
+    ↑(-physicalRaise n) ((l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u)) + (raisePeterssonCuspCommutator N n) ↑x
+
+N : ℕ
+n : ℤ
+x : ↥(l2Coordinate n).range
+u : ↥(InverseEtaFixedPhaseCore n) := (l2CoreRangeEquiv n).symm x
+xCut : ↥(l2Coordinate n).range := ⟨(peterssonCuspCutoff N n) ↑x, ⋯⟩
+hx : (l2Coordinate n) u = ↑x
+hxCut : xCut = (l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u)
+⊢ -(raisedCoordinate n) ((cuspCutoffOperator N n) u) + (raisePeterssonCuspCommutator N n) ((l2Coordinate n) u) =
+    ↑(-physicalRaise n) ((l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u)) + (raisePeterssonCuspCommutator N n) ↑x
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    (l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u)
+  has type
+    ↥(l2Coordinate n).range
+  but is expected to have type
+    ↥(-physicalRaise n).domain
+  in the application
+    ↑(-physicalRaise n) ((l2CoreRangeEquiv n) ((cuspCutoffOperator N n) u))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38946:14: error(lean.unknownIdentifier): Unknown identifier `peterssonCuspCutoff_l2Coordinate`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38954:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(-?f) ?x
+in the target expression
+  (peterssonCuspCutoff N n) (↑(-physicalLowerFromSucc n) x) = (peterssonCuspCutoff N n) (-(lowerFromSuccCoordinate n) u)
+
+N : ℕ
+n : ℤ
+x : ↥(l2Coordinate (n + 1)).range
+u : ↥(InverseEtaFixedPhaseCore (n + 1)) := (l2CoreRangeEquiv (n + 1)).symm x
+xCut : ↥(l2Coordinate (n + 1)).range := ⟨(peterssonCuspCutoff N (n + 1)) ↑x, ⋯⟩
+hx : (l2Coordinate (n + 1)) u = ↑x
+hxCut : xCut = (l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u)
+⊢ (peterssonCuspCutoff N n) (↑(-physicalLowerFromSucc n) x) = (peterssonCuspCutoff N n) (-(lowerFromSuccCoordinate n) u)
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    x
+  has type
+    ↥(l2Coordinate (n + 1)).range
+  but is expected to have type
+    ↥(-physicalLowerFromSucc n).domain
+  in the application
+    ↑(-physicalLowerFromSucc n) x
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38963:17: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(-?f) ?x
+in the target expression
+  -(lowerFromSuccCoordinate n) ((cuspCutoffOperator N (n + 1)) u) +
+      (lowerFromSuccPeterssonCuspCommutator N n) ((l2Coordinate (n + 1)) u) =
+    ↑(-physicalLowerFromSucc n) ((l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u)) +
+      (lowerFromSuccPeterssonCuspCommutator N n) ↑x
+
+N : ℕ
+n : ℤ
+x : ↥(l2Coordinate (n + 1)).range
+u : ↥(InverseEtaFixedPhaseCore (n + 1)) := (l2CoreRangeEquiv (n + 1)).symm x
+xCut : ↥(l2Coordinate (n + 1)).range := ⟨(peterssonCuspCutoff N (n + 1)) ↑x, ⋯⟩
+hx : (l2Coordinate (n + 1)) u = ↑x
+hxCut : xCut = (l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u)
+⊢ -(lowerFromSuccCoordinate n) ((cuspCutoffOperator N (n + 1)) u) +
+      (lowerFromSuccPeterssonCuspCommutator N n) ((l2Coordinate (n + 1)) u) =
+    ↑(-physicalLowerFromSucc n) ((l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u)) +
+      (lowerFromSuccPeterssonCuspCommutator N n) ↑x
+
+Note: The target expression is not type-correct under the `implicit` transparency level, which may have triggered the failure. This is usually caused by unfolding of semireducible definitions in prior tactic steps. Use `set_option linter.tacticCheckInstances true` to investigate the source of the issue.
+Full error:
+  Application type mismatch: The argument
+    (l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u)
+  has type
+    ↥(l2Coordinate (n + 1)).range
+  but is expected to have type
+    ↥(-physicalLowerFromSucc n).domain
+  in the application
+    ↑(-physicalLowerFromSucc n) ((l2CoreRangeEquiv (n + 1)) ((cuspCutoffOperator N (n + 1)) u))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:38997:6: error: maximum number of errors (400; from option `maxErrors`) reached, exiting
