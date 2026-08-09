@@ -1,0 +1,173 @@
+name: PASS 394 robust tournament FA Mock3 QYM solver
+
+on:
+  push:
+    branches: [fix/fa394-tournament-20260809]
+    paths:
+      - '.github/workflows/fa394-tournament.yml'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/fa394_tournament_solver.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa394-tournament
+  cancel-in-progress: false
+
+jobs:
+  tournament-solve-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact PASS 394 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa394-tournament-20260809
+          fetch-depth: 950
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Select robust winner and continue ordered repair
+        id: solver
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FA394_MODELS: >-
+            openai/gpt-5,openai/o3,openai/o4-mini,openai/gpt-4.1,
+            xai/grok-3-mini,deepseek/DeepSeek-V3-0324,
+            mistral-ai/Mistral-Large-2411,qwen/Qwen3-235B-A22B
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs
+          python3 scripts/fa394_tournament_solver.py \
+            --fa-rounds 14 \
+            --downstream-rounds 8 \
+            --max-candidates 4 \
+            --max-errors 200 \
+            2>&1 | tee build-logs/fa394-tournament.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "solver_exit_code=${rc}" > build-logs/fa394-tournament.exit.txt
+
+      - name: Commit only robust source progress or final marker
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          source_changed=0
+          for f in \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean; do
+            if ! git diff --quiet -- "$f"; then source_changed=1; fi
+          done
+          while IFS= read -r f; do
+            if ! git diff --quiet -- "$f"; then source_changed=1; fi
+          done < <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort)
+
+          final_marker=0
+          test ! -f build-logs/fa394-tournament/ALL_REQUIRED_TARGETS_2X_PASS || final_marker=1
+
+          if test "$source_changed" = 1 || test "$final_marker" = 1; then
+            git add \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              PrimalitySheafVerification/QYM.lean
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | \
+              xargs -0 -r git add
+            find build-logs/fa394-tournament \
+              -type f \( -name 'FINAL_STATUS.json' -o -name 'history.json' \
+              -o -name 'baseline-selection.json' -o -name 'FINAL_FORBIDDEN_AUDIT.json' \
+              -o -name 'ALL_REQUIRED_TARGETS_2X_PASS' \) \
+              -print0 2>/dev/null | xargs -0 -r git add
+            git commit -m 'fix: advance PASS 394 robust tournament frontier'
+            git push origin HEAD:fix/fa394-tournament-20260809
+          else
+            echo 'No robustly verified source progress to commit.'
+          fi
+
+      - name: Promote fully verified sources to PR 9 branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='build-logs/fa394-tournament/ALL_REQUIRED_TARGETS_2X_PASS'
+          test -f "$marker" || exit 0
+          grep -qx 'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS' "$marker"
+
+          git fetch origin ci/fa319-isolated-20260807
+          remote_sha=$(git rev-parse FETCH_HEAD)
+          tmp=$(mktemp -d)
+          git worktree add --detach "$tmp" "$remote_sha"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$tmp/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            "$tmp/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean"
+          cp PrimalitySheafVerification/QYM.lean \
+            "$tmp/PrimalitySheafVerification/QYM.lean"
+          while IFS= read -r f; do
+            cp "$f" "$tmp/$f"
+          done < <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort)
+          mkdir -p "$tmp/build-logs"
+          cp build-logs/fa394-tournament/FINAL_STATUS.json \
+            "$tmp/build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json"
+
+          cd "$tmp"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add PrimalitySheafVerification build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: promote verified FA Mock3 QYM two-pass sources'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+          cd -
+          git worktree remove "$tmp" --force
+
+      - name: Upload complete PASS 394 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa394-tournament-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa394-tournament
+            build-logs/fa394-tournament.console.log
+            build-logs/fa394-tournament.exit.txt
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce current ordered result
+        if: always()
+        shell: bash
+        env:
+          SOLVER_EXIT_CODE: ${{ steps.solver.outputs.exit_code }}
+        run: |
+          test -n "${SOLVER_EXIT_CODE:-}"
+          exit "${SOLVER_EXIT_CODE}"
