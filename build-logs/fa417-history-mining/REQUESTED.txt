@@ -1,0 +1,1 @@
+Mine matching declaration proofs from every reachable historical version of Mock2_FunctionalAnalysis. Candidate probes use only the first Lean error; selected sources receive full diagnostic replay. Continue only on a strict checked-in improvement, then require FA/Integrated/Mock3/QYM x2.
