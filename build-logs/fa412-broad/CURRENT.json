@@ -1,0 +1,31 @@
+{
+  "complete": false,
+  "baseline": {
+    "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "first_error_line": 31725
+  },
+  "candidate_source_sha256": "b1496ba28205c7166d980cdbe58fae97b9956a973d4771763d43feff86c700a9",
+  "results": {
+    "Mock2": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "error_headers": 0,
+      "first_error_line": 0,
+      "first_error_col": 0
+    },
+    "Mock2_FunctionalAnalysis": {
+      "exit_code": 1,
+      "error_headers": 401,
+      "first_error_line": 31724,
+      "first_error_col": 2
+    }
+  },
+  "metric_improved": false,
+  "promoted": false,
+  "promotion_rule": "FA exit 0, otherwise first_error_line strictly greater than 31725; prerequisites exit 0"
+}
