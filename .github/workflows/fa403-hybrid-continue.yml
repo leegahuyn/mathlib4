@@ -1,0 +1,106 @@
+name: PASS 403 hybrid continuation FA Mock3 QYM solver
+
+on:
+  push:
+    branches: [fix/fa403-hybrid-continue-20260809]
+    paths:
+      - '.github/workflows/fa403-hybrid-continue.yml'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/fa394_tournament_solver.py'
+      - 'scripts/fa396_proof_body_persistent.py'
+      - 'scripts/fa401_extended_frontier.py'
+      - 'scripts/fa403_hybrid_continue.py'
+      - 'scripts/promote_priority_verified_to_pr9.sh'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+  pull-requests: write
+
+concurrency:
+  group: fa403-hybrid-continue
+  cancel-in-progress: false
+
+jobs:
+  solve-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Checkout exact PASS 403 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa403-hybrid-continue-20260809
+          fetch-depth: 1500
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, GitHub CLI, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run proof-body then extended frontier on one source chain
+        id: solver
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs/fa403-hybrid
+          python3 scripts/fa403_hybrid_continue.py \
+            2>&1 | tee build-logs/fa403-hybrid.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "solver_exit_code=${rc}" > build-logs/fa403-hybrid.exit.txt
+
+      - name: Promote only after source and PR9-context two-pass verification
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f build-logs/fa403-hybrid/ALL_REQUIRED_TARGETS_2X_PASS || exit 0
+          bash scripts/promote_priority_verified_to_pr9.sh \
+            build-logs/fa403-hybrid/FINAL_STATUS.json \
+            build-logs/fa403-hybrid/ALL_REQUIRED_TARGETS_2X_PASS
+
+      - name: Upload complete PASS 403 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa403-hybrid-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa403-hybrid
+            build-logs/fa403-hybrid.console.log
+            build-logs/fa403-hybrid.exit.txt
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce final ordered result
+        if: always()
+        shell: bash
+        env:
+          SOLVER_EXIT_CODE: ${{ steps.solver.outputs.exit_code }}
+        run: |
+          test -n "${SOLVER_EXIT_CODE:-}"
+          exit "${SOLVER_EXIT_CODE}"
