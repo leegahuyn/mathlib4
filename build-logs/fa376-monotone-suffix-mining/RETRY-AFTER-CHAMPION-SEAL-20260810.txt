@@ -1,0 +1,1 @@
+Retry only after the immutable PASS376 champion branch has been sealed. Reproduce SHA256 and first-error frontier before mining; preserve strict monotone promotion.
