@@ -1,0 +1,209 @@
+name: PASS 399 single-run proof-body FA Mock3 QYM loop
+
+on:
+  push:
+    branches: [fix/fa399-single-run-proof-body-loop-20260809]
+    paths:
+      - '.github/workflows/fa399-single-run-proof-body-loop.yml'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/fa394_tournament_solver.py'
+      - 'scripts/fa396_proof_body_persistent.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+  pull-requests: write
+
+concurrency:
+  group: fa399-single-run-proof-body-loop
+  cancel-in-progress: false
+
+jobs:
+  solve-until-pass-or-time-budget:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Checkout exact PASS 399 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa399-single-run-proof-body-loop-20260809
+          fetch-depth: 1100
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, GitHub CLI, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run consecutive proof-body cycles in this job
+        id: loop
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs/fa396-proof-body
+          overall_rc=2
+
+          for local_cycle in 1 2 3 4 5; do
+            echo "===== PASS 399 local cycle ${local_cycle} ====="
+            set +e
+            python3 scripts/fa396_proof_body_persistent.py \
+              --max-cycles 24 --max-errors 220 \
+              2>&1 | tee -a build-logs/fa399-single-run.console.log
+            rc=${PIPESTATUS[0]}
+            set -e
+            echo "local_cycle=${local_cycle} solver_rc=${rc}" | \
+              tee -a build-logs/fa399-single-run.cycles.txt
+
+            git add \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              PrimalitySheafVerification/QYM.lean \
+              build-logs/fa396-proof-body/STATE.json \
+              build-logs/fa396-proof-body/NEXT_ACTION.json \
+              build-logs/fa396-proof-body/FINAL_STATUS.json
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | \
+              xargs -0 -r git add
+            test ! -f build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS || \
+              git add build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS
+            find build-logs/fa396-proof-body -type f \
+              \( -name history.json -o -name baseline-selection.json \
+              -o -name FINAL_FORBIDDEN_AUDIT.json \) -print0 2>/dev/null | \
+              xargs -0 -r git add
+
+            if ! git diff --cached --quiet; then
+              state_cycle=$(python3 -c "import json; print(json.load(open('build-logs/fa396-proof-body/STATE.json'))['cycle'])")
+              git commit -m "fix: PASS 399 proof-body cycle ${state_cycle}"
+              git push origin HEAD:fix/fa399-single-run-proof-body-loop-20260809
+            fi
+
+            if test -f build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS; then
+              grep -qx 'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS' \
+                build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS
+              overall_rc=0
+              break
+            fi
+          done
+
+          echo "exit_code=${overall_rc}" >> "${GITHUB_OUTPUT}"
+          echo "overall_rc=${overall_rc}" > build-logs/fa399-single-run.exit.txt
+          exit 0
+
+      - name: Reverify in exact PR 9 context and promote only on full success
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS'
+          test -f "$marker" || exit 0
+          grep -qx 'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS' "$marker"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+
+          git fetch origin ci/fa319-isolated-20260807
+          remote_sha=$(git rev-parse FETCH_HEAD)
+          tmp=$(mktemp -d)
+          git worktree add --detach "$tmp" "$remote_sha"
+          for f in \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean; do cp "$f" "$tmp/$f"; done
+          while IFS= read -r f; do cp "$f" "$tmp/$f"; done < \
+            <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort)
+
+          rm -rf "$tmp/.lake"
+          ln -s "$GITHUB_WORKSPACE/.lake" "$tmp/.lake"
+          mkdir -p "$tmp/build-logs/pr9-promoted-2x/logs"
+          cd "$tmp"
+          for stem in Mock2 Mock2_Advanced; do
+            rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                  ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            lake env lean -DmaxErrors=200 "PrimalitySheafVerification/${stem}.lean" \
+              > "build-logs/pr9-promoted-2x/logs/${stem}-prerequisite.log" 2>&1
+          done
+          mapfile -t modules < <(
+            printf '%s\n' Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' \
+              -printf '%f\n' | sed 's/\.lean$//' | sort
+            printf '%s\n' QYM
+          )
+          : > build-logs/pr9-promoted-2x/results.tsv
+          for pass in 1 2; do
+            for stem in "${modules[@]}"; do
+              rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                    ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              lake env lean -DmaxErrors=250 "PrimalitySheafVerification/${stem}.lean" \
+                > "build-logs/pr9-promoted-2x/logs/${stem}-pass${pass}.log" 2>&1
+              errors=$(grep -c 'error:' "build-logs/pr9-promoted-2x/logs/${stem}-pass${pass}.log" || true)
+              test "$errors" -eq 0
+              test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+              test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              printf '%s\t%s\t0\t0\tartifacts-ok\n' "$pass" "$stem" >> \
+                build-logs/pr9-promoted-2x/results.tsv
+            done
+          done
+
+          mkdir -p build-logs
+          cp "$GITHUB_WORKSPACE/build-logs/fa396-proof-body/FINAL_STATUS.json" \
+            build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json
+          cp build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json \
+            build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json \
+            build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json \
+            build-logs/pr9-promoted-2x/results.tsv
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | xargs -0 -r git add
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: promote independently verified PASS 399 sources'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+          cd -
+          git worktree remove "$tmp" --force
+
+      - name: Upload all PASS 399 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa399-single-run-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa396-proof-body
+            build-logs/fa399-single-run.console.log
+            build-logs/fa399-single-run.cycles.txt
+            build-logs/fa399-single-run.exit.txt
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce final ordered result
+        if: always()
+        shell: bash
+        env:
+          LOOP_EXIT_CODE: ${{ steps.loop.outputs.exit_code }}
+        run: |
+          test -n "${LOOP_EXIT_CODE:-}"
+          exit "${LOOP_EXIT_CODE}"
