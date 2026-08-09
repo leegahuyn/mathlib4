@@ -1,0 +1,990 @@
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:210:0: warning: 
+'Mathlib.Analysis.Normed.Operator.FredholmAlternative' has been deprecated: please replace this import by
+
+import Mathlib.Analysis.Normed.Operator.Compact.FredholmAlternative
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:731:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:972:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:980:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_smul`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:989:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_density_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:997:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1005:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_smul`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1015:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_density_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1190:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.integral_eq_setIntegral_of_support_subset`:
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1198:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.support_linearTestIntegrand_subset_test`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1207:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.support_antiTestIntegrand_subset_test`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1278:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.tsupport_subset_interior_compactExhaustion`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1292:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.eventually_tsupport_subset_compactExhaustion`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1354:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.mem_truncatedTestCore`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1360:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.truncatedTestCore_subset_core`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1365:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.truncatedTestCore_mono`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1372:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.iUnion_truncatedTestCore_eq`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1409:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.compactExhaustion_covers_compactlySupported_tests`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1839:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1840:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1872:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1873:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:2703:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.compactPerturbation_isCompact`:
+  [CompleteSpace V]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:2708:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.normalized_hasTrivialKernel`:
+  [CompleteSpace V]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3098:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_apply`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3106:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_injective`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3127:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_antilipschitz`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3263:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.ShiftedCompactDecomposition.range_isClosed`:
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3299:47: warning: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3305:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_apply`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3312:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_injective`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3330:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_surjective`:
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3427:5: warning: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3481:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.compactPerturbation_isCompact`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3488:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.factorization`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4293:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4296:19: warning: 'norm_num' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4296:19: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4420:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4488:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4488:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4537:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4589:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4672:43: warning: This simp argument is unused:
+  zpow_neg_one
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [weightFiberScale, halfWeightScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5284:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5284:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5632:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5689:15: warning: `Set.preimage_setOf_eq` has been deprecated: Use `Set.preimage_ofPred_eq` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5782:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5944:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6011:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6084:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6158:10: warning: `Set.mem_diff` has been deprecated: Use `Set.mem_sdiff` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6554:4: warning: Try `simp at hback` instead of `simpa using hback`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6778:39: warning: `Set.mem_diff` has been deprecated: Use `Set.mem_sdiff` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6990:42: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.neg_im, Complex.ofReal_im, sub_zero, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:26: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, sub_zero, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:45: warning: This simp argument is unused:
+  sub_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:55: warning: This simp argument is unused:
+  neg_neg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:26: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_im, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:45: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_re, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:64: warning: This simp argument is unused:
+  sub_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_re, Complex.ofReal_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7074:6: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7074:25: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7075:22: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7075:32: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7081:6: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7081:25: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7082:22: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7082:32: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7883:14: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairingMatrix
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.paired, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7884:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.paired
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7885:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairedParameter
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7886:10: warning: This simp argument is unused:
+  modularTileEdgeParam
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7886:57: warning: This simp argument is unused:
+  hnormSq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam, modularCircularArcParam, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7888:14: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairingMatrix
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.paired, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7889:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.paired
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7890:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairedParameter
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7891:10: warning: This simp argument is unused:
+  modularTileEdgeParam
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7891:57: warning: This simp argument is unused:
+  hnormSq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam, modularCircularArcParam, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8371:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8519:8: warning: `continuous_finset_sum` has been deprecated: Use `continuous_finsetSum` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8893:8: warning: `continuous_finset_sum` has been deprecated: Use `continuous_finsetSum` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9027:15: warning: `Set.preimage_setOf_eq` has been deprecated: Use `Set.preimage_ofPred_eq` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9360:10: warning: `Set.diff_subset` has been deprecated: Use `Set.sdiff_subset` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9955:10: warning: `Set.diff_subset` has been deprecated: Use `Set.sdiff_subset` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10093:27: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10385:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10402:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10419:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10780:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10789:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10969:19: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12021:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12022:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12049:10: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12049:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12358:30: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12382:28: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, heightC, UpperHalfPlane.ofComplex_apply_of_im_pos hw, heightCoordinateCLM]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12664:2: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12677:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12677:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13363:8: warning: This simp argument is unused:
+  IsInverseEtaPaperOrbitCovariant
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13435:8: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, etaSqrtFactor, g, UpperHalfPlane.denom, hc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13456:41: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, etaSqrtFactor, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13628:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13664:6: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, inverseEtaPaperOrbitDenom, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13688:51: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, inverseEtaPaperOrbitDenom, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13716:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13723:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13743:2: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13754:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13754:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13903:42: warning: This simp argument is unused:
+  Complex.I_sq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Complex.mul_re, Complex.mul_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13914:42: warning: This simp argument is unused:
+  Complex.I_sq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Complex.mul_re, Complex.mul_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13961:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14040:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14041:55: warning: This simp argument is unused:
+  hg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, inverseEtaPaperOrbitDenom, inverseEtaPaperOrbit_det_eq_one,
+    g, smul_eq_mul, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14042:33: warning: This simp argument is unused:
+  inverseEtaPaperOrbit_det_eq_one
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, hg, inverseEtaPaperOrbitDenom, g, smul_eq_mul, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14059:6: warning: This simp argument is unused:
+  GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, Function.comp_def, G, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14150:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14165:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14191:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14206:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14310:31: warning: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14341:4: warning: 'change star (j ^ 2) = star j ^ 2' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15042:11: warning: Variable name `a` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _a
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15258:4: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [conjugate, TestFunction.postcompCLM_apply, Complex.conjCLE_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15258:23: warning: This simp argument is unused:
+  Complex.conjCLE_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [conjugate, TestFunction.postcompCLM_apply, Function.comp_def]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15348:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15349:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15502:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15503:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15521:8: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15660:41: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [rpowMul_apply, rpowScale, Complex.ofReal_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15875:35: warning: This simp argument is unused:
+  Complex.conj_I
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, conj_exponentC, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15902:21: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15942:45: warning: This simp argument is unused:
+  Complex.conj_I
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, conj_exponentC, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15943:6: warning: This simp argument is unused:
+  conj_exponentC
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, Complex.conj_I, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15943:22: warning: This simp argument is unused:
+  conj_rpowScale
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, Complex.conj_I, conj_exponentC]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15971:21: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16015:36: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, restrictToUpper, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16088:19: warning: This simp argument is unused:
+  Real.rpow_two
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [rpowScale, heightC]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16230:19: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, HalfWeightCompactCoordinateGreen.rpowScale, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16243:21: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, HalfWeightCompactCoordinateGreen.rpowScale, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17188:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.peterssonInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17206:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.chosenPeterssonInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17306:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.wrappedInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17966:6: warning: 'ring_nf' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17966:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18054:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18054:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18075:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18075:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18424:0: warning: Definition `memLpTwo` is a proposition; use `theorem` instead of `def`
+
+Note: This linter can be disabled with `set_option linter.defProp false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18905:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18907:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  NormedSpace ℂ Q.SobolevCompletion
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18908:4: error: Type mismatch: After simplification, term
+  norm_baseExtension_le Q x
+ has type
+  @LE.le ℝ Real.instLE ‖Q.baseExtension x‖ ‖x‖
+but is expected to have type
+  @LE.le ℝ Real.instLE ‖Q.baseExtension x‖ ‖x‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18911:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18913:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  NormedSpace ℂ Q.SobolevCompletion
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18914:4: error: Type mismatch: After simplification, term
+  norm_raiseExtension_le Q x
+ has type
+  @LE.le ℝ Real.instLE ‖Q.raiseExtension x‖ ‖x‖
+but is expected to have type
+  @LE.le ℝ Real.instLE ‖Q.raiseExtension x‖ ‖x‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18917:8: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  NormedSpace ℂ Q.SobolevCompletion
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18918:4: error: Type mismatch: After simplification, term
+  norm_lowerExtension_le Q x
+ has type
+  @LE.le ℝ Real.instLE ‖Q.lowerExtension x‖ ‖x‖
+but is expected to have type
+  @LE.le ℝ Real.instLE ‖Q.lowerExtension x‖ ‖x‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18950:8: error: typeclass instance problem is stuck
+  InnerProductSpace ℂ ?m.66
+
+Note: Lean will not try to resolve this typeclass instance problem because the second and fourth type arguments to `InnerProductSpace` are metavariables. These arguments must be fully determined before Lean will try to resolve the typeclass.
+
+Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18955:2: error: Type mismatch
+  innerSLFlip_apply_apply ℂ u v
+has type
+  ((innerSLFlip ℂ) u) v = ⟪v, u⟫_ℂ
+but is expected to have type
+  (Q.completionEnergyOperator u) v = ⟪v, u⟫_ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18967:6: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ⟪?m.180 ?x, ?m.180 ?y⟫_?m.172
+in the target expression
+  ⟪Q.coreEmbedding (Q.toGraphRange v), Q.coreEmbedding (Q.toGraphRange u)⟫_ℂ = Q.energyForm v u
+
+V : Type u
+inst✝¹⁰ : AddCommGroup V
+inst✝⁹ : Module ℂ V
+H₀ : Type v₀
+HR : Type vR
+HL : Type vL
+inst✝⁸ : NormedAddCommGroup H₀
+inst✝⁷ : InnerProductSpace ℂ H₀
+inst✝⁶ : NormedAddCommGroup HR
+inst✝⁵ : InnerProductSpace ℂ HR
+inst✝⁴ : NormedAddCommGroup HL
+inst✝³ : InnerProductSpace ℂ HL
+Q : QuotientHilbertCoordinates V H₀ HR HL
+inst✝² : CompleteSpace H₀
+inst✝¹ : CompleteSpace HR
+inst✝ : CompleteSpace HL
+u v : V
+⊢ ⟪Q.coreEmbedding (Q.toGraphRange v), Q.coreEmbedding (Q.toGraphRange u)⟫_ℂ = Q.energyForm v u
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18971:40: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ⟪?m.76, ?m.76⟫_?m.71 = 0
+in the target expression
+  ⟪u, u⟫_ℂ = 0 ↔ u = 0
+
+V : Type u
+inst✝¹⁰ : AddCommGroup V
+inst✝⁹ : Module ℂ V
+H₀ : Type v₀
+HR : Type vR
+HL : Type vL
+inst✝⁸ : NormedAddCommGroup H₀
+inst✝⁷ : InnerProductSpace ℂ H₀
+inst✝⁶ : NormedAddCommGroup HR
+inst✝⁵ : InnerProductSpace ℂ HR
+inst✝⁴ : NormedAddCommGroup HL
+inst✝³ : InnerProductSpace ℂ HL
+Q : QuotientHilbertCoordinates V H₀ HR HL
+inst✝² : CompleteSpace H₀
+inst✝¹ : CompleteSpace HR
+inst✝ : CompleteSpace HL
+u : Q.SobolevCompletion
+⊢ ⟪u, u⟫_ℂ = 0 ↔ u = 0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18979:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  RCLike.re ⟪?x, ?x⟫_?m.82
+in the target expression
+  ‖u‖ ^ 2 ≤ (⟪u, u⟫_ℂ).re
+
+V : Type u
+inst✝¹⁰ : AddCommGroup V
+inst✝⁹ : Module ℂ V
+H₀ : Type v₀
+HR : Type vR
+HL : Type vL
+inst✝⁸ : NormedAddCommGroup H₀
+inst✝⁷ : InnerProductSpace ℂ H₀
+inst✝⁶ : NormedAddCommGroup HR
+inst✝⁵ : InnerProductSpace ℂ HR
+inst✝⁴ : NormedAddCommGroup HL
+inst✝³ : InnerProductSpace ℂ HL
+Q : QuotientHilbertCoordinates V H₀ HR HL
+inst✝² : CompleteSpace H₀
+inst✝¹ : CompleteSpace HR
+inst✝ : CompleteSpace HL
+u : Q.SobolevCompletion
+⊢ ‖u‖ ^ 2 ≤ (⟪u, u⟫_ℂ).re
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18984:2: error: Type mismatch
+  FredholmBypass.coerciveForm_injective 1 ?m.53 ?m.69
+has type
+  Injective ⇑?m.53
+but is expected to have type
+  Injective ⇑Q.completionEnergyOperator
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18990:2: error: Type mismatch
+  FredholmBypass.coerciveForm_surjective 1 ?m.53 ?m.69
+has type
+  Surjective ⇑?m.53
+but is expected to have type
+  Surjective ⇑Q.completionEnergyOperator
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19003:2: error: Type mismatch
+  FredholmBypass.coerciveFormEquiv 1 ?m.78 ?m.94
+has type
+  ?m.60 ≃L[ℂ] @StrongAntiDual ?m.60 ?m.61 toNormedSpace
+but is expected to have type
+  Q.SobolevCompletion ≃L[ℂ]
+    @StrongAntiDual Q.SobolevCompletion (UniformSpace.Completion.instNormedAddCommGroup ↥Q.GraphRange)
+      (UniformSpace.Completion.instNormedSpace ℂ ↥Q.GraphRange)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19006:0: error: Not a definitional equality: the left-hand side
+  Q.completionEnergyEquiv u
+is not definitionally equal to the right-hand side
+  Q.completionEnergyOperator u
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19009:2: error: Type mismatch
+  rfl
+has type
+  ?m.60 = ?m.60
+but is expected to have type
+  Q.completionEnergyEquiv u = Q.completionEnergyOperator u
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19021:2: error: 'change' tactic failed, pattern
+  Q.completionEnergyEquiv (Q.completionEnergyEquiv.symm F) = F
+is not definitionally equal to target
+  Q.completionEnergyOperator (Q.solveCompletionEnergy F) = F
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19045:2: error: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19045:32: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19076:7: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'UniformSpace.Completion.instAddCommGroup', which is 'noncomputable'
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19151:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.precomp_graph`:
+  [CompleteSpace H₀]
+  [CompleteSpace HR]
+  [CompleteSpace HL]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19220:7: error: Application type mismatch: The argument
+  UniformSpace.Completion.continuous_coe
+has type
+  ∀ (α : Type ?u.48) [inst : UniformSpace α], Continuous UniformSpace.Completion.coe'
+but is expected to have type
+  Continuous[PseudoMetricSpace.toUniformSpace.toTopologicalSpace, _] UniformSpace.Completion.coe'
+in the application
+  DenseRange.comp UniformSpace.Completion.denseRange_coe hf UniformSpace.Completion.continuous_coe
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19221:2: error: maximum number of errors (20; from option `maxErrors`) reached, exiting

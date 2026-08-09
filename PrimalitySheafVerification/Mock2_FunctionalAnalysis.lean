@@ -18947,8 +18947,6 @@ theorem completion_norm_sq (x : Q.SobolevCompletion) :
 /-- Trial-first weak energy operator on the Hilbert completion. -/
 noncomputable def completionEnergyOperator :
     WeakAntiOperator Q.SobolevCompletion := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
   exact innerSLFlip ℂ
 
 @[simp]
