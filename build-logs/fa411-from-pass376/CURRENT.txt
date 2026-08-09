@@ -1,0 +1,6 @@
+Mock2: exit=0 errors=0 first=0:0
+Mock2_Advanced: exit=0 errors=0 first=0:0
+Mock2_FunctionalAnalysis: exit=1 errors=501 first=31724:2
+baseline_first=31725
+candidate_sha256=2d7297e2f69bb51434b19d63eeb3abddc3f7d1311da0157b7981c7e7477cee83
+promoted=false
