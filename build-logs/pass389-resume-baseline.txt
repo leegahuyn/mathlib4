@@ -1,0 +1,5 @@
+PASS 389 is the active baseline for the strict repair order:
+1. Mock2_FunctionalAnalysis direct source 2x PASS
+2. Mock2_FunctionalAnalysis_Integrated and every actual Mock3*.lean 2x PASS
+3. QYM.lean 2x PASS
+No automatic merge.

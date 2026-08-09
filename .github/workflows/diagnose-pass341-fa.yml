@@ -1,0 +1,60 @@
+name: Diagnose PASS 341 FunctionalAnalysis full
+
+# Full 1000-error compile retained for manual confirmation. Iterative repair
+# commits use the smaller frontier workflow until the first-error chain is clean.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: diagnose-pass341-fa-full
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      SOURCE_SHA: ${{ github.sha }}
+    steps:
+      - name: Checkout exact PR9 head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 260
+          persist-credentials: false
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p /tmp/diagnose-pass341-fa/logs
+          lean --version | tee /tmp/diagnose-pass341-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass341-fa/lake-version.txt
+          sha256sum --version | head -1 | tee /tmp/diagnose-pass341-fa/sha256sum-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass341-fa/logs/cache-get.log
+
+      - name: Reconstruct and compile PASS 341 FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/diagnose_pass341_fa.sh
+
+      - name: Upload PASS 341 diagnostic
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: diagnose-pass341-fa-${{ env.SOURCE_SHA }}
+          path: /tmp/diagnose-pass341-fa
+          if-no-files-found: error
+          retention-days: 90

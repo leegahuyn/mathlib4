@@ -1,8 +1,12 @@
-name: Historical PASS 320 derived FA and QYM gate
+name: Probe PASS 342 Lean APIs
 
-# PASS 327 is the current repair authority. This workflow is retained only for
-# manual historical reproduction and must not compete with the PASS 327 gate.
 on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/probe-pass342-api.yml'
+      - 'scripts/probe_pass342_api.sh'
+      - 'scripts/probe_pass342_addgroup.sh'
   workflow_dispatch:
 
 permissions:
@@ -10,26 +14,24 @@ permissions:
   actions: read
 
 concurrency:
-  group: historical-fa324-pr9-pass320
+  group: probe-pass342-api-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
-  verify-historical-pass320-derived-fa-and-qym:
+  probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 90
     env:
-      SOURCE_SHA: ${{ github.sha }}
-      SOURCE_BRANCH: ${{ github.ref_name }}
-
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Checkout exact selected head
+      - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ env.SOURCE_SHA }}
-          fetch-depth: 1
+          fetch-depth: 8
           persist-credentials: false
 
-      - name: Install exact Lean toolchain and restore Mathlib cache
+      - name: Install pinned Lean and restore Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -38,24 +40,21 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           export PATH="${HOME}/.elan/bin:${PATH}"
-          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
           elan toolchain install "$(cat lean-toolchain)"
-          lean --version
-          lake --version
           lake exe cache get
 
-      - name: Reproduce historical PASS 320-derived candidate without pushing
+      - name: Compile PASS 342 API and AddCommGroup probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/ci_fa319_qym.sh
+          bash scripts/probe_pass342_addgroup.sh
 
-      - name: Upload historical evidence
+      - name: Upload API probe evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: historical-fa324-pr9-pass320-${{ env.SOURCE_SHA }}
-          path: /tmp/fa324-qym
-          if-no-files-found: warn
-          retention-days: 30
+          name: pass342-api-probe-${{ env.SOURCE_SHA }}
+          path: /tmp/pass342-api-probe
+          if-no-files-found: error
+          retention-days: 90

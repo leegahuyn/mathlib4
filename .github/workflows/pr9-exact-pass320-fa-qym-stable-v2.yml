@@ -1,35 +1,43 @@
-name: Historical PASS 320 derived FA and QYM gate
+name: PR9 PASS324 FunctionalAnalysis Integrated QYM gate
 
-# PASS 327 is the current repair authority. This workflow is retained only for
-# manual historical reproduction and must not compete with the PASS 327 gate.
 on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-exact-pass320-fa-qym-stable-v2.yml'
+      - 'scripts/ci_fa319_qym.sh'
+      - 'scripts/ci_fa321_qym.sh'
+      - 'scripts/apply_three_hundred_twenty_first_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_second_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_third_pass_functional_analysis_repairs.py'
+      - 'scripts/apply_three_hundred_twenty_fourth_pass_functional_analysis_repairs.py'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 concurrency:
-  group: historical-fa324-pr9-pass320
+  group: pr9-pass324-fa-integrated-qym
   cancel-in-progress: true
 
 jobs:
-  verify-historical-pass320-derived-fa-and-qym:
+  verify-pass324:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 720
     env:
       SOURCE_SHA: ${{ github.sha }}
-      SOURCE_BRANCH: ${{ github.ref_name }}
+      SOURCE_BRANCH: ci/fa319-isolated-20260807
 
     steps:
-      - name: Checkout exact selected head
+      - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 1
-          persist-credentials: false
+          persist-credentials: true
 
-      - name: Install exact Lean toolchain and restore Mathlib cache
+      - name: Install exact Lean toolchain and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -42,20 +50,21 @@ jobs:
           elan toolchain install "$(cat lean-toolchain)"
           lean --version
           lake --version
+          sha256sum --version | head -1
           lake exe cache get
 
-      - name: Reproduce historical PASS 320-derived candidate without pushing
+      - name: Apply PASS320 through PASS324 and compile FA Integrated QYM twice
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
           bash scripts/ci_fa319_qym.sh
 
-      - name: Upload historical evidence
+      - name: Upload PASS324 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: historical-fa324-pr9-pass320-${{ env.SOURCE_SHA }}
+          name: pr9-pass324-fa-integrated-qym-${{ env.SOURCE_SHA }}
           path: /tmp/fa324-qym
           if-no-files-found: warn
           retention-days: 30

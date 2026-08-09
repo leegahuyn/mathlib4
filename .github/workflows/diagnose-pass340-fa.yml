@@ -1,7 +1,6 @@
-name: Historical PASS 320 derived FA and QYM gate
+name: Diagnose PASS 340 FunctionalAnalysis
 
-# PASS 327 is the current repair authority. This workflow is retained only for
-# manual historical reproduction and must not compete with the PASS 327 gate.
+# PASS 340 evidence is preserved; new automatic work continues at PASS 341.
 on:
   workflow_dispatch:
 
@@ -10,26 +9,24 @@ permissions:
   actions: read
 
 concurrency:
-  group: historical-fa324-pr9-pass320
+  group: diagnose-pass340-fa
   cancel-in-progress: true
 
 jobs:
-  verify-historical-pass320-derived-fa-and-qym:
+  diagnose:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 180
     env:
       SOURCE_SHA: ${{ github.sha }}
-      SOURCE_BRANCH: ${{ github.ref_name }}
-
     steps:
-      - name: Checkout exact selected head
+      - name: Checkout exact PR9 head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ env.SOURCE_SHA }}
-          fetch-depth: 1
+          fetch-depth: 240
           persist-credentials: false
 
-      - name: Install exact Lean toolchain and restore Mathlib cache
+      - name: Install pinned Lean and restore Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -38,24 +35,25 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           export PATH="${HOME}/.elan/bin:${PATH}"
-          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
           elan toolchain install "$(cat lean-toolchain)"
-          lean --version
-          lake --version
-          lake exe cache get
+          mkdir -p /tmp/diagnose-pass340-fa/logs
+          lean --version | tee /tmp/diagnose-pass340-fa/lean-version.txt
+          lake --version | tee /tmp/diagnose-pass340-fa/lake-version.txt
+          sha256sum --version | head -1 | tee /tmp/diagnose-pass340-fa/sha256sum-version.txt
+          lake exe cache get 2>&1 | tee /tmp/diagnose-pass340-fa/logs/cache-get.log
 
-      - name: Reproduce historical PASS 320-derived candidate without pushing
+      - name: Reconstruct and compile PASS 340 FA
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/ci_fa319_qym.sh
+          bash scripts/diagnose_pass340_fa.sh
 
-      - name: Upload historical evidence
+      - name: Upload PASS 340 diagnostic
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: historical-fa324-pr9-pass320-${{ env.SOURCE_SHA }}
-          path: /tmp/fa324-qym
-          if-no-files-found: warn
-          retention-days: 30
+          name: diagnose-pass340-fa-${{ env.SOURCE_SHA }}
+          path: /tmp/diagnose-pass340-fa
+          if-no-files-found: error
+          retention-days: 90

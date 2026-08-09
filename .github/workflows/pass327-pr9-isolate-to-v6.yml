@@ -1,0 +1,55 @@
+name: PR9 focused queue cleanup v7
+
+# Non-destructive Actions cleanup. Repository files and source history are not
+# rewritten; only obsolete queued/running jobs on the PR9 branch are cancelled.
+on:
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass327-pr9-isolate-to-v6.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: pr9-focused-queue-cleanup-v7
+  cancel-in-progress: true
+
+jobs:
+  cleanup-obsolete-runs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ci/fa319-isolated-20260807
+    steps:
+      - name: Keep only the PASS 349 frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?branch=${BRANCH}&per_page=100" \
+            --jq '.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "pending") | [.id, .name, .head_sha] | @tsv' \
+            | sort -u \
+            | while IFS=$'\t' read -r run_id run_name run_sha; do
+                [[ -n "${run_id}" ]] || continue
+                [[ "${run_id}" = "${GITHUB_RUN_ID}" ]] && continue
+                keep=false
+                case "${run_name}" in
+                  'Diagnose PASS 349 FunctionalAnalysis frontier'|\
+                  'PR9 focused queue cleanup v7')
+                    keep=true
+                    ;;
+                esac
+                if [[ "${keep}" = true ]]; then
+                  echo "preserve ${run_id} | ${run_name} | ${run_sha}"
+                  continue
+                fi
+                if gh api -X POST \
+                    "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
+                    >/dev/null 2>&1; then
+                  echo "cancelled ${run_id} | ${run_name} | ${run_sha}"
+                fi
+              done

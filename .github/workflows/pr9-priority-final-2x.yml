@@ -1,0 +1,230 @@
+name: PR9 final FA Integrated Mock3 QYM two-pass gate
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-priority-final-2x.yml'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: pr9-priority-final-2x
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - name: Checkout exact PR9 priority-source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2200
+          persist-credentials: true
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/pr9-priority-lean-version.txt
+          lake --version | tee /tmp/pr9-priority-lake-version.txt
+          lake exe cache get 2>&1 | tee /tmp/pr9-priority-cache.log
+
+      - name: Verify priority targets twice in the required order
+        id: verify
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          evidence='/tmp/pr9-priority-final-2x'
+          mkdir -p "${evidence}/logs"
+          targets=(
+            'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+            'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+          )
+          while IFS= read -r file; do targets+=("${file}"); done < <(
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' \
+              ! -iname '*backup*' ! -iname '*candidate*' ! -iname '*probe*' ! -iname '*tmp*' | sort
+          )
+          targets+=('PrimalitySheafVerification/QYM.lean')
+          printf '%s\n' "${targets[@]}" > "${evidence}/targets.txt"
+          overall=0
+          for round in 1 2; do
+            echo "round=${round}" | tee -a "${evidence}/status.txt"
+            for target in "${targets[@]}"; do
+              if [[ ! -s "${target}" ]]; then
+                echo "missing=${target}" | tee -a "${evidence}/status.txt"
+                overall=70
+                break 2
+              fi
+              rel=${target#PrimalitySheafVerification/}
+              stem=${rel%.lean}
+              artifact_base=".lake/build/lib/lean/PrimalitySheafVerification/${stem}"
+              rm -f "${artifact_base}.olean" "${artifact_base}.ilean"
+              log="${evidence}/logs/${stem//\//__}-round${round}.log"
+              lake env lean -DmaxErrors=300 "${target}" > "${log}" 2>&1
+              rc=$?
+              error_count=$(grep -cE '\.lean:[0-9]+:[0-9]+: error:' "${log}" || true)
+              warning_count=$(grep -cE '\.lean:[0-9]+:[0-9]+: warning:' "${log}" || true)
+              olean=0; ilean=0
+              [[ -s "${artifact_base}.olean" ]] && olean=1
+              [[ -s "${artifact_base}.ilean" ]] && ilean=1
+              echo "round=${round} target=${target} exit=${rc} errors=${error_count} warnings=${warning_count} olean=${olean} ilean=${ilean}" \
+                | tee -a "${evidence}/status.txt"
+              if [[ ${rc} -ne 0 || ${error_count} -ne 0 || ${olean} -ne 1 || ${ilean} -ne 1 ]]; then
+                overall=${rc}
+                [[ ${overall} -eq 0 ]] && overall=71
+                break 2
+              fi
+            done
+          done
+          set -e
+          echo "exit_code=${overall}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Audit priority sources for forbidden proof escapes
+        id: trust
+        shell: bash
+        run: |
+          set +e
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+          files=[
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'),
+              Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),
+          ]
+          files += sorted(
+              p for p in Path('PrimalitySheafVerification').glob('Mock3*.lean')
+              if not any(x in p.name.lower() for x in ('backup','candidate','probe','tmp'))
+          )
+          files += [Path('PrimalitySheafVerification/QYM.lean')]
+          patterns={
+              'sorry':r'\bsorry\b', 'admit':r'\badmit\b',
+              'global_axiom':r'^\s*axiom\b', 'unsafe':r'\bunsafe\b',
+              'native_decide':r'\bnative_decide\b',
+              'Lean.ofReduceBool':r'\bLean\.ofReduceBool\b',
+          }
+          violations=[]
+          hashes={}
+          import hashlib
+          for path in files:
+              if not path.exists():
+                  violations.append({'file':str(path),'kind':'missing'})
+                  continue
+              hashes[str(path)]=hashlib.sha256(path.read_bytes()).hexdigest()
+              text=path.read_text(encoding='utf-8')
+              text=re.sub(r'/\*.*?\*/','',text,flags=re.S)
+              text=re.sub(r'--[^\n]*','',text)
+              text=re.sub(r'"(?:\\.|[^"\\])*"','""',text)
+              for name,pattern in patterns.items():
+                  if re.search(pattern,text,flags=re.M):
+                      violations.append({'file':str(path),'kind':name})
+          out=Path('/tmp/pr9-priority-final-2x/trust.json')
+          out.parent.mkdir(parents=True,exist_ok=True)
+          out.write_text(json.dumps({'hashes':hashes,'violations':violations},indent=2),encoding='utf-8')
+          if violations:
+              print(json.dumps(violations,indent=2))
+              raise SystemExit(1)
+          PY
+          rc=$?
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Build final PR9 priority-source evidence
+        if: always()
+        shell: bash
+        env:
+          VERIFY_EXIT: ${{ steps.verify.outputs.exit_code }}
+          TRUST_EXIT: ${{ steps.trust.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          evidence='/tmp/pr9-priority-final-2x'
+          mkdir -p "${evidence}"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          evidence=Path('/tmp/pr9-priority-final-2x')
+          trust={}
+          if (evidence/'trust.json').exists():
+              trust=json.loads((evidence/'trust.json').read_text())
+          payload={
+              'status': (
+                  'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS'
+                  if os.environ.get('VERIFY_EXIT')=='0' and os.environ.get('TRUST_EXIT')=='0'
+                  else 'FAILED'
+              ),
+              'workflow_run_id':os.environ.get('GITHUB_RUN_ID'),
+              'head_sha':os.environ.get('GITHUB_SHA'),
+              'verify_exit':os.environ.get('VERIFY_EXIT',''),
+              'trust_exit':os.environ.get('TRUST_EXIT',''),
+              'targets':(evidence/'targets.txt').read_text().splitlines() if (evidence/'targets.txt').exists() else [],
+              'compiler_status':(evidence/'status.txt').read_text().splitlines() if (evidence/'status.txt').exists() else [],
+              'source_hashes':trust.get('hashes',{}),
+              'trust_violations':trust.get('violations',[]),
+              'draft_preserved':True,
+              'automatic_merge':False,
+          }
+          (evidence/'result.json').write_text(json.dumps(payload,indent=2),encoding='utf-8')
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Upload final PR9 priority-source evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-fa-integrated-mock3-qym-final-2x-${{ github.sha }}
+          path: |
+            /tmp/pr9-priority-final-2x
+            /tmp/pr9-priority-lean-version.txt
+            /tmp/pr9-priority-lake-version.txt
+            /tmp/pr9-priority-cache.log
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Commit final marker and comment on PR9 only after real success
+        if: steps.verify.outputs.exit_code == '0' && steps.trust.outputs.exit_code == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs
+          cp /tmp/pr9-priority-final-2x/result.json \
+            build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record PR9 FA Integrated Mock3 QYM final two-pass PASS'
+            git push origin HEAD:ci/fa319-isolated-20260807
+          fi
+          gh pr comment 9 --repo "${GITHUB_REPOSITORY}" --body \
+            "FA → Integrated/actual Mock3 → QYM priority gate passed twice from deleted target artifacts on head \`${GITHUB_SHA}\`. Evidence: workflow run \`${GITHUB_RUN_ID}\`. PR remains draft and unmerged."
+
+      - name: Enforce final result
+        if: always()
+        shell: bash
+        env:
+          VERIFY_EXIT: ${{ steps.verify.outputs.exit_code }}
+          TRUST_EXIT: ${{ steps.trust.outputs.exit_code }}
+        run: |
+          test "${VERIFY_EXIT:-1}" = '0'
+          test "${TRUST_EXIT:-1}" = '0'

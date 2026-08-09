@@ -1,0 +1,115 @@
+name: PASS 339 persistent FA Mock3 QYM frontier
+
+on:
+  push:
+    branches:
+      - ci/fa319-isolated-20260807
+      - ci/fa339-frontier-20260808
+    paths:
+      - '.github/workflows/pass339-persistent-frontier.yml'
+      - 'scripts/ci_pass339_persistent_frontier.sh'
+      - 'scripts/pass339_targeted_lean_repair_agent.py'
+      - 'scripts/diagnose_pass339_fa.sh'
+      - 'scripts/apply_*_pass*_repairs.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - 'build-logs/pass339-frontier-iteration.txt'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass339-persistent-frontier.yml'
+      - 'scripts/ci_pass339_persistent_frontier.sh'
+      - 'scripts/pass339_targeted_lean_repair_agent.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  models: read
+
+concurrency:
+  group: pass339-persistent-frontier
+  cancel-in-progress: false
+
+jobs:
+  repair-persist-or-promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      TARGET_BRANCH: ci/fa319-isolated-20260807
+      FRONTIER_BRANCH: ci/fa339-frontier-20260808
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      MODELS_TOKEN: ${{ github.token }}
+      EVIDENCE: /tmp/pass339-persistent-frontier
+
+    steps:
+      - name: Cancel obsolete nonpersistent PASS 339 runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?branch=ci%2Ffa319-isolated-20260807&status=in_progress&per_page=100" \
+            > /tmp/pass339-obsolete.json
+          python3 - /tmp/pass339-obsolete.json "${GITHUB_RUN_ID}" <<'PY' > /tmp/pass339-obsolete-ids.txt
+          import json,sys
+          data=json.load(open(sys.argv[1],encoding='utf-8'))
+          current=int(sys.argv[2])
+          for run in data.get('workflow_runs',[]):
+              name=(run.get('name') or '').lower()
+              if run.get('id') == current:
+                  continue
+              if 'pass 339' in name and 'persistent' not in name:
+                  print(run['id'])
+          PY
+          while IFS= read -r run_id; do
+            [[ -z "${run_id}" ]] && continue
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+          done < /tmp/pass339-obsolete-ids.txt
+
+      - name: Checkout exact source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 256
+          persist-credentials: true
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p "${EVIDENCE}/logs"
+          lean --version | tee "${EVIDENCE}/lean-version.txt"
+          lake --version | tee "${EVIDENCE}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${EVIDENCE}/"
+          lake exe cache get 2>&1 | tee "${EVIDENCE}/logs/cache-get.log"
+
+      - name: Repair, persist frontier, or promote verified chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/ci_pass339_persistent_frontier.sh
+
+      - name: Upload persistent PASS 339 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass339-persistent-frontier-${{ env.SOURCE_BRANCH }}-${{ env.SOURCE_SHA }}
+          path: /tmp/pass339-persistent-frontier
+          if-no-files-found: warn
+          retention-days: 90

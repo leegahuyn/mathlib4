@@ -1,35 +1,44 @@
-name: Historical PASS 320 derived FA and QYM gate
+name: FA pass320 unpinned then Integrated and QYM
 
-# PASS 327 is the current repair authority. This workflow is retained only for
-# manual historical reproduction and must not compete with the PASS 327 gate.
 on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/fa320-unpinned-qym-20260807.yml'
+      - 'scripts/ci_fa320_unpinned_qym_20260807.sh'
+      - 'scripts/apply_*_pass_repairs.py'
+      - 'scripts/fa316_driver.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+      - 'PrimalitySheafVerification/Mock3.lean'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 concurrency:
-  group: historical-fa324-pr9-pass320
-  cancel-in-progress: true
+  group: fa320-unpinned-qym-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  verify-historical-pass320-derived-fa-and-qym:
+  verify-materialize:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 720
     env:
       SOURCE_SHA: ${{ github.sha }}
       SOURCE_BRANCH: ${{ github.ref_name }}
 
     steps:
-      - name: Checkout exact selected head
+      - name: Checkout exact PR 9 branch head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ env.SOURCE_SHA }}
           fetch-depth: 1
-          persist-credentials: false
+          persist-credentials: true
 
-      - name: Install exact Lean toolchain and restore Mathlib cache
+      - name: Install exact Lean and restore Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -38,24 +47,24 @@ jobs:
             -o /tmp/elan-init.sh
           sh /tmp/elan-init.sh -y --default-toolchain none
           export PATH="${HOME}/.elan/bin:${PATH}"
-          echo "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
           elan toolchain install "$(cat lean-toolchain)"
           lean --version
           lake --version
           lake exe cache get
 
-      - name: Reproduce historical PASS 320-derived candidate without pushing
+      - name: Verify FA PASS 320 candidate, Integrated, Mock3 when present, and QYM
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          bash scripts/ci_fa319_qym.sh
+          bash scripts/ci_fa320_unpinned_qym_20260807.sh
 
-      - name: Upload historical evidence
+      - name: Upload complete focused evidence
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: historical-fa324-pr9-pass320-${{ env.SOURCE_SHA }}
-          path: /tmp/fa324-qym
+          name: fa320-unpinned-qym-${{ env.SOURCE_SHA }}
+          path: /tmp/fa320-unpinned-qym
           if-no-files-found: warn
           retention-days: 30

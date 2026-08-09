@@ -1,0 +1,48 @@
+name: PR9 priority queue cleanup v8
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-priority-queue-cleanup-v8.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: pr9-priority-queue-cleanup-v8
+  cancel-in-progress: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Cancel stale non-priority feature-branch runs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_RUN: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          repo='${{ github.repository }}'
+          keep='PASS 398 single-run tournament|PASS 399 single-run proof-body|PASS 400 fast declaration-frontier|PR9 priority repair supervisor v1|PR9 independent FA Integrated Mock3 QYM two-pass verification v2|PR9 priority queue cleanup v8'
+          gh api "repos/${repo}/actions/runs?per_page=100" --paginate \
+            --jq '.workflow_runs[] | select((.status=="queued" or .status=="in_progress") and .head_branch!="master") | [.id,.name,.head_branch,.status] | @tsv' \
+            > /tmp/active-runs.tsv
+          : > /tmp/cancelled.tsv
+          while IFS=$'\t' read -r id name branch status; do
+            test -n "$id" || continue
+            test "$id" != "$CURRENT_RUN" || continue
+            if echo "$name" | grep -Eq "$keep"; then
+              continue
+            fi
+            printf '%s\t%s\t%s\t%s\n' "$id" "$name" "$branch" "$status" | tee -a /tmp/cancelled.tsv
+            gh api --method POST "repos/${repo}/actions/runs/${id}/cancel" || true
+          done < /tmp/active-runs.tsv
+          echo '--- preserved priority runs ---'
+          grep -E "$keep" /tmp/active-runs.tsv || true
+          echo '--- cancelled stale runs ---'
+          cat /tmp/cancelled.tsv

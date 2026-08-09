@@ -1,0 +1,95 @@
+name: PASS 339 final two-pass proof
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pass339-final-two-pass-proof.yml'
+      - 'scripts/verify_pass339_final_two_pass.sh'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  pull_request:
+    branches: [fix/primality-sheaf-clean-build]
+    paths:
+      - '.github/workflows/pass339-final-two-pass-proof.yml'
+      - 'scripts/verify_pass339_final_two_pass.sh'
+      - 'PrimalitySheafVerification/Mock2_Advanced.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pass339-final-two-pass-proof
+  cancel-in-progress: true
+
+jobs:
+  prove-twice:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      TARGET_BRANCH: ci/fa319-isolated-20260807
+      EVIDENCE: /tmp/pass339-final-two-pass
+
+    steps:
+      - name: Checkout exact PR9 source head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 64
+          persist-credentials: true
+
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          mkdir -p "${EVIDENCE}/logs"
+          lean --version | tee "${EVIDENCE}/lean-version.txt"
+          lake --version | tee "${EVIDENCE}/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${EVIDENCE}/"
+          lake exe cache get 2>&1 | tee "${EVIDENCE}/logs/cache-get.log"
+
+      - name: Compile FA Integrated Mock3 QYM twice from deleted project artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          bash scripts/verify_pass339_final_two_pass.sh
+
+      - name: Commit final success evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_head="$(git ls-remote origin "refs/heads/${TARGET_BRANCH}" | awk '{print $1}')"
+          test "${remote_head}" = "${SOURCE_SHA}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/PASS339_FINAL_TWO_PASS_SUCCESS.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record PASS339 FA Mock3 QYM two-pass success'
+            git push origin "HEAD:refs/heads/${TARGET_BRANCH}"
+          fi
+
+      - name: Upload independent PASS 339 proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pass339-final-two-pass-${{ env.SOURCE_SHA }}
+          path: /tmp/pass339-final-two-pass
+          if-no-files-found: warn
+          retention-days: 90

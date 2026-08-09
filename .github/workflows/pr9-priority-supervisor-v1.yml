@@ -1,0 +1,277 @@
+name: PR9 priority repair supervisor v1
+
+on:
+  push:
+    branches: [ci/fa319-isolated-20260807]
+    paths:
+      - '.github/workflows/pr9-priority-supervisor-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: pr9-priority-supervisor-v1
+  cancel-in-progress: true
+
+jobs:
+  wait-reverify-promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - name: Checkout current PR 9 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa319-isolated-20260807
+          fetch-depth: 1200
+          persist-credentials: true
+
+      - name: Poll verified repair branches for up to four hours
+        id: poll
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/pr9-priority-supervisor
+          candidates=$(cat <<'EOF'
+          fix/fa400-fast-frontier-20260809|build-logs/fa400-fast-frontier/ALL_REQUIRED_TARGETS_2X_PASS|build-logs/fa400-fast-frontier/FINAL_STATUS.json
+          fix/fa398-single-run-tournament-loop-20260809|build-logs/fa395-persistent/ALL_REQUIRED_TARGETS_2X_PASS|build-logs/fa395-persistent/FINAL_STATUS.json
+          fix/fa399-single-run-proof-body-loop-20260809|build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS|build-logs/fa396-proof-body/FINAL_STATUS.json
+          fix/fa395-persistent-tournament-20260809|build-logs/fa395-persistent/ALL_REQUIRED_TARGETS_2X_PASS|build-logs/fa395-persistent/FINAL_STATUS.json
+          fix/fa396-proof-body-persistent-20260809|build-logs/fa396-proof-body/ALL_REQUIRED_TARGETS_2X_PASS|build-logs/fa396-proof-body/FINAL_STATUS.json
+          EOF
+          )
+          found=0
+          winner_branch=''
+          winner_ref=''
+          winner_status=''
+          for attempt in $(seq 1 48); do
+            echo "attempt=${attempt} utc=$(date -u +%FT%TZ)" | tee -a build-logs/pr9-priority-supervisor/poll.log
+            while IFS='|' read -r branch marker status; do
+              branch=$(echo "$branch" | xargs)
+              marker=$(echo "$marker" | xargs)
+              status=$(echo "$status" | xargs)
+              test -n "$branch" || continue
+              label=$(echo "$branch" | tr '/.' '__')
+              ref="refs/remotes/origin/supervisor-${label}"
+              if git fetch --no-tags --force origin "refs/heads/${branch}:${ref}" \
+                   >> build-logs/pr9-priority-supervisor/poll.log 2>&1; then
+                if value=$(git show "${ref}:${marker}" 2>/dev/null); then
+                  if test "$value" = 'SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS'; then
+                    found=1
+                    winner_branch="$branch"
+                    winner_ref="$ref"
+                    winner_status="$status"
+                    break 2
+                  fi
+                fi
+              fi
+            done <<< "$candidates"
+            sleep 300
+          done
+          {
+            echo "found=${found}"
+            echo "winner_branch=${winner_branch}"
+            echo "winner_ref=${winner_ref}"
+            echo "winner_status=${winner_status}"
+          } >> "$GITHUB_OUTPUT"
+          cat > build-logs/pr9-priority-supervisor/winner.env <<EOF
+          found=${found}
+          winner_branch=${winner_branch}
+          winner_ref=${winner_ref}
+          winner_status=${winner_status}
+          EOF
+
+      - name: Install Lean and cache after a winner appears
+        if: steps.poll.outputs.found == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep gh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee build-logs/pr9-priority-supervisor/lean-version.txt
+          lake --version | tee build-logs/pr9-priority-supervisor/lake-version.txt
+          lake exe cache get 2>&1 | tee build-logs/pr9-priority-supervisor/cache-get.log
+
+      - name: Materialize winner source into PR 9 checkout
+        if: steps.poll.outputs.found == '1'
+        shell: bash
+        env:
+          WINNER_REF: ${{ steps.poll.outputs.winner_ref }}
+          WINNER_STATUS: ${{ steps.poll.outputs.winner_status }}
+        run: |
+          set -euo pipefail
+          for path in \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean; do
+            git show "${WINNER_REF}:${path}" > "$path"
+          done
+          while IFS= read -r path; do
+            git show "${WINNER_REF}:${path}" > "$path"
+          done < <(git ls-tree -r --name-only "$WINNER_REF" PrimalitySheafVerification | \
+                    grep -E '^PrimalitySheafVerification/Mock3.*\.lean$' | sort)
+          git show "${WINNER_REF}:${WINNER_STATUS}" > \
+            build-logs/pr9-priority-supervisor/winner-status.json
+          sha256sum \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            > build-logs/pr9-priority-supervisor/source-sha256.txt
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | \
+            sort -z | xargs -0 -r sha256sum >> build-logs/pr9-priority-supervisor/source-sha256.txt
+
+      - name: Audit winner source
+        if: steps.poll.outputs.found == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          root=Path('PrimalitySheafVerification')
+          targets=[root/'Mock2_FunctionalAnalysis.lean',root/'Mock2_FunctionalAnalysis_Integrated.lean',*sorted(root.glob('Mock3*.lean')),root/'QYM.lean']
+          def strip(text):
+              out=[]; i=0; depth=0; string=False; escape=False
+              while i<len(text):
+                  if depth:
+                      if text.startswith('/-',i): depth+=1; out+=[' ',' ']; i+=2; continue
+                      if text.startswith('-/',i): depth-=1; out+=[' ',' ']; i+=2; continue
+                      out.append('\n' if text[i]=='\n' else ' '); i+=1; continue
+                  if string:
+                      c=text[i]; out.append('\n' if c=='\n' else ' ')
+                      if escape: escape=False
+                      elif c=='\\': escape=True
+                      elif c=='"': string=False
+                      i+=1; continue
+                  if text.startswith('/-',i): depth=1; out+=[' ',' ']; i+=2; continue
+                  if text.startswith('--',i):
+                      while i<len(text) and text[i]!='\n': out.append(' '); i+=1
+                      continue
+                  if text[i]=='"': string=True; out.append(' '); i+=1; continue
+                  out.append(text[i]); i+=1
+              return ''.join(out)
+          pats={'sorry':re.compile(r'\bsorry\b'),'admit':re.compile(r'\badmit\b'),'global_axiom':re.compile(r'(?m)^\s*(?:public\s+)?axiom\b'),'unsafe':re.compile(r'(?m)^\s*unsafe\b'),'native_decide':re.compile(r'\bnative_decide\b'),'Lean.ofReduceBool':re.compile(r'\bLean\.ofReduceBool\b')}
+          report={}; bad=False
+          for path in targets:
+              if not path.exists(): continue
+              clean=strip(path.read_text(encoding='utf-8'))
+              counts={k:len(p.findall(clean)) for k,p in pats.items()}
+              report[str(path)]=counts; bad |= any(counts.values())
+          Path('build-logs/pr9-priority-supervisor/forbidden-audit.json').write_text(json.dumps(report,indent=2))
+          if bad: raise SystemExit(report)
+          PY
+
+      - name: Build prerequisites and verify priority sequence twice
+        if: steps.poll.outputs.found == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p build-logs/pr9-priority-supervisor/logs
+          for stem in Mock2 Mock2_Advanced; do
+            rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                  ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            lake env lean -DmaxErrors=200 "PrimalitySheafVerification/${stem}.lean" \
+              > "build-logs/pr9-priority-supervisor/logs/${stem}-prerequisite.log" 2>&1
+            test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            test -s ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+          done
+          mapfile -t modules < <(
+            printf '%s\n' Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' \
+              -printf '%f\n' | sed 's/\.lean$//' | sort
+            printf '%s\n' QYM
+          )
+          printf '%s\n' "${modules[@]}" > build-logs/pr9-priority-supervisor/module-order.txt
+          : > build-logs/pr9-priority-supervisor/results.tsv
+          for pass in 1 2; do
+            for stem in "${modules[@]}"; do
+              rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean" \
+                    ".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              set +e
+              lake env lean -DmaxErrors=250 "PrimalitySheafVerification/${stem}.lean" \
+                > "build-logs/pr9-priority-supervisor/logs/${stem}-pass${pass}.log" 2>&1
+              rc=$?
+              set -e
+              errors=$(grep -c 'error:' "build-logs/pr9-priority-supervisor/logs/${stem}-pass${pass}.log" || true)
+              warnings=$(grep -c 'warning:' "build-logs/pr9-priority-supervisor/logs/${stem}-pass${pass}.log" || true)
+              olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+              ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+              artifacts=missing
+              test -s "$olean" && test -s "$ilean" && artifacts=ok
+              printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$pass" "$stem" "$rc" "$errors" "$warnings" "$artifacts" >> \
+                build-logs/pr9-priority-supervisor/results.tsv
+              test "$rc" -eq 0
+              test "$errors" -eq 0
+              test "$artifacts" = ok
+            done
+          done
+
+      - name: Write and commit official PR 9 marker
+        if: steps.poll.outputs.found == '1'
+        shell: bash
+        env:
+          WINNER_BRANCH: ${{ steps.poll.outputs.winner_branch }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          summary=json.loads(Path('build-logs/pr9-priority-supervisor/winner-status.json').read_text())
+          rows=[]
+          for line in Path('build-logs/pr9-priority-supervisor/results.tsv').read_text().splitlines():
+              p,stem,rc,errors,warnings,artifacts=line.split('\t')
+              rows.append({'pass':int(p),'module':stem,'exit_code':int(rc),'errors':int(errors),'warnings':int(warnings),'artifacts':artifacts})
+          summary['status']='SUCCESS_ALL_REQUIRED_TARGETS_2X_PASS'
+          summary['supervisor_winner_branch']=os.environ.get('WINNER_BRANCH','')
+          summary['supervisor_run_id']=os.environ.get('GITHUB_RUN_ID','')
+          summary['pr9_context_results']=rows
+          summary['pr9_context_forbidden_audit']=json.loads(Path('build-logs/pr9-priority-supervisor/forbidden-audit.json').read_text())
+          paths=[Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'),Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'),*sorted(Path('PrimalitySheafVerification').glob('Mock3*.lean')),Path('PrimalitySheafVerification/QYM.lean')]
+          summary['pr9_context_sources']={str(p):hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+          text=json.dumps(summary,indent=2)
+          Path('build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json').write_text(text)
+          Path('build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json').write_text(text)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean \
+            build-logs/PR9_FA_INTEGRATED_MOCK3_QYM_FINAL_2X_PASS.json \
+            build-logs/PR9_PRIORITY_FINAL_2X_VERIFIED.json \
+            build-logs/pr9-priority-supervisor/results.tsv \
+            build-logs/pr9-priority-supervisor/module-order.txt \
+            build-logs/pr9-priority-supervisor/forbidden-audit.json \
+            build-logs/pr9-priority-supervisor/source-sha256.txt \
+            build-logs/pr9-priority-supervisor/winner.env
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | xargs -0 -r git add
+          git commit -m 'fix: supervisor promotes verified FA Mock3 QYM sources'
+          git push origin HEAD:ci/fa319-isolated-20260807
+
+      - name: Upload supervisor evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr9-priority-supervisor-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/pr9-priority-supervisor
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce a verified winner
+        if: always()
+        shell: bash
+        env:
+          FOUND: ${{ steps.poll.outputs.found }}
+        run: |
+          test "${FOUND:-0}" = 1
