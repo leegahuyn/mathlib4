@@ -1,0 +1,87 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "immutable_baseline": {
+    "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "first_error_line": 31725
+  },
+  "promotion_rule": "exit 0, or both raw and positive-line-delta-normalized first error strictly later; never error-count-only",
+  "prerequisites": {
+    "Mock2": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+      "line_count": 26607,
+      "line_delta": 0,
+      "normalized_first_line": null,
+      "log": "build-logs/fa414-full-script-tournament/Mock2-prerequisite.log"
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+      "line_count": 31919,
+      "line_delta": 0,
+      "normalized_first_line": null,
+      "log": "build-logs/fa414-full-script-tournament/Mock2_Advanced-prerequisite.log"
+    }
+  },
+  "baseline_metric": {
+    "exit_code": 1,
+    "errors": 501,
+    "first_line": 31725,
+    "first_col": 2,
+    "first_message": "Type mismatch: After simplification, term",
+    "artifacts_ok": false,
+    "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "line_count": 60453,
+    "line_delta": 0,
+    "normalized_first_line": 31725,
+    "log": "build-logs/fa414-full-script-tournament/baseline-authoritative.log"
+  },
+  "selected_label": "immutable-pass376",
+  "selected_metric": {
+    "exit_code": 1,
+    "errors": 501,
+    "first_line": 31725,
+    "first_col": 2,
+    "first_message": "Type mismatch: After simplification, term",
+    "artifacts_ok": false,
+    "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "line_count": 60453,
+    "line_delta": 0,
+    "normalized_first_line": 31725,
+    "log": "build-logs/fa414-full-script-tournament/selected-authoritative.log"
+  },
+  "candidate_results": [
+    {
+      "label": "origin/fix/fa411-from-pass376-champion-20260809:scripts/fa411_from_pass376_frontier.py",
+      "sha256": "2d7297e2f69bb51434b19d63eeb3abddc3f7d1311da0157b7981c7e7477cee83",
+      "rejected": "declaration header manifest changed"
+    },
+    {
+      "label": "origin/fix/fa412-broad-from-pass376-20260809:scripts/fa412_broad_from_pass376.py",
+      "sha256": "b1496ba28205c7166d980cdbe58fae97b9956a973d4771763d43feff86c700a9",
+      "rejected": "declaration header manifest changed"
+    }
+  ],
+  "declaration_manifest_unchanged": true,
+  "forbidden_token_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "two_pass": {},
+  "downstream_failure": null
+}
