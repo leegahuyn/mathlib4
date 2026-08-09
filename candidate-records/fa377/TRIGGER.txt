@@ -1,0 +1,1 @@
+Trigger exact FA377 direct compile metric gate after authoritative PASS376 reproduction.
