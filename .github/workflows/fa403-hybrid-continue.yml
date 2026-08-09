@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 1500
           persist-credentials: true
 
-      - name: Install pinned Lean, missing solver dependency, ripgrep, GitHub CLI, and Mathlib cache
+      - name: Install pinned Lean, complete solver dependency chain, ripgrep, GitHub CLI, and Mathlib cache
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -47,15 +47,21 @@ jobs:
           set -euo pipefail
           sudo apt-get update -y
           sudo apt-get install -y ripgrep gh
-          if [[ ! -f scripts/fa396_proof_body_persistent.py ]]; then
-            gh api --method GET \
-              -H 'Accept: application/vnd.github.raw+json' \
-              repos/leegahuyn/mathlib4/contents/scripts/fa396_proof_body_persistent.py \
-              -f ref='fix/fa396-proof-body-persistent-20260809' \
-              > scripts/fa396_proof_body_persistent.py
-          fi
-          test -s scripts/fa396_proof_body_persistent.py
+          fetch_script() {
+            local path=$1
+            local ref=$2
+            if [[ ! -f "${path}" ]]; then
+              gh api --method GET \
+                -H 'Accept: application/vnd.github.raw+json' \
+                "repos/leegahuyn/mathlib4/contents/${path}" \
+                -f "ref=${ref}" > "${path}"
+            fi
+            test -s "${path}"
+          }
+          fetch_script scripts/fa392_iterative_solver.py fix/fa392-iterative-solver-20260809
+          fetch_script scripts/fa396_proof_body_persistent.py fix/fa396-proof-body-persistent-20260809
           python3 -m py_compile \
+            scripts/fa392_iterative_solver.py \
             scripts/fa394_tournament_solver.py \
             scripts/fa396_proof_body_persistent.py \
             scripts/fa401_extended_frontier.py \
