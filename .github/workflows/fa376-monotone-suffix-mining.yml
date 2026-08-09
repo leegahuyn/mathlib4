@@ -1,0 +1,585 @@
+name: PASS376 monotone suffix recovery and final 2x gate
+
+on:
+  push:
+    branches:
+      - ops/fa376-monotone-suffix-mining-20260810
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  recover-and-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      BASE_SHA: 71227bd1ba88c99f9a535df044fd37041bcf2304
+      SOURCE_RUN_ID: '31267332510'
+      SOURCE_ARTIFACT_ID: '9024606745'
+      EXPECTED_SOURCE_SHA256: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+      INITIAL_FRONTIER: '31725'
+      SEALED_BASE_BRANCH: champion/fa-07f6efd3-first31725-20260810
+      WORK_DIR: build-logs/fa376-monotone-suffix-mining
+    steps:
+      - name: Checkout recovery controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa376-monotone-suffix-mining-20260810
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Restore exact PASS376 source and seal checked-in baseline
+        id: baseline
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pass376 /tmp/pass376.zip
+          mkdir -p /tmp/pass376
+          curl --retry 5 --retry-all-errors --fail --location --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" \
+            -o /tmp/pass376.zip
+          unzip -q /tmp/pass376.zip -d /tmp/pass376
+          mapfile -d '' candidates < <(find /tmp/pass376 -type f -name Mock2_FunctionalAnalysis.lean -print0)
+          test "${#candidates[@]}" -eq 1
+          restored=${candidates[0]}
+          restored_sha=$(sha256sum "$restored" | awk '{print $1}')
+          test "$restored_sha" = "$EXPECTED_SOURCE_SHA256"
+
+          git fetch origin "$BASE_SHA"
+          if git ls-remote --exit-code --heads origin "$SEALED_BASE_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$SEALED_BASE_BRANCH"
+            git switch --detach FETCH_HEAD
+            checked_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+            test "$checked_sha" = "$EXPECTED_SOURCE_SHA256"
+          else
+            git switch --detach "$BASE_SHA"
+            git switch -c "$SEALED_BASE_BRANCH"
+            install -m 0644 "$restored" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            checked_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+            test "$checked_sha" = "$EXPECTED_SOURCE_SHA256"
+            mkdir -p build-logs/champions/fa-07f6efd3-first31725
+            cat > build-logs/champions/fa-07f6efd3-first31725/CHAMPION.json <<JSON
+          {
+            "sealed": true,
+            "source_sha256": "${EXPECTED_SOURCE_SHA256}",
+            "source_run_id": ${SOURCE_RUN_ID},
+            "source_artifact_id": ${SOURCE_ARTIFACT_ID},
+            "expected_direct_compile_first_error_minimum": ${INITIAL_FRONTIER},
+            "promotion_rule": "exit_zero_or_strictly_greater_first_error_only",
+            "regression_rule": "evidence_only_never_baseline",
+            "pass_number_authoritative": false
+          }
+          JSON
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            git add -f build-logs/champions/fa-07f6efd3-first31725/CHAMPION.json
+            git commit -m 'champion: seal exact PASS376 FA source at frontier 31725'
+            git push origin "HEAD:refs/heads/${SEALED_BASE_BRANCH}"
+          fi
+          baseline_commit=$(git rev-parse HEAD)
+          printf 'baseline_commit=%s\n' "$baseline_commit" >> "$GITHUB_OUTPUT"
+          printf 'restored_sha256=%s\n' "$restored_sha" >> "$GITHUB_OUTPUT"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/current-best.lean
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Reproduce prerequisites and exact 31725 champion frontier
+        id: reproduce
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf "$WORK_DIR"
+          mkdir -p "$WORK_DIR/baseline" .lake/build/lib/lean/PrimalitySheafVerification
+
+          direct_compile() {
+            local stem=$1
+            local tag=$2
+            local max_errors=$3
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            local ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$olean" "$ilean"
+            lake env lean -DmaxErrors="$max_errors" -DwarningAsError=false \
+              -o "$olean" -i "$ilean" "$src" > "$WORK_DIR/baseline/${tag}.log" 2>&1
+            local rc=$?
+            printf '%s' "$rc" > "$WORK_DIR/baseline/${tag}.exit"
+            if test "$rc" -eq 0 && test -s "$olean" && test -s "$ilean"; then
+              printf '1' > "$WORK_DIR/baseline/${tag}.artifacts_ok"
+            else
+              printf '0' > "$WORK_DIR/baseline/${tag}.artifacts_ok"
+            fi
+          }
+
+          direct_compile Mock2 Mock2 300
+          direct_compile Mock2_Advanced Mock2_Advanced 300
+          direct_compile Mock2_FunctionalAnalysis FA 300
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+          d=Path(os.environ['WORK_DIR'])/'baseline'
+          pat=re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          rows={}
+          for tag,stem in [('Mock2','Mock2'),('Mock2_Advanced','Mock2_Advanced'),('FA','Mock2_FunctionalAnalysis')]:
+              text=(d/f'{tag}.log').read_text(encoding='utf-8',errors='replace')
+              ms=list(pat.finditer(text))
+              rows[tag]={
+                  'exit_code':int((d/f'{tag}.exit').read_text()),
+                  'errors':len(ms),
+                  'first_line':int(ms[0].group(1)) if ms else 0,
+                  'first_col':int(ms[0].group(2)) if ms else 0,
+                  'artifacts_ok':(d/f'{tag}.artifacts_ok').read_text()=='1',
+                  'source_sha256':hashlib.sha256(Path(f'PrimalitySheafVerification/{stem}.lean').read_bytes()).hexdigest(),
+              }
+          prereq=all(rows[n]['exit_code']==0 and rows[n]['errors']==0 and rows[n]['artifacts_ok'] for n in ['Mock2','Mock2_Advanced'])
+          fa=rows['FA']
+          source_ok=fa['source_sha256']==os.environ['EXPECTED_SOURCE_SHA256']
+          frontier_ok=fa['exit_code']==0 or fa['first_line']>=int(os.environ['INITIAL_FRONTIER'])
+          reproduced=prereq and source_ok and frontier_ok
+          status={'reproduced':reproduced,'prerequisites_ok':prereq,'source_ok':source_ok,'frontier_ok':frontier_ok,'results':rows}
+          (d/'CURRENT.json').write_text(json.dumps(status,indent=2),encoding='utf-8')
+          print(json.dumps(status,indent=2))
+          PY
+          gate=$(python3 -c "import json; print(0 if json.load(open('${WORK_DIR}/baseline/CURRENT.json'))['reproduced'] else 1)")
+          fa_first=$(python3 -c "import json; print(json.load(open('${WORK_DIR}/baseline/CURRENT.json'))['results']['FA']['first_line'])")
+          fa_exit=$(python3 -c "import json; print(json.load(open('${WORK_DIR}/baseline/CURRENT.json'))['results']['FA']['exit_code'])")
+          echo "gate_exit=$gate" >> "$GITHUB_OUTPUT"
+          echo "fa_first=$fa_first" >> "$GITHUB_OUTPUT"
+          echo "fa_exit=$fa_exit" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Reject mining unless champion is reproduced
+        if: steps.reproduce.outputs.gate_exit != '0'
+        shell: bash
+        run: |
+          echo 'PASS376 champion was not reproduced; no repair is permitted.' >&2
+          exit 71
+
+      - name: Fetch historical FA candidate branches
+        if: steps.reproduce.outputs.gate_exit == '0' && steps.reproduce.outputs.fa_exit != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '+refs/heads/fix/fa*:refs/remotes/origin/fix/fa*'
+          git for-each-ref --format='%(refname)' refs/remotes/origin/fix/fa | sort > "$WORK_DIR/historical_refs.txt"
+          wc -l "$WORK_DIR/historical_refs.txt"
+
+      - name: Mine suffix-only repairs under strict monotone promotion
+        id: mine
+        if: steps.reproduce.outputs.gate_exit == '0' && steps.reproduce.outputs.fa_exit != '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          best_frontier=${{ steps.reproduce.outputs.fa_first }}
+          best_exit=${{ steps.reproduce.outputs.fa_exit }}
+          cp /tmp/current-best.lean /tmp/best.lean
+          mkdir -p "$WORK_DIR/mining"
+          printf '%s' "$best_frontier" > "$WORK_DIR/mining/initial_frontier.txt"
+
+          parse_metric() {
+            local log=$1
+            local exit_file=$2
+            python3 - "$log" "$exit_file" <<'PY'
+          import pathlib,re,sys
+          text=pathlib.Path(sys.argv[1]).read_text(encoding='utf-8',errors='replace')
+          rc=int(pathlib.Path(sys.argv[2]).read_text())
+          pat=re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          m=pat.search(text)
+          first=int(m.group(1)) if m else 0
+          print(f'{rc} {first}')
+          PY
+          }
+
+          compile_candidate() {
+            local candidate=$1
+            local tag=$2
+            install -m 0644 "$candidate" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean \
+                  .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            lake env lean -DmaxErrors=100 -DwarningAsError=false \
+              -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean \
+              -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              > "$WORK_DIR/mining/${tag}.log" 2>&1
+            local rc=$?
+            printf '%s' "$rc" > "$WORK_DIR/mining/${tag}.exit"
+            sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              > "$WORK_DIR/mining/${tag}.sha256"
+            return 0
+          }
+
+          improved_any=0
+          attempts=0
+          max_attempts=15
+          round=0
+          while test "$round" -lt 3 && test "$attempts" -lt "$max_attempts" && test "$best_exit" -ne 0; do
+            round=$((round+1))
+            round_dir="$WORK_DIR/mining/round-${round}"
+            rm -rf "$round_dir"
+            mkdir -p "$round_dir/candidates"
+            cp /tmp/best.lean "$round_dir/current.lean"
+            BEST_FRONTIER="$best_frontier" ROUND_DIR="$round_dir" python3 - <<'PY'
+          from pathlib import Path
+          import difflib, hashlib, json, os, re, subprocess
+
+          current_path=Path(os.environ['ROUND_DIR'])/'current.lean'
+          current=current_path.read_text(encoding='utf-8').splitlines(keepends=True)
+          frontier=int(os.environ['BEST_FRONTIER'])
+          guard=max(1,frontier-120)
+          refs=[]
+          for line in Path(os.environ['WORK_DIR']+'/historical_refs.txt').read_text().splitlines():
+              m=re.search(r'/fix/fa(\d+)',line)
+              if m and int(m.group(1))>376:
+                  refs.append((int(m.group(1)),line))
+          refs.sort(reverse=True)
+          records=[]
+          seen=set()
+          target='PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          for passno,ref in refs:
+              try:
+                  raw=subprocess.check_output(['git','show',f'{ref}:{target}'])
+                  other=raw.decode('utf-8')
+              except Exception:
+                  continue
+              other_lines=other.splitlines(keepends=True)
+              sm=difflib.SequenceMatcher(a=current,b=other_lines,autojunk=True)
+              out=[]; cursor=0; applied=[]
+              for tag,i1,i2,j1,j2 in sm.get_opcodes():
+                  if tag=='equal':
+                      continue
+                  start_line=i1+1
+                  if start_line>=guard:
+                      out.extend(current[cursor:i1])
+                      out.extend(other_lines[j1:j2])
+                      cursor=i2
+                      applied.append({'tag':tag,'current_start':i1+1,'current_end':i2,'other_start':j1+1,'other_end':j2})
+              if not applied:
+                  continue
+              out.extend(current[cursor:])
+              text=''.join(out)
+              digest=hashlib.sha256(text.encode()).hexdigest()
+              if digest in seen:
+                  continue
+              seen.add(digest)
+              first=min(x['current_start'] for x in applied)
+              if first>frontier+2500:
+                  continue
+              score=(abs(first-frontier),-passno,len(applied))
+              rec={'pass':passno,'ref':ref,'sha256':digest,'first_applied_line':first,'applied_hunks':len(applied),'score':score,'details':applied}
+              records.append((score,rec,text))
+          records.sort(key=lambda x:x[0])
+          selected=records[:8]
+          manifest=[]
+          cdir=Path(os.environ['ROUND_DIR'])/'candidates'
+          for idx,(_,rec,text) in enumerate(selected,1):
+              p=cdir/f'candidate-{idx:02d}-fa{rec["pass"]}.lean'
+              p.write_text(text,encoding='utf-8')
+              rec['path']=str(p)
+              manifest.append(rec)
+          (Path(os.environ['ROUND_DIR'])/'manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+          print(json.dumps(manifest,indent=2))
+          PY
+
+            mapfile -t candidate_paths < <(python3 - "$round_dir/manifest.json" <<'PY'
+          import json,sys
+          for row in json.load(open(sys.argv[1])):
+              print(row['path'])
+          PY
+            )
+            if test "${#candidate_paths[@]}" -eq 0; then
+              break
+            fi
+
+            round_best_frontier=$best_frontier
+            round_best_exit=$best_exit
+            round_best_path=''
+            round_best_tag=''
+            idx=0
+            for candidate in "${candidate_paths[@]}"; do
+              if test "$attempts" -ge "$max_attempts"; then break; fi
+              idx=$((idx+1)); attempts=$((attempts+1))
+              tag="r${round}-c${idx}-a${attempts}"
+              compile_candidate "$candidate" "$tag"
+              read -r rc first < <(parse_metric "$WORK_DIR/mining/${tag}.log" "$WORK_DIR/mining/${tag}.exit")
+              printf '%s rc=%s first=%s baseline=%s\n' "$tag" "$rc" "$first" "$best_frontier" | tee -a "$WORK_DIR/mining/metrics.txt"
+              if test "$rc" -eq 0; then
+                round_best_exit=0
+                round_best_frontier=999999999
+                round_best_path="$candidate"
+                round_best_tag="$tag"
+                break
+              fi
+              if test "$first" -gt "$round_best_frontier"; then
+                round_best_exit=$rc
+                round_best_frontier=$first
+                round_best_path="$candidate"
+                round_best_tag="$tag"
+              fi
+            done
+
+            if test -n "$round_best_path" && { test "$round_best_exit" -eq 0 || test "$round_best_frontier" -gt "$best_frontier"; }; then
+              cp "$round_best_path" /tmp/best.lean
+              best_exit=$round_best_exit
+              best_frontier=$round_best_frontier
+              improved_any=1
+              printf 'round=%s promoted=%s exit=%s frontier=%s\n' "$round" "$round_best_tag" "$best_exit" "$best_frontier" | tee -a "$WORK_DIR/mining/promotions.txt"
+            else
+              break
+            fi
+          done
+
+          install -m 0644 /tmp/best.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          best_sha=$(sha256sum /tmp/best.lean | awk '{print $1}')
+          printf '%s' "$best_exit" > "$WORK_DIR/mining/best.exit"
+          printf '%s' "$best_frontier" > "$WORK_DIR/mining/best.frontier"
+          printf '%s' "$best_sha" > "$WORK_DIR/mining/best.sha256"
+          printf '%s' "$improved_any" > "$WORK_DIR/mining/improved_any"
+          echo "best_exit=$best_exit" >> "$GITHUB_OUTPUT"
+          echo "best_frontier=$best_frontier" >> "$GITHUB_OUTPUT"
+          echo "best_sha=$best_sha" >> "$GITHUB_OUTPUT"
+          echo "improved_any=$improved_any" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Preserve baseline when FA already passed
+        id: already
+        if: steps.reproduce.outputs.gate_exit == '0' && steps.reproduce.outputs.fa_exit == '0'
+        shell: bash
+        run: |
+          sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          echo 'best_exit=0' >> "$GITHUB_OUTPUT"
+          echo 'best_frontier=999999999' >> "$GITHUB_OUTPUT"
+          echo "best_sha=$sha" >> "$GITHUB_OUTPUT"
+          echo 'improved_any=0' >> "$GITHUB_OUTPUT"
+
+      - name: Seal strictly improved champion as a new immutable branch
+        id: seal
+        if: steps.reproduce.outputs.gate_exit == '0' && steps.reproduce.outputs.fa_exit != '0' && steps.mine.outputs.improved_any == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          best_exit='${{ steps.mine.outputs.best_exit }}'
+          best_frontier='${{ steps.mine.outputs.best_frontier }}'
+          best_sha='${{ steps.mine.outputs.best_sha }}'
+          cp /tmp/best.lean /tmp/sealed-best.lean
+          git reset --hard '${{ steps.baseline.outputs.baseline_commit }}'
+          short=${best_sha:0:12}
+          if test "$best_exit" -eq 0; then
+            new_branch="champion/fa-${short}-PASS-${GITHUB_RUN_ID}"
+            metric='exit_zero'
+          else
+            new_branch="champion/fa-${short}-first${best_frontier}-${GITHUB_RUN_ID}"
+            metric="first_error_${best_frontier}"
+          fi
+          git switch -c "$new_branch"
+          install -m 0644 /tmp/sealed-best.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$best_sha"
+          mkdir -p "build-logs/champions/${short}"
+          cat > "build-logs/champions/${short}/CHAMPION.json" <<JSON
+          {
+            "sealed": true,
+            "parent_champion": "${SEALED_BASE_BRANCH}",
+            "source_sha256": "${best_sha}",
+            "direct_compile_metric": "${metric}",
+            "strictly_better_than_first_error": ${INITIAL_FRONTIER},
+            "workflow_run_id": ${GITHUB_RUN_ID},
+            "promotion_rule": "exit_zero_or_strictly_greater_first_error_only"
+          }
+          JSON
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add -f "build-logs/champions/${short}/CHAMPION.json"
+          git commit -m "champion: promote monotone FA candidate ${metric}"
+          git push origin "HEAD:refs/heads/${new_branch}"
+          echo "sealed_branch=$new_branch" >> "$GITHUB_OUTPUT"
+          echo "sealed_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Select source for final ordered gate
+        id: select
+        if: steps.reproduce.outputs.gate_exit == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test '${{ steps.reproduce.outputs.fa_exit }}' = '0'; then
+            branch="$SEALED_BASE_BRANCH"
+            commit='${{ steps.baseline.outputs.baseline_commit }}'
+            exit_code=0
+          elif test '${{ steps.mine.outputs.best_exit }}' = '0' && test '${{ steps.mine.outputs.improved_any }}' = '1'; then
+            branch='${{ steps.seal.outputs.sealed_branch }}'
+            commit='${{ steps.seal.outputs.sealed_commit }}'
+            exit_code=0
+          else
+            branch='${{ steps.seal.outputs.sealed_branch }}'
+            commit='${{ steps.seal.outputs.sealed_commit }}'
+            exit_code='${{ steps.mine.outputs.best_exit }}'
+          fi
+          echo "source_branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "source_commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "fa_candidate_exit=$exit_code" >> "$GITHUB_OUTPUT"
+
+      - name: Run final ordered FA Integrated Mock3 QYM two-pass gate
+        id: final
+        if: steps.reproduce.outputs.gate_exit == '0' && steps.select.outputs.fa_candidate_exit == '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          git reset --hard '${{ steps.select.outputs.source_commit }}'
+          d="$WORK_DIR/final-2x"
+          rm -rf "$d"
+          mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
+
+          compile_one() {
+            local stem=$1
+            local run=$2
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            local ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$olean" "$ilean"
+            lake env lean -DmaxErrors=500 -DwarningAsError=false \
+              -o "$olean" -i "$ilean" "$src" > "$d/${stem}-run${run}.log" 2>&1
+            local rc=$?
+            printf '%s' "$rc" > "$d/${stem}-run${run}.exit"
+            if test "$rc" -eq 0 && test -s "$olean" && test -s "$ilean"; then return 0; fi
+            return 1
+          }
+
+          final=1
+          compile_one Mock2 1; rc_m2=$?
+          compile_one Mock2_Advanced 1; rc_m2a=$?
+          rc_fa1=125; rc_fa2=125; rc_int1=125; rc_int2=125; rc_mock3=125; rc_qym1=125; rc_qym2=125
+          if test "$rc_m2" -eq 0 && test "$rc_m2a" -eq 0; then
+            compile_one Mock2_FunctionalAnalysis 1; rc_fa1=$?
+          fi
+          if test "$rc_fa1" -eq 0; then compile_one Mock2_FunctionalAnalysis 2; rc_fa2=$?; fi
+          if test "$rc_fa2" -eq 0; then
+            if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean; then
+              compile_one Mock2_FunctionalAnalysis_Integrated 1; rc_int1=$?
+              if test "$rc_int1" -eq 0; then compile_one Mock2_FunctionalAnalysis_Integrated 2; rc_int2=$?; fi
+            else
+              rc_int1=126; rc_int2=126
+              echo 'required Integrated source missing' > "$d/Mock2_FunctionalAnalysis_Integrated-run1.log"
+            fi
+          fi
+          if test "$rc_int2" -eq 0; then
+            shopt -s nullglob
+            mock3=(PrimalitySheafVerification/Mock3*.lean)
+            if test "${#mock3[@]}" -eq 0; then
+              rc_mock3=126
+              echo 'required Mock3 source missing' > "$d/Mock3-required.log"
+            else
+              rc_mock3=0
+              for src in "${mock3[@]}"; do
+                stem=$(basename "$src" .lean)
+                compile_one "$stem" 1; a=$?
+                b=125
+                if test "$a" -eq 0; then compile_one "$stem" 2; b=$?; fi
+                if test "$a" -ne 0 || test "$b" -ne 0; then rc_mock3=1; fi
+              done
+            fi
+          fi
+          if test "$rc_int2" -eq 0 && test "$rc_mock3" -eq 0; then
+            if test -f PrimalitySheafVerification/QYM.lean; then
+              compile_one QYM 1; rc_qym1=$?
+              if test "$rc_qym1" -eq 0; then compile_one QYM 2; rc_qym2=$?; fi
+            else
+              rc_qym1=126; rc_qym2=126
+              echo 'required QYM source missing' > "$d/QYM-run1.log"
+            fi
+          fi
+          if test "$rc_fa1" -eq 0 && test "$rc_fa2" -eq 0 && test "$rc_int1" -eq 0 && test "$rc_int2" -eq 0 && test "$rc_mock3" -eq 0 && test "$rc_qym1" -eq 0 && test "$rc_qym2" -eq 0; then
+            final=0
+            touch "$d/ALL_REQUIRED_TARGETS_2X_PASS"
+          fi
+          RC_M2=$rc_m2 RC_M2A=$rc_m2a RC_FA1=$rc_fa1 RC_FA2=$rc_fa2 RC_INT1=$rc_int1 RC_INT2=$rc_int2 RC_MOCK3=$rc_mock3 RC_QYM1=$rc_qym1 RC_QYM2=$rc_qym2 FINAL=$final python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          d=Path(os.environ['WORK_DIR'])/'final-2x'
+          pat=re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          runs={}
+          for p in sorted(d.glob('*-run*.log')):
+              text=p.read_text(encoding='utf-8',errors='replace'); ms=list(pat.finditer(text)); ep=p.with_suffix('.exit')
+              runs[p.stem]={'exit_code':int(ep.read_text()) if ep.exists() else 999,'errors':len(ms),'first_line':int(ms[0].group(1)) if ms else 0,'first_col':int(ms[0].group(2)) if ms else 0}
+          status={'complete':os.environ['FINAL']=='0','summary':{k:int(os.environ[k]) for k in ['RC_M2','RC_M2A','RC_FA1','RC_FA2','RC_INT1','RC_INT2','RC_MOCK3','RC_QYM1','RC_QYM2']},'runs':runs}
+          (d/'CURRENT.json').write_text(json.dumps(status,indent=2),encoding='utf-8')
+          print(json.dumps(status,indent=2))
+          PY
+          echo "final_exit=$final" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Record incomplete FA frontier when final gate is not reached
+        if: always() && steps.reproduce.outputs.gate_exit == '0' && steps.select.outputs.fa_candidate_exit != '0'
+        shell: bash
+        run: |
+          mkdir -p "$WORK_DIR/final-2x"
+          cat > "$WORK_DIR/final-2x/CURRENT.json" <<JSON
+          {
+            "complete": false,
+            "stage": "Mock2_FunctionalAnalysis",
+            "best_exit": "${{ steps.mine.outputs.best_exit }}",
+            "best_first_error": "${{ steps.mine.outputs.best_frontier }}",
+            "best_sha256": "${{ steps.mine.outputs.best_sha }}",
+            "sealed_branch": "${{ steps.seal.outputs.sealed_branch }}"
+          }
+          JSON
+
+      - name: Check in all evidence on a separate branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ steps.select.outputs.source_commit }}'
+          if test -z "$base"; then base='${{ steps.baseline.outputs.baseline_commit }}'; fi
+          git reset --hard "$base"
+          evidence_branch="evidence/fa376-monotone-mining-${GITHUB_RUN_ID}"
+          git switch -c "$evidence_branch"
+          git add -f "$WORK_DIR"
+          git commit -m "evidence: PASS376 monotone suffix mining run ${GITHUB_RUN_ID}"
+          git push origin "HEAD:refs/heads/${evidence_branch}"
+          echo "evidence_branch=$evidence_branch"
+
+      - name: Upload recovery and two-pass evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa376-monotone-mining-${{ github.run_id }}
+          path: |
+            build-logs/fa376-monotone-suffix-mining
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce final two-pass result
+        if: always()
+        env:
+          REPRO_GATE: ${{ steps.reproduce.outputs.gate_exit }}
+          FINAL_EXIT: ${{ steps.final.outputs.final_exit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${REPRO_GATE:-1}" = '0'
+          test -n "${FINAL_EXIT:-}"
+          exit "$FINAL_EXIT"
