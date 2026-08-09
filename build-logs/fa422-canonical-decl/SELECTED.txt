@@ -1,5 +1,5 @@
-ref=origin/champion/fa-pass376-31725-07f6efd-immutable
-sha256=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+ref=origin/fix/fa422-canonical-decl-controller-20260809
+sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
 direct_exit=1
-direct_first=31725:2
-direct_normalized_first=31725
+direct_first=31726:2
+direct_normalized_first=31726
