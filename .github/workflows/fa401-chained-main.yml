@@ -1,0 +1,119 @@
+name: PASS 401 twelve-stage FA Integrated Mock3 QYM completion chain
+
+on:
+  push:
+    branches:
+      - fix/fa401-chained-jobs-20260809
+    paths:
+      - '.github/workflows/fa401-chained-main.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  models: read
+
+concurrency:
+  group: fa401-twelve-stage-completion-chain
+  cancel-in-progress: false
+
+jobs:
+  stage01:
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 1
+    secrets: inherit
+
+  stage02:
+    needs: stage01
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 2
+    secrets: inherit
+
+  stage03:
+    needs: stage02
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 3
+    secrets: inherit
+
+  stage04:
+    needs: stage03
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 4
+    secrets: inherit
+
+  stage05:
+    needs: stage04
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 5
+    secrets: inherit
+
+  stage06:
+    needs: stage05
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 6
+    secrets: inherit
+
+  stage07:
+    needs: stage06
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 7
+    secrets: inherit
+
+  stage08:
+    needs: stage07
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 8
+    secrets: inherit
+
+  stage09:
+    needs: stage08
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 9
+    secrets: inherit
+
+  stage10:
+    needs: stage09
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 10
+    secrets: inherit
+
+  stage11:
+    needs: stage10
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 11
+    secrets: inherit
+
+  stage12:
+    needs: stage11
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-repair-stage-v2.yml
+    with:
+      stage: 12
+    secrets: inherit
+
+  independent-pr9-finalizer:
+    needs: stage12
+    if: ${{ always() }}
+    uses: ./.github/workflows/fa401-finalize-pr9.yml
+    secrets: inherit
