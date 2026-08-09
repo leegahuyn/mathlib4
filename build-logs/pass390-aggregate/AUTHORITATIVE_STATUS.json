@@ -1,0 +1,14 @@
+{
+  "complete": false,
+  "status": "stage=Mock2_FunctionalAnalysis\nexit_code=1",
+  "source_sha256": "10c95422f6e57fb0ec21f8307f5ca97636997bb111e9347beb7ac5fb58b2d196",
+  "compile_rows": [
+    {
+      "module": "Mock2_FunctionalAnalysis",
+      "stage": "FA-pass1",
+      "exit_code": "1",
+      "error_count": "175",
+      "warning_count": "195"
+    }
+  ]
+}

@@ -18736,14 +18736,57 @@ theorem toGraphRange_injective_iff_energyDefinite :
     apply h
     exact congrArg Subtype.val huv
 
-/-- The Definition 1 Sobolev space: completion of the genuine energy graph. -/
+/-- The graph-range subtype inherits the uniform additive group structure
+from the ambient Hilbert direct sum through its subtype isometry. -/
+noncomputable instance graphRangeIsUniformAddGroup :
+    IsUniformAddGroup Q.GraphRange :=
+  IsUniformInducing.isUniformAddGroup Q.GraphRange.subtype
+    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
+
+/-- Complex scalar multiplication on the graph range is uniformly continuous. -/
+noncomputable instance graphRangeUniformContinuousConstSMul :
+    UniformContinuousConstSMul ℂ Q.GraphRange :=
+  uniformContinuousConstSMul_of_continuousConstSMul ℂ Q.GraphRange
+
+/-- The Definition 1 Sobolev space is the uniform completion of the genuine graph range. -/
 abbrev SobolevCompletion :=
   UniformSpace.Completion Q.GraphRange
+
+/-! Expose Mathlib's canonical structures through the dependent abbreviation.
+
+The explicit `change` steps are deliberate: they expose the underlying
+`UniformSpace.Completion Q.GraphRange` before typeclass search starts.  This
+avoids an expensive failed search through the dependent abbreviation. -/
+noncomputable instance sobolevCompletionNormedAddCommGroup :
+    NormedAddCommGroup Q.SobolevCompletion :=
+  UniformSpace.Completion.instNormedAddCommGroup Q.GraphRange
+
+noncomputable instance sobolevCompletionNormedSpace :
+    NormedSpace ℂ Q.SobolevCompletion :=
+  UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
+
+noncomputable instance sobolevCompletionInnerProductSpace :
+    InnerProductSpace ℂ Q.SobolevCompletion :=
+  @UniformSpace.Completion.innerProductSpace
+    ℂ Q.GraphRange Complex.instRCLike inferInstance inferInstance
+
+noncomputable instance sobolevCompletionCompleteSpace :
+    CompleteSpace Q.SobolevCompletion :=
+  UniformSpace.Completion.completeSpace Q.GraphRange
+
+/- These smoke tests force the four bridge instances to elaborate here, rather
+than allowing a missing instance to trigger a very long search thousands of
+lines later. -/
+#synth NormedAddCommGroup Q.SobolevCompletion
+#synth NormedSpace ℂ Q.SobolevCompletion
+#synth InnerProductSpace ℂ Q.SobolevCompletion
+#synth CompleteSpace Q.SobolevCompletion
 
 /-- Canonical isometric embedding of the graph core into its completion. -/
 noncomputable def coreEmbedding :
     Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion :=
-  UniformSpace.Completion.toComplₗᵢ
+  (UniformSpace.Completion.toComplₗᵢ :
+    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
 
 theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
   simpa [coreEmbedding] using
@@ -18753,6 +18796,12 @@ theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
 /-- Map a raw smooth core vector into the completed energy graph. -/
 noncomputable def sectionCoreMap : V →ₗ[ℂ] Q.SobolevCompletion :=
   Q.coreEmbedding.toLinearMap.comp Q.toGraphRange
+
+@[simp]
+theorem sectionCoreMap_apply (u : V) :
+    Q.sectionCoreMap u =
+      (Q.toGraphRange u : Q.SobolevCompletion) := by
+  simpa [sectionCoreMap, coreEmbedding]
 
 theorem denseRange_sectionCoreMap : DenseRange Q.sectionCoreMap := by
   have hs : DenseRange Q.toGraphRange := Q.toGraphRange_surjective.denseRange
@@ -18771,9 +18820,10 @@ theorem sectionCoreMap_injective_iff_energyDefinite :
   · intro h u v huv
     apply h
     apply Q.coreEmbedding.injective
-    simpa [sectionCoreMap] using huv
+    change Q.coreEmbedding (Q.toGraphRange u) =
+      Q.coreEmbedding (Q.toGraphRange v) at huv
+    exact huv
 
-@[simp]
 theorem norm_sectionCoreMap_sq (u : V) :
     ‖Q.sectionCoreMap u‖ ^ 2 =
       ‖Q.base u‖ ^ 2 + ‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2 := by
@@ -18785,30 +18835,30 @@ variable [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL]
 noncomputable def graphExtension :
     Q.SobolevCompletion →L[ℂ] EnergyTarget H₀ HR HL :=
   Q.GraphRange.subtypeₗᵢ.toContinuousLinearMap.extend
-    (UniformSpace.Completion.toComplL :
-      Q.GraphRange →L[ℂ] Q.SobolevCompletion)
+    Q.coreEmbedding.toContinuousLinearMap
 
 @[simp]
 theorem graphExtension_coe (x : Q.GraphRange) :
     Q.graphExtension (x : Q.SobolevCompletion) =
       (x : EnergyTarget H₀ HR HL) := by
   unfold graphExtension
-  exact ContinuousLinearMap.extend_eq _
-    (UniformSpace.Completion.denseRange_coe :
-      DenseRange ((↑) : Q.GraphRange → Q.SobolevCompletion))
-    (by simpa using
-      UniformSpace.Completion.isUniformInducing_coe Q.GraphRange) x
+  exact ContinuousLinearMap.extend_eq
+    (e := Q.coreEmbedding.toContinuousLinearMap)
+    Q.GraphRange.subtypeₗᵢ.toContinuousLinearMap
+    Q.denseRange_coreEmbedding
+    Q.coreEmbedding.isometry.isUniformInducing x
 
 theorem graphExtension_norm (x : Q.SobolevCompletion) :
     ‖Q.graphExtension x‖ = ‖x‖ := by
-  refine UniformSpace.Completion.denseRange_coe.induction_on x
-    (isClosed_eq Q.graphExtension.continuous.norm continuous_norm) ?_
+  refine
+    (UniformSpace.Completion.denseRange_coe :
+      DenseRange ((↑) : Q.GraphRange → Q.SobolevCompletion)).induction_on x
+      (isClosed_eq Q.graphExtension.continuous.norm
+        (show Continuous (fun y : Q.SobolevCompletion => ‖y‖) from
+          continuous_norm)) ?_
   intro y
   rw [Q.graphExtension_coe y]
-  calc
-    ‖(y : EnergyTarget H₀ HR HL)‖ = ‖y‖ := rfl
-    _ = ‖(y : Q.SobolevCompletion)‖ :=
-      (UniformSpace.Completion.norm_coe y).symm
+  exact (UniformSpace.Completion.norm_coe y).symm
 
 noncomputable def graphExtensionIsometry :
     Q.SobolevCompletion →ₗᵢ[ℂ] EnergyTarget H₀ HR HL where
@@ -18817,8 +18867,8 @@ noncomputable def graphExtensionIsometry :
 
 theorem graphExtension_range_isClosed :
     IsClosed (Set.range Q.graphExtension) := by
-  simpa [graphExtensionIsometry] using
-    Q.graphExtensionIsometry.isometry.isClosedEmbedding.isClosed_range
+  change IsClosed (Set.range Q.graphExtensionIsometry)
+  exact Q.graphExtensionIsometry.isometry.isClosedEmbedding.isClosed_range
 
 /-- The completed graph is exactly the ambient closure of the raw graph. -/
 theorem range_graphExtension_eq_closure_range_graph :
@@ -18855,27 +18905,21 @@ noncomputable def lowerExtension : Q.SobolevCompletion →L[ℂ] HL :=
 theorem baseExtension_core (u : V) :
     Q.baseExtension (Q.sectionCoreMap u) = Q.base u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).fst = Q.base u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 @[simp]
 theorem raiseExtension_core (u : V) :
     Q.raiseExtension (Q.sectionCoreMap u) = Q.raised u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).snd.fst = Q.raised u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 @[simp]
 theorem lowerExtension_core (u : V) :
     Q.lowerExtension (Q.sectionCoreMap u) = Q.lowered u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).snd.snd = Q.lowered u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 theorem norm_baseExtension_le (x : Q.SobolevCompletion) :
@@ -18890,7 +18934,8 @@ theorem norm_raiseExtension_le (x : Q.SobolevCompletion) :
   calc
     ‖Q.raiseExtension x‖ ≤ ‖(Q.graphExtension x).snd‖ :=
       WithLp.norm_fst_le HR (Q.graphExtension x).snd
-    _ ≤ ‖Q.graphExtension x‖ := WithLp.norm_snd_le H₀ (Q.graphExtension x)
+    _ ≤ ‖Q.graphExtension x‖ :=
+      WithLp.norm_snd_le H₀ (Q.graphExtension x)
     _ = ‖x‖ := Q.graphExtension_norm x
 
 theorem norm_lowerExtension_le (x : Q.SobolevCompletion) :
@@ -18898,26 +18943,21 @@ theorem norm_lowerExtension_le (x : Q.SobolevCompletion) :
   calc
     ‖Q.lowerExtension x‖ ≤ ‖(Q.graphExtension x).snd‖ :=
       WithLp.norm_snd_le HR (Q.graphExtension x).snd
-    _ ≤ ‖Q.graphExtension x‖ := WithLp.norm_snd_le H₀ (Q.graphExtension x)
+    _ ≤ ‖Q.graphExtension x‖ :=
+      WithLp.norm_snd_le H₀ (Q.graphExtension x)
     _ = ‖x‖ := Q.graphExtension_norm x
 
-theorem norm_baseExtension_le_one : ‖Q.baseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.baseExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_baseExtension_le x
+theorem norm_baseExtension_le_one : ‖Q.baseExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.baseExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_baseExtension_le x)
 
-theorem norm_raiseExtension_le_one : ‖Q.raiseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.raiseExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_raiseExtension_le x
+theorem norm_raiseExtension_le_one : ‖Q.raiseExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.raiseExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_raiseExtension_le x)
 
-theorem norm_lowerExtension_le_one : ‖Q.lowerExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.lowerExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_lowerExtension_le x
+theorem norm_lowerExtension_le_one : ‖Q.lowerExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.lowerExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_lowerExtension_le x)
 
 /-- Exact sum-of-squares norm identity for every completed graph vector. -/
 theorem completion_norm_sq (x : Q.SobolevCompletion) :
@@ -18937,24 +18977,22 @@ theorem completion_norm_sq (x : Q.SobolevCompletion) :
         ‖Q.raiseExtension x‖ ^ 2 + ‖Q.lowerExtension x‖ ^ 2 := by
       change
         ‖(Q.graphExtension x).fst‖ ^ 2 +
-          (‖(Q.graphExtension x).snd.fst‖ ^ 2 +
-            ‖(Q.graphExtension x).snd.snd‖ ^ 2) =
-        ‖(Q.graphExtension x).fst‖ ^ 2 +
-          ‖(Q.graphExtension x).snd.fst‖ ^ 2 +
-            ‖(Q.graphExtension x).snd.snd‖ ^ 2
-      ring
+            (‖(Q.graphExtension x).snd.fst‖ ^ 2 +
+              ‖(Q.graphExtension x).snd.snd‖ ^ 2) =
+          ‖(Q.graphExtension x).fst‖ ^ 2 +
+            ‖(Q.graphExtension x).snd.fst‖ ^ 2 +
+              ‖(Q.graphExtension x).snd.snd‖ ^ 2
+      exact (add_assoc _ _ _).symm
 
 /-- Trial-first weak energy operator on the Hilbert completion. -/
 noncomputable def completionEnergyOperator :
-    WeakAntiOperator Q.SobolevCompletion := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact innerSLFlip ℂ
+    WeakAntiOperator Q.SobolevCompletion :=
+  innerSLFlip ℂ (E := Q.SobolevCompletion)
 
 @[simp]
 theorem completionEnergyOperator_apply (u v : Q.SobolevCompletion) :
     Q.completionEnergyOperator u v = ⟪v, u⟫_ℂ :=
-  innerSLFlip_apply_apply ℂ u v
+  innerSLFlip_apply_apply ℂ (E := Q.SobolevCompletion) u v
 
 /-- On the dense raw core, the canonical completion pairing is exactly the
 previously defined graph energy form, with the trial-first argument order of
@@ -18963,34 +19001,47 @@ previously defined graph energy form, with the trial-first argument order of
 theorem completionEnergyOperator_sectionCoreMap (u v : V) :
     Q.completionEnergyOperator (Q.sectionCoreMap u) (Q.sectionCoreMap v) =
       Q.energyForm v u := by
-  rw [Q.completionEnergyOperator_apply]
-  change ⟪Q.coreEmbedding (Q.toGraphRange v),
-      Q.coreEmbedding (Q.toGraphRange u)⟫_ℂ = Q.energyForm v u
-  rw [Q.coreEmbedding.inner_map_map, Q.inner_toGraphRange]
+  rw [Q.completionEnergyOperator_apply, Q.sectionCoreMap_apply,
+    Q.sectionCoreMap_apply]
+  change
+    ⟪((Q.toGraphRange v : Q.GraphRange) : Q.SobolevCompletion),
+      ((Q.toGraphRange u : Q.GraphRange) : Q.SobolevCompletion)⟫_ℂ =
+        Q.energyForm v u
+  calc
+    inner ℂ
+        ((Q.toGraphRange v : Q.GraphRange) : Q.SobolevCompletion)
+        ((Q.toGraphRange u : Q.GraphRange) : Q.SobolevCompletion) =
+      inner ℂ (Q.toGraphRange v) (Q.toGraphRange u) := by
+        exact UniformSpace.Completion.inner_coe
+          (𝕜 := ℂ) (Q.toGraphRange v) (Q.toGraphRange u)
+    _ = Q.energyForm v u := Q.inner_toGraphRange v u
 
 theorem completionEnergyOperator_self_eq_zero_iff (u : Q.SobolevCompletion) :
     Q.completionEnergyOperator u u = 0 ↔ u = 0 := by
-  rw [Q.completionEnergyOperator_apply, inner_self_eq_zero]
+  rw [Q.completionEnergyOperator_apply]
+  exact inner_self_eq_zero (𝕜 := ℂ) (x := u)
 
 /-- The completed energy pairing is coercive with the sharp constant one. -/
 theorem completionEnergyOperator_coercive :
     ComplexLaxMilgram.ComplexCoerciveWith
       (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator := by
   refine ⟨zero_lt_one, fun u ↦ ?_⟩
-  rw [one_mul, Q.completionEnergyOperator_apply,
-    inner_self_eq_norm_sq]
+  rw [one_mul, Q.completionEnergyOperator_apply]
+  exact le_of_eq (norm_sq_eq_re_inner (𝕜 := ℂ) u)
 
 /-- The completed energy operator is injective. -/
 theorem completionEnergyOperator_injective :
     Function.Injective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_injective
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 /-- Every bounded anti-linear functional has a completed energy solution. -/
 theorem completionEnergyOperator_surjective :
     Function.Surjective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_surjective
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 /-- The completed energy operator is bijective. -/
 theorem completionEnergyOperator_bijective :
@@ -19003,12 +19054,15 @@ noncomputable def completionEnergyEquiv :
     Q.SobolevCompletion ≃L[ℂ]
       StrongAntiDual Q.SobolevCompletion :=
   FredholmBypass.coerciveFormEquiv
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 @[simp]
 theorem completionEnergyEquiv_apply (u : Q.SobolevCompletion) :
-    Q.completionEnergyEquiv u = Q.completionEnergyOperator u :=
-  rfl
+    Q.completionEnergyEquiv u = Q.completionEnergyOperator u := by
+  exact FredholmBypass.coerciveFormEquiv_apply
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive u
 
 /-- Canonical completed solution for an anti-dual right-hand side. -/
 noncomputable def solveCompletionEnergy
@@ -19020,16 +19074,15 @@ noncomputable def solveCompletionEnergy
 theorem completionEnergyOperator_solveCompletionEnergy
     (F : StrongAntiDual Q.SobolevCompletion) :
     Q.completionEnergyOperator (Q.solveCompletionEnergy F) = F := by
-  change Q.completionEnergyEquiv
-    (Q.completionEnergyEquiv.symm F) = F
-  exact Q.completionEnergyEquiv.apply_symm_apply F
+  simpa only [solveCompletionEnergy, completionEnergyEquiv_apply] using
+    Q.completionEnergyEquiv.apply_symm_apply F
 
 theorem solveCompletionEnergy_unique
     (F : StrongAntiDual Q.SobolevCompletion) {u : Q.SobolevCompletion}
     (hu : Q.completionEnergyOperator u = F) :
     u = Q.solveCompletionEnergy F := by
   apply Q.completionEnergyOperator_injective
-  rw [hu, Q.completionEnergyOperator_solveCompletionEnergy]
+  exact hu.trans (Q.completionEnergyOperator_solveCompletionEnergy F).symm
 
 theorem solveCompletionEnergy_existsUnique
     (F : StrongAntiDual Q.SobolevCompletion) :
@@ -19044,10 +19097,20 @@ theorem solveCompletionEnergy_existsUnique
 theorem solveCompletionEnergy_norm_le
     (F : StrongAntiDual Q.SobolevCompletion) :
     ‖Q.solveCompletionEnergy F‖ ≤ ‖F‖ := by
-  simpa [solveCompletionEnergy, completionEnergyEquiv] using
-    (FredholmBypass.coerciveFormEquiv_symm_norm_le
-      1 Q.completionEnergyOperator
-      Q.completionEnergyOperator_coercive F)
+  let u := Q.solveCompletionEnergy F
+  have huOp : Q.completionEnergyOperator u = F := by
+    simpa only [u] using
+      Q.completionEnergyOperator_solveCompletionEnergy F
+  have henergy : ‖u‖ ^ 2 ≤ ‖F‖ * ‖u‖ := by
+    calc
+      ‖u‖ ^ 2 = 1 * ‖u‖ ^ 2 := (one_mul _).symm
+      _ ≤ (Q.completionEnergyOperator u u).re :=
+        Q.completionEnergyOperator_coercive.2 u
+      _ = (F u).re := by rw [huOp]
+      _ ≤ ‖F u‖ := Complex.re_le_norm _
+      _ ≤ ‖F‖ * ‖u‖ := F.le_opNorm u
+  change ‖u‖ ≤ ‖F‖
+  nlinarith [norm_nonneg u, norm_nonneg F]
 
 /-- All three completion coordinates jointly remain injective. -/
 theorem jointExtensions_injective :
@@ -19075,7 +19138,7 @@ theorem jointlyClosable_iff_verticalKernel_eq_bot :
   change Function.Injective Q.baseExtension.toLinearMap ↔ _
   exact LinearMap.ker_eq_bot.symm
 
-abbrev ClosedBaseDomain :=
+noncomputable def ClosedBaseDomain :=
   LinearMap.range Q.baseExtension.toLinearMap
 
 noncomputable def baseEquiv (h : Q.JointlyClosable) :

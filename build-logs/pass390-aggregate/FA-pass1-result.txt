@@ -1,0 +1,368 @@
+module=Mock2_FunctionalAnalysis
+stage=FA-pass1
+exit_code=1
+error_count=175
+warning_count=195
+first_errors:
+829:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19285:7: error: Application type mismatch: The argument
+837:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19286:2: error: Type mismatch: After simplification, term
+843:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19308:6: error: Function expected at
+850:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19291:20: error: unsolved goals
+870:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19409:37: error: Invalid field notation: Function `graphRange_le` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+873:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19416:2: error: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+878:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19420:15: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+888:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19428:20: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+894:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19431:5: error: Invalid field notation: Function `denseRange_graphRange_iff_completion_surjective` does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+897:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19435:20: error: Invalid field notation: Function `DFunLike.coe` (coerced from `graphRangeIsometry`) does not have a usable parameter of type `CompatibleCoreInclusion ...` for which to substitute `I`
+906:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19503:5: error: invalid binder annotation, type is not a class instance
+918:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19679:37: error: Function expected at
+927:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19684:49: error: Function expected at
+936:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19685:9: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+937:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19689:56: error: Function expected at
+946:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19689:70: error: unsolved goals
+951:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19697:20: error: Function expected at
+960:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19716:5: error: Function expected at
+969:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19729:5: error: Function expected at
+976:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19733:13: error: Invalid argument: Variable `coreMap` is not a proposition or let-declaration
+977:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19741:4: error: Function expected at
+986:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19746:4: error: Function expected at
+995:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19751:4: error: Function expected at
+1004:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19759:4: error: Function expected at
+1013:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19760:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1015:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19768:4: error: Function expected at
+1024:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19770:9: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1026:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19778:4: error: Function expected at
+1035:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19780:9: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1037:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19784:43: error: Function expected at
+1046:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19785:5: error: Function expected at
+1055:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19786:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+1056:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19788:44: error: Function expected at
+1065:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19789:5: error: Function expected at
+1074:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19790:9: error: Invalid argument: Variable `raiseExtension` is not a proposition or let-declaration
+1075:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19792:44: error: Function expected at
+1084:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19793:5: error: Function expected at
+1093:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19794:9: error: Invalid argument: Variable `lowerExtension` is not a proposition or let-declaration
+1094:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19798:45: error: Function expected at
+1103:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19799:9: error: Invalid argument: Variable `baseExtension` is not a proposition or let-declaration
+last_errors:
+2186:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21915:11: error: Function expected at
+2195:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21915:11: error: Function expected at
+2204:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21916:4: error: Function expected at
+2213:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21917:15: error: Function expected at
+2222:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21918:19: error: Function expected at
+2231:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21919:30: error: Function expected at
+2238:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21923:11: error: Function expected at
+2247:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21923:11: error: Function expected at
+2256:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21924:10: error: Function expected at
+2265:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21925:6: error: Function expected at
+2275:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21930:9: error: Function expected at
+2284:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21931:9: error: Function expected at
+2294:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21937:23: error: Function expected at
+2304:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21943:33: error: Function expected at
+2313:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21944:27: error: Function expected at
+2321:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21950:6: error: Function expected at
+2330:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21951:8: error: Function expected at
+2339:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21951:40: error: unsolved goals
+2348:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21965:32: error: Function expected at
+2358:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21973:4: error: maximum number of errors (250; from option `maxErrors`) reached, exiting
+tail:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21389:8: warning: Overlapping instance parameters in `rankOneCuspTail_truncation`:
+
+⚠️ `[NormedSpace ℂ H]` and `[InnerProductSpace ℂ H]` can be used to infer conflicting versions of `[SMul ℂ H]`.
+💡️ Of these, `[NormedSpace ℂ H]` may be removed.
+
+When a data-carrying type class has multiple potential instances coming from different instance parameters, then these potential instances are incompatible. This is an example of an "instance diamond", which leads to unexpected unification failures.
+
+Delete or combine some of your instance parameters to avoid this.
+
+Note: This linter can be disabled with `set_option linter.overlappingInstances false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21395:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  Norm (ContinuousSesquilinearForm H)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21395:62: error: unsolved goals
+H : Type u_1
+inst✝² : NormedAddCommGroup H
+inst✝¹ : NormedSpace ℂ H
+inst✝ : InnerProductSpace ℂ H
+φ : H
+n : ℕ
+⊢ sorry () = 0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21394:8: warning: Overlapping instance parameters in `rankOneCuspTail_tail_norm_eq_zero`:
+
+⚠️ `[NormedSpace ℂ H]` and `[InnerProductSpace ℂ H]` can be used to infer conflicting versions of `[SMul ℂ H]`.
+💡️ Of these, `[NormedSpace ℂ H]` may be removed.
+
+When a data-carrying type class has multiple potential instances coming from different instance parameters, then these potential instances are incompatible. This is an example of an "instance diamond", which leads to unexpected unification failures.
+
+Delete or combine some of your instance parameters to avoid this.
+
+Note: This linter can be disabled with `set_option linter.overlappingInstances false`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21470:38: error: unsolved goals
+H : Type u_1
+G : Type u_2
+inst✝⁵ : NormedAddCommGroup H
+inst✝⁴ : InnerProductSpace ℂ H
+inst✝³ : CompleteSpace H
+inst✝² : NormedAddCommGroup G
+inst✝¹ : InnerProductSpace ℂ G
+inst✝ : CompleteSpace G
+B : H →L[ℂ] G
+φ : G
+u v : H
+⊢ star (⟪B u, φ⟫_ℂ * ⟪φ, B v⟫_ℂ) = ⟪B v, φ⟫_ℂ * ⟪φ, B u⟫_ℂ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21471:41: warning: This simp argument is unused:
+  map_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [pulledBackKernelForm_apply, inner_conj_symm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21471:50: warning: This simp argument is unused:
+  inner_conj_symm
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [pulledBackKernelForm_apply, map_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21481:2: error: `simp` made no progress
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21540:2: error: `simp` made no progress
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21626:2: error: `simp` made no progress
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21705:4: warning: `ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.sub_apply` to `sub_apply x`).
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21769:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ?m.17 ∙ ?m.22 = ⊥
+in the target expression
+  ℂ ∙ explicitKernelUnitVector ≠ ⊥
+
+⊢ ℂ ∙ explicitKernelUnitVector ≠ ⊥
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21850:6: error: Tactic `rewrite` failed: motive is not type correct:
+  fun _a => ↑f ∈ _a
+Error: Application type mismatch: The argument
+  f
+has type
+  ↥(↑explicitUnshiftedFredholmOperator).range
+but is expected to have type
+  ↥_a
+in the application
+  ↑f
+
+Explanation: The rewrite tactic rewrites an expression 'e' using an equality 'a = b' by the following process. First, it looks for all 'a' in 'e'. Second, it tries to abstract these occurrences of 'a' to create a function 'm := fun _a => ...', called the *motive*, with the property that 'm a' is definitionally equal to 'e'. Third, we observe that 'congrArg' implies that 'm a = m b', which can be used with lemmas such as 'Eq.mpr' to change the goal. However, if 'e' depends on specific properties of 'a', then the motive 'm' might not typecheck.
+
+Possible solutions: use rewrite's 'occs' configuration option to limit which occurrences are rewritten, or use 'simp' or 'conv' mode, which have strategies for certain kinds of dependencies (these tactics can handle proofs and 'Decidable' instances whose types depend on the rewritten term, and 'simp' can apply user-defined '@[congr]' theorems as well).
+
+f : ↥(↑explicitUnshiftedFredholmOperator).range
+hf : ↑f ∈ (↑explicitUnshiftedFredholmOperator).range
+⊢ ⟪explicitKernelUnitVector, ↑f⟫_ℂ = 0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21874:62: error: unsolved goals
+f : ↥(↑explicitUnshiftedFredholmOperator).range
+⊢ ‖↑f‖ ≤ ‖f‖
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21903:4: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21903:35: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21904:27: error(lean.unknownIdentifier): Unknown identifier `baseExtension`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21909:32: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21910:24: error(lean.unknownIdentifier): Unknown identifier `baseExtension`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21915:11: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21915:11: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21916:4: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21917:15: error: Function expected at
+  baseExtension
+but this term has type
+  ?m.3
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `baseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21918:19: error: Function expected at
+  baseExtension
+but this term has type
+  ?m.3
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `baseExtension` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21919:30: error: Function expected at
+  baseExtension
+but this term has type
+  x✝
+
+Note: Expected a function because this term is being applied to the argument
+  n
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21923:11: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21923:11: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21924:10: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21925:6: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21926:34: error(lean.unknownIdentifier): Unknown identifier `baseExtension`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21930:9: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21931:9: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21932:36: error(lean.unknownIdentifier): Unknown identifier `baseExtension`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21937:23: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21938:34: error(lean.unknownIdentifier): Unknown identifier `baseExtension`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21943:33: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21944:27: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  x✝
+
+Note: Expected a function because this term is being applied to the argument
+  n
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21945:5: error(lean.unknownIdentifier): Unknown identifier `graphBaseKernelForm_isCompact`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21950:6: error: Function expected at
+  graphBaseKernelCuspTail
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelCuspTail` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21951:8: error: Function expected at
+  graphBaseKernelForm
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `graphBaseKernelForm` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21951:40: error: unsolved goals
+x✝¹ : Sort u_1
+graphBaseKernelCuspTail : x✝¹
+x✝ : Sort u_2
+graphBaseKernelForm : x✝
+n : ℤ
+φ : OrbitPeterssonHilbert n
+Y : ℕ
+⊢ ‖sorry () - sorry ()‖ = 0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21965:32: error: Function expected at
+  GraphSobolevCompletion
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `GraphSobolevCompletion` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21966:2: error(lean.unknownIdentifier): Unknown identifier `graphBaseKernelForm`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21973:4: error: maximum number of errors (250; from option `maxErrors`) reached, exiting
