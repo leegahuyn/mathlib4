@@ -1,0 +1,1 @@
+Verify exact PASS376 checked-in champion first, then mine only literal repair-script changes near or after first error 31725. Promote solely on exit 0 or a strictly later first error; regressions remain evidence-only.
