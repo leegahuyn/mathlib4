@@ -1,0 +1,153 @@
+name: FA411 extract verified champion first-error context
+
+on:
+  push:
+    branches:
+      - fix/fa411-from-pass376-champion-20260809
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  EXPECTED_FA_SHA256: '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+  REQUIRED_FIRST_ERROR: '31725'
+
+jobs:
+  extract-context:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout verified working branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa411-from-pass376-champion-20260809
+          fetch-depth: 50
+          persist-credentials: true
+
+      - name: Verify champion source and reproduction evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          test "$actual" = "$EXPECTED_FA_SHA256"
+          test -f build-logs/fa-pass376-champion-reproduction/REPRODUCED_31725_OR_BETTER
+          test -f build-logs/fa-pass376-champion-reproduction/Mock2_FunctionalAnalysis.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          status = json.loads(Path(
+              'build-logs/fa-pass376-champion-reproduction/CURRENT.json'
+          ).read_text())
+          assert status['source_sha256'] == '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+          assert status['Mock2_exit'] == 0
+          assert status['Mock2_Advanced_exit'] == 0
+          assert status['Mock2_FunctionalAnalysis_exit'] == 0 or status['FA_first_error_line'] >= 31725
+          PY
+
+      - name: Extract first error block and declaration context
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re
+
+          src_path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log_path = Path('build-logs/fa-pass376-champion-reproduction/Mock2_FunctionalAnalysis.log')
+          out = Path('build-logs/fa411-first-error-context')
+          out.mkdir(parents=True, exist_ok=True)
+
+          src_lines = src_path.read_text(encoding='utf-8', errors='replace').splitlines()
+          log = log_path.read_text(encoding='utf-8', errors='replace')
+          err = re.compile(
+              r'(?m)^(.*Mock2_FunctionalAnalysis\.lean:(\d+):(\d+):\s+'
+              r'(?:error(?:\([^)]*\))?:.*)$')
+          matches = list(err.finditer(log))
+          if not matches:
+              raise SystemExit('no FA errors found in reproduced log')
+          first = matches[0]
+          line = int(first.group(2))
+          col = int(first.group(3))
+          if line < 31725:
+              raise SystemExit(f'regression in committed evidence: {line}')
+
+          next_start = matches[1].start() if len(matches) > 1 else len(log)
+          first_block = log[first.start():next_start].rstrip() + '\n'
+          (out / 'FIRST_ERROR_BLOCK.txt').write_text(first_block, encoding='utf-8')
+
+          lo = max(1, line - 180)
+          hi = min(len(src_lines), line + 360)
+          numbered = '\n'.join(
+              f'{i:06d}: {src_lines[i-1]}' for i in range(lo, hi + 1)
+          ) + '\n'
+          (out / 'SOURCE_CONTEXT.txt').write_text(numbered, encoding='utf-8')
+
+          decl_re = re.compile(
+              r'^\s*(?:noncomputable\s+)?(?:private\s+|protected\s+)?'
+              r'(?:theorem|lemma|def|abbrev|instance|structure|class)\b')
+          decl_line = 1
+          for i in range(line, 0, -1):
+              if decl_re.search(src_lines[i-1]):
+                  decl_line = i
+                  break
+          decl_hi = min(len(src_lines), max(line + 80, decl_line + 500))
+          decl_text = '\n'.join(
+              f'{i:06d}: {src_lines[i-1]}'
+              for i in range(decl_line, decl_hi + 1)
+          ) + '\n'
+          (out / 'ENCLOSING_DECLARATION.txt').write_text(decl_text, encoding='utf-8')
+
+          first_errors = []
+          for m in matches[:40]:
+              start = m.start()
+              end = matches[matches.index(m)+1].start() if matches.index(m)+1 < len(matches) else min(len(log), start + 4000)
+              header = m.group(1)
+              first_errors.append({
+                  'line': int(m.group(2)),
+                  'col': int(m.group(3)),
+                  'header': header,
+                  'block_prefix': log[start:end][:2000],
+              })
+
+          summary = {
+              'source_sha256': hashlib.sha256(src_path.read_bytes()).hexdigest(),
+              'first_error_line': line,
+              'first_error_col': col,
+              'captured_error_count': len(matches),
+              'enclosing_declaration_start_line': decl_line,
+              'source_context_start_line': lo,
+              'source_context_end_line': hi,
+              'first_40_errors': first_errors,
+          }
+          (out / 'DIAGNOSTIC.json').write_text(
+              json.dumps(summary, indent=2) + '\n', encoding='utf-8')
+          (out / 'DIAGNOSTIC.txt').write_text(
+              f"source_sha256={summary['source_sha256']}\n"
+              f"first_error={line}:{col}\n"
+              f"captured_error_count={len(matches)}\n"
+              f"enclosing_declaration_start={decl_line}\n",
+              encoding='utf-8')
+          print((out / 'DIAGNOSTIC.txt').read_text())
+          PY
+
+      - name: Commit compact diagnostic evidence only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/fa411-first-error-context
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA champion 31725 first-error context [skip ci]'
+            git push origin HEAD:fix/fa411-from-pass376-champion-20260809
+          fi
+
+      - name: Upload compact diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa411-champion-first-error-context-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/fa411-first-error-context
+          if-no-files-found: error
+          retention-days: 90
