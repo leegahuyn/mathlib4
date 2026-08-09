@@ -1,0 +1,267 @@
+Mock2_FunctionalAnalysis.lean:31725:2: error: Type mismatch: After simplification, term
+  hcomp
+ has type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+but is expected to have type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (actualEdgeAmbientParam e)
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32041:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32079:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32084:6: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32104:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32109:6: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32125:8: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32126:38: warning: Variable name `hInv` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hInv
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32127:16: warning: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32380:50: error: unsolved goals
+T : ℝ
+hT : 0 ≤ T
+X Y : ℍ → ℂ
+q : GammaTwoRightCoset
+⊢ -(1 * ∫ (s : ℝ) in 0..T, realProdLift (selectedCosetPiolaX q X Y) (-(1 / 2), modularVertexHeight + s)) =
+    -∫ (s : ℝ) in 0..T, realProdLift (selectedCosetPiolaX q X Y) (-(1 / 2), modularVertexHeight + s)
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.modularCircularArcAmbient_hasDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.modularTileEdgeAmbientParam_hasDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.actualEdgeAmbientParam_hasDerivAt' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.parameterSign_mul_nativePairedTangent_eq_transport' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.invariantFlux_nativePaired_parameterSign' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.nativeActualEdgeFluxIntegral_paired' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.nativeOrientedActualEdgeContribution_paired_eq_neg' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.sum_nativeOrientedActualEdgeContribution_eq_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_native_of_top_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoNativeEdgeCancellation.sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32590:5: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  MeasurableConstSMul SL(2, ℤ) ℍ
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32747:12: warning: `MeasureTheory.setIntegral_eq_of_subset_of_forall_diff_eq_zero` has been deprecated: Use `MeasureTheory.setIntegral_eq_of_subset_of_forall_sdiff_eq_zero` instead
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32754:42: error: Type mismatch
+  le_of_not_gt ?m.135
+has type
+  ?m.133 ≤ ?m.134
+but is expected to have type
+  z ∈ {w | w.im ≤ H}
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32922:12: warning: This simp argument is unused:
+  orientedFluxParameterIntegral
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [fluxOneFormValue, hPiola.1, hPiola.2]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32954:12: warning: This simp argument is unused:
+  orientedFluxParameterIntegral
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [fluxOneFormValue, hFields.1, hFields.2]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.modularHalfOpenTile_ae_eq_fdo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.selectedHalfOpenTile_ae_eq_openTile' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonBaseHeight_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.selectedCosetPiola_divergence_eq_zero_on_modularOpenHighTail' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.integral_selectedPiola_full_eq_closedTruncation' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.selectedActualTopHorocycle_fluxIntegral_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonPiolaTruncation_and_top_zero' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33063:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  MeasurableConstSMul SL(2, ℤ) ℍ
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integrableOn_selectedPiola_closedTruncation_of_chosenCarrier' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoGlobalStokesCompositionSupport.integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.gammaTwoPairedPolygonFluxStokes' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.gammaTwoCompactFluxStokes' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.greenBoundaryDefect_eq_zero_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalGreenIdentity_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalGreenHalfAverageOnCore_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_isFormalAdjoint_negativeLower_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.graphSobolevGreenDefect_eq_zero_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.graphSobolev_raising_lowering_identity_unconditional' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33552:4: error: Type mismatch
+  Continuous.subtype_mk hcomplex ?m.80
+has type
+  Continuous fun x => ⟨↑x + ↑(gammaTwoCuspLevel Y) * Complex.I, ⋯⟩
+but is expected to have type
+  Continuous fun t => { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ }
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33558:6: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+  ?a1 = ?a2
+with the goal
+  { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ } =
+    { coe := { re := t, im := gammaTwoCuspLevel Y }, coe_im_pos := ⋯ }
+
+Note: The full type of `@Subtype.ext` is
+  ∀ {α : Sort ?u.53} {p : α → Prop} {a1 a2 : { x // p x }}, ↑a1 = ↑a2 → a1 = a2
+
+q : GammaTwoRightCoset
+Y : ℝ
+hcomplex : Continuous fun t => ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I
+hbase' : Continuous fun t => { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ }
+t : ℝ
+⊢ { coe := ↑t + ↑(gammaTwoCuspLevel Y) * Complex.I, coe_im_pos := ⋯ } =
+    { coe := { re := t, im := gammaTwoCuspLevel Y }, coe_im_pos := ⋯ }
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33624:57: error: unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+Y : ℝ
+u v : InverseEtaFixedPhaseCore n
+t : ℝ
+⊢ ↑(selectedCuspTraceWeight n q Y t) * ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) +
+      ↑(selectedCuspTraceWeight n q Y t) * ↑↑v.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) =
+    (selectedCuspRestrictionRepresentative n q Y u + selectedCuspRestrictionRepresentative n q Y v) t
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:33675:2: error: Type mismatch: After simplification, term
+  ContinuousOn.integrableOn_Icc (Continuous.continuousOn (Continuous.pow (Continuous.norm hf) 2))
+ has type
+  @IntegrableOn ℝ ℝ Real.measurableSpace PseudoMetricSpace.toUniformSpa
