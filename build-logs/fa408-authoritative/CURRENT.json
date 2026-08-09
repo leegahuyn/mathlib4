@@ -3,28 +3,28 @@
   "stage": "Mock2_FunctionalAnalysis",
   "results": {
     "Mock2": {
-      "exit_code": 1,
+      "exit_code": 0,
       "errors": 0,
       "first_line": 0,
       "first_col": 0,
-      "olean": false,
-      "ilean": false,
+      "olean": true,
+      "ilean": true,
       "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594"
     },
     "Mock2_Advanced": {
-      "exit_code": 1,
+      "exit_code": 0,
       "errors": 0,
       "first_line": 0,
       "first_col": 0,
-      "olean": false,
-      "ilean": false,
+      "olean": true,
+      "ilean": true,
       "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526"
     },
     "Mock2_FunctionalAnalysis": {
-      "exit_code": 125,
-      "errors": 0,
-      "first_line": 0,
-      "first_col": 0,
+      "exit_code": 1,
+      "errors": 267,
+      "first_line": 18908,
+      "first_col": 4,
       "olean": false,
       "ilean": false,
       "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620"

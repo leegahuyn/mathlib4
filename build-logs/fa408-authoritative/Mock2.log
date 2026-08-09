@@ -4739,4 +4739,3 @@ Note: This linter can be disabled with `set_option linter.unusedSectionVars fals
  Classical.choice,
  Quot.sound]
 'Mock2.bridge_obstruction_matches_Tor1' depends on axioms: [propext, Classical.choice, Quot.sound]
-failed to write '=.lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean': failed to create file '=.lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean'

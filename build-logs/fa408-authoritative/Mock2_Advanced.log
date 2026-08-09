@@ -7911,4 +7911,3 @@ Note: This linter can be disabled with `set_option linter.defProp false`
 'Mock2Adv.GlobalChecklistClosure.terminal' depends on axioms: [propext]
 'Mock2Adv.GlobalChecklistClosure.Evidence' depends on axioms: [propext, Classical.choice, Quot.sound]
 'Mock2Adv.GlobalChecklistClosure.evidence' depends on axioms: [propext, Classical.choice, Quot.sound]
-failed to write '=.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean': failed to create file '=.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean'
