@@ -1,0 +1,259 @@
+name: Restore and reproduce PASS376 FA champion
+
+on:
+  push:
+    branches:
+      - ops/fa376-champion-restore-20260810
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  restore-and-reproduce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      BASE_SHA: 71227bd1ba88c99f9a535df044fd37041bcf2304
+      SOURCE_RUN_ID: '31267332510'
+      SOURCE_ARTIFACT_ID: '9024606745'
+      EXPECTED_SOURCE_SHA256: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+      EXPECTED_FIRST_ERROR: '31725'
+      CHAMPION_BRANCH: champion/fa-07f6efd3-first31725-20260810
+      EVIDENCE_DIR: build-logs/fa376-champion-reproduction
+    steps:
+      - name: Checkout restore controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa376-champion-restore-20260810
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Download PASS376 artifact and verify exact source hash
+        id: restore
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/pass376 /tmp/pass376.zip
+          mkdir -p /tmp/pass376
+          curl --retry 5 --retry-all-errors --fail --location --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" \
+            -o /tmp/pass376.zip
+          unzip -q /tmp/pass376.zip -d /tmp/pass376
+          mapfile -d '' candidates < <(find /tmp/pass376 -type f -name Mock2_FunctionalAnalysis.lean -print0)
+          if test "${#candidates[@]}" -ne 1; then
+            printf 'expected exactly one restored FA source, found %s\n' "${#candidates[@]}" >&2
+            find /tmp/pass376 -type f -maxdepth 8 -print >&2
+            exit 41
+          fi
+          restored=${candidates[0]}
+          actual=$(sha256sum "$restored" | awk '{print $1}')
+          printf 'restored=%s\nactual_sha256=%s\n' "$restored" "$actual"
+          test "$actual" = "$EXPECTED_SOURCE_SHA256"
+          printf 'restored_path=%s\n' "$restored" >> "$GITHUB_OUTPUT"
+          printf 'source_sha256=%s\n' "$actual" >> "$GITHUB_OUTPUT"
+
+      - name: Create or verify immutable checked-in champion branch
+        id: champion
+        shell: bash
+        env:
+          RESTORED_PATH: ${{ steps.restore.outputs.restored_path }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$BASE_SHA"
+          if git ls-remote --exit-code --heads origin "$CHAMPION_BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$CHAMPION_BRANCH"
+            git switch --detach FETCH_HEAD
+            actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+            test "$actual" = "$EXPECTED_SOURCE_SHA256"
+            git ls-files --error-unmatch PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean >/dev/null
+          else
+            git switch --detach "$BASE_SHA"
+            git switch -c "$CHAMPION_BRANCH"
+            install -m 0644 "$RESTORED_PATH" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+            test "$actual" = "$EXPECTED_SOURCE_SHA256"
+            mkdir -p build-logs/champions/fa-07f6efd3-first31725
+            cat > build-logs/champions/fa-07f6efd3-first31725/CHAMPION.json <<JSON
+          {
+            "status": "sealed_checked_in_champion",
+            "source": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "source_sha256": "${EXPECTED_SOURCE_SHA256}",
+            "source_workflow_run": ${SOURCE_RUN_ID},
+            "source_artifact_id": ${SOURCE_ARTIFACT_ID},
+            "base_sha": "${BASE_SHA}",
+            "authoritative_metric": {
+              "kind": "direct_lean_compile_first_error",
+              "minimum_expected_line": ${EXPECTED_FIRST_ERROR}
+            },
+            "promotion_policy": {
+              "promote_on_exit_zero": true,
+              "otherwise_require_first_error_strictly_greater": true,
+              "regressions_are_evidence_only": true,
+              "pass_number_is_not_authoritative": true
+            }
+          }
+          JSON
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            git add -f build-logs/champions/fa-07f6efd3-first31725/CHAMPION.json
+            git commit -m 'champion: seal PASS376 FA source sha07f6 first-error-31725'
+            git push origin "HEAD:refs/heads/${CHAMPION_BRANCH}"
+          fi
+          actual=$(git show "HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" | sha256sum | awk '{print $1}')
+          test "$actual" = "$EXPECTED_SOURCE_SHA256"
+          champion_sha=$(git rev-parse HEAD)
+          printf 'champion_sha=%s\n' "$champion_sha" >> "$GITHUB_OUTPUT"
+          printf 'champion_branch=%s\n' "$CHAMPION_BRANCH" >> "$GITHUB_OUTPUT"
+          printf 'checked_in_source_sha256=%s\n' "$actual" >> "$GITHUB_OUTPUT"
+          printf 'champion_sha=%s\nchecked_in_source_sha256=%s\n' "$champion_sha" "$actual"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Directly compile prerequisites and restored FA
+        id: reproduce
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf "$EVIDENCE_DIR"
+          mkdir -p "$EVIDENCE_DIR" .lake/build/lib/lean/PrimalitySheafVerification
+
+          compile_one() {
+            local stem=$1
+            local max_errors=$2
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            local ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$olean" "$ilean"
+            lake env lean -DmaxErrors="$max_errors" -DwarningAsError=false \
+              -o "$olean" -i "$ilean" "$src" \
+              > "$EVIDENCE_DIR/${stem}.log" 2>&1
+            local rc=$?
+            printf '%s' "$rc" > "$EVIDENCE_DIR/${stem}.exit"
+            if test "$rc" -eq 0 && test -s "$olean" && test -s "$ilean"; then
+              printf '1' > "$EVIDENCE_DIR/${stem}.artifacts_ok"
+            else
+              printf '0' > "$EVIDENCE_DIR/${stem}.artifacts_ok"
+            fi
+            return 0
+          }
+
+          compile_one Mock2 500
+          compile_one Mock2_Advanced 500
+          compile_one Mock2_FunctionalAnalysis 1000
+
+          export CHAMPION_SHA='${{ steps.champion.outputs.champion_sha }}'
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+
+          d = Path(os.environ['EVIDENCE_DIR'])
+          root = Path('.')
+          names = ['Mock2', 'Mock2_Advanced', 'Mock2_FunctionalAnalysis']
+          err_pat = re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          rows = {}
+          for name in names:
+              log = (d / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+              matches = list(err_pat.finditer(log))
+              rows[name] = {
+                  'exit_code': int((d / f'{name}.exit').read_text()),
+                  'error_count': len(matches),
+                  'first_error_line': int(matches[0].group(1)) if matches else 0,
+                  'first_error_col': int(matches[0].group(2)) if matches else 0,
+                  'olean_and_ilean_nonempty': (d / f'{name}.artifacts_ok').read_text() == '1',
+                  'source_sha256': hashlib.sha256((root / f'PrimalitySheafVerification/{name}.lean').read_bytes()).hexdigest(),
+              }
+
+          m2 = rows['Mock2']
+          m2a = rows['Mock2_Advanced']
+          fa = rows['Mock2_FunctionalAnalysis']
+          prereqs_ok = all(
+              row['exit_code'] == 0 and row['error_count'] == 0 and row['olean_and_ilean_nonempty']
+              for row in (m2, m2a)
+          )
+          hash_ok = fa['source_sha256'] == os.environ['EXPECTED_SOURCE_SHA256']
+          frontier_ok = fa['exit_code'] == 0 or fa['first_error_line'] >= int(os.environ['EXPECTED_FIRST_ERROR'])
+          reproduced = prereqs_ok and hash_ok and frontier_ok
+          status = {
+              'reproduced': reproduced,
+              'champion_branch': os.environ['CHAMPION_BRANCH'],
+              'champion_commit': os.environ['CHAMPION_SHA'],
+              'source_run_id': int(os.environ['SOURCE_RUN_ID']),
+              'source_artifact_id': int(os.environ['SOURCE_ARTIFACT_ID']),
+              'expected_source_sha256': os.environ['EXPECTED_SOURCE_SHA256'],
+              'expected_first_error_minimum': int(os.environ['EXPECTED_FIRST_ERROR']),
+              'prerequisites_passed': prereqs_ok,
+              'source_hash_verified': hash_ok,
+              'frontier_reproduced': frontier_ok,
+              'results': rows,
+          }
+          (d / 'CURRENT.json').write_text(json.dumps(status, indent=2), encoding='utf-8')
+          (d / 'CURRENT.txt').write_text(
+              '\n'.join(
+                  f"{name}: exit={row['exit_code']} errors={row['error_count']} first={row['first_error_line']}:{row['first_error_col']} artifacts={row['olean_and_ilean_nonempty']} sha256={row['source_sha256']}"
+                  for name, row in rows.items()
+              ) + f"\nreproduced={reproduced}\n",
+              encoding='utf-8'
+          )
+          print(json.dumps(status, indent=2))
+          PY
+
+          reproduced=$(python3 -c "import json; print(0 if json.load(open('${EVIDENCE_DIR}/CURRENT.json'))['reproduced'] else 1)")
+          echo "gate_exit=$reproduced" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Check in reproduction evidence on a separate branch
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_branch="evidence/fa376-champion-reproduction-${GITHUB_RUN_ID}"
+          git switch -c "$evidence_branch"
+          git add -f "$EVIDENCE_DIR"
+          git commit -m "evidence: reproduce PASS376 FA champion run ${GITHUB_RUN_ID}"
+          git push origin "HEAD:refs/heads/${evidence_branch}"
+          printf 'evidence_branch=%s\n' "$evidence_branch"
+
+      - name: Upload immutable champion reproduction evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa376-champion-reproduction-${{ github.run_id }}-${{ steps.champion.outputs.champion_sha }}
+          path: |
+            build-logs/fa376-champion-reproduction
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce exact hash and reproduced frontier
+        if: always()
+        env:
+          GATE_EXIT: ${{ steps.reproduce.outputs.gate_exit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${GATE_EXIT:-}"
+          exit "$GATE_EXIT"
