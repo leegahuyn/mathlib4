@@ -1,0 +1,37 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "baseline": "current",
+  "extended_metric": {
+    "lean": {
+      "exit_code": 1,
+      "errors": 17,
+      "first_line": 18908,
+      "first_column": 4,
+      "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+      "elapsed_seconds": 81.603,
+      "passed": false
+    },
+    "declaration_ordinal": 1674,
+    "declaration_name": "norm_baseExtension_le_one",
+    "errors_in_declaration": 1,
+    "normalized_token_offset": 37,
+    "score": [
+      1,
+      1674,
+      -1,
+      37,
+      -17
+    ]
+  },
+  "full_metric": {
+    "exit_code": 1,
+    "errors": 243,
+    "first_line": 18908,
+    "first_column": 4,
+    "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
+    "elapsed_seconds": 147.534,
+    "passed": false
+  },
+  "reason": "full FA compile still fails after extended frontier rounds"
+}
