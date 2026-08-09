@@ -1,0 +1,159 @@
+name: PASS 393 v2 declaration replacement FA Mock3 QYM solver
+
+on:
+  push:
+    branches: [fix/fa393-v2-declaration-replacement-20260809]
+    paths:
+      - '.github/workflows/fa393-v2-declaration-replacement.yml'
+      - 'scripts/fa392_iterative_solver.py'
+      - 'scripts/fa393_declaration_solver.py'
+      - 'scripts/fa393_declaration_solver_v2.py'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+      - 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean'
+      - 'PrimalitySheafVerification/Mock3*.lean'
+      - 'PrimalitySheafVerification/QYM.lean'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  models: read
+
+concurrency:
+  group: fa393-v2-declaration-replacement
+  cancel-in-progress: false
+
+jobs:
+  solve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact PASS 393 v2 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa393-v2-declaration-replacement-20260809
+          fetch-depth: 900
+          persist-credentials: true
+
+      - name: Install pinned Lean, ripgrep, and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y ripgrep
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Repair FA by whole declaration replacement
+        id: declaration
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FA393_MODELS: >-
+            openai/gpt-5,openai/o3,openai/o4-mini,openai/gpt-4.1,
+            xai/grok-3-mini,deepseek/DeepSeek-V3-0324,
+            mistral-ai/Mistral-Large-2411,qwen/Qwen3-235B-A22B
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa393_declaration_solver_v2.py \
+            --rounds 10 --candidates 6 --max-errors 180 \
+            2>&1 | tee build-logs/fa393-declaration.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "declaration_exit_code=${rc}" > build-logs/fa393-declaration.exit.txt
+
+      - name: Continue strict two-pass and downstream gate when FA compiles
+        id: ordered
+        if: steps.declaration.outputs.exit_code == '0'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FA392_MODELS: >-
+            openai/gpt-5,openai/o3,openai/o4-mini,openai/gpt-4.1,
+            xai/grok-3-mini,deepseek/DeepSeek-V3-0324,
+            mistral-ai/Mistral-Large-2411,qwen/Qwen3-235B-A22B
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa392_iterative_solver.py \
+            --evidence-dir build-logs/fa393-ordered \
+            --fa-rounds 2 --downstream-rounds 8 \
+            --max-candidates 5 --max-errors 200 \
+            2>&1 | tee build-logs/fa393-ordered.console.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=${rc}" >> "${GITHUB_OUTPUT}"
+          echo "ordered_exit_code=${rc}" > build-logs/fa393-ordered.exit.txt
+
+      - name: Commit verified source progress or final marker
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          source_changed=0
+          for f in \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+            PrimalitySheafVerification/QYM.lean; do
+            if ! git diff --quiet -- "$f"; then source_changed=1; fi
+          done
+          while IFS= read -r f; do
+            if ! git diff --quiet -- "$f"; then source_changed=1; fi
+          done < <(find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' | sort)
+          final_marker=0
+          test ! -f build-logs/fa393-ordered/ALL_REQUIRED_TARGETS_2X_PASS || final_marker=1
+
+          if test "$source_changed" = 1 || test "$final_marker" = 1; then
+            git add \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              PrimalitySheafVerification/QYM.lean
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print0 | xargs -0 -r git add
+            find build-logs/fa393-declaration build-logs/fa393-ordered \
+              -type f \( -name 'FINAL_STATUS.json' -o -name 'history.json' \
+              -o -name 'public-headers.sha256' -o -name 'ALL_REQUIRED_TARGETS_2X_PASS' \) \
+              -print0 2>/dev/null | xargs -0 -r git add
+            git commit -m 'fix: advance PASS 393 v2 declaration frontier'
+            git push origin HEAD:fix/fa393-v2-declaration-replacement-20260809
+          else
+            echo 'No verified source progress to commit.'
+          fi
+
+      - name: Upload PASS 393 v2 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa393-v2-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa393-declaration
+            build-logs/fa393-declaration.console.log
+            build-logs/fa393-declaration.exit.txt
+            build-logs/fa393-ordered
+            build-logs/fa393-ordered.console.log
+            build-logs/fa393-ordered.exit.txt
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 6
+
+      - name: Enforce current result
+        if: always()
+        shell: bash
+        env:
+          DECLARATION_EXIT: ${{ steps.declaration.outputs.exit_code }}
+          ORDERED_EXIT: ${{ steps.ordered.outputs.exit_code }}
+        run: |
+          test -n "${DECLARATION_EXIT:-}"
+          if test "${DECLARATION_EXIT}" != 0; then exit "${DECLARATION_EXIT}"; fi
+          test -n "${ORDERED_EXIT:-}"
+          exit "${ORDERED_EXIT}"
