@@ -1,0 +1,45 @@
+build-logs/probe-fa413-fa414/Probe.lean:9:26: error: unexpected token '('; expected ':=', 'where' or '|'
+build-logs/probe-fa413-fa414/Probe.lean:20:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+build-logs/probe-fa413-fa414/Probe.lean:25:2: error: Type mismatch: After simplification, term
+  ContinuousOn.integrableOn_Icc (Continuous.continuousOn (Continuous.pow (Continuous.norm hf) 2))
+ has type
+  @IntegrableOn ℝ ℝ this PseudoMetricSpace.toUniformSpace.toTopologicalSpace SeminormedAddGroup.toContinuousENorm
+    ((fun x => ‖f x‖) ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
+but is expected to have type
+  @IntegrableOn ℝ ℝ Real.measureSpace.toMeasurableSpace PseudoMetricSpace.toUniformSpace.toTopologicalSpace
+    SeminormedAddGroup.toContinuousENorm (fun x => ‖f x‖ ^ 2) (Icc (-(1 / 2)) (1 / 2)) volume
+build-logs/probe-fa413-fa414/Probe.lean:30:42: error: unexpected identifier; expected ':=', 'where' or '|'
+build-logs/probe-fa413-fa414/Probe.lean:37:2: error: Type mismatch: After simplification, term
+  HasCompactSupport.comp_left (HasCompactSupport.norm hcompact)
+    (Mathlib.Meta.NormNum.isNat_eq_true
+      (Mathlib.Meta.NormNum.isNat_pow (Eq.refl HPow.hPow) (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero)
+        (Mathlib.Meta.NormNum.isNat_ofNat ℕ (Eq.refl 2)) Mathlib.Meta.NormNum.zero_natPow)
+      (Mathlib.Meta.NormNum.isNat_ofNat ℝ Nat.cast_zero))
+ has type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero
+    ((fun x => x ^ 2) ∘ fun x => ‖f x‖)
+but is expected to have type
+  @HasCompactSupport ℝ ℝ PseudoMetricSpace.toUniformSpace.toTopologicalSpace Real.instZero fun y => ‖f y‖ ^ 2
+build-logs/probe-fa413-fa414/Probe.lean:58:27: error: unexpected identifier; expected '|' or '|ₘ'
+build-logs/probe-fa413-fa414/Probe.lean:57:4: error: Unexpected syntax
+  failed to pretty print term (use 'set_option pp.rawOnError true' for raw representation)
+build-logs/probe-fa413-fa414/Probe.lean:50:39: error: unsolved goals
+f : ℝ → ℂ
+hf : ContDiff ℝ 1 f
+r : ℝ
+hpoint : ‖deriv (fun s => ‖f s‖ ^ 2) r‖ ≤ ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2
+⊢ ‖‖deriv (fun s => ‖f s‖ ^ 2) r‖‖ ≤ ‖‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2‖
+build-logs/probe-fa413-fa414/Probe.lean:70:7: error: Invalid `⟨...⟩` notation: The expected type `ℍ` is not an inductive type
+
+Note: This notation can only be used when the expected type is an inductive type with a single constructor
+build-logs/probe-fa413-fa414/Probe.lean:69:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
+  TopologicalSpace ℍ
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
