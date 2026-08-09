@@ -1,0 +1,1 @@
+Apply the exact PASS413 canonical/paired repairs and then the audited analytic-cluster repairs from the immutable PASS376 source. Compile Mock2 and Mock2_Advanced first, then FA. Promote only for FA exit 0 or first error strictly later than 31725; retain regression candidates as evidence only.
