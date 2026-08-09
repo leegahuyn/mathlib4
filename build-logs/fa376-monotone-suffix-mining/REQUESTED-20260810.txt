@@ -1,0 +1,1 @@
+Run the exact PASS376 SHA256 restoration, direct frontier reproduction, monotone post-31725 historical suffix mining, immutable promotion gate, and ordered FA/Integrated/Mock3/QYM two-pass verification.
