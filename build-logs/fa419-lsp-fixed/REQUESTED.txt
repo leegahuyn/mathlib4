@@ -1,0 +1,1 @@
+Handle Lean LSP server-to-client requests explicitly. LSP only screens candidates; direct CLI compile remains the sole promotion authority. Final completion requires FA, Integrated, every Mock3, and QYM twice.
