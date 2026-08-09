@@ -1,0 +1,251 @@
+name: PASS376 monotone repair-script mining
+
+on:
+  push:
+    branches:
+      - ops/fa376-monotone-script-mining-20260810
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  mine-repair-scripts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      CHAMPION_BRANCH: champion/fa-07f6efd3-first31725-20260810
+      EXPECTED_SHA: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+      INITIAL_FRONTIER: '31725'
+      D: build-logs/fa376-monotone-script-mining
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa376-monotone-script-mining-20260810
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Wait for and checkout sealed champion
+        id: champion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          found=0
+          for _ in $(seq 1 80); do
+            if git ls-remote --exit-code --heads origin "$CHAMPION_BRANCH" >/dev/null 2>&1; then found=1; break; fi
+            sleep 15
+          done
+          test "$found" -eq 1
+          git fetch origin "$CHAMPION_BRANCH"
+          git switch --detach FETCH_HEAD
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$EXPECTED_SHA"
+          echo "champion_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Reproduce exact baseline before any script mining
+        id: reproduce
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf "$D"; mkdir -p "$D/baseline" .lake/build/lib/lean/PrimalitySheafVerification
+          compile() {
+            s=$1; tag=$2; rm -f ".lake/build/lib/lean/PrimalitySheafVerification/${s}.olean" ".lake/build/lib/lean/PrimalitySheafVerification/${s}.ilean"
+            lake env lean -DmaxErrors=250 -DwarningAsError=false -o ".lake/build/lib/lean/PrimalitySheafVerification/${s}.olean" -i ".lake/build/lib/lean/PrimalitySheafVerification/${s}.ilean" "PrimalitySheafVerification/${s}.lean" > "$D/baseline/${tag}.log" 2>&1
+            echo -n $? > "$D/baseline/${tag}.exit"
+          }
+          compile Mock2 Mock2
+          compile Mock2_Advanced Mock2_Advanced
+          compile Mock2_FunctionalAnalysis FA
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          d=Path(os.environ['D'])/'baseline'; pat=re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          out={}
+          for t,s in [('Mock2','Mock2'),('Mock2_Advanced','Mock2_Advanced'),('FA','Mock2_FunctionalAnalysis')]:
+            z=(d/f'{t}.log').read_text(errors='replace'); m=pat.search(z); rc=int((d/f'{t}.exit').read_text())
+            out[t]={'exit':rc,'first':int(m.group(1)) if m else 0,'errors':len(list(pat.finditer(z))),'sha':hashlib.sha256(Path(f'PrimalitySheafVerification/{s}.lean').read_bytes()).hexdigest()}
+          ok=out['Mock2']['exit']==0 and out['Mock2_Advanced']['exit']==0 and out['FA']['sha']==os.environ['EXPECTED_SHA'] and (out['FA']['exit']==0 or out['FA']['first']>=int(os.environ['INITIAL_FRONTIER']))
+          (d/'CURRENT.json').write_text(json.dumps({'reproduced':ok,'results':out},indent=2)); print(json.dumps({'reproduced':ok,'results':out},indent=2))
+          PY
+          ok=$(python3 -c "import json; print(0 if json.load(open('${D}/baseline/CURRENT.json'))['reproduced'] else 1)")
+          first=$(python3 -c "import json; print(json.load(open('${D}/baseline/CURRENT.json'))['results']['FA']['first'])")
+          exitc=$(python3 -c "import json; print(json.load(open('${D}/baseline/CURRENT.json'))['results']['FA']['exit'])")
+          echo "gate=$ok" >> "$GITHUB_OUTPUT"; echo "first=$first" >> "$GITHUB_OUTPUT"; echo "exitc=$exitc" >> "$GITHUB_OUTPUT"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/current.lean
+          exit 0
+
+      - name: Block all repairs if reproduction failed
+        if: steps.reproduce.outputs.gate != '0'
+        run: exit 73
+
+      - name: Fetch every historical FA repair branch
+        if: steps.reproduce.outputs.gate == '0' && steps.reproduce.outputs.exitc != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '+refs/heads/fix/fa*:refs/remotes/origin/fix/fa*'
+          git for-each-ref --format='%(refname)' refs/remotes/origin/fix/fa | sort > "$D/refs.txt"
+
+      - name: Extract literal post-frontier repairs and test strict candidates
+        id: mine
+        if: steps.reproduce.outputs.gate == '0' && steps.reproduce.outputs.exitc != '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p "$D/mining/candidates" "$D/mining/logs"
+          FRONTIER='${{ steps.reproduce.outputs.first }}' python3 - <<'PY'
+          from pathlib import Path
+          import ast,hashlib,json,os,re,subprocess
+          frontier=int(os.environ['FRONTIER']); guard=max(1,frontier-120); base=Path('/tmp/current.lean').read_text()
+          refs=[]
+          for ref in Path(os.environ['D']+'/refs.txt').read_text().splitlines():
+            m=re.search(r'/fix/fa(\d+)',ref)
+            if m and int(m.group(1))>376: refs.append((int(m.group(1)),ref))
+          refs.sort()
+          scripts={}
+          for passno,ref in refs:
+            try: paths=subprocess.check_output(['git','ls-tree','-r','--name-only',ref,'scripts']).decode().splitlines()
+            except: continue
+            for p in paths:
+              m=re.search(r'(?:^|/)fa(\d+).*\.py$',p,re.I)
+              if not m or int(m.group(1))<=376: continue
+              key=(int(m.group(1)),p)
+              if key in scripts: continue
+              try: scripts[key]=subprocess.check_output(['git','show',f'{ref}:{p}']).decode()
+              except: pass
+          records=[]
+          for (passno,path),src in scripts.items():
+            pairs=[]
+            try:
+              tree=ast.parse(src)
+              for node in ast.walk(tree):
+                if isinstance(node,(ast.List,ast.Tuple)) and len(node.elts)==2 and all(isinstance(x,ast.Constant) and isinstance(x.value,str) for x in node.elts):
+                  a,b=(x.value for x in node.elts)
+                  if len(a)>20: pairs.append((a,b))
+                if isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=='replace' and len(node.args)>=2 and all(isinstance(x,ast.Constant) and isinstance(x.value,str) for x in node.args[:2]):
+                  a,b=(x.value for x in node.args[:2]);
+                  if len(a)>20: pairs.append((a,b))
+            except SyntaxError: continue
+            uniq=[];seen=set()
+            for a,b in pairs:
+              h=hashlib.sha256((a+'\0'+b).encode()).hexdigest()
+              if h not in seen: seen.add(h);uniq.append((a,b))
+            valid=[]
+            for a,b in uniq:
+              if base.count(a)==1:
+                line=base[:base.index(a)].count('\n')+1
+                if guard<=line<=frontier+2500: valid.append((line,a,b))
+            if valid: records.append({'pass':passno,'script':path,'pairs':valid})
+          candidates=[]; seen_hash={hashlib.sha256(base.encode()).hexdigest()}
+          def add(label,text,meta):
+            h=hashlib.sha256(text.encode()).hexdigest()
+            if h in seen_hash:return
+            seen_hash.add(h); candidates.append({'label':label,'sha':h,'text':text,'meta':meta})
+          singles=[]
+          for r in records:
+            for line,a,b in r['pairs']: singles.append((abs(line-frontier),-r['pass'],line,r['pass'],r['script'],a,b))
+          singles.sort()
+          for _,_,line,p,s,a,b in singles[:20]: add(f'single-fa{p}-L{line}',base.replace(a,b),{'kind':'single','pass':p,'script':s,'line':line})
+          for r in sorted(records,key=lambda x:(min(z[0] for z in x['pairs'])-frontier,-x['pass']))[:12]:
+            text=base; used=[]
+            for line,a,b in sorted(r['pairs']):
+              if text.count(a)==1: text=text.replace(a,b); used.append(line)
+            if used:add(f'group-fa{r["pass"]}',text,{'kind':'group','pass':r['pass'],'script':r['script'],'lines':used})
+          text=base;used=[]
+          for _,_,line,p,s,a,b in singles:
+            if text.count(a)==1: text=text.replace(a,b); used.append({'pass':p,'line':line,'script':s})
+          if used:add('cumulative-all',text,{'kind':'cumulative','used':used})
+          candidates.sort(key=lambda c:(0 if c['meta']['kind']=='group' else 1,abs((c['meta'].get('line') or min(c['meta'].get('lines',[frontier])))-frontier)))
+          candidates=candidates[:15]
+          out=[]; cdir=Path(os.environ['D'])/'mining/candidates'
+          for i,c in enumerate(candidates,1):
+            p=cdir/f'{i:02d}-{c["label"]}.lean';p.write_text(c.pop('text'));c['path']=str(p);out.append(c)
+          (Path(os.environ['D'])/'mining/manifest.json').write_text(json.dumps({'scripts':len(scripts),'records':len(records),'candidates':out},indent=2)); print(json.dumps(out,indent=2))
+          PY
+          best_first='${{ steps.reproduce.outputs.first }}'; best_exit='${{ steps.reproduce.outputs.exitc }}'; best=''; attempts=0
+          mapfile -t paths < <(python3 -c "import json;[print(x['path']) for x in json.load(open('${D}/mining/manifest.json'))['candidates']]")
+          for p in "${paths[@]}"; do
+            attempts=$((attempts+1)); tag=$(printf 'candidate-%02d' "$attempts")
+            install -m 0644 "$p" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.{o,ilean} .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            lake env lean -DmaxErrors=100 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$D/mining/logs/${tag}.log" 2>&1
+            rc=$?; echo -n "$rc" > "$D/mining/logs/${tag}.exit"
+            first=$(python3 - "$D/mining/logs/${tag}.log" <<'PY'
+          import pathlib,re,sys
+          z=pathlib.Path(sys.argv[1]).read_text(errors='replace');m=re.search(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)',z);print(int(m.group(1)) if m else 0)
+          PY
+            )
+            echo "$tag rc=$rc first=$first" | tee -a "$D/mining/metrics.txt"
+            if test "$rc" -eq 0; then best_exit=0;best_first=999999999;best="$p";break;fi
+            if test "$first" -gt "$best_first"; then best_exit=$rc;best_first=$first;best="$p";fi
+          done
+          if test -n "$best"; then cp "$best" /tmp/best-script.lean; improved=1; else cp /tmp/current.lean /tmp/best-script.lean; improved=0; fi
+          bestsha=$(sha256sum /tmp/best-script.lean|awk '{print $1}')
+          echo -n "$best_exit" > "$D/mining/best.exit"; echo -n "$best_first" > "$D/mining/best.first"; echo -n "$bestsha" > "$D/mining/best.sha"
+          echo "best_exit=$best_exit" >> "$GITHUB_OUTPUT";echo "best_first=$best_first" >> "$GITHUB_OUTPUT";echo "best_sha=$bestsha" >> "$GITHUB_OUTPUT";echo "improved=$improved" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Seal only a strict improvement
+        id: seal
+        if: steps.mine.outputs.improved == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/best-script.lean /tmp/seal.lean
+          git reset --hard '${{ steps.champion.outputs.champion_commit }}'
+          sha='${{ steps.mine.outputs.best_sha }}'; short=${sha:0:12}; rc='${{ steps.mine.outputs.best_exit }}'; first='${{ steps.mine.outputs.best_first }}'
+          if test "$rc" = 0;then branch="champion/fa-script-${short}-PASS-${GITHUB_RUN_ID}";metric=exit_zero;else branch="champion/fa-script-${short}-first${first}-${GITHUB_RUN_ID}";metric="first_error_${first}";fi
+          git switch -c "$branch"; install -m 0644 /tmp/seal.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mkdir -p "build-logs/champions/script-${short}"
+          printf '{"sealed":true,"parent":"%s","source_sha256":"%s","metric":"%s","run_id":%s}\n' "$CHAMPION_BRANCH" "$sha" "$metric" "$GITHUB_RUN_ID" > "build-logs/champions/script-${short}/CHAMPION.json"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean;git add -f "build-logs/champions/script-${short}/CHAMPION.json";git commit -m "champion: promote repair-script candidate ${metric}";git push origin "HEAD:refs/heads/${branch}"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT";echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify FA twice if script mining reaches exit zero
+        id: fa2x
+        if: steps.mine.outputs.best_exit == '0'
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}";git reset --hard '${{ steps.seal.outputs.commit }}';mkdir -p "$D/fa-2x"
+          for n in 1 2;do rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.{olean,ilean};lake env lean -DmaxErrors=500 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$D/fa-2x/run${n}.log" 2>&1;echo -n $? > "$D/fa-2x/run${n}.exit";done
+          a=$(cat "$D/fa-2x/run1.exit");b=$(cat "$D/fa-2x/run2.exit");test "$a" = 0 -a "$b" = 0;echo "exit=$?" >> "$GITHUB_OUTPUT";exit 0
+
+      - name: Commit evidence separately
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ steps.seal.outputs.commit }}';test -n "$base" || base='${{ steps.champion.outputs.champion_commit }}';git reset --hard "$base";branch="evidence/fa376-script-mining-${GITHUB_RUN_ID}";git switch -c "$branch";git add -f "$D";git commit -m "evidence: PASS376 repair-script mining run ${GITHUB_RUN_ID}";git push origin "HEAD:refs/heads/${branch}"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa376-script-mining-${{ github.run_id }}
+          path: build-logs/fa376-monotone-script-mining
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce FA two-pass only when reached
+        if: always()
+        shell: bash
+        run: |
+          test '${{ steps.reproduce.outputs.gate }}' = 0
+          test '${{ steps.mine.outputs.best_exit }}' = 0
+          test '${{ steps.fa2x.outputs.exit }}' = 0
