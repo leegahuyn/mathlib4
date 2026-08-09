@@ -1,0 +1,1 @@
+Run the corrected declaration-level donor tournament from the checked-in PASS376 champion. Preserve strict first-error-line promotion and run the ordered 2x gate only after FA reaches exit 0.
