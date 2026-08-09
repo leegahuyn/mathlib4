@@ -280,7 +280,7 @@ import Mathlib.Tactic
 
 open scoped RealInnerProductSpace
 open scoped MatrixGroups UpperHalfPlane
-open scoped BigOperators Pointwise
+open scoped BigOperators Pointwise ContDiff ENNReal
 open InnerProductSpace
 
 namespace Mock2FA

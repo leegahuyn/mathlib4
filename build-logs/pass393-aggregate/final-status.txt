@@ -1,0 +1,2 @@
+stage=Mock2_FunctionalAnalysis
+exit_code=1
