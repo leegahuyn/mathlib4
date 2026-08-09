@@ -1,0 +1,17 @@
+{
+  "immutable_champion": true,
+  "artifact_run_id": 31267332510,
+  "artifact_id": 9024606745,
+  "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "direct_reverify_run_id": 31319355275,
+  "direct_reverify_job_id": 93259721048,
+  "Mock2_exit": 0,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_FunctionalAnalysis_exit": 1,
+  "Mock2_FunctionalAnalysis_first_error_line": 31725,
+  "Mock2_FunctionalAnalysis_first_error_col": 2,
+  "repairs_applied_during_reverify": 0,
+  "authority": "actual direct Lean compile metric",
+  "promotion_rule": "Promote only on exit 0 or first_error_line strictly greater than 31725; regressions remain evidence only."
+}
