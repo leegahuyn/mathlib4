@@ -1,0 +1,52 @@
+name: PASS 399 cancel obsolete priority repair runs
+
+on:
+  push:
+    branches:
+      - fix/fa399-harvest-combinator-loop-20260809
+    paths:
+      - '.github/workflows/fa399-cancel-obsolete-priority-runs.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cancel-obsolete:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Keep PASS 399 only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,urllib.parse,urllib.request
+          repo=os.environ['GITHUB_REPOSITORY']; token=os.environ['GH_TOKEN']; current=int(os.environ['GITHUB_RUN_ID'])
+          def req(url,method='GET'):
+              r=urllib.request.Request(url,method=method,headers={
+                  'Authorization':f'Bearer {token}',
+                  'Accept':'application/vnd.github+json',
+                  'X-GitHub-Api-Version':'2022-11-28',
+              })
+              with urllib.request.urlopen(r,timeout=60) as resp:
+                  raw=resp.read(); return resp.status,(json.loads(raw) if raw else None)
+          cancelled=[]
+          for status in ('queued','in_progress'):
+              _,data=req(f'https://api.github.com/repos/{repo}/actions/runs?'+urllib.parse.urlencode({'status':status,'per_page':100}))
+              for run in data.get('workflow_runs',[]):
+                  rid=int(run['id']); branch=run.get('head_branch') or ''; name=run.get('name') or ''
+                  if rid==current: continue
+                  obsolete=(
+                      any(branch.startswith(f'fix/fa{n}') for n in range(391,399))
+                      or any(f'PASS {n}' in name for n in range(391,399))
+                  )
+                  if not obsolete: continue
+                  try:
+                      code,_=req(f'https://api.github.com/repos/{repo}/actions/runs/{rid}/cancel','POST')
+                      if code in (202,204): cancelled.append({'id':rid,'branch':branch,'name':name})
+                  except Exception as exc: print(f'cancel failed {rid}: {exc}')
+          print(json.dumps({'cancelled':cancelled},indent=2))
+          PY
