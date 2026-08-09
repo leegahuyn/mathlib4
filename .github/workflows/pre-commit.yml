@@ -1,30 +1,43 @@
 name: Run pre-commit and in-place update PR on push
-
 on:
   push:
-    branches-ignore:
-      # ignore tmp branches used by bors
-      - 'staging.tmp*'
-      - 'trying.tmp*'
-      - 'staging*.tmp'
-      - 'nolints'
-      # ignore staging and trying branches used by bors, these are handled by bors.yml
-      - 'staging'
-      - 'trying'
-      - 'ci-dev/**' # ignore branches meant for experiments
-      - 'master'
+    branches-ignore: ['staging.tmp*','trying.tmp*','staging*.tmp','nolints','staging','trying','ci-dev/**','master']
   pull_request:
-
-# extracted from https://pre-commit.ci/lite
+permissions: {actions: read, contents: read}
 jobs:
   main:
-    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build'
+    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build' && github.head_ref != 'candidate/fa431-coherent-real-module-20260810' && github.ref_name != 'candidate/fa431-coherent-real-module-20260810'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-      with:
-        python-version: 3.x
-    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43 # v1.1.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with: {python-version: 3.x}
+    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
+    - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43
       if: always()
+  fa431-direct:
+    if: github.ref_name == 'candidate/fa431-coherent-real-module-20260810'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [legacy_complex_module,legacy_inner_module,legacy_complex_module_normed,legacy_inner_module_normed,canonical_complex_module,legacy_module_then_group]
+    steps:
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      with: {ref: candidate/fa431-coherent-real-module-20260810, fetch-depth: 0, persist-credentials: false}
+    - name: Apply candidate and directly compile prerequisites and FA
+      shell: bash
+      env: {VARIANT: '${{ matrix.variant }}'}
+      run: bash scripts/fa431_matrix_ci.sh "$VARIANT"
+    - name: Upload candidate and direct evidence
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with: {name: 'fa431-${{ matrix.variant }}-${{ github.run_id }}-${{ github.sha }}', path: 'build-logs/fa431-coherent-module/${{ matrix.variant }}', if-no-files-found: error, retention-days: 90}
+    - name: Enforce strict direct-CLI improvement
+      if: always()
+      shell: bash
+      env: {VARIANT: '${{ matrix.variant }}'}
+      run: |
+        test -f "build-logs/fa431-coherent-module/${VARIANT}/FINAL_EXIT"
+        exit "$(cat "build-logs/fa431-coherent-module/${VARIANT}/FINAL_EXIT")"
