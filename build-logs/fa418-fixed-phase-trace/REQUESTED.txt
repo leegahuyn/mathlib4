@@ -1,0 +1,1 @@
+From exact PASS376, preserve exactly 60453 lines. Apply PASS417, then fix the FixedPhaseHorocycleTrace measurable-space scope, UpperHalfPlane structure APIs, pointwise trace addition, literal MemLp representative, cusp-tail field projection/indentation, and Lp zero representative. Compile prerequisites first and promote only for literal first error >31725 or exit 0.
