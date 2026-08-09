@@ -1,0 +1,1 @@
+Start from exact PASS376 SHA and preserve exactly 60453 lines. Declare the canonical Complex AddCommGroup as a noncomputable local instance before elaborating actualEdgeAmbientParam_hasDerivAt, remove the proof-local legacy instance, compile Mock2 and Mock2_Advanced to exit 0, then compile FA. Promote only for literal first error >31725 or exit 0.
