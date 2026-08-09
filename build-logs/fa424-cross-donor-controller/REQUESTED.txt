@@ -1,0 +1,1 @@
+2026-08-10 continuation request: direct Lean CLI strict promotion from latest verified champion; preserve checked-in source and evidence SHA identity.
