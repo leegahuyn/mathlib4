@@ -1,0 +1,599 @@
+module=Mock2_FunctionalAnalysis
+run=pass1
+exit_code=1
+error_count=195
+warning_count=363
+first_line=210
+first_errors:
+829:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19454:22: error: Application type mismatch: The argument
+839:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19454:50: error: Application type mismatch: The argument
+847:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19451:2: error: Cannot add `simp` attribute to `completionEquiv_apply`: It is not a proposition nor a definition (to unfold)
+850:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19455:2: error: Tactic `rfl` failed: The left-hand side
+876:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19520:5: error: invalid binder annotation, type is not a class instance
+884:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19607:6: error: Function expected at
+894:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19615:16: error: Function expected at
+903:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19616:9: error: Invalid argument: Variable `paperFourCoreMap` is not a proposition or let-declaration
+905:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19624:24: error: Function expected at
+915:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19624:49: error: unsolved goals
+1033:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20879:18: error: `Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potentialPreInnerProductCore` has already been declared
+1060:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:22616:14: error: type expected, got
+1062:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:22616:27: error: expected token
+1096:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23507:15: error: type expected, got
+1098:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23507:28: error: expected token
+1099:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23699:35: error: Function expected at
+1108:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23704:70: error: unsolved goals
+1114:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23731:4: error: Type mismatch: After simplification, term
+1140:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23879:50: error: unsolved goals
+1241:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24063:42: error: expected token
+1242:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24128:30: error: unsolved goals
+1408:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24769:30: error: expected token
+1415:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24824:33: error: expected token
+1416:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24838:33: error: expected token
+1417:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24846:33: error: expected token
+1439:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25167:60: error: unsolved goals
+2460:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27437:15: error: Application type mismatch: The argument
+2468:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27443:12: error: Application type mismatch: The argument
+2476:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27451:10: error: Application type mismatch: The argument
+2485:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27475:46: error: unsolved goals
+2490:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27490:2: error: Type mismatch
+2496:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27488:32: error: Fields missing: `raised`, `lowered`
+2497:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27497:2: error: Type mismatch
+2505:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27505:2: error: Type mismatch
+2521:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27523:8: error: Type mismatch: After simplification, term
+2530:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27660:4: error: Application type mismatch: The argument
+2608:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27977:37: error: unsolved goals
+2650:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28337:13: error: Application type mismatch: The argument
+2703:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28492:50: error: expected token
+2704:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28500:58: error: unsolved goals
+2727:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28635:50: error: unexpected token ','; expected ')'
+2729:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28683:43: error: unexpected token ','; expected ')'
+2730:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28702:44: error: unexpected token ','; expected ')'
+2738:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28831:44: error: unexpected token ','; expected ')'
+2792:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28950:50: error: unexpected token ','; expected ')'
+2793:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28967:49: error: unexpected token ','; expected ')'
+2794:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29091:60: error: unsolved goals
+2801:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29138:45: error: unexpected token ','; expected ')'
+2802:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29165:45: error: unexpected token ','; expected ')'
+2803:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29206:49: error: unexpected token ','; expected ')'
+2869:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29649:42: error: unexpected token ','; expected ')'
+2874:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29886:49: error: unsolved goals
+2929:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30069:17: error: expected token
+2938:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30096:17: error: type expected, got
+2940:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30096:30: error: expected token
+3090:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31738:4: error: Application type mismatch: The argument
+3098:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31737:45: error: Application type mismatch: The argument
+3108:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31804:2: error: Type mismatch: After simplification, term
+3114:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31824:4: error: Application type mismatch: The argument
+3122:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31823:45: error: Application type mismatch: The argument
+last_errors:
+4422:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34974:4: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+4440:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34968:52: error: unsolved goals
+4468:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35005:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+4484:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35042:8: error: Tactic `rewrite` failed: motive is not type correct:
+4522:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35027:64: error: unsolved goals
+4564:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35105:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+4575:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35112:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+4588:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35126:36: error: Function expected at
+4596:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35136:71: error: unsolved goals
+4606:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35219:4: error: No goals to be solved
+4611:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35244:4: error: `fun_prop` was unable to prove `Continuous fun p =>
+4617:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35270:8: error: Tactic `rewrite` failed: motive is not type correct:
+4656:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35252:66: error: unsolved goals
+4699:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35390:2: error: 'change' tactic failed, pattern
+4707:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35414:6: error: `fun_prop` was unable to prove `Continuous fun t =>
+4718:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35447:2: error: failed to prove positivity/nonnegativity/nonzeroness
+4723:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35472:65: error: unsolved goals
+4731:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35481:17: error: Function expected at
+4740:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35492:26: error: Function expected at
+4749:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35494:21: error: Function expected at
+4756:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35493:39: error: unsolved goals
+4765:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35506:11: error: Function expected at
+4775:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35508:32: error: unsolved goals
+4785:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35526:39: error: unsolved goals
+4792:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35543:43: error: unsolved goals
+4800:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35565:8: error: `fun_prop` was unable to prove `ContinuousOn (Complex.mk t) (Ioi 0)`
+4804:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35567:2: error: 'change' tactic failed, pattern
+4808:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35581:71: error: Invalid field notation: Identifier or numeral expected
+4809:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35591:52: error: Invalid field notation: Identifier or numeral expected
+4810:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35645:8: error: maximum number of errors (300; from option `maxErrors`) reached, exiting
+tail:
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34880:44: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34884:15: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34887:36: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  x✝
+
+Note: Expected a function because this term is being applied to the argument
+  n
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34890:7: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34893:54: error: unsolved goals
+case e'_8
+x✝ : Sort u_1
+fixedPhaseEuclideanGauge : x✝
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t r : ℝ
+h : ℍ → ℂ := selectedCosetUnitaryPullback q sorry
+hh : RealSmooth h
+⊢ (fun s => ↑(Real.exp (s * (1 / 2)))) = fun y => ↑((Real.exp ∘ fun x => id x * (1 / 2)) y)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34901:15: error(lean.invalidField): Invalid field `comp_logHeightBasePoint`: The environment does not contain `Function.comp_logHeightBasePoint`, so it is not possible to project the field `comp_logHeightBasePoint` from an expression
+  hh
+of type
+  ∀ x ∈ UpperHalfPlane.upperHalfPlaneSet, ContDiffWithinAt ℝ (↑⊤) (upperLift h) UpperHalfPlane.upperHalfPlaneSet x
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34919:15: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34921:13: error: Function expected at
+  euclideanRaiseGauge
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `euclideanRaiseGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34923:13: error: Function expected at
+  euclideanLowerFromSuccGauge
+but this term has type
+  ?m.3
+
+Note: Expected a function because this term is being applied to the argument
+  (n - 1)
+
+Hint: The identifier `euclideanLowerFromSuccGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34927:11: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  x✝²
+
+Note: Expected a function because this term is being applied to the argument
+  n
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34925:68: error: unsolved goals
+x✝² : Sort u_1
+fixedPhaseEuclideanGauge : x✝²
+x✝¹ : Sort u_2
+euclideanRaiseGauge : x✝¹
+x✝ : Sort u_3
+euclideanLowerFromSuccGauge : x✝
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t r : ℝ
+z : ℍ := logHeightBasePoint t r
+⊢ ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ≤
+    Real.exp (r / 2) * ‖selectedCosetConformalScaleC q (logHeightBasePoint t r)‖ *
+      (logHeightTraceDrift n * ‖sorry‖ + ‖sorry‖ + ‖sorry‖)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34966:36: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  n
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34974:4: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+  ?a1 = ?a2
+with the goal
+  logHeightBasePoint t (Real.log H) = { coe := { re := t, im := H }, coe_im_pos := hH }
+
+Note: The full type of `@Subtype.ext` is
+  ∀ {α : Sort ?u.22} {p : α → Prop} {a1 a2 : { x // p x }}, ↑a1 = ↑a2 → a1 = a2
+
+x✝ : Sort u_1
+fixedPhaseEuclideanGauge : x✝
+n : ℤ
+q : GammaTwoRightCoset
+Y : ℝ
+u : ↥(InverseEtaFixedPhaseCore n)
+t : ℝ
+H : ℝ := gammaTwoCuspLevel Y
+hH : 0 < H
+⊢ logHeightBasePoint t (Real.log H) = { coe := { re := t, im := H }, coe_im_pos := hH }
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34968:52: error: unsolved goals
+x✝ : Sort u_1
+fixedPhaseEuclideanGauge : x✝
+n : ℤ
+q : GammaTwoRightCoset
+Y : ℝ
+u : ↥(InverseEtaFixedPhaseCore n)
+t : ℝ
+H : ℝ := gammaTwoCuspLevel Y
+hH : 0 < H
+hbase : logHeightBasePoint t (Real.log H) = { coe := { re := t, im := H }, coe_im_pos := hH }
+htarget : selectedCosetAction q (logHeightBasePoint t (Real.log H)) = gammaTwoSelectedHorocycleParam q Y t
+⊢ ↑(gammaTwoSelectedHorocycleParam q Y t).im / ↑(Real.exp (Real.log (gammaTwoCuspLevel Y))) *
+      sorry (gammaTwoSelectedHorocycleParam q Y t) =
+    ↑(gammaTwoSelectedHorocycleParam q Y t).im / ↑(gammaTwoCuspLevel Y) * sorry
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:34984:45: warning: This simp argument is unused:
+  Real.exp_log hH
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [heightC, logHeightBasePoint_im, Complex.ofReal_div]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35005:4: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |Real.exp ?m.161|
+in the target expression
+  (‖Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)‖ * ‖selectedCuspPulledEuclideanGauge ?n q Y ?u t‖) ^ 2 =
+    gammaTwoCuspLevel Y * ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2
+
+n : ℤ
+q : GammaTwoRightCoset
+Y : ℝ
+u : ↥(InverseEtaFixedPhaseCore n)
+t : ℝ
+H : ℝ := gammaTwoCuspLevel Y
+hH : 0 < H
+hExp : Real.exp (Real.log H / 2) ^ 2 = H
+⊢ (‖Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)‖ * ‖selectedCuspPulledEuclideanGauge ?n q Y ?u t‖) ^ 2 =
+    gammaTwoCuspLevel Y * ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35042:8: error: Tactic `rewrite` failed: motive is not type correct:
+  fun _a =>
+    gammaTwoCosetRep q • { coe := { re := t, im := _a }, coe_im_pos := ⋯ } =
+      gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
+Error: Application type mismatch: The argument
+  gammaTwoSelectedHorocycleParam._proof_1 (Real.exp r) t
+has type
+  0 < { re := t, im := gammaTwoCuspLevel (Real.exp r) }.im
+but is expected to have type
+  0 < { re := t, im := _a }.im
+in the application
+  { coe := { re := t, im := _a }, coe_im_pos := ⋯ }
+
+Explanation: The rewrite tactic rewrites an expression 'e' using an equality 'a = b' by the following process. First, it looks for all 'a' in 'e'. Second, it tries to abstract these occurrences of 'a' to create a function 'm := fun _a => ...', called the *motive*, with the property that 'm a' is definitionally equal to 'e'. Third, we observe that 'congrArg' implies that 'm a = m b', which can be used with lemmas such as 'Eq.mpr' to change the goal. However, if 'e' depends on specific properties of 'a', then the motive 'm' might not typecheck.
+
+Possible solutions: use rewrite's 'occs' configuration option to limit which occurrences are rewritten, or use 'simp' or 'conv' mode, which have strategies for certain kinds of dependencies (these tactics can handle proofs and 'Decidable' instances whose types depend on the rewritten term, and 'simp' can apply user-defined '@[congr]' theorems as well).
+
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t : ℝ
+ht : t ∈ Icc (-(1 / 2)) (1 / 2)
+Y₀ : ℝ
+hY₀ : 1 < Y₀
+hZero :
+  ∀ (Z : ℝ),
+    Y₀ < Z →
+      ∀ (q : GammaTwoRightCoset),
+        ∀ t ∈ Icc (-(1 / 2)) (1 / 2),
+          ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (gammaTwoSelectedHorocycleParam q Z t) = 0
+hExpEventually : ∀ᶠ (r : ℝ) in atTop, Y₀ < Real.exp r
+r : ℝ
+hr : Y₀ < Real.exp r
+hExpOne : 1 ≤ Real.exp r
+hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
+⊢ gammaTwoCosetRep q • { coe := { re := t, im := gammaTwoCuspLevel (Real.exp r) }, coe_im_pos := ⋯ } =
+    gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35049:4: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_apply`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35027:64: error: unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t : ℝ
+ht : t ∈ Icc (-(1 / 2)) (1 / 2)
+Y₀ : ℝ
+hY₀ : 1 < Y₀
+hZero :
+  ∀ (Z : ℝ),
+    Y₀ < Z →
+      ∀ (q : GammaTwoRightCoset),
+        ∀ t ∈ Icc (-(1 / 2)) (1 / 2),
+          ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (gammaTwoSelectedHorocycleParam q Z t) = 0
+hExpEventually : ∀ᶠ (r : ℝ) in atTop, Y₀ < Real.exp r
+r : ℝ
+hr : Y₀ < Real.exp r
+hExpOne : 1 ≤ Real.exp r
+hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
+hpoint : gammaTwoSelectedHorocycleParam q (Real.exp r) t = selectedCosetAction q (logHeightBasePoint t r)
+hu0 :
+  ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (selectedCosetAction q (logHeightBasePoint t r)) = 0
+⊢ ↑(Real.exp (r / 2)) *
+      (selectedCosetConformalScaleC q (logHeightBasePoint t r) *
+        sorry (selectedCosetAction q (logHeightBasePoint t r))) =
+    0 r
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35048:13: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35049:36: warning: This simp argument is unused:
+  hu0
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback, fixedPhaseEuclideanGauge_apply,
+    mul_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35049:41: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback, fixedPhaseEuclideanGauge_apply, hu0]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35105:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+  ?a1 = ?a2
+with the goal
+  selectedHeightBasePoint t y = { coe := { re := t, im := y }, coe_im_pos := hy }
+
+Note: The full type of `@Subtype.ext` is
+  ∀ {α : Sort ?u.10} {p : α → Prop} {a1 a2 : { x // p x }}, ↑a1 = ↑a2 → a1 = a2
+
+t y : ℝ
+hy : 0 < y
+⊢ selectedHeightBasePoint t y = { coe := { re := t, im := y }, coe_im_pos := hy }
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35112:2: error: Tactic `apply` failed: could not unify the conclusion of `@Subtype.ext`
+  ?a1 = ?a2
+with the goal
+  selectedHeightBasePoint t (Real.exp r) = logHeightBasePoint t r
+
+Note: The full type of `@Subtype.ext` is
+  ∀ {α : Sort ?u.5} {p : α → Prop} {a1 a2 : { x // p x }}, ↑a1 = ↑a2 → a1 = a2
+
+t r : ℝ
+⊢ selectedHeightBasePoint t (Real.exp r) = logHeightBasePoint t r
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35124:13: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35127:13: error(lean.unknownIdentifier): Unknown identifier `euclideanRaiseGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35128:13: error(lean.unknownIdentifier): Unknown identifier `euclideanLowerFromSuccGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35126:36: error: Function expected at
+  f
+but this term has type
+  ?m.181 p
+
+Note: Expected a function because this term is being applied to the argument
+  w
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35138:11: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35136:71: error: unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t r : ℝ
+z : ℍ := logHeightBasePoint t r
+⊢ selectedLogHeightEnergyDensity n q u (t, r) ≤ Real.exp r * selectedHeightGraphDensity n q u (t, Real.exp r)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35212:36: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35215:7: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35218:10: error(lean.unknownIdentifier): Unknown identifier `continuous_subtype_mk`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35219:4: error: No goals to be solved
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35226:7: error(lean.invalidField): Invalid field `dy`: The environment does not contain `Function.dy`, so it is not possible to project the field `dy` from an expression
+  hh
+of type
+  ∀ x ∈ UpperHalfPlane.upperHalfPlaneSet, ContDiffWithinAt ℝ (↑⊤) (upperLift h) UpperHalfPlane.upperHalfPlaneSet x
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35244:4: error: `fun_prop` was unable to prove `Continuous fun p =>
+  ↑(Real.exp (p.2 / 2)) *
+    (1 / 2 * h (logHeightBasePoint p.1 p.2) + heightC (logHeightBasePoint p.1 p.2) * dy h (logHeightBasePoint p.1 p.2))`
+
+Issues:
+  No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x0 => selectedCosetUnitaryPullback q sorry x0`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35270:8: error: Tactic `rewrite` failed: motive is not type correct:
+  fun _a =>
+    gammaTwoCosetRep q • { coe := { re := t, im := _a }, coe_im_pos := ⋯ } =
+      gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
+Error: Application type mismatch: The argument
+  gammaTwoSelectedHorocycleParam._proof_1 (Real.exp r) t
+has type
+  0 < { re := t, im := gammaTwoCuspLevel (Real.exp r) }.im
+but is expected to have type
+  0 < { re := t, im := _a }.im
+in the application
+  { coe := { re := t, im := _a }, coe_im_pos := ⋯ }
+
+Explanation: The rewrite tactic rewrites an expression 'e' using an equality 'a = b' by the following process. First, it looks for all 'a' in 'e'. Second, it tries to abstract these occurrences of 'a' to create a function 'm := fun _a => ...', called the *motive*, with the property that 'm a' is definitionally equal to 'e'. Third, we observe that 'congrArg' implies that 'm a = m b', which can be used with lemmas such as 'Eq.mpr' to change the goal. However, if 'e' depends on specific properties of 'a', then the motive 'm' might not typecheck.
+
+Possible solutions: use rewrite's 'occs' configuration option to limit which occurrences are rewritten, or use 'simp' or 'conv' mode, which have strategies for certain kinds of dependencies (these tactics can handle proofs and 'Decidable' instances whose types depend on the rewritten term, and 'simp' can apply user-defined '@[congr]' theorems as well).
+
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+Y₀ : ℝ
+hY₀ : 1 < Y₀
+hZero :
+  ∀ (Z : ℝ),
+    Y₀ < Z →
+      ∀ (q : GammaTwoRightCoset),
+        ∀ t ∈ Icc (-(1 / 2)) (1 / 2),
+          ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (gammaTwoSelectedHorocycleParam q Z t) = 0
+hY₀pos : 0 < Y₀
+t : ℝ
+ht : t ∈ Icc (-(1 / 2)) (1 / 2)
+r : ℝ
+hr : Real.log Y₀ < r
+hExp : Y₀ < Real.exp r
+hExpOne : 1 ≤ Real.exp r
+hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
+⊢ gammaTwoCosetRep q • { coe := { re := t, im := gammaTwoCuspLevel (Real.exp r) }, coe_im_pos := ⋯ } =
+    gammaTwoCosetRep q • { coe := { re := t, im := Real.exp r }, coe_im_pos := ⋯ }
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35277:4: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_apply`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35252:66: error: unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+Y₀ : ℝ
+hY₀ : 1 < Y₀
+hZero :
+  ∀ (Z : ℝ),
+    Y₀ < Z →
+      ∀ (q : GammaTwoRightCoset),
+        ∀ t ∈ Icc (-(1 / 2)) (1 / 2),
+          ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (gammaTwoSelectedHorocycleParam q Z t) = 0
+hY₀pos : 0 < Y₀
+t : ℝ
+ht : t ∈ Icc (-(1 / 2)) (1 / 2)
+r : ℝ
+hr : Real.log Y₀ < r
+hExp : Y₀ < Real.exp r
+hExpOne : 1 ≤ Real.exp r
+hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r
+hpoint : gammaTwoSelectedHorocycleParam q (Real.exp r) t = selectedCosetAction q (logHeightBasePoint t r)
+hu0 :
+  ↑↑(InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction u) (selectedCosetAction q (logHeightBasePoint t r)) = 0
+⊢ ↑(Real.exp (r / 2)) *
+      (selectedCosetConformalScaleC q (logHeightBasePoint t r) *
+        sorry (selectedCosetAction q (logHeightBasePoint t r))) =
+    0
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35276:13: warning: declaration uses `sorry`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35277:36: warning: This simp argument is unused:
+  hu0
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback, fixedPhaseEuclideanGauge_apply,
+    mul_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35277:41: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback, fixedPhaseEuclideanGauge_apply, hu0]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35390:2: error: 'change' tactic failed, pattern
+  ∫ (p : ℝ × ℝ), selectedLogHeightEnergyDensity n q u p ∂μ.prod ν =
+    ∫ (t : ℝ), ∫ (r : ℝ), selectedLogHeightEnergyDensity n q u (t, r) ∂ν ∂μ
+is not definitionally equal to target
+  ∫ (p : ℝ × ℝ) in Icc (-(1 / 2)) (1 / 2) ×ˢ Ioi r₀, selectedLogHeightEnergyDensity n q u p ∂volume.prod volume =
+    ∫ (t : ℝ) in Icc (-(1 / 2)) (1 / 2), ∫ (r : ℝ) in Ioi r₀, selectedLogHeightEnergyDensity n q u (t, r)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35409:40: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35412:11: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35414:6: error: `fun_prop` was unable to prove `Continuous fun t =>
+  ‖↑(Real.exp (Real.log (gammaTwoCuspLevel Y) / 2)) *
+        selectedCosetUnitaryPullback q sorry (logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y)))‖ ^
+    2`
+
+Issues:
+  No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x2 => selectedCosetUnitaryPullback q sorry x2`
+  No theorems found for `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseHorocycleTrace.selectedCosetUnitaryPullback` in order to prove `Continuous fun x => selectedCosetUnitaryPullback q sorry (logHeightBasePoint x (Real.log (gammaTwoCuspLevel Y)))`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35437:9: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35438:11: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35440:11: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35447:2: error: failed to prove positivity/nonnegativity/nonzeroness
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35455:10: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35457:10: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35460:10: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_realSmooth`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35474:8: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_raise`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35472:65: error: unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+u : ↥(InverseEtaFixedPhaseCore n)
+t y : ℝ
+⊢ sorry n q u (t, y) =
+    ‖selectedCosetConformalScaleC q (selectedHeightBasePoint t y)‖ ^ 2 *
+      sorry n u (selectedCosetAction q (selectedHeightBasePoint t y))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35481:17: error: Function expected at
+  OrbitEuclideanL2
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  m
+
+Hint: The identifier `OrbitEuclideanL2` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35492:26: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.1
+
+Note: Expected a function because this term is being applied to the argument
+  m
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35494:21: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  x✝
+
+Note: Expected a function because this term is being applied to the argument
+  m
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35493:39: error: unsolved goals
+x✝ : Sort u_1
+fixedPhaseEuclideanGauge : x✝
+α✝ : Type u_2
+inst✝ : MeasurableSpace α✝
+chosenEuclideanCarrierMeasure : Measure α✝
+m : ℤ
+v : ↥(InverseEtaFixedPhaseCore m)
+⊢ Integrable (fun z => ‖?m.12‖ ^ 2) chosenEuclideanCarrierMeasure
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35506:11: error: Function expected at
+  fixedPhaseEuclideanGauge
+but this term has type
+  ?m.2
+
+Note: Expected a function because this term is being applied to the argument
+  m
+
+Hint: The identifier `fixedPhaseEuclideanGauge` is unknown, and Lean's `autoImplicit` option causes an unknown identifier to be treated as an implicitly bound variable with an unknown type. However, the unknown type cannot be a function, and a function is what Lean expects here. This is often the result of a typo or a missing `import` or `open` statement.
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35509:11: error(lean.unknownIdentifier): Unknown identifier `orbitPeterssonEuclideanEmbedding`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35508:32: error: unsolved goals
+α✝ : Type u_1
+inst✝ : MeasurableSpace α✝
+chosenEuclideanCarrierMeasure : Measure α✝
+x✝ : Sort u_2
+fixedPhaseEuclideanGauge : x✝
+m : ℤ
+v : ↥(InverseEtaFixedPhaseCore m)
+⊢ ∫ (z : α✝), ‖?m.14‖ ^ 2 ∂chosenEuclideanCarrierMeasure = ‖(l2Coordinate m) v‖ ^ 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35527:16: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_normSq_integrable`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35526:39: error: unsolved goals
+inst✝ : MeasurableSpace ℍ
+chosenEuclideanCarrierMeasure : Measure ℍ
+n : ℤ
+u : ↥(InverseEtaFixedPhaseCore n)
+⊢ Integrable (fixedPhaseEuclideanGraphDensity n u) chosenEuclideanCarrierMeasure
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35544:16: error(lean.unknownIdentifier): Unknown identifier `fixedPhaseEuclideanGauge_normSq_integrable`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35543:43: error: unsolved goals
+inst✝ : MeasurableSpace ℍ
+chosenEuclideanCarrierMeasure : Measure ℍ
+n : ℤ
+u : ↥(InverseEtaFixedPhaseCore n)
+⊢ ∫ (z : ℍ), fixedPhaseEuclideanGraphDensity n u z ∂chosenEuclideanCarrierMeasure =
+    logHeightTraceBaseCoeff n * ‖(l2Coordinate n) u‖ ^ 2 + 3 * ‖(raisedCoordinate n) u‖ ^ 2 +
+      3 * ‖(loweredCoordinate n) u‖ ^ 2
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35565:8: error: `fun_prop` was unable to prove `ContinuousOn (Complex.mk t) (Ioi 0)`
+
+Issues:
+  No theorems found for `Complex.mk` in order to prove `ContinuousOn (fun im => { re := t, im := im }) (Ioi 0)`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35567:2: error: 'change' tactic failed, pattern
+  0 < { re := t, im := y }.im
+is not definitionally equal to target
+  { re := t, im := y } ∈ UpperHalfPlane.ofComplex.source
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35581:71: error: Invalid field notation: Identifier or numeral expected
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35591:52: error: Invalid field notation: Identifier or numeral expected
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:35645:8: error: maximum number of errors (300; from option `maxErrors`) reached, exiting
