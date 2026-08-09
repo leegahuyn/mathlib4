@@ -1,0 +1,1 @@
+Starting from the exact checked-in PASS376 champion, move the canonical Complex AddCommGroup choice to declaration scope around actualEdgeAmbientParam_hasDerivAt while preserving the exact 60453-line count. Compile Mock2 and Mock2_Advanced to exit 0, then compile FA directly. Promote only for literal first error strictly later than 31725 or exit 0; otherwise retain evidence only.
