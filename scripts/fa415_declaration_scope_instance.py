@@ -3,45 +3,29 @@ import hashlib
 
 path = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
 text = path.read_text(encoding='utf-8')
-expected = '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+expected_input = '07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4'
+expected_output = '49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74'
 actual = hashlib.sha256(text.encode()).hexdigest()
-if actual != expected:
+if actual != expected_input:
     raise SystemExit(f'unexpected PASS376 champion input sha256: {actual}')
 
-repls = [
-    (
-        "/-! #### Selected-coset actual edges -/\n\n/-- Ambient formula for an actual edge obtained from a selected right-coset\n",
-        "/-! #### Selected-coset actual edges -/\nsection actualEdgeCanonicalDerivative\n/-- Ambient formula for an actual edge obtained from a selected right-coset\n",
-        'open declaration-scoped instance section without changing line count',
-    ),
-    (
-        "  exact selectedCoset_smulFDeriv_apply e.1\n    (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)\n\n/-- The Mobius-composed actual edge has the declared native tangent. -/\n",
-        "  exact selectedCoset_smulFDeriv_apply e.1\n    (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)\nlocal instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n/-- The Mobius-composed actual edge has the declared native tangent. -/\n",
-        'place canonical AddCommGroup before theorem elaboration',
-    ),
-    (
-        "  letI : AddCommGroup Complex := Complex.addCommGroup\n  have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t\n",
-        "  -- The theorem statement and derivative chain now share the declaration-scoped canonical instance.\n  have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t\n",
-        'remove proof-local legacy instance while preserving line count',
-    ),
-    (
-        "  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,\n    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp\n\n/-! #### Native tangent compatibility under the actual side pairing -/\n",
-        "  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,\n    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp\nend actualEdgeCanonicalDerivative\n/-! #### Native tangent compatibility under the actual side pairing -/\n",
-        'close declaration-scoped instance section without changing line count',
-    ),
-]
+old = '''  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
+    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
+'''
+new = '''  rw [hasDerivAt_iff_tendsto_slope_zero] at hcomp ⊢
+  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity, Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
+'''
+count = text.count(old)
+if count != 1:
+    raise SystemExit(f'derivative-wrapper unfold repair expected once, found {count}')
+text = text.replace(old, new)
 
-for old, new, label in repls:
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f'{label}: expected once, found {count}')
-    text = text.replace(old, new)
-
-if len(text.splitlines()) != 60453:
-    raise SystemExit(f'line-count drift: {len(text.splitlines())}, expected 60453')
-
+output = hashlib.sha256(text.encode()).hexdigest()
+line_count = len(text.splitlines())
+if output != expected_output or line_count != 60453:
+    raise SystemExit(f'unexpected FA381b output: sha={output} lines={line_count}')
 path.write_text(text, encoding='utf-8')
 print('input_sha256=' + actual)
-print('output_sha256=' + hashlib.sha256(text.encode()).hexdigest())
-print('lines=' + str(len(text.splitlines())))
-print('repairs=4')
+print('output_sha256=' + output)
+print('lines=' + str(line_count))
+print('repairs=1')
