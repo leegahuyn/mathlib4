@@ -1,0 +1,153 @@
+name: PASS419 unfold derivative-instance FA frontier
+
+on:
+  push:
+    branches: [fix/fa419-unfold-deriv-instance-20260809]
+    paths: [build-logs/fa419-unfold-deriv/REQUESTED.txt]
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa419-unfold-deriv-instance-20260809
+          fetch-depth: 1900
+          persist-credentials: true
+
+      - name: Apply exact line-preserving derivative repair
+        run: |
+          set -euo pipefail
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+          python3 scripts/fa419_unfold_deriv_instance.py
+          test "$(wc -l < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq 60453
+
+      - name: Install pinned Lean and cache
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/lean-version.txt
+          lake --version | tee /tmp/lake-version.txt
+          lake exe cache get | tee /tmp/cache-get.log
+
+      - name: Direct compile and strict comparison
+        id: metric
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          d=build-logs/fa419-unfold-deriv
+          mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
+          rm -f "$d"/*.log "$d"/*.exit "$d"/CURRENT.* "$d"/PROMOTED "$d"/REGRESSION
+          cp /tmp/lean-version.txt "$d/lean-version.txt"
+          cp /tmp/lake-version.txt "$d/lake-version.txt"
+          cp /tmp/cache-get.log "$d/cache-get.log"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$d/candidate.lean"
+
+          compile_one() {
+            stem=$1; max=$2
+            src="PrimalitySheafVerification/${stem}.lean"
+            olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$olean" "$ilean"
+            lake env lean -DmaxErrors="$max" -DwarningAsError=false -o "$olean" -i "$ilean" "$src" > "$d/${stem}.log" 2>&1
+            rc=$?; printf '%s' "$rc" > "$d/${stem}.exit"
+            test "$rc" -eq 0 && test -s "$olean" && test -s "$ilean"
+          }
+
+          compile_one Mock2 120; rc_m2=$?
+          compile_one Mock2_Advanced 120; rc_m2a=$?
+          rc_fa=125
+          if test "$rc_m2" -eq 0 && test "$rc_m2a" -eq 0; then
+            compile_one Mock2_FunctionalAnalysis 80; rc_fa=$?
+          else
+            echo prerequisite-failure > "$d/Mock2_FunctionalAnalysis.log"
+            printf '%s' "$rc_fa" > "$d/Mock2_FunctionalAnalysis.exit"
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re
+          d=Path('build-logs/fa419-unfold-deriv')
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          pat=re.compile(r'\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          rows={}
+          for stem in ['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']:
+              text=(d/f'{stem}.log').read_text(errors='replace')
+              ms=list(pat.finditer(text))
+              rows[stem]={
+                  'exit_code':int((d/f'{stem}.exit').read_text()),
+                  'error_headers':len(ms),
+                  'first_error_line':int(ms[0].group(1)) if ms else 0,
+                  'first_error_col':int(ms[0].group(2)) if ms else 0,
+              }
+          sha=hashlib.sha256(src.read_bytes()).hexdigest()
+          lines=len(src.read_text().splitlines())
+          prereq=(rows['Mock2']['exit_code']==0 and rows['Mock2']['error_headers']==0 and
+                  rows['Mock2_Advanced']['exit_code']==0 and rows['Mock2_Advanced']['error_headers']==0)
+          fa=rows['Mock2_FunctionalAnalysis']
+          improved=fa['exit_code']==0 or fa['first_error_line']>31725
+          promoted=prereq and lines==60453 and improved
+          status={
+              'complete':promoted,
+              'baseline':{'source_sha256':'07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4','first_error_line':31725,'line_count':60453},
+              'candidate_source_sha256':sha,
+              'candidate_line_count':lines,
+              'results':rows,
+              'metric_improved':improved,
+              'promoted':promoted,
+              'promotion_rule':'same 60453 lines; prerequisites exit 0; FA exit 0 or literal first error >31725'
+          }
+          (d/'CURRENT.json').write_text(json.dumps(status,indent=2))
+          (d/'CURRENT.txt').write_text('\n'.join(f"{k}: exit={v['exit_code']} errors={v['error_headers']} first={v['first_error_line']}:{v['first_error_col']}" for k,v in rows.items())+f'\nsha256={sha}\nlines={lines}\npromoted={str(promoted).lower()}\n')
+          (d/('PROMOTED' if promoted else 'REGRESSION')).touch()
+          print(json.dumps(status,indent=2))
+          PY
+          test -f "$d/PROMOTED" && final=0 || final=1
+          echo "final_exit=$final" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Commit strict result
+        if: always()
+        run: |
+          set -euo pipefail
+          d=build-logs/fa419-unfold-deriv
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if test -f "$d/PROMOTED"; then
+            first=$(python3 -c "import json; print(json.load(open('$d/CURRENT.json'))['results']['Mock2_FunctionalAnalysis']['first_error_line'])")
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$d"
+            msg="fix: promote PASS419 FA frontier to line ${first} [skip ci]"
+          else
+            git restore PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            git add "$d"
+            msg='ci: retain PASS376 champion after PASS419 regression [skip ci]'
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "$msg"
+            git push origin HEAD:fix/fa419-unfold-deriv-instance-20260809
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa419-unfold-deriv-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/fa419-unfold-deriv
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce result
+        if: always()
+        env:
+          FINAL_EXIT: ${{ steps.metric.outputs.final_exit }}
+        run: |
+          test -n "${FINAL_EXIT:-}"
+          exit "$FINAL_EXIT"
