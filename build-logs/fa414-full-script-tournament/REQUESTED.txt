@@ -1,0 +1,1 @@
+Evaluate checked-in and script-materialized PASS411/PASS412 candidates from the immutable PASS376 source. Promote only exit 0 or a strictly later raw and normalized first error. Then run FA, Integrated, every Mock3, and QYM twice.
