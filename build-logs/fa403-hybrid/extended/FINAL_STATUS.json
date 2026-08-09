@@ -9,7 +9,7 @@
       "first_line": 18908,
       "first_column": 4,
       "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
-      "elapsed_seconds": 81.603,
+      "elapsed_seconds": 122.646,
       "passed": false
     },
     "declaration_ordinal": 1674,
@@ -30,7 +30,7 @@
     "first_line": 18908,
     "first_column": 4,
     "source_sha256": "5f2d7615aaad7bb3a232d19829f0f801278e7ab2fa2f66ccb68408b87647e620",
-    "elapsed_seconds": 147.534,
+    "elapsed_seconds": 218.075,
     "passed": false
   },
   "reason": "full FA compile still fails after extended frontier rounds"
