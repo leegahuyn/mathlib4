@@ -10,9 +10,10 @@ text=TARGET.read_text(encoding='utf-8')
 actual=hashlib.sha256(text.encode()).hexdigest()
 if actual != BASE:
     raise SystemExit(f'unexpected baseline: {actual}')
+if len(text.splitlines()) != 60453:
+    raise SystemExit(f'unexpected baseline line count: {len(text.splitlines())}')
 
-old='''  letI : AddCommGroup ℂ :=
-    Complex.instNormedAddCommGroup.toAddCommGroup
+old='''  letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
   letI : AddCommGroup Complex := Complex.addCommGroup'''
 
 variants={
