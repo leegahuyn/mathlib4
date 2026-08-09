@@ -1,0 +1,5 @@
+ref=origin/champion/fa-pass376-31725-07f6efd-immutable
+sha256=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+direct_exit=1
+direct_first=31725:2
+direct_normalized_first=31725
