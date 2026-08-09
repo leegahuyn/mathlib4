@@ -1,0 +1,21 @@
+{
+  "cycle": 0,
+  "branch": "fix/fa406-self-contained-20260809",
+  "models": [
+    "openai/gpt-5",
+    "openai/gpt-5-mini",
+    "openai/o3",
+    "openai/o4-mini",
+    "openai/gpt-4.1",
+    "xai/grok-3-mini",
+    "deepseek/DeepSeek-V3-0324",
+    "mistral-ai/Mistral-Large-2411",
+    "qwen/Qwen3-235B-A22B"
+  ],
+  "started_at": 1786265310.3916633,
+  "prerequisites": [],
+  "modules": [],
+  "complete": false,
+  "exception": "RuntimeError: verified prerequisite Mock2.lean no longer compiles: {'exit_code': 1, 'errors': 301, 'first_line': 0, 'first_col': 0, 'declaration_ordinal': -1, 'declaration_name': '(preamble)', 'errors_in_declaration': 0, 'source_sha256': '36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594', 'olean': False, 'ilean': False, 'log': 'build-logs/fa406-self-contained/prerequisites/Mock2.log', 'passed': False, 'score': (1, -1, 0, 0, -301)}",
+  "finished_at": 1786265376.2415476
+}
