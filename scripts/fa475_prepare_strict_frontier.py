@@ -31,6 +31,11 @@ EXACT_FA474_WINNER = "explicit_through2791"
 ORIGINAL_TAIL = """  rw [hProduct.deriv]
   ring"""
 
+ORIGINAL_HEXP_FINISH = """    convert (((Real.hasDerivAt_exp (r / 2)).comp r
+      ((hasDerivAt_id r).div_const 2)).ofReal_comp) using 1
+      <;> simp only [Function.comp_apply, id_eq, div_eq_mul_inv]
+      <;> ring"""
+
 
 def with_final_tail(tail: str) -> str:
     body = fa474.GAUGE_DERIV_CUMULATIVE
@@ -45,7 +50,39 @@ def with_final_tail(tail: str) -> str:
     return updated
 
 
+def with_clean_sequences(*, all_goals: bool) -> str:
+    if all_goals:
+        h_exp = """    convert (((Real.hasDerivAt_exp (r / 2)).comp r
+      ((hasDerivAt_id r).div_const 2)).ofReal_comp) using 1
+    all_goals simp only [Function.comp_apply, id_eq, div_eq_mul_inv]
+    all_goals ring"""
+        tail = """  rw [hProduct.deriv]
+  all_goals simp [h]
+  all_goals ring"""
+    else:
+        h_exp = """    convert (((Real.hasDerivAt_exp (r / 2)).comp r
+      ((hasDerivAt_id r).div_const 2)).ofReal_comp) using 1; simp only
+        [Function.comp_apply, id_eq, div_eq_mul_inv]; ring"""
+        tail = """  rw [hProduct.deriv]
+  simp [h]; ring"""
+    body = with_final_tail(tail)
+    count = body.count(ORIGINAL_HEXP_FINISH)
+    if count != 1:
+        raise RuntimeError(
+            f"expected one FA474 hExp sequence, found {count}"
+        )
+    return body.replace(ORIGINAL_HEXP_FINISH, h_exp, 1)
+
+
 VARIANTS = {
+    "clean_semicolon": (
+        with_clean_sequences(all_goals=False),
+        "replace both unnecessary sequence-focus operators with semicolon sequencing",
+    ),
+    "clean_all_goals": (
+        with_clean_sequences(all_goals=True),
+        "use explicit all_goals sequencing for hExp and final algebra",
+    ),
     "simp_h_ring": (
         with_final_tail("""  rw [hProduct.deriv]
   simp [h] <;> ring"""),
