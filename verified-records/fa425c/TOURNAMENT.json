@@ -1,0 +1,358 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "keep-unfold-add",
+        "provenance": "hand:keep+unfold-add",
+        "sha256": "641ea05023ab11503a621131f306cb25d464bb01f9e55b664271d7b5ac873e84",
+        "file": "00-keep-unfold-add.lean"
+      },
+      "metric": {
+        "label": "candidate-00-keep-unfold-add",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "641ea05023ab11503a621131f306cb25d464bb01f9e55b664271d7b5ac873e84",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-keep-unfold-add.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-unfold-normed",
+        "provenance": "hand:keep+unfold-normed",
+        "sha256": "675df83037733cb22e30eb2ac1f2da69d21056d1254b60892dc5a55329cfc932",
+        "file": "01-keep-unfold-normed.lean"
+      },
+      "metric": {
+        "label": "candidate-01-keep-unfold-normed",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "675df83037733cb22e30eb2ac1f2da69d21056d1254b60892dc5a55329cfc932",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-01-keep-unfold-normed.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-unfold-both",
+        "provenance": "hand:keep+unfold-both",
+        "sha256": "e283c8e0b9666e23ff0baf6f149c19567d6c6401fcbd5382d186c344a5533824",
+        "file": "02-keep-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-02-keep-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e283c8e0b9666e23ff0baf6f149c19567d6c6401fcbd5382d186c344a5533824",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-02-keep-unfold-both.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-simp-full-add",
+        "provenance": "hand:keep+simp-full-add",
+        "sha256": "fc0071acde07133e8cb2b87aa8ca9b08a7bf576dd10c7f18914e475510317256",
+        "file": "03-keep-simp-full-add.lean"
+      },
+      "metric": {
+        "label": "candidate-03-keep-simp-full-add",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "fc0071acde07133e8cb2b87aa8ca9b08a7bf576dd10c7f18914e475510317256",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-keep-simp-full-add.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-simpa-defs",
+        "provenance": "hand:keep+simpa-defs",
+        "sha256": "b5f6168c12dcaf28dfd55957d0f1778685d6ee27b093339beb68f5fea69b7e87",
+        "file": "04-keep-simpa-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-04-keep-simpa-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "b5f6168c12dcaf28dfd55957d0f1778685d6ee27b093339beb68f5fea69b7e87",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-04-keep-simpa-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-convert-rfl",
+        "provenance": "hand:keep+convert-rfl",
+        "sha256": "e83b82b7e80872c157be68758238ef8f79e2296886251c70de3bd0d8f63f7803",
+        "file": "05-keep-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-05-keep-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e83b82b7e80872c157be68758238ef8f79e2296886251c70de3bd0d8f63f7803",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 28,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-05-keep-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-exact-hcomp",
+        "provenance": "hand:keep+exact-hcomp",
+        "sha256": "cab81839b4e63b30c61496a7bc4624beecfdf7608042c35ac9f5ad3c0fd8300c",
+        "file": "06-keep-exact-hcomp.lean"
+      },
+      "metric": {
+        "label": "candidate-06-keep-exact-hcomp",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "cab81839b4e63b30c61496a7bc4624beecfdf7608042c35ac9f5ad3c0fd8300c",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-06-keep-exact-hcomp.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-unfold-add",
+        "provenance": "hand:canonical+unfold-add",
+        "sha256": "779c25f4055c16b47dc6a07696ffdb060df3bdc33e16b8d3c3d5122adb2d02e0",
+        "file": "07-canonical-unfold-add.lean"
+      },
+      "metric": {
+        "label": "candidate-07-canonical-unfold-add",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "779c25f4055c16b47dc6a07696ffdb060df3bdc33e16b8d3c3d5122adb2d02e0",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-canonical-unfold-add.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-unfold-normed",
+        "provenance": "hand:canonical+unfold-normed",
+        "sha256": "655ed73040209b79d0b706daddbc96eb04d3e186eec1168a1f11c3ceb53de737",
+        "file": "08-canonical-unfold-normed.lean"
+      },
+      "metric": {
+        "label": "candidate-08-canonical-unfold-normed",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "655ed73040209b79d0b706daddbc96eb04d3e186eec1168a1f11c3ceb53de737",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-08-canonical-unfold-normed.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-unfold-both",
+        "provenance": "hand:canonical+unfold-both",
+        "sha256": "c567286aae4ae18385e8c2a328495697f32cc9f27108bd5ee2de34031e9e4877",
+        "file": "09-canonical-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-09-canonical-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "c567286aae4ae18385e8c2a328495697f32cc9f27108bd5ee2de34031e9e4877",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-09-canonical-unfold-both.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-simp-full-add",
+        "provenance": "hand:canonical+simp-full-add",
+        "sha256": "4c20df16549cb0bf4e9db5f84c70e212c70c8ec6fe3613b48a4bc3ba15400af6",
+        "file": "10-canonical-simp-full-add.lean"
+      },
+      "metric": {
+        "label": "candidate-10-canonical-simp-full-add",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4c20df16549cb0bf4e9db5f84c70e212c70c8ec6fe3613b48a4bc3ba15400af6",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-10-canonical-simp-full-add.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-simpa-defs",
+        "provenance": "hand:canonical+simpa-defs",
+        "sha256": "e16075333f2e39a2a1ec4ed9dd37a703a3606cf48f770543dc3c5112ddd4aa55",
+        "file": "11-canonical-simpa-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-11-canonical-simpa-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e16075333f2e39a2a1ec4ed9dd37a703a3606cf48f770543dc3c5112ddd4aa55",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-11-canonical-simpa-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-convert-rfl",
+        "provenance": "hand:canonical+convert-rfl",
+        "sha256": "1a8fbbed1bdc35257ef7e2dc4ec7c2b718b423cb8403d17b502cb18092723ea8",
+        "file": "12-canonical-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-12-canonical-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "1a8fbbed1bdc35257ef7e2dc4ec7c2b718b423cb8403d17b502cb18092723ea8",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 28,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-12-canonical-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-exact-hcomp",
+        "provenance": "hand:canonical+exact-hcomp",
+        "sha256": "701520fa5edb05db2b391bba58d7fb3de1629b67f3c60fea7b4891211ea26fc8",
+        "file": "13-canonical-exact-hcomp.lean"
+      },
+      "metric": {
+        "label": "candidate-13-canonical-exact-hcomp",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "701520fa5edb05db2b391bba58d7fb3de1629b67f3c60fea7b4891211ea26fc8",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-13-canonical-exact-hcomp.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}
