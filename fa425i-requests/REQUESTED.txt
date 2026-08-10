@@ -1,0 +1,5 @@
+requested_at=2026-08-10T09:05:00+09:00
+strategy=disable Complex.addCommGroup before blocker theorem and re-enable after theorem
+fixed_theorem_header=true
+fixed_line_count=60453
+authority=direct Lean CLI
