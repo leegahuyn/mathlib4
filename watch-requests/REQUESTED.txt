@@ -1,4 +1,4 @@
-cycle=1
-previous_target_triggered=false
+cycle=2
+previous_target_triggered=true
 authority=direct Lean CLI source-matched evidence
 max_cycles=8

@@ -1,0 +1,176 @@
+{
+  "generated_at_utc": "2026-08-10T01:52:48.801588+00:00",
+  "cycle": 1,
+  "best_source_matched_verified": {
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "score": [
+      0,
+      32035,
+      8
+    ],
+    "ref": "refs/remotes/fa425/donor-42",
+    "classification": "VERIFIED",
+    "evidence_path": "verified-records/fa425/CURRENT.json"
+  },
+  "current_fa427": {
+    "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "line_count": 60453,
+    "score": [
+      0,
+      31725,
+      2
+    ],
+    "evidence_path": "known-source-sha",
+    "round": 1,
+    "head": "b065e6497b8a297746287cb03aeb6c8d63c418e4"
+  },
+  "activity": {
+    "latest_target_run": {
+      "id": 31347115009,
+      "name": "FA427 parallel direct-Lean frontier loop",
+      "run_number": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "b065e6497b8a297746287cb03aeb6c8d63c418e4",
+      "created_at": "2026-08-10T01:26:57Z",
+      "updated_at": "2026-08-10T01:35:04Z"
+    },
+    "target_active": false,
+    "relevant_active_runs": [
+      {
+        "id": 31348247977,
+        "name": "continuous integration",
+        "head_branch": "fix/fa425i-disable-reenable-custom-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 2340
+      },
+      {
+        "id": 31348247663,
+        "name": "FA425i focused custom-instance disable-reenable tournament",
+        "head_branch": "fix/fa425i-disable-reenable-custom-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31348247615,
+        "name": "Run pre-commit and in-place update PR on push",
+        "head_branch": "fix/fa425i-disable-reenable-custom-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 3652
+      },
+      {
+        "id": 31348238608,
+        "name": "Run pre-commit and in-place update PR on push",
+        "head_branch": "fix/fa425i-disable-reenable-custom-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 3651
+      },
+      {
+        "id": 31348028823,
+        "name": "FA source-matched verified frontier watcher",
+        "head_branch": "ops/fa-verified-source-watch-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31347815381,
+        "name": "FA425h inline-composition elaboration tournament",
+        "head_branch": "fix/fa425h-inline-composition-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31347668436,
+        "name": "FA428 direct-Lean batch blocker solver",
+        "head_branch": "fix/fa428-batch-blocker-screen-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31347424387,
+        "name": "FA425g canonical-instance sandwich tournament",
+        "head_branch": "fix/fa425g-instance-sandwich-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31347238989,
+        "name": "FA425e isolated canonical-instance section tournament",
+        "head_branch": "fix/fa425e-isolated-instance-section-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31346812751,
+        "name": "FA426b import-safe multiround strict controller",
+        "head_branch": "fix/fa426b-multiround-importsafe-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31346724593,
+        "name": "FA425d derivative rebundling tournament",
+        "head_branch": "fix/fa425d-derivative-rebundle-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31342860061,
+        "name": "FA429 autonomous continuation after FA426 verified source",
+        "head_branch": "fix/fa429-continuation-after-fa426-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      },
+      {
+        "id": 31342645644,
+        "name": "FA426 monotone donor proof miner and ordered final gate",
+        "head_branch": "fix/fa426-monotone-donor-proof-miner-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 2
+      },
+      {
+        "id": 31342191464,
+        "name": "FA425 actualEdge proof-body direct Lean tournament",
+        "head_branch": "fix/fa425-actualedge-proof-tournament-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 2
+      },
+      {
+        "id": 31340212633,
+        "name": "Run pre-commit and in-place update PR on push",
+        "head_branch": "fix/fa425-instance-transport-controller-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 3506
+      },
+      {
+        "id": 31339790833,
+        "name": "FA425 verified instance-transport and cross-donor controller",
+        "head_branch": "fix/fa425-instance-transport-controller-20260810",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 1
+      }
+    ]
+  },
+  "better_than_current": true,
+  "retry_infra": false,
+  "should_trigger": true,
+  "triggered": true,
+  "continue_watch": true,
+  "classification": "VERIFIED"
+}
