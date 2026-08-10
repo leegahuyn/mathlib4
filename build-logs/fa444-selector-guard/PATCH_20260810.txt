@@ -1,0 +1,1 @@
+Patch the repair branch selector so parser/syntax errors cannot win strict promotion via a one-line movement inside the same declaration.
