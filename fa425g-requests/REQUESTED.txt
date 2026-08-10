@@ -1,0 +1,5 @@
+requested_at=2026-08-10T08:25:00+09:00
+strategy=canonical instance before theorem and custom instance restoration after theorem
+fixed_theorem_header=true
+fixed_line_count=60453
+authority=direct Lean CLI
