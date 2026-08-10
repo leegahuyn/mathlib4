@@ -1,0 +1,60 @@
+name: FA442 exact skipped-step root cause
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa442-skip-root-cause-20260810
+    paths:
+      - build-logs/fa442-skip-root-cause/REQUESTED.txt
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-skip-root-cause-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Read FA442 run jobs and exact workflow conditions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_diagnose_only.py
+
+      - name: Commit exact root-cause evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/fa442-skip-root-cause
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record exact FA442 skipped-step root cause [skip ci]'
+            git push origin HEAD:refs/heads/fix/fa442-skip-root-cause-20260810
+          fi
+
+      - name: Upload root-cause evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-skip-root-cause-${{ github.run_id }}
+          path: build-logs/fa442-skip-root-cause
+          if-no-files-found: error
+          retention-days: 90
