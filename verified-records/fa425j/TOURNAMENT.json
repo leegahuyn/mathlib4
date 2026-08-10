@@ -1,0 +1,47 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "root-instance-paired",
+        "provenance": "deterministic fixed-height root instance repair plus PASS413 paired-call normalization",
+        "kind": "single-cumulative-candidate",
+        "sha256": "2d0e3640842e7211f19e06f8613713049e49161f0f645f487d0e24482144aa2f",
+        "file": "00-root-instance-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-00-root-instance-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2d0e3640842e7211f19e06f8613713049e49161f0f645f487d0e24482144aa2f",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-root-instance-paired.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}
