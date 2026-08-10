@@ -1,4 +1,5 @@
 name: Codex FA480 Pi.zero_apply strict direct Lean
+# FA480 retry 2: target-scoped global-count guard fixed after run 31419378100.
 
 on:
   push:
@@ -73,7 +74,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA480 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> FA476 -> FA477 -> FA478 -> FA479 -> FA480\`\n- upstream_FA479_run: \`31418190945\`\n- upstream_FA479_source: \`9e88d79d650d9a9a2f334aceb14f0ef14890f62785f045e03ffb073fd007eb3a\`\n- upstream_FA479_goal: \`0 = 0 r\`\n- patch: \`final simp only + Pi.zero_apply\`"
+          body="## FA480 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> FA476 -> FA477 -> FA478 -> FA479 -> FA480\`\n- upstream_FA479_run: \`31418190945\`\n- upstream_FA479_source: \`9e88d79d650d9a9a2f334aceb14f0ef14890f62785f045e03ffb073fd007eb3a\`\n- upstream_FA479_goal: \`0 = 0 r\`\n- patch: \`final simp only + Pi.zero_apply\`\n- infra_retry: \`target declaration old count 1; observed global count exactly 2\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
 
       - name: Run exact FA480 candidate/direct Lean loop and retain exit
