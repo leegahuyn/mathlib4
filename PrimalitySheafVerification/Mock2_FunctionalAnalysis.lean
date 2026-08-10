@@ -31715,6 +31715,7 @@ theorem actualEdgeAmbientParam_hasDerivAt
     (t : modularTileEdgeParameterSet e.2) :
     HasDerivAt (actualEdgeAmbientParam e)
       (actualEdgeNativeVelocity e t) (t : Real) := by
+  letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
   letI : AddCommGroup Complex := Complex.addCommGroup
   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
   have houter :=
@@ -31722,11 +31723,10 @@ theorem actualEdgeAmbientParam_hasDerivAt
       (modularTileEdgeParam e.2 t)).hasFDerivAt
   have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hbase
     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
-  simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
-    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
+  show HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) (t : Real)
+  exact hcomp.hasFDerivAt.hasDerivAt
 
 /-! #### Native tangent compatibility under the actual side pairing -/
-
 /-- The subtype pairing is multiplication of the real parameter by the
 declared sign. -/
 @[simp]

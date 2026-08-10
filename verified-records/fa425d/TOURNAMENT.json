@@ -1,0 +1,358 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-rebundle-exact",
+        "provenance": "hand:no-preheader+keep-local+rebundle-exact",
+        "sha256": "04090572009693db59a895ebd2f0bd0856d27a69f2140d7f28a3a7147d93f8da",
+        "file": "00-no-preheader-keep-local-rebundle-exact.lean"
+      },
+      "metric": {
+        "label": "candidate-00-no-preheader-keep-local-rebundle-exact",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "04090572009693db59a895ebd2f0bd0856d27a69f2140d7f28a3a7147d93f8da",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-no-preheader-keep-local-rebundle-exact.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-rebundle-simpa-defs",
+        "provenance": "hand:no-preheader+keep-local+rebundle-simpa-defs",
+        "sha256": "b8753f8df1b63b29a30be4a5ec34b902c4be463aea058a633fa2f911298a4c53",
+        "file": "01-no-preheader-keep-local-rebundle-simpa-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-01-no-preheader-keep-local-rebundle-simpa-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "b8753f8df1b63b29a30be4a5ec34b902c4be463aea058a633fa2f911298a4c53",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-01-no-preheader-keep-local-rebundle-simpa-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-rebundle-simp-defs",
+        "provenance": "hand:no-preheader+keep-local+rebundle-simp-defs",
+        "sha256": "cf405cae3575b595fd74fe488afd1712fbd2533f2d6ce02d2bc5dba162a2f376",
+        "file": "02-no-preheader-keep-local-rebundle-simp-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-02-no-preheader-keep-local-rebundle-simp-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "cf405cae3575b595fd74fe488afd1712fbd2533f2d6ce02d2bc5dba162a2f376",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-02-no-preheader-keep-local-rebundle-simp-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-rebundle-convert-rfl",
+        "provenance": "hand:no-preheader+keep-local+rebundle-convert-rfl",
+        "sha256": "2b5ac698157f0621aaa3749d70a6fd2afb7d712feae51d4185b459eafece7c1d",
+        "file": "03-no-preheader-keep-local-rebundle-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-03-no-preheader-keep-local-rebundle-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2b5ac698157f0621aaa3749d70a6fd2afb7d712feae51d4185b459eafece7c1d",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 51,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-no-preheader-keep-local-rebundle-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-rebundle-convert-simp",
+        "provenance": "hand:no-preheader+keep-local+rebundle-convert-simp",
+        "sha256": "4d848fc88c6d9797e6d87e6c550fd993223158565013b291bf63a6c29642097e",
+        "file": "04-no-preheader-keep-local-rebundle-convert-simp.lean"
+      },
+      "metric": {
+        "label": "candidate-04-no-preheader-keep-local-rebundle-convert-simp",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4d848fc88c6d9797e6d87e6c550fd993223158565013b291bf63a6c29642097e",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 51,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-04-no-preheader-keep-local-rebundle-convert-simp.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-hasF-simpa",
+        "provenance": "hand:no-preheader+keep-local+hasF-simpa",
+        "sha256": "9375e9d41e528f940e8d0f56d1d020c1f5861cf8d4afc0e0d9092c1a6ae7d32f",
+        "file": "05-no-preheader-keep-local-hasF-simpa.lean"
+      },
+      "metric": {
+        "label": "candidate-05-no-preheader-keep-local-hasF-simpa",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9375e9d41e528f940e8d0f56d1d020c1f5861cf8d4afc0e0d9092c1a6ae7d32f",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-05-no-preheader-keep-local-hasF-simpa.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-hasF-simp",
+        "provenance": "hand:no-preheader+keep-local+hasF-simp",
+        "sha256": "f7aa2d9bdf3307bc4f7ad7ee22620081d4e30e3d4402ca529bf86d8e06fd0fd7",
+        "file": "06-no-preheader-keep-local-hasF-simp.lean"
+      },
+      "metric": {
+        "label": "candidate-06-no-preheader-keep-local-hasF-simp",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "f7aa2d9bdf3307bc4f7ad7ee22620081d4e30e3d4402ca529bf86d8e06fd0fd7",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-06-no-preheader-keep-local-hasF-simp.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-keep-local-show-rebundle",
+        "provenance": "hand:no-preheader+keep-local+show-rebundle",
+        "sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+        "file": "07-no-preheader-keep-local-show-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-07-no-preheader-keep-local-show-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-no-preheader-keep-local-show-rebundle.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-rebundle-exact",
+        "provenance": "hand:no-preheader+canonical-local+rebundle-exact",
+        "sha256": "9f4696fa13b9bd072bbe1cfaa4e48712402b7bdc52e6525ba04cfb6e3e62818e",
+        "file": "08-no-preheader-canonical-local-rebundle-exact.lean"
+      },
+      "metric": {
+        "label": "candidate-08-no-preheader-canonical-local-rebundle-exact",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9f4696fa13b9bd072bbe1cfaa4e48712402b7bdc52e6525ba04cfb6e3e62818e",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-08-no-preheader-canonical-local-rebundle-exact.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-rebundle-simpa-defs",
+        "provenance": "hand:no-preheader+canonical-local+rebundle-simpa-defs",
+        "sha256": "4ff751f54fb0062ceb7d02b1d270945ac6a195a338dca3b370cc9b86de55cfe6",
+        "file": "09-no-preheader-canonical-local-rebundle-simpa-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-09-no-preheader-canonical-local-rebundle-simpa-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4ff751f54fb0062ceb7d02b1d270945ac6a195a338dca3b370cc9b86de55cfe6",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-09-no-preheader-canonical-local-rebundle-simpa-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-rebundle-simp-defs",
+        "provenance": "hand:no-preheader+canonical-local+rebundle-simp-defs",
+        "sha256": "0a62933348ae4109a9e626cb0f536168870ba3095b5a91282e3e20bee714706c",
+        "file": "10-no-preheader-canonical-local-rebundle-simp-defs.lean"
+      },
+      "metric": {
+        "label": "candidate-10-no-preheader-canonical-local-rebundle-simp-defs",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "0a62933348ae4109a9e626cb0f536168870ba3095b5a91282e3e20bee714706c",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-10-no-preheader-canonical-local-rebundle-simp-defs.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-rebundle-convert-rfl",
+        "provenance": "hand:no-preheader+canonical-local+rebundle-convert-rfl",
+        "sha256": "291e982ee9aafbec6f650b0380c1b154c5f95d9318790fce8c97c3d2122c999a",
+        "file": "11-no-preheader-canonical-local-rebundle-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-11-no-preheader-canonical-local-rebundle-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "291e982ee9aafbec6f650b0380c1b154c5f95d9318790fce8c97c3d2122c999a",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 51,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-11-no-preheader-canonical-local-rebundle-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-rebundle-convert-simp",
+        "provenance": "hand:no-preheader+canonical-local+rebundle-convert-simp",
+        "sha256": "0d399ea0f10599f3cc2ad23fbdb528d33de24a01426b76c6e33440802fc1291b",
+        "file": "12-no-preheader-canonical-local-rebundle-convert-simp.lean"
+      },
+      "metric": {
+        "label": "candidate-12-no-preheader-canonical-local-rebundle-convert-simp",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "0d399ea0f10599f3cc2ad23fbdb528d33de24a01426b76c6e33440802fc1291b",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 51,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-12-no-preheader-canonical-local-rebundle-convert-simp.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "no-preheader-canonical-local-hasF-simpa",
+        "provenance": "hand:no-preheader+canonical-local+hasF-simpa",
+        "sha256": "fc7fa6b7450e7824b2107171fa510b8adbdde89f4c608cb608f8440ea8f89dd5",
+        "file": "13-no-preheader-canonical-local-hasF-simpa.lean"
+      },
+      "metric": {
+        "label": "candidate-13-no-preheader-canonical-local-hasF-simpa",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "fc7fa6b7450e7824b2107171fa510b8adbdde89f4c608cb608f8440ea8f89dd5",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-13-no-preheader-canonical-local-hasF-simpa.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}

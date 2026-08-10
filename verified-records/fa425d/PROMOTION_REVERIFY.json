@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "name": "no-preheader-keep-local-show-rebundle",
+    "provenance": "hand:no-preheader+keep-local+show-rebundle",
+    "sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+    "file": "07-no-preheader-keep-local-show-rebundle.lean"
+  },
+  "screening_metric": {
+    "label": "candidate-07-no-preheader-keep-local-show-rebundle",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-no-preheader-keep-local-show-rebundle.log"
+  },
+  "reverify_run1": {
+    "label": "FA-promotion-reverify-run1",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run1.log"
+  },
+  "reverify_run2": {
+    "label": "FA-promotion-reverify-run2",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+  },
+  "consistent": true
+}
