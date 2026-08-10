@@ -1,0 +1,1 @@
+Retrigger the already-registered FA447b explicit GL invariant direct matrix. No source changes; require all five direct Lean metrics.
