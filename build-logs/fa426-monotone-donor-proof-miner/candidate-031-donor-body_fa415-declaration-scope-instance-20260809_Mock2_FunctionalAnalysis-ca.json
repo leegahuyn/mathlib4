@@ -1,0 +1,15 @@
+{
+  "label": "candidate-031-donor-body_fa415-declaration-scope-instance-20260809_Mock2_FunctionalAnalysis-ca",
+  "source_sha256": "10b7ce2f7d6edad715e1e061fb3c744a0dbb4344777caf0650aa4f9c219e2ad9",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31725,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 141.593,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-031-donor-body_fa415-declaration-scope-instance-20260809_Mock2_FunctionalAnalysis-ca.log"
+}

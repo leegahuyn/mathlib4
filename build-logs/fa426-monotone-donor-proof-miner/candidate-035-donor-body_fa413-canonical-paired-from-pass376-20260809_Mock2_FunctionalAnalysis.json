@@ -1,0 +1,15 @@
+{
+  "label": "candidate-035-donor-body_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalysis",
+  "source_sha256": "164f03fda75c5317a4a32876b24bb908ffc6feeec71a2837041cc1f9d730b429",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 32035,
+  "first_error_col": 8,
+  "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 140.129,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-035-donor-body_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalysis.log"
+}

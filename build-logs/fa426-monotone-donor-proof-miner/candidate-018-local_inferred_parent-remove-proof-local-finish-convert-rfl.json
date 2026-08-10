@@ -1,0 +1,15 @@
+{
+  "label": "candidate-018-local_inferred_parent-remove-proof-local-finish-convert-rfl",
+  "source_sha256": "ffd600d232ef8fea4993cf04b78dc95e227823428d9405d6f469b922562f5be4",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 28,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 141.48,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-018-local_inferred_parent-remove-proof-local-finish-convert-rfl.log"
+}

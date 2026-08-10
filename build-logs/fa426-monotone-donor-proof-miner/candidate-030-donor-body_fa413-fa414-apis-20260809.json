@@ -1,0 +1,15 @@
+{
+  "label": "candidate-030-donor-body_fa413-fa414-apis-20260809",
+  "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31725,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 140.472,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-030-donor-body_fa413-fa414-apis-20260809.log"
+}

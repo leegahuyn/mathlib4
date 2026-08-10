@@ -1,0 +1,12 @@
+classification=VERIFIED
+authority=direct Lean CLI
+baseline_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+selected_sha256=49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74
+FA_exit=1
+FA_first_error=32035:8
+FA_first_declaration=nativeActualEdgeFluxIntegral_paired_circular
+line_count=60453
+strict_promotion=true
+materialized_verified_baseline=false
+candidate_trials=36
+maxErrors_cap=1

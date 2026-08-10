@@ -1,0 +1,15 @@
+{
+  "label": "candidate-025-remove-proof-local-instance-finish-exact-hcomp",
+  "source_sha256": "ee5e824104fe0972062cb61050b1313f03b890f67947cff9d4debc5959fc7ac3",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 149.821,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-025-remove-proof-local-instance-finish-exact-hcomp.log"
+}

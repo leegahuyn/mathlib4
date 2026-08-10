@@ -1,0 +1,15 @@
+{
+  "label": "candidate-014-local_normed_parent-reuse-proof-local-finish-simpa-definitions",
+  "source_sha256": "e66d3fdd0546915671c008f0ac7c79008215a7fc4f484fc3110448d3831cfaf2",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 146.411,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-014-local_normed_parent-reuse-proof-local-finish-simpa-definitions.log"
+}

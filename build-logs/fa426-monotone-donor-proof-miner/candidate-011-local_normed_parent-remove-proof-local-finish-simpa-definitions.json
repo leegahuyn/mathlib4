@@ -1,0 +1,15 @@
+{
+  "label": "candidate-011-local_normed_parent-remove-proof-local-finish-simpa-definitions",
+  "source_sha256": "74ae1bfc17e154096195ba85794668bbfa42f5f4e19e6c3dc6f6998bbd7f0398",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 141.89,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-011-local_normed_parent-remove-proof-local-finish-simpa-definitions.log"
+}

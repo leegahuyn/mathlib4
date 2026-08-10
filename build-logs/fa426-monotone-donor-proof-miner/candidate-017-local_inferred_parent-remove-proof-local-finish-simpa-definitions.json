@@ -1,0 +1,15 @@
+{
+  "label": "candidate-017-local_inferred_parent-remove-proof-local-finish-simpa-definitions",
+  "source_sha256": "7ea51d4443b5ca9e7f02f0cac7b43162ba6cb1c721e4012c4be1a38af57afef6",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 140.804,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-017-local_inferred_parent-remove-proof-local-finish-simpa-definitions.log"
+}

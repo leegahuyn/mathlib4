@@ -1,0 +1,88 @@
+{
+  "classification": "VERIFIED",
+  "authority": "direct Lean CLI",
+  "baseline_provenance": {
+    "source": "checked-in verified evidence",
+    "exact_historical_sha": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0"
+  },
+  "original_checked_source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "baseline": {
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "required_frontier": 31726
+  },
+  "selected": {
+    "label": "selected-direct-confirmation",
+    "source_sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "max_errors": 1,
+    "olean": false,
+    "ilean": false,
+    "elapsed_seconds": 140.107,
+    "log_path": "build-logs/fa426-monotone-donor-proof-miner/selected-direct-confirmation.log"
+  },
+  "line_count": 60453,
+  "strict_promotion": true,
+  "materialized_verified_baseline": false,
+  "persist_source": true,
+  "promotion_chain": [
+    {
+      "label": "donor-body::fa419-unfold-deriv-instance-20260809",
+      "previous": {
+        "label": "baseline-direct",
+        "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "max_errors": 1,
+        "olean": false,
+        "ilean": false,
+        "elapsed_seconds": 140.993,
+        "log_path": "build-logs/fa426-monotone-donor-proof-miner/baseline-direct.log"
+      },
+      "new": {
+        "label": "candidate-034-donor-body_fa419-unfold-deriv-instance-20260809",
+        "source_sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "max_errors": 1,
+        "olean": false,
+        "ilean": false,
+        "elapsed_seconds": 142.594,
+        "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-034-donor-body_fa419-unfold-deriv-instance-20260809.log"
+      }
+    }
+  ],
+  "candidate_trials": 36,
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap only; error_headers is not total error count or progress",
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "selected_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_not_increased": true,
+  "elapsed_seconds": 5794.532
+}

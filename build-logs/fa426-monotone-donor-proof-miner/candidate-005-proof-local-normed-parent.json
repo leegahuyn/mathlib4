@@ -1,0 +1,15 @@
+{
+  "label": "candidate-005-proof-local-normed-parent",
+  "source_sha256": "9e421f948e9db117bcd85c082eb1b482932293a8030e15018297422a52c7b490",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 141.719,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-005-proof-local-normed-parent.log"
+}

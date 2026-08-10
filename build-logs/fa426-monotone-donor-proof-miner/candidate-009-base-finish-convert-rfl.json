@@ -1,0 +1,15 @@
+{
+  "label": "candidate-009-base-finish-convert-rfl",
+  "source_sha256": "e83b82b7e80872c157be68758238ef8f79e2296886251c70de3bd0d8f63f7803",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 28,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 144.27,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-009-base-finish-convert-rfl.log"
+}

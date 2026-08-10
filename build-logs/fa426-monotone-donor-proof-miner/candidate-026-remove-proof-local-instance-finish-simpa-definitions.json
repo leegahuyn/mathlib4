@@ -1,0 +1,15 @@
+{
+  "label": "candidate-026-remove-proof-local-instance-finish-simpa-definitions",
+  "source_sha256": "7d1e103ba392cdc402b92efe1107a919fa512ee533e44c3c1cafbb30daafac24",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 148.193,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-026-remove-proof-local-instance-finish-simpa-definitions.log"
+}
