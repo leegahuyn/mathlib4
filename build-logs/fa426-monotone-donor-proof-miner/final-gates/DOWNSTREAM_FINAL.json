@@ -1,0 +1,10 @@
+{
+  "complete": false,
+  "runs": {
+    "FA-run1": {
+      "exit_code": 1,
+      "error_headers": 2,
+      "maxErrors_cap": 1
+    }
+  }
+}
