@@ -1,0 +1,1 @@
+Trigger the FA444 repaired matrix with both candidate and selector checkouts pinned to the current repair branch ref. PR remains draft and unmerged.
