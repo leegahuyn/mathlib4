@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa440_parallel_direct_solver.py", line 1187, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa440_parallel_direct_solver.py", line 973, in main
+    baseline, provenance = recover_verified_baseline()
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa440_parallel_direct_solver.py", line 393, in recover_verified_baseline
+    artifact_helper = fa432.load_helper()
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa432_prepare_scoped_instance_candidate.py", line 42, in load_helper
+    spec.loader.exec_module(module)
+  File "<frozen importlib._bootstrap_external>", line 991, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1128, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1186, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/mathlib4/mathlib4/scripts/fa427_prepare_actualedge_candidate.py'
