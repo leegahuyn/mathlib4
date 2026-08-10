@@ -1,0 +1,2 @@
+requested_at=2026-08-10T14:20:00+09:00
+include=diagnostic,matrix,sequential,fa443,baseline-smoke-v1,baseline-smoke-v2
