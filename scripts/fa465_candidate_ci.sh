@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set +e
+: "${VARIANT:?VARIANT required}"
+OUT="build-logs/fa465-checked-lower/candidates/${VARIANT}"; SRC="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"; MAX_ERRORS="${MAX_ERRORS:-6}"
+rm -rf "$OUT";mkdir -p "$OUT" .lake/build/lib/lean/PrimalitySheafVerification
+git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git rev-parse HEAD > "$OUT/repository-head.txt"
+python3 scripts/fa465_prepare_checked_lower.py --variant "$VARIANT" --output-dir "$OUT" > "$OUT/prepare.log" 2>&1;prepare_rc=$?;printf '%s' "$prepare_rc" > "$OUT/prepare.exit";cat "$OUT/prepare.log"
+curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh > "$OUT/elan-download.log" 2>&1;curl_rc=$?;printf '%s' "$curl_rc" > "$OUT/elan-download.exit";install_rc=125
+if test "$curl_rc" -eq 0;then sh /tmp/elan-init.sh -y --default-toolchain none > "$OUT/elan-init.log" 2>&1;elan_rc=$?;printf '%s' "$elan_rc" > "$OUT/elan-init.exit";if test "$elan_rc" -eq 0;then export PATH="${HOME}/.elan/bin:${PATH}";elan toolchain install "$(cat lean-toolchain)" > "$OUT/toolchain-install.log" 2>&1;install_rc=$?;fi;fi
+printf '%s' "$install_rc" > "$OUT/toolchain-install.exit";export PATH="${HOME}/.elan/bin:${PATH}";cache_rc=125
+if test "$install_rc" -eq 0;then lean --version > "$OUT/lean-version.txt" 2>&1;lake --version > "$OUT/lake-version.txt" 2>&1;lake exe cache get > "$OUT/cache-get.log" 2>&1;cache_rc=$?;else printf 'toolchain failed\n' > "$OUT/cache-get.log";fi;printf '%s' "$cache_rc" > "$OUT/cache-get.exit"
+compile_one(){ stem="$1";cap="$2";src="PrimalitySheafVerification/${stem}.lean";o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean";i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean";rm -f "$o" "$i";command=(lake env lean "-DmaxErrors=${cap}" -DwarningAsError=false -o "$o" -i "$i" "$src");printf '%q ' "${command[@]}" > "$OUT/${stem}.command";printf '\n' >> "$OUT/${stem}.command";touch "$OUT/${stem}.executed";"${command[@]}" > "$OUT/${stem}.log" 2>&1;rc=$?;printf '%s' "$rc" > "$OUT/${stem}.exit";}
+if test "$prepare_rc" -eq 0 && test "$install_rc" -eq 0 && test "$cache_rc" -eq 0;then compile_one Mock2 3;compile_one Mock2_Advanced 3;compile_one Mock2_FunctionalAnalysis "$MAX_ERRORS";else for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis;do printf 125 > "$OUT/${stem}.exit";printf 'direct Lean unavailable\n' > "$OUT/${stem}.log";done;fi
+export FA442_OUT_DIR="$OUT" FA442_SOURCE="$SRC" FA442_METADATA="$OUT/CANDIDATE.json" MAX_ERRORS;export FA442_EXPECTED_LINES="$(wc -l < "$SRC"|tr -d ' ')";python3 scripts/fa458_record_direct_metric_strict.py > "$OUT/metric-console.log" 2>&1;printf '%s' "$?" > "$OUT/metric.exit";cat "$OUT/metric-console.log";exit 0
