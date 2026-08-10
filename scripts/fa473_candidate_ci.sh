@@ -10,12 +10,12 @@ if [[ "$VARIANT" != "norms" ]]; then
   echo "FA473 requires VARIANT=norms, got: $VARIANT" >&2
   exit 2
 fi
-if [[ "$MAX_ERRORS" != "160" ]]; then
-  echo "FA473 requires MAX_ERRORS=160, got: $MAX_ERRORS" >&2
+if [[ "$MAX_ERRORS" != "32" ]]; then
+  echo "FA473 requires MAX_ERRORS=32, got: $MAX_ERRORS" >&2
   exit 2
 fi
 case "$TRACE_VARIANT" in
-  exp_mul_i|convert_ring_nf|const_add) ;;
+  const_add_simp|const_add_norm|const_add_map_zero) ;;
   *)
     echo "unsupported TRACE_VARIANT: $TRACE_VARIANT" >&2
     exit 2
