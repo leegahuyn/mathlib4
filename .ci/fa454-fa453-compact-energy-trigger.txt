@@ -1,2 +1,3 @@
 FA454 draft PR trigger for the FA453 compact-energy direct Lean matrix.
 Do not merge or mark ready. Promotion authority is direct lake env lean evidence only.
+Retrigger after isolating concurrency by run ID so the PR matrix cannot be blocked by a base push run.
