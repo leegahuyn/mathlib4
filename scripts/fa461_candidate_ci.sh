@@ -13,7 +13,7 @@ git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 git rev-parse HEAD > "$OUT/repository-head.txt"
 printf '%s\n' "$(cat lean-toolchain)" > "$OUT/lean-toolchain.txt"
 
-python3 scripts/fa461_prepare_gl_analytic_cluster1.py \
+python3 scripts/fa461_prepare_gl_analytic_cluster1_v2.py \
   --variant "$VARIANT" --output-dir "$OUT" > "$OUT/prepare.log" 2>&1
 prepare_rc=$?
 printf '%s' "$prepare_rc" > "$OUT/prepare.exit"
