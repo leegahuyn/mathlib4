@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: codex-fa478-observe
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   observe:
@@ -50,6 +50,14 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Publish FA478 observer start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA478 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> FA476 -> FA477 -> FA478 -> FA479\`\n- next rule: \`do not create FA479 until FA478 actual direct Lean frontier is known\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
       - name: Run exact FA478 candidate/direct Lean loop and retain exit
         id: run
         shell: bash
@@ -69,7 +77,6 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY' > /tmp/fa478-comment.md
-          import json
           from pathlib import Path
           import os
 
@@ -84,6 +91,7 @@ jobs:
               f"- run_id: `{os.environ.get('GITHUB_RUN_ID', '')}`",
               f"- head_sha: `{os.environ.get('GITHUB_SHA', '')}`",
               f"- script_exit: `{os.environ.get('SCRIPT_EXIT', '')}`",
+              "- sequence: `FA475 -> FA476 -> FA477 -> FA478 -> FA479`",
               "- workflow: `codex-fa478-observe.yml`",
               "",
           ]
@@ -99,8 +107,7 @@ jobs:
               lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
               tail = "\n".join(lines[-180:])
               parts += ["### Tail of actual execution log", "```text", tail[-30000:], "```", ""]
-          body = "\n".join(parts)
-          print(body[:62000])
+          print("\n".join(parts)[:62000])
           PY
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa478-comment.md)"
 
