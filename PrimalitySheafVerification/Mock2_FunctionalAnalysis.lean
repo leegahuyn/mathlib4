@@ -32585,11 +32585,11 @@ This is the per-tile equality required by the finite carrier decomposition. -/
 theorem selectedHalfOpenTile_ae_eq_openTile
     (q : GammaTwoRightCoset) :
     gammaTwoCosetRep q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
-      gammaTwoCosetRep q • ModularGroup.fdo :=
-  Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
-    (measurePreserving_smul (gammaTwoCosetRep q)⁻¹
-      hyperbolicMeasure).quasiMeasurePreserving
-    modularHalfOpenTile_ae_eq_fdo
+      gammaTwoCosetRep q • ModularGroup.fdo := by
+  letI : MeasurableConstSMul SL(2, ℤ) ℍ :=
+    ⟨fun g ↦ (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable⟩
+  exact Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
+    (measurePreserving_smul (gammaTwoCosetRep q)⁻¹ hyperbolicMeasure).quasiMeasurePreserving modularHalfOpenTile_ae_eq_fdo
 
 /-- Consequently every Bochner set integral may be moved between the actual
 selected open tile and its half-open representative without an integrability
@@ -32751,7 +32751,7 @@ theorem setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero
       refine ⟨hz.1, ?_⟩
       by_contra hHigh
       exact hz.2 ⟨hz.1,
-        (show z.im ≤ H from le_of_not_gt hHigh)⟩
+        (show z ∈ {w : ℍ | w.im ≤ H} from le_of_not_gt hHigh)⟩
     _ = ∫ z in modularClosedTileTruncation H,
         f z ∂hyperbolicMeasure := by
       apply setIntegral_congr_set

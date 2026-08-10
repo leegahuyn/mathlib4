@@ -1,0 +1,56 @@
+{
+  "variant": "measurable_const_smul_local",
+  "baseline_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "candidate_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+  "line_count": 60453,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "repairs": [
+    {
+      "repair": "slope_plain",
+      "applied": 1
+    },
+    {
+      "repair": "paired_parenthesized",
+      "applied": 9,
+      "per_edge": {
+        "circularArc": 5,
+        "leftVerticalSegment": 2,
+        "rightVerticalSegment": 2
+      }
+    },
+    {
+      "repair": "left_selected_piola_ring",
+      "applied": 1
+    },
+    {
+      "repair": "proof_local_MeasurableConstSMul",
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "applied": 1,
+      "same_height": true
+    }
+  ],
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "parent_direct_champion_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+  "parent_direct_first_error": {
+    "line": 32590,
+    "column": 5,
+    "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+    "declaration_index": 2671
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "input_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+  "output_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+  "line_count": 60453,
+  "same_height": true,
+  "target_theorem_header_changed": false,
+  "changed_declaration": "selectedHalfOpenTile_ae_eq_openTile",
+  "repair": "proof-local MeasurableConstSMul SL(2, \u2124) \u210d",
+  "forbidden_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_clean": true
+}
