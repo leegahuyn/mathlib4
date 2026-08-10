@@ -1,0 +1,1 @@
+Run the FA454 cumulative actual-Lean autorepair matrix from the checked-in FA451 champion. Every candidate must execute pinned Lean, cache restore, interim direct FA where applicable, final Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis direct CLI. No merge or master push.
