@@ -1,0 +1,247 @@
+name: FA425 strict fixed-height blocker theorem tournament
+
+on:
+  push:
+    branches:
+      - fix/fa425-strict-theorem-tournament-20260810
+    paths:
+      - fa425-requests/REQUESTED.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  resolve-test-promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      EXPECTED_SHA_31725: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+      EXPECTED_SHA_31726: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+      PASS423_RUN_ID: '31317392557'
+      PASS376_ARTIFACT_ID: '9024606745'
+      SOURCE_PATH: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      ACTIVE_BRANCH: fix/fa425-strict-theorem-tournament-20260810
+
+    steps:
+      - name: Checkout FA425 controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa425-strict-theorem-tournament-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Locate latest direct-verified champion by source SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fa425-artifacts /tmp/fa425-refs
+          sha256sum "$SOURCE_PATH" | awk '{print $1}' > /tmp/fa425-original-source.sha
+          : > /tmp/fa425-donor-refs.txt
+          : > /tmp/fa425-remote-branches.txt
+
+          git ls-remote --heads origin \
+            | awk '{print $2}' \
+            | sed 's#refs/heads/##' \
+            | grep -E '(fa37[6-9]|fa4[0-9][0-9]|pass376|champion|functional|mock2)' \
+            | sort -u \
+            | tail -n 80 > /tmp/fa425-remote-branches.txt || true
+
+          i=0
+          while IFS= read -r branch; do
+            test -n "$branch" || continue
+            i=$((i+1))
+            local_ref="refs/remotes/fa425/donor-${i}"
+            if git fetch --no-tags --depth=1 origin \
+                "+refs/heads/${branch}:${local_ref}" >/dev/null 2>&1; then
+              echo "$local_ref" >> /tmp/fa425-donor-refs.txt
+              if git show "${local_ref}:${SOURCE_PATH}" > "/tmp/fa425-refs/${i}.lean" 2>/dev/null; then
+                printf '%s\t%s\n' "$local_ref" "$branch" >> /tmp/fa425-ref-map.tsv
+              fi
+            fi
+          done < /tmp/fa425-remote-branches.txt
+
+          find_by_sha() {
+            local expected=$1
+            local output=$2
+            local origin_file=$3
+            local found=0
+            if test "$(sha256sum "$SOURCE_PATH" | awk '{print $1}')" = "$expected"; then
+              cp "$SOURCE_PATH" "$output"
+              echo "checked-in:${ACTIVE_BRANCH}" > "$origin_file"
+              return 0
+            fi
+            while IFS=$'\t' read -r ref branch; do
+              test -n "${ref:-}" || continue
+              tmp=$(mktemp)
+              if git show "${ref}:${SOURCE_PATH}" > "$tmp" 2>/dev/null; then
+                actual=$(sha256sum "$tmp" | awk '{print $1}')
+                if test "$actual" = "$expected"; then
+                  cp "$tmp" "$output"
+                  echo "branch:${branch}" > "$origin_file"
+                  rm -f "$tmp"
+                  return 0
+                fi
+              fi
+              rm -f "$tmp"
+            done < /tmp/fa425-ref-map.tsv
+            return 1
+          }
+
+          if find_by_sha "$EXPECTED_SHA_31726" /tmp/fa425-baseline.lean /tmp/fa425-champion-origin.txt; then
+            echo 'resolved 31726 champion from checked-in branch source'
+          else
+            gh api -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/actions/runs/${PASS423_RUN_ID}/artifacts?per_page=100" \
+              --paginate > /tmp/fa425-pass423-artifacts.json
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          raw = Path('/tmp/fa425-pass423-artifacts.json').read_text(encoding='utf-8')
+          docs=[]
+          decoder=json.JSONDecoder(); pos=0
+          while pos < len(raw):
+              while pos < len(raw) and raw[pos].isspace(): pos += 1
+              if pos >= len(raw): break
+              obj,pos=decoder.raw_decode(raw,pos); docs.append(obj)
+          ids=[]
+          for doc in docs:
+              for a in doc.get('artifacts',[]):
+                  if not a.get('expired'): ids.append(str(a['id']))
+          Path('/tmp/fa425-pass423-artifact-ids.txt').write_text('\n'.join(ids)+'\n',encoding='utf-8')
+          PY
+            while IFS= read -r artifact_id; do
+              test -n "$artifact_id" || continue
+              zip="/tmp/fa425-artifacts/pass423-${artifact_id}.zip"
+              dir="/tmp/fa425-artifacts/pass423-${artifact_id}"
+              mkdir -p "$dir"
+              gh api -H 'Accept: application/vnd.github+json' \
+                "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > "$zip" || continue
+              unzip -q "$zip" -d "$dir" || continue
+            done < /tmp/fa425-pass423-artifact-ids.txt
+
+            match=$(find /tmp/fa425-artifacts -type f -print0 | while IFS= read -r -d '' file; do
+              actual=$(sha256sum "$file" | awk '{print $1}')
+              if test "$actual" = "$EXPECTED_SHA_31726"; then printf '%s\n' "$file"; fi
+            done | head -n 1)
+            if test -n "$match"; then
+              cp "$match" /tmp/fa425-baseline.lean
+              echo "PASS423-run:${PASS423_RUN_ID}:artifact-file:${match}" > /tmp/fa425-champion-origin.txt
+            elif find_by_sha "$EXPECTED_SHA_31725" /tmp/fa425-baseline.lean /tmp/fa425-champion-origin.txt; then
+              echo '31726 source unavailable; resolved authoritative 31725 checked-in source'
+            else
+              zip=/tmp/fa425-artifacts/pass376.zip
+              dir=/tmp/fa425-artifacts/pass376
+              mkdir -p "$dir"
+              gh api -H 'Accept: application/vnd.github+json' \
+                "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${PASS376_ARTIFACT_ID}/zip" > "$zip"
+              unzip -q "$zip" -d "$dir"
+              match=$(find "$dir" -type f -print0 | while IFS= read -r -d '' file; do
+                actual=$(sha256sum "$file" | awk '{print $1}')
+                if test "$actual" = "$EXPECTED_SHA_31725"; then printf '%s\n' "$file"; fi
+              done | head -n 1)
+              test -n "$match"
+              cp "$match" /tmp/fa425-baseline.lean
+              echo "PASS376-artifact:${PASS376_ARTIFACT_ID}:file:${match}" > /tmp/fa425-champion-origin.txt
+            fi
+          fi
+
+          resolved=$(sha256sum /tmp/fa425-baseline.lean | awk '{print $1}')
+          test "$resolved" = "$EXPECTED_SHA_31726" || test "$resolved" = "$EXPECTED_SHA_31725"
+          test "$(python3 -c "print(len(open('/tmp/fa425-baseline.lean',encoding='utf-8').read().splitlines()))")" = 60453
+          cp /tmp/fa425-baseline.lean "$SOURCE_PATH"
+          printf 'resolved_sha256=%s\norigin=%s\nline_count=60453\n' \
+            "$resolved" "$(cat /tmp/fa425-champion-origin.txt)" \
+            | tee /tmp/fa425-resolution.txt
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa425-lean-version.txt
+          lake --version | tee /tmp/fa425-lake-version.txt
+          lake exe cache get | tee /tmp/fa425-cache-get.log
+
+      - name: Run direct Lean fixed-height tournament and ordered gates
+        id: controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa425_run_strict_controller.py
+          cp /tmp/fa425-resolution.txt build-logs/fa425-strict-theorem-tournament/RESOLUTION.txt
+          cp /tmp/fa425-lean-version.txt build-logs/fa425-strict-theorem-tournament/lean-version.txt
+          cp /tmp/fa425-lake-version.txt build-logs/fa425-strict-theorem-tournament/lake-version.txt
+          cp /tmp/fa425-cache-get.log build-logs/fa425-strict-theorem-tournament/cache-get.log
+
+      - name: Persist only verified source and concise evidence
+        if: always()
+        shell: bash
+        env:
+          SOURCE_SHOULD_COMMIT: ${{ steps.controller.outputs.source_should_commit }}
+          STRICT_PROMOTION: ${{ steps.controller.outputs.strict_promotion }}
+          FA_TRUE_PASS: ${{ steps.controller.outputs.fa_true_pass }}
+          ALL_CHAIN_PASS: ${{ steps.controller.outputs.all_chain_pass }}
+        run: |
+          set -euo pipefail
+          d=build-logs/fa425-strict-theorem-tournament
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          mkdir -p verified-records/fa425
+          cp "$d/CURRENT.json" verified-records/fa425/CURRENT.json
+          cp "$d/CURRENT.txt" verified-records/fa425/CURRENT.txt
+          cp "$d/BASELINE.json" verified-records/fa425/BASELINE.json
+          cp "$d/BASELINE_FIRST_ERROR_CONTEXT.txt" verified-records/fa425/BASELINE_FIRST_ERROR_CONTEXT.txt
+          test ! -f "$d/PROMOTED_FIRST_ERROR_CONTEXT.txt" || \
+            cp "$d/PROMOTED_FIRST_ERROR_CONTEXT.txt" verified-records/fa425/PROMOTED_FIRST_ERROR_CONTEXT.txt
+          test ! -f "$d/TOURNAMENT.json" || cp "$d/TOURNAMENT.json" verified-records/fa425/TOURNAMENT.json
+          test ! -f "$d/PROMOTION_REVERIFY.json" || \
+            cp "$d/PROMOTION_REVERIFY.json" verified-records/fa425/PROMOTION_REVERIFY.json
+
+          if test "${SOURCE_SHOULD_COMMIT:-false}" = true; then
+            git add "$SOURCE_PATH" verified-records/fa425
+            if test "${ALL_CHAIN_PASS:-false}" = true; then
+              msg='fix: FA425 FA Integrated Mock3 QYM ordered 2x PASS [skip ci]'
+            elif test "${FA_TRUE_PASS:-false}" = true; then
+              msg='fix: FA425 Mock2 FunctionalAnalysis TRUE PASS 2x audit clean [skip ci]'
+            elif test "${STRICT_PROMOTION:-false}" = true; then
+              first=$(python3 -c "import json; d=json.load(open('$d/CURRENT.json')); print(d['promotion']['reverify_run2']['first_error_line'])")
+              msg="fix: promote FA425 strict frontier to ${first} [skip ci]"
+            else
+              msg='chore: materialize latest direct-verified FA champion [skip ci]'
+            fi
+          else
+            git restore "$SOURCE_PATH"
+            git add verified-records/fa425
+            msg='evidence: retain verified FA champion after FA425 tournament [skip ci]'
+          fi
+
+          if ! git diff --cached --quiet; then
+            git commit -m "$msg"
+            git push origin "HEAD:${ACTIVE_BRANCH}"
+          fi
+
+      - name: Upload complete FA425 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa425-strict-theorem-tournament-${{ github.run_id }}-${{ github.sha }}
+          path: build-logs/fa425-strict-theorem-tournament
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Classify controller result
+        if: always()
+        env:
+          CONTROLLER_SUCCESS: ${{ steps.controller.outputs.controller_success }}
+        shell: bash
+        run: |
+          test "${CONTROLLER_SUCCESS:-false}" = true
