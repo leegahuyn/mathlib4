@@ -1,4 +1,4 @@
-cycle=1
+cycle=2
 previous_chain_integrated=false
 previous_final_complete=false
 authority=direct Lean source rebuild and whole-file audit
