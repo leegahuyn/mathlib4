@@ -142,7 +142,7 @@ orig_norm_repairs = fa470.norm_repairs
 
 def norm_repairs(text: str):
     text, repairs = orig_norm_repairs(text)
-    variant = os.environ.get("VARIANT", "direct_one")
+    variant = os.environ.get("LOG_VARIANT", "direct_one")
     if variant == "surrogate_one":
         text = b.replace_body(
             text, "RealSmooth.comp_logHeightBasePoint", COMP_SURROGATE)
