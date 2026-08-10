@@ -1,0 +1,1 @@
+Draft-only FA461 v2 trigger using direct-diagnostic refinements. Do not merge or mark ready.
