@@ -1,0 +1,166 @@
+name: PR7 guarded final source rebuild and audit
+
+on:
+  push:
+    branches:
+      - ops/pr7-finalization-guard-20260810
+    paths:
+      - pr7-final-requests/REQUESTED.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  final-source-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      OPS_BRANCH: ops/pr7-finalization-guard-20260810
+      PR_BRANCH: fix/primality-sheaf-clean-build
+
+    steps:
+      - name: Checkout finalization guard
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/pr7-finalization-guard-20260810
+          fetch-depth: 2400
+          persist-credentials: true
+
+      - name: Allow guarded chain integration to settle
+        shell: bash
+        run: sleep 600
+
+      - name: Fetch exact current PR7 head and inspect chain evidence
+        id: precondition
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "+refs/heads/${PR_BRANCH}:refs/remotes/pr7final/pr-head"
+          rm -rf /tmp/pr7-final-worktree
+          git worktree add --detach /tmp/pr7-final-worktree refs/remotes/pr7final/pr-head
+          complete=false
+          if test -f /tmp/pr7-final-worktree/build-logs/pr7-verified-chain-integration/CURRENT.json; then
+            complete=$(python3 -c "import json; print(str(json.load(open('/tmp/pr7-final-worktree/build-logs/pr7-verified-chain-integration/CURRENT.json')).get('complete') is True).lower())")
+          fi
+          echo "chain_integrated=$complete" >> "$GITHUB_OUTPUT"
+          echo "pr_head=$(git rev-parse refs/remotes/pr7final/pr-head)" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: ${{ steps.precondition.outputs.chain_integrated == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          cd /tmp/pr7-final-worktree
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/pr7-final-lean-version.txt
+          lake --version | tee /tmp/pr7-final-lake-version.txt
+          lake exe cache get | tee /tmp/pr7-final-cache-get.log
+
+      - name: Run Mock1 BuildAll clean rebuild x2 and Spt5 whole-file audit
+        id: finalize
+        if: ${{ steps.precondition.outputs.chain_integrated == 'true' }}
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf /tmp/pr7-final-evidence
+          mkdir -p /tmp/pr7-final-evidence
+          python3 scripts/pr7_finalize_after_chain.py \
+            --worktree /tmp/pr7-final-worktree \
+            --output /tmp/pr7-final-evidence
+          rc=$?
+          cp /tmp/pr7-final-lean-version.txt /tmp/pr7-final-evidence/lean-version.txt
+          cp /tmp/pr7-final-lake-version.txt /tmp/pr7-final-evidence/lake-version.txt
+          cp /tmp/pr7-final-cache-get.log /tmp/pr7-final-evidence/cache-get.log
+          if test "$rc" -eq 0; then complete=true; else complete=false; fi
+          echo "complete=$complete" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Commit final evidence to PR7 and trigger official CI
+        if: ${{ steps.finalize.outputs.complete == 'true' }}
+        shell: bash
+        env:
+          EXPECTED_PR_HEAD: ${{ steps.precondition.outputs.pr_head }}
+        run: |
+          set -euo pipefail
+          git -C /tmp/pr7-final-worktree switch -c pr7-finalized-source
+          evidence=/tmp/pr7-final-worktree/build-logs/pr7-final-source-validation
+          mkdir -p "$evidence"
+          cp /tmp/pr7-final-evidence/CURRENT.json "$evidence/CURRENT.json"
+          cp /tmp/pr7-final-evidence/CURRENT.txt "$evidence/CURRENT.txt"
+          git -C /tmp/pr7-final-worktree config user.name 'github-actions[bot]'
+          git -C /tmp/pr7-final-worktree config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/pr7-final-worktree add build-logs/pr7-final-source-validation
+          git -C /tmp/pr7-final-worktree commit -m 'ci: record final source rebuilds and Spt5 axiom audit'
+          current_remote=$(git ls-remote origin "refs/heads/${PR_BRANCH}" | awk '{print $1}')
+          test "$current_remote" = "$EXPECTED_PR_HEAD"
+          git -C /tmp/pr7-final-worktree push origin "HEAD:${PR_BRANCH}"
+
+      - name: Record finalization status and schedule bounded rescan
+        if: always()
+        shell: bash
+        env:
+          CHAIN_INTEGRATED: ${{ steps.precondition.outputs.chain_integrated }}
+          FINAL_COMPLETE: ${{ steps.finalize.outputs.complete }}
+        run: |
+          set -euo pipefail
+          cycle=$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+          p=Path('pr7-final-requests/REQUESTED.txt')
+          text=p.read_text() if p.exists() else 'cycle=1'
+          m=re.search(r'(?m)^cycle=(\d+)\s*$',text)
+          print(int(m.group(1)) if m else 1)
+          PY
+          )
+          mkdir -p guard-records/pr7-finalization
+          if test -d /tmp/pr7-final-evidence; then
+            cp /tmp/pr7-final-evidence/CURRENT.json guard-records/pr7-finalization/CURRENT.json || true
+            cp /tmp/pr7-final-evidence/CURRENT.txt guard-records/pr7-finalization/CURRENT.txt || true
+          fi
+          if test "${FINAL_COMPLETE:-false}" = true; then
+            status=official-ci-triggered
+            msg='ci: record completed PR7 final source validation [skip ci]'
+          elif test "$cycle" -lt 12; then
+            next=$((cycle+1))
+            cat > pr7-final-requests/REQUESTED.txt <<EOF
+          cycle=${next}
+          previous_chain_integrated=${CHAIN_INTEGRATED:-false}
+          previous_final_complete=${FINAL_COMPLETE:-false}
+          authority=direct Lean source rebuild and whole-file audit
+          max_cycles=12
+          EOF
+            git add pr7-final-requests/REQUESTED.txt
+            status=rescan-scheduled
+            msg="ci: continue PR7 finalization guard cycle ${next}"
+          else
+            status=bounded-rescan-exhausted
+            msg='ci: record bounded PR7 finalization scan exhaustion [skip ci]'
+          fi
+          printf 'cycle=%s\nchain_integrated=%s\nfinal_complete=%s\nstatus=%s\n' \
+            "$cycle" "${CHAIN_INTEGRATED:-false}" "${FINAL_COMPLETE:-false}" "$status" \
+            > guard-records/pr7-finalization/STATUS.txt
+          git worktree remove --force /tmp/pr7-final-worktree >/dev/null 2>&1 || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add guard-records/pr7-finalization
+          if ! git diff --cached --quiet; then
+            git commit -m "$msg"
+            git push origin HEAD:ops/pr7-finalization-guard-20260810
+          fi
+
+      - name: Upload finalization evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr7-finalization-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            guard-records/pr7-finalization
+            /tmp/pr7-final-evidence
+          if-no-files-found: warn
+          retention-days: 90
