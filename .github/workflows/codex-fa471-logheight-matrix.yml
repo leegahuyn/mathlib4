@@ -25,7 +25,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
-      VARIANT: ${{ matrix.variant }}
+      VARIANT: norms
+      LOG_VARIANT: ${{ matrix.variant }}
       HORIZONTAL_STYLE: calc_four
       MAX_ERRORS: "128"
     steps:
@@ -41,7 +42,7 @@ jobs:
       - name: Print captured Lean error headers
         if: always()
         run: |
-          OUT="build-logs/codex-fa471-logheight-matrix/candidates/${{ matrix.variant }}"
+          OUT="build-logs/codex-fa471-logheight-matrix/candidates/norms"
           if test -f "$OUT/Mock2_FunctionalAnalysis.log"; then
             grep -nE '^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:[0-9]+:[0-9]+: error' "$OUT/Mock2_FunctionalAnalysis.log" || true
           fi
@@ -51,14 +52,14 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: codex-fa471-${{ matrix.variant }}
-          path: build-logs/codex-fa471-logheight-matrix/candidates/${{ matrix.variant }}
+          path: build-logs/codex-fa471-logheight-matrix/candidates/norms
           if-no-files-found: error
           retention-days: 90
 
       - name: Require an actual direct full-source Lean pass
         if: always()
         run: |
-          python3 - "build-logs/codex-fa471-logheight-matrix/candidates/${{ matrix.variant }}/METRIC.json" <<'PY'
+          python3 - "build-logs/codex-fa471-logheight-matrix/candidates/norms/METRIC.json" <<'PY'
           import json
           import sys
           metric = json.load(open(sys.argv[1], encoding="utf-8"))
