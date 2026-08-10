@@ -25,7 +25,7 @@ if [[ "$FA474_WINNER" != "explicit_through2791" ]]; then
   exit 2
 fi
 case "$FA475_VARIANT" in
-  simp_h_ring|simp_h_comm_ring|simp_h_ring_nf|norm_cast_h_ring_nf|norm_num_h_ring_nf) ;;
+  clean_semicolon|clean_all_goals|simp_h_ring|simp_h_comm_ring|simp_h_ring_nf|norm_cast_h_ring_nf|norm_num_h_ring_nf) ;;
   *)
     echo "unsupported FA475_VARIANT: $FA475_VARIANT" >&2
     exit 2
