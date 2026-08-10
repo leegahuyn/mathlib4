@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/native_decide_prepare_trust_repair.py \
+          python3 .github/scripts/native_decide_prepare_trust_repair.py \
             --source-dir PrimalitySheafVerification \
             --output-dir "${EVIDENCE_ROOT}/native" \
             --variant kernel \
@@ -67,7 +67,7 @@ jobs:
           python3 .github/scripts/mock1_advanced_warning_kernel_followup_runner.py \
             --repo-root "${GITHUB_WORKSPACE}" \
             --native-source \
-              "${EVIDENCE_ROOT}/native/candidate/Mock1_Advanced.lean" \
+              "${EVIDENCE_ROOT}/native/Mock1_Advanced.lean" \
             --out "${EVIDENCE_ROOT}/warnings" \
             --variant "${FOLLOWUP_VARIANT}"
           code=$?
