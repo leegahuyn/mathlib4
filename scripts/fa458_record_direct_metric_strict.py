@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import sys
 from pathlib import Path
@@ -20,9 +21,6 @@ spec.loader.exec_module(legacy)
 def strict_parse_errors(stem: str):
     log_path = legacy.OUT / f"{stem}.log"
     log = legacy.read_text(log_path)
-    # Lean 4 emits both `error:` and categorized diagnostics such as
-    # `error(lean.invalidField):`.  Every one is an actual Lean error and must
-    # participate in first-error ordering.
     pattern = re.compile(
         rf"(?m)^(?P<prefix>.*?{re.escape(stem)}\.lean):"
         r"(?P<line>\d+):(?P<col>\d+):\s+"
@@ -59,3 +57,7 @@ def strict_parse_errors(stem: str):
 
 legacy.parse_errors = strict_parse_errors
 legacy.main()
+metric_path = legacy.OUT / "METRIC.json"
+metric = json.loads(metric_path.read_text(encoding="utf-8"))
+metric["diagnostic_parser"] = "strict_error_and_error_category_v1"
+metric_path.write_text(json.dumps(metric, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
