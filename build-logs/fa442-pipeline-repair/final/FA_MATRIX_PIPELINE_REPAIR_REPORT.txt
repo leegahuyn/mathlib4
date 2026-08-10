@@ -1,0 +1,92 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+line count: 60453
+direct Lean exit: 1
+first error: 31726:2 Type mismatch: After simplification, term
+  hcomp
+ has type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+but is expected to have type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (actualEdgeAmbientParam e)
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+declaration: actualEdgeAmbientParam_hasDerivAt
+
+Pipeline issue found:
+root cause: the FA442 prepare step compared the checked-in promoted SHA 885e585d... against the authoritative baseline 71dc36f... and emitted ok=false; both Lean installation and direct compilation were guarded by if: steps.prepare.outputs.ok == 'true', so they were skipped. The selector therefore received zero baseline direct metrics. Git identity lived in a later install step, which was also skipped after selector failure.
+workflow files changed: .github/workflows/fa442-same-height-slope-cumulative.yml; .github/workflows/pre-commit.yml
+scripts changed: scripts/fa442_restore_authoritative_baseline.py; scripts/fa442_record_direct_metric.py; scripts/fa442_select_strict_champion.py; scripts/fa444_candidate_ci.sh; scripts/fa444_selector_ci.sh
+
+Candidate results:
+variant | SHA256 | Lean executed? | exit | first line:col | declaration | classification
+baseline | 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0 | True | 1 | 31726:2 | actualEdgeAmbientParam_hasDerivAt | BASELINE
+slope_change_convert | a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa | True | 1 | 32035:8 | nativeActualEdgeFluxIntegral_paired_circular | DECLARATION_BREAKTHROUGH
+slope_change_convert_paired_all_known | bad4afbe8291643e7add4210c9d42cf13f122dfd34b10d32d5c0e8bf19cfcf65 | True | 1 | 32035:8 | nativeActualEdgeFluxIntegral_paired_circular | DECLARATION_BREAKTHROUGH
+slope_only | 42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5 | True | 1 | 32035:8 | nativeActualEdgeFluxIntegral_paired_circular | DECLARATION_BREAKTHROUGH
+slope_paired_dot | a8e689a69e59d79ad4610ac8ddc46def37a0e07220bcf87fffc38c7fbe8cd0a5 | True | 1 | 32380:50 | nativeOrientedActualEdgeContribution_left | DECLARATION_BREAKTHROUGH
+slope_paired_dot_all_known | 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized | 7671b34dc82cf76ac83f6394eef16911174e263adf2f44eb4c27d4113da84616 | True | 1 | 32380:50 | nativeOrientedActualEdgeContribution_left | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_all_known | ca5a1ae1c713f0061fc3df103f0fd46cbad419cf1ffb41bd6e02778a9767d012 | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_deep_simp | 17bab6b1dee69ffe29c61e548a7df1fbfcdbd51a5206caea050732cc0f35eea5 | True | 1 | 33625:55 | selectedCuspRestrictionRepresentative_add | LEAN_SYNTAX_REGRESSION
+slope_paired_parenthesized_ring | 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152 | True | 1 | 32754:42 | setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_ring_height | 885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489 | True | 1 | 33552:4 | gammaTwoSelectedHorocycleParam_continuous | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_ring_height_upper | c1b2275a88474e3005985700576454234c382b2a8d9a07310772b4194bc9f787 | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_ring_height_upper_tail | e4daf2cffac3d5ef984fcd19152c09f1130f6e939c8ca402705ba043b78f9bee | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | DECLARATION_BREAKTHROUGH
+slope_paired_parenthesized_ring_height_upper_tail_zero | 37a1db68e1c4561a5b505516af58027041f2336c3798b30fc7abf66777bfc081 | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | DECLARATION_BREAKTHROUGH
+slope_structures | 6083f4bb01b25b0fab5897131d1cd85cb134be0115fd61c321fd0cd6b5db7c23 | True | 1 | 32035:8 | nativeActualEdgeFluxIntegral_paired_circular | DECLARATION_BREAKTHROUGH
+slope_structures_paired_all_known | 9d47872ddee2723361e14400761af13249690c25756e690557346a0d9183c6ea | True | 1 | 32035:8 | nativeActualEdgeFluxIntegral_paired_circular | DECLARATION_BREAKTHROUGH
+
+Best direct-verified candidate:
+variant: slope_paired_dot_all_known
+SHA256: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
+exit: 1
+first error: 33624:57 unsolved goals
+n : ℤ
+q : GammaTwoRightCoset
+Y : ℝ
+u v : InverseEtaFixedPhaseCore n
+t : ℝ
+⊢ ↑(selectedCuspTraceWeight n q Y t) * ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) +
+      ↑(selectedCuspTraceWeight n q Y t) * ↑↑v.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) =
+    (selectedCuspRestrictionRepresentative n q Y u + selectedCuspRestrictionRepresentative n q Y v) t
+declaration: selectedCuspRestrictionRepresentative_add
+strictly better than 31726?: True
+
+Checked-in identity:
+selected SHA: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
+worktree SHA: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
+HEAD source SHA: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
+identity_ok: True
+
+Trust audit:
+sorry: 0
+admit: 0
+global axiom: 0
+unsafe: 0
+native_decide: 0
+Lean.ofReduceBool: 0
+
+FA checked-in verification:
+run1: 1
+run2: 1
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: SKIPPED
+Mock3 bridges: SKIPPED
+QYM: SKIPPED
+
+Final classification: STRICT PROMOTION
+
+Branches/commits:
+branch: fix/fa444-fa442-matrix-pipeline-repair-20260810
+source commit: d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe
+verification HEAD: d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31350101724
+Artifact ID: PENDING_UPLOAD
