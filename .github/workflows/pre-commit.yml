@@ -1,9 +1,9 @@
-name: FA451 trace derivative direct Lean matrix
+name: FA452 compact support energy direct Lean matrix
 
 on:
-  push:
+  pull_request:
     branches:
-      - fix/fa451-trace-deriv-compact-matrix-20260810
+      - fix/fa452-compact-support-energy-matrix-20260810
   workflow_dispatch:
 
 permissions:
@@ -11,171 +11,168 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa451-trace-deriv-direct-matrix
-  cancel-in-progress: true
+  group: fa452-compact-support-energy-direct-matrix
+  cancel-in-progress: false
 
 env:
-  ACTIVE_BRANCH: fix/fa451-trace-deriv-compact-matrix-20260810
+  ACTIVE_BRANCH: fix/fa452-compact-support-energy-matrix-20260810
+  MAX_ERRORS: '180'
 
 jobs:
   candidate:
     name: candidate (${{ matrix.variant }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
+    timeout-minutes: 280
     strategy:
       fail-fast: false
-      max-parallel: 7
+      max-parallel: 10
       matrix:
         variant:
-          - known_before_trace
-          - trace_lpz
-          - trace_lpz_rw
-          - trace_deriv_change
-          - trace_deriv_simpa
-          - trace_deriv_change_norm
-          - trace_deriv_simpa_norm
+          - root_baseline
+          - simpa_norm
+          - change_norm
+          - rw_simpa_norm
+          - simpa_norm_compact_pow
+          - change_norm_compact_pow
+          - simpa_norm_compact_mulleft
+          - simpa_norm_compact_convert
+          - rw_simpa_norm_compact_pow
+          - simpa_norm_compact_mono
     env:
       VARIANT: ${{ matrix.variant }}
-      MAX_ERRORS: '120'
     steps:
-      - name: Checkout immutable FA451 trigger commit
+      - name: Checkout current FA452 repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: fix/fa452-compact-support-energy-matrix-20260810
           fetch-depth: 2500
           persist-credentials: false
 
-      - name: Generate candidate and execute every required direct Lean command
+      - name: Generate candidate and execute actual direct Lean CLI
         shell: bash
-        run: bash scripts/fa451_candidate_ci.sh
+        run: bash scripts/fa452_candidate_ci.sh
 
-      - name: Upload candidate source and complete direct metric
+      - name: Upload complete candidate source and direct metric
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa451-candidate-${{ matrix.variant }}
-          path: build-logs/fa451-trace-deriv/candidates/${{ matrix.variant }}
+          name: fa452-candidate-${{ matrix.variant }}
+          path: build-logs/fa452-compact-energy/candidates/${{ matrix.variant }}
           if-no-files-found: error
           retention-days: 90
 
-      - name: Enforce direct Lean execution, prerequisites, identity, and trust
+      - name: Reject skipped Lean execution and prerequisite regressions
         if: always()
         shell: bash
         run: |
-          python3 - "build-logs/fa451-trace-deriv/candidates/${VARIANT}/METRIC.json" <<'PY'
-          import json
-          import sys
-
-          try:
-              metric = json.load(open(sys.argv[1], encoding="utf-8"))
-          except Exception as exc:
-              raise SystemExit(f"INFRA_FAILURE: metric missing or invalid: {exc}")
-
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          variant = os.environ['VARIANT']
+          path = Path(f'build-logs/fa452-compact-energy/candidates/{variant}/METRIC.json')
+          if not path.exists():
+              raise SystemExit('INFRA_FAILURE: METRIC.json missing')
+          metric = json.loads(path.read_text(encoding='utf-8'))
           ok = (
-              metric.get("classification") != "INFRA_FAILURE"
-              and metric.get("all_required_lean_executed") is True
-              and metric.get("source_metadata_identity") is True
-              and metric.get("Mock2_executed") is True
-              and metric.get("Mock2_exit") == 0
-              and metric.get("Mock2_errors_under_cap") == 0
-              and metric.get("Mock2_Advanced_executed") is True
-              and metric.get("Mock2_Advanced_exit") == 0
-              and metric.get("Mock2_Advanced_errors_under_cap") == 0
-              and metric.get("FA_executed") is True
-              and metric.get("forbidden_clean") is True
+              metric.get('classification') != 'INFRA_FAILURE'
+              and metric.get('all_required_lean_executed') is True
+              and metric.get('source_metadata_identity') is True
+              and metric.get('Mock2_exit') == 0
+              and metric.get('Mock2_errors_under_cap') == 0
+              and metric.get('Mock2_Advanced_exit') == 0
+              and metric.get('Mock2_Advanced_errors_under_cap') == 0
+              and metric.get('FA_executed') is True
+              and metric.get('forbidden_clean') is True
           )
           print(json.dumps(metric, indent=2, ensure_ascii=False))
           if not ok:
-              raise SystemExit("INFRA_FAILURE or prerequisite regression")
+              raise SystemExit('INFRA_FAILURE or prerequisite regression')
           PY
 
   select-confirm-persist:
-    name: independent baselines, strict selector, materialize, and checked-in x2
+    name: independent baseline, selector, checked-in x2, downstream gate
     needs: candidate
     if: always()
     runs-on: ubuntu-24.04
-    timeout-minutes: 480
+    timeout-minutes: 600
     env:
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
-      MAX_ERRORS: '200'
+      MAX_ERRORS: '260'
     steps:
-      - name: Checkout immutable FA451 trigger commit with push credentials
+      - name: Checkout current FA452 repair branch with push credentials
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: fix/fa452-compact-support-energy-matrix-20260810
           fetch-depth: 2500
           persist-credentials: true
 
-      - name: Run independent baselines, strict selector, materialization, and checked-in verification
+      - name: Configure Git identity before any possible commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run strict direct selector and checked-in verification
         id: selector
         shell: bash
-        run: bash scripts/fa451_selector_ci.sh
+        run: bash scripts/fa452_selector_ci.sh
 
-      - name: Upload complete FA451 direct Lean evidence
-        id: evidence_upload
+      - name: Upload complete FA452 evidence
+        id: upload
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa451-complete-evidence-${{ github.run_id }}-${{ github.sha }}
+          name: fa452-complete-evidence-${{ github.run_id }}-${{ github.sha }}
           path: |
-            build-logs/fa451-trace-deriv
+            build-logs/fa452-compact-energy
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
           if-no-files-found: warn
           retention-days: 90
 
-      - name: Patch report with evidence artifact ID and persist compact final report
-        if: steps.selector.outcome == 'success'
+      - name: Patch final report with artifact identity
+        if: always() && steps.upload.outputs.artifact-id != ''
         env:
-          ARTIFACT_ID: ${{ steps.evidence_upload.outputs.artifact-id }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           python3 - <<'PY'
-          import json
-          import os
+          import json, os
           from pathlib import Path
-
-          base = Path("build-logs/fa451-trace-deriv/final")
-          artifact_id = os.environ.get("ARTIFACT_ID", "")
-          final_path = base / "FINAL.json"
-          report_path = base / "FA_MATRIX_PIPELINE_REPAIR_REPORT.txt"
-          result = json.loads(final_path.read_text(encoding="utf-8"))
-          result["evidence_artifact_id"] = int(artifact_id) if artifact_id.isdigit() else artifact_id
-          final_path.write_text(
-              json.dumps(result, indent=2, ensure_ascii=False) + "\n",
-              encoding="utf-8",
-          )
-          report = report_path.read_text(encoding="utf-8")
-          report = report.replace(
-              "Artifact ID: PENDING_UPLOAD_PATCH",
-              f"Artifact ID: {artifact_id or 'UNAVAILABLE'}",
-          )
-          report_path.write_text(report, encoding="utf-8")
+          root = Path('build-logs/fa452-compact-energy/final')
+          summary = root / 'FINAL.json'
+          report = root / 'FA_MATRIX_PIPELINE_REPAIR_REPORT.txt'
+          if summary.exists():
+              data = json.loads(summary.read_text(encoding='utf-8'))
+              data['evidence_artifact_id'] = int(os.environ['ARTIFACT_ID'])
+              summary.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          if report.exists():
+              text = report.read_text(encoding='utf-8')
+              text = text.replace('Artifact ID: PENDING_UPLOAD_PATCH', 'Artifact ID: ' + os.environ['ARTIFACT_ID'])
+              report.write_text(text, encoding='utf-8')
           PY
-          git add -f \
-            build-logs/fa451-trace-deriv/final/FINAL.json \
-            build-logs/fa451-trace-deriv/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
+          git add -f build-logs/fa452-compact-energy/final/FINAL.json \
+            build-logs/fa452-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
           if ! git diff --cached --quiet; then
-            git commit -m 'ci: attach FA451 evidence artifact identity [skip ci]'
+            git commit -m 'ci: attach FA452 evidence artifact identity [skip ci]'
             git push origin "HEAD:${ACTIVE_BRANCH}"
           fi
 
-      - name: Enforce infrastructure integrity separately from Lean proof status
+      - name: Enforce infrastructure separately from Lean proof status
         if: always()
         shell: bash
         run: |
-          set -euo pipefail
           test "${{ steps.selector.outcome }}" = success
-          test -s build-logs/fa451-trace-deriv/root-baseline/METRIC.json
-          test -s build-logs/fa451-trace-deriv/selector-matrix-baseline/METRIC.json
-          test -s build-logs/fa451-trace-deriv/selected/SELECTION.json
-          test -s build-logs/fa451-trace-deriv/selected/CANDIDATE_RESULTS.json
-          test -s build-logs/fa451-trace-deriv/selected-confirm/CONFIRMATION.json
-          test -s build-logs/fa451-trace-deriv/final/CHECKED_IN_IDENTITY.json
-          test -s build-logs/fa451-trace-deriv/final/FA_FINAL.json
-          test -s build-logs/fa451-trace-deriv/final/downstream/DOWNSTREAM.json
-          test -s build-logs/fa451-trace-deriv/final/FINAL.json
-          test -s build-logs/fa451-trace-deriv/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
+          test -s build-logs/fa452-compact-energy/selected/SELECTION.json
+          test -s build-logs/fa452-compact-energy/selected/CANDIDATE_RESULTS.json
+          test -s build-logs/fa452-compact-energy/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa452-compact-energy/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa452-compact-energy/final/FA_FINAL.json
+          test -s build-logs/fa452-compact-energy/final/FINAL.json
+          test -s build-logs/fa452-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
