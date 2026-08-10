@@ -1,0 +1,168 @@
+name: FA442 exact-SHA baseline direct smoke v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa442-baseline-direct-smoke-20260810
+    paths:
+      - build-logs/fa442-baseline-direct-smoke/REQUESTED_V3.txt
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  WORK_BRANCH: fix/fa442-baseline-direct-smoke-20260810
+  BASELINE_SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+  BASELINE_LINE_COUNT: '60453'
+  FA_MAX_ERRORS: '120'
+
+jobs:
+  baseline-direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - name: Checkout baseline smoke branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-baseline-direct-smoke-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/fa442-lean-install-ok
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa442-lean-version.txt
+          lake --version | tee /tmp/fa442-lake-version.txt
+          lake exe cache get | tee /tmp/fa442-cache-get.log
+          touch /tmp/fa442-lean-install-ok
+
+      - name: Recover exact SHA 71dc36 baseline from authoritative runs
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_recover_exact_baseline.py
+
+      - name: Recover exact original FA442 skip condition evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_diagnose_only.py
+
+      - name: Build one-entry current-run baseline bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=build-logs/fa442-exact-baseline-bundle
+          rm -rf "$root"
+          mkdir -p "$root/candidate-bundle/baseline"
+          cp build-logs/fa442-exact-baseline-recovery/source.lean \
+            "$root/candidate-bundle/baseline/source.lean"
+          cp build-logs/fa442-exact-baseline-recovery/metadata.json \
+            "$root/candidate-bundle/baseline/metadata.json"
+          cp build-logs/fa442-exact-baseline-recovery/metadata.json \
+            "$root/baseline-meta.json"
+
+      - name: Directly compile Mock2, Mock2 Advanced, and exact baseline FA
+        shell: bash
+        env:
+          VARIANT: baseline-exact-current-run
+          VARIANT_SLUG: baseline
+          EXPECTED_SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+          IS_BASELINE: 'true'
+          CANDIDATE_BUNDLE_ROOT: build-logs/fa442-exact-baseline-bundle/candidate-bundle
+          BASELINE_META_PATH: build-logs/fa442-exact-baseline-bundle/baseline-meta.json
+          LEAN_INSTALL_MARKER: /tmp/fa442-lean-install-ok
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa442_pipeline_metric.py
+
+      - name: Enforce exact current-run baseline direct metric
+        shell: bash
+        run: |
+          set -euo pipefail
+          metric=build-logs/fa442-pipeline-repair/matrix-results/baseline/metric.json
+          python3 - "$metric" <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          row=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert row['classification'] == 'LEAN_FAILURE', row
+          assert row['direct_lean_executed'] is True, row
+          assert row['source']['sha256'] == os.environ['BASELINE_SHA256'], row
+          assert row['source']['line_count'] == int(os.environ['BASELINE_LINE_COUNT']), row
+          assert row['source']['blocker_header_unchanged'] is True, row
+          assert row['source']['declaration_sequence_unchanged'] is True, row
+          assert row['source']['trust_audit_clean'] is True, row
+          assert row['prerequisites']['Mock2']['exit_code'] == 0, row
+          assert row['prerequisites']['Mock2_Advanced']['exit_code'] == 0, row
+          assert row['fa']['exit_code'] == 1, row
+          first=row['fa']['first_error']
+          assert (first['line'],first['column']) == (31726,2), first
+          assert first['declaration'] == 'actualEdgeAmbientParam_hasDerivAt', first
+          assert row['fa']['max_errors'] == 120, row['fa']
+          out=Path('build-logs/fa442-baseline-direct-smoke')
+          out.mkdir(parents=True,exist_ok=True)
+          (out/'METRIC_V3.json').write_text(json.dumps(row,indent=2,ensure_ascii=False)+'\n',encoding='utf-8')
+          (out/'VERIFIED_V3').touch()
+          PY
+
+      - name: Materialize exact baseline into checked-in source and commit evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp build-logs/fa442-pipeline-repair/matrix-results/baseline/source.lean /tmp/fa442-v3.lean
+          cp build-logs/fa442-baseline-direct-smoke/METRIC_V3.json /tmp/fa442-v3-metric.json
+          cp build-logs/fa442-skip-root-cause/ROOT_CAUSE.json /tmp/fa442-v3-root.json
+          cp build-logs/fa442-skip-root-cause/ROOT_CAUSE.md /tmp/fa442-v3-root.md
+          git fetch origin "${WORK_BRANCH}"
+          git reset --hard "origin/${WORK_BRANCH}"
+          cp /tmp/fa442-v3.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mkdir -p build-logs/fa442-baseline-direct-smoke
+          cp /tmp/fa442-v3-metric.json build-logs/fa442-baseline-direct-smoke/METRIC_V3.json
+          cp /tmp/fa442-v3-root.json build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE_V3.json
+          cp /tmp/fa442-v3-root.md build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE_V3.md
+          touch build-logs/fa442-baseline-direct-smoke/VERIFIED_V3
+          selected_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          test "$selected_sha" = "$BASELINE_SHA256"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/fa442-baseline-direct-smoke
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: exact current-run direct metric for FA 31726 baseline [skip ci]'
+          fi
+          head_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+          test "$head_sha" = "$BASELINE_SHA256"
+          git push origin "HEAD:refs/heads/${WORK_BRANCH}"
+
+      - name: Upload exact-SHA baseline direct evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-exact-sha-baseline-direct-v3-${{ github.run_id }}
+          path: |
+            build-logs/fa442-exact-baseline-recovery
+            build-logs/fa442-skip-root-cause
+            build-logs/fa442-pipeline-repair/matrix-results/baseline
+            build-logs/fa442-baseline-direct-smoke
+          if-no-files-found: error
+          retention-days: 90
