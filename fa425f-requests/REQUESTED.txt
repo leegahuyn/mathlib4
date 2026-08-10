@@ -1,0 +1,5 @@
+requested_at=2026-08-10T08:15:00+09:00
+strategy=prove AddCommGroup instance equality and transport hcomp
+fixed_theorem_header=true
+fixed_line_count=60453
+authority=direct Lean CLI
