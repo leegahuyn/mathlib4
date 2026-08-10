@@ -1,0 +1,64 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
+line count: 60453
+direct Lean exit: 1
+first error: 33624:57
+declaration: selectedCuspRestrictionRepresentative_add
+
+Pipeline issue found:
+root cause: FA451 was initially committed with [skip ci]; this run uses a real trigger, complete direct candidate metrics, an independent root baseline, selector confirmation, checked-in identity, and x2 verification.
+workflow files changed: .github/workflows/pre-commit.yml
+scripts changed: scripts/fa451_candidate_ci.sh; scripts/fa451_prepare_trace_deriv.py; scripts/fa451_select_trace_deriv.py; scripts/fa451_selector_ci.sh
+
+Candidate results:
+variant | SHA256 | Lean executed? | exit | first line:col | declaration | classification
+checked_in_root | 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a | True | 1 | 33624:57 | selectedCuspRestrictionRepresentative_add | ROOT_BASELINE
+known_before_trace | 0321d073820d47e7ff5fd944a61787646971482ef380c1cd2aaf008e463e9c5c | True | 1 | 33842:2 | fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero | MATRIX_BASELINE
+trace_deriv_change | d0aa5b26c39f7e0d0949112de2c26075beed19dbfa688edb50698a6ba31c510c | True | 1 | 33915:6 | norm_deriv_height_mul_normSq_le | DECLARATION_BREAKTHROUGH
+trace_deriv_change_norm | 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb | True | 1 | 33929:4 | compactSupport_height_mul_normSq_le_energy_Ioi | DECLARATION_BREAKTHROUGH
+trace_deriv_simpa | b4b7f8ee74867dbf568ae4fc038f0123f87db5ded850da12d6b4c24f90a3cf81 | True | 1 | 33894:4 | deriv_height_mul_normSq | DECLARATION_BREAKTHROUGH
+trace_deriv_simpa_norm | 290231bf0edf2adb6a63e4a0a8b90f69a97ed35cafb5a525caff729b652d50a8 | True | 1 | 33894:4 | deriv_height_mul_normSq | DECLARATION_BREAKTHROUGH
+trace_lpz | c526a0f1029ecbc9f59d9b7778fe7f97f0eeebce1553647a1c4f2f7e3c792ea6 | True | 1 | 33890:48 | deriv_height_mul_normSq | DECLARATION_BREAKTHROUGH
+trace_lpz_rw | 03aae2f7cf2d4ea42b36ceb0676e452d14666c3a0ebef05d25b76b5469646360 | True | 1 | 33890:48 | deriv_height_mul_normSq | DECLARATION_BREAKTHROUGH
+
+Best direct-verified candidate:
+variant: trace_deriv_change_norm
+SHA256: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+exit: 1
+first error: 33929:4
+declaration: compactSupport_height_mul_normSq_le_energy_Ioi
+strictly better than 33624: True
+
+Checked-in identity:
+selected SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+worktree SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+HEAD source SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+identity_ok: True
+
+Trust audit:
+sorry: 0
+admit: 0
+new_global_axiom: 0
+unsafe: 0
+native_decide: 0
+Lean.ofReduceBool: 0
+
+FA checked-in verification:
+run1: 1
+run2: 1
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: SKIPPED
+Mock3 bridges: SKIPPED
+QYM: SKIPPED
+
+Final classification: STRICT_PROMOTION
+
+Branches/commits:
+branch: fix/fa451-trace-deriv-compact-matrix-20260810
+source commit: ae1e4671fea02c91abe250e3d1c589227081c9b8
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31357603942
+Artifact ID: PENDING_UPLOAD_PATCH
