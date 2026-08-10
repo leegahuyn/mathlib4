@@ -1,0 +1,203 @@
+name: FA452 compact support energy direct Lean matrix
+
+on:
+  push:
+    branches:
+      - fix/fa452-compact-support-energy-matrix-20260810
+    paths:
+      - .github/workflows/fa452-compact-support-energy.yml
+      - scripts/fa452_*.py
+      - scripts/fa452_*.sh
+      - build-logs/fa452-compact-energy/REQUESTED*.txt
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa452-compact-support-energy-matrix
+  cancel-in-progress: false
+
+env:
+  ACTIVE_BRANCH: fix/fa452-compact-support-energy-matrix-20260810
+  MAX_ERRORS: '180'
+
+jobs:
+  candidate:
+    name: candidate (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 260
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        variant:
+          - root_baseline
+          - simpa_norm
+          - change_norm
+          - rw_simpa_norm
+          - simpa_norm_compact_pow
+          - change_norm_compact_pow
+          - simpa_norm_compact_mulleft
+          - simpa_norm_compact_convert
+          - rw_simpa_norm_compact_pow
+          - simpa_norm_compact_mono
+    env:
+      VARIANT: ${{ matrix.variant }}
+    steps:
+      - name: Checkout immutable workflow trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2500
+          persist-credentials: false
+
+      - name: Generate candidate and execute actual direct Lean CLI
+        shell: bash
+        run: bash scripts/fa452_candidate_ci.sh
+
+      - name: Upload complete candidate source and direct metric
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa452-candidate-${{ matrix.variant }}
+          path: build-logs/fa452-compact-energy/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce infrastructure and clean prerequisites separately from FA proof status
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          variant=os.environ['VARIANT']
+          p=Path(f'build-logs/fa452-compact-energy/candidates/{variant}/METRIC.json')
+          if not p.exists():
+              raise SystemExit('INFRA_FAILURE: METRIC.json missing')
+          m=json.loads(p.read_text())
+          ok=(
+              m.get('all_required_lean_executed') is True
+              and m.get('source_metadata_identity') is True
+              and m.get('Mock2_exit')==0
+              and m.get('Mock2_errors_under_cap')==0
+              and m.get('Mock2_Advanced_exit')==0
+              and m.get('Mock2_Advanced_errors_under_cap')==0
+              and m.get('FA_executed') is True
+              and m.get('forbidden_clean') is True
+              and m.get('classification')!='INFRA_FAILURE'
+          )
+          if not ok:
+              raise SystemExit('INFRA_FAILURE or prerequisite regression: '+json.dumps(m))
+          print(json.dumps({
+              'variant':variant,
+              'FA_exit':m.get('FA_exit'),
+              'first':f"{m.get('FA_first_actual_error_line')}:{m.get('FA_first_actual_error_col')}",
+              'declaration':m.get('FA_first_error_declaration'),
+          },indent=2))
+          PY
+
+  select-confirm-persist:
+    name: strict selector, checked-in x2, and ordered downstream gate
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 520
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      MAX_ERRORS: '240'
+    steps:
+      - name: Checkout immutable workflow trigger commit with push credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2500
+          persist-credentials: true
+
+      - name: Configure Git identity before every commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run independent root baseline, strict selector, materialization, checked-in x2, and downstream gate
+        shell: bash
+        run: bash scripts/fa452_selector_ci.sh
+
+      - name: Upload complete FA452 evidence
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa452-complete-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa452-compact-energy/selected
+            build-logs/fa452-compact-energy/selector-root-baseline
+            build-logs/fa452-compact-energy/selected-confirm
+            build-logs/fa452-compact-energy/final
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Patch final report with evidence artifact ID
+        if: always() && steps.upload.outputs.artifact-id != ''
+        env:
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          base=Path('build-logs/fa452-compact-energy/final')
+          p=base/'FINAL.json'
+          if p.exists():
+              data=json.loads(p.read_text())
+              data['evidence_artifact_id']=int(os.environ['ARTIFACT_ID'])
+              p.write_text(json.dumps(data,indent=2,ensure_ascii=False)+'\n')
+          r=base/'FA_MATRIX_PIPELINE_REPAIR_REPORT.txt'
+          if r.exists():
+              text=r.read_text()
+              text=text.replace('Artifact ID: PENDING_UPLOAD_PATCH',
+                                'Artifact ID: '+os.environ['ARTIFACT_ID'])
+              r.write_text(text)
+          PY
+          git add -f \
+            build-logs/fa452-compact-energy/final/FINAL.json \
+            build-logs/fa452-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA452 evidence artifact ID [skip ci]'
+            git push origin "HEAD:${ACTIVE_BRANCH}"
+          fi
+
+      - name: Enforce selector infrastructure independently of Lean proof success
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-logs/fa452-compact-energy/selected/SELECTION.json
+          test -s build-logs/fa452-compact-energy/selected/CANDIDATE_RESULTS.json
+          test -s build-logs/fa452-compact-energy/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa452-compact-energy/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa452-compact-energy/final/FA_FINAL.json
+          test -s build-logs/fa452-compact-energy/final/FINAL.json
+          test -s build-logs/fa452-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path('build-logs/fa452-compact-energy')
+          identity=json.loads((base/'final/CHECKED_IN_IDENTITY.json').read_text())
+          confirm=json.loads((base/'selected-confirm/CONFIRMATION.json').read_text())
+          if identity.get('identity_ok') is not True:
+              raise SystemExit('INFRA_FAILURE: checked-in identity false')
+          if confirm.get('ok') is not True:
+              raise SystemExit('INFRA_FAILURE: independent confirmation false')
+          PY
