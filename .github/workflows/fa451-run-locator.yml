@@ -1,0 +1,112 @@
+name: Locate active FA451 trace-derivative matrix run
+
+on:
+  push:
+    branches:
+      - ci/fa451-run-locator-20260810
+    paths:
+      - build-logs/fa451-run-locator/REQUESTED*.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout locator branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa451-run-locator-20260810
+          persist-credentials: true
+
+      - name: Locate exact FA451 workflow run and jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_BRANCH: fix/fa451-trace-deriv-compact-matrix-20260810
+          TARGET_SHA: 5d56d0e5a2c26f1f44897a61e245df505563d5e6
+          TARGET_NAME: FA451 trace derivative direct Lean matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa451-run-locator
+          mkdir -p "$d"
+          gh api --paginate \
+            "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&per_page=100" \
+            > "$d/ALL_RUNS.json"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path('build-logs/fa451-run-locator/ALL_RUNS.json')
+          raw = path.read_text(encoding='utf-8')
+          decoder = json.JSONDecoder()
+          index = 0
+          pages = []
+          while index < len(raw):
+              while index < len(raw) and raw[index].isspace():
+                  index += 1
+              if index >= len(raw):
+                  break
+              page, index = decoder.raw_decode(raw, index)
+              pages.append(page)
+          runs = []
+          for page in pages:
+              if isinstance(page, dict):
+                  runs.extend(page.get('workflow_runs', []))
+          target = [
+              run for run in runs
+              if run.get('name') == os.environ['TARGET_NAME']
+              and run.get('head_branch') == os.environ['TARGET_BRANCH']
+              and run.get('head_sha') == os.environ['TARGET_SHA']
+          ]
+          target.sort(
+              key=lambda run: (run.get('created_at', ''), run.get('id', 0)),
+              reverse=True,
+          )
+          result = {
+              'found': bool(target),
+              'target_branch': os.environ['TARGET_BRANCH'],
+              'target_sha': os.environ['TARGET_SHA'],
+              'target_name': os.environ['TARGET_NAME'],
+              'latest': target[0] if target else None,
+              'target_runs': target,
+          }
+          out = Path('build-logs/fa451-run-locator/RUN_LOCATOR.json')
+          out.write_text(
+              json.dumps(result, indent=2, ensure_ascii=False) + '\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(result, indent=2, ensure_ascii=False))
+          if target:
+              Path('/tmp/fa451-run-id').write_text(str(target[0]['id']))
+          PY
+          if test -s /tmp/fa451-run-id; then
+            run_id=$(cat /tmp/fa451-run-id)
+            gh api --paginate \
+              "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+              > "$d/JOBS.json"
+            gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" \
+              > "$d/ARTIFACTS.json"
+          else
+            printf '{"total_count":0,"jobs":[]}\n' > "$d/JOBS.json"
+            printf '{"total_count":0,"artifacts":[]}\n' > "$d/ARTIFACTS.json"
+          fi
+
+      - name: Persist locator evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            build-logs/fa451-run-locator/RUN_LOCATOR.json \
+            build-logs/fa451-run-locator/JOBS.json \
+            build-logs/fa451-run-locator/ARTIFACTS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA451 run locator evidence [skip ci]'
+            git push origin HEAD:ci/fa451-run-locator-20260810
+          fi
