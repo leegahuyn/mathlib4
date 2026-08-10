@@ -300,6 +300,22 @@ def classify_progress(
     if int(metric.get("FA_exit", 125)) == 0:
         return "FA_PASS_CANDIDATE"
 
+    # A parser/syntax failure can appear one line later simply because the
+    # malformed proof consumes input up to the next declaration.  It is real
+    # Lean evidence, but never semantic proof progress and must not win by the
+    # same-declaration line/column tie-breaker.
+    first_message = str(metric.get("FA_first_error_message", "")).lower()
+    syntax_markers = (
+        "unexpected token",
+        "unexpected end of input",
+        "invalid syntax",
+        "parser error",
+        "expected ':='",
+        'expected ":="',
+    )
+    if any(marker in first_message for marker in syntax_markers):
+        return "LEAN_SYNTAX_REGRESSION"
+
     baseline_index = int(baseline.get("FA_error_declaration_index", -1))
     candidate_index = int(metric.get("FA_error_declaration_index", -1))
     baseline_line = int(baseline.get("FA_first_actual_error_line", 0))
