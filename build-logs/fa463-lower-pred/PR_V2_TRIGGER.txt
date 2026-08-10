@@ -1,0 +1,1 @@
+Draft-only exact-index lower-pred direct Lean matrix. Do not merge or mark ready.
