@@ -1,0 +1,9 @@
+FA442 matrix pipeline repair requested.
+
+Authority:
+- baseline SHA256 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+- line count 60453
+- first direct Lean error 31726:2
+- declaration actualEdgeAmbientParam_hasDerivAt
+
+This push intentionally triggers the repaired baseline + 16-candidate direct Lean matrix.
