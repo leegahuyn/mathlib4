@@ -1,0 +1,114 @@
+name: Codex FA478 observe actual direct Lean
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-fa478-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa478-observe
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      VARIANT: norms
+      FA473_WINNER: const_add_simp
+      FA474_WINNER: explicit_through2791
+      FA475_WINNER: clean_semicolon
+      FA476_R2_VARIANT: explicit_exp_nonneg
+      FA476_R3_VARIANT: minimal_simpa
+      FA476_R3_EVIDENCE_RUN_ID: "31407777360"
+      FA476_R3_EVIDENCE_ARTIFACT_ID: "9070636218"
+      FA476_R3_EVIDENCE_ARTIFACT_DIGEST: "sha256:343607e51bea29fd2878bf6ebfcc0c1c8b1daf9826733b0cd3729e63fbbea3ca"
+      FA477_VARIANT: upper_ext_h_simp_only
+      FA477_EVIDENCE_RUN_ID: "31409787172"
+      FA477_EVIDENCE_JOB_ID: "93524786715"
+      FA477_EVIDENCE_HEAD_SHA: "faf902ceda7cce10ada4399326330effaa4d669b"
+      FA477_EVIDENCE_ARTIFACT_ID: "9071387258"
+      FA477_EVIDENCE_ARTIFACT_NAME: codex-fa477-minimal_simpa-run31407777360-artifact9070636218-upper_ext_h_simp_only
+      FA477_EVIDENCE_ARTIFACT_SIZE: "598253"
+      FA477_EVIDENCE_ARTIFACT_DIGEST: "sha256:25928120f3113f98886a469b255eec59754bfd232b4df621f4efa4e1e9940b81"
+      FA478_VARIANT: real_norm_eq_abs_only
+      HORIZONTAL_STYLE: calc_four
+      MAX_ERRORS: "32"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Run exact FA478 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa478_normsq_log_cusp_candidate_ci.sh 2>&1 | tee /tmp/fa478-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report exact FA478 evidence to issue 14
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa478-comment.md
+          import json
+          from pathlib import Path
+          import os
+
+          out = Path("build-logs/codex-fa478-normsq-log-cusp/candidates/norms")
+          metric = out / "METRIC.json"
+          candidate = out / "CANDIDATE.json"
+          log = Path("/tmp/fa478-observe.log")
+
+          parts = [
+              "## FA478 observer — actual remote execution",
+              "",
+              f"- run_id: `{os.environ.get('GITHUB_RUN_ID', '')}`",
+              f"- head_sha: `{os.environ.get('GITHUB_SHA', '')}`",
+              f"- script_exit: `{os.environ.get('SCRIPT_EXIT', '')}`",
+              "- workflow: `codex-fa478-observe.yml`",
+              "",
+          ]
+          if metric.exists():
+              parts += ["### METRIC.json", "```json", metric.read_text(encoding="utf-8")[:24000], "```", ""]
+          else:
+              parts += ["### METRIC.json", "`MISSING`", ""]
+          if candidate.exists():
+              parts += ["### CANDIDATE.json", "```json", candidate.read_text(encoding="utf-8")[:16000], "```", ""]
+          else:
+              parts += ["### CANDIDATE.json", "`MISSING`", ""]
+          if log.exists():
+              lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
+              tail = "\n".join(lines[-180:])
+              parts += ["### Tail of actual execution log", "```text", tail[-30000:], "```", ""]
+          body = "\n".join(parts)
+          print(body[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa478-comment.md)"
+
+      - name: Preserve FA478 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
