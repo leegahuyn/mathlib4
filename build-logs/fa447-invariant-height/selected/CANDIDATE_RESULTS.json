@@ -1,0 +1,74 @@
+[
+  {
+    "variant": "champion",
+    "source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32592,
+    "first_col": 5,
+    "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+    "declaration_index": 2671
+  },
+  {
+    "variant": "height_only",
+    "source_sha256": "07afb89ecce1d0b6be4c15bb6752a6907a4594d6a37f6b516868b09cd61bc43d",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32592,
+    "first_col": 5,
+    "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+    "declaration_index": 2671
+  },
+  {
+    "variant": "proof_invariant",
+    "source_sha256": "e77d57a492f15ef79bb30ed2d5a73822a91329a29c24578234787cfd296dc25d",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32754,
+    "first_col": 42,
+    "declaration": "setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero",
+    "declaration_index": 2680
+  },
+  {
+    "variant": "proof_invariant_height",
+    "source_sha256": "d26926c92ae5be13464a43a4dbadcc4c52a0240e0312f75795c860418b57beef",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 33063,
+    "first_col": 4,
+    "declaration": "integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola",
+    "declaration_index": 2691
+  },
+  {
+    "variant": "namespace_both",
+    "source_sha256": "5b5d3e956d5e3e8a93a0bf355edf59c10204676b5cf44c7b934dfb12a9552afa",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32552,
+    "first_col": 249,
+    "declaration": "sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero",
+    "declaration_index": 2668
+  },
+  {
+    "variant": "namespace_both_height",
+    "source_sha256": "7672a704456be636790b2984bb2de8564414fa9a701059d7c7ab9ed9922dabe1",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32552,
+    "first_col": 249,
+    "declaration": "sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero",
+    "declaration_index": 2668
+  }
+]
