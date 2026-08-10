@@ -1,0 +1,50 @@
+name: FA463 lower-pred focused strict direct matrix
+on:
+  pull_request:
+    branches: [fix/fa463-lower-pred-focused-20260810]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+env:
+  SOURCE_REF: ${{ github.event.pull_request.base.sha || github.sha }}
+jobs:
+  candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 160
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        variant: [baseline, gl_cumulative, lower_pow_linarith, lower_pow_ring, lower_pow_before]
+    env:
+      VARIANT: ${{ matrix.variant }}
+      MAX_ERRORS: '4'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: false
+      - name: Generate and directly compile pinned Lean prerequisites and FA
+        run: bash scripts/fa463_candidate_ci.sh
+      - name: Upload direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa463-candidate-${{ matrix.variant }}
+          path: build-logs/fa463-lower-pred/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+      - name: Reject skipped/infra/trust/prerequisite failures
+        if: always()
+        run: |
+          python3 - "build-logs/fa463-lower-pred/candidates/${VARIANT}/METRIC.json" <<'PY'
+          import json,sys
+          try:m=json.load(open(sys.argv[1],encoding='utf-8'))
+          except Exception as e:raise SystemExit(f'INFRA_FAILURE: {e}')
+          ok=(m.get('classification')!='INFRA_FAILURE' and m.get('all_required_lean_executed') is True and m.get('source_metadata_identity') is True and m.get('Mock2_exit')==0 and m.get('Mock2_Advanced_exit')==0 and m.get('FA_executed') is True and m.get('forbidden_clean') is True and m.get('diagnostic_parser')=='strict_error_and_error_category_v1')
+          print(json.dumps(m,indent=2,ensure_ascii=False))
+          if not ok: raise SystemExit('INFRA_FAILURE: direct evidence requirement failed')
+          PY
