@@ -1,0 +1,9 @@
+classification=VERIFIED_NO_STRICT_PROMOTION
+baseline_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+baseline_first=31726:2
+selected_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+selected_exit=1
+selected_first=31726:2
+selected_declaration=actualEdgeAmbientParam_hasDerivAt
+promoted=false
+FA_TRUE_PASS=false

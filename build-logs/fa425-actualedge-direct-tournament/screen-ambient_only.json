@@ -1,0 +1,14 @@
+{
+  "label": "screen-ambient_only",
+  "source_sha256": "d6badbd4d65858ce15508cd5f92fae371c68dd6e1f301dfc9926437a33fe1d5c",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "log": "build-logs/fa425-actualedge-direct-tournament/screen-ambient_only.log"
+}

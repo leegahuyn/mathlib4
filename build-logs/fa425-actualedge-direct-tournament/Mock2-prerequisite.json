@@ -1,0 +1,14 @@
+{
+  "label": "Mock2-prerequisite",
+  "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+  "line_count": 26607,
+  "exit_code": 0,
+  "error_headers": 0,
+  "first_error_line": 0,
+  "first_error_col": 0,
+  "first_error_declaration": "<none>",
+  "max_errors": 50,
+  "olean": true,
+  "ilean": true,
+  "log": "build-logs/fa425-actualedge-direct-tournament/Mock2-prerequisite.log"
+}

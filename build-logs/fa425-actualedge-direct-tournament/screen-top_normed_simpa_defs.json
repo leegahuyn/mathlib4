@@ -1,0 +1,14 @@
+{
+  "label": "screen-top_normed_simpa_defs",
+  "source_sha256": "30705fd1ceef3ff84c0de890acdf716dae7865f2006e0ee6b28311cdc0b2ee9b",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_simpa_defs.log"
+}

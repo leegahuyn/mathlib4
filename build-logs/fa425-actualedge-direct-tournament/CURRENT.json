@@ -1,0 +1,180 @@
+{
+  "classification": "VERIFIED_NO_STRICT_PROMOTION",
+  "authority": "direct Lean CLI",
+  "PASS423_run": 31317392557,
+  "baseline": {
+    "label": "baseline-authoritative",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 1270,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "max_errors": 1800,
+    "olean": false,
+    "ilean": false,
+    "log": "build-logs/fa425-actualedge-direct-tournament/baseline-authoritative.log"
+  },
+  "selected": {
+    "label": "baseline-authoritative",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 1270,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "max_errors": 1800,
+    "olean": false,
+    "ilean": false,
+    "log": "build-logs/fa425-actualedge-direct-tournament/baseline-authoritative.log"
+  },
+  "previous_frontier": [
+    31726,
+    2
+  ],
+  "new_frontier": [
+    31726,
+    2
+  ],
+  "same_file_height": true,
+  "target_declaration_header_preserved": true,
+  "promoted": false,
+  "baseline_forbidden_counts": {
+    "sorry": 1,
+    "admit": 4,
+    "axiom": 0,
+    "unsafe": 1,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "selected_forbidden_counts": {
+    "sorry": 1,
+    "admit": 4,
+    "axiom": 0,
+    "unsafe": 1,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_not_increased": true,
+  "screening_maxErrors": 1,
+  "authoritative_maxErrors": 1800,
+  "trials": [
+    {
+      "label": "screen-proof_normed",
+      "source_sha256": "9e421f948e9db117bcd85c082eb1b482932293a8030e15018297422a52c7b490",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31726,
+      "first_error_col": 2,
+      "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-proof_normed.log"
+    },
+    {
+      "label": "screen-ambient_only",
+      "source_sha256": "d6badbd4d65858ce15508cd5f92fae371c68dd6e1f301dfc9926437a33fe1d5c",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31726,
+      "first_error_col": 2,
+      "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-ambient_only.log"
+    },
+    {
+      "label": "screen-top_normed_ambient_body",
+      "source_sha256": "4de68c203f16770d40313e596c12a5c77d7ebc465987c8c453bcbc697f16997b",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_ambient_body.log"
+    },
+    {
+      "label": "screen-top_normed_same_body",
+      "source_sha256": "1be31cc7170ea98527791c9028fb1403c95d41e9798b135e1dc91c0943b75fbf",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_same_body.log"
+    },
+    {
+      "label": "screen-top_normed_proof_normed",
+      "source_sha256": "80ac8c4f586ca01290986125b7923a061138e985bfbb5a7203e23b5de0c4734b",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_proof_normed.log"
+    },
+    {
+      "label": "screen-top_normed_exact",
+      "source_sha256": "ea71174d98872d76919b86af1905e29a39c37ff47e65e4614b64d0434e919928",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_exact.log"
+    },
+    {
+      "label": "screen-top_normed_simpa_defs",
+      "source_sha256": "30705fd1ceef3ff84c0de890acdf716dae7865f2006e0ee6b28311cdc0b2ee9b",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_simpa_defs.log"
+    },
+    {
+      "label": "screen-top_normed_convert_rfl",
+      "source_sha256": "19996bc95b91fe5f56910ca495180e9c7e755ee7a22958a904105bd53eb155ce",
+      "line_count": 60453,
+      "exit_code": 1,
+      "error_headers": 2,
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+      "max_errors": 1,
+      "olean": false,
+      "ilean": false,
+      "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_convert_rfl.log"
+    }
+  ],
+  "gates": {
+    "fa_true_pass": false
+  }
+}

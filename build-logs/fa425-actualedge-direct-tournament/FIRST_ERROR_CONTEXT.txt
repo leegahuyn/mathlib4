@@ -1,0 +1,88 @@
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31719:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31726:2: error: Type mismatch: After simplification, term
+  hcomp
+ has type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+but is expected to have type
+  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup
+    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯
+    (actualEdgeAmbientParam e)
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32041:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32079:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32084:6: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32104:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32109:6: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegrand X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32125:8: warning: declaration uses `sorry`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32126:38: warning: Variable name `hInv` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hInv
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32127:16: warning: Variable name `hT` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hT
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32380:50: error: unsolved goals
+T : ℝ
+hT : 0 ≤ T
+X Y : ℍ → ℂ

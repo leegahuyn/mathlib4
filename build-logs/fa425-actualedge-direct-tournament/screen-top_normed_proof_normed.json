@@ -1,0 +1,14 @@
+{
+  "label": "screen-top_normed_proof_normed",
+  "source_sha256": "80ac8c4f586ca01290986125b7923a061138e985bfbb5a7203e23b5de0c4734b",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "log": "build-logs/fa425-actualedge-direct-tournament/screen-top_normed_proof_normed.log"
+}

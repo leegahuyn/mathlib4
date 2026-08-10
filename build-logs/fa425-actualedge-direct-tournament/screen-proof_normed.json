@@ -1,0 +1,14 @@
+{
+  "label": "screen-proof_normed",
+  "source_sha256": "9e421f948e9db117bcd85c082eb1b482932293a8030e15018297422a52c7b490",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "log": "build-logs/fa425-actualedge-direct-tournament/screen-proof_normed.log"
+}
