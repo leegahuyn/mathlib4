@@ -1,0 +1,5 @@
+cycle=1
+previous_found=false
+previous_complete=false
+authority=source-matched direct Lean CLI x2 evidence
+max_cycles=12
