@@ -77,4 +77,27 @@ mod.PROOFS['lower_raise_mirror_norm_index']=mod.COMMON_PREFIX+'''  have hIndex :
   field_simp [hz]
   push_cast
   ring'''
+mod.PROOFS['lower_all_relations_last']=mod.COMMON_PREFIX+'''  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply, hScale, hExponent]
+  have hz : heightC z ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  push_cast
+  ring'''
+mod.PROOFS['lower_all_relations_last_ring']=mod.COMMON_PREFIX+'''  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply]
+  rw [hScale, hExponent]
+  have hz : heightC z ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  push_cast
+  ring'''
 if __name__=='__main__': mod.main()
