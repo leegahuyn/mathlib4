@@ -254,5 +254,6 @@
   "branch": "fix/fa453-compact-energy-from-fa451-20260810",
   "source_commit": "fe0602c7c47224c2d4c7afa0773a8b15fd531f66",
   "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31365700780",
-  "artifact_id": "PENDING_UPLOAD"
+  "artifact_id": 9055107308,
+  "artifact_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31365700780/artifacts/9055107308"
 }
