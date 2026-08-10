@@ -1,0 +1,71 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+line count: 60450
+direct Lean exit: 1
+first error: 33929:4 Type mismatch: After simplification, term
+  IsCompact.mul (HasCompactSupport.norm hcompact) (HasCompactSupport.norm hcompact)
+ has type
+  IsCompact ((tsupport fun x => ‖f x‖) * tsupport fun x => ‖f x‖)
+but is expected to have type
+  HasCompactSupport fun y => ‖f y‖ * ‖f y‖
+declaration: compactSupport_height_mul_normSq_le_energy_Ioi
+
+Pipeline issue found:
+root cause: FA442 guarded Lean installation and direct compilation with if: steps.prepare.outputs.ok == 'true'; checked-in promoted bytes failed the authoritative-baseline prepare check, so both direct stages were skipped and the selector received zero baseline metrics. Git identity was configured only on a later path. The repaired lineage now requires execution markers, direct metrics, independent baseline recompilation, and early bot identity.
+workflow files changed: .github/workflows/pre-commit.yml
+scripts changed: scripts/fa453_prepare_compact_energy.py, scripts/fa453_candidate_ci.sh, scripts/fa453_select_compact_energy.py, scripts/fa453_selector_ci.sh
+
+Candidate results:
+variant | SHA256 | Lean executed? | exit | first line:col | declaration | classification
+baseline | 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb | True | 1 | 33929:4 | compactSupport_height_mul_normSq_le_energy_Ioi | BASELINE
+direct_union | 089eb5c20077bba78dcf5cd4bd72b4fafd3b785f8d7b2e967ae52767c5475eec | True | 1 | 33976:38 | compactSupport_height_mul_normSq_le_energy_Ioi | NO_STRICT_PROMOTION
+direct_union_abs | 4add28171d860cccc7d352df7a490c85cd9c30b29a417ac6781763293a445c9b | True | 1 | 33976:38 | compactSupport_height_mul_normSq_le_energy_Ioi | NO_STRICT_PROMOTION
+direct_union_explicit | 2aafcf88ad279d3d311aab9bb094ca2553eebbb3c43a2a3b04d7f2bbb0de1a4e | True | 1 | 33946:6 | compactSupport_height_mul_normSq_le_energy_Ioi | NO_STRICT_PROMOTION
+
+Best direct-verified candidate:
+variant: baseline
+SHA256: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+exit: 1
+first error: 33929:4 Type mismatch: After simplification, term
+  IsCompact.mul (HasCompactSupport.norm hcompact) (HasCompactSupport.norm hcompact)
+ has type
+  IsCompact ((tsupport fun x => ‖f x‖) * tsupport fun x => ‖f x‖)
+but is expected to have type
+  HasCompactSupport fun y => ‖f y‖ * ‖f y‖
+declaration: compactSupport_height_mul_normSq_le_energy_Ioi
+strictly better than 31726?: True
+
+Checked-in identity:
+selected SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+worktree SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+HEAD source SHA: 1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb
+identity_ok: True
+
+Trust audit:
+sorry: 0
+admit: 0
+global axiom: 0
+unsafe: 0
+native_decide: 0
+Lean.ofReduceBool: 0
+
+FA checked-in verification:
+run1: 1
+run2: 1
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: SKIPPED
+Mock3 bridges: SKIPPED
+QYM: SKIPPED
+
+Final classification: NO IMPROVEMENT
+
+Branches/commits:
+branch: fix/fa453-compact-energy-from-fa451-20260810
+source commit: fe0602c7c47224c2d4c7afa0773a8b15fd531f66
+verification HEAD: fe0602c7c47224c2d4c7afa0773a8b15fd531f66
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31365700780
+Artifact ID: PENDING_UPLOAD
