@@ -1,0 +1,1 @@
+FA456 candidate metrics are NOT promotion-authoritative: the legacy parser omitted Lean diagnostics of the form error(lean.category):. This commit intentionally advances the base branch so the in-flight selector cannot fast-forward-push a false champion. Re-run with the strict diagnostic parser before any promotion.
