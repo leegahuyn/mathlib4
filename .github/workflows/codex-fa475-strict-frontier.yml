@@ -21,11 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         final_variant:
-          - simp_h_ring
-          - simp_h_comm_ring
-          - simp_h_ring_nf
-          - norm_cast_h_ring_nf
-          - norm_num_h_ring_nf
+          - clean_semicolon
+          - clean_all_goals
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
