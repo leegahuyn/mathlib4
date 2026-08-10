@@ -1,0 +1,102 @@
+name: FA source-matched verified frontier watcher
+
+on:
+  push:
+    branches:
+      - ops/fa-verified-source-watch-20260810
+    paths:
+      - watch-requests/REQUESTED.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      EXPECTED_SHA_31725: 07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+      EXPECTED_SHA_31726: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+      PASS423_RUN_ID: '31317392557'
+      PASS376_ARTIFACT_ID: '9024606745'
+      SOURCE_PATH: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      ACTIVE_BRANCH: ops/fa-verified-source-watch-20260810
+
+    steps:
+      - name: Checkout watcher branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa-verified-source-watch-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Allow active direct-compile jobs to publish source-matched evidence
+        shell: bash
+        run: sleep 240
+
+      - name: Fetch candidate branches and resolve authoritative SHA fallback
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/fa425b_resolve_verified_champion.sh
+
+      - name: Select best available source-matched VERIFIED source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa426_resolve_best_verified.py \
+            --refs /tmp/fa425-donor-refs.txt \
+            --fallback /tmp/fa425-baseline.lean \
+            --output /tmp/fa-watch-best.lean \
+            --metadata /tmp/fa-watch-best.json
+          test "$(python3 -c "print(len(open('/tmp/fa-watch-best.lean',encoding='utf-8').read().splitlines()))")" = 60453
+
+      - name: Compare with FA427 and safely retrigger only when inactive
+        id: watch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/fa_verified_source_watch.py
+
+      - name: Persist watcher status and schedule next bounded cycle
+        if: always()
+        shell: bash
+        env:
+          CONTINUE_WATCH: ${{ steps.watch.outputs.continue_watch }}
+          NEXT_CYCLE: ${{ steps.watch.outputs.next_cycle }}
+          TARGET_TRIGGERED: ${{ steps.watch.outputs.triggered }}
+        run: |
+          set -euo pipefail
+          git worktree remove --force /tmp/fa427-watch-worktree >/dev/null 2>&1 || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add watch-records/fa-verified-source-watch/STATUS.json
+
+          if test "${CONTINUE_WATCH:-false}" = true; then
+            mkdir -p watch-requests
+            cat > watch-requests/REQUESTED.txt <<EOF
+          cycle=${NEXT_CYCLE}
+          previous_target_triggered=${TARGET_TRIGGERED:-false}
+          authority=direct Lean CLI source-matched evidence
+          max_cycles=8
+          EOF
+            git add watch-requests/REQUESTED.txt
+            msg="ci: continue verified-source watch cycle ${NEXT_CYCLE}"
+          else
+            msg='ci: record final verified-source watch status [skip ci]'
+          fi
+
+          if ! git diff --cached --quiet; then
+            git commit -m "$msg"
+            git push origin HEAD:ops/fa-verified-source-watch-20260810
+          fi
+
+      - name: Upload watcher status
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-verified-source-watch-${{ github.run_id }}-${{ github.sha }}
+          path: watch-records/fa-verified-source-watch
+          if-no-files-found: error
+          retention-days: 90
