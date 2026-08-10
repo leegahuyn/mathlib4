@@ -1,0 +1,5 @@
+requested_at=2026-08-10T07:35:00+09:00
+authority=direct Lean CLI
+fixed_line_count=60453
+rounds=4
+import_safety=sys.modules registration before dataclass module execution
