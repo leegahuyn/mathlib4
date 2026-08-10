@@ -1,0 +1,5 @@
+requested_at=2026-08-10T08:05:00+09:00
+strategy=theorem-scoped canonical Complex instance with custom instance disabled
+fixed_theorem_start=true
+fixed_line_count=60453
+authority=direct Lean CLI
