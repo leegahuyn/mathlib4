@@ -1,4 +1,4 @@
-name: FA450 portable pinned Lean environment
+name: FA450 split portable pinned Lean environment
 
 on:
   push:
@@ -14,8 +14,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa450-portable-pinned-lean-environment
-  cancel-in-progress: true
+  group: fa450-split-portable-pinned-lean-environment
+  cancel-in-progress: false
 
 jobs:
   package:
@@ -43,7 +43,7 @@ jobs:
           lake --version
           lake exe cache get
 
-      - name: Directly compile clean prerequisites before packaging
+      - name: Directly compile clean prerequisites
         shell: bash
         run: |
           set -euo pipefail
@@ -58,41 +58,93 @@ jobs:
             -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
             PrimalitySheafVerification/Mock2_Advanced.lean
 
-      - name: Package relocatable toolchain, repository cache, and project sources
+      - name: Package and split below connector download limit
         shell: bash
         run: |
           set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
           toolchain_root=$(dirname "$(dirname "$(elan which lean)")")
           toolchain_name=$(basename "$toolchain_root")
-          mkdir -p build-logs/fa450-portable-env
-          du -sh "$toolchain_root" .lake PrimalitySheafVerification \
-            | tee build-logs/fa450-portable-env/SIZES.txt
-          printf 'toolchain_name=%s\nlean=%s\nlake=%s\nhead=%s\n' \
-            "$toolchain_name" "$(lean --version | head -1)" \
-            "$(lake --version | head -1)" "$(git rev-parse HEAD)" \
-            > build-logs/fa450-portable-env/MANIFEST.txt
-          tar --zstd -cf /tmp/fa450-toolchain.tar.zst \
+          mkdir -p /tmp/fa450-bundle /tmp/fa450-parts build-logs/fa450-portable-env
+          tar --zstd -cf /tmp/fa450-bundle/toolchain.tar.zst \
             -C "${HOME}/.elan/toolchains" "$toolchain_name"
-          tar --zstd -cf /tmp/fa450-repository-env.tar.zst \
+          tar --zstd -cf /tmp/fa450-bundle/repository-env.tar.zst \
             --exclude='.git' --exclude='.lake/packages/*/.git' \
             .lake PrimalitySheafVerification lakefile.lean lake-manifest.json \
             lean-toolchain scripts
-          sha256sum /tmp/fa450-toolchain.tar.zst \
-            /tmp/fa450-repository-env.tar.zst \
-            | tee build-logs/fa450-portable-env/SHA256SUMS.txt
-          ls -lh /tmp/fa450-*.tar.zst \
-            | tee build-logs/fa450-portable-env/ARCHIVE_SIZES.txt
+          tar -cf /tmp/fa450-portable-combined.tar -C /tmp/fa450-bundle .
+          split --numeric-suffixes=1 --suffix-length=2 -b 450M \
+            /tmp/fa450-portable-combined.tar /tmp/fa450-parts/part-
+          sha256sum /tmp/fa450-parts/part-* \
+            | tee build-logs/fa450-portable-env/PART_SHA256SUMS.txt
+          ls -lh /tmp/fa450-parts/part-* \
+            | tee build-logs/fa450-portable-env/PART_SIZES.txt
+          printf 'toolchain=%s\nhead=%s\nparts=%s\n' \
+            "$toolchain_name" "$(git rev-parse HEAD)" \
+            "$(find /tmp/fa450-parts -type f | wc -l)" \
+            > build-logs/fa450-portable-env/MANIFEST.txt
 
-      - name: Upload portable pinned Lean environment
-        id: upload
+      - name: Upload metadata
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa450-portable-lean-env-${{ github.run_id }}-${{ github.sha }}
-          path: |
-            /tmp/fa450-toolchain.tar.zst
-            /tmp/fa450-repository-env.tar.zst
-            build-logs/fa450-portable-env
+          name: fa450-portable-metadata-${{ github.run_id }}
+          path: build-logs/fa450-portable-env
           compression-level: 0
-          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload part 01
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-01-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-01
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-02-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-02
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 03
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-03-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-03
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 04
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-04-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-04
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 05
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-05-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-05
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 06
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-06-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-06
+          compression-level: 0
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload part 07
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa450-portable-part-07-${{ github.run_id }}
+          path: /tmp/fa450-parts/part-07
+          compression-level: 0
+          if-no-files-found: ignore
           retention-days: 7
