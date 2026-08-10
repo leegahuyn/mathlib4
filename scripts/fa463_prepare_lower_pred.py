@@ -25,14 +25,12 @@ def replace_body(text,name,proof):
     a,b=span(text,name); block=text[a:b]; p=block.find(':='); suffix='\n' if block.endswith('\n') else ''
     return text[:a]+block[:p+2]+' '+proof.rstrip()+'\n'+suffix+text[b:]
 
-PROOF_POW_LINARITH='''by
+COMMON_PREFIX='''by
   have hScale := euclideanGaugeScale_succ (n - 1) z
   have hExponent := euclideanGaugeExponent_succ (n - 1)
   rw [sub_add_cancel] at hScale hExponent
-  have hExponent' :
-      1 + euclideanGaugeExponent (n - 1) = euclideanGaugeExponent n := by
-    linarith
-  simp only [fixedPhaseEuclideanGauge_apply,
+'''
+COMMON_BODY='''  simp only [fixedPhaseEuclideanGauge_apply,
     InverseEtaFixedPhaseCore.lower_apply]
   unfold euclideanLowerFromSuccGauge lowerRaw
   rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
@@ -40,51 +38,46 @@ PROOF_POW_LINARITH='''by
     fixedPhaseEuclideanGauge_apply]
   have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
   field_simp [hz]
-  rw [hExponent']
+'''
+PROOF_POW_LINARITH=COMMON_PREFIX+'''  have hExponent' :
+      1 + euclideanGaugeExponent (n - 1) = euclideanGaugeExponent n := by
+    linarith
+'''+COMMON_BODY+'''  rw [hExponent']
   ring'''
-
-PROOF_POW_RING='''by
-  have hScale := euclideanGaugeScale_succ (n - 1) z
-  have hExponent := euclideanGaugeExponent_succ (n - 1)
-  rw [sub_add_cancel] at hScale hExponent
-  have hExponent' :
+PROOF_POW_RING=COMMON_PREFIX+'''  have hExponent' :
       1 + euclideanGaugeExponent (n - 1) = euclideanGaugeExponent n := by
     rw [hExponent]
     ring
-  simp only [fixedPhaseEuclideanGauge_apply,
-    InverseEtaFixedPhaseCore.lower_apply]
-  unfold euclideanLowerFromSuccGauge lowerRaw
-  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
-    hScale, hExponent, complex_rpow_derivative_eq_div,
-    fixedPhaseEuclideanGauge_apply]
-  have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
-  field_simp [hz]
-  rw [hExponent']
+'''+COMMON_BODY+'''  rw [hExponent']
   ring'''
-
-PROOF_POW_BEFORE='''by
-  have hScale := euclideanGaugeScale_succ (n - 1) z
-  have hExponent := euclideanGaugeExponent_succ (n - 1)
-  rw [sub_add_cancel] at hScale hExponent
-  have hPow :
+PROOF_POW_BEFORE=COMMON_PREFIX+'''  have hPow :
       ((z.im ^ (1 + euclideanGaugeExponent (n - 1)) : ℝ) : ℂ) =
         ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) := by
     have he : 1 + euclideanGaugeExponent (n - 1) = euclideanGaugeExponent n := by
       rw [hExponent]
       ring
     rw [he]
-  simp only [fixedPhaseEuclideanGauge_apply,
-    InverseEtaFixedPhaseCore.lower_apply]
-  unfold euclideanLowerFromSuccGauge lowerRaw
-  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
-    hScale, hExponent, complex_rpow_derivative_eq_div,
-    fixedPhaseEuclideanGauge_apply]
-  have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
-  field_simp [hz]
-  rw [hPow]
+'''+COMMON_BODY+'''  rw [hPow]
   ring'''
-
-PROOFS={'lower_pow_linarith':PROOF_POW_LINARITH,'lower_pow_ring':PROOF_POW_RING,'lower_pow_before':PROOF_POW_BEFORE}
+PROOF_NORMALIZED=COMMON_PREFIX+'''  have hExponentNorm :
+      euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
+    simpa [sub_eq_add_neg, add_comm] using hExponent
+  have hExponentNorm' :
+      1 + euclideanGaugeExponent (-1 + n) = euclideanGaugeExponent n := by
+    linarith
+'''+COMMON_BODY+'''  rw [hExponentNorm']
+  ring'''
+PROOF_NORMALIZED_POW=COMMON_PREFIX+'''  have hExponentNorm :
+      euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
+    simpa [sub_eq_add_neg, add_comm] using hExponent
+  have hPowNorm :
+      ((z.im ^ (1 + euclideanGaugeExponent (-1 + n)) : ℝ) : ℂ) =
+        ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) := by
+    congr 2
+    linarith
+'''+COMMON_BODY+'''  rw [hPowNorm]
+  ring'''
+PROOFS={'lower_pow_linarith':PROOF_POW_LINARITH,'lower_pow_ring':PROOF_POW_RING,'lower_pow_before':PROOF_POW_BEFORE,'lower_normalized':PROOF_NORMALIZED,'lower_normalized_pow':PROOF_NORMALIZED_POW}
 
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--variant',required=True,choices=['baseline','gl_cumulative',*PROOFS]); p.add_argument('--output-dir',required=True); a=p.parse_args()
