@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "name": "donor-refs-remotes-fa425-donor-47",
+    "provenance": "refs/remotes/fa425/donor-47",
+    "sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "file": "03-donor-refs-remotes-fa425-donor-47.lean"
+  },
+  "screening_metric": {
+    "label": "candidate-03-donor-refs-remotes-fa425-donor-47",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-donor-refs-remotes-fa425-donor-47.log"
+  },
+  "reverify_run1": {
+    "label": "FA-promotion-reverify-run1",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run1.log"
+  },
+  "reverify_run2": {
+    "label": "FA-promotion-reverify-run2",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+  },
+  "consistent": true
+}

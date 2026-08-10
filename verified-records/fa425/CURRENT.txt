@@ -1,0 +1,9 @@
+classification=VERIFIED
+stage=strict FA frontier promoted
+baseline_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+baseline_first_error=31726:2
+baseline_declaration=actualEdgeAmbientParam_hasDerivAt
+strict_promotion=true
+checked_in_candidate_sha256=df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a
+fa_true_pass=false
+all_required_targets_2x_pass=false

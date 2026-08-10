@@ -1,0 +1,90 @@
+[METRIC]
+{
+  "label": "FA-promotion-reverify-run2",
+  "stem": "Mock2_FunctionalAnalysis",
+  "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 32035,
+  "first_error_col": 8,
+  "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+  "olean": false,
+  "ilean": false,
+  "max_errors": 1,
+  "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+}
+
+[LEAN LOG CONTEXT]
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: Application type mismatch: The argument
+  GammaTwoActualPolygonEdge.paired
+has type
+  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
+but is expected to have type
+  GammaTwoActualPolygonEdge
+in the application
+  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32041:8: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
+
+[SOURCE CONTEXT]
+32015:   | rightVerticalSegment =>
+32016:       intro t ht
+32017:       have ht' : t ∈ Set.Icc (0 : Real) T := by
+32018:         simpa [nativeEdgeParameterLower, nativeEdgeParameterUpper,
+32019:           uIcc_of_le hT] using ht
+32020:       simpa [modularTileEdgeParameterSet] using ht'.1
+32021: 
+32022: /-- Unoriented finite native flux integral on one actual edge. -/
+32023: noncomputable def nativeActualEdgeFluxIntegral
+32024:     (T : Real) (X Y : UpperHalfPlane → Complex)
+32025:     (e : GammaTwoActualPolygonEdge) : Complex :=
+32026:   ∫ t in nativeEdgeParameterLower e.2..nativeEdgeParameterUpper T e.2,
+32027:     nativeActualEdgeFluxIntegrand X Y e t
+32028: 
+32029: /-- Circular native integrals acquire the sign `-1` under pairing, including
+32030: the nontrivial change of variables `t |-> -t`. -/
+32031: theorem nativeActualEdgeFluxIntegral_paired_circular
+32032:     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+32033:     (T : Real) (q : GammaTwoRightCoset) :
+32034:     nativeActualEdgeFluxIntegral T X Y
+32035:         GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) =
+32036:       (-1 : Complex) *
+32037:         nativeActualEdgeFluxIntegral T X Y
+32038:           (q, GammaTwoModularTileEdge.circularArc) := by
+32039:   change
+32040:     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+32041:         GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t) =
+32042:       (-1 : Complex) *
+32043:         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+32044:           (q, GammaTwoModularTileEdge.circularArc) t)
+32045:   calc
+32046:     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+32047:         GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t) =
+32048:         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+32049:           GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) (-t) := by
+32050:       symm
+32051:       simpa using
+32052:         (intervalIntegral.integral_comp_neg
+32053:           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
+32054:             GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t)
+32055:           (a := (-1 : Real)) (b := (1 : Real)))
+32056:     _ = ∫ t in (-1 : Real)..1,
+32057:         -nativeActualEdgeFluxIntegrand X Y
+32058:           (q, GammaTwoModularTileEdge.circularArc) t := by
+32059:       apply intervalIntegral.integral_congr
+32060:       intro t ht
+32061:       have ht' : t ∈ Set.Icc (-1 : Real) 1 := by
+32062:         simpa [uIcc_of_le (by norm_num : (-1 : Real) ≤ 1)] using ht
+32063:       have hpair := nativeActualEdgeFluxIntegrand_paired_mul hInv
+32064:         ((q, GammaTwoModularTileEdge.circularArc) :
+32065:           GammaTwoActualPolygonEdge) ⟨t, ht'⟩
+32066:       simpa [GammaTwoModularTileEdge.parameterSign] using hpair
+32067:     _ = -(∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+32068:         (q, GammaTwoModularTileEdge.circularArc) t) := by
+32069:       rw [intervalIntegral.integral_neg]
+32070:     _ = (-1 : Complex) *
