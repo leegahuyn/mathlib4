@@ -1,0 +1,167 @@
+name: Codex FA481 UpperHalfPlane.ext strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa481-selected-height-upper-ext-20260811
+    paths:
+      - .github/workflows/codex-fa481-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa481-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      VARIANT: norms
+      FA473_WINNER: const_add_simp
+      FA474_WINNER: explicit_through2791
+      FA475_WINNER: clean_semicolon
+      FA476_R2_VARIANT: explicit_exp_nonneg
+      FA476_R3_VARIANT: minimal_simpa
+      FA476_R3_EVIDENCE_RUN_ID: "31407777360"
+      FA476_R3_EVIDENCE_ARTIFACT_ID: "9070636218"
+      FA476_R3_EVIDENCE_ARTIFACT_DIGEST: "sha256:343607e51bea29fd2878bf6ebfcc0c1c8b1daf9826733b0cd3729e63fbbea3ca"
+      FA477_VARIANT: upper_ext_h_simp_only
+      FA477_EVIDENCE_RUN_ID: "31409787172"
+      FA477_EVIDENCE_JOB_ID: "93524786715"
+      FA477_EVIDENCE_HEAD_SHA: faf902ceda7cce10ada4399326330effaa4d669b
+      FA477_EVIDENCE_ARTIFACT_ID: "9071387258"
+      FA477_EVIDENCE_ARTIFACT_NAME: codex-fa477-minimal_simpa-run31407777360-artifact9070636218-upper_ext_h_simp_only
+      FA477_EVIDENCE_ARTIFACT_SIZE: "598253"
+      FA477_EVIDENCE_ARTIFACT_DIGEST: "sha256:25928120f3113f98886a469b255eec59754bfd232b4df621f4efa4e1e9940b81"
+      FA478_VARIANT: real_norm_eq_abs_only
+      FA478_EVIDENCE_RUN_ID: "31416050563"
+      FA478_EVIDENCE_JOB_ID: "93545285888"
+      FA478_EVIDENCE_HEAD_SHA: 46241996e61a001d498ad3e126dc8b38867bff86
+      FA478_EVIDENCE_SOURCE_SHA256: 53a703d3e138ae7a964b7221c52337082cb59820595cfce877a679f024fbcf82
+      FA478_FIRST_ERROR_LINE: "35133"
+      FA478_FIRST_ERROR_COL: "8"
+      FA478_FRONTIER_DECLARATION: selectedLogHeightNaturalGauge_eventuallyEq_zero
+      FA478_FRONTIER_INDEX: "2796"
+      FA479_VARIANT: simp_only_hlevel
+      FA479_EVIDENCE_RUN_ID: "31418190945"
+      FA479_EVIDENCE_JOB_ID: "93552181972"
+      FA479_EVIDENCE_HEAD_SHA: 23432f72b76df7a708322ad12afa4ac807fce722
+      FA479_EVIDENCE_SOURCE_SHA256: 9e88d79d650d9a9a2f334aceb14f0ef14890f62785f045e03ffb073fd007eb3a
+      FA479_FIRST_ERROR_LINE: "35118"
+      FA479_FIRST_ERROR_COL: "64"
+      FA479_FRONTIER_DECLARATION: selectedLogHeightNaturalGauge_eventuallyEq_zero
+      FA479_FRONTIER_INDEX: "2796"
+      FA480_VARIANT: pi_zero_apply
+      FA480_EVIDENCE_RUN_ID: "31419752422"
+      FA480_EVIDENCE_JOB_ID: "93557362741"
+      FA480_EVIDENCE_HEAD_SHA: a7b882e84aa31a321e0f108b5f56ca477586ddd8
+      FA480_EVIDENCE_SOURCE_SHA256: 939a4d0db78c0a7e4fadf5a1db97626aaccbb1d7258f6bf77a0ffbede83f52b9
+      FA480_FIRST_ERROR_LINE: "35196"
+      FA480_FIRST_ERROR_COL: "2"
+      FA480_FRONTIER_DECLARATION: selectedHeightBasePoint_of_pos
+      FA480_FRONTIER_INDEX: "2802"
+      FA481_VARIANT: upper_half_plane_ext
+      HORIZONTAL_STYLE: calc_four
+      MAX_ERRORS: "32"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA481 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA481 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> FA476 -> FA477 -> FA478 -> FA479 -> FA480 -> FA481\`\n- upstream_FA480_run: \`31419752422\`\n- upstream_FA480_source: \`939a4d0db78c0a7e4fadf5a1db97626aaccbb1d7258f6bf77a0ffbede83f52b9\`\n- upstream_frontier: \`35196:2 / selectedHeightBasePoint_of_pos / index 2802\`\n- patch: \`apply Subtype.ext -> apply UpperHalfPlane.ext\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA481 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa481_selected_height_upper_ext_candidate_ci.sh 2>&1 | tee /tmp/fa481-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report exact FA481 evidence to issue 14
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa481-comment.md
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path("build-logs/codex-fa481-selected-height-upper-ext/candidates/norms")
+          metric = out / "METRIC.json"
+          candidate = out / "CANDIDATE.json"
+          log = Path("/tmp/fa481-observe.log")
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+
+          parts = [
+              "## FA481 observer — actual remote execution",
+              "",
+              f"- run_id: `{os.environ.get('GITHUB_RUN_ID', '')}`",
+              f"- head_sha: `{os.environ.get('GITHUB_SHA', '')}`",
+              f"- script_exit: `{os.environ.get('SCRIPT_EXIT', '')}`",
+              "- sequence: `FA475 -> FA476 -> FA477 -> FA478 -> FA479 -> FA480 -> FA481`",
+              "- variant: `upper_half_plane_ext`",
+              "- workflow: `codex-fa481-observe.yml`",
+              "",
+          ]
+          metric_data = None
+          if metric.exists():
+              raw = metric.read_text(encoding="utf-8")
+              parts += ["### METRIC.json", "```json", raw[:30000], "```", ""]
+              try:
+                  metric_data = json.loads(raw)
+              except Exception:
+                  metric_data = None
+          else:
+              parts += ["### METRIC.json", "`MISSING`", ""]
+          if candidate.exists():
+              parts += ["### CANDIDATE.json", "```json", candidate.read_text(encoding="utf-8")[:15000], "```", ""]
+          else:
+              parts += ["### CANDIDATE.json", "`MISSING`", ""]
+          if source.exists():
+              lines = source.read_text(encoding="utf-8", errors="replace").splitlines()
+              center = 35196
+              if isinstance(metric_data, dict):
+                  value = metric_data.get("FA_first_actual_error_line")
+                  if isinstance(value, int) and value > 0:
+                      center = value
+              lo, hi = max(1, center - 16), min(len(lines), center + 24)
+              snippet = "\n".join(f"{i}: {lines[i-1]}" for i in range(lo, hi + 1))
+              parts += [f"### Exact FA481 candidate source around line {center}", "```lean", snippet, "```", ""]
+          if log.exists():
+              lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
+              tail = "\n".join(lines[-120:])
+              parts += ["### Tail of actual execution log", "```text", tail[-16000:], "```", ""]
+          print("\n".join(parts)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa481-comment.md)"
+
+      - name: Preserve FA481 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
