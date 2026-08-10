@@ -1,0 +1,5 @@
+cycle=1
+previous_chain_integrated=false
+previous_final_complete=false
+authority=direct Lean source rebuild and whole-file audit
+max_cycles=12
