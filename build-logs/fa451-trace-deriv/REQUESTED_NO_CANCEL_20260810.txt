@@ -1,0 +1,1 @@
+Rerun FA451 after disabling concurrency cancellation. Every candidate must reach actual direct Lean metric generation.
