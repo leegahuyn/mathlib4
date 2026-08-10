@@ -1,0 +1,38 @@
+name: Probe FA444 target workflow runs
+
+on:
+  push:
+    branches:
+      - ci/fa444-run-probe-20260810
+    paths:
+      - build-logs/fa444-probe/PROBE*.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: fix/fa444-fa442-matrix-pipeline-repair-20260810
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa444-run-probe-20260810
+          persist-credentials: true
+      - name: Query target branch workflow runs
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/fa444-probe
+          gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&event=push&per_page=100" \
+            > build-logs/fa444-probe/RUNS.json
+      - name: Persist probe
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f build-logs/fa444-probe/RUNS.json
+          git commit -m 'ci: record FA444 target runs probe [skip ci]'
+          git push origin HEAD:ci/fa444-run-probe-20260810
