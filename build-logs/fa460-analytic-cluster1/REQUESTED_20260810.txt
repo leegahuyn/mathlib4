@@ -1,0 +1,1 @@
+Strict categorized direct Lean cluster after 32035/32590 fixes. Historical authority remains 71dc36f... / 60453 / 31726:2; current strict source baseline is 1f0a7e... / 60450 / 32035:79. Every candidate runs Mock2, Mock2_Advanced, and FA directly.
