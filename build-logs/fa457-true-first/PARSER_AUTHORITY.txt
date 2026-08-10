@@ -1,0 +1,5 @@
+Direct metric authority correction:
+
+The previous parser matched only `error:` and omitted coded Lean headers such as `error(lean.invalidField):` and `error(lean.synthInstanceFailed):`. Therefore reported first-error positions 33624, 33929, and 34052 were not actual Lean first errors.
+
+FA457 requires the corrected parser and independently reproduces the true first error 32035:79 before candidate selection.
