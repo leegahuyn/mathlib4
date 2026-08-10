@@ -89,4 +89,4 @@ branch: fix/fa444-fa442-matrix-pipeline-repair-20260810
 source commit: d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe
 verification HEAD: d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe
 Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31350101724
-Artifact ID: PENDING_UPLOAD
+Artifact ID: 9049467864

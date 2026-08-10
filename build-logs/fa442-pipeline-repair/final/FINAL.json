@@ -261,5 +261,6 @@
   "branch": "fix/fa444-fa442-matrix-pipeline-repair-20260810",
   "source_commit": "d8f1d3e6d61c16b91e49b51dbbd56edce1448cbe",
   "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31350101724",
-  "artifact_id": "PENDING_UPLOAD"
+  "artifact_id": "9049467864",
+  "artifact_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31350101724/artifacts/9049467864"
 }
