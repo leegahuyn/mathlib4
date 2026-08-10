@@ -1,0 +1,418 @@
+{
+  "classification": "INFRA_FAILURE",
+  "run_id": 31345045760,
+  "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31345045760",
+  "head_branch": "fix/fa442-same-height-slope-cumulative-20260810",
+  "head_sha": "4c8a688568b11755c489e8252b4fb075430dc679",
+  "workflow_path": ".github/workflows/fa442-same-height-slope-cumulative.yml",
+  "workflow_name": "FA442 same-height slope cumulative direct Lean matrix",
+  "skipped_steps": [
+    {
+      "job_id": 93328039423,
+      "job_name": "candidate (slope_change_convert)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039423,
+      "job_name": "candidate (slope_change_convert)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039454,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039454,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039460,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039460,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039464,
+      "job_name": "candidate (slope_change_convert_paired_all_known)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039464,
+      "job_name": "candidate (slope_change_convert_paired_all_known)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039469,
+      "job_name": "candidate (slope_paired_dot)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039469,
+      "job_name": "candidate (slope_paired_dot)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039474,
+      "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039474,
+      "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039478,
+      "job_name": "candidate (slope_paired_dot_all_known)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039478,
+      "job_name": "candidate (slope_paired_dot_all_known)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039482,
+      "job_name": "candidate (slope_only)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039482,
+      "job_name": "candidate (slope_only)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039483,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039483,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039485,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039485,
+      "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039489,
+      "job_name": "candidate (slope_structures)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039489,
+      "job_name": "candidate (slope_structures)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039494,
+      "job_name": "candidate (baseline)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039494,
+      "job_name": "candidate (baseline)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039497,
+      "job_name": "candidate (slope_paired_parenthesized)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039497,
+      "job_name": "candidate (slope_paired_parenthesized)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039505,
+      "job_name": "candidate (slope_structures_paired_all_known)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039505,
+      "job_name": "candidate (slope_structures_paired_all_known)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039507,
+      "job_name": "candidate (slope_paired_parenthesized_ring)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039507,
+      "job_name": "candidate (slope_paired_parenthesized_ring)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328039532,
+      "job_name": "candidate (slope_paired_parenthesized_all_known)",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    },
+    {
+      "job_id": 93328039532,
+      "job_name": "candidate (slope_paired_parenthesized_all_known)",
+      "step_name": "Directly compile completed prerequisites and candidate FA",
+      "step_number": 5,
+      "conclusion": "skipped",
+      "condition": "steps.prepare.outputs.ok == 'true'",
+      "output_references": [
+        {
+          "reference": "steps.prepare.outputs.ok",
+          "owner_exists": true,
+          "output_definition_found": true
+        }
+      ]
+    },
+    {
+      "job_id": 93328109303,
+      "job_name": "select-confirm-persist",
+      "step_name": "Install pinned Lean and Mathlib cache",
+      "step_number": 4,
+      "conclusion": "skipped",
+      "condition": "",
+      "output_references": []
+    }
+  ],
+  "undefined_output_references": [],
+  "guard_expressions": [
+    "steps.prepare.outputs.ok == 'true'"
+  ],
+  "selector_failure": "RuntimeError: expected one baseline direct metric, found 0",
+  "git_identity_failure": "Author identity unknown / fatal: empty ident name",
+  "root_cause": "The skipped Lean setup/compile steps were not unconditional. Their actual FA442 `if:` guards were: steps.prepare.outputs.ok == 'true'. In the candidate jobs the referenced upstream value was empty/false, so GitHub Actions evaluated the guard false. Candidate generation therefore completed while no direct Lean metric was produced.",
+  "repair": {
+    "candidate_lean_install_unconditional": true,
+    "candidate_direct_compile_unconditional": true,
+    "missing_metric_classification": "INFRA_FAILURE",
+    "selector_requires_exactly_one_current_run_baseline_metric": true,
+    "git_identity_configured_in_every_commit_job": true
+  }
+}
