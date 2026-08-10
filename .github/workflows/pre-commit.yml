@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - ci/fa444-recognized-run-probe-20260810
-    paths:
-      - build-logs/fa-run-cancel/CANCEL*.txt
   pull_request:
     branches:
       - ci/fa444-recognized-run-probe-20260810
@@ -36,7 +34,10 @@ jobs:
           set +e
           mkdir -p build-logs/fa-run-cancel
           : > build-logs/fa-run-cancel/CANCEL_RESULTS.txt
-          for run_id in 31370630147 31371627211 31372073619 31372769897 31373126614; do
+          for run_id in \
+            31370630147 31371627211 31372073619 31372769897 31373126614 \
+            31374330498 31374877843 31375909117 31376122619 31376472425 \
+            31376638208 31376821540 31377200700; do
             before=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
               --jq '.status + ":" + (.conclusion // "")' 2>&1)
             printf 'run=%s before=%s\n' "$run_id" "$before" \
@@ -46,9 +47,9 @@ jobs:
             printf 'force_cancel_exit=%s\n' "$?" \
               | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
           done
-          printf 'preserved_authoritative_run=31373682702\n' \
+          printf 'preserved_selector_run=31373682702\n' \
             | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
-          printf 'preserved_followup_run=31374330498\n' \
+          printf 'preserved_latest_focused_run=31377365024\n' \
             | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
           exit 0
       - name: Persist cancellation evidence
