@@ -1,0 +1,1 @@
+Trigger the direct Lean FA451 trace/derivative matrix from the FA444 champion. Draft-only CI trigger; do not merge or mark ready.
