@@ -26,10 +26,8 @@ for old,new in replacements.items():
     if count != 1:
         raise SystemExit(f'INFRA_FAILURE: selector patch expected one {old!r}, found {count}')
     text=text.replace(old,new,1)
-# Make the evidence/report labels truthful about the strict baseline generation.
-text=text.replace('FA453', 'FA459')
-text=text.replace('FA451 champion', 'strict categorized FA451-source baseline')
-text=text.replace('compact-energy', 'strict-true-first')
+# Preserve all proven FA453 file/path machinery; only the metric authority and
+# strict baseline facts above are changed.
 dst.write_text(text,encoding='utf-8')
 PY
 
