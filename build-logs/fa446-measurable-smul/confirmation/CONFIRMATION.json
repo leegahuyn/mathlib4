@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "identity_ok": true,
+  "selected_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+  "worktree_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+  "head_source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+  "Mock2_exit": 0,
+  "Mock2_Advanced_exit": 0,
+  "FA_exit": 1,
+  "first_error_line": 32592,
+  "first_error_col": 5
+}
