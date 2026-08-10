@@ -1,0 +1,51 @@
+name: Codex inventory actual Mock3 Lean files
+
+on:
+  push:
+    branches:
+      - fix/fa480-eventually-zero-pi-zero-20260811
+    paths:
+      - .github/workflows/codex-mock3-inventory.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Enumerate actual checked-in Mock3 Lean files only
+        id: scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print | LC_ALL=C sort | tee /tmp/mock3-files.txt
+          count=$(wc -l < /tmp/mock3-files.txt | tr -d ' ')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+      - name: Post inventory to issue 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COUNT: ${{ steps.scan.outputs.count }}
+        shell: bash
+        run: |
+          {
+            echo '## Actual checked-in Mock3 inventory'
+            echo
+            echo "- run_id: \`${GITHUB_RUN_ID}\`"
+            echo "- head_sha: \`${GITHUB_SHA}\`"
+            echo "- count: \`${COUNT}\`"
+            echo '- scope: `PrimalitySheafVerification/Mock3*.lean`'
+            echo '- note: inventory only; no Mock3 Lean compile was run before FA PASS'
+            echo
+            echo '```text'
+            cat /tmp/mock3-files.txt
+            echo '```'
+          } > /tmp/mock3-comment.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/mock3-comment.md)"
