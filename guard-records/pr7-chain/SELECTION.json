@@ -1,0 +1,7 @@
+{
+  "found": false,
+  "selection_rule": "latest source-matched VERIFIED all-required-targets x2 evidence with clean FA trust audit",
+  "candidate_count": 0,
+  "candidates": [],
+  "selected": null
+}
