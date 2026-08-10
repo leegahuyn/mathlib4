@@ -2556,6 +2556,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 /home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31696:2: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31711:15: error(lean.dependsOnNoncomputable): failed to compile definition, consider marking it as 'noncomputable' because it depends on 'Complex.instNormedAddCommGroup', which is 'noncomputable'
 /home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31718:2: warning: Try this: 
   letI̵
 
@@ -2572,18 +2573,4 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
-/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31727:2: error: Type mismatch
-  HasFDerivAt.hasDerivAt (HasDerivAt.hasFDerivAt hcomp)
-has type
-  HasDerivAt (selectedCosetAmbientMap e.1 ∘ modularTileEdgeAmbientParam e.2)
-    ((ContinuousLinearMap.toSpanSingleton ℝ
-        ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t))
-          (modularTileEdgeAmbientVelocity e.2 ↑t)))
-      1)
-    ↑t
-but is expected to have type
-  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) ↑t
-/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
-
-Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31727:2: error: maximum number of errors (1; from option `maxErrors`) reached, exiting

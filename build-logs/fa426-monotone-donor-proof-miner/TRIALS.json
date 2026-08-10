@@ -14,7 +14,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.518,
+      "elapsed_seconds": 151.253,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-001-local_normed_parent-remove-proof-local.log"
     },
     "strictly_better": false,
@@ -37,7 +37,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.673,
+      "elapsed_seconds": 146.19,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-002-local_normed_parent-reuse-proof-local.log"
     },
     "strictly_better": false,
@@ -60,7 +60,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.455,
+      "elapsed_seconds": 148.628,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-003-local_inferred_parent-remove-proof-local.log"
     },
     "strictly_better": false,
@@ -83,7 +83,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.208,
+      "elapsed_seconds": 147.505,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-004-local_inferred_parent-reuse-proof-local.log"
     },
     "strictly_better": false,
@@ -106,7 +106,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.719,
+      "elapsed_seconds": 148.193,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-005-proof-local-normed-parent.log"
     },
     "strictly_better": false,
@@ -129,7 +129,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 147.944,
+      "elapsed_seconds": 147.878,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-006-remove-proof-local-instance.log"
     },
     "strictly_better": false,
@@ -152,7 +152,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.095,
+      "elapsed_seconds": 149.965,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-007-base-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -175,7 +175,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.675,
+      "elapsed_seconds": 145.313,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-008-base-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -198,7 +198,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 144.27,
+      "elapsed_seconds": 142.294,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-009-base-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -221,7 +221,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 143.704,
+      "elapsed_seconds": 142.787,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-010-local_normed_parent-remove-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -244,7 +244,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.89,
+      "elapsed_seconds": 142.119,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-011-local_normed_parent-remove-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -267,7 +267,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.849,
+      "elapsed_seconds": 142.306,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-012-local_normed_parent-remove-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -290,7 +290,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.026,
+      "elapsed_seconds": 147.884,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-013-local_normed_parent-reuse-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -313,7 +313,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.411,
+      "elapsed_seconds": 151.68,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-014-local_normed_parent-reuse-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -336,7 +336,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.553,
+      "elapsed_seconds": 147.954,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-015-local_normed_parent-reuse-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -359,7 +359,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 140.603,
+      "elapsed_seconds": 152.73,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-016-local_inferred_parent-remove-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -382,7 +382,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 140.804,
+      "elapsed_seconds": 150.617,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-017-local_inferred_parent-remove-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -405,7 +405,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.48,
+      "elapsed_seconds": 144.803,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-018-local_inferred_parent-remove-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -428,7 +428,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 143.407,
+      "elapsed_seconds": 145.32,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-019-local_inferred_parent-reuse-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -451,7 +451,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.18,
+      "elapsed_seconds": 139.86,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-020-local_inferred_parent-reuse-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -474,7 +474,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 149.456,
+      "elapsed_seconds": 143.053,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-021-local_inferred_parent-reuse-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -497,7 +497,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.801,
+      "elapsed_seconds": 140.834,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-022-proof-local-normed-parent-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -520,7 +520,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 147.332,
+      "elapsed_seconds": 141.253,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-023-proof-local-normed-parent-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -543,7 +543,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.638,
+      "elapsed_seconds": 143.787,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-024-proof-local-normed-parent-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -566,7 +566,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 149.821,
+      "elapsed_seconds": 145.34,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-025-remove-proof-local-instance-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -589,7 +589,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 148.193,
+      "elapsed_seconds": 141.814,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-026-remove-proof-local-instance-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -612,7 +612,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.224,
+      "elapsed_seconds": 143.106,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-027-remove-proof-local-instance-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -635,7 +635,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.174,
+      "elapsed_seconds": 146.893,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-028-donor-body_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalysis.log"
     },
     "strictly_better": false,
@@ -658,7 +658,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 140.897,
+      "elapsed_seconds": 148.723,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-029-donor-hunk-0_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalys.log"
     },
     "strictly_better": false,
@@ -681,7 +681,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 140.472,
+      "elapsed_seconds": 148.078,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-030-donor-body_fa413-fa414-apis-20260809.log"
     },
     "strictly_better": false,
@@ -704,7 +704,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.593,
+      "elapsed_seconds": 147.29,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-031-donor-body_fa415-declaration-scope-instance-20260809_Mock2_FunctionalAnalysis-ca.log"
     },
     "strictly_better": false,
@@ -727,7 +727,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 146.841,
+      "elapsed_seconds": 141.193,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-032-donor-hunk-0_fa415-declaration-scope-instance-20260809_Mock2_FunctionalAnalysis-.log"
     },
     "strictly_better": false,
@@ -750,7 +750,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 141.467,
+      "elapsed_seconds": 142.649,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-033-donor-hunk-2_fa415-declaration-scope-instance-20260809_Mock2_FunctionalAnalysis-.log"
     },
     "strictly_better": false,
@@ -760,71 +760,71 @@
   },
   {
     "candidate_number": 34,
-    "label": "donor-body::fa419-unfold-deriv-instance-20260809",
+    "label": "donor-body::fa425d-derivative-rebundle-20260810",
     "metric": {
-      "label": "candidate-034-donor-body_fa419-unfold-deriv-instance-20260809",
-      "source_sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+      "label": "candidate-034-donor-body_fa425d-derivative-rebundle-20260810",
+      "source_sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
       "line_count": 60453,
       "exit_code": 1,
       "error_headers": 2,
-      "first_error_line": 32035,
-      "first_error_col": 8,
-      "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "first_error_line": 31727,
+      "first_error_col": 2,
+      "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.594,
-      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-034-donor-body_fa419-unfold-deriv-instance-20260809.log"
+      "elapsed_seconds": 149.316,
+      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-034-donor-body_fa425d-derivative-rebundle-20260810.log"
     },
     "strictly_better": true,
     "same_file_height": true,
     "failing_declaration_before": "actualEdgeAmbientParam_hasDerivAt",
-    "failing_declaration_after": "nativeActualEdgeFluxIntegral_paired_circular"
+    "failing_declaration_after": "actualEdgeAmbientParam_hasDerivAt"
   },
   {
     "candidate_number": 35,
-    "label": "donor-body::fa413-canonical-paired-from-pass376-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "label": "local_normed_parent-remove-proof-local",
     "metric": {
-      "label": "candidate-035-donor-body_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalysis",
-      "source_sha256": "164f03fda75c5317a4a32876b24bb908ffc6feeec71a2837041cc1f9d730b429",
+      "label": "candidate-035-local_normed_parent-remove-proof-local",
+      "source_sha256": "a99dcbee4bbac804b38f385312f957771e94f9c486f09816f9e4ff3c2b876a23",
       "line_count": 60453,
       "exit_code": 1,
       "error_headers": 2,
-      "first_error_line": 32035,
-      "first_error_col": 8,
-      "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 140.129,
-      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-035-donor-body_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalysis.log"
+      "elapsed_seconds": 149.443,
+      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-035-local_normed_parent-remove-proof-local.log"
     },
     "strictly_better": false,
     "same_file_height": true,
-    "failing_declaration_before": "nativeActualEdgeFluxIntegral_paired_circular",
-    "failing_declaration_after": "nativeActualEdgeFluxIntegral_paired_circular"
+    "failing_declaration_before": "actualEdgeAmbientParam_hasDerivAt",
+    "failing_declaration_after": "actualEdgeNativeVelocity_eq_selectedDerivative_mul"
   },
   {
     "candidate_number": 36,
-    "label": "donor-hunk-0::fa413-canonical-paired-from-pass376-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "label": "local_normed_parent-reuse-proof-local",
     "metric": {
-      "label": "candidate-036-donor-hunk-0_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalys",
-      "source_sha256": "0b640e7cba90bca865e7b193818b4b5d79600f80bd342891fb2c18d00504446d",
+      "label": "candidate-036-local_normed_parent-reuse-proof-local",
+      "source_sha256": "613f74a7fedf927f0f6a797e12e3c9e53146cbaa7ffe7ee0063e63e88813388e",
       "line_count": 60453,
       "exit_code": 1,
       "error_headers": 2,
-      "first_error_line": 32035,
-      "first_error_col": 8,
-      "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "first_error_line": 31711,
+      "first_error_col": 15,
+      "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 142.375,
-      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-036-donor-hunk-0_fa413-canonical-paired-from-pass376-20260809_Mock2_FunctionalAnalys.log"
+      "elapsed_seconds": 152.551,
+      "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-036-local_normed_parent-reuse-proof-local.log"
     },
     "strictly_better": false,
     "same_file_height": true,
-    "failing_declaration_before": "nativeActualEdgeFluxIntegral_paired_circular",
-    "failing_declaration_after": "nativeActualEdgeFluxIntegral_paired_circular"
+    "failing_declaration_before": "actualEdgeAmbientParam_hasDerivAt",
+    "failing_declaration_after": "actualEdgeNativeVelocity_eq_selectedDerivative_mul"
   }
 ]

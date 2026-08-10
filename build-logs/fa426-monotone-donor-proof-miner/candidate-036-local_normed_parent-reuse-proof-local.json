@@ -1,0 +1,15 @@
+{
+  "label": "candidate-036-local_normed_parent-reuse-proof-local",
+  "source_sha256": "613f74a7fedf927f0f6a797e12e3c9e53146cbaa7ffe7ee0063e63e88813388e",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 152.551,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-036-local_normed_parent-reuse-proof-local.log"
+}

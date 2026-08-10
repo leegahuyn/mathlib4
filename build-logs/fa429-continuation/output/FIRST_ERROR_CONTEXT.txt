@@ -1,3 +1,6 @@
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31719:2: warning: Try this: 
   letI̵
 
 The goal is a proposition, so `let` is preferred over `letI`.
@@ -5,15 +8,18 @@ The difference between `let` and `letI` is that `letI` inlines the value.
 But this is not relevant for proofs because of proof irrelevance.
 
 Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31727:2: error: Type mismatch
+  HasFDerivAt.hasDerivAt (HasDerivAt.hasFDerivAt hcomp)
+has type
+  HasDerivAt (selectedCosetAmbientMap e.1 ∘ modularTileEdgeAmbientParam e.2)
+    ((ContinuousLinearMap.toSpanSingleton ℝ
+        ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t))
+          (modularTileEdgeAmbientVelocity e.2 ↑t)))
+      1)
+    ↑t
+but is expected to have type
+  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) ↑t
 /home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
 
 Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
-/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: Application type mismatch: The argument
-  GammaTwoActualPolygonEdge.paired
-has type
-  GammaTwoActualPolygonEdge → GammaTwoActualPolygonEdge
-but is expected to have type
-  GammaTwoActualPolygonEdge
-in the application
-  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired
-/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32041:8: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
