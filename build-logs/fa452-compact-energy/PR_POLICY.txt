@@ -1,0 +1,1 @@
+This CI trigger branch is draft-only. It must not be merged or marked ready for review.
