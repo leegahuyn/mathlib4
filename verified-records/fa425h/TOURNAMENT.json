@@ -1,0 +1,358 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "keep-local-inline-simpa-only",
+        "provenance": "hand:keep-local+inline-simpa-only",
+        "sha256": "2079d788f8eafa646c013b2fad47519d09bcdca33a51643bd2f245830e25d880",
+        "file": "00-keep-local-inline-simpa-only.lean"
+      },
+      "metric": {
+        "label": "candidate-00-keep-local-inline-simpa-only",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2079d788f8eafa646c013b2fad47519d09bcdca33a51643bd2f245830e25d880",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-keep-local-inline-simpa-only.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-simpa-full",
+        "provenance": "hand:keep-local+inline-simpa-full",
+        "sha256": "2245b34055a3cc517a583b58e6d470c7d131028b5f3c1a037365e3831493e36b",
+        "file": "01-keep-local-inline-simpa-full.lean"
+      },
+      "metric": {
+        "label": "candidate-01-keep-local-inline-simpa-full",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2245b34055a3cc517a583b58e6d470c7d131028b5f3c1a037365e3831493e36b",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-01-keep-local-inline-simpa-full.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-unfold-custom",
+        "provenance": "hand:keep-local+inline-unfold-custom",
+        "sha256": "c6fcc3a16cc8f0edbf5c2e10af86796f57def2961c4fe76f2cf9cf942ac373a8",
+        "file": "02-keep-local-inline-unfold-custom.lean"
+      },
+      "metric": {
+        "label": "candidate-02-keep-local-inline-unfold-custom",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "c6fcc3a16cc8f0edbf5c2e10af86796f57def2961c4fe76f2cf9cf942ac373a8",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-02-keep-local-inline-unfold-custom.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-unfold-both",
+        "provenance": "hand:keep-local+inline-unfold-both",
+        "sha256": "f14009e26756a51e34b98db9614233b6a47b8aeb99e9c08340e1204578ac6161",
+        "file": "03-keep-local-inline-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-03-keep-local-inline-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "f14009e26756a51e34b98db9614233b6a47b8aeb99e9c08340e1204578ac6161",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-keep-local-inline-unfold-both.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-convert-rfl",
+        "provenance": "hand:keep-local+inline-convert-rfl",
+        "sha256": "4a3a0a2a0f82802745161b158c63fe8e98f7b496f0d9fc0571066ac26d84d87c",
+        "file": "04-keep-local-inline-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-04-keep-local-inline-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4a3a0a2a0f82802745161b158c63fe8e98f7b496f0d9fc0571066ac26d84d87c",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31725,
+        "first_error_col": 65,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-04-keep-local-inline-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-rebundle",
+        "provenance": "hand:keep-local+inline-rebundle",
+        "sha256": "9965bdaab4fa123e51ac2d062439e813263646c7869b3a0b56bd9bbfa4895cf0",
+        "file": "05-keep-local-inline-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-05-keep-local-inline-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9965bdaab4fa123e51ac2d062439e813263646c7869b3a0b56bd9bbfa4895cf0",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-05-keep-local-inline-rebundle.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "keep-local-inline-typed-have",
+        "provenance": "hand:keep-local+inline-typed-have",
+        "sha256": "6c104c29427e4ddca98fab32d485914a8cf426185ebbf8867bc064b62ca396e8",
+        "file": "06-keep-local-inline-typed-have.lean"
+      },
+      "metric": {
+        "label": "candidate-06-keep-local-inline-typed-have",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "6c104c29427e4ddca98fab32d485914a8cf426185ebbf8867bc064b62ca396e8",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31725,
+        "first_error_col": 4,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-06-keep-local-inline-typed-have.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-simpa-only",
+        "provenance": "hand:canonical-local+inline-simpa-only",
+        "sha256": "8c5c967fcfe9634bad2591f4c73b04855ab6ae2f1ae617216f2125d3c66cd8fe",
+        "file": "07-canonical-local-inline-simpa-only.lean"
+      },
+      "metric": {
+        "label": "candidate-07-canonical-local-inline-simpa-only",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "8c5c967fcfe9634bad2591f4c73b04855ab6ae2f1ae617216f2125d3c66cd8fe",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-canonical-local-inline-simpa-only.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-simpa-full",
+        "provenance": "hand:canonical-local+inline-simpa-full",
+        "sha256": "a352fc13db035cb303b4e2736853f3de55889b8de72a1388eec1ab156c892df7",
+        "file": "08-canonical-local-inline-simpa-full.lean"
+      },
+      "metric": {
+        "label": "candidate-08-canonical-local-inline-simpa-full",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "a352fc13db035cb303b4e2736853f3de55889b8de72a1388eec1ab156c892df7",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-08-canonical-local-inline-simpa-full.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-unfold-custom",
+        "provenance": "hand:canonical-local+inline-unfold-custom",
+        "sha256": "af03a74378601845e26ba5e45502d627a96b44732a2732c9a47355243a925231",
+        "file": "09-canonical-local-inline-unfold-custom.lean"
+      },
+      "metric": {
+        "label": "candidate-09-canonical-local-inline-unfold-custom",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "af03a74378601845e26ba5e45502d627a96b44732a2732c9a47355243a925231",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-09-canonical-local-inline-unfold-custom.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-unfold-both",
+        "provenance": "hand:canonical-local+inline-unfold-both",
+        "sha256": "438221f99ac175dedd16d3319623207f4d68afefd9358f36c8c3059d302b0316",
+        "file": "10-canonical-local-inline-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-10-canonical-local-inline-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "438221f99ac175dedd16d3319623207f4d68afefd9358f36c8c3059d302b0316",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-10-canonical-local-inline-unfold-both.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-convert-rfl",
+        "provenance": "hand:canonical-local+inline-convert-rfl",
+        "sha256": "8de9fe9061edb0dd232fa76512427c5c9abeb2b77c8b530456784b863b4d12e8",
+        "file": "11-canonical-local-inline-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-11-canonical-local-inline-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "8de9fe9061edb0dd232fa76512427c5c9abeb2b77c8b530456784b863b4d12e8",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31725,
+        "first_error_col": 65,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-11-canonical-local-inline-convert-rfl.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-rebundle",
+        "provenance": "hand:canonical-local+inline-rebundle",
+        "sha256": "430182325fa4a577035738e21c2533aee514d5f42a562659eb079f4d342e4084",
+        "file": "12-canonical-local-inline-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-12-canonical-local-inline-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "430182325fa4a577035738e21c2533aee514d5f42a562659eb079f4d342e4084",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31724,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-12-canonical-local-inline-rebundle.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "canonical-local-inline-typed-have",
+        "provenance": "hand:canonical-local+inline-typed-have",
+        "sha256": "686a3d41b6f5c4b3baf8f7b399d5790db83c0b7e648e4f606f762898c1d1f3e8",
+        "file": "13-canonical-local-inline-typed-have.lean"
+      },
+      "metric": {
+        "label": "candidate-13-canonical-local-inline-typed-have",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "686a3d41b6f5c4b3baf8f7b399d5790db83c0b7e648e4f606f762898c1d1f3e8",
+        "line_count": 60454,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31725,
+        "first_error_col": 4,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-13-canonical-local-inline-typed-have.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}
