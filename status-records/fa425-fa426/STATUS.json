@@ -1,0 +1,582 @@
+{
+  "generated_at_utc": "2026-08-10T01:28:08.772007+00:00",
+  "repository": "leegahuyn/mathlib4",
+  "authority": "direct Lean CLI evidence inside artifact/checked-in records; workflow conclusion is not module status",
+  "known_historical": {
+    "31725": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "31726": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0"
+  },
+  "best_verified": null,
+  "records": [
+    {
+      "branch": "fix/fa425-strict-theorem-tournament-20260810",
+      "expected_workflow_name": "FA425 strict fixed-height blocker theorem tournament",
+      "checked_in_source": {
+        "available": true,
+        "commit": "c136a744bdca712540c395ebcc11b09e6e2c0939",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31345848607,
+        "name": "FA425 strict fixed-height blocker theorem tournament",
+        "run_number": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "c136a744bdca712540c395ebcc11b09e6e2c0939",
+        "created_at": "2026-08-10T00:58:27Z",
+        "updated_at": "2026-08-10T00:58:32Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31345848607"
+      },
+      "jobs": [
+        {
+          "id": 93327521653,
+          "name": "resolve-test-promote",
+          "status": "in_progress",
+          "conclusion": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA425 controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Locate latest direct-verified champion by source SHA",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run direct Lean fixed-height tournament and ordered gates",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Persist only verified source and concise evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Upload complete FA425 evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Classify controller result",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Post Checkout FA425 controller",
+              "status": "pending",
+              "conclusion": null,
+              "number": 16
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "CANDIDATE"
+    },
+    {
+      "branch": "fix/fa425b-preheader-instance-tournament-20260810",
+      "expected_workflow_name": "FA425b pre-header canonical instance tournament",
+      "checked_in_source": {
+        "available": true,
+        "commit": "eaaf739c0aff5f068abc3bc86dc8a99d897be6aa",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31346038292,
+        "name": "FA425b pre-header canonical instance tournament",
+        "run_number": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "eaaf739c0aff5f068abc3bc86dc8a99d897be6aa",
+        "created_at": "2026-08-10T01:02:48Z",
+        "updated_at": "2026-08-10T01:02:58Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31346038292"
+      },
+      "jobs": [
+        {
+          "id": 93328059260,
+          "name": "resolve-test-promote",
+          "status": "in_progress",
+          "conclusion": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA425b controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Resolve latest direct-verified champion",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run fixed-height pre-header instance tournament",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Persist only verified source and concise evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Upload complete FA425b evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Classify controller result",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Post Checkout FA425b controller",
+              "status": "pending",
+              "conclusion": null,
+              "number": 16
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "CANDIDATE"
+    },
+    {
+      "branch": "fix/fa425c-instance-unfold-tournament-20260810",
+      "expected_workflow_name": "FA425c instance-unfold closing tournament",
+      "checked_in_source": {
+        "available": true,
+        "commit": "8ff04174c46402b38ac0f8016ed95b25bb156561",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31346174526,
+        "name": "FA425c instance-unfold closing tournament",
+        "run_number": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "8ff04174c46402b38ac0f8016ed95b25bb156561",
+        "created_at": "2026-08-10T01:05:51Z",
+        "updated_at": "2026-08-10T01:05:54Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31346174526"
+      },
+      "jobs": [
+        {
+          "id": 93328431894,
+          "name": "resolve-test-promote",
+          "status": "in_progress",
+          "conclusion": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA425c controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Resolve latest direct-verified champion",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run fixed-height instance-unfold closing tournament",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Persist only verified source and concise evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Upload complete FA425c evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Classify controller result",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Post Checkout FA425c controller",
+              "status": "pending",
+              "conclusion": null,
+              "number": 16
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "CANDIDATE"
+    },
+    {
+      "branch": "fix/fa425d-derivative-rebundle-20260810",
+      "expected_workflow_name": "FA425d derivative rebundling tournament",
+      "checked_in_source": {
+        "available": true,
+        "commit": "935bd642cf6d1d5d4f498fd0ebf511b11c464a76",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31346724593,
+        "name": "FA425d derivative rebundling tournament",
+        "run_number": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "935bd642cf6d1d5d4f498fd0ebf511b11c464a76",
+        "created_at": "2026-08-10T01:17:49Z",
+        "updated_at": "2026-08-10T01:17:51Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31346724593"
+      },
+      "jobs": [
+        {
+          "id": 93329908626,
+          "name": "resolve-test-promote",
+          "status": "in_progress",
+          "conclusion": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA425d controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Resolve latest direct-verified champion",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Run fixed-height derivative rebundling tournament",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 5
+            },
+            {
+              "name": "Persist only verified source and concise evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 6
+            },
+            {
+              "name": "Upload complete FA425d evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Classify controller result",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Post Checkout FA425d controller",
+              "status": "pending",
+              "conclusion": null,
+              "number": 16
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "CANDIDATE"
+    },
+    {
+      "branch": "fix/fa426-multiround-cross-donor-20260810",
+      "expected_workflow_name": "FA426 multiround cross-donor strict controller",
+      "checked_in_source": {
+        "available": true,
+        "commit": "e003357aa87610244f198fd6747658e4c57b2f09",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31346560050,
+        "name": "FA426 multiround cross-donor strict controller",
+        "run_number": 1,
+        "status": "completed",
+        "conclusion": "failure",
+        "event": "push",
+        "head_sha": "e003357aa87610244f198fd6747658e4c57b2f09",
+        "created_at": "2026-08-10T01:14:02Z",
+        "updated_at": "2026-08-10T01:23:25Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31346560050"
+      },
+      "jobs": [
+        {
+          "id": 93329457671,
+          "name": "resolve-test-promote",
+          "status": "completed",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA426 controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Allow predecessor strict tournaments to persist evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Fetch candidate branches and resolve SHA fallback",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Select best source-matched VERIFIED evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Run four-round fixed-height cross-donor controller",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 7
+            },
+            {
+              "name": "Persist only direct-verified source and concise evidence",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 8
+            },
+            {
+              "name": "Upload complete FA426 evidence",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 9
+            },
+            {
+              "name": "Classify controller result",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 10
+            },
+            {
+              "name": "Post Checkout FA426 controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 20
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 21
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "INFRA FAILURE"
+    },
+    {
+      "branch": "fix/fa426b-multiround-importsafe-20260810",
+      "expected_workflow_name": "FA426b import-safe multiround strict controller",
+      "checked_in_source": {
+        "available": true,
+        "commit": "e8d7ebe5e5253d9b8ab6f22a013b087b25e81af4",
+        "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+        "line_count": 60453,
+        "bytes": 2694929
+      },
+      "run": {
+        "id": 31346812751,
+        "name": "FA426b import-safe multiround strict controller",
+        "run_number": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "e8d7ebe5e5253d9b8ab6f22a013b087b25e81af4",
+        "created_at": "2026-08-10T01:19:56Z",
+        "updated_at": "2026-08-10T01:19:59Z",
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31346812751"
+      },
+      "jobs": [
+        {
+          "id": 93330156808,
+          "name": "resolve-test-promote",
+          "status": "in_progress",
+          "conclusion": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Checkout FA426b controller",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Allow predecessor evidence commits to settle",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Fetch candidate branches and resolve SHA fallback",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Select best source-matched VERIFIED evidence",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5
+            },
+            {
+              "name": "Install pinned Lean and Mathlib cache",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6
+            },
+            {
+              "name": "Run import-safe four-round cross-donor controller",
+              "status": "in_progress",
+              "conclusion": null,
+              "number": 7
+            },
+            {
+              "name": "Persist only direct-verified source and concise evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 8
+            },
+            {
+              "name": "Upload complete FA426b evidence",
+              "status": "pending",
+              "conclusion": null,
+              "number": 9
+            },
+            {
+              "name": "Classify controller result",
+              "status": "pending",
+              "conclusion": null,
+              "number": 10
+            },
+            {
+              "name": "Post Checkout FA426b controller",
+              "status": "pending",
+              "conclusion": null,
+              "number": 20
+            }
+          ]
+        }
+      ],
+      "artifacts": [],
+      "currents": [],
+      "classification": "CANDIDATE"
+    }
+  ]
+}

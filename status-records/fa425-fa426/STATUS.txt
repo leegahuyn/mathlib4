@@ -1,0 +1,9 @@
+generated_at_utc=2026-08-10T01:28:08.772007+00:00
+best_verified_branch=
+best_verified_score=
+fix/fa425-strict-theorem-tournament-20260810: classification=CANDIDATE run=31345848607 status=in_progress conclusion=None source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
+fix/fa425b-preheader-instance-tournament-20260810: classification=CANDIDATE run=31346038292 status=in_progress conclusion=None source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
+fix/fa425c-instance-unfold-tournament-20260810: classification=CANDIDATE run=31346174526 status=in_progress conclusion=None source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
+fix/fa425d-derivative-rebundle-20260810: classification=CANDIDATE run=31346724593 status=in_progress conclusion=None source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
+fix/fa426-multiround-cross-donor-20260810: classification=INFRA FAILURE run=31346560050 status=completed conclusion=failure source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
+fix/fa426b-multiround-importsafe-20260810: classification=CANDIDATE run=31346812751 status=in_progress conclusion=None source_sha=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4 lines=60453 metric=None
