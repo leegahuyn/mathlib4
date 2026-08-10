@@ -1,0 +1,16 @@
+{
+  "found": true,
+  "id": 31348818685,
+  "run_number": 3,
+  "run_attempt": 1,
+  "status": "queued",
+  "conclusion": null,
+  "head_sha": "263eb77cdae38f5ebd24da66a131c2efe59ac767",
+  "head_branch": "fix/fa444-fa442-matrix-pipeline-repair-20260810",
+  "workflow_id": 330749601,
+  "name": "FA444 repair FA442 direct Lean matrix pipeline",
+  "path": ".github/workflows/fa442-same-height-slope-cumulative.yml",
+  "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31348818685",
+  "created_at": "2026-08-10T02:05:16Z",
+  "updated_at": "2026-08-10T02:05:16Z"
+}
