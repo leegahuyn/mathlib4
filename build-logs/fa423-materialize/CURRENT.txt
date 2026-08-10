@@ -1,0 +1,13 @@
+classification=VERIFIED
+authority=direct Lean CLI
+source_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+line_count=60453
+Mock2_exit=0
+Mock2_Advanced_exit=0
+FA_exit=1
+FA_first_error_line=31726
+FA_first_error_col=2
+error_headers_under_cap=2
+maxErrors_cap=1
+maxErrors_interpretation=cap only; not total errors or progress
+verified=True
