@@ -1,0 +1,4 @@
+requested_at=2026-08-10T07:25:00+09:00
+strategy=rebuild HasDerivAt via HasFDerivAt under expected target instance
+fixed_line_count=60453
+authority=direct Lean CLI
