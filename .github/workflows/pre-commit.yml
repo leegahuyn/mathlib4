@@ -1,54 +1,59 @@
-name: Tighten FA444 selector against syntax-only line movement
+name: Cancel superseded FA exploration runs
 
 on:
   push:
     branches:
       - ci/fa444-recognized-run-probe-20260810
-  pull_request:
-    branches:
-      - ci/fa444-recognized-run-probe-20260810
+    paths:
+      - build-logs/fa-run-cancel/CANCEL*.txt
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
-  group: fa444-selector-syntax-guard-patcher
+  group: superseded-fa-run-canceller-20260810
   cancel-in-progress: true
 
 jobs:
-  patch:
+  cancel:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Checkout repair branch
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa444-fa442-matrix-pipeline-repair-20260810
-          fetch-depth: 2500
+          ref: ci/fa444-recognized-run-probe-20260810
           persist-credentials: true
-      - name: Add checked-in syntax/parser regression guard
+      - name: Force-cancel only superseded exploration runs
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build-logs/fa-run-cancel
+          : > build-logs/fa-run-cancel/CANCEL_RESULTS.txt
+          for run_id in 31370630147 31371627211 31372073619 31372769897 31373126614; do
+            before=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
+              --jq '.status + ":" + (.conclusion // "")' 2>&1)
+            printf 'run=%s before=%s\n' "$run_id" "$before" \
+              | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
+            gh api -X POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/force-cancel" \
+              >> build-logs/fa-run-cancel/CANCEL_RESULTS.txt 2>&1
+            printf 'force_cancel_exit=%s\n' "$?" \
+              | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
+          done
+          printf 'preserved_authoritative_run=31373682702\n' \
+            | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
+          exit 0
+      - name: Persist cancellation evidence
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          path=Path('scripts/fa442_select_strict_champion.py')
-          text=path.read_text(encoding='utf-8')
-          old='''    if int(metric.get("FA_exit", 125)) == 0:\n        return "FA_PASS_CANDIDATE"\n\n    baseline_index = int(baseline.get("FA_error_declaration_index", -1))\n'''
-          new='''    if int(metric.get("FA_exit", 125)) == 0:\n        return "FA_PASS_CANDIDATE"\n\n    # A parser/syntax failure can appear one line later simply because the\n    # malformed proof consumes input up to the next declaration. It is real\n    # Lean evidence, but never semantic proof progress.\n    first_message = str(metric.get("FA_first_error_message", "")).lower()\n    syntax_markers = (\n        "unexpected token",\n        "unexpected end of input",\n        "invalid syntax",\n        "parser error",\n        "expected ':='",\n        'expected ":="',\n    )\n    if any(marker in first_message for marker in syntax_markers):\n        return "LEAN_SYNTAX_REGRESSION"\n\n    baseline_index = int(baseline.get("FA_error_declaration_index", -1))\n'''
-          if new in text:
-              print('syntax guard already present')
-          else:
-              count=text.count(old)
-              if count != 1:
-                  raise SystemExit(f'expected one selector insertion point, found {count}')
-              path.write_text(text.replace(old,new),encoding='utf-8')
-          PY
-          python3 -m py_compile scripts/fa442_select_strict_champion.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/fa442_select_strict_champion.py
+          git add -f build-logs/fa-run-cancel/CANCEL_RESULTS.txt
           if ! git diff --cached --quiet; then
-            git commit -m 'ci: reject syntax-only line movement in FA selector [skip ci]'
-            git push origin HEAD:fix/fa444-fa442-matrix-pipeline-repair-20260810
+            git commit -m 'ci: record superseded FA run cancellation [skip ci]'
+            git push origin HEAD:ci/fa444-recognized-run-probe-20260810
           fi
