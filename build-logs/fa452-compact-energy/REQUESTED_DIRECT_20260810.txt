@@ -1,0 +1,1 @@
+Trigger the FA452 compact-support energy direct Lean matrix from the FA451/FA444 verified lineage. Every candidate must execute Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis under the pinned toolchain. Keep this trigger draft and unmerged.
