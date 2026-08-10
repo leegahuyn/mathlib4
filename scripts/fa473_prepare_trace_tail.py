@@ -110,18 +110,49 @@ DERIV_CONST_ADD = """by
     logHeightBasePoint_im]
   ring"""
 
+DERIV_CONST_ADD_SIMP = DERIV_CONST_ADD.replace(
+    """  rw [d1_complex_decomposition]
+  simp only [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
+    Complex.ofReal_re, Complex.ofReal_im, zero_mul, mul_zero, one_mul,
+    mul_one, add_zero, zero_add, sub_zero, z, heightC,
+    logHeightBasePoint_im]
+  ring""",
+    """  rw [d1_complex_decomposition]
+  simp [Complex.mul_re, Complex.mul_im, z, heightC,
+    logHeightBasePoint_im]""",
+)
+
+DERIV_CONST_ADD_NORM = DERIV_CONST_ADD.replace(
+    """  ring""",
+    """  norm_num <;> ring""",
+)
+
+DERIV_CONST_ADD_MAP_ZERO = DERIV_CONST_ADD.replace(
+    """    logHeightBasePoint_im]
+  ring""",
+    """    logHeightBasePoint_im, map_zero]
+  ring""",
+)
+
+if DERIV_CONST_ADD_SIMP == DERIV_CONST_ADD:
+    raise RuntimeError("const_add simp candidate did not change")
+if DERIV_CONST_ADD_NORM == DERIV_CONST_ADD:
+    raise RuntimeError("const_add norm candidate did not change")
+if DERIV_CONST_ADD_MAP_ZERO == DERIV_CONST_ADD:
+    raise RuntimeError("const_add map_zero candidate did not change")
+
 VARIANTS = {
-    "exp_mul_i": (
-        DERIV_EXP_MUL_I,
-        "HasDerivAt.mul_const with the literal exp*I derivative",
+    "const_add_simp": (
+        DERIV_CONST_ADD_SIMP,
+        "const_add followed by unrestricted simplification of the zero real coercion",
     ),
-    "convert_ring_nf": (
-        DERIV_CONVERT_RING_NF,
-        "retain I*exp and close the product-order conversion with ring_nf",
+    "const_add_norm": (
+        DERIV_CONST_ADD_NORM,
+        "const_add followed by norm_num normalization of the zero real coercion",
     ),
-    "const_add": (
-        DERIV_CONST_ADD,
-        "avoid Pi addition by applying HasDerivAt.const_add to exp*I",
+    "const_add_map_zero": (
+        DERIV_CONST_ADD_MAP_ZERO,
+        "const_add with map_zero included in the final restricted simplifier",
     ),
 }
 
@@ -151,7 +182,7 @@ def norm_repairs(text: str):
         else:
             os.environ["LOG_VARIANT"] = prior_log_variant
 
-    variant = os.environ.get("TRACE_VARIANT", "exp_mul_i")
+    variant = os.environ.get("TRACE_VARIANT", "const_add_simp")
     if variant not in VARIANTS:
         raise RuntimeError(f"unsupported TRACE_VARIANT={variant!r}")
     body, strategy = VARIANTS[variant]
