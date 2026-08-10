@@ -1,0 +1,474 @@
+{
+  "classification": "CANDIDATE",
+  "authority_required": "independent direct Lean CLI confirmation",
+  "selection_mode": "strict_promotion",
+  "baseline": {
+    "classification": "VERIFIED",
+    "authority": "direct Lean CLI on repository source path",
+    "variant": "baseline",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "candidate_metadata_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "source_metadata_identity": true,
+    "line_count": 60453,
+    "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "Mock2_exit": 0,
+    "Mock2_errors_under_cap": 0,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_Advanced_errors_under_cap": 0,
+    "FA_exit": 1,
+    "FA_error_headers_captured": 47,
+    "FA_first_actual_error_line": 31726,
+    "FA_first_actual_error_col": 2,
+    "FA_first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "FA_error_declaration_index": 2624,
+    "maxErrors_cap": 50,
+    "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+    "candidate_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_not_increased": true,
+    "forbidden_clean": true,
+    "repairs": [],
+    "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/baseline/METRIC.json",
+    "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/baseline/Mock2_FunctionalAnalysis-candidate.lean",
+    "_actual_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0"
+  },
+  "chosen": {
+    "classification": "VERIFIED",
+    "authority": "direct Lean CLI on repository source path",
+    "variant": "slope_paired_parenthesized_ring_height",
+    "source_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "candidate_metadata_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "source_metadata_identity": true,
+    "line_count": 60453,
+    "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "Mock2_exit": 0,
+    "Mock2_errors_under_cap": 0,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_Advanced_errors_under_cap": 0,
+    "FA_exit": 1,
+    "FA_error_headers_captured": 47,
+    "FA_first_actual_error_line": 33552,
+    "FA_first_actual_error_col": 4,
+    "FA_first_error_declaration": "gammaTwoSelectedHorocycleParam_continuous",
+    "FA_error_declaration_index": 2712,
+    "maxErrors_cap": 50,
+    "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+    "candidate_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_not_increased": true,
+    "forbidden_clean": true,
+    "repairs": [
+      {
+        "repair": "slope_plain",
+        "applied": 1
+      },
+      {
+        "repair": "paired_parenthesized",
+        "applied": 9,
+        "per_edge": {
+          "circularArc": 5,
+          "leftVerticalSegment": 2,
+          "rightVerticalSegment": 2
+        }
+      },
+      {
+        "repair": "left_selected_piola_ring",
+        "applied": 1
+      },
+      {
+        "repair": "height_membership",
+        "applied": 1
+      }
+    ],
+    "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring_height/METRIC.json",
+    "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring_height/Mock2_FunctionalAnalysis-candidate.lean",
+    "_actual_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489"
+  },
+  "eligible_strict_candidates": 7,
+  "all_direct_metrics": [
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_paired_parenthesized_ring",
+      "source_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+      "candidate_metadata_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 32754,
+      "FA_first_actual_error_col": 42,
+      "FA_first_error_declaration": "setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero",
+      "FA_error_declaration_index": 2680,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_plain",
+          "applied": 1
+        },
+        {
+          "repair": "paired_parenthesized",
+          "applied": 9,
+          "per_edge": {
+            "circularArc": 5,
+            "leftVerticalSegment": 2,
+            "rightVerticalSegment": 2
+          }
+        },
+        {
+          "repair": "left_selected_piola_ring",
+          "applied": 1
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_only",
+      "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+      "candidate_metadata_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 32035,
+      "FA_first_actual_error_col": 8,
+      "FA_first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "FA_error_declaration_index": 2645,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_plain",
+          "applied": 1
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_only/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_only/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_paired_dot",
+      "source_sha256": "a8e689a69e59d79ad4610ac8ddc46def37a0e07220bcf87fffc38c7fbe8cd0a5",
+      "candidate_metadata_sha256": "a8e689a69e59d79ad4610ac8ddc46def37a0e07220bcf87fffc38c7fbe8cd0a5",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 41,
+      "FA_first_actual_error_line": 32380,
+      "FA_first_actual_error_col": 50,
+      "FA_first_error_declaration": "nativeOrientedActualEdgeContribution_left",
+      "FA_error_declaration_index": 2661,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_plain",
+          "applied": 1
+        },
+        {
+          "repair": "paired_dot",
+          "applied": 9,
+          "per_edge": {
+            "circularArc": 5,
+            "leftVerticalSegment": 2,
+            "rightVerticalSegment": 2
+          }
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_dot/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_dot/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "a8e689a69e59d79ad4610ac8ddc46def37a0e07220bcf87fffc38c7fbe8cd0a5"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_structures",
+      "source_sha256": "6083f4bb01b25b0fab5897131d1cd85cb134be0115fd61c321fd0cd6b5db7c23",
+      "candidate_metadata_sha256": "6083f4bb01b25b0fab5897131d1cd85cb134be0115fd61c321fd0cd6b5db7c23",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 32035,
+      "FA_first_actual_error_col": 8,
+      "FA_first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "FA_error_declaration_index": 2645,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_structures",
+          "applied": 1
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_structures/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_structures/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "6083f4bb01b25b0fab5897131d1cd85cb134be0115fd61c321fd0cd6b5db7c23"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_change_convert",
+      "source_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa",
+      "candidate_metadata_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 32035,
+      "FA_first_actual_error_col": 8,
+      "FA_first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "FA_error_declaration_index": 2645,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_change_convert",
+          "applied": 1
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_change_convert/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_change_convert/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_paired_parenthesized_ring_height",
+      "source_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+      "candidate_metadata_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 33552,
+      "FA_first_actual_error_col": 4,
+      "FA_first_error_declaration": "gammaTwoSelectedHorocycleParam_continuous",
+      "FA_error_declaration_index": 2712,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_plain",
+          "applied": 1
+        },
+        {
+          "repair": "paired_parenthesized",
+          "applied": 9,
+          "per_edge": {
+            "circularArc": 5,
+            "leftVerticalSegment": 2,
+            "rightVerticalSegment": 2
+          }
+        },
+        {
+          "repair": "left_selected_piola_ring",
+          "applied": 1
+        },
+        {
+          "repair": "height_membership",
+          "applied": 1
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring_height/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized_ring_height/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "baseline",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "candidate_metadata_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 31726,
+      "FA_first_actual_error_col": 2,
+      "FA_first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "FA_error_declaration_index": 2624,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/baseline/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/baseline/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0"
+    },
+    {
+      "classification": "VERIFIED",
+      "authority": "direct Lean CLI on repository source path",
+      "variant": "slope_paired_parenthesized",
+      "source_sha256": "7671b34dc82cf76ac83f6394eef16911174e263adf2f44eb4c27d4113da84616",
+      "candidate_metadata_sha256": "7671b34dc82cf76ac83f6394eef16911174e263adf2f44eb4c27d4113da84616",
+      "source_metadata_identity": true,
+      "line_count": 60453,
+      "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+      "Mock2_exit": 0,
+      "Mock2_errors_under_cap": 0,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_Advanced_errors_under_cap": 0,
+      "FA_exit": 1,
+      "FA_error_headers_captured": 47,
+      "FA_first_actual_error_line": 32380,
+      "FA_first_actual_error_col": 50,
+      "FA_first_error_declaration": "nativeOrientedActualEdgeContribution_left",
+      "FA_error_declaration_index": 2661,
+      "maxErrors_cap": 50,
+      "maxErrors_interpretation": "diagnostic cap only; not total errors or proof progress",
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "forbidden_not_increased": true,
+      "forbidden_clean": true,
+      "repairs": [
+        {
+          "repair": "slope_plain",
+          "applied": 1
+        },
+        {
+          "repair": "paired_parenthesized",
+          "applied": 9,
+          "per_edge": {
+            "circularArc": 5,
+            "leftVerticalSegment": 2,
+            "rightVerticalSegment": 2
+          }
+        }
+      ],
+      "_metric_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized/METRIC.json",
+      "_source_path": "/home/runner/work/mathlib4/mathlib4/build-logs/fa442-same-height/collected/slope_paired_parenthesized/Mock2_FunctionalAnalysis-candidate.lean",
+      "_actual_sha256": "7671b34dc82cf76ac83f6394eef16911174e263adf2f44eb4c27d4113da84616"
+    }
+  ],
+  "promotion_rule": "checked source SHA identity, 60453 lines, identical theorem header, Mock2 and Mock2_Advanced clean, forbidden audit clean, then FA exit0 or first actual error line strictly greater than 31726"
+}
