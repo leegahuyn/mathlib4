@@ -1,4 +1,4 @@
-name: Locate FA452 push workflow run
+name: Cancel invalid FA452 regression-selector run
 
 on:
   push:
@@ -6,83 +6,51 @@ on:
       - ci/fa452-run-locator-20260810
 
 permissions:
-  actions: read
+  actions: write
   contents: write
 
 concurrency:
-  group: fa452-run-locator
+  group: fa452-invalid-run-canceller
   cancel-in-progress: true
 
 jobs:
-  locate:
+  cancel:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      TARGET_BRANCH: fix/fa452-compact-support-energy-matrix-20260810
-      TARGET_SHA: dda9ea4c916735e3ed8814a077a395a19c24df78
+      TARGET_RUN: '31362532810'
     steps:
-      - name: Checkout locator branch
+      - name: Checkout helper branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ci/fa452-run-locator-20260810
           persist-credentials: true
 
-      - name: Poll exact target push run
+      - name: Force-cancel invalid selector run only
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p build-logs/fa452-run-locator
-          found=false
-          for attempt in $(seq 1 180); do
-            gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&event=push&per_page=100" > /tmp/fa452-runs.json
-            if python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          data=json.loads(Path('/tmp/fa452-runs.json').read_text(encoding='utf-8'))
-          runs=data.get('workflow_runs',[])
-          exact=[r for r in runs if r.get('head_sha')==os.environ['TARGET_SHA']]
-          result={
-            'found':bool(exact),
-            'target_branch':os.environ['TARGET_BRANCH'],
-            'target_sha':os.environ['TARGET_SHA'],
-            'exact_matches':[
-              {k:r.get(k) for k in (
-                'id','name','path','run_number','run_attempt','event','status',
-                'conclusion','head_branch','head_sha','html_url','created_at','updated_at'
-              )} for r in exact
-            ],
-            'recent_branch_runs':[
-              {k:r.get(k) for k in (
-                'id','name','path','run_number','run_attempt','event','status',
-                'conclusion','head_branch','head_sha','html_url','created_at','updated_at'
-              )} for r in runs[:30]
-            ],
-          }
-          Path('build-logs/fa452-run-locator/RUN_LOCATOR.json').write_text(
-            json.dumps(result,indent=2)+'\n',encoding='utf-8')
-          if not exact:
-            raise SystemExit(1)
-          print(json.dumps(result,indent=2))
-          PY
-            then
-              found=true
-              break
-            fi
-            sleep 5
-          done
-          cp /tmp/fa452-runs.json build-logs/fa452-run-locator/RUNS_RAW.json
-          printf '%s\n' "$found" > build-logs/fa452-run-locator/found.txt
+          set +e
+          mkdir -p build-logs/fa452-run-cancel
+          before=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${TARGET_RUN}" --jq '.status + ":" + (.conclusion // "")' 2>&1)
+          printf 'target_run=%s\nbefore=%s\n' "$TARGET_RUN" "$before" > build-logs/fa452-run-cancel/CANCEL_RESULT.txt
+          gh api -X POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${TARGET_RUN}/force-cancel" >> build-logs/fa452-run-cancel/CANCEL_RESULT.txt 2>&1
+          printf 'force_cancel_exit=%s\n' "$?" >> build-logs/fa452-run-cancel/CANCEL_RESULT.txt
+          sleep 3
+          after=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${TARGET_RUN}" --jq '.status + ":" + (.conclusion // "")' 2>&1)
+          printf 'after=%s\n' "$after" >> build-logs/fa452-run-cancel/CANCEL_RESULT.txt
+          cat build-logs/fa452-run-cancel/CANCEL_RESULT.txt
+          exit 0
 
-      - name: Persist locator evidence
+      - name: Persist cancellation evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f build-logs/fa452-run-locator
+          git add -f build-logs/fa452-run-cancel/CANCEL_RESULT.txt
           if ! git diff --cached --quiet; then
-            git commit -m 'ci: record FA452 push run locator [skip ci]'
+            git commit -m 'ci: record cancellation of invalid FA452 selector run [skip ci]'
             git push origin HEAD:ci/fa452-run-locator-20260810
           fi
