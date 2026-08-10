@@ -1,0 +1,19 @@
+{
+  "run1": 1,
+  "run2": 1,
+  "artifacts": {
+    "FA-run1.olean": false,
+    "FA-run1.ilean": false,
+    "FA-run2.olean": false,
+    "FA-run2.ilean": false
+  },
+  "trust_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "FA_TRUE_PASS": false
+}
