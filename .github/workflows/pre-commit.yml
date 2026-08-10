@@ -1,24 +1,21 @@
-name: FA449 first-cluster direct Lean matrix
+name: FA451 trace derivative direct Lean matrix
 
 on:
   push:
     branches:
-      - fix/fa449-first-cluster-matrix-20260810
+      - fix/fa451-trace-deriv-compact-matrix-20260810
   pull_request:
     branches:
-      - fix/fa449-first-cluster-matrix-20260810
+      - fix/fa451-trace-deriv-compact-matrix-20260810
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 concurrency:
-  group: fa449-first-cluster-direct-matrix
+  group: fa451-trace-deriv-direct-matrix
   cancel-in-progress: true
-
-env:
-  ACTIVE_BRANCH: fix/fa449-first-cluster-matrix-20260810
 
 jobs:
   candidate:
@@ -27,53 +24,45 @@ jobs:
     timeout-minutes: 240
     strategy:
       fail-fast: false
-      max-parallel: 15
+      max-parallel: 7
       matrix:
         variant:
-          - baseline
-          - add_explicit
-          - add_unfold
-          - add_memlp_exact
-          - add_memlp_convert
-          - add_memlp_have
-          - add_memlp_letI
-          - cluster_exact
-          - cluster_convert
-          - cluster_have
-          - cluster_letI
-          - cluster_exact_deriv
-          - cluster_convert_deriv
-          - cluster_have_deriv
-          - cluster_letI_deriv
+          - known_before_trace
+          - trace_lpz
+          - trace_lpz_rw
+          - trace_deriv_change
+          - trace_deriv_simpa
+          - trace_deriv_change_norm
+          - trace_deriv_simpa_norm
     env:
       VARIANT: ${{ matrix.variant }}
-      MAX_ERRORS: '80'
+      MAX_ERRORS: '100'
     steps:
-      - name: Checkout current FA449 branch
+      - name: Checkout current FA451 branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa449-first-cluster-matrix-20260810
+          ref: fix/fa451-trace-deriv-compact-matrix-20260810
           fetch-depth: 2500
           persist-credentials: false
 
-      - name: Generate candidate, install pinned Lean, restore cache, and direct compile
+      - name: Generate candidate and execute all direct Lean commands
         shell: bash
-        run: bash scripts/fa449_candidate_ci.sh
+        run: bash scripts/fa451_candidate_ci.sh
 
-      - name: Upload source and complete direct evidence
+      - name: Upload candidate and complete direct metric
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa449-candidate-${{ matrix.variant }}
-          path: build-logs/fa449-first-cluster/candidates/${{ matrix.variant }}
+          name: fa451-candidate-${{ matrix.variant }}
+          path: build-logs/fa451-trace-deriv/candidates/${{ matrix.variant }}
           if-no-files-found: error
           retention-days: 90
 
-      - name: Enforce actual Lean execution, prerequisites, and trust audit
+      - name: Enforce direct Lean execution and prerequisite passes
         if: always()
         shell: bash
         run: |
-          python3 - "build-logs/fa449-first-cluster/candidates/${VARIANT}/METRIC.json" <<'PY'
+          python3 - "build-logs/fa451-trace-deriv/candidates/${VARIANT}/METRIC.json" <<'PY'
           import json,sys
           try: m=json.load(open(sys.argv[1],encoding='utf-8'))
           except Exception as exc: raise SystemExit(f'INFRA_FAILURE: {exc}')
@@ -86,50 +75,3 @@ jobs:
           print(json.dumps(m,indent=2,ensure_ascii=False))
           if not ok: raise SystemExit('INFRA_FAILURE or prerequisite regression')
           PY
-
-  select-confirm-persist:
-    name: independent baseline, strict selector, materialize, checked-in x2
-    needs: candidate
-    if: always()
-    runs-on: ubuntu-24.04
-    timeout-minutes: 420
-    env:
-      GH_TOKEN: ${{ github.token }}
-      GITHUB_TOKEN: ${{ github.token }}
-      ACTIVE_BRANCH: fix/fa449-first-cluster-matrix-20260810
-      MAX_ERRORS: '120'
-    steps:
-      - name: Checkout current FA449 branch with push credentials
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: fix/fa449-first-cluster-matrix-20260810
-          fetch-depth: 2500
-          persist-credentials: true
-
-      - name: Run independent baseline, selector, confirmation, and checked-in verification
-        id: selector
-        shell: bash
-        run: bash scripts/fa449_selector_ci.sh
-
-      - name: Upload complete matrix and checked-in evidence
-        id: upload
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: fa449-first-cluster-evidence-${{ github.run_id }}-${{ github.sha }}
-          path: |
-            build-logs/fa449-first-cluster
-            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          if-no-files-found: warn
-          retention-days: 90
-
-      - name: Enforce pipeline integrity separately from FA proof result
-        if: always()
-        shell: bash
-        run: |
-          test "${{ steps.selector.outcome }}" = success
-          test -s build-logs/fa449-first-cluster/selected/SELECTION.json
-          test -s build-logs/fa449-first-cluster/selected/INDEPENDENT_BASELINE.json
-          test -s build-logs/fa449-first-cluster/selected-confirm/CONFIRMATION.json
-          test -s build-logs/fa449-first-cluster/final/CHECKED_IN_IDENTITY.json
-          test -s build-logs/fa449-first-cluster/final/FA_FINAL.json
