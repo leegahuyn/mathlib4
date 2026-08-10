@@ -1,0 +1,2 @@
+FA457 draft-only trigger. Preserve the original analytic proof and replace only compact-support multiplication/Real norm normalization with direct support inclusion. Direct Lean CLI only; do not merge or mark ready.
+Retriggered after strict metric repair: both `error:` and `error(lean.category):` diagnostics must participate in first-error ordering.
