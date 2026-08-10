@@ -1,0 +1,14 @@
+from fa442_collect_status import TARGETS, main
+
+TARGETS.append({
+    "branch": "fix/fa442-baseline-direct-smoke-20260810",
+    "workflow_name": "FA442 baseline direct metric smoke gate",
+    "report_paths": [
+        "build-logs/fa442-baseline-direct-smoke/METRIC.json",
+        "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.json",
+        "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.md",
+    ],
+})
+
+if __name__ == "__main__":
+    main()
