@@ -1,4 +1,4 @@
-name: Cancel superseded FA444 workflow runs
+name: Force-cancel superseded FA444 workflow runs
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: fa444-superseded-run-canceller
+  group: fa444-superseded-run-force-canceller
   cancel-in-progress: true
 
 jobs:
@@ -24,30 +24,30 @@ jobs:
         with:
           ref: ci/fa444-recognized-run-probe-20260810
           persist-credentials: true
-      - name: Cancel only superseded FA444 runs
+      - name: Force-cancel only superseded FA444 runs
         shell: bash
         run: |
           set +e
-          mkdir -p build-logs/fa444-cancel
-          : > build-logs/fa444-cancel/CANCEL_RESULTS.txt
-          for run_id in 31349476861 31349626486 31349892084 31349476866; do
+          mkdir -p build-logs/fa444-force-cancel
+          : > build-logs/fa444-force-cancel/FORCE_CANCEL_RESULTS.txt
+          for run_id in 31349476861 31349476866; do
             status=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
               --jq '.status + ":" + (.conclusion // "")' 2>&1)
             printf 'before run=%s status=%s\n' "$run_id" "$status" \
-              | tee -a build-logs/fa444-cancel/CANCEL_RESULTS.txt
-            gh api -X POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
-              >> build-logs/fa444-cancel/CANCEL_RESULTS.txt 2>&1
-            printf 'cancel_exit=%s\n' "$?" \
-              | tee -a build-logs/fa444-cancel/CANCEL_RESULTS.txt
+              | tee -a build-logs/fa444-force-cancel/FORCE_CANCEL_RESULTS.txt
+            gh api -X POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/force-cancel" \
+              >> build-logs/fa444-force-cancel/FORCE_CANCEL_RESULTS.txt 2>&1
+            printf 'force_cancel_exit=%s\n' "$?" \
+              | tee -a build-logs/fa444-force-cancel/FORCE_CANCEL_RESULTS.txt
           done
           exit 0
-      - name: Persist cancellation evidence
+      - name: Persist force-cancellation evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f build-logs/fa444-cancel/CANCEL_RESULTS.txt
-          git commit -m 'ci: record superseded FA444 run cancellation [skip ci]'
+          git add -f build-logs/fa444-force-cancel/FORCE_CANCEL_RESULTS.txt
+          git commit -m 'ci: record superseded FA444 force-cancellation [skip ci]'
           git push origin HEAD:ci/fa444-recognized-run-probe-20260810
