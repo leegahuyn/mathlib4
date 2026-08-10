@@ -1,0 +1,1 @@
+Trigger a draft-only checked-in direct Lean diagnostic for the FA448 continuation branch. Do not merge or mark ready.
