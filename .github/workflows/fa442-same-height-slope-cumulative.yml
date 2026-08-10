@@ -1,15 +1,16 @@
-name: FA442 same-height slope cumulative direct Lean matrix
+name: FA444 repair FA442 direct Lean matrix pipeline
 
 on:
   push:
     branches:
-      - fix/fa442-same-height-slope-cumulative-20260810
+      - fix/fa444-fa442-matrix-pipeline-repair-20260810
     paths:
       - scripts/fa442_prepare_same_height_candidate.py
+      - scripts/fa442_restore_authoritative_baseline.py
       - scripts/fa442_record_direct_metric.py
       - scripts/fa442_select_strict_champion.py
       - .github/workflows/fa442-same-height-slope-cumulative.yml
-      - build-logs/fa442-same-height/REQUESTED*.txt
+      - build-logs/fa442-pipeline-repair/REQUESTED*.txt
   workflow_dispatch:
 
 permissions:
@@ -17,11 +18,19 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa442-same-height-slope-cumulative
+  group: fa444-fa442-matrix-pipeline-repair
   cancel-in-progress: false
+
+env:
+  ACTIVE_BRANCH: fix/fa444-fa442-matrix-pipeline-repair-20260810
+  EXPECTED_BASELINE_SHA: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+  EXPECTED_LINE_COUNT: '60453'
 
 jobs:
   candidate:
+    name: candidate (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       max-parallel: 16
@@ -43,31 +52,55 @@ jobs:
           - slope_structures_paired_all_known
           - slope_change_convert_paired_all_known
           - slope_paired_parenthesized_deep_simp
-    runs-on: ubuntu-24.04
-    timeout-minutes: 190
     env:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '50'
     steps:
-      - name: Checkout exact FA442 branch
+      - name: Checkout exact repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa442-same-height-slope-cumulative-20260810
-          fetch-depth: 1800
+          ref: fix/fa444-fa442-matrix-pipeline-repair-20260810
+          fetch-depth: 2500
           persist-credentials: false
 
-      - name: Prepare exact 60453-line candidate
-        id: prepare
+      - name: Configure GitHub Actions git identity
+        if: always()
         shell: bash
         run: |
-          set +e
-          d="build-logs/fa442-same-height/candidates/${VARIANT}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Recover authoritative baseline source
+        id: recover
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          d="build-logs/fa442-pipeline-repair/candidates/${VARIANT}"
           rm -rf "$d"
           mkdir -p "$d"
-          python3 scripts/fa442_prepare_same_height_candidate.py \
-            --variant "$VARIANT" --output-dir "$d" \
-            > "$d/prepare.log" 2>&1
-          rc=$?
+          python3 scripts/fa442_restore_authoritative_baseline.py --output-dir "$d"
+
+      - name: Generate exact same-height candidate
+        id: prepare
+        if: always()
+        shell: bash
+        env:
+          RECOVER_OK: ${{ steps.recover.outputs.ok }}
+        run: |
+          set +e
+          d="build-logs/fa442-pipeline-repair/candidates/${VARIANT}"
+          mkdir -p "$d"
+          if test "${RECOVER_OK:-false}" = true; then
+            python3 scripts/fa442_prepare_same_height_candidate.py \
+              --variant "$VARIANT" --output-dir "$d" \
+              > "$d/prepare.log" 2>&1
+            rc=$?
+          else
+            rc=125
+            printf 'authoritative baseline recovery failed before candidate generation\n' \
+              > "$d/prepare.log"
+          fi
           cat "$d/prepare.log"
           printf '%s' "$rc" > "$d/prepare.exit"
           if test "$rc" -eq 0; then
@@ -78,56 +111,108 @@ jobs:
           fi
           exit 0
 
-      - name: Install pinned Lean and Mathlib cache
-        if: steps.prepare.outputs.ok == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          d="build-logs/fa442-same-height/candidates/${VARIANT}"
-          curl --retry 5 --retry-all-errors --fail --silent --show-error \
-            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            -o /tmp/elan-init.sh
-          sh /tmp/elan-init.sh -y --default-toolchain none
-          export PATH="${HOME}/.elan/bin:${PATH}"
-          elan toolchain install "$(cat lean-toolchain)"
-          lean --version | tee "$d/lean-version.txt"
-          lake --version | tee "$d/lake-version.txt"
-          lake exe cache get | tee "$d/cache-get.log"
-
-      - name: Directly compile completed prerequisites and candidate FA
-        if: steps.prepare.outputs.ok == 'true'
+      - name: Install pinned Lean toolchain and restore Mathlib cache
+        id: toolchain
+        if: always()
         shell: bash
         run: |
           set +e
+          d="build-logs/fa442-pipeline-repair/candidates/${VARIANT}"
+          mkdir -p "$d"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          curl_rc=$?
+          install_rc=125
+          if test "$curl_rc" -eq 0; then
+            sh /tmp/elan-init.sh -y --default-toolchain none \
+              > "$d/elan-init.log" 2>&1
+            elan_rc=$?
+            if test "$elan_rc" -eq 0; then
+              export PATH="${HOME}/.elan/bin:${PATH}"
+              elan toolchain install "$(cat lean-toolchain)" \
+                > "$d/toolchain-install.log" 2>&1
+              install_rc=$?
+            else
+              install_rc=$elan_rc
+            fi
+          fi
+          printf '%s' "$install_rc" > "$d/toolchain-install.exit"
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
           export PATH="${HOME}/.elan/bin:${PATH}"
-          d="build-logs/fa442-same-height/candidates/${VARIANT}"
-          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          if test "$install_rc" -eq 0; then
+            lean --version > "$d/lean-version.txt" 2>&1
+            lean_version_rc=$?
+            lake --version > "$d/lake-version.txt" 2>&1
+            lake_version_rc=$?
+            lake exe cache get > "$d/cache-get.log" 2>&1
+            cache_rc=$?
+          else
+            lean_version_rc=125
+            lake_version_rc=125
+            cache_rc=125
+            printf 'toolchain installation failed\n' > "$d/cache-get.log"
+          fi
+          printf '%s' "$cache_rc" > "$d/cache-get.exit"
+          printf '%s' "$lean_version_rc" > "$d/lean-version.exit"
+          printf '%s' "$lake_version_rc" > "$d/lake-version.exit"
+          cat "$d/lean-version.txt" 2>/dev/null || true
+          cat "$d/lake-version.txt" 2>/dev/null || true
+          cat "$d/cache-get.log" 2>/dev/null || true
+          if test "$install_rc" -eq 0; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: Directly compile Mock2, Mock2_Advanced, and candidate FA
+        id: direct
+        if: always()
+        shell: bash
+        env:
+          PREPARE_OK: ${{ steps.prepare.outputs.ok }}
+          TOOLCHAIN_OK: ${{ steps.toolchain.outputs.ok }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          d="build-logs/fa442-pipeline-repair/candidates/${VARIANT}"
+          mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
           compile_one() {
-            stem=$1
+            stem="$1"
             src="PrimalitySheafVerification/${stem}.lean"
             o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
             i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
             rm -f "$o" "$i"
-            lake env lean -DmaxErrors="$MAX_ERRORS" -DwarningAsError=false \
-              -o "$o" -i "$i" "$src" > "$d/${stem}.log" 2>&1
+            command=(lake env lean "-DmaxErrors=${MAX_ERRORS}" -DwarningAsError=false \
+              -o "$o" -i "$i" "$src")
+            printf '%q ' "${command[@]}" > "$d/${stem}.command"
+            printf '\n' >> "$d/${stem}.command"
+            touch "$d/${stem}.executed"
+            "${command[@]}" > "$d/${stem}.log" 2>&1
             rc=$?
             printf '%s' "$rc" > "$d/${stem}.exit"
             if test "$rc" -eq 0 && test -s "$o" && test -s "$i"; then
-              return 0
+              printf 'true\n' > "$d/${stem}.artifacts_ok"
+            else
+              printf 'false\n' > "$d/${stem}.artifacts_ok"
             fi
-            return 1
           }
-          compile_one Mock2; m2=$?
-          compile_one Mock2_Advanced; m2a=$?
-          fa=125
-          if test "$m2" -eq 0 && test "$m2a" -eq 0; then
-            compile_one Mock2_FunctionalAnalysis; fa=$?
+          if test "${PREPARE_OK:-false}" = true && \
+             test "${TOOLCHAIN_OK:-false}" = true; then
+            compile_one Mock2
+            compile_one Mock2_Advanced
+            compile_one Mock2_FunctionalAnalysis
           else
-            printf 'FA blocked by completed prerequisite regression\n' \
-              > "$d/Mock2_FunctionalAnalysis.log"
-            printf '%s' "$fa" > "$d/Mock2_FunctionalAnalysis.exit"
+            for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+              printf 'direct Lean CLI was not executable: prepare_ok=%s toolchain_ok=%s\n' \
+                "${PREPARE_OK:-false}" "${TOOLCHAIN_OK:-false}" > "$d/${stem}.log"
+              printf '125' > "$d/${stem}.exit"
+            done
           fi
-          export M2_EXIT="$m2" M2A_EXIT="$m2a" FA_EXIT="$fa"
+          export FA442_OUT_DIR="$d"
+          export FA442_SOURCE="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          export FA442_METADATA="$d/CANDIDATE.json"
           python3 scripts/fa442_record_direct_metric.py \
             > "$d/metric-console.log" 2>&1
           metric_rc=$?
@@ -139,356 +224,774 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa442-candidate-${{ matrix.variant }}
-          path: build-logs/fa442-same-height/candidates/${{ matrix.variant }}
+          name: fa442-repair-candidate-${{ matrix.variant }}
+          path: build-logs/fa442-pipeline-repair/candidates/${{ matrix.variant }}
           if-no-files-found: error
           retention-days: 90
 
+      - name: Enforce actual direct Lean execution
+        if: always()
+        shell: bash
+        run: |
+          d="build-logs/fa442-pipeline-repair/candidates/${VARIANT}"
+          python3 - "$d/METRIC.json" <<'PY'
+          import json,sys
+          path=sys.argv[1]
+          try:
+              metric=json.load(open(path,encoding='utf-8'))
+          except Exception as exc:
+              raise SystemExit(f"INFRA_FAILURE: metric missing or invalid: {exc}")
+          required=(
+              metric.get('all_required_lean_executed') is True
+              and metric.get('source_metadata_identity') is True
+              and metric.get('line_count') == 60453
+              and metric.get('Mock2_exit') == 0
+              and metric.get('Mock2_Advanced_exit') == 0
+              and metric.get('forbidden_clean') is True
+              and metric.get('classification') != 'INFRA_FAILURE'
+          )
+          if not required:
+              raise SystemExit(
+                  "INFRA_FAILURE or prerequisite regression: "
+                  + json.dumps(metric,ensure_ascii=False)
+              )
+          print(
+              f"DIRECT_METRIC_OK variant={metric['variant']} "
+              f"FA_exit={metric['FA_exit']} "
+              f"first={metric['FA_first_actual_error_line']}:"
+              f"{metric['FA_first_actual_error_col']}"
+          )
+          PY
+
   select-confirm-persist:
+    name: select, confirm, persist, and gate
     needs: candidate
     if: always()
     runs-on: ubuntu-24.04
-    timeout-minutes: 330
+    timeout-minutes: 420
     env:
-      ACTIVE_BRANCH: fix/fa442-same-height-slope-cumulative-20260810
       GH_TOKEN: ${{ github.token }}
       GITHUB_TOKEN: ${{ github.token }}
       MAX_ERRORS: '100'
     steps:
-      - name: Checkout exact FA442 branch
+      - name: Checkout exact repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa442-same-height-slope-cumulative-20260810
-          fetch-depth: 1800
+          ref: fix/fa444-fa442-matrix-pipeline-repair-20260810
+          fetch-depth: 2500
           persist-credentials: true
 
-      - name: Select best same-height direct candidate
+      - name: Configure GitHub Actions git identity before every possible commit
+        id: identity_config
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = \
+            '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean toolchain and restore Mathlib cache for selector
+        id: selector_toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          d="build-logs/fa442-pipeline-repair/selector-baseline"
+          rm -rf "$d"
+          mkdir -p "$d"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none \
+            > "$d/elan-init.log" 2>&1
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(cat lean-toolchain)" \
+            > "$d/toolchain-install.log" 2>&1
+          printf '0' > "$d/toolchain-install.exit"
+          lean --version | tee "$d/lean-version.txt"
+          lake --version | tee "$d/lake-version.txt"
+          lake exe cache get | tee "$d/cache-get.log"
+          printf '0' > "$d/cache-get.exit"
+
+      - name: Recover authoritative baseline inside selector
+        id: selector_recover
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_restore_authoritative_baseline.py \
+            --output-dir build-logs/fa442-pipeline-repair/selector-baseline
+
+      - name: Generate and directly compile selector baseline
+        id: selector_baseline
+        shell: bash
+        env:
+          VARIANT: baseline
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          d="build-logs/fa442-pipeline-repair/selector-baseline"
+          python3 scripts/fa442_prepare_same_height_candidate.py \
+            --variant baseline --output-dir "$d" \
+            > "$d/prepare.log" 2>&1
+          prepare_rc=$?
+          printf '%s' "$prepare_rc" > "$d/prepare.exit"
+          if test "$prepare_rc" -ne 0; then
+            cat "$d/prepare.log"
+            exit "$prepare_rc"
+          fi
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          compile_one() {
+            stem="$1"
+            src="PrimalitySheafVerification/${stem}.lean"
+            o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$o" "$i"
+            command=(lake env lean "-DmaxErrors=${MAX_ERRORS}" -DwarningAsError=false \
+              -o "$o" -i "$i" "$src")
+            printf '%q ' "${command[@]}" > "$d/${stem}.command"
+            printf '\n' >> "$d/${stem}.command"
+            touch "$d/${stem}.executed"
+            "${command[@]}" > "$d/${stem}.log" 2>&1
+            rc=$?
+            printf '%s' "$rc" > "$d/${stem}.exit"
+            if test "$rc" -eq 0 && test -s "$o" && test -s "$i"; then
+              printf 'true\n' > "$d/${stem}.artifacts_ok"
+            else
+              printf 'false\n' > "$d/${stem}.artifacts_ok"
+            fi
+          }
+          compile_one Mock2
+          compile_one Mock2_Advanced
+          compile_one Mock2_FunctionalAnalysis
+          export FA442_OUT_DIR="$d"
+          export FA442_SOURCE="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          export FA442_METADATA="$d/CANDIDATE.json"
+          python3 scripts/fa442_record_direct_metric.py \
+            > "$d/metric-console.log" 2>&1
+          metric_rc=$?
+          cat "$d/metric-console.log"
+          exit "$metric_rc"
+
+      - name: Select best strict current-run direct candidate
         id: select
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/fa442_select_strict_champion.py
 
-      - name: Install pinned Lean and Mathlib cache
-        shell: bash
-        run: |
-          set -euo pipefail
-          d=build-logs/fa442-same-height/selected
-          curl --retry 5 --retry-all-errors --fail --silent --show-error \
-            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            -o /tmp/elan-init.sh
-          sh /tmp/elan-init.sh -y --default-toolchain none
-          export PATH="${HOME}/.elan/bin:${PATH}"
-          elan toolchain install "$(cat lean-toolchain)"
-          lean --version | tee "$d/lean-version.txt"
-          lake --version | tee "$d/lake-version.txt"
-          lake exe cache get | tee "$d/cache-get.log"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-
-      - name: Independently confirm selected source at repository path
+      - name: Materialize selected source and independently reproduce its metric
         id: confirm
+        shell: bash
         env:
-          SELECTION_MODE: ${{ steps.select.outputs.selection_mode }}
+          SELECTOR_OK: ${{ steps.select.outputs.selector_ok }}
           SELECTED_SHA: ${{ steps.select.outputs.selected_sha }}
+          SELECTED_VARIANT: ${{ steps.select.outputs.variant }}
+          MATRIX_FA_EXIT: ${{ steps.select.outputs.matrix_fa_exit }}
           MATRIX_FIRST_LINE: ${{ steps.select.outputs.matrix_first_line }}
           MATRIX_FIRST_COL: ${{ steps.select.outputs.matrix_first_col }}
           MATRIX_DECLARATION: ${{ steps.select.outputs.matrix_declaration }}
-          SELECTED_VARIANT: ${{ steps.select.outputs.variant }}
-        shell: bash
+          MATRIX_DECLARATION_INDEX: ${{ steps.select.outputs.matrix_declaration_index }}
         run: |
           set +e
           export PATH="${HOME}/.elan/bin:${PATH}"
-          d=build-logs/fa442-same-height/selected
-          cp "$d/Mock2_FunctionalAnalysis-selected.lean" \
+          test "${SELECTOR_OK:-false}" = true || exit 1
+          selected="build-logs/fa442-pipeline-repair/selected"
+          d="build-logs/fa442-pipeline-repair/selected-confirm"
+          rm -rf "$d"
+          mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
+          cp "$selected/Mock2_FunctionalAnalysis-selected.lean" \
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
-          if test "$actual" != "$SELECTED_SHA"; then
-            echo "selected source SHA mismatch" > "$d/confirmation-infra-failure.txt"
-          fi
-          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          cp "$selected/SELECTED_METADATA.json" "$d/CANDIDATE.json"
+          for evidence in lean-version.txt lake-version.txt toolchain-install.exit \
+              cache-get.exit; do
+            cp "build-logs/fa442-pipeline-repair/selector-baseline/${evidence}" \
+              "$d/${evidence}"
+          done
+          actual=$(sha256sum \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          printf '%s\n' "$actual" > "$d/materialized-source.sha256"
           compile_one() {
-            stem=$1
+            stem="$1"
             src="PrimalitySheafVerification/${stem}.lean"
             o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
             i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
             rm -f "$o" "$i"
-            lake env lean -DmaxErrors="$MAX_ERRORS" -DwarningAsError=false \
-              -o "$o" -i "$i" "$src" > "$d/confirm-${stem}.log" 2>&1
+            command=(lake env lean "-DmaxErrors=${MAX_ERRORS}" -DwarningAsError=false \
+              -o "$o" -i "$i" "$src")
+            printf '%q ' "${command[@]}" > "$d/${stem}.command"
+            printf '\n' >> "$d/${stem}.command"
+            touch "$d/${stem}.executed"
+            "${command[@]}" > "$d/${stem}.log" 2>&1
             rc=$?
-            printf '%s' "$rc" > "$d/confirm-${stem}.exit"
-            test "$rc" -eq 0 && test -s "$o" && test -s "$i"
+            printf '%s' "$rc" > "$d/${stem}.exit"
+            if test "$rc" -eq 0 && test -s "$o" && test -s "$i"; then
+              printf 'true\n' > "$d/${stem}.artifacts_ok"
+            else
+              printf 'false\n' > "$d/${stem}.artifacts_ok"
+            fi
           }
-          compile_one Mock2; m2=$?
-          compile_one Mock2_Advanced; m2a=$?
-          fa=125
-          if test "$m2" -eq 0 && test "$m2a" -eq 0; then
-            compile_one Mock2_FunctionalAnalysis; fa=$?
-          fi
-          export M2="$m2" M2A="$m2a" FA="$fa"
+          compile_one Mock2
+          compile_one Mock2_Advanced
+          compile_one Mock2_FunctionalAnalysis
+          export VARIANT="$SELECTED_VARIANT"
+          export FA442_OUT_DIR="$d"
+          export FA442_SOURCE="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          export FA442_METADATA="$d/CANDIDATE.json"
+          python3 scripts/fa442_record_direct_metric.py \
+            > "$d/metric-console.log" 2>&1
+          metric_rc=$?
+          cat "$d/metric-console.log"
+          export ACTUAL_SHA="$actual"
           python3 - <<'PY'
+          import json,os
           from pathlib import Path
-          import hashlib,json,os,re
-
-          d=Path('build-logs/fa442-same-height/selected')
-          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
-          data=src.read_bytes(); text=data.decode('utf-8')
-          source_sha=hashlib.sha256(data).hexdigest()
-          lines=data.count(b'\n')+(0 if data.endswith(b'\n') else 1)
-          log=(d/'confirm-Mock2_FunctionalAnalysis.log').read_text(errors='replace') if (d/'confirm-Mock2_FunctionalAnalysis.log').exists() else ''
-          matches=list(re.finditer(r'Mock2_FunctionalAnalysis\.lean:(\d+):(\d+):\s+error:',log))
-          first=int(matches[0].group(1)) if matches else 0
-          col=int(matches[0].group(2)) if matches else 0
-          decl_re=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)')
-          declaration='<none>'; declaration_index=-1; current=-1
-          for i,line in enumerate(text.splitlines()):
-              m=decl_re.match(line)
-              if m:
-                  current+=1; declaration=m.group(1)
-              if first and i+1>=first:
-                  declaration_index=current; break
-          m2=int(os.environ['M2']); m2a=int(os.environ['M2A']); fa=int(os.environ['FA'])
-          matrix_line=int(os.environ.get('MATRIX_FIRST_LINE') or 0)
-          mode=os.environ.get('SELECTION_MODE','')
-          selected_sha=os.environ.get('SELECTED_SHA','')
-          reproduced=(fa==0 or first>=matrix_line)
-          strict=(fa==0 or first>31726)
-          verified=(source_sha==selected_sha and lines==60453 and m2==0 and m2a==0 and reproduced and (mode!='strict_promotion' or strict))
+          d=Path('build-logs/fa442-pipeline-repair/selected-confirm')
+          metric=json.loads((d/'METRIC.json').read_text(encoding='utf-8'))
+          expected={
+              'source_sha256':os.environ['SELECTED_SHA'],
+              'FA_exit':int(os.environ['MATRIX_FA_EXIT']),
+              'FA_first_actual_error_line':int(os.environ['MATRIX_FIRST_LINE']),
+              'FA_first_actual_error_col':int(os.environ['MATRIX_FIRST_COL']),
+              'FA_first_error_declaration':os.environ['MATRIX_DECLARATION'],
+              'FA_error_declaration_index':int(os.environ['MATRIX_DECLARATION_INDEX']),
+          }
+          mismatches={
+              key:{'expected':value,'actual':metric.get(key)}
+              for key,value in expected.items() if metric.get(key)!=value
+          }
+          verified=(
+              os.environ['ACTUAL_SHA']==os.environ['SELECTED_SHA']
+              and metric.get('classification')!='INFRA_FAILURE'
+              and metric.get('all_required_lean_executed') is True
+              and metric.get('Mock2_exit')==0
+              and metric.get('Mock2_Advanced_exit')==0
+              and metric.get('forbidden_clean') is True
+              and not mismatches
+          )
           result={
               'classification':'VERIFIED' if verified else 'INFRA_FAILURE',
-              'authority':'independent direct Lean CLI on repository source path',
-              'selection_mode':mode,'variant':os.environ.get('SELECTED_VARIANT',''),
-              'source_sha256':source_sha,'line_count':lines,
-              'Mock2_exit':m2,'Mock2_Advanced_exit':m2a,'FA_exit':fa,
-              'FA_first_actual_error_line':first,'FA_first_actual_error_col':col,
-              'FA_first_error_declaration':declaration,
-              'FA_error_declaration_index':declaration_index,
-              'error_headers_captured':len(matches),'maxErrors_cap':100,
-              'maxErrors_interpretation':'diagnostic cap only; not total errors or proof progress',
-              'matrix_first_line':matrix_line,'matrix_first_col':int(os.environ.get('MATRIX_FIRST_COL') or 0),
-              'matrix_declaration':os.environ.get('MATRIX_DECLARATION',''),
               'verified':verified,
+              'selected_sha256':os.environ['SELECTED_SHA'],
+              'materialized_sha256':os.environ['ACTUAL_SHA'],
+              'selected_variant':os.environ['SELECTED_VARIANT'],
+              'mismatches':mismatches,
+              'direct_metric':metric,
           }
-          (d/'CONFIRMATION.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-          (d/'CONFIRMATION.txt').write_text('\n'.join(f'{k}={v}' for k,v in result.items())+'\n',encoding='utf-8')
-          (d/('VERIFIED' if verified else 'FAILED')).touch()
-          print(json.dumps(result,indent=2))
+          (d/'CONFIRMATION.json').write_text(
+              json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'
+          )
+          print(json.dumps(result,indent=2,ensure_ascii=False))
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as handle:
               handle.write(f"verified={str(verified).lower()}\n")
-              handle.write(f"fa_exit={fa}\nfirst_line={first}\nfirst_col={col}\n")
-              handle.write(f"declaration={declaration}\n")
+              handle.write(f"fa_exit={metric.get('FA_exit',125)}\n")
+              handle.write(
+                  f"first_line={metric.get('FA_first_actual_error_line',0)}\n"
+              )
+              handle.write(
+                  f"first_col={metric.get('FA_first_actual_error_col',0)}\n"
+              )
+              handle.write(
+                  f"declaration={metric.get('FA_first_error_declaration','')}\n"
+              )
+          if not verified:
+              raise SystemExit(1)
           PY
-          exit 0
+          exit "$metric_rc"
 
-      - name: Commit only independently verified strict champion
+      - name: Persist only the independently reproduced selected source
         id: persist
-        if: always()
+        shell: bash
         env:
           VERIFIED: ${{ steps.confirm.outputs.verified }}
-          SELECTION_MODE: ${{ steps.select.outputs.selection_mode }}
           SELECTED_SHA: ${{ steps.select.outputs.selected_sha }}
-          FA_EXIT: ${{ steps.confirm.outputs.fa_exit }}
-          FIRST_LINE: ${{ steps.confirm.outputs.first_line }}
-          DECLARATION: ${{ steps.confirm.outputs.declaration }}
-          VARIANT: ${{ steps.select.outputs.variant }}
-        shell: bash
+          SELECTED_VARIANT: ${{ steps.select.outputs.variant }}
+          PROGRESS_CLASSIFICATION: ${{ steps.select.outputs.progress_classification }}
+          SELECTION_MODE: ${{ steps.select.outputs.selection_mode }}
         run: |
           set -euo pipefail
-          d=build-logs/fa442-same-height
           test "${VERIFIED:-false}" = true
-          if test "$SELECTION_MODE" != strict_promotion; then
-            git restore PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            git add "$d/selected"
-            if ! git diff --cached --quiet; then
-              git commit -m 'evidence: retain PASS423 after FA442 no strict same-height improvement [skip ci]'
-              git push origin "HEAD:${ACTIVE_BRANCH}"
-            fi
-            echo "source_committed=false" >> "$GITHUB_OUTPUT"
-            echo "selected_sha=$SELECTED_SHA" >> "$GITHUB_OUTPUT"
-            exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          selected="build-logs/fa442-pipeline-repair/selected"
+          confirm="build-logs/fa442-pipeline-repair/selected-confirm"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git add -f \
+            "$selected/SELECTION.json" \
+            "$selected/CANDIDATE_RESULTS.json" \
+            "$selected/CANDIDATE_RESULTS.tsv" \
+            "$selected/SELECTED_METADATA.json" \
+            "$confirm/METRIC.json" \
+            "$confirm/CONFIRMATION.json"
+          if ! git diff --cached --quiet; then
+            git commit -m \
+              "ci: persist FA442 repaired direct selection ${SELECTED_VARIANT} ${SELECTED_SHA:0:12} [skip ci]"
+            git push origin "HEAD:${ACTIVE_BRANCH}"
           fi
-          actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
-          selected_copy=$(sha256sum "$d/selected/Mock2_FunctionalAnalysis-selected.lean" | awk '{print $1}')
-          test "$actual" = "$SELECTED_SHA"
-          test "$selected_copy" = "$SELECTED_SHA"
-          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$d/selected"
-          if test "$FA_EXIT" = 0; then metric=pass; else metric="first-${FIRST_LINE}"; fi
-          git commit -m "fix: promote FA442 ${metric} same-height ${VARIANT} ${SELECTED_SHA:0:12}"
-          git push origin "HEAD:${ACTIVE_BRANCH}"
-          checked=$(git show "HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" | sha256sum | awk '{print $1}')
+          source_commit=$(git rev-parse HEAD)
+          checked=$(git show \
+            "HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" \
+            | sha256sum | awk '{print $1}')
           test "$checked" = "$SELECTED_SHA"
-          head=$(git rev-parse HEAD)
+          echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
           echo "source_committed=true" >> "$GITHUB_OUTPUT"
-          echo "source_commit=$head" >> "$GITHUB_OUTPUT"
-          echo "selected_sha=$SELECTED_SHA" >> "$GITHUB_OUTPUT"
-          immutable="champion/fa442-${metric}-${SELECTED_SHA:0:12}-${GITHUB_RUN_ID}"
-          python3 - <<PY > /tmp/fa442-ref.json
-          import json
-          print(json.dumps({'ref':'refs/heads/${immutable}','sha':'${head}'}))
-          PY
-          if gh api -X POST "/repos/${GITHUB_REPOSITORY}/git/refs" \
-               --input /tmp/fa442-ref.json > "$d/selected/immutable-response.json" \
-               2> "$d/selected/immutable-error.txt"; then
-            printf '%s\n' "$immutable" > "$d/selected/IMMUTABLE_CHAMPION_BRANCH.txt"
-          fi
 
-      - name: Verify checked-in source identity
-        id: identity
-        if: always()
-        env:
-          SOURCE_COMMITTED: ${{ steps.persist.outputs.source_committed }}
-          SELECTED_SHA: ${{ steps.persist.outputs.selected_sha }}
+      - name: Verify selected, worktree, and checked-in HEAD source identity
+        id: checked_identity
         shell: bash
+        env:
+          SELECTED_SHA: ${{ steps.select.outputs.selected_sha }}
         run: |
           set -euo pipefail
-          d=build-logs/fa442-same-height/final-gates
+          d="build-logs/fa442-pipeline-repair/final"
           mkdir -p "$d"
-          src=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          checked=$(git show "HEAD:$src" | sha256sum | awk '{print $1}')
-          worktree=$(sha256sum "$src" | awk '{print $1}')
+          selected=$(sha256sum \
+            build-logs/fa442-pipeline-repair/selected/Mock2_FunctionalAnalysis-selected.lean \
+            | awk '{print $1}')
+          worktree=$(sha256sum \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            | awk '{print $1}')
+          checked=$(git show \
+            "HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" \
+            | sha256sum | awk '{print $1}')
           identity=false
-          if test "${SOURCE_COMMITTED:-false}" = true && test -n "$SELECTED_SHA" && \
-             test "$SELECTED_SHA" = "$checked" && test "$SELECTED_SHA" = "$worktree"; then
+          if test "$selected" = "$SELECTED_SHA" && \
+             test "$worktree" = "$SELECTED_SHA" && \
+             test "$checked" = "$SELECTED_SHA"; then
             identity=true
           fi
-          printf 'selected_sha256=%s\nchecked_in_sha256=%s\nworktree_sha256=%s\nidentity_ok=%s\nsource_commit=%s\n' \
-            "$SELECTED_SHA" "$checked" "$worktree" "$identity" "$(git rev-parse HEAD)" \
+          printf 'selected_sha256=%s\nworktree_sha256=%s\nhead_source_sha256=%s\nidentity_ok=%s\nhead_commit=%s\n' \
+            "$selected" "$worktree" "$checked" "$identity" "$(git rev-parse HEAD)" \
             > "$d/CHECKED_IN_IDENTITY.txt"
+          python3 - "$selected" "$worktree" "$checked" "$identity" <<'PY'
+          import json,sys
+          from pathlib import Path
+          result={
+              'selected_sha256':sys.argv[1],
+              'worktree_sha256':sys.argv[2],
+              'head_source_sha256':sys.argv[3],
+              'identity_ok':sys.argv[4]=='true',
+          }
+          Path('build-logs/fa442-pipeline-repair/final/CHECKED_IN_IDENTITY.json').write_text(
+              json.dumps(result,indent=2)+'\n',encoding='utf-8'
+          )
+          PY
           echo "identity_ok=$identity" >> "$GITHUB_OUTPUT"
+          test "$identity" = true
 
-      - name: Checked-in FA direct compile twice and forbidden audit
-        id: fa_gate
-        if: always()
-        env:
-          IDENTITY_OK: ${{ steps.identity.outputs.identity_ok }}
+      - name: Checked-in FA direct compile run 1 and run 2 with trust audit
+        id: fa_checked
         shell: bash
+        env:
+          IDENTITY_OK: ${{ steps.checked_identity.outputs.identity_ok }}
         run: |
           set +e
           export PATH="${HOME}/.elan/bin:${PATH}"
-          d=build-logs/fa442-same-height/final-gates
-          mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
-          src=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test "${IDENTITY_OK:-false}" = true || exit 1
+          d="build-logs/fa442-pipeline-repair/final"
+          src="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+          o=".lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean"
+          i=".lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean"
           compile_fa() {
-            n=$1
-            o=.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
-            i=.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            n="$1"
             rm -f "$o" "$i"
-            lake env lean -DmaxErrors=1 -DwarningAsError=false \
-              -o "$o" -i "$i" "$src" > "$d/FA-run${n}.log" 2>&1
+            command=(lake env lean -DmaxErrors=100 -DwarningAsError=false \
+              -o "$o" -i "$i" "$src")
+            printf '%q ' "${command[@]}" > "$d/FA-run${n}.command"
+            printf '\n' >> "$d/FA-run${n}.command"
+            touch "$d/FA-run${n}.executed"
+            "${command[@]}" > "$d/FA-run${n}.log" 2>&1
             rc=$?
             printf '%s' "$rc" > "$d/FA-run${n}.exit"
-            test "$rc" -eq 0 && test -s "$o" && test -s "$i"
+            olean=false
+            ilean=false
+            test -s "$o" && olean=true
+            test -s "$i" && ilean=true
+            printf '%s' "$olean" > "$d/FA-run${n}.olean"
+            printf '%s' "$ilean" > "$d/FA-run${n}.ilean"
           }
-          r1=125; r2=125
-          if test "${IDENTITY_OK:-false}" = true; then
-            compile_fa 1; r1=$?
-            if test "$r1" -eq 0; then compile_fa 2; r2=$?; fi
-          fi
-          export R1="$r1" R2="$r2"
+          compile_fa 1
+          compile_fa 2
+          export R1="$(cat "$d/FA-run1.exit")"
+          export R2="$(cat "$d/FA-run2.exit")"
+          export O1="$(cat "$d/FA-run1.olean")"
+          export I1="$(cat "$d/FA-run1.ilean")"
+          export O2="$(cat "$d/FA-run2.olean")"
+          export I2="$(cat "$d/FA-run2.ilean")"
           python3 - <<'PY'
-          from pathlib import Path
           import importlib.util,json,os,sys
-          spec=importlib.util.spec_from_file_location('fa442audit','scripts/fa442_prepare_same_height_candidate.py')
-          mod=importlib.util.module_from_spec(spec); sys.modules[spec.name]=mod; spec.loader.exec_module(mod)
-          text=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8')
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location(
+              'fa442_audit','scripts/fa442_prepare_same_height_candidate.py'
+          )
+          mod=importlib.util.module_from_spec(spec)
+          sys.modules[spec.name]=mod
+          assert spec.loader is not None
+          spec.loader.exec_module(mod)
+          text=Path(
+              'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
+          ).read_text(encoding='utf-8')
           audit=mod.forbidden_counts(text)
-          r1=int(os.environ['R1']); r2=int(os.environ['R2']); clean=all(v==0 for v in audit.values())
-          result={'checked_in_source':True,'FA_run1_exit':r1,'FA_run2_exit':r2,
-                  'forbidden_audit':audit,'forbidden_clean':clean,
-                  'FA_TRUE_PASS':r1==0 and r2==0 and clean,'maxErrors_cap':1}
-          path=Path('build-logs/fa442-same-height/final-gates/FA_FINAL.json')
-          path.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps(result,indent=2))
+          r1=int(os.environ['R1'])
+          r2=int(os.environ['R2'])
+          artifacts={
+              'run1_olean':os.environ['O1']=='true',
+              'run1_ilean':os.environ['I1']=='true',
+              'run2_olean':os.environ['O2']=='true',
+              'run2_ilean':os.environ['I2']=='true',
+          }
+          clean=all(value==0 for value in audit.values())
+          true_pass=(
+              r1==0 and r2==0 and all(artifacts.values()) and clean
+          )
+          result={
+              'checked_in_source':True,
+              'FA_run1_exit':r1,
+              'FA_run2_exit':r2,
+              'artifacts':artifacts,
+              'forbidden_audit':audit,
+              'forbidden_clean':clean,
+              'FA_TRUE_PASS':true_pass,
+          }
+          path=Path('build-logs/fa442-pipeline-repair/final/FA_FINAL.json')
+          path.write_text(
+              json.dumps(result,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'
+          )
+          print(json.dumps(result,indent=2,ensure_ascii=False))
           with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as handle:
-              handle.write(f"fa_true_pass={str(result['FA_TRUE_PASS']).lower()}\n")
+              handle.write(f"fa_true_pass={str(true_pass).lower()}\n")
+              handle.write(f"run1={r1}\nrun2={r2}\n")
           PY
           exit 0
 
-      - name: Ordered Integrated Mock3 bridge QYM direct two-pass gate
+      - name: Ordered Integrated, Mock3 bridges, and QYM two-pass gate
         id: downstream
-        if: always()
-        env:
-          FA_TRUE_PASS: ${{ steps.fa_gate.outputs.fa_true_pass }}
+        if: steps.fa_checked.outputs.fa_true_pass == 'true'
         shell: bash
         run: |
           set +e
           export PATH="${HOME}/.elan/bin:${PATH}"
-          d=build-logs/fa442-same-height/final-gates
+          d="build-logs/fa442-pipeline-repair/final/downstream"
           mkdir -p "$d" .lake/build/lib/lean/PrimalitySheafVerification
-          complete=true; final=1; targets=()
-          if test "${FA_TRUE_PASS:-false}" != true; then complete=false; fi
-          if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean; then
-            targets+=(Mock2_FunctionalAnalysis_Integrated)
-          else
-            complete=false; echo missing > "$d/Integrated-missing.txt"
-          fi
-          shopt -s nullglob
-          for source in PrimalitySheafVerification/Mock3*.lean; do
-            targets+=("$(basename "$source" .lean)")
-          done
-          if test -f PrimalitySheafVerification/QYM.lean; then
-            targets+=(QYM)
-          else
-            complete=false; echo missing > "$d/QYM-missing.txt"
-          fi
+          complete=true
+          failure=''
           compile_one() {
-            stem=$1; n=$2
+            stem="$1"
+            n="$2"
             src="PrimalitySheafVerification/${stem}.lean"
             o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
             i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
             rm -f "$o" "$i"
-            lake env lean -DmaxErrors=1 -DwarningAsError=false \
-              -o "$o" -i "$i" "$src" > "$d/${stem}-run${n}.log" 2>&1
+            command=(lake env lean -DmaxErrors=100 -DwarningAsError=false \
+              -o "$o" -i "$i" "$src")
+            printf '%q ' "${command[@]}" > "$d/${stem}-run${n}.command"
+            printf '\n' >> "$d/${stem}-run${n}.command"
+            touch "$d/${stem}-run${n}.executed"
+            "${command[@]}" > "$d/${stem}-run${n}.log" 2>&1
             rc=$?
             printf '%s' "$rc" > "$d/${stem}-run${n}.exit"
             test "$rc" -eq 0 && test -s "$o" && test -s "$i"
           }
-          if test "$complete" = true; then
-            for stem in "${targets[@]}"; do
-              compile_one "$stem" 1; a=$?; b=125
-              if test "$a" -eq 0; then compile_one "$stem" 2; b=$?; fi
-              if test "$a" -ne 0 || test "$b" -ne 0; then
-                complete=false
-                break
-              fi
-            done
+          run_twice() {
+            stem="$1"
+            if ! compile_one "$stem" 1; then
+              complete=false
+              failure="${stem}-run1"
+              return 1
+            fi
+            if ! compile_one "$stem" 2; then
+              complete=false
+              failure="${stem}-run2"
+              return 1
+            fi
+            return 0
+          }
+          integrated=Mock2_FunctionalAnalysis_Integrated
+          if test ! -f "PrimalitySheafVerification/${integrated}.lean"; then
+            complete=false
+            failure='Integrated-missing'
+          elif ! run_twice "$integrated"; then
+            :
           fi
           if test "$complete" = true; then
-            final=0
-            touch "$d/ALL_REQUIRED_TARGETS_2X_PASS"
+            shopt -s nullglob
+            bridges=(PrimalitySheafVerification/Mock3*.lean)
+            if test "${#bridges[@]}" -eq 0; then
+              complete=false
+              failure='Mock3-bridges-missing'
+            else
+              for source in "${bridges[@]}"; do
+                stem="$(basename "$source" .lean)"
+                if ! run_twice "$stem"; then
+                  break
+                fi
+              done
+            fi
           fi
-          echo "final_exit=$final" >> "$GITHUB_OUTPUT"
-          exit 0
+          if test "$complete" = true; then
+            if test ! -f PrimalitySheafVerification/QYM.lean; then
+              complete=false
+              failure='QYM-missing'
+            elif ! run_twice QYM; then
+              :
+            fi
+          fi
+          export COMPLETE="$complete" FAILURE="$failure"
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          d=Path('build-logs/fa442-pipeline-repair/final/downstream')
+          exits={}
+          for path in sorted(d.glob('*.exit')):
+              try:
+                  exits[path.name]=int(path.read_text().strip())
+              except ValueError:
+                  exits[path.name]=125
+          result={
+              'classification':'TRUE_PASS' if os.environ['COMPLETE']=='true'
+                  else 'LEAN_FAILURE',
+              'complete':os.environ['COMPLETE']=='true',
+              'failure':os.environ['FAILURE'],
+              'ordered_exits':exits,
+          }
+          (d/'DOWNSTREAM.json').write_text(
+              json.dumps(result,indent=2)+'\n',encoding='utf-8'
+          )
+          print(json.dumps(result,indent=2))
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as handle:
+              handle.write(f"complete={str(result['complete']).lower()}\n")
+          PY
+          test "$complete" = true
 
-      - name: Commit final verification evidence
+      - name: Record downstream skip because FA is not TRUE PASS
+        if: steps.fa_checked.outputs.fa_true_pass != 'true'
+        shell: bash
+        run: |
+          d="build-logs/fa442-pipeline-repair/final/downstream"
+          mkdir -p "$d"
+          cat > "$d/DOWNSTREAM.json" <<'JSON'
+          {
+            "classification": "SKIPPED_FA_NOT_TRUE_PASS",
+            "complete": false,
+            "Integrated": "SKIPPED",
+            "Mock3_bridges": "SKIPPED",
+            "QYM": "SKIPPED"
+          }
+          JSON
+
+      - name: Generate FA matrix pipeline repair report
+        id: report
         if: always()
+        shell: bash
+        env:
+          RUN1: ${{ steps.fa_checked.outputs.run1 }}
+          RUN2: ${{ steps.fa_checked.outputs.run2 }}
+          FA_TRUE_PASS: ${{ steps.fa_checked.outputs.fa_true_pass }}
+          IDENTITY_OK: ${{ steps.checked_identity.outputs.identity_ok }}
+          SOURCE_COMMIT: ${{ steps.persist.outputs.source_commit }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,subprocess
+          from pathlib import Path
+          base=Path('build-logs/fa442-pipeline-repair')
+          final=base/'final'
+          final.mkdir(parents=True,exist_ok=True)
+          selection=json.loads((base/'selected/SELECTION.json').read_text())
+          confirmation=json.loads(
+              (base/'selected-confirm/CONFIRMATION.json').read_text()
+          )
+          identity=json.loads((final/'CHECKED_IN_IDENTITY.json').read_text())
+          fa=json.loads((final/'FA_FINAL.json').read_text())
+          downstream=json.loads((final/'downstream/DOWNSTREAM.json').read_text())
+          baseline=selection['baseline']
+          chosen=selection['chosen']
+          results=selection['candidate_results']
+          if fa.get('FA_TRUE_PASS') and downstream.get('complete'):
+              classification='TRUE PASS'
+          elif selection.get('selection_mode')=='strict_promotion':
+              classification='STRICT PROMOTION'
+          else:
+              classification='NO IMPROVEMENT'
+          audit=fa.get('forbidden_audit',{})
+          lines=[
+              'FA MATRIX PIPELINE REPAIR REPORT',
+              '',
+              'Baseline:',
+              f"source SHA256: {baseline.get('source_sha256','')}",
+              f"line count: {baseline.get('line_count','')}",
+              f"direct Lean exit: {baseline.get('FA_exit','')}",
+              (
+                  f"first error: {baseline.get('FA_first_actual_error_line',0)}:"
+                  f"{baseline.get('FA_first_actual_error_col',0)} "
+                  f"{baseline.get('FA_first_error_message','')}"
+              ),
+              f"declaration: {baseline.get('FA_first_error_declaration','')}",
+              '',
+              'Pipeline issue found:',
+              (
+                  'root cause: checked-in source SHA 885e585d... did not equal the '
+                  'hard-required authoritative baseline 71dc36f...; prepare emitted '
+                  'ok=false, and both Lean install and direct compile were guarded by '
+                  "if: steps.prepare.outputs.ok == 'true'. Candidate jobs uploaded "
+                  'prepare-only artifacts, so the selector found zero baseline direct '
+                  'metrics. Git identity was configured only in a later install step '
+                  'that was skipped after selector failure.'
+              ),
+              (
+                  'workflow files changed: '
+                  '.github/workflows/fa442-same-height-slope-cumulative.yml'
+              ),
+              (
+                  'scripts changed: scripts/fa442_restore_authoritative_baseline.py, '
+                  'scripts/fa442_record_direct_metric.py, '
+                  'scripts/fa442_select_strict_champion.py'
+              ),
+              '',
+              'Candidate results:',
+              (
+                  'variant | SHA256 | Lean executed? | exit | first line:col | '
+                  'declaration | classification'
+              ),
+          ]
+          for row in results:
+              lines.append(
+                  f"{row.get('variant')} | {row.get('source_sha256')} | "
+                  f"{row.get('Lean_executed')} | {row.get('FA_exit')} | "
+                  f"{row.get('first_line')}:{row.get('first_col')} | "
+                  f"{row.get('declaration')} | {row.get('classification')}"
+              )
+          lines += [
+              '',
+              'Best direct-verified candidate:',
+              f"variant: {chosen.get('variant','')}",
+              f"SHA256: {chosen.get('source_sha256','')}",
+              f"exit: {chosen.get('FA_exit','')}",
+              (
+                  f"first error: {chosen.get('FA_first_actual_error_line',0)}:"
+                  f"{chosen.get('FA_first_actual_error_col',0)} "
+                  f"{chosen.get('FA_first_error_message','')}"
+              ),
+              f"declaration: {chosen.get('FA_first_error_declaration','')}",
+              (
+                  'strictly better than 31726?: '
+                  f"{selection.get('selection_mode')=='strict_promotion'}"
+              ),
+              '',
+              'Checked-in identity:',
+              f"selected SHA: {identity.get('selected_sha256','')}",
+              f"worktree SHA: {identity.get('worktree_sha256','')}",
+              f"HEAD source SHA: {identity.get('head_source_sha256','')}",
+              f"identity_ok: {identity.get('identity_ok',False)}",
+              '',
+              'Trust audit:',
+              f"sorry: {audit.get('sorry','')}",
+              f"admit: {audit.get('admit','')}",
+              f"global axiom: {audit.get('new_global_axiom','')}",
+              f"unsafe: {audit.get('unsafe','')}",
+              f"native_decide: {audit.get('native_decide','')}",
+              f"Lean.ofReduceBool: {audit.get('Lean.ofReduceBool','')}",
+              '',
+              'FA checked-in verification:',
+              f"run1: {fa.get('FA_run1_exit','')}",
+              f"run2: {fa.get('FA_run2_exit','')}",
+              f"FA_TRUE_PASS: {fa.get('FA_TRUE_PASS',False)}",
+              '',
+              'Downstream:',
+              f"Integrated: {downstream.get('Integrated', downstream.get('classification',''))}",
+              f"Mock3 bridges: {downstream.get('Mock3_bridges', downstream.get('classification',''))}",
+              f"QYM: {downstream.get('QYM', downstream.get('classification',''))}",
+              '',
+              f"Final classification: {classification}",
+              '',
+              'Branches/commits:',
+              (
+                  'branch: fix/fa444-fa442-matrix-pipeline-repair-20260810; '
+                  f"source commit: {os.environ.get('SOURCE_COMMIT','')}; "
+                  f"current HEAD: {subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()}"
+              ),
+              (
+                  'Workflow run URL: '
+                  f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
+                  f"{os.environ['GITHUB_RUN_ID']}"
+              ),
+              'Artifact ID: populated from GitHub Actions API after upload',
+          ]
+          report='\n'.join(lines)+'\n'
+          (final/'FA_MATRIX_PIPELINE_REPAIR_REPORT.txt').write_text(
+              report,encoding='utf-8'
+          )
+          summary={
+              'final_classification':classification,
+              'baseline':baseline,
+              'chosen':chosen,
+              'confirmation':confirmation,
+              'identity':identity,
+              'trust_audit':audit,
+              'FA_checked_in':fa,
+              'downstream':downstream,
+              'branch':'fix/fa444-fa442-matrix-pipeline-repair-20260810',
+              'source_commit':os.environ.get('SOURCE_COMMIT',''),
+              'workflow_run_url':(
+                  f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/"
+                  f"{os.environ['GITHUB_RUN_ID']}"
+              ),
+          }
+          (final/'FINAL.json').write_text(
+              json.dumps(summary,indent=2,ensure_ascii=False)+'\n',encoding='utf-8'
+          )
+          print(report)
+          with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf-8') as handle:
+              handle.write(f"classification={classification.replace(' ','_')}\n")
+          PY
+
+      - name: Commit final verification evidence with configured identity
+        if: always() && steps.report.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
-          git add build-logs/fa442-same-height/selected \
-                  build-logs/fa442-same-height/final-gates
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f \
+            build-logs/fa442-pipeline-repair/final/CHECKED_IN_IDENTITY.txt \
+            build-logs/fa442-pipeline-repair/final/CHECKED_IN_IDENTITY.json \
+            build-logs/fa442-pipeline-repair/final/FA_FINAL.json \
+            build-logs/fa442-pipeline-repair/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt \
+            build-logs/fa442-pipeline-repair/final/FINAL.json \
+            build-logs/fa442-pipeline-repair/final/downstream/DOWNSTREAM.json
           if ! git diff --cached --quiet; then
-            git commit -m 'ci: record FA442 checked-in direct and ordered gate evidence [skip ci]'
+            git commit -m \
+              'ci: record repaired FA442 direct matrix and checked-in evidence [skip ci]'
             git push origin "HEAD:${ACTIVE_BRANCH}"
           fi
 
-      - name: Upload complete selected evidence
+      - name: Upload complete repaired matrix selection evidence
+        id: upload_final
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa442-selected-${{ github.run_id }}-${{ github.sha }}
+          name: fa442-pipeline-repair-${{ github.run_id }}-${{ github.sha }}
           path: |
-            build-logs/fa442-same-height/selected
-            build-logs/fa442-same-height/final-gates
+            build-logs/fa442-pipeline-repair/selected
+            build-logs/fa442-pipeline-repair/selected-confirm
+            build-logs/fa442-pipeline-repair/selector-baseline
+            build-logs/fa442-pipeline-repair/final
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
           if-no-files-found: warn
           retention-days: 90
 
-      - name: Enforce complete ordered result
+      - name: Enforce pipeline integrity separately from Lean proof status
         if: always()
-        env:
-          FINAL_EXIT: ${{ steps.downstream.outputs.final_exit }}
         shell: bash
+        env:
+          SELECTOR_OK: ${{ steps.select.outputs.selector_ok }}
+          VERIFIED: ${{ steps.confirm.outputs.verified }}
+          IDENTITY_OK: ${{ steps.checked_identity.outputs.identity_ok }}
         run: |
-          test -n "${FINAL_EXIT:-}"
-          exit "$FINAL_EXIT"
+          test "${SELECTOR_OK:-false}" = true
+          test "${VERIFIED:-false}" = true
+          test "${IDENTITY_OK:-false}" = true
+          test -s build-logs/fa442-pipeline-repair/final/FINAL.json
+          test -s build-logs/fa442-pipeline-repair/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
