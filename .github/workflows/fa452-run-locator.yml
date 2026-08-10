@@ -1,0 +1,75 @@
+name: Locate active FA452 compact-support matrix run
+
+on:
+  push:
+    branches:
+      - ci/fa452-run-locator-20260810
+    paths:
+      - build-logs/fa452-run-locator/REQUESTED*.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout locator branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa452-run-locator-20260810
+          persist-credentials: true
+
+      - name: Locate exact FA452 workflow run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_BRANCH: fix/fa452-compact-support-matrix-20260810
+          TARGET_SHA: efa0a2f6558b32475c0dd06d220215093c1da5d8
+          TARGET_NAME: FA452 compact-support direct Lean matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa452-run-locator
+          mkdir -p "$d"
+          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&per_page=100" > "$d/ALL_RUNS.json"
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          raw=Path('build-logs/fa452-run-locator/ALL_RUNS.json').read_text()
+          dec=json.JSONDecoder(); i=0; pages=[]
+          while i < len(raw):
+              while i < len(raw) and raw[i].isspace(): i+=1
+              if i>=len(raw): break
+              page,i=dec.raw_decode(raw,i); pages.append(page)
+          runs=[]
+          for page in pages:
+              if isinstance(page,dict): runs.extend(page.get('workflow_runs',[]))
+          target=[r for r in runs if r.get('name')==os.environ['TARGET_NAME'] and r.get('head_branch')==os.environ['TARGET_BRANCH'] and r.get('head_sha')==os.environ['TARGET_SHA']]
+          target.sort(key=lambda r:(r.get('created_at',''),r.get('id',0)),reverse=True)
+          result={'found':bool(target),'latest':target[0] if target else None,'target_runs':target}
+          Path('build-logs/fa452-run-locator/RUN_LOCATOR.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          if target: Path('/tmp/fa452-run-id').write_text(str(target[0]['id']))
+          PY
+          if test -s /tmp/fa452-run-id; then
+            run_id=$(cat /tmp/fa452-run-id)
+            gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" > "$d/JOBS.json"
+            gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts?per_page=100" > "$d/ARTIFACTS.json"
+          else
+            printf '{"total_count":0,"jobs":[]}\n' > "$d/JOBS.json"
+            printf '{"total_count":0,"artifacts":[]}\n' > "$d/ARTIFACTS.json"
+          fi
+
+      - name: Persist locator evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/fa452-run-locator/RUN_LOCATOR.json build-logs/fa452-run-locator/JOBS.json build-logs/fa452-run-locator/ARTIFACTS.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA452 run locator evidence [skip ci]'
+            git push origin HEAD:ci/fa452-run-locator-20260810
+          fi
