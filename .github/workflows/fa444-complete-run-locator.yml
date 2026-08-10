@@ -1,0 +1,64 @@
+name: Locate FA444 complete direct matrix run
+
+on:
+  push:
+    branches:
+      - ci/fa444-complete-run-locator-20260810
+    paths:
+      - build-logs/fa444-complete-locator/REQUESTED*.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa444-complete-run-locator-20260810
+          persist-credentials: true
+      - name: Locate current target workflow run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa444-complete-locator
+          mkdir -p "$d"
+          gh api --paginate \
+            "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=fix/fa444-complete-direct-matrix-20260810&per_page=100" \
+            > "$d/ALL_RUNS.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('build-logs/fa444-complete-locator/ALL_RUNS.json')
+          raw=p.read_text(encoding='utf-8')
+          decoder=json.JSONDecoder(); i=0; pages=[]
+          while i < len(raw):
+              while i < len(raw) and raw[i].isspace(): i += 1
+              if i >= len(raw): break
+              obj,i=decoder.raw_decode(raw,i); pages.append(obj)
+          runs=[]
+          for page in pages:
+              if isinstance(page,dict): runs.extend(page.get('workflow_runs',[]))
+          target=[r for r in runs if r.get('path')=='.github/workflows/fa444-complete-direct-matrix.yml']
+          target.sort(key=lambda r:(r.get('created_at',''),r.get('id',0)), reverse=True)
+          result={'found':bool(target),'latest':target[0] if target else None,'matching_runs':target}
+          Path('build-logs/fa444-complete-locator/RUN_LOCATOR.json').write_text(
+              json.dumps(result,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(result,indent=2))
+          PY
+      - name: Persist locator result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/fa444-complete-locator/RUN_LOCATOR.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA444 complete target run [skip ci]'
+            git push origin HEAD:ci/fa444-complete-run-locator-20260810
+          fi
