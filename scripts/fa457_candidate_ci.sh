@@ -77,6 +77,6 @@ export FA442_SOURCE="$SRC"
 export FA442_METADATA="$OUT/CANDIDATE.json"
 export FA442_EXPECTED_LINES="$(wc -l < "$SRC" | tr -d ' ')"
 export MAX_ERRORS
-python3 scripts/fa442_record_direct_metric.py > "$OUT/metric-console.log" 2>&1
+python3 scripts/fa458_record_direct_metric_strict.py > "$OUT/metric-console.log" 2>&1
 metric_rc=$?; printf '%s' "$metric_rc" > "$OUT/metric.exit"; cat "$OUT/metric-console.log"
 exit 0
