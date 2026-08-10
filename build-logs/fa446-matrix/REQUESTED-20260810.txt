@@ -1,0 +1,1 @@
+Run the FA446 measurable cumulative same-height matrix from immutable trigger SHA. Current checked-in baseline is 4647a946 at 32590:5 selectedHalfOpenTile_ae_eq_openTile. Every variant must install pinned Lean/cache, direct-compile Mock2, Mock2_Advanced, and FA, upload source/metric identity, and enter strict selection only after the complete current-run matrix exists.
