@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 5
       matrix:
-        variant: [baseline, gl_cumulative, lower_pow_linarith, lower_pow_ring, lower_pow_before]
+        variant: [baseline, gl_cumulative, lower_normalized, lower_normalized_pow, lower_index_rw, lower_index_simp]
     env:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '4'
