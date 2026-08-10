@@ -1,0 +1,81 @@
+name: Codex FA479 frontier source capture
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-fa479-frontier-source.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      VARIANT: norms
+      FRONTIER_VARIANT: const_add_simp
+      NEXT_VARIANT: explicit_through2791
+      FA473_WINNER: const_add_simp
+      FA474_WINNER: explicit_through2791
+      FA475_WINNER: clean_semicolon
+      FA475_VARIANT: clean_semicolon
+      FA476_R2_VARIANT: explicit_exp_nonneg
+      FA476_R3_VARIANT: minimal_simpa
+      FA476_R3_EVIDENCE_RUN_ID: "31407777360"
+      FA476_R3_EVIDENCE_ARTIFACT_ID: "9070636218"
+      FA476_R3_EVIDENCE_ARTIFACT_DIGEST: "sha256:343607e51bea29fd2878bf6ebfcc0c1c8b1daf9826733b0cd3729e63fbbea3ca"
+      FA477_VARIANT: upper_ext_h_simp_only
+      FA477_EVIDENCE_RUN_ID: "31409787172"
+      FA477_EVIDENCE_JOB_ID: "93524786715"
+      FA477_EVIDENCE_HEAD_SHA: "faf902ceda7cce10ada4399326330effaa4d669b"
+      FA477_EVIDENCE_ARTIFACT_ID: "9071387258"
+      FA477_EVIDENCE_ARTIFACT_NAME: codex-fa477-minimal_simpa-run31407777360-artifact9070636218-upper_ext_h_simp_only
+      FA477_EVIDENCE_ARTIFACT_SIZE: "598253"
+      FA477_EVIDENCE_ARTIFACT_DIGEST: "sha256:25928120f3113f98886a469b255eec59754bfd232b4df621f4efa4e1e9940b81"
+      FA478_VARIANT: real_norm_eq_abs_only
+      HORIZONTAL_STYLE: calc_four
+      MAX_ERRORS: "32"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Materialize exact FA478 candidate only
+        shell: bash
+        run: |
+          python3 scripts/fa478_prepare_normsq_log_cusp.py > /tmp/fa478-prepare.json
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "53a703d3e138ae7a964b7221c52337082cb59820595cfce877a679f024fbcf82"
+
+      - name: Publish exact failing declaration source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa479-source.md
+          from pathlib import Path
+          import hashlib, os
+          p = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          text = p.read_text(encoding="utf-8")
+          lines = text.splitlines()
+          lo, hi = 35110, 35150
+          snippet = "\n".join(f"{i}: {lines[i-1]}" for i in range(lo, hi + 1))
+          print("## FA479 source capture from exact FA478 candidate")
+          print()
+          print(f"- run_id: `{os.environ['GITHUB_RUN_ID']}`")
+          print(f"- head_sha: `{os.environ['GITHUB_SHA']}`")
+          print(f"- source_sha256: `{hashlib.sha256(text.encode()).hexdigest()}`")
+          print("- predecessor: `FA478 real_norm_eq_abs_only`")
+          print("- next stage: `FA479`")
+          print()
+          print("```lean")
+          print(snippet)
+          print("```")
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa479-source.md)"
