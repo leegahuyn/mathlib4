@@ -7,8 +7,9 @@ from pathlib import Path
 ROOT=Path.cwd(); SOURCE=ROOT/'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
 BASE_SHA='1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb'
 DECL_RE=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)',re.MULTILINE)
-spec=importlib.util.spec_from_file_location('fa461base',ROOT/'scripts/fa461_prepare_gl_analytic_cluster1.py')
-if spec is None or spec.loader is None: raise RuntimeError('cannot load base')
+
+spec=importlib.util.spec_from_file_location('fa459base',ROOT/'scripts/fa459_prepare_true_first_cluster.py')
+if spec is None or spec.loader is None: raise RuntimeError('cannot load FA459 base')
 base=importlib.util.module_from_spec(spec); sys.modules[spec.name]=base; spec.loader.exec_module(base)
 
 def sha(b:bytes)->str:return hashlib.sha256(b).hexdigest()
@@ -24,6 +25,38 @@ def header(text,name):
 def replace_body(text,name,proof):
     a,b=span(text,name); block=text[a:b]; p=block.find(':='); suffix='\n' if block.endswith('\n') else ''
     return text[:a]+block[:p+2]+' '+proof.rstrip()+'\n'+suffix+text[b:]
+def replace_in(text,name,old,new):
+    a,b=span(text,name); block=text[a:b]; c=block.count(old)
+    if c!=1: raise RuntimeError(f'{name}: expected one replacement, found {c}')
+    return text[:a]+block.replace(old,new,1)+text[b:]
+
+GL_SELECTED_AE='''by
+  change selectedCosetGL q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
+    selectedCosetGL q • ModularGroup.fdo
+  exact Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq
+    (selectedCosetGL q)
+    (measurePreserving_smul (selectedCosetGL q)⁻¹
+      hyperbolicMeasure).quasiMeasurePreserving
+    modularHalfOpenTile_ae_eq_fdo'''
+HSELECTED_OLD='''  have hSelectedTile : MeasurableSet
+      (gammaTwoCosetRep q • modularHalfOpenTile) :=
+    MeasurableSet.const_smul modularHalfOpenTile_measurable
+      (gammaTwoCosetRep q)'''
+HSELECTED_GL='''  have hSelectedTile : MeasurableSet
+      (gammaTwoCosetRep q • modularHalfOpenTile) := by
+    change MeasurableSet (selectedCosetGL q • modularHalfOpenTile)
+    exact MeasurableSet.const_smul modularHalfOpenTile_measurable
+      (selectedCosetGL q)'''
+
+def apply_gl_pair_cumulative(text):
+    repairs=[]
+    text,r=base.apply_pair_compat(text,'macro'); repairs.append(r)
+    text=replace_body(text,'selectedHalfOpenTile_ae_eq_openTile',GL_SELECTED_AE)
+    repairs.append({'declaration':'selectedHalfOpenTile_ae_eq_openTile','strategy':'selectedCosetGL_invariant_measure'})
+    text=replace_in(text,'integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola',HSELECTED_OLD,HSELECTED_GL)
+    repairs.append({'declaration':'integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola','strategy':'selectedCosetGL_measurable_const_smul'})
+    text,rs=base.fa458.apply_cumulative(text,'direct_union'); repairs.extend(rs)
+    return text,repairs
 
 COMMON_PREFIX='''by
   have hScale := euclideanGaugeScale_succ (n - 1) z
@@ -61,7 +94,9 @@ PROOF_POW_BEFORE=COMMON_PREFIX+'''  have hPow :
   ring'''
 PROOF_NORMALIZED=COMMON_PREFIX+'''  have hExponentNorm :
       euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
-    simpa [sub_eq_add_neg, add_comm] using hExponent
+    have hIndex : -1 + n = n - 1 := by ring
+    rw [hIndex]
+    exact hExponent
   have hExponentNorm' :
       1 + euclideanGaugeExponent (-1 + n) = euclideanGaugeExponent n := by
     linarith
@@ -69,12 +104,14 @@ PROOF_NORMALIZED=COMMON_PREFIX+'''  have hExponentNorm :
   ring'''
 PROOF_NORMALIZED_POW=COMMON_PREFIX+'''  have hExponentNorm :
       euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
-    simpa [sub_eq_add_neg, add_comm] using hExponent
+    have hIndex : -1 + n = n - 1 := by ring
+    rw [hIndex]
+    exact hExponent
   have hPowNorm :
       ((z.im ^ (1 + euclideanGaugeExponent (-1 + n)) : ℝ) : ℂ) =
         ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) := by
-    congr 2
-    linarith
+    have he : 1 + euclideanGaugeExponent (-1 + n) = euclideanGaugeExponent n := by linarith
+    rw [he]
 '''+COMMON_BODY+'''  rw [hPowNorm]
   ring'''
 PROOFS={'lower_pow_linarith':PROOF_POW_LINARITH,'lower_pow_ring':PROOF_POW_RING,'lower_pow_before':PROOF_POW_BEFORE,'lower_normalized':PROOF_NORMALIZED,'lower_normalized_pow':PROOF_NORMALIZED_POW}
@@ -85,11 +122,11 @@ def main():
     raw=SOURCE.read_bytes()
     if sha(raw)!=BASE_SHA: raise RuntimeError(f'baseline SHA {sha(raw)}')
     text=raw.decode(); seq=[m.group(1) for m in DECL_RE.finditer(text)]
-    protected=['actualEdgeAmbientParam_hasDerivAt','fixedPhaseEuclideanGauge_lower_pred']
+    protected=['actualEdgeAmbientParam_hasDerivAt','fixedPhaseEuclideanGauge_lower_pred','selectedHalfOpenTile_ae_eq_openTile','integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola']
     heads={n:header(text,n) for n in protected}
     cand=text; repairs=[]
     if a.variant!='baseline':
-        cand,rs=base.apply_gl_pair_cumulative(cand); repairs+=rs
+        cand,rs=apply_gl_pair_cumulative(cand); repairs+=rs
     if a.variant in PROOFS:
         cand=replace_body(cand,'fixedPhaseEuclideanGauge_lower_pred',PROOFS[a.variant]); repairs.append({'declaration':'fixedPhaseEuclideanGauge_lower_pred','strategy':a.variant})
     if [m.group(1) for m in DECL_RE.finditer(cand)]!=seq: raise RuntimeError('declaration sequence changed')
