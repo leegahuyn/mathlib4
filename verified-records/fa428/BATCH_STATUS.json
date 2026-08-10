@@ -1,0 +1,975 @@
+{
+  "authority": "direct Lean CLI diagnostic screening; full source direct compile remains promotion authority",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa428-batch-blocker-screen/FA-baseline-direct.log"
+  },
+  "generator_records": [
+    {
+      "label": "generic",
+      "success": true,
+      "candidate_count": 9
+    },
+    {
+      "label": "preheader",
+      "success": true,
+      "candidate_count": 16
+    },
+    {
+      "label": "unfold",
+      "success": true,
+      "candidate_count": 18
+    },
+    {
+      "label": "rebundle",
+      "success": true,
+      "candidate_count": 18
+    },
+    {
+      "label": "isolated-section",
+      "success": true,
+      "candidate_count": 18
+    }
+  ],
+  "candidate_count": 60,
+  "diagnostic_exit": 1,
+  "diagnostic_reached_end_marker": true,
+  "diagnostic_error_headers": 55,
+  "outside_candidate_error_lines": [],
+  "marker_line": 32808,
+  "successful_candidate_count": 6,
+  "rows": [
+    {
+      "index": 0,
+      "name": "generic:donor-refs-remotes-fa425-donor-1",
+      "provenance": "refs/remotes/fa425/donor-1",
+      "source_sha256": "efa98f13afe9da6b1d32b1f38f4903cd29bf83b8950f84211e7a409126f8133a",
+      "file": "000.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31712,
+      "diagnostic_end_line": 31729,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        31723,
+        31722
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 1,
+      "name": "generic:donor-refs-remotes-fa425-donor-17",
+      "provenance": "refs/remotes/fa425/donor-17",
+      "source_sha256": "798b806f96cfef6acdf1eb9ee0a70a934997d4f3954124c4e26474abff1063d1",
+      "file": "001.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31730,
+      "diagnostic_end_line": 31747,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        31743
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 2,
+      "name": "generic:donor-refs-remotes-fa425-donor-21",
+      "provenance": "refs/remotes/fa425/donor-21",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "file": "002.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31748,
+      "diagnostic_end_line": 31765,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        31762
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 3,
+      "name": "generic:donor-refs-remotes-fa425-donor-65",
+      "provenance": "refs/remotes/fa425/donor-65",
+      "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+      "file": "003.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31766,
+      "diagnostic_end_line": 31783,
+      "prelude": [],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    },
+    {
+      "index": 4,
+      "name": "generic:canonical-explicit",
+      "provenance": "hand:canonical-explicit",
+      "source_sha256": "49d676a4a2a91a223fdb49cae965ce86c5b264c6b1bf1721087bd6eb52fb85f2",
+      "file": "004.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31784,
+      "diagnostic_end_line": 31801,
+      "prelude": [],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    },
+    {
+      "index": 5,
+      "name": "generic:canonical-infer",
+      "provenance": "hand:canonical-infer",
+      "source_sha256": "fc152f173878e83af06bb74bb81890c634accbcd39557ba1869dc604f5aec92f",
+      "file": "005.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31802,
+      "diagnostic_end_line": 31819,
+      "prelude": [],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    },
+    {
+      "index": 6,
+      "name": "generic:canonical-default",
+      "provenance": "hand:canonical-default",
+      "source_sha256": "ece9ded33e179dfb23d82fc13c06a53bc3d1fe4c4ac798352011a10cf577b93d",
+      "file": "006.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31820,
+      "diagnostic_end_line": 31837,
+      "prelude": [],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    },
+    {
+      "index": 7,
+      "name": "generic:canonical-noninstance-let",
+      "provenance": "hand:canonical-noninstance-let",
+      "source_sha256": "ba0e7bc879485e3c0fb40dbf0250ea4aa91945449b6ead660d7d43f45eca7ac6",
+      "file": "007.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31838,
+      "diagnostic_end_line": 31855,
+      "prelude": [],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    },
+    {
+      "index": 8,
+      "name": "preheader:preheader-add-remove-local",
+      "provenance": "hand:preheader-add-remove-local",
+      "source_sha256": "fc1cc6c85101adcfe67dae82f29cf243f332409a296d3961d8e645c663bcb750",
+      "file": "008.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31856,
+      "diagnostic_end_line": 31874,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31857
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 9,
+      "name": "preheader:preheader-add-remove-local-paired",
+      "provenance": "hand:preheader-add-remove-local+paired",
+      "source_sha256": "95126cf87826745af0e54dc34695fd2be154c7d5ccfafccda28490d3bfb67009",
+      "file": "009.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31875,
+      "diagnostic_end_line": 31893,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31876
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 10,
+      "name": "preheader:preheader-add-remove-local-paired-ring",
+      "provenance": "hand:preheader-add-remove-local+paired+ring",
+      "source_sha256": "e4861069dd2443e270d255d131bbf8c1a5cd1c176647a7a57f26d02602a98923",
+      "file": "010.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31894,
+      "diagnostic_end_line": 31912,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31895
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 11,
+      "name": "preheader:preheader-add-local-canonical",
+      "provenance": "hand:preheader-add-local-canonical",
+      "source_sha256": "30eecffda9ff285eac53206644feb22ca66219ec387f781f778c458587c110fb",
+      "file": "011.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31913,
+      "diagnostic_end_line": 31931,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31914
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 12,
+      "name": "preheader:preheader-add-local-canonical-paired",
+      "provenance": "hand:preheader-add-local-canonical+paired",
+      "source_sha256": "be5c6ab54b4d558a6668441f870b8d468369fb256a2537ea5436e5a14c722fd0",
+      "file": "012.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31932,
+      "diagnostic_end_line": 31950,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31933
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 13,
+      "name": "preheader:preheader-add-local-canonical-paired-ring",
+      "provenance": "hand:preheader-add-local-canonical+paired+ring",
+      "source_sha256": "6a7fdf3e97363b2d2fd2e49a8272216db25eab506142dff1c4c2422d19279109",
+      "file": "013.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31951,
+      "diagnostic_end_line": 31969,
+      "prelude": [
+        "local instance : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31952
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 14,
+      "name": "preheader:preheader-normed-remove-local",
+      "provenance": "hand:preheader-normed-remove-local",
+      "source_sha256": "c97c482fb97e6515445ac4e9471c75117f1b45b873d2ceaeb760d7e229793417",
+      "file": "014.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31970,
+      "diagnostic_end_line": 31988,
+      "prelude": [
+        "local instance : NormedAddCommGroup Complex := Complex.instNormedAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31971
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 15,
+      "name": "preheader:preheader-normed-remove-local-paired",
+      "provenance": "hand:preheader-normed-remove-local+paired",
+      "source_sha256": "e33f541d90b9efb3d7197e9f5ae85b53ee3657b7c4eebd739486d5e5031fd164",
+      "file": "015.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 31989,
+      "diagnostic_end_line": 32007,
+      "prelude": [
+        "local instance : NormedAddCommGroup Complex := Complex.instNormedAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        31990
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 16,
+      "name": "preheader:preheader-normed-remove-local-paired-ring",
+      "provenance": "hand:preheader-normed-remove-local+paired+ring",
+      "source_sha256": "4ac1f055eb4bdfe9cd2683402e4d27f22ed5568a783394eed0dd28151da1c12a",
+      "file": "016.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32008,
+      "diagnostic_end_line": 32026,
+      "prelude": [
+        "local instance : NormedAddCommGroup Complex := Complex.instNormedAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32009
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 17,
+      "name": "preheader:preheader-add-named-remove-local",
+      "provenance": "hand:preheader-add-named-remove-local",
+      "source_sha256": "bae29460903584f84df4d21e33683105bd73147e2a673e7cbdffc0b2114b3299",
+      "file": "017.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32027,
+      "diagnostic_end_line": 32045,
+      "prelude": [
+        "local instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32028
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 18,
+      "name": "preheader:preheader-add-named-remove-local-paired",
+      "provenance": "hand:preheader-add-named-remove-local+paired",
+      "source_sha256": "54c373d87d73bec859307216398f91b8799ea32e38282ee5a07f760915d0a706",
+      "file": "018.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32046,
+      "diagnostic_end_line": 32064,
+      "prelude": [
+        "local instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32047
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 19,
+      "name": "preheader:preheader-add-named-remove-local-paired-ring",
+      "provenance": "hand:preheader-add-named-remove-local+paired+ring",
+      "source_sha256": "2b850849339484e8e20550175b869d11ae9788fb1bda571106ee752027e65d1d",
+      "file": "019.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32065,
+      "diagnostic_end_line": 32083,
+      "prelude": [
+        "local instance actualEdgeCanonicalComplexAddCommGroup : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32066
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 20,
+      "name": "preheader:preheader-add-priority-remove-local",
+      "provenance": "hand:preheader-add-priority-remove-local",
+      "source_sha256": "baea6c77ad2a46572cc0c7b559ce3307aeede8921545eae2331135b3ac0dbe02",
+      "file": "020.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32084,
+      "diagnostic_end_line": 32102,
+      "prelude": [
+        "local instance (priority := 2000) : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32085
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 21,
+      "name": "preheader:preheader-add-priority-remove-local-paired",
+      "provenance": "hand:preheader-add-priority-remove-local+paired",
+      "source_sha256": "3917fdb9f452919470d64b671600c1c3e02f649cf3adee76b2bc36641d5f1d67",
+      "file": "021.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32103,
+      "diagnostic_end_line": 32121,
+      "prelude": [
+        "local instance (priority := 2000) : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32104
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 22,
+      "name": "preheader:preheader-add-priority-remove-local-paired-ring",
+      "provenance": "hand:preheader-add-priority-remove-local+paired+ring",
+      "source_sha256": "6f9cd10ea458a089e3a47ac49ce476ec0ecfa649422a346455cbe305f5f2d0d8",
+      "file": "022.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32122,
+      "diagnostic_end_line": 32140,
+      "prelude": [
+        "local instance (priority := 2000) : AddCommGroup Complex := Complex.instNormedAddCommGroup.toAddCommGroup\n"
+      ],
+      "diagnostic_error_lines": [
+        32123
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 23,
+      "name": "unfold:keep-unfold-add",
+      "provenance": "hand:keep+unfold-add",
+      "source_sha256": "c9a5e462028bea24d2b710e1a1f3b31c148aaba65be6392aaad9a30f73836364",
+      "file": "023.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32141,
+      "diagnostic_end_line": 32158,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32155
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 24,
+      "name": "unfold:keep-unfold-normed",
+      "provenance": "hand:keep+unfold-normed",
+      "source_sha256": "7ae17f9994d1727d81578d92c2782927d5448966aae1c7d17d60e999af5959a0",
+      "file": "024.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32159,
+      "diagnostic_end_line": 32176,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32173
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 25,
+      "name": "unfold:keep-unfold-both",
+      "provenance": "hand:keep+unfold-both",
+      "source_sha256": "0e9133b1a4e6080350f4544ca88bf10aef48b9947710dd8f707daeea2061c4c1",
+      "file": "025.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32177,
+      "diagnostic_end_line": 32194,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32191
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 26,
+      "name": "unfold:keep-simp-full-add",
+      "provenance": "hand:keep+simp-full-add",
+      "source_sha256": "6d5d050489be1f4b82c5d3bcdb6a5fadc6fa365efd4924122d74f00b81df44ef",
+      "file": "026.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32195,
+      "diagnostic_end_line": 32212,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32209
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 27,
+      "name": "unfold:keep-simpa-defs",
+      "provenance": "hand:keep+simpa-defs",
+      "source_sha256": "7b0fb14751b2462bb5f39f10d59a0c60fdc916e98c2ce0015a17a54a836716ac",
+      "file": "027.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32213,
+      "diagnostic_end_line": 32230,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32227
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 28,
+      "name": "unfold:keep-convert-rfl",
+      "provenance": "hand:keep+convert-rfl",
+      "source_sha256": "45dde3b38345b540300a103e85110456f1920d6288ba135305d30b14476383a0",
+      "file": "028.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32231,
+      "diagnostic_end_line": 32248,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32245
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 29,
+      "name": "unfold:keep-exact-hcomp",
+      "provenance": "hand:keep+exact-hcomp",
+      "source_sha256": "920ee1aa33be85a336a664ac2fc083b44343f2b2722deff85f71e88b837ef427",
+      "file": "029.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32249,
+      "diagnostic_end_line": 32266,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32263
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 30,
+      "name": "unfold:canonical-unfold-add",
+      "provenance": "hand:canonical+unfold-add",
+      "source_sha256": "fc3f5e9d9f0609481539e9b02c660879847f7ca6b7dc0840ca5be7c08d984e48",
+      "file": "030.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32267,
+      "diagnostic_end_line": 32284,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32281
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 31,
+      "name": "unfold:canonical-unfold-normed",
+      "provenance": "hand:canonical+unfold-normed",
+      "source_sha256": "b1af5155946ded1b7a82585fc8ae95b79f06e1d1c966991959542c1fc3ffa81c",
+      "file": "031.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32285,
+      "diagnostic_end_line": 32302,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32299
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 32,
+      "name": "unfold:canonical-unfold-both",
+      "provenance": "hand:canonical+unfold-both",
+      "source_sha256": "dc4fafc5ad6e1795cf92f7bcb431cc41e89a87cfb0fda4c997bf02519d9d4389",
+      "file": "032.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32303,
+      "diagnostic_end_line": 32320,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32317
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 33,
+      "name": "unfold:canonical-simp-full-add",
+      "provenance": "hand:canonical+simp-full-add",
+      "source_sha256": "a75e0b668618c9009621ac331b4e09639c4d532071c6a8bae1f667a934b7e21c",
+      "file": "033.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32321,
+      "diagnostic_end_line": 32338,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32335
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 34,
+      "name": "unfold:canonical-simpa-defs",
+      "provenance": "hand:canonical+simpa-defs",
+      "source_sha256": "d1133c0c5e6a1a75dfb3d865a42a697aa48b8f040e09f08d442f27a173cfc422",
+      "file": "034.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32339,
+      "diagnostic_end_line": 32356,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32353
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 35,
+      "name": "unfold:canonical-convert-rfl",
+      "provenance": "hand:canonical+convert-rfl",
+      "source_sha256": "b78ee0863bce6d40c192936ce7de711355a423878442d63bca8b161c5fdc68d5",
+      "file": "035.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32357,
+      "diagnostic_end_line": 32374,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32371
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 36,
+      "name": "unfold:canonical-exact-hcomp",
+      "provenance": "hand:canonical+exact-hcomp",
+      "source_sha256": "8a455f65ec1a7ae2eaaaa6f8bf4065d2ca2e3e40d964fd783af7a47114e432f4",
+      "file": "036.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32375,
+      "diagnostic_end_line": 32392,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32389
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 37,
+      "name": "unfold:remove-unfold-add",
+      "provenance": "hand:remove+unfold-add",
+      "source_sha256": "ecabc47dcfb97e8b62d6207429886b2c6f9f13c00be11f59db15e87a3525c6e9",
+      "file": "037.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32393,
+      "diagnostic_end_line": 32410,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32407
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 38,
+      "name": "unfold:remove-unfold-normed",
+      "provenance": "hand:remove+unfold-normed",
+      "source_sha256": "4533254ee6d9c8979a3b062f1e291a4409e10cf2e487f6f94f7e5492fdb33546",
+      "file": "038.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32411,
+      "diagnostic_end_line": 32428,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32425
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 39,
+      "name": "unfold:remove-unfold-both",
+      "provenance": "hand:remove+unfold-both",
+      "source_sha256": "b71eb5091a43d56ed16fdf7ffd59153c02fa39467f753b3c443f387dd5e1f37f",
+      "file": "039.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32429,
+      "diagnostic_end_line": 32446,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32443
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 40,
+      "name": "unfold:remove-simp-full-add",
+      "provenance": "hand:remove+simp-full-add",
+      "source_sha256": "8f84ded63ee3a3559aa99100929ea5dcc0ef5f65a0d95c026ba1d75283f35091",
+      "file": "040.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32447,
+      "diagnostic_end_line": 32464,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32461
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 41,
+      "name": "rebundle:no-preheader-keep-local-rebundle-exact",
+      "provenance": "hand:no-preheader+keep-local+rebundle-exact",
+      "source_sha256": "efc7f1ca6874947e31b36e2036b03638ae716bf40a554ef24cd261f94815c868",
+      "file": "041.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32465,
+      "diagnostic_end_line": 32482,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32479
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 42,
+      "name": "rebundle:no-preheader-keep-local-rebundle-simpa-defs",
+      "provenance": "hand:no-preheader+keep-local+rebundle-simpa-defs",
+      "source_sha256": "6e768036f7b2a327fc5736e96633ea672aad451950d27109e2726bb820fd1d28",
+      "file": "042.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32483,
+      "diagnostic_end_line": 32500,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32497
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 43,
+      "name": "rebundle:no-preheader-keep-local-rebundle-simp-defs",
+      "provenance": "hand:no-preheader+keep-local+rebundle-simp-defs",
+      "source_sha256": "d0ab075d0bf162e15bb509f6ae537d9c0cd0e1fb6221ea8814e6a05a28f1dd6d",
+      "file": "043.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32501,
+      "diagnostic_end_line": 32518,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32515
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 44,
+      "name": "rebundle:no-preheader-keep-local-rebundle-convert-rfl",
+      "provenance": "hand:no-preheader+keep-local+rebundle-convert-rfl",
+      "source_sha256": "104830a51af624924728b827dfa9d78c908adba3e24c399ea129c1b76c82c2d4",
+      "file": "044.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32519,
+      "diagnostic_end_line": 32536,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32533
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 45,
+      "name": "rebundle:no-preheader-keep-local-rebundle-convert-simp",
+      "provenance": "hand:no-preheader+keep-local+rebundle-convert-simp",
+      "source_sha256": "eb1a297d1105aa8d0e5b76183bc614957778f289c8407a46eb989b460f6bea0d",
+      "file": "045.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32537,
+      "diagnostic_end_line": 32554,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32551
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 46,
+      "name": "rebundle:no-preheader-keep-local-hasF-simpa",
+      "provenance": "hand:no-preheader+keep-local+hasF-simpa",
+      "source_sha256": "bdae3ce77d77b256a351d776c2c286c55b67485a9084af04464646cf0a70d5f7",
+      "file": "046.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32555,
+      "diagnostic_end_line": 32572,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32569
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 47,
+      "name": "rebundle:no-preheader-keep-local-hasF-simp",
+      "provenance": "hand:no-preheader+keep-local+hasF-simp",
+      "source_sha256": "cc0bde8e7ce6150817e5837b59d475787cd85a0ceabf3a25397fb5e03e1a5773",
+      "file": "047.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32573,
+      "diagnostic_end_line": 32590,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32587
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 48,
+      "name": "rebundle:no-preheader-canonical-local-rebundle-exact",
+      "provenance": "hand:no-preheader+canonical-local+rebundle-exact",
+      "source_sha256": "1f2ba9b3a3ae7c543345a8686f8590e96f69db18e9847c2948630b516d520022",
+      "file": "048.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32591,
+      "diagnostic_end_line": 32608,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32605
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 49,
+      "name": "rebundle:no-preheader-canonical-local-rebundle-simpa-defs",
+      "provenance": "hand:no-preheader+canonical-local+rebundle-simpa-defs",
+      "source_sha256": "cac9c4af0a3584656fb3fb28e1e1ed3d3dc945826608dbebe3bc0aeb07523e8b",
+      "file": "049.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32609,
+      "diagnostic_end_line": 32626,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32623
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 50,
+      "name": "rebundle:no-preheader-canonical-local-rebundle-simp-defs",
+      "provenance": "hand:no-preheader+canonical-local+rebundle-simp-defs",
+      "source_sha256": "7631cd6593185af1d93bcab1ba1a04dec1d0d86b3b0dfaa7b5b4b99d1cd81474",
+      "file": "050.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32627,
+      "diagnostic_end_line": 32644,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32641
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 51,
+      "name": "rebundle:no-preheader-canonical-local-rebundle-convert-rfl",
+      "provenance": "hand:no-preheader+canonical-local+rebundle-convert-rfl",
+      "source_sha256": "55fd21f5ddb883a8e75cdabb1ac7e7bfa76d861210068469036fe1ccf0fa8393",
+      "file": "051.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32645,
+      "diagnostic_end_line": 32662,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32659
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 52,
+      "name": "rebundle:no-preheader-canonical-local-rebundle-convert-simp",
+      "provenance": "hand:no-preheader+canonical-local+rebundle-convert-simp",
+      "source_sha256": "785c266887e0c44553677a81c2b0bc2b695b4db5bffe280976439da17f07a7db",
+      "file": "052.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32663,
+      "diagnostic_end_line": 32680,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32677
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 53,
+      "name": "rebundle:no-preheader-canonical-local-hasF-simpa",
+      "provenance": "hand:no-preheader+canonical-local+hasF-simpa",
+      "source_sha256": "ae2eef371182c42c9b460a110acc754ca232dc91523d987ddcb9fcba6a5465b0",
+      "file": "053.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32681,
+      "diagnostic_end_line": 32698,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32695
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 54,
+      "name": "rebundle:no-preheader-canonical-local-hasF-simp",
+      "provenance": "hand:no-preheader+canonical-local+hasF-simp",
+      "source_sha256": "6d95157b9db3e777bf7440560f9a00dca284e1a432c895bfb3187a5c17e2f669",
+      "file": "054.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32699,
+      "diagnostic_end_line": 32716,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32713
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 55,
+      "name": "rebundle:no-preheader-remove-local-rebundle-exact",
+      "provenance": "hand:no-preheader+remove-local+rebundle-exact",
+      "source_sha256": "c88d86f02c75194c3f05ce4da0a7a8a2f5d2dddccd0524145e905c9082c7a8cd",
+      "file": "055.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32717,
+      "diagnostic_end_line": 32734,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32731
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 56,
+      "name": "rebundle:no-preheader-remove-local-rebundle-simpa-defs",
+      "provenance": "hand:no-preheader+remove-local+rebundle-simpa-defs",
+      "source_sha256": "9d6fb140b654b23b0b4532d0b5fd454e755e2d464728efb1cd3ef5f3bbdf211e",
+      "file": "056.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32735,
+      "diagnostic_end_line": 32752,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32749
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 57,
+      "name": "rebundle:no-preheader-remove-local-rebundle-simp-defs",
+      "provenance": "hand:no-preheader+remove-local+rebundle-simp-defs",
+      "source_sha256": "f34ce7df382869831c87da9e35c0c85b27affcba5893243e4cd114f98d3ef3f1",
+      "file": "057.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32753,
+      "diagnostic_end_line": 32770,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32767
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 58,
+      "name": "rebundle:no-preheader-remove-local-rebundle-convert-rfl",
+      "provenance": "hand:no-preheader+remove-local+rebundle-convert-rfl",
+      "source_sha256": "c0a5406b9e505d53d78902a007d65af5b577218ce530f9ed4ebd7a9b26e81ab2",
+      "file": "058.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32771,
+      "diagnostic_end_line": 32788,
+      "prelude": [],
+      "diagnostic_error_lines": [
+        32785
+      ],
+      "batch_pass": false
+    },
+    {
+      "index": 59,
+      "name": "isolated-section:disable-custom-remove-proof-local-keep-closing",
+      "provenance": "hand:disable-custom+remove-proof-local+keep-closing",
+      "source_sha256": "974ef6ab760e51c1ffbc8efd8bb39bbd80e026adb53feea470aa2c51409c362a",
+      "file": "059.lean",
+      "theorem_end": 31728,
+      "diagnostic_start_line": 32789,
+      "diagnostic_end_line": 32807,
+      "prelude": [
+        "attribute [-instance] Complex.addCommGroup\n"
+      ],
+      "diagnostic_error_lines": [],
+      "batch_pass": true
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32035,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa428-batch-blocker-screen/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "index": 3,
+        "name": "generic:donor-refs-remotes-fa425-donor-65",
+        "provenance": "refs/remotes/fa425/donor-65",
+        "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "file": "003.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 31766,
+        "diagnostic_end_line": 31783,
+        "prelude": []
+      },
+      "metric": {
+        "label": "full-candidate-003",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-003.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "index": 4,
+        "name": "generic:canonical-explicit",
+        "provenance": "hand:canonical-explicit",
+        "source_sha256": "49d676a4a2a91a223fdb49cae965ce86c5b264c6b1bf1721087bd6eb52fb85f2",
+        "file": "004.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 31784,
+        "diagnostic_end_line": 31801,
+        "prelude": []
+      },
+      "metric": {
+        "label": "full-candidate-004",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "49d676a4a2a91a223fdb49cae965ce86c5b264c6b1bf1721087bd6eb52fb85f2",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-004.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "index": 5,
+        "name": "generic:canonical-infer",
+        "provenance": "hand:canonical-infer",
+        "source_sha256": "fc152f173878e83af06bb74bb81890c634accbcd39557ba1869dc604f5aec92f",
+        "file": "005.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 31802,
+        "diagnostic_end_line": 31819,
+        "prelude": []
+      },
+      "metric": {
+        "label": "full-candidate-005",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "fc152f173878e83af06bb74bb81890c634accbcd39557ba1869dc604f5aec92f",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-005.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "index": 6,
+        "name": "generic:canonical-default",
+        "provenance": "hand:canonical-default",
+        "source_sha256": "ece9ded33e179dfb23d82fc13c06a53bc3d1fe4c4ac798352011a10cf577b93d",
+        "file": "006.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 31820,
+        "diagnostic_end_line": 31837,
+        "prelude": []
+      },
+      "metric": {
+        "label": "full-candidate-006",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "ece9ded33e179dfb23d82fc13c06a53bc3d1fe4c4ac798352011a10cf577b93d",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-006.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "index": 7,
+        "name": "generic:canonical-noninstance-let",
+        "provenance": "hand:canonical-noninstance-let",
+        "source_sha256": "ba0e7bc879485e3c0fb40dbf0250ea4aa91945449b6ead660d7d43f45eca7ac6",
+        "file": "007.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 31838,
+        "diagnostic_end_line": 31855,
+        "prelude": []
+      },
+      "metric": {
+        "label": "full-candidate-007",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "ba0e7bc879485e3c0fb40dbf0250ea4aa91945449b6ead660d7d43f45eca7ac6",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-007.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "index": 59,
+        "name": "isolated-section:disable-custom-remove-proof-local-keep-closing",
+        "provenance": "hand:disable-custom+remove-proof-local+keep-closing",
+        "source_sha256": "974ef6ab760e51c1ffbc8efd8bb39bbd80e026adb53feea470aa2c51409c362a",
+        "file": "059.lean",
+        "theorem_end": 31728,
+        "diagnostic_start_line": 32789,
+        "diagnostic_end_line": 32807,
+        "prelude": [
+          "attribute [-instance] Complex.addCommGroup\n"
+        ]
+      },
+      "metric": {
+        "label": "full-candidate-059",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "974ef6ab760e51c1ffbc8efd8bb39bbd80e026adb53feea470aa2c51409c362a",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa428-batch-blocker-screen/full-candidate-059.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}
