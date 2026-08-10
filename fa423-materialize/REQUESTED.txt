@@ -1,0 +1,6 @@
+requested_at=2026-08-10T09:20:00+09:00
+run_id=31317392557
+source_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+line_count=60453
+expected_first_error=31726:2
+authority=direct Lean CLI
