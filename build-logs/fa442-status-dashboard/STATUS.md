@@ -8,6 +8,7 @@ branch | run | workflow status | workflow conclusion | Lean/pipeline classificat
 `fix/fa442-matrix-direct-compile-repair-20260810` | [31354569386](https://github.com/leegahuyn/mathlib4/actions/runs/31354569386) | in_progress | None | **NO_COMMITTED_REPORT** | fa442-metric-git-origin-fix-fa424-cross-donor-controller-20260809-31354569386 (`9050549314`), fa442-metric-git-origin-ci-fa447-run-locator-20260810-31354569386 (`9050533561`), fa442-prep-31354569386 (`9050209026`)
 `fix/fa442-sequential-direct-tournament-20260810` | [31354847621](https://github.com/leegahuyn/mathlib4/actions/runs/31354847621) | in_progress | None | **NO_COMMITTED_REPORT** | NONE
 `fix/fa443-blocker-body-tournament-20260810` | [31355435033](https://github.com/leegahuyn/mathlib4/actions/runs/31355435033) | in_progress | None | **NO_COMMITTED_REPORT** | NONE
+`fix/fa442-baseline-direct-smoke-20260810` | [31355707466](https://github.com/leegahuyn/mathlib4/actions/runs/31355707466) | queued | None | **NO_COMMITTED_REPORT** | NONE
 
 ## Job steps
 
@@ -197,4 +198,8 @@ branch | run | workflow status | workflow conclusion | Lean/pipeline classificat
   - 25. Commit final status and compact evidence: `pending` / `None`
   - 26. Enforce pipeline and tournament infrastructure only: `pending` / `None`
   - 52. Post Checkout FA443 branch: `pending` / `None`
+
+### `fix/fa442-baseline-direct-smoke-20260810`
+
+- `baseline-direct`: status `queued`, conclusion `None`
 
