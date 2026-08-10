@@ -1,16 +1,12 @@
-name: FA448 checked-in direct Lean diagnostic
+name: FA449 first-cluster direct Lean matrix
 
 on:
   push:
     branches:
-      - fix/fa448-functional-analysis-exit0-20260810
-    paths:
-      - .github/workflows/pre-commit.yml
-      - scripts/fa448_diagnose_current.py
-      - build-logs/fa448-diagnostic/REQUESTED*.txt
+      - fix/fa449-first-cluster-matrix-20260810
   pull_request:
     branches:
-      - fix/fa448-functional-analysis-exit0-20260810
+      - fix/fa449-first-cluster-matrix-20260810
   workflow_dispatch:
 
 permissions:
@@ -18,193 +14,122 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa448-checked-in-direct-diagnostic
+  group: fa449-first-cluster-direct-matrix
   cancel-in-progress: true
 
 env:
-  ACTIVE_BRANCH: fix/fa448-functional-analysis-exit0-20260810
-  EXPECTED_SOURCE_SHA: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
-  EXPECTED_LINE_COUNT: '60453'
-  MAX_ERRORS: '300'
+  ACTIVE_BRANCH: fix/fa449-first-cluster-matrix-20260810
 
 jobs:
-  diagnose:
+  candidate:
+    name: candidate (${{ matrix.variant }})
     runs-on: ubuntu-24.04
     timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 15
+      matrix:
+        variant:
+          - baseline
+          - add_explicit
+          - add_unfold
+          - add_memlp_exact
+          - add_memlp_convert
+          - add_memlp_have
+          - add_memlp_letI
+          - cluster_exact
+          - cluster_convert
+          - cluster_have
+          - cluster_letI
+          - cluster_exact_deriv
+          - cluster_convert_deriv
+          - cluster_have_deriv
+          - cluster_letI_deriv
+    env:
+      VARIANT: ${{ matrix.variant }}
+      MAX_ERRORS: '80'
     steps:
-      - name: Checkout current FA448 branch
+      - name: Checkout current FA449 branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa448-functional-analysis-exit0-20260810
+          ref: fix/fa449-first-cluster-matrix-20260810
+          fetch-depth: 2500
+          persist-credentials: false
+
+      - name: Generate candidate, install pinned Lean, restore cache, and direct compile
+        shell: bash
+        run: bash scripts/fa449_candidate_ci.sh
+
+      - name: Upload source and complete direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa449-candidate-${{ matrix.variant }}
+          path: build-logs/fa449-first-cluster/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual Lean execution, prerequisites, and trust audit
+        if: always()
+        shell: bash
+        run: |
+          python3 - "build-logs/fa449-first-cluster/candidates/${VARIANT}/METRIC.json" <<'PY'
+          import json,sys
+          try: m=json.load(open(sys.argv[1],encoding='utf-8'))
+          except Exception as exc: raise SystemExit(f'INFRA_FAILURE: {exc}')
+          ok=(m.get('classification')!='INFRA_FAILURE'
+              and m.get('all_required_lean_executed') is True
+              and m.get('source_metadata_identity') is True
+              and m.get('Mock2_exit')==0
+              and m.get('Mock2_Advanced_exit')==0
+              and m.get('forbidden_clean') is True)
+          print(json.dumps(m,indent=2,ensure_ascii=False))
+          if not ok: raise SystemExit('INFRA_FAILURE or prerequisite regression')
+          PY
+
+  select-confirm-persist:
+    name: independent baseline, strict selector, materialize, checked-in x2
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 420
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      ACTIVE_BRANCH: fix/fa449-first-cluster-matrix-20260810
+      MAX_ERRORS: '120'
+    steps:
+      - name: Checkout current FA449 branch with push credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa449-first-cluster-matrix-20260810
           fetch-depth: 2500
           persist-credentials: true
 
-      - name: Configure GitHub Actions identity
+      - name: Run independent baseline, selector, confirmation, and checked-in verification
+        id: selector
         shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          test "$(git config user.name)" = 'github-actions[bot]'
-          test "$(git config user.email)" = \
-            '41898282+github-actions[bot]@users.noreply.github.com'
+        run: bash scripts/fa449_selector_ci.sh
 
-      - name: Verify checked-in champion identity before compilation
-        shell: bash
-        run: |
-          set -euo pipefail
-          d=build-logs/fa448-diagnostic
-          rm -rf "$d"
-          mkdir -p "$d"
-          src=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          actual=$(sha256sum "$src" | awk '{print $1}')
-          lines=$(wc -l < "$src" | tr -d ' ')
-          printf '%s\n' "$actual" > "$d/source.sha256"
-          printf '%s\n' "$lines" > "$d/source.lines"
-          git rev-parse HEAD > "$d/repository-head.txt"
-          printf '%s\n' "$(cat lean-toolchain)" > "$d/lean-toolchain.txt"
-          test "$actual" = "$EXPECTED_SOURCE_SHA"
-          test "$lines" = "$EXPECTED_LINE_COUNT"
-
-      - name: Install pinned Lean and restore Mathlib cache
-        shell: bash
-        run: |
-          set -euo pipefail
-          d=build-logs/fa448-diagnostic
-          curl --retry 5 --retry-all-errors --fail --silent --show-error \
-            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            -o /tmp/elan-init.sh
-          sh /tmp/elan-init.sh -y --default-toolchain none \
-            > "$d/elan-init.log" 2>&1
-          export PATH="${HOME}/.elan/bin:${PATH}"
-          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
-          elan toolchain install "$(cat lean-toolchain)" \
-            > "$d/toolchain-install.log" 2>&1
-          printf '0\n' > "$d/toolchain-install.exit"
-          lean --version | tee "$d/lean-version.txt"
-          lake --version | tee "$d/lake-version.txt"
-          lake exe cache get | tee "$d/cache-get.log"
-          printf '0\n' > "$d/cache-get.exit"
-
-      - name: Directly compile Mock2, Mock2 Advanced, and checked-in FA
-        shell: bash
-        run: |
-          set +e
-          export PATH="${HOME}/.elan/bin:${PATH}"
-          d=build-logs/fa448-diagnostic
-          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
-          compile_one() {
-            stem="$1"
-            cap="$2"
-            src="PrimalitySheafVerification/${stem}.lean"
-            o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
-            i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
-            rm -f "$o" "$i"
-            command=(lake env lean "-DmaxErrors=${cap}" -DwarningAsError=false \
-              -o "$o" -i "$i" "$src")
-            printf '%q ' "${command[@]}" > "$d/${stem}.command"
-            printf '\n' >> "$d/${stem}.command"
-            touch "$d/${stem}.executed"
-            "${command[@]}" > "$d/${stem}.log" 2>&1
-            rc=$?
-            printf '%s\n' "$rc" > "$d/${stem}.exit"
-            olean=false
-            ilean=false
-            test -s "$o" && olean=true
-            test -s "$i" && ilean=true
-            printf '%s\n' "$olean" > "$d/${stem}.olean"
-            printf '%s\n' "$ilean" > "$d/${stem}.ilean"
-          }
-          compile_one Mock2 50
-          compile_one Mock2_Advanced 50
-          compile_one Mock2_FunctionalAnalysis "$MAX_ERRORS"
-          exit 0
-
-      - name: Parse every available Lean error and source declaration context
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 scripts/fa448_diagnose_current.py
-          python3 - <<'PY'
-          import importlib.util,json,sys
-          from pathlib import Path
-          spec=importlib.util.spec_from_file_location(
-              'fa448_audit','scripts/fa442_prepare_same_height_candidate.py'
-          )
-          module=importlib.util.module_from_spec(spec)
-          sys.modules[spec.name]=module
-          assert spec.loader is not None
-          spec.loader.exec_module(module)
-          source=Path(
-              'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
-          ).read_text(encoding='utf-8')
-          counts=module.forbidden_counts(source)
-          result={
-              'sorry':counts.get('sorry',0),
-              'admit':counts.get('admit',0),
-              'global_axiom':counts.get('new_global_axiom',0),
-              'unsafe':counts.get('unsafe',0),
-              'native_decide':counts.get('native_decide',0),
-              'Lean.ofReduceBool':counts.get('Lean.ofReduceBool',0),
-              'clean':all(value==0 for value in counts.values()),
-          }
-          path=Path('build-logs/fa448-diagnostic/TRUST_AUDIT.json')
-          path.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps(result,indent=2))
-          PY
-
-      - name: Persist compact diagnostic evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          d=build-logs/fa448-diagnostic
-          git add -f \
-            "$d/DIAGNOSTIC.json" \
-            "$d/ERRORS.json" \
-            "$d/ERROR_CONTEXTS.txt" \
-            "$d/ERROR_DECLARATION_BLOCKS.txt" \
-            "$d/SOURCE_REGION_31680_33850.txt" \
-            "$d/TRUST_AUDIT.json" \
-            "$d/source.sha256" \
-            "$d/source.lines" \
-            "$d/repository-head.txt" \
-            "$d/lean-toolchain.txt" \
-            "$d/lean-version.txt" \
-            "$d/lake-version.txt" \
-            "$d/Mock2.command" \
-            "$d/Mock2.exit" \
-            "$d/Mock2_Advanced.command" \
-            "$d/Mock2_Advanced.exit" \
-            "$d/Mock2_FunctionalAnalysis.command" \
-            "$d/Mock2_FunctionalAnalysis.exit"
-          if ! git diff --cached --quiet; then
-            git commit -m 'ci: record FA448 checked-in direct Lean diagnostics [skip ci]'
-            git push origin "HEAD:${ACTIVE_BRANCH}"
-          fi
-
-      - name: Upload complete direct diagnostic evidence
+      - name: Upload complete matrix and checked-in evidence
         id: upload
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa448-direct-diagnostic-${{ github.run_id }}-${{ github.sha }}
-          path: build-logs/fa448-diagnostic
-          if-no-files-found: error
+          name: fa449-first-cluster-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa449-first-cluster
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: warn
           retention-days: 90
 
-      - name: Enforce infrastructure separately from FA proof status
+      - name: Enforce pipeline integrity separately from FA proof result
         if: always()
         shell: bash
         run: |
-          set -euo pipefail
-          d=build-logs/fa448-diagnostic
-          test -f "$d/Mock2.executed"
-          test -f "$d/Mock2_Advanced.executed"
-          test -f "$d/Mock2_FunctionalAnalysis.executed"
-          test "$(cat "$d/Mock2.exit")" = 0
-          test "$(cat "$d/Mock2_Advanced.exit")" = 0
-          test "$(python3 -c 'import json; print(str(json.load(open("build-logs/fa448-diagnostic/TRUST_AUDIT.json"))["clean"]).lower())')" = true
-          test -s "$d/DIAGNOSTIC.json"
-          test -s "$d/ERRORS.json"
+          test "${{ steps.selector.outcome }}" = success
+          test -s build-logs/fa449-first-cluster/selected/SELECTION.json
+          test -s build-logs/fa449-first-cluster/selected/INDEPENDENT_BASELINE.json
+          test -s build-logs/fa449-first-cluster/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa449-first-cluster/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa449-first-cluster/final/FA_FINAL.json
