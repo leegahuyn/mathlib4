@@ -53,4 +53,28 @@ mod.PROOFS['lower_second_rw_comm']=mod.COMMON_PREFIX+'''  have hIndex : n - 1 = 
   have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
   field_simp [hz]
   ring'''
+mod.PROOFS['lower_raise_mirror']=mod.COMMON_PREFIX+'''  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    hScale, complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply, hExponent]
+  have hz : heightC z ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  push_cast
+  ring'''
+mod.PROOFS['lower_raise_mirror_norm_index']=mod.COMMON_PREFIX+'''  have hIndex : n - 1 = -1 + n := by ring
+  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    hScale, complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply, hExponent]
+  simp only [hIndex]
+  have hz : heightC z ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  push_cast
+  ring'''
 if __name__=='__main__': mod.main()
