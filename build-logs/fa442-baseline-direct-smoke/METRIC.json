@@ -1,0 +1,76 @@
+{
+  "variant": "baseline-direct",
+  "slug": "baseline",
+  "is_baseline": true,
+  "classification": "LEAN_FAILURE",
+  "direct_lean_executed": true,
+  "expected_source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "source": {
+    "sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "blocker_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "blocker_header": "theorem actualEdgeAmbientParam_hasDerivAt\n    (e : GammaTwoActualPolygonEdge)\n    (t : modularTileEdgeParameterSet e.2) :\n    HasDerivAt (actualEdgeAmbientParam e)\n      (actualEdgeNativeVelocity e t) (t : Real) := by",
+    "declaration_sequence_sha256": "db73e81df023036c61e9514d48c88e590bc57d4f247a344cd493dad0bcf47d23",
+    "trust_audit": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "expected_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "sha_identity_ok": true,
+    "line_count_ok": true,
+    "blocker_header_unchanged": true,
+    "declaration_sequence_unchanged": true,
+    "trust_audit_clean": true
+  },
+  "prerequisites": {
+    "Mock2": {
+      "stem": "Mock2",
+      "command": "lake env lean -DwarningAsError=false -DmaxErrors=400 -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+      "max_errors": 400,
+      "exit_code": 0,
+      "olean_exists": true,
+      "ilean_exists": true,
+      "log": "Mock2.log"
+    },
+    "Mock2_Advanced": {
+      "stem": "Mock2_Advanced",
+      "command": "lake env lean -DwarningAsError=false -DmaxErrors=400 -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+      "max_errors": 400,
+      "exit_code": 0,
+      "olean_exists": true,
+      "ilean_exists": true,
+      "log": "Mock2_Advanced.log"
+    }
+  },
+  "fa": {
+    "stem": "Mock2_FunctionalAnalysis",
+    "command": "lake env lean -DwarningAsError=false -DmaxErrors=120 -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "max_errors": 120,
+    "exit_code": 1,
+    "olean_exists": false,
+    "ilean_exists": false,
+    "log": "Mock2_FunctionalAnalysis.log",
+    "first_error": {
+      "line": 31726,
+      "column": 2,
+      "message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\nbut is expected to have type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t",
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "declaration_kind": "theorem",
+      "declaration_index": 2631,
+      "declaration_start_line": 31713
+    },
+    "error_header_count": 121,
+    "error_header_count_interpretation": "diagnostic headers captured before Lean stopped; not total errors or progress",
+    "direct_lean_executed": true
+  },
+  "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+  "repository_head": "018d63558febd714158c5fc56aa20adcad7d9d52",
+  "mathlib_identity": "032c41588309149a2026dd0a968ca277a4320fec",
+  "authority": "direct lake env lean CLI in this matrix job"
+}
