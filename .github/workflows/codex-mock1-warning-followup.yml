@@ -1,0 +1,113 @@
+name: Codex Mock1 warning follow-up
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260810
+    paths:
+      - .github/workflows/codex-mock1-warning-followup.yml
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-mock1-warning-followup
+  cancel-in-progress: false
+
+jobs:
+  direct-warning-diff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      EVIDENCE_ROOT: /tmp/codex-mock1-warning-followup
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${EVIDENCE_ROOT}/setup"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          printf '%s\n' "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)" \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/toolchain-install.log"
+          lake env lean --version | tee "${EVIDENCE_ROOT}/setup/lean-version.txt"
+          lake --version | tee "${EVIDENCE_ROOT}/setup/lake-version.txt"
+          cp lean-toolchain lake-manifest.json "${EVIDENCE_ROOT}/setup/"
+          lake exe cache get 2>&1 | tee "${EVIDENCE_ROOT}/setup/cache-get.log"
+      - name: Materialize corrected candidate and directly compile both sources
+        shell: bash
+        run: |
+          set +e
+          python3 .github/scripts/mock1_warning_followup_runner.py \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --out "${EVIDENCE_ROOT}"
+          code=$?
+          set -e
+          printf '%s\n' "$code" > "${EVIDENCE_ROOT}/runner.exit"
+          exit 0
+      - name: Print strict warning metric
+        if: always()
+        shell: bash
+        run: |
+          if test -f "${EVIDENCE_ROOT}/METRIC.json"; then
+            python3 -m json.tool "${EVIDENCE_ROOT}/METRIC.json"
+          fi
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-mock1-warning-followup-${{ github.sha }}
+          path: /tmp/codex-mock1-warning-followup
+          if-no-files-found: error
+          retention-days: 90
+      - name: Require exact reduction and clean direct compilation
+        if: always()
+        shell: bash
+        run: |
+          python3 - "${EVIDENCE_ROOT}/METRIC.json" <<'PY'
+          import json
+          import sys
+
+          metric = json.load(open(sys.argv[1], encoding="utf-8"))
+          gates = metric.get("gates", {})
+          warning = metric.get("warning_diff", {})
+          required = (
+              metric.get("module") == "Mock1"
+              and metric.get("classification") == "WARNING_MECHANICAL_PASS"
+              and metric.get("all_gates_pass") is True
+              and metric.get("warning_zero_required") is False
+              and warning.get("baseline_total") == 66
+              and warning.get("candidate_total") == 54
+              and warning.get("actual_added_multiset") == []
+              and gates.get("source_guard") is True
+              and gates.get("candidate_guard") is True
+              and gates.get("declaration_header_gate") is True
+              and gates.get("candidate_whitespace_clean") is True
+              and gates.get("baseline_direct_compile_clean") is True
+              and gates.get("baseline_warning_inventory_exact") is True
+              and gates.get("candidate_warning_inventory_exact") is True
+              and gates.get("exact_expected_warning_multiset_reduction") is True
+              and gates.get("new_warning_categories_zero") is True
+              and gates.get("forbidden_absolute_zero") is True
+              and gates.get("source_unchanged_after_compile") is True
+              and metric.get("baseline_direct", {}).get("exit") == 0
+              and metric.get("candidate_direct", {}).get("exit") == 0
+              and metric.get("baseline_direct", {}).get("olean_bytes", 0) > 0
+              and metric.get("baseline_direct", {}).get("ilean_bytes", 0) > 0
+              and metric.get("candidate_direct", {}).get("olean_bytes", 0) > 0
+              and metric.get("candidate_direct", {}).get("ilean_bytes", 0) > 0
+          )
+          print(json.dumps(metric, ensure_ascii=False, indent=2))
+          if not required:
+              raise SystemExit("Mock1 warning follow-up did not pass every gate")
+          PY
