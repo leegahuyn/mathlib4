@@ -68,4 +68,4 @@ branch: fix/fa454-fa453-compact-energy-direct-matrix-20260810
 source commit: 1bc221147d7057f7f6c19d6ed413e399a58c59d5
 verification HEAD: 1bc221147d7057f7f6c19d6ed413e399a58c59d5
 Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31366502564
-Artifact ID: PENDING_UPLOAD
+Artifact ID: 9055269642
