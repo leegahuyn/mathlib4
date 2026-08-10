@@ -1,0 +1,1 @@
+Trigger FA444 complete direct matrix replay after confirming FA442 skip root cause and FA443 preparation failures. Require baseline plus all candidate direct Lean CLI metrics; no artifact-only promotion.
