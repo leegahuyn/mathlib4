@@ -1,0 +1,60 @@
+name: Locate active FA447 invariant-height matrix run
+
+on:
+  push:
+    branches:
+      - ci/fa447-run-locator-20260810
+    paths:
+      - build-logs/fa447-run-locator/REQUESTED*.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa447-run-locator-20260810
+          persist-credentials: true
+      - name: Locate target branch workflow run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=build-logs/fa447-run-locator
+          mkdir -p "$d"
+          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=fix/fa447-invariant-height-matrix-20260810&per_page=100" > "$d/ALL_RUNS.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          raw=Path('build-logs/fa447-run-locator/ALL_RUNS.json').read_text()
+          dec=json.JSONDecoder(); i=0; pages=[]
+          while i < len(raw):
+              while i < len(raw) and raw[i].isspace(): i += 1
+              if i >= len(raw): break
+              obj,i=dec.raw_decode(raw,i); pages.append(obj)
+          runs=[]
+          for p in pages:
+              if isinstance(p,dict): runs.extend(p.get('workflow_runs',[]))
+          target=[r for r in runs if r.get('name')=='FA447 invariant and height strict direct matrix']
+          target.sort(key=lambda r:(r.get('created_at',''),r.get('id',0)),reverse=True)
+          result={'found':bool(target),'latest':target[0] if target else None,'target_runs':target}
+          Path('build-logs/fa447-run-locator/RUN_LOCATOR.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          PY
+      - name: Persist locator result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add build-logs/fa447-run-locator/RUN_LOCATOR.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA447 active run locator [skip ci]'
+            git push origin HEAD:ci/fa447-run-locator-20260810
+          fi
