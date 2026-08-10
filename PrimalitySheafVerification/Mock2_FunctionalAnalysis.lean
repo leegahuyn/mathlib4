@@ -32032,26 +32032,26 @@ theorem nativeActualEdgeFluxIntegral_paired_circular
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     (T : Real) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired =
       (-1 : Complex) *
         nativeActualEdgeFluxIntegral T X Y
           (q, GammaTwoModularTileEdge.circularArc) := by
   change
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
       (-1 : Complex) *
         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
           (q, GammaTwoModularTileEdge.circularArc) t)
   calc
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t) =
+        ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-          (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) (-t) := by
+          ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired (-t) := by
       symm
       simpa using
         (intervalIntegral.integral_comp_neg
           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
-            (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge)) t)
+            ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t)
           (a := (-1 : Real)) (b := (1 : Real)))
     _ = ∫ t in (-1 : Real)..1,
         -nativeActualEdgeFluxIntegrand X Y
@@ -32076,12 +32076,12 @@ theorem nativeActualEdgeFluxIntegral_paired_left
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.leftVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
+      ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.leftVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -32101,12 +32101,12 @@ theorem nativeActualEdgeFluxIntegral_paired_right
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) =
+        ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.rightVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      (GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge)) t) =
+      ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.rightVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -33549,13 +33549,13 @@ theorem gammaTwoSelectedHorocycleParam_continuous
       (⟨(t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I,
         lt_of_lt_of_le zero_lt_one
           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
-    hcomplex.subtype_mk _
+    hcomplex.upperHalfPlaneMk _
   have hbase : Continuous (fun t : ℝ =>
       (⟨Complex.mk t (gammaTwoCuspLevel Y),
         lt_of_lt_of_le zero_lt_one
           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
     hbase'.congr (fun t => by
-      apply Subtype.ext
+      apply UpperHalfPlane.ext
       apply Complex.ext <;> simp)
   exact (continuous_sl2z_smul (gammaTwoCosetRep q)).comp hbase
 
@@ -33791,8 +33791,8 @@ theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
         selectedCuspRestrictionRepresentative n q Z u =ᵐ[
           selectedHorocycleParameterMeasure] 0 := by
-  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u)
-      .eventually_zero_on_horocycleBoundary with
+  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
+
     ⟨Y₀, hY₀, hZero⟩
   refine ⟨Y₀, hY₀, ?_⟩
   intro Z hYZ q
@@ -33814,8 +33814,8 @@ theorem fixedPhaseCore_eventually_selectedCuspSection_eq_zero
         ∀ t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
           ((u : SmoothQuotientCompactFunction)
             (gammaTwoSelectedHorocycleParam q Z t)) = 0 := by
-  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u)
-      .eventually_zero_on_horocycleBoundary with
+  rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
+
     ⟨Y₀, hY₀, hZero⟩
   refine ⟨Y₀, hY₀, ?_⟩
   intro Z hYZ q t ht
@@ -33837,7 +33837,7 @@ theorem fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero
   apply MeasureTheory.Lp.ext
   filter_upwards [coeFn_selectedCuspCoreTrace n q Z u,
     hZero Z hYZ q] with t htrace hrep
-  simpa using htrace.trans hrep
+  simpa only [Pi.zero_apply] using htrace.trans hrep
 
 /-- The existing compact-core Green flux theorem is the bilinear boundary
 counterpart of the individual trace vanishing theorem above. -/
@@ -33888,7 +33888,7 @@ theorem deriv_height_mul_normSq
       ‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ := by
   have hnorm := (hf y).hasDerivAt.norm_sq
   have hprod := (hasDerivAt_id y).mul hnorm
-  simpa only [one_mul] using hprod.deriv
+  convert hprod.deriv using 1 <;> ring
 
 /-- Pointwise Young inequality for the preceding derivative.  On the positive
 height axis it costs exactly two copies of the base density and one copy of
@@ -33904,15 +33904,15 @@ theorem norm_deriv_height_mul_normSq_le
   calc
     |‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ| ≤
         |‖f y‖ ^ 2| + |2 * y * ⟪f y, deriv f y⟫_ℝ| :=
-      abs_add _ _
+      abs_add_le _ _
     _ = ‖f y‖ ^ 2 + (2 * y) * |⟪f y, deriv f y⟫_ℝ| := by
       rw [abs_of_nonneg (sq_nonneg _), abs_mul,
         abs_of_nonneg (mul_nonneg (by norm_num) hy)]
     _ ≤ ‖f y‖ ^ 2 + (2 * y) *
         (‖f y‖ * ‖deriv f y‖) := by
       exact add_le_add_left
-        (mul_le_mul_of_nonneg_left hinner
-          (mul_nonneg (by norm_num) hy)) _
+        (mul_le_mul_of_nonneg_left hinner (by positivity))
+          _
     _ ≤ 2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2 := by
       nlinarith [sq_nonneg (‖f y‖ - y * ‖deriv f y‖)]
 
@@ -33975,8 +33975,8 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
       hderivWeightedIntegrable.integrableOn
       henergyIntegrable.integrableOn measurableSet_Ioi
     intro y hy
-    exact norm_deriv_height_mul_normSq_le
-      (hf.differentiable (by norm_num)) (le_of_lt hy)
+    exact norm_deriv_height_mul_normSq_le (hf.differentiable (by norm_num))
+      ((zero_le_one.trans hH).trans (le_of_lt hy))
   have hH0 : 0 ≤ H := zero_le_one.trans hH
   calc
     H * ‖f H‖ ^ 2 = ‖weighted H‖ := by
