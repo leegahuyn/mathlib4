@@ -1,0 +1,6 @@
+requested_at=2026-08-10T10:20:00+09:00
+strategy=checked-in historical candidate evidence donor proof hunk mining
+statement_header_changes=forbidden
+fixed_line_count=60453
+candidate_limit=14
+authority=direct Lean CLI
