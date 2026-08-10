@@ -1,0 +1,1 @@
+Trigger the FA457 fixed-parser matrix. The parser must recognize both `error:` and coded headers such as `error(lean.invalidField):`. The true current first error is 32035:79 in nativeActualEdgeFluxIntegral_paired_circular. Draft-only CI trigger; do not merge or mark ready.
