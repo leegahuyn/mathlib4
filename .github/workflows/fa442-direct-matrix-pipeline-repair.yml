@@ -1,0 +1,526 @@
+name: FA442 direct matrix pipeline repair
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa442-matrix-direct-compile-repair-20260810
+    paths:
+      - build-logs/fa442-pipeline-repair/REQUESTED.txt
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa442-direct-matrix-pipeline-repair
+  cancel-in-progress: false
+
+env:
+  REPAIR_BRANCH: fix/fa442-matrix-direct-compile-repair-20260810
+  BASELINE_SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+  BASELINE_LINE_COUNT: '60453'
+  FA_MAX_ERRORS: '2000'
+
+jobs:
+  prepare:
+    name: Diagnose FA442 and recover baseline/candidate sources
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    outputs:
+      matrix: ${{ steps.prepare.outputs.matrix }}
+      candidate_count: ${{ steps.prepare.outputs.candidate_count }}
+      baseline_sha: ${{ steps.prepare.outputs.baseline_sha }}
+    steps:
+      - name: Checkout pipeline repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Inspect FA442 workflow, jobs, artifacts, and build matrix
+        id: prepare
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_pipeline_prepare.py
+
+      - name: Upload recovered sources and root-cause evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-prep-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/prep
+          if-no-files-found: error
+          retention-days: 90
+
+  direct-metric:
+    name: direct metric / ${{ matrix.slug }}
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout exact pipeline repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean and Mathlib cache
+        id: lean-install
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/fa442-lean-install-ok
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa442-lean-version.txt
+          lake --version | tee /tmp/fa442-lake-version.txt
+          lake exe cache get | tee /tmp/fa442-cache-get.log
+          touch /tmp/fa442-lean-install-ok
+
+      - name: Download authoritative candidate bundle
+        if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-prep-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/prep-download
+
+      - name: Directly compile completed prerequisites and candidate FA
+        id: metric
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+          VARIANT_SLUG: ${{ matrix.slug }}
+          EXPECTED_SHA256: ${{ matrix.sha256 }}
+          IS_BASELINE: ${{ matrix.is_baseline }}
+          CANDIDATE_BUNDLE_ROOT: build-logs/fa442-pipeline-repair/prep-download/candidate-bundle
+          BASELINE_META_PATH: build-logs/fa442-pipeline-repair/prep-download/baseline-meta.json
+          LEAN_INSTALL_MARKER: /tmp/fa442-lean-install-ok
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa442_pipeline_metric.py
+          exit $?
+
+      - name: Upload candidate source, direct logs, and metric
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-metric-${{ matrix.slug }}-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/matrix-results
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual Lean execution or explicit infrastructure failure
+        if: always()
+        shell: bash
+        env:
+          SLUG: ${{ matrix.slug }}
+        run: |
+          set -euo pipefail
+          metric="build-logs/fa442-pipeline-repair/matrix-results/${SLUG}/metric.json"
+          test -f "$metric"
+          python3 - "$metric" <<'PY'
+          import json, sys
+          row=json.load(open(sys.argv[1], encoding='utf-8'))
+          if row.get('classification') == 'INFRA_FAILURE':
+              raise SystemExit(1)
+          if not row.get('direct_lean_executed'):
+              raise SystemExit(1)
+          PY
+
+  selector:
+    name: Select strict best current-run direct metric
+    needs: [prepare, direct-metric]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      classification: ${{ steps.select.outputs.classification }}
+      advance_classification: ${{ steps.select.outputs.advance_classification }}
+      selected_sha: ${{ steps.select.outputs.selected_sha }}
+      selected_slug: ${{ steps.select.outputs.selected_slug }}
+      selected_variant: ${{ steps.select.outputs.selected_variant }}
+      selected_fa_exit: ${{ steps.select.outputs.selected_fa_exit }}
+      selected_first_line: ${{ steps.select.outputs.selected_first_line }}
+      selected_first_col: ${{ steps.select.outputs.selected_first_col }}
+      selected_declaration: ${{ steps.select.outputs.selected_declaration }}
+      strict_promotion: ${{ steps.select.outputs.strict_promotion }}
+      materialized: ${{ steps.select.outputs.materialized }}
+    steps:
+      - name: Checkout repair branch for materialization
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Download preparation evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-prep-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/prep-selector-download
+
+      - name: Download all matrix direct metrics
+        if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: fa442-metric-*-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/selector-download
+          merge-multiple: true
+
+      - name: Strictly select and materialize best direct-verified source
+        id: select
+        continue-on-error: true
+        shell: bash
+        env:
+          METRICS_ROOT: build-logs/fa442-pipeline-repair/selector-download
+          PREP_ROOT: build-logs/fa442-pipeline-repair/prep-selector-download
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_pipeline_select.py
+
+      - name: Commit materialized checked-in source and selection evidence
+        id: persist
+        if: steps.select.outcome == 'success' && steps.select.outputs.materialized == 'true'
+        shell: bash
+        env:
+          SELECTED_SHA: ${{ steps.select.outputs.selected_sha }}
+          CLASSIFICATION: ${{ steps.select.outputs.classification }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/fa442-selected.lean
+          rm -rf /tmp/fa442-selection
+          cp -a build-logs/fa442-pipeline-repair/selection /tmp/fa442-selection
+
+          git fetch origin "${REPAIR_BRANCH}"
+          git reset --hard "origin/${REPAIR_BRANCH}"
+          cp /tmp/fa442-selected.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          rm -rf build-logs/fa442-pipeline-repair/selection
+          cp -a /tmp/fa442-selection build-logs/fa442-pipeline-repair/selection
+
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$SELECTED_SHA"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/fa442-pipeline-repair/selection
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: FA442 repaired matrix ${CLASSIFICATION} [skip ci]"
+          fi
+
+          worktree_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          head_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+          test "$SELECTED_SHA" = "$worktree_sha"
+          test "$SELECTED_SHA" = "$head_sha"
+          export WORKTREE_SHA="$worktree_sha" HEAD_SOURCE_SHA="$head_sha"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path('build-logs/fa442-pipeline-repair/selection/CHECKED_IN_IDENTITY.json')
+          p.write_text(json.dumps({
+              'selected_sha': os.environ['SELECTED_SHA'],
+              'worktree_sha': os.environ['WORKTREE_SHA'],
+              'HEAD_source_sha': os.environ['HEAD_SOURCE_SHA'],
+              'identity_ok': os.environ['SELECTED_SHA'] == os.environ['WORKTREE_SHA'] == os.environ['HEAD_SOURCE_SHA'],
+          }, indent=2)+'\n', encoding='utf-8')
+          PY
+          git add build-logs/fa442-pipeline-repair/selection/CHECKED_IN_IDENTITY.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record selected/worktree/HEAD source identity [skip ci]'
+          fi
+          git push origin "HEAD:refs/heads/${REPAIR_BRANCH}"
+
+      - name: Upload selection and root-cause evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-selection-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/selection
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce selector and checked-in persistence infrastructure
+        if: always()
+        shell: bash
+        env:
+          SELECT_OUTCOME: ${{ steps.select.outcome }}
+          PERSIST_OUTCOME: ${{ steps.persist.outcome }}
+          MATERIALIZED: ${{ steps.select.outputs.materialized }}
+        run: |
+          set -euo pipefail
+          test "$SELECT_OUTCOME" = success
+          test "$MATERIALIZED" = true
+          test "$PERSIST_OUTCOME" = success
+
+  verify-checked-in:
+    name: Verify checked-in selected FA directly twice
+    needs: selector
+    if: needs.selector.result == 'success' && needs.selector.outputs.materialized == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    outputs:
+      classification: ${{ steps.verify.outputs.classification }}
+      fa_true_pass: ${{ steps.verify.outputs.fa_true_pass }}
+      run1_exit: ${{ steps.verify.outputs.run1_exit }}
+      run2_exit: ${{ steps.verify.outputs.run2_exit }}
+      identity_ok: ${{ steps.verify.outputs.identity_ok }}
+    steps:
+      - name: Checkout persisted selected source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean and Mathlib cache for checked-in verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa442-verify-lean-version.txt
+          lake --version | tee /tmp/fa442-verify-lake-version.txt
+          lake exe cache get | tee /tmp/fa442-verify-cache-get.log
+
+      - name: Directly compile checked-in FA run1 and run2 with trust audit
+        id: verify
+        shell: bash
+        env:
+          EXPECTED_SELECTED_SHA: ${{ needs.selector.outputs.selected_sha }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa442_pipeline_verify_checked_in.py
+
+      - name: Upload checked-in two-pass verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-checked-in-verification-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/checked-in-verification
+          if-no-files-found: error
+          retention-days: 90
+
+  downstream:
+    name: Integrated, Mock3 bridges, and QYM ordered two-pass gate
+    needs: verify-checked-in
+    if: needs.verify-checked-in.outputs.fa_true_pass == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout FA TRUE PASS source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean and Mathlib cache for downstream gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Run ordered downstream direct two-pass gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa442_pipeline_downstream.py
+
+      - name: Upload downstream gate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-downstream-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/downstream
+          if-no-files-found: error
+          retention-days: 90
+
+  final-report:
+    name: Preserve pipeline repair report and evidence
+    needs: [prepare, direct-metric, selector, verify-checked-in, downstream]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout latest repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-matrix-direct-compile-repair-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Download preparation evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-prep-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/final-download/prep
+
+      - name: Download selection evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-selection-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/final-download/selection
+
+      - name: Download checked-in verification evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-checked-in-verification-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/final-download/verification
+
+      - name: Download downstream evidence when eligible
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: fa442-downstream-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/final-download/downstream
+
+      - name: Generate preliminary repair report
+        shell: bash
+        env:
+          REPORT_INPUT_ROOT: build-logs/fa442-pipeline-repair/final-download
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_pipeline_report.py
+          python3 scripts/fa442_pipeline_report_strict.py
+
+      - name: Upload complete evidence bundle
+        id: evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-pipeline-repair-evidence-${{ github.run_id }}
+          path: |
+            build-logs/fa442-pipeline-repair/final-download
+            build-logs/fa442-pipeline-repair/final-report
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Finalize report with workflow artifact identity
+        shell: bash
+        env:
+          REPORT_INPUT_ROOT: build-logs/fa442-pipeline-repair/final-download
+          FINAL_ARTIFACT_ID: ${{ steps.evidence.outputs.artifact-id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_pipeline_report.py
+          python3 scripts/fa442_pipeline_report_strict.py
+
+      - name: Commit final report without changing PR readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -rf /tmp/fa442-final-report
+          cp -a build-logs/fa442-pipeline-repair/final-report /tmp/fa442-final-report
+          git fetch origin "${REPAIR_BRANCH}"
+          git reset --hard "origin/${REPAIR_BRANCH}"
+          rm -rf build-logs/fa442-pipeline-repair/final-report
+          cp -a /tmp/fa442-final-report build-logs/fa442-pipeline-repair/final-report
+          git add build-logs/fa442-pipeline-repair/final-report
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA442 matrix pipeline repair report [skip ci]'
+            git push origin "HEAD:refs/heads/${REPAIR_BRANCH}"
+          fi
+
+      - name: Upload finalized report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-pipeline-repair-report-${{ github.run_id }}
+          path: build-logs/fa442-pipeline-repair/final-report
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce repaired pipeline infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          p='build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.json'
+          row=json.load(open(p, encoding='utf-8'))
+          if row.get('final_classification') == 'INFRA FAILURE':
+              raise SystemExit(1)
+          PY
