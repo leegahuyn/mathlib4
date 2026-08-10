@@ -13,6 +13,10 @@ on:
       - scripts/fa442_record_direct_metric.py
       - scripts/fa442_prepare_same_height_candidate.py
       - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+  pull_request:
+    branches:
+      - fix/fa454-fa453-compact-energy-direct-matrix-20260810
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -25,6 +29,7 @@ concurrency:
 
 env:
   ACTIVE_BRANCH: fix/fa454-fa453-compact-energy-direct-matrix-20260810
+  SOURCE_REF: ${{ github.event.pull_request.base.sha || github.sha }}
 
 jobs:
   candidate:
@@ -44,10 +49,10 @@ jobs:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '160'
     steps:
-      - name: Checkout immutable FA454 trigger commit
+      - name: Checkout immutable FA454 source commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.SOURCE_REF }}
           fetch-depth: 2500
           persist-credentials: false
 
@@ -106,10 +111,10 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       MAX_ERRORS: '260'
     steps:
-      - name: Checkout immutable FA454 trigger commit with push credentials
+      - name: Checkout immutable FA454 source commit with push credentials
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.SOURCE_REF }}
           fetch-depth: 2500
           persist-credentials: true
 
