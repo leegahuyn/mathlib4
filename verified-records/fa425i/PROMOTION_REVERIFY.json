@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "name": "disable-reenable-custom-remove-proof-local-unfold-both",
+    "provenance": "hand:disable-reenable-custom+remove-proof-local+unfold-both",
+    "sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+    "file": "03-disable-reenable-custom-remove-proof-local-unfold-both.lean"
+  },
+  "screening_metric": {
+    "label": "candidate-03-disable-reenable-custom-remove-proof-local-unfold-both",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-disable-reenable-custom-remove-proof-local-unfold-both.log"
+  },
+  "reverify_run1": {
+    "label": "FA-promotion-reverify-run1",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run1.log"
+  },
+  "reverify_run2": {
+    "label": "FA-promotion-reverify-run2",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+  },
+  "consistent": true
+}

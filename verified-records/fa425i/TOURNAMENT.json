@@ -1,0 +1,358 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-remove-proof-local-keep-closing",
+        "provenance": "hand:disable-reenable-custom+remove-proof-local+keep-closing",
+        "sha256": "2b7c8133bdc75b92171cb1db287b64953beeaecce8d7d633a0515f0e21544f51",
+        "file": "00-disable-reenable-custom-remove-proof-local-keep-closing.lean"
+      },
+      "metric": {
+        "label": "candidate-00-disable-reenable-custom-remove-proof-local-keep-closing",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2b7c8133bdc75b92171cb1db287b64953beeaecce8d7d633a0515f0e21544f51",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-disable-reenable-custom-remove-proof-local-keep-closing.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-remove-proof-local-rebundle",
+        "provenance": "hand:disable-reenable-custom+remove-proof-local+rebundle",
+        "sha256": "ffa89dc18dea0ed9c6075453177d996bd8e4cbc5fa8eb9eb426c2a92a1f81c3a",
+        "file": "01-disable-reenable-custom-remove-proof-local-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-01-disable-reenable-custom-remove-proof-local-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "ffa89dc18dea0ed9c6075453177d996bd8e4cbc5fa8eb9eb426c2a92a1f81c3a",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 36,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-01-disable-reenable-custom-remove-proof-local-rebundle.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-remove-proof-local-unfold-custom",
+        "provenance": "hand:disable-reenable-custom+remove-proof-local+unfold-custom",
+        "sha256": "4a3a0002bd323e4ca91c0558b6ab3ce570eeb048a187e3425fac08e008152f6e",
+        "file": "02-disable-reenable-custom-remove-proof-local-unfold-custom.lean"
+      },
+      "metric": {
+        "label": "candidate-02-disable-reenable-custom-remove-proof-local-unfold-custom",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4a3a0002bd323e4ca91c0558b6ab3ce570eeb048a187e3425fac08e008152f6e",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 85,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-02-disable-reenable-custom-remove-proof-local-unfold-custom.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-remove-proof-local-unfold-both",
+        "provenance": "hand:disable-reenable-custom+remove-proof-local+unfold-both",
+        "sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+        "file": "03-disable-reenable-custom-remove-proof-local-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-03-disable-reenable-custom-remove-proof-local-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 117,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-disable-reenable-custom-remove-proof-local-unfold-both.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-remove-proof-local-convert-rfl",
+        "provenance": "hand:disable-reenable-custom+remove-proof-local+convert-rfl",
+        "sha256": "3acb0130a834cccb70087416305fc24c79772a077780d914b327993645c2d523",
+        "file": "04-disable-reenable-custom-remove-proof-local-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-04-disable-reenable-custom-remove-proof-local-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "3acb0130a834cccb70087416305fc24c79772a077780d914b327993645c2d523",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-04-disable-reenable-custom-remove-proof-local-convert-rfl.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-canonical-proof-local-keep-closing",
+        "provenance": "hand:disable-reenable-custom+canonical-proof-local+keep-closing",
+        "sha256": "1d9d676f525eb86c06da5e9c1d2560d0516275a313e5eb07860ed0bf55de104a",
+        "file": "05-disable-reenable-custom-canonical-proof-local-keep-closing.lean"
+      },
+      "metric": {
+        "label": "candidate-05-disable-reenable-custom-canonical-proof-local-keep-closing",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "1d9d676f525eb86c06da5e9c1d2560d0516275a313e5eb07860ed0bf55de104a",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31726,
+        "first_error_col": 2,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-05-disable-reenable-custom-canonical-proof-local-keep-closing.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-canonical-proof-local-rebundle",
+        "provenance": "hand:disable-reenable-custom+canonical-proof-local+rebundle",
+        "sha256": "9433977f5f2e5d7caa976fe66c66028752d4ee6331a33337fa5b65c7f9e5b11a",
+        "file": "06-disable-reenable-custom-canonical-proof-local-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-06-disable-reenable-custom-canonical-proof-local-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9433977f5f2e5d7caa976fe66c66028752d4ee6331a33337fa5b65c7f9e5b11a",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 36,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-06-disable-reenable-custom-canonical-proof-local-rebundle.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-canonical-proof-local-unfold-custom",
+        "provenance": "hand:disable-reenable-custom+canonical-proof-local+unfold-custom",
+        "sha256": "3fff10a058421b3c4fa4a3e5595bfd7450e20692ada4ba2d022f73812867b2d8",
+        "file": "07-disable-reenable-custom-canonical-proof-local-unfold-custom.lean"
+      },
+      "metric": {
+        "label": "candidate-07-disable-reenable-custom-canonical-proof-local-unfold-custom",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "3fff10a058421b3c4fa4a3e5595bfd7450e20692ada4ba2d022f73812867b2d8",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 85,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-disable-reenable-custom-canonical-proof-local-unfold-custom.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-canonical-proof-local-unfold-both",
+        "provenance": "hand:disable-reenable-custom+canonical-proof-local+unfold-both",
+        "sha256": "9dca314d5f66dba906a66515845a7b13249bda9dcfc571402df3c8546f69c8cc",
+        "file": "08-disable-reenable-custom-canonical-proof-local-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-08-disable-reenable-custom-canonical-proof-local-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9dca314d5f66dba906a66515845a7b13249bda9dcfc571402df3c8546f69c8cc",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 117,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-08-disable-reenable-custom-canonical-proof-local-unfold-both.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "disable-reenable-custom-canonical-proof-local-convert-rfl",
+        "provenance": "hand:disable-reenable-custom+canonical-proof-local+convert-rfl",
+        "sha256": "d38d3ffb609ed07711f25e232c125fc6e4dbf1e555f1150643cb0fc5c47b6134",
+        "file": "09-disable-reenable-custom-canonical-proof-local-convert-rfl.lean"
+      },
+      "metric": {
+        "label": "candidate-09-disable-reenable-custom-canonical-proof-local-convert-rfl",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "d38d3ffb609ed07711f25e232c125fc6e4dbf1e555f1150643cb0fc5c47b6134",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31727,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-09-disable-reenable-custom-canonical-proof-local-convert-rfl.log"
+      },
+      "strictly_better": true
+    },
+    {
+      "candidate": {
+        "name": "named-canonical-remove-proof-local-keep-closing",
+        "provenance": "hand:named-canonical+remove-proof-local+keep-closing",
+        "sha256": "d4c49d0e5235423f282ded95ce5ec331be3bdc3ec1d02ed30010f4a89acf46ab",
+        "file": "10-named-canonical-remove-proof-local-keep-closing.lean"
+      },
+      "metric": {
+        "label": "candidate-10-named-canonical-remove-proof-local-keep-closing",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "d4c49d0e5235423f282ded95ce5ec331be3bdc3ec1d02ed30010f4a89acf46ab",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-10-named-canonical-remove-proof-local-keep-closing.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "named-canonical-remove-proof-local-rebundle",
+        "provenance": "hand:named-canonical+remove-proof-local+rebundle",
+        "sha256": "824b9e9a1003c13cb1ff3285c6f48c47abfb5ddfa0d6c1077ca24c15d33fc810",
+        "file": "11-named-canonical-remove-proof-local-rebundle.lean"
+      },
+      "metric": {
+        "label": "candidate-11-named-canonical-remove-proof-local-rebundle",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "824b9e9a1003c13cb1ff3285c6f48c47abfb5ddfa0d6c1077ca24c15d33fc810",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-11-named-canonical-remove-proof-local-rebundle.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "named-canonical-remove-proof-local-unfold-custom",
+        "provenance": "hand:named-canonical+remove-proof-local+unfold-custom",
+        "sha256": "e4f95b9d6ec414f4a4386e82a8b2186c8fcabd778799ce3c9203cd04d3f14139",
+        "file": "12-named-canonical-remove-proof-local-unfold-custom.lean"
+      },
+      "metric": {
+        "label": "candidate-12-named-canonical-remove-proof-local-unfold-custom",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e4f95b9d6ec414f4a4386e82a8b2186c8fcabd778799ce3c9203cd04d3f14139",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-12-named-canonical-remove-proof-local-unfold-custom.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "named-canonical-remove-proof-local-unfold-both",
+        "provenance": "hand:named-canonical+remove-proof-local+unfold-both",
+        "sha256": "fe889b54664b8ce2ee81dbe3397c1b90e5cfee7b9450346a317887e53f4b6ee3",
+        "file": "13-named-canonical-remove-proof-local-unfold-both.lean"
+      },
+      "metric": {
+        "label": "candidate-13-named-canonical-remove-proof-local-unfold-both",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "fe889b54664b8ce2ee81dbe3397c1b90e5cfee7b9450346a317887e53f4b6ee3",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-13-named-canonical-remove-proof-local-unfold-both.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}

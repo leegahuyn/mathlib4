@@ -1,0 +1,83 @@
+[METRIC]
+{
+  "label": "FA-promotion-reverify-run2",
+  "stem": "Mock2_FunctionalAnalysis",
+  "source_sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31727,
+  "first_error_col": 117,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "olean": false,
+  "ilean": false,
+  "max_errors": 1,
+  "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+}
+
+[LEAN LOG CONTEXT]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31696:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31727:117: error: unexpected token 'using'; expected ']'
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31727:2: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
+
+[SOURCE CONTEXT]
+31707:         modularTileEdgeVelocity e.2 t := by
+31708:   unfold actualEdgeNativeVelocity
+31709:   exact selectedCoset_smulFDeriv_apply e.1
+31710:     (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)
+31711: attribute [-instance] Complex.addCommGroup
+31712: /-- The Mobius-composed actual edge has the declared native tangent. -/
+31713: theorem actualEdgeAmbientParam_hasDerivAt
+31714:     (e : GammaTwoActualPolygonEdge)
+31715:     (t : modularTileEdgeParameterSet e.2) :
+31716:     HasDerivAt (actualEdgeAmbientParam e)
+31717:       (actualEdgeNativeVelocity e t) (t : Real) := by
+31718:   letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
+31719:   -- theorem statement and proof use the canonical surrounding instance
+31720:   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
+31721:   have houter :=
+31722:     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
+31723:       (modularTileEdgeParam e.2 t)).hasFDerivAt
+31724:   have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hbase
+31725:     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
+31726:   simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
+31727:   simpa only [actualEdgeAmbientParam, actualEdgeNativeVelocity, Complex.addCommGroup, Complex.instNormedAddCommGroup] using hcomp
+31728: 
+31729: /-! #### Native tangent compatibility under the actual side pairing -/
+31730: /-- The subtype pairing is multiplication of the real parameter by the
+31731: declared sign. -/
+31732: @[simp]
+31733: theorem pairedParameter_coe_eq_parameterSign_mul
+31734:     (e : GammaTwoActualPolygonEdge)
+31735:     (t : modularTileEdgeParameterSet e.2) :
+31736:     (e.pairedParameter t : Real) =
+31737:       (e.2.parameterSign : Real) * (t : Real) := by
+31738:   rcases e with ⟨q, edge⟩
+31739:   cases edge <;>
+31740:     simp [GammaTwoActualPolygonEdge.pairedParameter,
+31741:       GammaTwoModularTileEdge.pairedParameter,
+31742:       GammaTwoModularTileEdge.parameterSign]
+31743: 
+31744: /-- Each real parameter set has unique one-dimensional derivatives, including
+31745: at its finite endpoints. -/
+31746: theorem uniqueDiffOn_modularTileEdgeParameterSet
+31747:     (e : GammaTwoModularTileEdge) :
+31748:     UniqueDiffOn Real (modularTileEdgeParameterSet e) := by
+31749:   cases e with
+31750:   | circularArc =>
+31751:       simpa [modularTileEdgeParameterSet] using
+31752:         (uniqueDiffOn_Icc (by norm_num : (-1 : Real) < 1))
+31753:   | leftVerticalSegment =>
+31754:       simpa [modularTileEdgeParameterSet] using uniqueDiffOn_Ici (0 : Real)
+31755:   | rightVerticalSegment =>
+31756:       simpa [modularTileEdgeParameterSet] using uniqueDiffOn_Ici (0 : Real)
+31757: 
+31758: /-- Ambient form of the exact actual-edge pairing identity. -/
+31759: theorem gammaTwoMoebiusChart_actualEdgeAmbientParam_eq
+31760:     (e : GammaTwoActualPolygonEdge) {t : Real}
+31761:     (ht : t ∈ modularTileEdgeParameterSet e.2) :
+31762:     gammaTwoMoebiusChart e.pairingElement (actualEdgeAmbientParam e t) =
