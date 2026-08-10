@@ -1,0 +1,1 @@
+Run the FA451 trace-derivative candidate matrix now. Every matrix cell must execute pinned Lean setup, lake cache restore, Mock2 direct compile, Mock2_Advanced direct compile, and candidate Mock2_FunctionalAnalysis direct compile. Treat missing direct execution as INFRA_FAILURE. Do not merge or mark PR ready.
