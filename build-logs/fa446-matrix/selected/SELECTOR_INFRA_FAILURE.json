@@ -1,0 +1,75 @@
+{
+  "classification": "INFRA_FAILURE",
+  "authority": "selector requires one current-run direct metric for every matrix variant",
+  "infra_reasons": [
+    "baseline: expected one candidate source, found 0",
+    "measurable_only: expected one candidate source, found 0",
+    "measurable_height: expected one candidate source, found 0",
+    "measurable_height_upper: expected one candidate source, found 0",
+    "measurable_height_upper_pointwise: expected one candidate source, found 0",
+    "measurable_height_upper_pointwise_memspace: expected one candidate source, found 0",
+    "measurable_height_upper_pointwise_memspace_lp: expected one candidate source, found 0",
+    "measurable_height_upper_pointwise_memspace_lp_tail: expected one candidate source, found 0",
+    "measurable_height_upper_pointwise_memspace_lp_tail_zero: expected one candidate source, found 0",
+    "missing parsed metrics: baseline, measurable_height, measurable_height_upper, measurable_height_upper_pointwise, measurable_height_upper_pointwise_memspace, measurable_height_upper_pointwise_memspace_lp, measurable_height_upper_pointwise_memspace_lp_tail, measurable_height_upper_pointwise_memspace_lp_tail_zero, measurable_only"
+  ],
+  "partial": {
+    "artifact_records": [
+      {
+        "variant": "baseline",
+        "artifact_id": 9049807307,
+        "artifact_name": "fa446-candidate-baseline",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_only",
+        "artifact_id": 9049809157,
+        "artifact_name": "fa446-candidate-measurable_only",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height",
+        "artifact_id": 9049811067,
+        "artifact_name": "fa446-candidate-measurable_height",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper",
+        "artifact_id": 9049807757,
+        "artifact_name": "fa446-candidate-measurable_height_upper",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper_pointwise",
+        "artifact_id": 9049816115,
+        "artifact_name": "fa446-candidate-measurable_height_upper_pointwise",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper_pointwise_memspace",
+        "artifact_id": 9049809475,
+        "artifact_name": "fa446-candidate-measurable_height_upper_pointwise_memspace",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper_pointwise_memspace_lp",
+        "artifact_id": 9049807747,
+        "artifact_name": "fa446-candidate-measurable_height_upper_pointwise_memspace_lp",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper_pointwise_memspace_lp_tail",
+        "artifact_id": 9049807983,
+        "artifact_name": "fa446-candidate-measurable_height_upper_pointwise_memspace_lp_tail",
+        "download_exit": 0
+      },
+      {
+        "variant": "measurable_height_upper_pointwise_memspace_lp_tail_zero",
+        "artifact_id": 9049806962,
+        "artifact_name": "fa446-candidate-measurable_height_upper_pointwise_memspace_lp_tail_zero",
+        "download_exit": 0
+      }
+    ],
+    "metrics": {}
+  }
+}
