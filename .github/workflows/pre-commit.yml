@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - ci/fa444-recognized-run-probe-20260810
+  pull_request:
+    branches:
+      - ci/fa444-recognized-run-probe-20260810
 
 permissions:
   contents: write
@@ -32,15 +35,20 @@ jobs:
           path=Path('scripts/fa442_select_strict_champion.py')
           text=path.read_text(encoding='utf-8')
           old='''    if int(metric.get("FA_exit", 125)) == 0:\n        return "FA_PASS_CANDIDATE"\n\n    baseline_index = int(baseline.get("FA_error_declaration_index", -1))\n'''
-          new='''    if int(metric.get("FA_exit", 125)) == 0:\n        return "FA_PASS_CANDIDATE"\n\n    # A parser/syntax failure can appear one line later simply because the\n    # malformed proof consumes input up to the next declaration.  It is real\n    # Lean evidence, but never semantic proof progress and must not win by the\n    # same-declaration line/column tie-breaker.\n    first_message = str(metric.get("FA_first_error_message", "")).lower()\n    syntax_markers = (\n        "unexpected token",\n        "unexpected end of input",\n        "invalid syntax",\n        "parser error",\n        "expected ':='",\n        'expected ":="',\n    )\n    if any(marker in first_message for marker in syntax_markers):\n        return "LEAN_SYNTAX_REGRESSION"\n\n    baseline_index = int(baseline.get("FA_error_declaration_index", -1))\n'''
-          count=text.count(old)
-          if count != 1:
-              raise SystemExit(f'expected one selector insertion point, found {count}')
-          path.write_text(text.replace(old,new),encoding='utf-8')
+          new='''    if int(metric.get("FA_exit", 125)) == 0:\n        return "FA_PASS_CANDIDATE"\n\n    # A parser/syntax failure can appear one line later simply because the\n    # malformed proof consumes input up to the next declaration. It is real\n    # Lean evidence, but never semantic proof progress.\n    first_message = str(metric.get("FA_first_error_message", "")).lower()\n    syntax_markers = (\n        "unexpected token",\n        "unexpected end of input",\n        "invalid syntax",\n        "parser error",\n        "expected ':='",\n        'expected ":="',\n    )\n    if any(marker in first_message for marker in syntax_markers):\n        return "LEAN_SYNTAX_REGRESSION"\n\n    baseline_index = int(baseline.get("FA_error_declaration_index", -1))\n'''
+          if new in text:
+              print('syntax guard already present')
+          else:
+              count=text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one selector insertion point, found {count}')
+              path.write_text(text.replace(old,new),encoding='utf-8')
           PY
           python3 -m py_compile scripts/fa442_select_strict_champion.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add scripts/fa442_select_strict_champion.py
-          git commit -m 'ci: reject syntax-only line movement in FA selector [skip ci]'
-          git push origin HEAD:fix/fa444-fa442-matrix-pipeline-repair-20260810
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: reject syntax-only line movement in FA selector [skip ci]'
+            git push origin HEAD:fix/fa444-fa442-matrix-pipeline-repair-20260810
+          fi
