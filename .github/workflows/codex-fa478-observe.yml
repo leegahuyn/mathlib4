@@ -84,6 +84,7 @@ jobs:
           metric = out / "METRIC.json"
           candidate = out / "CANDIDATE.json"
           log = Path("/tmp/fa478-observe.log")
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
 
           parts = [
               "## FA478 observer — actual remote execution",
@@ -100,13 +101,18 @@ jobs:
           else:
               parts += ["### METRIC.json", "`MISSING`", ""]
           if candidate.exists():
-              parts += ["### CANDIDATE.json", "```json", candidate.read_text(encoding="utf-8")[:16000], "```", ""]
+              parts += ["### CANDIDATE.json", "```json", candidate.read_text(encoding="utf-8")[:12000], "```", ""]
           else:
               parts += ["### CANDIDATE.json", "`MISSING`", ""]
+          if source.exists():
+              lines = source.read_text(encoding="utf-8", errors="replace").splitlines()
+              lo, hi = 35115, 35142
+              snippet = "\n".join(f"{i}: {lines[i-1]}" for i in range(lo, min(hi, len(lines)) + 1))
+              parts += ["### Exact FA478 candidate source around frontier", "```lean", snippet, "```", ""]
           if log.exists():
               lines = log.read_text(encoding="utf-8", errors="replace").splitlines()
-              tail = "\n".join(lines[-180:])
-              parts += ["### Tail of actual execution log", "```text", tail[-30000:], "```", ""]
+              tail = "\n".join(lines[-80:])
+              parts += ["### Tail of actual execution log", "```text", tail[-12000:], "```", ""]
           print("\n".join(parts)[:62000])
           PY
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa478-comment.md)"
