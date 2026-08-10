@@ -1,0 +1,47 @@
+{
+  "variant": "slope_paired_parenthesized_ring_height",
+  "baseline_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "candidate_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+  "line_count": 60453,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "repairs": [
+    {
+      "repair": "slope_plain",
+      "applied": 1
+    },
+    {
+      "repair": "paired_parenthesized",
+      "applied": 9,
+      "per_edge": {
+        "circularArc": 5,
+        "leftVerticalSegment": 2,
+        "rightVerticalSegment": 2
+      }
+    },
+    {
+      "repair": "left_selected_piola_ring",
+      "applied": 1
+    },
+    {
+      "repair": "height_membership",
+      "applied": 1
+    }
+  ],
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  }
+}

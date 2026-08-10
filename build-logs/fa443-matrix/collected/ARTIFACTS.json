@@ -1,0 +1,98 @@
+[
+  {
+    "variant": "baseline",
+    "artifact_id": 9049084833,
+    "artifact_name": "fa443-candidate-baseline",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_only",
+    "artifact_id": 9049148267,
+    "artifact_name": "fa443-candidate-slope_only",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_structures",
+    "artifact_id": 9049131168,
+    "artifact_name": "fa443-candidate-slope_structures",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_change_convert",
+    "artifact_id": 9049160466,
+    "artifact_name": "fa443-candidate-slope_change_convert",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized",
+    "artifact_id": 9049154741,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_dot",
+    "artifact_id": 9049229549,
+    "artifact_name": "fa443-candidate-slope_paired_dot",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_ring",
+    "artifact_id": 9049157216,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_ring",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_ring_height",
+    "artifact_id": 9049218437,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_ring_height",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_ring_height_upper",
+    "artifact_id": 9049076016,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_ring_height_upper",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_ring_height_upper_tail",
+    "artifact_id": 9048878284,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_ring_height_upper_tail",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_ring_height_upper_tail_zero",
+    "artifact_id": 9049104176,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_ring_height_upper_tail_zero",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_all_known",
+    "artifact_id": 9048940585,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_all_known",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_dot_all_known",
+    "artifact_id": 9049060657,
+    "artifact_name": "fa443-candidate-slope_paired_dot_all_known",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_structures_paired_all_known",
+    "artifact_id": 9049083144,
+    "artifact_name": "fa443-candidate-slope_structures_paired_all_known",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_change_convert_paired_all_known",
+    "artifact_id": 9049001527,
+    "artifact_name": "fa443-candidate-slope_change_convert_paired_all_known",
+    "download_exit": 0
+  },
+  {
+    "variant": "slope_paired_parenthesized_deep_simp",
+    "artifact_id": 9049037727,
+    "artifact_name": "fa443-candidate-slope_paired_parenthesized_deep_simp",
+    "download_exit": 0
+  }
+]

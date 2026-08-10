@@ -1,0 +1,43 @@
+{
+  "classification": "INFRA_FAILURE",
+  "authority": "checked-in source direct Lean CLI run twice",
+  "selected_sha256": "",
+  "checked_in_source_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+  "source_identity_ok": false,
+  "runs": [
+    {
+      "run": 1,
+      "executed": false,
+      "exit": 999,
+      "command": "",
+      "olean_size": 0,
+      "ilean_size": 0,
+      "log_exists": false
+    },
+    {
+      "run": 2,
+      "executed": false,
+      "exit": 999,
+      "command": "",
+      "olean_size": 0,
+      "ilean_size": 0,
+      "log_exists": false
+    }
+  ],
+  "forbidden_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_clean": true,
+  "FA_TRUE_PASS": false,
+  "infra_reasons": [
+    "checked-in selected/worktree/HEAD source identity is not established",
+    "one or both checked-in FA direct commands were not executed"
+  ],
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "first-error cap only; exit 0 plus nonempty olean/ilean is required"
+}

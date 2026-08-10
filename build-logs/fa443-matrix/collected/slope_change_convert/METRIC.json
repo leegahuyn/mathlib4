@@ -1,0 +1,64 @@
+{
+  "classification": "VERIFIED",
+  "result_classification": "LEAN_FAILURE",
+  "authority": "actual direct Lean CLI on generated repository source path",
+  "variant": "slope_change_convert",
+  "prepare_ok": true,
+  "infra_reasons": [],
+  "lean_executed": {
+    "Mock2": true,
+    "Mock2_Advanced": true,
+    "Mock2_FunctionalAnalysis": true
+  },
+  "all_required_lean_commands_executed": true,
+  "source_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa",
+  "candidate_metadata_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa",
+  "source_metadata_identity": true,
+  "baseline_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "line_count": 60453,
+  "expected_line_count": 60453,
+  "same_height": true,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "theorem_header_unchanged": true,
+  "Mock2_exit": 0,
+  "Mock2_errors_under_cap": 0,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_Advanced_errors_under_cap": 0,
+  "FA_exit": 1,
+  "FA_error_headers_captured": 81,
+  "FA_first_actual_error_line": 32035,
+  "FA_first_actual_error_col": 8,
+  "FA_first_error_message": "Mock2_FunctionalAnalysis.lean:32035:8: error: Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+  "FA_first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+  "FA_error_declaration_index": 2645,
+  "maxErrors_cap": 80,
+  "maxErrors_interpretation": "diagnostic cap only; never interpreted as total errors or completion progress",
+  "compile_commands": {
+    "Mock2": "lake env lean -DmaxErrors=80 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+    "Mock2_Advanced": "lake env lean -DmaxErrors=80 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+    "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=80 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+  },
+  "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+  "workflow_commit_identity": "8e67595ad555936b5b10dff5133ab2668a526e72",
+  "trigger_commit_identity": "8e67595ad555936b5b10dff5133ab2668a526e72",
+  "baseline_commit_identity": "b7c8159cc3de07dbe455b9d3979e043e18e20886",
+  "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_clean": true,
+  "repairs": [
+    {
+      "repair": "slope_change_convert",
+      "applied": 1
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa442_prepare_same_height_candidate.py", line 502, in <module>
+    main()
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa442_prepare_same_height_candidate.py", line 471, in main
+    candidate, repairs = build_variant(baseline, args.variant)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa442_prepare_same_height_candidate.py", line 336, in build_variant
+    text, record = apply_upper_half_plane(text)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa442_prepare_same_height_candidate.py", line 192, in apply_upper_half_plane
+    text, count = replace_exact(
+                  ^^^^^^^^^^^^^^
+  File "/home/runner/work/mathlib4/mathlib4/scripts/fa442_prepare_same_height_candidate.py", line 79, in replace_exact
+    raise RuntimeError(
+RuntimeError: unexpected match count 4, expected 1: '      apply Subtype.ext\n'

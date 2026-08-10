@@ -1,0 +1,40 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 
+line count: 
+direct Lean exit: 
+first error: :
+declaration: 
+
+Pipeline issue found:
+root cause: mutable branch checkout changed the checked-in source before candidate preparation; prepare.ok=false then skipped Lean install and compile; selector received no baseline direct metric; git identity existed only in a skipped step.
+workflow files changed: .github/workflows/fa443-matrix-direct-repair.yml
+scripts changed: scripts/fa443_record_direct_metric.py, scripts/fa443_select_direct_champion.py, scripts/fa443_confirm_selected.py, scripts/fa443_checked_in_fa_gate.py, scripts/fa443_build_pipeline_report.py
+
+Best direct-verified candidate:
+variant: 
+SHA256: 
+exit: 
+first error: :
+declaration: 
+strictly better than 31726?: False
+
+Checked-in identity:
+selected SHA: 
+worktree SHA: 885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489
+HEAD source SHA: 885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489
+identity_ok: False
+
+FA checked-in verification:
+run1: {'run': 1, 'executed': False, 'exit': 999, 'command': '', 'olean_size': 0, 'ilean_size': 0, 'log_exists': False}
+run2: {'run': 2, 'executed': False, 'exit': 999, 'command': '', 'olean_size': 0, 'ilean_size': 0, 'log_exists': False}
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: BLOCKED_BY_FA_TRUE_PASS_GATE
+Mock3 bridges: BLOCKED_BY_FA_TRUE_PASS_GATE
+QYM: BLOCKED_BY_FA_TRUE_PASS_GATE
+
+Final classification: INFRA FAILURE
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31350088342

@@ -1,0 +1,30 @@
+{
+  "variant": "slope_change_convert",
+  "baseline_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "candidate_sha256": "a89c24b2ed5cf99a510b96a0766b5c4b64ac49a0c9078c6926800f78407189aa",
+  "line_count": 60453,
+  "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "repairs": [
+    {
+      "repair": "slope_change_convert",
+      "applied": 1
+    }
+  ],
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  }
+}

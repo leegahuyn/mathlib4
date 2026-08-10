@@ -1,0 +1,79 @@
+{
+  "title": "FA MATRIX PIPELINE REPAIR REPORT",
+  "workflow_run_id": "31350088342",
+  "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31350088342",
+  "trigger_sha": "8e67595ad555936b5b10dff5133ab2668a526e72",
+  "pipeline_ok": false,
+  "pipeline_infra_reasons": [
+    "selector did not complete with a full current-run direct matrix",
+    "independent selected-source direct confirmation failed",
+    "selected/worktree/HEAD checked-in source identity failed"
+  ],
+  "baseline": {},
+  "candidate_results": [],
+  "best_direct_verified_candidate": {},
+  "selection_mode": "",
+  "selection_classification": "",
+  "independent_confirmation": {},
+  "checked_in_identity": {
+    "selected_sha256": "",
+    "worktree_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "head_source_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "identity_ok": false,
+    "head_commit": "8e67595ad555936b5b10dff5133ab2668a526e72"
+  },
+  "trust_audit": {},
+  "FA_checked_in_verification": {
+    "classification": "INFRA_FAILURE",
+    "authority": "checked-in source direct Lean CLI run twice",
+    "selected_sha256": "",
+    "checked_in_source_sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+    "source_identity_ok": false,
+    "runs": [
+      {
+        "run": 1,
+        "executed": false,
+        "exit": 999,
+        "command": "",
+        "olean_size": 0,
+        "ilean_size": 0,
+        "log_exists": false
+      },
+      {
+        "run": 2,
+        "executed": false,
+        "exit": 999,
+        "command": "",
+        "olean_size": 0,
+        "ilean_size": 0,
+        "log_exists": false
+      }
+    ],
+    "forbidden_audit": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_clean": true,
+    "FA_TRUE_PASS": false,
+    "infra_reasons": [
+      "checked-in selected/worktree/HEAD source identity is not established",
+      "one or both checked-in FA direct commands were not executed"
+    ],
+    "maxErrors_cap": 1,
+    "maxErrors_interpretation": "first-error cap only; exit 0 plus nonempty olean/ilean is required"
+  },
+  "downstream": {
+    "classification": "BLOCKED_BY_FA",
+    "Integrated": "BLOCKED_BY_FA_TRUE_PASS_GATE",
+    "Mock3_bridges": "BLOCKED_BY_FA_TRUE_PASS_GATE",
+    "QYM": "BLOCKED_BY_FA_TRUE_PASS_GATE",
+    "complete": false
+  },
+  "FA_TRUE_PASS": false,
+  "final_classification": "INFRA FAILURE",
+  "maxErrors_policy": "caps are diagnostic only and are not interpreted as total errors or progress"
+}
