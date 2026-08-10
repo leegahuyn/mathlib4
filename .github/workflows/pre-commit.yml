@@ -1,210 +1,98 @@
-name: FA448 checked-in direct Lean diagnostic
+name: FA450 portable pinned Lean environment
 
 on:
   push:
     branches:
-      - fix/fa448-functional-analysis-exit0-20260810
-    paths:
-      - .github/workflows/pre-commit.yml
-      - scripts/fa448_diagnose_current.py
-      - build-logs/fa448-diagnostic/REQUESTED*.txt
+      - fix/fa450-portable-lean-env-20260810
   pull_request:
     branches:
-      - fix/fa448-functional-analysis-exit0-20260810
+      - fix/fa450-portable-lean-env-20260810
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 concurrency:
-  group: fa448-checked-in-direct-diagnostic
+  group: fa450-portable-pinned-lean-environment
   cancel-in-progress: true
 
-env:
-  ACTIVE_BRANCH: fix/fa448-functional-analysis-exit0-20260810
-  EXPECTED_SOURCE_SHA: 1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a
-  EXPECTED_LINE_COUNT: '60453'
-  MAX_ERRORS: '300'
-
 jobs:
-  diagnose:
+  package:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:
-      - name: Checkout current FA448 branch
+      - name: Checkout exact FA450 branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: fix/fa448-functional-analysis-exit0-20260810
-          fetch-depth: 2500
-          persist-credentials: true
-
-      - name: Configure GitHub Actions identity
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          test "$(git config user.name)" = 'github-actions[bot]'
-          test "$(git config user.email)" = \
-            '41898282+github-actions[bot]@users.noreply.github.com'
-
-      - name: Verify checked-in champion identity before compilation
-        shell: bash
-        run: |
-          set -euo pipefail
-          d=build-logs/fa448-diagnostic
-          rm -rf "$d"
-          mkdir -p "$d"
-          src=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          actual=$(sha256sum "$src" | awk '{print $1}')
-          lines=$(wc -l < "$src" | tr -d ' ')
-          printf '%s\n' "$actual" > "$d/source.sha256"
-          printf '%s\n' "$lines" > "$d/source.lines"
-          git rev-parse HEAD > "$d/repository-head.txt"
-          printf '%s\n' "$(cat lean-toolchain)" > "$d/lean-toolchain.txt"
-          test "$actual" = "$EXPECTED_SOURCE_SHA"
-          test "$lines" = "$EXPECTED_LINE_COUNT"
+          ref: fix/fa450-portable-lean-env-20260810
+          fetch-depth: 1
 
       - name: Install pinned Lean and restore Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
-          d=build-logs/fa448-diagnostic
           curl --retry 5 --retry-all-errors --fail --silent --show-error \
             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
             -o /tmp/elan-init.sh
-          sh /tmp/elan-init.sh -y --default-toolchain none \
-            > "$d/elan-init.log" 2>&1
+          sh /tmp/elan-init.sh -y --default-toolchain none
           export PATH="${HOME}/.elan/bin:${PATH}"
           echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
-          elan toolchain install "$(cat lean-toolchain)" \
-            > "$d/toolchain-install.log" 2>&1
-          printf '0\n' > "$d/toolchain-install.exit"
-          lean --version | tee "$d/lean-version.txt"
-          lake --version | tee "$d/lake-version.txt"
-          lake exe cache get | tee "$d/cache-get.log"
-          printf '0\n' > "$d/cache-get.exit"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+          lake exe cache get
 
-      - name: Directly compile Mock2, Mock2 Advanced, and checked-in FA
+      - name: Directly compile clean prerequisites before packaging
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
           export PATH="${HOME}/.elan/bin:${PATH}"
-          d=build-logs/fa448-diagnostic
           mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
-          compile_one() {
-            stem="$1"
-            cap="$2"
-            src="PrimalitySheafVerification/${stem}.lean"
-            o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
-            i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
-            rm -f "$o" "$i"
-            command=(lake env lean "-DmaxErrors=${cap}" -DwarningAsError=false \
-              -o "$o" -i "$i" "$src")
-            printf '%q ' "${command[@]}" > "$d/${stem}.command"
-            printf '\n' >> "$d/${stem}.command"
-            touch "$d/${stem}.executed"
-            "${command[@]}" > "$d/${stem}.log" 2>&1
-            rc=$?
-            printf '%s\n' "$rc" > "$d/${stem}.exit"
-            olean=false
-            ilean=false
-            test -s "$o" && olean=true
-            test -s "$i" && ilean=true
-            printf '%s\n' "$olean" > "$d/${stem}.olean"
-            printf '%s\n' "$ilean" > "$d/${stem}.ilean"
-          }
-          compile_one Mock2 50
-          compile_one Mock2_Advanced 50
-          compile_one Mock2_FunctionalAnalysis "$MAX_ERRORS"
-          exit 0
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean \
+            PrimalitySheafVerification/Mock2.lean
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
+            PrimalitySheafVerification/Mock2_Advanced.lean
 
-      - name: Parse every available Lean error and source declaration context
+      - name: Package relocatable toolchain, repository cache, and project sources
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/fa448_diagnose_current.py
-          python3 - <<'PY'
-          import importlib.util,json,sys
-          from pathlib import Path
-          spec=importlib.util.spec_from_file_location(
-              'fa448_audit','scripts/fa442_prepare_same_height_candidate.py'
-          )
-          module=importlib.util.module_from_spec(spec)
-          sys.modules[spec.name]=module
-          assert spec.loader is not None
-          spec.loader.exec_module(module)
-          source=Path(
-              'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'
-          ).read_text(encoding='utf-8')
-          counts=module.forbidden_counts(source)
-          result={
-              'sorry':counts.get('sorry',0),
-              'admit':counts.get('admit',0),
-              'global_axiom':counts.get('new_global_axiom',0),
-              'unsafe':counts.get('unsafe',0),
-              'native_decide':counts.get('native_decide',0),
-              'Lean.ofReduceBool':counts.get('Lean.ofReduceBool',0),
-              'clean':all(value==0 for value in counts.values()),
-          }
-          path=Path('build-logs/fa448-diagnostic/TRUST_AUDIT.json')
-          path.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps(result,indent=2))
-          PY
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          toolchain_root=$(dirname "$(dirname "$(elan which lean)")")
+          toolchain_name=$(basename "$toolchain_root")
+          mkdir -p build-logs/fa450-portable-env
+          du -sh "$toolchain_root" .lake PrimalitySheafVerification \
+            | tee build-logs/fa450-portable-env/SIZES.txt
+          printf 'toolchain_name=%s\nlean=%s\nlake=%s\nhead=%s\n' \
+            "$toolchain_name" "$(lean --version | head -1)" \
+            "$(lake --version | head -1)" "$(git rev-parse HEAD)" \
+            > build-logs/fa450-portable-env/MANIFEST.txt
+          tar --zstd -cf /tmp/fa450-toolchain.tar.zst \
+            -C "${HOME}/.elan/toolchains" "$toolchain_name"
+          tar --zstd -cf /tmp/fa450-repository-env.tar.zst \
+            --exclude='.git' --exclude='.lake/packages/*/.git' \
+            .lake PrimalitySheafVerification lakefile.lean lake-manifest.json \
+            lean-toolchain scripts
+          sha256sum /tmp/fa450-toolchain.tar.zst \
+            /tmp/fa450-repository-env.tar.zst \
+            | tee build-logs/fa450-portable-env/SHA256SUMS.txt
+          ls -lh /tmp/fa450-*.tar.zst \
+            | tee build-logs/fa450-portable-env/ARCHIVE_SIZES.txt
 
-      - name: Persist compact diagnostic evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          d=build-logs/fa448-diagnostic
-          git add -f \
-            "$d/DIAGNOSTIC.json" \
-            "$d/ERRORS.json" \
-            "$d/ERROR_CONTEXTS.txt" \
-            "$d/ERROR_DECLARATION_BLOCKS.txt" \
-            "$d/SOURCE_REGION_31680_33850.txt" \
-            "$d/TRUST_AUDIT.json" \
-            "$d/source.sha256" \
-            "$d/source.lines" \
-            "$d/repository-head.txt" \
-            "$d/lean-toolchain.txt" \
-            "$d/lean-version.txt" \
-            "$d/lake-version.txt" \
-            "$d/Mock2.command" \
-            "$d/Mock2.exit" \
-            "$d/Mock2_Advanced.command" \
-            "$d/Mock2_Advanced.exit" \
-            "$d/Mock2_FunctionalAnalysis.command" \
-            "$d/Mock2_FunctionalAnalysis.exit"
-          if ! git diff --cached --quiet; then
-            git commit -m 'ci: record FA448 checked-in direct Lean diagnostics [skip ci]'
-            git push origin "HEAD:${ACTIVE_BRANCH}"
-          fi
-
-      - name: Upload complete direct diagnostic evidence
+      - name: Upload portable pinned Lean environment
         id: upload
-        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: fa448-direct-diagnostic-${{ github.run_id }}-${{ github.sha }}
-          path: build-logs/fa448-diagnostic
+          name: fa450-portable-lean-env-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            /tmp/fa450-toolchain.tar.zst
+            /tmp/fa450-repository-env.tar.zst
+            build-logs/fa450-portable-env
+          compression-level: 0
           if-no-files-found: error
-          retention-days: 90
-
-      - name: Enforce infrastructure separately from FA proof status
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          d=build-logs/fa448-diagnostic
-          test -f "$d/Mock2.executed"
-          test -f "$d/Mock2_Advanced.executed"
-          test -f "$d/Mock2_FunctionalAnalysis.executed"
-          test "$(cat "$d/Mock2.exit")" = 0
-          test "$(cat "$d/Mock2_Advanced.exit")" = 0
-          test "$(python3 -c 'import json; print(str(json.load(open("build-logs/fa448-diagnostic/TRUST_AUDIT.json"))["clean"]).lower())')" = true
-          test -s "$d/DIAGNOSTIC.json"
-          test -s "$d/ERRORS.json"
+          retention-days: 7
