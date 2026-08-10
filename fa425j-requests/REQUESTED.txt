@@ -1,0 +1,5 @@
+requested_at=2026-08-10T09:30:00+09:00
+strategy=disable custom Complex.addCommGroup during blocker theorem plus paired-call normalization
+fixed_line_count=60453
+candidate_count=1
+authority=direct Lean CLI
