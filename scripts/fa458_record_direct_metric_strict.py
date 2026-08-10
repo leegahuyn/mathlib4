@@ -19,11 +19,7 @@ spec.loader.exec_module(legacy)
 
 
 def proposition_header(text: str, name: str) -> str:
-    """Hash the declaration proposition/type through `:=`, not proof syntax.
-
-    This makes `:= term` and `:= by ...` equivalent for statement/header
-    invariance while still rejecting any changed assumptions or conclusion.
-    """
+    """Hash the declaration proposition/type through `:=`, not proof syntax."""
     lines = text.splitlines(keepends=True)
     start: int | None = None
     for index, line in enumerate(lines):
@@ -85,7 +81,7 @@ legacy.parse_errors = strict_parse_errors
 legacy.main()
 metric_path = legacy.OUT / "METRIC.json"
 metric = json.loads(metric_path.read_text(encoding="utf-8"))
-metric["diagnostic_parser"] = "strict_error_and_error_category_v2"
+metric["diagnostic_parser"] = "strict_error_and_error_category_v1"
 metric["header_authority"] = "declaration proposition/type through := only"
 metric_path.write_text(
     json.dumps(metric, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
