@@ -1,0 +1,1 @@
+Run 10 same-height scoped local AddCommGroup candidates around actualEdgeAmbientParam_hasDerivAt from exact PASS423 SHA; direct Lean line-only strict promotion.
