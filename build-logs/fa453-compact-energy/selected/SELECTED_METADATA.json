@@ -1,0 +1,62 @@
+{
+  "variant": "macro_pair_smul_cumulative",
+  "baseline_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "candidate_sha256": "b51c2ddcdfec8b98a89734575ef57b681f47eefba8b879028a3233439b70906a",
+  "line_count": 60474,
+  "target_header_sha256": "3bf8171b0e1fd825b1a17a8e52637810c328df76a5bd10475674d2925f35e4c9",
+  "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "repairs": [
+    {
+      "declaration": "PAIRING_SYNTAX_COMPATIBILITY",
+      "strategy": "scoped_macro_compat_no_theorem_header_change"
+    },
+    {
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "strategy": "change_integer_SL_action_to_explicit_real_SL_action"
+    },
+    {
+      "declaration": "integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola",
+      "strategy": "explicit_real_SL_const_smul_measurability"
+    },
+    {
+      "declaration": "compactSupport_height_mul_normSq_le_energy_Ioi",
+      "strategy": "manual_support_original_analytic:direct_union"
+    },
+    {
+      "declaration": "tendsto_zero_normSq_le_energy_Ioi",
+      "strategy": "normalize_outer_real_norms_and_endpoint_norm"
+    },
+    {
+      "declaration": "norm_dy_le_half_raise_lower_base",
+      "strategy": "explicit_add_le_add"
+    },
+    {
+      "declaration": "fixedPhaseEuclideanGauge_lower_pred",
+      "strategy": "ring_nf_after_field_simp"
+    },
+    {
+      "declaration": "height_mul_dx_eq_negI_half_raise_sub_lower_sub",
+      "strategy": "normalize_I_sq"
+    },
+    {
+      "declaration": "norm_height_mul_dx_le_euclideanGraph",
+      "strategy": "canonical_real_norm_and_explicit_complex_norm_two"
+    }
+  ]
+}

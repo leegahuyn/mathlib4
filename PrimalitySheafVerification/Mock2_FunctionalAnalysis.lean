@@ -32026,6 +32026,10 @@ noncomputable def nativeActualEdgeFluxIntegral
   ∫ t in nativeEdgeParameterLower e.2..nativeEdgeParameterUpper T e.2,
     nativeActualEdgeFluxIntegrand X Y e t
 
+section ActualPolygonEdgeLiteralPairedCompat
+local macro_rules
+  | `(($e:term : GammaTwoActualPolygonEdge).paired) =>
+      `(GammaTwoActualPolygonEdge.paired ($e : GammaTwoActualPolygonEdge))
 /-- Circular native integrals acquire the sign `-1` under pairing, including
 the nontrivial change of variables `t |-> -t`. -/
 theorem nativeActualEdgeFluxIntegral_paired_circular
@@ -32120,6 +32124,8 @@ theorem nativeActualEdgeFluxIntegral_paired_right
     ((q, GammaTwoModularTileEdge.rightVerticalSegment) :
       GammaTwoActualPolygonEdge) ⟨t, ht'⟩
   simpa [GammaTwoModularTileEdge.parameterSign] using hpair
+
+end ActualPolygonEdgeLiteralPairedCompat
 
 /-- Uniform pairing law for every finite native edge integral. -/
 theorem nativeActualEdgeFluxIntegral_paired
@@ -32585,15 +32591,16 @@ This is the per-tile equality required by the finite carrier decomposition. -/
 theorem selectedHalfOpenTile_ae_eq_openTile
     (q : GammaTwoRightCoset) :
     gammaTwoCosetRep q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
-      gammaTwoCosetRep q • ModularGroup.fdo :=
-  Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
-    (measurePreserving_smul (gammaTwoCosetRep q)⁻¹
+      gammaTwoCosetRep q • ModularGroup.fdo := by
+  change
+    selectedCosetGL q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
+      selectedCosetGL q • ModularGroup.fdo
+  exact Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq
+    (selectedCosetGL q)
+    (measurePreserving_smul (selectedCosetGL q)⁻¹
       hyperbolicMeasure).quasiMeasurePreserving
     modularHalfOpenTile_ae_eq_fdo
 
-/-- Consequently every Bochner set integral may be moved between the actual
-selected open tile and its half-open representative without an integrability
-hypothesis. -/
 theorem setIntegral_selectedOpenTile_eq_halfOpenTile
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (q : GammaTwoRightCoset) (f : ℍ → E) :
@@ -33059,9 +33066,10 @@ theorem integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola
             dy (selectedCosetPiolaY q X Y) z))
         modularHalfOpenTile hyperbolicMeasure := by
   have hSelectedTile : MeasurableSet
-      (gammaTwoCosetRep q • modularHalfOpenTile) :=
-    MeasurableSet.const_smul modularHalfOpenTile_measurable
-      (gammaTwoCosetRep q)
+      (gammaTwoCosetRep q • modularHalfOpenTile) := by
+    change MeasurableSet (selectedCosetGL q • modularHalfOpenTile)
+    exact MeasurableSet.const_smul modularHalfOpenTile_measurable
+      (selectedCosetGL q)
   have hBaseImage : MeasurableSet
       (UpperHalfPlane.coe '' modularHalfOpenTile) :=
     UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr
@@ -33925,23 +33933,30 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
   let weighted : ℝ → ℝ := fun y => y * ‖f y‖ ^ 2
   let energy : ℝ → ℝ := fun y =>
     2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2
-  have hnormSq : HasCompactSupport (fun y : ℝ => ‖f y‖ ^ 2) := by
-    simpa only [pow_two] using hcompact.norm.mul hcompact.norm
-  have hderivNormSq :
-      HasCompactSupport (fun y : ℝ => ‖deriv f y‖ ^ 2) := by
-    simpa only [pow_two] using
-      hcompact.deriv.norm.mul hcompact.deriv.norm
   have hweightedCompact : HasCompactSupport weighted := by
-    simpa only [weighted, Pi.mul_apply] using
-      hnormSq.mul_left (f := fun y : ℝ => y)
+    change HasCompactSupport (fun y : ℝ => y * ‖f y‖ ^ 2)
+    exact hcompact.mono (by
+      intro y hy
+      simp only [Function.mem_support] at hy ⊢
+      intro hfy
+      apply hy
+      simp [hfy])
   have hfirstCompact :
       HasCompactSupport (fun y : ℝ => 2 * ‖f y‖ ^ 2) := by
-    simpa only [Pi.mul_apply] using
-      hnormSq.mul_left (f := fun _y : ℝ => (2 : ℝ))
+    exact hcompact.mono (by
+      intro y hy
+      simp only [Function.mem_support] at hy ⊢
+      intro hfy
+      apply hy
+      simp [hfy])
   have hsecondCompact :
       HasCompactSupport (fun y : ℝ => y ^ 2 * ‖deriv f y‖ ^ 2) := by
-    simpa only [Pi.mul_apply] using
-      hderivNormSq.mul_left (f := fun y : ℝ => y ^ 2)
+    exact hcompact.deriv.mono (by
+      intro y hy
+      simp only [Function.mem_support] at hy ⊢
+      intro hdfy
+      apply hy
+      simp [hdfy])
   have henergyCompact : HasCompactSupport energy := by
     exact hfirstCompact.add hsecondCompact
   have hweightedSmooth : ContDiff ℝ 1 weighted := by
@@ -33975,16 +33990,15 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
     exact norm_deriv_height_mul_normSq_le (hf.differentiable (by norm_num))
       ((zero_le_one.trans hH).trans (le_of_lt hy))
   have hH0 : 0 ≤ H := zero_le_one.trans hH
+  have hweightedNonneg : 0 ≤ weighted H := by
+    dsimp [weighted]
+    exact mul_nonneg hH0 (sq_nonneg _)
   calc
-    H * ‖f H‖ ^ 2 = ‖weighted H‖ := by
-      simp only [weighted, Real.norm_eq_abs, abs_mul,
-        abs_of_nonneg hH0, abs_of_nonneg (sq_nonneg _)]
+    H * ‖f H‖ ^ 2 = weighted H := rfl
+    _ = ‖weighted H‖ := (Real.norm_of_nonneg hweightedNonneg).symm
     _ ≤ ∫ y in Set.Ioi H, ‖deriv weighted y‖ := hFTC
     _ ≤ ∫ y in Set.Ioi H, energy y := hmono
 
-/-- Fubini-ready scalar strip estimate.  All integrability assumptions here
-are ordinary Bochner hypotheses; the pointwise trace estimate itself is the
-unconditional theorem above. -/
 theorem compactSupport_scalarStrip_trace_le_iteratedEnergy
     (f : ℝ → ℝ → ℂ) {H : ℝ} (hH : 1 ≤ H)
     (hsmooth : ∀ t, ContDiff ℝ 1 (f t))
@@ -34042,8 +34056,13 @@ theorem tendsto_zero_normSq_le_energy_Ioi
       (Set.Ioi r₀) := by
     apply Integrable.mono henergy hgDerivMeasurable
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
-    exact norm_deriv_normSq_le_energy
+    have hpoint := norm_deriv_normSq_le_energy
       (hf.differentiable (by norm_num)) r
+    have henergyNonneg :
+        0 ≤ ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2 := by positivity
+    rw [Real.norm_of_nonneg (norm_nonneg _),
+      Real.norm_of_nonneg henergyNonneg]
+    simpa only [g] using hpoint
   have hgDerivIntegrable' : IntegrableOn (deriv g) (Set.Ioi r₀) := by
     apply (integrable_norm_iff
       ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).mono_measure Measure.restrict_le_self)).mp
@@ -34058,9 +34077,12 @@ theorem tendsto_zero_normSq_le_energy_Ioi
         (fun r _hr =>
           (hgSmooth.differentiable (by norm_num) r).hasDerivAt)
         hgDerivIntegrable' hgzero
+  have hgNonneg : 0 ≤ g r₀ := by
+    dsimp [g]
+    positivity
   calc
-    ‖f r₀‖ ^ 2 = ‖g r₀‖ := by
-      simp only [g, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+    ‖f r₀‖ ^ 2 = g r₀ := rfl
+    _ = ‖g r₀‖ := (Real.norm_of_nonneg hgNonneg).symm
     _ = ‖∫ r in Set.Ioi r₀, deriv g r‖ := by
       rw [hFTC, norm_neg]
     _ ≤ ∫ r in Set.Ioi r₀, ‖deriv g r‖ :=
@@ -34158,7 +34180,7 @@ theorem norm_dy_le_half_raise_lower_base
       _ ≤ (‖raiseRaw a f z‖ +
           ‖lowerRaw a f z / heightC z ^ 2‖) +
           ‖-(physicalExponent a / heightC z * f z)‖ :=
-        add_le_add_right (norm_add_le _ _) _
+        add_le_add (norm_add_le _ _) (le_refl _)
       _ = ‖raiseRaw a f z‖ +
           ‖lowerRaw a f z / heightC z ^ 2‖ +
           ‖physicalExponent a / heightC z * f z‖ := by simp
@@ -34233,7 +34255,7 @@ theorem fixedPhaseEuclideanGauge_lower_pred
   have hz : heightC z ≠ 0 :=
     Complex.ofReal_ne_zero.mpr z.im_ne_zero
   field_simp [hz]
-  ring
+  ring_nf
 
 /-- The complementary difference of the same two graph coordinates recovers
 the horizontal logarithmic derivative. -/
@@ -34257,7 +34279,7 @@ theorem height_mul_dx_eq_negI_half_raise_sub_lower_sub
           euclideanLowerFromSuccGauge (n - 1) f z -
           ((2 * (euclideanGaugeExponent n + 1) : ℝ) : ℂ) * f z) := by
   rw [euclideanRaiseGauge_sub_lowerPredGauge]
-  ring
+  simp [Complex.I_sq]
 
 /-- Absolute size of the zero-order drift in the horizontal reconstruction. -/
 noncomputable def euclideanHorizontalDrift (n : ℤ) : ℝ :=
@@ -34301,10 +34323,12 @@ theorem norm_height_mul_dx_le_euclideanGraph
   let L := euclideanLowerFromSuccGauge (n - 1) f z
   let c : ℂ := ((2 * (euclideanGaugeExponent n + 1) : ℝ) : ℂ)
   have hc : ‖c‖ = euclideanHorizontalDrift n := by
-    simp only [c, Complex.norm_real, euclideanHorizontalDrift]
+    simp only [c, Complex.norm_real, euclideanHorizontalDrift, Real.norm_eq_abs]
   change ‖(-Complex.I / 2) * (R - L - c * f z)‖ ≤
     (‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖) / 2
-  rw [norm_mul, norm_div, norm_neg, Complex.norm_I, norm_ofNat, one_div]
+  rw [norm_mul, norm_div, norm_neg, Complex.norm_I]
+  have hnormTwo : ‖(2 : ℂ)‖ = 2 := by norm_num
+  rw [hnormTwo]
   have hinside : ‖R - L - c * f z‖ ≤
       ‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖ := by
     calc
