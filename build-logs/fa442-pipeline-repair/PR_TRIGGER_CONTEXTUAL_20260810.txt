@@ -1,0 +1,1 @@
+Trigger the contextual-rewrite FA444 matrix. The base workflow now cancels stale runs and checks out the repair base SHA so selector commits remain fast-forwardable.
