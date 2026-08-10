@@ -1,0 +1,55 @@
+name: FA425g-FA427 direct-evidence status harvester
+
+on:
+  push:
+    branches:
+      - ops/fa425g-fa427-status-harvester-20260810
+    paths:
+      - status2-requests/REQUESTED.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  harvest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Checkout extended harvester branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa425g-fa427-status-harvester-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Let current aggregate and evidence pushes settle
+        shell: bash
+        run: sleep 120
+
+      - name: Harvest source-matched direct evidence through FA427
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/fa425g_fa427_status_harvester.py
+
+      - name: Commit normalized extended status
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add status-records/fa425g-fa427
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record extended FA direct-evidence status [skip ci]'
+            git push origin HEAD:ops/fa425g-fa427-status-harvester-20260810
+          fi
+
+      - name: Upload extended normalized status
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa425g-fa427-status-${{ github.run_id }}-${{ github.sha }}
+          path: status-records/fa425g-fa427
+          if-no-files-found: error
+          retention-days: 90
