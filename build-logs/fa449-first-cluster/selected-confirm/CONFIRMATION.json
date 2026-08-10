@@ -1,0 +1,103 @@
+{
+  "classification": "VERIFIED",
+  "ok": true,
+  "actual_sha256": "c3a8de87db816980f8bd2f0b7e559a2eccfdde4fa8ee96bc2d602fc1c1d6627d",
+  "mismatch": {},
+  "metric": {
+    "classification": "LEAN_FAILURE",
+    "authority": "direct Lean CLI on repository source path",
+    "variant": "cluster_exact",
+    "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "source_sha256": "c3a8de87db816980f8bd2f0b7e559a2eccfdde4fa8ee96bc2d602fc1c1d6627d",
+    "candidate_metadata_sha256": "c3a8de87db816980f8bd2f0b7e559a2eccfdde4fa8ee96bc2d602fc1c1d6627d",
+    "source_metadata_identity": true,
+    "head_source_sha256_before_candidate_materialization": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+    "baseline_sha256_required": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60455,
+    "required_line_count": 60455,
+    "target_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "target_declaration_index": 2624,
+    "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "metadata_target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+    "lean_executed": true,
+    "all_required_lean_executed": true,
+    "Mock2_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_errors_under_cap": 0,
+    "Mock2_Advanced_executed": true,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_Advanced_errors_under_cap": 0,
+    "FA_executed": true,
+    "FA_exit": 1,
+    "FA_error_headers_captured": 106,
+    "FA_first_actual_error_line": 33842,
+    "FA_first_actual_error_col": 2,
+    "FA_first_error_message": "'change' tactic failed, pattern\n  ↑↑((selectedCuspCoreTrace n q Z) u) t = 0\nis not definitionally equal to target\n  ↑↑((selectedCuspCoreTrace n q Z) u) t = ↑↑0 t\nTry this:\n  [apply] ring_nf\n\n  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.\n\n  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.\nTry this:\n  [apply] ring_nf\n\n  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.\n\n  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.",
+    "FA_first_error_declaration": "fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero",
+    "FA_error_declaration_index": 2733,
+    "FA_error_declaration_start_line": 33830,
+    "exact_compile_commands": {
+      "Mock2": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+      "Mock2_Advanced": "lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+      "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=120 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+    },
+    "maxErrors_cap": 120,
+    "maxErrors_interpretation": "diagnostic cap only; not total errors and not proof-progress evidence",
+    "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+    "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+    "lean_toolchain": "leanprover/lean4:v4.33.0-rc1",
+    "toolchain_install_exit": 0,
+    "cache_get_exit": 0,
+    "repository_head": "c1a0fcbcbfe945fbcbf04242f257d8f808f73bd0",
+    "repository_tree": "9f65b7b716b4e7b641fe1c4ec4564a3a096ffbd9",
+    "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26",
+    "candidate_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "baseline_forbidden_counts": {
+      "sorry": 0,
+      "admit": 0,
+      "new_global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "forbidden_not_increased": true,
+    "forbidden_clean": true,
+    "repairs": [
+      {
+        "declaration": "selectedCuspRestrictionRepresentative_add",
+        "old_block_sha256": "ceb4a6cddc83c37824a08646b228b745e0ceb4124d0aefceae477b47b7fb269d",
+        "new_block_sha256": "87424ae15e6aaf28a34c7732232e35458a612608ba750f833827ee236a45b82e"
+      },
+      {
+        "declaration": "selectedCuspRestrictionRepresentative_memLp",
+        "old_block_sha256": "eaf85e2697904c49e9d81deeb0bb65c19bfd4a6b3f02062080deba60e77b6672",
+        "new_block_sha256": "1f7ad40be814db531292223af87ce5b9c4a28603fff810059694745306d52b0f"
+      },
+      {
+        "declaration": "coeFn_selectedCuspCoreTrace",
+        "old_block_sha256": "def63a84ba668f4f1809989d9b596a457f17c4aa23610f3a911157d26632e2be",
+        "new_block_sha256": "379775808fb590cce5c229fdfec7ab6432912b392d89e7bd2deb08629c2f17ff"
+      },
+      {
+        "declaration": "fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero",
+        "old_block_sha256": "e31b73645db1a275cf4aa5f4b47986f8edccb7fe9c90590b2655fc86e628891b",
+        "new_block_sha256": "449dd5af4582c60cc9f6cbfcbae54ef5946b1c6f7b3e83a4138e2247edbc2ab1"
+      },
+      {
+        "declaration": "fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero",
+        "old_block_sha256": "9785505e8d1040d193731bc2227301cb0c54beaada04496826af7b2d4dd74ec6",
+        "new_block_sha256": "74bbd4a2051dce1f0985a4cf61b5696d6eee74fd2dc9231f91dfb78d15137216"
+      }
+    ],
+    "infra_reasons": []
+  }
+}

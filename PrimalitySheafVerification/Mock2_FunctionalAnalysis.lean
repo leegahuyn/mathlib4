@@ -33628,10 +33628,15 @@ theorem selectedCuspRestrictionRepresentative_add
         (((u : SmoothQuotientCompactFunction)
           (gammaTwoSelectedHorocycleParam q Y t)) +
          ((v : SmoothQuotientCompactFunction)
-          (gammaTwoSelectedHorocycleParam q Y t))) = _
+          (gammaTwoSelectedHorocycleParam q Y t))) =
+      (selectedCuspTraceWeight n q Y t : ℂ) *
+          ((u : SmoothQuotientCompactFunction)
+            (gammaTwoSelectedHorocycleParam q Y t)) +
+        (selectedCuspTraceWeight n q Y t : ℂ) *
+          ((v : SmoothQuotientCompactFunction)
+            (gammaTwoSelectedHorocycleParam q Y t))
   ring
 
-@[simp]
 theorem selectedCuspRestrictionRepresentative_smul
     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ) (c : ℂ)
     (u : InverseEtaFixedPhaseCore n) :
@@ -33672,10 +33677,8 @@ theorem selectedCuspRestrictionRepresentative_memLp
     hf.aestronglyMeasurable).2
   change IntegrableOn (fun x => ‖f x‖ ^ 2)
     (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) volume
-  simpa only [Pi.pow_apply] using
-    (hf.norm.pow 2).continuousOn.integrableOn_Icc
+  exact (hf.norm.pow 2).continuousOn.integrableOn_Icc
 
-/-- The actual complex-linear smooth-core trace map. -/
 noncomputable def selectedCuspCoreTrace
     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ) :
     InverseEtaFixedPhaseCore n →ₗ[ℂ] SelectedHorocycleL2 where
@@ -33700,14 +33703,14 @@ theorem coeFn_selectedCuspCoreTrace
     ⇑(selectedCuspCoreTrace n q Y u) =ᵐ[
       selectedHorocycleParameterMeasure]
         selectedCuspRestrictionRepresentative n q Y u := by
-  simpa only [selectedCuspCoreTrace] using
-    MemLp.coeFn_toLp
-      (selectedCuspRestrictionRepresentative_memLp n q Y u)
+  change
+    ⇑((selectedCuspRestrictionRepresentative_memLp n q Y u).toLp
+      (selectedCuspRestrictionRepresentative n q Y u)) =ᵐ[
+        selectedHorocycleParameterMeasure]
+      selectedCuspRestrictionRepresentative n q Y u
+  exact MemLp.coeFn_toLp
+    (selectedCuspRestrictionRepresentative_memLp n q Y u)
 
-/-! #### C. Exact compact-support tail, including all corners -/
-
-/-- Every standard horizontal point with parameter in `[-1/2,1/2]` and
-height at least one lies in the closed modular tile. -/
 theorem baseSelectedHorocyclePoint_mem_fd
     (Y : ℝ) {t : ℝ}
     (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
@@ -33792,7 +33795,6 @@ theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
         selectedCuspRestrictionRepresentative n q Z u =ᵐ[
           selectedHorocycleParameterMeasure] 0 := by
   rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
-
     ⟨Y₀, hY₀, hZero⟩
   refine ⟨Y₀, hY₀, ?_⟩
   intro Z hYZ q
@@ -33801,12 +33803,12 @@ theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
     (gammaTwoSelectedHorocycleParam q Z t)
     ⟨selectedHorocycleParam_mem_closedCarrier q Z ht,
       selectedHorocycleParam_mem_threeCuspBoundary q Z t⟩
-    simp only [selectedCuspRestrictionRepresentative, Pi.zero_apply,
-      hz.1, mul_zero]
+  change
+    (selectedCuspTraceWeight n q Z t : ℂ) *
+        ((u : SmoothQuotientCompactFunction)
+          (gammaTwoSelectedHorocycleParam q Z t)) = 0
+  rw [hz.1, mul_zero]
 
-/-- Pointwise version of the same compact tail on the closed parameter
-interval.  This is used for each vertical log-height slice before integrating
-in the horizontal parameter. -/
 theorem fixedPhaseCore_eventually_selectedCuspSection_eq_zero
     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
     ∃ Y₀ : ℝ, 1 < Y₀ ∧
@@ -33837,10 +33839,10 @@ theorem fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero
   apply MeasureTheory.Lp.ext
   filter_upwards [coeFn_selectedCuspCoreTrace n q Z u,
     hZero Z hYZ q] with t htrace hrep
-  simpa only [Pi.zero_apply] using htrace.trans hrep
+  change ((selectedCuspCoreTrace n q Z u : SelectedHorocycleL2) : ℝ → ℂ) t =
+    (0 : ℂ)
+  exact htrace.trans hrep
 
-/-- The existing compact-core Green flux theorem is the bilinear boundary
-counterpart of the individual trace vanishing theorem above. -/
 theorem compactCoreGreenFlux_eventually_selectedHorocycle_eq_zero
     (n : ℤ) (u : InverseEtaFixedPhaseCore n)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
