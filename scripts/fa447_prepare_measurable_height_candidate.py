@@ -16,28 +16,37 @@ TARGET = "actualEdgeAmbientParam_hasDerivAt"
 
 EXPECTED_OUTPUTS = {
     "parent": PARENT_SHA256,
-    "proof_local_height": "07afb89ecce1d0b6be4c15bb6752a6907a4594d6a37f6b516868b09cd61bc43d",
-    "namespace_local": "f208d4d86fe225e2e18f69220b0660db683dbaa5b62835f2a8196f59325aa2ef",
-    "namespace_local_height": "c278f9488601dd69535acf508ef10d49aecafd1e143a8e5a55f554478102174a",
+    "proof_both": "e77d57a492f15ef79bb30ed2d5a73822a91329a29c24578234787cfd296dc25d",
+    "proof_both_height": "d26926c92ae5be13464a43a4dbadcc4c52a0240e0312f75795c860418b57beef",
+    "namespace_both": "5b5d3e956d5e3e8a93a0bf355edf59c10204676b5cf44c7b934dfb12a9552afa",
+    "namespace_both_height": "7672a704456be636790b2984bb2de8564414fa9a701059d7c7ab9ed9922dabe1",
 }
 
-PROOF_LOCAL_OLD = """      gammaTwoCosetRep q • ModularGroup.fdo :=
+THEOREM_OLD = """      gammaTwoCosetRep q • ModularGroup.fdo :=
   Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
     (measurePreserving_smul (gammaTwoCosetRep q)⁻¹
       hyperbolicMeasure).quasiMeasurePreserving
     modularHalfOpenTile_ae_eq_fdo
 """
-PROOF_LOCAL_NEW = """      gammaTwoCosetRep q • ModularGroup.fdo := by
-  letI : MeasurableConstSMul SL(2, ℤ) ℍ :=
-    ⟨fun g ↦ (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable⟩
+THEOREM_BOTH = """      gammaTwoCosetRep q • ModularGroup.fdo := by
+  letI : MeasurableConstSMul SL(2, ℤ) ℍ := ⟨fun g ↦ (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable⟩
+  letI : MeasureTheory.SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure := ⟨fun g s hs ↦ by change hyperbolicMeasure ((fun z : ℍ => (g : GL (Fin 2) ℝ) • z) ⁻¹' s) = hyperbolicMeasure s; exact (inferInstance : MeasureTheory.SMulInvariantMeasure (GL (Fin 2) ℝ) ℍ hyperbolicMeasure).1 (g : GL (Fin 2) ℝ) hs⟩
   exact Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
     (measurePreserving_smul (gammaTwoCosetRep q)⁻¹ hyperbolicMeasure).quasiMeasurePreserving modularHalfOpenTile_ae_eq_fdo
 """
-NAMESPACE_ANCHOR = """open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+NAMESPACE_ANCHOR = """namespace GammaTwoGlobalStokesBridge
+
+open MeasureTheory Set Function Topology Filter
+"""
+NAMESPACE_SMUL = """namespace GammaTwoGlobalStokesBridge
+local instance gammaTwoGlobalStokesBridgeSMulInvariantMeasure : MeasureTheory.SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure := ⟨fun g s hs ↦ by change hyperbolicMeasure ((fun z : ℍ => (g : GL (Fin 2) ℝ) • z) ⁻¹' s) = hyperbolicMeasure s; exact (inferInstance : MeasureTheory.SMulInvariantMeasure (GL (Fin 2) ℝ) ℍ hyperbolicMeasure).1 (g : GL (Fin 2) ℝ) hs⟩
+open MeasureTheory Set Function Topology Filter
+"""
+MEASURABLE_ANCHOR = """open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
 
 /-! #### A. The selected open and half-open tiles agree almost everywhere -/
 """
-NAMESPACE_INSTANCE = """open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+MEASURABLE_INSTANCE = """open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
 local instance gammaTwoGlobalStokesBridgeMeasurableConstSMul : MeasurableConstSMul SL(2, ℤ) ℍ := ⟨fun g ↦ (HalfIntegralMultiplier.continuous_sl2z_smul g).measurable⟩
 /-! #### A. The selected open and half-open tiles agree almost everywhere -/
 """
@@ -79,15 +88,19 @@ def build(parent: str, variant: str) -> tuple[str, list[dict]]:
     repairs: list[dict] = []
     if variant == "parent":
         return text, repairs
-    if variant == "proof_local_height":
-        text, r = replace_once(text, PROOF_LOCAL_OLD, PROOF_LOCAL_NEW,
-                               "proof_local_MeasurableConstSMul")
+    if variant in {"proof_both", "proof_both_height"}:
+        text, r = replace_once(text, THEOREM_OLD, THEOREM_BOTH,
+                               "proof_local_measurable_and_invariant")
         repairs.append(r)
-        text, r = replace_once(text, HEIGHT_OLD, HEIGHT_NEW, "height_membership")
-        repairs.append(r)
+        if variant.endswith("_height"):
+            text, r = replace_once(text, HEIGHT_OLD, HEIGHT_NEW, "height_membership")
+            repairs.append(r)
         return text, repairs
-    if variant in {"namespace_local", "namespace_local_height"}:
-        text, r = replace_once(text, NAMESPACE_ANCHOR, NAMESPACE_INSTANCE,
+    if variant in {"namespace_both", "namespace_both_height"}:
+        text, r = replace_once(text, NAMESPACE_ANCHOR, NAMESPACE_SMUL,
+                               "namespace_local_SMulInvariantMeasure")
+        repairs.append(r)
+        text, r = replace_once(text, MEASURABLE_ANCHOR, MEASURABLE_INSTANCE,
                                "namespace_local_MeasurableConstSMul")
         repairs.append(r)
         if variant.endswith("_height"):
