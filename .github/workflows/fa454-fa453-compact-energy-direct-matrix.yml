@@ -24,7 +24,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: fa454-fa453-compact-energy-direct-matrix
+  group: fa454-fa453-compact-energy-direct-matrix-${{ github.run_id }}
   cancel-in-progress: false
 
 env:
