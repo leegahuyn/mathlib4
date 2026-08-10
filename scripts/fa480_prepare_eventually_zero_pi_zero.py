@@ -34,6 +34,7 @@ TARGET_DECLARATION = "selectedLogHeightNaturalGauge_eventuallyEq_zero"
 TARGET_DECLARATION_INDEX = 2796
 EXPECTED_INTERMEDIATE_SOURCE_SHA256 = REQUIRED_FA479_SOURCE_SHA256
 EXPECTED_LINE_COUNT = 60535
+EXPECTED_OLD_GLOBAL_COUNT = 2
 
 _DECL_START = re.compile(
     r"(?m)^(?:(?:noncomputable|private|protected|local)\s+)*"
@@ -111,15 +112,19 @@ def replace_target_only(
         old_count_global = text.count(old)
         new_count_target = region.count(new)
         new_count_global = text.count(new)
+        # The exact FA479 candidate contains the same final simp fragment twice
+        # globally, but exactly once inside declaration 2796.  Restrict the edit
+        # by declaration bounds and guard the observed global multiplicity.
         if (
             old_count_target != 1
-            or old_count_global != 1
+            or old_count_global != EXPECTED_OLD_GLOBAL_COUNT
             or new_count_target != 0
             or new_count_global != 0
         ):
             raise RuntimeError(
                 f"{TARGET_DECLARATION}: expected target/global old/new counts "
-                f"1/1/0/0, got {old_count_target}/{old_count_global}/"
+                f"1/{EXPECTED_OLD_GLOBAL_COUNT}/0/0, got "
+                f"{old_count_target}/{old_count_global}/"
                 f"{new_count_target}/{new_count_global}"
             )
         region = region.replace(old, new, 1)
