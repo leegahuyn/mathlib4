@@ -1,0 +1,1 @@
+FA455 draft-only trigger. Same-height direct Lean candidates repair the compact-support API misuse at compactSupport_height_mul_normSq_le_energy_Ioi. Do not merge or mark ready.
