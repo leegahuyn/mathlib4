@@ -1,0 +1,25 @@
+{
+  "verified": true,
+  "selected_variant": "proof_explicit_height",
+  "selected_sha256": "2bf64d3eca2579915bcbb8db4fa766fe9b0ed2d69609eb5cf6522ece1a124893",
+  "actual_sha256": "2bf64d3eca2579915bcbb8db4fa766fe9b0ed2d69609eb5cf6522ece1a124893",
+  "Mock2_exit": 0,
+  "Mock2_Advanced_exit": 0,
+  "FA_exit": 1,
+  "first_error_line": 33063,
+  "first_error_col": 4,
+  "first_error_declaration": "integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola",
+  "first_error_declaration_index": 2691,
+  "selected_rank": [
+    0,
+    2691,
+    33063,
+    4
+  ],
+  "confirmation_rank": [
+    0,
+    2691,
+    33063,
+    4
+  ]
+}

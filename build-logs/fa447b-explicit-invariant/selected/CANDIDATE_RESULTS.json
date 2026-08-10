@@ -1,0 +1,62 @@
+[
+  {
+    "variant": "champion",
+    "source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32592,
+    "first_col": 5,
+    "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+    "declaration_index": 2671
+  },
+  {
+    "variant": "proof_explicit",
+    "source_sha256": "6613fd6cacd3aae8ea16561e42e3f67cb763219ddbf1885b426b42f6b0e89c9a",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32754,
+    "first_col": 42,
+    "declaration": "setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero",
+    "declaration_index": 2680
+  },
+  {
+    "variant": "proof_explicit_height",
+    "source_sha256": "2bf64d3eca2579915bcbb8db4fa766fe9b0ed2d69609eb5cf6522ece1a124893",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 33063,
+    "first_col": 4,
+    "declaration": "integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola",
+    "declaration_index": 2691
+  },
+  {
+    "variant": "namespace_explicit",
+    "source_sha256": "9578814ffd1b3cbf28c33fcc32ca43e68d0db026a9be2b18c5ba50c1577e9c15",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32552,
+    "first_col": 348,
+    "declaration": "sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero",
+    "declaration_index": 2668
+  },
+  {
+    "variant": "namespace_explicit_height",
+    "source_sha256": "0475ba4ba5327b21350ad7991dbad54ba7d56684d5df02ae23f9192fd6ed69ac",
+    "Lean_executed": true,
+    "Mock2_exit": 0,
+    "Mock2_Advanced_exit": 0,
+    "FA_exit": 1,
+    "first_line": 32552,
+    "first_col": 348,
+    "declaration": "sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero",
+    "declaration_index": 2668
+  }
+]
