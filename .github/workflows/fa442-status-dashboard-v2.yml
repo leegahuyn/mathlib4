@@ -1,0 +1,58 @@
+name: FA442 repair status dashboard v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa442-status-dashboard-20260810
+    paths:
+      - build-logs/fa442-status-dashboard/REQUESTED_V2.txt
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout dashboard branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa442-status-dashboard-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Collect diagnostic, matrix, sequential, FA443, and baseline smoke status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_collect_status_v2.py
+
+      - name: Commit dashboard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add build-logs/fa442-status-dashboard
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: update FA442 status dashboard v2 [skip ci]'
+            git push origin HEAD:refs/heads/fix/fa442-status-dashboard-20260810
+          fi
+
+      - name: Upload dashboard
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa442-status-dashboard-v2-${{ github.run_id }}
+          path: build-logs/fa442-status-dashboard
+          if-no-files-found: error
+          retention-days: 90
