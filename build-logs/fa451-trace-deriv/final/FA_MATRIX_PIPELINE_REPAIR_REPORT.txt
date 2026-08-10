@@ -61,4 +61,4 @@ Branches/commits:
 branch: fix/fa451-trace-deriv-compact-matrix-20260810
 source commit: ae1e4671fea02c91abe250e3d1c589227081c9b8
 Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31357603942
-Artifact ID: PENDING_UPLOAD_PATCH
+Artifact ID: 9052133947
