@@ -1,0 +1,536 @@
+name: FA443 repaired-pipeline blocker body tournament
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/fa443-blocker-body-tournament-20260810
+    paths:
+      - build-logs/fa443-blocker-tournament/REQUESTED.txt
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa443-blocker-body-tournament
+  cancel-in-progress: false
+
+env:
+  WORK_BRANCH: fix/fa443-blocker-body-tournament-20260810
+  BASELINE_SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+  BASELINE_LINE_COUNT: '60453'
+  FA_MAX_ERRORS: '2000'
+
+jobs:
+  tournament:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout FA443 branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/fa443-blocker-body-tournament-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Configure Git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/fa442-lean-install-ok /tmp/fa443-lean-install-ok
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "${HOME}/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa442-lean-version.txt
+          cp /tmp/fa442-lean-version.txt /tmp/fa443-lean-version.txt
+          cp /tmp/fa442-lean-version.txt /tmp/fa442-verify-lean-version.txt
+          lake --version | tee /tmp/fa442-lake-version.txt
+          cp /tmp/fa442-lake-version.txt /tmp/fa443-lake-version.txt
+          cp /tmp/fa442-lake-version.txt /tmp/fa442-verify-lake-version.txt
+          lake exe cache get | tee /tmp/fa442-cache-get.log
+          touch /tmp/fa442-lean-install-ok /tmp/fa443-lean-install-ok
+
+      - name: Recover FA442 baseline and candidate bundle; diagnose skip root cause
+        id: prepare
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 scripts/fa442_pipeline_prepare.py
+
+      - name: Re-run baseline and every FA442 candidate by direct Lean CLI
+        id: recovered-direct
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa442-pipeline-repair/matrix-results
+          mkdir -p build-logs/fa442-pipeline-repair/matrix-results
+          python3 - <<'PY' > /tmp/fa442-recovered.tsv
+          import json
+          row=json.load(open('build-logs/fa442-pipeline-repair/prep/matrix.json', encoding='utf-8'))
+          for x in row['include']:
+              print('\t'.join([
+                  x['variant'].replace('\t',' '), x['slug'], x['sha256'],
+                  'true' if x['is_baseline'] else 'false'
+              ]))
+          PY
+          infra=0
+          total=0
+          while IFS=$'\t' read -r variant slug sha is_baseline; do
+            total=$((total+1))
+            echo "=== RECOVERED DIRECT LEAN VARIANT $total: $variant / $sha ==="
+            VARIANT="$variant" \
+            VARIANT_SLUG="$slug" \
+            EXPECTED_SHA256="$sha" \
+            IS_BASELINE="$is_baseline" \
+            CANDIDATE_BUNDLE_ROOT="build-logs/fa442-pipeline-repair/prep/candidate-bundle" \
+            BASELINE_META_PATH="build-logs/fa442-pipeline-repair/prep/baseline-meta.json" \
+            LEAN_INSTALL_MARKER="/tmp/fa442-lean-install-ok" \
+              python3 scripts/fa442_pipeline_metric.py
+            rc=$?
+            if test "$rc" -ne 0; then infra=1; fi
+          done < /tmp/fa442-recovered.tsv
+          echo "infra_failure=$infra" >> "$GITHUB_OUTPUT"
+          echo "variant_count=$total" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Strictly select recovered current-run direct champion
+        id: recovered-select
+        shell: bash
+        env:
+          METRICS_ROOT: build-logs/fa442-pipeline-repair/matrix-results
+          PREP_ROOT: build-logs/fa442-pipeline-repair/prep
+        run: |
+          set -euo pipefail
+          test "${{ steps.recovered-direct.outputs.infra_failure }}" = 0
+          python3 scripts/fa442_pipeline_select.py
+
+      - name: Persist recovered direct champion before new proof search
+        id: recovered-persist
+        shell: bash
+        env:
+          SELECTED_SHA: ${{ steps.recovered-select.outputs.selected_sha }}
+          CLASSIFICATION: ${{ steps.recovered-select.outputs.classification }}
+        run: |
+          set -euo pipefail
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/fa443-recovered-selected.lean
+          rm -rf /tmp/fa443-recovered-selection
+          cp -a build-logs/fa442-pipeline-repair/selection /tmp/fa443-recovered-selection
+          git fetch origin "${WORK_BRANCH}"
+          git reset --hard "origin/${WORK_BRANCH}"
+          cp /tmp/fa443-recovered-selected.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          rm -rf build-logs/fa442-pipeline-repair/selection
+          cp -a /tmp/fa443-recovered-selection build-logs/fa442-pipeline-repair/selection
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$SELECTED_SHA"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/fa442-pipeline-repair/selection
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: materialize repaired FA442 ${CLASSIFICATION} [skip ci]"
+          fi
+          head_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+          worktree_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          test "$SELECTED_SHA" = "$head_sha"
+          test "$SELECTED_SHA" = "$worktree_sha"
+          git push origin "HEAD:refs/heads/${WORK_BRANCH}"
+
+      - name: Reverify materialized recovered champion directly
+        shell: bash
+        env:
+          EXPECTED_SELECTED_SHA: ${{ steps.recovered-select.outputs.selected_sha }}
+          EXPECTED_SELECTED_EXIT: ${{ steps.recovered-select.outputs.selected_fa_exit }}
+          EXPECTED_SELECTED_FIRST_LINE: ${{ steps.recovered-select.outputs.selected_first_line }}
+          EXPECTED_SELECTED_FIRST_COL: ${{ steps.recovered-select.outputs.selected_first_col }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa443_verify_frontier.py
+          rm -rf build-logs/fa443-blocker-tournament/recovered-frontier
+          cp -a build-logs/fa443-blocker-tournament/checked-in-frontier \
+            build-logs/fa443-blocker-tournament/recovered-frontier
+
+      - name: Generate FA443 blocker proof-body candidate set
+        id: round1-generate
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.recovered-select.outputs.selected_sha }}
+          FA443_DONOR_ROOT: build-logs/fa442-pipeline-repair/prep/candidate-bundle
+        run: |
+          set -euo pipefail
+          python3 scripts/fa443_generate_blocker_candidates.py
+
+      - name: Directly compile every FA443 round-1 proof candidate
+        id: round1-direct
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.recovered-select.outputs.selected_sha }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa443-blocker-tournament/direct-metrics
+          mkdir -p build-logs/fa443-blocker-tournament/direct-metrics
+          python3 - <<'PY' > /tmp/fa443-round1.tsv
+          import json
+          row=json.load(open('build-logs/fa443-blocker-tournament/generated/matrix.json', encoding='utf-8'))
+          for x in row['include']:
+              print('\t'.join([
+                  x['variant'].replace('\t',' '), x['slug'], x['sha256'],
+                  'true' if x['is_baseline'] else 'false'
+              ]))
+          PY
+          infra=0
+          total=0
+          while IFS=$'\t' read -r variant slug sha is_baseline; do
+            total=$((total+1))
+            echo "=== FA443 ROUND1 DIRECT LEAN $total: $variant / $sha ==="
+            VARIANT="$variant" \
+            VARIANT_SLUG="$slug" \
+            EXPECTED_SHA256="$sha" \
+            IS_BASELINE="$is_baseline" \
+            CURRENT_BASELINE_SHA="${CURRENT_BASELINE_SHA}" \
+            CANDIDATE_BUNDLE_ROOT="build-logs/fa443-blocker-tournament/generated/candidate-bundle" \
+            BASELINE_META_PATH="build-logs/fa443-blocker-tournament/generated/baseline-meta.json" \
+            LEAN_INSTALL_MARKER="/tmp/fa443-lean-install-ok" \
+              python3 scripts/fa443_metric.py
+            rc=$?
+            if test "$rc" -ne 0; then infra=1; fi
+          done < /tmp/fa443-round1.tsv
+          echo "infra_failure=$infra" >> "$GITHUB_OUTPUT"
+          echo "variant_count=$total" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Strictly select FA443 round-1 candidate
+        id: round1-select
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.recovered-select.outputs.selected_sha }}
+          FA443_METRICS_ROOT: build-logs/fa443-blocker-tournament/direct-metrics
+        run: |
+          set -euo pipefail
+          test "${{ steps.round1-direct.outputs.infra_failure }}" = 0
+          python3 scripts/fa443_select.py
+
+      - name: Persist FA443 round-1 selection and exact identity
+        id: round1-persist
+        shell: bash
+        env:
+          SELECTED_SHA: ${{ steps.round1-select.outputs.selected_sha }}
+          CLASSIFICATION: ${{ steps.round1-select.outputs.classification }}
+        run: |
+          set -euo pipefail
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/fa443-round1-selected.lean
+          rm -rf /tmp/fa443-round1-selection
+          cp -a build-logs/fa443-blocker-tournament/selection /tmp/fa443-round1-selection
+          rm -rf /tmp/fa443-round1-generated
+          cp -a build-logs/fa443-blocker-tournament/generated /tmp/fa443-round1-generated
+          git fetch origin "${WORK_BRANCH}"
+          git reset --hard "origin/${WORK_BRANCH}"
+          cp /tmp/fa443-round1-selected.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          mkdir -p build-logs/fa443-blocker-tournament/round1
+          rm -rf build-logs/fa443-blocker-tournament/selection
+          cp -a /tmp/fa443-round1-selection build-logs/fa443-blocker-tournament/selection
+          rm -rf build-logs/fa443-blocker-tournament/round1/generated
+          cp -a /tmp/fa443-round1-generated build-logs/fa443-blocker-tournament/round1/generated
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$SELECTED_SHA"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/fa443-blocker-tournament/selection \
+            build-logs/fa443-blocker-tournament/round1/generated/inventory.json
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: FA443 round1 ${CLASSIFICATION} [skip ci]"
+          fi
+          head_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+          worktree_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          test "$SELECTED_SHA" = "$head_sha"
+          test "$SELECTED_SHA" = "$worktree_sha"
+          git push origin "HEAD:refs/heads/${WORK_BRANCH}"
+
+      - name: Reverify FA443 round-1 checked-in frontier
+        shell: bash
+        env:
+          EXPECTED_SELECTED_SHA: ${{ steps.round1-select.outputs.selected_sha }}
+          EXPECTED_SELECTED_EXIT: ${{ steps.round1-select.outputs.selected_exit }}
+          EXPECTED_SELECTED_FIRST_LINE: ${{ steps.round1-select.outputs.selected_first_line }}
+          EXPECTED_SELECTED_FIRST_COL: ${{ steps.round1-select.outputs.selected_first_col }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa443-blocker-tournament/checked-in-frontier
+          python3 scripts/fa443_verify_frontier.py
+          rm -rf build-logs/fa443-blocker-tournament/round1/checked-in-frontier
+          cp -a build-logs/fa443-blocker-tournament/checked-in-frontier \
+            build-logs/fa443-blocker-tournament/round1/checked-in-frontier
+
+      - name: Generate FA443 round-2 cumulative candidates after strict non-pass promotion
+        id: round2-generate
+        if: steps.round1-select.outputs.strict_promotion == 'true' && steps.round1-select.outputs.selected_exit != '0'
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.round1-select.outputs.selected_sha }}
+          FA443_DONOR_ROOT: build-logs/fa442-pipeline-repair/prep/candidate-bundle
+        run: |
+          set -euo pipefail
+          rm -rf build-logs/fa443-blocker-tournament/generated
+          python3 scripts/fa443_generate_blocker_candidates.py
+
+      - name: Directly compile every FA443 round-2 candidate
+        id: round2-direct
+        if: steps.round2-generate.outcome == 'success'
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.round1-select.outputs.selected_sha }}
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa443-blocker-tournament/direct-metrics
+          mkdir -p build-logs/fa443-blocker-tournament/direct-metrics
+          python3 - <<'PY' > /tmp/fa443-round2.tsv
+          import json
+          row=json.load(open('build-logs/fa443-blocker-tournament/generated/matrix.json', encoding='utf-8'))
+          for x in row['include']:
+              print('\t'.join([
+                  x['variant'].replace('\t',' '), x['slug'], x['sha256'],
+                  'true' if x['is_baseline'] else 'false'
+              ]))
+          PY
+          infra=0
+          total=0
+          while IFS=$'\t' read -r variant slug sha is_baseline; do
+            total=$((total+1))
+            echo "=== FA443 ROUND2 DIRECT LEAN $total: $variant / $sha ==="
+            VARIANT="$variant" \
+            VARIANT_SLUG="$slug" \
+            EXPECTED_SHA256="$sha" \
+            IS_BASELINE="$is_baseline" \
+            CURRENT_BASELINE_SHA="${CURRENT_BASELINE_SHA}" \
+            CANDIDATE_BUNDLE_ROOT="build-logs/fa443-blocker-tournament/generated/candidate-bundle" \
+            BASELINE_META_PATH="build-logs/fa443-blocker-tournament/generated/baseline-meta.json" \
+            LEAN_INSTALL_MARKER="/tmp/fa443-lean-install-ok" \
+              python3 scripts/fa443_metric.py
+            rc=$?
+            if test "$rc" -ne 0; then infra=1; fi
+          done < /tmp/fa443-round2.tsv
+          echo "infra_failure=$infra" >> "$GITHUB_OUTPUT"
+          echo "variant_count=$total" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Strictly select FA443 round-2 candidate
+        id: round2-select
+        if: steps.round2-direct.outcome == 'success'
+        shell: bash
+        env:
+          CURRENT_BASELINE_SHA: ${{ steps.round1-select.outputs.selected_sha }}
+          FA443_METRICS_ROOT: build-logs/fa443-blocker-tournament/direct-metrics
+        run: |
+          set -euo pipefail
+          test "${{ steps.round2-direct.outputs.infra_failure }}" = 0
+          rm -rf build-logs/fa443-blocker-tournament/selection
+          python3 scripts/fa443_select.py
+
+      - name: Persist FA443 round-2 selection
+        id: round2-persist
+        if: steps.round2-select.outcome == 'success'
+        shell: bash
+        env:
+          SELECTED_SHA: ${{ steps.round2-select.outputs.selected_sha }}
+          CLASSIFICATION: ${{ steps.round2-select.outputs.classification }}
+        run: |
+          set -euo pipefail
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/fa443-round2-selected.lean
+          rm -rf /tmp/fa443-round2-selection /tmp/fa443-round2-generated
+          cp -a build-logs/fa443-blocker-tournament/selection /tmp/fa443-round2-selection
+          cp -a build-logs/fa443-blocker-tournament/generated /tmp/fa443-round2-generated
+          git fetch origin "${WORK_BRANCH}"
+          git reset --hard "origin/${WORK_BRANCH}"
+          cp /tmp/fa443-round2-selected.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          rm -rf build-logs/fa443-blocker-tournament/selection
+          cp -a /tmp/fa443-round2-selection build-logs/fa443-blocker-tournament/selection
+          mkdir -p build-logs/fa443-blocker-tournament/round2
+          rm -rf build-logs/fa443-blocker-tournament/round2/generated
+          cp -a /tmp/fa443-round2-generated build-logs/fa443-blocker-tournament/round2/generated
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$SELECTED_SHA"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            build-logs/fa443-blocker-tournament/selection \
+            build-logs/fa443-blocker-tournament/round2/generated/inventory.json
+          if ! git diff --cached --quiet; then
+            git commit -m "fix: FA443 round2 ${CLASSIFICATION} [skip ci]"
+          fi
+          head_sha=$(git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum | awk '{print $1}')
+          worktree_sha=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+          test "$SELECTED_SHA" = "$head_sha"
+          test "$SELECTED_SHA" = "$worktree_sha"
+          git push origin "HEAD:refs/heads/${WORK_BRANCH}"
+
+      - name: Reverify FA443 round-2 checked-in frontier
+        if: steps.round2-persist.outcome == 'success'
+        shell: bash
+        env:
+          EXPECTED_SELECTED_SHA: ${{ steps.round2-select.outputs.selected_sha }}
+          EXPECTED_SELECTED_EXIT: ${{ steps.round2-select.outputs.selected_exit }}
+          EXPECTED_SELECTED_FIRST_LINE: ${{ steps.round2-select.outputs.selected_first_line }}
+          EXPECTED_SELECTED_FIRST_COL: ${{ steps.round2-select.outputs.selected_first_col }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa443-blocker-tournament/checked-in-frontier
+          python3 scripts/fa443_verify_frontier.py
+          rm -rf build-logs/fa443-blocker-tournament/round2/checked-in-frontier
+          cp -a build-logs/fa443-blocker-tournament/checked-in-frontier \
+            build-logs/fa443-blocker-tournament/round2/checked-in-frontier
+
+      - name: Resolve final checked-in FA443 selection
+        id: final
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path('build-logs/fa443-blocker-tournament/selection/selection.json')
+          if not p.exists():
+              raise SystemExit('missing final FA443 selection')
+          row=json.load(open(p, encoding='utf-8'))
+          selected=row['selected']
+          out=os.environ['GITHUB_OUTPUT']
+          with open(out,'a',encoding='utf-8') as f:
+              f.write(f"classification={row['classification']}\n")
+              f.write(f"advance_classification={row['advance_classification']}\n")
+              f.write(f"selected_sha={row['selected_source_sha256']}\n")
+              f.write(f"selected_exit={selected['exit']}\n")
+              f.write(f"selected_first_line={selected['first_line']}\n")
+              f.write(f"selected_first_col={selected['first_col']}\n")
+              f.write(f"selected_declaration={selected['declaration']}\n")
+          PY
+
+      - name: Full checked-in FA compile run1/run2 and trust audit for exit-zero candidate
+        id: true-pass
+        if: steps.final.outputs.selected_exit == '0'
+        shell: bash
+        env:
+          EXPECTED_SELECTED_SHA: ${{ steps.final.outputs.selected_sha }}
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          rm -rf build-logs/fa442-pipeline-repair/checked-in-verification
+          python3 scripts/fa442_pipeline_verify_checked_in.py
+
+      - name: Ordered Integrated, Mock3 bridges, QYM gate after FA TRUE PASS
+        if: steps.true-pass.outputs.fa_true_pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          python3 scripts/fa442_pipeline_downstream.py
+
+      - name: Write FA443 final status
+        if: always()
+        shell: bash
+        env:
+          FINAL_CLASSIFICATION: ${{ steps.final.outputs.classification }}
+          ADVANCE_CLASSIFICATION: ${{ steps.final.outputs.advance_classification }}
+          SELECTED_SHA: ${{ steps.final.outputs.selected_sha }}
+          SELECTED_EXIT: ${{ steps.final.outputs.selected_exit }}
+          SELECTED_LINE: ${{ steps.final.outputs.selected_first_line }}
+          SELECTED_COL: ${{ steps.final.outputs.selected_first_col }}
+          SELECTED_DECL: ${{ steps.final.outputs.selected_declaration }}
+          FA_TRUE_PASS: ${{ steps.true-pass.outputs.fa_true_pass }}
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/fa443-blocker-tournament/final
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          p=Path('build-logs/fa443-blocker-tournament/final/STATUS.json')
+          status={
+            'classification': os.environ.get('FINAL_CLASSIFICATION','INFRA_FAILURE'),
+            'advance_classification': os.environ.get('ADVANCE_CLASSIFICATION',''),
+            'selected_sha256': os.environ.get('SELECTED_SHA',''),
+            'FA_exit': int(os.environ.get('SELECTED_EXIT') or 999),
+            'first_error_line': int(os.environ.get('SELECTED_LINE') or 0),
+            'first_error_col': int(os.environ.get('SELECTED_COL') or 0),
+            'declaration': os.environ.get('SELECTED_DECL',''),
+            'FA_TRUE_PASS': os.environ.get('FA_TRUE_PASS','false') == 'true',
+            'worktree_sha256': subprocess.check_output(['sha256sum','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'], text=True).split()[0],
+            'HEAD_source_sha256': subprocess.check_output(['bash','-lc','git show HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | sha256sum'], text=True).split()[0],
+            'workflow_run_url': f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+          }
+          status['identity_ok']=status['selected_sha256']==status['worktree_sha256']==status['HEAD_source_sha256']
+          p.write_text(json.dumps(status,indent=2)+'\n',encoding='utf-8')
+          Path('build-logs/fa443-blocker-tournament/final/STATUS.md').write_text(
+            '# FA443 BLOCKER TOURNAMENT STATUS\n\n'
+            f"classification: **{status['classification']}**\n\n"
+            f"advance: **{status['advance_classification']}**\n\n"
+            f"source SHA: `{status['selected_sha256']}`\n\n"
+            f"FA exit: `{status['FA_exit']}`\n\n"
+            f"first error: `{status['first_error_line']}:{status['first_error_col']}`\n\n"
+            f"declaration: `{status['declaration']}`\n\n"
+            f"identity_ok: `{str(status['identity_ok']).lower()}`\n\n"
+            f"FA_TRUE_PASS: `{str(status['FA_TRUE_PASS']).lower()}`\n",
+            encoding='utf-8')
+          print(json.dumps(status,indent=2))
+          PY
+
+      - name: Upload complete FA443 evidence
+        id: evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa443-blocker-body-tournament-${{ github.run_id }}
+          path: |
+            build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.json
+            build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.md
+            build-logs/fa442-pipeline-repair/selection
+            build-logs/fa443-blocker-tournament
+            build-logs/fa442-pipeline-repair/checked-in-verification
+            build-logs/fa442-pipeline-repair/downstream
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Commit final status and compact evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/fa443-final /tmp/fa443-selection
+          cp -a build-logs/fa443-blocker-tournament/final /tmp/fa443-final
+          cp -a build-logs/fa443-blocker-tournament/selection /tmp/fa443-selection
+          git fetch origin "${WORK_BRANCH}"
+          git reset --hard "origin/${WORK_BRANCH}"
+          rm -rf build-logs/fa443-blocker-tournament/final \
+            build-logs/fa443-blocker-tournament/selection
+          cp -a /tmp/fa443-final build-logs/fa443-blocker-tournament/final
+          cp -a /tmp/fa443-selection build-logs/fa443-blocker-tournament/selection
+          git add build-logs/fa443-blocker-tournament/final \
+            build-logs/fa443-blocker-tournament/selection
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: record FA443 blocker tournament status [skip ci]'
+            git push origin "HEAD:refs/heads/${WORK_BRANCH}"
+          fi
+
+      - name: Enforce pipeline and tournament infrastructure only
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f build-logs/fa443-blocker-tournament/final/STATUS.json
+          python3 - <<'PY'
+          import json
+          row=json.load(open('build-logs/fa443-blocker-tournament/final/STATUS.json', encoding='utf-8'))
+          if not row.get('identity_ok'):
+              raise SystemExit(1)
+          if row.get('classification') == 'INFRA_FAILURE':
+              raise SystemExit(1)
+          PY
