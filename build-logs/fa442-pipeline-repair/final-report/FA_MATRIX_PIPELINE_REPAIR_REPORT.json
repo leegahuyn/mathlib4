@@ -1,0 +1,735 @@
+{
+  "title": "FA MATRIX PIPELINE REPAIR REPORT",
+  "baseline": {
+    "variant": "baseline-direct",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "direct_lean_exit": 1,
+    "first_error": {
+      "line": 31726,
+      "column": 2,
+      "message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\nbut is expected to have type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t",
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "declaration_kind": "theorem",
+      "declaration_index": 2631,
+      "declaration_start_line": 31713
+    }
+  },
+  "pipeline_issue_found": {
+    "classification": "INFRA_FAILURE",
+    "run_id": 31345045760,
+    "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31345045760",
+    "head_branch": "fix/fa442-same-height-slope-cumulative-20260810",
+    "head_sha": "4c8a688568b11755c489e8252b4fb075430dc679",
+    "workflow_path": ".github/workflows/fa442-same-height-slope-cumulative.yml",
+    "workflow_name": "FA442 same-height slope cumulative direct Lean matrix",
+    "skipped_steps": [
+      {
+        "job_id": 93328039423,
+        "job_name": "candidate (slope_change_convert)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039423,
+        "job_name": "candidate (slope_change_convert)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039454,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039454,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039460,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039460,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039464,
+        "job_name": "candidate (slope_change_convert_paired_all_known)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039464,
+        "job_name": "candidate (slope_change_convert_paired_all_known)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039469,
+        "job_name": "candidate (slope_paired_dot)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039469,
+        "job_name": "candidate (slope_paired_dot)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039474,
+        "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039474,
+        "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039478,
+        "job_name": "candidate (slope_paired_dot_all_known)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039478,
+        "job_name": "candidate (slope_paired_dot_all_known)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039482,
+        "job_name": "candidate (slope_only)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039482,
+        "job_name": "candidate (slope_only)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039483,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039483,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039485,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039485,
+        "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039489,
+        "job_name": "candidate (slope_structures)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039489,
+        "job_name": "candidate (slope_structures)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039494,
+        "job_name": "candidate (baseline)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039494,
+        "job_name": "candidate (baseline)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039497,
+        "job_name": "candidate (slope_paired_parenthesized)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039497,
+        "job_name": "candidate (slope_paired_parenthesized)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039505,
+        "job_name": "candidate (slope_structures_paired_all_known)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039505,
+        "job_name": "candidate (slope_structures_paired_all_known)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039507,
+        "job_name": "candidate (slope_paired_parenthesized_ring)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039507,
+        "job_name": "candidate (slope_paired_parenthesized_ring)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328039532,
+        "job_name": "candidate (slope_paired_parenthesized_all_known)",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      },
+      {
+        "job_id": 93328039532,
+        "job_name": "candidate (slope_paired_parenthesized_all_known)",
+        "step_name": "Directly compile completed prerequisites and candidate FA",
+        "step_number": 5,
+        "conclusion": "skipped",
+        "condition": "steps.prepare.outputs.ok == 'true'",
+        "output_references": [
+          {
+            "reference": "steps.prepare.outputs.ok",
+            "owner_exists": true,
+            "output_definition_found": true
+          }
+        ]
+      },
+      {
+        "job_id": 93328109303,
+        "job_name": "select-confirm-persist",
+        "step_name": "Install pinned Lean and Mathlib cache",
+        "step_number": 4,
+        "conclusion": "skipped",
+        "condition": "",
+        "output_references": []
+      }
+    ],
+    "undefined_output_references": [],
+    "guard_expressions": [
+      "steps.prepare.outputs.ok == 'true'"
+    ],
+    "selector_failure": "RuntimeError: expected one baseline direct metric, found 0",
+    "git_identity_failure": "Author identity unknown / fatal: empty ident name",
+    "root_cause": "The skipped Lean setup/compile steps were not unconditional. Their actual FA442 `if:` guards were: steps.prepare.outputs.ok == 'true'. In the candidate jobs the referenced upstream value was empty/false, so GitHub Actions evaluated the guard false. Candidate generation therefore completed while no direct Lean metric was produced.",
+    "repair": {
+      "candidate_lean_install_unconditional": true,
+      "candidate_direct_compile_unconditional": true,
+      "missing_metric_classification": "INFRA_FAILURE",
+      "selector_requires_exactly_one_current_run_baseline_metric": true,
+      "git_identity_configured_in_every_commit_job": true
+    }
+  },
+  "candidate_results": [
+    {
+      "variant": "baseline-direct",
+      "slug": "baseline",
+      "sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 31726,
+      "first_col": 2,
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/ci/fa444-complete-run-locator-20260810",
+      "slug": "git-origin-ci-fa444-complete-run-locator-20260810",
+      "sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32590,
+      "first_col": 5,
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/ci/fa447-run-locator-20260810",
+      "slug": "git-origin-ci-fa447-run-locator-20260810",
+      "sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32592,
+      "first_col": 5,
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa424-cross-donor-controller-20260809",
+      "slug": "git-origin-fix-fa424-cross-donor-controller-20260809",
+      "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 31725,
+      "first_col": 2,
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa425-strict-theorem-tournament-20260810",
+      "slug": "git-origin-fix-fa425-strict-theorem-tournament-20260810",
+      "sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32035,
+      "first_col": 8,
+      "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa425d-derivative-rebundle-20260810",
+      "slug": "git-origin-fix-fa425d-derivative-rebundle-20260810",
+      "sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 31727,
+      "first_col": 2,
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa425e-isolated-instance-section-20260810",
+      "slug": "git-origin-fix-fa425e-isolated-instance-section-20260810",
+      "sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 31727,
+      "first_col": 117,
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa425i-disable-reenable-custom-20260810",
+      "slug": "git-origin-fix-fa425i-disable-reenable-custom-20260810",
+      "sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 31727,
+      "first_col": 117,
+      "declaration": "actualEdgeAmbientParam_hasDerivAt",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa426b-multiround-importsafe-20260810",
+      "slug": "git-origin-fix-fa426b-multiround-importsafe-20260810",
+      "sha256": "7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32079,
+      "first_col": 8,
+      "declaration": "nativeActualEdgeFluxIntegral_paired_left",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa429-continuation-after-fa426-20260810",
+      "slug": "git-origin-fix-fa429-continuation-after-fa426-20260810",
+      "sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32035,
+      "first_col": 8,
+      "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa444-complete-direct-matrix-20260810",
+      "slug": "git-origin-fix-fa444-complete-direct-matrix-20260810",
+      "sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32590,
+      "first_col": 5,
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    },
+    {
+      "variant": "git:origin/fix/fa444-fa442-matrix-pipeline-repair-20260810",
+      "slug": "git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810",
+      "sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+      "lean_executed": true,
+      "exit": 1,
+      "first_line": 32035,
+      "first_col": 79,
+      "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+      "classification": "LEAN_FAILURE",
+      "Mock2_exit": 0,
+      "Mock2_Advanced_exit": 0,
+      "maxErrors": 2000
+    }
+  ],
+  "best_direct_verified_candidate": {
+    "variant": "git:origin/ci/fa447-run-locator-20260810",
+    "slug": "git-origin-ci-fa447-run-locator-20260810",
+    "source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "line_count": 60453,
+    "exit": 1,
+    "first_error": {
+      "line": 32592,
+      "column": 5,
+      "message": "failed to synthesize instance of type class\n  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+      "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+      "declaration_kind": "theorem",
+      "declaration_index": 2678,
+      "declaration_start_line": 32585
+    },
+    "trust_audit": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "worktree_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "selected_artifact_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "identity_ok_before_commit": true
+  },
+  "checked_in_identity": {
+    "selected_sha": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "worktree_sha": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "HEAD_source_sha": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "identity_ok": true
+  },
+  "trust_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "FA_checked_in_verification": {
+    "classification": "LEAN_FAILURE",
+    "FA_TRUE_PASS": false,
+    "selected_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "worktree_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "HEAD_source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+    "identity_ok": true,
+    "line_count": 60453,
+    "trust_audit": {
+      "sorry": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "trust_audit_clean": true,
+    "prerequisites": {
+      "Mock2": {
+        "label": "regression",
+        "command": "lake env lean -DwarningAsError=false -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+        "exit_code": 0,
+        "olean_exists": true,
+        "ilean_exists": true,
+        "error_header_count": 0,
+        "log": "Mock2-regression.log"
+      },
+      "Mock2_Advanced": {
+        "label": "regression",
+        "command": "lake env lean -DwarningAsError=false -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+        "exit_code": 0,
+        "olean_exists": true,
+        "ilean_exists": true,
+        "error_header_count": 0,
+        "log": "Mock2_Advanced-regression.log"
+      }
+    },
+    "FA_checked_in_run1": {
+      "label": "run1",
+      "command": "lake env lean -DwarningAsError=false -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "exit_code": 1,
+      "olean_exists": false,
+      "ilean_exists": false,
+      "error_header_count": 101,
+      "log": "Mock2_FunctionalAnalysis-run1.log",
+      "first_error": {
+        "line": 32592,
+        "column": 5,
+        "message": "failed to synthesize instance of type class\n  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+        "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+        "declaration_kind": "theorem",
+        "declaration_index": 2678,
+        "declaration_start_line": 32585
+      }
+    },
+    "FA_checked_in_run2": {
+      "label": "run2",
+      "command": "lake env lean -DwarningAsError=false -o /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i /home/runner/work/mathlib4/mathlib4/.lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "exit_code": 1,
+      "olean_exists": false,
+      "ilean_exists": false,
+      "error_header_count": 101,
+      "log": "Mock2_FunctionalAnalysis-run2.log",
+      "first_error": {
+        "line": 32592,
+        "column": 5,
+        "message": "failed to synthesize instance of type class\n  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+        "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+        "declaration_kind": "theorem",
+        "declaration_index": 2678,
+        "declaration_start_line": 32585
+      }
+    },
+    "lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+    "lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+    "repository_head": "fed9c870531fc81d33b0ec384886b69a33716d8b",
+    "authority": "checked-in HEAD source direct lake env lean CLI, run twice"
+  },
+  "downstream": {
+    "Integrated": "NOT_RUN_FA_NOT_TRUE_PASS",
+    "Mock3_bridges": "NOT_RUN_FA_NOT_TRUE_PASS",
+    "QYM": "NOT_RUN_FA_NOT_TRUE_PASS"
+  },
+  "final_classification": "STRICT PROMOTION",
+  "branch": "fix/fa442-matrix-direct-compile-repair-20260810",
+  "head": "fed9c870531fc81d33b0ec384886b69a33716d8b",
+  "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31354569386",
+  "artifact_id": "9050982724"
+}
