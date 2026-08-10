@@ -1,0 +1,1 @@
+Draft-only fast strict first-error matrix trigger. maxErrors is a diagnostic cap only. Do not merge or mark ready.
