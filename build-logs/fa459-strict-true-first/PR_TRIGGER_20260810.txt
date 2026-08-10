@@ -1,0 +1,1 @@
+Draft-only trigger for FA459 strict categorized true-first direct Lean matrix. Do not merge or mark ready.
