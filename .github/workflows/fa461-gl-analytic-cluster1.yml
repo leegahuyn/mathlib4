@@ -1,0 +1,157 @@
+name: FA461 GL analytic cluster1 strict direct matrix
+
+on:
+  push:
+    branches: [fix/fa461-gl-analytic-cluster1-20260810]
+    paths:
+      - .github/workflows/fa461-gl-analytic-cluster1.yml
+      - scripts/fa461_prepare_gl_analytic_cluster1.py
+      - scripts/fa461_candidate_ci.sh
+      - scripts/fa461_select_cluster1.py
+      - scripts/fa461_selector_ci.sh
+      - scripts/fa459_prepare_true_first_cluster.py
+      - scripts/fa458_record_direct_metric_strict.py
+      - scripts/fa458_prepare_cumulative_early.py
+      - build-logs/fa461-gl-analytic-cluster1/REQUESTED*.txt
+  pull_request:
+    branches: [fix/fa461-gl-analytic-cluster1-20260810]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa461-gl-analytic-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  ACTIVE_BRANCH: fix/fa461-gl-analytic-cluster1-20260810
+  SOURCE_REF: ${{ github.event.pull_request.base.sha || github.sha }}
+
+jobs:
+  candidate:
+    name: candidate (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 280
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        variant:
+          - baseline
+          - gl_cumulative
+          - gl_algA
+          - gl_algB
+          - gl_cluster1A
+          - gl_cluster1B
+    env:
+      VARIANT: ${{ matrix.variant }}
+      MAX_ERRORS: '380'
+    steps:
+      - name: Checkout immutable FA461 source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: false
+
+      - name: Generate candidate, install pinned Lean/cache, execute Mock2/Advanced/FA directly
+        shell: bash
+        run: bash scripts/fa461_candidate_ci.sh
+
+      - name: Upload candidate source and strict direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa461-candidate-${{ matrix.variant }}
+          path: build-logs/fa461-gl-analytic-cluster1/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce real direct Lean execution, prerequisites, identity and trust
+        if: always()
+        shell: bash
+        run: |
+          python3 - "build-logs/fa461-gl-analytic-cluster1/candidates/${VARIANT}/METRIC.json" <<'PY'
+          import json,sys
+          try:
+              m=json.load(open(sys.argv[1],encoding='utf-8'))
+          except Exception as exc:
+              raise SystemExit(f'INFRA_FAILURE: metric missing/invalid: {exc}')
+          ok=(
+              m.get('classification') != 'INFRA_FAILURE'
+              and m.get('diagnostic_parser') == 'strict_error_and_error_category_v1'
+              and m.get('header_authority') == 'declaration proposition/type through := only'
+              and m.get('all_required_lean_executed') is True
+              and m.get('source_metadata_identity') is True
+              and m.get('Mock2_exit') == 0
+              and m.get('Mock2_errors_under_cap') == 0
+              and m.get('Mock2_Advanced_exit') == 0
+              and m.get('Mock2_Advanced_errors_under_cap') == 0
+              and m.get('FA_executed') is True
+              and m.get('forbidden_clean') is True
+          )
+          print(json.dumps(m,indent=2,ensure_ascii=False))
+          if not ok:
+              raise SystemExit('INFRA_FAILURE: required direct evidence missing')
+          PY
+
+  select-confirm-persist:
+    name: independent strict baseline, selector, checked-in x2, downstream gate
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 520
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      MAX_ERRORS: '450'
+    steps:
+      - name: Checkout immutable FA461 source commit with push credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: true
+
+      - name: Configure GitHub Actions git identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Independent baseline, strict selection, materialization, checked-in x2 and gated downstream
+        id: selector
+        shell: bash
+        run: bash scripts/fa461_selector_ci.sh
+
+      - name: Upload complete FA461 evidence
+        id: evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa461-complete-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa461-gl-analytic-cluster1
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce infrastructure integrity separately from Lean proof status
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.selector.outcome }}" = success
+          test -s build-logs/fa461-gl-analytic-cluster1/selector-baseline/METRIC.json
+          test -s build-logs/fa461-gl-analytic-cluster1/selected/SELECTION.json
+          test -s build-logs/fa461-gl-analytic-cluster1/selected/CANDIDATE_RESULTS.json
+          test -s build-logs/fa461-gl-analytic-cluster1/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa461-gl-analytic-cluster1/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa461-gl-analytic-cluster1/final/FA_FINAL.json
+          test -s build-logs/fa461-gl-analytic-cluster1/final/downstream/DOWNSTREAM.json
