@@ -1,0 +1,1508 @@
+====================================================================================================
+DECLARATION selectedCuspRestrictionRepresentative_add index=2720 starts=33619 first_error=33624:57
+ 33619 | theorem selectedCuspRestrictionRepresentative_add
+ 33620 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33621 |     (u v : InverseEtaFixedPhaseCore n) :
+ 33622 |     selectedCuspRestrictionRepresentative n q Y (u + v) =
+ 33623 |       selectedCuspRestrictionRepresentative n q Y u +
+ 33624 |         selectedCuspRestrictionRepresentative n q Y v := by
+ 33625 |   funext t
+ 33626 |   change
+ 33627 |     (selectedCuspTraceWeight n q Y t : ℂ) *
+ 33628 |         (((u : SmoothQuotientCompactFunction)
+ 33629 |           (gammaTwoSelectedHorocycleParam q Y t)) +
+ 33630 |          ((v : SmoothQuotientCompactFunction)
+ 33631 |           (gammaTwoSelectedHorocycleParam q Y t))) = _
+ 33632 |   ring
+ 33633 | 
+ 33634 | @[simp]
+
+====================================================================================================
+DECLARATION selectedCuspRestrictionRepresentative_memLp index=2723 starts=33663 first_error=33675:2
+ 33663 | theorem selectedCuspRestrictionRepresentative_memLp
+ 33664 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33665 |     (u : InverseEtaFixedPhaseCore n) :
+ 33666 |     MemLp (selectedCuspRestrictionRepresentative n q Y u) 2
+ 33667 |       selectedHorocycleParameterMeasure := by
+ 33668 |   let f := selectedCuspRestrictionRepresentative n q Y u
+ 33669 |   have hf : Continuous f :=
+ 33670 |     selectedCuspRestrictionRepresentative_continuous n q Y u
+ 33671 |   apply (memLp_two_iff_integrable_sq_norm
+ 33672 |     hf.aestronglyMeasurable).2
+ 33673 |   change IntegrableOn (fun x => ‖f x‖ ^ 2)
+ 33674 |     (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) volume
+ 33675 |   simpa only [Pi.pow_apply] using
+ 33676 |     (hf.norm.pow 2).continuousOn.integrableOn_Icc
+ 33677 | 
+ 33678 | /-- The actual complex-linear smooth-core trace map. -/
+
+====================================================================================================
+DECLARATION coeFn_selectedCuspCoreTrace index=2725 starts=33697 first_error=33703:2
+ 33697 | theorem coeFn_selectedCuspCoreTrace
+ 33698 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33699 |     (u : InverseEtaFixedPhaseCore n) :
+ 33700 |     ⇑(selectedCuspCoreTrace n q Y u) =ᵐ[
+ 33701 |       selectedHorocycleParameterMeasure]
+ 33702 |         selectedCuspRestrictionRepresentative n q Y u := by
+ 33703 |   simpa only [selectedCuspCoreTrace] using
+ 33704 |     MemLp.coeFn_toLp
+ 33705 |       (selectedCuspRestrictionRepresentative_memLp n q Y u)
+ 33706 | 
+ 33707 | /-! #### C. Exact compact-support tail, including all corners -/
+ 33708 | 
+ 33709 | /-- Every standard horizontal point with parameter in `[-1/2,1/2]` and
+ 33710 | height at least one lies in the closed modular tile. -/
+
+====================================================================================================
+DECLARATION fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero index=2731 starts=33788 first_error=33800:13
+ 33788 | theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
+ 33789 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33790 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33791 |       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
+ 33792 |         selectedCuspRestrictionRepresentative n q Z u =ᵐ[
+ 33793 |           selectedHorocycleParameterMeasure] 0 := by
+ 33794 |   rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
+ 33795 | 
+ 33796 |     ⟨Y₀, hY₀, hZero⟩
+ 33797 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33798 |   intro Z hYZ q
+ 33799 |   filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
+ 33800 |   have hz := hZero Z hYZ
+ 33801 |     (gammaTwoSelectedHorocycleParam q Z t)
+ 33802 |     ⟨selectedHorocycleParam_mem_closedCarrier q Z ht,
+ 33803 |       selectedHorocycleParam_mem_threeCuspBoundary q Z t⟩
+ 33804 |     simp only [selectedCuspRestrictionRepresentative, Pi.zero_apply,
+ 33805 |       hz.1, mul_zero]
+ 33806 | 
+ 33807 | /-- Pointwise version of the same compact tail on the closed parameter
+ 33808 | interval.  This is used for each vertical log-height slice before integrating
+ 33809 | in the horizontal parameter. -/
+
+====================================================================================================
+DECLARATION fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero index=2733 starts=33828 first_error=33840:2
+ 33828 | theorem fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero
+ 33829 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33830 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33831 |       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
+ 33832 |         selectedCuspCoreTrace n q Z u = 0 := by
+ 33833 |   rcases fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero n u with
+ 33834 |     ⟨Y₀, hY₀, hZero⟩
+ 33835 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33836 |   intro Z hYZ q
+ 33837 |   apply MeasureTheory.Lp.ext
+ 33838 |   filter_upwards [coeFn_selectedCuspCoreTrace n q Z u,
+ 33839 |     hZero Z hYZ q] with t htrace hrep
+ 33840 |   simpa only [Pi.zero_apply] using htrace.trans hrep
+ 33841 | 
+ 33842 | /-- The existing compact-core Green flux theorem is the bilinear boundary
+ 33843 | counterpart of the individual trace vanishing theorem above. -/
+
+====================================================================================================
+DECLARATION deriv_height_mul_normSq index=2736 starts=33885 first_error=33888:48
+ 33885 | theorem deriv_height_mul_normSq
+ 33886 |     {f : ℝ → ℂ} (hf : Differentiable ℝ f) (y : ℝ) :
+ 33887 |     deriv (fun r : ℝ => r * ‖f r‖ ^ 2) y =
+ 33888 |       ‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ := by
+ 33889 |   have hnorm := (hf y).hasDerivAt.norm_sq
+ 33890 |   have hprod := (hasDerivAt_id y).mul hnorm
+ 33891 |   convert hprod.deriv using 1 <;> ring
+ 33892 | 
+ 33893 | /-- Pointwise Young inequality for the preceding derivative.  On the positive
+ 33894 | height axis it costs exactly two copies of the base density and one copy of
+ 33895 | the logarithmic vertical-derivative density. -/
+
+====================================================================================================
+DECLARATION norm_deriv_height_mul_normSq_le index=2737 starts=33896 first_error=33913:6
+ 33896 | theorem norm_deriv_height_mul_normSq_le
+ 33897 |     {f : ℝ → ℂ} (hf : Differentiable ℝ f) {y : ℝ} (hy : 0 ≤ y) :
+ 33898 |     ‖deriv (fun r : ℝ => r * ‖f r‖ ^ 2) y‖ ≤
+ 33899 |       2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2 := by
+ 33900 |   rw [deriv_height_mul_normSq hf y, Real.norm_eq_abs]
+ 33901 |   have hinner : |⟪f y, deriv f y⟫_ℝ| ≤
+ 33902 |       ‖f y‖ * ‖deriv f y‖ :=
+ 33903 |     abs_real_inner_le_norm _ _
+ 33904 |   calc
+ 33905 |     |‖f y‖ ^ 2 + 2 * y * ⟪f y, deriv f y⟫_ℝ| ≤
+ 33906 |         |‖f y‖ ^ 2| + |2 * y * ⟪f y, deriv f y⟫_ℝ| :=
+ 33907 |       abs_add_le _ _
+ 33908 |     _ = ‖f y‖ ^ 2 + (2 * y) * |⟪f y, deriv f y⟫_ℝ| := by
+ 33909 |       rw [abs_of_nonneg (sq_nonneg _), abs_mul,
+ 33910 |         abs_of_nonneg (mul_nonneg (by norm_num) hy)]
+ 33911 |     _ ≤ ‖f y‖ ^ 2 + (2 * y) *
+ 33912 |         (‖f y‖ * ‖deriv f y‖) := by
+ 33913 |       exact add_le_add_left
+ 33914 |         (mul_le_mul_of_nonneg_left hinner (by positivity))
+ 33915 |           _
+ 33916 |     _ ≤ 2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2 := by
+ 33917 |       nlinarith [sq_nonneg (‖f y‖ - y * ‖deriv f y‖)]
+ 33918 | 
+ 33919 | /-- A fully unconditional one-dimensional weighted trace estimate.  This is
+ 33920 | the scalar analytic core of the horocycle trace theorem: no Sobolev trace
+ 33921 | operator, compact embedding, or boundary certificate is assumed. -/
+
+====================================================================================================
+DECLARATION compactSupport_height_mul_normSq_le_energy_Ioi index=2738 starts=33922 first_error=33932:4
+ 33922 | theorem compactSupport_height_mul_normSq_le_energy_Ioi
+ 33923 |     {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f)
+ 33924 |     (hcompact : HasCompactSupport f) {H : ℝ} (hH : 1 ≤ H) :
+ 33925 |     H * ‖f H‖ ^ 2 ≤
+ 33926 |       ∫ y in Set.Ioi H,
+ 33927 |         (2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2) := by
+ 33928 |   let weighted : ℝ → ℝ := fun y => y * ‖f y‖ ^ 2
+ 33929 |   let energy : ℝ → ℝ := fun y =>
+ 33930 |     2 * ‖f y‖ ^ 2 + y ^ 2 * ‖deriv f y‖ ^ 2
+ 33931 |   have hnormSq : HasCompactSupport (fun y : ℝ => ‖f y‖ ^ 2) := by
+ 33932 |     simpa only [pow_two] using hcompact.norm.mul hcompact.norm
+ 33933 |   have hderivNormSq :
+ 33934 |       HasCompactSupport (fun y : ℝ => ‖deriv f y‖ ^ 2) := by
+ 33935 |     simpa only [pow_two] using
+ 33936 |       hcompact.deriv.norm.mul hcompact.deriv.norm
+ 33937 |   have hweightedCompact : HasCompactSupport weighted := by
+ 33938 |     simpa only [weighted, Pi.mul_apply] using
+ 33939 |       hnormSq.mul_left (f := fun y : ℝ => y)
+ 33940 |   have hfirstCompact :
+ 33941 |       HasCompactSupport (fun y : ℝ => 2 * ‖f y‖ ^ 2) := by
+ 33942 |     simpa only [Pi.mul_apply] using
+ 33943 |       hnormSq.mul_left (f := fun _y : ℝ => (2 : ℝ))
+ 33944 |   have hsecondCompact :
+ 33945 |       HasCompactSupport (fun y : ℝ => y ^ 2 * ‖deriv f y‖ ^ 2) := by
+ 33946 |     simpa only [Pi.mul_apply] using
+ 33947 |       hderivNormSq.mul_left (f := fun y : ℝ => y ^ 2)
+ 33948 |   have henergyCompact : HasCompactSupport energy := by
+ 33949 |     exact hfirstCompact.add hsecondCompact
+ 33950 |   have hweightedSmooth : ContDiff ℝ 1 weighted := by
+ 33951 |     exact contDiff_id.mul (hf.norm_sq ℂ)
+ 33952 |   have henergyContinuous : Continuous energy := by
+ 33953 |     exact
+ 33954 |       (continuous_const.mul (hf.continuous.norm.pow 2)).add
+ 33955 |         ((continuous_id.pow 2).mul
+ 33956 |           (hf.continuous_deriv_one.norm.pow 2))
+ 33957 |   have hderivWeightedIntegrable :
+ 33958 |       Integrable (fun y : ℝ => ‖deriv weighted y‖) :=
+ 33959 |     (hweightedSmooth.continuous_deriv_one.norm).integrable_of_hasCompactSupport hweightedCompact.deriv.norm
+ 33960 |   have henergyIntegrable : Integrable energy :=
+ 33961 |     henergyContinuous.integrable_of_hasCompactSupport henergyCompact
+ 33962 |   have hFTC : ‖weighted H‖ ≤
+ 33963 |       ∫ y in Set.Ioi H, ‖deriv weighted y‖ := by
+ 33964 |     calc
+ 33965 |       ‖weighted H‖ = ‖-weighted H‖ := by rw [norm_neg]
+ 33966 |       _ = ‖∫ y in Set.Ioi H, deriv weighted y‖ := by
+ 33967 |         rw [hweightedCompact.integral_Ioi_deriv_eq
+ 33968 |           hweightedSmooth H]
+ 33969 |       _ ≤ ∫ y in Set.Ioi H, ‖deriv weighted y‖ :=
+ 33970 |         norm_integral_le_integral_norm _
+ 33971 |   have hmono :
+ 33972 |       (∫ y in Set.Ioi H, ‖deriv weighted y‖) ≤
+ 33973 |         ∫ y in Set.Ioi H, energy y := by
+ 33974 |     apply setIntegral_mono_on
+ 33975 |       hderivWeightedIntegrable.integrableOn
+ 33976 |       henergyIntegrable.integrableOn measurableSet_Ioi
+ 33977 |     intro y hy
+ 33978 |     exact norm_deriv_height_mul_normSq_le (hf.differentiable (by norm_num))
+ 33979 |       ((zero_le_one.trans hH).trans (le_of_lt hy))
+ 33980 |   have hH0 : 0 ≤ H := zero_le_one.trans hH
+ 33981 |   calc
+ 33982 |     H * ‖f H‖ ^ 2 = ‖weighted H‖ := by
+ 33983 |       simp only [weighted, Real.norm_eq_abs, abs_mul,
+ 33984 |         abs_of_nonneg hH0, abs_of_nonneg (sq_nonneg _)]
+ 33985 |     _ ≤ ∫ y in Set.Ioi H, ‖deriv weighted y‖ := hFTC
+ 33986 |     _ ≤ ∫ y in Set.Ioi H, energy y := hmono
+ 33987 | 
+ 33988 | /-- Fubini-ready scalar strip estimate.  All integrability assumptions here
+ 33989 | are ordinary Bochner hypotheses; the pointwise trace estimate itself is the
+ 33990 | unconditional theorem above. -/
+
+====================================================================================================
+DECLARATION tendsto_zero_normSq_le_energy_Ioi index=2741 starts=34032 first_error=34048:4
+ 34032 | theorem tendsto_zero_normSq_le_energy_Ioi
+ 34033 |     {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) {r₀ : ℝ}
+ 34034 |     (hzero : Filter.Tendsto f Filter.atTop (nhds 0))
+ 34035 |     (henergy : IntegrableOn
+ 34036 |       (fun r => ‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2) (Set.Ioi r₀)) :
+ 34037 |     ‖f r₀‖ ^ 2 ≤
+ 34038 |       ∫ r in Set.Ioi r₀, (‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2) := by
+ 34039 |   let g : ℝ → ℝ := fun r => ‖f r‖ ^ 2
+ 34040 |   have hgSmooth : ContDiff ℝ 1 g := hf.norm_sq ℂ
+ 34041 |   have hgDerivMeasurable : AEStronglyMeasurable
+ 34042 |       (fun r => ‖deriv g r‖) ((volume : Measure ℝ).restrict (Set.Ioi r₀)) :=
+ 34043 |     (hgSmooth.continuous_deriv_one.norm.aestronglyMeasurable).mono_measure Measure.restrict_le_self
+ 34044 |   have hgDerivIntegrable : IntegrableOn (fun r => ‖deriv g r‖)
+ 34045 |       (Set.Ioi r₀) := by
+ 34046 |     apply Integrable.mono henergy hgDerivMeasurable
+ 34047 |     filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
+ 34048 |     exact norm_deriv_normSq_le_energy
+ 34049 |       (hf.differentiable (by norm_num)) r
+ 34050 |   have hgDerivIntegrable' : IntegrableOn (deriv g) (Set.Ioi r₀) := by
+ 34051 |     apply (integrable_norm_iff
+ 34052 |       ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).mono_measure Measure.restrict_le_self)).mp
+ 34053 |     exact hgDerivIntegrable
+ 34054 |   have hgzero : Filter.Tendsto g Filter.atTop (nhds 0) := by
+ 34055 |     simpa only [g, norm_zero, zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using
+ 34056 |       hzero.norm.pow 2
+ 34057 |   have hFTC : (∫ r in Set.Ioi r₀, deriv g r) = -g r₀ := by
+ 34058 |     simpa only [zero_sub] using
+ 34059 |       integral_Ioi_of_hasDerivAt_of_tendsto'
+ 34060 |         (f := g) (f' := deriv g) (m := 0)
+ 34061 |         (fun r _hr =>
+ 34062 |           (hgSmooth.differentiable (by norm_num) r).hasDerivAt)
+ 34063 |         hgDerivIntegrable' hgzero
+ 34064 |   calc
+ 34065 |     ‖f r₀‖ ^ 2 = ‖g r₀‖ := by
+ 34066 |       simp only [g, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+ 34067 |     _ = ‖∫ r in Set.Ioi r₀, deriv g r‖ := by
+ 34068 |       rw [hFTC, norm_neg]
+ 34069 |     _ ≤ ∫ r in Set.Ioi r₀, ‖deriv g r‖ :=
+ 34070 |       norm_integral_le_integral_norm _
+ 34071 |     _ ≤ ∫ r in Set.Ioi r₀,
+ 34072 |         (‖f r‖ ^ 2 + ‖deriv f r‖ ^ 2) := by
+ 34073 |       apply setIntegral_mono_on hgDerivIntegrable henergy measurableSet_Ioi
+ 34074 |       intro r _hr
+ 34075 |       exact norm_deriv_normSq_le_energy
+ 34076 |         (hf.differentiable (by norm_num)) r
+ 34077 | 
+ 34078 | /-- A `C¹` function which is literally zero sufficiently far to the right has
+ 34079 | integrable one-dimensional `H¹` energy on every right tail. -/
+
+====================================================================================================
+DECLARATION norm_dy_le_half_raise_lower_base index=2744 starts=34140 first_error=34164:8
+ 34140 | theorem norm_dy_le_half_raise_lower_base
+ 34141 |     (a : ℤ) (f : ℍ → ℂ) (z : ℍ) :
+ 34142 |     ‖dy f z‖ ≤
+ 34143 |       (‖raiseRaw a f z‖ +
+ 34144 |         ‖lowerRaw a f z / heightC z ^ 2‖ +
+ 34145 |         ‖physicalExponent a / heightC z * f z‖) / 2 := by
+ 34146 |   rw [dy_eq_half_raiseRaw_add_lowerRaw_div_sub_base]
+ 34147 |   have htri :
+ 34148 |       ‖raiseRaw a f z + lowerRaw a f z / heightC z ^ 2 -
+ 34149 |           physicalExponent a / heightC z * f z‖ ≤
+ 34150 |         ‖raiseRaw a f z‖ +
+ 34151 |           ‖lowerRaw a f z / heightC z ^ 2‖ +
+ 34152 |           ‖physicalExponent a / heightC z * f z‖ := by
+ 34153 |     calc
+ 34154 |       ‖raiseRaw a f z + lowerRaw a f z / heightC z ^ 2 -
+ 34155 |           physicalExponent a / heightC z * f z‖ =
+ 34156 |           ‖(raiseRaw a f z + lowerRaw a f z / heightC z ^ 2) +
+ 34157 |             -(physicalExponent a / heightC z * f z)‖ := by ring_nf
+ 34158 |       _ ≤ ‖raiseRaw a f z + lowerRaw a f z / heightC z ^ 2‖ +
+ 34159 |           ‖-(physicalExponent a / heightC z * f z)‖ :=
+ 34160 |         norm_add_le _ _
+ 34161 |       _ ≤ (‖raiseRaw a f z‖ +
+ 34162 |           ‖lowerRaw a f z / heightC z ^ 2‖) +
+ 34163 |           ‖-(physicalExponent a / heightC z * f z)‖ :=
+ 34164 |         add_le_add_right (norm_add_le _ _) _
+ 34165 |       _ = ‖raiseRaw a f z‖ +
+ 34166 |           ‖lowerRaw a f z / heightC z ^ 2‖ +
+ 34167 |           ‖physicalExponent a / heightC z * f z‖ := by simp
+ 34168 |   calc
+ 34169 |     ‖(1 / 2 : ℂ) *
+ 34170 |         (raiseRaw a f z + lowerRaw a f z / heightC z ^ 2 -
+ 34171 |           physicalExponent a / heightC z * f z)‖ =
+ 34172 |         (1 / 2 : ℝ) *
+ 34173 |           ‖raiseRaw a f z + lowerRaw a f z / heightC z ^ 2 -
+ 34174 |             physicalExponent a / heightC z * f z‖ := by
+ 34175 |       rw [norm_mul]
+ 34176 |       norm_num
+ 34177 |     _ ≤ (1 / 2 : ℝ) *
+ 34178 |         (‖raiseRaw a f z‖ +
+ 34179 |           ‖lowerRaw a f z / heightC z ^ 2‖ +
+ 34180 |           ‖physicalExponent a / heightC z * f z‖) := by
+ 34181 |       exact mul_le_mul_of_nonneg_left htri (by norm_num)
+ 34182 |     _ = (‖raiseRaw a f z‖ +
+ 34183 |         ‖lowerRaw a f z / heightC z ^ 2‖ +
+ 34184 |         ‖physicalExponent a / heightC z * f z‖) / 2 := by ring
+ 34185 | 
+ 34186 | /-- Predecessor form of the Euclidean gauge exponent. -/
+
+====================================================================================================
+DECLARATION fixedPhaseEuclideanGauge_lower_pred index=2748 starts=34220 first_error=34225:44
+ 34220 | theorem fixedPhaseEuclideanGauge_lower_pred
+ 34221 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+ 34222 |     fixedPhaseEuclideanGauge (n - 1)
+ 34223 |         (InverseEtaFixedPhaseCore.lower n u) z =
+ 34224 |       euclideanLowerFromSuccGauge (n - 1)
+ 34225 |         (fixedPhaseEuclideanGauge n u) z := by
+ 34226 |   have hScale := euclideanGaugeScale_succ (n - 1) z
+ 34227 |   have hExponent := euclideanGaugeExponent_succ (n - 1)
+ 34228 |   rw [sub_add_cancel] at hScale hExponent
+ 34229 |   simp only [fixedPhaseEuclideanGauge_apply,
+ 34230 |     InverseEtaFixedPhaseCore.lower_apply]
+ 34231 |   unfold euclideanLowerFromSuccGauge lowerRaw
+ 34232 |   rw [dx_fixedPhaseEuclideanGauge,
+ 34233 |     dy_fixedPhaseEuclideanGauge,
+ 34234 |     hScale, hExponent,
+ 34235 |     complex_rpow_derivative_eq_div]
+ 34236 |   have hz : heightC z ≠ 0 :=
+ 34237 |     Complex.ofReal_ne_zero.mpr z.im_ne_zero
+ 34238 |   field_simp [hz]
+ 34239 |   ring
+ 34240 | 
+ 34241 | /-- The complementary difference of the same two graph coordinates recovers
+ 34242 | the horizontal logarithmic derivative. -/
+
+====================================================================================================
+DECLARATION height_mul_dx_eq_negI_half_raise_sub_lower_sub index=2750 starts=34255 first_error=34261:67
+ 34255 | theorem height_mul_dx_eq_negI_half_raise_sub_lower_sub
+ 34256 |     (n : ℤ) (f : ℍ → ℂ) (z : ℍ) :
+ 34257 |     heightC z * dx f z =
+ 34258 |       (-Complex.I / 2) *
+ 34259 |         (euclideanRaiseGauge n f z -
+ 34260 |           euclideanLowerFromSuccGauge (n - 1) f z -
+ 34261 |           ((2 * (euclideanGaugeExponent n + 1) : ℝ) : ℂ) * f z) := by
+ 34262 |   rw [euclideanRaiseGauge_sub_lowerPredGauge]
+ 34263 |   ring
+ 34264 | 
+ 34265 | /-- Absolute size of the zero-order drift in the horizontal reconstruction. -/
+
+====================================================================================================
+DECLARATION norm_height_mul_dx_le_euclideanGraph index=2754 starts=34296 first_error=34306:48
+ 34296 | theorem norm_height_mul_dx_le_euclideanGraph
+ 34297 |     (n : ℤ) (f : ℍ → ℂ) (z : ℍ) :
+ 34298 |     ‖heightC z * dx f z‖ ≤
+ 34299 |       (‖euclideanRaiseGauge n f z‖ +
+ 34300 |         ‖euclideanLowerFromSuccGauge (n - 1) f z‖ +
+ 34301 |         euclideanHorizontalDrift n * ‖f z‖) / 2 := by
+ 34302 |   rw [height_mul_dx_eq_negI_half_raise_sub_lower_sub]
+ 34303 |   let R := euclideanRaiseGauge n f z
+ 34304 |   let L := euclideanLowerFromSuccGauge (n - 1) f z
+ 34305 |   let c : ℂ := ((2 * (euclideanGaugeExponent n + 1) : ℝ) : ℂ)
+ 34306 |   have hc : ‖c‖ = euclideanHorizontalDrift n := by
+ 34307 |     simp only [c, Complex.norm_real, euclideanHorizontalDrift]
+ 34308 |   change ‖(-Complex.I / 2) * (R - L - c * f z)‖ ≤
+ 34309 |     (‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖) / 2
+ 34310 |   rw [norm_mul, norm_div, norm_neg, Complex.norm_I, norm_ofNat, one_div]
+ 34311 |   have hinside : ‖R - L - c * f z‖ ≤
+ 34312 |       ‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖ := by
+ 34313 |     calc
+ 34314 |       ‖R - L - c * f z‖ ≤ ‖R - L‖ + ‖c * f z‖ := norm_sub_le _ _
+ 34315 |       _ ≤ (‖R‖ + ‖L‖) + ‖c * f z‖ := by
+ 34316 |         exact add_le_add_right (norm_sub_le _ _) _
+ 34317 |       _ = ‖R‖ + ‖L‖ + euclideanHorizontalDrift n * ‖f z‖ := by
+ 34318 |         rw [norm_mul, hc]
+ 34319 |   nlinarith
+ 34320 | 
+ 34321 | /-! #### E. Exact unitary pullback of a selected horocycle
+ 34322 | 
+ 34323 | For `φ_q(z) = gammaTwoCosetRep q • z`, conformality gives the Euclidean
+ 34324 | unitary pullback factor
+ 34325 | 
+ 34326 | `s_q(z) = Im(φ_q(z)) / Im(z) = |det Dφ_q(z)|^(1/2)`.
+ 34327 | 
+ 34328 | The following definitions use the first quotient directly.  The key squared
+ 34329 | norm identity is proved from `euclideanGaugeScale_sq`; it is therefore not an
+ 34330 | assumed covariance statement for a coset representative outside `Γ(2)`. -/
+ 34331 | 
+ 34332 | /-- Complex-valued conformal scale of a selected Möbius chart.  It is in fact
+ 34333 | positive real-valued, but the complex codomain lets it multiply the Euclidean
+ 34334 | gauge without coercion noise. -/
+
+====================================================================================================
+DECLARATION selectedCosetConformalScaleC_realSmooth index=2756 starts=34339 first_error=34346:53
+ 34339 | theorem selectedCosetConformalScaleC_realSmooth
+ 34340 |     (q : GammaTwoRightCoset) :
+ 34341 |     RealSmooth (selectedCosetConformalScaleC q) := by
+ 34342 |   have hnum : RealSmooth
+ 34343 |       (fun z => heightC (selectedCosetAction q z)) :=
+ 34344 |     RealSmooth.comp_selectedCosetAction realSmooth_heightC q
+ 34345 |   have hdenInv : RealSmooth (fun z => (heightC z)⁻¹) :=
+ 34346 |     realSmooth_heightC.inv (fun z => heightC_ne_zero z)
+ 34347 |   simpa only [selectedCosetConformalScaleC, div_eq_mul_inv] using
+ 34348 |     hnum.mul hdenInv
+ 34349 | 
+ 34350 | /-- The conformal scale is the inverse squared denominator norm. -/
+
+====================================================================================================
+DECLARATION selectedCosetConformalScaleC_eq_inv_normSq_denom index=2757 starts=34351 first_error=34360:6
+ 34351 | theorem selectedCosetConformalScaleC_eq_inv_normSq_denom
+ 34352 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34353 |     selectedCosetConformalScaleC q z =
+ 34354 |       ((1 / Complex.normSq
+ 34355 |         (UpperHalfPlane.denom (selectedCosetGL q) z) : ℝ) : ℂ) := by
+ 34356 |   have him := UpperHalfPlane.im_smul_eq_div_normSq
+ 34357 |     (gammaTwoCosetRep q) z
+ 34358 |   unfold selectedCosetConformalScaleC selectedCosetAction selectedCosetGL
+ 34359 |     heightC
+ 34360 |   rw [him]
+ 34361 |   simp only [Complex.ofReal_div, Complex.ofReal_one]
+ 34362 | 
+ 34363 | /-- Horizontal derivative of the conformal scale. -/
+
+====================================================================================================
+DECLARATION dx_selectedCosetConformalScaleC index=2758 starts=34364 first_error=34372:53
+ 34364 | theorem dx_selectedCosetConformalScaleC
+ 34365 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34366 |     dx (selectedCosetConformalScaleC q) z =
+ 34367 |       selectedCosetB q z / heightC z := by
+ 34368 |   let N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
+ 34369 |   let Dinv : ℍ → ℂ := fun w => (heightC w)⁻¹
+ 34370 |   have hN : RealSmooth N := RealSmooth.comp_selectedCosetAction realSmooth_heightC q
+ 34371 |   have hDinv : RealSmooth Dinv :=
+ 34372 |     realSmooth_heightC.inv (fun w => heightC_ne_zero w)
+ 34373 |   have hdxN : dx N z = selectedCosetB q z := by
+ 34374 |     simpa only [N, dx_heightC, dy_heightC, mul_zero, mul_one,
+ 34375 |       zero_add] using
+ 34376 |         dx_comp_selectedCosetAction q realSmooth_heightC z
+ 34377 |   have hdxDinv : dx Dinv z = 0 := by
+ 34378 |     change d1 Dinv z 1 = 0
+ 34379 |     rw [show d1 Dinv z 1 =
+ 34380 |         -(d1 heightC z 1) / heightC z ^ 2 by
+ 34381 |       simpa only [Dinv] using
+ 34382 |         d1_inv realSmooth_heightC z 1 (heightC_ne_zero z),
+ 34383 |       d1_heightC]
+ 34384 |     simp
+ 34385 |   have hfun : selectedCosetConformalScaleC q = N * Dinv := by
+ 34386 |     funext w
+ 34387 |     simp only [selectedCosetConformalScaleC, N, Dinv,
+ 34388 |       Pi.mul_apply, div_eq_mul_inv]
+ 34389 |   rw [hfun, dx_mul hN hDinv, hdxN, hdxDinv]
+ 34390 |   simp only [mul_zero, add_zero, Dinv, div_eq_mul_inv]
+ 34391 | 
+ 34392 | /-- Vertical derivative of the conformal scale. -/
+
+====================================================================================================
+DECLARATION dy_selectedCosetConformalScaleC index=2759 starts=34393 first_error=34402:53
+ 34393 | theorem dy_selectedCosetConformalScaleC
+ 34394 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34395 |     dy (selectedCosetConformalScaleC q) z =
+ 34396 |       selectedCosetA q z / heightC z -
+ 34397 |         selectedCosetConformalScaleC q z / heightC z := by
+ 34398 |   let N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
+ 34399 |   let Dinv : ℍ → ℂ := fun w => (heightC w)⁻¹
+ 34400 |   have hN : RealSmooth N := RealSmooth.comp_selectedCosetAction realSmooth_heightC q
+ 34401 |   have hDinv : RealSmooth Dinv :=
+ 34402 |     realSmooth_heightC.inv (fun w => heightC_ne_zero w)
+ 34403 |   have hdyN : dy N z = selectedCosetA q z := by
+ 34404 |     simpa only [N, dx_heightC, dy_heightC, mul_zero, mul_one,
+ 34405 |       add_zero] using
+ 34406 |         dy_comp_selectedCosetAction q realSmooth_heightC z
+ 34407 |   have hdyDinv : dy Dinv z = -(1 / heightC z ^ 2) := by
+ 34408 |     change d1 Dinv z Complex.I = _
+ 34409 |     rw [show d1 Dinv z Complex.I =
+ 34410 |         -(d1 heightC z Complex.I) / heightC z ^ 2 by
+ 34411 |       simpa only [Dinv] using
+ 34412 |         d1_inv realSmooth_heightC z Complex.I (heightC_ne_zero z),
+ 34413 |       d1_heightC]
+ 34414 |     field_simp [heightC_ne_zero z]
+ 34415 |   have hfun : selectedCosetConformalScaleC q = N * Dinv := by
+ 34416 |     funext w
+ 34417 |     simp only [selectedCosetConformalScaleC, N, Dinv,
+ 34418 |       Pi.mul_apply, div_eq_mul_inv]
+ 34419 |   rw [hfun, dy_mul hN hDinv, hdyN, hdyDinv]
+ 34420 |   simp only [Dinv, N, div_eq_mul_inv]
+ 34421 |   have hz : heightC z ≠ 0 := heightC_ne_zero z
+ 34422 |   field_simp [hz]
+ 34423 |   <;> ring
+ 34424 | 
+ 34425 | /-- Logarithmic horizontal scale derivative. -/
+
+====================================================================================================
+DECLARATION norm_selectedCosetConformalScaleC_eq_derivative index=2762 starts=34442 first_error=34450:25
+ 34442 | theorem norm_selectedCosetConformalScaleC_eq_derivative
+ 34443 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34444 |     ‖selectedCosetConformalScaleC q z‖ =
+ 34445 |       ‖selectedCosetDerivative q z‖ := by
+ 34446 |   have hden := selectedCosetDenom_ne_zero q z
+ 34447 |   have hnorm : 0 < ‖selectedCosetDenom q z‖ := norm_pos_iff.mpr hden
+ 34448 |   rw [selectedCosetConformalScaleC_eq_inv_normSq_denom]
+ 34449 |   unfold selectedCosetDerivative selectedCosetDenom selectedCosetGL
+ 34450 |   rw [Complex.norm_real, abs_of_pos (one_div_pos.mpr
+ 34451 |     (Complex.normSq_pos.mpr hden)), norm_div, norm_one, norm_pow,
+ 34452 |     Complex.normSq_eq_norm_sq]
+ 34453 | 
+ 34454 | /-- Each real conformal coefficient is bounded by the full scale. -/
+
+====================================================================================================
+DECLARATION norm_selectedCosetA_le_scale index=2763 starts=34455 first_error=34459:65
+ 34455 | theorem norm_selectedCosetA_le_scale
+ 34456 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34457 |     ‖selectedCosetA q z‖ ≤ ‖selectedCosetConformalScaleC q z‖ := by
+ 34458 |   calc
+ 34459 |     ‖selectedCosetA q z‖ = |(selectedCosetDerivative q z).re| := by
+ 34460 |       simp only [selectedCosetA, Complex.norm_real]
+ 34461 |     _ ≤ ‖selectedCosetDerivative q z‖ := Complex.abs_re_le_norm _
+ 34462 |     _ = ‖selectedCosetConformalScaleC q z‖ :=
+ 34463 |       (norm_selectedCosetConformalScaleC_eq_derivative q z).symm
+ 34464 | 
+
+====================================================================================================
+DECLARATION norm_selectedCosetB_le_scale index=2764 starts=34465 first_error=34469:65
+ 34465 | theorem norm_selectedCosetB_le_scale
+ 34466 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34467 |     ‖selectedCosetB q z‖ ≤ ‖selectedCosetConformalScaleC q z‖ := by
+ 34468 |   calc
+ 34469 |     ‖selectedCosetB q z‖ = |(selectedCosetDerivative q z).im| := by
+ 34470 |       simp only [selectedCosetB, Complex.norm_real]
+ 34471 |     _ ≤ ‖selectedCosetDerivative q z‖ := Complex.abs_im_le_norm _
+ 34472 |     _ = ‖selectedCosetConformalScaleC q z‖ :=
+ 34473 |       (norm_selectedCosetConformalScaleC_eq_derivative q z).symm
+ 34474 | 
+ 34475 | /-- Uniform logarithmic derivative bounds for all six selected charts. -/
+
+====================================================================================================
+DECLARATION norm_height_mul_dy_selectedCosetConformalScaleC_le index=2766 starts=34483 first_error=34494:6
+ 34483 | theorem norm_height_mul_dy_selectedCosetConformalScaleC_le
+ 34484 |     (q : GammaTwoRightCoset) (z : ℍ) :
+ 34485 |     ‖heightC z * dy (selectedCosetConformalScaleC q) z‖ ≤
+ 34486 |       2 * ‖selectedCosetConformalScaleC q z‖ := by
+ 34487 |   rw [height_mul_dy_selectedCosetConformalScaleC]
+ 34488 |   calc
+ 34489 |     ‖selectedCosetA q z - selectedCosetConformalScaleC q z‖ ≤
+ 34490 |         ‖selectedCosetA q z‖ +
+ 34491 |           ‖selectedCosetConformalScaleC q z‖ := norm_sub_le _ _
+ 34492 |     _ ≤ ‖selectedCosetConformalScaleC q z‖ +
+ 34493 |           ‖selectedCosetConformalScaleC q z‖ := by
+ 34494 |       exact add_le_add_right (norm_selectedCosetA_le_scale q z) _
+ 34495 |     _ = 2 * ‖selectedCosetConformalScaleC q z‖ := by ring
+ 34496 | 
+ 34497 | /-- General unitary Euclidean pullback along one selected tile chart. -/
+
+====================================================================================================
+DECLARATION dx_selectedCosetUnitaryPullback index=2769 starts=34510 first_error=34519:6
+ 34510 | theorem dx_selectedCosetUnitaryPullback
+ 34511 |     (q : GammaTwoRightCoset) {f : ℍ → ℂ} (hf : RealSmooth f)
+ 34512 |     (z : ℍ) :
+ 34513 |     dx (selectedCosetUnitaryPullback q f) z =
+ 34514 |       dx (selectedCosetConformalScaleC q) z *
+ 34515 |           f (selectedCosetAction q z) +
+ 34516 |         selectedCosetConformalScaleC q z *
+ 34517 |           (selectedCosetA q z * dx f (selectedCosetAction q z) +
+ 34518 |             selectedCosetB q z * dy f (selectedCosetAction q z)) := by
+ 34519 |   rw [dx_mul (selectedCosetConformalScaleC_realSmooth q)
+ 34520 |     (RealSmooth.comp_selectedCosetAction hf q),
+ 34521 |     dx_comp_selectedCosetAction q hf]
+ 34522 | 
+ 34523 | /-- Exact vertical chain/product rule for the unitary pullback. -/
+
+====================================================================================================
+DECLARATION dy_selectedCosetUnitaryPullback index=2770 starts=34524 first_error=34533:6
+ 34524 | theorem dy_selectedCosetUnitaryPullback
+ 34525 |     (q : GammaTwoRightCoset) {f : ℍ → ℂ} (hf : RealSmooth f)
+ 34526 |     (z : ℍ) :
+ 34527 |     dy (selectedCosetUnitaryPullback q f) z =
+ 34528 |       dy (selectedCosetConformalScaleC q) z *
+ 34529 |           f (selectedCosetAction q z) +
+ 34530 |         selectedCosetConformalScaleC q z *
+ 34531 |           (-selectedCosetB q z * dx f (selectedCosetAction q z) +
+ 34532 |             selectedCosetA q z * dy f (selectedCosetAction q z)) := by
+ 34533 |   rw [dy_mul (selectedCosetConformalScaleC_realSmooth q)
+ 34534 |     (RealSmooth.comp_selectedCosetAction hf q),
+ 34535 |     dy_comp_selectedCosetAction q hf]
+ 34536 | 
+ 34537 | /-- Exact logarithmic vertical derivative of the unitary pullback. -/
+
+====================================================================================================
+DECLARATION height_mul_dy_selectedCosetUnitaryPullback index=2771 starts=34538 first_error=34551:4
+ 34538 | theorem height_mul_dy_selectedCosetUnitaryPullback
+ 34539 |     (q : GammaTwoRightCoset) {f : ℍ → ℂ} (hf : RealSmooth f)
+ 34540 |     (z : ℍ) :
+ 34541 |     heightC z * dy (selectedCosetUnitaryPullback q f) z =
+ 34542 |       (selectedCosetA q z - selectedCosetConformalScaleC q z) *
+ 34543 |           f (selectedCosetAction q z) -
+ 34544 |         selectedCosetB q z *
+ 34545 |           (heightC (selectedCosetAction q z) *
+ 34546 |             dx f (selectedCosetAction q z)) +
+ 34547 |         selectedCosetA q z *
+ 34548 |           (heightC (selectedCosetAction q z) *
+ 34549 |             dy f (selectedCosetAction q z)) := by
+ 34550 |   rw [dy_selectedCosetUnitaryPullback q hf,
+ 34551 |     height_mul_dy_selectedCosetConformalScaleC]
+ 34552 |   have hscale :
+ 34553 |       heightC z * selectedCosetConformalScaleC q z =
+ 34554 |         heightC (selectedCosetAction q z) := by
+ 34555 |     unfold selectedCosetConformalScaleC
+ 34556 |     exact mul_div_cancel₀ _ (heightC_ne_zero z)
+ 34557 |   rw [mul_add, ← mul_assoc, hscale]
+ 34558 |   ring
+ 34559 | 
+ 34560 | /-- Uniform pointwise bound for that vertical derivative.  The constants
+ 34561 | `2,1,1` come respectively from the logarithmic scale derivative and the two
+ 34562 | orthogonal conformal coefficients; in particular they do not depend on the
+ 34563 | selected cusp chart. -/
+
+====================================================================================================
+DECLARATION norm_height_mul_dy_selectedCosetUnitaryPullback_le index=2772 starts=34564 first_error=34588:23
+ 34564 | theorem norm_height_mul_dy_selectedCosetUnitaryPullback_le
+ 34565 |     (q : GammaTwoRightCoset) {f : ℍ → ℂ} (hf : RealSmooth f)
+ 34566 |     (z : ℍ) :
+ 34567 |     ‖heightC z * dy (selectedCosetUnitaryPullback q f) z‖ ≤
+ 34568 |       ‖selectedCosetConformalScaleC q z‖ *
+ 34569 |         (2 * ‖f (selectedCosetAction q z)‖ +
+ 34570 |           ‖heightC (selectedCosetAction q z) *
+ 34571 |             dx f (selectedCosetAction q z)‖ +
+ 34572 |           ‖heightC (selectedCosetAction q z) *
+ 34573 |             dy f (selectedCosetAction q z)‖) := by
+ 34574 |   rw [height_mul_dy_selectedCosetUnitaryPullback q hf]
+ 34575 |   let A := selectedCosetA q z
+ 34576 |   let B := selectedCosetB q z
+ 34577 |   let S := selectedCosetConformalScaleC q z
+ 34578 |   let F := f (selectedCosetAction q z)
+ 34579 |   let Fx := heightC (selectedCosetAction q z) *
+ 34580 |     dx f (selectedCosetAction q z)
+ 34581 |   let Fy := heightC (selectedCosetAction q z) *
+ 34582 |     dy f (selectedCosetAction q z)
+ 34583 |   have hA : ‖A‖ ≤ ‖S‖ := norm_selectedCosetA_le_scale q z
+ 34584 |   have hB : ‖B‖ ≤ ‖S‖ := norm_selectedCosetB_le_scale q z
+ 34585 |   have hAS : ‖A - S‖ ≤ 2 * ‖S‖ := by
+ 34586 |     calc
+ 34587 |       ‖A - S‖ ≤ ‖A‖ + ‖S‖ := norm_sub_le _ _
+ 34588 |       _ ≤ ‖S‖ + ‖S‖ := add_le_add_right hA _
+ 34589 |       _ = 2 * ‖S‖ := by ring
+ 34590 |   change ‖(A - S) * F - B * Fx + A * Fy‖ ≤
+ 34591 |     ‖S‖ * (2 * ‖F‖ + ‖Fx‖ + ‖Fy‖)
+ 34592 |   calc
+ 34593 |     ‖(A - S) * F - B * Fx + A * Fy‖ ≤
+ 34594 |         ‖(A - S) * F‖ + ‖B * Fx‖ + ‖A * Fy‖ := by
+ 34595 |       calc
+ 34596 |         _ ≤ ‖(A - S) * F - B * Fx‖ + ‖A * Fy‖ := norm_add_le _ _
+ 34597 |         _ ≤ (‖(A - S) * F‖ + ‖B * Fx‖) + ‖A * Fy‖ := by
+ 34598 |           exact add_le_add_right (norm_sub_le _ _) _
+ 34599 |     _ = ‖A - S‖ * ‖F‖ + ‖B‖ * ‖Fx‖ + ‖A‖ * ‖Fy‖ := by
+ 34600 |       rw [norm_mul, norm_mul, norm_mul]
+ 34601 |     _ ≤ (2 * ‖S‖) * ‖F‖ + ‖S‖ * ‖Fx‖ + ‖S‖ * ‖Fy‖ := by
+ 34602 |       gcongr
+ 34603 |     _ = ‖S‖ * (2 * ‖F‖ + ‖Fx‖ + ‖Fy‖) := by ring
+ 34604 | 
+ 34605 | /-- The selected-chart vertical derivative is controlled pointwise by the
+ 34606 | actual Euclidean raising/lowering graph coordinates at the image point. -/
+
+====================================================================================================
+DECLARATION logHeightTraceDrift_nonneg index=2775 starts=34648 first_error=34651:2
+ 34648 | theorem logHeightTraceDrift_nonneg (n : ℤ) :
+ 34649 |     0 ≤ logHeightTraceDrift n := by
+ 34650 |   unfold logHeightTraceDrift
+ 34651 |   positivity
+ 34652 | 
+
+====================================================================================================
+DECLARATION height_mul_normSq_selectedCuspPulledEuclideanGauge index=2781 starts=34685 first_error=34710:29
+ 34685 | theorem height_mul_normSq_selectedCuspPulledEuclideanGauge
+ 34686 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 34687 |     (u : InverseEtaFixedPhaseCore n) (t : ℝ) :
+ 34688 |     gammaTwoCuspLevel Y *
+ 34689 |         ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2 =
+ 34690 |       selectedCuspTraceWeightSq n q Y t *
+ 34691 |         ‖(u : SmoothQuotientCompactFunction)
+ 34692 |           (gammaTwoSelectedHorocycleParam q Y t)‖ ^ 2 := by
+ 34693 |   let H : ℝ := gammaTwoCuspLevel Y
+ 34694 |   let z : ℍ := gammaTwoSelectedHorocycleParam q Y t
+ 34695 |   let s : ℝ := selectedCuspPullbackScale q Y t
+ 34696 |   have hH : 0 < H :=
+ 34697 |     lt_of_lt_of_le zero_lt_one (one_le_gammaTwoCuspLevel Y)
+ 34698 |   have hz : 0 < z.im := z.im_pos
+ 34699 |   have hs : 0 < s := selectedCuspPullbackScale_pos q Y t
+ 34700 |   have hGauge :
+ 34701 |       ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 =
+ 34702 |         (hyperbolicDensity z : ℝ) *
+ 34703 |           weightFiberScale (-paperOrbitExponent n) z *
+ 34704 |             ‖(u : SmoothQuotientCompactFunction) z‖ ^ 2 := by
+ 34705 |     calc
+ 34706 |       ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 =
+ 34707 |           (z.im ^ euclideanGaugeExponent n) ^ 2 *
+ 34708 |             ‖(u : SmoothQuotientCompactFunction) z‖ ^ 2 := by
+ 34709 |         rw [fixedPhaseEuclideanGauge_apply, norm_mul,
+ 34710 |           Complex.norm_real, abs_of_pos (Real.rpow_pos_of_pos hz _)]
+ 34711 |         ring
+ 34712 |       _ = (hyperbolicDensity z : ℝ) *
+ 34713 |           weightFiberScale (-paperOrbitExponent n) z *
+ 34714 |             ‖(u : SmoothQuotientCompactFunction) z‖ ^ 2 := by
+ 34715 |         rw [euclideanGaugeScale_sq]
+ 34716 |   have hDensity : (hyperbolicDensity z : ℝ) = (1 / z.im) ^ 2 := by
+ 34717 |     simp only [hyperbolicDensity, NNReal.coe_pow, NNReal.coe_div,
+ 34718 |       NNReal.coe_one, NNReal.coe_mk]
+ 34719 |   have hsFormula : s = z.im / H := rfl
+ 34720 |   change H *
+ 34721 |       ‖((s : ℝ) : ℂ) * fixedPhaseEuclideanGauge n u z‖ ^ 2 =
+ 34722 |     (weightFiberScale (-paperOrbitExponent n) z / H) *
+ 34723 |       ‖(u : SmoothQuotientCompactFunction) z‖ ^ 2
+ 34724 |   rw [norm_mul, Complex.norm_real, abs_of_pos hs, hGauge,
+ 34725 |     hDensity, hsFormula]
+ 34726 |   field_simp [ne_of_gt hH, ne_of_gt hz]
+ 34727 |   <;> ring
+ 34728 | 
+ 34729 | /-- The literal weighted restriction is exactly `sqrt(H)` times the unitary
+ 34730 | pulled gauge at the level of squared norms. -/
+
+====================================================================================================
+DECLARATION normSq_selectedCuspRestrictionRepresentative_eq_height_mul_pulled index=2782 starts=34731 first_error=34741:6
+ 34731 | theorem normSq_selectedCuspRestrictionRepresentative_eq_height_mul_pulled
+ 34732 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 34733 |     (u : InverseEtaFixedPhaseCore n) (t : ℝ) :
+ 34734 |     ‖selectedCuspRestrictionRepresentative n q Y u t‖ ^ 2 =
+ 34735 |       gammaTwoCuspLevel Y *
+ 34736 |         ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2 := by
+ 34737 |   have hw :
+ 34738 |       ‖((selectedCuspTraceWeight n q Y t : ℝ) : ℂ)‖ ^ 2 =
+ 34739 |         selectedCuspTraceWeightSq n q Y t := by
+ 34740 |     rw [Complex.norm_real,
+ 34741 |       abs_of_pos (selectedCuspTraceWeight_pos n q Y t),
+ 34742 |       selectedCuspTraceWeight_sq]
+ 34743 |   calc
+ 34744 |     ‖selectedCuspRestrictionRepresentative n q Y u t‖ ^ 2 =
+ 34745 |         selectedCuspTraceWeightSq n q Y t *
+ 34746 |           ‖(u : SmoothQuotientCompactFunction)
+ 34747 |             (gammaTwoSelectedHorocycleParam q Y t)‖ ^ 2 := by
+ 34748 |       rw [selectedCuspRestrictionRepresentative, norm_mul, mul_pow, hw]
+ 34749 |     _ = gammaTwoCuspLevel Y *
+ 34750 |         ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2 :=
+ 34751 |       (height_mul_normSq_selectedCuspPulledEuclideanGauge
+ 34752 |         n q Y u t).symm
+ 34753 | 
+ 34754 | /-- Squared norm in the fixed horocycle `L²` target as the literal integral
+ 34755 | of squared pointwise norms. -/
+
+====================================================================================================
+DECLARATION selectedHorocycleL2_norm_sq_eq_integral index=2783 starts=34756 first_error=34760:8
+ 34756 | theorem selectedHorocycleL2_norm_sq_eq_integral
+ 34757 |     (F : SelectedHorocycleL2) :
+ 34758 |     ‖F‖ ^ 2 =
+ 34759 |       ∫ t, ‖F t‖ ^ 2 ∂selectedHorocycleParameterMeasure := by
+ 34760 |   rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
+ 34761 |     ← integral_re (MeasureTheory.L2.integrable_inner F F)]
+ 34762 |   apply integral_congr_ae
+ 34763 |   exact Filter.Eventually.of_forall fun t =>
+ 34764 |     inner_self_eq_norm_sq (𝕜 := ℂ) (F t)
+ 34765 | 
+ 34766 | /-- Exact norm-level reduction of the actual selected-cusp trace to the
+ 34767 | unitarily pulled Euclidean gauge on the standard parameter interval. -/
+
+====================================================================================================
+DECLARATION RealSmooth.comp_logHeightBasePoint index=2788 starts=34818 first_error=34824:4
+ 34818 | theorem RealSmooth.comp_logHeightBasePoint
+ 34819 |     {f : ℍ → ℂ} (hf : RealSmooth f) (t : ℝ) :
+ 34820 |     ContDiff ℝ ∞ (fun r => f (logHeightBasePoint t r)) := by
+ 34821 |   let p : ℝ → ℂ := fun r => Complex.mk t (Real.exp r)
+ 34822 |   have hp : ContDiff ℝ ∞ p := by
+ 34823 |     dsimp only [p]
+ 34824 |     fun_prop
+ 34825 |   have hpMaps : Set.MapsTo p Set.univ
+ 34826 |       UpperHalfPlane.upperHalfPlaneSet := by
+ 34827 |     intro r _hr
+ 34828 |     simpa only [p, Complex.mk_im] using Real.exp_pos r
+ 34829 |   unfold RealSmooth at hf
+ 34830 |   have hcomp := hf.comp hp.contDiffOn hpMaps
+ 34831 |   rw [contDiffOn_univ] at hcomp
+ 34832 |   simpa only [p, upperLift, Function.comp_def, logHeightBasePoint,
+ 34833 |     UpperHalfPlane.ofComplex_apply_of_im_pos, Real.exp_pos] using hcomp
+ 34834 | 
+ 34835 | /-- Exact chain rule `d/dr = y d/dy` on a log-height slice. -/
+
+====================================================================================================
+DECLARATION deriv_comp_logHeightBasePoint index=2789 starts=34836 first_error=34848:4
+ 34836 | theorem deriv_comp_logHeightBasePoint
+ 34837 |     {f : ℍ → ℂ} (hf : RealSmooth f) (t r : ℝ) :
+ 34838 |     deriv (fun s => f (logHeightBasePoint t s)) r =
+ 34839 |       heightC (logHeightBasePoint t r) *
+ 34840 |         dy f (logHeightBasePoint t r) := by
+ 34841 |   let p : ℝ → ℂ := fun s => Complex.mk t (Real.exp s)
+ 34842 |   let z : ℍ := logHeightBasePoint t r
+ 34843 |   have hpDeriv : HasDerivAt p
+ 34844 |       (Complex.I * (Real.exp r : ℂ)) r := by
+ 34845 |     have hExp := (Real.hasDerivAt_exp r).ofReal_comp
+ 34846 |     have hIm := hExp.const_mul Complex.I
+ 34847 |     have hRe := hasDerivAt_const r (t : ℂ)
+ 34848 |     simpa only [p, Complex.mk_eq_add_mul_I, add_comm, mul_comm] using
+ 34849 |       hRe.add hIm
+ 34850 |   have hOuter : DifferentiableAt ℝ (upperLift f) (z : ℂ) :=
+ 34851 |     (RealSmooth.contDiffAt_upperLift hf z).differentiableAt (by simp)
+ 34852 |   have hComp := hOuter.hasFDerivAt.comp r hpDeriv.hasFDerivAt
+ 34853 |   have hEq : (fun s => f (logHeightBasePoint t s)) =
+ 34854 |       upperLift f ∘ p := by
+ 34855 |     funext s
+ 34856 |     simp only [p, logHeightBasePoint, upperLift, Function.comp_apply,
+ 34857 |       UpperHalfPlane.ofComplex_apply_of_im_pos, Real.exp_pos]
+ 34858 |   rw [hEq, hComp.hasDerivAt.deriv]
+ 34859 |   change d1 f z (Complex.I * (Real.exp r : ℂ)) =
+ 34860 |     heightC z * dy f z
+ 34861 |   rw [d1_complex_decomposition]
+ 34862 |   simp only [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
+ 34863 |     Complex.ofReal_re, Complex.ofReal_im, zero_mul, one_mul, add_zero,
+ 34864 |     z, heightC, logHeightBasePoint_im]
+ 34865 |   ring
+ 34866 | 
+
+====================================================================================================
+DECLARATION selectedLogHeightNaturalGauge_contDiff index=2790 starts=34867 first_error=34879:4
+ 34867 | theorem selectedLogHeightNaturalGauge_contDiff
+ 34868 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 34869 |     (t : ℝ) :
+ 34870 |     ContDiff ℝ 1 (selectedLogHeightNaturalGauge n q u t) := by
+ 34871 |   have hPull : RealSmooth
+ 34872 |       (selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)) :=
+ 34873 |     selectedCosetUnitaryPullback_realSmooth q
+ 34874 |       (fixedPhaseEuclideanGauge_realSmooth n u)
+ 34875 |   have hSlice := RealSmooth.comp_logHeightBasePoint hPull t
+ 34876 |   unfold selectedLogHeightNaturalGauge
+ 34877 |   have hFactor : ContDiff ℝ 1
+ 34878 |       (fun r : ℝ => ((Real.exp (r / 2) : ℝ) : ℂ)) := by
+ 34879 |     fun_prop
+ 34880 |   exact hFactor.mul (hSlice.of_le (by norm_num))
+ 34881 | 
+ 34882 | /-- Exact derivative of the natural log-height gauge. -/
+
+====================================================================================================
+DECLARATION deriv_selectedLogHeightNaturalGauge index=2791 starts=34883 first_error=34902:54
+ 34883 | theorem deriv_selectedLogHeightNaturalGauge
+ 34884 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 34885 |     (t r : ℝ) :
+ 34886 |     deriv (selectedLogHeightNaturalGauge n q u t) r =
+ 34887 |       ((Real.exp (r / 2) : ℝ) : ℂ) *
+ 34888 |         ((1 / 2 : ℂ) *
+ 34889 |             selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
+ 34890 |               (logHeightBasePoint t r) +
+ 34891 |           heightC (logHeightBasePoint t r) *
+ 34892 |             dy (selectedCosetUnitaryPullback q
+ 34893 |               (fixedPhaseEuclideanGauge n u))
+ 34894 |               (logHeightBasePoint t r)) := by
+ 34895 |   let h : ℍ → ℂ :=
+ 34896 |     selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
+ 34897 |   have hh : RealSmooth h :=
+ 34898 |     selectedCosetUnitaryPullback_realSmooth q
+ 34899 |       (fixedPhaseEuclideanGauge_realSmooth n u)
+ 34900 |   have hExp : HasDerivAt
+ 34901 |       (fun s : ℝ => ((Real.exp (s / 2) : ℝ) : ℂ))
+ 34902 |       (((1 / 2 : ℝ) * Real.exp (r / 2) : ℝ) : ℂ) r := by
+ 34903 |     convert (((Real.hasDerivAt_exp (r / 2)).comp r
+ 34904 |       ((hasDerivAt_id r).div_const 2)).ofReal_comp) using 1 <;> ring
+ 34905 |   have hSlice : HasDerivAt
+ 34906 |       (fun s => h (logHeightBasePoint t s))
+ 34907 |       (heightC (logHeightBasePoint t r) *
+ 34908 |         dy h (logHeightBasePoint t r)) r := by
+ 34909 |     rw [← deriv_comp_logHeightBasePoint hh t r]
+ 34910 |     exact ((RealSmooth.comp_logHeightBasePoint hh t).differentiable
+ 34911 |       (by norm_num) r).hasDerivAt
+ 34912 |   have hProduct := hExp.mul hSlice
+ 34913 |   change deriv
+ 34914 |       (fun s : ℝ => ((Real.exp (s / 2) : ℝ) : ℂ) *
+ 34915 |         h (logHeightBasePoint t s)) r = _
+ 34916 |   rw [hProduct.deriv]
+ 34917 |   ring
+ 34918 | 
+ 34919 | /-- Pointwise graph-coordinate bound for the derivative of the natural
+ 34920 | log-height gauge. -/
+
+====================================================================================================
+DECLARATION norm_deriv_selectedLogHeightNaturalGauge_le_graph index=2792 starts=34921 first_error=34967:4
+ 34921 | theorem norm_deriv_selectedLogHeightNaturalGauge_le_graph
+ 34922 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 34923 |     (t r : ℝ) :
+ 34924 |     ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ≤
+ 34925 |       Real.exp (r / 2) *
+ 34926 |         ‖selectedCosetConformalScaleC q (logHeightBasePoint t r)‖ *
+ 34927 |           (logHeightTraceDrift n *
+ 34928 |               ‖fixedPhaseEuclideanGauge n u
+ 34929 |                 (selectedCosetAction q (logHeightBasePoint t r))‖ +
+ 34930 |             ‖euclideanRaiseGauge n (fixedPhaseEuclideanGauge n u)
+ 34931 |               (selectedCosetAction q (logHeightBasePoint t r))‖ +
+ 34932 |             ‖euclideanLowerFromSuccGauge (n - 1)
+ 34933 |               (fixedPhaseEuclideanGauge n u)
+ 34934 |               (selectedCosetAction q (logHeightBasePoint t r))‖) := by
+ 34935 |   let z := logHeightBasePoint t r
+ 34936 |   let f := fixedPhaseEuclideanGauge n u
+ 34937 |   let S := ‖selectedCosetConformalScaleC q z‖
+ 34938 |   let F := ‖f (selectedCosetAction q z)‖
+ 34939 |   let R := ‖euclideanRaiseGauge n f (selectedCosetAction q z)‖
+ 34940 |   let L := ‖euclideanLowerFromSuccGauge (n - 1) f
+ 34941 |     (selectedCosetAction q z)‖
+ 34942 |   have hPullNorm :
+ 34943 |       ‖selectedCosetUnitaryPullback q f z‖ = S * F := by
+ 34944 |     rw [selectedCosetUnitaryPullback, norm_mul]
+ 34945 |   have hdy := norm_height_mul_dy_selectedCosetUnitaryPullback_le_graph
+ 34946 |     n q (fixedPhaseEuclideanGauge_realSmooth n u) z
+ 34947 |   rw [deriv_selectedLogHeightNaturalGauge]
+ 34948 |   have hOuter :
+ 34949 |       ‖((1 / 2 : ℂ) * selectedCosetUnitaryPullback q f z +
+ 34950 |           heightC z * dy (selectedCosetUnitaryPullback q f) z)‖ ≤
+ 34951 |         S * (logHeightTraceDrift n * F + R + L) := by
+ 34952 |     calc
+ 34953 |       _ ≤ ‖(1 / 2 : ℂ) * selectedCosetUnitaryPullback q f z‖ +
+ 34954 |           ‖heightC z * dy (selectedCosetUnitaryPullback q f) z‖ :=
+ 34955 |         norm_add_le _ _
+ 34956 |       _ = (1 / 2 : ℝ) * (S * F) +
+ 34957 |           ‖heightC z * dy (selectedCosetUnitaryPullback q f) z‖ := by
+ 34958 |         rw [norm_mul, hPullNorm]
+ 34959 |         norm_num
+ 34960 |       _ ≤ (1 / 2 : ℝ) * (S * F) +
+ 34961 |           S * ((3 + euclideanHorizontalDrift n / 2) * F + R + L) := by
+ 34962 |         gcongr
+ 34963 |       _ = S * (logHeightTraceDrift n * F + R + L) := by
+ 34964 |         unfold logHeightTraceDrift
+ 34965 |         ring
+ 34966 |   rw [norm_mul, Complex.norm_real,
+ 34967 |     abs_of_pos (Real.exp_pos (r / 2))]
+ 34968 |   exact mul_le_mul_of_nonneg_left hOuter (Real.exp_pos _).le
+ 34969 | 
+ 34970 | /-- At `r = log H`, the general unitary pullback is the selected horocycle
+ 34971 | pullback defined above. -/
+
+====================================================================================================
+DECLARATION selectedCosetUnitaryPullback_log_cuspLevel index=2793 starts=34972 first_error=34983:4
+ 34972 | theorem selectedCosetUnitaryPullback_log_cuspLevel
+ 34973 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 34974 |     (u : InverseEtaFixedPhaseCore n) (t : ℝ) :
+ 34975 |     selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
+ 34976 |         (logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y))) =
+ 34977 |       selectedCuspPulledEuclideanGauge n q Y u t := by
+ 34978 |   let H := gammaTwoCuspLevel Y
+ 34979 |   have hH : 0 < H :=
+ 34980 |     lt_of_lt_of_le zero_lt_one (one_le_gammaTwoCuspLevel Y)
+ 34981 |   have hbase : logHeightBasePoint t (Real.log H) =
+ 34982 |       (⟨Complex.mk t H, hH⟩ : ℍ) := by
+ 34983 |     apply Subtype.ext
+ 34984 |     simp only [logHeightBasePoint, H, Real.exp_log hH]
+ 34985 |   have htarget : selectedCosetAction q
+ 34986 |       (logHeightBasePoint t (Real.log H)) =
+ 34987 |         gammaTwoSelectedHorocycleParam q Y t := by
+ 34988 |     rw [hbase]
+ 34989 |     rfl
+ 34990 |   unfold selectedCosetUnitaryPullback selectedCuspPulledEuclideanGauge
+ 34991 |     selectedCuspPullbackScale selectedCosetConformalScaleC
+ 34992 |   rw [htarget]
+ 34993 |   simp only [heightC, logHeightBasePoint_im, Real.exp_log hH,
+ 34994 |     Complex.ofReal_div]
+ 34995 | 
+ 34996 | /-- Consequently the natural log-height gauge has exactly the selected trace
+ 34997 | density at its base point. -/
+
+====================================================================================================
+DECLARATION normSq_selectedLogHeightNaturalGauge_at_log_cuspLevel index=2794 starts=34998 first_error=35014:4
+ 34998 | theorem normSq_selectedLogHeightNaturalGauge_at_log_cuspLevel
+ 34999 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 35000 |     (u : InverseEtaFixedPhaseCore n) (t : ℝ) :
+ 35001 |     ‖selectedLogHeightNaturalGauge n q u t
+ 35002 |         (Real.log (gammaTwoCuspLevel Y))‖ ^ 2 =
+ 35003 |       gammaTwoCuspLevel Y *
+ 35004 |         ‖selectedCuspPulledEuclideanGauge n q Y u t‖ ^ 2 := by
+ 35005 |   let H := gammaTwoCuspLevel Y
+ 35006 |   have hH : 0 < H :=
+ 35007 |     lt_of_lt_of_le zero_lt_one (one_le_gammaTwoCuspLevel Y)
+ 35008 |   have hExp : Real.exp (Real.log H / 2) ^ 2 = H := by
+ 35009 |     rw [pow_two, ← Real.exp_add]
+ 35010 |     convert Real.exp_log hH using 1 <;> ring
+ 35011 |   unfold selectedLogHeightNaturalGauge
+ 35012 |   rw [selectedCosetUnitaryPullback_log_cuspLevel]
+ 35013 |   rw [norm_mul, Complex.norm_real,
+ 35014 |     abs_of_pos (Real.exp_pos _), mul_pow, hExp]
+ 35015 | 
+ 35016 | /-- Norm of the actual `L²` trace as an integral of log-height endpoint
+ 35017 | values. -/
+
+====================================================================================================
+DECLARATION selectedLogHeightNaturalGauge_eventuallyEq_zero index=2796 starts=35033 first_error=35051:8
+ 35033 | theorem selectedLogHeightNaturalGauge_eventuallyEq_zero
+ 35034 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 35035 |     {t : ℝ} (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 35036 |     selectedLogHeightNaturalGauge n q u t =ᶠ[Filter.atTop] 0 := by
+ 35037 |   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero n u with
+ 35038 |     ⟨Y₀, hY₀, hZero⟩
+ 35039 |   have hExpEventually : ∀ᶠ r : ℝ in Filter.atTop, Y₀ < Real.exp r :=
+ 35040 |     Real.tendsto_exp_atTop.eventually (eventually_gt_atTop Y₀)
+ 35041 |   filter_upwards [hExpEventually] with r hr
+ 35042 |   have hExpOne : 1 ≤ Real.exp r :=
+ 35043 |     le_of_lt (hY₀.trans hr)
+ 35044 |   have hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r :=
+ 35045 |     gammaTwoCuspLevel_of_one_le hExpOne
+ 35046 |   have hpoint :
+ 35047 |       gammaTwoSelectedHorocycleParam q (Real.exp r) t =
+ 35048 |         selectedCosetAction q (logHeightBasePoint t r) := by
+ 35049 |     unfold gammaTwoSelectedHorocycleParam selectedCosetAction
+ 35050 |       logHeightBasePoint
+ 35051 |     rw [hlevel]
+ 35052 |   have hu0 :
+ 35053 |       ((u : SmoothQuotientCompactFunction)
+ 35054 |         (selectedCosetAction q (logHeightBasePoint t r))) = 0 := by
+ 35055 |     rw [← hpoint]
+ 35056 |     exact hZero (Real.exp r) hr q t ht
+ 35057 |   simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback,
+ 35058 |     fixedPhaseEuclideanGauge_apply, hu0, mul_zero]
+ 35059 | 
+ 35060 | /-- Hence every fixed smooth-core log-height slice tends to zero at `+∞`. -/
+
+====================================================================================================
+DECLARATION selectedHeightBasePoint_of_pos index=2802 starts=35112 first_error=35114:2
+ 35112 | theorem selectedHeightBasePoint_of_pos (t : ℝ) {y : ℝ} (hy : 0 < y) :
+ 35113 |     selectedHeightBasePoint t y = (⟨Complex.mk t y, hy⟩ : ℍ) := by
+ 35114 |   apply Subtype.ext
+ 35115 |   simp only [selectedHeightBasePoint,
+ 35116 |     UpperHalfPlane.ofComplex_apply_of_im_pos, Complex.mk_im, hy]
+ 35117 | 
+ 35118 | @[simp]
+
+====================================================================================================
+DECLARATION selectedHeightBasePoint_exp index=2803 starts=35119 first_error=35121:2
+ 35119 | theorem selectedHeightBasePoint_exp (t r : ℝ) :
+ 35120 |     selectedHeightBasePoint t (Real.exp r) = logHeightBasePoint t r := by
+ 35121 |   apply Subtype.ext
+ 35122 |   simp only [selectedHeightBasePoint, logHeightBasePoint,
+ 35123 |     UpperHalfPlane.ofComplex_apply_of_im_pos, Complex.mk_im, Real.exp_pos]
+ 35124 | 
+ 35125 | /-- Euclidean graph density after unitary pullback, expressed in ordinary
+ 35126 | height.  The constants are the explicit output of the pointwise Young bounds. -/
+
+====================================================================================================
+DECLARATION selectedLogHeightEnergyDensity_le_exp_mul_heightGraphDensity index=2805 starts=35141 first_error=35173:37
+ 35141 | theorem selectedLogHeightEnergyDensity_le_exp_mul_heightGraphDensity
+ 35142 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 35143 |     (t r : ℝ) :
+ 35144 |     selectedLogHeightEnergyDensity n q u (t, r) ≤
+ 35145 |       Real.exp r * selectedHeightGraphDensity n q u (t, Real.exp r) := by
+ 35146 |   let z := logHeightBasePoint t r
+ 35147 |   let f := fixedPhaseEuclideanGauge n u
+ 35148 |   let w := selectedCosetAction q z
+ 35149 |   let e := Real.exp (r / 2)
+ 35150 |   let S := ‖selectedCosetConformalScaleC q z‖
+ 35151 |   let F := ‖f w‖
+ 35152 |   let R := ‖euclideanRaiseGauge n f w‖
+ 35153 |   let L := ‖euclideanLowerFromSuccGauge (n - 1) f w‖
+ 35154 |   let A := logHeightTraceDrift n
+ 35155 |   have he : 0 ≤ e := (Real.exp_pos _).le
+ 35156 |   have hS : 0 ≤ S := norm_nonneg _
+ 35157 |   have hF : 0 ≤ F := norm_nonneg _
+ 35158 |   have hR : 0 ≤ R := norm_nonneg _
+ 35159 |   have hL : 0 ≤ L := norm_nonneg _
+ 35160 |   have hA : 0 ≤ A := logHeightTraceDrift_nonneg n
+ 35161 |   have hExp : e ^ 2 = Real.exp r := by
+ 35162 |     dsimp only [e]
+ 35163 |     rw [pow_two, ← Real.exp_add]
+ 35164 |     congr 1
+ 35165 |     ring
+ 35166 |   have hPullNorm :
+ 35167 |       ‖selectedCosetUnitaryPullback q f z‖ = S * F := by
+ 35168 |     rw [selectedCosetUnitaryPullback, norm_mul]
+ 35169 |   have hNatural :
+ 35170 |       ‖selectedLogHeightNaturalGauge n q u t r‖ ^ 2 =
+ 35171 |         Real.exp r * S ^ 2 * F ^ 2 := by
+ 35172 |     unfold selectedLogHeightNaturalGauge
+ 35173 |     rw [norm_mul, Complex.norm_real, abs_of_pos (Real.exp_pos _),
+ 35174 |       hPullNorm, mul_pow, mul_pow, hExp]
+ 35175 |     ring
+ 35176 |   have hDeriv := norm_deriv_selectedLogHeightNaturalGauge_le_graph
+ 35177 |     n q u t r
+ 35178 |   change ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ≤
+ 35179 |       e * S * (A * F + R + L) at hDeriv
+ 35180 |   have hsum0 : 0 ≤ A * F + R + L := by positivity
+ 35181 |   have hcoef0 : 0 ≤ e * S := mul_nonneg he hS
+ 35182 |   have hDerivSq :
+ 35183 |       ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ^ 2 ≤
+ 35184 |         (e * S * (A * F + R + L)) ^ 2 :=
+ 35185 |     pow_le_pow_left₀ (norm_nonneg _) hDeriv 2
+ 35186 |   have hthree : (A * F + R + L) ^ 2 ≤
+ 35187 |       3 * ((A * F) ^ 2 + R ^ 2 + L ^ 2) := by
+ 35188 |     nlinarith [sq_nonneg (A * F - R), sq_nonneg (A * F - L),
+ 35189 |       sq_nonneg (R - L)]
+ 35190 |   have hDerivSq' :
+ 35191 |       ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ^ 2 ≤
+ 35192 |         Real.exp r * S ^ 2 *
+ 35193 |           (3 * ((A * F) ^ 2 + R ^ 2 + L ^ 2)) := by
+ 35194 |     calc
+ 35195 |       _ ≤ (e * S * (A * F + R + L)) ^ 2 := hDerivSq
+ 35196 |       _ = Real.exp r * S ^ 2 * (A * F + R + L) ^ 2 := by
+ 35197 |         rw [mul_pow, mul_pow, hExp]
+ 35198 |         ring
+ 35199 |       _ ≤ Real.exp r * S ^ 2 *
+ 35200 |           (3 * ((A * F) ^ 2 + R ^ 2 + L ^ 2)) := by
+ 35201 |         exact mul_le_mul_of_nonneg_left hthree
+ 35202 |           (mul_nonneg (Real.exp_pos r).le (sq_nonneg S))
+ 35203 |   rw [selectedLogHeightEnergyDensity, hNatural]
+ 35204 |   change Real.exp r * S ^ 2 * F ^ 2 +
+ 35205 |       ‖deriv (selectedLogHeightNaturalGauge n q u t) r‖ ^ 2 ≤ _
+ 35206 |   calc
+ 35207 |     _ ≤ Real.exp r * S ^ 2 * F ^ 2 +
+ 35208 |         Real.exp r * S ^ 2 *
+ 35209 |           (3 * ((A * F) ^ 2 + R ^ 2 + L ^ 2)) :=
+ 35210 |       by
+ 35211 |         simpa [add_comm] using
+ 35212 |           add_le_add_left hDerivSq' (Real.exp r * S ^ 2 * F ^ 2)
+ 35213 |     _ = Real.exp r *
+ 35214 |         selectedHeightGraphDensity n q u (t, Real.exp r) := by
+ 35215 |       simp only [selectedHeightGraphDensity, selectedHeightBasePoint_exp,
+ 35216 |         z, f, w, S, F, R, L, A, logHeightTraceBaseCoeff]
+ 35217 |       ring
+ 35218 | 
+
+====================================================================================================
+DECLARATION selectedLogHeightEnergyDensity_continuous index=2806 starts=35219 first_error=35230:4
+ 35219 | theorem selectedLogHeightEnergyDensity_continuous
+ 35220 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n) :
+ 35221 |     Continuous (selectedLogHeightEnergyDensity n q u) := by
+ 35222 |   let h : ℍ → ℂ :=
+ 35223 |     selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
+ 35224 |   have hh : RealSmooth h :=
+ 35225 |     selectedCosetUnitaryPullback_realSmooth q
+ 35226 |       (fixedPhaseEuclideanGauge_realSmooth n u)
+ 35227 |   have hpoint : Continuous
+ 35228 |       (fun p : ℝ × ℝ => logHeightBasePoint p.1 p.2) := by
+ 35229 |     apply continuous_subtype_mk
+ 35230 |     fun_prop
+ 35231 |   have hcomp : Continuous
+ 35232 |       (fun p : ℝ × ℝ => h (logHeightBasePoint p.1 p.2)) :=
+ 35233 |     hh.continuous.comp hpoint
+ 35234 |   have hdycomp : Continuous
+ 35235 |       (fun p : ℝ × ℝ =>
+ 35236 |         dy h (logHeightBasePoint p.1 p.2)) :=
+ 35237 |     (RealSmooth.dy hh).continuous.comp hpoint
+ 35238 |   have hnatural : Continuous
+ 35239 |       (fun p : ℝ × ℝ =>
+ 35240 |         selectedLogHeightNaturalGauge n q u p.1 p.2) := by
+ 35241 |     unfold selectedLogHeightNaturalGauge
+ 35242 |     exact (Complex.continuous_ofReal.comp (by fun_prop)).mul hcomp
+ 35243 |   have hderiv : Continuous
+ 35244 |       (fun p : ℝ × ℝ =>
+ 35245 |         deriv (selectedLogHeightNaturalGauge n q u p.1) p.2) := by
+ 35246 |     have hExplicit : (fun p : ℝ × ℝ =>
+ 35247 |         deriv (selectedLogHeightNaturalGauge n q u p.1) p.2) =
+ 35248 |         fun p => ((Real.exp (p.2 / 2) : ℝ) : ℂ) *
+ 35249 |           ((1 / 2 : ℂ) * h (logHeightBasePoint p.1 p.2) +
+ 35250 |             heightC (logHeightBasePoint p.1 p.2) *
+ 35251 |               dy h (logHeightBasePoint p.1 p.2) ) := by
+ 35252 |       funext p
+ 35253 |       exact deriv_selectedLogHeightNaturalGauge n q u p.1 p.2
+ 35254 |     rw [hExplicit]
+ 35255 |     fun_prop
+ 35256 |   unfold selectedLogHeightEnergyDensity
+ 35257 |   exact (hnatural.norm.pow 2).add (hderiv.norm.pow 2)
+ 35258 | 
+ 35259 | /-- One height cuts off all horizontal slices simultaneously. -/
+
+====================================================================================================
+DECLARATION selectedLogHeightNaturalGauge_uniform_eventually_zero index=2807 starts=35260 first_error=35281:8
+ 35260 | theorem selectedLogHeightNaturalGauge_uniform_eventually_zero
+ 35261 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n) :
+ 35262 |     ∃ R : ℝ, ∀ t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 35263 |       ∀ r, R < r → selectedLogHeightNaturalGauge n q u t r = 0 := by
+ 35264 |   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero n u with
+ 35265 |     ⟨Y₀, hY₀, hZero⟩
+ 35266 |   have hY₀pos : 0 < Y₀ := zero_lt_one.trans hY₀
+ 35267 |   refine ⟨Real.log Y₀, ?_⟩
+ 35268 |   intro t ht r hr
+ 35269 |   have hExp : Y₀ < Real.exp r := by
+ 35270 |     rw [← Real.exp_log hY₀pos]
+ 35271 |     exact Real.exp_lt_exp.mpr hr
+ 35272 |   have hExpOne : 1 ≤ Real.exp r :=
+ 35273 |     le_of_lt (hY₀.trans hExp)
+ 35274 |   have hlevel : gammaTwoCuspLevel (Real.exp r) = Real.exp r :=
+ 35275 |     gammaTwoCuspLevel_of_one_le hExpOne
+ 35276 |   have hpoint :
+ 35277 |       gammaTwoSelectedHorocycleParam q (Real.exp r) t =
+ 35278 |         selectedCosetAction q (logHeightBasePoint t r) := by
+ 35279 |     unfold gammaTwoSelectedHorocycleParam selectedCosetAction
+ 35280 |       logHeightBasePoint
+ 35281 |     rw [hlevel]
+ 35282 |   have hu0 :
+ 35283 |       ((u : SmoothQuotientCompactFunction)
+ 35284 |         (selectedCosetAction q (logHeightBasePoint t r))) = 0 := by
+ 35285 |     rw [← hpoint]
+ 35286 |     exact hZero (Real.exp r) hExp q t ht
+ 35287 |   simp only [selectedLogHeightNaturalGauge, selectedCosetUnitaryPullback,
+ 35288 |     fixedPhaseEuclideanGauge_apply, hu0, mul_zero]
+ 35289 | 
+
+====================================================================================================
+DECLARATION integral_selectedLogHeightEnergyDensity_stripTail_eq_iterated index=2811 starts=35379 first_error=35401:2
+ 35379 | theorem integral_selectedLogHeightEnergyDensity_stripTail_eq_iterated
+ 35380 |     (n : ℤ) (q : GammaTwoRightCoset) (u : InverseEtaFixedPhaseCore n)
+ 35381 |     (r₀ : ℝ) :
+ 35382 |     (∫ p in Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ×ˢ Set.Ioi r₀,
+ 35383 |         selectedLogHeightEnergyDensity n q u p
+ 35384 |         ∂((volume : Measure ℝ).prod volume)) =
+ 35385 |       ∫ t in Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 35386 |         ∫ r in Set.Ioi r₀,
+ 35387 |           selectedLogHeightEnergyDensity n q u (t, r) := by
+ 35388 |   let μ : Measure ℝ :=
+ 35389 |     (volume : Measure ℝ).restrict
+ 35390 |       (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))
+ 35391 |   let ν : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi r₀)
+ 35392 |   have hProd : Integrable (selectedLogHeightEnergyDensity n q u)
+ 35393 |       (μ.prod ν) := by
+ 35394 |     change Integrable (selectedLogHeightEnergyDensity n q u)
+ 35395 |       (((volume : Measure ℝ).restrict
+ 35396 |           (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))).prod
+ 35397 |         ((volume : Measure ℝ).restrict (Set.Ioi r₀)))
+ 35398 |     rw [Measure.prod_restrict]
+ 35399 |     exact selectedLogHeightEnergyDensity_integrableOn_stripTail
+ 35400 |       n q u r₀
+ 35401 |   change (∫ p, selectedLogHeightEnergyDensity n q u p ∂μ.prod ν) =
+ 35402 |     ∫ t, ∫ r, selectedLogHeightEnergyDensity n q u (t, r) ∂ν ∂μ
+ 35403 |   exact integral_prod _ hProd
+ 35404 | 
+ 35405 | /-- Unconditional integrated scalar trace estimate on the actual selected
+ 35406 | cusp chart. -/
+
+====================================================================================================
+DECLARATION norm_selectedCuspCoreTrace_sq_le_logHeightEnergy index=2812 starts=35407 first_error=35425:6
+ 35407 | theorem norm_selectedCuspCoreTrace_sq_le_logHeightEnergy
+ 35408 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 35409 |     (u : InverseEtaFixedPhaseCore n) :
+ 35410 |     ‖selectedCuspCoreTrace n q Y u‖ ^ 2 ≤
+ 35411 |       ∫ t in Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 35412 |         ∫ r in Set.Ioi (Real.log (gammaTwoCuspLevel Y)),
+ 35413 |           selectedLogHeightEnergyDensity n q u (t, r) := by
+ 35414 |   rw [norm_selectedCuspCoreTrace_sq_eq_integral_logHeightEndpoint]
+ 35415 |   apply setIntegral_mono_on
+ 35416 |   · have hEndpoint : Continuous (fun t =>
+ 35417 |         ‖selectedLogHeightNaturalGauge n q u t
+ 35418 |           (Real.log (gammaTwoCuspLevel Y))‖ ^ 2) := by
+ 35419 |       let h : ℍ → ℂ :=
+ 35420 |         selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)
+ 35421 |       have hh : RealSmooth h :=
+ 35422 |         selectedCosetUnitaryPullback_realSmooth q
+ 35423 |           (fixedPhaseEuclideanGauge_realSmooth n u)
+ 35424 |       unfold selectedLogHeightNaturalGauge
+ 35425 |       fun_prop
+ 35426 |     exact hEndpoint.continuousOn.integrableOn_Icc
+ 35427 |   · exact selectedLogHeightEnergy_iterated_integrableOn n q u
+ 35428 |       (Real.log (gammaTwoCuspLevel Y))
+ 35429 |   · exact measurableSet_Icc
+ 35430 |   · intro t ht
+ 35431 |     exact normSq_selectedLogHeightNaturalGauge_at_log_cuspLevel_le_energy
+ 35432 |       n q Y u ht
+ 35433 | 
+ 35434 | /-! #### H. Ordinary-height strip energy and the three Hilbert coordinates
+ 35435 | 
+ 35436 | The logarithmic estimate above is now connected to the actual Euclidean
+ 35437 | carrier.  We first package the three literal gauge densities which represent
+ 35438 | the base, raised, and lowered Petersson coordinates.  Every statement in this
+ 35439 | subsection is an equality or inequality for the already constructed objects;
+ 35440 | there is no trace, extension, or compactness certificate among its inputs. -/
+ 35441 | 
+ 35442 | /-- The literal three-coordinate Euclidean graph density on the chosen
+ 35443 | carrier. -/
+
+====================================================================================================
+DECLARATION fixedPhaseEuclideanGraphDensity_nonneg index=2814 starts=35454 first_error=35458:2
+ 35454 | theorem fixedPhaseEuclideanGraphDensity_nonneg
+ 35455 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+ 35456 |     0 ≤ fixedPhaseEuclideanGraphDensity n u z := by
+ 35457 |   unfold fixedPhaseEuclideanGraphDensity
+ 35458 |   positivity
+ 35459 | 
+
+====================================================================================================
+DECLARATION selectedHeightGraphDensity_eq_scale_mul_fixedPhaseDensity index=2816 starts=35476 first_error=35485:6
+ 35476 | theorem selectedHeightGraphDensity_eq_scale_mul_fixedPhaseDensity
+ 35477 |     (n : ℤ) (q : GammaTwoRightCoset)
+ 35478 |     (u : InverseEtaFixedPhaseCore n) (t y : ℝ) :
+ 35479 |     selectedHeightGraphDensity n q u (t, y) =
+ 35480 |       ‖selectedCosetConformalScaleC q
+ 35481 |         (selectedHeightBasePoint t y)‖ ^ 2 *
+ 35482 |       fixedPhaseEuclideanGraphDensity n u
+ 35483 |         (selectedCosetAction q (selectedHeightBasePoint t y)) := by
+ 35484 |   unfold selectedHeightGraphDensity fixedPhaseEuclideanGraphDensity
+ 35485 |   rw [← fixedPhaseEuclideanGauge_raise n u,
+ 35486 |     ← fixedPhaseEuclideanGauge_lower_pred n u]
+ 35487 | 
+ 35488 | /-- Squared `L²` norm formula, stated for the concrete carrier realization.
+ 35489 | This is the same Hilbert identity as for the horocycle target, but keeping it
+ 35490 | separate avoids any accidental identification of the two measures. -/
+
+====================================================================================================
+DECLARATION orbitEuclideanL2_norm_sq_eq_integral index=2817 starts=35491 first_error=35495:8
+ 35491 | theorem orbitEuclideanL2_norm_sq_eq_integral
+ 35492 |     (m : ℤ) (F : OrbitEuclideanL2 m) :
+ 35493 |     ‖F‖ ^ 2 =
+ 35494 |       ∫ z, ‖F z‖ ^ 2 ∂chosenEuclideanCarrierMeasure := by
+ 35495 |   rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
+ 35496 |     ← integral_re (MeasureTheory.L2.integrable_inner F F)]
+ 35497 |   apply integral_congr_ae
+ 35498 |   exact Filter.Eventually.of_forall fun z =>
+ 35499 |     inner_self_eq_norm_sq (𝕜 := ℂ) (F z)
+ 35500 | 
+
+====================================================================================================
+DECLARATION integral_fixedPhaseEuclideanGraphDensity_eq_coordinates index=2821 starts=35547 first_error=35560:6
+ 35547 | theorem integral_fixedPhaseEuclideanGraphDensity_eq_coordinates
+ 35548 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 35549 |     (∫ z, fixedPhaseEuclideanGraphDensity n u z
+ 35550 |         ∂chosenEuclideanCarrierMeasure) =
+ 35551 |       logHeightTraceBaseCoeff n * ‖l2Coordinate n u‖ ^ 2 +
+ 35552 |         3 * ‖raisedCoordinate n u‖ ^ 2 +
+ 35553 |         3 * ‖loweredCoordinate n u‖ ^ 2 := by
+ 35554 |   have hBase := fixedPhaseEuclideanGauge_normSq_integrable n u
+ 35555 |   have hRaise := fixedPhaseEuclideanGauge_normSq_integrable (n + 1)
+ 35556 |     (InverseEtaFixedPhaseCore.raise n u)
+ 35557 |   have hLower := fixedPhaseEuclideanGauge_normSq_integrable (n - 1)
+ 35558 |     (InverseEtaFixedPhaseCore.lower n u)
+ 35559 |   unfold fixedPhaseEuclideanGraphDensity
+ 35560 |   rw [integral_add ((hBase.const_mul _).add (hRaise.const_mul _))
+ 35561 |       (hLower.const_mul _),
+ 35562 |     integral_add (hBase.const_mul _) (hRaise.const_mul _),
+ 35563 |     integral_const_mul, integral_const_mul, integral_const_mul,
+ 35564 |     integral_fixedPhaseEuclideanGauge_normSq_eq_coordinate,
+ 35565 |     integral_fixedPhaseEuclideanGauge_normSq_eq_coordinate,
+ 35566 |     integral_fixedPhaseEuclideanGauge_normSq_eq_coordinate,
+ 35567 |     raisedCoordinate_apply, loweredCoordinate_apply]
+ 35568 | 
+ 35569 | /-- On positive heights, the totalized point `(t,y)` varies continuously in
+ 35570 | the upper half-plane. -/
+
+====================================================================================================
+DECLARATION selectedHeightBasePoint_continuousOn_Ioi index=2822 starts=35571 first_error=35575:8
+ 35571 | theorem selectedHeightBasePoint_continuousOn_Ioi (t : ℝ) :
+ 35572 |     ContinuousOn (selectedHeightBasePoint t) (Set.Ioi 0) := by
+ 35573 |   unfold selectedHeightBasePoint
+ 35574 |   refine UpperHalfPlane.ofComplex.continuousOn.comp
+ 35575 |     (by fun_prop) ?_
+ 35576 |   intro y hy
+ 35577 |   change 0 < (Complex.mk t y).im
+ 35578 |   simpa using hy
+ 35579 | 
+ 35580 | /-- Ordinary-height graph density is continuous on every positive vertical
+ 35581 | slice. -/
+
+====================================================================================================
+DECLARATION selectedHeightGraphDensity_uniform_eventually_zero index=2825 starts=35622 first_error=35653:8
+ 35622 | theorem selectedHeightGraphDensity_uniform_eventually_zero
+ 35623 |     (n : ℤ) (q : GammaTwoRightCoset)
+ 35624 |     (u : InverseEtaFixedPhaseCore n) :
+ 35625 |     ∃ B : ℝ, 1 < B ∧
+ 35626 |       ∀ t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 35627 |         ∀ y, B < y → selectedHeightGraphDensity n q u (t, y) = 0 := by
+ 35628 |   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero n u with
+ 35629 |     ⟨B₀, hB₀, hZeroBase⟩
+ 35630 |   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero (n + 1)
+ 35631 |       (InverseEtaFixedPhaseCore.raise n u) with
+ 35632 |     ⟨B₁, hB₁, hZeroRaise⟩
+ 35633 |   rcases fixedPhaseCore_eventually_selectedCuspSection_eq_zero (n - 1)
+ 35634 |       (InverseEtaFixedPhaseCore.lower n u) with
+ 35635 |     ⟨B₂, hB₂, hZeroLower⟩
+ 35636 |   let B : ℝ := max B₀ (max B₁ B₂)
+ 35637 |   have hB : 1 < B := hB₀.trans_le (le_max_left _ _)
+ 35638 |   refine ⟨B, hB, ?_⟩
+ 35639 |   intro t ht y hy
+ 35640 |   have hB₀y : B₀ < y := (le_max_left B₀ (max B₁ B₂)).trans_lt hy
+ 35641 |   have hB₁y : B₁ < y :=
+ 35642 |     ((le_max_left B₁ B₂).trans (le_max_right B₀ (max B₁ B₂))).trans_lt hy
+ 35643 |   have hB₂y : B₂ < y :=
+ 35644 |     ((le_max_right B₁ B₂).trans (le_max_right B₀ (max B₁ B₂))).trans_lt hy
+ 35645 |   have hyOne : 1 ≤ y := le_of_lt (hB.trans hy)
+ 35646 |   have hyPos : 0 < y := zero_lt_one.trans_le hyOne
+ 35647 |   have hlevel : gammaTwoCuspLevel y = y :=
+ 35648 |     gammaTwoCuspLevel_of_one_le hyOne
+ 35649 |   have hpoint : selectedCosetAction q (selectedHeightBasePoint t y) =
+ 35650 |       gammaTwoSelectedHorocycleParam q y t := by
+ 35651 |     rw [selectedHeightBasePoint_of_pos t hyPos]
+ 35652 |     unfold gammaTwoSelectedHorocycleParam selectedCosetAction
+ 35653 |     rw [hlevel]
+ 35654 |   have hu : ((u : SmoothQuotientCompactFunction)
+ 35655 |       (selectedCosetAction q (selectedHeightBasePoint t y))) = 0 := by
+ 35656 |     rw [hpoint]
+ 35657 |     exact hZeroBase y hB₀y q t ht
+ 35658 |   have hru := hZeroRaise y hB₁y q t ht
+ 35659 |   rw [← hpoint] at hru
+ 35660 |   have hlu := hZeroLower y hB₂y q t ht
+ 35661 |   rw [← hpoint] at hlu
+ 35662 |   have hg : fixedPhaseEuclideanGauge n u
+ 35663 |       (selectedCosetAction q (selectedHeightBasePoint t y)) = 0 := by
+ 35664 |     simp only [fixedPhaseEuclideanGauge_apply, hu, mul_zero]
+ 35665 |   have hrg : fixedPhaseEuclideanGauge (n + 1)
+ 35666 |       (InverseEtaFixedPhaseCore.raise n u)
+ 35667 |       (selectedCosetAction q (selectedHeightBasePoint t y)) = 0 := by
+ 35668 |     simp only [fixedPhaseEuclideanGauge_apply, hru, mul_zero]
+ 35669 |   have hlg : fixedPhaseEuclideanGauge (n - 1)
+ 35670 |       (InverseEtaFixedPhaseCore.lower n u)
+ 35671 |       (selectedCosetAction q (selectedHeightBasePoint t y)) = 0 := by
+ 35672 |     simp only [fixedPhaseEuclideanGauge_apply, hlu, mul_zero]
+ 35673 |   rw [selectedHeightGraphDensity_eq_scale_mul_fixedPhaseDensity]
+ 35674 |   simp only [fixedPhaseEuclideanGraphDensity, hg, hrg, hlg, norm_zero,
+ 35675 |     zero_pow (by norm_num : (2 : ℕ) ≠ 0), mul_zero, add_zero]
+ 35676 | 
+ 35677 | /-- A continuous real function which is literally zero at the right end is
+ 35678 | integrable on every closed right tail. -/
+
+====================================================================================================
+DECLARATION exp_mul_selectedHeightGraphDensity_integrableOn_Ici_log index=2828 starts=35726 first_error=35732:32
+ 35726 | theorem exp_mul_selectedHeightGraphDensity_integrableOn_Ici_log
+ 35727 |     (n : ℤ) (q : GammaTwoRightCoset)
+ 35728 |     (u : InverseEtaFixedPhaseCore n) {t H : ℝ}
+ 35729 |     (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) (hH : 0 < H) :
+ 35730 |     IntegrableOn (fun r =>
+ 35731 |         selectedHeightGraphDensity n q u (t, Real.exp r) * Real.exp r)
+ 35732 |       (Set.Ici (Real.log H)) := by
+ 35733 |   let g : ℝ → ℝ := fun y => selectedHeightGraphDensity n q u (t, y)
+ 35734 |   have hg : ContinuousOn g (Set.Ioi 0) :=
+ 35735 |     selectedHeightGraphDensity_slice_continuousOn n q u t
+ 35736 |   have hcont : ContinuousOn (fun r => g (Real.exp r) * Real.exp r)
+ 35737 |       (Set.Ici (Real.log H)) :=
+ 35738 |     (hg.comp Real.continuous_exp.continuousOn
+ 35739 |       (fun r _hr => Real.exp_pos r)).mul Real.continuous_exp.continuousOn
+ 35740 |   apply continuousOn_eventuallyEq_zero_integrableOn_Ici hcont
+ 35741 |   rcases selectedHeightGraphDensity_uniform_eventually_zero n q u with
+ 35742 |     ⟨B, _hB, hZero⟩
+ 35743 |   have hExpEventually : ∀ᶠ r : ℝ in Filter.atTop, B < Real.exp r :=
+ 35744 |     Real.tendsto_exp_atTop.eventually (eventually_gt_atTop B)
+ 35745 |   filter_upwards [hExpEventually] with r hr
+ 35746 |   simp only [g, hZero t ht (Real.exp r) hr, zero_mul]
+ 35747 | 
+ 35748 | /-- Exact improper substitution `y = exp r` for an actual selected graph
+ 35749 | density.  All continuity and integrability hypotheses of Mathlib's theorem
+ 35750 | are discharged by the preceding compact-tail lemmas. -/
+
+====================================================================================================
+DECLARATION selectedHeightBasePoint_joint_continuousOn_positive index=2831 starts=35824 first_error=35830:8
+ 35824 | theorem selectedHeightBasePoint_joint_continuousOn_positive :
+ 35825 |     ContinuousOn (fun p : ℝ × ℝ =>
+ 35826 |       selectedHeightBasePoint p.1 p.2)
+ 35827 |       (Set.univ ×ˢ Set.Ioi (0 : ℝ)) := by
+ 35828 |   unfold selectedHeightBasePoint
+ 35829 |   refine UpperHalfPlane.ofComplex.continuousOn.comp
+ 35830 |     (by fun_prop) ?_
+ 35831 |   intro p hp
+ 35832 |   change 0 < (Complex.mk p.1 p.2).im
+ 35833 |   simpa using hp.2
+ 35834 | 
+
+====================================================================================================
+DECLARATION integral_selectedHeightGraphDensity_stripTail_eq_iterated index=2835 starts=35936 first_error=35957:2
+ 35936 | theorem integral_selectedHeightGraphDensity_stripTail_eq_iterated
+ 35937 |     (n : ℤ) (q : GammaTwoRightCoset)
+ 35938 |     (u : InverseEtaFixedPhaseCore n) {H : ℝ} (hH : 0 < H) :
+ 35939 |     (∫ p in Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ×ˢ Set.Ioi H,
+ 35940 |         selectedHeightGraphDensity n q u p
+ 35941 |         ∂((volume : Measure ℝ).prod volume)) =
+ 35942 |       ∫ t in Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 35943 |         ∫ y in Set.Ioi H,
+ 35944 |           selectedHeightGraphDensity n q u (t, y) := by
+ 35945 |   let μ : Measure ℝ :=
+ 35946 |     (volume : Measure ℝ).restrict
+ 35947 |       (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))
+ 35948 |   let ν : Measure ℝ := (volume : Measure ℝ).restrict (Set.Ioi H)
+ 35949 |   have hProd : Integrable (selectedHeightGraphDensity n q u)
+ 35950 |       (μ.prod ν) := by
+ 35951 |     change Integrable (selectedHeightGraphDensity n q u)
+ 35952 |       (((volume : Measure ℝ).restrict
+ 35953 |           (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))).prod
+ 35954 |         ((volume : Measure ℝ).restrict (Set.Ioi H)))
+ 35955 |     rw [Measure.prod_restrict]
+ 35956 |     exact selectedHeightGraphDensity_integrableOn_stripTail n q u hH
+ 35957 |   change (∫ p, selectedHeightGraphDensity n q u p ∂μ.prod ν) =
+ 35958 |     ∫ t, ∫ y, selectedHeightGraphDensity n q u (t, y) ∂ν ∂μ
+ 35959 |   exact integral_prod _ hProd
+ 35960 | 
+ 35961 | /-- The scalar trace estimate has now been transported all the way to the
+ 35962 | literal ordinary-height strip. -/
+
+====================================================================================================
+DECLARATION complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip index=2839 starts=36011 first_error=36025:4
+ 36011 | theorem complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip
+ 36012 |     {H : ℝ} (hH : 0 < H) :
+ 36013 |     Complex.measurableEquivRealProd.symm ''
+ 36014 |         (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ×ˢ Set.Ioi H) =
+ 36015 |       UpperHalfPlane.coe '' selectedBaseCuspStrip H := by
+ 36016 |   apply Set.Subset.antisymm
+ 36017 |   · rintro w ⟨p, hp, rfl⟩
+ 36018 |     have him : 0 <
+ 36019 |         (Complex.measurableEquivRealProd.symm p).im := by
+ 36020 |       simpa using hH.trans hp.2
+ 36021 |     let z : ℍ :=
+ 36022 |       ⟨Complex.measurableEquivRealProd.symm p, him⟩
+ 36023 |     refine ⟨z, ?_, rfl⟩
+ 36024 |     change z.re ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ∧ H < z.im
+ 36025 |     simpa only [z, Complex.measurableEquivRealProd_symm_apply] using hp
+ 36026 |   · rintro w ⟨z, hz, rfl⟩
+ 36027 |     change z.re ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ∧
+ 36028 |       H < z.im at hz
+ 36029 |     refine ⟨(z.re, z.im), hz, ?_⟩
+ 36030 |     apply Complex.ext <;>
+ 36031 |       simp only [Complex.measurableEquivRealProd_symm_apply]
+ 36032 | 
+ 36033 | /-- Above height one the closed strip lies in the closed standard modular
+ 36034 | tile, including both null vertical endpoints. -/
+

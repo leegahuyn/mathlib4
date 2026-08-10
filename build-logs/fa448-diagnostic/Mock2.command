@@ -1,0 +1,1 @@
+lake env lean -DmaxErrors=50 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean 

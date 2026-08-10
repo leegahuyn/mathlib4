@@ -1,0 +1,25 @@
+{
+  "classification": "LEAN_FAILURE",
+  "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "source_sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+  "line_count": 60453,
+  "declaration_count": 4397,
+  "error_headers_captured": 242,
+  "errors_recorded": 242,
+  "first_error": {
+    "ordinal": 1,
+    "line": 33624,
+    "column": 57,
+    "message": "unsolved goals\nn : ℤ\nq : GammaTwoRightCoset\nY : ℝ\nu v : InverseEtaFixedPhaseCore n\nt : ℝ\n⊢ ↑(selectedCuspTraceWeight n q Y t) * ↑↑u.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) +\n      ↑(selectedCuspTraceWeight n q Y t) * ↑↑v.toSmoothQuotientCompactFunction (gammaTwoSelectedHorocycleParam q Y t) =\n    (selectedCuspRestrictionRepresentative n q Y u + selectedCuspRestrictionRepresentative n q Y v) t",
+    "declaration": "selectedCuspRestrictionRepresentative_add",
+    "declaration_line": 33619,
+    "declaration_index": 2720
+  },
+  "Mock2_exit": "0",
+  "Mock2_Advanced_exit": "0",
+  "FA_exit": "1",
+  "Lean_version": "Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)",
+  "Lake_version": "Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)",
+  "repository_head": "5e460232c728ecfcbc7171e3062e287c12e611bb",
+  "lake_manifest_sha256": "672474eb93bc14c66cd1ff45203c451987fe525f7b5d13ecd83140be46434b26"
+}

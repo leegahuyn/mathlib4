@@ -1,0 +1,2171 @@
+ 31680 | applied to the native base-edge tangent. -/
+ 31681 | noncomputable def actualEdgeNativeVelocity
+ 31682 |     (e : GammaTwoActualPolygonEdge)
+ 31683 |     (t : modularTileEdgeParameterSet e.2) : Complex :=
+ 31684 |   UpperHalfPlane.smulFDeriv (selectedCosetGL e.1)
+ 31685 |     (modularTileEdgeParam e.2 t : Complex)
+ 31686 |     (modularTileEdgeVelocity e.2 t)
+ 31687 | 
+ 31688 | /-- Pointwise agreement of the ambient actual-edge formula with the existing
+ 31689 | subtype-valued actual polygon-edge parametrization. -/
+ 31690 | theorem actualEdgeAmbientParam_eq_coe
+ 31691 |     (e : GammaTwoActualPolygonEdge)
+ 31692 |     (t : modularTileEdgeParameterSet e.2) :
+ 31693 |     actualEdgeAmbientParam e t =
+ 31694 |       (gammaTwoActualPolygonEdgeParam e t : Complex) := by
+ 31695 |   rw [actualEdgeAmbientParam, modularTileEdgeAmbientParam_eq_coe]
+ 31696 |   simpa [selectedCosetAction, gammaTwoActualPolygonEdgeParam] using
+ 31697 |     selectedCosetAmbientMap_coe e.1 (modularTileEdgeParam e.2 t)
+ 31698 | 
+ 31699 | /-- Coordinate form of the native actual tangent.  This records explicitly
+ 31700 | that no informal complex derivative is substituted for Mathlib's bundled real
+ 31701 | Frechet derivative. -/
+ 31702 | theorem actualEdgeNativeVelocity_eq_selectedDerivative_mul
+ 31703 |     (e : GammaTwoActualPolygonEdge)
+ 31704 |     (t : modularTileEdgeParameterSet e.2) :
+ 31705 |     actualEdgeNativeVelocity e t =
+ 31706 |       selectedCosetDerivative e.1 (modularTileEdgeParam e.2 t) *
+ 31707 |         modularTileEdgeVelocity e.2 t := by
+ 31708 |   unfold actualEdgeNativeVelocity
+ 31709 |   exact selectedCoset_smulFDeriv_apply e.1
+ 31710 |     (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)
+ 31711 | 
+ 31712 | /-- The Mobius-composed actual edge has the declared native tangent. -/
+ 31713 | theorem actualEdgeAmbientParam_hasDerivAt
+ 31714 |     (e : GammaTwoActualPolygonEdge)
+ 31715 |     (t : modularTileEdgeParameterSet e.2) :
+ 31716 |     HasDerivAt (actualEdgeAmbientParam e)
+ 31717 |       (actualEdgeNativeVelocity e t) (t : Real) := by
+ 31718 |   letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
+ 31719 |   letI : AddCommGroup Complex := Complex.addCommGroup
+ 31720 |   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
+ 31721 |   have houter :=
+ 31722 |     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
+ 31723 |       (modularTileEdgeParam e.2 t)).hasFDerivAt
+ 31724 |   have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hbase
+ 31725 |     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
+ 31726 |   rw [hasDerivAt_iff_tendsto_slope_zero] at hcomp ⊢
+ 31727 |   simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity, Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
+ 31728 | 
+ 31729 | /-! #### Native tangent compatibility under the actual side pairing -/
+ 31730 | /-- The subtype pairing is multiplication of the real parameter by the
+ 31731 | declared sign. -/
+ 31732 | @[simp]
+ 31733 | theorem pairedParameter_coe_eq_parameterSign_mul
+ 31734 |     (e : GammaTwoActualPolygonEdge)
+ 31735 |     (t : modularTileEdgeParameterSet e.2) :
+ 31736 |     (e.pairedParameter t : Real) =
+ 31737 |       (e.2.parameterSign : Real) * (t : Real) := by
+ 31738 |   rcases e with ⟨q, edge⟩
+ 31739 |   cases edge <;>
+ 31740 |     simp [GammaTwoActualPolygonEdge.pairedParameter,
+ 31741 |       GammaTwoModularTileEdge.pairedParameter,
+ 31742 |       GammaTwoModularTileEdge.parameterSign]
+ 31743 | 
+ 31744 | /-- Each real parameter set has unique one-dimensional derivatives, including
+ 31745 | at its finite endpoints. -/
+ 31746 | theorem uniqueDiffOn_modularTileEdgeParameterSet
+ 31747 |     (e : GammaTwoModularTileEdge) :
+ 31748 |     UniqueDiffOn Real (modularTileEdgeParameterSet e) := by
+ 31749 |   cases e with
+ 31750 |   | circularArc =>
+ 31751 |       simpa [modularTileEdgeParameterSet] using
+ 31752 |         (uniqueDiffOn_Icc (by norm_num : (-1 : Real) < 1))
+ 31753 |   | leftVerticalSegment =>
+ 31754 |       simpa [modularTileEdgeParameterSet] using uniqueDiffOn_Ici (0 : Real)
+ 31755 |   | rightVerticalSegment =>
+ 31756 |       simpa [modularTileEdgeParameterSet] using uniqueDiffOn_Ici (0 : Real)
+ 31757 | 
+ 31758 | /-- Ambient form of the exact actual-edge pairing identity. -/
+ 31759 | theorem gammaTwoMoebiusChart_actualEdgeAmbientParam_eq
+ 31760 |     (e : GammaTwoActualPolygonEdge) {t : Real}
+ 31761 |     (ht : t ∈ modularTileEdgeParameterSet e.2) :
+ 31762 |     gammaTwoMoebiusChart e.pairingElement (actualEdgeAmbientParam e t) =
+ 31763 |       actualEdgeAmbientParam e.paired
+ 31764 |         ((e.2.parameterSign : Real) * t) := by
+ 31765 |   let tau : modularTileEdgeParameterSet e.2 := ⟨t, ht⟩
+ 31766 |   have hpair := gammaTwoActualPolygonEdgePairing_param e tau
+ 31767 |   have hpairCoe := congrArg (fun z : UpperHalfPlane => (z : Complex)) hpair
+ 31768 |   calc
+ 31769 |     gammaTwoMoebiusChart e.pairingElement (actualEdgeAmbientParam e t) =
+ 31770 |         gammaTwoMoebiusChart e.pairingElement
+ 31771 |           (gammaTwoActualPolygonEdgeParam e tau : Complex) := by
+ 31772 |             rw [actualEdgeAmbientParam_eq_coe e tau]
+ 31773 |     _ = (((e.pairingElement : SL(2, Int))
+ 31774 |           • gammaTwoActualPolygonEdgeParam e tau : UpperHalfPlane) : Complex) := by
+ 31775 |             simp [gammaTwoMoebiusChart, gammaTwoMoebiusCoordinate]
+ 31776 |     _ = (gammaTwoActualPolygonEdgeParam e.paired
+ 31777 |           (e.pairedParameter tau) : Complex) := hpairCoe
+ 31778 |     _ = actualEdgeAmbientParam e.paired
+ 31779 |           ((e.2.parameterSign : Real) * t) := by
+ 31780 |             simpa [pairedParameter_coe_eq_parameterSign_mul e tau] using
+ 31781 |               (actualEdgeAmbientParam_eq_coe e.paired
+ 31782 |                 (e.pairedParameter tau)).symm
+ 31783 | 
+ 31784 | /-- The `d1` derivative used by flux invariance is the same derivative as the
+ 31785 | fixed-phase Mobius chart derivative. -/
+ 31786 | theorem d1_gammaTwoActionCoordinate_eq
+ 31787 |     (gamma : GammaTwo) (z : UpperHalfPlane) (xi : Complex) :
+ 31788 |     d1 (gammaTwoActionCoordinate gamma) z xi =
+ 31789 |       xi / inverseEtaPaperOrbitDenom gamma z ^ 2 := by
+ 31790 |   change d1 (gammaTwoMoebiusCoordinate gamma) z xi =
+ 31791 |     xi / inverseEtaPaperOrbitDenom gamma z ^ 2
+ 31792 |   exact d1_gammaTwoMoebiusCoordinate gamma z xi
+ 31793 | 
+ 31794 | /-- Derivative of the paired Mobius image of a native actual-edge curve,
+ 31795 | expressed in the exact `d1` notation used by invariant fluxes. -/
+ 31796 | theorem gammaTwoChart_actualEdgeAmbientParam_hasDerivAt
+ 31797 |     (e : GammaTwoActualPolygonEdge)
+ 31798 |     (t : modularTileEdgeParameterSet e.2) :
+ 31799 |     HasDerivAt
+ 31800 |       (fun s : Real =>
+ 31801 |         gammaTwoMoebiusChart e.pairingElement
+ 31802 |           (actualEdgeAmbientParam e s))
+ 31803 |       (d1 (gammaTwoActionCoordinate e.pairingElement)
+ 31804 |         (gammaTwoActualPolygonEdgeParam e t)
+ 31805 |         (actualEdgeNativeVelocity e t)) (t : Real) := by
+ 31806 |   have hinner := actualEdgeAmbientParam_hasDerivAt e t
+ 31807 |   have houter :=
+ 31808 |     (gammaTwoMoebiusChart_hasStrictDerivAt e.pairingElement
+ 31809 |       (gammaTwoActualPolygonEdgeParam e t)).hasDerivAt.complexToReal_fderiv
+ 31810 |   have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hinner
+ 31811 |     (actualEdgeAmbientParam_eq_coe e t).symm
+ 31812 |   simpa [Function.comp_def, d1_gammaTwoActionCoordinate_eq,
+ 31813 |     smul_eq_mul, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using hcomp
+ 31814 | 
+ 31815 | /-- Exact native tangent compatibility.  The parameter sign is indispensable:
+ 31816 | on the circular side the paired native tangent is the negative of the
+ 31817 | transported source tangent, whereas it is equal on the two vertical sides. -/
+ 31818 | theorem parameterSign_mul_nativePairedTangent_eq_transport
+ 31819 |     (e : GammaTwoActualPolygonEdge)
+ 31820 |     (t : modularTileEdgeParameterSet e.2) :
+ 31821 |     (e.2.parameterSign : Complex) *
+ 31822 |         actualEdgeNativeVelocity e.paired (e.pairedParameter t) =
+ 31823 |       d1 (gammaTwoActionCoordinate e.pairingElement)
+ 31824 |         (gammaTwoActualPolygonEdgeParam e t)
+ 31825 |         (actualEdgeNativeVelocity e t) := by
+ 31826 |   let sigma : Real := (e.2.parameterSign : Real)
+ 31827 |   have hleft := gammaTwoChart_actualEdgeAmbientParam_hasDerivAt e t
+ 31828 |   have htarget := actualEdgeAmbientParam_hasDerivAt e.paired
+ 31829 |     (e.pairedParameter t)
+ 31830 |   have htarget' : HasDerivAt (actualEdgeAmbientParam e.paired)
+ 31831 |       (actualEdgeNativeVelocity e.paired (e.pairedParameter t))
+ 31832 |       (sigma * (t : Real)) := by
+ 31833 |     simpa [sigma, pairedParameter_coe_eq_parameterSign_mul e t] using htarget
+ 31834 |   have hscale : HasDerivAt (fun s : Real => sigma * s) sigma (t : Real) := by
+ 31835 |     simpa using (hasDerivAt_id (t : Real)).const_mul sigma
+ 31836 |   have hright := htarget'.scomp (t : Real) hscale
+ 31837 |   have heq : ∀ s ∈ modularTileEdgeParameterSet e.2,
+ 31838 |       (fun r : Real =>
+ 31839 |         gammaTwoMoebiusChart e.pairingElement
+ 31840 |           (actualEdgeAmbientParam e r)) s =
+ 31841 |       (fun r : Real => actualEdgeAmbientParam e.paired (sigma * r)) s := by
+ 31842 |     intro s hs
+ 31843 |     simpa [sigma] using gammaTwoMoebiusChart_actualEdgeAmbientParam_eq e hs
+ 31844 |   have hleftAsRight : HasDerivWithinAt
+ 31845 |       (fun r : Real => actualEdgeAmbientParam e.paired (sigma * r))
+ 31846 |       (d1 (gammaTwoActionCoordinate e.pairingElement)
+ 31847 |         (gammaTwoActualPolygonEdgeParam e t)
+ 31848 |         (actualEdgeNativeVelocity e t))
+ 31849 |       (modularTileEdgeParameterSet e.2) (t : Real) :=
+ 31850 |     hleft.hasDerivWithinAt.congr_of_mem
+ 31851 |       (fun s hs => (heq s hs).symm) t.property
+ 31852 |   have hderivEq :=
+ 31853 |     (uniqueDiffOn_modularTileEdgeParameterSet e.2 t t.property).eq
+ 31854 |       hleftAsRight.hasFDerivWithinAt hright.hasDerivWithinAt.hasFDerivWithinAt
+ 31855 |   have happly := congrArg
+ 31856 |     (fun L : Real →L[Real] Complex => L 1) hderivEq
+ 31857 |   simpa [sigma, Complex.real_smul] using happly.symm
+ 31858 | 
+ 31859 | /-! #### Pointwise native flux pairing -/
+ 31860 | 
+ 31861 | /-- The flux one-form is linear under multiplication of a tangent by a real
+ 31862 | scalar. -/
+ 31863 | theorem fluxOneFormValue_real_mul
+ 31864 |     (X Y : UpperHalfPlane → Complex) (z : UpperHalfPlane)
+ 31865 |     (r : Real) (xi : Complex) :
+ 31866 |     fluxOneFormValue X Y z ((r : Complex) * xi) =
+ 31867 |       (r : Complex) * fluxOneFormValue X Y z xi := by
+ 31868 |   simp [fluxOneFormValue, Complex.mul_re, Complex.mul_im]
+ 31869 |   ring
+ 31870 | 
+ 31871 | /-- Specialization of real linearity to the three integral parameter signs.
+ 31872 | This form avoids hiding the integer-to-real-to-complex coercion used by the
+ 31873 | geometric edge data. -/
+ 31874 | theorem fluxOneFormValue_parameterSign_mul
+ 31875 |     (X Y : UpperHalfPlane → Complex) (z : UpperHalfPlane)
+ 31876 |     (e : GammaTwoModularTileEdge) (xi : Complex) :
+ 31877 |     fluxOneFormValue X Y z ((e.parameterSign : Complex) * xi) =
+ 31878 |       (e.parameterSign : Complex) * fluxOneFormValue X Y z xi := by
+ 31879 |   cases e <;>
+ 31880 |     simp [GammaTwoModularTileEdge.parameterSign, fluxOneFormValue_neg]
+ 31881 | 
+ 31882 | /-- The square of every parameter sign is one. -/
+ 31883 | theorem parameterSign_mul_self_complex (e : GammaTwoModularTileEdge) :
+ 31884 |     (e.parameterSign : Complex) * (e.parameterSign : Complex) = 1 := by
+ 31885 |   cases e <;> norm_num [GammaTwoModularTileEdge.parameterSign]
+ 31886 | 
+ 31887 | /-- Flux on the native paired edge equals the parameter sign times flux on the
+ 31888 | native source edge. -/
+ 31889 | theorem invariantFlux_nativePaired_parameterSign
+ 31890 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 31891 |     (e : GammaTwoActualPolygonEdge)
+ 31892 |     (t : modularTileEdgeParameterSet e.2) :
+ 31893 |     fluxOneFormValue X Y
+ 31894 |         (gammaTwoActualPolygonEdgeParam e.paired (e.pairedParameter t))
+ 31895 |         (actualEdgeNativeVelocity e.paired (e.pairedParameter t)) =
+ 31896 |       (e.2.parameterSign : Complex) *
+ 31897 |         fluxOneFormValue X Y (gammaTwoActualPolygonEdgeParam e t)
+ 31898 |           (actualEdgeNativeVelocity e t) := by
+ 31899 |   have hinv := invariantFlux_actualPolygonEdge_pairing hInv e t
+ 31900 |     (actualEdgeNativeVelocity e t)
+ 31901 |   rw [← parameterSign_mul_nativePairedTangent_eq_transport e t] at hinv
+ 31902 |   rw [fluxOneFormValue_parameterSign_mul] at hinv
+ 31903 |   have hsquare := parameterSign_mul_self_complex e.2
+ 31904 |   calc
+ 31905 |     fluxOneFormValue X Y
+ 31906 |         (gammaTwoActualPolygonEdgeParam e.paired (e.pairedParameter t))
+ 31907 |         (actualEdgeNativeVelocity e.paired (e.pairedParameter t)) =
+ 31908 |         1 * fluxOneFormValue X Y
+ 31909 |           (gammaTwoActualPolygonEdgeParam e.paired (e.pairedParameter t))
+ 31910 |           (actualEdgeNativeVelocity e.paired (e.pairedParameter t)) := by ring
+ 31911 |     _ = ((e.2.parameterSign : Complex) * (e.2.parameterSign : Complex)) *
+ 31912 |         fluxOneFormValue X Y
+ 31913 |           (gammaTwoActualPolygonEdgeParam e.paired (e.pairedParameter t))
+ 31914 |           (actualEdgeNativeVelocity e.paired (e.pairedParameter t)) := by
+ 31915 |           rw [hsquare]
+ 31916 |     _ = (e.2.parameterSign : Complex) *
+ 31917 |         ((e.2.parameterSign : Complex) *
+ 31918 |           fluxOneFormValue X Y
+ 31919 |             (gammaTwoActualPolygonEdgeParam e.paired (e.pairedParameter t))
+ 31920 |             (actualEdgeNativeVelocity e.paired (e.pairedParameter t))) := by ring
+ 31921 |     _ = (e.2.parameterSign : Complex) *
+ 31922 |         fluxOneFormValue X Y (gammaTwoActualPolygonEdgeParam e t)
+ 31923 |           (actualEdgeNativeVelocity e t) := by rw [hinv]
+ 31924 | 
+ 31925 | /-! #### Total integrands and finite truncation -/
+ 31926 | 
+ 31927 | /-- Totalized native tangent; outside the edge parameter set its value is
+ 31928 | irrelevant and is set to zero. -/
+ 31929 | noncomputable def actualEdgeNativeVelocityTotal
+ 31930 |     (e : GammaTwoActualPolygonEdge) (t : Real) : Complex := by
+ 31931 |   classical
+ 31932 |   exact if ht : t ∈ modularTileEdgeParameterSet e.2 then
+ 31933 |     actualEdgeNativeVelocity e ⟨t, ht⟩
+ 31934 |   else 0
+ 31935 | 
+ 31936 | /-- Native actual-edge flux integrand used by the finite tile boundary
+ 31937 | integral. -/
+ 31938 | noncomputable def nativeActualEdgeFluxIntegrand
+ 31939 |     (X Y : UpperHalfPlane → Complex)
+ 31940 |     (e : GammaTwoActualPolygonEdge) (t : Real) : Complex :=
+ 31941 |   fluxOneFormValue X Y (actualEdgePoint e t)
+ 31942 |     (actualEdgeNativeVelocityTotal e t)
+ 31943 | 
+ 31944 | /-- Totalized integrands satisfy the same exact native pairing law at every
+ 31945 | admissible source parameter. -/
+ 31946 | theorem nativeActualEdgeFluxIntegrand_pairedParameter
+ 31947 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 31948 |     (e : GammaTwoActualPolygonEdge)
+ 31949 |     (t : modularTileEdgeParameterSet e.2) :
+ 31950 |     nativeActualEdgeFluxIntegrand X Y e.paired (e.pairedParameter t) =
+ 31951 |       (e.2.parameterSign : Complex) *
+ 31952 |         nativeActualEdgeFluxIntegrand X Y e t := by
+ 31953 |   classical
+ 31954 |   simp only [nativeActualEdgeFluxIntegrand, actualEdgePoint,
+ 31955 |     actualEdgeNativeVelocityTotal, dif_pos t.property,
+ 31956 |     dif_pos (e.pairedParameter t).property]
+ 31957 |   exact invariantFlux_nativePaired_parameterSign hInv e t
+ 31958 | 
+ 31959 | /-- Real-parameter version of the preceding identity. -/
+ 31960 | theorem nativeActualEdgeFluxIntegrand_paired_mul
+ 31961 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 31962 |     (e : GammaTwoActualPolygonEdge)
+ 31963 |     (t : modularTileEdgeParameterSet e.2) :
+ 31964 |     nativeActualEdgeFluxIntegrand X Y e.paired
+ 31965 |         ((e.2.parameterSign : Real) * (t : Real)) =
+ 31966 |       (e.2.parameterSign : Complex) *
+ 31967 |         nativeActualEdgeFluxIntegrand X Y e t := by
+ 31968 |   simpa [pairedParameter_coe_eq_parameterSign_mul e t] using
+ 31969 |     nativeActualEdgeFluxIntegrand_pairedParameter hInv e t
+ 31970 | 
+ 31971 | /-- Lower endpoint of a finite native edge integral. -/
+ 31972 | def nativeEdgeParameterLower : GammaTwoModularTileEdge → Real
+ 31973 |   | .circularArc => -1
+ 31974 |   | .leftVerticalSegment => 0
+ 31975 |   | .rightVerticalSegment => 0
+ 31976 | 
+ 31977 | /-- Upper endpoint of a finite native edge integral.  `T` is the common
+ 31978 | vertical truncation parameter; the circular edge retains its fixed endpoint
+ 31979 | `1`. -/
+ 31980 | def nativeEdgeParameterUpper (T : Real) : GammaTwoModularTileEdge → Real
+ 31981 |   | .circularArc => 1
+ 31982 |   | .leftVerticalSegment => T
+ 31983 |   | .rightVerticalSegment => T
+ 31984 | 
+ 31985 | @[simp]
+ 31986 | theorem nativeEdgeParameterLower_paired (e : GammaTwoActualPolygonEdge) :
+ 31987 |     nativeEdgeParameterLower e.paired.2 = nativeEdgeParameterLower e.2 := by
+ 31988 |   rcases e with ⟨q, edge⟩
+ 31989 |   cases edge <;> rfl
+ 31990 | 
+ 31991 | @[simp]
+ 31992 | theorem nativeEdgeParameterUpper_paired
+ 31993 |     (T : Real) (e : GammaTwoActualPolygonEdge) :
+ 31994 |     nativeEdgeParameterUpper T e.paired.2 =
+ 31995 |       nativeEdgeParameterUpper T e.2 := by
+ 31996 |   rcases e with ⟨q, edge⟩
+ 31997 |   cases edge <;> rfl
+ 31998 | 
+ 31999 | /-- Every parameter in a finite native integration interval is admissible. -/
+ 32000 | theorem nativeEdge_uIcc_subset_parameterSet
+ 32001 |     {T : Real} (hT : 0 ≤ T) (e : GammaTwoModularTileEdge) :
+ 32002 |     Set.uIcc (nativeEdgeParameterLower e) (nativeEdgeParameterUpper T e) ⊆
+ 32003 |       modularTileEdgeParameterSet e := by
+ 32004 |   cases e with
+ 32005 |   | circularArc =>
+ 32006 |       simpa [nativeEdgeParameterLower, nativeEdgeParameterUpper,
+ 32007 |         modularTileEdgeParameterSet,
+ 32008 |         uIcc_of_le (by norm_num : (-1 : Real) ≤ 1)]
+ 32009 |   | leftVerticalSegment =>
+ 32010 |       intro t ht
+ 32011 |       have ht' : t ∈ Set.Icc (0 : Real) T := by
+ 32012 |         simpa [nativeEdgeParameterLower, nativeEdgeParameterUpper,
+ 32013 |           uIcc_of_le hT] using ht
+ 32014 |       simpa [modularTileEdgeParameterSet] using ht'.1
+ 32015 |   | rightVerticalSegment =>
+ 32016 |       intro t ht
+ 32017 |       have ht' : t ∈ Set.Icc (0 : Real) T := by
+ 32018 |         simpa [nativeEdgeParameterLower, nativeEdgeParameterUpper,
+ 32019 |           uIcc_of_le hT] using ht
+ 32020 |       simpa [modularTileEdgeParameterSet] using ht'.1
+ 32021 | 
+ 32022 | /-- Unoriented finite native flux integral on one actual edge. -/
+ 32023 | noncomputable def nativeActualEdgeFluxIntegral
+ 32024 |     (T : Real) (X Y : UpperHalfPlane → Complex)
+ 32025 |     (e : GammaTwoActualPolygonEdge) : Complex :=
+ 32026 |   ∫ t in nativeEdgeParameterLower e.2..nativeEdgeParameterUpper T e.2,
+ 32027 |     nativeActualEdgeFluxIntegrand X Y e t
+ 32028 | 
+ 32029 | /-- Circular native integrals acquire the sign `-1` under pairing, including
+ 32030 | the nontrivial change of variables `t |-> -t`. -/
+ 32031 | theorem nativeActualEdgeFluxIntegral_paired_circular
+ 32032 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32033 |     (T : Real) (q : GammaTwoRightCoset) :
+ 32034 |     nativeActualEdgeFluxIntegral T X Y
+ 32035 |         ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired =
+ 32036 |       (-1 : Complex) *
+ 32037 |         nativeActualEdgeFluxIntegral T X Y
+ 32038 |           (q, GammaTwoModularTileEdge.circularArc) := by
+ 32039 |   change
+ 32040 |     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32041 |         ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
+ 32042 |       (-1 : Complex) *
+ 32043 |         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32044 |           (q, GammaTwoModularTileEdge.circularArc) t)
+ 32045 |   calc
+ 32046 |     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32047 |         ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t) =
+ 32048 |         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32049 |           ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired (-t) := by
+ 32050 |       symm
+ 32051 |       simpa using
+ 32052 |         (intervalIntegral.integral_comp_neg
+ 32053 |           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
+ 32054 |             ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge).paired t)
+ 32055 |           (a := (-1 : Real)) (b := (1 : Real)))
+ 32056 |     _ = ∫ t in (-1 : Real)..1,
+ 32057 |         -nativeActualEdgeFluxIntegrand X Y
+ 32058 |           (q, GammaTwoModularTileEdge.circularArc) t := by
+ 32059 |       apply intervalIntegral.integral_congr
+ 32060 |       intro t ht
+ 32061 |       have ht' : t ∈ Set.Icc (-1 : Real) 1 := by
+ 32062 |         simpa [uIcc_of_le (by norm_num : (-1 : Real) ≤ 1)] using ht
+ 32063 |       have hpair := nativeActualEdgeFluxIntegrand_paired_mul hInv
+ 32064 |         ((q, GammaTwoModularTileEdge.circularArc) :
+ 32065 |           GammaTwoActualPolygonEdge) ⟨t, ht'⟩
+ 32066 |       simpa [GammaTwoModularTileEdge.parameterSign] using hpair
+ 32067 |     _ = -(∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32068 |         (q, GammaTwoModularTileEdge.circularArc) t) := by
+ 32069 |       rw [intervalIntegral.integral_neg]
+ 32070 |     _ = (-1 : Complex) *
+ 32071 |         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
+ 32072 |           (q, GammaTwoModularTileEdge.circularArc) t) := by ring
+ 32073 | 
+ 32074 | /-- Left-to-right vertical pairing preserves the unoriented native integral. -/
+ 32075 | theorem nativeActualEdgeFluxIntegral_paired_left
+ 32076 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32077 |     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
+ 32078 |     nativeActualEdgeFluxIntegral T X Y
+ 32079 |         ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired =
+ 32080 |       nativeActualEdgeFluxIntegral T X Y
+ 32081 |         (q, GammaTwoModularTileEdge.leftVerticalSegment) := by
+ 32082 |   change
+ 32083 |     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
+ 32084 |       ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
+ 32085 |     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
+ 32086 |       (q, GammaTwoModularTileEdge.leftVerticalSegment) t
+ 32087 |   apply intervalIntegral.integral_congr
+ 32088 |   intro t ht
+ 32089 |   have htIcc : t ∈ Set.Icc (0 : Real) T := by
+ 32090 |     simpa [uIcc_of_le hT] using ht
+ 32091 |   have ht' : t ∈ modularTileEdgeParameterSet
+ 32092 |       GammaTwoModularTileEdge.leftVerticalSegment := by
+ 32093 |     simpa [modularTileEdgeParameterSet] using htIcc.1
+ 32094 |   have hpair := nativeActualEdgeFluxIntegrand_paired_mul hInv
+ 32095 |     ((q, GammaTwoModularTileEdge.leftVerticalSegment) :
+ 32096 |       GammaTwoActualPolygonEdge) ⟨t, ht'⟩
+ 32097 |   simpa [GammaTwoModularTileEdge.parameterSign] using hpair
+ 32098 | 
+ 32099 | /-- Right-to-left vertical pairing preserves the unoriented native integral. -/
+ 32100 | theorem nativeActualEdgeFluxIntegral_paired_right
+ 32101 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32102 |     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
+ 32103 |     nativeActualEdgeFluxIntegral T X Y
+ 32104 |         ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired =
+ 32105 |       nativeActualEdgeFluxIntegral T X Y
+ 32106 |         (q, GammaTwoModularTileEdge.rightVerticalSegment) := by
+ 32107 |   change
+ 32108 |     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
+ 32109 |       ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge).paired t) =
+ 32110 |     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
+ 32111 |       (q, GammaTwoModularTileEdge.rightVerticalSegment) t
+ 32112 |   apply intervalIntegral.integral_congr
+ 32113 |   intro t ht
+ 32114 |   have htIcc : t ∈ Set.Icc (0 : Real) T := by
+ 32115 |     simpa [uIcc_of_le hT] using ht
+ 32116 |   have ht' : t ∈ modularTileEdgeParameterSet
+ 32117 |       GammaTwoModularTileEdge.rightVerticalSegment := by
+ 32118 |     simpa [modularTileEdgeParameterSet] using htIcc.1
+ 32119 |   have hpair := nativeActualEdgeFluxIntegrand_paired_mul hInv
+ 32120 |     ((q, GammaTwoModularTileEdge.rightVerticalSegment) :
+ 32121 |       GammaTwoActualPolygonEdge) ⟨t, ht'⟩
+ 32122 |   simpa [GammaTwoModularTileEdge.parameterSign] using hpair
+ 32123 | 
+ 32124 | /-- Uniform pairing law for every finite native edge integral. -/
+ 32125 | theorem nativeActualEdgeFluxIntegral_paired
+ 32126 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32127 |     {T : Real} (hT : 0 ≤ T) (e : GammaTwoActualPolygonEdge) :
+ 32128 |     nativeActualEdgeFluxIntegral T X Y e.paired =
+ 32129 |       (e.2.parameterSign : Complex) *
+ 32130 |         nativeActualEdgeFluxIntegral T X Y e := by
+ 32131 |   rcases e with ⟨q, edge⟩
+ 32132 |   cases edge with
+ 32133 |   | circularArc =>
+ 32134 |       simpa [GammaTwoModularTileEdge.parameterSign] using
+ 32135 |         nativeActualEdgeFluxIntegral_paired_circular hInv T q
+ 32136 |   | leftVerticalSegment =>
+ 32137 |       simpa [GammaTwoModularTileEdge.parameterSign] using
+ 32138 |         nativeActualEdgeFluxIntegral_paired_left hInv hT q
+ 32139 |   | rightVerticalSegment =>
+ 32140 |       simpa [GammaTwoModularTileEdge.parameterSign] using
+ 32141 |         nativeActualEdgeFluxIntegral_paired_right hInv hT q
+ 32142 | 
+ 32143 | /-! #### Oriented contribution and finite cancellation -/
+ 32144 | 
+ 32145 | /-- Native oriented edge contribution with exactly the orientation convention
+ 32146 | used by the actual finite tile complex. -/
+ 32147 | noncomputable def nativeOrientedActualEdgeContribution
+ 32148 |     (T : Real) (X Y : UpperHalfPlane → Complex)
+ 32149 |     (e : GammaTwoActualPolygonEdge) : Complex :=
+ 32150 |   (e.orientationSign : Complex) * nativeActualEdgeFluxIntegral T X Y e
+ 32151 | 
+ 32152 | /-- Every paired native contribution is the exact negative of its source
+ 32153 | contribution.  The proof uses both the analytic parameter sign and the
+ 32154 | geometric orientation sign. -/
+ 32155 | theorem nativeOrientedActualEdgeContribution_paired_eq_neg
+ 32156 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32157 |     {T : Real} (hT : 0 ≤ T) (e : GammaTwoActualPolygonEdge) :
+ 32158 |     nativeOrientedActualEdgeContribution T X Y e.paired =
+ 32159 |       -nativeOrientedActualEdgeContribution T X Y e := by
+ 32160 |   rw [nativeOrientedActualEdgeContribution,
+ 32161 |     nativeOrientedActualEdgeContribution,
+ 32162 |     nativeActualEdgeFluxIntegral_paired hInv hT]
+ 32163 |   have horient :
+ 32164 |       (e.paired.orientationSign : Complex) *
+ 32165 |           (e.2.parameterSign : Complex) =
+ 32166 |         -(e.orientationSign : Complex) := by
+ 32167 |     exact_mod_cast e.pairing_reverses_orientation
+ 32168 |   rw [← mul_assoc, horient]
+ 32169 |   ring
+ 32170 | 
+ 32171 | /-- The complete finite native boundary sum cancels.  This invokes the genuine
+ 32172 | actual-edge pairing equivalence, not an informal pairing of a polygon picture.
+ 32173 | -/
+ 32174 | theorem sum_nativeOrientedActualEdgeContribution_eq_zero
+ 32175 |     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
+ 32176 |     {T : Real} (hT : 0 ≤ T) :
+ 32177 |     (Finset.univ.sum fun e : GammaTwoActualPolygonEdge =>
+ 32178 |       nativeOrientedActualEdgeContribution T X Y e) = 0 := by
+ 32179 |   exact sum_actualPolygonEdges_eq_zero_of_paired_neg
+ 32180 |     (nativeOrientedActualEdgeContribution T X Y)
+ 32181 |     (nativeOrientedActualEdgeContribution_paired_eq_neg hInv hT)
+ 32182 | 
+ 32183 | /-! #### Exact bridge to the curved-tile Stokes boundary expression -/
+ 32184 | 
+ 32185 | /-- The native actual-edge density is exactly the flux of the selected Piola
+ 32186 | field on the corresponding base edge. -/
+ 32187 | theorem nativeActualEdgeFluxIntegrand_eq_selectedPiolaFlux
+ 32188 |     (X Y : UpperHalfPlane → Complex) (q : GammaTwoRightCoset)
+ 32189 |     (edge : GammaTwoModularTileEdge)
+ 32190 |     (t : modularTileEdgeParameterSet edge) :
+ 32191 |     nativeActualEdgeFluxIntegrand X Y (q, edge) t =
+ 32192 |       fluxOneFormValue (selectedCosetPiolaX q X Y)
+ 32193 |         (selectedCosetPiolaY q X Y) (modularTileEdgeParam edge t)
+ 32194 |         (modularTileEdgeVelocity edge t) := by
+ 32195 |   simpa [nativeActualEdgeFluxIntegrand, actualEdgePoint,
+ 32196 |     actualEdgeNativeVelocityTotal, actualEdgeNativeVelocity,
+ 32197 |     gammaTwoActualPolygonEdgeParam, selectedCosetAction, t.property] using
+ 32198 |       (selectedCosetPiola_fluxOneFormValue q X Y
+ 32199 |         (modularTileEdgeParam edge t)
+ 32200 |         (modularTileEdgeVelocity edge t)).symm
+ 32201 | 
+ 32202 | /-- The tangent normalized in the curved-tile theorem is the same circular
+ 32203 | tangent already differentiated above. -/
+ 32204 | theorem baseModularCircularTangent_eq_nativeVelocity
+ 32205 |     (t : Set.Icc (-1 : Real) 1) :
+ 32206 |     baseModularCircularTangent t =
+ 32207 |       modularTileEdgeVelocity GammaTwoModularTileEdge.circularArc t := by
+ 32208 |   apply Complex.ext <;>
+ 32209 |     simp [baseModularCircularTangent, modularTileEdgeVelocity,
+ 32210 |       modularCircularArcVelocity, modularLowerHeight]
+ 32211 | 
+ 32212 | /-- The circular native integral on one selected tile is exactly the circular
+ 32213 | term in the normalized curved-tile boundary formula. -/
+ 32214 | theorem nativeActualEdgeFluxIntegral_circular_eq_selectedPiola
+ 32215 |     (T : Real) (X Y : UpperHalfPlane → Complex)
+ 32216 |     (q : GammaTwoRightCoset) :
+ 32217 |     nativeActualEdgeFluxIntegral T X Y
+ 32218 |         (q, GammaTwoModularTileEdge.circularArc) =
+ 32219 |       ∫ t in (-1 : Real)..1,
+ 32220 |         baseModularCircularFluxIntegrand
+ 32221 |           (realProdLift (selectedCosetPiolaX q X Y))
+ 32222 |           (realProdLift (selectedCosetPiolaY q X Y)) t := by
+ 32223 |   change
+ 32224 |     (∫ t in (-1 : Real)..1,
+ 32225 |       nativeActualEdgeFluxIntegrand X Y
+ 32226 |         (q, GammaTwoModularTileEdge.circularArc) t) = _
+ 32227 |   apply intervalIntegral.integral_congr
+ 32228 |   intro t ht
+ 32229 |   have ht' : t ∈ Set.Icc (-1 : Real) 1 := by
+ 32230 |     simpa [uIcc_of_le (by norm_num : (-1 : Real) ≤ 1)] using ht
+ 32231 |   let tau : Set.Icc (-1 : Real) 1 := ⟨t, ht'⟩
+ 32232 |   calc
+ 32233 |     nativeActualEdgeFluxIntegrand X Y
+ 32234 |         (q, GammaTwoModularTileEdge.circularArc) t =
+ 32235 |         fluxOneFormValue (selectedCosetPiolaX q X Y)
+ 32236 |           (selectedCosetPiolaY q X Y) (modularCircularArcParam tau)
+ 32237 |           (modularTileEdgeVelocity
+ 32238 |             GammaTwoModularTileEdge.circularArc tau) := by
+ 32239 |       simpa [tau, modularTileEdgeParam] using
+ 32240 |         nativeActualEdgeFluxIntegrand_eq_selectedPiolaFlux X Y q
+ 32241 |           GammaTwoModularTileEdge.circularArc tau
+ 32242 |     _ = fluxOneFormValue (selectedCosetPiolaX q X Y)
+ 32243 |           (selectedCosetPiolaY q X Y) (modularCircularArcParam tau)
+ 32244 |           (baseModularCircularTangent t) := by
+ 32245 |       rw [baseModularCircularTangent_eq_nativeVelocity tau]
+ 32246 |     _ = baseModularCircularFluxIntegrand
+ 32247 |           (realProdLift (selectedCosetPiolaX q X Y))
+ 32248 |           (realProdLift (selectedCosetPiolaY q X Y)) t := by
+ 32249 |       simpa [tau] using
+ 32250 |         (baseModularCircularFluxIntegrand_lift_eq_flux
+ 32251 |           (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y) tau).symm
+ 32252 | 
+ 32253 | /-- The right native vertical integral is the right vertical term in the
+ 32254 | curved-tile boundary expression. -/
+ 32255 | theorem nativeActualEdgeFluxIntegral_right_eq_selectedPiola
+ 32256 |     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
+ 32257 |     (q : GammaTwoRightCoset) :
+ 32258 |     nativeActualEdgeFluxIntegral T X Y
+ 32259 |         (q, GammaTwoModularTileEdge.rightVerticalSegment) =
+ 32260 |       ∫ s in (0 : Real)..T,
+ 32261 |         realProdLift (selectedCosetPiolaX q X Y)
+ 32262 |           (1 / 2, modularVertexHeight + s) := by
+ 32263 |   change
+ 32264 |     (∫ s in (0 : Real)..T,
+ 32265 |       nativeActualEdgeFluxIntegrand X Y
+ 32266 |         (q, GammaTwoModularTileEdge.rightVerticalSegment) s) = _
+ 32267 |   apply intervalIntegral.integral_congr
+ 32268 |   intro s hs
+ 32269 |   have hsIcc : s ∈ Set.Icc (0 : Real) T := by
+ 32270 |     simpa [uIcc_of_le hT] using hs
+ 32271 |   have hs' : s ∈ modularTileEdgeParameterSet
+ 32272 |       GammaTwoModularTileEdge.rightVerticalSegment := by
+ 32273 |     simpa [modularTileEdgeParameterSet] using hsIcc.1
+ 32274 |   let sigma : modularTileEdgeParameterSet
+ 32275 |       GammaTwoModularTileEdge.rightVerticalSegment := ⟨s, hs'⟩
+ 32276 |   calc
+ 32277 |     nativeActualEdgeFluxIntegrand X Y
+ 32278 |         (q, GammaTwoModularTileEdge.rightVerticalSegment) s =
+ 32279 |         fluxOneFormValue (selectedCosetPiolaX q X Y)
+ 32280 |           (selectedCosetPiolaY q X Y) (modularRightVerticalParam sigma)
+ 32281 |           Complex.I := by
+ 32282 |       simpa [sigma, modularTileEdgeParam, modularTileEdgeVelocity] using
+ 32283 |         nativeActualEdgeFluxIntegrand_eq_selectedPiolaFlux X Y q
+ 32284 |           GammaTwoModularTileEdge.rightVerticalSegment sigma
+ 32285 |     _ = realProdLift (selectedCosetPiolaX q X Y)
+ 32286 |           (1 / 2, modularVertexHeight + s) := by
+ 32287 |       simpa [sigma] using
+ 32288 |         (realProdLift_rightVertical_eq_flux
+ 32289 |           (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y) sigma).symm
+ 32290 | 
+ 32291 | /-- The left native vertical integral is the unsigned left vertical term in
+ 32292 | the curved-tile boundary expression; its negative orientation is inserted in
+ 32293 | `nativeOrientedActualEdgeContribution`. -/
+ 32294 | theorem nativeActualEdgeFluxIntegral_left_eq_selectedPiola
+ 32295 |     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
+ 32296 |     (q : GammaTwoRightCoset) :
+ 32297 |     nativeActualEdgeFluxIntegral T X Y
+ 32298 |         (q, GammaTwoModularTileEdge.leftVerticalSegment) =
+ 32299 |       ∫ s in (0 : Real)..T,
+ 32300 |         realProdLift (selectedCosetPiolaX q X Y)
+ 32301 |           (-(1 / 2), modularVertexHeight + s) := by
+ 32302 |   change
+ 32303 |     (∫ s in (0 : Real)..T,
+ 32304 |       nativeActualEdgeFluxIntegrand X Y
+ 32305 |         (q, GammaTwoModularTileEdge.leftVerticalSegment) s) = _
+ 32306 |   apply intervalIntegral.integral_congr
+ 32307 |   intro s hs
+ 32308 |   have hsIcc : s ∈ Set.Icc (0 : Real) T := by
+ 32309 |     simpa [uIcc_of_le hT] using hs
+ 32310 |   have hs' : s ∈ modularTileEdgeParameterSet
+ 32311 |       GammaTwoModularTileEdge.leftVerticalSegment := by
+ 32312 |     simpa [modularTileEdgeParameterSet] using hsIcc.1
+ 32313 |   let sigma : modularTileEdgeParameterSet
+ 32314 |       GammaTwoModularTileEdge.leftVerticalSegment := ⟨s, hs'⟩
+ 32315 |   calc
+ 32316 |     nativeActualEdgeFluxIntegrand X Y
+ 32317 |         (q, GammaTwoModularTileEdge.leftVerticalSegment) s =
+ 32318 |         fluxOneFormValue (selectedCosetPiolaX q X Y)
+ 32319 |           (selectedCosetPiolaY q X Y) (modularLeftVerticalParam sigma)
+ 32320 |           Complex.I := by
+ 32321 |       simpa [sigma, modularTileEdgeParam, modularTileEdgeVelocity] using
+ 32322 |         nativeActualEdgeFluxIntegrand_eq_selectedPiolaFlux X Y q
+ 32323 |           GammaTwoModularTileEdge.leftVerticalSegment sigma
+ 32324 |     _ = realProdLift (selectedCosetPiolaX q X Y)
+ 32325 |           (-(1 / 2), modularVertexHeight + s) := by
+ 32326 |       simpa [sigma] using
+ 32327 |         (realProdLift_leftVertical_eq_flux
+ 32328 |           (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y) sigma).symm
+ 32329 | 
+ 32330 | /-- The modular finite vertex lies strictly below height one. -/
+ 32331 | theorem modularVertexHeight_lt_one : modularVertexHeight < (1 : Real) := by
+ 32332 |   have hsqrtSq : (Real.sqrt (3 : Real)) ^ 2 = 3 :=
+ 32333 |     Real.sq_sqrt (by norm_num)
+ 32334 |   have hsqrtNonneg : 0 ≤ Real.sqrt (3 : Real) := Real.sqrt_nonneg _
+ 32335 |   unfold modularVertexHeight
+ 32336 |   nlinarith
+ 32337 | 
+ 32338 | /-- A truncation height above one gives a nonnegative common vertical
+ 32339 | parameter length. -/
+ 32340 | theorem zero_le_height_sub_modularVertexHeight
+ 32341 |     {H : Real} (hH : 1 < H) : 0 ≤ H - modularVertexHeight := by
+ 32342 |   linarith [modularVertexHeight_lt_one]
+ 32343 | 
+ 32344 | /-- The three native contributions over one selected coset are the circular,
+ 32345 | left, and right normalized Piola boundary terms. -/
+ 32346 | theorem nativeOrientedActualEdgeContribution_circular
+ 32347 |     (T : Real) (X Y : UpperHalfPlane → Complex)
+ 32348 |     (q : GammaTwoRightCoset) :
+ 32349 |     nativeOrientedActualEdgeContribution T X Y
+ 32350 |         (q, GammaTwoModularTileEdge.circularArc) =
+ 32351 |       ∫ t in (-1 : Real)..1,
+ 32352 |         baseModularCircularFluxIntegrand
+ 32353 |           (realProdLift (selectedCosetPiolaX q X Y))
+ 32354 |           (realProdLift (selectedCosetPiolaY q X Y)) t := by
+ 32355 |   simp only [nativeOrientedActualEdgeContribution,
+ 32356 |     GammaTwoActualPolygonEdge.orientationSign,
+ 32357 |     GammaTwoModularTileEdge.orientationSign, Int.cast_one, one_mul]
+ 32358 |   exact nativeActualEdgeFluxIntegral_circular_eq_selectedPiola T X Y q
+ 32359 | 
+ 32360 | theorem nativeOrientedActualEdgeContribution_right
+ 32361 |     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
+ 32362 |     (q : GammaTwoRightCoset) :
+ 32363 |     nativeOrientedActualEdgeContribution T X Y
+ 32364 |         (q, GammaTwoModularTileEdge.rightVerticalSegment) =
+ 32365 |       ∫ s in (0 : Real)..T,
+ 32366 |         realProdLift (selectedCosetPiolaX q X Y)
+ 32367 |           (1 / 2, modularVertexHeight + s) := by
+ 32368 |   simp only [nativeOrientedActualEdgeContribution,
+ 32369 |     GammaTwoActualPolygonEdge.orientationSign,
+ 32370 |     GammaTwoModularTileEdge.orientationSign, Int.cast_one, one_mul]
+ 32371 |   exact nativeActualEdgeFluxIntegral_right_eq_selectedPiola hT X Y q
+ 32372 | 
+ 32373 | theorem nativeOrientedActualEdgeContribution_left
+ 32374 |     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
+ 32375 |     (q : GammaTwoRightCoset) :
+ 32376 |     nativeOrientedActualEdgeContribution T X Y
+ 32377 |         (q, GammaTwoModularTileEdge.leftVerticalSegment) =
+ 32378 |       -(∫ s in (0 : Real)..T,
+ 32379 |         realProdLift (selectedCosetPiolaX q X Y)
+ 32380 |           (-(1 / 2), modularVertexHeight + s)) := by
+ 32381 |   simp only [nativeOrientedActualEdgeContribution,
+ 32382 |     GammaTwoActualPolygonEdge.orientationSign,
+ 32383 |     GammaTwoModularTileEdge.orientationSign, Int.cast_neg,
+ 32384 |     Int.cast_one, neg_mul]
+ 32385 |   rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]
+ 32386 |   ring
+ 32387 | /-- Explicit enumeration of the three base-edge labels. -/
+ 32388 | theorem sum_modularTileEdges_eq_three
+ 32389 |     (B : GammaTwoModularTileEdge → Complex) :
+ 32390 |     (∑ edge : GammaTwoModularTileEdge, B edge) =
+ 32391 |       B GammaTwoModularTileEdge.circularArc +
+ 32392 |         B GammaTwoModularTileEdge.leftVerticalSegment +
+ 32393 |           B GammaTwoModularTileEdge.rightVerticalSegment := by
+ 32394 |   classical
+ 32395 |   rw [show (Finset.univ : Finset GammaTwoModularTileEdge) =
+ 32396 |       {GammaTwoModularTileEdge.circularArc,
+ 32397 |         GammaTwoModularTileEdge.leftVerticalSegment,
+ 32398 |         GammaTwoModularTileEdge.rightVerticalSegment} by decide]
+ 32399 |   simp [add_assoc]
+ 32400 | 
+ 32401 | /-- Top horocycle term of the selected Piola boundary. -/
+ 32402 | noncomputable def selectedPiolaTopBoundaryTerm
+ 32403 |     (H : Real) (X Y : UpperHalfPlane → Complex)
+ 32404 |     (q : GammaTwoRightCoset) : Complex :=
+ 32405 |   ∫ x in (-(1 / 2 : Real))..(1 / 2 : Real),
+ 32406 |     realProdLift (selectedCosetPiolaY q X Y) (x, H)
+ 32407 | 
+ 32408 | /-- Per selected coset, the closed-tile boundary is the top horocycle plus the
+ 32409 | sum of the three genuinely oriented native actual-edge contributions. -/
+ 32410 | theorem baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32411 |     {H : Real} (hH : 1 < H) (X Y : UpperHalfPlane → Complex)
+ 32412 |     (q : GammaTwoRightCoset) :
+ 32413 |     baseModularTruncationBoundaryFlux H
+ 32414 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y) =
+ 32415 |       selectedPiolaTopBoundaryTerm H X Y q +
+ 32416 |         ∑ edge : GammaTwoModularTileEdge,
+ 32417 |           nativeOrientedActualEdgeContribution
+ 32418 |             (H - modularVertexHeight) X Y (q, edge) := by
+ 32419 |   have hT : 0 ≤ H - modularVertexHeight :=
+ 32420 |     zero_le_height_sub_modularVertexHeight hH
+ 32421 |   rw [baseModularTruncationBoundaryFlux_eq,
+ 32422 |     sum_modularTileEdges_eq_three,
+ 32423 |     nativeOrientedActualEdgeContribution_circular,
+ 32424 |     nativeOrientedActualEdgeContribution_left hT,
+ 32425 |     nativeOrientedActualEdgeContribution_right hT]
+ 32426 |   simp only [selectedPiolaTopBoundaryTerm]
+ 32427 |   ring
+ 32428 | 
+ 32429 | /-- Global boundary decomposition: all non-top terms are exactly one finite
+ 32430 | sum over the actual edge type. -/
+ 32431 | theorem sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32432 |     {H : Real} (hH : 1 < H) (X Y : UpperHalfPlane → Complex) :
+ 32433 |     (∑ q : GammaTwoRightCoset,
+ 32434 |       baseModularTruncationBoundaryFlux H
+ 32435 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)) =
+ 32436 |       (∑ q : GammaTwoRightCoset, selectedPiolaTopBoundaryTerm H X Y q) +
+ 32437 |         ∑ e : GammaTwoActualPolygonEdge,
+ 32438 |           nativeOrientedActualEdgeContribution
+ 32439 |             (H - modularVertexHeight) X Y e := by
+ 32440 |   classical
+ 32441 |   calc
+ 32442 |     (∑ q : GammaTwoRightCoset,
+ 32443 |         baseModularTruncationBoundaryFlux H
+ 32444 |           (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)) =
+ 32445 |         ∑ q : GammaTwoRightCoset,
+ 32446 |           (selectedPiolaTopBoundaryTerm H X Y q +
+ 32447 |             ∑ edge : GammaTwoModularTileEdge,
+ 32448 |               nativeOrientedActualEdgeContribution
+ 32449 |                 (H - modularVertexHeight) X Y (q, edge)) := by
+ 32450 |       apply Finset.sum_congr rfl
+ 32451 |       intro q _hq
+ 32452 |       exact baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32453 |         hH X Y q
+ 32454 |     _ = (∑ q : GammaTwoRightCoset,
+ 32455 |           selectedPiolaTopBoundaryTerm H X Y q) +
+ 32456 |         ∑ q : GammaTwoRightCoset,
+ 32457 |           ∑ edge : GammaTwoModularTileEdge,
+ 32458 |             nativeOrientedActualEdgeContribution
+ 32459 |               (H - modularVertexHeight) X Y (q, edge) := by
+ 32460 |       rw [Finset.sum_add_distrib]
+ 32461 |     _ = (∑ q : GammaTwoRightCoset,
+ 32462 |           selectedPiolaTopBoundaryTerm H X Y q) +
+ 32463 |         ∑ e : GammaTwoActualPolygonEdge,
+ 32464 |           nativeOrientedActualEdgeContribution
+ 32465 |             (H - modularVertexHeight) X Y e := by
+ 32466 |       rw [Fintype.sum_prod_type]
+ 32467 | 
+ 32468 | /-- If the top horocycle vanishes on every selected tile, the full boundary
+ 32469 | sum is exactly the native actual-edge sum requested by the global Stokes
+ 32470 | bridge. -/
+ 32471 | theorem sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_native_of_top_zero
+ 32472 |     {H : Real} (hH : 1 < H) (X Y : UpperHalfPlane → Complex)
+ 32473 |     (hTop : ∀ q : GammaTwoRightCoset,
+ 32474 |       (∫ x in (-(1 / 2 : Real))..(1 / 2 : Real),
+ 32475 |         realProdLift (selectedCosetPiolaY q X Y) (x, H)) = 0) :
+ 32476 |     (∑ q : GammaTwoRightCoset,
+ 32477 |       baseModularTruncationBoundaryFlux H
+ 32478 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)) =
+ 32479 |       ∑ e : GammaTwoActualPolygonEdge,
+ 32480 |         nativeOrientedActualEdgeContribution
+ 32481 |           (H - modularVertexHeight) X Y e := by
+ 32482 |   rw [sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32483 |     hH X Y]
+ 32484 |   have hTopSum :
+ 32485 |       (∑ q : GammaTwoRightCoset, selectedPiolaTopBoundaryTerm H X Y q) = 0 := by
+ 32486 |     apply Finset.sum_eq_zero
+ 32487 |     intro q _hq
+ 32488 |     simpa [selectedPiolaTopBoundaryTerm] using hTop q
+ 32489 |   rw [hTopSum, zero_add]
+ 32490 | 
+ 32491 | /-- Invariant flux makes the native actual-edge sum vanish, leaving only the
+ 32492 | top horocycles.  No top-tail hypothesis is used in this stronger identity. -/
+ 32493 | theorem sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top
+ 32494 |     {H : Real} (hH : 1 < H) {X Y : UpperHalfPlane → Complex}
+ 32495 |     (hInv : IsGammaTwoInvariantFlux X Y) :
+ 32496 |     (∑ q : GammaTwoRightCoset,
+ 32497 |       baseModularTruncationBoundaryFlux H
+ 32498 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)) =
+ 32499 |       ∑ q : GammaTwoRightCoset, selectedPiolaTopBoundaryTerm H X Y q := by
+ 32500 |   rw [sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32501 |     hH X Y]
+ 32502 |   rw [sum_nativeOrientedActualEdgeContribution_eq_zero hInv
+ 32503 |     (zero_le_height_sub_modularVertexHeight hH)]
+ 32504 |   exact add_zero _
+ 32505 | 
+ 32506 | /-- With pointwise top cancellation, the complete selected Piola boundary sum
+ 32507 | is zero. -/
+ 32508 | theorem sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero
+ 32509 |     {H : Real} (hH : 1 < H) {X Y : UpperHalfPlane → Complex}
+ 32510 |     (hInv : IsGammaTwoInvariantFlux X Y)
+ 32511 |     (hTop : ∀ q : GammaTwoRightCoset,
+ 32512 |       (∫ x in (-(1 / 2 : Real))..(1 / 2 : Real),
+ 32513 |         realProdLift (selectedCosetPiolaY q X Y) (x, H)) = 0) :
+ 32514 |     (∑ q : GammaTwoRightCoset,
+ 32515 |       baseModularTruncationBoundaryFlux H
+ 32516 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)) = 0 := by
+ 32517 |   rw [sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top hH hInv]
+ 32518 |   apply Finset.sum_eq_zero
+ 32519 |   intro q _hq
+ 32520 |   simpa [selectedPiolaTopBoundaryTerm] using hTop q
+ 32521 | 
+ 32522 | namespace AxiomAuditP3NativeEdges
+ 32523 | 
+ 32524 | #print axioms modularCircularArcAmbient_hasDerivAt
+ 32525 | #print axioms modularTileEdgeAmbientParam_hasDerivAt
+ 32526 | #print axioms actualEdgeAmbientParam_hasDerivAt
+ 32527 | #print axioms parameterSign_mul_nativePairedTangent_eq_transport
+ 32528 | #print axioms invariantFlux_nativePaired_parameterSign
+ 32529 | #print axioms nativeActualEdgeFluxIntegral_paired
+ 32530 | #print axioms nativeOrientedActualEdgeContribution_paired_eq_neg
+ 32531 | #print axioms sum_nativeOrientedActualEdgeContribution_eq_zero
+ 32532 | #print axioms sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_top_add_native
+ 32533 | #print axioms sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_native_of_top_zero
+ 32534 | #print axioms sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero
+ 32535 | 
+ 32536 | end AxiomAuditP3NativeEdges
+ 32537 | end GammaTwoNativeEdgeCancellation
+ 32538 | end Mock2FA.PaperCorrections.AutomorphicSobolev
+ 32539 | 
+ 32540 | /-!
+ 32541 | ================================================================================
+ 32542 | P3.8: global Stokes bridge -- null boundaries, common cusp height, and top tail
+ 32543 | 
+ 32544 | This block supplies the measure-theoretic and cusp-tail interfaces needed by
+ 32545 | the global six-tile Stokes argument.  It is deliberately independent of the
+ 32546 | curved-chart derivative calculation: no Stokes conclusion is assumed here.
+ 32547 | ================================================================================
+ 32548 | -/
+ 32549 | 
+ 32550 | namespace Mock2FA.PaperCorrections.AutomorphicSobolev
+ 32551 | namespace GammaTwoGlobalStokesBridge
+ 32552 | 
+ 32553 | open MeasureTheory Set Function Topology Filter
+ 32554 | open scoped Pointwise Interval
+ 32555 | open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
+ 32556 | open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
+ 32557 | open GammaTwoOrientedBoundaryIntegral
+ 32558 | open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+ 32559 | 
+ 32560 | /-! #### A. The selected open and half-open tiles agree almost everywhere -/
+ 32561 | 
+ 32562 | /-- The standard half-open modular tile differs from the standard open tile
+ 32563 | only on the already-proved hyperbolic-null modular boundary. -/
+ 32564 | theorem modularHalfOpenTile_ae_eq_fdo :
+ 32565 |     modularHalfOpenTile =ᵐ[hyperbolicMeasure] ModularGroup.fdo := by
+ 32566 |   apply Filter.EventuallyLE.antisymm
+ 32567 |   · rw [ae_le_set]
+ 32568 |     exact measure_mono_null (by
+ 32569 |       intro z hz
+ 32570 |       exact ⟨modularHalfOpenTile_subset_fd hz.1, hz.2⟩)
+ 32571 |       modularBoundary_null
+ 32572 |   · exact ModularGroup.fdo_subset_modularHalfOpenTile.eventuallyLE
+ 32573 | 
+ 32574 | /-- The standard open and closed modular domains also differ only on the
+ 32575 | same null boundary. -/
+ 32576 | theorem modularFdo_ae_eq_fd :
+ 32577 |     ModularGroup.fdo =ᵐ[hyperbolicMeasure] ModularGroup.fd := by
+ 32578 |   apply Filter.EventuallyLE.antisymm
+ 32579 |   · exact ModularGroup.fdo_subset_fd.eventuallyLE
+ 32580 |   · rw [ae_le_set]
+ 32581 |     simpa only [modularBoundary] using modularBoundary_null
+ 32582 | 
+ 32583 | /-- Null-boundary equality is preserved by every selected Möbius translate.
+ 32584 | This is the per-tile equality required by the finite carrier decomposition. -/
+ 32585 | theorem selectedHalfOpenTile_ae_eq_openTile
+ 32586 |     (q : GammaTwoRightCoset) :
+ 32587 |     gammaTwoCosetRep q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
+ 32588 |       gammaTwoCosetRep q • ModularGroup.fdo :=
+ 32589 |   Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
+ 32590 |     (measurePreserving_smul (gammaTwoCosetRep q)⁻¹
+ 32591 |       hyperbolicMeasure).quasiMeasurePreserving
+ 32592 |     modularHalfOpenTile_ae_eq_fdo
+ 32593 | 
+ 32594 | /-- Consequently every Bochner set integral may be moved between the actual
+ 32595 | selected open tile and its half-open representative without an integrability
+ 32596 | hypothesis. -/
+ 32597 | theorem setIntegral_selectedOpenTile_eq_halfOpenTile
+ 32598 |     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+ 32599 |     (q : GammaTwoRightCoset) (f : ℍ → E) :
+ 32600 |     (∫ z in gammaTwoCosetRep q • ModularGroup.fdo,
+ 32601 |         f z ∂hyperbolicMeasure) =
+ 32602 |       ∫ z in gammaTwoCosetRep q • modularHalfOpenTile,
+ 32603 |         f z ∂hyperbolicMeasure :=
+ 32604 |   setIntegral_congr_set (selectedHalfOpenTile_ae_eq_openTile q).symm
+ 32605 | 
+ 32606 | /-! #### B. One literal height works in all six selected cusp charts -/
+ 32607 | 
+ 32608 | /-- The open part of the standard modular tile above height `H`.  Its
+ 32609 | openness is essential: pointwise zero on this set gives local zero and hence
+ 32610 | zero coordinate derivatives. -/
+ 32611 | def modularOpenHighTail (H : ℝ) : Set ℍ :=
+ 32612 |   ModularGroup.fdo ∩ {z : ℍ | H < z.im}
+ 32613 | 
+ 32614 | theorem modularOpenHighTail_isOpen (H : ℝ) :
+ 32615 |     IsOpen (modularOpenHighTail H) :=
+ 32616 |   ModularGroup.isOpen_fdo.inter
+ 32617 |     (isOpen_lt continuous_const UpperHalfPlane.continuous_im)
+ 32618 | 
+ 32619 | /-- Literal vanishing outside one three-cusp truncation yields one common
+ 32620 | base-tile height for every selected right-coset representative.  The proof
+ 32621 | uses the very same coset `q` in the universal height condition defining
+ 32622 | `gammaTwoThreeCuspTruncation`; no comparison between different cusp charts
+ 32623 | is postulated. -/
+ 32624 | theorem HasZeroThreeCuspTail.exists_commonBaseHeight_zero
+ 32625 |     {X Y : ℍ → ℂ} (hTail : HasZeroThreeCuspTail X Y) :
+ 32626 |     ∃ H : ℝ, 1 < H ∧
+ 32627 |       ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32628 |         z ∈ ModularGroup.fd → H ≤ z.im →
+ 32629 |           X (selectedCosetAction q z) = 0 ∧
+ 32630 |             Y (selectedCosetAction q z) = 0 := by
+ 32631 |   rcases hTail with ⟨Y₀, hY₀, hTail⟩
+ 32632 |   refine ⟨Y₀ + 1, by linarith, ?_⟩
+ 32633 |   intro q z hzfd hzHigh
+ 32634 |   apply hTail (selectedCosetAction q z)
+ 32635 |   refine ⟨?_, ?_⟩
+ 32636 |   · exact mem_gammaTwoClosedTileCarrier_iff.mpr
+ 32637 |       ⟨q, z, hzfd, rfl⟩
+ 32638 |   · intro hzTrunc
+ 32639 |     have hqHeight :=
+ 32640 |       (mem_gammaTwoThreeCuspTruncation_iff.mp hzTrunc).2
+ 32641 |         (gammaTwoTileCuspClass q) q rfl
+ 32642 |     have hheight :
+ 32643 |         gammaTwoTileHeight q (selectedCosetAction q z) = z.im := by
+ 32644 |       simp [gammaTwoTileHeight, selectedCosetAction]
+ 32645 |     rw [hheight, gammaTwoCuspLevel_of_one_le hY₀.le] at hqHeight
+ 32646 |     linarith
+ 32647 | 
+ 32648 | /-- On the open high tail, the two selected pullbacks are locally the zero
+ 32649 | function.  This strengthens pointwise tail vanishing precisely enough for
+ 32650 | the derivative API. -/
+ 32651 | theorem selectedFields_eventuallyEq_zero_on_modularOpenHighTail
+ 32652 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32653 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32654 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32655 |         X (selectedCosetAction q z) = 0 ∧
+ 32656 |           Y (selectedCosetAction q z) = 0)
+ 32657 |     (q : GammaTwoRightCoset) {z : ℍ}
+ 32658 |     (hz : z ∈ modularOpenHighTail H) :
+ 32659 |     (fun w : ℍ => X (selectedCosetAction q w)) =ᶠ[nhds z]
+ 32660 |         (0 : ℍ → ℂ) ∧
+ 32661 |       (fun w : ℍ => Y (selectedCosetAction q w)) =ᶠ[nhds z]
+ 32662 |         (0 : ℍ → ℂ) := by
+ 32663 |   have hTailNhd : modularOpenHighTail H ∈ nhds z :=
+ 32664 |     (modularOpenHighTail_isOpen H).mem_nhds hz
+ 32665 |   constructor
+ 32666 |   · filter_upwards [hTailNhd] with w hw
+ 32667 |     exact (hZero q w (ModularGroup.fdo_subset_fd hw.1) hw.2.le).1
+ 32668 |   · filter_upwards [hTailNhd] with w hw
+ 32669 |     exact (hZero q w (ModularGroup.fdo_subset_fd hw.1) hw.2.le).2
+ 32670 | 
+ 32671 | /-- Both coefficients of the genuine Möbius--Piola pullback are locally zero
+ 32672 | on the common high tail. -/
+ 32673 | theorem selectedCosetPiola_eventuallyEq_zero_on_modularOpenHighTail
+ 32674 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32675 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32676 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32677 |         X (selectedCosetAction q z) = 0 ∧
+ 32678 |           Y (selectedCosetAction q z) = 0)
+ 32679 |     (q : GammaTwoRightCoset) {z : ℍ}
+ 32680 |     (hz : z ∈ modularOpenHighTail H) :
+ 32681 |     selectedCosetPiolaX q X Y =ᶠ[nhds z] (0 : ℍ → ℂ) ∧
+ 32682 |       selectedCosetPiolaY q X Y =ᶠ[nhds z] (0 : ℍ → ℂ) := by
+ 32683 |   have hFields :=
+ 32684 |     selectedFields_eventuallyEq_zero_on_modularOpenHighTail hZero q hz
+ 32685 |   constructor
+ 32686 |   · filter_upwards [hFields.1, hFields.2] with w hXw hYw
+ 32687 |     simp only [Pi.zero_apply] at hXw hYw ⊢
+ 32688 |     rw [selectedCosetPiolaX_coordinate, hXw, hYw]
+ 32689 |     ring
+ 32690 |   · filter_upwards [hFields.1, hFields.2] with w hXw hYw
+ 32691 |     simp only [Pi.zero_apply] at hXw hYw ⊢
+ 32692 |     rw [selectedCosetPiolaY_coordinate, hXw, hYw]
+ 32693 |     ring
+ 32694 | 
+ 32695 | /-- The common high tail is disjoint from both Piola topological supports. -/
+ 32696 | theorem selectedCosetPiola_not_mem_tsupport_on_modularOpenHighTail
+ 32697 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32698 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32699 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32700 |         X (selectedCosetAction q z) = 0 ∧
+ 32701 |           Y (selectedCosetAction q z) = 0)
+ 32702 |     (q : GammaTwoRightCoset) {z : ℍ}
+ 32703 |     (hz : z ∈ modularOpenHighTail H) :
+ 32704 |     z ∉ tsupport (selectedCosetPiolaX q X Y) ∧
+ 32705 |       z ∉ tsupport (selectedCosetPiolaY q X Y) := by
+ 32706 |   have hPiola :=
+ 32707 |     selectedCosetPiola_eventuallyEq_zero_on_modularOpenHighTail hZero q hz
+ 32708 |   exact ⟨notMem_tsupport_iff_eventuallyEq.mpr hPiola.1,
+ 32709 |     notMem_tsupport_iff_eventuallyEq.mpr hPiola.2⟩
+ 32710 | 
+ 32711 | /-- Hence the pulled-back Euclidean divergence is exactly zero, pointwise,
+ 32712 | on the open high tail. -/
+ 32713 | theorem selectedCosetPiola_divergence_eq_zero_on_modularOpenHighTail
+ 32714 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32715 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32716 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32717 |         X (selectedCosetAction q z) = 0 ∧
+ 32718 |           Y (selectedCosetAction q z) = 0)
+ 32719 |     (q : GammaTwoRightCoset) {z : ℍ}
+ 32720 |     (hz : z ∈ modularOpenHighTail H) :
+ 32721 |     dx (selectedCosetPiolaX q X Y) z +
+ 32722 |         dy (selectedCosetPiolaY q X Y) z = 0 := by
+ 32723 |   have hSupport :=
+ 32724 |     selectedCosetPiola_not_mem_tsupport_on_modularOpenHighTail hZero q hz
+ 32725 |   rw [dx_eq_zero_of_not_mem_tsupport hSupport.1,
+ 32726 |     dy_eq_zero_of_not_mem_tsupport hSupport.2, zero_add]
+ 32727 | 
+ 32728 | /-! #### C. Removing the full open cusp tail from each base tile -/
+ 32729 | 
+ 32730 | /-- A function which is zero on the open high tail has the same integral on
+ 32731 | the full half-open modular tile and on the closed height truncation.  The
+ 32732 | only set changes not covered by pointwise vanishing lie on the proved-null
+ 32733 | modular boundary. -/
+ 32734 | theorem setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero
+ 32735 |     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+ 32736 |     (H : ℝ) (f : ℍ → E)
+ 32737 |     (hZero : ∀ z ∈ modularOpenHighTail H, f z = 0) :
+ 32738 |     (∫ z in modularHalfOpenTile, f z ∂hyperbolicMeasure) =
+ 32739 |       ∫ z in modularClosedTileTruncation H,
+ 32740 |         f z ∂hyperbolicMeasure := by
+ 32741 |   calc
+ 32742 |     (∫ z in modularHalfOpenTile, f z ∂hyperbolicMeasure) =
+ 32743 |         ∫ z in ModularGroup.fdo, f z ∂hyperbolicMeasure :=
+ 32744 |       setIntegral_congr_set modularHalfOpenTile_ae_eq_fdo
+ 32745 |     _ = ∫ z in ModularGroup.fdo ∩ {z : ℍ | z.im ≤ H},
+ 32746 |         f z ∂hyperbolicMeasure := by
+ 32747 |       apply setIntegral_eq_of_subset_of_forall_diff_eq_zero
+ 32748 |         ModularGroup.isOpen_fdo.measurableSet Set.inter_subset_left
+ 32749 |       intro z hz
+ 32750 |       apply hZero z
+ 32751 |       refine ⟨hz.1, ?_⟩
+ 32752 |       by_contra hHigh
+ 32753 |       exact hz.2 ⟨hz.1,
+ 32754 |         (show z.im ≤ H from le_of_not_gt hHigh)⟩
+ 32755 |     _ = ∫ z in modularClosedTileTruncation H,
+ 32756 |         f z ∂hyperbolicMeasure := by
+ 32757 |       apply setIntegral_congr_set
+ 32758 |       simpa only [modularClosedTileTruncation] using
+ 32759 |         ae_eq_set_inter modularFdo_ae_eq_fd
+ 32760 |           (ae_eq_refl {z : ℍ | z.im ≤ H})
+ 32761 | 
+ 32762 | /-- Specialization of the preceding tail-removal theorem to the true
+ 32763 | Möbius--Piola divergence density. -/
+ 32764 | theorem integral_selectedPiola_full_eq_closedTruncation
+ 32765 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32766 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32767 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32768 |         X (selectedCosetAction q z) = 0 ∧
+ 32769 |           Y (selectedCosetAction q z) = 0)
+ 32770 |     (q : GammaTwoRightCoset) :
+ 32771 |     (∫ z in modularHalfOpenTile,
+ 32772 |         heightC z ^ 2 *
+ 32773 |           (dx (selectedCosetPiolaX q X Y) z +
+ 32774 |             dy (selectedCosetPiolaY q X Y) z)
+ 32775 |         ∂hyperbolicMeasure) =
+ 32776 |       ∫ z in modularClosedTileTruncation H,
+ 32777 |         heightC z ^ 2 *
+ 32778 |           (dx (selectedCosetPiolaX q X Y) z +
+ 32779 |             dy (selectedCosetPiolaY q X Y) z)
+ 32780 |         ∂hyperbolicMeasure := by
+ 32781 |   apply setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero
+ 32782 |   intro z hz
+ 32783 |   rw [selectedCosetPiola_divergence_eq_zero_on_modularOpenHighTail
+ 32784 |     hZero q hz, mul_zero]
+ 32785 | 
+ 32786 | /-- Planar form of the same equality, ready to be composed with the curved
+ 32787 | base-tile Stokes theorem. -/
+ 32788 | theorem integral_complexImage_selectedPiola_eq_closedTruncation
+ 32789 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32790 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32791 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32792 |         X (selectedCosetAction q z) = 0 ∧
+ 32793 |           Y (selectedCosetAction q z) = 0)
+ 32794 |     (q : GammaTwoRightCoset) :
+ 32795 |     (∫ w in UpperHalfPlane.coe '' modularHalfOpenTile,
+ 32796 |         upperLift (fun z =>
+ 32797 |           dx (selectedCosetPiolaX q X Y) z +
+ 32798 |             dy (selectedCosetPiolaY q X Y) z) w
+ 32799 |         ∂(volume : Measure ℂ)) =
+ 32800 |       ∫ z in modularClosedTileTruncation H,
+ 32801 |         heightC z ^ 2 *
+ 32802 |           (dx (selectedCosetPiolaX q X Y) z +
+ 32803 |             dy (selectedCosetPiolaY q X Y) z)
+ 32804 |         ∂hyperbolicMeasure := by
+ 32805 |   calc
+ 32806 |     (∫ w in UpperHalfPlane.coe '' modularHalfOpenTile,
+ 32807 |         upperLift (fun z =>
+ 32808 |           dx (selectedCosetPiolaX q X Y) z +
+ 32809 |             dy (selectedCosetPiolaY q X Y) z) w
+ 32810 |         ∂(volume : Measure ℂ)) =
+ 32811 |         ∫ z in modularHalfOpenTile,
+ 32812 |           heightC z ^ 2 *
+ 32813 |             (dx (selectedCosetPiolaX q X Y) z +
+ 32814 |               dy (selectedCosetPiolaY q X Y) z)
+ 32815 |           ∂hyperbolicMeasure :=
+ 32816 |       (setIntegral_heightSq_mul_hyperbolic_eq_complexImage
+ 32817 |         modularHalfOpenTile modularHalfOpenTile_measurable _).symm
+ 32818 |     _ = ∫ z in modularClosedTileTruncation H,
+ 32819 |         heightC z ^ 2 *
+ 32820 |           (dx (selectedCosetPiolaX q X Y) z +
+ 32821 |             dy (selectedCosetPiolaY q X Y) z)
+ 32822 |         ∂hyperbolicMeasure :=
+ 32823 |       integral_selectedPiola_full_eq_closedTruncation hZero q
+ 32824 | 
+ 32825 | /-- A literal three-cusp zero tail therefore supplies one common truncation
+ 32826 | height for all six Piola divergence integrals. -/
+ 32827 | theorem HasZeroThreeCuspTail.exists_commonPiolaTruncation
+ 32828 |     {X Y : ℍ → ℂ} (hTail : HasZeroThreeCuspTail X Y) :
+ 32829 |     ∃ H : ℝ, 1 < H ∧ ∀ q : GammaTwoRightCoset,
+ 32830 |       (∫ z in modularHalfOpenTile,
+ 32831 |           heightC z ^ 2 *
+ 32832 |             (dx (selectedCosetPiolaX q X Y) z +
+ 32833 |               dy (selectedCosetPiolaY q X Y) z)
+ 32834 |           ∂hyperbolicMeasure) =
+ 32835 |         ∫ z in modularClosedTileTruncation H,
+ 32836 |           heightC z ^ 2 *
+ 32837 |             (dx (selectedCosetPiolaX q X Y) z +
+ 32838 |               dy (selectedCosetPiolaY q X Y) z)
+ 32839 |           ∂hyperbolicMeasure := by
+ 32840 |   rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
+ 32841 |   exact ⟨H, hH, fun q =>
+ 32842 |     integral_selectedPiola_full_eq_closedTruncation hZero q⟩
+ 32843 | 
+ 32844 | /-! #### D. The top horocycles vanish at that same common height -/
+ 32845 | 
+ 32846 | /-- Every point on the horizontal segment `[-1/2,1/2] + iH`, for `H>1`,
+ 32847 | lies in the closed standard modular tile. -/
+ 32848 | theorem baseHorocycleParam_mem_fd
+ 32849 |     {H : ℝ} (hH0 : 0 < H) (hH : 1 < H) {t : ℝ}
+ 32850 |     (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 32851 |     baseHorocycleParam H hH0 t ∈ ModularGroup.fd := by
+ 32852 |   change 1 ≤ Complex.normSq (Complex.mk t H) ∧
+ 32853 |     |t| ≤ (1 : ℝ) / 2
+ 32854 |   constructor
+ 32855 |   · simp only [Complex.normSq_apply]
+ 32856 |     have hprod : 0 < (H - 1) * (H + 1) :=
+ 32857 |       mul_pos (sub_pos.mpr hH) (by linarith)
+ 32858 |     nlinarith [sq_nonneg t]
+ 32859 |   · exact abs_le.mpr ht
+ 32860 | 
+ 32861 | /-- The original vector field vanishes at every selected top-horocycle
+ 32862 | point at a common tail height. -/
+ 32863 | theorem selectedFields_eq_zero_on_commonTop
+ 32864 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32865 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32866 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32867 |         X (selectedCosetAction q z) = 0 ∧
+ 32868 |           Y (selectedCosetAction q z) = 0)
+ 32869 |     (hH0 : 0 < H) (hH : 1 < H) (q : GammaTwoRightCoset)
+ 32870 |     {t : ℝ} (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 32871 |     X (selectedCosetAction q (baseHorocycleParam H hH0 t)) = 0 ∧
+ 32872 |       Y (selectedCosetAction q (baseHorocycleParam H hH0 t)) = 0 := by
+ 32873 |   apply hZero q (baseHorocycleParam H hH0 t)
+ 32874 |   · exact baseHorocycleParam_mem_fd hH0 hH ht
+ 32875 |   · simp [baseHorocycleParam]
+ 32876 | 
+ 32877 | /-- Both Piola coefficients vanish on the same top segment. -/
+ 32878 | theorem selectedCosetPiola_eq_zero_on_commonTop
+ 32879 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32880 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32881 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32882 |         X (selectedCosetAction q z) = 0 ∧
+ 32883 |           Y (selectedCosetAction q z) = 0)
+ 32884 |     (hH0 : 0 < H) (hH : 1 < H) (q : GammaTwoRightCoset)
+ 32885 |     {t : ℝ} (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 32886 |     selectedCosetPiolaX q X Y (baseHorocycleParam H hH0 t) = 0 ∧
+ 32887 |       selectedCosetPiolaY q X Y (baseHorocycleParam H hH0 t) = 0 := by
+ 32888 |   have hFields := selectedFields_eq_zero_on_commonTop
+ 32889 |     hZero hH0 hH q ht
+ 32890 |   constructor
+ 32891 |   · rw [selectedCosetPiolaX_coordinate, hFields.1, hFields.2]
+ 32892 |     ring
+ 32893 |   · rw [selectedCosetPiolaY_coordinate, hFields.1, hFields.2]
+ 32894 |     ring
+ 32895 | 
+ 32896 | /-- The horizontal top contribution in base Piola coordinates is exactly
+ 32897 | zero, not merely convergent to zero as `H → ∞`. -/
+ 32898 | theorem selectedPiola_topHorocycle_fluxIntegral_eq_zero
+ 32899 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32900 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32901 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32902 |         X (selectedCosetAction q z) = 0 ∧
+ 32903 |           Y (selectedCosetAction q z) = 0)
+ 32904 |     (hH0 : 0 < H) (hH : 1 < H) (q : GammaTwoRightCoset) :
+ 32905 |     orientedFluxParameterIntegral
+ 32906 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)
+ 32907 |         (baseHorocycleParam H hH0) (fun _ => 1)
+ 32908 |         (-(1 / 2 : ℝ)) (1 / 2 : ℝ) = 0 := by
+ 32909 |   calc
+ 32910 |     orientedFluxParameterIntegral
+ 32911 |         (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)
+ 32912 |         (baseHorocycleParam H hH0) (fun _ => 1)
+ 32913 |         (-(1 / 2 : ℝ)) (1 / 2 : ℝ) =
+ 32914 |         ∫ _t in (-(1 / 2 : ℝ))..(1 / 2 : ℝ), (0 : ℂ) := by
+ 32915 |       apply intervalIntegral.integral_congr
+ 32916 |       intro t ht
+ 32917 |       have ht' : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) := by
+ 32918 |         simpa [uIcc_of_le (by norm_num :
+ 32919 |           (-(1 / 2 : ℝ)) ≤ (1 / 2 : ℝ))] using ht
+ 32920 |       have hPiola := selectedCosetPiola_eq_zero_on_commonTop
+ 32921 |         hZero hH0 hH q ht'
+ 32922 |       simp [orientedFluxParameterIntegral, fluxOneFormValue,
+ 32923 |         hPiola.1, hPiola.2]
+ 32924 |     _ = 0 := by simp
+ 32925 | 
+ 32926 | /-- Equivalently, on the actual selected tile the transformed top curve and
+ 32927 | its genuine Möbius differential have zero flux integral. -/
+ 32928 | theorem selectedActualTopHorocycle_fluxIntegral_eq_zero
+ 32929 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 32930 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 32931 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 32932 |         X (selectedCosetAction q z) = 0 ∧
+ 32933 |           Y (selectedCosetAction q z) = 0)
+ 32934 |     (hH0 : 0 < H) (hH : 1 < H) (q : GammaTwoRightCoset) :
+ 32935 |     orientedFluxParameterIntegral X Y
+ 32936 |         (fun t => selectedCosetAction q (baseHorocycleParam H hH0 t))
+ 32937 |         (fun t => UpperHalfPlane.smulFDeriv (selectedCosetGL q)
+ 32938 |           (baseHorocycleParam H hH0 t : ℂ) 1)
+ 32939 |         (-(1 / 2 : ℝ)) (1 / 2 : ℝ) = 0 := by
+ 32940 |   calc
+ 32941 |     orientedFluxParameterIntegral X Y
+ 32942 |         (fun t => selectedCosetAction q (baseHorocycleParam H hH0 t))
+ 32943 |         (fun t => UpperHalfPlane.smulFDeriv (selectedCosetGL q)
+ 32944 |           (baseHorocycleParam H hH0 t : ℂ) 1)
+ 32945 |         (-(1 / 2 : ℝ)) (1 / 2 : ℝ) =
+ 32946 |         ∫ _t in (-(1 / 2 : ℝ))..(1 / 2 : ℝ), (0 : ℂ) := by
+ 32947 |       apply intervalIntegral.integral_congr
+ 32948 |       intro t ht
+ 32949 |       have ht' : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) := by
+ 32950 |         simpa [uIcc_of_le (by norm_num :
+ 32951 |           (-(1 / 2 : ℝ)) ≤ (1 / 2 : ℝ))] using ht
+ 32952 |       have hFields := selectedFields_eq_zero_on_commonTop
+ 32953 |         hZero hH0 hH q ht'
+ 32954 |       simp [orientedFluxParameterIntegral, fluxOneFormValue,
+ 32955 |         hFields.1, hFields.2]
+ 32956 |     _ = 0 := by simp
+ 32957 | 
+ 32958 | /-- The zero-tail hypothesis supplies one and the same height for both the
+ 32959 | full-to-truncated divergence identity and every selected top-horocycle
+ 32960 | cancellation. -/
+ 32961 | theorem HasZeroThreeCuspTail.exists_commonPiolaTruncation_and_top_zero
+ 32962 |     {X Y : ℍ → ℂ} (hTail : HasZeroThreeCuspTail X Y) :
+ 32963 |     ∃ H : ℝ, ∃ hH0 : 0 < H, 1 < H ∧
+ 32964 |       ∀ q : GammaTwoRightCoset,
+ 32965 |         ((∫ z in modularHalfOpenTile,
+ 32966 |             heightC z ^ 2 *
+ 32967 |               (dx (selectedCosetPiolaX q X Y) z +
+ 32968 |                 dy (selectedCosetPiolaY q X Y) z)
+ 32969 |             ∂hyperbolicMeasure) =
+ 32970 |           ∫ z in modularClosedTileTruncation H,
+ 32971 |             heightC z ^ 2 *
+ 32972 |               (dx (selectedCosetPiolaX q X Y) z +
+ 32973 |                 dy (selectedCosetPiolaY q X Y) z)
+ 32974 |             ∂hyperbolicMeasure) ∧
+ 32975 |         orientedFluxParameterIntegral X Y
+ 32976 |             (fun t => selectedCosetAction q
+ 32977 |               (baseHorocycleParam H hH0 t))
+ 32978 |             (fun t => UpperHalfPlane.smulFDeriv (selectedCosetGL q)
+ 32979 |               (baseHorocycleParam H hH0 t : ℂ) 1)
+ 32980 |             (-(1 / 2 : ℝ)) (1 / 2 : ℝ) = 0 := by
+ 32981 |   rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
+ 32982 |   have hH0 : 0 < H := by linarith
+ 32983 |   refine ⟨H, hH0, hH, ?_⟩
+ 32984 |   intro q
+ 32985 |   exact ⟨integral_selectedPiola_full_eq_closedTruncation hZero q,
+ 32986 |     selectedActualTopHorocycle_fluxIntegral_eq_zero hZero hH0 hH q⟩
+ 32987 | 
+ 32988 | end GammaTwoGlobalStokesBridge
+ 32989 | 
+ 32990 | namespace AxiomAuditP3GlobalStokesBridge
+ 32991 | 
+ 32992 | #print axioms GammaTwoGlobalStokesBridge.modularHalfOpenTile_ae_eq_fdo
+ 32993 | #print axioms GammaTwoGlobalStokesBridge.selectedHalfOpenTile_ae_eq_openTile
+ 32994 | #print axioms GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonBaseHeight_zero
+ 32995 | #print axioms GammaTwoGlobalStokesBridge.selectedCosetPiola_divergence_eq_zero_on_modularOpenHighTail
+ 32996 | #print axioms GammaTwoGlobalStokesBridge.integral_selectedPiola_full_eq_closedTruncation
+ 32997 | #print axioms GammaTwoGlobalStokesBridge.selectedActualTopHorocycle_fluxIntegral_eq_zero
+ 32998 | #print axioms GammaTwoGlobalStokesBridge.HasZeroThreeCuspTail.exists_commonPiolaTruncation_and_top_zero
+ 32999 | 
+ 33000 | end AxiomAuditP3GlobalStokesBridge
+ 33001 | end Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33002 | 
+ 33003 | /-!
+ 33004 | ### P3.9: integrability-preserving global Stokes composition support
+ 33005 | 
+ 33006 | The final finite boundary cancellation must not acquire a new integrability
+ 33007 | assumption after changing tiles or coordinates.  The lemmas below transport
+ 33008 | the original chosen-carrier hypothesis through the same genuine Jacobian and
+ 33009 | Piola maps used by the integral identities above.
+ 33010 | -/
+ 33011 | 
+ 33012 | namespace Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33013 | namespace GammaTwoGlobalStokesCompositionSupport
+ 33014 | 
+ 33015 | open MeasureTheory Set Function
+ 33016 | open scoped Pointwise Interval
+ 33017 | open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
+ 33018 | open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
+ 33019 | open GammaTwoOrientedBoundaryIntegral GammaTwoGlobalStokesBridge
+ 33020 | open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+ 33021 | 
+ 33022 | /-- Integrability counterpart of the selected-coset Bochner Jacobian
+ 33023 | identity.  This is Mathlib's actual change-of-variables equivalence for the
+ 33024 | Möbius map, not a consequence inferred from equality of two integrals. -/
+ 33025 | theorem integrableOn_complexImage_selectedCoset_smul_iff_jacobian
+ 33026 |     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+ 33027 |     (q : GammaTwoRightCoset) (s : Set ℍ) (hs : MeasurableSet s)
+ 33028 |     (f : ℂ → E) :
+ 33029 |     IntegrableOn f
+ 33030 |         (UpperHalfPlane.coe '' (gammaTwoCosetRep q • s))
+ 33031 |         (volume : Measure ℂ) ↔
+ 33032 |       IntegrableOn
+ 33033 |         (fun w => |(UpperHalfPlane.smulFDeriv
+ 33034 |           (selectedCosetGL q) w).det| •
+ 33035 |             f (selectedCosetAmbientMap q w))
+ 33036 |         (UpperHalfPlane.coe '' s) (volume : Measure ℂ) := by
+ 33037 |   rw [← selectedCosetAmbientMap_image_coe q s]
+ 33038 |   exact MeasureTheory.integrableOn_image_iff_integrableOn_abs_det_fderiv_smul
+ 33039 |     volume
+ 33040 |     (UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr hs)
+ 33041 |     (fun w hw => by
+ 33042 |       rcases hw with ⟨z, hz, rfl⟩
+ 33043 |       exact (selectedCosetAmbientMap_hasStrictFDerivAt q z).hasFDerivAt.hasFDerivWithinAt)
+ 33044 |     (selectedCosetAmbientMap_injOn_coeImage q s) f
+ 33045 | 
+ 33046 | /-- The hyperbolic `height² × divergence` integrability on a selected tile
+ 33047 | is equivalent to integrability of the genuine Piola divergence on the base
+ 33048 | half-open tile. -/
+ 33049 | theorem integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola
+ 33050 |     (q : GammaTwoRightCoset) {X Y : ℍ → ℂ}
+ 33051 |     (hX : RealSmooth X) (hY : RealSmooth Y) :
+ 33052 |     IntegrableOn
+ 33053 |         (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33054 |         (gammaTwoCosetRep q • modularHalfOpenTile)
+ 33055 |         hyperbolicMeasure ↔
+ 33056 |       IntegrableOn
+ 33057 |         (fun z => heightC z ^ 2 *
+ 33058 |           (dx (selectedCosetPiolaX q X Y) z +
+ 33059 |             dy (selectedCosetPiolaY q X Y) z))
+ 33060 |         modularHalfOpenTile hyperbolicMeasure := by
+ 33061 |   have hSelectedTile : MeasurableSet
+ 33062 |       (gammaTwoCosetRep q • modularHalfOpenTile) :=
+ 33063 |     MeasurableSet.const_smul modularHalfOpenTile_measurable
+ 33064 |       (gammaTwoCosetRep q)
+ 33065 |   have hBaseImage : MeasurableSet
+ 33066 |       (UpperHalfPlane.coe '' modularHalfOpenTile) :=
+ 33067 |     UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr
+ 33068 |       modularHalfOpenTile_measurable
+ 33069 |   calc
+ 33070 |     IntegrableOn
+ 33071 |         (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33072 |         (gammaTwoCosetRep q • modularHalfOpenTile)
+ 33073 |         hyperbolicMeasure ↔
+ 33074 |         IntegrableOn (fun z => dx X z + dy Y z)
+ 33075 |           (gammaTwoCosetRep q • modularHalfOpenTile)
+ 33076 |           (volume.comap UpperHalfPlane.coe) :=
+ 33077 |       integrableOn_heightSq_mul_hyperbolic_iff_comap
+ 33078 |         _ hSelectedTile _
+ 33079 |     _ ↔ IntegrableOn (upperLift (fun z => dx X z + dy Y z))
+ 33080 |         (UpperHalfPlane.coe ''
+ 33081 |           (gammaTwoCosetRep q • modularHalfOpenTile))
+ 33082 |         (volume : Measure ℂ) :=
+ 33083 |       integrableOn_comap_iff_complexImage _ _
+ 33084 |     _ ↔ IntegrableOn
+ 33085 |         (fun w => |(UpperHalfPlane.smulFDeriv
+ 33086 |           (selectedCosetGL q) w).det| •
+ 33087 |             upperLift (fun z => dx X z + dy Y z)
+ 33088 |               (selectedCosetAmbientMap q w))
+ 33089 |         (UpperHalfPlane.coe '' modularHalfOpenTile)
+ 33090 |         (volume : Measure ℂ) :=
+ 33091 |       integrableOn_complexImage_selectedCoset_smul_iff_jacobian
+ 33092 |         q modularHalfOpenTile modularHalfOpenTile_measurable _
+ 33093 |     _ ↔ IntegrableOn
+ 33094 |         (upperLift (fun z =>
+ 33095 |           dx (selectedCosetPiolaX q X Y) z +
+ 33096 |             dy (selectedCosetPiolaY q X Y) z))
+ 33097 |         (UpperHalfPlane.coe '' modularHalfOpenTile)
+ 33098 |         (volume : Measure ℂ) := by
+ 33099 |       apply integrableOn_congr_fun
+ 33100 |       · rintro _w ⟨z, _hz, rfl⟩
+ 33101 |         simp only [selectedCosetAmbientMap_coe, upperLift_apply]
+ 33102 |         change (selectedCosetJacobian q z : ℝ) •
+ 33103 |             (dx X (selectedCosetAction q z) +
+ 33104 |               dy Y (selectedCosetAction q z)) =
+ 33105 |           dx (selectedCosetPiolaX q X Y) z +
+ 33106 |             dy (selectedCosetPiolaY q X Y) z
+ 33107 |         rw [Complex.real_smul]
+ 33108 |         exact (divergence_selectedCosetPiola q hX hY z).symm
+ 33109 |       · exact hBaseImage
+ 33110 |     _ ↔ IntegrableOn
+ 33111 |         (fun z => dx (selectedCosetPiolaX q X Y) z +
+ 33112 |           dy (selectedCosetPiolaY q X Y) z)
+ 33113 |         modularHalfOpenTile
+ 33114 |         (volume.comap UpperHalfPlane.coe) :=
+ 33115 |       (integrableOn_comap_iff_complexImage _ _).symm
+ 33116 |     _ ↔ IntegrableOn
+ 33117 |         (fun z => heightC z ^ 2 *
+ 33118 |           (dx (selectedCosetPiolaX q X Y) z +
+ 33119 |             dy (selectedCosetPiolaY q X Y) z))
+ 33120 |         modularHalfOpenTile hyperbolicMeasure :=
+ 33121 |       (integrableOn_heightSq_mul_hyperbolic_iff_comap
+ 33122 |         modularHalfOpenTile modularHalfOpenTile_measurable _).symm
+ 33123 | 
+ 33124 | /-- The sole global `hInt` hypothesis restricts to every selected half-open
+ 33125 | tile, crosses the Möbius--Piola equivalence, and then extends across the null
+ 33126 | base boundary before restricting to any closed height truncation. -/
+ 33127 | theorem integrableOn_selectedPiola_closedTruncation_of_chosenCarrier
+ 33128 |     (q : GammaTwoRightCoset) {X Y : ℍ → ℂ} (H : ℝ)
+ 33129 |     (hX : RealSmooth X) (hY : RealSmooth Y)
+ 33130 |     (hInt : IntegrableOn
+ 33131 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33132 |       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure) :
+ 33133 |     IntegrableOn
+ 33134 |       (fun z => heightC z ^ 2 *
+ 33135 |         (dx (selectedCosetPiolaX q X Y) z +
+ 33136 |           dy (selectedCosetPiolaY q X Y) z))
+ 33137 |       (modularClosedTileTruncation H) hyperbolicMeasure := by
+ 33138 |   have hHalfCarrier : IntegrableOn
+ 33139 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33140 |       gammaTwoHalfOpenTileCarrier hyperbolicMeasure :=
+ 33141 |     hInt.congr_set_ae gammaTwoHalfOpenTileCarrier_ae_eq_chosenCarrier
+ 33142 |   have hTileSubset :
+ 33143 |       gammaTwoCosetRep q • modularHalfOpenTile ⊆
+ 33144 |         gammaTwoHalfOpenTileCarrier := by
+ 33145 |     intro z hz
+ 33146 |     exact Set.mem_iUnion.2 ⟨q, hz⟩
+ 33147 |   have hSelected : IntegrableOn
+ 33148 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33149 |       (gammaTwoCosetRep q • modularHalfOpenTile)
+ 33150 |       hyperbolicMeasure :=
+ 33151 |     hHalfCarrier.mono_set hTileSubset
+ 33152 |   have hBaseHalfOpen : IntegrableOn
+ 33153 |       (fun z => heightC z ^ 2 *
+ 33154 |         (dx (selectedCosetPiolaX q X Y) z +
+ 33155 |           dy (selectedCosetPiolaY q X Y) z))
+ 33156 |       modularHalfOpenTile hyperbolicMeasure :=
+ 33157 |     (integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola
+ 33158 |       q hX hY).mp hSelected
+ 33159 |   have hHalfOpenFd :
+ 33160 |       modularHalfOpenTile =ᵐ[hyperbolicMeasure] ModularGroup.fd :=
+ 33161 |     modularHalfOpenTile_ae_eq_fdo.trans modularFdo_ae_eq_fd
+ 33162 |   have hBaseFd : IntegrableOn
+ 33163 |       (fun z => heightC z ^ 2 *
+ 33164 |         (dx (selectedCosetPiolaX q X Y) z +
+ 33165 |           dy (selectedCosetPiolaY q X Y) z))
+ 33166 |       ModularGroup.fd hyperbolicMeasure :=
+ 33167 |     hBaseHalfOpen.congr_set_ae hHalfOpenFd.symm
+ 33168 |   exact hBaseFd.mono_set (by
+ 33169 |     intro z hz
+ 33170 |     exact hz.1)
+ 33171 | 
+ 33172 | /-- The landed curved-tile Green theorem can therefore be instantiated for
+ 33173 | every selected Piola field using only the original chosen-carrier
+ 33174 | integrability hypothesis. -/
+ 33175 | theorem integral_selectedPiola_closedTruncation_eq_boundary_of_chosenCarrier
+ 33176 |     (q : GammaTwoRightCoset) {X Y : ℍ → ℂ}
+ 33177 |     (H : ℝ) (hH : 1 < H)
+ 33178 |     (hX : RealSmooth X) (hY : RealSmooth Y)
+ 33179 |     (hInt : IntegrableOn
+ 33180 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33181 |       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure) :
+ 33182 |     (∫ z in modularClosedTileTruncation H,
+ 33183 |       heightC z ^ 2 *
+ 33184 |         (dx (selectedCosetPiolaX q X Y) z +
+ 33185 |           dy (selectedCosetPiolaY q X Y) z)
+ 33186 |         ∂hyperbolicMeasure) =
+ 33187 |       baseModularTruncationBoundaryFlux H
+ 33188 |         (selectedCosetPiolaX q X Y)
+ 33189 |         (selectedCosetPiolaY q X Y) := by
+ 33190 |   exact setIntegral_heightSq_divergence_modularClosedTile_eq_boundary
+ 33191 |     H hH (selectedCosetPiolaX q X Y) (selectedCosetPiolaY q X Y)
+ 33192 |     (selectedCosetPiolaX_realSmooth q hX hY)
+ 33193 |     (selectedCosetPiolaY_realSmooth q hX hY)
+ 33194 |     (integrableOn_selectedPiola_closedTruncation_of_chosenCarrier
+ 33195 |       q H hX hY hInt)
+ 33196 | 
+ 33197 | /-- The top term occurring in the curved-tile boundary formula vanishes at
+ 33198 | the common literal zero-tail height.  This is the exact `realProdLift`
+ 33199 | expression consumed by `baseModularTruncationBoundaryFlux_eq`. -/
+ 33200 | theorem integral_realProdLift_selectedPiolaY_top_eq_zero
+ 33201 |     {X Y : ℍ → ℂ} {H : ℝ}
+ 33202 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 33203 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 33204 |         X (selectedCosetAction q z) = 0 ∧
+ 33205 |           Y (selectedCosetAction q z) = 0)
+ 33206 |     (hH0 : 0 < H) (hH : 1 < H) (q : GammaTwoRightCoset) :
+ 33207 |     (∫ x in (-(1 / 2 : ℝ))..(1 / 2 : ℝ),
+ 33208 |       realProdLift (selectedCosetPiolaY q X Y) (x, H)) = 0 := by
+ 33209 |   calc
+ 33210 |     (∫ x in (-(1 / 2 : ℝ))..(1 / 2 : ℝ),
+ 33211 |       realProdLift (selectedCosetPiolaY q X Y) (x, H)) =
+ 33212 |         ∫ _x in (-(1 / 2 : ℝ))..(1 / 2 : ℝ), (0 : ℂ) := by
+ 33213 |       apply intervalIntegral.integral_congr
+ 33214 |       intro x hx
+ 33215 |       have hx' : x ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) := by
+ 33216 |         simpa [uIcc_of_le (by norm_num :
+ 33217 |           (-(1 / 2 : ℝ)) ≤ (1 / 2 : ℝ))] using hx
+ 33218 |       have hPiola := selectedCosetPiola_eq_zero_on_commonTop
+ 33219 |         hZero hH0 hH q hx'
+ 33220 |       change realProdLift (selectedCosetPiolaY q X Y) (x, H) = (0 : ℂ)
+ 33221 |       rw [realProdLift_topHorocycle _ H hH0 x]
+ 33222 |       simpa [curvedTileTopHorocycleParam, baseHorocycleParam]
+ 33223 |         using hPiola.2
+ 33224 |     _ = 0 := by simp
+ 33225 | 
+ 33226 | /-- Global reduction at a fixed common tail height.  Exposing the actual
+ 33227 | pointwise zero hypothesis lets the final pairing theorem use exactly the same
+ 33228 | `H` for the bulk truncation and the vanished top horocycles. -/
+ 33229 | theorem integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight
+ 33230 |     (X Y : ℍ → ℂ) (H : ℝ) (hH : 1 < H)
+ 33231 |     (hZero : ∀ (q : GammaTwoRightCoset) (z : ℍ),
+ 33232 |       z ∈ ModularGroup.fd → H ≤ z.im →
+ 33233 |         X (selectedCosetAction q z) = 0 ∧
+ 33234 |           Y (selectedCosetAction q z) = 0)
+ 33235 |     (hX : RealSmooth X) (hY : RealSmooth Y)
+ 33236 |     (hInt : IntegrableOn
+ 33237 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33238 |       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure) :
+ 33239 |     (∫ z in chosenGammaTwoFundamentalDomain.carrier,
+ 33240 |       heightC z ^ 2 * (dx X z + dy Y z)
+ 33241 |         ∂hyperbolicMeasure) =
+ 33242 |       ∑ q : GammaTwoRightCoset,
+ 33243 |         baseModularTruncationBoundaryFlux H
+ 33244 |           (selectedCosetPiolaX q X Y)
+ 33245 |           (selectedCosetPiolaY q X Y) := by
+ 33246 |   calc
+ 33247 |     (∫ z in chosenGammaTwoFundamentalDomain.carrier,
+ 33248 |         heightC z ^ 2 * (dx X z + dy Y z)
+ 33249 |           ∂hyperbolicMeasure) =
+ 33250 |         ∑ q : GammaTwoRightCoset,
+ 33251 |           ∫ z in gammaTwoCosetRep q • ModularGroup.fdo,
+ 33252 |             heightC z ^ 2 * (dx X z + dy Y z)
+ 33253 |               ∂hyperbolicMeasure :=
+ 33254 |       integral_chosenCarrier_eq_sum_openTiles _ hInt
+ 33255 |     _ = ∑ q : GammaTwoRightCoset,
+ 33256 |         ∫ z in gammaTwoCosetRep q • modularHalfOpenTile,
+ 33257 |           heightC z ^ 2 * (dx X z + dy Y z)
+ 33258 |             ∂hyperbolicMeasure := by
+ 33259 |       apply Finset.sum_congr rfl
+ 33260 |       intro q _hq
+ 33261 |       exact setIntegral_selectedOpenTile_eq_halfOpenTile q _
+ 33262 |     _ = ∑ q : GammaTwoRightCoset,
+ 33263 |         ∫ z in modularHalfOpenTile,
+ 33264 |           heightC z ^ 2 *
+ 33265 |             (dx (selectedCosetPiolaX q X Y) z +
+ 33266 |               dy (selectedCosetPiolaY q X Y) z)
+ 33267 |             ∂hyperbolicMeasure := by
+ 33268 |       apply Finset.sum_congr rfl
+ 33269 |       intro q _hq
+ 33270 |       exact integral_heightSq_divergence_selectedHalfOpenTile_eq_basePiola
+ 33271 |         q hX hY
+ 33272 |     _ = ∑ q : GammaTwoRightCoset,
+ 33273 |         ∫ z in modularClosedTileTruncation H,
+ 33274 |           heightC z ^ 2 *
+ 33275 |             (dx (selectedCosetPiolaX q X Y) z +
+ 33276 |               dy (selectedCosetPiolaY q X Y) z)
+ 33277 |             ∂hyperbolicMeasure := by
+ 33278 |       apply Finset.sum_congr rfl
+ 33279 |       intro q _hq
+ 33280 |       exact integral_selectedPiola_full_eq_closedTruncation hZero q
+ 33281 |     _ = ∑ q : GammaTwoRightCoset,
+ 33282 |         baseModularTruncationBoundaryFlux H
+ 33283 |           (selectedCosetPiolaX q X Y)
+ 33284 |           (selectedCosetPiolaY q X Y) := by
+ 33285 |       apply Finset.sum_congr rfl
+ 33286 |       intro q _hq
+ 33287 |       exact integral_selectedPiola_closedTruncation_eq_boundary_of_chosenCarrier
+ 33288 |         q H hH hX hY hInt
+ 33289 | 
+ 33290 | /-- Complete global reduction up to the native finite boundary sum.  Every
+ 33291 | step is now unconditional: chosen-carrier decomposition, null-boundary
+ 33292 | replacement, Möbius--Piola transport, common cusp truncation, and the curved
+ 33293 | closed-tile Green theorem.  The remaining operation is purely the finite
+ 33294 | identification and pairing of these explicit boundary terms. -/
+ 33295 | theorem exists_commonHeight_integral_chosenCarrier_eq_sum_PiolaBoundary
+ 33296 |     (X Y : ℍ → ℂ)
+ 33297 |     (hXY : IsSmoothQuotientCompactFlux X Y)
+ 33298 |     (hTail : HasZeroThreeCuspTail X Y)
+ 33299 |     (hInt : IntegrableOn
+ 33300 |       (fun z => heightC z ^ 2 * (dx X z + dy Y z))
+ 33301 |       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure) :
+ 33302 |     ∃ H : ℝ, 1 < H ∧
+ 33303 |       (∫ z in chosenGammaTwoFundamentalDomain.carrier,
+ 33304 |         heightC z ^ 2 * (dx X z + dy Y z)
+ 33305 |           ∂hyperbolicMeasure) =
+ 33306 |         ∑ q : GammaTwoRightCoset,
+ 33307 |           baseModularTruncationBoundaryFlux H
+ 33308 |             (selectedCosetPiolaX q X Y)
+ 33309 |             (selectedCosetPiolaY q X Y) := by
+ 33310 |   rcases hXY with ⟨hX, hY, _hXCompact, _hYCompact, _hInvariant⟩
+ 33311 |   rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
+ 33312 |   exact ⟨H, hH,
+ 33313 |     integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight
+ 33314 |       X Y H hH hZero hX hY hInt⟩
+ 33315 | 
+ 33316 | end GammaTwoGlobalStokesCompositionSupport
+ 33317 | end Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33318 | 
+ 33319 | /-!
+ 33320 | ### P3.10: unconditional global polygon Stokes and Green endpoints
+ 33321 | 
+ 33322 | All geometric, measure-theoretic, differential, and finite-pairing bridges
+ 33323 | are now proved.  The following endpoints remove the former polygon/Stokes
+ 33324 | parameters while retaining the separate essential-graph-core obligations for
+ 33325 | strong maximal-adjoint equality.
+ 33326 | -/
+ 33327 | 
+ 33328 | namespace Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33329 | 
+ 33330 | open MeasureTheory Set
+ 33331 | open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
+ 33332 | open GammaTwoCurvilinearTileStokes GammaTwoMoebiusPiola
+ 33333 | open GammaTwoGlobalStokesBridge GammaTwoGlobalStokesCompositionSupport
+ 33334 | open GammaTwoNativeEdgeCancellation
+ 33335 | open HalfWeightDifferentialOperators SmoothCompactCoreGeometry
+ 33336 | 
+ 33337 | /-- The genuine six-tile polygon Stokes theorem.  The proof uses one literal
+ 33338 | height simultaneously for cusp-tail removal and top-horocycle vanishing, and
+ 33339 | then the actual-edge native-tangent pairing theorem cancels the complete
+ 33340 | finite boundary sum. -/
+ 33341 | theorem gammaTwoPairedPolygonFluxStokes :
+ 33342 |     GammaTwoPairedPolygonFluxStokes := by
+ 33343 |   intro X Y hXY hTail hInt
+ 33344 |   rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
+ 33345 |   have hH0 : 0 < H := lt_trans zero_lt_one hH
+ 33346 |   have hBulk :
+ 33347 |       (∫ z in chosenGammaTwoFundamentalDomain.carrier,
+ 33348 |         heightC z ^ 2 * (dx X z + dy Y z)
+ 33349 |           ∂hyperbolicMeasure) =
+ 33350 |         ∑ q : GammaTwoRightCoset,
+ 33351 |           baseModularTruncationBoundaryFlux H
+ 33352 |             (selectedCosetPiolaX q X Y)
+ 33353 |             (selectedCosetPiolaY q X Y) :=
+ 33354 |     integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight
+ 33355 |       X Y H hH hZero hXY.1 hXY.2.1 hInt
+ 33356 |   have hTop : ∀ q : GammaTwoRightCoset,
+ 33357 |       (∫ x in (-(1 / 2 : ℝ))..(1 / 2 : ℝ),
+ 33358 |         realProdLift (selectedCosetPiolaY q X Y) (x, H)) = 0 :=
+ 33359 |     fun q => integral_realProdLift_selectedPiolaY_top_eq_zero
+ 33360 |       hZero hH0 hH q
+ 33361 |   exact hBulk.trans
+ 33362 |     (sum_baseModularTruncationBoundaryFlux_selectedPiola_eq_zero
+ 33363 |       hH hXY.2.2.2.2 hTop)
+ 33364 | 
+ 33365 | /-- Compact-flux Stokes is now unconditional: quotient-compact support gives
+ 33366 | the literal zero cusp tail, and the polygon theorem above supplies the full
+ 33367 | boundary cancellation. -/
+ 33368 | theorem gammaTwoCompactFluxStokes : GammaTwoCompactFluxStokes :=
+ 33369 |   gammaTwoCompactFluxStokes_of_pairedPolygon
+ 33370 |     gammaTwoPairedPolygonFluxStokes
+ 33371 | 
+ 33372 | namespace FixedPhaseClosedOperators
+ 33373 | 
+ 33374 | open DefinitionOneSobolev
+ 33375 | open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ 33376 | open DefinitionOneSobolev.FixedPhaseGraphCompletion
+ 33377 | open scoped LinearPMap
+ 33378 | 
+ 33379 | /-- The concrete fixed-phase boundary defect vanishes with no remaining
+ 33380 | Stokes or polygon argument. -/
+ 33381 | theorem greenBoundaryDefect_eq_zero_unconditional
+ 33382 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+ 33383 |     (v : InverseEtaFixedPhaseCore (n + 1)) :
+ 33384 |     greenBoundaryDefect n u v = 0 :=
+ 33385 |   greenBoundaryDefect_eq_zero_of_compactFluxStokes
+ 33386 |     gammaTwoCompactFluxStokes n u v
+ 33387 | 
+ 33388 | /-- Unconditional physical Green identity at each fixed-phase index. -/
+ 33389 | theorem physicalGreenIdentityAt_unconditional (n : ℤ) :
+ 33390 |     PhysicalGreenIdentityAt n :=
+ 33391 |   physicalGreenIdentityAt_of_compactFluxStokes
+ 33392 |     gammaTwoCompactFluxStokes n
+ 33393 | 
+ 33394 | /-- Unconditional physical Green identity on the entire residue-class
+ 33395 | tower. -/
+ 33396 | theorem physicalGreenIdentity_unconditional : PhysicalGreenIdentity :=
+ 33397 |   physicalGreenIdentity_of_compactFluxStokes gammaTwoCompactFluxStokes
+ 33398 | 
+ 33399 | /-- The raising core identity with the former `hGreen` input discharged. -/
+ 33400 | theorem physicalRaisingGreenIdentityOnCore_unconditional
+ 33401 |     {n : ℤ} (u : InverseEtaFixedPhaseCore n)
+ 33402 |     (v : InverseEtaFixedPhaseCore (n + 1)) :
+ 33403 |     inner ℂ (raisedCoordinate n u) (l2Coordinate (n + 1) v) =
+ 33404 |       -inner ℂ (l2Coordinate n u) (lowerFromSuccCoordinate n v) :=
+ 33405 |   physicalRaisingGreenIdentityOnCore
+ 33406 |     (physicalGreenIdentityAt_unconditional n) u v
+ 33407 | 
+ 33408 | /-- The conjugate lowering core identity, also free of a Green parameter. -/
+ 33409 | theorem physicalLoweringGreenIdentityOnCore_unconditional
+ 33410 |     {n : ℤ} (v : InverseEtaFixedPhaseCore (n + 1))
+ 33411 |     (u : InverseEtaFixedPhaseCore n) :
+ 33412 |     inner ℂ (lowerFromSuccCoordinate n v) (l2Coordinate n u) =
+ 33413 |       -inner ℂ (l2Coordinate (n + 1) v) (raisedCoordinate n u) :=
+ 33414 |   physicalLoweringGreenIdentityOnCore
+ 33415 |     (physicalGreenIdentityAt_unconditional n) v u
+ 33416 | 
+ 33417 | /-- The exact `1/2`-averaged core Green identity with all geometric inputs
+ 33418 | discharged. -/
+ 33419 | theorem physicalGreenHalfAverageOnCore_unconditional
+ 33420 |     {n : ℤ} (u : InverseEtaFixedPhaseCore n)
+ 33421 |     (v : InverseEtaFixedPhaseCore (n + 1)) :
+ 33422 |     (1 / 2 : ℂ) *
+ 33423 |         (inner ℂ (raisedCoordinate n u) (l2Coordinate (n + 1) v) +
+ 33424 |           inner ℂ (l2Coordinate n u) (lowerFromSuccCoordinate n v)) +
+ 33425 |       (1 / 2 : ℂ) *
+ 33426 |         (inner ℂ (lowerFromSuccCoordinate n v) (l2Coordinate n u) +
+ 33427 |           inner ℂ (l2Coordinate (n + 1) v) (raisedCoordinate n u)) = 0 :=
+ 33428 |   physicalGreenHalfAverageOnCore
+ 33429 |     (physicalGreenIdentityAt_unconditional n) u v
+ 33430 | 
+ 33431 | /-- Formal adjointness of raising and signed lowering is now an unconditional
+ 33432 | dense-core theorem. -/
+ 33433 | theorem physicalRaise_isFormalAdjoint_negativeLower_unconditional
+ 33434 |     (n : ℤ) :
+ 33435 |     (physicalRaise n).IsFormalAdjoint (-physicalLowerFromSucc n) :=
+ 33436 |   (physicalGreenIdentityAt_iff_isFormalAdjoint_negativeLower n).mp
+ 33437 |     (physicalGreenIdentityAt_unconditional n)
+ 33438 | 
+ 33439 | /-- The converse signed formal-adjoint orientation is unconditional as well. -/
+ 33440 | theorem physicalLowerFromSucc_isFormalAdjoint_negativeRaise_unconditional
+ 33441 |     (n : ℤ) :
+ 33442 |     (physicalLowerFromSucc n).IsFormalAdjoint (-physicalRaise n) :=
+ 33443 |   physicalLowerFromSucc_isFormalAdjoint_negativeRaise
+ 33444 |     (physicalGreenIdentityAt_unconditional n)
+ 33445 | 
+ 33446 | /-- Vanishing on the embedded smooth graph core, with no `hGreen` input. -/
+ 33447 | theorem graphSobolevGreenDefect_core_eq_zero_unconditional
+ 33448 |     {n : ℤ} (u : InverseEtaFixedPhaseCore n)
+ 33449 |     (v : InverseEtaFixedPhaseCore (n + 1)) :
+ 33450 |     graphSobolevGreenDefect n (coreMap n u) (coreMap (n + 1) v) = 0 :=
+ 33451 |   graphSobolevGreenDefect_core_eq_zero
+ 33452 |     (physicalGreenIdentityAt_unconditional n) u v
+ 33453 | 
+ 33454 | /-- The Green defect vanishes on the complete adjacent graph/form domains. -/
+ 33455 | theorem graphSobolevGreenDefect_eq_zero_unconditional
+ 33456 |     {n : ℤ} (u : GraphSobolevCompletion n)
+ 33457 |     (v : GraphSobolevCompletion (n + 1)) :
+ 33458 |     graphSobolevGreenDefect n u v = 0 :=
+ 33459 |   graphSobolevGreenDefect_eq_zero
+ 33460 |     (physicalGreenIdentityAt_unconditional n) u v
+ 33461 | 
+ 33462 | /-- Expanded raising/lowering Green identity on the completed graph domains,
+ 33463 | with no polygon, Stokes, or Green hypothesis. -/
+ 33464 | theorem graphSobolev_raising_lowering_identity_unconditional
+ 33465 |     {n : ℤ} (u : GraphSobolevCompletion n)
+ 33466 |     (v : GraphSobolevCompletion (n + 1)) :
+ 33467 |     inner ℂ (raiseExtension n u) (baseExtension (n + 1) v) =
+ 33468 |       -inner ℂ (baseExtension n u)
+ 33469 |         (graphLowerFromSuccExtension n v) :=
+ 33470 |   graphSobolev_raising_lowering_identity
+ 33471 |     (physicalGreenIdentityAt_unconditional n) u v
+ 33472 | 
+ 33473 | end FixedPhaseClosedOperators
+ 33474 | 
+ 33475 | namespace AxiomAuditP3GlobalStokesCompletion
+ 33476 | 
+ 33477 | #print axioms GammaTwoGlobalStokesCompositionSupport.integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola
+ 33478 | #print axioms GammaTwoGlobalStokesCompositionSupport.integrableOn_selectedPiola_closedTruncation_of_chosenCarrier
+ 33479 | #print axioms GammaTwoGlobalStokesCompositionSupport.integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight
+ 33480 | #print axioms gammaTwoPairedPolygonFluxStokes
+ 33481 | #print axioms gammaTwoCompactFluxStokes
+ 33482 | #print axioms FixedPhaseClosedOperators.greenBoundaryDefect_eq_zero_unconditional
+ 33483 | #print axioms FixedPhaseClosedOperators.physicalGreenIdentity_unconditional
+ 33484 | #print axioms FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore_unconditional
+ 33485 | #print axioms FixedPhaseClosedOperators.physicalGreenHalfAverageOnCore_unconditional
+ 33486 | #print axioms FixedPhaseClosedOperators.physicalRaise_isFormalAdjoint_negativeLower_unconditional
+ 33487 | #print axioms FixedPhaseClosedOperators.graphSobolevGreenDefect_eq_zero_unconditional
+ 33488 | #print axioms FixedPhaseClosedOperators.graphSobolev_raising_lowering_identity_unconditional
+ 33489 | 
+ 33490 | end AxiomAuditP3GlobalStokesCompletion
+ 33491 | end Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33492 | 
+ 33493 | /-!
+ 33494 | ================================================================================
+ 33495 | P3.5: actual selected-cusp `L²` traces on the fixed-phase graph core
+ 33496 | 
+ 33497 | The trace target below is the literal `L²` space on the fixed parameter
+ 33498 | interval `[-1/2,1/2]`.  Its pointwise weight is not guessed from a displayed
+ 33499 | power: it is the square root of the already certified Hermitian fiber scale
+ 33500 | times the hyperbolic horocycle density `dt / H`.  This avoids reversing the
+ 33501 | sign of `paperOrbitExponent` (the multiplier index is its negative).
+ 33502 | 
+ 33503 | The smooth-core restriction and its exact compact-tail vanishing are
+ 33504 | unconditional.  The graph-norm trace inequality is proved below by a scalar
+ 33505 | log-height estimate, exponential substitution, product/complex-coordinate
+ 33506 | transport, the genuine selected Möbius Jacobian, and the three concrete
+ 33507 | Petersson coordinates.  Thus the extension to the graph completion and its
+ 33508 | full strong cusp limit are unconditional; no scalar decay claim is silently
+ 33509 | promoted to an `L²` trace theorem.
+ 33510 | ================================================================================
+ 33511 | -/
+ 33512 | 
+ 33513 | namespace Mock2FA.PaperCorrections.AutomorphicSobolev
+ 33514 | namespace FixedPhaseHorocycleTrace
+ 33515 | 
+ 33516 | open MeasureTheory Set Filter Topology
+ 33517 | open GammaTwoQuotientGeometry GammaTwoQuotientGreenBoundary
+ 33518 | open GammaTwoMoebiusPiola GammaTwoGlobalStokesBridge
+ 33519 | open HalfIntegralMultiplier HalfWeightDifferentialOperators
+ 33520 | open SmoothCompactCoreGeometry
+ 33521 | open DefinitionOneSobolev
+ 33522 | open DefinitionOneSobolev.WeightCorePetersson
+ 33523 | open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ 33524 | open DefinitionOneSobolev.FixedPhaseGraphCompletion
+ 33525 | open FixedPhaseClosedOperators.PhysicalLocalL2
+ 33526 | 
+ 33527 | /-! #### A. The actual fixed parameter `L²` target -/
+ 33528 | 
+ 33529 | /-- Lebesgue measure restricted to the standard closed horocycle parameter
+ 33530 | interval.  Endpoints are retained; they are null and therefore do not alter
+ 33531 | the `L²` class. -/
+ 33532 | noncomputable abbrev selectedHorocycleParameterMeasure : Measure ℝ :=
+ 33533 |   (volume : Measure ℝ).restrict
+ 33534 |     (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))
+ 33535 | 
+ 33536 | /-- The genuine Hilbert target of every selected-cusp restriction. -/
+ 33537 | noncomputable abbrev SelectedHorocycleL2 :=
+ 33538 |   MeasureTheory.Lp ℂ 2 selectedHorocycleParameterMeasure
+ 33539 | 
+ 33540 | /-- The actual selected Möbius horocycle parametrization is continuous in
+ 33541 | its real parameter. -/
+ 33542 | theorem gammaTwoSelectedHorocycleParam_continuous
+ 33543 |     (q : GammaTwoRightCoset) (Y : ℝ) :
+ 33544 |     Continuous (gammaTwoSelectedHorocycleParam q Y) := by
+ 33545 |   have hcomplex : Continuous (fun t : ℝ =>
+ 33546 |       (t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I) :=
+ 33547 |     (Complex.continuous_ofReal.comp continuous_id).add continuous_const
+ 33548 |   have hbase' : Continuous (fun t : ℝ =>
+ 33549 |       (⟨(t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I,
+ 33550 |         lt_of_lt_of_le zero_lt_one
+ 33551 |           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
+ 33552 |     hcomplex.upperHalfPlaneMk _
+ 33553 |   have hbase : Continuous (fun t : ℝ =>
+ 33554 |       (⟨Complex.mk t (gammaTwoCuspLevel Y),
+ 33555 |         lt_of_lt_of_le zero_lt_one
+ 33556 |           (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
+ 33557 |     hbase'.congr (fun t => by
+ 33558 |       apply UpperHalfPlane.ext
+ 33559 |       apply Complex.ext <;> simp)
+ 33560 |   exact (continuous_sl2z_smul (gammaTwoCosetRep q)).comp hbase
+ 33561 | 
+ 33562 | /-- Squared geometric trace weight.  The numerator is the invariant
+ 33563 | Hermitian fiber scale at the actual selected point and the denominator is
+ 33564 | the local cusp height, because hyperbolic horocycle length is `dt / H`. -/
+ 33565 | noncomputable def selectedCuspTraceWeightSq
+ 33566 |     (n : ℤ) (q : GammaTwoRightCoset) (Y t : ℝ) : ℝ :=
+ 33567 |   weightFiberScale (-paperOrbitExponent n)
+ 33568 |       (gammaTwoSelectedHorocycleParam q Y t) /
+ 33569 |     gammaTwoCuspLevel Y
+ 33570 | 
+ 33571 | /-- Positive square root of the geometric trace weight. -/
+ 33572 | noncomputable def selectedCuspTraceWeight
+ 33573 |     (n : ℤ) (q : GammaTwoRightCoset) (Y t : ℝ) : ℝ :=
+ 33574 |   Real.sqrt (selectedCuspTraceWeightSq n q Y t)
+ 33575 | 
+ 33576 | theorem selectedCuspTraceWeightSq_pos
+ 33577 |     (n : ℤ) (q : GammaTwoRightCoset) (Y t : ℝ) :
+ 33578 |     0 < selectedCuspTraceWeightSq n q Y t := by
+ 33579 |   exact div_pos
+ 33580 |     (weightFiberScale_pos (-paperOrbitExponent n)
+ 33581 |       (gammaTwoSelectedHorocycleParam q Y t))
+ 33582 |     (lt_of_lt_of_le zero_lt_one (one_le_gammaTwoCuspLevel Y))
+ 33583 | 
+ 33584 | theorem selectedCuspTraceWeight_pos
+ 33585 |     (n : ℤ) (q : GammaTwoRightCoset) (Y t : ℝ) :
+ 33586 |     0 < selectedCuspTraceWeight n q Y t := by
+ 33587 |   exact Real.sqrt_pos.2 (selectedCuspTraceWeightSq_pos n q Y t)
+ 33588 | 
+ 33589 | theorem selectedCuspTraceWeight_sq
+ 33590 |     (n : ℤ) (q : GammaTwoRightCoset) (Y t : ℝ) :
+ 33591 |     selectedCuspTraceWeight n q Y t ^ 2 =
+ 33592 |       selectedCuspTraceWeightSq n q Y t := by
+ 33593 |   exact Real.sq_sqrt (selectedCuspTraceWeightSq_pos n q Y t).le
+ 33594 | 
+ 33595 | theorem selectedCuspTraceWeight_continuous
+ 33596 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ) :
+ 33597 |     Continuous (selectedCuspTraceWeight n q Y) := by
+ 33598 |   unfold selectedCuspTraceWeight selectedCuspTraceWeightSq
+ 33599 |   apply Real.continuous_sqrt.comp
+ 33600 |   exact
+ 33601 |     ((continuous_weightFiberScale
+ 33602 |         (k := -paperOrbitExponent n)).comp
+ 33603 |       (gammaTwoSelectedHorocycleParam_continuous q Y)).div_const
+ 33604 |       (gammaTwoCuspLevel Y)
+ 33605 | 
+ 33606 | /-! #### B. Smooth-core restriction and square integrability -/
+ 33607 | 
+ 33608 | /-- Literal weighted restriction of a fixed-phase smooth core vector to one
+ 33609 | selected cusp horocycle. -/
+ 33610 | noncomputable def selectedCuspRestrictionRepresentative
+ 33611 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33612 |     (u : InverseEtaFixedPhaseCore n) : ℝ → ℂ :=
+ 33613 |   fun t =>
+ 33614 |     ((selectedCuspTraceWeight n q Y t : ℝ) : ℂ) *
+ 33615 |       ((u : SmoothQuotientCompactFunction)
+ 33616 |         (gammaTwoSelectedHorocycleParam q Y t))
+ 33617 | 
+ 33618 | @[simp]
+ 33619 | theorem selectedCuspRestrictionRepresentative_add
+ 33620 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33621 |     (u v : InverseEtaFixedPhaseCore n) :
+ 33622 |     selectedCuspRestrictionRepresentative n q Y (u + v) =
+ 33623 |       selectedCuspRestrictionRepresentative n q Y u +
+ 33624 |         selectedCuspRestrictionRepresentative n q Y v := by
+ 33625 |   funext t
+ 33626 |   change
+ 33627 |     (selectedCuspTraceWeight n q Y t : ℂ) *
+ 33628 |         (((u : SmoothQuotientCompactFunction)
+ 33629 |           (gammaTwoSelectedHorocycleParam q Y t)) +
+ 33630 |          ((v : SmoothQuotientCompactFunction)
+ 33631 |           (gammaTwoSelectedHorocycleParam q Y t))) = _
+ 33632 |   ring
+ 33633 | 
+ 33634 | @[simp]
+ 33635 | theorem selectedCuspRestrictionRepresentative_smul
+ 33636 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ) (c : ℂ)
+ 33637 |     (u : InverseEtaFixedPhaseCore n) :
+ 33638 |     selectedCuspRestrictionRepresentative n q Y (c • u) =
+ 33639 |       c • selectedCuspRestrictionRepresentative n q Y u := by
+ 33640 |   funext t
+ 33641 |   change
+ 33642 |     (selectedCuspTraceWeight n q Y t : ℂ) *
+ 33643 |         (c * ((u : SmoothQuotientCompactFunction)
+ 33644 |           (gammaTwoSelectedHorocycleParam q Y t))) =
+ 33645 |       c * ((selectedCuspTraceWeight n q Y t : ℂ) *
+ 33646 |         ((u : SmoothQuotientCompactFunction)
+ 33647 |           (gammaTwoSelectedHorocycleParam q Y t)))
+ 33648 |   ring
+ 33649 | 
+ 33650 | theorem selectedCuspRestrictionRepresentative_continuous
+ 33651 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33652 |     (u : InverseEtaFixedPhaseCore n) :
+ 33653 |     Continuous (selectedCuspRestrictionRepresentative n q Y u) := by
+ 33654 |   exact
+ 33655 |     (Complex.continuous_ofReal.comp
+ 33656 |       (selectedCuspTraceWeight_continuous n q Y)).mul
+ 33657 |       ((u : SmoothQuotientCompactFunction).1.2.continuous.comp
+ 33658 |         (gammaTwoSelectedHorocycleParam_continuous q Y))
+ 33659 | 
+ 33660 | /-- Every actual smooth-core restriction belongs to the fixed target `L²`.
+ 33661 | The proof uses continuity on the compact parameter interval, not a global
+ 33662 | boundedness assertion. -/
+ 33663 | theorem selectedCuspRestrictionRepresentative_memLp
+ 33664 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33665 |     (u : InverseEtaFixedPhaseCore n) :
+ 33666 |     MemLp (selectedCuspRestrictionRepresentative n q Y u) 2
+ 33667 |       selectedHorocycleParameterMeasure := by
+ 33668 |   let f := selectedCuspRestrictionRepresentative n q Y u
+ 33669 |   have hf : Continuous f :=
+ 33670 |     selectedCuspRestrictionRepresentative_continuous n q Y u
+ 33671 |   apply (memLp_two_iff_integrable_sq_norm
+ 33672 |     hf.aestronglyMeasurable).2
+ 33673 |   change IntegrableOn (fun x => ‖f x‖ ^ 2)
+ 33674 |     (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) volume
+ 33675 |   simpa only [Pi.pow_apply] using
+ 33676 |     (hf.norm.pow 2).continuousOn.integrableOn_Icc
+ 33677 | 
+ 33678 | /-- The actual complex-linear smooth-core trace map. -/
+ 33679 | noncomputable def selectedCuspCoreTrace
+ 33680 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ) :
+ 33681 |     InverseEtaFixedPhaseCore n →ₗ[ℂ] SelectedHorocycleL2 where
+ 33682 |   toFun u :=
+ 33683 |     (selectedCuspRestrictionRepresentative_memLp n q Y u).toLp
+ 33684 |       (selectedCuspRestrictionRepresentative n q Y u)
+ 33685 |   map_add' u v := by
+ 33686 |     simpa only [selectedCuspRestrictionRepresentative_add] using
+ 33687 |       (MemLp.toLp_add
+ 33688 |         (selectedCuspRestrictionRepresentative_memLp n q Y u)
+ 33689 |         (selectedCuspRestrictionRepresentative_memLp n q Y v))
+ 33690 |   map_smul' c u := by
+ 33691 |     simpa only [selectedCuspRestrictionRepresentative_smul,
+ 33692 |       RingHom.id_apply] using
+ 33693 |       (MemLp.toLp_const_smul c
+ 33694 |         (selectedCuspRestrictionRepresentative_memLp n q Y u))
+ 33695 | 
+ 33696 | /-- The `L²` class retains the literal selected-horocycle representative. -/
+ 33697 | theorem coeFn_selectedCuspCoreTrace
+ 33698 |     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
+ 33699 |     (u : InverseEtaFixedPhaseCore n) :
+ 33700 |     ⇑(selectedCuspCoreTrace n q Y u) =ᵐ[
+ 33701 |       selectedHorocycleParameterMeasure]
+ 33702 |         selectedCuspRestrictionRepresentative n q Y u := by
+ 33703 |   simpa only [selectedCuspCoreTrace] using
+ 33704 |     MemLp.coeFn_toLp
+ 33705 |       (selectedCuspRestrictionRepresentative_memLp n q Y u)
+ 33706 | 
+ 33707 | /-! #### C. Exact compact-support tail, including all corners -/
+ 33708 | 
+ 33709 | /-- Every standard horizontal point with parameter in `[-1/2,1/2]` and
+ 33710 | height at least one lies in the closed modular tile. -/
+ 33711 | theorem baseSelectedHorocyclePoint_mem_fd
+ 33712 |     (Y : ℝ) {t : ℝ}
+ 33713 |     (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 33714 |     (⟨Complex.mk t (gammaTwoCuspLevel Y),
+ 33715 |       lt_of_lt_of_le zero_lt_one
+ 33716 |         (one_le_gammaTwoCuspLevel Y)⟩ : ℍ) ∈ ModularGroup.fd := by
+ 33717 |   change 1 ≤ Complex.normSq
+ 33718 |       (Complex.mk t (gammaTwoCuspLevel Y)) ∧
+ 33719 |     |t| ≤ (1 : ℝ) / 2
+ 33720 |   constructor
+ 33721 |   · simp only [Complex.normSq_apply]
+ 33722 |     have hlevel : 1 ≤ gammaTwoCuspLevel Y :=
+ 33723 |       one_le_gammaTwoCuspLevel Y
+ 33724 |     have hprod : 0 ≤
+ 33725 |         (gammaTwoCuspLevel Y - 1) *
+ 33726 |           (gammaTwoCuspLevel Y + 1) :=
+ 33727 |       mul_nonneg (sub_nonneg.mpr hlevel) (by linarith)
+ 33728 |     nlinarith [sq_nonneg t]
+ 33729 |   · exact abs_le.mpr ht
+ 33730 | 
+ 33731 | /-- Hence every selected parameter point in the standard interval belongs
+ 33732 | to the actual six-tile closed carrier. -/
+ 33733 | theorem selectedHorocycleParam_mem_closedCarrier
+ 33734 |     (q : GammaTwoRightCoset) (Y : ℝ) {t : ℝ}
+ 33735 |     (ht : t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
+ 33736 |     gammaTwoSelectedHorocycleParam q Y t ∈
+ 33737 |       gammaTwoClosedTileCarrier := by
+ 33738 |   exact mem_gammaTwoClosedTileCarrier_iff.mpr
+ 33739 |     ⟨q,
+ 33740 |       ⟨Complex.mk t (gammaTwoCuspLevel Y),
+ 33741 |         lt_of_lt_of_le zero_lt_one
+ 33742 |           (one_le_gammaTwoCuspLevel Y)⟩,
+ 33743 |       baseSelectedHorocyclePoint_mem_fd Y ht, rfl⟩
+ 33744 | 
+ 33745 | theorem selectedHorocycleParam_mem_threeCuspBoundary
+ 33746 |     (q : GammaTwoRightCoset) (Y t : ℝ) :
+ 33747 |     gammaTwoSelectedHorocycleParam q Y t ∈
+ 33748 |       gammaTwoThreeCuspHorocycleBoundary Y := by
+ 33749 |   rw [gammaTwoThreeCuspHorocycleBoundary_eq_iUnion_selectedCurves]
+ 33750 |   exact Set.mem_iUnion.mpr ⟨q, by
+ 33751 |     simpa only [gammaTwoSelectedHorocycleCurve] using
+ 33752 |       gammaTwoSelectedHorocycleParam_mem q Y t⟩
+ 33753 | 
+ 33754 | /-- Quotient compactness of one scalar function already gives a literal
+ 33755 | three-cusp zero tail; no flux-invariance hypothesis is needed. -/
+ 33756 | theorem hasZeroThreeCuspTail_self_zero_of_quotientCompact
+ 33757 |     {f : ℍ → ℂ} (hf : HasQuotientCompactSupport f) :
+ 33758 |     HasZeroThreeCuspTail f 0 := by
+ 33759 |   let K : Set GammaTwoQuotient := quotientTSupport f
+ 33760 |   have hLift : IsCompact
+ 33761 |       (gammaTwoClosedTileCarrier ∩ gammaTwoQuotientMk ⁻¹' K) :=
+ 33762 |     gammaTwoClosedCarrierCompactPreimage K hf
+ 33763 |   obtain ⟨Y₀, hY₀, hsub⟩ :=
+ 33764 |     compact_closedTileCarrier_subset_threeCuspTruncation hLift
+ 33765 |       Set.inter_subset_left
+ 33766 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33767 |   intro z hz
+ 33768 |   constructor
+ 33769 |   · by_contra hfz
+ 33770 |     have hq : gammaTwoQuotientMk z ∈ quotientTSupport f :=
+ 33771 |       subset_closure ⟨z, hfz, rfl⟩
+ 33772 |     exact hz.2 (hsub ⟨hz.1, hq⟩)
+ 33773 |   · rfl
+ 33774 | 
+ 33775 | /-- Each actual fixed-phase core vector therefore vanishes identically in
+ 33776 | all three sufficiently high cusp ends. -/
+ 33777 | theorem fixedPhaseCore_hasZeroThreeCuspTail
+ 33778 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33779 |     HasZeroThreeCuspTail
+ 33780 |       (((u : SmoothQuotientCompactFunction) : ℍ → ℂ)) 0 :=
+ 33781 |   hasZeroThreeCuspTail_self_zero_of_quotientCompact
+ 33782 |     (u : SmoothQuotientCompactFunction).2
+ 33783 | 
+ 33784 | /-- The literal restriction representative is zero almost everywhere on
+ 33785 | every sufficiently high selected horocycle.  The `a.e.` qualifier is only
+ 33786 | because the fixed `L²` measure is restricted to the parameter interval;
+ 33787 | vanishing on that interval is pointwise, including both endpoints. -/
+ 33788 | theorem fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero
+ 33789 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33790 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33791 |       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
+ 33792 |         selectedCuspRestrictionRepresentative n q Z u =ᵐ[
+ 33793 |           selectedHorocycleParameterMeasure] 0 := by
+ 33794 |   rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
+ 33795 | 
+ 33796 |     ⟨Y₀, hY₀, hZero⟩
+ 33797 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33798 |   intro Z hYZ q
+ 33799 |   filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
+ 33800 |   have hz := hZero Z hYZ
+ 33801 |     (gammaTwoSelectedHorocycleParam q Z t)
+ 33802 |     ⟨selectedHorocycleParam_mem_closedCarrier q Z ht,
+ 33803 |       selectedHorocycleParam_mem_threeCuspBoundary q Z t⟩
+ 33804 |     simp only [selectedCuspRestrictionRepresentative, Pi.zero_apply,
+ 33805 |       hz.1, mul_zero]
+ 33806 | 
+ 33807 | /-- Pointwise version of the same compact tail on the closed parameter
+ 33808 | interval.  This is used for each vertical log-height slice before integrating
+ 33809 | in the horizontal parameter. -/
+ 33810 | theorem fixedPhaseCore_eventually_selectedCuspSection_eq_zero
+ 33811 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33812 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33813 |       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
+ 33814 |         ∀ t ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ),
+ 33815 |           ((u : SmoothQuotientCompactFunction)
+ 33816 |             (gammaTwoSelectedHorocycleParam q Z t)) = 0 := by
+ 33817 |   rcases (fixedPhaseCore_hasZeroThreeCuspTail n u).eventually_zero_on_horocycleBoundary with
+ 33818 | 
+ 33819 |     ⟨Y₀, hY₀, hZero⟩
+ 33820 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33821 |   intro Z hYZ q t ht
+ 33822 |   exact (hZero Z hYZ (gammaTwoSelectedHorocycleParam q Z t)
+ 33823 |     ⟨selectedHorocycleParam_mem_closedCarrier q Z ht,
+ 33824 |       selectedHorocycleParam_mem_threeCuspBoundary q Z t⟩).1
+ 33825 | 
+ 33826 | /-- Consequently the genuine smooth-core `L²` trace is exactly zero past a
+ 33827 | single support height, simultaneously for every selected cusp chart. -/
+ 33828 | theorem fixedPhaseCore_eventually_selectedCuspCoreTrace_eq_zero
+ 33829 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+ 33830 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33831 |       ∀ Z : ℝ, Y₀ < Z → ∀ q : GammaTwoRightCoset,
+ 33832 |         selectedCuspCoreTrace n q Z u = 0 := by
+ 33833 |   rcases fixedPhaseCore_eventually_selectedCuspRepresentative_ae_zero n u with
+ 33834 |     ⟨Y₀, hY₀, hZero⟩
+ 33835 |   refine ⟨Y₀, hY₀, ?_⟩
+ 33836 |   intro Z hYZ q
+ 33837 |   apply MeasureTheory.Lp.ext
+ 33838 |   filter_upwards [coeFn_selectedCuspCoreTrace n q Z u,
+ 33839 |     hZero Z hYZ q] with t htrace hrep
+ 33840 |   simpa only [Pi.zero_apply] using htrace.trans hrep
+ 33841 | 
+ 33842 | /-- The existing compact-core Green flux theorem is the bilinear boundary
+ 33843 | counterpart of the individual trace vanishing theorem above. -/
+ 33844 | theorem compactCoreGreenFlux_eventually_selectedHorocycle_eq_zero
+ 33845 |     (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+ 33846 |     (v : InverseEtaFixedPhaseCore (n + 1)) :
+ 33847 |     ∃ Y₀ : ℝ, 1 < Y₀ ∧
+ 33848 |       ∀ (Z : ℝ), Y₀ < Z →
+ 33849 |         ∀ (q : GammaTwoRightCoset) (a b : ℝ) (ξ : ℝ → ℂ),
+ 33850 |           (∀ t ∈ Set.Icc a b,
