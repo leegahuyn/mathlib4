@@ -1,0 +1,159 @@
+name: FA460 analytic normalization cluster1 strict direct matrix
+
+on:
+  push:
+    branches: [fix/fa460-analytic-normalization-cluster1-20260810]
+    paths:
+      - .github/workflows/fa460-analytic-normalization-cluster1.yml
+      - scripts/fa460_prepare_analytic_cluster1.py
+      - scripts/fa460_candidate_ci.sh
+      - scripts/fa460_select_cluster1.py
+      - scripts/fa460_selector_strict_ci.sh
+      - scripts/fa459_prepare_true_first_cluster.py
+      - scripts/fa459_select_true_first.py
+      - scripts/fa458_record_direct_metric_strict.py
+      - scripts/fa458_prepare_cumulative_early.py
+      - scripts/fa453_selector_ci.sh
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      - build-logs/fa460-analytic-cluster1/REQUESTED*.txt
+  pull_request:
+    branches: [fix/fa460-analytic-normalization-cluster1-20260810]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: fa460-analytic-cluster1-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  ACTIVE_BRANCH: fix/fa460-analytic-normalization-cluster1-20260810
+  SOURCE_REF: ${{ github.event.pull_request.base.sha || github.sha }}
+
+jobs:
+  candidate:
+    name: candidate (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 260
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        variant:
+          - baseline
+          - macro_cumulative
+          - macro_cluster1_change
+          - macro_cluster1_localEq
+          - postfix_cluster1_change
+          - postfix_cluster1_localEq
+    env:
+      VARIANT: ${{ matrix.variant }}
+      MAX_ERRORS: '340'
+    steps:
+      - name: Checkout immutable FA460 source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: false
+
+      - name: Generate candidate, install pinned Lean/cache, execute all direct Lean commands
+        shell: bash
+        run: bash scripts/fa460_candidate_ci.sh
+
+      - name: Upload candidate source and strict direct metric
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa460-candidate-${{ matrix.variant }}
+          path: build-logs/fa460-analytic-cluster1/candidates/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce actual Lean execution and trust, not FA proof success
+        if: always()
+        shell: bash
+        run: |
+          python3 - "build-logs/fa460-analytic-cluster1/candidates/${VARIANT}/METRIC.json" <<'PY'
+          import json,sys
+          try:
+              m=json.load(open(sys.argv[1],encoding='utf-8'))
+          except Exception as exc:
+              raise SystemExit(f'INFRA_FAILURE: metric missing/invalid: {exc}')
+          ok=(
+              m.get('classification') != 'INFRA_FAILURE'
+              and m.get('diagnostic_parser') == 'strict_error_and_error_category_v1'
+              and m.get('all_required_lean_executed') is True
+              and m.get('source_metadata_identity') is True
+              and m.get('Mock2_exit') == 0
+              and m.get('Mock2_errors_under_cap') == 0
+              and m.get('Mock2_Advanced_exit') == 0
+              and m.get('Mock2_Advanced_errors_under_cap') == 0
+              and m.get('FA_executed') is True
+              and m.get('forbidden_clean') is True
+          )
+          print(json.dumps(m,indent=2,ensure_ascii=False))
+          if not ok:
+              raise SystemExit('INFRA_FAILURE: required direct Lean evidence missing')
+          PY
+
+  select-confirm-persist:
+    name: independent baseline, strict selector, materialize, checked-in x2
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 500
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      MAX_ERRORS: '420'
+    steps:
+      - name: Checkout immutable FA460 source commit with push credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.SOURCE_REF }}
+          fetch-depth: 2500
+          persist-credentials: true
+
+      - name: Configure GitHub Actions identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          test "$(git config user.name)" = 'github-actions[bot]'
+          test "$(git config user.email)" = '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Run independent strict baseline, selector, materialization, checked-in x2 and downstream gate
+        id: selector
+        shell: bash
+        run: bash scripts/fa460_selector_strict_ci.sh
+
+      - name: Upload complete FA460 direct evidence
+        id: evidence_upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa460-complete-evidence-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            build-logs/fa460-analytic-cluster1
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Enforce pipeline integrity separately from Lean result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.selector.outcome }}" = success
+          test -s build-logs/fa460-analytic-cluster1/selector-baseline/METRIC.json
+          test -s build-logs/fa460-analytic-cluster1/selected/SELECTION.json
+          test -s build-logs/fa460-analytic-cluster1/selected/CANDIDATE_RESULTS.json
+          test -s build-logs/fa460-analytic-cluster1/selected-confirm/CONFIRMATION.json
+          test -s build-logs/fa460-analytic-cluster1/final/CHECKED_IN_IDENTITY.json
+          test -s build-logs/fa460-analytic-cluster1/final/FA_FINAL.json
+          test -s build-logs/fa460-analytic-cluster1/final/downstream/DOWNSTREAM.json
