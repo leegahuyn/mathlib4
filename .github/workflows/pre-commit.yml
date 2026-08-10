@@ -6,6 +6,10 @@ on:
       - ci/fa444-recognized-run-probe-20260810
     paths:
       - build-logs/fa-run-cancel/CANCEL*.txt
+  pull_request:
+    branches:
+      - ci/fa444-recognized-run-probe-20260810
+    types: [opened, synchronize, reopened]
 
 permissions:
   actions: write
@@ -43,6 +47,8 @@ jobs:
               | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
           done
           printf 'preserved_authoritative_run=31373682702\n' \
+            | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
+          printf 'preserved_followup_run=31374330498\n' \
             | tee -a build-logs/fa-run-cancel/CANCEL_RESULTS.txt
           exit 0
       - name: Persist cancellation evidence
