@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/fa444-fa442-matrix-pipeline-repair-20260810
+  pull_request:
+    branches:
+      - fix/fa444-fa442-matrix-pipeline-repair-20260810
 
 permissions:
   actions: read
