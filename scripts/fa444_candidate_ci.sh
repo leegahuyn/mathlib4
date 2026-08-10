@@ -29,7 +29,7 @@ cat "$OUT/baseline-recovery.log"
 # 2. Generate candidate from the recovered baseline. Never turn failure into a fake pass.
 prepare_rc=125
 if test "$recover_rc" -eq 0; then
-  python3 scripts/fa442_prepare_same_height_candidate.py \
+  python3 scripts/fa444_prepare_same_height_candidate.py \
     --variant "$VARIANT" --output-dir "$OUT" \
     > "$OUT/prepare.log" 2>&1
   prepare_rc=$?
