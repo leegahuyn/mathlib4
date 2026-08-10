@@ -21,14 +21,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        trace_variant: [exp_mul_i, convert_ring_nf, const_add]
+        trace_variant: [const_add_simp, const_add_norm, const_add_map_zero]
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
       VARIANT: norms
       TRACE_VARIANT: ${{ matrix.trace_variant }}
       HORIZONTAL_STYLE: calc_four
-      MAX_ERRORS: "160"
+      MAX_ERRORS: "32"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -91,7 +91,7 @@ jobs:
               and metric.get("FA_executed") is True
               and metric.get("FA_exit") == 0
               and metric.get("FA_error_headers_captured") == 0
-              and metric.get("maxErrors_cap") == 160
+              and metric.get("maxErrors_cap") == 32
               and metric.get("diagnostic_parser")
                   == "strict_error_and_error_category_v1"
               and metric.get("forbidden_not_increased") is True
