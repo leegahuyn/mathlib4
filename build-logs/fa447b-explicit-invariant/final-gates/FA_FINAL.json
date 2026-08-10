@@ -1,0 +1,27 @@
+{
+  "classification": "LEAN_FAILURE",
+  "FA_TRUE_PASS": false,
+  "source_sha256": "2bf64d3eca2579915bcbb8db4fa766fe9b0ed2d69609eb5cf6522ece1a124893",
+  "runs": [
+    {
+      "run": 1,
+      "exit": 1,
+      "olean_size": 0,
+      "ilean_size": 0
+    },
+    {
+      "run": 2,
+      "exit": 1,
+      "olean_size": 0,
+      "ilean_size": 0
+    }
+  ],
+  "forbidden_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  }
+}
