@@ -21,27 +21,28 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Enumerate actual checked-in Mock3 Lean files only
+      - name: Enumerate every checked-in Mock3 Lean file in repository
         id: scan
         shell: bash
         run: |
           set -euo pipefail
-          find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print | LC_ALL=C sort | tee /tmp/mock3-files.txt
+          find . -type f -name 'Mock3*.lean' -not -path './.lake/*' -not -path './.git/*' -print \
+            | sed 's#^./##' | LC_ALL=C sort | tee /tmp/mock3-files.txt
           count=$(wc -l < /tmp/mock3-files.txt | tr -d ' ')
           echo "count=$count" >> "$GITHUB_OUTPUT"
-      - name: Post inventory to issue 14
+      - name: Post global inventory to issue 14
         env:
           GH_TOKEN: ${{ github.token }}
           COUNT: ${{ steps.scan.outputs.count }}
         shell: bash
         run: |
           {
-            echo '## Actual checked-in Mock3 inventory'
+            echo '## Actual checked-in Mock3 inventory — repository-wide'
             echo
             echo "- run_id: \`${GITHUB_RUN_ID}\`"
             echo "- head_sha: \`${GITHUB_SHA}\`"
             echo "- count: \`${COUNT}\`"
-            echo '- scope: `PrimalitySheafVerification/Mock3*.lean`'
+            echo '- scope: repository-wide checked-in `Mock3*.lean` (excluding `.lake`/`.git`)'
             echo '- note: inventory only; no Mock3 Lean compile was run before FA PASS'
             echo
             echo '```text'
