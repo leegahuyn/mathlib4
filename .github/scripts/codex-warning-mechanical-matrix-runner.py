@@ -450,7 +450,19 @@ def direct_compile(
         if path.is_file():
             path.unlink()
             deleted.append(str(path))
-    command = ["lake", "env", "lean", str(source_path), "-o", str(olean), "-i", str(ilean)]
+    try:
+        source_path.relative_to(repo_root)
+        lean_root = repo_root
+    except ValueError:
+        # Lean 4 requires an input file to be below its module root.  Warning
+        # candidates deliberately live outside the checkout, so make the
+        # isolated candidate directory their root while retaining Lake's
+        # dependency search path.
+        lean_root = source_path.parent.parent
+    command = [
+        "lake", "env", "lean", f"--root={lean_root}",
+        str(source_path), "-o", str(olean), "-i", str(ilean),
+    ]
     environment = os.environ.copy()
     environment["LEAN_ABORT_ON_PANIC"] = "1"
     completed = subprocess.run(
@@ -474,6 +486,7 @@ def direct_compile(
         "label": label,
         "command": command,
         "source_path": str(source_path),
+        "lean_root": str(lean_root),
         "deleted_before_compile": deleted,
         "exit": completed.returncode,
         "error_header_count": len(errors),
