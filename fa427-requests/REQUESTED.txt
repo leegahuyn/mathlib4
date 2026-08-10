@@ -1,0 +1,9 @@
+round=1
+parent_round=0
+parent_source_sha256=auto-select-best-verified
+parent_first_error=auto
+parent_declaration=auto
+authority=direct Lean CLI
+fixed_line_count=60453
+max_rounds=12
+matrix_max_candidates=24
