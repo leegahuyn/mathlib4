@@ -1,0 +1,1 @@
+Trigger FA458 cumulative fixed-parser matrix for paired explicit calls, both local measurable scalar-action instances, derivative-norm normalization, Tendsto eventual equality transport, and continuity candidates. Draft-only; do not merge or mark ready.
