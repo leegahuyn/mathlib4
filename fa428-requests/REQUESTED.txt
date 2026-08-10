@@ -1,0 +1,4 @@
+requested_at=2026-08-10T08:45:00+09:00
+strategy=batch direct-Lean theorem proof screening then full checked-in source reverify
+fixed_line_count=60453
+promotion_authority=full source direct Lean CLI
