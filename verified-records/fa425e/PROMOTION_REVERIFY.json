@@ -1,0 +1,54 @@
+{
+  "candidate": {
+    "name": "disable-custom-remove-proof-local-unfold-both",
+    "provenance": "hand:disable-custom+remove-proof-local+unfold-both",
+    "sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+    "file": "03-disable-custom-remove-proof-local-unfold-both.lean"
+  },
+  "screening_metric": {
+    "label": "candidate-03-disable-custom-remove-proof-local-unfold-both",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-disable-custom-remove-proof-local-unfold-both.log"
+  },
+  "reverify_run1": {
+    "label": "FA-promotion-reverify-run1",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run1.log"
+  },
+  "reverify_run2": {
+    "label": "FA-promotion-reverify-run2",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31727,
+    "first_error_col": 117,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-promotion-reverify-run2.log"
+  },
+  "consistent": true
+}

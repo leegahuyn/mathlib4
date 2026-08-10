@@ -31695,7 +31695,7 @@ theorem actualEdgeAmbientParam_eq_coe
   rw [actualEdgeAmbientParam, modularTileEdgeAmbientParam_eq_coe]
   simpa [selectedCosetAction, gammaTwoActualPolygonEdgeParam] using
     selectedCosetAmbientMap_coe e.1 (modularTileEdgeParam e.2 t)
-
+section actualEdgeCanonicalInstanceScope
 /-- Coordinate form of the native actual tangent.  This records explicitly
 that no informal complex derivative is substituted for Mathlib's bundled real
 Frechet derivative. -/
@@ -31708,14 +31708,15 @@ theorem actualEdgeNativeVelocity_eq_selectedDerivative_mul
   unfold actualEdgeNativeVelocity
   exact selectedCoset_smulFDeriv_apply e.1
     (modularTileEdgeParam e.2 t) (modularTileEdgeVelocity e.2 t)
-
+attribute [-instance] Complex.addCommGroup
 /-- The Mobius-composed actual edge has the declared native tangent. -/
 theorem actualEdgeAmbientParam_hasDerivAt
     (e : GammaTwoActualPolygonEdge)
     (t : modularTileEdgeParameterSet e.2) :
     HasDerivAt (actualEdgeAmbientParam e)
       (actualEdgeNativeVelocity e t) (t : Real) := by
-  letI : AddCommGroup Complex := Complex.addCommGroup
+  letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
+  -- canonical Complex additive structure is fixed by the surrounding section
   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
   have houter :=
     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
@@ -31723,10 +31724,9 @@ theorem actualEdgeAmbientParam_hasDerivAt
   have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hbase
     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
   simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
-    Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
+  simpa only [actualEdgeAmbientParam, actualEdgeNativeVelocity, Complex.addCommGroup, Complex.instNormedAddCommGroup] using hcomp
 
 /-! #### Native tangent compatibility under the actual side pairing -/
-
 /-- The subtype pairing is multiplication of the real parameter by the
 declared sign. -/
 @[simp]
