@@ -1,0 +1,1 @@
+Trigger draft-only packaging of the pinned Lean 4.33.0-rc1 toolchain, Mathlib cache, and FA project sources for local direct Lean iteration. Do not merge or mark ready.
