@@ -1,0 +1,1 @@
+Retrigger FA459 after changing header invariance to compare the declaration proposition/type through :=, independent of proof term vs by presentation.
