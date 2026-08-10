@@ -57,16 +57,18 @@ def declaration_span(text: str, name: str) -> tuple[int, int]:
 
 
 def declaration_header(text: str, name: str) -> str:
+    """Return only the declaration proposition/type through `:=`.
+
+    `:= term` and `:= by` are two proof presentation styles for the same
+    theorem statement.  Treating the token `by` as part of the header caused
+    the first FA459 generator to reject a statement-preserving repair.
+    """
     start, end = declaration_span(text, name)
     block = text[start:end]
-    marker = block.find(":= by")
-    marker_len = len(":= by")
-    if marker < 0:
-        marker = block.find(":=")
-        marker_len = len(":=")
+    marker = block.find(":=")
     if marker < 0:
         raise RuntimeError(f"proof/body marker not found: {name}")
-    return block[: marker + marker_len]
+    return block[: marker + len(":=")]
 
 
 def replace_body(text: str, name: str, body_after_assign: str) -> str:
@@ -102,9 +104,15 @@ local postfix:max \".paired\" => GammaTwoActualPolygonEdge.paired"""
 
 def apply_pair_compat(text: str, mode: str) -> tuple[str, dict[str, str]]:
     opening = MACRO_OPEN if mode == "macro" else POSTFIX_OPEN
-    text = replace_once(text, PAIR_DOC, opening + "\n" + PAIR_DOC, f"insert {mode} paired compatibility")
-    text = replace_once(text, UNIFORM_DOC, "end ActualPolygonEdgeLiteralPairedCompat\n\n" + UNIFORM_DOC,
-                        f"close {mode} paired compatibility")
+    text = replace_once(
+        text, PAIR_DOC, opening + "\n" + PAIR_DOC,
+        f"insert {mode} paired compatibility"
+    )
+    text = replace_once(
+        text, UNIFORM_DOC,
+        "end ActualPolygonEdgeLiteralPairedCompat\n\n" + UNIFORM_DOC,
+        f"close {mode} paired compatibility"
+    )
     return text, {
         "declaration": "PAIRING_SYNTAX_COMPATIBILITY",
         "strategy": f"scoped_{mode}_compat_no_theorem_header_change",
@@ -140,7 +148,10 @@ HSELECTED_NEW = """  have hSelectedTile : MeasurableSet
 
 def apply_real_smul_repairs(text: str) -> tuple[str, list[dict[str, str]]]:
     text = replace_body(text, "selectedHalfOpenTile_ae_eq_openTile", SELECTED_AE_BODY)
-    text = replace_once(text, HSELECTED_OLD, HSELECTED_NEW, "selected tile measurable real-SL cast")
+    text = replace_once(
+        text, HSELECTED_OLD, HSELECTED_NEW,
+        "selected tile measurable real-SL cast"
+    )
     return text, [
         {
             "declaration": "selectedHalfOpenTile_ae_eq_openTile",
