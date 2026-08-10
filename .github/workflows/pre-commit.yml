@@ -50,10 +50,10 @@ jobs:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '50'
     steps:
-      - name: Checkout exact repair base commit for this event
+      - name: Checkout current repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          ref: fix/fa444-fa442-matrix-pipeline-repair-20260810
           fetch-depth: 2500
           persist-credentials: false
 
@@ -115,10 +115,10 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       MAX_ERRORS: '100'
     steps:
-      - name: Checkout exact repair base commit with push credentials
+      - name: Checkout current repair branch with push credentials
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          ref: fix/fa444-fa442-matrix-pipeline-repair-20260810
           fetch-depth: 2500
           persist-credentials: true
 
