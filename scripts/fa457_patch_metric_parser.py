@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 PATH = Path("scripts/fa442_record_direct_metric.py")
+PATCH_MARKER = '"FA_first_error_code": fa_errors["first_code"]'
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -15,6 +16,9 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 def main() -> None:
     text = PATH.read_text(encoding="utf-8")
+    if PATCH_MARKER in text:
+        print("coded Lean error parser already installed")
+        return
     text = replace_once(
         text,
         '''    pattern = re.compile(\n        rf"(?m)^(?P<prefix>.*?{re.escape(stem)}\\.lean):"\n        r"(?P<line>\\d+):(?P<col>\\d+):\\s+error:\\s*(?P<message>.*)$"\n    )\n''',
@@ -40,6 +44,7 @@ def main() -> None:
         "metric error code field",
     )
     PATH.write_text(text, encoding="utf-8")
+    print("installed coded Lean error parser")
 
 
 if __name__ == "__main__":
