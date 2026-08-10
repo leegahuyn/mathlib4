@@ -280,7 +280,7 @@ import Mathlib.Tactic
 
 open scoped RealInnerProductSpace
 open scoped MatrixGroups UpperHalfPlane
-open scoped BigOperators Pointwise
+open scoped BigOperators Pointwise ContDiff ENNReal
 open InnerProductSpace
 
 namespace Mock2FA
@@ -5108,7 +5108,7 @@ theorem pointwiseInnerDensity_add_left
     m.pointwiseInnerDensity (u + v) w z =
       m.pointwiseInnerDensity u w z +
         m.pointwiseInnerDensity v w z := by
-  simp only [pointwiseInnerDensity, WeightSection.add_apply, star_add]
+  simp only [pointwiseInnerDensity, HalfIntegralMultiplier.WeightSection.add_apply, star_add]
   ring
 
 @[simp]
@@ -5117,7 +5117,7 @@ theorem pointwiseInnerDensity_smul_left
     (u v : WeightSection M) (z : ℍ) :
     m.pointwiseInnerDensity (c • u) v z =
       star c * m.pointwiseInnerDensity u v z := by
-  simp only [pointwiseInnerDensity, WeightSection.smul_apply, star_mul]
+  simp only [pointwiseInnerDensity, HalfIntegralMultiplier.WeightSection.smul_apply, star_mul]
   ring
 
 @[simp]
@@ -5126,7 +5126,7 @@ theorem pointwiseInnerDensity_add_right
     m.pointwiseInnerDensity u (v + w) z =
       m.pointwiseInnerDensity u v z +
         m.pointwiseInnerDensity u w z := by
-  simp only [pointwiseInnerDensity, WeightSection.add_apply]
+  simp only [pointwiseInnerDensity, HalfIntegralMultiplier.WeightSection.add_apply]
   ring
 
 @[simp]
@@ -5135,7 +5135,7 @@ theorem pointwiseInnerDensity_smul_right
     (u v : WeightSection M) (z : ℍ) :
     m.pointwiseInnerDensity u (c • v) z =
       c * m.pointwiseInnerDensity u v z := by
-  simp only [pointwiseInnerDensity, WeightSection.smul_apply]
+  simp only [pointwiseInnerDensity, HalfIntegralMultiplier.WeightSection.smul_apply]
   ring
 
 theorem pointwiseInnerDensity_conj_symm
@@ -14550,8 +14550,8 @@ noncomputable def inverseEtaFixedPhaseStableCoreSubmodule (n : ℤ) :
     exact (hf word).smul c
 
 /-- Canonical fixed-phase core at orbit index `n`. -/
-noncomputable abbrev InverseEtaFixedPhaseCore (n : ℤ) :=
-  inverseEtaFixedPhaseStableCoreSubmodule n
+noncomputable abbrev InverseEtaFixedPhaseCore (n : ℤ) : Type :=
+  ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
 
 /-- Once the one-step covariance theorem has been proved, membership in the
 all-word stable core is equivalent to the ordinary zeroth-word covariance
@@ -17457,6 +17457,7 @@ open MeasureTheory
 open HalfIntegralMultiplier HalfWeightDifferentialOperators
   GammaTwoQuotientGeometry
 open GammaTwoQuotientGreenBoundary
+open SmoothCompactCoreGeometry
 open WeightCorePetersson WeightCorePetersson.PeterssonCoreSpace
 
 noncomputable abbrev OrbitMultiplier (n : ℤ) :=
@@ -18031,11 +18032,23 @@ theorem fixedPhaseGreen_fluxOneFormValue (n : ℤ)
         (fixedPhaseGreenFluxX n u v) (fixedPhaseGreenFluxY n u v) z ξ =
       -fixedPhaseGreenScalarDensity n u v z * ξ := by
   unfold fluxOneFormValue fixedPhaseGreenFluxX fixedPhaseGreenFluxY
+  rw [← Complex.re_add_im ξ]
+  simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re,
+    Complex.ofReal_im, Complex.mul_re, Complex.mul_im,
+    Complex.I_re, Complex.I_im, zero_mul, one_mul, mul_zero,
+    add_zero, zero_add, sub_zero]
+  ring_nf
+
+/-- Cancellation of a nonzero squared automorphy factor against the denominator
+in a transformed tangent vector. -/
+private theorem sq_mul_mul_div_sq_cancel (j rho xi : ℂ) (hj : j ≠ 0) :
+    (j ^ 2 * rho) * (xi / j ^ 2) = rho * xi := by
   calc
-    _ = -(fixedPhaseGreenScalarDensity n u v z *
-        ((ξ.re : ℂ) + (ξ.im : ℂ) * Complex.I)) := by ring
-    _ = -fixedPhaseGreenScalarDensity n u v z * ξ := by
-      rw [Complex.re_add_im, neg_mul]
+    (j ^ 2 * rho) * (xi / j ^ 2) =
+        rho * (j ^ 2 * (xi / j ^ 2)) := by
+      ac_rfl
+    _ = rho * xi := by
+      rw [mul_div_cancel₀ xi (pow_ne_zero _ hj)]
 
 /-- The weight-two scalar transformation and the inverse-square Möbius
 differential cancel exactly.  This is the fiber-metric/Jacobian cancellation
@@ -18050,8 +18063,8 @@ theorem fixedPhaseGreenScalarDensity_mul_moebiusDifferential (n : ℤ)
       fixedPhaseGreenScalarDensity n u v z * ξ := by
   rw [fixedPhaseGreenScalarDensity_covariance,
     d1_gammaTwoMoebiusCoordinate]
-  field_simp [inverseEtaPaperOrbitDenom_ne_zero γ z]
-  <;> ring
+  exact sq_mul_mul_div_sq_cancel _ _ _
+    (inverseEtaPaperOrbitDenom_ne_zero γ z)
 
 /-- The concrete Green flux satisfies the exact Möbius pullback law.  This
 closes the former side-pairing part of the flux bridge directly from section
@@ -18071,8 +18084,9 @@ theorem fixedPhaseGreenFlux_invariant (n : ℤ)
       -fixedPhaseGreenScalarDensity n u v z * ξ
   rw [fixedPhaseGreenScalarDensity_covariance,
     d1_gammaTwoMoebiusCoordinate]
-  field_simp [inverseEtaPaperOrbitDenom_ne_zero γ z]
-  <;> ring
+  simpa only [neg_mul] using congrArg Neg.neg
+    (sq_mul_mul_div_sq_cancel _ _ _
+      (inverseEtaPaperOrbitDenom_ne_zero γ z))
 
 /-- Explicit one-form pullback statement for `(-iρ) dy - ρ dx = -ρ dz`.
 It is definitionally the concrete instance of `IsGammaTwoInvariantFlux`, but
@@ -18226,9 +18240,9 @@ compactness of the explicit scalar flux coefficient. -/
 theorem fixedPhaseGreenScalarDensity_quotientCompact (n : ℤ)
     (u : InverseEtaFixedPhaseCore n)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
-    SmoothCompactCoreGeometry.HasQuotientCompactSupport (fixedPhaseGreenScalarDensity n u v) := by
+    HasQuotientCompactSupport (fixedPhaseGreenScalarDensity n u v) := by
   apply u.1.2.of_isClosed_subset isClosed_closure
-  unfold SmoothCompactCoreGeometry.quotientTSupport
+  unfold quotientTSupport
   exact closure_mono (Set.image_mono
     (fixedPhaseGreenScalarDensity_support_subset_left n u v))
 
@@ -18236,11 +18250,11 @@ theorem fixedPhaseGreenScalarDensity_quotientCompact (n : ℤ)
 theorem fixedPhaseGreenFlux_quotientCompact (n : ℤ)
     (u : InverseEtaFixedPhaseCore n)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
-    SmoothCompactCoreGeometry.HasQuotientCompactSupport (fixedPhaseGreenFluxX n u v) ∧
-      SmoothCompactCoreGeometry.HasQuotientCompactSupport (fixedPhaseGreenFluxY n u v) := by
+    HasQuotientCompactSupport (fixedPhaseGreenFluxX n u v) ∧
+      HasQuotientCompactSupport (fixedPhaseGreenFluxY n u v) := by
   have hρ := fixedPhaseGreenScalarDensity_quotientCompact n u v
   constructor
-  · change SmoothCompactCoreGeometry.HasQuotientCompactSupport
+  · change HasQuotientCompactSupport
       ((-Complex.I) • fixedPhaseGreenScalarDensity n u v)
     exact hρ.smul (-Complex.I)
   · exact hρ
@@ -18249,11 +18263,11 @@ theorem fixedPhaseGreenFlux_quotientCompact (n : ℤ)
 theorem fixedPhaseGreenFlux_realSmooth (n : ℤ)
     (u : InverseEtaFixedPhaseCore n)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
-    SmoothCompactCoreGeometry.RealSmooth (fixedPhaseGreenFluxX n u v) ∧
-      SmoothCompactCoreGeometry.RealSmooth (fixedPhaseGreenFluxY n u v) := by
+    RealSmooth (fixedPhaseGreenFluxX n u v) ∧
+      RealSmooth (fixedPhaseGreenFluxY n u v) := by
   have hρ := fixedPhaseGreenScalarDensity_realSmooth n u v
   constructor
-  · change SmoothCompactCoreGeometry.RealSmooth
+  · change RealSmooth
       ((-Complex.I) • fixedPhaseGreenScalarDensity n u v)
     exact hρ.const_complex_smul (-Complex.I)
   · exact hρ
@@ -18266,8 +18280,8 @@ theorem fixedPhaseGreenFlux_isSmoothQuotientCompact_iff (n : ℤ)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
     IsSmoothQuotientCompactFlux
         (fixedPhaseGreenFluxX n u v) (fixedPhaseGreenFluxY n u v) ↔
-      SmoothCompactCoreGeometry.RealSmooth (fixedPhaseGreenFluxX n u v) ∧
-        SmoothCompactCoreGeometry.RealSmooth (fixedPhaseGreenFluxY n u v) ∧
+      RealSmooth (fixedPhaseGreenFluxX n u v) ∧
+        RealSmooth (fixedPhaseGreenFluxY n u v) ∧
           IsGammaTwoInvariantFlux
             (fixedPhaseGreenFluxX n u v) (fixedPhaseGreenFluxY n u v) := by
   constructor
@@ -18423,7 +18437,7 @@ variable {X : Type*} [TopologicalSpace X] [MeasurableSpace X]
 
 /-- A compactly supported continuous scalar function belongs to every finite
 `L^p`; here we specialize the reusable Mathlib result to `p = 2`. -/
-def memLpTwo (f : CompactlySupportedContinuousMap X ℂ) :
+theorem memLpTwo (f : CompactlySupportedContinuousMap X ℂ) :
     MemLp (f : X → ℂ) 2 mu :=
   f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
 
@@ -18436,7 +18450,8 @@ noncomputable def toL2 :
     simpa only [CompactlySupportedContinuousMap.coe_add] using
       (MemLp.toLp_add (memLpTwo mu f) (memLpTwo mu g))
   map_smul' c f := by
-    simpa only [CompactlySupportedContinuousMap.coe_smul, RingHom.id_apply] using
+    simpa only [CompactlySupportedContinuousMap.coe_smul,
+      RingHom.id_apply] using
       (MemLp.toLp_const_smul c (memLpTwo mu f))
 
 /-- The `L²` class has the original continuous function as an a.e.
@@ -18534,6 +18549,7 @@ abbrev EnergyTarget (H₀ : Type v₀) (HR : Type vR) (HL : Type vL) :=
 quotient-`L²` coordinates.  Each field is linear; integrability and quotient
 choice-independence are obligations of the realization that constructs it.
 -/
+@[ext]
 structure QuotientHilbertCoordinates
     (V : Type u) [AddCommGroup V] [Module ℂ V]
     (H₀ : Type v₀) (HR : Type vR) (HL : Type vL)
@@ -18553,24 +18569,14 @@ variable {V : Type u} [AddCommGroup V] [Module ℂ V]
   [NormedAddCommGroup HL] [InnerProductSpace ℂ HL]
   (Q : QuotientHilbertCoordinates V H₀ HR HL)
 
+include Q
+
 /-- `(u, R u, L u)` in the Hilbert `L²` direct sum. -/
 def graph : V →ₗ[ℂ] EnergyTarget H₀ HR HL where
   toFun u := WithLp.toLp 2
     (Q.base u, WithLp.toLp 2 (Q.raised u, Q.lowered u))
-  map_add' u v := by
-    simp only [map_add]
-    change WithLp.toLp 2
-      ((Q.base u, WithLp.toLp 2 (Q.raised u, Q.lowered u)) +
-        (Q.base v, WithLp.toLp 2 (Q.raised v, Q.lowered v))) =
-      WithLp.toLp 2 (Q.base u, WithLp.toLp 2 (Q.raised u, Q.lowered u)) +
-        WithLp.toLp 2 (Q.base v, WithLp.toLp 2 (Q.raised v, Q.lowered v))
-    exact WithLp.toLp_add 2 _ _
-  map_smul' c u := by
-    simp only [map_smul, RingHom.id_apply]
-    change WithLp.toLp 2
-      (c • (Q.base u, WithLp.toLp 2 (Q.raised u, Q.lowered u))) =
-      c • WithLp.toLp 2 (Q.base u, WithLp.toLp 2 (Q.raised u, Q.lowered u))
-    exact WithLp.toLp_smul 2 c _
+  map_add' u v := by simp [← WithLp.toLp_add]
+  map_smul' c u := by simp [← WithLp.toLp_smul]
 
 @[simp]
 theorem graph_fst (u : V) : (Q.graph u).fst = Q.base u :=
@@ -18593,40 +18599,25 @@ theorem energyForm_apply (u v : V) :
       ⟪Q.base u, Q.base v⟫_ℂ +
       ⟪Q.raised u, Q.raised v⟫_ℂ +
       ⟪Q.lowered u, Q.lowered v⟫_ℂ := by
-  unfold energyForm
-  rw [WithLp.prod_inner_apply, WithLp.prod_inner_apply]
-  change
-    ⟪Q.base u, Q.base v⟫_ℂ +
-        (⟪Q.raised u, Q.raised v⟫_ℂ +
-          ⟪Q.lowered u, Q.lowered v⟫_ℂ) =
-      ⟪Q.base u, Q.base v⟫_ℂ +
-        ⟪Q.raised u, Q.raised v⟫_ℂ +
-          ⟪Q.lowered u, Q.lowered v⟫_ℂ
-  exact (add_assoc _ _ _).symm
+  simp only [energyForm, WithLp.prod_inner_apply, graph_fst,
+    WithLp.ofLp_fst, WithLp.ofLp_snd,
+    graph_snd_fst, graph_snd_snd, add_assoc]
 
 theorem energyForm_add_left (u v w : V) :
     Q.energyForm (u + v) w = Q.energyForm u w + Q.energyForm v w := by
-  rw [Q.energyForm_apply, Q.energyForm_apply, Q.energyForm_apply]
-  simp only [map_add, inner_add_left]
-  ring
+  simp only [energyForm, map_add, inner_add_left]
 
 theorem energyForm_add_right (u v w : V) :
     Q.energyForm u (v + w) = Q.energyForm u v + Q.energyForm u w := by
-  rw [Q.energyForm_apply, Q.energyForm_apply, Q.energyForm_apply]
-  simp only [map_add, inner_add_right]
-  ring
+  simp only [energyForm, map_add, inner_add_right]
 
 theorem energyForm_smul_left (c : ℂ) (u v : V) :
     Q.energyForm (c • u) v = conj c * Q.energyForm u v := by
-  rw [Q.energyForm_apply, Q.energyForm_apply]
-  simp only [map_smul, inner_smul_left]
-  ring
+  simp only [energyForm, map_smul, inner_smul_left]
 
 theorem energyForm_smul_right (c : ℂ) (u v : V) :
     Q.energyForm u (c • v) = c * Q.energyForm u v := by
-  rw [Q.energyForm_apply, Q.energyForm_apply]
-  simp only [map_smul, inner_smul_right]
-  ring
+  simp only [energyForm, map_smul, inner_smul_right]
 
 theorem energyForm_conj_symm (u v : V) :
     conj (Q.energyForm v u) = Q.energyForm u v :=
@@ -18636,20 +18627,18 @@ theorem graph_norm_sq (u : V) :
     ‖Q.graph u‖ ^ 2 =
       ‖Q.base u‖ ^ 2 + ‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2 := by
   rw [WithLp.prod_norm_sq_eq_of_L2 (Q.graph u),
-    WithLp.prod_norm_sq_eq_of_L2 (Q.graph u).snd]
-  change
-    ‖Q.base u‖ ^ 2 + (‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2) =
-      ‖Q.base u‖ ^ 2 + ‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2
+    WithLp.prod_norm_sq_eq_of_L2 (Q.graph u).snd,
+    Q.graph_fst u, Q.graph_snd_fst u, Q.graph_snd_snd u]
   ring
 
 theorem re_energyForm_self (u : V) :
     (Q.energyForm u u).re =
       ‖Q.base u‖ ^ 2 + ‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2 := by
   rw [energyForm]
-  calc
-    (⟪Q.graph u, Q.graph u⟫_ℂ).re = ‖Q.graph u‖ ^ 2 :=
-      inner_self_eq_norm_sq (𝕜 := ℂ) (Q.graph u)
-    _ = _ := Q.graph_norm_sq u
+  have h := norm_sq_eq_re_inner (𝕜 := ℂ) (Q.graph u)
+  change ‖Q.graph u‖ ^ 2 = (inner ℂ (Q.graph u) (Q.graph u)).re at h
+  rw [← h]
+  exact Q.graph_norm_sq u
 
 theorem re_energyForm_self_nonneg (u : V) :
     0 ≤ (Q.energyForm u u).re := by
@@ -18666,7 +18655,7 @@ theorem graph_eq_zero_iff (u : V) :
 theorem energyForm_self_eq_zero_iff (u : V) :
     Q.energyForm u u = 0 ↔
       Q.base u = 0 ∧ Q.raised u = 0 ∧ Q.lowered u = 0 := by
-  rw [energyForm, inner_self_eq_zero, Q.graph_eq_zero_iff u]
+  rw [energyForm, inner_self_eq_zero (𝕜 := ℂ), Q.graph_eq_zero_iff u]
 
 /-- Definiteness on the raw core is exactly joint graph injectivity. -/
 def EnergyDefinite : Prop :=
@@ -18680,7 +18669,7 @@ theorem energyDefinite_iff_graph_injective :
     apply h
     have hgraph : Q.graph (u - v) = 0 := by
       rw [map_sub, huv, sub_self]
-    simp [energyForm, hgraph]
+    simp only [energyForm, hgraph, inner_zero_left]
   · intro h u hu
     apply h
     rw [map_zero, Q.graph_eq_zero_iff]
@@ -18695,6 +18684,9 @@ theorem energyDefinite_of_base_injective (h : Function.Injective Q.base) :
 so it is always a genuine pre-Hilbert space. -/
 abbrev GraphRange :=
   LinearMap.range Q.graph
+
+
+
 
 def toGraphRange : V →ₗ[ℂ] Q.GraphRange :=
   Q.graph.rangeRestrict
@@ -18717,13 +18709,14 @@ theorem norm_toGraphRange_sq (u : V) :
 @[simp]
 theorem graphRange_inner_self_eq_zero_iff (x : Q.GraphRange) :
     ⟪x, x⟫_ℂ = 0 ↔ x = 0 :=
-  inner_self_eq_zero
+  inner_self_eq_zero (𝕜 := ℂ)
 
 theorem graphRange_re_inner_self_pos {x : Q.GraphRange} (hx : x ≠ 0) :
     0 < (⟪x, x⟫_ℂ).re := by
-  calc
-    0 < ‖x‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr hx)
-    _ = (⟪x, x⟫_ℂ).re := norm_sq_eq_re_inner (𝕜 := ℂ) x
+  have h := norm_sq_eq_re_inner (𝕜 := ℂ) x
+  change ‖x‖ ^ 2 = (inner ℂ x x).re at h
+  rw [← h]
+  positivity
 
 theorem toGraphRange_injective_iff_energyDefinite :
     Function.Injective Q.toGraphRange ↔ Q.EnergyDefinite := by
@@ -18736,14 +18729,57 @@ theorem toGraphRange_injective_iff_energyDefinite :
     apply h
     exact congrArg Subtype.val huv
 
-/-- The Definition 1 Sobolev space: completion of the genuine energy graph. -/
+/-- The graph-range subtype inherits the uniform additive group structure
+from the ambient Hilbert direct sum through its subtype isometry. -/
+noncomputable instance graphRangeIsUniformAddGroup :
+    IsUniformAddGroup Q.GraphRange :=
+  IsUniformInducing.isUniformAddGroup Q.GraphRange.subtype
+    Q.GraphRange.subtypeₗᵢ.isometry.isUniformInducing
+
+/-- Complex scalar multiplication on the graph range is uniformly continuous. -/
+noncomputable instance graphRangeUniformContinuousConstSMul :
+    UniformContinuousConstSMul ℂ Q.GraphRange :=
+  uniformContinuousConstSMul_of_continuousConstSMul ℂ Q.GraphRange
+
+/-- The Definition 1 Sobolev space is the uniform completion of the genuine graph range. -/
 abbrev SobolevCompletion :=
   UniformSpace.Completion Q.GraphRange
+
+/-! Expose Mathlib's canonical structures through the dependent abbreviation.
+
+The explicit `change` steps are deliberate: they expose the underlying
+`UniformSpace.Completion Q.GraphRange` before typeclass search starts.  This
+avoids an expensive failed search through the dependent abbreviation. -/
+noncomputable instance sobolevCompletionNormedAddCommGroup :
+    NormedAddCommGroup Q.SobolevCompletion :=
+  UniformSpace.Completion.instNormedAddCommGroup Q.GraphRange
+
+noncomputable instance sobolevCompletionNormedSpace :
+    NormedSpace ℂ Q.SobolevCompletion :=
+  UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
+
+noncomputable instance sobolevCompletionInnerProductSpace :
+    InnerProductSpace ℂ Q.SobolevCompletion :=
+  @UniformSpace.Completion.innerProductSpace
+    ℂ Q.GraphRange Complex.instRCLike inferInstance inferInstance
+
+noncomputable instance sobolevCompletionCompleteSpace :
+    CompleteSpace Q.SobolevCompletion :=
+  UniformSpace.Completion.completeSpace Q.GraphRange
+
+/- These smoke tests force the four bridge instances to elaborate here, rather
+than allowing a missing instance to trigger a very long search thousands of
+lines later. -/
+#synth NormedAddCommGroup Q.SobolevCompletion
+#synth NormedSpace ℂ Q.SobolevCompletion
+#synth InnerProductSpace ℂ Q.SobolevCompletion
+#synth CompleteSpace Q.SobolevCompletion
 
 /-- Canonical isometric embedding of the graph core into its completion. -/
 noncomputable def coreEmbedding :
     Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion :=
-  UniformSpace.Completion.toComplₗᵢ
+  (UniformSpace.Completion.toComplₗᵢ :
+    Q.GraphRange →ₗᵢ[ℂ] Q.SobolevCompletion)
 
 theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
   simpa [coreEmbedding] using
@@ -18753,6 +18789,12 @@ theorem denseRange_coreEmbedding : DenseRange Q.coreEmbedding := by
 /-- Map a raw smooth core vector into the completed energy graph. -/
 noncomputable def sectionCoreMap : V →ₗ[ℂ] Q.SobolevCompletion :=
   Q.coreEmbedding.toLinearMap.comp Q.toGraphRange
+
+@[simp]
+theorem sectionCoreMap_apply (u : V) :
+    Q.sectionCoreMap u =
+      (Q.toGraphRange u : Q.SobolevCompletion) := by
+  simpa [sectionCoreMap, coreEmbedding]
 
 theorem denseRange_sectionCoreMap : DenseRange Q.sectionCoreMap := by
   have hs : DenseRange Q.toGraphRange := Q.toGraphRange_surjective.denseRange
@@ -18771,9 +18813,10 @@ theorem sectionCoreMap_injective_iff_energyDefinite :
   · intro h u v huv
     apply h
     apply Q.coreEmbedding.injective
-    simpa [sectionCoreMap] using huv
+    change Q.coreEmbedding (Q.toGraphRange u) =
+      Q.coreEmbedding (Q.toGraphRange v) at huv
+    exact huv
 
-@[simp]
 theorem norm_sectionCoreMap_sq (u : V) :
     ‖Q.sectionCoreMap u‖ ^ 2 =
       ‖Q.base u‖ ^ 2 + ‖Q.raised u‖ ^ 2 + ‖Q.lowered u‖ ^ 2 := by
@@ -18785,30 +18828,30 @@ variable [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL]
 noncomputable def graphExtension :
     Q.SobolevCompletion →L[ℂ] EnergyTarget H₀ HR HL :=
   Q.GraphRange.subtypeₗᵢ.toContinuousLinearMap.extend
-    (UniformSpace.Completion.toComplL :
-      Q.GraphRange →L[ℂ] Q.SobolevCompletion)
+    Q.coreEmbedding.toContinuousLinearMap
 
 @[simp]
 theorem graphExtension_coe (x : Q.GraphRange) :
     Q.graphExtension (x : Q.SobolevCompletion) =
       (x : EnergyTarget H₀ HR HL) := by
   unfold graphExtension
-  exact ContinuousLinearMap.extend_eq _
-    (UniformSpace.Completion.denseRange_coe :
-      DenseRange ((↑) : Q.GraphRange → Q.SobolevCompletion))
-    (by simpa using
-      UniformSpace.Completion.isUniformInducing_coe Q.GraphRange) x
+  exact ContinuousLinearMap.extend_eq
+    (e := Q.coreEmbedding.toContinuousLinearMap)
+    Q.GraphRange.subtypeₗᵢ.toContinuousLinearMap
+    Q.denseRange_coreEmbedding
+    Q.coreEmbedding.isometry.isUniformInducing x
 
 theorem graphExtension_norm (x : Q.SobolevCompletion) :
     ‖Q.graphExtension x‖ = ‖x‖ := by
-  refine UniformSpace.Completion.denseRange_coe.induction_on x
-    (isClosed_eq Q.graphExtension.continuous.norm continuous_norm) ?_
+  refine
+    (UniformSpace.Completion.denseRange_coe :
+      DenseRange ((↑) : Q.GraphRange → Q.SobolevCompletion)).induction_on x
+      (isClosed_eq Q.graphExtension.continuous.norm
+        (show Continuous (fun y : Q.SobolevCompletion => ‖y‖) from
+          continuous_norm)) ?_
   intro y
   rw [Q.graphExtension_coe y]
-  calc
-    ‖(y : EnergyTarget H₀ HR HL)‖ = ‖y‖ := rfl
-    _ = ‖(y : Q.SobolevCompletion)‖ :=
-      (UniformSpace.Completion.norm_coe y).symm
+  exact (UniformSpace.Completion.norm_coe y).symm
 
 noncomputable def graphExtensionIsometry :
     Q.SobolevCompletion →ₗᵢ[ℂ] EnergyTarget H₀ HR HL where
@@ -18817,8 +18860,8 @@ noncomputable def graphExtensionIsometry :
 
 theorem graphExtension_range_isClosed :
     IsClosed (Set.range Q.graphExtension) := by
-  simpa [graphExtensionIsometry] using
-    Q.graphExtensionIsometry.isometry.isClosedEmbedding.isClosed_range
+  change IsClosed (Set.range Q.graphExtensionIsometry)
+  exact Q.graphExtensionIsometry.isometry.isClosedEmbedding.isClosed_range
 
 /-- The completed graph is exactly the ambient closure of the raw graph. -/
 theorem range_graphExtension_eq_closure_range_graph :
@@ -18855,27 +18898,21 @@ noncomputable def lowerExtension : Q.SobolevCompletion →L[ℂ] HL :=
 theorem baseExtension_core (u : V) :
     Q.baseExtension (Q.sectionCoreMap u) = Q.base u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).fst = Q.base u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 @[simp]
 theorem raiseExtension_core (u : V) :
     Q.raiseExtension (Q.sectionCoreMap u) = Q.raised u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).snd.fst = Q.raised u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 @[simp]
 theorem lowerExtension_core (u : V) :
     Q.lowerExtension (Q.sectionCoreMap u) = Q.lowered u := by
   change (Q.graphExtension (Q.sectionCoreMap u)).snd.snd = Q.lowered u
-  rw [show Q.sectionCoreMap u =
-    (Q.toGraphRange u : Q.SobolevCompletion) from rfl,
-    Q.graphExtension_coe]
+  rw [Q.sectionCoreMap_apply, Q.graphExtension_coe]
   rfl
 
 theorem norm_baseExtension_le (x : Q.SobolevCompletion) :
@@ -18890,7 +18927,8 @@ theorem norm_raiseExtension_le (x : Q.SobolevCompletion) :
   calc
     ‖Q.raiseExtension x‖ ≤ ‖(Q.graphExtension x).snd‖ :=
       WithLp.norm_fst_le HR (Q.graphExtension x).snd
-    _ ≤ ‖Q.graphExtension x‖ := WithLp.norm_snd_le H₀ (Q.graphExtension x)
+    _ ≤ ‖Q.graphExtension x‖ :=
+      WithLp.norm_snd_le H₀ (Q.graphExtension x)
     _ = ‖x‖ := Q.graphExtension_norm x
 
 theorem norm_lowerExtension_le (x : Q.SobolevCompletion) :
@@ -18898,26 +18936,21 @@ theorem norm_lowerExtension_le (x : Q.SobolevCompletion) :
   calc
     ‖Q.lowerExtension x‖ ≤ ‖(Q.graphExtension x).snd‖ :=
       WithLp.norm_snd_le HR (Q.graphExtension x).snd
-    _ ≤ ‖Q.graphExtension x‖ := WithLp.norm_snd_le H₀ (Q.graphExtension x)
+    _ ≤ ‖Q.graphExtension x‖ :=
+      WithLp.norm_snd_le H₀ (Q.graphExtension x)
     _ = ‖x‖ := Q.graphExtension_norm x
 
-theorem norm_baseExtension_le_one : ‖Q.baseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.baseExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_baseExtension_le x
+theorem norm_baseExtension_le_one : ‖Q.baseExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.baseExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_baseExtension_le x)
 
-theorem norm_raiseExtension_le_one : ‖Q.raiseExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.raiseExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_raiseExtension_le x
+theorem norm_raiseExtension_le_one : ‖Q.raiseExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.raiseExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_raiseExtension_le x)
 
-theorem norm_lowerExtension_le_one : ‖Q.lowerExtension‖ ≤ 1 := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact Q.lowerExtension.opNorm_le_bound zero_le_one fun x => by
-    simpa only [one_mul] using Q.norm_lowerExtension_le x
+theorem norm_lowerExtension_le_one : ‖Q.lowerExtension‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound Q.lowerExtension zero_le_one
+    (fun x => by simpa only [one_mul] using Q.norm_lowerExtension_le x)
 
 /-- Exact sum-of-squares norm identity for every completed graph vector. -/
 theorem completion_norm_sq (x : Q.SobolevCompletion) :
@@ -18937,24 +18970,22 @@ theorem completion_norm_sq (x : Q.SobolevCompletion) :
         ‖Q.raiseExtension x‖ ^ 2 + ‖Q.lowerExtension x‖ ^ 2 := by
       change
         ‖(Q.graphExtension x).fst‖ ^ 2 +
-          (‖(Q.graphExtension x).snd.fst‖ ^ 2 +
-            ‖(Q.graphExtension x).snd.snd‖ ^ 2) =
-        ‖(Q.graphExtension x).fst‖ ^ 2 +
-          ‖(Q.graphExtension x).snd.fst‖ ^ 2 +
-            ‖(Q.graphExtension x).snd.snd‖ ^ 2
-      ring
+            (‖(Q.graphExtension x).snd.fst‖ ^ 2 +
+              ‖(Q.graphExtension x).snd.snd‖ ^ 2) =
+          ‖(Q.graphExtension x).fst‖ ^ 2 +
+            ‖(Q.graphExtension x).snd.fst‖ ^ 2 +
+              ‖(Q.graphExtension x).snd.snd‖ ^ 2
+      exact (add_assoc _ _ _).symm
 
 /-- Trial-first weak energy operator on the Hilbert completion. -/
 noncomputable def completionEnergyOperator :
-    WeakAntiOperator Q.SobolevCompletion := by
-  letI : NormedSpace ℂ Q.SobolevCompletion :=
-    UniformSpace.Completion.instNormedSpace ℂ Q.GraphRange
-  exact innerSLFlip ℂ
+    WeakAntiOperator Q.SobolevCompletion :=
+  innerSLFlip ℂ (E := Q.SobolevCompletion)
 
 @[simp]
 theorem completionEnergyOperator_apply (u v : Q.SobolevCompletion) :
     Q.completionEnergyOperator u v = ⟪v, u⟫_ℂ :=
-  innerSLFlip_apply_apply ℂ u v
+  innerSLFlip_apply_apply ℂ (E := Q.SobolevCompletion) u v
 
 /-- On the dense raw core, the canonical completion pairing is exactly the
 previously defined graph energy form, with the trial-first argument order of
@@ -18963,34 +18994,47 @@ previously defined graph energy form, with the trial-first argument order of
 theorem completionEnergyOperator_sectionCoreMap (u v : V) :
     Q.completionEnergyOperator (Q.sectionCoreMap u) (Q.sectionCoreMap v) =
       Q.energyForm v u := by
-  rw [Q.completionEnergyOperator_apply]
-  change ⟪Q.coreEmbedding (Q.toGraphRange v),
-      Q.coreEmbedding (Q.toGraphRange u)⟫_ℂ = Q.energyForm v u
-  rw [Q.coreEmbedding.inner_map_map, Q.inner_toGraphRange]
+  rw [Q.completionEnergyOperator_apply, Q.sectionCoreMap_apply,
+    Q.sectionCoreMap_apply]
+  change
+    ⟪((Q.toGraphRange v : Q.GraphRange) : Q.SobolevCompletion),
+      ((Q.toGraphRange u : Q.GraphRange) : Q.SobolevCompletion)⟫_ℂ =
+        Q.energyForm v u
+  calc
+    inner ℂ
+        ((Q.toGraphRange v : Q.GraphRange) : Q.SobolevCompletion)
+        ((Q.toGraphRange u : Q.GraphRange) : Q.SobolevCompletion) =
+      inner ℂ (Q.toGraphRange v) (Q.toGraphRange u) := by
+        exact UniformSpace.Completion.inner_coe
+          (𝕜 := ℂ) (Q.toGraphRange v) (Q.toGraphRange u)
+    _ = Q.energyForm v u := Q.inner_toGraphRange v u
 
 theorem completionEnergyOperator_self_eq_zero_iff (u : Q.SobolevCompletion) :
     Q.completionEnergyOperator u u = 0 ↔ u = 0 := by
-  rw [Q.completionEnergyOperator_apply, inner_self_eq_zero]
+  rw [Q.completionEnergyOperator_apply]
+  exact inner_self_eq_zero (𝕜 := ℂ) (x := u)
 
 /-- The completed energy pairing is coercive with the sharp constant one. -/
 theorem completionEnergyOperator_coercive :
     ComplexLaxMilgram.ComplexCoerciveWith
       (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator := by
   refine ⟨zero_lt_one, fun u ↦ ?_⟩
-  rw [one_mul, Q.completionEnergyOperator_apply,
-    inner_self_eq_norm_sq]
+  rw [one_mul, Q.completionEnergyOperator_apply]
+  exact le_of_eq (norm_sq_eq_re_inner (𝕜 := ℂ) u)
 
 /-- The completed energy operator is injective. -/
 theorem completionEnergyOperator_injective :
     Function.Injective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_injective
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 /-- Every bounded anti-linear functional has a completed energy solution. -/
 theorem completionEnergyOperator_surjective :
     Function.Surjective Q.completionEnergyOperator :=
   FredholmBypass.coerciveForm_surjective
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 /-- The completed energy operator is bijective. -/
 theorem completionEnergyOperator_bijective :
@@ -19003,12 +19047,15 @@ noncomputable def completionEnergyEquiv :
     Q.SobolevCompletion ≃L[ℂ]
       StrongAntiDual Q.SobolevCompletion :=
   FredholmBypass.coerciveFormEquiv
-    1 Q.completionEnergyOperator Q.completionEnergyOperator_coercive
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive
 
 @[simp]
 theorem completionEnergyEquiv_apply (u : Q.SobolevCompletion) :
-    Q.completionEnergyEquiv u = Q.completionEnergyOperator u :=
-  rfl
+    Q.completionEnergyEquiv u = Q.completionEnergyOperator u := by
+  exact FredholmBypass.coerciveFormEquiv_apply
+    (V := Q.SobolevCompletion) 1 Q.completionEnergyOperator
+      Q.completionEnergyOperator_coercive u
 
 /-- Canonical completed solution for an anti-dual right-hand side. -/
 noncomputable def solveCompletionEnergy
@@ -19020,16 +19067,15 @@ noncomputable def solveCompletionEnergy
 theorem completionEnergyOperator_solveCompletionEnergy
     (F : StrongAntiDual Q.SobolevCompletion) :
     Q.completionEnergyOperator (Q.solveCompletionEnergy F) = F := by
-  change Q.completionEnergyEquiv
-    (Q.completionEnergyEquiv.symm F) = F
-  exact Q.completionEnergyEquiv.apply_symm_apply F
+  simpa only [solveCompletionEnergy, completionEnergyEquiv_apply] using
+    Q.completionEnergyEquiv.apply_symm_apply F
 
 theorem solveCompletionEnergy_unique
     (F : StrongAntiDual Q.SobolevCompletion) {u : Q.SobolevCompletion}
     (hu : Q.completionEnergyOperator u = F) :
     u = Q.solveCompletionEnergy F := by
   apply Q.completionEnergyOperator_injective
-  rw [hu, Q.completionEnergyOperator_solveCompletionEnergy]
+  exact hu.trans (Q.completionEnergyOperator_solveCompletionEnergy F).symm
 
 theorem solveCompletionEnergy_existsUnique
     (F : StrongAntiDual Q.SobolevCompletion) :
@@ -19044,10 +19090,20 @@ theorem solveCompletionEnergy_existsUnique
 theorem solveCompletionEnergy_norm_le
     (F : StrongAntiDual Q.SobolevCompletion) :
     ‖Q.solveCompletionEnergy F‖ ≤ ‖F‖ := by
-  simpa [solveCompletionEnergy, completionEnergyEquiv] using
-    (FredholmBypass.coerciveFormEquiv_symm_norm_le
-      1 Q.completionEnergyOperator
-      Q.completionEnergyOperator_coercive F)
+  let u := Q.solveCompletionEnergy F
+  have huOp : Q.completionEnergyOperator u = F := by
+    simpa only [u] using
+      Q.completionEnergyOperator_solveCompletionEnergy F
+  have henergy : ‖u‖ ^ 2 ≤ ‖F‖ * ‖u‖ := by
+    calc
+      ‖u‖ ^ 2 = 1 * ‖u‖ ^ 2 := (one_mul _).symm
+      _ ≤ (Q.completionEnergyOperator u u).re :=
+        Q.completionEnergyOperator_coercive.2 u
+      _ = (F u).re := by rw [huOp]
+      _ ≤ ‖F u‖ := Complex.re_le_norm _
+      _ ≤ ‖F‖ * ‖u‖ := F.le_opNorm u
+  change ‖u‖ ≤ ‖F‖
+  nlinarith [norm_nonneg u, norm_nonneg F]
 
 /-- All three completion coordinates jointly remain injective. -/
 theorem jointExtensions_injective :
@@ -19075,7 +19131,7 @@ theorem jointlyClosable_iff_verticalKernel_eq_bot :
   change Function.Injective Q.baseExtension.toLinearMap ↔ _
   exact LinearMap.ker_eq_bot.symm
 
-abbrev ClosedBaseDomain :=
+noncomputable def ClosedBaseDomain :=
   LinearMap.range Q.baseExtension.toLinearMap
 
 noncomputable def baseEquiv (h : Q.JointlyClosable) :
@@ -19157,6 +19213,9 @@ theorem precomp_graph {U : Type*} [AddCommGroup U] [Module ℂ U]
 
 end QuotientHilbertCoordinates
 
+
+open QuotientHilbertCoordinates
+
 /-! #### Completion of an isometric core inclusion -/
 
 variable {E F : Type*}
@@ -19180,7 +19239,10 @@ theorem energyCompletionMap_coe (f : E →ₗᵢ[ℂ] F) (x : E) :
   exact ContinuousLinearMap.extend_eq _
     (UniformSpace.Completion.denseRange_coe :
       DenseRange ((↑) : E → UniformSpace.Completion E))
-    (by simpa using UniformSpace.Completion.isUniformInducing_coe E) x
+    (by
+      simpa using
+        (UniformSpace.Completion.isUniformInducing_coe E :
+          IsUniformInducing ((↑) : E → UniformSpace.Completion E))) x
 
 theorem energyCompletionMap_norm (f : E →ₗᵢ[ℂ] F)
     (x : UniformSpace.Completion E) :
@@ -19217,10 +19279,20 @@ private theorem denseRange_energyCompletionMap_of_denseRange
     (f : E →ₗᵢ[ℂ] F) (hf : DenseRange f) :
     DenseRange (energyCompletionMap f) := by
   apply DenseRange.of_comp (g := ((↑) : E → UniformSpace.Completion E))
-  have h := (UniformSpace.Completion.denseRange_coe :
+  have h : DenseRange
+      (((↑) : F → UniformSpace.Completion F) ∘ (f : E → F)) :=
+    (UniformSpace.Completion.denseRange_coe :
       DenseRange ((↑) : F → UniformSpace.Completion F)).comp
-    hf UniformSpace.Completion.continuous_coe
-  simpa only [Function.comp_apply, energyCompletionMap_coe] using h
+        hf (UniformSpace.Completion.continuous_coe F)
+  have hfun :
+      ((energyCompletionMap f :
+          UniformSpace.Completion E → UniformSpace.Completion F) ∘
+        ((↑) : E → UniformSpace.Completion E)) =
+      (((↑) : F → UniformSpace.Completion F) ∘ (f : E → F)) := by
+    funext e
+    exact energyCompletionMap_coe f e
+  rw [hfun]
+  exact h
 
 private theorem denseRange_of_surjective_energyCompletionMap
     (f : E →ₗᵢ[ℂ] F)
@@ -19242,8 +19314,10 @@ private theorem denseRange_of_surjective_energyCompletionMap
     closure (Set.range
       (((↑) : F → UniformSpace.Completion F) ∘ f)) at hmem
   rw [Set.range_comp] at hmem
-  rw [(UniformSpace.Completion.isUniformInducing_coe F).isInducing
-    .closure_eq_preimage_closure_image (Set.range f)]
+  rw [Topology.IsInducing.closure_eq_preimage_closure_image
+    ((UniformSpace.Completion.isUniformInducing_coe F :
+      IsUniformInducing ((↑) : F → UniformSpace.Completion F))).isInducing
+      (Set.range f)]
   exact hmem
 
 /-- Exact p4/p12 bridge: an isometric core inclusion is dense exactly when
@@ -19328,6 +19402,8 @@ def ofPullback (inclusion : Vc →ₗ[ℂ] Vs) :
 
 variable (I : CompatibleCoreInclusion Qc Qs)
 
+include I
+
 @[simp]
 theorem graph_compat (u : Vc) :
     Qs.graph (I.inclusion u) = Qc.graph u := by
@@ -19339,52 +19415,58 @@ theorem graph_compat (u : Vc) :
 
 theorem graphRange_le : Qc.GraphRange ≤ Qs.GraphRange := by
   rintro _ ⟨u, rfl⟩
-  exact ⟨I.inclusion u, I.graph_compat u⟩
+  exact ⟨I.inclusion u, graph_compat Qc Qs I u⟩
 
 noncomputable def graphRangeIsometry :
     Qc.GraphRange →ₗᵢ[ℂ] Qs.GraphRange where
-  toLinearMap := Submodule.inclusion I.graphRange_le
+  toLinearMap := Submodule.inclusion (graphRange_le Qc Qs I)
   norm_map' _ := rfl
 
 /-- Canonical isometric completion map associated to a supplied compatible
 core inclusion. -/
 noncomputable def completionInclusion :
     Qc.SobolevCompletion →ₗᵢ[ℂ] Qs.SobolevCompletion :=
-  energyCompletionIsometry I.graphRangeIsometry
+  energyCompletionIsometry
+    (E := Qc.GraphRange) (F := Qs.GraphRange)
+    (graphRangeIsometry Qc Qs I)
 
 /-- The two completions coincide only after proving graph-density. -/
 theorem denseRange_graphRange_iff_completion_surjective :
-    DenseRange I.graphRangeIsometry ↔
-      Function.Surjective I.completionInclusion := by
-  simpa [completionInclusion] using
-    denseRange_iff_surjective_energyCompletionIsometry I.graphRangeIsometry
+    DenseRange (graphRangeIsometry Qc Qs I) ↔
+      Function.Surjective (completionInclusion Qc Qs I) := by
+  simpa only [completionInclusion] using
+    denseRange_iff_surjective_energyCompletionIsometry
+      (E := Qc.GraphRange) (F := Qs.GraphRange)
+      (graphRangeIsometry Qc Qs I)
 
 /-- Once graph density is supplied, the page-4 and page-12 completions are
 canonically linearly isometric. -/
 noncomputable def completionEquiv
-    (h : DenseRange I.graphRangeIsometry) :
+    (h : DenseRange (graphRangeIsometry Qc Qs I)) :
     Qc.SobolevCompletion ≃ₗᵢ[ℂ] Qs.SobolevCompletion :=
-  LinearIsometryEquiv.ofSurjective I.completionInclusion
-    (I.denseRange_graphRange_iff_completion_surjective.mp h)
+  LinearIsometryEquiv.ofSurjective (completionInclusion Qc Qs I)
+    ((denseRange_graphRange_iff_completion_surjective Qc Qs I).mp h)
 
 @[simp]
 theorem completionEquiv_apply
-    (h : DenseRange I.graphRangeIsometry) (x : Qc.SobolevCompletion) :
-    I.completionEquiv h x = I.completionInclusion x := by
+    (h : DenseRange (graphRangeIsometry Qc Qs I))
+    (x : Qc.SobolevCompletion) :
+    completionEquiv Qc Qs I h x = completionInclusion Qc Qs I x := by
   rfl
 
 end CompatibleCoreInclusion
 
+
 /-- Page 4: completion of the compactly supported graph core. -/
 abbrev PaperFourCompactCompletion
     (Q4 : QuotientHilbertCoordinates Vc H₀ HR HL) :=
-  Q4.SobolevCompletion
+  (SobolevCompletion Q4)
 
 /-- Page 12, interpreted honestly: completion of a separately supplied
 smooth finite-energy graph core. -/
 abbrev PaperTwelveSmoothFiniteEnergyCompletion
     (Q12 : QuotientHilbertCoordinates Vs H₀ HR HL) :=
-  Q12.SobolevCompletion
+  (SobolevCompletion Q12)
 
 end QuotientHilbertCoordinates
 
@@ -19419,9 +19501,7 @@ variable {Γ : Subgroup SL(2, ℤ)}
 /-- Build all three Hilbert coordinates from compactly supported continuous
 models.  The only algebraic input needed for energy definiteness is that the
 base model itself is injective; the passage from a continuous representative
-to its `L²` class is proved injective above rather than postulated.
-
-For automorphic sections the model spaces should live on a genuine quotient
+to its `L²` class is proved injective above rather than postulated.For automorphic sections the model spaces should live on a genuine quotient
 or on a line-bundle trivialization over a fundamental domain.  This constructor
 deliberately does not pretend that a nonzero automorphic lift is compactly
 supported on the full upper half-plane.
@@ -19437,9 +19517,9 @@ noncomputable def ofCompactlySupportedL2
     (mu₀ : MeasureTheory.Measure X₀)
     (muR : MeasureTheory.Measure XR)
     (muL : MeasureTheory.Measure XL)
-    [IsFiniteMeasureOnCompacts mu₀]
-    [IsFiniteMeasureOnCompacts muR]
-    [IsFiniteMeasureOnCompacts muL]
+    [hmu₀ : MeasureTheory.IsFiniteMeasureOnCompacts mu₀]
+    [hmuR : MeasureTheory.IsFiniteMeasureOnCompacts muR]
+    [hmuL : MeasureTheory.IsFiniteMeasureOnCompacts muL]
     [mu₀.IsOpenPosMeasure]
     (baseModel : D.core a →ₗ[ℂ]
       CompactlySupportedContinuousMap X₀ ℂ)
@@ -19478,8 +19558,8 @@ theorem coordinates_raised (u : D.core a) :
 theorem coordinates_lowered (u : D.core a) :
     J.coordinates.lowered u = J.lowered (D.lowerCore a u) := rfl
 
-theorem coordinates_energyDefinite : J.coordinates.EnergyDefinite :=
-  J.coordinates.energyDefinite_of_base_injective J.base_injective
+theorem coordinates_energyDefinite : EnergyDefinite J.coordinates :=
+  energyDefinite_of_base_injective J.coordinates J.base_injective
 
 end ThreeWeightHilbertRealization
 
@@ -19497,15 +19577,15 @@ def paperFourCoordinates
       H₀ HR HL) :
     QuotientHilbertCoordinates
       (SmoothCompactCoreGeometry.SmoothCompactCore P) H₀ HR HL :=
-  J.coordinates.precomp A.halfCoreEquiv.symm.toLinearMap
+  precomp J.coordinates A.halfCoreEquiv.symm.toLinearMap
 
 theorem paperFourCoordinates_energyDefinite
     (A : PaperExponentIndexedDifferentialCore P)
     (J : ThreeWeightHilbertRealization
       A.toExponentIndexedDifferentialCore paperDisplayedExponentIndex
       H₀ HR HL) :
-    (paperFourCoordinates A J).EnergyDefinite :=
-  (paperFourCoordinates A J).energyDefinite_of_base_injective
+    EnergyDefinite (paperFourCoordinates A J) :=
+  energyDefinite_of_base_injective (paperFourCoordinates A J)
     (J.base_injective.comp A.halfCoreEquiv.symm.injective)
 
 /-- The page-4 half-weight Sobolev completion associated to the explicitly
@@ -19515,7 +19595,7 @@ abbrev PaperHalfWeightSobolevCompletion
     (J : ThreeWeightHilbertRealization
       A.toExponentIndexedDifferentialCore paperDisplayedExponentIndex
       H₀ HR HL) :=
-  (paperFourCoordinates A J).SobolevCompletion
+  SobolevCompletion (paperFourCoordinates A J)
 
 /-- Canonical map from the paper compact core into its energy completion. -/
 noncomputable def paperFourCoreMap
@@ -19525,7 +19605,7 @@ noncomputable def paperFourCoreMap
       H₀ HR HL) :
     SmoothCompactCoreGeometry.SmoothCompactCore P →ₗ[ℂ]
       PaperHalfWeightSobolevCompletion A J :=
-  (paperFourCoordinates A J).sectionCoreMap
+  sectionCoreMap (paperFourCoordinates A J)
 
 theorem denseRange_paperFourCoreMap
     (A : PaperExponentIndexedDifferentialCore P)
@@ -19534,7 +19614,7 @@ theorem denseRange_paperFourCoreMap
       H₀ HR HL) :
     DenseRange (paperFourCoreMap A J) := by
   simpa [paperFourCoreMap] using
-    (paperFourCoordinates A J).denseRange_sectionCoreMap
+    denseRange_sectionCoreMap (paperFourCoordinates A J)
 
 theorem paperFourCoreMap_injective
     (A : PaperExponentIndexedDifferentialCore P)
@@ -19543,7 +19623,7 @@ theorem paperFourCoreMap_injective
       H₀ HR HL) :
     Function.Injective (paperFourCoreMap A J) := by
   have h :=
-    (paperFourCoordinates A J).sectionCoreMap_injective_iff_energyDefinite.mpr
+    (sectionCoreMap_injective_iff_energyDefinite (paperFourCoordinates A J)).mpr
       (paperFourCoordinates_energyDefinite A J)
   simpa [paperFourCoreMap] using h
 
@@ -19556,9 +19636,7 @@ coordinates of Definition 1 without an additional realization certificate.
 At orbit index `n`, the base coordinate is the shifted Petersson `L²`
 completion, while the derivative coordinates are obtained by applying the
 actual typed `R_n` and `L_n` before entering the adjacent-weight Petersson
-completions.
-
-This constructs the graph completion and its continuous coordinate maps.  It
+completions.This constructs the graph completion and its continuous coordinate maps.  It
 does not identify this completion with the base Petersson `L²` completion, and
 it does not identify independently chosen page-4 and page-12 cores.
 -/
@@ -19569,6 +19647,19 @@ open HalfIntegralMultiplier HalfWeightDifferentialOperators
   GammaTwoQuotientGeometry
 open WeightCorePetersson WeightCorePetersson.PeterssonCoreSpace
 open FixedPhasePeterssonCoordinates
+
+/- `InverseEtaFixedPhaseCore` is an opaque abbreviation of a `Submodule`
+subtype. Keep one canonical additive/module instance family for every orbit
+index so graph-coordinate structures and completion constructions elaborate
+coherently throughout this namespace. -/
+noncomputable local instance fixedPhaseGraphCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
 
 /-- The three concrete shifted Petersson coordinates on the canonical
 fixed-phase differential core. -/
@@ -19608,8 +19699,25 @@ theorem coordinates_energyDefinite (n : ℤ) :
 
 /-- Hilbert completion of the actual fixed-phase graph
 `(u, R_n u, L_n u)`. -/
-abbrev GraphSobolevCompletion (n : ℤ) :=
+noncomputable abbrev GraphSobolevCompletion (n : ℤ) : Type :=
   (coordinates n).SobolevCompletion
+
+/- Re-export only the canonical completion structures needed to reveal the
+opaque abbreviation.  The scalar normed-space structure is deliberately
+inherited from the inner-product instance, avoiding two competing `Module`
+fields on the same completion type. -/
+noncomputable instance graphSobolevCompletionNormedAddCommGroup (n : ℤ) :
+    NormedAddCommGroup (GraphSobolevCompletion n) :=
+  UniformSpace.Completion.instNormedAddCommGroup (coordinates n).GraphRange
+
+noncomputable instance graphSobolevCompletionInnerProductSpace (n : ℤ) :
+    InnerProductSpace ℂ (GraphSobolevCompletion n) :=
+  @UniformSpace.Completion.innerProductSpace
+    ℂ (coordinates n).GraphRange Complex.instRCLike inferInstance inferInstance
+
+noncomputable instance graphSobolevCompletionCompleteSpace (n : ℤ) :
+    CompleteSpace (GraphSobolevCompletion n) :=
+  UniformSpace.Completion.completeSpace (coordinates n).GraphRange
 
 /-- Canonical map of the smooth fixed-phase core into its graph completion. -/
 noncomputable def coreMap (n : ℤ) :
@@ -19624,15 +19732,14 @@ theorem denseRange_coreMap (n : ℤ) : DenseRange (coreMap n) := by
 /-- Definiteness of the base Petersson coordinate makes the canonical graph
 core map injective. -/
 theorem coreMap_injective (n : ℤ) : Function.Injective (coreMap n) := by
-  have h :=
-    (coordinates n).sectionCoreMap_injective_iff_energyDefinite.mpr
-      (coordinates_energyDefinite n)
-  simpa [coreMap] using h
+  change Function.Injective ((coordinates n).sectionCoreMap)
+  exact (coordinates n).sectionCoreMap_injective_iff_energyDefinite.mpr
+    (coordinates_energyDefinite n)
 
 /-- Explicit Hilbert-space witness for the fixed-phase graph completion. -/
 noncomputable def hilbertSpaceWitness (n : ℤ) :
     HilbertSpace ℂ (GraphSobolevCompletion n) :=
-  by infer_instance
+  by exact ⟨⟩
 
 /-- A Petersson `L²` coordinate has squared norm equal to the concrete
 fundamental-domain integral defining that shifted-weight norm. -/
@@ -19732,14 +19839,17 @@ theorem norm_lowerExtension_le (n : ℤ) (x : GraphSobolevCompletion n) :
 
 /-- Consequently all three continuous coordinate operators have norm at most
 one. -/
-theorem norm_baseExtension_le_one (n : ℤ) : ‖baseExtension n‖ ≤ 1 := by
-  simpa [baseExtension] using (coordinates n).norm_baseExtension_le_one
+theorem norm_baseExtension_le_one (n : ℤ) : ‖baseExtension n‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound (baseExtension n) zero_le_one
+    (fun x => by simpa only [one_mul] using norm_baseExtension_le n x)
 
-theorem norm_raiseExtension_le_one (n : ℤ) : ‖raiseExtension n‖ ≤ 1 := by
-  simpa [raiseExtension] using (coordinates n).norm_raiseExtension_le_one
+theorem norm_raiseExtension_le_one (n : ℤ) : ‖raiseExtension n‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound (raiseExtension n) zero_le_one
+    (fun x => by simpa only [one_mul] using norm_raiseExtension_le n x)
 
-theorem norm_lowerExtension_le_one (n : ℤ) : ‖lowerExtension n‖ ≤ 1 := by
-  simpa [lowerExtension] using (coordinates n).norm_lowerExtension_le_one
+theorem norm_lowerExtension_le_one (n : ℤ) : ‖lowerExtension n‖ ≤ 1 :=
+  ContinuousLinearMap.opNorm_le_bound (lowerExtension n) zero_le_one
+    (fun x => by simpa only [one_mul] using norm_lowerExtension_le n x)
 
 /-- Exact sum-of-squares identity on every vector of the completed graph. -/
 theorem completion_norm_sq (n : ℤ) (x : GraphSobolevCompletion n) :
@@ -19768,7 +19878,7 @@ abbrev PaperPageTwelveGraphSpace (n : ℤ) := GraphSobolevCompletion n
 
 /-- The two corrected manuscript spaces are canonically and isometrically
 identical.  No density or closability assumption is used here. -/
-def pageFourHOneEquivPageTwelveGraph (n : ℤ) :
+noncomputable def pageFourHOneEquivPageTwelveGraph (n : ℤ) :
     PaperPageFourHOne n ≃ₗᵢ[ℂ] PaperPageTwelveGraphSpace n :=
   LinearIsometryEquiv.refl ℂ (GraphSobolevCompletion n)
 
@@ -19788,7 +19898,10 @@ theorem paperPageFour_norm_sq
 
 end FixedPhaseGraphCompletion
 
+
 end DefinitionOneSobolev
+
+open Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates
 
 /-! ### A concrete nonzero bounded cusp-decaying potential
 
@@ -19803,9 +19916,7 @@ at every cusp after applying any integral scaling matrix.  It therefore
 descends to the effective quotient.  On every shifted-weight compact core the
 associated Hermitian potential form is genuinely integrable and its diagonal
 has an explicit relative Petersson bound.  Since `VΔ ≥ 0`, its negative part
-vanishes identically.
-
-The pointwise decay is connected below to the literal geometric three-cusp
+vanishes identically.The pointwise decay is connected below to the literal geometric three-cusp
 truncations.  The final `H¹ → H⁻¹` compactness step still requires a local
 Rellich theorem on those compact stages; no compactness claim is hidden here.
 -/
@@ -19817,8 +19928,9 @@ open HalfIntegralMultiplier SmoothCompactCoreGeometry
 open HalfWeightDifferentialOperators
 open DefinitionOneSobolev
 open DefinitionOneSobolev.WeightCorePetersson
+open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open MeasureTheory
-open scoped ModularForm
+open scoped ModularForm ContDiff
 
 /-- The nonzero discriminant Petersson potential upstairs. -/
 noncomputable def upstairsPotential (z : ℍ) : ℝ :=
@@ -19841,15 +19953,24 @@ theorem upstairsPotential_nonneg (z : ℍ) : 0 ≤ upstairsPotential z :=
 strictly positive rather than the forbidden zero-potential shortcut. -/
 theorem upstairsPotential_pos (z : ℍ) : 0 < upstairsPotential z := by
   rw [upstairsPotential, norm_pos_iff]
-  simp [UpperHalfPlane.petersson, ModularForm.discriminantCuspForm,
-    ModularForm.discriminant_ne_zero z, ne_of_gt z.im_pos]
+  have hDelta : (ModularForm.discriminantCuspForm z : ℂ) ≠ 0 := by
+    change ModularForm.discriminant z ≠ 0
+    exact ModularForm.discriminant_ne_zero z
+  have hConj : star (ModularForm.discriminantCuspForm z : ℂ) ≠ 0 := by
+    intro h
+    apply hDelta
+    simpa using congrArg star h
+  have hIm : (z.im : ℂ) ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr (ne_of_gt z.im_pos)
+  unfold UpperHalfPlane.petersson
+  exact mul_ne_zero (mul_ne_zero hConj hDelta) (zpow_ne_zero _ hIm)
 
 /-- Full modular invariance of the discriminant Petersson density. -/
 theorem upstairsPotential_SL_invariant (g : SL(2, ℤ)) (z : ℍ) :
     upstairsPotential (g • z) = upstairsPotential z := by
   have hg : ((g : SL(2, ℤ)) : GL (Fin 2) ℝ) ∈ 𝒮ℒ :=
     ⟨g, rfl⟩
-  simpa only [upstairsPotential] using
+  simpa only [upstairsPotential, ModularGroup.sl_moeb] using
     (SlashInvariantFormClass.norm_petersson_smul
       (k := (12 : ℤ)) (f := ModularForm.discriminantCuspForm)
       (f' := ModularForm.discriminantCuspForm) (τ := z) hg)
@@ -19889,7 +20010,8 @@ theorem potential_measurable : Measurable potential :=
 /-- Strict positivity survives descent. -/
 theorem potential_pos (q : GammaTwoQuotient) : 0 < potential q := by
   induction q using Quotient.inductionOn'
-  simpa only [potential_mk] using upstairsPotential_pos _
+  change 0 < upstairsPotential _
+  exact upstairsPotential_pos _
 
 theorem potential_nonneg (q : GammaTwoQuotient) : 0 ≤ potential q :=
   (potential_pos q).le
@@ -19929,7 +20051,8 @@ theorem upstairsPotential_le_uniformBound (z : ℍ) :
 theorem potential_le_uniformBound (q : GammaTwoQuotient) :
     potential q ≤ uniformBound := by
   induction q using Quotient.inductionOn'
-  simpa only [potential_mk] using upstairsPotential_le_uniformBound _
+  change upstairsPotential _ ≤ uniformBound
+  exact upstairsPotential_le_uniformBound _
 
 /-- Local integrability with respect to every certified quotient measure. -/
 theorem potential_locallyIntegrable (D : GammaTwoFundamentalDomain) :
@@ -19943,9 +20066,10 @@ theorem upstairsPotential_isZeroAtImInfty :
   have hPet : UpperHalfPlane.IsZeroAtImInfty
       (UpperHalfPlane.petersson 12 ModularForm.discriminantCuspForm
         ModularForm.discriminantCuspForm) :=
-    (CuspFormClass.zero_at_infty ModularForm.discriminantCuspForm)
-      .petersson_isZeroAtImInfty_left 12 𝒮ℒ
-        ModularForm.discriminantCuspForm
+    UpperHalfPlane.IsZeroAtImInfty.petersson_isZeroAtImInfty_left
+      (k := (12 : ℤ)) (Γ := 𝒮ℒ)
+      (CuspFormClass.zero_at_infty ModularForm.discriminantCuspForm)
+      ModularForm.discriminantCuspForm
   rw [UpperHalfPlane.isZeroAtImInfty_iff] at hPet ⊢
   intro ε hε
   simpa only [upstairsPotential, norm_norm] using hPet ε hε
@@ -20077,6 +20201,7 @@ theorem discriminant_upperLift_realContDiffOn :
           (ModularForm.discriminantCuspForm z : ℂ)) ∘
         UpperHalfPlane.ofComplex)
       UpperHalfPlane.upperHalfPlaneSet := by
+  letI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
   have hDiff : DifferentiableOn ℂ
       ((fun z : ℍ ↦
           (ModularForm.discriminantCuspForm z : ℂ)) ∘
@@ -20084,9 +20209,9 @@ theorem discriminant_upperLift_realContDiffOn :
       UpperHalfPlane.upperHalfPlaneSet :=
     UpperHalfPlane.mdifferentiable_iff.mp
       ModularForm.discriminantCuspForm.holo'
-  exact
-    (hDiff.analyticOnNhd UpperHalfPlane.isOpen_upperHalfPlaneSet)
-      .restrictScalars.contDiffOn_of_completeSpace
+  exact ContDiffOn.restrict_scalars ℝ
+    ((hDiff.analyticOnNhd
+      UpperHalfPlane.isOpen_upperHalfPlaneSet).contDiffOn_of_completeSpace)
 
 /-- The discriminant itself belongs to the real-smooth function class used
 throughout the differential-operator layer. -/
@@ -20101,11 +20226,7 @@ theorem discriminant_conj_realSmooth :
     RealSmooth
       (fun z : ℍ ↦
         star (ModularForm.discriminantCuspForm z : ℂ)) := by
-  have hDelta := discriminant_realSmooth
-  unfold RealSmooth at hDelta ⊢
-  simpa only [upperLift, Function.comp_def, Complex.conjCLE_apply] using
-    Complex.conjCLE.contDiff.comp_contDiffOn
-      hDelta
+  exact RealSmooth.conj discriminant_realSmooth
 
 /-- The un-normed Petersson self-density is real smooth. -/
 theorem discriminantPetersson_realSmooth :
@@ -20116,9 +20237,12 @@ theorem discriminantPetersson_realSmooth :
   have hProduct :=
     (discriminant_conj_realSmooth.mul discriminant_realSmooth).mul
       (HalfWeightDifferentialOperators.realSmooth_heightC.pow 12)
-  simpa only [UpperHalfPlane.petersson,
-    HalfWeightDifferentialOperators.heightC, zpow_natCast,
-    Pi.mul_apply] using hProduct
+  change RealSmooth
+    (((fun z : ℍ =>
+        star (ModularForm.discriminantCuspForm z : ℂ)) *
+      (fun z : ℍ => (ModularForm.discriminantCuspForm z : ℂ))) *
+        (HalfWeightDifferentialOperators.heightC ^ (12 : ℕ)))
+  exact hProduct
 
 /-- Ambient real `C∞` regularity of the positive discriminant potential.  The
 norm is smooth here because the Petersson self-density never vanishes. -/
@@ -20189,7 +20313,7 @@ theorem quotientCoreCutoff_mk (z : ℍ) :
 
 theorem quotientCoreCutoff_continuous : Continuous quotientCoreCutoff := by
   exact Complex.ofRealCLM.continuous.comp
-    (expNegInvGlue.contDiff.continuous.comp
+    ((expNegInvGlue.contDiff (n := 1)).continuous.comp
       (potential_continuous.sub continuous_const))
 
 /-- The support of the descended cutoff lies in one compact literal
@@ -20239,7 +20363,9 @@ theorem upstairsCoreCutoff_projected_support :
     rwa [hEq] at hw'
   · intro hz
     refine ⟨z, ?_, rfl⟩
-    simpa only [Function.mem_support, quotientCoreCutoff_mk] using hz
+    change quotientCoreCutoff (gammaTwoQuotientMk z) ≠ 0 at hz
+    rw [quotientCoreCutoff_mk] at hz
+    exact hz
 
 /-- Consequently quotient support upstairs is literally the ordinary
 topological support of the descended bump. -/
@@ -20264,14 +20390,15 @@ locally uniform holomorphic eta product and its nowhere-vanishing theorem; it
 does not infer smoothness merely from continuity. -/
 theorem inverseEtaSection_realSmooth :
     RealSmooth (inverseEtaSection : ℍ → ℂ) := by
+  letI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
   have hEtaDiff : DifferentiableOn ℂ ModularForm.eta
       UpperHalfPlane.upperHalfPlaneSet := fun w hw ↦
-    (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet hw)
-      .differentiableWithinAt
+    (ModularForm.differentiableAt_eta_of_mem_upperHalfPlaneSet hw).differentiableWithinAt
   have hEtaSmooth : ContDiffOn ℝ ∞ ModularForm.eta
       UpperHalfPlane.upperHalfPlaneSet :=
-    (hEtaDiff.analyticOnNhd UpperHalfPlane.isOpen_upperHalfPlaneSet)
-      .restrictScalars.contDiffOn_of_completeSpace
+    ContDiffOn.restrict_scalars ℝ
+      ((hEtaDiff.analyticOnNhd
+        UpperHalfPlane.isOpen_upperHalfPlaneSet).contDiffOn_of_completeSpace)
   have hEtaInv : ContDiffOn ℝ ∞ (fun w : ℂ ↦ (ModularForm.eta w)⁻¹)
       UpperHalfPlane.upperHalfPlaneSet :=
     hEtaSmooth.inv (fun w hw ↦ ModularForm.eta_ne_zero hw)
@@ -20307,13 +20434,17 @@ noncomputable def inverseEtaPaperOrbitZeroSeedSection :
     InverseEtaPaperOrbitSection GammaTwo 0 := by
   refine ⟨(inverseEtaSection : ℍ → ℂ), ?_⟩
   intro γ z
+  have hEta := WeightSection.covariance inverseEtaSection γ z
+  change
+    inverseEtaSection (((γ : GammaTwo) : SL(2, ℤ)) • z) =
+      (inverseEtaMultiplier GammaTwo).factor γ z * inverseEtaSection z at hEta
   change
     inverseEtaSection (((γ : GammaTwo) : SL(2, ℤ)) • z) =
       (inverseEtaPaperOrbitMultiplier GammaTwo 0).factor γ z *
         inverseEtaSection z
-  rw [inverseEtaSection.covariance,
-    inverseEtaPaperOrbitMultiplier_factor]
-  simp
+  rw [inverseEtaPaperOrbitMultiplier_factor]
+  simp only [mul_zero, zpow_zero, mul_one]
+  exact hEta
 
 @[simp]
 theorem inverseEtaPaperOrbitZeroSeedSection_apply (z : ℍ) :
@@ -20352,7 +20483,7 @@ noncomputable def compactInverseEtaSection :
       inverseEtaPaperCertificate.multiplier.factor γ z *
         (upstairsCoreCutoff z * inverseEtaSection z)
   rw [upstairsCoreCutoff_gammaTwo_invariant,
-    inverseEtaSection.covariance]
+    WeightSection.covariance inverseEtaSection]
   ring
 
 theorem compactInverseEtaSection_realSmooth :
@@ -20398,7 +20529,7 @@ noncomputable def compactInverseEtaOrbitZeroSection :
       inverseEtaSection (((γ : GammaTwo) : SL(2, ℤ)) • z) =
         (inverseEtaMultiplier GammaTwo).factor γ z *
           inverseEtaSection z :=
-    inverseEtaSection.covariance γ z
+    WeightSection.covariance inverseEtaSection γ z
   change
     upstairsCoreCutoff (((γ : GammaTwo) : SL(2, ℤ)) • z) *
         inverseEtaSection (((γ : GammaTwo) : SL(2, ℤ)) • z) =
@@ -20420,7 +20551,7 @@ noncomputable def compactInverseEtaOrbitZeroWeightCore :
 
 @[simp]
 theorem compactInverseEtaPaperCore_apply (z : ℍ) :
-    compactInverseEtaPaperCore.toSection z =
+    SmoothCompactCore.toSection compactInverseEtaPaperCore z =
       upstairsCoreCutoff z * inverseEtaSection z :=
   rfl
 
@@ -20432,7 +20563,7 @@ theorem compactInverseEtaPaperCore_ne_zero :
   intro hZero
   have hAtI := congrArg
     (fun u : SmoothCompactCore inverseEtaPaperCertificate ↦
-      u.toSection UpperHalfPlane.I) hZero
+      SmoothCompactCore.toSection u UpperHalfPlane.I) hZero
   rw [compactInverseEtaPaperCore_apply,
     SmoothCompactCore.zero_apply] at hAtI
   exact (mul_ne_zero upstairsCoreCutoff_apply_I_ne_zero
@@ -20446,7 +20577,7 @@ theorem compactInverseEtaWeightCore_ne_zero :
   have hAtI := congrArg
     (fun u : SmoothCompactWeightCore
         inverseEtaPaperCertificate.multiplier ↦
-      u.toSection UpperHalfPlane.I) hZero
+      SmoothCompactWeightCore.toSection u UpperHalfPlane.I) hZero
   rw [SmoothCompactWeightCore.zero_apply] at hAtI
   change upstairsCoreCutoff UpperHalfPlane.I *
       inverseEtaSection UpperHalfPlane.I = 0 at hAtI
@@ -20461,7 +20592,7 @@ theorem compactInverseEtaOrbitZeroWeightCore_ne_zero :
   have hAtI := congrArg
     (fun u : SmoothCompactWeightCore
         (inverseEtaPaperOrbitMultiplier GammaTwo 0) ↦
-      u.toSection UpperHalfPlane.I) hZero
+      SmoothCompactWeightCore.toSection u UpperHalfPlane.I) hZero
   rw [SmoothCompactWeightCore.zero_apply] at hAtI
   change upstairsCoreCutoff UpperHalfPlane.I *
       inverseEtaSection UpperHalfPlane.I = 0 at hAtI
@@ -20472,18 +20603,26 @@ theorem compactInverseEtaOrbitZeroWeightCore_ne_zero :
 weight core, retaining its genuine real-smooth quotient-compact function. -/
 noncomputable def compactInverseEtaOrbitZeroSmoothQuotient :
     SmoothQuotientCompactFunction :=
-  ⟨⟨(compactInverseEtaOrbitZeroWeightCore.toSection : ℍ → ℂ),
-      compactInverseEtaOrbitZeroWeightCore.realSmooth⟩,
-    compactInverseEtaOrbitZeroWeightCore.quotientCompact⟩
+  ⟨⟨(SmoothCompactWeightCore.toSection compactInverseEtaOrbitZeroWeightCore : ℍ → ℂ),
+      SmoothCompactWeightCore.realSmooth compactInverseEtaOrbitZeroWeightCore⟩,
+    SmoothCompactWeightCore.quotientCompact compactInverseEtaOrbitZeroWeightCore⟩
 
 /-- Zeroth-word covariance of the explicit discriminant-cutoff section. -/
 theorem compactInverseEtaOrbitZeroSmoothQuotient_covariant :
     IsInverseEtaPaperOrbitCovariant 0
       compactInverseEtaOrbitZeroSmoothQuotient := by
   intro γ z
+  have hCov :=
+    SmoothCompactWeightCore.covariance
+      compactInverseEtaOrbitZeroWeightCore γ z
+  rw [← GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul] at hCov
+  rw [show
+    GammaTwoQuotientGeometry.gammaTwoToSL2Real γ • z =
+      Matrix.SpecialLinearGroup.toGL
+        (GammaTwoQuotientGeometry.gammaTwoToSL2Real γ) • z by rfl] at hCov
   simpa [compactInverseEtaOrbitZeroSmoothQuotient,
-    inverseEtaPaperOrbitFactor] using
-      compactInverseEtaOrbitZeroWeightCore.covariance γ z
+    inverseEtaPaperOrbitFactor,
+    GammaTwoQuotientGeometry.gammaTwoToSL2Real] using hCov
 
 /-- The discriminant-cutoff section belongs to the all-word stable
 fixed-phase core.  Membership is discharged by the proved `R/L` word
@@ -20601,6 +20740,8 @@ theorem potentialForm_self_eq_ofReal_energy
           ∂D.quotientMeasure := by
       apply integral_congr_ae
       exact Filter.Eventually.of_forall fun q => by
+        change (potential q : ℂ) * quotientInnerDensity M u u q =
+          ((potential q * quotientNormSqDensity M u q : ℝ) : ℂ)
         rw [quotientInnerDensity_self]
         exact (Complex.ofReal_mul _ _).symm
     _ = ((∫ q, potential q * quotientNormSqDensity M u q
@@ -20614,7 +20755,7 @@ theorem potentialForm_conj_symm
     star (potentialForm M D v u) = potentialForm M D u v := by
   unfold potentialForm
   calc
-    Complex.conj
+    star
         (∫ q, weightedInnerDensity M v u q ∂D.quotientMeasure) =
         ∫ q, star (weightedInnerDensity M v u q)
           ∂D.quotientMeasure := by
@@ -20623,8 +20764,17 @@ theorem potentialForm_conj_symm
     _ = ∫ q, weightedInnerDensity M u v q ∂D.quotientMeasure := by
       apply integral_congr_ae
       exact Filter.Eventually.of_forall fun q => by
-        simp only [weightedInnerDensity, map_mul, Complex.conj_ofReal]
-        rw [quotientInnerDensity_conj_symm]
+        change (starRingEnd ℂ)
+            ((potential q : ℂ) * quotientInnerDensity M v u q) =
+          (potential q : ℂ) * quotientInnerDensity M u v q
+        rw [map_mul]
+        change star (potential q : ℂ) *
+            star (quotientInnerDensity M v u q) =
+          (potential q : ℂ) * quotientInnerDensity M u v q
+        have hPotentialConj : star (potential q : ℂ) =
+            (potential q : ℂ) :=
+          Complex.conj_ofReal _
+        rw [hPotentialConj, quotientInnerDensity_conj_symm]
 
 /-- Additivity in the conjugate-linear entry. -/
 theorem potentialForm_add_left
@@ -20633,7 +20783,7 @@ theorem potentialForm_add_left
     potentialForm M D (u + v) w =
       potentialForm M D u w + potentialForm M D v w := by
   unfold potentialForm weightedInnerDensity
-  simpa only [quotientInnerDensity_add_left, mul_add] using
+  simpa only [weightedInnerDensity, quotientInnerDensity_add_left, mul_add] using
     integral_add (weightedInnerDensity_integrable M D u w)
       (weightedInnerDensity_integrable M D v w)
 
@@ -20657,7 +20807,7 @@ theorem potentialForm_add_right
     potentialForm M D u (v + w) =
       potentialForm M D u v + potentialForm M D u w := by
   unfold potentialForm weightedInnerDensity
-  simpa only [quotientInnerDensity_add_right, mul_add] using
+  simpa only [weightedInnerDensity, quotientInnerDensity_add_right, mul_add] using
     integral_add (weightedInnerDensity_integrable M D u v)
       (weightedInnerDensity_integrable M D u w)
 
@@ -20711,13 +20861,14 @@ nonvanishing certificate is introduced.
 
 /-- The explicit potential form as a positive-semidefinite Hermitian
 pre-inner-product core on the smooth compact section space. -/
-noncomputable def potentialPreInnerProductCore
+@[reducible] noncomputable def potentialPreInnerProductCore
     (D : GammaTwoFundamentalDomain) :
     PreInnerProductSpace.Core ℂ (SmoothCompactWeightCore M) where
   inner := potentialForm M D
   conj_inner_symm := potentialForm_conj_symm M D
   re_inner_nonneg := fun u => by
-    rw [potentialForm_self_eq_ofReal_energy, Complex.ofReal_re]
+    rw [potentialForm_self_eq_ofReal_energy]
+    change 0 ≤ potentialEnergy M D u
     exact potentialEnergy_nonneg M D u
   add_left := potentialForm_add_left M D
   smul_left := fun u v c => potentialForm_smul_left M D c u v
@@ -20812,20 +20963,32 @@ noncomputable def peterssonCorePotentialLinear :
           potentialForm_add_left M chosenGammaTwoFundamentalDomain
             v.toSmoothCore w.toSmoothCore u.toSmoothCore
       map_smul' := fun c v => by
+        have hstar : (starRingEnd ℂ) c = star c := by
+          rfl
         simpa only [PeterssonCoreSpace.toSmoothCore_smul,
-          starRingEnd_apply, Complex.star_def, smul_eq_mul] using
+          smul_eq_mul, hstar] using
           potentialForm_smul_left M chosenGammaTwoFundamentalDomain c
             v.toSmoothCore u.toSmoothCore }
   map_add' u w := by
     ext v
-    simpa only [PeterssonCoreSpace.toSmoothCore_add] using
-      potentialForm_add_right M chosenGammaTwoFundamentalDomain
-        v.toSmoothCore u.toSmoothCore w.toSmoothCore
+    change potentialForm M chosenGammaTwoFundamentalDomain
+        v.toSmoothCore (u + w).toSmoothCore =
+      potentialForm M chosenGammaTwoFundamentalDomain
+          v.toSmoothCore u.toSmoothCore +
+        potentialForm M chosenGammaTwoFundamentalDomain
+          v.toSmoothCore w.toSmoothCore
+    rw [PeterssonCoreSpace.toSmoothCore_add]
+    exact potentialForm_add_right M chosenGammaTwoFundamentalDomain
+      v.toSmoothCore u.toSmoothCore w.toSmoothCore
   map_smul' c u := by
     ext v
-    simpa only [PeterssonCoreSpace.toSmoothCore_smul, smul_eq_mul] using
-      potentialForm_smul_right M chosenGammaTwoFundamentalDomain c
+    change potentialForm M chosenGammaTwoFundamentalDomain
+        v.toSmoothCore (c • u).toSmoothCore =
+      c * potentialForm M chosenGammaTwoFundamentalDomain
         v.toSmoothCore u.toSmoothCore
+    rw [PeterssonCoreSpace.toSmoothCore_smul]
+    exact potentialForm_smul_right M chosenGammaTwoFundamentalDomain c
+      v.toSmoothCore u.toSmoothCore
 
 @[simp]
 theorem peterssonCorePotentialLinear_apply
@@ -20872,13 +21035,19 @@ noncomputable def peterssonCompletionEmbedding :
 
 theorem peterssonCompletionEmbedding_denseRange :
     DenseRange (peterssonCompletionEmbedding M) := by
-  simpa only [peterssonCompletionEmbedding] using
-    (PeterssonCoreSpace.denseRange_toCompletion (M := M))
+  change DenseRange
+    ((↑) : PeterssonCoreSpace M →
+      UniformSpace.Completion (PeterssonCoreSpace M))
+  exact UniformSpace.Completion.denseRange_coe
 
 theorem peterssonCompletionEmbedding_isUniformInducing :
     IsUniformInducing (peterssonCompletionEmbedding M) := by
-  simpa only [peterssonCompletionEmbedding] using
-    (PeterssonCoreSpace.toCompletion (M := M)).isometry.isUniformInducing
+  change IsUniformInducing
+    ((↑) : PeterssonCoreSpace M →
+      UniformSpace.Completion (PeterssonCoreSpace M))
+  exact (UniformSpace.Completion.isUniformInducing_coe (PeterssonCoreSpace M) :
+    IsUniformInducing ((↑) : PeterssonCoreSpace M →
+      UniformSpace.Completion (PeterssonCoreSpace M)))
 
 /-- Algebraic dependence of the extension of an anti-linear functional on
 that functional.  Each value is the unique continuous extension along the
@@ -20906,7 +21075,7 @@ noncomputable def peterssonAntiDualExtensionLinear :
     simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
       ContinuousLinearMap.extend_eq _
         (peterssonCompletionEmbedding_denseRange M)
-        (peterssonCompletionEmbedding_isUniformInducing M)]
+        (peterssonCompletionEmbedding_isUniformInducing M), RingHom.id_apply]
 
 /-- Extension to the completed test space does not increase the anti-dual
 operator norm. -/
@@ -20916,11 +21085,12 @@ theorem peterssonAntiDualExtensionLinear_norm_le
   change ‖f.extend (peterssonCompletionEmbedding M)‖ ≤ ‖f‖
   have h := ContinuousLinearMap.opNorm_extend_le
     (f := f) (e := peterssonCompletionEmbedding M)
-    (N := (1 : ℝ≥0))
+    (N := (1 : NNReal))
     (peterssonCompletionEmbedding_denseRange M)
     (fun u => by
-      rw [NNReal.coe_one, one_mul, peterssonCompletionEmbedding,
-        PeterssonCoreSpace.norm_toCompletion])
+      rw [NNReal.coe_one, one_mul]
+      change ‖u‖ ≤ ‖PeterssonCoreSpace.toCompletion u‖
+      exact (PeterssonCoreSpace.norm_toCompletion u).ge)
   simpa only [NNReal.coe_one, one_mul] using h
 
 /-- Continuous linear extension of anti-duals from the Petersson core to its
@@ -20967,7 +21137,7 @@ theorem norm_peterssonCorePotentialIntoCompletion_le_uniformBound :
       exact mul_le_mul
         (norm_peterssonAntiDualExtension_le_one M)
         (norm_peterssonCorePotentialOperator_le_uniformBound M)
-        (norm_nonneg _) zero_le_one
+        (norm_nonneg (peterssonCorePotentialOperator M)) zero_le_one
     _ = uniformBound := one_mul _
 
 /-- The explicit potential form as a bounded weak anti-operator on the full
@@ -20986,10 +21156,14 @@ theorem peterssonPotentialOperator_apply_core
         (PeterssonCoreSpace.toCompletion v) =
       potentialForm M chosenGammaTwoFundamentalDomain
         v.toSmoothCore u.toSmoothCore := by
-  rw [peterssonPotentialOperator,
-    ContinuousLinearMap.extend_eq _
-      (peterssonCompletionEmbedding_denseRange M)
-      (peterssonCompletionEmbedding_isUniformInducing M)]
+  change
+    ((peterssonCorePotentialIntoCompletion M).extend
+      (peterssonCompletionEmbedding M))
+        (peterssonCompletionEmbedding M u)
+        (peterssonCompletionEmbedding M v) = _
+  rw [ContinuousLinearMap.extend_eq _
+    (peterssonCompletionEmbedding_denseRange M)
+    (peterssonCompletionEmbedding_isUniformInducing M)]
   exact peterssonAntiDualExtension_apply_core M
     (peterssonCorePotentialOperator M u) v
 
@@ -20999,14 +21173,18 @@ theorem norm_peterssonPotentialOperator_le_uniformBound :
   have hExtend := ContinuousLinearMap.opNorm_extend_le
     (f := peterssonCorePotentialIntoCompletion M)
     (e := peterssonCompletionEmbedding M)
-    (N := (1 : ℝ≥0))
+    (N := (1 : NNReal))
     (peterssonCompletionEmbedding_denseRange M)
     (fun u => by
-      rw [NNReal.coe_one, one_mul, peterssonCompletionEmbedding,
-        PeterssonCoreSpace.norm_toCompletion])
-  exact (by simpa only [peterssonPotentialOperator, NNReal.coe_one, one_mul]
-    using hExtend).trans
-      (norm_peterssonCorePotentialIntoCompletion_le_uniformBound M)
+      rw [NNReal.coe_one, one_mul]
+      change ‖u‖ ≤ ‖PeterssonCoreSpace.toCompletion u‖
+      exact (PeterssonCoreSpace.norm_toCompletion u).ge)
+  have hPotential :
+      ‖peterssonPotentialOperator M‖ ≤
+        ‖peterssonCorePotentialIntoCompletion M‖ := by
+    simpa only [peterssonPotentialOperator, NNReal.coe_one, one_mul] using hExtend
+  exact hPotential.trans
+    (norm_peterssonCorePotentialIntoCompletion_le_uniformBound M)
 
 /-- Pointwise two-variable continuity on the Petersson Hilbert completion. -/
 theorem peterssonPotentialOperator_bound
@@ -21127,7 +21305,7 @@ end FixedPhaseGraphPotential
 
 /-- The negative part is identically zero, so its relative form bound is
 exactly zero (and in particular strictly below one). -/
-def negativePart (q : GammaTwoQuotient) : ℝ :=
+noncomputable def negativePart (q : GammaTwoQuotient) : ℝ :=
   max (-potential q) 0
 
 @[simp]
@@ -21200,7 +21378,7 @@ theorem norm_hilbertRankOne (φ : H) :
 theorem hilbertRankOne_range_le_span (φ : H) :
     (hilbertRankOne φ).range ≤ Submodule.span ℂ {φ} := by
   rintro _ ⟨u, rfl⟩
-  rw [hilbertRankOne_apply]
+  change inner ℂ φ u • φ ∈ Submodule.span ℂ {φ}
   exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self φ)
 
 /-- Rank one is compact, proved through the displayed finite-dimensional
@@ -21226,14 +21404,18 @@ theorem rankOneForm_apply (φ u v : H) :
 /-- The pairing is Hermitian. -/
 theorem rankOneForm_conj_symm (φ u v : H) :
     star (rankOneForm φ v u) = rankOneForm φ u v := by
-  simp only [rankOneForm_apply, map_mul, inner_conj_symm]
-  ring
+  rw [rankOneForm_apply, rankOneForm_apply, star_mul']
+  calc
+    star (inner ℂ u φ) * star (inner ℂ φ v) =
+        inner ℂ φ u * inner ℂ v φ :=
+      congrArg₂ (· * ·) (inner_conj_symm φ u) (inner_conj_symm v φ)
+    _ = inner ℂ v φ * inner ℂ φ u := mul_comm _ _
 
 /-- The diagonal is the squared modulus of the one scalar coefficient. -/
 theorem rankOneForm_self_re (φ u : H) :
     (rankOneForm φ u u).re = ‖inner ℂ φ u‖ ^ 2 := by
   rw [rankOneForm_apply, ← inner_conj_symm, Complex.conj_mul']
-  simp
+  norm_cast
 
 /-- Positivity is pointwise and unconditional. -/
 theorem rankOneForm_self_nonneg (φ u : H) :
@@ -21307,15 +21489,25 @@ theorem constantCompactCuspTail_epsilon
 theorem constantCompactCuspTail_tail_eq_zero
     (C : ContinuousSesquilinearForm H) (hC : IsCompactOperator C) (n : ℕ) :
     (constantCompactCuspTail C hC).truncation n - C = 0 := by
-  simp
+  rw [constantCompactCuspTail_truncation]
+  exact sub_self C
 
 @[simp]
 theorem constantCompactCuspTail_tail_norm_eq_zero
     (C : ContinuousSesquilinearForm H) (hC : IsCompactOperator C) (n : ℕ) :
     ‖(constantCompactCuspTail C hC).truncation n - C‖ = 0 := by
-  simp
+  calc
+    ‖(constantCompactCuspTail C hC).truncation n - C‖ = ‖(0 : ContinuousSesquilinearForm H)‖ :=
+      congrArg norm (constantCompactCuspTail_tail_eq_zero C hC n)
+    _ = 0 := by
+      exact ContinuousLinearMap.opNorm_zero
 
-variable [InnerProductSpace ℂ H]
+end ExactTail
+
+section RankOneExactTail
+
+variable {H : Type*}
+variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
 /-- The explicit rank-one cusp-tail package. -/
 noncomputable def rankOneCuspTail (φ : H) :
@@ -21330,9 +21522,11 @@ theorem rankOneCuspTail_truncation (φ : H) (n : ℕ) :
 @[simp]
 theorem rankOneCuspTail_tail_norm_eq_zero (φ : H) (n : ℕ) :
     ‖(rankOneCuspTail φ).truncation n - rankOneForm φ‖ = 0 := by
-  simp
+  simpa only [rankOneCuspTail] using
+    constantCompactCuspTail_tail_norm_eq_zero
+      (rankOneForm φ) (rankOneForm_isCompact φ) n
 
-end ExactTail
+end RankOneExactTail
 
 section FredholmConstructors
 
@@ -21405,8 +21599,13 @@ theorem pulledBackKernelForm_conj_symm
     (B : H →L[ℂ] G) (φ : G) (u v : H) :
     star (pulledBackKernelForm B φ v u) =
       pulledBackKernelForm B φ u v := by
-  simp only [pulledBackKernelForm_apply, map_mul, inner_conj_symm]
-  ring
+  rw [pulledBackKernelForm_apply, pulledBackKernelForm_apply, star_mul']
+  calc
+    star (inner ℂ (B u) φ) * star (inner ℂ φ (B v)) =
+        inner ℂ φ (B u) * inner ℂ (B v) φ :=
+      congrArg₂ (· * ·)
+        (inner_conj_symm φ (B u)) (inner_conj_symm (B v) φ)
+    _ = inner ℂ (B v) φ * inner ℂ φ (B u) := mul_comm _ _
 
 /-- Its diagonal is positive, with the exact scalar square. -/
 theorem pulledBackKernelForm_self_re
@@ -21415,7 +21614,7 @@ theorem pulledBackKernelForm_self_re
       ‖inner ℂ φ (B u)‖ ^ 2 := by
   rw [pulledBackKernelForm_apply, ← inner_conj_symm,
     Complex.conj_mul']
-  simp
+  norm_cast
 
 theorem pulledBackKernelForm_self_nonneg
     (B : H →L[ℂ] G) (φ : G) (u : H) :
@@ -21474,7 +21673,9 @@ theorem pulledBackKernelCuspTail_tail_norm_eq_zero
     (B : H →L[ℂ] G) (φ : G) (n : ℕ) :
     ‖(pulledBackKernelCuspTail B φ).truncation n -
         pulledBackKernelForm B φ‖ = 0 := by
-  simp
+  simpa only [pulledBackKernelCuspTail] using
+    constantCompactCuspTail_tail_norm_eq_zero
+      (pulledBackKernelForm B φ) (pulledBackKernelForm_isCompact B φ) n
 
 end PulledBackKernel
 
@@ -21560,7 +21761,9 @@ noncomputable def explicitCompactKernelCuspTail :
 theorem explicitCompactKernelCuspTail_tail_norm_eq_zero (Y : ℕ) :
     ‖explicitCompactKernelCuspTail.truncation Y -
         explicitCompactKernelForm‖ = 0 := by
-  simp
+  simpa only [explicitCompactKernelCuspTail] using
+    constantCompactCuspTail_tail_norm_eq_zero explicitCompactKernelForm
+      explicitCompactKernelForm_isCompact Y
 
 /-! #### A completely explicit unshifted Fredholm model
 
@@ -21702,9 +21905,14 @@ theorem explicitUnshiftedFredholmOperator_ker :
 
 theorem explicitUnshiftedFredholmOperator_ker_ne_bot :
     explicitUnshiftedFredholmOperator.ker ≠ ⊥ := by
-  rw [explicitUnshiftedFredholmOperator_ker,
-    Submodule.span_singleton_eq_bot]
-  exact explicitKernelUnitVector_ne_zero
+  rw [explicitUnshiftedFredholmOperator_ker]
+  intro hbot
+  apply explicitKernelUnitVector_ne_zero
+  have hmem : explicitKernelUnitVector ∈
+      (⊥ : Submodule ℂ ExplicitKernelHilbert) := by
+    rw [← hbot]
+    exact Submodule.mem_span_singleton_self explicitKernelUnitVector
+  simpa using hmem
 
 /-- The unshifted operator is self-adjoint. -/
 theorem explicitUnshiftedFredholmOperator_adjoint :
@@ -21783,10 +21991,9 @@ theorem explicitRange_inner_eq_zero
     (f : explicitUnshiftedFredholmOperator.range) :
     inner ℂ explicitKernelUnitVector (f : ExplicitKernelHilbert) = 0 := by
   have hf : (f : ExplicitKernelHilbert) ∈
-      explicitUnshiftedFredholmOperator.range := f.property
-  rw [explicitUnshiftedFredholmOperator_range,
-    Submodule.mem_orthogonal_singleton_iff_inner_right] at hf
-  exact hf
+      (ℂ ∙ explicitKernelUnitVector)ᗮ := by
+    simpa only [explicitUnshiftedFredholmOperator_range] using f.property
+  exact Submodule.mem_orthogonal_singleton_iff_inner_right.mp hf
 
 /-- On the compatible range, the canonical kernel-orthogonal solution is the
 underlying forcing vector itself.  This formulation applies to an arbitrary
@@ -21814,6 +22021,7 @@ theorem explicitCanonicalInverseNorm_le_one :
   intro f
   change ‖explicitUnshiftedFredholmData.canonicalSolution f‖ ≤ 1 * ‖f‖
   rw [explicitCanonicalSolution_range_eq, one_mul]
+  exact le_rfl
 
 end ExplicitNonzeroKernel
 
@@ -21886,7 +22094,9 @@ theorem graphBaseKernelCuspTail_tail_norm_eq_zero
     (n : ℤ) (φ : OrbitPeterssonHilbert n) (Y : ℕ) :
     ‖(graphBaseKernelCuspTail n φ).truncation Y -
         graphBaseKernelForm n φ‖ = 0 := by
-  simp
+  simpa only [graphBaseKernelCuspTail] using
+    constantCompactCuspTail_tail_norm_eq_zero
+      (graphBaseKernelForm n φ) (graphBaseKernelForm_isCompact n φ) Y
 
 /-- Use an actual smooth quotient-compact core vector as the kernel vector. -/
 noncomputable def compactCoreKernelVector
@@ -21930,7 +22140,9 @@ theorem compactCoreKernelCuspTail_tail_norm_eq_zero
     (n : ℤ) (φ₀ : InverseEtaFixedPhaseCore n) (Y : ℕ) :
     ‖(compactCoreKernelCuspTail n φ₀).truncation Y -
         compactCoreKernelForm n φ₀‖ = 0 := by
-  simp
+  simpa only [compactCoreKernelCuspTail] using
+    constantCompactCuspTail_tail_norm_eq_zero
+      (compactCoreKernelForm n φ₀) (compactCoreKernelForm_isCompact n φ₀) Y
 
 /-- The compact-core kernel directly discharges the compactness hypothesis
 of the shifted trivial-kernel Fredholm constructor. -/
@@ -22008,8 +22220,7 @@ theorem explicitQuotientKernel_at_I_ne_zero :
     explicitQuotientKernel
       (gammaTwoQuotientMk UpperHalfPlane.I,
         gammaTwoQuotientMk UpperHalfPlane.I) ≠ 0 := by
-  rw [explicitQuotientKernel, quotientCoreCutoff_mk,
-    quotientCoreCutoff_mk]
+  rw [explicitQuotientKernel, quotientCoreCutoff_mk]
   apply mul_ne_zero upstairsCoreCutoff_apply_I_ne_zero
   intro hConj
   apply upstairsCoreCutoff_apply_I_ne_zero
@@ -22103,17 +22314,33 @@ open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 
+/- `InverseEtaFixedPhaseCore` is an opaque abbreviation of a `Submodule`
+subtype. Keep one canonical additive/module instance family for every orbit
+index so subtraction of core-valued linear maps and finite-sum APIs elaborate
+coherently throughout the density section. -/
+noncomputable local instance fixedPhaseDensityCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
+
 /-- Forget the bundled covariance of a smooth compact weight section while
 retaining its actual function, real smoothness, and quotient-compact support. -/
 noncomputable def rawOfSmoothCompactWeightCore (n : ℤ)
     (u : SmoothCompactWeightCore (OrbitMultiplier n)) :
     SmoothQuotientCompactFunction :=
-  ⟨⟨(u.toSection : ℍ → ℂ), u.realSmooth⟩, u.quotientCompact⟩
+  ⟨⟨(SmoothCompactWeightCore.toSection u : ℍ → ℂ),
+      SmoothCompactWeightCore.realSmooth u⟩,
+    SmoothCompactWeightCore.quotientCompact u⟩
 
 @[simp]
 theorem rawOfSmoothCompactWeightCore_apply (n : ℤ)
     (u : SmoothCompactWeightCore (OrbitMultiplier n)) (z : ℍ) :
-    (rawOfSmoothCompactWeightCore n u : ℍ → ℂ) z = u.toSection z :=
+    (rawOfSmoothCompactWeightCore n u : ℍ → ℂ) z =
+      SmoothCompactWeightCore.toSection u z :=
   rfl
 
 /-- The forgotten raw function has precisely the fixed-phase covariance at
@@ -22123,9 +22350,15 @@ theorem rawOfSmoothCompactWeightCore_covariant (n : ℤ)
     IsInverseEtaPaperOrbitCovariant n
       (rawOfSmoothCompactWeightCore n u) := by
   intro γ z
+  have hCov := SmoothCompactWeightCore.covariance u γ z
+  rw [← GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul] at hCov
+  rw [show
+    GammaTwoQuotientGeometry.gammaTwoToSL2Real γ • z =
+      Matrix.SpecialLinearGroup.toGL
+        (GammaTwoQuotientGeometry.gammaTwoToSL2Real γ) • z by rfl] at hCov
   simpa [rawOfSmoothCompactWeightCore,
-    IsInverseEtaPaperOrbitCovariant, OrbitMultiplier] using
-      WeightSection.covariance u γ z
+    IsInverseEtaPaperOrbitCovariant, OrbitMultiplier,
+    GammaTwoQuotientGeometry.gammaTwoToSL2Real] using hCov
 
 /-- Every smooth quotient-compact covariant section belongs to the all-word
 stable core.  Stability is deduced from covariance through the proved finite
@@ -22142,7 +22375,8 @@ noncomputable def ofSmoothCompactWeightCore (n : ℤ)
 theorem ofSmoothCompactWeightCore_apply (n : ℤ)
     (u : SmoothCompactWeightCore (OrbitMultiplier n)) (z : ℍ) :
     ((ofSmoothCompactWeightCore n u : InverseEtaFixedPhaseCore n) :
-        SmoothQuotientCompactFunction) z = u.toSection z :=
+        SmoothQuotientCompactFunction) z =
+      SmoothCompactWeightCore.toSection u z :=
   rfl
 
 /-- The inverse construction is complex-linear. -/
@@ -22225,8 +22459,10 @@ theorem coreEmbedding_surjective (n : ℤ) :
   obtain ⟨u, hu⟩ :=
     toSmoothCompactWeightCore_surjective n v.toSmoothCore
   refine ⟨u, ?_⟩
-  apply PeterssonCoreSpace.ext
-  simpa only [coreEmbedding_toSmoothCore] using hu
+  cases v with
+  | mk v =>
+      cases hu
+      rfl
 
 /-- The actual fixed-phase base coordinate is dense in the Petersson Hilbert
 completion because it already contains the entire normed smooth core.  This is
@@ -22450,12 +22686,14 @@ theorem upstairsCuspCutoff_projected_support (N : ℕ) :
     rwa [hEq] at hw'
   · intro hz
     refine ⟨z, ?_, rfl⟩
-    simpa only [Function.mem_support, quotientCuspCutoffReal_mk,
-      upstairsCuspCutoff, Complex.ofReal_ne_zero] using hz
+    change quotientCuspCutoffReal N (gammaTwoQuotientMk z) ≠ 0 at hz
+    rw [quotientCuspCutoffReal_mk] at hz
+    simpa only [Function.mem_support, upstairsCuspCutoff,
+      Complex.ofReal_ne_zero] using hz
 
 theorem upstairsCuspCutoff_quotientCompact (N : ℕ) :
     HasQuotientCompactSupport (upstairsCuspCutoff N) := by
-  rw [HasQuotientCompactSupport, quotientTSupport, tsupport,
+  rw [HasQuotientCompactSupport, quotientTSupport,
     upstairsCuspCutoff_projected_support]
   exact quotientCuspCutoffReal_hasCompactSupport N
 
@@ -22557,7 +22795,9 @@ theorem quotientCuspPartitionPiece_hasCompactSupport (N : ℕ) :
   cases N with
   | zero => exact quotientCuspCutoffReal_hasCompactSupport 0
   | succ N =>
-      simpa only [quotientCuspPartitionPiece, sub_eq_add_neg] using
+      change HasCompactSupport
+        (quotientCuspCutoffReal (N + 1) - quotientCuspCutoffReal N)
+      simpa only [sub_eq_add_neg] using
         (quotientCuspCutoffReal_hasCompactSupport (N + 1)).add
           (quotientCuspCutoffReal_hasCompactSupport N).neg
 
@@ -22589,7 +22829,7 @@ theorem quotientCuspPartitionPiece_hasSum_one (q : GammaTwoQuotient) :
     rw [hIndex, sum_quotientCuspPartitionPiece]
     exact quotientCuspCutoffReal_eq_one_of_le
       (Nat.le_add_right N k) hN
-  exact (tendsto_congr' hEventually).mpr tendsto_const_nhds
+  exact (Filter.tendsto_congr' hEventually).mpr tendsto_const_nhds
 
 /-- The supports of the explicit quotient pieces are locally finite.  Near a
 point, positivity of `V` makes all sufficiently late cutoffs identically one,
@@ -22646,23 +22886,30 @@ theorem upstairsCuspPartitionPiece_realSmooth (N : ℕ) :
     RealSmooth (upstairsCuspPartitionPiece N) := by
   cases N with
   | zero =>
-      simpa only [upstairsCuspPartitionPiece,
-        quotientCuspPartitionPiece, quotientCuspCutoffReal_mk,
-        upstairsCuspCutoff] using
-        upstairsCuspCutoff_realSmooth 0
+      have hEq : upstairsCuspPartitionPiece 0 = upstairsCuspCutoff 0 := by
+        funext z
+        rfl
+      rw [hEq]
+      exact upstairsCuspCutoff_realSmooth 0
   | succ N =>
-      simpa only [upstairsCuspPartitionPiece,
-        quotientCuspPartitionPiece, quotientCuspCutoffReal_mk,
-        upstairsCuspCutoff, Complex.ofReal_sub] using
-          (upstairsCuspCutoff_realSmooth (N + 1)).sub
-            (upstairsCuspCutoff_realSmooth N)
+      have hEq : upstairsCuspPartitionPiece (N + 1) =
+          upstairsCuspCutoff (N + 1) - upstairsCuspCutoff N := by
+        funext z
+        simp [upstairsCuspPartitionPiece, quotientCuspPartitionPiece,
+          upstairsCuspCutoff, quotientCuspCutoffReal_mk]
+      rw [hEq]
+      exact (upstairsCuspCutoff_realSmooth (N + 1)).sub
+        (upstairsCuspCutoff_realSmooth N)
 
 theorem upstairsCuspPartitionPiece_gammaTwo_invariant (N : ℕ)
     (γ : GammaTwo) (z : ℍ) :
     upstairsCuspPartitionPiece N
         (((γ : GammaTwo) : SL(2, ℤ)) • z) =
       upstairsCuspPartitionPiece N z := by
-  simp only [upstairsCuspPartitionPiece,
+  change (quotientCuspPartitionPiece N
+      (gammaTwoQuotientMk (((γ : GammaTwo) : SL(2, ℤ)) • z)) : ℂ) =
+    (quotientCuspPartitionPiece N (gammaTwoQuotientMk z) : ℂ)
+  rw [show (((γ : GammaTwo) : SL(2, ℤ)) • z) = γ • z from rfl,
     gammaTwoQuotientMk_gamma_smul]
 
 theorem upstairsCuspPartitionPiece_support (N : ℕ) :
@@ -22687,8 +22934,7 @@ theorem upstairsCuspPartitionPiece_locallyFinite :
   rcases quotientCuspPartitionPiece_locallyFinite
       (gammaTwoQuotientMk z) with ⟨U, hU, hFinite⟩
   refine ⟨gammaTwoQuotientMk ⁻¹' U,
-    (gammaTwoQuotientMk_isOpenQuotientMap.continuous.continuousAt)
-      .preimage_mem_nhds hU, ?_⟩
+    gammaTwoQuotientMk_isOpenQuotientMap.continuous.continuousAt hU, ?_⟩
   apply hFinite.subset
   intro N hMeet
   rcases hMeet with ⟨w, hwSupport, hwU⟩
@@ -22698,15 +22944,21 @@ theorem upstairsCuspPartitionPiece_quotientCompact (N : ℕ) :
     HasQuotientCompactSupport (upstairsCuspPartitionPiece N) := by
   cases N with
   | zero =>
-      simpa only [upstairsCuspPartitionPiece,
-        quotientCuspPartitionPiece, quotientCuspCutoffReal_mk,
-        upstairsCuspCutoff] using upstairsCuspCutoff_quotientCompact 0
+      have hEq : upstairsCuspPartitionPiece 0 = upstairsCuspCutoff 0 := by
+        funext z
+        rfl
+      rw [hEq]
+      exact upstairsCuspCutoff_quotientCompact 0
   | succ N =>
-      simpa only [upstairsCuspPartitionPiece,
-        quotientCuspPartitionPiece, quotientCuspCutoffReal_mk,
-        upstairsCuspCutoff, Complex.ofReal_sub, sub_eq_add_neg] using
+      have hEq : upstairsCuspPartitionPiece (N + 1) =
+          upstairsCuspCutoff (N + 1) - upstairsCuspCutoff N := by
+        funext z
+        simp [upstairsCuspPartitionPiece, quotientCuspPartitionPiece,
+          upstairsCuspCutoff, quotientCuspCutoffReal_mk]
+      rw [hEq]
+      simpa only [sub_eq_add_neg, neg_smul, one_smul] using
         (upstairsCuspCutoff_quotientCompact (N + 1)).add
-          (upstairsCuspCutoff_quotientCompact N).smul (-1)
+          ((upstairsCuspCutoff_quotientCompact N).smul (-1))
 
 /-- Each partition piece is a genuine invariant smooth quotient-compact
 function, suitable for multiplying any fixed-phase section. -/
@@ -22740,7 +22992,7 @@ theorem raiseRaw_mul_cutoff {χ f : ℍ → ℂ}
     raiseRaw a (χ * f) z =
       χ z * raiseRaw a f z +
         (Complex.I * dx χ z + dy χ z) * f z := by
-  rw [raiseRaw, dx_mul hχ hf, dy_mul hχ hf]
+  simp only [raiseRaw, dx_mul hχ hf, dy_mul hχ hf, Pi.mul_apply]
   ring
 
 /-- Exact lowering product rule and cutoff commutator. -/
@@ -22751,7 +23003,7 @@ theorem lowerRaw_mul_cutoff {χ f : ℍ → ℂ}
       χ z * lowerRaw a f z +
         (-Complex.I * heightC z ^ 2 * dx χ z +
           heightC z ^ 2 * dy χ z) * f z := by
-  rw [lowerRaw, dx_mul hχ hf, dy_mul hχ hf]
+  simp only [lowerRaw, dx_mul hχ hf, dy_mul hχ hf, Pi.mul_apply]
   ring
 
 /-! #### Covariance-preserving cutoff operators and typed commutators -/
@@ -22771,13 +23023,27 @@ noncomputable def cuspCutoffOperator (N : ℕ) (n : ℤ) :
     apply Subtype.ext
     apply Subtype.ext
     funext z
-    rfl
+    change
+      (cuspCutoffSmoothQuotient N : ℍ → ℂ) z *
+          (InverseEtaFixedPhaseCore.toWeightSection n (u + v)) z =
+        (cuspCutoffSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n u) z +
+          (cuspCutoffSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n v) z
+    simp only [map_add, HalfIntegralMultiplier.WeightSection.add_apply, mul_add]
   map_smul' c u := by
     apply Subtype.ext
     apply Subtype.ext
     apply Subtype.ext
     funext z
-    rfl
+    change
+      (cuspCutoffSmoothQuotient N : ℍ → ℂ) z *
+          (InverseEtaFixedPhaseCore.toWeightSection n (c • u)) z =
+        c *
+          ((cuspCutoffSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n u) z)
+    simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply, smul_eq_mul]
+    ring
 
 @[simp]
 theorem cuspCutoffOperator_apply (N : ℕ) (n : ℤ)
@@ -22803,13 +23069,27 @@ noncomputable def cuspPartitionPieceOperator (N : ℕ) (n : ℤ) :
     apply Subtype.ext
     apply Subtype.ext
     funext z
-    rfl
+    change
+      (cuspPartitionPieceSmoothQuotient N : ℍ → ℂ) z *
+          (InverseEtaFixedPhaseCore.toWeightSection n (u + v)) z =
+        (cuspPartitionPieceSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n u) z +
+          (cuspPartitionPieceSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n v) z
+    simp only [map_add, HalfIntegralMultiplier.WeightSection.add_apply, mul_add]
   map_smul' c u := by
     apply Subtype.ext
     apply Subtype.ext
     apply Subtype.ext
     funext z
-    rfl
+    change
+      (cuspPartitionPieceSmoothQuotient N : ℍ → ℂ) z *
+          (InverseEtaFixedPhaseCore.toWeightSection n (c • u)) z =
+        c *
+          ((cuspPartitionPieceSmoothQuotient N : ℍ → ℂ) z *
+            (InverseEtaFixedPhaseCore.toWeightSection n u) z)
+    simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply, smul_eq_mul]
+    ring
 
 @[simp]
 theorem cuspPartitionPieceOperator_apply (N : ℕ) (n : ℤ)
@@ -22858,15 +23138,29 @@ theorem raiseCuspCutoffCommutator_apply (N : ℕ) (n : ℤ)
       (Complex.I * dx (upstairsCuspCutoff N) z +
           dy (upstairsCuspCutoff N) z) *
         (u : SmoothQuotientCompactFunction) z := by
+  simp only [raiseCuspCutoffCommutator, LinearMap.sub_apply,
+    LinearMap.comp_apply]
+  change
+    (InverseEtaFixedPhaseCore.toWeightSection (n + 1)
+      ((InverseEtaFixedPhaseCore.raise n)
+          (cuspCutoffOperator N n u) -
+        (cuspCutoffOperator N (n + 1))
+          (InverseEtaFixedPhaseCore.raise n u))) z = _
+  rw [map_sub]
   change
     raiseRaw (paperOrbitExponent n)
-        (upstairsCuspCutoff N *
-          (u : SmoothQuotientCompactFunction)) z -
+        (((cuspCutoffOperator N n u : InverseEtaFixedPhaseCore n) :
+          SmoothQuotientCompactFunction) : ℍ → ℂ) z -
       upstairsCuspCutoff N z *
         raiseRaw (paperOrbitExponent n)
-          (u : SmoothQuotientCompactFunction) z = _
-  rw [raiseRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)
-    (u : SmoothQuotientCompactFunction).1.2]
+          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) z = _
+  rw [show
+      (((cuspCutoffOperator N n u : InverseEtaFixedPhaseCore n) :
+          SmoothQuotientCompactFunction) : ℍ → ℂ) =
+        upstairsCuspCutoff N *
+          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) from rfl,
+    raiseRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)
+      (u : SmoothQuotientCompactFunction).1.2]
   ring
 
 /-- Exact pointwise formula for the typed lowering commutator. -/
@@ -22878,15 +23172,29 @@ theorem lowerCuspCutoffCommutator_apply (N : ℕ) (n : ℤ)
       (-Complex.I * heightC z ^ 2 * dx (upstairsCuspCutoff N) z +
           heightC z ^ 2 * dy (upstairsCuspCutoff N) z) *
         (u : SmoothQuotientCompactFunction) z := by
+  simp only [lowerCuspCutoffCommutator, LinearMap.sub_apply,
+    LinearMap.comp_apply]
+  change
+    (InverseEtaFixedPhaseCore.toWeightSection (n - 1)
+      ((InverseEtaFixedPhaseCore.lower n)
+          (cuspCutoffOperator N n u) -
+        (cuspCutoffOperator N (n - 1))
+          (InverseEtaFixedPhaseCore.lower n u))) z = _
+  rw [map_sub]
   change
     lowerRaw (paperOrbitExponent n)
-        (upstairsCuspCutoff N *
-          (u : SmoothQuotientCompactFunction)) z -
+        (((cuspCutoffOperator N n u : InverseEtaFixedPhaseCore n) :
+          SmoothQuotientCompactFunction) : ℍ → ℂ) z -
       upstairsCuspCutoff N z *
         lowerRaw (paperOrbitExponent n)
-          (u : SmoothQuotientCompactFunction) z = _
-  rw [lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)
-    (u : SmoothQuotientCompactFunction).1.2]
+          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) z = _
+  rw [show
+      (((cuspCutoffOperator N n u : InverseEtaFixedPhaseCore n) :
+          SmoothQuotientCompactFunction) : ℍ → ℂ) =
+        upstairsCuspCutoff N *
+          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) from rfl,
+    lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)
+      (u : SmoothQuotientCompactFunction).1.2]
   ring
 
 /-! #### Exact exhaustion on every quotient-compact fixed-phase section
@@ -23012,7 +23320,7 @@ theorem coreMap_cuspCutoffOperator_tendsto (n : ℤ)
     Filter.Tendsto
       (fun M ↦ coreMap n (cuspCutoffOperator M n u))
       Filter.atTop (nhds (coreMap n u)) := by
-  apply (tendsto_congr' ?_).mpr tendsto_const_nhds
+  apply (Filter.tendsto_congr' ?_).mpr tendsto_const_nhds
   exact (cuspCutoffOperator_eventuallyEq n u).fun_comp (coreMap n)
 
 /-- Quantitative graph-norm form: the cutoff error is literally zero after a
@@ -23036,7 +23344,7 @@ theorem dense_iUnion_range_coreMap_cuspCutoffOperator (n : ℤ) :
   rintro _ ⟨u, rfl⟩
   obtain ⟨N, hN⟩ := exists_cuspCutoffOperator_eventually_eq n u
   refine Set.mem_iUnion.mpr ⟨N, ?_⟩
-  exact ⟨u, by rw [hN N le_rfl]⟩
+  exact ⟨u, congrArg (coreMap n) (hN N le_rfl)⟩
 
 theorem closure_iUnion_range_coreMap_cuspCutoffOperator (n : ℤ) :
     closure
@@ -23056,11 +23364,8 @@ theorem exists_raiseCuspCutoffCommutator_eventually_eq_zero (n : ℤ)
   refine ⟨max Nu Nr, fun M hM ↦ ?_⟩
   have hMu := hNu M ((le_max_left Nu Nr).trans hM)
   have hMr := hNr M ((le_max_right Nu Nr).trans hM)
-  change
-    InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator M n u) -
-      cuspCutoffOperator M (n + 1)
-        (InverseEtaFixedPhaseCore.raise n u) = 0
-  rw [hMu, hMr, sub_self]
+  simpa only [raiseCuspCutoffCommutator, LinearMap.sub_apply,
+    LinearMap.comp_apply, hMu, hMr, sub_self]
 
 /-- The typed lowering cutoff commutator likewise vanishes exactly from a
 finite stage onward. -/
@@ -23074,11 +23379,8 @@ theorem exists_lowerCuspCutoffCommutator_eventually_eq_zero (n : ℤ)
   refine ⟨max Nu Nl, fun M hM ↦ ?_⟩
   have hMu := hNu M ((le_max_left Nu Nl).trans hM)
   have hMl := hNl M ((le_max_right Nu Nl).trans hM)
-  change
-    InverseEtaFixedPhaseCore.lower n (cuspCutoffOperator M n u) -
-      cuspCutoffOperator M (n - 1)
-        (InverseEtaFixedPhaseCore.lower n u) = 0
-  rw [hMu, hMl, sub_self]
+  simpa only [lowerCuspCutoffCommutator, LinearMap.sub_apply,
+    LinearMap.comp_apply, hMu, hMl, sub_self]
 
 /-! #### Disjoint compact seeds and infinite dimension at physical index zero
 
@@ -23181,9 +23483,9 @@ theorem quotientPotentialShellReal_mk (N : ℕ) (z : ℍ) :
 theorem quotientPotentialShellReal_continuous (N : ℕ) :
     Continuous (quotientPotentialShellReal N) := by
   exact
-    (expNegInvGlue.contDiff.continuous.comp
+    ((expNegInvGlue.contDiff (n := 1)).continuous.comp
       (potential_continuous.sub continuous_const)).mul
-    (expNegInvGlue.contDiff.continuous.comp
+    ((expNegInvGlue.contDiff (n := 1)).continuous.comp
       (continuous_const.sub potential_continuous))
 
 theorem upstairsPotentialShell_realSmooth (N : ℕ) :
@@ -23320,12 +23622,16 @@ theorem upstairsPotentialShell_projected_support (N : ℕ) :
     rwa [hEq] at hw'
   · intro hz
     refine ⟨z, ?_, rfl⟩
+    change quotientPotentialShellReal N (gammaTwoQuotientMk z) ≠ 0 at hz
+    have hzC :
+        (quotientPotentialShellReal N (gammaTwoQuotientMk z) : ℂ) ≠ 0 :=
+      Complex.ofReal_ne_zero.mpr hz
     simpa only [Function.mem_support, quotientPotentialShellReal,
-      upstairsPotentialShell, potential_mk, Complex.ofReal_ne_zero] using hz
+      upstairsPotentialShell, potential_mk] using hzC
 
 theorem upstairsPotentialShell_quotientCompact (N : ℕ) :
     HasQuotientCompactSupport (upstairsPotentialShell N) := by
-  rw [HasQuotientCompactSupport, quotientTSupport, tsupport,
+  rw [HasQuotientCompactSupport, quotientTSupport,
     upstairsPotentialShell_projected_support]
   exact quotientPotentialShellReal_hasCompactSupport N
 
@@ -23377,7 +23683,7 @@ noncomputable def potentialShellCoreZero (N : ℕ) :
 theorem potentialShellCoreZero_apply (N : ℕ) (z : ℍ) :
     ((potentialShellCoreZero N : InverseEtaFixedPhaseCore 0) :
         SmoothQuotientCompactFunction) z =
-      upstairsPotentialShell N z * inverseEtaSection z :=
+      upstairsPotentialShell N z * inverseEtaPaperOrbitZeroSeedSection z := by
   rfl
 
 theorem potentialShellCoreZero_at_point_ne_zero (N : ℕ) :
@@ -23385,7 +23691,8 @@ theorem potentialShellCoreZero_at_point_ne_zero (N : ℕ) :
         SmoothQuotientCompactFunction) (potentialShellPoint N) ≠ 0 := by
   rw [potentialShellCoreZero_apply]
   exact mul_ne_zero (upstairsPotentialShell_at_point_ne_zero N)
-    (inverseEtaSection_apply_ne_zero (potentialShellPoint N))
+    (inverseEtaPaperOrbitZeroSeedSection_apply_ne_zero
+      (potentialShellPoint N))
 
 theorem potentialShellCoreZero_ne_zero (N : ℕ) :
     potentialShellCoreZero N ≠ (0 : InverseEtaFixedPhaseCore 0) := by
@@ -23394,7 +23701,10 @@ theorem potentialShellCoreZero_ne_zero (N : ℕ) :
     (fun u : InverseEtaFixedPhaseCore 0 ↦
       ((u : SmoothQuotientCompactFunction) : ℍ → ℂ)
         (potentialShellPoint N)) hzero
-  exact potentialShellCoreZero_at_point_ne_zero N (by simpa using hAt)
+  change
+    upstairsPotentialShell N (potentialShellPoint N) *
+      inverseEtaPaperOrbitZeroSeedSection (potentialShellPoint N) = 0 at hAt
+  exact potentialShellCoreZero_at_point_ne_zero N hAt
 
 theorem potentialShellCoreZero_support_subset (N : ℕ) :
     Function.support
@@ -23402,8 +23712,11 @@ theorem potentialShellCoreZero_support_subset (N : ℕ) :
           InverseEtaFixedPhaseCore 0) : SmoothQuotientCompactFunction) z) ⊆
       Function.support (upstairsPotentialShell N) := by
   intro z hz
-  rw [potentialShellCoreZero_apply] at hz
-  exact left_ne_zero_of_mul hz
+  have hz' :
+      upstairsPotentialShell N z *
+          inverseEtaPaperOrbitZeroSeedSection z ≠ 0 := by
+    simpa only [Function.mem_support, potentialShellCoreZero_apply] using hz
+  exact left_ne_zero_of_mul hz'
 
 theorem potentialShellCoreZero_support_pairwiseDisjoint :
     Pairwise fun N M : ℕ ↦
@@ -23439,11 +23752,11 @@ theorem fixedPhaseCoreEvaluation_apply (n : ℤ) (z : ℍ)
 family in the physical fixed-phase core. -/
 theorem potentialShellCoreZero_linearIndependent :
     LinearIndependent ℂ potentialShellCoreZero := by
-  rw [linearIndependent_iff']
-  intro s g hsum N hNs
+  refine (linearIndependent_iff'ₛ).2 ?_
+  intro s f g hsum N hNs
   have hEval := congrArg
     (fixedPhaseCoreEvaluation 0 (potentialShellPoint N)) hsum
-  simp only [map_sum, map_smul, map_zero,
+  simp only [map_sum, map_smul,
     fixedPhaseCoreEvaluation_apply, smul_eq_mul] at hEval
   have hOther : ∀ M ∈ s, M ≠ N →
       ((potentialShellCoreZero M : InverseEtaFixedPhaseCore 0) :
@@ -23453,7 +23766,17 @@ theorem potentialShellCoreZero_linearIndependent :
     exact Set.disjoint_left.mp
       (potentialShellCoreZero_support_pairwiseDisjoint hMN.symm)
       (potentialShellCoreZero_at_point_ne_zero N) hMpoint
-  have hSingle :
+  have hF :
+      ∑ M ∈ s, f M *
+          ((potentialShellCoreZero M : InverseEtaFixedPhaseCore 0) :
+            SmoothQuotientCompactFunction) (potentialShellPoint N) =
+        f N *
+          ((potentialShellCoreZero N : InverseEtaFixedPhaseCore 0) :
+            SmoothQuotientCompactFunction) (potentialShellPoint N) := by
+    apply Finset.sum_eq_single_of_mem N hNs
+    intro M hMs hMN
+    rw [hOther M hMs hMN, mul_zero]
+  have hG :
       ∑ M ∈ s, g M *
           ((potentialShellCoreZero M : InverseEtaFixedPhaseCore 0) :
             SmoothQuotientCompactFunction) (potentialShellPoint N) =
@@ -23463,9 +23786,9 @@ theorem potentialShellCoreZero_linearIndependent :
     apply Finset.sum_eq_single_of_mem N hNs
     intro M hMs hMN
     rw [hOther M hMs hMN, mul_zero]
-  rw [hSingle] at hEval
-  exact (mul_eq_zero.mp hEval).resolve_right
-    (potentialShellCoreZero_at_point_ne_zero N)
+  rw [hF, hG] at hEval
+  exact mul_right_cancel₀
+    (potentialShellCoreZero_at_point_ne_zero N) hEval
 
 /-- Consequently the physical fixed-phase smooth core is genuinely
 infinite-dimensional, not merely nontrivial. -/
@@ -23475,7 +23798,8 @@ theorem inverseEtaFixedPhaseCoreZero_not_finiteDimensional :
   letI : FiniteDimensional ℂ (InverseEtaFixedPhaseCore 0) := hFinite
   have hlt :=
     potentialShellCoreZero_linearIndependent.lt_aleph0_of_finiteDimensional
-  simpa [Cardinal.mk_nat] using hlt
+  rw [Cardinal.mk_nat] at hlt
+  exact (lt_irrefl _ hlt)
 
 end PaperCorrections.AutomorphicSobolev.FixedPhaseDensity
 
@@ -23522,26 +23846,35 @@ This construction is independent of every polygonal Green/Stokes statement. -/
 namespace PhysicalLocalL2
 
 open MeasureTheory Set Function Topology
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
+open GammaTwoQuotientGeometry
 open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open HalfIntegralMultiplier SmoothCompactCoreGeometry
 
 /-- Euclidean area on the upper half-plane, before insertion of `y⁻²`. -/
-abbrev upperEuclideanMeasure : Measure ℍ :=
+noncomputable abbrev upperEuclideanMeasure : Measure ℍ :=
   volume.comap UpperHalfPlane.coe
 
 /-- The nowhere-zero Radon--Nikodym density which turns Euclidean area into
 hyperbolic area. -/
-noncomputable def hyperbolicDensity (z : ℍ) : ℝ≥0 :=
-  (1 / NNReal.mk z.im z.im_pos.le) ^ 2
+noncomputable def hyperbolicDensity (z : ℍ) : NNReal :=
+  ((1 : NNReal) / NNReal.mk z.im z.im_pos.le) ^ 2
+
+@[simp]
+theorem hyperbolicDensity_coe (z : ℍ) :
+    (hyperbolicDensity z : ℝ) = (1 / z.im) ^ 2 := by
+  simp [hyperbolicDensity, one_div]
 
 theorem hyperbolicDensity_continuous :
     Continuous hyperbolicDensity := by
-  refine .pow (.div₀ continuous_const ?_ ?_) _
-  · exact UpperHalfPlane.continuous_im.subtype_mk _
-  · exact fun z => NNReal.ne_iff.mp z.im_ne_zero
+  have hOne : Continuous (fun _ : ℍ => (1 : NNReal)) := continuous_const
+  have hIm : Continuous (fun z : ℍ => NNReal.mk z.im z.im_pos.le) :=
+    UpperHalfPlane.continuous_im.subtype_mk _
+  exact (hOne.div₀ hIm (fun z hz => by
+    apply z.im_ne_zero
+    have hcoe := congrArg (fun x : NNReal => (x : ℝ)) hz
+    simpa using hcoe)).pow 2
 
 theorem hyperbolicDensity_measurable :
     Measurable hyperbolicDensity :=
@@ -23554,24 +23887,24 @@ theorem hyperbolicMeasure_eq_euclidean_withDensity :
     hyperbolicMeasure_def
 
 /-- Euclidean area restricted to the actual chosen closed carrier. -/
-abbrev chosenEuclideanCarrierMeasure : Measure ℍ :=
+noncomputable abbrev chosenEuclideanCarrierMeasure : Measure ℍ :=
   upperEuclideanMeasure.restrict
     chosenGammaTwoFundamentalDomain.carrier
 
 /-- The concrete scalar `L²` space in which local distributions are tested. -/
-abbrev OrbitEuclideanL2 (_n : ℤ) :=
+noncomputable abbrev OrbitEuclideanL2 (_n : ℤ) :=
   MeasureTheory.Lp ℂ 2 chosenEuclideanCarrierMeasure
 
 /-- Exponent of the Euclidean gauge.  The `-1` is precisely the square root
 of the hyperbolic density `y⁻²`. -/
-def euclideanGaugeExponent (n : ℤ) : ℝ :=
+noncomputable def euclideanGaugeExponent (n : ℤ) : ℝ :=
   ((paperOrbitExponent n : ℤ) : ℝ) / 4 - 1
 
 /-- Euclidean-gauge representative of a Petersson compact-core vector. -/
 noncomputable def orbitEuclideanGauge (n : ℤ)
     (u : OrbitPeterssonCore n) : ℍ → ℂ :=
   fun z => ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) *
-    u.toSmoothCore.toSection z
+    SmoothCompactWeightCore.toSection u.toSmoothCore z
 
 @[simp]
 theorem orbitEuclideanGauge_add (n : ℤ)
@@ -23599,9 +23932,9 @@ theorem orbitEuclideanGauge_realSmooth (n : ℤ)
   change RealSmooth
     ((fun z : ℍ =>
         ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ)) *
-      (u.toSmoothCore.toSection : ℍ → ℂ))
+      (SmoothCompactWeightCore.toSection u.toSmoothCore : ℍ → ℂ))
   exact (realSmooth_complexHeightRpow (euclideanGaugeExponent n)).mul
-    u.toSmoothCore.realSmooth
+    (SmoothCompactWeightCore.realSmooth u.toSmoothCore)
 
 theorem orbitEuclideanGauge_continuous (n : ℤ)
     (u : OrbitPeterssonCore n) :
@@ -23635,8 +23968,7 @@ theorem euclideanGaugeScale_sq (n : ℤ) (z : ℍ) :
       <;> ring
     _ = (hyperbolicDensity z : ℝ) *
         z.im ^ (((paperOrbitExponent n : ℤ) : ℝ) / 2) := by
-      simp only [hyperbolicDensity, NNReal.coe_pow, NNReal.coe_div,
-        NNReal.coe_one, NNReal.coe_mk]
+      rw [hyperbolicDensity_coe]
 
 /-- Pointwise Hermitian products in the Euclidean gauge are the Petersson
 products multiplied by the hyperbolic density. -/
@@ -23648,19 +23980,29 @@ theorem orbitEuclideanGauge_inner (n : ℤ)
         upstairsInnerDensity (OrbitMultiplier n)
           u.toSmoothCore v.toSmoothCore z := by
   change
-    Complex.conj
-          (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) *
-            u.toSmoothCore.toSection z) *
-        (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) *
-          v.toSmoothCore.toSection z) = _
+    inner ℂ
+        (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) •
+          SmoothCompactWeightCore.toSection u.toSmoothCore z)
+        (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) •
+          SmoothCompactWeightCore.toSection v.toSmoothCore z) =
+      hyperbolicDensity z •
+        upstairsInnerDensity (OrbitMultiplier n)
+          u.toSmoothCore v.toSmoothCore z
+  rw [inner_smul_left, inner_smul_right]
   unfold upstairsInnerDensity
     InvariantFiberMetric.pointwiseInnerDensity
+    InvariantFiberMetric.weightFiberMetric
   have hScale := congrArg (fun r : ℝ => (r : ℂ))
     (euclideanGaugeScale_sq n z)
   simp only [Complex.ofReal_mul, Complex.ofReal_pow] at hScale
-  simp only [map_mul, Complex.conj_ofReal, NNReal.smul_def,
-    smul_eq_mul]
-  rw [← hScale]
+  simp only [RCLike.inner_apply, Complex.conj_ofReal, starRingEnd_apply,
+    NNReal.smul_def, smul_eq_mul, Complex.ofReal_mul]
+  have hReal :
+      star (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ)) =
+        (((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ)) := by
+    simp
+  rw [hReal, ← mul_assoc, ← pow_two, hScale]
+  rw [Complex.real_smul]
   ring
 
 /-- Squared pointwise norms satisfy the corresponding real identity. -/
@@ -23669,11 +24011,17 @@ theorem orbitEuclideanGauge_norm_sq (n : ℤ)
     ‖orbitEuclideanGauge n u z‖ ^ 2 =
       hyperbolicDensity z •
         upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore z := by
-  have h := orbitEuclideanGauge_inner n u u z
-  have hre := congrArg Complex.re h
-  simpa only [inner_self_eq_norm_sq, Complex.ofReal_re,
-    upstairsInnerDensity_self, NNReal.smul_def,
-    Complex.smul_re, smul_eq_mul] using hre
+  calc
+    ‖orbitEuclideanGauge n u z‖ ^ 2 =
+        (inner ℂ (orbitEuclideanGauge n u z)
+          (orbitEuclideanGauge n u z)).re :=
+      norm_sq_eq_re_inner (𝕜 := ℂ) _
+    _ = _ := by
+      have hre := congrArg Complex.re
+        (orbitEuclideanGauge_inner n u u z)
+      simpa only [upstairsInnerDensity_self, upstairsNormSqDensity,
+        NNReal.smul_def, Complex.smul_re, Complex.ofReal_re,
+        smul_eq_mul] using hre
 
 /-- The Euclidean-gauge representative belongs to the concrete carrier
 `L²` space. -/
@@ -23687,18 +24035,19 @@ theorem orbitEuclideanGauge_memLp (n : ℤ)
     (OrbitMultiplier n) u.toSmoothCore u.toSmoothCore
       chosenGammaTwoFundamentalDomain
   have hNormHyperbolic :
-      IntegrableOn
+      Integrable
         (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
-        chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure := by
-    simpa only [upstairsInnerDensity_self, Complex.ofReal_re] using
-      hHyperbolic.re
-  change Integrable
-    (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
-    (hyperbolicMeasure.restrict
-      chosenGammaTwoFundamentalDomain.carrier) at hNormHyperbolic
+        (hyperbolicMeasure.restrict
+          chosenGammaTwoFundamentalDomain.carrier) := by
+    convert hHyperbolic.re using 1
+    funext z
+    simp only [upstairsInnerDensity_self, upstairsNormSqDensity]
+    exact (Complex.ofReal_re _).symm
   rw [hyperbolicMeasure_eq_euclidean_withDensity,
-    Measure.restrict_withDensity
-      chosenGammaTwoFundamentalDomain.carrier_measurable] at hNormHyperbolic
+    MeasureTheory.restrict_withDensity
+      (μ := upperEuclideanMeasure)
+      chosenGammaTwoFundamentalDomain.carrier_measurable
+      (fun z => (hyperbolicDensity z : ℝ≥0∞))] at hNormHyperbolic
   have hWeighted :=
     (integrable_withDensity_iff_integrable_smul
       (μ := chosenEuclideanCarrierMeasure)
@@ -23715,6 +24064,11 @@ noncomputable def orbitPeterssonCoreToEuclideanL2 (n : ℤ) :
       (MemLp.toLp_add (orbitEuclideanGauge_memLp n u)
         (orbitEuclideanGauge_memLp n v))
   map_smul' c u := by
+    change
+      (orbitEuclideanGauge_memLp n (c • u)).toLp
+          (orbitEuclideanGauge n (c • u)) =
+        c • (orbitEuclideanGauge_memLp n u).toLp
+          (orbitEuclideanGauge n u)
     simpa only [orbitEuclideanGauge_smul] using
       (MemLp.toLp_const_smul c (orbitEuclideanGauge_memLp n u))
 
@@ -23723,8 +24077,11 @@ theorem coeFn_orbitPeterssonCoreToEuclideanL2 (n : ℤ)
     (u : OrbitPeterssonCore n) :
     ⇑(orbitPeterssonCoreToEuclideanL2 n u) =ᵐ[
       chosenEuclideanCarrierMeasure] orbitEuclideanGauge n u := by
-  simpa only [orbitPeterssonCoreToEuclideanL2] using
-    MemLp.coeFn_toLp (orbitEuclideanGauge_memLp n u)
+  change
+    ⇑((orbitEuclideanGauge_memLp n u).toLp
+      (orbitEuclideanGauge n u)) =ᵐ[
+        chosenEuclideanCarrierMeasure] orbitEuclideanGauge n u
+  exact MemLp.coeFn_toLp (orbitEuclideanGauge_memLp n u)
 
 /-- The concrete realization preserves the full Petersson inner product. -/
 theorem inner_orbitPeterssonCoreToEuclideanL2 (n : ℤ)
@@ -23793,9 +24150,10 @@ theorem orbitPeterssonEuclideanEmbedding_coe (n : ℤ)
   exact ContinuousLinearMap.extend_eq _
     (UniformSpace.Completion.denseRange_coe :
       DenseRange ((↑) : OrbitPeterssonCore n → OrbitPeterssonHilbert n))
-    (by simpa using
-      UniformSpace.Completion.isUniformInducing_coe
-        (OrbitPeterssonCore n)) u
+    (by
+      simpa using
+        (UniformSpace.Completion.isUniformInducing_coe
+          (OrbitPeterssonCore n))) u
 
 theorem orbitPeterssonEuclideanEmbedding_norm (n : ℤ)
     (x : OrbitPeterssonHilbert n) :
@@ -23804,9 +24162,10 @@ theorem orbitPeterssonEuclideanEmbedding_norm (n : ℤ)
     (isClosed_eq (orbitPeterssonEuclideanEmbedding n).continuous.norm
       continuous_norm) ?_
   intro u
-  rw [orbitPeterssonEuclideanEmbedding_coe]
-  simpa only [UniformSpace.Completion.norm_coe] using
-    (orbitPeterssonCoreEuclideanIsometry n).norm_map u
+  rw [orbitPeterssonEuclideanEmbedding_coe,
+    UniformSpace.Completion.norm_coe]
+  change ‖orbitPeterssonCoreEuclideanIsometry n u‖ = ‖u‖
+  exact (orbitPeterssonCoreEuclideanIsometry n).norm_map u
 
 /-- The completed Petersson realization is an actual linear isometry. -/
 noncomputable def orbitPeterssonEuclideanIsometry (n : ℤ) :
@@ -23827,11 +24186,13 @@ theorem coeFn_embedding_l2Coordinate (n : ℤ)
       (fun z =>
         ((z.im ^ euclideanGaugeExponent n : ℝ) : ℂ) *
           ((u : SmoothQuotientCompactFunction) z)) := by
-  rw [l2Coordinate_apply,
+  rw [l2Coordinate_apply, PeterssonCoreSpace.toCompletion_apply,
     orbitPeterssonEuclideanEmbedding_coe]
+  have h :=
+    coeFn_orbitPeterssonCoreToEuclideanL2 n (coreEmbedding n u)
+  filter_upwards [h] with z hz
   simpa only [orbitEuclideanGauge, coreEmbedding_toSmoothCore,
-    InverseEtaFixedPhaseCore.toSmoothCompactWeightCore_apply] using
-      coeFn_orbitPeterssonCoreToEuclideanL2 n (coreEmbedding n u)
+    InverseEtaFixedPhaseCore.toSmoothCompactWeightCore_apply] using hz
 
 /-! #### Exact Euclidean-gauge formulas for the physical operators -/
 
@@ -23894,9 +24255,15 @@ theorem dx_fixedPhaseEuclideanGauge (n : ℤ)
     ((fun w : ℍ =>
         ((w.im ^ euclideanGaugeExponent n : ℝ) : ℂ)) *
       (((u : SmoothQuotientCompactFunction) : ℍ → ℂ))) z = _
-  rw [dx_mul (realSmooth_complexHeightRpow _)
-    u.1.1.2, dx_complexHeightRpow]
-  simp only [Pi.mul_apply, zero_mul, zero_add]
+  have hProd :=
+    dx_mul
+      (u := fun w : ℍ =>
+        ((w.im ^ euclideanGaugeExponent n : ℝ) : ℂ))
+      (v := ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+      (realSmooth_complexHeightRpow (euclideanGaugeExponent n))
+      u.1.1.2 z
+  simpa only [dx_complexHeightRpow, Pi.mul_apply, zero_mul,
+    zero_add] using hProd
 
 /-- Vertical derivative of the literal Euclidean gauge, including the
 derivative of its height power. -/
@@ -23912,9 +24279,14 @@ theorem dy_fixedPhaseEuclideanGauge (n : ℤ)
     ((fun w : ℍ =>
         ((w.im ^ euclideanGaugeExponent n : ℝ) : ℂ)) *
       (((u : SmoothQuotientCompactFunction) : ℍ → ℂ))) z = _
-  rw [dy_mul (realSmooth_complexHeightRpow _)
-    u.1.1.2, dy_complexHeightRpow]
-  rfl
+  have hProd :=
+    dy_mul
+      (u := fun w : ℍ =>
+        ((w.im ^ euclideanGaugeExponent n : ℝ) : ℂ))
+      (v := ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+      (realSmooth_complexHeightRpow (euclideanGaugeExponent n))
+      u.1.1.2 z
+  simpa only [dy_complexHeightRpow, Pi.mul_apply] using hProd
 
 /-- Euclidean-gauge raising expression.  Its zeroth-order coefficient is
 `p+2`, where `p=a/4-1` is the source gauge exponent. -/
@@ -23953,10 +24325,12 @@ theorem fixedPhaseEuclideanGauge_raise (n : ℤ)
     dy_fixedPhaseEuclideanGauge,
     euclideanGaugeScale_succ,
     complex_rpow_derivative_eq_div,
-    physicalExponent_eq_twice_gaugeShift]
+    physicalExponent_eq_twice_gaugeShift,
+    fixedPhaseEuclideanGauge_apply]
   have hz : heightC z ≠ 0 := by
     exact Complex.ofReal_ne_zero.mpr z.im_ne_zero
   field_simp [hz]
+  push_cast
   ring
 
 /-- Exact pointwise conjugation of lowering from the successor orbit by the
@@ -23974,10 +24348,13 @@ theorem fixedPhaseEuclideanGauge_lowerFromSucc (n : ℤ)
     dy_fixedPhaseEuclideanGauge,
     euclideanGaugeScale_succ,
     euclideanGaugeExponent_succ,
-    complex_rpow_derivative_eq_div]
+    complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply]
   have hz : heightC z ≠ 0 := by
     exact Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  rw [euclideanGaugeExponent_succ]
   field_simp [hz]
+  push_cast
   ring
 
 /-! #### Compact Hermitian test transposes -/
@@ -23992,12 +24369,24 @@ theorem euclideanRaiseGauge_realSmooth (n : ℤ)
       ((Complex.I • (heightC * dx f)) +
         (heightC * dy f) +
         (((euclideanGaugeExponent n + 2 : ℝ) : ℂ) • f)) :=
-    (((realSmooth_heightC.mul RealSmooth.dx hf).const_complex_smul Complex.I).add
-      (realSmooth_heightC.mul RealSmooth.dy hf)).add
-        (hf.const_complex_smul
-          ((euclideanGaugeExponent n + 2 : ℝ) : ℂ))
-  simpa only [euclideanRaiseGauge, Pi.add_apply, Pi.mul_apply,
-    Pi.smul_apply, smul_eq_mul, mul_assoc] using h
+    RealSmooth.add
+      (RealSmooth.add
+        (RealSmooth.const_complex_smul Complex.I
+          (RealSmooth.mul realSmooth_heightC (RealSmooth.dx hf)))
+        (RealSmooth.mul realSmooth_heightC (RealSmooth.dy hf)))
+      (RealSmooth.const_complex_smul
+        ((euclideanGaugeExponent n + 2 : ℝ) : ℂ) hf)
+  have hEq :
+      euclideanRaiseGauge n f =
+        (Complex.I • (heightC * dx f)) +
+          (heightC * dy f) +
+          (((euclideanGaugeExponent n + 2 : ℝ) : ℂ) • f) := by
+    funext z
+    simp only [euclideanRaiseGauge, Pi.add_apply, Pi.mul_apply,
+      Pi.smul_apply, smul_eq_mul]
+    ring
+  rw [hEq]
+  exact h
 
 /-- Lowering preserves real smoothness after Euclidean gauge conjugation. -/
 theorem euclideanLowerFromSuccGauge_realSmooth (n : ℤ)
@@ -24007,12 +24396,24 @@ theorem euclideanLowerFromSuccGauge_realSmooth (n : ℤ)
       (((-Complex.I) • (heightC * dx f)) +
         (heightC * dy f) -
         (((euclideanGaugeExponent n + 1 : ℝ) : ℂ) • f)) :=
-    (((realSmooth_heightC.mul RealSmooth.dx hf).const_complex_smul
-      (-Complex.I)).add (realSmooth_heightC.mul RealSmooth.dy hf)).sub
-        (hf.const_complex_smul
-          ((euclideanGaugeExponent n + 1 : ℝ) : ℂ))
-  simpa only [euclideanLowerFromSuccGauge, Pi.add_apply, Pi.sub_apply,
-    Pi.mul_apply, Pi.smul_apply, smul_eq_mul, mul_assoc] using h
+    RealSmooth.sub
+      (RealSmooth.add
+        (RealSmooth.const_complex_smul (-Complex.I)
+          (RealSmooth.mul realSmooth_heightC (RealSmooth.dx hf)))
+        (RealSmooth.mul realSmooth_heightC (RealSmooth.dy hf)))
+      (RealSmooth.const_complex_smul
+        ((euclideanGaugeExponent n + 1 : ℝ) : ℂ) hf)
+  have hEq :
+      euclideanLowerFromSuccGauge n f =
+        ((-Complex.I) • (heightC * dx f)) +
+          (heightC * dy f) -
+          (((euclideanGaugeExponent n + 1 : ℝ) : ℂ) • f) := by
+    funext z
+    simp only [euclideanLowerFromSuccGauge, Pi.add_apply, Pi.sub_apply,
+      Pi.mul_apply, Pi.smul_apply, smul_eq_mul]
+    ring
+  rw [hEq]
+  exact h
 
 /-- Compact-core Hermitian transpose of the Euclidean raising expression.
 The `+I` sign is forced by conjugating the first argument before horizontal
@@ -24148,7 +24549,7 @@ noncomputable def ambientCompactHermitianPair
     (f : ℍ → ℂ) (hf : RealSmooth f) (v : AmbientTestCore) : ℂ :=
   ∫ w : ℂ,
     HalfWeightCompactCoordinateGreen.localizeLeft
-      (fun z => star (f z)) hf.conj v w
+      (fun z => star (f z)) (RealSmooth.conj hf) v w
 
 /-- Pointwise localization of the starred Euclidean raising expression into
 the three terms to which one-sided integration by parts applies. -/
@@ -24156,31 +24557,40 @@ theorem localizeStar_euclideanRaiseGauge (n : ℤ)
     (f : ℍ → ℂ) (hf : RealSmooth f) (v : AmbientTestCore) :
     HalfWeightCompactCoordinateGreen.localizeLeft
         (fun z => star (euclideanRaiseGauge n f z))
-        (euclideanRaiseGauge_realSmooth n hf).conj v =
+        (RealSmooth.conj (euclideanRaiseGauge_realSmooth n hf)) v =
       (-Complex.I) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (dx (fun z => star (f z))) hf.conj.dx
+            (dx (fun z => star (f z)))
+            (RealSmooth.dx (RealSmooth.conj hf))
             (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (dy (fun z => star (f z))) hf.conj.dy
+          (dy (fun z => star (f z)))
+          (RealSmooth.dy (RealSmooth.conj hf))
           (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         ((euclideanGaugeExponent n + 2 : ℝ) : ℂ) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (fun z => star (f z)) hf.conj v := by
+            (fun z => star (f z)) (RealSmooth.conj hf) v := by
   apply TestFunction.ext
   intro w
   by_cases hw : 0 < w.im
   · let z : ℍ := ⟨w, hw⟩
     simp only [HalfWeightCompactCoordinateGreen.localizeLeft_apply,
-      TestFunction.add_apply, TestFunction.smul_apply,
-      HalfWeightCompactCoordinateGreen.rpowMul_apply,
-      HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
-      smul_eq_mul]
-    simp only [upperLift, Function.comp_def, hw, dif_pos,
-      UpperHalfPlane.ofComplex_apply_of_im_pos, z]
-    rw [dx_conj hf, dy_conj hf]
-    simp only [euclideanRaiseGauge, map_add, map_mul,
-      Complex.conj_I, Complex.conj_ofReal, heightC]
+      HalfWeightCompactCoordinateGreen.rpowMul_apply]
+    simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift,
+      Function.comp_def, hw, dif_pos,
+      UpperHalfPlane.ofComplex_apply_of_im_pos, z,
+      euclideanRaiseGauge, map_add, map_mul,
+      Complex.conj_I, Complex.conj_ofReal, heightC, smul_eq_mul]
+    have hdx :
+        dx (fun w => (starRingEnd ℂ) (f w)) z =
+          (starRingEnd ℂ) (dx f z) := by
+      simpa only [starRingEnd_apply] using dx_conj hf z
+    have hdy :
+        dy (fun w => (starRingEnd ℂ) (f w)) z =
+          (starRingEnd ℂ) (dy f z) := by
+      simpa only [starRingEnd_apply] using dy_conj hf z
+    rw [hdx, hdy]
+    norm_num
     ring
   · rw [HalfWeightCompactCoordinateGreen.eq_zero_of_not_im_pos _ hw,
       HalfWeightCompactCoordinateGreen.eq_zero_of_not_im_pos _ hw]
@@ -24190,33 +24600,40 @@ theorem localizeStar_euclideanLowerFromSuccGauge (n : ℤ)
     (f : ℍ → ℂ) (hf : RealSmooth f) (v : AmbientTestCore) :
     HalfWeightCompactCoordinateGreen.localizeLeft
         (fun z => star (euclideanLowerFromSuccGauge n f z))
-        (euclideanLowerFromSuccGauge_realSmooth n hf).conj v =
+        (RealSmooth.conj (euclideanLowerFromSuccGauge_realSmooth n hf)) v =
       Complex.I •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (dx (fun z => star (f z))) hf.conj.dx
+            (dx (fun z => star (f z)))
+            (RealSmooth.dx (RealSmooth.conj hf))
             (HalfWeightCompactCoordinateGreen.rpowMul 1 v) +
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (dy (fun z => star (f z))) hf.conj.dy
+          (dy (fun z => star (f z)))
+          (RealSmooth.dy (RealSmooth.conj hf))
           (HalfWeightCompactCoordinateGreen.rpowMul 1 v) -
         ((euclideanGaugeExponent n + 1 : ℝ) : ℂ) •
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (fun z => star (f z)) hf.conj v := by
+            (fun z => star (f z)) (RealSmooth.conj hf) v := by
   apply TestFunction.ext
   intro w
   by_cases hw : 0 < w.im
   · let z : ℍ := ⟨w, hw⟩
     simp only [HalfWeightCompactCoordinateGreen.localizeLeft_apply,
-      TestFunction.add_apply, TestFunction.sub_apply,
-      TestFunction.smul_apply,
-      HalfWeightCompactCoordinateGreen.rpowMul_apply,
-      HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
-      smul_eq_mul]
-    simp only [upperLift, Function.comp_def, hw, dif_pos,
-      UpperHalfPlane.ofComplex_apply_of_im_pos, z]
-    rw [dx_conj hf, dy_conj hf]
-    simp only [euclideanLowerFromSuccGauge, map_add, map_sub,
-      map_mul, map_neg, Complex.conj_I, Complex.conj_ofReal,
-      heightC]
+      HalfWeightCompactCoordinateGreen.rpowMul_apply]
+    simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift,
+      Function.comp_def, hw, dif_pos,
+      UpperHalfPlane.ofComplex_apply_of_im_pos, z,
+      euclideanLowerFromSuccGauge, map_add, map_sub, map_mul, map_neg,
+      Complex.conj_I, Complex.conj_ofReal, heightC, smul_eq_mul]
+    have hdx :
+        dx (fun w => (starRingEnd ℂ) (f w)) z =
+          (starRingEnd ℂ) (dx f z) := by
+      simpa only [starRingEnd_apply] using dx_conj hf z
+    have hdy :
+        dy (fun w => (starRingEnd ℂ) (f w)) z =
+          (starRingEnd ℂ) (dy f z) := by
+      simpa only [starRingEnd_apply] using dy_conj hf z
+    rw [hdx, hdy]
+    norm_num
     ring
   · rw [HalfWeightCompactCoordinateGreen.eq_zero_of_not_im_pos _ hw,
       HalfWeightCompactCoordinateGreen.eq_zero_of_not_im_pos _ hw]
@@ -24231,10 +24648,10 @@ theorem ambientCompactHermitianPair_raise (n : ℤ)
         (euclideanRaiseTestAdjoint n v) := by
   have hx :=
     HalfWeightCompactCoordinateGreen.integral_height_dx_mul_test_eq_neg
-      (fun z => star (f z)) hf.conj v
+      (fun z => star (f z)) (RealSmooth.conj hf) v
   have hy :=
     HalfWeightCompactCoordinateGreen.integral_height_dy_mul_test_eq_neg
-      (fun z => star (f z)) hf.conj v
+      (fun z => star (f z)) (RealSmooth.conj hf) v
   rw [localizeLeft_add_right, integral_ambientTestCore_add] at hy
   unfold ambientCompactHermitianPair
   rw [localizeStar_euclideanRaiseGauge,
@@ -24246,6 +24663,10 @@ theorem ambientCompactHermitianPair_raise (n : ℤ)
     integral_ambientTestCore_add, integral_ambientTestCore_sub,
     integral_ambientTestCore_smul, integral_ambientTestCore_smul]
   rw [hx, hy]
+  all_goals try exact hf
+  simp only [smul_apply, smul_eq_mul]
+  push_cast
+  rw [integral_const_mul]
   ring
 
 /-- Exact one-sided Hermitian formal-adjoint identity for Euclidean lowering.
@@ -24258,10 +24679,10 @@ theorem ambientCompactHermitianPair_lowerFromSucc (n : ℤ)
         (euclideanLowerFromSuccTestAdjoint n v) := by
   have hx :=
     HalfWeightCompactCoordinateGreen.integral_height_dx_mul_test_eq_neg
-      (fun z => star (f z)) hf.conj v
+      (fun z => star (f z)) (RealSmooth.conj hf) v
   have hy :=
     HalfWeightCompactCoordinateGreen.integral_height_dy_mul_test_eq_neg
-      (fun z => star (f z)) hf.conj v
+      (fun z => star (f z)) (RealSmooth.conj hf) v
   rw [localizeLeft_add_right, integral_ambientTestCore_add] at hy
   unfold ambientCompactHermitianPair
   rw [localizeStar_euclideanLowerFromSuccGauge,
@@ -24273,6 +24694,10 @@ theorem ambientCompactHermitianPair_lowerFromSucc (n : ℤ)
     integral_ambientTestCore_sub, integral_ambientTestCore_sub,
     integral_ambientTestCore_smul, integral_ambientTestCore_smul]
   rw [hx, hy]
+  all_goals try exact hf
+  simp only [smul_apply, smul_eq_mul]
+  push_cast
+  rw [integral_const_mul]
   ring
 
 /-! #### Ambient carrier and distributional uniqueness
@@ -24309,7 +24734,7 @@ theorem ambientGammaTwoOpenCarrier_subset_upperPlaneOpen :
   exact z.im_pos
 
 /-- Euclidean area restricted to the image of the chosen carrier. -/
-abbrev ambientChosenEuclideanMeasure : Measure ℂ :=
+noncomputable abbrev ambientChosenEuclideanMeasure : Measure ℂ :=
   (volume : Measure ℂ).restrict ambientChosenCarrier
 
 /-- The concrete carrier measure is transported exactly to restricted planar
@@ -24332,10 +24757,15 @@ theorem map_chosenEuclideanCarrierMeasure :
 
 /-- The positive hyperbolic density never vanishes. -/
 theorem hyperbolicDensity_ne_zero (z : ℍ) :
-    (hyperbolicDensity z : ℝ≥0∞) ≠ 0 :=
-  ENNReal.coe_ne_zero.mpr <| pow_ne_zero 2 <|
-    div_ne_zero one_ne_zero
-      (NNReal.ne_iff.mp z.im_ne_zero)
+    (hyperbolicDensity z : ℝ≥0∞) ≠ 0 := by
+  apply ENNReal.coe_ne_zero.mpr
+  change (((1 : NNReal) / NNReal.mk z.im z.im_pos.le) ^ 2) ≠ 0
+  apply pow_ne_zero
+  exact div_ne_zero one_ne_zero <| by
+    intro hz
+    apply z.im_ne_zero
+    have hcoe := congrArg (fun x : NNReal => (x : ℝ)) hz
+    simpa using hcoe
 
 /-- Euclidean area is absolutely continuous with respect to hyperbolic area
 because their density is everywhere strictly positive. -/
@@ -24367,16 +24797,16 @@ theorem ae_mem_open_chosenEuclidean :
       z ∈ gammaTwoOpenCarrier
   rw [ae_restrict_iff'
     chosenGammaTwoFundamentalDomain.carrier_measurable]
-  have hnot : ∀ᵐ z ∂upperEuclideanMeasure,
-      z ∉ chosenGammaTwoFundamentalDomain.carrier \
-        gammaTwoOpenCarrier := by
-    rw [ae_iff]
-    simpa only [not_not, Set.setOf_mem] using
-      chosenCarrier_diff_open_null_upperEuclidean
-  filter_upwards [hnot] with z hz
-  exact fun hzC => by
-    by_contra hzU
-    exact hz ⟨hzC, hzU⟩
+  rw [ae_iff]
+  have hset :
+      {z : ℍ | ¬(z ∈ chosenGammaTwoFundamentalDomain.carrier →
+        z ∈ gammaTwoOpenCarrier)} =
+        chosenGammaTwoFundamentalDomain.carrier \
+          gammaTwoOpenCarrier := by
+    ext z
+    simp
+  rw [hset]
+  exact chosenCarrier_diff_open_null_upperEuclidean
 
 /-- Complexification of an arbitrary real ambient distribution test.  The
 support hypothesis makes it an element of the already-defined genuine
@@ -24432,10 +24862,16 @@ theorem ambientStarRepresentative_memLp (n : ℤ)
     (q : OrbitEuclideanL2 n) :
     MemLp (ambientStarRepresentative n q) 2
       ambientChosenEuclideanMeasure := by
-  rw [← map_chosenEuclideanCarrierMeasure]
-  apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.mpr
-  simpa only [Function.comp_apply,
-    ambientStarRepresentative_apply] using (Lp.memLp q).star
+  rw [← map_chosenEuclideanCarrierMeasure,
+    UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff]
+  have hcomp :
+      ambientStarRepresentative n q ∘ UpperHalfPlane.coe =
+        star (q : ℍ → ℂ) := by
+    funext z
+    simpa only [Function.comp_apply, Pi.star_apply] using
+      ambientStarRepresentative_apply n q z
+  rw [hcomp]
+  exact (Lp.memLp q).star
 
 theorem ambientStarRepresentative_locallyIntegrable (n : ℤ)
     (q : OrbitEuclideanL2 n) :
@@ -24454,8 +24890,7 @@ theorem ambientTestCore_memLp_chosen (n : ℤ)
     MemLp.mono_measure Measure.restrict_le_self
       (v.continuous.memLp_of_hasCompactSupport v.hasCompactSupport)
   rw [← map_chosenEuclideanCarrierMeasure] at hvAmbient
-  exact UpperHalfPlane.measurableEmbedding_coe.
-    memLp_map_measure_iff.mp hvAmbient
+  exact UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.mp hvAmbient
 
 /-- The carrier `L²` vector represented by an ambient compact test. -/
 noncomputable def ambientTestCoreToCarrierL2 (n : ℤ)
@@ -24489,6 +24924,7 @@ theorem ambient_integral_eq_inner_test (n : ℤ)
         hwC (ambientGammaTwoOpenCarrier_subset_ambientChosenCarrier
           (hv hwv))
       exact hw <| by
+        change ambientStarRepresentative n q w * v w = 0
         rw [image_eq_zero_of_notMem_tsupport hwv, mul_zero]
     _ = ∫ w : ℂ, ambientStarRepresentative n q w * v w
           ∂ambientChosenEuclideanMeasure := rfl
@@ -24505,16 +24941,14 @@ theorem ambient_integral_eq_inner_test (n : ℤ)
       apply integral_congr_ae
       filter_upwards [coeFn_ambientTestCoreToCarrierL2 n v] with z hz
       rw [ambientStarRepresentative_apply, hz]
-      simpa only [RCLike.inner_apply']
+      simpa only [RCLike.inner_apply', starRingEnd_apply]
 
 theorem coeFn_embedding_l2Coordinate_fixedPhaseGauge (n : ℤ)
     (u : InverseEtaFixedPhaseCore n) :
     ⇑(orbitPeterssonEuclideanEmbedding n (l2Coordinate n u)) =ᵐ[
       chosenEuclideanCarrierMeasure] fixedPhaseEuclideanGauge n u := by
-  simpa only [fixedPhaseEuclideanGauge, orbitEuclideanGauge,
-    coreEmbedding_toSmoothCore,
-    InverseEtaFixedPhaseCore.toSmoothCompactWeightCore_apply] using
-      coeFn_embedding_l2Coordinate n u
+  filter_upwards [coeFn_embedding_l2Coordinate n u] with z hz
+  simpa only [fixedPhaseEuclideanGauge_apply] using hz
 
 /-- A literal smooth gauge pairing agrees with the Hilbert pairing of any
 carrier `L²` class represented by that gauge. -/
@@ -24530,10 +24964,10 @@ theorem ambientCompactHermitianPair_eq_inner_of_ae (n : ℤ)
   calc
     (∫ w : ℂ,
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (fun z => star (f z)) hf.conj v w) =
+          (fun z => star (f z)) (RealSmooth.conj hf) v w) =
         ∫ w in ambientChosenCarrier,
           HalfWeightCompactCoordinateGreen.localizeLeft
-            (fun z => star (f z)) hf.conj v w := by
+            (fun z => star (f z)) (RealSmooth.conj hf) v w := by
       apply Mock2FA.PaperCorrections.integral_eq_setIntegral_of_support_subset
       intro w hw
       by_contra hwC
@@ -24545,17 +24979,17 @@ theorem ambientCompactHermitianPair_eq_inner_of_ae (n : ℤ)
           image_eq_zero_of_notMem_tsupport hwv]
     _ = ∫ w : ℂ,
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (fun z => star (f z)) hf.conj v w
+          (fun z => star (f z)) (RealSmooth.conj hf) v w
           ∂ambientChosenEuclideanMeasure := rfl
     _ = ∫ w : ℂ,
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (fun z => star (f z)) hf.conj v w
+          (fun z => star (f z)) (RealSmooth.conj hf) v w
           ∂Measure.map UpperHalfPlane.coe
             chosenEuclideanCarrierMeasure := by
       rw [map_chosenEuclideanCarrierMeasure]
     _ = ∫ z : ℍ,
         HalfWeightCompactCoordinateGreen.localizeLeft
-          (fun z => star (f z)) hf.conj v (z : ℂ)
+          (fun z => star (f z)) (RealSmooth.conj hf) v (z : ℂ)
           ∂chosenEuclideanCarrierMeasure :=
       UpperHalfPlane.measurableEmbedding_coe.integral_map _
     _ = ∫ z : ℍ, star (f z) * v (z : ℂ)
@@ -24570,7 +25004,7 @@ theorem ambientCompactHermitianPair_eq_inner_of_ae (n : ℤ)
       filter_upwards [hq, coeFn_ambientTestCoreToCarrierL2 n v]
         with z hzq hzv
       rw [hzq, hzv]
-      simpa only [RCLike.inner_apply']
+      simpa only [RCLike.inner_apply', starRingEnd_apply]
 
 /-- Local compact-test identity for the actual typed raising coordinate,
 expressed entirely in the concrete Euclidean `L²` realizations. -/
@@ -24699,8 +25133,7 @@ theorem orbitEuclidean_eq_zero_of_ambient_test_pairings (n : ℤ)
       w ∈ ambientGammaTwoOpenCarrier →
         ambientStarRepresentative n q w = 0 := by
     apply ambientGammaTwoOpenCarrier_isOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero
-        ((ambientStarRepresentative_locallyIntegrable n q).
-          locallyIntegrableOn ambientGammaTwoOpenCarrier)
+        ((ambientStarRepresentative_locallyIntegrable n q).locallyIntegrableOn ambientGammaTwoOpenCarrier)
     intro g hg hcompact hsupport
     let v : HalfWeightCompactCoordinateGreen.Core :=
       ambientRealTestCore g hg hcompact hsupport
@@ -24776,37 +25209,66 @@ topological closure.  No density or single-valuedness hypothesis is needed. -/
 theorem submodule_adjoint_adjoint_eq_topologicalClosure
     (g : Submodule ℂ (E × F)) :
     g.adjoint.adjoint = g.topologicalClosure := by
-  rw [← g.orthogonal_orthogonal_eq_closure]
-  ext x
+  let e : (E × F) ≃L[ℂ] WithLp 2 (E × F) :=
+    (WithLp.prodContinuousLinearEquiv 2 ℂ E F).symm
+  let G : Submodule ℂ (WithLp 2 (E × F)) :=
+    g.map e.toLinearMap
+  apply Submodule.ext
+  intro x
   rcases x with ⟨x₀, x₁⟩
-  constructor
-  · intro hx
-    rw [Submodule.mem_orthogonal]
-    rintro ⟨p, q⟩ hpq
-    have hpqAdj : (q, -p) ∈ g.adjoint := by
-      rw [Submodule.mem_adjoint_iff]
-      intro a b hab
-      have hOrth :=
-        (Submodule.mem_orthogonal (K := g) (p, q)).mp hpq (a, b) hab
-      simpa only [prod_inner_apply, inner_neg_right, sub_neg_eq_add,
-        add_comm] using hOrth
-    have hDouble :=
-      (Submodule.mem_adjoint_iff g.adjoint (x₀, x₁)).mp hx q (-p) hpqAdj
-    simp only [prod_inner_apply, inner_neg_left] at hDouble ⊢
-    linear_combination -hDouble
-  · intro hx
-    rw [Submodule.mem_adjoint_iff]
-    intro c d hcd
-    have hOrth : (-d, c) ∈ gᗮ := by
+  have hmem :
+      (x₀, x₁) ∈ g.adjoint.adjoint ↔
+        e (x₀, x₁) ∈ G.orthogonal.orthogonal := by
+    constructor
+    · intro hx
       rw [Submodule.mem_orthogonal]
-      rintro ⟨a, b⟩ hab
-      have hAdj :=
-        (Submodule.mem_adjoint_iff g (c, d)).mp hcd a b hab
-      simpa only [prod_inner_apply, inner_neg_right] using hAdj
-    have hDouble :=
-      (Submodule.mem_orthogonal (K := gᗮ) (x₀, x₁)).mp hx (-d, c) hOrth
-    simp only [prod_inner_apply, inner_neg_left] at hDouble
-    linear_combination -hDouble
+      intro y hy
+      have hAdj : (y.snd, -y.fst) ∈ g.adjoint := by
+        rw [Submodule.mem_adjoint_iff]
+        intro a b hab
+        have hy0 : inner ℂ (e (a, b)) y = 0 :=
+          (Submodule.mem_orthogonal G y).mp hy (e (a, b)) <| by
+            exact ⟨(a, b), hab, rfl⟩
+        simpa [e, WithLp.prod_inner_apply, inner_neg_right,
+          sub_neg_eq_add, add_comm] using hy0
+      have hDouble :=
+        (Submodule.mem_adjoint_iff g.adjoint (x₀, x₁)).mp
+          hx y.snd (-y.fst) hAdj
+      simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply,
+        WithLp.prod_inner_apply, WithLp.ofLp_fst, WithLp.ofLp_snd,
+        inner_neg_left] at hDouble ⊢
+      linear_combination -hDouble
+    · intro hx
+      rw [Submodule.mem_adjoint_iff]
+      intro c d hcd
+      have hOrth : e (-d, c) ∈ G.orthogonal := by
+        rw [Submodule.mem_orthogonal]
+        intro y hy
+        rcases hy with ⟨⟨a, b⟩, hab, rfl⟩
+        have hAdj :=
+          (Submodule.mem_adjoint_iff g (c, d)).mp hcd a b hab
+        simpa [e, G, WithLp.prod_inner_apply, inner_neg_right,
+          sub_eq_add_neg, add_comm] using hAdj
+      have hDouble :=
+        (Submodule.mem_orthogonal G.orthogonal (e (x₀, x₁))).mp
+          hx (e (-d, c)) hOrth
+      simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply,
+        WithLp.prod_inner_apply, WithLp.ofLp_fst, WithLp.ofLp_snd,
+        inner_neg_left] at hDouble
+      linear_combination -hDouble
+  rw [hmem, G.orthogonal_orthogonal_eq_closure]
+  change e (x₀, x₁) ∈ (G.topologicalClosure : Set _) ↔
+    (x₀, x₁) ∈ (g.topologicalClosure : Set _)
+  rw [Submodule.topologicalClosure_coe, Submodule.topologicalClosure_coe]
+  change e (x₀, x₁) ∈ closure (e '' (g : Set (E × F))) ↔
+    (x₀, x₁) ∈ closure (g : Set (E × F))
+  rw [← e.image_closure]
+  constructor
+  · rintro ⟨y, hy, hxy⟩
+    have : y = (x₀, x₁) := e.injective hxy
+    simpa [this] using hy
+  · intro hx
+    exact ⟨(x₀, x₁), hx, rfl⟩
 
 /-- Once a densely defined operator is closable, the domain of its Hilbert
 adjoint is automatically dense.  The proof uses the preceding graph theorem:
@@ -24824,7 +25286,9 @@ theorem adjoint_dense_domain
     have ha : a ∈ (T†).domain := by
       rcases (LinearPMap.mem_graph_iff (T†)).mp hab with
         ⟨a', ha', _⟩
-      rw [← ha']
+      have haEq : (a' : F) = a := by
+        simpa only using ha'
+      rw [← haEq]
       exact a'.property
     have hay : inner ℂ a y = 0 :=
       (Submodule.mem_orthogonal (K := (T†).domain) y).mp hy a ha
@@ -24969,7 +25433,7 @@ theorem physicalRaise_dense_domain (n : ℤ) :
     Dense ((physicalRaise n).domain : Set (OrbitPeterssonHilbert n)) := by
   change Dense (LinearMap.range (l2Coordinate n) :
     Set (OrbitPeterssonHilbert n))
-  simpa only [LinearMap.coe_range] using
+  simpa only [DenseRange, LinearMap.coe_range] using
     FixedPhaseDensity.denseRange_l2Coordinate n
 
 /-- The successor core domain of lowering is likewise dense. -/
@@ -24978,7 +25442,7 @@ theorem physicalLowerFromSucc_dense_domain (n : ℤ) :
       Set (OrbitPeterssonHilbert (n + 1))) := by
   change Dense (LinearMap.range (l2Coordinate (n + 1)) :
     Set (OrbitPeterssonHilbert (n + 1)))
-  simpa only [LinearMap.coe_range] using
+  simpa only [DenseRange, LinearMap.coe_range] using
     FixedPhaseDensity.denseRange_l2Coordinate (n + 1)
 
 theorem negativePhysicalRaise_dense_domain (n : ℤ) :
@@ -25039,10 +25503,19 @@ theorem physicalGreenIdentityAt_iff_greenIdentity (n : ℤ) :
   rw [physicalGreenIdentityAt_iff_coreInner]
   constructor
   · intro h x y
-    simpa only [physicalRaise_apply, physicalLowerFromSucc_apply,
-      l2Coordinate_l2CoreRangeEquiv_symm] using
-        h ((l2CoreRangeEquiv n).symm x)
-          ((l2CoreRangeEquiv (n + 1)).symm y)
+    change
+      inner ℂ
+          (raisedCoordinate n ((l2CoreRangeEquiv n).symm x))
+          (y : OrbitPeterssonHilbert (n + 1)) +
+        inner ℂ (x : OrbitPeterssonHilbert n)
+          (lowerFromSuccCoordinate n
+            ((l2CoreRangeEquiv (n + 1)).symm y)) = 0
+    have hxy :=
+      h ((l2CoreRangeEquiv n).symm x)
+        ((l2CoreRangeEquiv (n + 1)).symm y)
+    rw [l2Coordinate_l2CoreRangeEquiv_symm n x,
+      l2Coordinate_l2CoreRangeEquiv_symm (n + 1) y] at hxy
+    exact hxy
   · intro h u v
     simpa only [physicalRaise_apply, physicalLowerFromSucc_apply,
       l2CoreRangeEquiv_coe, LinearEquiv.symm_apply_apply] using
@@ -25101,41 +25574,41 @@ theorem physicalGreenIdentity_of_pairedPolygon
 
 theorem physicalRaise_core_ambient_test_identity (n : ℤ)
     (x : LinearMap.range (l2Coordinate n))
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (physicalRaise n x))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (x : OrbitPeterssonHilbert n))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n
-          (PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
   simpa only [physicalRaise_apply, raisedCoordinate_apply,
     l2Coordinate_l2CoreRangeEquiv_symm] using
-      PhysicalLocalL2.inner_embedded_raise_test n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.inner_embedded_raise_test n
         ((l2CoreRangeEquiv n).symm x) v hv
 
 theorem physicalLowerFromSucc_core_ambient_test_identity (n : ℤ)
     (x : LinearMap.range (l2Coordinate (n + 1)))
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (physicalLowerFromSucc n x))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (x : OrbitPeterssonHilbert (n + 1)))
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
-          (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
   simpa only [physicalLowerFromSucc_apply,
     lowerFromSuccCoordinate_apply,
     l2Coordinate_l2CoreRangeEquiv_symm] using
-      PhysicalLocalL2.inner_embedded_lowerFromSucc_test n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.inner_embedded_lowerFromSucc_test n
         ((l2CoreRangeEquiv (n + 1)).symm x) v hv
 
 /-! #### Closures and adjoint inclusions -/
@@ -25166,7 +25639,9 @@ theorem physicalRaise_isClosable (n : ℤ) :
       p ∈ closure ((physicalRaise n).graph :
         Set (OrbitPeterssonHilbert n ×
           OrbitPeterssonHilbert (n + 1))) := by
-    simpa only [Submodule.topologicalClosure_coe] using hp
+    change p ∈ closure ((physicalRaise n).graph :
+      Set (OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1))) at hp
+    exact hp
   have hPair : ∀ v : PhysicalLocalL2.AmbientTestCore,
       tsupport (v : ℂ → ℂ) ⊆
           PhysicalLocalL2.ambientGammaTwoOpenCarrier →
@@ -25189,10 +25664,8 @@ theorem physicalRaise_isClosable (n : ℤ) :
     have hPairingContinuous : Continuous pairing := by
       dsimp only [pairing]
       exact
-        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)).continuous.
-          comp continuous_snd).inner continuous_const).sub
-        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.
-          comp continuous_fst).inner continuous_const)
+        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)).continuous.comp continuous_snd).inner continuous_const).sub
+        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.comp continuous_fst).inner continuous_const)
     have hClosed : IsClosed {r | pairing r = 0} :=
       isClosed_eq hPairingContinuous continuous_const
     have hGraphSubset :
@@ -25203,10 +25676,9 @@ theorem physicalRaise_isClosable (n : ℤ) :
       intro r hr
       rcases (LinearPMap.mem_graph_iff (physicalRaise n)).mp hr with
         ⟨x, hxBase, hxValue⟩
-      rw [← hxBase, ← hxValue]
-      change pairing
-        ((x : OrbitPeterssonHilbert n), physicalRaise n x) = 0
+      change pairing r = 0
       dsimp only [pairing]
+      rw [← hxBase, ← hxValue]
       rw [physicalRaise_core_ambient_test_identity n x v hv]
       ring
     have hpClosed : p ∈ {r | pairing r = 0} :=
@@ -25237,7 +25709,9 @@ theorem physicalLowerFromSucc_isClosable (n : ℤ) :
       p ∈ closure ((physicalLowerFromSucc n).graph :
         Set (OrbitPeterssonHilbert (n + 1) ×
           OrbitPeterssonHilbert n)) := by
-    simpa only [Submodule.topologicalClosure_coe] using hp
+    change p ∈ closure ((physicalLowerFromSucc n).graph :
+      Set (OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n)) at hp
+    exact hp
   have hPair : ∀ v : PhysicalLocalL2.AmbientTestCore,
       tsupport (v : ℂ → ℂ) ⊆
           PhysicalLocalL2.ambientGammaTwoOpenCarrier →
@@ -25259,10 +25733,8 @@ theorem physicalLowerFromSucc_isClosable (n : ℤ) :
     have hPairingContinuous : Continuous pairing := by
       dsimp only [pairing]
       exact
-        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.
-          comp continuous_snd).inner continuous_const).sub
-        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)).continuous.
-          comp continuous_fst).inner continuous_const)
+        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.comp continuous_snd).inner continuous_const).sub
+        (((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)).continuous.comp continuous_fst).inner continuous_const)
     have hClosed : IsClosed {r | pairing r = 0} :=
       isClosed_eq hPairingContinuous continuous_const
     have hGraphSubset :
@@ -25273,11 +25745,9 @@ theorem physicalLowerFromSucc_isClosable (n : ℤ) :
       intro r hr
       rcases (LinearPMap.mem_graph_iff (physicalLowerFromSucc n)).mp hr with
         ⟨x, hxBase, hxValue⟩
-      rw [← hxBase, ← hxValue]
-      change pairing
-        ((x : OrbitPeterssonHilbert (n + 1)),
-          physicalLowerFromSucc n x) = 0
+      change pairing r = 0
       dsimp only [pairing]
+      rw [← hxBase, ← hxValue]
       rw [physicalLowerFromSucc_core_ambient_test_identity n x v hv]
       ring
     have hpClosed : p ∈ {r | pairing r = 0} :=
@@ -25464,10 +25934,13 @@ theorem physicalJointFromSucc_on_core (n : ℤ)
       WithLp.toLp 2
         (raisedCoordinate (n + 1) u, lowerFromSuccCoordinate n u) := by
   apply WithLp.ofLp_injective 2
-  exact Prod.ext
-    (by simp only [physicalJointFromSucc_fst, physicalRaise_on_core])
-    (by simp only [physicalJointFromSucc_snd,
-      physicalLowerFromSucc_on_core])
+  apply Prod.ext
+  · change physicalRaise (n + 1)
+      (l2CoreRangeEquiv (n + 1) u) = raisedCoordinate (n + 1) u
+    exact physicalRaise_on_core (n + 1) u
+  · change physicalLowerFromSucc n
+      (l2CoreRangeEquiv (n + 1) u) = lowerFromSuccCoordinate n u
+    exact physicalLowerFromSucc_on_core n u
 
 /-- The joint domain is the same actual dense smooth-core range as each
 component. -/
@@ -25476,7 +25949,7 @@ theorem physicalJointFromSucc_dense_domain (n : ℤ) :
       Set (OrbitPeterssonHilbert (n + 1))) := by
   change Dense (LinearMap.range (l2Coordinate (n + 1)) :
     Set (OrbitPeterssonHilbert (n + 1)))
-  simpa only [LinearMap.coe_range] using
+  simpa only [DenseRange, LinearMap.coe_range] using
     FixedPhaseDensity.denseRange_l2Coordinate (n + 1)
 
 /-- If both physical components are closable, the actual `L²`-direct-sum
@@ -25494,7 +25967,9 @@ theorem physicalJointFromSucc_isClosable_of_components {n : ℤ}
   have hxSet :
       x ∈ closure ((physicalJointFromSucc n).graph :
         Set (OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n)) := by
-    simpa only [Submodule.topologicalClosure_coe] using hx
+    change x ∈ closure ((physicalJointFromSucc n).graph :
+      Set (OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n)) at hx
+    exact hx
   let projRaise :
       OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n →
         OrbitPeterssonHilbert (n + 1) ×
@@ -25521,8 +25996,11 @@ theorem physicalJointFromSucc_isClosable_of_components {n : ℤ}
     rcases (LinearPMap.mem_graph_iff (physicalJointFromSucc n)).mp hp with
       ⟨z, hzBase, hzValue⟩
     rw [← hzBase, ← hzValue]
-    simpa only [physicalJointFromSucc_fst] using
-      (physicalRaise (n + 1)).mem_graph z
+    change
+      ((z : OrbitPeterssonHilbert (n + 1)),
+        physicalRaise (n + 1) z) ∈
+          (physicalRaise (n + 1)).graph
+    exact (physicalRaise (n + 1)).mem_graph z
   have hProjLowerGraph :
       projLower '' ((physicalJointFromSucc n).graph :
         Set (OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n)) ⊆
@@ -25534,8 +26012,11 @@ theorem physicalJointFromSucc_isClosable_of_components {n : ℤ}
     rcases (LinearPMap.mem_graph_iff (physicalJointFromSucc n)).mp hp with
       ⟨z, hzBase, hzValue⟩
     rw [← hzBase, ← hzValue]
-    simpa only [physicalJointFromSucc_snd] using
-      (physicalLowerFromSucc n).mem_graph z
+    change
+      ((z : OrbitPeterssonHilbert (n + 1)),
+        physicalLowerFromSucc n z) ∈
+          (physicalLowerFromSucc n).graph
+    exact (physicalLowerFromSucc n).mem_graph z
   have hRaiseSet :
       projRaise x ∈ closure ((physicalRaise (n + 1)).graph :
         Set (OrbitPeterssonHilbert (n + 1) ×
@@ -25552,10 +26033,15 @@ theorem physicalJointFromSucc_isClosable_of_components {n : ℤ}
         ⟨x, hxSet, rfl⟩)
   have hRaiseClosure :
       projRaise x ∈ (physicalRaise (n + 1)).graph.topologicalClosure := by
-    simpa only [Submodule.topologicalClosure_coe] using hRaiseSet
+    change projRaise x ∈ closure ((physicalRaise (n + 1)).graph :
+      Set (OrbitPeterssonHilbert (n + 1) ×
+        OrbitPeterssonHilbert ((n + 1) + 1)))
+    exact hRaiseSet
   have hLowerClosure :
       projLower x ∈ (physicalLowerFromSucc n).graph.topologicalClosure := by
-    simpa only [Submodule.topologicalClosure_coe] using hLowerSet
+    change projLower x ∈ closure ((physicalLowerFromSucc n).graph :
+      Set (OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n))
+    exact hLowerSet
   rw [hRaise.graph_closure_eq_closure_graph] at hRaiseClosure
   rw [hLower.graph_closure_eq_closure_graph] at hLowerClosure
   dsimp only [projRaise] at hRaiseClosure
@@ -26081,17 +26567,19 @@ theorem fixedPhaseHolomorphicDirection_realSmooth :
     RealSmooth fixedPhaseHolomorphicDirection := by
   change RealSmooth
     (Complex.I • dx upstairsCoreCutoff + dy upstairsCoreCutoff)
-  exact
-    (upstairsCoreCutoff_realSmooth.dx.const_complex_smul Complex.I).add
-      upstairsCoreCutoff_realSmooth.dy
+  exact RealSmooth.add
+    (RealSmooth.const_complex_smul Complex.I
+      (RealSmooth.dx upstairsCoreCutoff_realSmooth))
+    (RealSmooth.dy upstairsCoreCutoff_realSmooth)
 
 theorem fixedPhaseAntiholomorphicDirection_realSmooth :
     RealSmooth fixedPhaseAntiholomorphicDirection := by
   change RealSmooth
     ((-Complex.I) • dx upstairsCoreCutoff + dy upstairsCoreCutoff)
-  exact
-    (upstairsCoreCutoff_realSmooth.dx.const_complex_smul (-Complex.I)).add
-      upstairsCoreCutoff_realSmooth.dy
+  exact RealSmooth.add
+    (RealSmooth.const_complex_smul (-Complex.I)
+      (RealSmooth.dx upstairsCoreCutoff_realSmooth))
+    (RealSmooth.dy upstairsCoreCutoff_realSmooth)
 
 /-- If both Wirtinger directions vanish at a point, the full real Frechet
 derivative vanishes there. -/
@@ -26100,17 +26588,27 @@ theorem fderiv_upstairsCoreCutoff_eq_zero_of_directions_eq_zero
     (hHol : fixedPhaseHolomorphicDirection z = 0)
     (hAnti : fixedPhaseAntiholomorphicDirection z = 0) :
     fderiv ℝ (upperLift upstairsCoreCutoff) (z : ℂ) = 0 := by
+  have hHol' : Complex.I * dx upstairsCoreCutoff z +
+      dy upstairsCoreCutoff z = 0 := by
+    simpa [fixedPhaseHolomorphicDirection, Pi.add_apply,
+      Pi.smul_apply, smul_eq_mul] using hHol
+  have hAnti' : (-Complex.I) * dx upstairsCoreCutoff z +
+      dy upstairsCoreCutoff z = 0 := by
+    simpa [fixedPhaseAntiholomorphicDirection, Pi.add_apply,
+      Pi.smul_apply, smul_eq_mul] using hAnti
   have hdx : dx upstairsCoreCutoff z = 0 := by
     have hTwoI : (2 * Complex.I) * dx upstairsCoreCutoff z = 0 := by
-      change (2 * Complex.I) * dx upstairsCoreCutoff z = 0
-      linear_combination hHol - hAnti
+      calc
+        (2 * Complex.I) * dx upstairsCoreCutoff z =
+            (Complex.I * dx upstairsCoreCutoff z +
+              dy upstairsCoreCutoff z) -
+            ((-Complex.I) * dx upstairsCoreCutoff z +
+              dy upstairsCoreCutoff z) := by ring
+        _ = 0 := by rw [hHol', hAnti', sub_self]
     exact (mul_eq_zero.mp hTwoI).resolve_left
       (mul_ne_zero (by norm_num) Complex.I_ne_zero)
   have hdy : dy upstairsCoreCutoff z = 0 := by
-    change dy upstairsCoreCutoff z = 0
-    change Complex.I * dx upstairsCoreCutoff z +
-      dy upstairsCoreCutoff z = 0 at hHol
-    simpa only [hdx, mul_zero, zero_add] using hHol
+    simpa only [hdx, mul_zero, zero_add] using hHol'
   apply ContinuousLinearMap.ext
   intro ξ
   have hξ : ξ = ξ.re • (1 : ℂ) + ξ.im • Complex.I := by
@@ -26118,7 +26616,8 @@ theorem fderiv_upstairsCoreCutoff_eq_zero_of_directions_eq_zero
   rw [hξ, map_add, map_smul, map_smul]
   change ξ.re • dx upstairsCoreCutoff z +
       ξ.im • dy upstairsCoreCutoff z = 0
-  simp only [hdx, hdy, smul_zero, add_zero]
+  rw [hdx, hdy]
+  simp
 
 /-- At least one of the two invariant differential directions is nonzero at
 an actual point. -/
@@ -26136,10 +26635,8 @@ theorem exists_fixedPhase_direction_ne_zero :
 
 /-- Real smoothness is preserved by pointwise complex conjugation. -/
 theorem realSmooth_conj_comp {f : ℍ → ℂ} (hf : RealSmooth f) :
-    RealSmooth (fun z ↦ star (f z)) := by
-  unfold RealSmooth upperLift at hf ⊢
-  simpa only [Function.comp_apply, Complex.conjCLE_apply] using
-    Complex.conjCLE.contDiff.comp_contDiffOn hf
+    RealSmooth (fun z ↦ star (f z)) :=
+  RealSmooth.conj hf
 
 /-- The holomorphic direction has exact integral weight `+2`. -/
 theorem fixedPhaseHolomorphicDirection_covariance
@@ -26212,16 +26709,22 @@ theorem fixedPhaseAntiholomorphicDirection_covariance
           (star ((inverseEtaPaperOrbitDenom γ z ^ 2)⁻¹) *
             fixedPhaseAntiholomorphicDirection
               (((γ : GammaTwo) : SL(2, ℤ)) • z)) := by
-          rw [Complex.conj_inv, hConjPow]
-          field_simp [hjc]
+          rw [show star ((inverseEtaPaperOrbitDenom γ z ^ 2)⁻¹) =
+              (star (inverseEtaPaperOrbitDenom γ z ^ 2))⁻¹ by
+            exact map_inv₀ (starRingEnd ℂ) _]
+          have hpow : star (inverseEtaPaperOrbitDenom γ z ^ 2) ≠ 0 := by
+            rw [hConjPow]
+            exact pow_ne_zero 2 hjc
+          field_simp [hpow]
     _ = star (inverseEtaPaperOrbitDenom γ z ^ 2) *
         fixedPhaseAntiholomorphicDirection z := by rw [← hChain]
 
 /-- Select a genuine weight-two generator.  If the first direction happens
 to vanish identically, conjugating the proved-nonzero opposite direction
 changes its conjugate covariance into ordinary weight `+2`. -/
-noncomputable def fixedPhasePositiveWeightGenerator (z : ℍ) : ℂ :=
-  if ∃ w : ℍ, fixedPhaseHolomorphicDirection w ≠ 0 then
+noncomputable def fixedPhasePositiveWeightGenerator (z : ℍ) : ℂ := by
+  classical
+  exact if ∃ w : ℍ, fixedPhaseHolomorphicDirection w ≠ 0 then
     fixedPhaseHolomorphicDirection z
   else
     star (fixedPhaseAntiholomorphicDirection z)
@@ -26246,16 +26749,19 @@ theorem fixedPhasePositiveWeightGenerator_covariance
   split_ifs with h
   · exact fixedPhaseHolomorphicDirection_covariance γ z
   · rw [fixedPhaseAntiholomorphicDirection_covariance]
-    simp only [map_mul, map_pow, Complex.conj_conj]
+    simp only [← starRingEnd_apply, map_mul, map_pow, Complex.conj_conj]
 
 theorem exists_fixedPhasePositiveWeightGenerator_ne_zero :
     ∃ z : ℍ, fixedPhasePositiveWeightGenerator z ≠ 0 := by
   classical
   by_cases hHol : ∃ z : ℍ, fixedPhaseHolomorphicDirection z ≠ 0
-  · obtain ⟨z, hz⟩ := hHol
-    exact ⟨z, by simpa [fixedPhasePositiveWeightGenerator, hHol] using hz⟩
-  · obtain ⟨z, hzHol | hzAnti⟩ := exists_fixedPhase_direction_ne_zero
-    · exact (hHol ⟨z, hzHol⟩).elim
+  · have hExists := hHol
+    obtain ⟨z, hz⟩ := hHol
+    refine ⟨z, ?_⟩
+    simpa [fixedPhasePositiveWeightGenerator, hExists] using hz
+  · rcases exists_fixedPhase_direction_ne_zero with ⟨z, hz⟩
+    rcases hz with hzHol | hzAnti
+    · exact False.elim (hHol ⟨z, hzHol⟩)
     · refine ⟨z, ?_⟩
       simp only [fixedPhasePositiveWeightGenerator, hHol, if_false]
       intro hConj
@@ -26264,6 +26770,7 @@ theorem exists_fixedPhasePositiveWeightGenerator_ne_zero :
       simpa using this
 
 /-- A fixed point at which the selected weight-two generator is nonzero. -/
+
 noncomputable def fixedPhaseGeneratorPoint : ℍ :=
   Classical.choose exists_fixedPhasePositiveWeightGenerator_ne_zero
 
@@ -26292,10 +26799,17 @@ private theorem heightSq_conj_weight_covariance_algebra
     apply hj
     have := congrArg star h
     simpa using this
-  rw [map_mul, map_pow]
+  have hstarMul :
+      star (j ^ (2 : ℕ) * p) = star (j ^ (2 : ℕ)) * star p := by
+    simpa only [starRingEnd_apply] using
+      (map_mul (starRingEnd ℂ) (j ^ (2 : ℕ)) p)
+  have hstarPow :
+      star (j ^ (2 : ℕ)) = (star j) ^ (2 : ℕ) := by
+    simpa only [starRingEnd_apply] using
+      (map_pow (starRingEnd ℂ) j (2 : ℕ))
+  rw [hstarMul, hstarPow]
   rw [show (Complex.normSq j : ℂ) = star j * j by
     exact Complex.normSq_eq_conj_mul_self]
-  simp only [zpow_negSucc, zpow_ofNat]
   field_simp [hj, hjc]
   <;> ring
 
@@ -26346,8 +26860,8 @@ private theorem positiveWeightPower_eq_zpow
   calc
     (j ^ (2 : ℕ)) ^ m = j ^ (2 * m) := (pow_mul j 2 m).symm
     _ = j ^ ((2 : ℤ) * (m : ℤ)) := by
-      simp only [Int.ofNat_eq_coe, Int.reduceOfNat, Int.mul_ofNat,
-        zpow_ofNat]
+      rw [show (2 : ℤ) * (m : ℤ) = ((2 * m : ℕ) : ℤ) by omega]
+      exact (zpow_ofNat j (2 * m)).symm
 
 private theorem negativeWeightPower_eq_zpow
     (j : ℂ) (m : ℕ) :
@@ -26356,12 +26870,11 @@ private theorem negativeWeightPower_eq_zpow
   calc
     (j ^ (-2 : ℤ)) ^ (m + 1) =
         (j ^ (-2 : ℤ)) ^ (((m + 1 : ℕ) : ℤ)) := by
-      simp only [zpow_ofNat]
+      exact (zpow_ofNat (j ^ (-2 : ℤ)) (m + 1)).symm
     _ = j ^ ((-2 : ℤ) * ((m + 1 : ℕ) : ℤ)) :=
       (zpow_mul j (-2 : ℤ) (((m + 1 : ℕ) : ℤ))).symm
     _ = j ^ ((2 : ℤ) * Int.negSucc m) := by
-      congr 1
-      omega
+      congr 1 <;> omega
 
 theorem fixedPhaseIntegralWeightFactor_covariance
     (n : ℤ) (γ : GammaTwo) (z : ℍ) :
@@ -26375,11 +26888,13 @@ theorem fixedPhaseIntegralWeightFactor_covariance
           (((γ : GammaTwo) : SL(2, ℤ)) • z) ^ m = _
       rw [fixedPhasePositiveWeightGenerator_covariance, mul_pow,
         positiveWeightPower_eq_zpow]
+      rfl
   | negSucc m =>
       change fixedPhaseNegativeWeightGenerator
           (((γ : GammaTwo) : SL(2, ℤ)) • z) ^ (m + 1) = _
       rw [fixedPhaseNegativeWeightGenerator_covariance, mul_pow,
         negativeWeightPower_eq_zpow]
+      rfl
 
 theorem fixedPhaseIntegralWeightFactor_at_point_ne_zero (n : ℤ) :
     fixedPhaseIntegralWeightFactor n fixedPhaseGeneratorPoint ≠ 0 := by
@@ -26404,8 +26919,16 @@ noncomputable def inverseEtaPaperOrbitAllIndexSeedSection (n : ℤ) :
       (inverseEtaPaperOrbitMultiplier GammaTwo n).factor γ z *
         (fixedPhaseIntegralWeightFactor n z * inverseEtaSection z)
   rw [fixedPhaseIntegralWeightFactor_covariance,
-    inverseEtaSection.covariance,
+    WeightSection.covariance inverseEtaSection,
     inverseEtaPaperOrbitMultiplier_factor]
+  change
+    inverseEtaPaperOrbitDenom γ z ^ (2 * n) *
+          fixedPhaseIntegralWeightFactor n z *
+        ((inverseEtaMultiplier GammaTwo).factor γ z *
+          inverseEtaSection z) =
+      (inverseEtaMultiplier GammaTwo).factor γ z *
+          inverseEtaPaperOrbitDenom γ z ^ (2 * n) *
+        (fixedPhaseIntegralWeightFactor n z * inverseEtaSection z)
   ring
 
 @[simp]
@@ -26423,7 +26946,7 @@ theorem inverseEtaPaperOrbitAllIndexSeedSection_covariance
         (((γ : GammaTwo) : SL(2, ℤ)) • z) =
       (inverseEtaPaperOrbitMultiplier GammaTwo n).factor γ z *
         inverseEtaPaperOrbitAllIndexSeedSection n z :=
-  (inverseEtaPaperOrbitAllIndexSeedSection n).covariance γ z
+  WeightSection.covariance (inverseEtaPaperOrbitAllIndexSeedSection n) γ z
 
 theorem inverseEtaPaperOrbitAllIndexSeedSection_realSmooth (n : ℤ) :
     RealSmooth
@@ -26499,7 +27022,7 @@ theorem quotientAllIndexCoreCutoff_mk (z : ℍ) :
 theorem quotientAllIndexCoreCutoff_continuous :
     Continuous quotientAllIndexCoreCutoff := by
   exact Complex.ofRealCLM.continuous.comp
-    (expNegInvGlue.contDiff.continuous.comp
+    ((expNegInvGlue.contDiff (n := 1)).continuous.comp
       (potential_continuous.sub continuous_const))
 
 theorem quotientAllIndexCoreCutoff_support_subset_compactTruncation :
@@ -26547,8 +27070,12 @@ theorem upstairsAllIndexCoreCutoff_projected_support :
     rwa [hEq] at hw'
   · intro hz
     refine ⟨z, ?_, rfl⟩
-    simpa only [Function.mem_support,
-      quotientAllIndexCoreCutoff_mk] using hz
+    have hz' :
+        quotientAllIndexCoreCutoff (gammaTwoQuotientMk z) ≠ 0 := by
+      simpa only [Function.mem_support, gammaTwoQuotientMk] using hz
+    change upstairsAllIndexCoreCutoff z ≠ 0
+    rw [← quotientAllIndexCoreCutoff_mk]
+    exact hz'
 
 theorem upstairsAllIndexCoreCutoff_quotientTSupport :
     quotientTSupport upstairsAllIndexCoreCutoff =
@@ -26656,6 +27183,15 @@ open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open scoped LinearPMap
 
+noncomputable local instance fixedPhaseClosedTowerCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseClosedTowerCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
+
 /-! ### Canonical double-adjoint closures on the physical tower -/
 
 /-- The second Hilbert adjoint of the physical raising operator is exactly its
@@ -26741,18 +27277,14 @@ the arithmetic identity `(n+1)-1=n`.  This definition exposes the transport
 instead of silently conflating the source and target indices. -/
 noncomputable def reindexedActualLower (n : ℤ) :
     InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
-      InverseEtaFixedPhaseCore n := by
-  simpa only [add_sub_cancel_right] using
-    (InverseEtaFixedPhaseCore.lower (n + 1))
+      InverseEtaFixedPhaseCore n :=
+  InverseEtaFixedPhaseCore.lowerFromSucc n
 
 /-- The transported actual lowering map is exactly the separately typed
 `lowerFromSucc`; both have the same raw differential expression and stable-core
 proof. -/
 theorem reindexedActualLower_eq_lowerFromSucc (n : ℤ) :
-    reindexedActualLower n = InverseEtaFixedPhaseCore.lowerFromSucc n := by
-  apply LinearMap.ext
-  intro u
-  apply Subtype.ext
+    reindexedActualLower n = InverseEtaFixedPhaseCore.lowerFromSucc n :=
   rfl
 
 /-- The corresponding transported Petersson coordinate. -/
@@ -26820,7 +27352,9 @@ theorem quotientCoordinates_jointlyClosable_of_jointGraph
         ⟨Q.graphExtension z, hRawClosure, rfl⟩)
   have hMapped :
       unwrap (Q.graphExtension z) ∈ T.graph.topologicalClosure := by
-    simpa only [Submodule.topologicalClosure_coe] using hMappedSet
+    change unwrap (Q.graphExtension z) ∈
+      closure (T.graph : Set (H₀ × WithLp 2 (HR × HL)))
+    exact hMappedSet
   rw [hT.graph_closure_eq_closure_graph] at hMapped
   have hFirstZero : (unwrap (Q.graphExtension z)).1 = 0 := by
     change Q.baseExtension z = 0
@@ -26850,30 +27384,130 @@ theorem quotientCoordinates_jointlyClosable_of_jointGraph
 
 /-! ### The actual Definition-1 graph completion is jointly closable -/
 
-/-- The three actual coordinates at source index `n+1`, with only the target
-of lowering rewritten along `(n+1)-1=n`. -/
+private abbrev successorCoordinateType (n k : ℤ) :=
+  DefinitionOneSobolev.QuotientHilbertCoordinates
+    (InverseEtaFixedPhaseCore (n + 1))
+    (OrbitPeterssonHilbert (n + 1))
+    (OrbitPeterssonHilbert ((n + 1) + 1))
+    (OrbitPeterssonHilbert k)
+
+private theorem successorIndexEq (n : ℤ) : n + 1 - 1 = n :=
+  add_sub_cancel_right n 1
+
+private noncomputable def transportSuccessorCoordinates
+    (n m : ℤ) (h : m = n) (Q : successorCoordinateType n m) :
+    successorCoordinateType n n :=
+  Eq.mp (congrArg (successorCoordinateType n) h) Q
+
+private theorem transportSuccessorCoordinates_base
+    (n m : ℤ) (h : m = n) (Q : successorCoordinateType n m)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (transportSuccessorCoordinates n m h Q).base u = Q.base u := by
+  cases h
+  rfl
+
+private theorem transportSuccessorCoordinates_raised
+    (n m : ℤ) (h : m = n) (Q : successorCoordinateType n m)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (transportSuccessorCoordinates n m h Q).raised u = Q.raised u := by
+  cases h
+  rfl
+
+private theorem transportSuccessorCoordinates_lowered
+    (n m : ℤ) (h : m = n) (Q : successorCoordinateType n m)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (transportSuccessorCoordinates n m h Q).lowered u =
+      Eq.mp (congrArg OrbitPeterssonHilbert h) (Q.lowered u) := by
+  cases h
+  rfl
+
+private theorem transportL2Coordinate
+    (m n : ℤ) (h : m = n) (u : InverseEtaFixedPhaseCore m) :
+    Eq.mp (congrArg OrbitPeterssonHilbert h) (l2Coordinate m u) =
+      l2Coordinate n
+        (Eq.mp (congrArg InverseEtaFixedPhaseCore h) u) := by
+  cases h
+  rfl
+
+private theorem coe_transportInverseEtaFixedPhaseCore
+    (m n : ℤ) (h : m = n) (u : InverseEtaFixedPhaseCore m) :
+    ((Eq.mp (congrArg InverseEtaFixedPhaseCore h) u :
+        InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) =
+      (u : SmoothQuotientCompactFunction) := by
+  cases h
+  rfl
+
+private theorem transportLowerCore_eq_lowerFromSucc
+    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    Eq.mp (congrArg InverseEtaFixedPhaseCore (successorIndexEq n))
+        (InverseEtaFixedPhaseCore.lower (n + 1) u) =
+      InverseEtaFixedPhaseCore.lowerFromSucc n u := by
+  apply Subtype.ext
+  change
+    ((Eq.mp (congrArg InverseEtaFixedPhaseCore (successorIndexEq n))
+        (InverseEtaFixedPhaseCore.lower (n + 1) u) :
+          InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) =
+      ((InverseEtaFixedPhaseCore.lowerFromSucc n u :
+          InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction)
+  calc
+    _ = ((InverseEtaFixedPhaseCore.lower (n + 1) u :
+          InverseEtaFixedPhaseCore (n + 1 - 1)) :
+            SmoothQuotientCompactFunction) :=
+      coe_transportInverseEtaFixedPhaseCore
+        (n + 1 - 1) n (successorIndexEq n)
+        (InverseEtaFixedPhaseCore.lower (n + 1) u)
+    _ = _ := rfl
+
+private theorem transportedCoordinateLowered_eq_reindexed
+    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    Eq.mp (congrArg OrbitPeterssonHilbert (successorIndexEq n))
+        ((DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
+          (n + 1)).lowered u) =
+      reindexedActualLoweredCoordinate n u := by
+  rw [DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates_lowered]
+  rw [transportL2Coordinate (n + 1 - 1) n (successorIndexEq n)]
+  rw [transportLowerCore_eq_lowerFromSucc]
+  rfl
+
+/-- The three actual coordinates at source index `n+1`, transported only in
+its lowering target across `(n+1)-1=n`. -/
 noncomputable def successorGraphCoordinates (n : ℤ) :
-    DefinitionOneSobolev.QuotientHilbertCoordinates
-      (InverseEtaFixedPhaseCore (n + 1))
-      (OrbitPeterssonHilbert (n + 1))
-      (OrbitPeterssonHilbert ((n + 1) + 1))
-      (OrbitPeterssonHilbert n) where
-  base := l2Coordinate (n + 1)
-  raised := raisedCoordinate (n + 1)
-  lowered := reindexedActualLoweredCoordinate n
+    successorCoordinateType n n :=
+  transportSuccessorCoordinates n (n + 1 - 1) (successorIndexEq n)
+    (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1))
+
+@[simp]
+theorem successorGraphCoordinates_base (n : ℤ)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (successorGraphCoordinates n).base u = l2Coordinate (n + 1) u := by
+  exact transportSuccessorCoordinates_base n (n + 1 - 1)
+    (successorIndexEq n)
+    (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1)) u
+
+@[simp]
+theorem successorGraphCoordinates_raised (n : ℤ)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (successorGraphCoordinates n).raised u = raisedCoordinate (n + 1) u := by
+  exact transportSuccessorCoordinates_raised n (n + 1 - 1)
+    (successorIndexEq n)
+    (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1)) u
+
+@[simp]
+theorem successorGraphCoordinates_lowered (n : ℤ)
+    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (successorGraphCoordinates n).lowered u =
+      reindexedActualLoweredCoordinate n u := by
+  rw [successorGraphCoordinates,
+    transportSuccessorCoordinates_lowered]
+  exact transportedCoordinateLowered_eq_reindexed n u
 
 /-- This rewritten coordinate package is literally the original graph
 coordinate package transported across the displayed integer identity. -/
 theorem successorGraphCoordinates_eq_coordinates (n : ℤ) :
     successorGraphCoordinates n =
-      (by
-        simpa only [add_sub_cancel_right] using
-          (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
-            (n + 1))) := by
-  simp only [successorGraphCoordinates,
-    reindexedActualLoweredCoordinate, reindexedActualLower,
-    DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates,
-    loweredCoordinate, add_sub_cancel_right]
+      transportSuccessorCoordinates n (n + 1 - 1) (successorIndexEq n)
+        (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1)) :=
+  rfl
 
 /-- Every raw successor graph vector belongs to the genuine physical joint
 operator graph. -/
@@ -26884,7 +27518,8 @@ theorem successorGraphCoordinates_core_mem_physicalJointGraph
           ((successorGraphCoordinates n).raised u,
             (successorGraphCoordinates n).lowered u)) ∈
       (physicalJointFromSucc n).graph := by
-  simpa only [successorGraphCoordinates,
+  simpa only [successorGraphCoordinates_base,
+    successorGraphCoordinates_raised, successorGraphCoordinates_lowered,
     reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
     l2CoreRangeEquiv_coe, physicalJointFromSucc_on_core] using
       (physicalJointFromSucc n).mem_graph
@@ -26903,7 +27538,7 @@ theorem successorGraphCoordinates_jointlyClosable (n : ℤ) :
 
 /-- Remove the outer `WithLp 2` wrapper from a successor graph vector.  This
 is a continuous linear equivalence, so it transports closures exactly. -/
-def successorGraphUnwrap (n : ℤ) :
+noncomputable def successorGraphUnwrap (n : ℤ) :
     DefinitionOneSobolev.EnergyTarget
         (OrbitPeterssonHilbert (n + 1))
         (OrbitPeterssonHilbert ((n + 1) + 1))
@@ -26943,14 +27578,17 @@ theorem successorGraphUnwrap_image_range_graph_eq_physicalJointGraph
           ((successorGraphCoordinates n).raised u,
             (successorGraphCoordinates n).lowered u)) = p
     apply Prod.ext
-    · change l2Coordinate (n + 1) u = p.1
+    · simp only [successorGraphCoordinates_base]
+      change l2Coordinate (n + 1) u = p.1
       calc
         l2Coordinate (n + 1) u =
             (x : OrbitPeterssonHilbert (n + 1)) := by
           simpa only [u] using
             (l2Coordinate_l2CoreRangeEquiv_symm (n + 1) x)
         _ = p.1 := hxBase
-    · change
+    · simp only [successorGraphCoordinates_raised,
+        successorGraphCoordinates_lowered]
+      change
         WithLp.toLp 2
             (raisedCoordinate (n + 1) u,
               reindexedActualLoweredCoordinate n u) = p.2
@@ -26977,8 +27615,7 @@ theorem successorGraphUnwrap_image_range_graphExtension_eq_closedJointGraph
         Set.range (successorGraphCoordinates n).graphExtension =
       ((closedJointFromSucc n).graph :
         Set (OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n)) := by
-  rw [(successorGraphCoordinates n)
-      .range_graphExtension_eq_closure_range_graph]
+  rw [(successorGraphCoordinates n).range_graphExtension_eq_closure_range_graph]
   rw [ContinuousLinearEquiv.image_closure]
   rw [successorGraphUnwrap_image_range_graph_eq_physicalJointGraph]
   change
@@ -26991,20 +27628,28 @@ theorem successorGraphUnwrap_image_range_graphExtension_eq_closedJointGraph
 
 /-- The literal fixed-phase coordinate package at `n+1` is jointly closable;
 there is no graph-density, Green, Stokes, or boundary parameter. -/
+private theorem jointlyClosable_of_transportSuccessorCoordinates
+    (n m : ℤ) (h : m = n) (Q : successorCoordinateType n m)
+    (hQ : (transportSuccessorCoordinates n m h Q).JointlyClosable) :
+    Q.JointlyClosable := by
+  cases h
+  exact hQ
+
 theorem coordinates_add_one_jointlyClosable (n : ℤ) :
     (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates
       (n + 1)).JointlyClosable := by
-  have h := successorGraphCoordinates_jointlyClosable n
-  rw [successorGraphCoordinates_eq_coordinates] at h
-  simpa only [add_sub_cancel_right] using h
+  exact jointlyClosable_of_transportSuccessorCoordinates
+    n (n + 1 - 1) (successorIndexEq n)
+    (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates (n + 1))
+    (successorGraphCoordinates_jointlyClosable n)
 
 /-- At every integer orbit index, the base Petersson coordinate on the actual
 Definition-1 graph completion is injective.  Consequently that completion is
 the graph of one single-valued closed `(R_n,L_n)` pair over its base range. -/
 theorem coordinates_jointlyClosable (n : ℤ) :
     (DefinitionOneSobolev.FixedPhaseGraphCompletion.coordinates n).JointlyClosable := by
-  simpa only [sub_add_cancel] using
-    (coordinates_add_one_jointlyClosable (n - 1))
+  have hIndex : n - 1 + 1 = n := sub_add_cancel n 1
+  exact hIndex ▸ coordinates_add_one_jointlyClosable (n - 1)
 
 end PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators
 
@@ -27134,7 +27779,7 @@ theorem HasZeroThreeCuspTail.eventually_selectedHorocycle_fluxIntegral_eq_zero
         (gammaTwoSelectedHorocycleParam q Z t)
         ⟨hCarrier t ht, hzHoro⟩
       simp [fluxOneFormValue, hz.1, hz.2]
-    _ = 0 := integral_zero
+    _ = 0 := by simp
 
 /-- Every smooth quotient-compact flux, hence in particular every actual
 fixed-phase Green flux, has exactly zero sufficiently high horocycle
@@ -27150,8 +27795,8 @@ theorem IsSmoothQuotientCompactFlux.eventually_selectedHorocycle_fluxIntegral_eq
           (∫ t in Set.Icc a b,
             fluxOneFormValue X Y
               (gammaTwoSelectedHorocycleParam q Z t) (ξ t)) = 0 :=
-  (gammaTwoQuotientCompactFluxTailTightness X Y hFlux)
-    .eventually_selectedHorocycle_fluxIntegral_eq_zero
+  HasZeroThreeCuspTail.eventually_selectedHorocycle_fluxIntegral_eq_zero
+    (gammaTwoQuotientCompactFluxTailTightness X Y hFlux)
 
 end GammaTwoQuotientGreenBoundary
 
@@ -27189,8 +27834,8 @@ theorem fixedPhaseGreenFlux_eventually_selectedHorocycle_integral_eq_zero
             fluxOneFormValue
               (fixedPhaseGreenFluxX n u v) (fixedPhaseGreenFluxY n u v)
               (gammaTwoSelectedHorocycleParam q Z t) (ξ t)) = 0 :=
-  (fixedPhaseGreenFlux_hasZeroThreeCuspTail n u v)
-    .eventually_selectedHorocycle_fluxIntegral_eq_zero
+  HasZeroThreeCuspTail.eventually_selectedHorocycle_fluxIntegral_eq_zero
+    (fixedPhaseGreenFlux_hasZeroThreeCuspTail n u v)
 
 end DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 
@@ -27201,6 +27846,15 @@ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open HalfWeightDifferentialOperators
 open GammaTwoQuotientGreenBoundary
 open scoped LinearPMap
+
+noncomputable local instance fixedPhaseGreenCoreModule (n : ℤ) :
+    Module ℂ (InverseEtaFixedPhaseCore n) := by
+  change Module ℂ ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+  exact Submodule.module (inverseEtaFixedPhaseStableCoreSubmodule n)
+
+noncomputable local instance fixedPhaseGreenCoreAddCommGroup (n : ℤ) :
+    AddCommGroup (InverseEtaFixedPhaseCore n) := by
+  exact Module.addCommMonoidToAddCommGroup ℂ
 
 /-! ### The actual raising, lowering, and one-half Green identities -/
 
@@ -27222,11 +27876,20 @@ theorem physicalLoweringGreenIdentityOnCore {n : ℤ}
     (u : InverseEtaFixedPhaseCore n) :
     inner ℂ (lowerFromSuccCoordinate n v) (l2Coordinate n u) =
       -inner ℂ (l2Coordinate (n + 1) v) (raisedCoordinate n u) := by
-  have hFormal :=
-    physicalLowerFromSucc_isFormalAdjoint_negativeRaise hGreen
-      (l2CoreRangeEquiv (n + 1) v) (l2CoreRangeEquiv n u)
-  simpa only [physicalLowerFromSucc_on_core, physicalRaise_on_core,
-    l2CoreRangeEquiv_coe, LinearPMap.neg_apply, inner_neg_right] using hFormal
+  have hCore :=
+    (physicalGreenIdentityAt_iff_coreInner n).mp hGreen u v
+  have hConj := congrArg (starRingEnd ℂ) hCore
+  simp only [map_add, map_zero, starRingEnd_apply] at hConj
+  have hA :
+      star (inner ℂ (raisedCoordinate n u) (l2Coordinate (n + 1) v)) =
+        inner ℂ (l2Coordinate (n + 1) v) (raisedCoordinate n u) :=
+    inner_conj_symm _ _
+  have hB :
+      star (inner ℂ (l2Coordinate n u) (lowerFromSuccCoordinate n v)) =
+        inner ℂ (lowerFromSuccCoordinate n v) (l2Coordinate n u) :=
+    inner_conj_symm _ _
+  rw [hA, hB] at hConj
+  linear_combination hConj
 
 /-- Averaging the two actual core Green sums keeps the coefficient `1/2`.
 This is independent of the already-proved factorization average, so neither
@@ -27261,28 +27924,54 @@ it does not assert the separate maximal-adjoint graph-core theorem below. -/
 
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 
+private noncomputable def transportGraphLowerExtension
+    (n m : ℤ) (h : m = n)
+    (L : GraphSobolevCompletion (n + 1) →L[ℂ]
+      OrbitPeterssonHilbert m) :
+    GraphSobolevCompletion (n + 1) →L[ℂ]
+      OrbitPeterssonHilbert n :=
+  Eq.mp
+    (congrArg
+      (fun k => GraphSobolevCompletion (n + 1) →L[ℂ]
+        OrbitPeterssonHilbert k) h) L
+
+private theorem transportGraphLowerExtension_apply
+    (n m : ℤ) (h : m = n)
+    (L : GraphSobolevCompletion (n + 1) →L[ℂ]
+      OrbitPeterssonHilbert m)
+    (x : GraphSobolevCompletion (n + 1)) :
+    transportGraphLowerExtension n m h L x =
+      Eq.mp (congrArg OrbitPeterssonHilbert h) (L x) := by
+  cases h
+  rfl
+
 /-- The lowering coordinate on the successor graph completion, with its
 target transported across the displayed arithmetic equality
 `(n + 1) - 1 = n`. -/
 noncomputable def graphLowerFromSuccExtension (n : ℤ) :
     GraphSobolevCompletion (n + 1) →L[ℂ]
-      OrbitPeterssonHilbert n := by
-  simpa only [add_sub_cancel_right] using
+      OrbitPeterssonHilbert n :=
+  transportGraphLowerExtension n (n + 1 - 1) (successorIndexEq n)
     (lowerExtension (n + 1))
+
+private theorem transportedLowerExtension_core_eq_lowerFromSucc
+    (n : ℤ) (v : InverseEtaFixedPhaseCore (n + 1)) :
+    Eq.mp (congrArg OrbitPeterssonHilbert (successorIndexEq n))
+        (lowerExtension (n + 1) (coreMap (n + 1) v)) =
+      lowerFromSuccCoordinate n v := by
+  rw [lowerExtension_core]
+  rw [transportL2Coordinate (n + 1 - 1) n (successorIndexEq n)]
+  rw [transportLowerCore_eq_lowerFromSucc]
+  rfl
 
 @[simp]
 theorem graphLowerFromSuccExtension_core (n : ℤ)
     (v : InverseEtaFixedPhaseCore (n + 1)) :
     graphLowerFromSuccExtension n (coreMap (n + 1) v) =
       lowerFromSuccCoordinate n v := by
-  change lowerExtension (n + 1) (coreMap (n + 1) v) =
-    lowerFromSuccCoordinate n v
-  rw [lowerExtension_core]
-  change
-    l2Coordinate n (reindexedActualLower n v) =
-      lowerFromSuccCoordinate n v
-  rw [reindexedActualLower_eq_lowerFromSucc]
-  rfl
+  rw [graphLowerFromSuccExtension,
+    transportGraphLowerExtension_apply]
+  exact transportedLowerExtension_core_eq_lowerFromSucc n v
 
 /-- The continuous Green defect on adjacent completed graph domains. -/
 noncomputable def graphSobolevGreenDefect (n : ℤ)
@@ -27629,8 +28318,9 @@ disjoint.  The only full-modular elements carrying one interior point of the
 standard tile to another are the central elements `±1`, and both belong to
 `Gamma(2)`; hence they cannot connect two distinct right cosets. -/
 theorem gammaTwoOpenTiles_pairwiseDisjoint :
-    Pairwise (Disjoint on fun q : GammaTwoRightCoset =>
-      gammaTwoCosetRep q • ModularGroup.fdo) := by
+    Pairwise (fun q₁ q₂ : GammaTwoRightCoset =>
+      Disjoint (gammaTwoCosetRep q₁ • ModularGroup.fdo)
+        (gammaTwoCosetRep q₂ • ModularGroup.fdo)) := by
   intro q₁ q₂ hq
   rw [Set.disjoint_left]
   intro z hz₁ hz₂
@@ -27639,8 +28329,15 @@ theorem gammaTwoOpenTiles_pairwiseDisjoint :
   have hmove :
       ((gammaTwoCosetRep q₂)⁻¹ * (1 : SL(2, ℤ)) *
           gammaTwoCosetRep q₁) • w₁ = w₂ := by
-    simp only [one_mul, mul_smul]
-    rw [h₁, ← h₂, inv_smul_smul]
+    calc
+      ((gammaTwoCosetRep q₂)⁻¹ * (1 : SL(2, ℤ)) *
+          gammaTwoCosetRep q₁) • w₁ =
+          (gammaTwoCosetRep q₂)⁻¹ •
+            (gammaTwoCosetRep q₁ • w₁) := by
+              simp only [one_mul, mul_smul, one_smul]
+      _ = (gammaTwoCosetRep q₂)⁻¹ •
+            (gammaTwoCosetRep q₂ • w₂) := by rw [h₁, ← h₂]
+      _ = w₂ := inv_smul_smul _ _
   have hcentral :
       (gammaTwoCosetRep q₂)⁻¹ * (1 : SL(2, ℤ)) *
             gammaTwoCosetRep q₁ = 1 ∨
@@ -27654,8 +28351,13 @@ theorem gammaTwoOpenTiles_pairwiseDisjoint :
 
 /-- Every selected open modular tile is measurable. -/
 theorem gammaTwoOpenTile_measurable (q : GammaTwoRightCoset) :
-    MeasurableSet (gammaTwoCosetRep q • ModularGroup.fdo) :=
-  (ModularGroup.isOpen_fdo.smul (gammaTwoCosetRep q)).measurableSet
+    MeasurableSet (gammaTwoCosetRep q • ModularGroup.fdo) := by
+  change MeasurableSet
+    (((gammaTwoCosetRep q : SL(2, ℤ)) : GL (Fin 2) ℝ) •
+      ModularGroup.fdo)
+  exact
+    (ModularGroup.isOpen_fdo.smul
+      (((gammaTwoCosetRep q : SL(2, ℤ)) : GL (Fin 2) ℝ))).measurableSet
 
 /-- An integrable function on the selected open carrier integrates as the
 finite sum of its integrals over the selected open modular tiles. -/
@@ -27671,7 +28373,10 @@ theorem integral_gammaTwoOpenCarrier_eq_sum_openTiles
   exact integral_iUnion_fintype
     gammaTwoOpenTile_measurable
     gammaTwoOpenTiles_pairwiseDisjoint
-    (fun q => hf.mono_set (Set.subset_iUnion _ q))
+    (fun q => hf.mono_set
+      (Set.subset_iUnion
+        (fun q : GammaTwoRightCoset =>
+          gammaTwoCosetRep q • ModularGroup.fdo) q))
 
 /-- Replacing the open carrier by the verified half-open carrier does not
 alter the finite tile decomposition. -/
@@ -27742,38 +28447,35 @@ open HalfWeightDifferentialOperators
 
 /-- The nonnegative density `y⁻²` used in Mathlib's upper-half-plane
 volume, before coercion to `ℝ≥0∞`. -/
-def hyperbolicDensityNNReal (z : ℍ) : ℝ≥0 :=
-  (1 / NNReal.mk z.im z.im_pos.le) ^ 2
+noncomputable def hyperbolicDensityNNReal (z : ℍ) : NNReal :=
+  (1 / NNReal.mk z.im z.im_pos.le : NNReal) ^ 2
 
 theorem hyperbolicDensityNNReal_continuous :
     Continuous hyperbolicDensityNNReal := by
   unfold hyperbolicDensityNNReal
-  exact
-    (.pow (.div₀ continuous_const
-      (UpperHalfPlane.continuous_im.subtype_mk _)
-      (fun z => NNReal.ne_iff.mp z.im_ne_zero)) _)
+  refine .pow (.div₀ continuous_const ?_ ?_) _
+  · exact UpperHalfPlane.continuous_im.subtype_mk _
+  · exact fun z => NNReal.ne_iff.mp z.im_ne_zero
 
 /-- Pointwise cancellation of `y⁻²` against the explicit `y²` factor
 in the Euclidean-divergence density. -/
 theorem hyperbolicDensityNNReal_smul_heightSq
     (f : ℍ → ℂ) (z : ℍ) :
     hyperbolicDensityNNReal z • (heightC z ^ 2 * f z) = f z := by
-  have hcancel :
-      (hyperbolicDensityNNReal z : ℝ) * z.im ^ 2 = 1 := by
-    change (1 / z.im) ^ 2 * z.im ^ 2 = 1
+  have hcancel : (hyperbolicDensityNNReal z : ℝ) * z.im ^ 2 = 1 := by
+    simp only [hyperbolicDensityNNReal, NNReal.coe_pow, NNReal.coe_div,
+      NNReal.coe_one, NNReal.coe_mk]
     field_simp [ne_of_gt z.im_pos]
-  have hheight :
-      heightC z ^ 2 * f z = (z.im ^ 2 : ℝ) • f z := by
+  have hheight : heightC z ^ 2 * f z = (z.im ^ 2 : ℝ) • f z := by
     simp [heightC, Algebra.smul_def]
-  rw [hheight, NNReal.smul_def, ← mul_smul, hcancel, one_smul]
+  rw [hheight, NNReal.smul_def, smul_smul, hcancel, one_smul]
 
 /-- The hyperbolic measure written with the named `ℝ≥0` density. -/
 theorem hyperbolicMeasure_eq_withDensityNNReal :
     hyperbolicMeasure =
       (volume.comap UpperHalfPlane.coe).withDensity
         (fun z => (hyperbolicDensityNNReal z : ℝ≥0∞)) := by
-  rw [hyperbolicMeasure_def]
-  rfl
+  simpa only [hyperbolicDensityNNReal] using hyperbolicMeasure_def
 
 /-- Multiplication by `heightC²` converts a hyperbolic set integral into
 the same set integral for the Euclidean comap measure. -/
@@ -27860,18 +28562,19 @@ theorem modularLowerHeight_le_one
   rw [modularLowerHeight, Real.sqrt_le_one]
   nlinarith [sq_nonneg x]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem modularLowerHeight_hasDerivAt
     {x : ℝ} (hx : x ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
     HasDerivAt modularLowerHeight (modularLowerHeightDeriv x) x := by
   have hpos := one_sub_sq_pos_of_mem_modularStrip hx
   have hinner : HasDerivAt (fun u : ℝ => 1 - u ^ 2) (-2 * x) x := by
-    convert (hasDerivAt_const x (1 : ℝ)).sub
-      ((hasDerivAt_id x).pow 2) using 1 <;> ring
+    have h := (hasDerivAt_pow 2 x).const_sub (1 : ℝ)
+    simpa [pow_two] using h
   have hsqrt := hinner.sqrt (ne_of_gt hpos)
+  change HasDerivAt (fun y : ℝ => Real.sqrt (1 - y ^ 2))
+    (-x / Real.sqrt (1 - x ^ 2)) x
   convert hsqrt using 1
-  unfold modularLowerHeightDeriv modularLowerHeight
-  field_simp [ne_of_gt (Real.sqrt_pos.2 hpos)]
-  ring
+  field_simp [ne_of_gt (Real.sqrt_pos.2 hpos)] <;> ring
 
 /-- Positive vertical Jacobian of the rectangle-to-curved-tile map. -/
 noncomputable def curvedTileJacobian (H x : ℝ) : ℝ :=
@@ -27914,7 +28617,7 @@ height.  This is the bridge needed to apply upper-half-plane smoothness to
 the real-product coordinate lift, including all four boundary faces. -/
 theorem curvedTileRectangleMap_snd_pos
     {H : ℝ} (hH : 1 < H) {p : ℝ × ℝ}
-    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) :
+    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) :
     0 < (curvedTileRectangleMap H p).2 := by
   have hx : p.1 ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) :=
     ⟨hp.1.1, hp.2.1⟩
@@ -27937,7 +28640,9 @@ theorem mem_modularCurvedTileTruncation_iff
     p ∈ modularCurvedTileTruncation H ↔
       p.1 ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) ∧
       modularLowerHeight p.1 ≤ p.2 ∧ p.2 ≤ H := by
-  rfl
+  simp only [modularCurvedTileTruncation, Set.mem_inter_iff,
+    Set.mem_preimage, Set.mem_setOf_eq]
+  tauto
 
 theorem modularLowerHeight_continuous :
     Continuous modularLowerHeight := by
@@ -27948,11 +28653,11 @@ theorem modularCurvedTileTruncation_measurable (H : ℝ) :
     MeasurableSet (modularCurvedTileTruncation H) := by
   unfold modularCurvedTileTruncation
   exact
-    (measurableSet_Icc.preimage measurable_fst).inter
-      ((isClosed_le
+    ((measurableSet_Icc.preimage measurable_fst).inter
+      (isClosed_le
         (modularLowerHeight_continuous.comp continuous_fst)
-        continuous_snd).measurableSet.inter
-      (isClosed_le continuous_snd continuous_const).measurableSet)
+        continuous_snd).measurableSet).inter
+      (isClosed_le continuous_snd continuous_const).measurableSet
 
 /-- `Φ_H` is injective on the closed source rectangle as soon as `H>1`.
 The first coordinate determines `x`, and positivity of `H-h(x)` then
@@ -27960,9 +28665,10 @@ determines `t`. -/
 theorem curvedTileRectangleMap_injOn
     {H : ℝ} (hH : 1 < H) :
     Set.InjOn (curvedTileRectangleMap H)
-      (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) := by
+      (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) := by
   intro p hp q hq hpq
-  have hx : p.1 = q.1 := congrArg Prod.fst hpq
+  have hx : p.1 = q.1 := by
+    simpa only [curvedTileRectangleMap] using congrArg Prod.fst hpq
   have hpx : p.1 ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) :=
     ⟨hp.1.1, hp.2.1⟩
   have hj : 0 < curvedTileJacobian H p.1 :=
@@ -27978,7 +28684,7 @@ theorem curvedTileRectangleMap_injOn
 theorem curvedTileRectangleMap_image
     {H : ℝ} (hH : 1 < H) :
     curvedTileRectangleMap H ''
-        Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1) =
+        Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1) =
       modularCurvedTileTruncation H := by
   apply Set.Subset.antisymm
   · rintro p ⟨q, hq, rfl⟩
@@ -28019,6 +28725,7 @@ theorem curvedTileRectangleMap_image
           t * curvedTileJacobian H p.1 = p.2
       dsimp only [t]
       field_simp [ne_of_gt hj]
+      ring
 
 /-- Closed standard modular tile cut off by the horizontal horocycle
 `im z = H`. -/
@@ -28047,7 +28754,9 @@ theorem mem_modularClosedTileTruncation_iff
     have hx : z.re ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ) := by
       exact abs_le.mp hfd.2
     have hsq : 1 - z.re ^ 2 ≤ z.im ^ 2 := by
-      simp only [Complex.normSq_apply] at hfd
+      have hnorm := hfd.1
+      simp only [Complex.normSq_apply, UpperHalfPlane.coe_re,
+        UpperHalfPlane.coe_im, pow_two] at hnorm
       nlinarith
     refine ⟨hx, ?_, hz.2⟩
     unfold modularLowerHeight
@@ -28067,8 +28776,14 @@ theorem mem_modularClosedTileTruncation_iff
     change 1 ≤ Complex.normSq (z : ℂ) ∧
       |z.re| ≤ (1 : ℝ) / 2
     constructor
-    · simp only [Complex.normSq_apply]
-      nlinarith
+    · have hnorm : 1 ≤ z.re ^ 2 + z.im ^ 2 := by
+        calc
+          1 = z.re ^ 2 + (1 - z.re ^ 2) := by ring
+          _ = z.re ^ 2 + modularLowerHeight z.re ^ 2 := by rw [hsqrtSq]
+          _ ≤ z.re ^ 2 + z.im ^ 2 := by
+            simpa [add_comm] using add_le_add_right hsqle (z.re ^ 2)
+      simpa only [Complex.normSq_apply, UpperHalfPlane.coe_re,
+        UpperHalfPlane.coe_im, pow_two] using hnorm
     · exact abs_le.mpr hx
 
 /-- After the standard volume-preserving identification `ℂ ≃ ℝ×ℝ`,
@@ -28098,11 +28813,31 @@ literally the same truncated modular tile. -/
 theorem curvedTileRectangleMap_image_eq_realProd_modularTile
     {H : ℝ} (hH : 1 < H) :
     curvedTileRectangleMap H ''
-        Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1) =
+        Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1) =
       Complex.measurableEquivRealProd ''
         (UpperHalfPlane.coe '' modularClosedTileTruncation H) := by
   rw [curvedTileRectangleMap_image hH,
     measurableEquivRealProd_image_modularClosedTileTruncation H]
+
+set_option backward.isDefEq.respectTransparency false
+
+section CurvedTileCoherentInstances
+
+/-- The calculus API follows the normed structures, while plain product and
+scalar instances are also globally available.  Pin the coherent forgetful
+path on this chart section to avoid non-definitional instance diamonds. -/
+noncomputable local instance curvedTileRealAddCommGroup : AddCommGroup ℝ :=
+  (inferInstance : NormedAddCommGroup ℝ).toAddCommGroup
+noncomputable local instance curvedTileRealModule : Module ℝ ℝ :=
+  (inferInstance : NormedSpace ℝ ℝ).toModule
+noncomputable local instance curvedTileComplexAddCommGroup : AddCommGroup ℂ :=
+  (inferInstance : NormedAddCommGroup ℂ).toAddCommGroup
+noncomputable local instance curvedTileComplexRealModule : Module ℝ ℂ :=
+  (inferInstance : NormedSpace ℝ ℂ).toModule
+noncomputable local instance curvedTileProdAddCommGroup : AddCommGroup (ℝ × ℝ) :=
+  (inferInstance : NormedAddCommGroup (ℝ × ℝ)).toAddCommGroup
+noncomputable local instance curvedTileProdModule : Module ℝ (ℝ × ℝ) :=
+  (inferInstance : NormedSpace ℝ (ℝ × ℝ)).toModule
 
 /-- Explicit Fréchet derivative of `Φ_H`.  In the product basis its
 matrix is lower triangular with diagonal `(1, H-h(x))`. -/
@@ -28118,16 +28853,23 @@ theorem hasFDerivAt_curvedTileRectangleMap
     (hp : p.1 ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
     HasFDerivAt (curvedTileRectangleMap H)
       (curvedTileRectangleFDeriv H p) p := by
-  have hh := (modularLowerHeight_hasDerivAt hp).comp_hasFDerivAt
-    p hasFDerivAt_fst
+  have hfst :
+      HasFDerivAt (Prod.fst : ℝ × ℝ → ℝ)
+        (ContinuousLinearMap.fst ℝ ℝ ℝ) p :=
+    hasFDerivAt_fst
+  have hsnd :
+      HasFDerivAt (Prod.snd : ℝ × ℝ → ℝ)
+        (ContinuousLinearMap.snd ℝ ℝ ℝ) p :=
+    hasFDerivAt_snd
+  have hh := (modularLowerHeight_hasDerivAt hp).comp_hasFDerivAt p hfst
   unfold curvedTileRectangleFDeriv
   rw [Matrix.toLin_finTwoProd_toContinuousLinearMap]
-  convert HasFDerivAt.prodMk (𝕜 := ℝ) hasFDerivAt_fst
-    (hh.add (hasFDerivAt_snd.mul
-      ((hasFDerivAt_const p H).sub hh))) using 2 <;>
-    simp [curvedTileRectangleMap, curvedTileJacobian,
+  convert! HasFDerivAt.prodMk (𝕜 := ℝ) hfst
+    (hh.add (hsnd.mul ((hasFDerivAt_const H p).sub hh))) using 2 <;>
+    try simp [curvedTileRectangleMap, curvedTileJacobian,
       smul_smul, add_comm, mul_comm, mul_left_comm, mul_assoc] <;>
-    ring
+    try ring <;>
+    try module
 
 theorem det_curvedTileRectangleFDeriv (H : ℝ) (p : ℝ × ℝ) :
     (curvedTileRectangleFDeriv H p).det =
@@ -28151,35 +28893,46 @@ theorem hasDerivAt_curvedTileRectangleMap_horizontal
     HasDerivAt (fun x : ℝ => curvedTileRectangleMap H (x, p.2))
       (1, (1 - p.2) * modularLowerHeightDeriv p.1) p.1 := by
   have hh := modularLowerHeight_hasDerivAt hp
-  convert HasDerivAt.prodMk hasDerivAt_id
-    (hh.add ((hasDerivAt_const p.1 p.2).mul
-      ((hasDerivAt_const p.1 H).sub hh))) using 2 <;>
-    simp [curvedTileRectangleMap, curvedTileJacobian] <;>
-    ring
+  have h :=
+    HasDerivAt.prodMk (hasDerivAt_id p.1)
+      (hh.add ((hasDerivAt_const p.1 p.2).mul
+        ((hasDerivAt_const p.1 H).sub hh)))
+  have hderiv :
+      ((1 : ℝ), modularLowerHeightDeriv p.1 +
+          (0 * (H - modularLowerHeight p.1) +
+            p.2 * (0 - modularLowerHeightDeriv p.1))) =
+        ((1 : ℝ), (1 - p.2) * modularLowerHeightDeriv p.1) := by
+    apply Prod.ext
+    · rfl
+    · ring
+  convert! h.congr_deriv hderiv using 1 <;>
+    simp [curvedTileRectangleMap, curvedTileJacobian,
+      Function.comp_apply, sub_eq_add_neg]
 
 /-- Derivative of `Φ_H` along a vertical line in the source rectangle. -/
 theorem hasDerivAt_curvedTileRectangleMap_vertical
     (H : ℝ) (p : ℝ × ℝ) :
     HasDerivAt (fun t : ℝ => curvedTileRectangleMap H (p.1, t))
       (0, curvedTileJacobian H p.1) p.2 := by
-  convert HasDerivAt.prodMk (hasDerivAt_const p.2 p.1)
-    ((hasDerivAt_const p.2 (modularLowerHeight p.1)).add
-      (hasDerivAt_id.mul
-        (hasDerivAt_const p.2 (curvedTileJacobian H p.1)))) using 2 <;>
-    simp [curvedTileRectangleMap]
+  simpa [curvedTileRectangleMap] using
+    HasDerivAt.prodMk (hasDerivAt_const p.2 p.1)
+      ((hasDerivAt_const p.2 (modularLowerHeight p.1)).add
+        ((hasDerivAt_id p.2).mul
+          (hasDerivAt_const p.2 (curvedTileJacobian H p.1))))
 
 theorem hasDerivAt_curvedTileJacobian
     (H : ℝ) {x : ℝ}
     (hx : x ∈ Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) :
     HasDerivAt (curvedTileJacobian H)
       (-modularLowerHeightDeriv x) x := by
-  simpa [curvedTileJacobian] using
-    (hasDerivAt_const x H).sub (modularLowerHeight_hasDerivAt hx)
+  convert! (hasDerivAt_const x H).sub
+      (modularLowerHeight_hasDerivAt hx) using 1 <;>
+    simp [curvedTileJacobian, sub_eq_add_neg]
 
 theorem abs_det_curvedTileRectangleFDeriv
     {H : ℝ} (hH : 1 < H)
     {p : ℝ × ℝ}
-    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)) :
+    (hp : p ∈ Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)) :
     |(curvedTileRectangleFDeriv H p).det| =
       curvedTileJacobian H p.1 := by
   rw [det_curvedTileRectangleFDeriv, abs_of_pos]
@@ -28196,16 +28949,24 @@ theorem integral_modularCurvedTileTruncation_eq_rectangle
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (H : ℝ) (hH : 1 < H) (f : ℝ × ℝ → E) :
     (∫ p in modularCurvedTileTruncation H, f p) =
-      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         curvedTileJacobian H q.1 • f (curvedTileRectangleMap H q) := by
   rw [← curvedTileRectangleMap_image hH]
   rw [MeasureTheory.integral_image_eq_integral_abs_det_fderiv_smul
     volume measurableSet_Icc
-    (fun q hq => (hasFDerivAt_curvedTileRectangleMap
-      ⟨hq.1.1, hq.2.1⟩).hasFDerivWithinAt)
+    (fun q (hq : q ∈ Set.Icc (-(1 / 2 : ℝ), 0)
+      ((1 / 2 : ℝ), 1)) =>
+        have hqi := Set.mem_Icc.mp hq
+        have hlo := Prod.le_def.mp hqi.1
+        have hhi := Prod.le_def.mp hqi.2
+        (hasFDerivAt_curvedTileRectangleMap
+          ⟨hlo.1, hhi.1⟩).hasFDerivWithinAt)
     (curvedTileRectangleMap_injOn hH) f]
   apply setIntegral_congr_fun measurableSet_Icc
   intro q hq
+  change |(curvedTileRectangleFDeriv H q).det| •
+      f (curvedTileRectangleMap H q) =
+    curvedTileJacobian H q.1 • f (curvedTileRectangleMap H q)
   rw [abs_det_curvedTileRectangleFDeriv hH hq]
 
 /-- Ordinary complex area is transported to product Lebesgue area by
@@ -28236,9 +28997,13 @@ noncomputable def realProdLift (u : ℍ → ℂ) : ℝ × ℝ → ℂ :=
 theorem realProdLift_eq_comp (u : ℍ → ℂ) :
     realProdLift u = upperLift u ∘ Complex.equivRealProdCLM.symm := by
   funext p
-  simp [realProdLift, Function.comp_def,
-    Complex.measurableEquivRealProd_symm_apply,
-    Complex.equivRealProdCLM_symm_apply]
+  unfold realProdLift Function.comp
+  apply congrArg (upperLift u)
+  apply Complex.ext
+  · simp [Complex.measurableEquivRealProd_symm_apply,
+      Complex.equivRealProdCLM_symm_apply]
+  · simp [Complex.measurableEquivRealProd_symm_apply,
+      Complex.equivRealProdCLM_symm_apply]
 
 /-- The upper-half-plane point represented by a real-product coordinate of
 positive second component. -/
@@ -28263,8 +29028,7 @@ theorem realProdLift_differentiableAt
   have hOuter : DifferentiableAt ℝ (upperLift u)
       (Complex.equivRealProdCLM.symm p) := by
     simpa [realProdUpperPoint] using
-      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).
-        differentiableAt (by simp)
+      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).differentiableAt (by simp)
   exact hOuter.comp p Complex.equivRealProdCLM.symm.differentiableAt
 
 /-- The first real-product coordinate derivative is exactly the previously
@@ -28277,8 +29041,7 @@ theorem fderiv_realProdLift_fst_eq_dx
   have hOuter : DifferentiableAt ℝ (upperLift u)
       (Complex.equivRealProdCLM.symm p) := by
     simpa [realProdUpperPoint] using
-      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).
-        differentiableAt (by simp)
+      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).differentiableAt (by simp)
   have hComp := hOuter.hasFDerivAt.comp p
     Complex.equivRealProdCLM.symm.hasFDerivAt
   have hApply := congrArg
@@ -28296,8 +29059,7 @@ theorem fderiv_realProdLift_snd_eq_dy
   have hOuter : DifferentiableAt ℝ (upperLift u)
       (Complex.equivRealProdCLM.symm p) := by
     simpa [realProdUpperPoint] using
-      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).
-        differentiableAt (by simp)
+      (RealSmooth.contDiffAt_upperLift hu (realProdUpperPoint p hp)).differentiableAt (by simp)
   have hComp := hOuter.hasFDerivAt.comp p
     Complex.equivRealProdCLM.symm.hasFDerivAt
   have hApply := congrArg
@@ -28314,7 +29076,7 @@ theorem integrableOn_heightSq_mul_hyperbolic_iff_comap
       IntegrableOn f s (volume.comap UpperHalfPlane.coe) := by
   rw [hyperbolicMeasure_eq_withDensityNNReal]
   unfold IntegrableOn
-  rw [Measure.restrict_withDensity hs]
+  rw [restrict_withDensity hs]
   rw [integrable_withDensity_iff_integrable_smul
     hyperbolicDensityNNReal_continuous.measurable]
   exact integrable_congr (Filter.Eventually.of_forall fun z =>
@@ -28358,16 +29120,21 @@ theorem integrableOn_modularCurvedTile_iff_rectangle
       IntegrableOn
         (fun q => curvedTileJacobian H q.1 •
           f (curvedTileRectangleMap H q))
-        (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+        (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
         (volume : Measure (ℝ × ℝ)) := by
   rw [← curvedTileRectangleMap_image hH]
   rw [MeasureTheory.integrableOn_image_iff_integrableOn_abs_det_fderiv_smul
     volume measurableSet_Icc
-    (fun q hq => (hasFDerivAt_curvedTileRectangleMap
-      ⟨hq.1.1, hq.2.1⟩).hasFDerivWithinAt)
+    (fun q (hq : q ∈ Set.Icc (-(1 / 2 : ℝ), 0)
+      ((1 / 2 : ℝ), 1)) =>
+        have hqi := Set.mem_Icc.mp hq
+        have hlo := Prod.le_def.mp hqi.1
+        have hhi := Prod.le_def.mp hqi.2
+        (hasFDerivAt_curvedTileRectangleMap
+          ⟨hlo.1, hhi.1⟩).hasFDerivWithinAt)
     (curvedTileRectangleMap_injOn hH)]
   apply integrableOn_congr_fun (s :=
-    Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+    Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
     (fun q hq => ?_) measurableSet_Icc
   rw [abs_det_curvedTileRectangleFDeriv hH hq]
 
@@ -28380,7 +29147,7 @@ theorem integrableOn_heightSq_modularClosedTile_iff_rectangle
       IntegrableOn
         (fun q => curvedTileJacobian H q.1 •
           realProdLift f (curvedTileRectangleMap H q))
-        (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+        (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
         (volume : Measure (ℝ × ℝ)) := by
   calc
     IntegrableOn (fun z => heightC z ^ 2 * f z)
@@ -28399,10 +29166,10 @@ theorem integrableOn_heightSq_modularClosedTile_iff_rectangle
         (Complex.measurableEquivRealProd ''
           (UpperHalfPlane.coe '' modularClosedTileTruncation H))
           (volume : Measure (ℝ × ℝ)) := by
-      simpa [realProdLift] using
-        (integrableOn_complex_iff_realProdImage
-          (UpperHalfPlane.coe '' modularClosedTileTruncation H)
-          (upperLift f))
+      unfold realProdLift
+      exact integrableOn_complex_iff_realProdImage
+        (UpperHalfPlane.coe '' modularClosedTileTruncation H)
+        (upperLift f)
     _ ↔ IntegrableOn (realProdLift f)
         (modularCurvedTileTruncation H)
           (volume : Measure (ℝ × ℝ)) := by
@@ -28410,7 +29177,7 @@ theorem integrableOn_heightSq_modularClosedTile_iff_rectangle
     _ ↔ IntegrableOn
         (fun q => curvedTileJacobian H q.1 •
           realProdLift f (curvedTileRectangleMap H q))
-        (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))
+        (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))
         (volume : Measure (ℝ × ℝ)) :=
       integrableOn_modularCurvedTile_iff_rectangle H hH (realProdLift f)
 
@@ -28421,7 +29188,7 @@ theorem setIntegral_heightSq_mul_modularClosedTile_eq_rectangle
     (H : ℝ) (hH : 1 < H) (f : ℍ → ℂ) :
     (∫ z in modularClosedTileTruncation H,
         heightC z ^ 2 * f z ∂hyperbolicMeasure) =
-      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         curvedTileJacobian H q.1 •
           upperLift f
             (Complex.measurableEquivRealProd.symm
@@ -28439,7 +29206,7 @@ theorem setIntegral_heightSq_mul_modularClosedTile_eq_rectangle
           ∂(volume : Measure (ℝ × ℝ)) := by
       rw [setIntegral_complex_eq_realProdImage,
         measurableEquivRealProd_image_modularClosedTileTruncation H]
-    _ = ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+    _ = ∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         curvedTileJacobian H q.1 •
           upperLift f
             (Complex.measurableEquivRealProd.symm
@@ -28493,8 +29260,9 @@ theorem hasDerivAt_curvedTilePiolaX_horizontal
   have hj := (hasDerivAt_curvedTileJacobian H hp).ofReal_comp
   have hXc := hX.comp_hasDerivAt p.1
     (hasDerivAt_curvedTileRectangleMap_horizontal H hp)
-  convert hj.mul hXc using 1 <;>
-    simp [curvedTilePiolaX, Complex.real_smul] <;>
+  convert! hj.mul hXc using 1 <;>
+    simp [curvedTilePiolaX, Complex.real_smul,
+      Function.comp_apply, sub_eq_add_neg] <;>
     ring
 
 /-- Vertical derivative of the second Piola component. -/
@@ -28518,11 +29286,15 @@ theorem hasDerivAt_curvedTilePiolaY_vertical
   have haReal : HasDerivAt
       (fun t : ℝ => (1 - t) * modularLowerHeightDeriv p.1)
       (-modularLowerHeightDeriv p.1) p.2 := by
-    convert ((hasDerivAt_const p.2 (1 : ℝ)).sub hasDerivAt_id).mul_const
-      (modularLowerHeightDeriv p.1) using 1 <;> ring
+    have hbase :=
+      (((hasDerivAt_const p.2 (1 : ℝ)).sub (hasDerivAt_id p.2)).mul_const
+        (modularLowerHeightDeriv p.1))
+    simpa [sub_eq_add_neg] using hbase
   have ha := haReal.ofReal_comp
-  convert hYc.sub (ha.mul hXc) using 1 <;>
-    simp [curvedTilePiolaY, Complex.real_smul] <;>
+  have h := hYc.sub (ha.mul hXc)
+  convert! h using 1 <;>
+    simp [curvedTilePiolaY, Function.comp_apply,
+      Complex.real_smul, sub_eq_add_neg] <;>
     ring
 
 theorem curvedTilePiolaX_differentiableAt
@@ -28533,11 +29305,16 @@ theorem curvedTilePiolaX_differentiableAt
     DifferentiableAt ℝ (curvedTilePiolaX H X) p := by
   have hΦ := hasFDerivAt_curvedTileRectangleMap (H := H) hp
   have hXc := hX.comp p hΦ
-  have hh := (modularLowerHeight_hasDerivAt hp).comp_hasFDerivAt
-    p hasFDerivAt_fst
-  have hjReal := (hasFDerivAt_const p H).sub hh
+  have hfst : HasFDerivAt
+      (Prod.fst : ℝ × ℝ → ℝ)
+      (ContinuousLinearMap.fst ℝ ℝ ℝ) p :=
+    hasFDerivAt_fst
+  have hh := (modularLowerHeight_hasDerivAt hp).comp_hasFDerivAt p hfst
+  have hjReal := (hasFDerivAt_const H p).sub hh
   have hj := Complex.ofRealCLM.hasFDerivAt.comp p hjReal
-  simpa [curvedTilePiolaX] using (hj.mul hXc).differentiableAt
+  convert! (hj.mul hXc).differentiableAt using 1 <;>
+    simp [curvedTilePiolaX, curvedTileJacobian,
+      Function.comp_apply, sub_eq_add_neg]
 
 theorem curvedTilePiolaY_differentiableAt
     (H : ℝ) {X Y : ℝ × ℝ → ℂ}
@@ -28563,7 +29340,9 @@ theorem curvedTilePiolaY_differentiableAt
       (fun q : ℝ × ℝ =>
         (((1 - q.2) * modularLowerHeightDeriv q.1 : ℝ) : ℂ)) p :=
     Complex.ofRealCLM.differentiableAt.comp p haReal
-  simpa [curvedTilePiolaY] using hYc.sub (ha.mul hXc)
+  convert! hYc.sub (ha.mul hXc) using 1 <;>
+    simp [curvedTilePiolaY, Function.comp_apply,
+      Complex.real_smul, sub_eq_add_neg]
 
 /-- Coordinate expansion for a real-linear complex-valued map on
 `ℝ×ℝ`. -/
@@ -28592,9 +29371,9 @@ theorem fderiv_curvedTilePiola_divergence
   have hPYfull :=
     (curvedTilePiolaY_differentiableAt H hp hX hY).hasFDerivAt
   have hlineX : HasDerivAt (fun x : ℝ => (x, p.2)) (1, 0) p.1 :=
-    HasDerivAt.prodMk hasDerivAt_id (hasDerivAt_const p.1 p.2)
+    HasDerivAt.prodMk (hasDerivAt_id p.1) (hasDerivAt_const p.1 p.2)
   have hlineY : HasDerivAt (fun y : ℝ => (p.1, y)) (0, 1) p.2 :=
-    HasDerivAt.prodMk (hasDerivAt_const p.2 p.1) hasDerivAt_id
+    HasDerivAt.prodMk (hasDerivAt_const p.2 p.1) (hasDerivAt_id p.2)
   have hPX :
       fderiv ℝ (curvedTilePiolaX H X) p (1, 0) =
         ((-modularLowerHeightDeriv p.1 : ℝ) *
@@ -28602,7 +29381,9 @@ theorem fderiv_curvedTilePiola_divergence
           curvedTileJacobian H p.1 *
             DX (1, (1 - p.2) * modularLowerHeightDeriv p.1)) :=
     (hPXfull.comp_hasDerivAt p.1 hlineX).unique
-      (hasDerivAt_curvedTilePiolaX_horizontal H hp hX)
+      (by
+        convert! hasDerivAt_curvedTilePiolaX_horizontal H hp hX using 1 <;>
+          simp [Function.comp_apply])
   have hPY :
       fderiv ℝ (curvedTilePiolaY H X Y) p (0, 1) =
         (DY (0, curvedTileJacobian H p.1) +
@@ -28611,7 +29392,9 @@ theorem fderiv_curvedTilePiola_divergence
           ((1 - p.2) * modularLowerHeightDeriv p.1 : ℝ) *
             DX (0, curvedTileJacobian H p.1)) :=
     (hPYfull.comp_hasDerivAt p.2 hlineY).unique
-      (hasDerivAt_curvedTilePiolaY_vertical H hX hY)
+      (by
+        convert! hasDerivAt_curvedTilePiolaY_vertical H hX hY using 1 <;>
+          simp [Function.comp_apply])
   rw [hPX, hPY,
     continuousLinearMap_apply_realProd_coordinates DX 1
       ((1 - p.2) * modularLowerHeightDeriv p.1),
@@ -28621,6 +29404,10 @@ theorem fderiv_curvedTilePiola_divergence
       (curvedTileJacobian H p.1)]
   push_cast
   ring
+
+end CurvedTileCoherentInstances
+
+set_option backward.isDefEq.respectTransparency true
 
 /-- Pure algebra behind the Piola identity.  The two middle shear terms and
 the two derivatives of the moving lower boundary cancel exactly, leaving
@@ -28760,8 +29547,7 @@ theorem integral_curvedTilePiolaX_vertical
           X (x, modularLowerHeight x + curvedTileJacobian H x * t)) := by
       rw [Complex.real_smul]
     _ = ∫ y in
-          modularLowerHeight x + curvedTileJacobian H x * 0..
-          modularLowerHeight x + curvedTileJacobian H x * 1,
+          modularLowerHeight x + curvedTileJacobian H x * 0..modularLowerHeight x + curvedTileJacobian H x * 1,
         X (x, y) := by
       exact intervalIntegral.smul_integral_comp_add_mul
         (f := fun y : ℝ => X (x, y))
@@ -28834,6 +29620,7 @@ theorem curvedTilePiolaBoundaryIntegral_eq_baseModular
     neg_integral_curvedTilePiolaY_bottom_eq_circular,
     integral_curvedTilePiolaX_right_eq_verticalParameter,
     integral_curvedTilePiolaX_left_eq_verticalParameter]
+  ring
 
 /-- Green's theorem for one curved modular tile, expressed on the source
 rectangle after the exact Piola pullback.  All differentiability hypotheses
@@ -28844,25 +29631,25 @@ theorem integral_rectangle_piola_divergence_eq_boundary
     (X Y : ℝ × ℝ → ℂ)
     (DX DY : ℝ × ℝ → (ℝ × ℝ) →L[ℝ] ℂ)
     (hX : ∀ q ∈
-      Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       HasFDerivAt X (DX (curvedTileRectangleMap H q))
         (curvedTileRectangleMap H q))
     (hY : ∀ q ∈
-      Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       HasFDerivAt Y (DY (curvedTileRectangleMap H q))
         (curvedTileRectangleMap H q))
     (hInt : IntegrableOn
       (fun q => (curvedTileJacobian H q.1 : ℂ) *
         (DX (curvedTileRectangleMap H q) (1, 0) +
           DY (curvedTileRectangleMap H q) (0, 1)))
-      (Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1))) :
-    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+      (Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1))) :
+    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
       (curvedTileJacobian H q.1 : ℂ) *
         (DX (curvedTileRectangleMap H q) (1, 0) +
           DY (curvedTileRectangleMap H q) (0, 1))) =
       curvedTilePiolaBoundaryIntegral H X Y := by
   let R : Set (ℝ × ℝ) :=
-    Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)
+    Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)
   have hdiv : ∀ q ∈ R,
       fderiv ℝ (curvedTilePiolaX H X) q (1, 0) +
           fderiv ℝ (curvedTilePiolaY H X Y) q (0, 1) =
@@ -28909,12 +29696,12 @@ theorem integral_rectangle_piola_divergence_eq_boundary
       (curvedTilePiolaX H X) (curvedTilePiolaY H X Y)
       (fun q => fderiv ℝ (curvedTilePiolaX H X) q)
       (fun q => fderiv ℝ (curvedTilePiolaY H X Y) q)
-      (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)
-      (⟨by norm_num, by norm_num⟩ :
-        (-(1 / 2 : ℝ), 0) ≤ (1 / 2 : ℝ, 1))
+      (-(1 / 2 : ℝ), (0 : ℝ)) ((1 / 2 : ℝ), (1 : ℝ))
+      (by norm_num :
+        (-(1 / 2 : ℝ), (0 : ℝ)) ≤ ((1 / 2 : ℝ), (1 : ℝ)))
       hPXc hPYc hPXdiff hPYdiff hInt'
   calc
-    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1),
+    (∫ q in Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1),
         (curvedTileJacobian H q.1 : ℂ) *
           (DX (curvedTileRectangleMap H q) (1, 0) +
             DY (curvedTileRectangleMap H q) (0, 1))) =
@@ -29048,7 +29835,8 @@ theorem realProdLift_rightVertical_eq_flux
     realProdLift U (1 / 2, modularVertexHeight + (s : ℝ)) =
       GammaTwoQuotientGreenBoundary.fluxOneFormValue U V
         (modularRightVerticalParam s) Complex.I := by
-  simp [GammaTwoQuotientGreenBoundary.fluxOneFormValue]
+  simpa [GammaTwoQuotientGreenBoundary.fluxOneFormValue] using
+    (realProdLift_modularRightVerticalParam U s)
 
 /-- Left vertical normalized density as an actual one-form value. -/
 theorem realProdLift_leftVertical_eq_flux
@@ -29056,7 +29844,8 @@ theorem realProdLift_leftVertical_eq_flux
     realProdLift U (-(1 / 2), modularVertexHeight + (s : ℝ)) =
       GammaTwoQuotientGreenBoundary.fluxOneFormValue U V
         (modularLeftVerticalParam s) Complex.I := by
-  simp [GammaTwoQuotientGreenBoundary.fluxOneFormValue]
+  simpa [GammaTwoQuotientGreenBoundary.fluxOneFormValue] using
+    (realProdLift_modularLeftVerticalParam U s)
 
 /-- The positively signed top term is the one-form evaluated on the
 counterclockwise tangent `-1` (right-to-left along the horocycle). -/
@@ -29065,7 +29854,8 @@ theorem realProdLift_topHorocycle_eq_flux
     realProdLift V (x, H) =
       GammaTwoQuotientGreenBoundary.fluxOneFormValue U V
         (curvedTileTopHorocycleParam H hH x) (-1) := by
-  simp [GammaTwoQuotientGreenBoundary.fluxOneFormValue]
+  simpa [GammaTwoQuotientGreenBoundary.fluxOneFormValue] using
+    (realProdLift_topHorocycle V H hH x)
 
 /-- Exact closed-tile Green identity.  The only integrability assumption is
 the natural truncated hyperbolic bulk integrability; all Euclidean,
@@ -29080,7 +29870,7 @@ theorem setIntegral_heightSq_divergence_modularClosedTile_eq_boundary
       heightC z ^ 2 * (dx U z + dy V z) ∂hyperbolicMeasure) =
       baseModularTruncationBoundaryFlux H U V := by
   let R : Set (ℝ × ℝ) :=
-    Set.Icc (-(1 / 2 : ℝ), 0) (1 / 2 : ℝ, 1)
+    Set.Icc (-(1 / 2 : ℝ), 0) ((1 / 2 : ℝ), 1)
   have hUchart : ∀ q ∈ R,
       HasFDerivAt (realProdLift U)
         (fderiv ℝ (realProdLift U) (curvedTileRectangleMap H q))
@@ -29198,13 +29988,13 @@ theorem selectedCosetGL_det_pos (q : GammaTwoRightCoset) :
   simp [selectedCosetGL]
 
 /-- The chosen Möbius action as a map of the upper half-plane. -/
-def selectedCosetAction (q : GammaTwoRightCoset) (z : ℍ) : ℍ :=
+noncomputable def selectedCosetAction (q : GammaTwoRightCoset) (z : ℍ) : ℍ :=
   gammaTwoCosetRep q • z
 
 /-- Ambient complex coordinate of the chosen action.  The use of
 `ofComplex` agrees with the genuine action on the open upper half-plane and
 makes the Mathlib Jacobian theorem directly applicable. -/
-def selectedCosetAmbientMap (q : GammaTwoRightCoset) (w : ℂ) : ℂ :=
+noncomputable def selectedCosetAmbientMap (q : GammaTwoRightCoset) (w : ℂ) : ℂ :=
   ((selectedCosetGL q • UpperHalfPlane.ofComplex w : ℍ) : ℂ)
 
 @[simp]
@@ -29214,7 +30004,7 @@ theorem selectedCosetAmbientMap_coe (q : GammaTwoRightCoset) (z : ℍ) :
   simp [selectedCosetAmbientMap, selectedCosetAction, selectedCosetGL]
 
 /-- The affine denominator `c z + d` of the selected representative. -/
-def selectedCosetDenom (q : GammaTwoRightCoset) (z : ℍ) : ℂ :=
+noncomputable def selectedCosetDenom (q : GammaTwoRightCoset) (z : ℍ) : ℂ :=
   UpperHalfPlane.denom (selectedCosetGL q) z
 
 theorem selectedCosetDenom_ne_zero (q : GammaTwoRightCoset) (z : ℍ) :
@@ -29227,7 +30017,7 @@ noncomputable def selectedCosetDerivative
   1 / selectedCosetDenom q z ^ 2
 
 /-- The lower-left matrix entry, in the complex coefficient field. -/
-def selectedCosetLowerLeft (q : GammaTwoRightCoset) : ℂ :=
+noncomputable def selectedCosetLowerLeft (q : GammaTwoRightCoset) : ℂ :=
   (((selectedCosetGL q) 1 0 : ℝ) : ℂ)
 
 /-- The real Jacobian used by Mathlib's change-of-variables theorem. -/
@@ -29246,6 +30036,7 @@ theorem selectedCoset_smulFDeriv_apply
   simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, hdet,
     selectedCosetDerivative, selectedCosetDenom, selectedCosetGL_det,
     smul_eq_mul]
+  ring
 
 /-- The selected ambient Möbius map has precisely Mathlib's bundled real
 Frechet derivative. -/
@@ -29253,8 +30044,8 @@ theorem selectedCosetAmbientMap_hasStrictFDerivAt
     (q : GammaTwoRightCoset) (z : ℍ) :
     HasStrictFDerivAt (selectedCosetAmbientMap q)
       (UpperHalfPlane.smulFDeriv (selectedCosetGL q) (z : ℂ)) (z : ℂ) := by
-  simpa [selectedCosetAmbientMap] using
-    (UpperHalfPlane.hasStrictFDerivAt_smul (selectedCosetGL q) z)
+  unfold selectedCosetAmbientMap
+  exact UpperHalfPlane.hasStrictFDerivAt_smul (selectedCosetGL q) z
 
 /-- The coordinate Möbius map is real `C-infinity` on the open upper
 half-plane. -/
@@ -29262,20 +30053,25 @@ theorem selectedCosetAmbientMap_contDiffOn
     (q : GammaTwoRightCoset) :
     ContDiffOn ℝ ∞ (selectedCosetAmbientMap q)
       UpperHalfPlane.upperHalfPlaneSet := by
+  letI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
   have hDiff : DifferentiableOn ℂ (selectedCosetAmbientMap q)
       UpperHalfPlane.upperHalfPlaneSet := by
     intro w hw
-    simpa [selectedCosetAmbientMap] using
+    change DifferentiableWithinAt ℂ
+      (fun z : ℂ =>
+        ((selectedCosetGL q • UpperHalfPlane.ofComplex z : ℍ) : ℂ))
+      UpperHalfPlane.upperHalfPlaneSet w
+    exact
       (UpperHalfPlane.hasStrictDerivAt_smul
-        (selectedCosetGL_det_pos q) (⟨w, hw⟩ : ℍ)).
-          differentiableAt.differentiableWithinAt
-  exact (hDiff.analyticOnNhd
-    UpperHalfPlane.isOpen_upperHalfPlaneSet).restrictScalars.
-      contDiffOn_of_completeSpace
+        (selectedCosetGL_det_pos q) (⟨w, hw⟩ : ℍ)).hasDerivAt.differentiableAt.differentiableWithinAt
+  exact ContDiffOn.restrict_scalars ℝ
+    ((hDiff.analyticOnNhd
+      UpperHalfPlane.isOpen_upperHalfPlaneSet).contDiffOn_of_completeSpace)
 
 /-- The selected affine denominator is real smooth. -/
 theorem selectedCosetDenom_realSmooth (q : GammaTwoRightCoset) :
     RealSmooth (selectedCosetDenom q) := by
+  letI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
   have hDiff : DifferentiableOn ℂ
       (fun w : ℂ => UpperHalfPlane.denom (selectedCosetGL q) w)
       UpperHalfPlane.upperHalfPlaneSet := by
@@ -29285,8 +30081,9 @@ theorem selectedCosetDenom_realSmooth (q : GammaTwoRightCoset) :
   have hSmooth : ContDiffOn ℝ ∞
       (fun w : ℂ => UpperHalfPlane.denom (selectedCosetGL q) w)
       UpperHalfPlane.upperHalfPlaneSet :=
-    (hDiff.analyticOnNhd
-      UpperHalfPlane.isOpen_upperHalfPlaneSet).restrictScalars.contDiffOn_of_completeSpace
+    ContDiffOn.restrict_scalars ℝ
+      ((hDiff.analyticOnNhd
+        UpperHalfPlane.isOpen_upperHalfPlaneSet).contDiffOn_of_completeSpace)
   unfold RealSmooth
   exact hSmooth.congr (fun w hw => by
     simp [upperLift, selectedCosetDenom, Function.comp_def,
@@ -29299,9 +30096,16 @@ theorem selectedCosetDerivative_realSmooth (q : GammaTwoRightCoset) :
   have hPow : RealSmooth (fun z => selectedCosetDenom q z ^ 2) :=
     hDenom.pow 2
   have hInv : RealSmooth
-      (fun z => (selectedCosetDenom q z ^ 2)⁻¹) :=
-    hPow.inv (fun z => pow_ne_zero 2 (selectedCosetDenom_ne_zero q z))
-  simpa [selectedCosetDerivative, one_div] using hInv
+      (fun z => (selectedCosetDenom q z ^ 2)⁻¹) := by
+    unfold RealSmooth at hPow ⊢
+    apply hPow.inv
+    intro w hw
+    simpa [upperLift, selectedCosetDenom, Function.comp_def,
+      UpperHalfPlane.ofComplex_apply_of_im_pos hw] using
+      (UpperHalfPlane.denom_ne_zero (selectedCosetGL q)
+        (⟨w, hw⟩ : ℍ))
+  unfold selectedCosetDerivative
+  simpa only [one_div] using hInv
 
 /-- Exact directional derivative of `(c z + d)^(-2)`. -/
 theorem d1_selectedCosetDerivative
@@ -29314,18 +30118,19 @@ theorem d1_selectedCosetDerivative
       ((selectedCosetGL q) 1 0 : ℂ) (z : ℂ) := by
     simpa [UpperHalfPlane.denom] using
       (((hasDerivAt_id (z : ℂ)).const_mul
-        ((selectedCosetGL q) 1 0)).add_const
-          ((selectedCosetGL q) 1 1))
+        ((((selectedCosetGL q) 1 0 : ℝ) : ℂ))).add_const
+          ((((selectedCosetGL q) 1 1 : ℝ) : ℂ)))
   have hPower : HasDerivAt
       (fun w : ℂ => UpperHalfPlane.denom (selectedCosetGL q) w ^ (-2 : ℤ))
       ((-2 : ℂ) *
         UpperHalfPlane.denom (selectedCosetGL q) z ^ (-3 : ℤ) *
           ((selectedCosetGL q) 1 0 : ℂ)) (z : ℂ) := by
-    simpa [mul_comm, mul_left_comm, mul_assoc] using
+    convert!
       (hasDerivAt_zpow (-2 : ℤ)
         (UpperHalfPlane.denom (selectedCosetGL q) z)
         (Or.inl (UpperHalfPlane.denom_ne_zero
-          (selectedCosetGL q) z))).scomp (z : ℂ) hAffine
+          (selectedCosetGL q) z))).scomp (z : ℂ) hAffine using 1 <;>
+      simp [Function.comp_apply, mul_comm, mul_left_comm, mul_assoc]
   have hLocal :
       upperLift (selectedCosetDerivative q) =ᶠ[nhds (z : ℂ)]
         (fun w : ℂ =>
@@ -29413,23 +30218,19 @@ theorem d1_complex_decomposition {f : ℍ → ℂ} (z : ℍ) (ξ : ℂ) :
       (ξ.re : ℂ) * dx f z + (ξ.im : ℂ) * dy f z := by
   have hξ : ξ = ξ.re • (1 : ℂ) + ξ.im • Complex.I := by
     apply Complex.ext <;> simp
-  unfold d1 dx dy
+  unfold dx dy d1
   rw [hξ, map_add, map_smul, map_smul]
-  simp only [Complex.real_smul, one_mul]
+  simp [Complex.real_smul]
 
 @[simp]
 theorem dx_neg {f : ℍ → ℂ} (hf : RealSmooth f) (z : ℍ) :
     dx (-f) z = -dx f z := by
-  change dx ((-1 : ℂ) • f) z = _
-  rw [dx_smul (-1 : ℂ) hf]
-  simp
+  simpa [Pi.smul_apply] using dx_smul (-1 : ℂ) hf z
 
 @[simp]
 theorem dy_neg {f : ℍ → ℂ} (hf : RealSmooth f) (z : ℍ) :
     dy (-f) z = -dy f z := by
-  change dy ((-1 : ℂ) • f) z = _
-  rw [dy_smul (-1 : ℂ) hf]
-  simp
+  simpa [Pi.smul_apply] using dy_smul (-1 : ℂ) hf z
 
 /-- Real and imaginary entries of the conformal derivative matrix. -/
 noncomputable def selectedCosetA
@@ -29442,11 +30243,11 @@ noncomputable def selectedCosetB
 
 theorem selectedCosetA_realSmooth (q : GammaTwoRightCoset) :
     RealSmooth (selectedCosetA q) :=
-  (selectedCosetDerivative_realSmooth q).complexRealPart
+  RealSmooth.complexRealPart (selectedCosetDerivative_realSmooth q)
 
 theorem selectedCosetB_realSmooth (q : GammaTwoRightCoset) :
     RealSmooth (selectedCosetB q) :=
-  (selectedCosetDerivative_realSmooth q).complexImagPart
+  RealSmooth.complexImagPart (selectedCosetDerivative_realSmooth q)
 
 /-- The Cauchy--Riemann equations for the two real derivative coefficients,
 in exactly the form which cancels the derivative-of-Jacobian terms in the
@@ -29456,14 +30257,14 @@ theorem dx_selectedCosetA_eq_dy_selectedCosetB
     dx (selectedCosetA q) z = dy (selectedCosetB q) z := by
   rw [show dx (selectedCosetA q) z =
       ((dx (selectedCosetDerivative q) z).re : ℂ) by
-        simpa [selectedCosetA, dx] using
-          d1_complexRealPart (selectedCosetDerivative_realSmooth q)
-            z (1 : ℂ),
+        unfold selectedCosetA dx
+        exact d1_complexRealPart (selectedCosetDerivative_realSmooth q)
+          z (1 : ℂ),
     show dy (selectedCosetB q) z =
       ((dy (selectedCosetDerivative q) z).im : ℂ) by
-        simpa [selectedCosetB, dy] using
-          d1_complexImagPart (selectedCosetDerivative_realSmooth q)
-            z Complex.I,
+        unfold selectedCosetB dy
+        exact d1_complexImagPart (selectedCosetDerivative_realSmooth q)
+          z Complex.I,
     dy_selectedCosetDerivative_eq_I_mul_dx]
   simp
 
@@ -29472,14 +30273,14 @@ theorem dy_selectedCosetA_eq_neg_dx_selectedCosetB
     dy (selectedCosetA q) z = -dx (selectedCosetB q) z := by
   rw [show dy (selectedCosetA q) z =
       ((dy (selectedCosetDerivative q) z).re : ℂ) by
-        simpa [selectedCosetA, dy] using
-          d1_complexRealPart (selectedCosetDerivative_realSmooth q)
-            z Complex.I,
+        unfold selectedCosetA dy
+        exact d1_complexRealPart (selectedCosetDerivative_realSmooth q)
+          z Complex.I,
     show dx (selectedCosetB q) z =
       ((dx (selectedCosetDerivative q) z).im : ℂ) by
-        simpa [selectedCosetB, dx] using
-          d1_complexImagPart (selectedCosetDerivative_realSmooth q)
-            z (1 : ℂ),
+        unfold selectedCosetB dx
+        exact d1_complexImagPart (selectedCosetDerivative_realSmooth q)
+          z (1 : ℂ),
     dy_selectedCosetDerivative_eq_I_mul_dx]
   simp
 
@@ -29519,8 +30320,7 @@ theorem d1_comp_selectedCosetAction
   have hOuter : DifferentiableAt ℝ (upperLift f)
       (selectedCosetAmbientMap q (z : ℂ)) := by
     simpa using
-      (RealSmooth.contDiffAt_upperLift hf (selectedCosetAction q z)).
-        differentiableAt (by simp)
+      (RealSmooth.contDiffAt_upperLift hf (selectedCosetAction q z)).differentiableAt (by simp)
   have hComp := hOuter.hasFDerivAt.comp (z : ℂ) hInner
   have hLocal :
       upperLift (fun w => f (selectedCosetAction q w)) =ᶠ[nhds (z : ℂ)]
@@ -29557,7 +30357,6 @@ theorem dy_comp_selectedCosetAction
     selectedCoset_smulFDeriv_apply,
     d1_complex_decomposition]
   simp [selectedCosetA, selectedCosetB]
-  ring
 
 /-! #### The genuine Piola pullback of the flux one-form -/
 
@@ -29585,6 +30384,7 @@ theorem selectedCosetPiolaX_coordinate
   unfold fluxOneFormValue selectedCosetA selectedCosetB
   simp only [Complex.mul_re, Complex.mul_im, Complex.I_re,
     Complex.I_im, mul_zero, mul_one, sub_zero, zero_mul, add_zero]
+  push_cast
   ring
 
 theorem selectedCosetPiolaY_coordinate
@@ -29605,19 +30405,21 @@ theorem selectedCosetPiola_fluxOneFormValue
       fluxOneFormValue X Y (selectedCosetAction q z)
         (UpperHalfPlane.smulFDeriv
           (selectedCosetGL q) (z : ℂ) ξ) := by
+  unfold fluxOneFormValue
   rw [selectedCosetPiolaX_coordinate,
     selectedCosetPiolaY_coordinate,
     selectedCoset_smulFDeriv_apply]
-  unfold fluxOneFormValue selectedCosetA selectedCosetB
+  unfold selectedCosetA selectedCosetB
   simp only [Complex.mul_re, Complex.mul_im]
+  push_cast
   ring
 
 theorem selectedCosetPiolaX_realSmooth
     (q : GammaTwoRightCoset) {X Y : ℍ → ℂ}
     (hX : RealSmooth X) (hY : RealSmooth Y) :
     RealSmooth (selectedCosetPiolaX q X Y) := by
-  have hXq := hX.comp_selectedCosetAction q
-  have hYq := hY.comp_selectedCosetAction q
+  have hXq := RealSmooth.comp_selectedCosetAction hX q
+  have hYq := RealSmooth.comp_selectedCosetAction hY q
   have hEq : selectedCosetPiolaX q X Y =
       selectedCosetA q * (fun z => X (selectedCosetAction q z)) +
         selectedCosetB q * (fun z => Y (selectedCosetAction q z)) := by
@@ -29631,8 +30433,8 @@ theorem selectedCosetPiolaY_realSmooth
     (q : GammaTwoRightCoset) {X Y : ℍ → ℂ}
     (hX : RealSmooth X) (hY : RealSmooth Y) :
     RealSmooth (selectedCosetPiolaY q X Y) := by
-  have hXq := hX.comp_selectedCosetAction q
-  have hYq := hY.comp_selectedCosetAction q
+  have hXq := RealSmooth.comp_selectedCosetAction hX q
+  have hYq := RealSmooth.comp_selectedCosetAction hY q
   have hEq : selectedCosetPiolaY q X Y =
       (-selectedCosetB q) * (fun z => X (selectedCosetAction q z)) +
         selectedCosetA q * (fun z => Y (selectedCosetAction q z)) := by
@@ -29690,10 +30492,25 @@ theorem divergence_selectedCosetPiola
           dy Y (selectedCosetAction q z)) := by
   let Xq : ℍ → ℂ := fun w => X (selectedCosetAction q w)
   let Yq : ℍ → ℂ := fun w => Y (selectedCosetAction q w)
-  have hXq : RealSmooth Xq := hX.comp_selectedCosetAction q
-  have hYq : RealSmooth Yq := hY.comp_selectedCosetAction q
-  have hA := selectedCosetA_realSmooth q
-  have hB := selectedCosetB_realSmooth q
+  have hXq : RealSmooth Xq := RealSmooth.comp_selectedCosetAction hX q
+  have hYq : RealSmooth Yq := RealSmooth.comp_selectedCosetAction hY q
+  have hA : RealSmooth (selectedCosetA q) :=
+    selectedCosetA_realSmooth q
+  have hB : RealSmooth (selectedCosetB q) :=
+    selectedCosetB_realSmooth q
+  have hAXq : RealSmooth (selectedCosetA q * Xq) := by
+    unfold RealSmooth at hA hXq ⊢
+    simpa [upperLift, Function.comp_def] using hA.mul hXq
+  have hBYq : RealSmooth (selectedCosetB q * Yq) := by
+    unfold RealSmooth at hB hYq ⊢
+    simpa [upperLift, Function.comp_def] using hB.mul hYq
+  have hNegBXq : RealSmooth ((-selectedCosetB q) * Xq) := by
+    have hNegB : RealSmooth (-selectedCosetB q) := RealSmooth.neg hB
+    unfold RealSmooth at hNegB hXq ⊢
+    simpa [upperLift, Function.comp_def] using hNegB.mul hXq
+  have hAYq : RealSmooth (selectedCosetA q * Yq) := by
+    unfold RealSmooth at hA hYq ⊢
+    simpa [upperLift, Function.comp_def] using hA.mul hYq
   have hPiolaX : selectedCosetPiolaX q X Y =
       selectedCosetA q * Xq + selectedCosetB q * Yq := by
     funext w
@@ -29703,10 +30520,10 @@ theorem divergence_selectedCosetPiola
     funext w
     simpa [Xq, Yq] using selectedCosetPiolaY_coordinate q X Y w
   rw [hPiolaX, hPiolaY]
-  rw [dx_add (hA.mul hXq) (hB.mul hYq),
+  rw [dx_add hAXq hBYq,
     dx_mul hA hXq, dx_mul hB hYq,
-    dy_add (hB.neg.mul hXq) (hA.mul hYq),
-    dy_mul hB.neg hXq, dy_mul hA hYq,
+    dy_add hNegBXq hAYq,
+    dy_mul (RealSmooth.neg hB) hXq, dy_mul hA hYq,
     dy_neg hB]
   rw [dx_selectedCosetA_eq_dy_selectedCosetB,
     dy_selectedCosetA_eq_neg_dx_selectedCosetB]
@@ -29727,6 +30544,7 @@ theorem divergence_selectedCosetPiola
         selectedCosetA q z * dy Y (selectedCosetAction q z) by
       simpa [Yq] using dy_comp_selectedCosetAction q hY z]
   rw [← selectedCosetA_sq_add_B_sq q z]
+  simp only [Pi.neg_apply]
   ring
 
 /-! #### Set images and the Mathlib Bochner Jacobian theorem -/
@@ -29736,8 +30554,8 @@ theorem selectedCosetAmbientMap_injOn_coeImage
     Set.InjOn (selectedCosetAmbientMap q) (UpperHalfPlane.coe '' s) := by
   rintro _ ⟨z, hz, rfl⟩ _ ⟨w, hw, rfl⟩ hEq
   have hAction : selectedCosetAction q z = selectedCosetAction q w := by
-    apply Subtype.ext
-    simpa using hEq
+    apply UpperHalfPlane.coe_injective
+    simpa [selectedCosetAmbientMap_coe] using hEq
   have hCancel := congrArg
     (fun u : ℍ => (selectedCosetGL q)⁻¹ • u) hAction
   have hzw : z = w := by
@@ -29779,8 +30597,7 @@ theorem integral_complexImage_selectedCoset_smul_eq_jacobian
     (UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr hs)
     (fun w hw => by
       rcases hw with ⟨z, hz, rfl⟩
-      exact (selectedCosetAmbientMap_hasStrictFDerivAt q z).
-        hasFDerivAt.hasFDerivWithinAt)
+      exact (selectedCosetAmbientMap_hasStrictFDerivAt q z).hasFDerivAt.hasFDerivWithinAt)
     (selectedCosetAmbientMap_injOn_coeImage q s) f
 
 /-- Specialization to every actual selected half-open modular tile. -/
@@ -29817,8 +30634,16 @@ theorem integral_divergence_selectedHalfOpenTile_eq_piola
   apply setIntegral_congr_fun
     (UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr
       modularHalfOpenTile_measurable)
-  rintro _w ⟨z, hz, rfl⟩
-  rw [selectedCosetAmbientMap_coe]
+  rintro _w ⟨z, _hz, rfl⟩
+  change
+    |(UpperHalfPlane.smulFDeriv
+        (selectedCosetGL q) (z : ℂ)).det| •
+      upperLift (fun z => dx X z + dy Y z)
+        (selectedCosetAmbientMap q (z : ℂ)) =
+      upperLift (fun z =>
+        dx (selectedCosetPiolaX q X Y) z +
+          dy (selectedCosetPiolaY q X Y) z) (z : ℂ)
+  simp only [selectedCosetAmbientMap_coe, upperLift_apply]
   change (selectedCosetJacobian q z : ℝ) •
       (dx X (selectedCosetAction q z) +
         dy Y (selectedCosetAction q z)) =
@@ -29843,9 +30668,13 @@ theorem integral_heightSq_divergence_selectedHalfOpenTile_eq_basePiola
             dy (selectedCosetPiolaY q X Y) z)
         ∂hyperbolicMeasure := by
   have hTile : MeasurableSet
-      (gammaTwoCosetRep q • modularHalfOpenTile) :=
-    MeasurableSet.const_smul modularHalfOpenTile_measurable
-      (gammaTwoCosetRep q)
+      (gammaTwoCosetRep q • modularHalfOpenTile) := by
+    change MeasurableSet
+      (((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+        (gammaTwoCosetRep q)) • modularHalfOpenTile)
+    exact MeasurableSet.const_smul modularHalfOpenTile_measurable
+      ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+        (gammaTwoCosetRep q))
   calc
     (∫ z in gammaTwoCosetRep q • modularHalfOpenTile,
         heightC z ^ 2 * (dx X z + dy Y z)
@@ -29854,8 +30683,7 @@ theorem integral_heightSq_divergence_selectedHalfOpenTile_eq_basePiola
             (gammaTwoCosetRep q • modularHalfOpenTile),
           upperLift (fun z => dx X z + dy Y z) w
           ∂(volume : Measure ℂ) :=
-      GammaTwoCurvilinearTileStokes.
-        setIntegral_heightSq_mul_hyperbolic_eq_complexImage
+      GammaTwoCurvilinearTileStokes.setIntegral_heightSq_mul_hyperbolic_eq_complexImage
           _ hTile _
     _ = ∫ w in UpperHalfPlane.coe '' modularHalfOpenTile,
         upperLift (fun z =>
@@ -29868,8 +30696,7 @@ theorem integral_heightSq_divergence_selectedHalfOpenTile_eq_basePiola
           (dx (selectedCosetPiolaX q X Y) z +
             dy (selectedCosetPiolaY q X Y) z)
         ∂hyperbolicMeasure :=
-      (GammaTwoCurvilinearTileStokes.
-        setIntegral_heightSq_mul_hyperbolic_eq_complexImage
+      (GammaTwoCurvilinearTileStokes.setIntegral_heightSq_mul_hyperbolic_eq_complexImage
           _ modularHalfOpenTile_measurable _).symm
 
 namespace AxiomAuditP3MoebiusPiola
@@ -30042,7 +30869,7 @@ theorem orientedFluxParameterIntegral_add_adjacent
     orientedFluxParameterIntegral X Y p velocity a c =
       orientedFluxParameterIntegral X Y p velocity a b +
         orientedFluxParameterIntegral X Y p velocity b c := by
-  exact intervalIntegral.integral_add_adjacent_intervals hab hbc
+  exact (intervalIntegral.integral_add_adjacent_intervals hab hbc).symm
 
 /-- Pointwise pullback invariance integrates to the exact Möbius
 change-of-variables formula.  The transformed tangent is the proved real
@@ -30201,22 +31028,25 @@ theorem measurableSet_modularTileEdgeParameterSet
   cases e <;> simp [modularTileEdgeParameterSet]
 
 noncomputable def actualEdgePoint
-    (e : GammaTwoActualPolygonEdge) (t : ℝ) : ℍ :=
-  if ht : t ∈ modularTileEdgeParameterSet e.2 then
+    (e : GammaTwoActualPolygonEdge) (t : ℝ) : ℍ := by
+  classical
+  exact if ht : t ∈ modularTileEdgeParameterSet e.2 then
     gammaTwoActualPolygonEdgeParam e ⟨t, ht⟩
   else UpperHalfPlane.I
 
 noncomputable def actualPairedEdgePoint
-    (e : GammaTwoActualPolygonEdge) (t : ℝ) : ℍ :=
-  if ht : t ∈ modularTileEdgeParameterSet e.2 then
+    (e : GammaTwoActualPolygonEdge) (t : ℝ) : ℍ := by
+  classical
+  exact if ht : t ∈ modularTileEdgeParameterSet e.2 then
     gammaTwoActualPolygonEdgeParam e.paired
       (e.pairedParameter ⟨t, ht⟩)
   else UpperHalfPlane.I
 
 noncomputable def actualPairedTransportedVelocity
     (e : GammaTwoActualPolygonEdge) (velocity : ℝ → ℂ)
-    (t : ℝ) : ℂ :=
-  if ht : t ∈ modularTileEdgeParameterSet e.2 then
+    (t : ℝ) : ℂ := by
+  classical
+  exact if ht : t ∈ modularTileEdgeParameterSet e.2 then
     -d1 (gammaTwoActionCoordinate e.pairingElement)
       (gammaTwoActualPolygonEdgeParam e ⟨t, ht⟩) (velocity t)
   else 0
@@ -30393,8 +31223,8 @@ theorem sum_actualPolygonEdges_eq_zero_of_paired_neg
         apply Finset.sum_congr rfl
         intro e _he
         exact hB e
-      _ = -(∑ e : GammaTwoActualPolygonEdge, B e) :=
-        Finset.sum_neg_distrib
+      _ = -(∑ e : GammaTwoActualPolygonEdge, B e) := by
+        simp
   have hsym :
       -(∑ e : GammaTwoActualPolygonEdge, B e) =
         ∑ e : GammaTwoActualPolygonEdge, B e :=
@@ -30412,7 +31242,7 @@ structure ComplexPathPiece where
 
 namespace ComplexPathPiece
 
-def symm (p : ComplexPathPiece) : ComplexPathPiece where
+noncomputable def symm (p : ComplexPathPiece) : ComplexPathPiece where
   source := p.target
   target := p.source
   path := p.path.symm
@@ -30436,7 +31266,7 @@ noncomputable def fluxIntegral (X Y : ℍ → ℂ)
     (C : ComplexBoundaryChain) : ℂ :=
   (C.map fun p => p.fluxIntegral X Y).sum
 
-def reverse (C : ComplexBoundaryChain) : ComplexBoundaryChain :=
+noncomputable def reverse (C : ComplexBoundaryChain) : ComplexBoundaryChain :=
   (C.map ComplexPathPiece.symm).reverse
 
 @[simp]
@@ -30450,11 +31280,14 @@ theorem fluxIntegral_append (X Y : ℍ → ℂ)
 theorem fluxIntegral_reverse (X Y : ℍ → ℂ)
     (C : ComplexBoundaryChain) :
     fluxIntegral X Y C.reverse = -fluxIntegral X Y C := by
+  unfold reverse fluxIntegral
+  rw [List.map_reverse, List.sum_reverse, List.map_map]
   induction C with
-  | nil => simp [reverse, fluxIntegral]
+  | nil => simp
   | cons p C ih =>
-      simp [reverse, fluxIntegral, ih]
-      ring
+      simp only [List.map_cons, List.sum_cons, Function.comp_apply]
+      rw [ComplexPathPiece.fluxIntegral_symm, ih]
+      abel
 
 /-- Adding every internal edge once in each orientation contributes exactly
 zero to the finite boundary integral. -/
@@ -30593,7 +31426,7 @@ theorem isEssentialGraphCoreFor_iff_hasSequentialGraphCore
         (LinearPMap.le_graph_of_le hSA) hA
     · intro p hp
       obtain ⟨q, hqGraph, hqLimit⟩ := hSequential p hp
-      rw [Submodule.topologicalClosure_coe]
+      change p ∈ closure (S.graph : Set (E × F))
       exact isClosed_closure.mem_of_tendsto hqLimit
         (Filter.Eventually.of_forall fun j ↦
           subset_closure (hqGraph j))
@@ -30718,6 +31551,7 @@ noncomputable def modularTileEdgeAmbientVelocity :
   | .leftVerticalSegment, _t => Complex.I
   | .rightVerticalSegment, _t => Complex.I
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the declared circular interval the square-root curve has exactly the
 velocity used by the boundary-flux API. -/
 theorem modularCircularArcAmbient_hasDerivAt
@@ -30727,11 +31561,16 @@ theorem modularCircularArcAmbient_hasDerivAt
       (modularTileEdgeAmbientVelocity .circularArc t) (t : Real) := by
   have hxR : HasDerivAt (fun s : Real => s / 2) (1 / 2 : Real) t :=
     (hasDerivAt_id (t : Real)).div_const 2
+  have hg0 := (hasDerivAt_const (t : Real) (1 : Real)).sub
+      (((hasDerivAt_id (t : Real)).div_const 2).pow 2)
   have hg : HasDerivAt
       (fun s : Real => 1 - (s / 2) ^ 2)
-      (-(t : Real) / 2) (t : Real) := by
-    convert (hasDerivAt_const (t : Real) (1 : Real)).sub
-      (((hasDerivAt_id (t : Real)).div_const 2).pow 2) using 1 <;> ring
+      (0 - (2 : Real) * ((t : Real) / 2) ^ (2 - 1) * (1 / 2))
+      (t : Real) :=
+    hg0.congr_of_eventuallyEq
+      (Filter.Eventually.of_forall (fun s => by
+        change 1 - (s / 2) ^ 2 = 1 - (s / 2) ^ 2
+        rfl))
   have hrad : 0 < 1 - ((t : Real) / 2) ^ 2 :=
     Real.sqrt_pos.1 (modularCircularArc_sqrt_pos t)
   have hsqrt0 : Real.sqrt (1 - ((t : Real) / 2) ^ 2) ≠ 0 :=
@@ -30743,39 +31582,41 @@ theorem modularCircularArcAmbient_hasDerivAt
         (4 * Real.sqrt (1 - ((t : Real) / 2) ^ 2))) (t : Real) := by
     convert hyR0 using 1
     field_simp [hsqrt0]
-    <;> ring
+    ring
   have hxC := hxR.ofReal_comp
   have hyC := hyR.ofReal_comp
-  simpa [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity] using
-    hxC.add (hyC.mul_const Complex.I)
+  unfold modularTileEdgeAmbientParam modularTileEdgeAmbientVelocity
+  exact hxC.add (hyC.mul_const Complex.I)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left vertical base edge has constant native velocity `I`. -/
 theorem modularLeftVerticalAmbient_hasDerivAt (t : Set.Ici (0 : Real)) :
     HasDerivAt
       (modularTileEdgeAmbientParam .leftVerticalSegment)
       (modularTileEdgeAmbientVelocity .leftVerticalSegment t) (t : Real) := by
-  have hxR : HasDerivAt (fun _s : Real => -(1 / 2 : Real)) 0 t :=
-    hasDerivAt_const (t : Real) _
-  have hyR : HasDerivAt
-      (fun s : Real => Real.sqrt 3 / 2 + s) 1 t :=
-    (hasDerivAt_const (t : Real) (Real.sqrt 3 / 2)).add
-      (hasDerivAt_id (t : Real))
-  simpa [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity] using
-    hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+  rw [hasDerivAt_iff_tendsto_slope_zero]
+  refine Filter.Tendsto.congr' ?_ tendsto_const_nhds
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs
+  dsimp [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity]
+  push_cast
+  field_simp [hs]
+  ring
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right vertical base edge has the same constant native velocity `I`. -/
 theorem modularRightVerticalAmbient_hasDerivAt (t : Set.Ici (0 : Real)) :
     HasDerivAt
       (modularTileEdgeAmbientParam .rightVerticalSegment)
       (modularTileEdgeAmbientVelocity .rightVerticalSegment t) (t : Real) := by
-  have hxR : HasDerivAt (fun _s : Real => (1 / 2 : Real)) 0 t :=
-    hasDerivAt_const (t : Real) _
-  have hyR : HasDerivAt
-      (fun s : Real => Real.sqrt 3 / 2 + s) 1 t :=
-    (hasDerivAt_const (t : Real) (Real.sqrt 3 / 2)).add
-      (hasDerivAt_id (t : Real))
-  simpa [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity] using
-    hxR.ofReal_comp.add (hyR.ofReal_comp.mul_const Complex.I)
+  rw [hasDerivAt_iff_tendsto_slope_zero]
+  refine Filter.Tendsto.congr' ?_ tendsto_const_nhds
+  filter_upwards [self_mem_nhdsWithin] with s hs
+  simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hs
+  dsimp [modularTileEdgeAmbientParam, modularTileEdgeAmbientVelocity]
+  push_cast
+  field_simp [hs]
+  ring
 
 /-- Uniform base-edge derivative theorem, including both finite circular
 endpoints and the initial points of the two vertical rays. -/
@@ -30817,13 +31658,15 @@ theorem modularTileEdgeAmbientVelocity_eq
     modularTileEdgeAmbientVelocity e t = modularTileEdgeVelocity e t := by
   cases e with
   | circularArc =>
+      unfold modularTileEdgeAmbientVelocity modularTileEdgeVelocity
+        modularCircularArcVelocity
       apply Complex.ext <;>
-        simp [modularTileEdgeAmbientVelocity, modularTileEdgeVelocity,
-          modularCircularArcVelocity]
-  | leftVerticalSegment =>
-      simp [modularTileEdgeAmbientVelocity, modularTileEdgeVelocity]
-  | rightVerticalSegment =>
-      simp [modularTileEdgeAmbientVelocity, modularTileEdgeVelocity]
+        simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re,
+          Complex.ofReal_im, Complex.mul_re, Complex.mul_im,
+          Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
+          sub_zero, add_zero, zero_add]
+  | leftVerticalSegment => rfl
+  | rightVerticalSegment => rfl
 
 /-! #### Selected-coset actual edges -/
 
@@ -30872,17 +31715,18 @@ theorem actualEdgeAmbientParam_hasDerivAt
     (t : modularTileEdgeParameterSet e.2) :
     HasDerivAt (actualEdgeAmbientParam e)
       (actualEdgeNativeVelocity e t) (t : Real) := by
+  letI : AddCommGroup ℂ := Complex.instNormedAddCommGroup.toAddCommGroup
+  letI : AddCommGroup Complex := Complex.addCommGroup
   have hbase := modularTileEdgeAmbientParam_hasDerivAt e.2 t
   have houter :=
     (selectedCosetAmbientMap_hasStrictFDerivAt e.1
       (modularTileEdgeParam e.2 t)).hasFDerivAt
-  have hcomp := houter.comp_hasDerivAt_of_eq hbase
+  have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hbase
     (modularTileEdgeAmbientParam_eq_coe e.2 t).symm
   simpa [actualEdgeAmbientParam, actualEdgeNativeVelocity,
     Function.comp_def, modularTileEdgeAmbientVelocity_eq] using hcomp
 
 /-! #### Native tangent compatibility under the actual side pairing -/
-
 /-- The subtype pairing is multiplication of the real parameter by the
 declared sign. -/
 @[simp]
@@ -30943,8 +31787,9 @@ theorem d1_gammaTwoActionCoordinate_eq
     (gamma : GammaTwo) (z : UpperHalfPlane) (xi : Complex) :
     d1 (gammaTwoActionCoordinate gamma) z xi =
       xi / inverseEtaPaperOrbitDenom gamma z ^ 2 := by
-  simpa [gammaTwoActionCoordinate, gammaTwoMoebiusCoordinate] using
-    d1_gammaTwoMoebiusCoordinate gamma z xi
+  change d1 (gammaTwoMoebiusCoordinate gamma) z xi =
+    xi / inverseEtaPaperOrbitDenom gamma z ^ 2
+  exact d1_gammaTwoMoebiusCoordinate gamma z xi
 
 /-- Derivative of the paired Mobius image of a native actual-edge curve,
 expressed in the exact `d1` notation used by invariant fluxes. -/
@@ -30962,7 +31807,7 @@ theorem gammaTwoChart_actualEdgeAmbientParam_hasDerivAt
   have houter :=
     (gammaTwoMoebiusChart_hasStrictDerivAt e.pairingElement
       (gammaTwoActualPolygonEdgeParam e t)).hasDerivAt.complexToReal_fderiv
-  have hcomp := houter.comp_hasDerivAt_of_eq hinner
+  have hcomp := houter.comp_hasDerivAt_of_eq (t : Real) hinner
     (actualEdgeAmbientParam_eq_coe e t).symm
   simpa [Function.comp_def, d1_gammaTwoActionCoordinate_eq,
     smul_eq_mul, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using hcomp
@@ -31082,8 +31927,9 @@ theorem invariantFlux_nativePaired_parameterSign
 /-- Totalized native tangent; outside the edge parameter set its value is
 irrelevant and is set to zero. -/
 noncomputable def actualEdgeNativeVelocityTotal
-    (e : GammaTwoActualPolygonEdge) (t : Real) : Complex :=
-  if ht : t ∈ modularTileEdgeParameterSet e.2 then
+    (e : GammaTwoActualPolygonEdge) (t : Real) : Complex := by
+  classical
+  exact if ht : t ∈ modularTileEdgeParameterSet e.2 then
     actualEdgeNativeVelocity e ⟨t, ht⟩
   else 0
 
@@ -31104,10 +31950,11 @@ theorem nativeActualEdgeFluxIntegrand_pairedParameter
     nativeActualEdgeFluxIntegrand X Y e.paired (e.pairedParameter t) =
       (e.2.parameterSign : Complex) *
         nativeActualEdgeFluxIntegrand X Y e t := by
-  simpa [nativeActualEdgeFluxIntegrand, actualEdgePoint,
-    actualEdgeNativeVelocityTotal, t.property,
-    (e.pairedParameter t).property] using
-      invariantFlux_nativePaired_parameterSign hInv e t
+  classical
+  simp only [nativeActualEdgeFluxIntegrand, actualEdgePoint,
+    actualEdgeNativeVelocityTotal, dif_pos t.property,
+    dif_pos (e.pairedParameter t).property]
+  exact invariantFlux_nativePaired_parameterSign hInv e t
 
 /-- Real-parameter version of the preceding identity. -/
 theorem nativeActualEdgeFluxIntegrand_paired_mul
@@ -31185,31 +32032,26 @@ theorem nativeActualEdgeFluxIntegral_paired_circular
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     (T : Real) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.circularArc) :
-          GammaTwoActualPolygonEdge).paired =
+        GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) =
       (-1 : Complex) *
         nativeActualEdgeFluxIntegral T X Y
           (q, GammaTwoModularTileEdge.circularArc) := by
   change
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        ((q, GammaTwoModularTileEdge.circularArc) :
-          GammaTwoActualPolygonEdge).paired t) =
+        GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t) =
       (-1 : Complex) *
         (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
           (q, GammaTwoModularTileEdge.circularArc) t)
   calc
     (∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-        ((q, GammaTwoModularTileEdge.circularArc) :
-          GammaTwoActualPolygonEdge).paired t) =
+        GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t) =
         ∫ t in (-1 : Real)..1, nativeActualEdgeFluxIntegrand X Y
-          ((q, GammaTwoModularTileEdge.circularArc) :
-            GammaTwoActualPolygonEdge).paired (-t) := by
+          GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) (-t) := by
       symm
       simpa using
         (intervalIntegral.integral_comp_neg
           (f := fun t : Real => nativeActualEdgeFluxIntegrand X Y
-            ((q, GammaTwoModularTileEdge.circularArc) :
-              GammaTwoActualPolygonEdge).paired t)
+            GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) t)
           (a := (-1 : Real)) (b := (1 : Real)))
     _ = ∫ t in (-1 : Real)..1,
         -nativeActualEdgeFluxIntegrand X Y
@@ -31234,14 +32076,12 @@ theorem nativeActualEdgeFluxIntegral_paired_left
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.leftVerticalSegment) :
-          GammaTwoActualPolygonEdge).paired =
+        GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge) =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.leftVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      ((q, GammaTwoModularTileEdge.leftVerticalSegment) :
-        GammaTwoActualPolygonEdge).paired t) =
+      GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.leftVerticalSegment) : GammaTwoActualPolygonEdge) t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.leftVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -31261,14 +32101,12 @@ theorem nativeActualEdgeFluxIntegral_paired_right
     {X Y : UpperHalfPlane → Complex} (hInv : IsGammaTwoInvariantFlux X Y)
     {T : Real} (hT : 0 ≤ T) (q : GammaTwoRightCoset) :
     nativeActualEdgeFluxIntegral T X Y
-        ((q, GammaTwoModularTileEdge.rightVerticalSegment) :
-          GammaTwoActualPolygonEdge).paired =
+        GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge) =
       nativeActualEdgeFluxIntegral T X Y
         (q, GammaTwoModularTileEdge.rightVerticalSegment) := by
   change
     (∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
-      ((q, GammaTwoModularTileEdge.rightVerticalSegment) :
-        GammaTwoActualPolygonEdge).paired t) =
+      GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.rightVerticalSegment) : GammaTwoActualPolygonEdge) t) =
     ∫ t in (0 : Real)..T, nativeActualEdgeFluxIntegrand X Y
       (q, GammaTwoModularTileEdge.rightVerticalSegment) t
   apply intervalIntegral.integral_congr
@@ -31514,9 +32352,10 @@ theorem nativeOrientedActualEdgeContribution_circular
         baseModularCircularFluxIntegrand
           (realProdLift (selectedCosetPiolaX q X Y))
           (realProdLift (selectedCosetPiolaY q X Y)) t := by
-  change (1 : Complex) * nativeActualEdgeFluxIntegral T X Y
-      (q, GammaTwoModularTileEdge.circularArc) = _
-  rw [one_mul, nativeActualEdgeFluxIntegral_circular_eq_selectedPiola]
+  simp only [nativeOrientedActualEdgeContribution,
+    GammaTwoActualPolygonEdge.orientationSign,
+    GammaTwoModularTileEdge.orientationSign, Int.cast_one, one_mul]
+  exact nativeActualEdgeFluxIntegral_circular_eq_selectedPiola T X Y q
 
 theorem nativeOrientedActualEdgeContribution_right
     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
@@ -31526,9 +32365,10 @@ theorem nativeOrientedActualEdgeContribution_right
       ∫ s in (0 : Real)..T,
         realProdLift (selectedCosetPiolaX q X Y)
           (1 / 2, modularVertexHeight + s) := by
-  change (1 : Complex) * nativeActualEdgeFluxIntegral T X Y
-      (q, GammaTwoModularTileEdge.rightVerticalSegment) = _
-  rw [one_mul, nativeActualEdgeFluxIntegral_right_eq_selectedPiola hT]
+  simp only [nativeOrientedActualEdgeContribution,
+    GammaTwoActualPolygonEdge.orientationSign,
+    GammaTwoModularTileEdge.orientationSign, Int.cast_one, one_mul]
+  exact nativeActualEdgeFluxIntegral_right_eq_selectedPiola hT X Y q
 
 theorem nativeOrientedActualEdgeContribution_left
     {T : Real} (hT : 0 ≤ T) (X Y : UpperHalfPlane → Complex)
@@ -31538,10 +32378,11 @@ theorem nativeOrientedActualEdgeContribution_left
       -(∫ s in (0 : Real)..T,
         realProdLift (selectedCosetPiolaX q X Y)
           (-(1 / 2), modularVertexHeight + s)) := by
-  change (-1 : Complex) * nativeActualEdgeFluxIntegral T X Y
-      (q, GammaTwoModularTileEdge.leftVerticalSegment) = _
+  simp only [nativeOrientedActualEdgeContribution,
+    GammaTwoActualPolygonEdge.orientationSign,
+    GammaTwoModularTileEdge.orientationSign, Int.cast_neg,
+    Int.cast_one, neg_mul]
   rw [nativeActualEdgeFluxIntegral_left_eq_selectedPiola hT]
-  ring
 
 /-- Explicit enumeration of the three base-edge labels. -/
 theorem sum_modularTileEdges_eq_three
@@ -31745,7 +32586,7 @@ theorem selectedHalfOpenTile_ae_eq_openTile
     (q : GammaTwoRightCoset) :
     gammaTwoCosetRep q • modularHalfOpenTile =ᵐ[hyperbolicMeasure]
       gammaTwoCosetRep q • ModularGroup.fdo :=
-  QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
+  Measure.QuasiMeasurePreserving.smul_ae_eq_of_ae_eq (gammaTwoCosetRep q)
     (measurePreserving_smul (gammaTwoCosetRep q)⁻¹
       hyperbolicMeasure).quasiMeasurePreserving
     modularHalfOpenTile_ae_eq_fdo
@@ -31843,9 +32684,11 @@ theorem selectedCosetPiola_eventuallyEq_zero_on_modularOpenHighTail
     selectedFields_eventuallyEq_zero_on_modularOpenHighTail hZero q hz
   constructor
   · filter_upwards [hFields.1, hFields.2] with w hXw hYw
+    simp only [Pi.zero_apply] at hXw hYw ⊢
     rw [selectedCosetPiolaX_coordinate, hXw, hYw]
     ring
   · filter_upwards [hFields.1, hFields.2] with w hXw hYw
+    simp only [Pi.zero_apply] at hXw hYw ⊢
     rw [selectedCosetPiolaY_coordinate, hXw, hYw]
     ring
 
@@ -31907,7 +32750,8 @@ theorem setIntegral_modularHalfOpenTile_eq_closedTruncation_of_highTail_zero
       apply hZero z
       refine ⟨hz.1, ?_⟩
       by_contra hHigh
-      exact hz.2 ⟨hz.1, le_of_not_gt hHigh⟩
+      exact hz.2 ⟨hz.1,
+        (show z ∈ {w : ℍ | w.im ≤ H} from le_of_not_gt hHigh)⟩
     _ = ∫ z in modularClosedTileTruncation H,
         f z ∂hyperbolicMeasure := by
       apply setIntegral_congr_set
@@ -31993,7 +32837,7 @@ theorem HasZeroThreeCuspTail.exists_commonPiolaTruncation
             (dx (selectedCosetPiolaX q X Y) z +
               dy (selectedCosetPiolaY q X Y) z)
           ∂hyperbolicMeasure := by
-  rcases hTail.exists_commonBaseHeight_zero with ⟨H, hH, hZero⟩
+  rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
   exact ⟨H, hH, fun q =>
     integral_selectedPiola_full_eq_closedTruncation hZero q⟩
 
@@ -32134,7 +32978,7 @@ theorem HasZeroThreeCuspTail.exists_commonPiolaTruncation_and_top_zero
             (fun t => UpperHalfPlane.smulFDeriv (selectedCosetGL q)
               (baseHorocycleParam H hH0 t : ℂ) 1)
             (-(1 / 2 : ℝ)) (1 / 2 : ℝ) = 0 := by
-  rcases hTail.exists_commonBaseHeight_zero with ⟨H, hH, hZero⟩
+  rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
   have hH0 : 0 < H := by linarith
   refine ⟨H, hH0, hH, ?_⟩
   intro q
@@ -32196,8 +33040,7 @@ theorem integrableOn_complexImage_selectedCoset_smul_iff_jacobian
     (UpperHalfPlane.measurableEmbedding_coe.measurableSet_image.mpr hs)
     (fun w hw => by
       rcases hw with ⟨z, hz, rfl⟩
-      exact (selectedCosetAmbientMap_hasStrictFDerivAt q z).
-        hasFDerivAt.hasFDerivWithinAt)
+      exact (selectedCosetAmbientMap_hasStrictFDerivAt q z).hasFDerivAt.hasFDerivWithinAt)
     (selectedCosetAmbientMap_injOn_coeImage q s) f
 
 /-- The hyperbolic `height² × divergence` integrability on a selected tile
@@ -32254,8 +33097,8 @@ theorem integrableOn_heightSq_divergence_selectedHalfOpenTile_iff_basePiola
         (UpperHalfPlane.coe '' modularHalfOpenTile)
         (volume : Measure ℂ) := by
       apply integrableOn_congr_fun
-      · rintro _w ⟨z, hz, rfl⟩
-        rw [selectedCosetAmbientMap_coe]
+      · rintro _w ⟨z, _hz, rfl⟩
+        simp only [selectedCosetAmbientMap_coe, upperLift_apply]
         change (selectedCosetJacobian q z : ℝ) •
             (dx X (selectedCosetAction q z) +
               dy Y (selectedCosetAction q z)) =
@@ -32374,7 +33217,8 @@ theorem integral_realProdLift_selectedPiolaY_top_eq_zero
           (-(1 / 2 : ℝ)) ≤ (1 / 2 : ℝ))] using hx
       have hPiola := selectedCosetPiola_eq_zero_on_commonTop
         hZero hH0 hH q hx'
-      rw [realProdLift_topHorocycle]
+      change realProdLift (selectedCosetPiolaY q X Y) (x, H) = (0 : ℂ)
+      rw [realProdLift_topHorocycle _ H hH0 x]
       simpa [curvedTileTopHorocycleParam, baseHorocycleParam]
         using hPiola.2
     _ = 0 := by simp
@@ -32464,7 +33308,7 @@ theorem exists_commonHeight_integral_chosenCarrier_eq_sum_PiolaBoundary
             (selectedCosetPiolaX q X Y)
             (selectedCosetPiolaY q X Y) := by
   rcases hXY with ⟨hX, hY, _hXCompact, _hYCompact, _hInvariant⟩
-  rcases hTail.exists_commonBaseHeight_zero with ⟨H, hH, hZero⟩
+  rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
   exact ⟨H, hH,
     integral_chosenCarrier_eq_sum_PiolaBoundary_of_commonHeight
       X Y H hH hZero hX hY hInt⟩
@@ -32497,7 +33341,7 @@ finite boundary sum. -/
 theorem gammaTwoPairedPolygonFluxStokes :
     GammaTwoPairedPolygonFluxStokes := by
   intro X Y hXY hTail hInt
-  rcases hTail.exists_commonBaseHeight_zero with ⟨H, hH, hZero⟩
+  rcases HasZeroThreeCuspTail.exists_commonBaseHeight_zero hTail with ⟨H, hH, hZero⟩
   have hH0 : 0 < H := lt_trans zero_lt_one hH
   have hBulk :
       (∫ z in chosenGammaTwoFundamentalDomain.carrier,
@@ -32678,19 +33522,19 @@ open DefinitionOneSobolev
 open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
-open PhysicalLocalL2
+open FixedPhaseClosedOperators.PhysicalLocalL2
 
 /-! #### A. The actual fixed parameter `L²` target -/
 
 /-- Lebesgue measure restricted to the standard closed horocycle parameter
 interval.  Endpoints are retained; they are null and therefore do not alter
 the `L²` class. -/
-abbrev selectedHorocycleParameterMeasure : Measure ℝ :=
+noncomputable abbrev selectedHorocycleParameterMeasure : Measure ℝ :=
   (volume : Measure ℝ).restrict
     (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ))
 
 /-- The genuine Hilbert target of every selected-cusp restriction. -/
-abbrev SelectedHorocycleL2 :=
+noncomputable abbrev SelectedHorocycleL2 :=
   MeasureTheory.Lp ℂ 2 selectedHorocycleParameterMeasure
 
 /-- The actual selected Möbius horocycle parametrization is continuous in
@@ -32698,11 +33542,21 @@ its real parameter. -/
 theorem gammaTwoSelectedHorocycleParam_continuous
     (q : GammaTwoRightCoset) (Y : ℝ) :
     Continuous (gammaTwoSelectedHorocycleParam q Y) := by
+  have hcomplex : Continuous (fun t : ℝ =>
+      (t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I) :=
+    (Complex.continuous_ofReal.comp continuous_id).add continuous_const
+  have hbase' : Continuous (fun t : ℝ =>
+      (⟨(t : ℂ) + (gammaTwoCuspLevel Y : ℂ) * Complex.I,
+        lt_of_lt_of_le zero_lt_one
+          (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
+    hcomplex.subtype_mk _
   have hbase : Continuous (fun t : ℝ =>
       (⟨Complex.mk t (gammaTwoCuspLevel Y),
         lt_of_lt_of_le zero_lt_one
-          (one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) := by
-    fun_prop
+          (by simpa using one_le_gammaTwoCuspLevel Y)⟩ : ℍ)) :=
+    hbase'.congr (fun t => by
+      apply Subtype.ext
+      apply Complex.ext <;> simp)
   exact (continuous_sl2z_smul (gammaTwoCosetRep q)).comp hbase
 
 /-- Squared geometric trace weight.  The numerator is the invariant
@@ -32769,7 +33623,13 @@ theorem selectedCuspRestrictionRepresentative_add
       selectedCuspRestrictionRepresentative n q Y u +
         selectedCuspRestrictionRepresentative n q Y v := by
   funext t
-  simp [selectedCuspRestrictionRepresentative, mul_add]
+  change
+    (selectedCuspTraceWeight n q Y t : ℂ) *
+        (((u : SmoothQuotientCompactFunction)
+          (gammaTwoSelectedHorocycleParam q Y t)) +
+         ((v : SmoothQuotientCompactFunction)
+          (gammaTwoSelectedHorocycleParam q Y t))) = _
+  ring
 
 @[simp]
 theorem selectedCuspRestrictionRepresentative_smul
@@ -32778,7 +33638,14 @@ theorem selectedCuspRestrictionRepresentative_smul
     selectedCuspRestrictionRepresentative n q Y (c • u) =
       c • selectedCuspRestrictionRepresentative n q Y u := by
   funext t
-  simp [selectedCuspRestrictionRepresentative, mul_assoc] <;> ring
+  change
+    (selectedCuspTraceWeight n q Y t : ℂ) *
+        (c * ((u : SmoothQuotientCompactFunction)
+          (gammaTwoSelectedHorocycleParam q Y t))) =
+      c * ((selectedCuspTraceWeight n q Y t : ℂ) *
+        ((u : SmoothQuotientCompactFunction)
+          (gammaTwoSelectedHorocycleParam q Y t)))
+  ring
 
 theorem selectedCuspRestrictionRepresentative_continuous
     (n : ℤ) (q : GammaTwoRightCoset) (Y : ℝ)
@@ -32803,7 +33670,9 @@ theorem selectedCuspRestrictionRepresentative_memLp
     selectedCuspRestrictionRepresentative_continuous n q Y u
   apply (memLp_two_iff_integrable_sq_norm
     hf.aestronglyMeasurable).2
-  simpa only [selectedHorocycleParameterMeasure] using
+  change IntegrableOn (fun x => ‖f x‖ ^ 2)
+    (Set.Icc (-(1 / 2 : ℝ)) (1 / 2 : ℝ)) volume
+  simpa only [Pi.pow_apply] using
     (hf.norm.pow 2).continuousOn.integrableOn_Icc
 
 /-- The actual complex-linear smooth-core trace map. -/
@@ -32819,7 +33688,8 @@ noncomputable def selectedCuspCoreTrace
         (selectedCuspRestrictionRepresentative_memLp n q Y u)
         (selectedCuspRestrictionRepresentative_memLp n q Y v))
   map_smul' c u := by
-    simpa only [selectedCuspRestrictionRepresentative_smul] using
+    simpa only [selectedCuspRestrictionRepresentative_smul,
+      RingHom.id_apply] using
       (MemLp.toLp_const_smul c
         (selectedCuspRestrictionRepresentative_memLp n q Y u))
 
@@ -33086,8 +33956,7 @@ theorem compactSupport_height_mul_normSq_le_energy_Ioi
           (hf.continuous_deriv_one.norm.pow 2))
   have hderivWeightedIntegrable :
       Integrable (fun y : ℝ => ‖deriv weighted y‖) :=
-    (hweightedSmooth.continuous_deriv_one.norm).
-      integrable_of_hasCompactSupport hweightedCompact.deriv.norm
+    (hweightedSmooth.continuous_deriv_one.norm).integrable_of_hasCompactSupport hweightedCompact.deriv.norm
   have henergyIntegrable : Integrable energy :=
     henergyContinuous.integrable_of_hasCompactSupport henergyCompact
   have hFTC : ‖weighted H‖ ≤
@@ -33171,8 +34040,7 @@ theorem tendsto_zero_normSq_le_energy_Ioi
   have hgSmooth : ContDiff ℝ 1 g := hf.norm_sq ℂ
   have hgDerivMeasurable : AEStronglyMeasurable
       (fun r => ‖deriv g r‖) ((volume : Measure ℝ).restrict (Set.Ioi r₀)) :=
-    (hgSmooth.continuous_deriv_one.norm.aestronglyMeasurable).
-      mono_measure Measure.restrict_le_self
+    (hgSmooth.continuous_deriv_one.norm.aestronglyMeasurable).mono_measure Measure.restrict_le_self
   have hgDerivIntegrable : IntegrableOn (fun r => ‖deriv g r‖)
       (Set.Ioi r₀) := by
     apply Integrable.mono henergy hgDerivMeasurable
@@ -33181,8 +34049,7 @@ theorem tendsto_zero_normSq_le_energy_Ioi
       (hf.differentiable (by norm_num)) r
   have hgDerivIntegrable' : IntegrableOn (deriv g) (Set.Ioi r₀) := by
     apply (integrable_norm_iff
-      ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).
-        mono_measure Measure.restrict_le_self)).mp
+      ((hgSmooth.continuous_deriv_one.aestronglyMeasurable).mono_measure Measure.restrict_le_self)).mp
     exact hgDerivIntegrable
   have hgzero : Filter.Tendsto g Filter.atTop (nhds 0) := by
     simpa only [g, norm_zero, zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using
@@ -33474,7 +34341,7 @@ theorem selectedCosetConformalScaleC_realSmooth
     RealSmooth (selectedCosetConformalScaleC q) := by
   have hnum : RealSmooth
       (fun z => heightC (selectedCosetAction q z)) :=
-    realSmooth_heightC.comp_selectedCosetAction q
+    RealSmooth.comp_selectedCosetAction realSmooth_heightC q
   have hdenInv : RealSmooth (fun z => (heightC z)⁻¹) :=
     realSmooth_heightC.inv (fun z => heightC_ne_zero z)
   simpa only [selectedCosetConformalScaleC, div_eq_mul_inv] using
@@ -33500,7 +34367,7 @@ theorem dx_selectedCosetConformalScaleC
       selectedCosetB q z / heightC z := by
   let N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
   let Dinv : ℍ → ℂ := fun w => (heightC w)⁻¹
-  have hN : RealSmooth N := realSmooth_heightC.comp_selectedCosetAction q
+  have hN : RealSmooth N := RealSmooth.comp_selectedCosetAction realSmooth_heightC q
   have hDinv : RealSmooth Dinv :=
     realSmooth_heightC.inv (fun w => heightC_ne_zero w)
   have hdxN : dx N z = selectedCosetB q z := by
@@ -33530,7 +34397,7 @@ theorem dy_selectedCosetConformalScaleC
         selectedCosetConformalScaleC q z / heightC z := by
   let N : ℍ → ℂ := fun w => heightC (selectedCosetAction q w)
   let Dinv : ℍ → ℂ := fun w => (heightC w)⁻¹
-  have hN : RealSmooth N := realSmooth_heightC.comp_selectedCosetAction q
+  have hN : RealSmooth N := RealSmooth.comp_selectedCosetAction realSmooth_heightC q
   have hDinv : RealSmooth Dinv :=
     realSmooth_heightC.inv (fun w => heightC_ne_zero w)
   have hdyN : dy N z = selectedCosetA q z := by
@@ -33637,7 +34504,7 @@ theorem selectedCosetUnitaryPullback_realSmooth
     (q : GammaTwoRightCoset) {f : ℍ → ℂ} (hf : RealSmooth f) :
     RealSmooth (selectedCosetUnitaryPullback q f) :=
   (selectedCosetConformalScaleC_realSmooth q).mul
-    (hf.comp_selectedCosetAction q)
+    (RealSmooth.comp_selectedCosetAction hf q)
 
 /-- Exact horizontal chain/product rule for the unitary pullback. -/
 theorem dx_selectedCosetUnitaryPullback
@@ -33650,7 +34517,7 @@ theorem dx_selectedCosetUnitaryPullback
           (selectedCosetA q z * dx f (selectedCosetAction q z) +
             selectedCosetB q z * dy f (selectedCosetAction q z)) := by
   rw [dx_mul (selectedCosetConformalScaleC_realSmooth q)
-    (hf.comp_selectedCosetAction q),
+    (RealSmooth.comp_selectedCosetAction hf q),
     dx_comp_selectedCosetAction q hf]
 
 /-- Exact vertical chain/product rule for the unitary pullback. -/
@@ -33664,7 +34531,7 @@ theorem dy_selectedCosetUnitaryPullback
           (-selectedCosetB q z * dx f (selectedCosetAction q z) +
             selectedCosetA q z * dy f (selectedCosetAction q z)) := by
   rw [dy_mul (selectedCosetConformalScaleC_realSmooth q)
-    (hf.comp_selectedCosetAction q),
+    (RealSmooth.comp_selectedCosetAction hf q),
     dy_comp_selectedCosetAction q hf]
 
 /-- Exact logarithmic vertical derivative of the unitary pullback. -/
@@ -34005,7 +34872,7 @@ theorem selectedLogHeightNaturalGauge_contDiff
       (selectedCosetUnitaryPullback q (fixedPhaseEuclideanGauge n u)) :=
     selectedCosetUnitaryPullback_realSmooth q
       (fixedPhaseEuclideanGauge_realSmooth n u)
-  have hSlice := hPull.comp_logHeightBasePoint t
+  have hSlice := RealSmooth.comp_logHeightBasePoint hPull t
   unfold selectedLogHeightNaturalGauge
   have hFactor : ContDiff ℝ 1
       (fun r : ℝ => ((Real.exp (r / 2) : ℝ) : ℂ)) := by
@@ -34040,7 +34907,7 @@ theorem deriv_selectedLogHeightNaturalGauge
       (heightC (logHeightBasePoint t r) *
         dy h (logHeightBasePoint t r)) r := by
     rw [← deriv_comp_logHeightBasePoint hh t r]
-    exact ((hh.comp_logHeightBasePoint t).differentiable
+    exact ((RealSmooth.comp_logHeightBasePoint hh t).differentiable
       (by norm_num) r).hasDerivAt
   have hProduct := hExp.mul hSlice
   change deriv
@@ -34340,7 +35207,9 @@ theorem selectedLogHeightEnergyDensity_le_exp_mul_heightGraphDensity
     _ ≤ Real.exp r * S ^ 2 * F ^ 2 +
         Real.exp r * S ^ 2 *
           (3 * ((A * F) ^ 2 + R ^ 2 + L ^ 2)) :=
-      add_le_add_left hDerivSq' _
+      by
+        simpa [add_comm] using
+          add_le_add_left hDerivSq' (Real.exp r * S ^ 2 * F ^ 2)
     _ = Real.exp r *
         selectedHeightGraphDensity n q u (t, Real.exp r) := by
       simp only [selectedHeightGraphDensity, selectedHeightBasePoint_exp,
@@ -34365,7 +35234,7 @@ theorem selectedLogHeightEnergyDensity_continuous
   have hdycomp : Continuous
       (fun p : ℝ × ℝ =>
         dy h (logHeightBasePoint p.1 p.2)) :=
-    hh.dy.continuous.comp hpoint
+    (RealSmooth.dy hh).continuous.comp hpoint
   have hnatural : Continuous
       (fun p : ℝ × ℝ =>
         selectedLogHeightNaturalGauge n q u p.1 p.2) := by
@@ -34638,8 +35507,7 @@ theorem fixedPhaseEuclideanGauge_normSq_integrable
     simpa only [fixedPhaseEuclideanGauge] using
       orbitEuclideanGauge_memLp m (coreEmbedding m v)
   exact (memLp_two_iff_integrable_sq_norm
-    (fixedPhaseEuclideanGauge_realSmooth m v).continuous.
-      aestronglyMeasurable).mp hMem
+    (fixedPhaseEuclideanGauge_realSmooth m v).continuous.aestronglyMeasurable).mp hMem
 
 /-- The integral of a literal fixed-phase gauge is the squared norm of its
 actual Petersson coordinate. -/
@@ -34720,8 +35588,7 @@ theorem selectedHeightGraphDensity_slice_continuousOn
   have hScale : ContinuousOn (fun y =>
       ‖selectedCosetConformalScaleC q
         (selectedHeightBasePoint t y)‖ ^ 2) (Set.Ioi 0) :=
-    ((selectedCosetConformalScaleC_realSmooth q).continuous.norm.pow 2).
-      comp_continuousOn hz
+    ((selectedCosetConformalScaleC_realSmooth q).continuous.norm.pow 2).comp_continuousOn hz
   have hAction : ContinuousOn (fun y =>
       selectedCosetAction q (selectedHeightBasePoint t y))
       (Set.Ioi 0) :=
@@ -34730,8 +35597,7 @@ theorem selectedHeightGraphDensity_slice_continuousOn
       fixedPhaseEuclideanGraphDensity n u
         (selectedCosetAction q (selectedHeightBasePoint t y)))
       (Set.Ioi 0) :=
-    (fixedPhaseEuclideanGraphDensity_continuous n u).
-      comp_continuousOn hAction
+    (fixedPhaseEuclideanGraphDensity_continuous n u).comp_continuousOn hAction
   rw [show (fun y => selectedHeightGraphDensity n q u (t, y)) =
       fun y => ‖selectedCosetConformalScaleC q
           (selectedHeightBasePoint t y)‖ ^ 2 *
@@ -34853,7 +35719,7 @@ theorem selectedHeightGraphDensity_slice_integrableOn_Ici
   · rcases selectedHeightGraphDensity_uniform_eventually_zero n q u with
       ⟨B, _hB, hZero⟩
     filter_upwards [eventually_gt_atTop B] with y hy
-    exact hZero t ht y hy
+    simpa using hZero t ht y hy
 
 /-- The Jacobian-weighted exponential pullback is also integrable on the
 closed logarithmic tail. -/
@@ -34976,8 +35842,7 @@ theorem selectedHeightGraphDensity_continuousOn_positive
       ‖selectedCosetConformalScaleC q
         (selectedHeightBasePoint p.1 p.2)‖ ^ 2)
       (Set.univ ×ˢ Set.Ioi (0 : ℝ)) :=
-    ((selectedCosetConformalScaleC_realSmooth q).continuous.norm.pow 2).
-      comp_continuousOn hz
+    ((selectedCosetConformalScaleC_realSmooth q).continuous.norm.pow 2).comp_continuousOn hz
   have hAction : ContinuousOn (fun p : ℝ × ℝ =>
       selectedCosetAction q (selectedHeightBasePoint p.1 p.2))
       (Set.univ ×ˢ Set.Ioi (0 : ℝ)) :=
@@ -34986,8 +35851,7 @@ theorem selectedHeightGraphDensity_continuousOn_positive
       fixedPhaseEuclideanGraphDensity n u
         (selectedCosetAction q (selectedHeightBasePoint p.1 p.2)))
       (Set.univ ×ˢ Set.Ioi (0 : ℝ)) :=
-    (fixedPhaseEuclideanGraphDensity_continuous n u).
-      comp_continuousOn hAction
+    (fixedPhaseEuclideanGraphDensity_continuous n u).comp_continuousOn hAction
   rw [show selectedHeightGraphDensity n q u = fun p : ℝ × ℝ =>
       ‖selectedCosetConformalScaleC q
           (selectedHeightBasePoint p.1 p.2)‖ ^ 2 *
@@ -35298,8 +36162,7 @@ theorem integral_selectedHeightGraphDensity_strip_eq_selectedImage
           ∂((volume : Measure ℝ).prod volume)) =
         ∫ w in e '' A, G w ∂(volume : Measure ℂ) := by
     have hImage :=
-      (Complex.volume_preserving_equiv_real_prod.symm).
-        setIntegral_image_emb e.measurableEmbedding G A
+      (Complex.volume_preserving_equiv_real_prod.symm).setIntegral_image_emb e.measurableEmbedding G A
     simpa only [A, e, G, Measure.volume_eq_prod,
       Complex.measurableEquivRealProd_symm_apply] using hImage.symm
   have hAmbientImage : e '' A = UpperHalfPlane.coe '' B := by
@@ -35898,7 +36761,7 @@ end Mock2FA.PaperCorrections.AutomorphicSobolev
 
 The global Green identity is now unconditional, but a maximal-adjoint graph
 vector is only a weak `L²` object.  The cutoff operators constructed earlier
-have source `InverseEtaFixedPhaseCore`; consequently their eventual-equality
+have source `Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore`; consequently their eventual-equality
 lemmas cannot be applied to such a maximal vector.  Likewise, ordinary
 smooth-compact density in `L²` does not approximate the differential graph
 coordinate.
@@ -35993,39 +36856,39 @@ choice of pointwise representative. -/
 def HasCompactCarrierSupport (n : ℤ)
     (x : OrbitPeterssonHilbert n) : Prop :=
   ∃ K : Set ℍ, IsCompact K ∧
-    ∀ᵐ z ∂PhysicalLocalL2.chosenEuclideanCarrierMeasure,
+    ∀ᵐ z ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure,
       z ∉ K →
-        PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x z = 0
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x z = 0
 
 /-- Distributional Euclidean-gauge raising equation on all compact ambient
 tests supported in the interior of the chosen carrier. -/
 def IsEuclideanRaisingWeakGraphAt (n : ℤ)
     (p : OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1)) : Prop :=
-  ∀ (v : PhysicalLocalL2.AmbientTestCore),
+  ∀ (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore),
     tsupport (v : ℂ → ℂ) ⊆
-        PhysicalLocalL2.ambientGammaTwoOpenCarrier →
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier →
       inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
-          (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
         inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
-          (PhysicalLocalL2.ambientTestCoreToCarrierL2 n
-            (PhysicalLocalL2.euclideanRaiseTestAdjoint n v))
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v))
 
 /-- Distributional Euclidean-gauge lowering equation from the successor
 orbit, again tested only in the actual open carrier. -/
 def IsEuclideanLoweringWeakGraphAt (n : ℤ)
     (p : OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n) : Prop :=
-  ∀ (v : PhysicalLocalL2.AmbientTestCore),
+  ∀ (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore),
     tsupport (v : ℂ → ℂ) ⊆
-        PhysicalLocalL2.ambientGammaTwoOpenCarrier →
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier →
       inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
-          (PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
         inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
-          (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
-            (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v))
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v))
 
 /-- Every literal raising-core graph vector satisfies the local weak Maass
 equation.  This is the unconditional easy direction of the weak-domain
@@ -36063,15 +36926,15 @@ operator identity, weak derivative, or graph conclusion is included in this
 predicate; all of those consequences are proved below from openness and the
 literal equality of smooth representatives. -/
 def AmbientTestPhysicalGaugePeriodizationAt (m : ℤ) : Prop :=
-  ∀ (v : PhysicalLocalL2.AmbientTestCore),
+  ∀ (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore),
     tsupport (v : ℂ → ℂ) ⊆
-        PhysicalLocalL2.ambientGammaTwoOpenCarrier →
-      ∃ u : InverseEtaFixedPhaseCore m,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier →
+      ∃ u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m,
         Set.EqOn
           (SmoothCompactCoreGeometry.upperLift
-            (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
           (v : ℂ → ℂ)
-          PhysicalLocalL2.ambientGammaTwoOpenCarrier
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier
 
 /-- Simultaneous minimal periodization at every member of the fixed-phase
 tower. -/
@@ -36082,49 +36945,49 @@ def AmbientTestPhysicalGaugePeriodization : Prop :=
 carrier point.  This is the only topological step needed to transport the
 two coordinate derivatives. -/
 theorem periodizedGauge_eventuallyEq_ambientTest
-    {m : ℤ} {u : InverseEtaFixedPhaseCore m}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) =ᶠ[nhds (z : ℂ)]
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u) =ᶠ[nhds (z : ℂ)]
       (v : ℂ → ℂ) :=
   hEq.eventuallyEq_of_mem
-    (PhysicalLocalL2.ambientGammaTwoOpenCarrier_isOpen.mem_nhds hz)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier_isOpen.mem_nhds hz)
 
 /-- Pointwise value equality extracted from a periodized gauge. -/
 theorem periodizedGauge_apply_eq_ambientTest
-    {m : ℤ} {u : InverseEtaFixedPhaseCore m}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge m u z = v (z : ℂ) := by
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u z = v (z : ℂ) := by
   simpa only [SmoothCompactCoreGeometry.upperLift_apply] using hEq hz
 
 /-- Horizontal derivatives of the periodized physical gauge and the ambient
 test agree at every point of the open carrier. -/
 theorem dx_periodizedGauge_eq_ambientTest
-    {m : ℤ} {u : InverseEtaFixedPhaseCore m}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     HalfWeightDifferentialOperators.dx
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) z =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u) z =
       HalfWeightCompactCoordinateGreen.dx v (z : ℂ) := by
   unfold HalfWeightDifferentialOperators.dx
     HalfWeightDifferentialOperators.d1
@@ -36135,17 +36998,17 @@ theorem dx_periodizedGauge_eq_ambientTest
 
 /-- Vertical derivatives satisfy the analogous exact local identity. -/
 theorem dy_periodizedGauge_eq_ambientTest
-    {m : ℤ} {u : InverseEtaFixedPhaseCore m}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     HalfWeightDifferentialOperators.dy
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) z =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u) z =
       HalfWeightCompactCoordinateGreen.dy v (z : ℂ) := by
   unfold HalfWeightDifferentialOperators.dy
     HalfWeightDifferentialOperators.d1
@@ -36158,25 +37021,25 @@ theorem dy_periodizedGauge_eq_ambientTest
 the Hermitian test transpose of raising.  In particular the coefficient is
 `p+1`, not `p+2`; it is forced by differentiating the height factor. -/
 theorem neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint
-    {n : ℤ} {u : InverseEtaFixedPhaseCore (n + 1)}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    -PhysicalLocalL2.euclideanLowerFromSuccGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u) z =
-      PhysicalLocalL2.euclideanRaiseTestAdjoint n v (z : ℂ) := by
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u) z =
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v (z : ℂ) := by
   have hx := dx_periodizedGauge_eq_ambientTest hEq hz
   have hy := dy_periodizedGauge_eq_ambientTest hEq hz
   have hv := periodizedGauge_apply_eq_ambientTest hEq hz
-  simp only [PhysicalLocalL2.euclideanLowerFromSuccGauge,
-    PhysicalLocalL2.euclideanRaiseTestAdjoint,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -36186,25 +37049,25 @@ theorem neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint
 /-- Dually, the gauge of signed raising is the test transpose of lowering
 from the successor orbit, with its exact `p+2` coefficient. -/
 theorem neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint
-    {n : ℤ} {u : InverseEtaFixedPhaseCore n}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    -PhysicalLocalL2.euclideanRaiseGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u) z =
-      PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v (z : ℂ) := by
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u) z =
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v (z : ℂ) := by
   have hx := dx_periodizedGauge_eq_ambientTest hEq hz
   have hy := dy_periodizedGauge_eq_ambientTest hEq hz
   have hv := periodizedGauge_apply_eq_ambientTest hEq hz
-  simp only [PhysicalLocalL2.euclideanRaiseGauge,
-    PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -36215,21 +37078,21 @@ theorem neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint
 actual carrier `L²` classes.  The null boundary of the six-tile carrier is
 used here through `ae_mem_open_chosenEuclidean`. -/
 theorem embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
-    {m : ℤ} {u : InverseEtaFixedPhaseCore m}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
         (l2Coordinate m u) =
-      PhysicalLocalL2.ambientTestCoreToCarrierL2 m v := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 m v := by
   apply MeasureTheory.Lp.ext
   filter_upwards [
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m u,
-    PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 m v,
-    PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m u,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 m v,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzPhysical hzTest hzOpen
   rw [hzPhysical, hzTest]
   exact periodizedGauge_apply_eq_ambientTest hEq ⟨z, hzOpen, rfl⟩
@@ -36237,64 +37100,64 @@ theorem embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
 /-- The preceding pointwise signed-lowering identity descends to the precise
 carrier `L²` coordinate required by the adjoint graph argument. -/
 theorem embedded_neg_lowerFromSuccCoordinate_eq_raiseTestAdjoint
-    {n : ℤ} {u : InverseEtaFixedPhaseCore (n + 1)}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         (-lowerFromSuccCoordinate n u) =
-      PhysicalLocalL2.ambientTestCoreToCarrierL2 n
-        (PhysicalLocalL2.euclideanRaiseTestAdjoint n v) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v) := by
   rw [lowerFromSuccCoordinate_apply, map_neg]
   apply MeasureTheory.Lp.ext
   filter_upwards [
     MeasureTheory.Lp.coeFn_neg
-      (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         (l2Coordinate n
-          (InverseEtaFixedPhaseCore.lowerFromSucc n u))),
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n u),
-    PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 n
-      (PhysicalLocalL2.euclideanRaiseTestAdjoint n v),
-    PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzNeg hzPhysical hzTest hzOpen
   rw [hzNeg, hzPhysical, hzTest,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]
   exact neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint
     hEq ⟨z, hzOpen, rfl⟩
 
 /-- The signed-raising coordinate has the corresponding exact lowering-test
 transpose representative. -/
 theorem embedded_neg_raisedCoordinate_eq_lowerFromSuccTestAdjoint
-    {n : ℤ} {u : InverseEtaFixedPhaseCore n}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         (-raisedCoordinate n u) =
-      PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
-        (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v) := by
   rw [raisedCoordinate_apply, map_neg]
   apply MeasureTheory.Lp.ext
   filter_upwards [
     MeasureTheory.Lp.coeFn_neg
-      (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         (l2Coordinate (n + 1)
-          (InverseEtaFixedPhaseCore.raise n u))),
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u),
-    PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 (n + 1)
-      (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v),
-    PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u))),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge (n + 1)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 (n + 1)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzNeg hzPhysical hzTest hzOpen
   rw [hzNeg, hzPhysical, hzTest,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]
   exact neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint
     hEq ⟨z, hzOpen, rfl⟩
 
@@ -36344,26 +37207,24 @@ theorem raisingMaximalAdjointWeakMaassIdentificationAt_of_periodization
     embedded_neg_lowerFromSuccCoordinate_eq_raiseTestAdjoint hEq
   calc
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.2)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (l2Coordinate (n + 1) u)) := by rw [hBase]
     _ = inner ℂ p.2 (l2Coordinate (n + 1) u) :=
-      (PhysicalLocalL2.orbitPeterssonEuclideanIsometry (n + 1)).
-        inner_map_map p.2 (l2Coordinate (n + 1) u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry (n + 1)).inner_map_map p.2 (l2Coordinate (n + 1) u)
     _ = inner ℂ p.1 (-lowerFromSuccCoordinate n u) := hPetersson
     _ = inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (-lowerFromSuccCoordinate n u)) :=
-      ((PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-        inner_map_map p.1 (-lowerFromSuccCoordinate n u)).symm
+      ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map p.1 (-lowerFromSuccCoordinate n u)).symm
     _ = inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n
-          (PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v)) := by
       rw [hSigned]
 
 /-- Periodization at the source index closes the lowering
@@ -36394,26 +37255,24 @@ theorem loweringMaximalAdjointWeakMaassIdentificationAt_of_periodization
     embedded_neg_raisedCoordinate_eq_lowerFromSuccTestAdjoint hEq
   calc
     inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n u)) := by rw [hBase]
     _ = inner ℂ p.2 (l2Coordinate n u) :=
-      (PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-        inner_map_map p.2 (l2Coordinate n u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map p.2 (l2Coordinate n u)
     _ = inner ℂ p.1 (-raisedCoordinate n u) := hPetersson
     _ = inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (-raisedCoordinate n u)) :=
-      ((PhysicalLocalL2.orbitPeterssonEuclideanIsometry (n + 1)).
-        inner_map_map p.1 (-raisedCoordinate n u)).symm
+      ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry (n + 1)).inner_map_map p.1 (-raisedCoordinate n u)).symm
     _ = inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
-        (PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
-          (PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1) p.1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v)) := by
       rw [hSigned]
 
 theorem raisingMaximalAdjointWeakMaassIdentificationAt_of_globalPeriodization
@@ -36636,12 +37495,13 @@ open SmoothCompactCoreGeometry
 open HalfWeightDifferentialOperators
 open GammaTwoQuotientGreenBoundary
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
-open PhysicalLocalL2
+open FixedPhaseClosedOperators
+open FixedPhaseClosedOperators.PhysicalLocalL2
 
 /-- Membership in the ambient image of the open carrier is exactly membership
 of the corresponding upper-half-plane point in the geometric carrier. -/
 theorem coe_mem_ambientGammaTwoOpenCarrier_iff (z : ℍ) :
-    (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier ↔
+    (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier ↔
       z ∈ gammaTwoOpenCarrier := by
   constructor
   · rintro ⟨w, hw, hwz⟩
@@ -36748,19 +37608,19 @@ theorem inverseEtaPaperOrbitFactor_centralNegOne
 actual bundled compact test, so compactness and global real smoothness are
 inherited from Mathlib's test-function API. -/
 noncomputable def gammaTwoPeriodizationSeedCore
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
-    PhysicalLocalL2.AmbientTestCore :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   HalfWeightCompactCoordinateGreen.rpowMul
     (-euclideanGaugeExponent m) v
 
 /-- Restriction of the preceding ambient seed to the upper half-plane. -/
 noncomputable def gammaTwoPeriodizationSeed
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
   gammaTwoPeriodizationSeedCore m v (z : ℂ)
 
 @[simp]
 theorem gammaTwoPeriodizationSeed_apply
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     gammaTwoPeriodizationSeed m v z =
       (((z.im ^ (-euclideanGaugeExponent m) : ℝ) : ℂ) *
         v (z : ℂ)) := by
@@ -36768,12 +37628,12 @@ theorem gammaTwoPeriodizationSeed_apply
 
 /-- Compact support of the seed viewed as a subset of the upper half-plane. -/
 def gammaTwoPeriodizationSeedSupport
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
   {z | (z : ℂ) ∈ tsupport
     (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ)}
 
 theorem gammaTwoPeriodizationSeedCore_tsupport_subset
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     tsupport (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ) ⊆
       tsupport (v : ℂ → ℂ) := by
   change tsupport
@@ -36784,7 +37644,7 @@ theorem gammaTwoPeriodizationSeedCore_tsupport_subset
   exact tsupport_mul_subset_right
 
 theorem gammaTwoPeriodizationSeedSupport_isCompact
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsCompact (gammaTwoPeriodizationSeedSupport m v) := by
   rw [UpperHalfPlane.isEmbedding_coe.isCompact_iff]
   have himage :
@@ -36803,16 +37663,16 @@ theorem gammaTwoPeriodizationSeedSupport_isCompact
   exact (gammaTwoPeriodizationSeedCore m v).hasCompactSupport
 
 theorem gammaTwoPeriodizationSeedSupport_subset_openCarrier
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     gammaTwoPeriodizationSeedSupport m v ⊆ gammaTwoOpenCarrier := by
   intro z hz
   apply (coe_mem_ambientGammaTwoOpenCarrier_iff z).mp
   exact hv (gammaTwoPeriodizationSeedCore_tsupport_subset m v hz)
 
 theorem gammaTwoPeriodizationSeed_realSmooth
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     RealSmooth (gammaTwoPeriodizationSeed m v) := by
   unfold RealSmooth
   refine (gammaTwoPeriodizationSeedCore m v).contDiff.contDiffOn.congr ?_
@@ -36847,7 +37707,7 @@ theorem RealSmooth.comp_gammaTwo_smul
 
 /-- One translate in the arithmetic Poincare extension. -/
 noncomputable def gammaTwoPeriodizationTerm
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore)
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (gamma : GammaTwo) (z : ℍ) : ℂ :=
   inverseEtaPaperOrbitFactor m gamma
       (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) *
@@ -36855,16 +37715,14 @@ noncomputable def gammaTwoPeriodizationTerm
       (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z)
 
 theorem gammaTwoPeriodizationTerm_realSmooth
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (gamma : GammaTwo) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (gamma : GammaTwo) :
     RealSmooth (gammaTwoPeriodizationTerm m v gamma) := by
   exact
-    ((inverseEtaPaperOrbitFactor_realSmooth m gamma).
-      comp_gammaTwo_smul gamma⁻¹).mul
-    ((gammaTwoPeriodizationSeed_realSmooth m v).
-      comp_gammaTwo_smul gamma⁻¹)
+    ((inverseEtaPaperOrbitFactor_realSmooth m gamma).comp_gammaTwo_smul gamma⁻¹).mul
+    ((gammaTwoPeriodizationSeed_realSmooth m v).comp_gammaTwo_smul gamma⁻¹)
 
 theorem support_gammaTwoPeriodizationTerm_subset
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (gamma : GammaTwo) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (gamma : GammaTwo) :
     Function.support (gammaTwoPeriodizationTerm m v gamma) ⊆
       ((gamma • ·) '' gammaTwoPeriodizationSeedSupport m v) := by
   intro z hz
@@ -36882,7 +37740,7 @@ theorem support_gammaTwoPeriodizationTerm_subset
   · simp
 
 theorem gammaTwoPeriodizationTerm_locallyFinite
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     LocallyFinite
       (fun gamma : GammaTwo ↦
         Function.support (gammaTwoPeriodizationTerm m v gamma)) :=
@@ -36904,11 +37762,11 @@ theorem realSmooth_finsum_of_locallyFinite_support
   obtain ⟨t, htnhds, htfinite⟩ := hlocal z
   obtain ⟨U, hUt, hUopen, hzU⟩ := mem_nhds_iff.mp htnhds
   let I : Finset iota := htfinite.toFinset
-  have hAmbientNhds : UpperHalfPlane.coe '' U ∈ 𝒩 (z : ℂ) := by
+  have hAmbientNhds : UpperHalfPlane.coe '' U ∈ 𝓝 (z : ℂ) := by
     apply (UpperHalfPlane.isOpenEmbedding_coe.isOpenMap U hUopen).mem_nhds
     exact ⟨z, hzU, rfl⟩
   have hEq :
-      upperLift (fun z : ℍ ↦ ∑ᶠ i, f i z) =ᶠ[𝒩 (z : ℂ)]
+      upperLift (fun z : ℍ ↦ ∑ᶠ i, f i z) =ᶠ[𝓝 (z : ℂ)]
         upperLift (fun z : ℍ ↦ ∑ i ∈ I, f i z) := by
     filter_upwards [hAmbientNhds] with y hy
     rcases hy with ⟨x, hxU, rfl⟩
@@ -36929,12 +37787,12 @@ theorem realSmooth_finsum_of_locallyFinite_support
 
 /-- The normalized, locally finite arithmetic Poincare periodization. -/
 noncomputable def gammaTwoPoincarePeriodization
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
   (1 / 2 : ℂ) *
     ∑ᶠ gamma : GammaTwo, gammaTwoPeriodizationTerm m v gamma z
 
 theorem gammaTwoPoincarePeriodization_realSmooth
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     RealSmooth (gammaTwoPoincarePeriodization m v) := by
   have hsum : RealSmooth
       (fun z ↦ ∑ᶠ gamma : GammaTwo,
@@ -36948,7 +37806,7 @@ theorem gammaTwoPoincarePeriodization_realSmooth
 /-- Multiplying the index on the left and translating the evaluation point
 produces exactly the total automorphy factor. -/
 theorem gammaTwoPeriodizationTerm_mul_smul
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore)
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (delta gamma : GammaTwo) (z : ℍ) :
     gammaTwoPeriodizationTerm m v (delta * gamma)
         ((delta : SL(2, ℤ)) • z) =
@@ -36975,7 +37833,7 @@ theorem gammaTwoPeriodizationTerm_mul_smul
   ring
 
 theorem gammaTwoPoincarePeriodization_covariance
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore)
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (delta : GammaTwo) (z : ℍ) :
     gammaTwoPoincarePeriodization m v ((delta : SL(2, ℤ)) • z) =
       (inverseEtaPaperOrbitMultiplier GammaTwo m).factor delta z *
@@ -37004,7 +37862,7 @@ theorem gammaTwoPoincarePeriodization_covariance
   ring
 
 theorem support_gammaTwoPoincarePeriodization_subset_iUnion
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     Function.support (gammaTwoPoincarePeriodization m v) ⊆
       ⋃ gamma : GammaTwo,
         ((gamma • ·) '' gammaTwoPeriodizationSeedSupport m v) := by
@@ -37021,7 +37879,7 @@ theorem support_gammaTwoPoincarePeriodization_subset_iUnion
   simp [gammaTwoPoincarePeriodization, hall]
 
 theorem gammaTwoPoincarePeriodization_quotientCompact
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     HasQuotientCompactSupport (gammaTwoPoincarePeriodization m v) := by
   let K := gammaTwoPeriodizationSeedSupport m v
   have hK : IsCompact K :=
@@ -37042,22 +37900,22 @@ theorem gammaTwoPoincarePeriodization_quotientCompact
 /-- The periodized seed as an element of the raw smooth quotient-compact
 domain. -/
 noncomputable def gammaTwoPeriodizedRaw
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     SmoothQuotientCompactFunction :=
   ⟨⟨gammaTwoPoincarePeriodization m v,
       gammaTwoPoincarePeriodization_realSmooth m v⟩,
     gammaTwoPoincarePeriodization_quotientCompact m v⟩
 
 theorem gammaTwoPeriodizedRaw_covariant
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsInverseEtaPaperOrbitCovariant m (gammaTwoPeriodizedRaw m v) := by
   intro gamma z
   exact gammaTwoPoincarePeriodization_covariance m v gamma z
 
 /-- The all-word physical core vector supplied by the periodization. -/
 noncomputable def gammaTwoPeriodizedPhysicalCore
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
-    InverseEtaFixedPhaseCore m :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m :=
   ⟨gammaTwoPeriodizedRaw m v,
     (mem_inverseEtaFixedPhaseStableCoreSubmodule_iff
       m (gammaTwoPeriodizedRaw m v)).2
@@ -37065,14 +37923,14 @@ noncomputable def gammaTwoPeriodizedPhysicalCore
 
 @[simp]
 theorem gammaTwoPeriodizationTerm_one
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     gammaTwoPeriodizationTerm m v 1 z =
       gammaTwoPeriodizationSeed m v z := by
   simp [gammaTwoPeriodizationTerm, inverseEtaPaperOrbitFactor]
 
 @[simp]
 theorem gammaTwoPeriodizationTerm_centralNegOne
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     gammaTwoPeriodizationTerm m v gammaTwoCentralNegOne z =
       gammaTwoPeriodizationSeed m v z := by
   simp [gammaTwoPeriodizationTerm]
@@ -37080,9 +37938,9 @@ theorem gammaTwoPeriodizationTerm_centralNegOne
 /-- At a point of the open carrier, no translate outside the two-element
 action kernel can contribute to the Poincare sum. -/
 theorem support_periodizationIndex_at_openCarrier
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ} (hz : z ∈ gammaTwoOpenCarrier) :
     Function.support
         (fun gamma : GammaTwo ↦
@@ -37121,9 +37979,9 @@ theorem support_periodizationIndex_at_openCarrier
 /-- The normalized sum restricts to the original inverse-gauge seed on the
 open carrier. -/
 theorem gammaTwoPoincarePeriodization_eq_seed_on_openCarrier
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ} (hz : z ∈ gammaTwoOpenCarrier) :
     gammaTwoPoincarePeriodization m v z =
       gammaTwoPeriodizationSeed m v z := by
@@ -37136,13 +37994,13 @@ theorem gammaTwoPoincarePeriodization_eq_seed_on_openCarrier
 /-- Multiplication by the Euclidean gauge exactly cancels the inverse gauge
 inserted in the seed. -/
 theorem fixedPhaseEuclideanGauge_periodized_eq_ambientTest
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ} (hz : z ∈ gammaTwoOpenCarrier) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge m
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
         (gammaTwoPeriodizedPhysicalCore m v) z = v (z : ℂ) := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
   change (((z.im ^ euclideanGaugeExponent m : ℝ) : ℂ) *
       gammaTwoPoincarePeriodization m v z) = v (z : ℂ)
   rw [gammaTwoPoincarePeriodization_eq_seed_on_openCarrier hv hz,
@@ -37225,7 +38083,7 @@ namespace FixedPhaseAdjointCutoffCore
 open Set Function Topology Filter MeasureTheory
 open scoped LinearPMap
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
+open GammaTwoQuotientGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseClosedOperators
 open FixedPhaseEssentialCoreAudit
@@ -37239,7 +38097,7 @@ in one compact subset of the selected Euclidean carrier.  The compact set is
 not chosen ad hoc: it is the intersection of the closed six-tile carrier with
 the inverse image of the genuine quotient topological support. -/
 theorem l2Coordinate_hasCompactCarrierSupport
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     HasCompactCarrierSupport n (l2Coordinate n u) := by
   let K : Set ℍ :=
     gammaTwoClosedTileCarrier ∩
@@ -37250,11 +38108,11 @@ theorem l2Coordinate_hasCompactCarrierSupport
   · exact gammaTwoClosedCarrier_inter_preimage_isCompact _
       (u : SmoothQuotientCompactFunction).2
   · filter_upwards [
-      PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
-      PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzGauge hzOpen
     intro hzK
-    rw [hzGauge, PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+    rw [hzGauge, Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
     have huZero :
         (u : SmoothQuotientCompactFunction) z = 0 := by
       by_contra huNe
@@ -37271,12 +38129,12 @@ theorem l2Coordinate_hasCompactCarrierSupport
 /-- The smooth cusp cutoff followed by the physical Petersson coordinate,
 still defined on the literal fixed-phase core. -/
 noncomputable def peterssonCuspCutoffCoreMap (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
   (l2Coordinate n).comp (cuspCutoffOperator N n)
 
 @[simp]
 theorem peterssonCuspCutoffCoreMap_apply
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     peterssonCuspCutoffCoreMap N n u =
       l2Coordinate n (cuspCutoffOperator N n u) :=
   rfl
@@ -37285,47 +38143,47 @@ theorem peterssonCuspCutoffCoreMap_apply
 `L²` norm.  The proof is pointwise in the isometric Euclidean gauge and uses
 the genuine bound `0 ≤ smoothTransition ≤ 1`. -/
 theorem norm_peterssonCuspCutoffCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖peterssonCuspCutoffCoreMap N n u‖ ≤ ‖l2Coordinate n u‖ := by
   calc
     ‖peterssonCuspCutoffCoreMap N n u‖ =
-        ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (cuspCutoffOperator N n u))‖ := by
-      rw [PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
       rfl
-    _ ≤ ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+    _ ≤ ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n u)‖ := by
       apply MeasureTheory.Lp.norm_le_norm_of_ae_le
       filter_upwards [
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (cuspCutoffOperator N n u),
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u]
           with z hzCut hzBase
       rw [hzCut, hzBase,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
         cuspCutoffOperator_apply]
       have hCutoffNorm : ‖upstairsCuspCutoff N z‖ ≤ 1 := by
         rw [upstairsCuspCutoff_ofReal, Complex.norm_real,
           Real.norm_of_nonneg (Real.smoothTransition.nonneg _)]
         exact Real.smoothTransition.le_one _
       calc
-        ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+        ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
             (upstairsCuspCutoff N z *
               (u : SmoothQuotientCompactFunction) z)‖ =
             ‖upstairsCuspCutoff N z‖ *
-              ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+              ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
                 (u : SmoothQuotientCompactFunction) z‖ := by
           simp only [norm_mul]
           ring
         _ ≤ 1 *
-              ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+              ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
                 (u : SmoothQuotientCompactFunction) z‖ :=
           mul_le_mul_of_nonneg_right hCutoffNorm (norm_nonneg _)
-        _ = ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+        _ = ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
                 (u : SmoothQuotientCompactFunction) z‖ := one_mul _
     _ = ‖l2Coordinate n u‖ :=
-      PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm n _
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm n _
 
 /-- Continuous extension of multiplication by the literal cusp cutoff from
 the dense smooth Petersson core to the full Petersson Hilbert space. -/
@@ -37335,7 +38193,7 @@ noncomputable def peterssonCuspCutoff (N : ℕ) (n : ℤ) :
 
 @[simp]
 theorem peterssonCuspCutoff_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     peterssonCuspCutoff N n (l2Coordinate n u) =
       l2Coordinate n (cuspCutoffOperator N n u) := by
   exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)
@@ -37365,50 +38223,49 @@ theorem peterssonCuspCutoff_opNorm_le_one (N : ℕ) (n : ℤ) :
 Petersson inner product. -/
 theorem inner_peterssonCuspCutoffCoreMap
     (N : ℕ) (n : ℤ)
-    (u v : InverseEtaFixedPhaseCore n) :
+    (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     inner ℂ (peterssonCuspCutoffCoreMap N n u) (l2Coordinate n v) =
       inner ℂ (l2Coordinate n u) (peterssonCuspCutoffCoreMap N n v) := by
   calc
     inner ℂ (peterssonCuspCutoffCoreMap N n u) (l2Coordinate n v) =
         inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
             (l2Coordinate n (cuspCutoffOperator N n u)))
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
             (l2Coordinate n v)) := by
       symm
-      exact (PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-        inner_map_map _ _
+      exact (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map _ _
     _ = inner ℂ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
             (l2Coordinate n u))
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
             (l2Coordinate n (cuspCutoffOperator N n v))) := by
       rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]
       apply integral_congr_ae
       filter_upwards [
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (cuspCutoffOperator N n u),
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n v,
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n v,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (cuspCutoffOperator N n v)]
           with z hCutU hV hU hCutV
       rw [hCutU, hV, hU, hCutV,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
         cuspCutoffOperator_apply, cuspCutoffOperator_apply]
-      change Complex.conj
-          (((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+      change star
+          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
             (upstairsCuspCutoff N z *
               (u : SmoothQuotientCompactFunction) z)) *
-            (((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
               (v : SmoothQuotientCompactFunction) z) =
-        Complex.conj
-          (((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+        star
+          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
             (u : SmoothQuotientCompactFunction) z) *
-            (((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
+            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *
               (upstairsCuspCutoff N z *
                 (v : SmoothQuotientCompactFunction) z))
       have hReal : star (upstairsCuspCutoff N z) =
@@ -37418,8 +38275,7 @@ theorem inner_peterssonCuspCutoffCoreMap
       ring
     _ = inner ℂ (l2Coordinate n u)
           (peterssonCuspCutoffCoreMap N n v) :=
-      (PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-        inner_map_map _ _
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map _ _
 
 /-- The completed real cutoff is genuinely self-adjoint.  Density is used in
 both Hilbert variables; no pointwise representative is assigned to a general
@@ -37618,10 +38474,10 @@ theorem norm_lowerCuspEuclideanCommutatorCoefficient_le
 /-- Predecessor form of the Euclidean gauge scale, written so no cancellation
 of a height factor is needed in the lowering commutator calculation. -/
 theorem euclideanGaugeScale_pred_inv (n : ℤ) (z : ℍ) :
-    ((z.im ^ PhysicalLocalL2.euclideanGaugeExponent (n - 1) : ℝ) : ℂ) =
+    ((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent (n - 1) : ℝ) : ℂ) =
       (heightC z)⁻¹ *
-        ((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) := by
-  rw [PhysicalLocalL2.euclideanGaugeExponent_pred,
+        ((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent_pred,
     Real.rpow_sub_one z.im_ne_zero]
   simp only [heightC, Complex.ofReal_div, div_eq_mul_inv]
   ring
@@ -37629,15 +38485,15 @@ theorem euclideanGaugeScale_pred_inv (n : ℤ) (z : ℍ) :
 /-- Exact Euclidean-gauge multiplier formula for the typed raising
 commutator. -/
 theorem fixedPhaseEuclideanGauge_raiseCuspCutoffCommutator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
         (raiseCuspCutoffCommutator N n u) z =
       raiseCuspEuclideanCommutatorCoefficient N z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     raiseCuspCutoffCommutator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-    PhysicalLocalL2.euclideanGaugeScale_succ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeScale_succ]
   unfold raiseCuspEuclideanCommutatorCoefficient raiseRaw physicalExponent
   push_cast
   ring
@@ -37645,14 +38501,14 @@ theorem fixedPhaseEuclideanGauge_raiseCuspCutoffCommutator
 /-- Exact Euclidean-gauge multiplier formula for the typed lowering
 commutator. -/
 theorem fixedPhaseEuclideanGauge_lowerCuspCutoffCommutator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge (n - 1)
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n - 1)
         (lowerCuspCutoffCommutator N n u) z =
       lowerCuspEuclideanCommutatorCoefficient N z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     lowerCuspCutoffCommutator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     euclideanGaugeScale_pred_inv]
   unfold lowerCuspEuclideanCommutatorCoefficient lowerRaw
   ring
@@ -37660,28 +38516,28 @@ theorem fixedPhaseEuclideanGauge_lowerCuspCutoffCommutator
 /-- Generic `L²` estimate for a fixed-phase core map which is pointwise a
 bounded multiplier in the isometric Euclidean gauge. -/
 theorem norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
-    {m n : ℤ} (v : InverseEtaFixedPhaseCore m)
-    (u : InverseEtaFixedPhaseCore n) (c : ℍ → ℂ) (C : ℝ)
+    {m n : ℤ} (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (c : ℍ → ℂ) (C : ℝ)
     (hC : 0 ≤ C)
     (hGauge : ∀ z : ℍ,
-      PhysicalLocalL2.fixedPhaseEuclideanGauge m v z =
-        c z * PhysicalLocalL2.fixedPhaseEuclideanGauge n u z)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m v z =
+        c z * Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z)
     (hBound : ∀ z : ℍ, z ∈ gammaTwoClosedTileCarrier →
       ‖c z‖ ≤ C) :
     ‖l2Coordinate m v‖ ≤ C * ‖l2Coordinate n u‖ := by
   calc
     ‖l2Coordinate m v‖ =
-        ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
           (l2Coordinate m v)‖ := by
-      rw [PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
     _ ≤ ‖(C : ℂ) •
-          PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
             (l2Coordinate n u)‖ := by
       apply MeasureTheory.Lp.norm_le_norm_of_ae_le
       filter_upwards [
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m v,
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
-        PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m v,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
           with z hzTarget hzSource hzOpen
       rw [hzTarget, hzSource, hGauge]
       simp only [Pi.smul_apply, smul_eq_mul, norm_mul,
@@ -37690,22 +38546,22 @@ theorem norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
         (hBound z (gammaTwoOpenCarrier_subset_closedTileCarrier hzOpen))
         (norm_nonneg _)
     _ = C *
-        ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n u)‖ := by
       rw [norm_smul, Complex.norm_real, abs_of_nonneg hC]
     _ = C * ‖l2Coordinate n u‖ := by
-      rw [PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
 
 /-- The typed raising commutator followed by the actual target Petersson
 coordinate. -/
 noncomputable def raisePeterssonCuspCommutatorCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
       OrbitPeterssonHilbert (n + 1) :=
   (l2Coordinate (n + 1)).comp (raiseCuspCutoffCommutator N n)
 
 theorem norm_raisePeterssonCuspCommutatorCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖raisePeterssonCuspCommutatorCoreMap N n u‖ ≤
       raiseCuspCommutatorCarrierBound N * ‖l2Coordinate n u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -37720,12 +38576,12 @@ theorem norm_raisePeterssonCuspCommutatorCoreMap_le
 Petersson coordinate. -/
 noncomputable def lowerPeterssonCuspCommutatorCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
       OrbitPeterssonHilbert (n - 1) :=
   (l2Coordinate (n - 1)).comp (lowerCuspCutoffCommutator N n)
 
 theorem norm_lowerPeterssonCuspCommutatorCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖lowerPeterssonCuspCommutatorCoreMap N n u‖ ≤
       lowerCuspCommutatorCarrierBound N * ‖l2Coordinate n u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -37746,7 +38602,7 @@ noncomputable def raisePeterssonCuspCommutator (N : ℕ) (n : ℤ) :
 
 @[simp]
 theorem raisePeterssonCuspCommutator_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     raisePeterssonCuspCommutator N n (l2Coordinate n u) =
       l2Coordinate (n + 1) (raiseCuspCutoffCommutator N n u) := by
   exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)
@@ -37763,7 +38619,7 @@ noncomputable def lowerPeterssonCuspCommutator (N : ℕ) (n : ℤ) :
 
 @[simp]
 theorem lowerPeterssonCuspCommutator_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     lowerPeterssonCuspCommutator N n (l2Coordinate n u) =
       l2Coordinate (n - 1) (lowerCuspCutoffCommutator N n u) := by
   exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)
@@ -37776,17 +38632,17 @@ transporting through the propositional equality `(n + 1) - 1 = n`. -/
 
 noncomputable def lowerFromSuccCuspCutoffCommutator
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
-      InverseEtaFixedPhaseCore n :=
-  (InverseEtaFixedPhaseCore.lowerFromSucc n).comp
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
+  (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp
       (cuspCutoffOperator N (n + 1)) -
     (cuspCutoffOperator N n).comp
-      (InverseEtaFixedPhaseCore.lowerFromSucc n)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)
 
 theorem lowerFromSuccCuspCutoffCommutator_apply
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
     ((lowerFromSuccCuspCutoffCommutator N n u :
-        InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
+        Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
       (-Complex.I * heightC z ^ 2 * dx (upstairsCuspCutoff N) z +
           heightC z ^ 2 * dy (upstairsCuspCutoff N) z) *
         (u : SmoothQuotientCompactFunction) z := by
@@ -37802,33 +38658,33 @@ theorem lowerFromSuccCuspCutoffCommutator_apply
   ring
 
 theorem euclideanGaugeScale_sourceSucc_inv (n : ℤ) (z : ℍ) :
-    ((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) =
+    ((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) =
       (heightC z)⁻¹ *
-        ((z.im ^ PhysicalLocalL2.euclideanGaugeExponent (n + 1) : ℝ) : ℂ) := by
+        ((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent (n + 1) : ℝ) : ℂ) := by
   simpa only [add_sub_cancel_right] using
     (euclideanGaugeScale_pred_inv (n + 1) z)
 
 theorem fixedPhaseEuclideanGauge_lowerFromSuccCuspCutoffCommutator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge n
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
         (lowerFromSuccCuspCutoffCommutator N n u) z =
       lowerCuspEuclideanCommutatorCoefficient N z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     lowerFromSuccCuspCutoffCommutator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     euclideanGaugeScale_sourceSucc_inv]
   unfold lowerCuspEuclideanCommutatorCoefficient lowerRaw
   ring
 
 noncomputable def lowerFromSuccPeterssonCuspCommutatorCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
       OrbitPeterssonHilbert n :=
   (l2Coordinate n).comp (lowerFromSuccCuspCutoffCommutator N n)
 
 theorem norm_lowerFromSuccPeterssonCuspCommutatorCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ‖lowerFromSuccPeterssonCuspCommutatorCoreMap N n u‖ ≤
       lowerCuspCommutatorCarrierBound N * ‖l2Coordinate (n + 1) u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -37848,7 +38704,7 @@ noncomputable def lowerFromSuccPeterssonCuspCommutator
 
 @[simp]
 theorem lowerFromSuccPeterssonCuspCommutator_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     lowerFromSuccPeterssonCuspCommutator N n
         (l2Coordinate (n + 1) u) =
       l2Coordinate n (lowerFromSuccCuspCutoffCommutator N n u) := by
@@ -37860,7 +38716,7 @@ theorem lowerFromSuccPeterssonCuspCommutator_l2Coordinate
 zero from a finite cutoff stage onward.  This is deliberately a dense-core
 statement, not a strong convergence assertion on the whole completion. -/
 theorem raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun N ↦ raisePeterssonCuspCommutator N n (l2Coordinate n u))
       =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
@@ -37871,7 +38727,7 @@ theorem raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
 /-- Generic lowering has the same exact finite-stage vanishing on its dense
 smooth source. -/
 theorem lowerPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun N ↦ lowerPeterssonCuspCommutator N n (l2Coordinate n u))
       =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
@@ -37880,25 +38736,25 @@ theorem lowerPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
   rw [lowerPeterssonCuspCommutator_l2Coordinate, hN M hM, map_zero]
 
 theorem exists_lowerFromSuccCuspCutoffCommutator_eventually_eq_zero
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ∃ N : ℕ, ∀ M : ℕ, N ≤ M →
       lowerFromSuccCuspCutoffCommutator M n u = 0 := by
   obtain ⟨Nu, hNu⟩ :=
     exists_cuspCutoffOperator_eventually_eq (n + 1) u
   obtain ⟨Nl, hNl⟩ := exists_cuspCutoffOperator_eventually_eq n
-    (InverseEtaFixedPhaseCore.lowerFromSucc n u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)
   refine ⟨max Nu Nl, fun M hM ↦ ?_⟩
   have hMu := hNu M ((le_max_left Nu Nl).trans hM)
   have hMl := hNl M ((le_max_right Nu Nl).trans hM)
   change
-    InverseEtaFixedPhaseCore.lowerFromSucc n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         (cuspCutoffOperator M (n + 1) u) -
       cuspCutoffOperator M n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u) = 0
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) = 0
   rw [hMu, hMl, sub_self]
 
 theorem lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ lowerFromSuccPeterssonCuspCommutator N n
       (l2Coordinate (n + 1) u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   obtain ⟨N, hN⟩ :=
@@ -37909,7 +38765,7 @@ theorem lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
 
 /-- Completed raising product rule on the literal smooth core. -/
 theorem raisedCoordinate_cuspCutoffOperator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     raisedCoordinate n (cuspCutoffOperator N n u) =
       peterssonCuspCutoff N (n + 1) (raisedCoordinate n u) +
         raisePeterssonCuspCommutator N n (l2Coordinate n u) := by
@@ -37917,26 +38773,26 @@ theorem raisedCoordinate_cuspCutoffOperator
     peterssonCuspCutoff_l2Coordinate,
     raisePeterssonCuspCommutator_l2Coordinate]
   change l2Coordinate (n + 1)
-      (InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u)) =
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u)) =
     l2Coordinate (n + 1)
       (cuspCutoffOperator N (n + 1)
-        (InverseEtaFixedPhaseCore.raise n u)) +
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) +
       l2Coordinate (n + 1) (raiseCuspCutoffCommutator N n u)
   rw [← map_add]
   apply congrArg (l2Coordinate (n + 1))
   change
-    InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u) =
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u) =
       cuspCutoffOperator N (n + 1)
-          (InverseEtaFixedPhaseCore.raise n u) +
-        (InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u) -
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) +
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (cuspCutoffOperator N n u) -
           cuspCutoffOperator N (n + 1)
-            (InverseEtaFixedPhaseCore.raise n u))
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u))
   abel
 
 /-- The exact signed-raising commutator identity in the orientation required
 by maximal-adjoint graph localization. -/
 theorem negativeRaisedCoordinate_peterssonCuspCutoff
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     peterssonCuspCutoff N (n + 1) (-raisedCoordinate n u) =
       -raisedCoordinate n (cuspCutoffOperator N n u) +
         raisePeterssonCuspCommutator N n (l2Coordinate n u) := by
@@ -37945,7 +38801,7 @@ theorem negativeRaisedCoordinate_peterssonCuspCutoff
 
 /-- Completed lowering product rule on the literal smooth core. -/
 theorem lowerFromSuccCoordinate_cuspCutoffOperator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     lowerFromSuccCoordinate n (cuspCutoffOperator N (n + 1) u) =
       peterssonCuspCutoff N n (lowerFromSuccCoordinate n u) +
         lowerFromSuccPeterssonCuspCommutator N n
@@ -37954,29 +38810,29 @@ theorem lowerFromSuccCoordinate_cuspCutoffOperator
     peterssonCuspCutoff_l2Coordinate,
     lowerFromSuccPeterssonCuspCommutator_l2Coordinate]
   change l2Coordinate n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         (cuspCutoffOperator N (n + 1) u)) =
     l2Coordinate n
       (cuspCutoffOperator N n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u)) +
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)) +
       l2Coordinate n (lowerFromSuccCuspCutoffCommutator N n u)
   rw [← map_add]
   apply congrArg (l2Coordinate n)
   change
-    InverseEtaFixedPhaseCore.lowerFromSucc n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         (cuspCutoffOperator N (n + 1) u) =
       cuspCutoffOperator N n
-          (InverseEtaFixedPhaseCore.lowerFromSucc n u) +
-        (InverseEtaFixedPhaseCore.lowerFromSucc n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) +
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
             (cuspCutoffOperator N (n + 1) u) -
           cuspCutoffOperator N n
-            (InverseEtaFixedPhaseCore.lowerFromSucc n u))
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))
   abel
 
 /-- Signed-lowering counterpart, again with the commutator sign fixed by the
 opposite dense operator used in the adjoint graph theorem. -/
 theorem negativeLowerFromSuccCoordinate_peterssonCuspCutoff
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     peterssonCuspCutoff N n (-lowerFromSuccCoordinate n u) =
       -lowerFromSuccCoordinate n
           (cuspCutoffOperator N (n + 1) u) +
@@ -37993,7 +38849,7 @@ theorem peterssonCuspCutoff_mem_l2CoreRange
     (N : ℕ) (n : ℤ) (x : LinearMap.range (l2Coordinate n)) :
     peterssonCuspCutoff N n (x : OrbitPeterssonHilbert n) ∈
       LinearMap.range (l2Coordinate n) := by
-  let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
   refine ⟨cuspCutoffOperator N n u, ?_⟩
   calc
     l2Coordinate n (cuspCutoffOperator N n u) =
@@ -38022,7 +38878,7 @@ theorem negativePhysicalRaise_peterssonCuspCutoff_commutator
             peterssonCuspCutoff_mem_l2CoreRange N n x⟩ +
         raisePeterssonCuspCommutator N n
           (x : OrbitPeterssonHilbert n) := by
-  let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
   let xCut : LinearMap.range (l2Coordinate n) :=
     ⟨peterssonCuspCutoff N n (x : OrbitPeterssonHilbert n),
       peterssonCuspCutoff_mem_l2CoreRange N n x⟩
@@ -38077,7 +38933,7 @@ theorem negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator
             peterssonCuspCutoff_mem_l2CoreRange N (n + 1) x⟩ +
         lowerFromSuccPeterssonCuspCommutator N n
           (x : OrbitPeterssonHilbert (n + 1)) := by
-  let u : InverseEtaFixedPhaseCore (n + 1) :=
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) :=
     (l2CoreRangeEquiv (n + 1)).symm x
   let xCut : LinearMap.range (l2Coordinate (n + 1)) :=
     ⟨peterssonCuspCutoff N (n + 1)
@@ -38148,7 +39004,7 @@ theorem physicalRaise_graph_hasCompactCarrierSupport
         ((l2CoreRangeEquiv n).symm x)
   · rw [← hxValue, physicalRaise_apply, raisedCoordinate_apply]
     exact l2Coordinate_hasCompactCarrierSupport (n + 1)
-      (InverseEtaFixedPhaseCore.raise n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
         ((l2CoreRangeEquiv n).symm x))
 
 /-- Lowering from the successor core has the corresponding two compact
@@ -38169,7 +39025,7 @@ theorem physicalLowerFromSucc_graph_hasCompactCarrierSupport
   · rw [← hxValue, physicalLowerFromSucc_apply,
       lowerFromSuccCoordinate_apply]
     exact l2Coordinate_hasCompactCarrierSupport n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         ((l2CoreRangeEquiv (n + 1)).symm x))
 
 /-- The actual raising core graph lies in the compact weak maximal class.
@@ -38277,11 +39133,11 @@ structure AdjointCutoffExhaustion
     ContinuousLinearMap.adjoint (V j) (T x) =
       T ⟨ContinuousLinearMap.adjoint (U j) (x : E),
         adjoint_U_mem_domain j x⟩ + C j x
-  tendsto_U : ∀ x : E, Filter.Tendsto (fun j ↦ U j x) Filter.atTop (𝒩 x)
-  tendsto_V : ∀ y : F, Filter.Tendsto (fun j ↦ V j y) Filter.atTop (𝒩 y)
+  tendsto_U : ∀ x : E, Filter.Tendsto (fun j ↦ U j x) Filter.atTop (𝓝 x)
+  tendsto_V : ∀ y : F, Filter.Tendsto (fun j ↦ V j y) Filter.atTop (𝓝 y)
   tendsto_adjoint_C_zero : ∀ y : F,
     Filter.Tendsto (fun j ↦ ContinuousLinearMap.adjoint (C j) y)
-      Filter.atTop (𝒩 0)
+      Filter.atTop (𝓝 0)
   localized_property : ∀ j (y : T†.domain),
     (V j (y : F),
       U j (T† y) + ContinuousLinearMap.adjoint (C j) (y : F)) ∈ P
@@ -38309,12 +39165,12 @@ theorem AdjointCutoffExhaustion.hasSequentialGraphLocalization
   · exact adjoint_graph_mem_of_bounded_cutoff_commutator T hT
       (X.U j) (X.V j) (X.C j)
       (X.adjoint_U_mem_domain j) (X.commutator j) y
-  have hBase : Filter.Tendsto (fun j ↦ X.V j (y : F)) Filter.atTop (𝒩 p.1) := by
+  have hBase : Filter.Tendsto (fun j ↦ X.V j (y : F)) Filter.atTop (𝓝 p.1) := by
     simpa only [hyBase] using X.tendsto_V (y : F)
   have hValue : Filter.Tendsto
       (fun j ↦ X.U j (T† y) +
         ContinuousLinearMap.adjoint (X.C j) (y : F))
-      Filter.atTop (𝒩 p.2) := by
+      Filter.atTop (𝓝 p.2) := by
     simpa only [hyValue, add_zero] using
       (X.tendsto_U (T† y)).add
         (X.tendsto_adjoint_C_zero (y : F))
@@ -38504,7 +39360,7 @@ open FixedPhaseAdjointCutoffCore
 /-- On a literal core vector the completed raising commutator is the exact
 difference between raising after cutoff and cutoff after raising. -/
 theorem raisePeterssonCuspCommutator_l2Coordinate_eq_sub
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     raisePeterssonCuspCommutator N n (l2Coordinate n u) =
       raisedCoordinate n (cuspCutoffOperator N n u) -
         peterssonCuspCutoff N (n + 1) (raisedCoordinate n u) := by
@@ -38514,7 +39370,7 @@ theorem raisePeterssonCuspCommutator_l2Coordinate_eq_sub
 /-- The corresponding exact difference formula for lowering from the
 successor orbit. -/
 theorem lowerFromSuccPeterssonCuspCommutator_l2Coordinate_eq_sub
-    (N : ℕ) (n : ℤ) (v : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     lowerFromSuccPeterssonCuspCommutator N n
         (l2Coordinate (n + 1) v) =
       lowerFromSuccCoordinate n (cuspCutoffOperator N (n + 1) v) -
@@ -38526,8 +39382,8 @@ theorem lowerFromSuccPeterssonCuspCommutator_l2Coordinate_eq_sub
 used here are the already proved unconditional global identities; no boundary
 or Stokes premise is reintroduced. -/
 theorem inner_raisePeterssonCuspCommutator_eq_lowerFromSucc
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n)
-    (v : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     inner ℂ
         (raisePeterssonCuspCommutator N n (l2Coordinate n u))
         (l2Coordinate (n + 1) v) =
@@ -38635,7 +39491,7 @@ theorem norm_raisePeterssonCuspCommutator_eq_lowerFromSucc
 /-- On every fixed target smooth core, the adjoint of the raising commutator
 is exactly zero from a finite stage onward. -/
 theorem adjoint_raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
-    (n : ℤ) (v : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ ContinuousLinearMap.adjoint
       (raisePeterssonCuspCommutator N n) (l2Coordinate (n + 1) v))
         =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
@@ -38647,7 +39503,7 @@ theorem adjoint_raisePeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
 /-- On every fixed base smooth core, the adjoint of the lowering commutator
 is exactly zero from a finite stage onward. -/
 theorem adjoint_lowerFromSuccPeterssonCuspCommutator_eventuallyEq_zero_on_l2Coordinate
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun N ↦ ContinuousLinearMap.adjoint
       (lowerFromSuccPeterssonCuspCommutator N n) (l2Coordinate n u))
         =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
@@ -39107,9 +39963,9 @@ namespace FixedPhaseIntrinsicAdjointCutoff
 open Set Function Topology Filter MeasureTheory Metric
 open scoped LinearPMap ContDiff
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
-open DefinitionOneSobolev.HalfWeightDifferentialOperators
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
+open HalfWeightDifferentialOperators
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
@@ -39144,14 +40000,17 @@ half-plane. -/
 theorem integralMoebiusChart_realContDiffOn (g : SL(2, ℤ)) :
     ContDiffOn ℝ ∞ (integralMoebiusChart g)
       UpperHalfPlane.upperHalfPlaneSet := by
+  letI : IsScalarTower ℝ ℂ ℂ := IsScalarTower.complexToReal
   have hDifferentiable : DifferentiableOn ℂ (integralMoebiusChart g)
       UpperHalfPlane.upperHalfPlaneSet := by
     intro w hw
     simpa using
-      (integralMoebiusChart_hasStrictDerivAt g
-        (⟨w, hw⟩ : ℍ)).differentiableAt.differentiableWithinAt
-  exact (hDifferentiable.analyticOnNhd
-      UpperHalfPlane.isOpen_upperHalfPlaneSet).restrictScalars.contDiffOn_of_completeSpace
+      (HasDerivAt.differentiableAt
+        (integralMoebiusChart_hasStrictDerivAt g
+          (⟨w, hw⟩ : ℍ)).hasDerivAt).differentiableWithinAt
+  exact ContDiffOn.restrict_scalars ℝ
+    ((hDifferentiable.analyticOnNhd
+      UpperHalfPlane.isOpen_upperHalfPlaneSet).contDiffOn_of_completeSpace)
 
 /-- Logarithmic height in one fixed integral Mobius chart. -/
 noncomputable def integralLogHeightChart
@@ -39227,8 +40086,7 @@ theorem intrinsicCuspCutoff_realSmooth (N : ℕ) :
     exact hChart.congr_of_eventuallyEq_of_mem hEq z.im_pos
   · have hzle : modularLogMaxHeight z ≤ 0 := le_of_not_gt hz
     have hRhoNhds : {q : ℍ | modularLogMaxHeight q < 1} ∈ nhds z := by
-      exact (isOpen_lt continuous_const modularLogMaxHeight_continuous).
-        mem_nhds (by simpa only [Set.mem_setOf_eq] using hzle.trans_lt zero_lt_one)
+      exact (isOpen_lt continuous_const modularLogMaxHeight_continuous).mem_nhds (by simpa only [Set.mem_setOf_eq] using hzle.trans_lt zero_lt_one)
     have hMap : Filter.Tendsto UpperHalfPlane.ofComplex
         (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by
       simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using
@@ -39363,8 +40221,7 @@ theorem intrinsicCuspCutoff_fderiv_hyperbolic_bound
           upperLift (intrinsicCuspCutoff N) (z : ℂ)‖ ≤
         C * ‖w - (z : ℂ)‖ := by
     have hImNhds : {w : ℂ | z.im / 2 < w.im} ∈ nhds (z : ℂ) := by
-      exact (isOpen_lt continuous_const Complex.continuous_im).
-        mem_nhds (by simpa only [Set.mem_setOf_eq] using
+      exact (isOpen_lt continuous_const Complex.continuous_im).mem_nhds (by simpa only [Set.mem_setOf_eq] using
           (by linarith [z.im_pos] : z.im / 2 < z.im))
     filter_upwards [hImNhds] with w hw
     have hwpos : 0 < w.im := by linarith [z.im_pos]
@@ -39443,9 +40300,9 @@ namespace FixedPhaseIntrinsicAdjointCutoff
 open Set Function Topology Filter MeasureTheory
 open scoped LinearPMap
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
-open DefinitionOneSobolev.HalfWeightDifferentialOperators
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
+open HalfWeightDifferentialOperators
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
@@ -39472,12 +40329,12 @@ theorem intrinsicCuspCutoffSmoothQuotient_invariant (N : ℕ) :
 
 /-- Multiplication by the intrinsic cutoff on the literal fixed-phase core. -/
 noncomputable def intrinsicCuspCutoffOperator (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore n where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n where
   toFun u :=
     invariantCutoffTimesOrbitSection n
       (intrinsicCuspCutoffSmoothQuotient N)
       (intrinsicCuspCutoffSmoothQuotient_invariant N)
-      (InverseEtaFixedPhaseCore.toWeightSection n u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)
       (u : SmoothQuotientCompactFunction).1.2
   map_add' u v := by
     apply Subtype.ext
@@ -39494,8 +40351,8 @@ noncomputable def intrinsicCuspCutoffOperator (N : ℕ) (n : ℤ) :
 
 @[simp]
 theorem intrinsicCuspCutoffOperator_apply
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    ((intrinsicCuspCutoffOperator N n u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    ((intrinsicCuspCutoffOperator N n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
         SmoothQuotientCompactFunction) z =
       intrinsicCuspCutoff N z *
         (u : SmoothQuotientCompactFunction) z :=
@@ -39511,7 +40368,7 @@ theorem modularLogMaxHeight_effective_invariant
 /-- On each quotient-compact core vector the intrinsic cutoff is exactly one
 from a finite stage onward. -/
 theorem exists_intrinsicCuspCutoffOperator_eventually_eq
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ∃ N : ℕ, ∀ M : ℕ, N ≤ M →
       intrinsicCuspCutoffOperator M n u = u := by
   let K : Set ℍ := gammaTwoClosedTileCarrier ∩
@@ -39554,7 +40411,7 @@ theorem exists_intrinsicCuspCutoffOperator_eventually_eq
       hRhoZ, Complex.ofReal_one, one_mul]
 
 theorem intrinsicCuspCutoffOperator_eventuallyEq
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun M ↦ intrinsicCuspCutoffOperator M n u) =ᶠ[Filter.atTop]
       (fun _ ↦ u) := by
   obtain ⟨N, hN⟩ :=
@@ -39566,30 +40423,30 @@ theorem intrinsicCuspCutoffOperator_eventuallyEq
 
 noncomputable def intrinsicPeterssonCuspCutoffCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
   (l2Coordinate n).comp (intrinsicCuspCutoffOperator N n)
 
 theorem norm_intrinsicPeterssonCuspCutoffCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖intrinsicPeterssonCuspCutoffCoreMap N n u‖ ≤
       ‖l2Coordinate n u‖ := by
   calc
     ‖intrinsicPeterssonCuspCutoffCoreMap N n u‖ =
-        ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (intrinsicCuspCutoffOperator N n u))‖ := by
-      rw [PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm]
       rfl
-    _ ≤ ‖PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+    _ ≤ ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n u)‖ := by
       apply MeasureTheory.Lp.norm_le_norm_of_ae_le
       filter_upwards [
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (intrinsicCuspCutoffOperator N n u),
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u]
           with z hzCut hzBase
       rw [hzCut, hzBase,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
         intrinsicCuspCutoffOperator_apply]
       have hCut : ‖intrinsicCuspCutoff N z‖ ≤ 1 := by
         rw [intrinsicCuspCutoff, Complex.norm_real,
@@ -39597,20 +40454,20 @@ theorem norm_intrinsicPeterssonCuspCutoffCoreMap_le
         exact intrinsicCuspCutoffReal_le_one N z
       simp only [norm_mul]
       calc
-        ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
+        ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
             (‖intrinsicCuspCutoff N z‖ *
               ‖(u : SmoothQuotientCompactFunction) z‖) =
           ‖intrinsicCuspCutoff N z‖ *
-            (‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
+            (‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
               ‖(u : SmoothQuotientCompactFunction) z‖) := by ring
         _ ≤ 1 *
-            (‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
+            (‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
               ‖(u : SmoothQuotientCompactFunction) z‖) :=
           mul_le_mul_of_nonneg_right hCut (mul_nonneg (norm_nonneg _) (norm_nonneg _))
-        _ = ‖((z.im ^ PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
+        _ = ‖((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ)‖ *
               ‖(u : SmoothQuotientCompactFunction) z‖ := one_mul _
     _ = ‖l2Coordinate n u‖ :=
-      PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm n _
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm n _
 
 noncomputable def intrinsicPeterssonCuspCutoff
     (N : ℕ) (n : ℤ) :
@@ -39619,7 +40476,7 @@ noncomputable def intrinsicPeterssonCuspCutoff
 
 @[simp]
 theorem intrinsicPeterssonCuspCutoff_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     intrinsicPeterssonCuspCutoff N n (l2Coordinate n u) =
       l2Coordinate n (intrinsicCuspCutoffOperator N n u) := by
   exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)
@@ -39673,7 +40530,7 @@ theorem intrinsicPeterssonCuspCutoff_tendsto_id
     _ = eps := by ring
 
 theorem inner_intrinsicPeterssonCuspCutoffCoreMap
-    (N : ℕ) (n : ℤ) (u v : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     inner ℂ (intrinsicPeterssonCuspCutoffCoreMap N n u)
         (l2Coordinate n v) =
       inner ℂ (l2Coordinate n u)
@@ -39682,33 +40539,32 @@ theorem inner_intrinsicPeterssonCuspCutoffCoreMap
     inner ℂ (intrinsicPeterssonCuspCutoffCoreMap N n u)
         (l2Coordinate n v) =
       inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (intrinsicCuspCutoffOperator N n u)))
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n v)) := by
         symm
-        exact (PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-          inner_map_map _ _
+        exact (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map _ _
     _ = inner ℂ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n u))
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (intrinsicCuspCutoffOperator N n v))) := by
       rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]
       apply integral_congr_ae
       filter_upwards [
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (intrinsicCuspCutoffOperator N n u),
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n v,
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
-        PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n v,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
           (intrinsicCuspCutoffOperator N n v)]
           with z hCu hV hU hCv
       rw [hCu, hV, hU, hCv,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
         intrinsicCuspCutoffOperator_apply,
         intrinsicCuspCutoffOperator_apply]
       have hReal : star (intrinsicCuspCutoff N z) =
@@ -39718,8 +40574,7 @@ theorem inner_intrinsicPeterssonCuspCutoffCoreMap
       ring
     _ = inner ℂ (l2Coordinate n u)
         (intrinsicPeterssonCuspCutoffCoreMap N n v) :=
-      (PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).
-        inner_map_map _ _
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanIsometry n).inner_map_map _ _
 
 theorem intrinsicPeterssonCuspCutoff_isSelfAdjoint
     (N : ℕ) (n : ℤ) :
@@ -39874,9 +40729,9 @@ namespace FixedPhaseIntrinsicAdjointCutoff
 open Set Function Topology Filter MeasureTheory
 open scoped LinearPMap
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
-open DefinitionOneSobolev.HalfWeightDifferentialOperators
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
+open HalfWeightDifferentialOperators
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
@@ -39885,26 +40740,26 @@ open FixedPhaseAdjointCutoffCore
 
 noncomputable def intrinsicRaiseCuspCutoffCommutator
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore (n + 1) :=
-  (InverseEtaFixedPhaseCore.raise n).comp
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) :=
+  (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n).comp
       (intrinsicCuspCutoffOperator N n) -
     (intrinsicCuspCutoffOperator N (n + 1)).comp
-      (InverseEtaFixedPhaseCore.raise n)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n)
 
 noncomputable def intrinsicLowerFromSuccCuspCutoffCommutator
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
-      InverseEtaFixedPhaseCore n :=
-  (InverseEtaFixedPhaseCore.lowerFromSucc n).comp
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
+  (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp
       (intrinsicCuspCutoffOperator N (n + 1)) -
     (intrinsicCuspCutoffOperator N n).comp
-      (InverseEtaFixedPhaseCore.lowerFromSucc n)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)
 
 theorem intrinsicRaiseCuspCutoffCommutator_apply
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ((intrinsicRaiseCuspCutoffCommutator N n u :
-        InverseEtaFixedPhaseCore (n + 1)) :
+        Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
       SmoothQuotientCompactFunction) z =
       (Complex.I * dx (intrinsicCuspCutoff N) z +
         dy (intrinsicCuspCutoff N) z) *
@@ -39922,9 +40777,9 @@ theorem intrinsicRaiseCuspCutoffCommutator_apply
 
 theorem intrinsicLowerFromSuccCuspCutoffCommutator_apply
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
     ((intrinsicLowerFromSuccCuspCutoffCommutator N n u :
-        InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
+        Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
       (-Complex.I * heightC z ^ 2 *
           dx (intrinsicCuspCutoff N) z +
         heightC z ^ 2 * dy (intrinsicCuspCutoff N) z) *
@@ -39941,42 +40796,42 @@ theorem intrinsicLowerFromSuccCuspCutoffCommutator_apply
   ring
 
 theorem fixedPhaseEuclideanGauge_intrinsicRaiseCommutator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
         (intrinsicRaiseCuspCutoffCommutator N n u) z =
       intrinsicRaiseCommutatorCoefficient N z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     intrinsicRaiseCuspCutoffCommutator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
-    PhysicalLocalL2.euclideanGaugeScale_succ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeScale_succ]
   unfold intrinsicRaiseCommutatorCoefficient raiseRaw physicalExponent
   push_cast
   ring
 
 theorem fixedPhaseEuclideanGauge_intrinsicLowerFromSuccCommutator
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge n
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
         (intrinsicLowerFromSuccCuspCutoffCommutator N n u) z =
       intrinsicLowerCommutatorCoefficient N z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     intrinsicLowerFromSuccCuspCutoffCommutator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     euclideanGaugeScale_sourceSucc_inv]
   unfold intrinsicLowerCommutatorCoefficient lowerRaw
   ring
 
 noncomputable def intrinsicRaisePeterssonCommutatorCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
       OrbitPeterssonHilbert (n + 1) :=
   (l2Coordinate (n + 1)).comp
     (intrinsicRaiseCuspCutoffCommutator N n)
 
 theorem norm_intrinsicRaisePeterssonCommutatorCoreMap_le
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖intrinsicRaisePeterssonCommutatorCoreMap N n u‖ ≤
       intrinsicCommutatorUniformBound * ‖l2Coordinate n u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -39989,14 +40844,14 @@ theorem norm_intrinsicRaisePeterssonCommutatorCoreMap_le
 
 noncomputable def intrinsicLowerFromSuccPeterssonCommutatorCoreMap
     (N : ℕ) (n : ℤ) :
-    InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
       OrbitPeterssonHilbert n :=
   (l2Coordinate n).comp
     (intrinsicLowerFromSuccCuspCutoffCommutator N n)
 
 theorem norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ‖intrinsicLowerFromSuccPeterssonCommutatorCoreMap N n u‖ ≤
       intrinsicCommutatorUniformBound * ‖l2Coordinate (n + 1) u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -40016,7 +40871,7 @@ noncomputable def intrinsicRaisePeterssonCommutator
 
 @[simp]
 theorem intrinsicRaisePeterssonCommutator_l2Coordinate
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     intrinsicRaisePeterssonCommutator N n (l2Coordinate n u) =
       l2Coordinate (n + 1)
         (intrinsicRaiseCuspCutoffCommutator N n u) := by
@@ -40034,7 +40889,7 @@ noncomputable def intrinsicLowerFromSuccPeterssonCommutator
 @[simp]
 theorem intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     intrinsicLowerFromSuccPeterssonCommutator N n
         (l2Coordinate (n + 1) u) =
       l2Coordinate n
@@ -40060,43 +40915,43 @@ theorem norm_intrinsicLowerFromSuccPeterssonCommutator_apply_le
     (norm_intrinsicLowerFromSuccPeterssonCommutatorCoreMap_le N n) x
 
 theorem intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun N ↦ intrinsicRaiseCuspCutoffCommutator N n u) =ᶠ[Filter.atTop]
       (fun _ ↦ 0) := by
   obtain ⟨Nu, hNu⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq n u
   obtain ⟨Nr, hNr⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)
   filter_upwards [eventually_ge_atTop (max Nu Nr)] with M hM
   have hu := hNu M ((le_max_left Nu Nr).trans hM)
   have hr := hNr M ((le_max_right Nu Nr).trans hM)
-  change InverseEtaFixedPhaseCore.raise n
+  change Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
       (intrinsicCuspCutoffOperator M n u) -
     intrinsicCuspCutoffOperator M (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u) = 0
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) = 0
   rw [hu, hr, sub_self]
 
 theorem intrinsicLowerFromSuccCuspCutoffCommutator_eventuallyEq_zero
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ intrinsicLowerFromSuccCuspCutoffCommutator N n u) =ᶠ[Filter.atTop]
       (fun _ ↦ 0) := by
   obtain ⟨Nu, hNu⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq (n + 1) u
   obtain ⟨Nl, hNl⟩ :=
     exists_intrinsicCuspCutoffOperator_eventually_eq n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)
   filter_upwards [eventually_ge_atTop (max Nu Nl)] with M hM
   have hu := hNu M ((le_max_left Nu Nl).trans hM)
   have hl := hNl M ((le_max_right Nu Nl).trans hM)
-  change InverseEtaFixedPhaseCore.lowerFromSucc n
+  change Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
       (intrinsicCuspCutoffOperator M (n + 1) u) -
     intrinsicCuspCutoffOperator M n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n u) = 0
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) = 0
   rw [hu, hl, sub_self]
 
 theorem intrinsicRaisePeterssonCommutator_eventuallyEq_zero_on_core
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (fun N ↦ intrinsicRaisePeterssonCommutator N n
       (l2Coordinate n u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero n u]
@@ -40104,7 +40959,7 @@ theorem intrinsicRaisePeterssonCommutator_eventuallyEq_zero_on_core
   rw [intrinsicRaisePeterssonCommutator_l2Coordinate, hN, map_zero]
 
 theorem intrinsicLowerFromSuccPeterssonCommutator_eventuallyEq_zero_on_core
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (fun N ↦ intrinsicLowerFromSuccPeterssonCommutator N n
       (l2Coordinate (n + 1) u)) =ᶠ[Filter.atTop] (fun _ ↦ 0) := by
   filter_upwards [
@@ -40202,7 +41057,7 @@ open FixedPhaseEssentialCoreRoute
 open FixedPhaseAdjointCutoffCore
 
 theorem intrinsicRaisePeterssonCommutator_l2Coordinate_eq_sub
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     intrinsicRaisePeterssonCommutator N n (l2Coordinate n u) =
       raisedCoordinate n (intrinsicCuspCutoffOperator N n u) -
         intrinsicPeterssonCuspCutoff N (n + 1)
@@ -40215,7 +41070,7 @@ theorem intrinsicRaisePeterssonCommutator_l2Coordinate_eq_sub
 
 theorem intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate_eq_sub
     (N : ℕ) (n : ℤ)
-    (v : InverseEtaFixedPhaseCore (n + 1)) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     intrinsicLowerFromSuccPeterssonCommutator N n
         (l2Coordinate (n + 1) v) =
       lowerFromSuccCoordinate n
@@ -40230,8 +41085,8 @@ theorem intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate_eq_sub
   rfl
 
 theorem inner_intrinsicRaiseCommutator_eq_intrinsicLowerFromSucc
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n)
-    (v : InverseEtaFixedPhaseCore (n + 1)) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     inner ℂ
         (intrinsicRaisePeterssonCommutator N n (l2Coordinate n u))
         (l2Coordinate (n + 1) v) =
@@ -40322,7 +41177,7 @@ theorem adjoint_intrinsicLowerFromSuccPeterssonCommutator
   (intrinsicRaisePeterssonCommutator_eq_adjoint_lowerFromSucc N n).symm
 
 theorem raisedCoordinate_intrinsicCuspCutoffOperator
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     raisedCoordinate n (intrinsicCuspCutoffOperator N n u) =
       intrinsicPeterssonCuspCutoff N (n + 1) (raisedCoordinate n u) +
         intrinsicRaisePeterssonCommutator N n (l2Coordinate n u) := by
@@ -40331,7 +41186,7 @@ theorem raisedCoordinate_intrinsicCuspCutoffOperator
 
 theorem lowerFromSuccCoordinate_intrinsicCuspCutoffOperator
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     lowerFromSuccCoordinate n
         (intrinsicCuspCutoffOperator N (n + 1) u) =
       intrinsicPeterssonCuspCutoff N n (lowerFromSuccCoordinate n u) +
@@ -40341,7 +41196,7 @@ theorem lowerFromSuccCoordinate_intrinsicCuspCutoffOperator
   abel
 
 theorem negativeRaisedCoordinate_intrinsicPeterssonCuspCutoff
-    (N : ℕ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (N : ℕ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     intrinsicPeterssonCuspCutoff N (n + 1) (-raisedCoordinate n u) =
       -raisedCoordinate n (intrinsicCuspCutoffOperator N n u) +
         intrinsicRaisePeterssonCommutator N n (l2Coordinate n u) := by
@@ -40350,7 +41205,7 @@ theorem negativeRaisedCoordinate_intrinsicPeterssonCuspCutoff
 
 theorem negativeLowerFromSuccCoordinate_intrinsicPeterssonCuspCutoff
     (N : ℕ) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     intrinsicPeterssonCuspCutoff N n (-lowerFromSuccCoordinate n u) =
       -lowerFromSuccCoordinate n
           (intrinsicCuspCutoffOperator N (n + 1) u) +
@@ -40364,7 +41219,7 @@ theorem intrinsicPeterssonCuspCutoff_mem_l2CoreRange
     intrinsicPeterssonCuspCutoff N n
         (x : OrbitPeterssonHilbert n) ∈
       LinearMap.range (l2Coordinate n) := by
-  let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
   refine ⟨intrinsicCuspCutoffOperator N n u, ?_⟩
   calc
     l2Coordinate n (intrinsicCuspCutoffOperator N n u) =
@@ -40395,7 +41250,7 @@ theorem negativePhysicalRaise_intrinsicCutoff_commutator
         intrinsicRaisePeterssonCommutator N n
           (x : OrbitPeterssonHilbert n) := by
   simp only [adjoint_intrinsicPeterssonCuspCutoff]
-  let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm x
   let xCut : LinearMap.range (l2Coordinate n) :=
     ⟨intrinsicPeterssonCuspCutoff N n
       (x : OrbitPeterssonHilbert n),
@@ -40443,7 +41298,7 @@ theorem negativePhysicalLowerFromSucc_intrinsicCutoff_commutator
         intrinsicLowerFromSuccPeterssonCommutator N n
           (x : OrbitPeterssonHilbert (n + 1)) := by
   simp only [adjoint_intrinsicPeterssonCuspCutoff]
-  let u : InverseEtaFixedPhaseCore (n + 1) :=
+  let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) :=
     (l2CoreRangeEquiv (n + 1)).symm x
   let xCut : LinearMap.range (l2Coordinate (n + 1)) :=
     ⟨intrinsicPeterssonCuspCutoff N (n + 1)
@@ -40501,8 +41356,8 @@ namespace FixedPhaseIntrinsicAdjointCutoff
 open Set Function Topology Filter MeasureTheory
 open scoped LinearPMap
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
@@ -40516,15 +41371,15 @@ complement of the compact carrier lift, so it never chooses a representative
 of an arbitrary completion vector. -/
 theorem completedGaugeMultiplier_hasCompactCarrierSupport
     {m n : ℤ}
-    (Acore : InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore m)
+    (Acore : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
     (A : OrbitPeterssonHilbert n →L[ℂ] OrbitPeterssonHilbert m)
     (c : ℍ → ℂ) (hc : HasQuotientCompactSupport c)
-    (hCore : ∀ u : InverseEtaFixedPhaseCore n,
+    (hCore : ∀ u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
       A (l2Coordinate n u) = l2Coordinate m (Acore u))
-    (hGauge : ∀ (u : InverseEtaFixedPhaseCore n) (z : ℍ),
-      PhysicalLocalL2.fixedPhaseEuclideanGauge m (Acore u) z =
-        c z * PhysicalLocalL2.fixedPhaseEuclideanGauge n u z)
+    (hGauge : ∀ (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ),
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m (Acore u) z =
+        c z * Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z)
     (x : OrbitPeterssonHilbert n) :
     HasCompactCarrierSupport m (A x) := by
   let K : Set ℍ := gammaTwoClosedTileCarrier ∩
@@ -40533,26 +41388,26 @@ theorem completedGaugeMultiplier_hasCompactCarrierSupport
     gammaTwoClosedCarrier_inter_preimage_isCompact _ hc
   let R : OrbitPeterssonHilbert n →L[ℂ]
       MeasureTheory.Lp ℂ 2
-        (PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ) :=
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ) :=
     (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-      PhysicalLocalL2.chosenEuclideanCarrierMeasure 2 Kᶜ).comp
-      ((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m).comp A)
-  have hCoreZero : ∀ u : InverseEtaFixedPhaseCore n,
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure 2 Kᶜ).comp
+      ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m).comp A)
+  have hCoreZero : ∀ u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
       R (l2Coordinate n u) = 0 := by
     intro u
     change MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-        PhysicalLocalL2.chosenEuclideanCarrierMeasure 2 Kᶜ
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure 2 Kᶜ
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
             (A (l2Coordinate n u))) = 0
     rw [hCore u]
     apply MeasureTheory.Lp.ext
     filter_upwards [
       MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m
           (l2Coordinate m (Acore u))),
-      (PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m
         (Acore u)).restrict,
-      PhysicalLocalL2.ae_mem_open_chosenEuclidean.restrict,
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean.restrict,
       ae_restrict_mem hK.measurableSet.compl]
         with z hzRestr hzGauge hzOpen hzCompl
     rw [hzRestr, hzGauge, hGauge]
@@ -40568,16 +41423,16 @@ theorem completedGaugeMultiplier_hasCompactCarrierSupport
       (isClosed_eq R.continuous continuous_const) hCoreZero
   refine ⟨K, hK, ?_⟩
   have hRestr := MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ
-    (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (A x))
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (A x))
   have hZero :
       ⇑(R x) =ᵐ[
-        PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ]
         (0 : ℍ → ℂ) := by
     rw [hAllZero x]
     exact MeasureTheory.Lp.coeFn_zero
   have hOff :
-      ⇑(PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (A x)) =ᵐ[
-        PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ]
+      ⇑(Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (A x)) =ᵐ[
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ]
         (0 : ℍ → ℂ) := by
     exact hRestr.symm.trans hZero
   exact (ae_restrict_iff' hK.measurableSet.compl).mp hOff
@@ -40592,8 +41447,8 @@ theorem HasCompactCarrierSupport.add
   refine ⟨K ∪ L, hK.union hL, ?_⟩
   filter_upwards [
     MeasureTheory.Lp.coeFn_add
-      (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x)
-      (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n y),
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n y),
     hx, hy] with z hAdd hxz hyz
   intro hz
   rw [hAdd, hxz (fun hzK ↦ hz (Or.inl hzK)),
@@ -40609,9 +41464,9 @@ theorem intrinsicPeterssonCuspCutoff_hasCompactCarrierSupport
     (intrinsicCuspCutoff_quotientCompact N)
     (intrinsicPeterssonCuspCutoff_l2Coordinate N n)
     (fun u z ↦ by
-      rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
         intrinsicCuspCutoffOperator_apply,
-        PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
       ring) x
 
 theorem intrinsicRaisePeterssonCommutator_hasCompactCarrierSupport
@@ -40747,28 +41602,28 @@ open FixedPhaseClosedOperators
 compact test.  Unlike the previously defined test transpose, this is the
 forward graph coordinate used by Friedrichs regularization. -/
 noncomputable def euclideanRaiseForwardTest (n : ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
-    PhysicalLocalL2.AmbientTestCore :=
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   Complex.I • HalfWeightCompactCoordinateGreen.rpowMul 1
       (HalfWeightCompactCoordinateGreen.dx v) +
     HalfWeightCompactCoordinateGreen.rpowMul 1
       (HalfWeightCompactCoordinateGreen.dy v) +
-    ((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ) • v
+    ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ) • v
 
 /-- The forward lowering expression from the successor gauge, again bundled
 in the genuine compact test core. -/
 noncomputable def euclideanLowerFromSuccForwardTest (n : ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
-    PhysicalLocalL2.AmbientTestCore :=
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   (-Complex.I) • HalfWeightCompactCoordinateGreen.rpowMul 1
       (HalfWeightCompactCoordinateGreen.dx v) +
     HalfWeightCompactCoordinateGreen.rpowMul 1
       (HalfWeightCompactCoordinateGreen.dy v) -
-    ((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ) • v
+    ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ) • v
 
 /-- Forward raising does not enlarge ambient topological support. -/
 theorem tsupport_euclideanRaiseForwardTest_subset (n : ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     tsupport (euclideanRaiseForwardTest n v : ℂ → ℂ) ⊆
       tsupport (v : ℂ → ℂ) := by
   intro w hw
@@ -40798,7 +41653,7 @@ theorem tsupport_euclideanRaiseForwardTest_subset (n : ℤ)
 
 /-- Forward lowering has the same exact support property. -/
 theorem tsupport_euclideanLowerFromSuccForwardTest_subset (n : ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     tsupport (euclideanLowerFromSuccForwardTest n v : ℂ → ℂ) ⊆
       tsupport (v : ℂ → ℂ) := by
   intro w hw
@@ -40829,15 +41684,15 @@ theorem tsupport_euclideanLowerFromSuccForwardTest_subset (n : ℤ)
 /-- On the upper half-plane, the bundled forward raising test is literally
 the Euclidean-gauge raising expression on the restricted ambient function. -/
 theorem euclideanRaiseForwardTest_apply_upper
-    (n : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     euclideanRaiseForwardTest n v (z : ℂ) =
-      PhysicalLocalL2.euclideanRaiseGauge n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n
         (HalfWeightCompactCoordinateGreen.restrictToUpper v) z := by
-  unfold PhysicalLocalL2.euclideanRaiseGauge
+  unfold Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge
   rw [HalfWeightCompactCoordinateGreen.raw_dx_restrictToUpper,
     HalfWeightCompactCoordinateGreen.raw_dy_restrictToUpper]
-  simp only [euclideanRaiseForwardTest, TestFunction.add_apply,
-    TestFunction.smul_apply,
+  simp only [euclideanRaiseForwardTest, add_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC,
@@ -40846,16 +41701,16 @@ theorem euclideanRaiseForwardTest_apply_upper
 
 /-- Pointwise counterpart for forward lowering. -/
 theorem euclideanLowerFromSuccForwardTest_apply_upper
-    (n : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     euclideanLowerFromSuccForwardTest n v (z : ℂ) =
-      PhysicalLocalL2.euclideanLowerFromSuccGauge n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n
         (HalfWeightCompactCoordinateGreen.restrictToUpper v) z := by
-  unfold PhysicalLocalL2.euclideanLowerFromSuccGauge
+  unfold Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge
   rw [HalfWeightCompactCoordinateGreen.raw_dx_restrictToUpper,
     HalfWeightCompactCoordinateGreen.raw_dy_restrictToUpper]
   simp only [euclideanLowerFromSuccForwardTest,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC,
@@ -40867,24 +41722,24 @@ theorem euclideanLowerFromSuccForwardTest_apply_upper
 /-- Equality of a periodized gauge with an ambient test on the open carrier
 also identifies their forward raising expressions pointwise. -/
 theorem euclideanRaiseGauge_periodized_eq_forwardTest
-    {n : ℤ} {u : InverseEtaFixedPhaseCore n}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.euclideanRaiseGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u) z =
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u) z =
       euclideanRaiseForwardTest n v (z : ℂ) := by
   have hx := dx_periodizedGauge_eq_ambientTest hEq hz
   have hy := dy_periodizedGauge_eq_ambientTest hEq hz
   have hv := periodizedGauge_apply_eq_ambientTest hEq hz
-  simp only [PhysicalLocalL2.euclideanRaiseGauge,
-    euclideanRaiseForwardTest, TestFunction.add_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,
+    euclideanRaiseForwardTest, add_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -40894,24 +41749,24 @@ theorem euclideanRaiseGauge_periodized_eq_forwardTest
 /-- Equality on the open carrier likewise identifies the forward lowering
 coordinate from the successor gauge. -/
 theorem euclideanLowerFromSuccGauge_periodized_eq_forwardTest
-    {n : ℤ} {u : InverseEtaFixedPhaseCore (n + 1)}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     {z : ℍ}
-    (hz : (z : ℂ) ∈ PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.euclideanLowerFromSuccGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u) z =
+    (hz : (z : ℂ) ∈ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u) z =
       euclideanLowerFromSuccForwardTest n v (z : ℂ) := by
   have hx := dx_periodizedGauge_eq_ambientTest hEq hz
   have hy := dy_periodizedGauge_eq_ambientTest hEq hz
   have hv := periodizedGauge_apply_eq_ambientTest hEq hz
-  simp only [PhysicalLocalL2.euclideanLowerFromSuccGauge,
-    euclideanLowerFromSuccForwardTest, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,
+    euclideanLowerFromSuccForwardTest, add_apply,
+    sub_apply, smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -40921,70 +41776,70 @@ theorem euclideanLowerFromSuccGauge_periodized_eq_forwardTest
 /-- The exact pointwise raising identity descends to the completed carrier
 `L2` coordinate of the actual typed raised section. -/
 theorem embedded_raisedCoordinate_eq_forwardTest_of_periodizedGauge
-    {n : ℤ} {u : InverseEtaFixedPhaseCore n}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         (raisedCoordinate n u) =
-      PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
         (euclideanRaiseForwardTest n v) := by
   rw [raisedCoordinate_apply]
   apply MeasureTheory.Lp.ext
   filter_upwards [
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u),
-    PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 (n + 1)
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge (n + 1)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 (n + 1)
       (euclideanRaiseForwardTest n v),
-    PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzPhysical hzTest hzOpen
   rw [hzPhysical, hzTest,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]
   exact euclideanRaiseGauge_periodized_eq_forwardTest
     hEq ⟨z, hzOpen, rfl⟩
 
 /-- The corresponding exact carrier coordinate identity for lowering. -/
 theorem embedded_lowerFromSuccCoordinate_eq_forwardTest_of_periodizedGauge
-    {n : ℤ} {u : InverseEtaFixedPhaseCore (n + 1)}
-    {v : PhysicalLocalL2.AmbientTestCore}
+    {n : ℤ} {u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hEq : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) u))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         (lowerFromSuccCoordinate n u) =
-      PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
         (euclideanLowerFromSuccForwardTest n v) := by
   rw [lowerFromSuccCoordinate_apply]
   apply MeasureTheory.Lp.ext
   filter_upwards [
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
-      (InverseEtaFixedPhaseCore.lowerFromSucc n u),
-    PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u),
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_ambientTestCoreToCarrierL2 n
       (euclideanLowerFromSuccForwardTest n v),
-    PhysicalLocalL2.ae_mem_open_chosenEuclidean]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean]
       with z hzPhysical hzTest hzOpen
   rw [hzPhysical, hzTest,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]
   exact euclideanLowerFromSuccGauge_periodized_eq_forwardTest
     hEq ⟨z, hzOpen, rfl⟩
 
 /-- The explicit periodized physical core has the required gauge equality on
 the whole open carrier, not merely almost everywhere. -/
 theorem gammaTwoPeriodizedPhysicalCore_gauge_eqOn
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hv : tsupport (v : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) :
     Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
           (gammaTwoPeriodizedPhysicalCore m v)))
       (v : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
   intro w hw
   rcases hw with ⟨z, hz, rfl⟩
   rw [SmoothCompactCoreGeometry.upperLift_apply]
@@ -40998,13 +41853,13 @@ theorem tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto
     {m : ℤ} {ι : Type*} {l : Filter ι}
     {x : ι → OrbitPeterssonHilbert m} {x0 : OrbitPeterssonHilbert m}
     (h : Filter.Tendsto
-      (fun i ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (x i))
+      (fun i ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m (x i))
       l
-      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m x0))) :
+      (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m x0))) :
     Filter.Tendsto x l (nhds x0) := by
   rw [tendsto_iff_norm_sub_tendsto_zero] at h ⊢
   simpa only [map_sub,
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm] using h
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_norm] using h
 
 /-! #### Ambient Friedrichs sequences give literal physical graph sequences -/
 
@@ -41015,33 +41870,33 @@ the exact endpoint needed from a Euclidean Friedrichs argument. -/
 theorem periodize_ambientRaisingGraphApproximation
     {n : ℤ}
     {p : OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1)}
-    (v : ℕ → PhysicalLocalL2.AmbientTestCore)
+    (v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     (hBase : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
       Filter.atTop
-      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)))
+      (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)))
     (hRaise : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
         (euclideanRaiseForwardTest n (v j)))
       Filter.atTop
-      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.2))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1),
       (∀ j : ℕ, q j ∈ (physicalRaise n).graph) ∧
         Filter.Tendsto q Filter.atTop (nhds p) := by
-  let u : ℕ → InverseEtaFixedPhaseCore n := fun j ↦
+  let u : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := fun j ↦
     gammaTwoPeriodizedPhysicalCore n (v j)
   let q : ℕ → OrbitPeterssonHilbert n ×
       OrbitPeterssonHilbert (n + 1) := fun j ↦
     (l2Coordinate n (u j), raisedCoordinate n (u j))
   have hEq (j : ℕ) : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n (u j)))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n (u j)))
       (v j : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
     exact gammaTwoPeriodizedPhysicalCore_gauge_eqOn (hv j)
   refine ⟨q, ?_, ?_⟩
   · intro j
@@ -41050,18 +41905,18 @@ theorem periodize_ambientRaisingGraphApproximation
     simpa only [l2CoreRangeEquiv_coe, physicalRaise_on_core] using
       (physicalRaise n).mem_graph (l2CoreRangeEquiv n (u j))
   · have hBaseEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (l2Coordinate n (u j)))
         Filter.atTop
-        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) :=
+        (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
     have hRaiseEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (raisedCoordinate n (u j)))
         Filter.atTop
-        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.2)) :=
       hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_raisedCoordinate_eq_forwardTest_of_periodizedGauge
@@ -41078,33 +41933,33 @@ theorem periodize_ambientRaisingGraphApproximation
 theorem periodize_ambientLoweringGraphApproximation
     {n : ℤ}
     {p : OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n}
-    (v : ℕ → PhysicalLocalL2.AmbientTestCore)
+    (v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     (hBase : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
       Filter.atTop
-      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.1)))
     (hLower : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
         (euclideanLowerFromSuccForwardTest n (v j)))
       Filter.atTop
-      (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
+      (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n,
       (∀ j : ℕ, q j ∈ (physicalLowerFromSucc n).graph) ∧
         Filter.Tendsto q Filter.atTop (nhds p) := by
-  let u : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
+  let u : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1) (v j)
   let q : ℕ → OrbitPeterssonHilbert (n + 1) ×
       OrbitPeterssonHilbert n := fun j ↦
     (l2Coordinate (n + 1) (u j), lowerFromSuccCoordinate n (u j))
   have hEq (j : ℕ) : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) (u j)))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) (u j)))
       (v j : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
     exact gammaTwoPeriodizedPhysicalCore_gauge_eqOn (hv j)
   refine ⟨q, ?_, ?_⟩
   · intro j
@@ -41116,19 +41971,19 @@ theorem periodize_ambientLoweringGraphApproximation
         (physicalLowerFromSucc n).mem_graph
           (l2CoreRangeEquiv (n + 1) (u j))
   · have hBaseEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (l2Coordinate (n + 1) (u j)))
         Filter.atTop
-        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
     have hLowerEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (lowerFromSuccCoordinate n (u j)))
         Filter.atTop
-        (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)) :=
+        (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2)) :=
       hLower.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_lowerFromSuccCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
@@ -41149,18 +42004,18 @@ theorem raisingCompactFriedrichsPeriodizationAt_of_ambientApproximation
     {n : ℤ}
     (hApprox : ∀ p,
       p ∈ RaisingCompactWeakMaximalGraphAt n →
-        ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
+        ∃ v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-            PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
+            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n (v j))
             Filter.atTop
-            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) ∧
+            (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.1)) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
               (euclideanRaiseForwardTest n (v j)))
             Filter.atTop
-            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+            (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
               p.2))) :
     RaisingCompactFriedrichsPeriodizationAt n := by
   intro p hp
@@ -41172,20 +42027,20 @@ theorem loweringCompactFriedrichsPeriodizationAt_of_ambientApproximation
     {n : ℤ}
     (hApprox : ∀ p,
       p ∈ LoweringCompactWeakMaximalGraphAt n →
-        ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
+        ∃ v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-            PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
+            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1)
               (v j))
             Filter.atTop
-            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+            (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
               p.1)) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
               (euclideanLowerFromSuccForwardTest n (v j)))
             Filter.atTop
-            (nhds (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
+            (nhds (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p.2))) :
     LoweringCompactFriedrichsPeriodizationAt n := by
   intro p hp
   obtain ⟨v, hv, hBase, hLower⟩ := hApprox p hp
@@ -41225,7 +42080,7 @@ namespace FixedPhaseReducedChartFriedrichs
 open Set Function Topology Filter MeasureTheory
 open scoped Manifold ContDiff
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
+open GammaTwoQuotientGeometry
 open FixedPhaseEssentialCoreRoute
 
 /-! #### Canonical relatively compact reduced charts -/
@@ -41369,11 +42224,9 @@ theorem exists_smoothPartitionOfUnity_gammaTwoReducedChart
       ambientGammaTwoReducedChart_isOpen hCover
   refine ⟨ρ, hρ, ?_, ?_⟩
   · intro z
-    exact (closure_ambientGammaTwoReducedChart_isCompact z).
-      of_isClosed_subset isClosed_closure
+    exact (closure_ambientGammaTwoReducedChart_isCompact z).of_isClosed_subset isClosed_closure
         ((hρ z).trans subset_closure)
-  · exact ρ.toPartitionOfUnity.locallyFinite_tsupport.
-      finite_nonempty_inter_compact hKambient
+  · exact ρ.toPartitionOfUnity.locallyFinite_tsupport.finite_nonempty_inter_compact hKambient
 
 /-- A subordinate partition member, complexified, is an actual member of the
 same ambient `C_c^infinity` core used by the weak Maass equations. -/
@@ -41382,14 +42235,13 @@ noncomputable def reducedChartPartitionAmbientTest
     (ρ : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ
       (UpperHalfPlane.coe '' K))
     (hρ : ρ.IsSubordinate ambientGammaTwoReducedChart)
-    (z : ℍ) : PhysicalLocalL2.AmbientTestCore where
+    (z : ℍ) : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore where
   toFun := Complex.ofRealCLM ∘ (ρ z : ℂ → ℝ)
   contDiff' := Complex.ofRealCLM.contDiff.comp
     (ρ z).contMDiff.contDiff
   hasCompactSupport' := by
     have hReal : HasCompactSupport (ρ z : ℂ → ℝ) :=
-      (closure_ambientGammaTwoReducedChart_isCompact z).
-        of_isClosed_subset isClosed_closure
+      (closure_ambientGammaTwoReducedChart_isCompact z).of_isClosed_subset isClosed_closure
           ((hρ z).trans subset_closure)
     exact hReal.comp_left rfl
   tsupport_subset' := by
@@ -41465,7 +42317,7 @@ open scoped Convolution
 open FixedPhaseEssentialCoreRoute
 
 /-- Ordinary planar scalar `L2`. -/
-abbrev AmbientPlaneL2 :=
+noncomputable abbrev AmbientPlaneL2 :=
   MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
 
 /-- Strong continuity of domain translation at the identity in planar `L2`.
@@ -41533,14 +42385,14 @@ theorem ambientAffineMaass_translate_commutator
 
 /-- Raising is the affine symbol with `sigma=I` and coefficient `p+2`. -/
 theorem euclideanRaiseForwardTest_eq_ambientAffineMaass
-    (n : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
+    (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
     euclideanRaiseForwardTest n v w =
       ambientAffineMaass Complex.I
-        ((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)
+        ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)
         (v : ℂ → ℂ) w := by
   simp only [euclideanRaiseForwardTest, ambientAffineMaass,
     ambientConstantMaassDerivative,
-    TestFunction.add_apply, TestFunction.smul_apply,
+    add_apply, smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightCompactCoordinateGreen.dx_apply,
@@ -41550,15 +42402,15 @@ theorem euclideanRaiseForwardTest_eq_ambientAffineMaass
 /-- Lowering from the successor is the same affine model with
 `sigma=-I` and coefficient `-(p+1)`. -/
 theorem euclideanLowerFromSuccForwardTest_eq_ambientAffineMaass
-    (n : ℤ) (v : PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
+    (n : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
     euclideanLowerFromSuccForwardTest n v w =
       ambientAffineMaass (-Complex.I)
-        (-((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))
+        (-((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))
         (v : ℂ → ℂ) w := by
   simp only [euclideanLowerFromSuccForwardTest, ambientAffineMaass,
     ambientConstantMaassDerivative,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightCompactCoordinateGreen.dx_apply,
@@ -41569,11 +42421,11 @@ theorem euclideanLowerFromSuccForwardTest_eq_ambientAffineMaass
 theorem ambientRaiseAffine_translate_commutator
     (n : ℤ) (t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
     ambientAffineMaass Complex.I
-          ((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)
+          ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)
           (ambientTranslate t f) w -
         ambientTranslate t
           (ambientAffineMaass Complex.I
-            ((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ) f) w =
+            ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ) f) w =
       (t.im : ℂ) *
         ambientConstantMaassDerivative Complex.I f (w - t) :=
   ambientAffineMaass_translate_commutator _ _ _ _ _
@@ -41582,11 +42434,11 @@ theorem ambientRaiseAffine_translate_commutator
 theorem ambientLowerAffine_translate_commutator
     (n : ℤ) (t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
     ambientAffineMaass (-Complex.I)
-          (-((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))
+          (-((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))
           (ambientTranslate t f) w -
         ambientTranslate t
           (ambientAffineMaass (-Complex.I)
-            (-((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)) f) w =
+            (-((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)) f) w =
       (t.im : ℂ) *
         ambientConstantMaassDerivative (-Complex.I) f (w - t) :=
   ambientAffineMaass_translate_commutator _ _ _ _ _
@@ -41928,10 +42780,10 @@ theorem friedrichsMollifier_support_bound
   exact ((lt_div_iff₀ ha).2 hlt).le
 
 theorem friedrichsRadius_tendsto_zero :
-    Filter.Tendsto friedrichsRadius Filter.atTop (𝒩 0) := by
+    Filter.Tendsto friedrichsRadius Filter.atTop (𝓝 0) := by
   have hbase : Filter.Tendsto
       (fun j : ℕ ↦ (1 : ℝ) / ((j : ℝ) + 1))
-      Filter.atTop (𝒩 0) :=
+      Filter.atTop (𝓝 0) :=
     tendsto_one_div_add_atTop_nhds_zero_nat
   have hmul := (tendsto_const_nhds (x := (2 : ℝ))).mul hbase
   simpa only [friedrichsRadius, friedrichsScale,
@@ -42073,7 +42925,7 @@ theorem friedrichsUnitAffineCommutatorTest_apply
       FixedPhaseAffineFriedrichs.ambientConstantMaassDerivative sigma
         (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) t := by
   simp only [friedrichsUnitAffineCommutatorTest,
-    TestFunction.add_apply, TestFunction.smul_apply,
+    add_apply, smul_apply,
     fullPlaneDirectionalDerivative_apply,
     friedrichsUnitHeightMollifierTest_apply, smul_eq_mul,
     FixedPhaseAffineFriedrichs.ambientConstantMaassDerivative]
@@ -42123,7 +42975,7 @@ theorem tsupport_friedrichsUnitAffineCommutatorTest_subset
         closedBall (0 : ℂ) 2 :=
     (tsupport_mul_subset_right.trans hOne)
   simpa only [friedrichsUnitAffineCommutatorTest,
-    TestFunction.add_apply, TestFunction.smul_apply, smul_eq_mul] using
+    add_apply, smul_apply, smul_eq_mul] using
       (tsupport_add _ _).trans (union_subset hSmul hI)
 
 /-- Stage-`j` commutator kernel.  Its `scale^2` normalization is forced by
@@ -42326,10 +43178,9 @@ theorem friedrichsMollifierError_tendsto_zero
     Filter.Tendsto
       (fun j : ℕ ↦ ∫ t : ℂ, friedrichsMollifier j t •
         (DomAddAct.mk (-t) +ᵥ f - f))
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
   apply
-    FixedPhaseAffineFriedrichs.
-      integral_shrinkingKernel_smul_translation_sub_tendsto_zero
+    FixedPhaseAffineFriedrichs.integral_shrinkingKernel_smul_translation_sub_tendsto_zero
         f friedrichsMollifier friedrichsRadius 1 zero_le_one
   · intro j
     exact (friedrichsMollifier_integrable j).norm
@@ -42341,7 +43192,7 @@ theorem friedrichsMollifierError_tendsto_zero
 theorem friedrichsMollifierAction_tendsto
     (f : AmbientPlaneL2) :
     Filter.Tendsto (fun j : ℕ ↦ friedrichsMollifierAction j f)
-      Filter.atTop (𝒩 f) := by
+      Filter.atTop (𝓝 f) := by
   have h := (tendsto_const_nhds (x := f)).add
     (friedrichsMollifierError_tendsto_zero f)
   simpa only [add_zero] using h.congr'
@@ -42354,8 +43205,7 @@ theorem friedrichsAffineCommutatorAction_eq_error
       ∫ t : ℂ, friedrichsAffineCommutatorKernel sigma j t •
         (DomAddAct.mk (-t) +ᵥ f - f) := by
   apply
-    FixedPhaseAffineFriedrichs.
-      integral_kernel_vadd_eq_integral_kernel_vadd_sub_of_mean_zero
+    FixedPhaseAffineFriedrichs.integral_kernel_vadd_eq_integral_kernel_vadd_sub_of_mean_zero
         (friedrichsAffineCommutatorKernel sigma j) f
   · exact friedrichsAffineCommutatorKernel_integrable sigma j
   · exact integral_friedrichsAffineCommutatorKernel_eq_zero sigma j
@@ -42370,10 +43220,9 @@ theorem friedrichsAffineCommutatorError_tendsto_zero
       (fun j : ℕ ↦ ∫ t : ℂ,
         friedrichsAffineCommutatorKernel sigma j t •
           (DomAddAct.mk (-t) +ᵥ f - f))
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
   apply
-    FixedPhaseAffineFriedrichs.
-      integral_shrinkingKernel_smul_translation_sub_tendsto_zero
+    FixedPhaseAffineFriedrichs.integral_shrinkingKernel_smul_translation_sub_tendsto_zero
         f (friedrichsAffineCommutatorKernel sigma)
           friedrichsRadius
           (friedrichsAffineCommutatorL1 sigma)
@@ -42388,7 +43237,7 @@ theorem friedrichsAffineCommutatorAction_tendsto_zero
     (sigma : ℂ) (f : AmbientPlaneL2) :
     Filter.Tendsto
       (fun j : ℕ ↦ friedrichsAffineCommutatorAction sigma j f)
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
   exact (friedrichsAffineCommutatorError_tendsto_zero sigma f).congr'
     (Filter.Eventually.of_forall fun j ↦
       (friedrichsAffineCommutatorAction_eq_error sigma j f).symm)
@@ -42404,7 +43253,7 @@ theorem friedrichsAffineForwardCoordinate_tendsto
     (sigma : ℂ) (u Pu : AmbientPlaneL2) :
     Filter.Tendsto
       (fun j : ℕ ↦ friedrichsAffineForwardCoordinate sigma j u Pu)
-      Filter.atTop (𝒩 Pu) := by
+      Filter.atTop (𝓝 Pu) := by
   simpa only [friedrichsAffineForwardCoordinate, add_zero] using
     (friedrichsMollifierAction_tendsto Pu).add
       (friedrichsAffineCommutatorAction_tendsto_zero sigma u)
@@ -42419,10 +43268,9 @@ theorem friedrichsJointAffineCoordinates_tendsto
         (friedrichsMollifierAction j u,
           friedrichsAffineForwardCoordinate Complex.I j u Ru,
           friedrichsAffineForwardCoordinate (-Complex.I) j u Lu))
-      Filter.atTop (𝒩 (u, Ru, Lu)) := by
+      Filter.atTop (𝓝 (u, Ru, Lu)) := by
   exact (friedrichsMollifierAction_tendsto u).prodMk_nhds <|
-    (friedrichsAffineForwardCoordinate_tendsto Complex.I u Ru).
-      prodMk_nhds
+    (friedrichsAffineForwardCoordinate_tendsto Complex.I u Ru).prodMk_nhds
         (friedrichsAffineForwardCoordinate_tendsto (-Complex.I) u Lu)
 
 end
@@ -42462,31 +43310,31 @@ periodizes to a literal sequence in the genuine joint physical graph. -/
 theorem periodize_ambientJointGraphApproximation
     {n : ℤ}
     {p : OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n}
-    (v : ℕ → PhysicalLocalL2.AmbientTestCore)
+    (v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier)
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier)
     (hBase : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 (n + 1) (v j))
       Filter.atTop
-      (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+      (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
         p.1)))
     (hRaise : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 ((n + 1) + 1)
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 ((n + 1) + 1)
         (euclideanRaiseForwardTest (n + 1) (v j)))
       Filter.atTop
-      (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
+      (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
         ((n + 1) + 1) p.2.fst)))
     (hLower : Filter.Tendsto
-      (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
         (euclideanLowerFromSuccForwardTest n (v j)))
       Filter.atTop
-      (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+      (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         p.2.snd))) :
     ∃ q : ℕ →
         OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n,
       (∀ j : ℕ, q j ∈ (physicalJointFromSucc n).graph) ∧
-        Filter.Tendsto q Filter.atTop (𝒩 p) := by
-  let u : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
+        Filter.Tendsto q Filter.atTop (𝓝 p) := by
+  let u : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1) (v j)
   let q : ℕ → OrbitPeterssonHilbert (n + 1) ×
       PhysicalJointTarget n := fun j ↦
@@ -42496,9 +43344,9 @@ theorem periodize_ambientJointGraphApproximation
           lowerFromSuccCoordinate n (u j)))
   have hEq (j : ℕ) : Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) (u j)))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1) (u j)))
       (v j : ℂ → ℂ)
-      PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier := by
     exact gammaTwoPeriodizedPhysicalCore_gauge_eqOn (hv j)
   refine ⟨q, ?_, ?_⟩
   · intro j
@@ -42513,48 +43361,48 @@ theorem periodize_ambientJointGraphApproximation
         (physicalJointFromSucc n).mem_graph
           (l2CoreRangeEquiv (n + 1) (u j))
   · have hBaseEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           (l2Coordinate (n + 1) (u j)))
         Filter.atTop
-        (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
+        (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding (n + 1)
           p.1)) :=
       hBase.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_l2Coordinate_eq_ambientTest_of_periodizedGauge
           (hEq j)).symm
     have hRaiseEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
           ((n + 1) + 1) (raisedCoordinate (n + 1) (u j)))
         Filter.atTop
-        (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
+        (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
           ((n + 1) + 1) p.2.fst)) :=
       hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_raisedCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
     have hLowerEmbedded : Filter.Tendsto
-        (fun j ↦ PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           (lowerFromSuccCoordinate n (u j)))
         Filter.atTop
-        (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+        (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
           p.2.snd)) :=
       hLower.congr' <| Filter.Eventually.of_forall fun j ↦
         (embedded_lowerFromSuccCoordinate_eq_forwardTest_of_periodizedGauge
           (hEq j)).symm
     have hBasePhysical : Filter.Tendsto
-        (fun j ↦ l2Coordinate (n + 1) (u j)) Filter.atTop (𝒩 p.1) :=
+        (fun j ↦ l2Coordinate (n + 1) (u j)) Filter.atTop (𝓝 p.1) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hBaseEmbedded
     have hRaisePhysical : Filter.Tendsto
         (fun j ↦ raisedCoordinate (n + 1) (u j))
-        Filter.atTop (𝒩 p.2.fst) :=
+        Filter.atTop (𝓝 p.2.fst) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hRaiseEmbedded
     have hLowerPhysical : Filter.Tendsto
         (fun j ↦ lowerFromSuccCoordinate n (u j))
-        Filter.atTop (𝒩 p.2.snd) :=
+        Filter.atTop (𝓝 p.2.snd) :=
       tendsto_of_orbitPeterssonEuclideanEmbedding_tendsto hLowerEmbedded
     have hTarget : Filter.Tendsto
         (fun j ↦ WithLp.toLp 2
           (raisedCoordinate (n + 1) (u j),
             lowerFromSuccCoordinate n (u j)))
-        Filter.atTop (𝒩 p.2) := by
+        Filter.atTop (𝓝 p.2) := by
       have hPair := hRaisePhysical.prodMk_nhds hLowerPhysical
       exact (WithLp.prod_continuous_toLp (p := 2)).continuousAt.tendsto.comp
         hPair
@@ -42569,27 +43417,27 @@ theorem hasSequentialJointGraphRegularization_of_ambientApproximation
     {K : Set (OrbitPeterssonHilbert (n + 1) × PhysicalJointTarget n)}
     (hApprox : ∀ p,
       p ∈ K →
-        ∃ v : ℕ → PhysicalLocalL2.AmbientTestCore,
+        ∃ v : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore,
           (∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
-            PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
+            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientGammaTwoOpenCarrier) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2
               (n + 1) (v j))
             Filter.atTop
-            (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
+            (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
               (n + 1) p.1)) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2
               ((n + 1) + 1)
               (euclideanRaiseForwardTest (n + 1) (v j)))
             Filter.atTop
-            (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
+            (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding
               ((n + 1) + 1) p.2.fst)) ∧
           Filter.Tendsto
-            (fun j ↦ PhysicalLocalL2.ambientTestCoreToCarrierL2 n
+            (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ambientTestCoreToCarrierL2 n
               (euclideanLowerFromSuccForwardTest n (v j)))
             Filter.atTop
-            (𝒩 (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+            (𝓝 (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
               p.2.snd))) :
     HasSequentialGraphRegularization (physicalJointFromSucc n) K := by
   intro p hp
@@ -42649,8 +43497,7 @@ noncomputable def friedrichsMollifiedRepresentative
 theorem friedrichsMollifiedRepresentative_contDiff
     (j : ℕ) (f : AmbientPlaneL2) :
     ContDiff ℝ ∞ (friedrichsMollifiedRepresentative j f) := by
-  exact (friedrichsMollifierReal_hasCompactSupport j).
-    contDiff_convolution_left (lsmul ℝ ℂ)
+  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left (lsmul ℝ ℂ)
       (friedrichsMollifierReal_contDiff j)
       ((MeasureTheory.Lp.memLp f).locallyIntegrable (by norm_num))
 
@@ -42803,8 +43650,8 @@ theorem fullPlaneAffineTranspose_apply
         (t.im : ℂ) *
           fderiv ℝ (v : ℂ → ℂ) t Complex.I +
         (c - 1) * v t := by
-  simp only [fullPlaneAffineTranspose, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply,
+  simp only [fullPlaneAffineTranspose, add_apply,
+    sub_apply, smul_apply,
     fullPlaneHeightMul_apply, fullPlaneDirectionalDerivative_apply,
     smul_eq_mul]
   ring
@@ -42823,8 +43670,7 @@ theorem fullPlaneTest_mul_l2_integrable
     (v : FullPlaneTest) (u : AmbientPlaneL2) :
     Integrable (fun t : ℂ ↦ v t * u t) (volume : Measure ℂ) := by
   simpa only [smul_eq_mul] using
-    ((MeasureTheory.Lp.memLp u).locallyIntegrable (by norm_num)).
-      integrable_smul_left_of_hasCompactSupport
+    ((MeasureTheory.Lp.memLp u).locallyIntegrable (by norm_num)).integrable_smul_left_of_hasCompactSupport
         v.continuous v.hasCompactSupport
 
 /-- The reflected translate `x |-> rho_j(w-x)` as a genuine full-plane
@@ -42999,8 +43845,7 @@ open DefinitionOneSobolev
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open ExplicitDiscriminantPotential
-open ExplicitDiscriminantPotential.CorePotentialForm
-open ExplicitDiscriminantPotential.CorePotentialForm.FixedPhaseGraphPotential
+open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 
 /-- The actual energy/form domain at one fixed-phase orbit index. -/
 abbrev ActualHOne (n : ℤ) := GraphSobolevCompletion n
@@ -43044,14 +43889,14 @@ three-coordinate graph energy minus the integral of `t VDelta u conj(v)`.
 This is the concrete weak PDE formula used by the manuscript. -/
 theorem weakSchrodingerOperator_apply_core
     (n : ℤ) (t : ℝ)
-    (u v : InverseEtaFixedPhaseCore n) :
+    (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     weakSchrodingerOperator n t (coreMap n u) (coreMap n v) =
       (coordinates n).energyForm v u -
         (t : ℂ) *
           potentialForm (OrbitMultiplier n)
             GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain
-            (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-            (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) := by
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) := by
   have hEnergy :=
     (coordinates n).completionEnergyOperator_sectionCoreMap u v
   change inner ℂ (coreMap n v) (coreMap n u) =
@@ -43126,7 +43971,7 @@ theorem weakSchrodinger_solvable_iff_adjointKernel_orthogonal
     .solvable_iff_mem_orthogonal_adjointKernel f
 
 /-- The compatible forcing subtype for the actual PDE. -/
-abbrev CompatibleForcing
+noncomputable abbrev CompatibleForcing
     (n : ℤ) (t : ℝ) := (weakSchrodingerOperator n t).range
 
 /-- Canonical kernel-orthogonal weak solution. -/
@@ -43321,7 +44166,7 @@ complex-linear continuous functional of `(u,r,l)`.  Its vanishing is the
 conjugate of
 `⟪r,v⟫ = -⟪u,L v⟫`. -/
 noncomputable def raisingDefect (n : ℤ)
-    (v : InverseEtaFixedPhaseCore ((n + 1) + 1)) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1)) :
     WeakCoordinateAmbient n →L[ℂ] ℂ :=
   ((innerSL ℂ (l2Coordinate ((n + 1) + 1) v)).comp
       (raiseProjection n)) +
@@ -43332,14 +44177,14 @@ noncomputable def raisingDefect (n : ℤ)
 vanishing is the conjugate of
 `⟪l,v⟫ = -⟪u,R v⟫`. -/
 noncomputable def loweringDefect (n : ℤ)
-    (v : InverseEtaFixedPhaseCore n) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     WeakCoordinateAmbient n →L[ℂ] ℂ :=
   ((innerSL ℂ (l2Coordinate n v)).comp (lowerProjection n)) +
     ((innerSL ℂ (raisedCoordinate n v)).comp (baseProjection n))
 
 @[simp]
 theorem raisingDefect_apply (n : ℤ)
-    (v : InverseEtaFixedPhaseCore ((n + 1) + 1))
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1))
     (x : WeakCoordinateAmbient n) :
     raisingDefect n v x =
       inner ℂ (l2Coordinate ((n + 1) + 1) v)
@@ -43351,7 +44196,7 @@ theorem raisingDefect_apply (n : ℤ)
 
 @[simp]
 theorem loweringDefect_apply (n : ℤ)
-    (v : InverseEtaFixedPhaseCore n) (x : WeakCoordinateAmbient n) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (x : WeakCoordinateAmbient n) :
     loweringDefect n v x =
       inner ℂ (l2Coordinate n v) (lowerProjection n x) +
         inner ℂ (raisedCoordinate n v) (baseProjection n x) := by
@@ -43361,13 +44206,13 @@ theorem loweringDefect_apply (n : ℤ)
 /-- Common kernel of all distributional raising tests. -/
 noncomputable def weakRaisingSubmodule (n : ℤ) :
     Submodule ℂ (WeakCoordinateAmbient n) :=
-  ⨅ v : InverseEtaFixedPhaseCore ((n + 1) + 1),
+  ⨅ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1),
     (raisingDefect n v).ker
 
 /-- Common kernel of all distributional lowering tests. -/
 noncomputable def weakLoweringSubmodule (n : ℤ) :
     Submodule ℂ (WeakCoordinateAmbient n) :=
-  ⨅ v : InverseEtaFixedPhaseCore n, (loweringDefect n v).ker
+  ⨅ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n, (loweringDefect n v).ker
 
 /-- The independent weighted weak Sobolev submodule.  It is defined by weak
 identities, not as a completion, graph range, or image. -/
@@ -43378,7 +44223,7 @@ noncomputable def weightedWeakSubmodule (n : ℤ) :
 theorem mem_weakRaisingSubmodule_iff (n : ℤ)
     (x : WeakCoordinateAmbient n) :
     x ∈ weakRaisingSubmodule n ↔
-      ∀ v : InverseEtaFixedPhaseCore ((n + 1) + 1),
+      ∀ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1),
         raisingDefect n v x = 0 := by
   simp only [weakRaisingSubmodule, Submodule.mem_iInf,
     LinearMap.mem_ker, ContinuousLinearMap.coe_coe]
@@ -43386,16 +44231,16 @@ theorem mem_weakRaisingSubmodule_iff (n : ℤ)
 theorem mem_weakLoweringSubmodule_iff (n : ℤ)
     (x : WeakCoordinateAmbient n) :
     x ∈ weakLoweringSubmodule n ↔
-      ∀ v : InverseEtaFixedPhaseCore n, loweringDefect n v x = 0 := by
+      ∀ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n, loweringDefect n v x = 0 := by
   simp only [weakLoweringSubmodule, Submodule.mem_iInf,
     LinearMap.mem_ker, ContinuousLinearMap.coe_coe]
 
 theorem mem_weightedWeakSubmodule_iff (n : ℤ)
     (x : WeakCoordinateAmbient n) :
     x ∈ weightedWeakSubmodule n ↔
-      (∀ v : InverseEtaFixedPhaseCore ((n + 1) + 1),
+      (∀ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1),
         raisingDefect n v x = 0) ∧
-      (∀ v : InverseEtaFixedPhaseCore n,
+      (∀ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
         loweringDefect n v x = 0) := by
   rw [weightedWeakSubmodule, Submodule.mem_inf,
     mem_weakRaisingSubmodule_iff,
@@ -43456,7 +44301,7 @@ theorem mem_weakRaisingSubmodule_iff_maximalAdjointGraph (n : ℤ)
       (negativePhysicalLowerFromSucc_dense_domain (n + 1))]
   constructor
   · intro hWeak y
-    let v : InverseEtaFixedPhaseCore ((n + 1) + 1) :=
+    let v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1) :=
       (l2CoreRangeEquiv ((n + 1) + 1)).symm y
     have hv := hWeak v
     rw [raisingDefect_apply] at hv
@@ -43488,7 +44333,7 @@ theorem mem_weakLoweringSubmodule_iff_maximalAdjointGraph (n : ℤ)
       (-physicalRaise n) (negativePhysicalRaise_dense_domain n)]
   constructor
   · intro hWeak y
-    let v : InverseEtaFixedPhaseCore n :=
+    let v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
       (l2CoreRangeEquiv n).symm y
     have hv := hWeak v
     rw [loweringDefect_apply] at hv
@@ -43561,7 +44406,7 @@ theorem weightedWeakSubmodule_isClosed (n : ℤ) :
     (weakLoweringSubmodule_isClosed n)
 
 /-- The actual independent weighted weak Sobolev space. -/
-abbrev WeightedWeakSobolev (n : ℤ) := weightedWeakSubmodule n
+noncomputable abbrev WeightedWeakSobolev (n : ℤ) := weightedWeakSubmodule n
 
 local instance weightedWeakSubmodule_closedInstance (n : ℤ) :
     IsClosed (weightedWeakSubmodule n : Set (WeakCoordinateAmbient n)) :=
@@ -43660,7 +44505,7 @@ theorem norm_eq_zero_iff_coordinates (n : ℤ)
 where the unconditional quotient Green theorem is used; closedness and
 completeness above did not use it. -/
 theorem successorSmoothGraph_mem_weightedWeakSubmodule (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (FixedPhaseClosedOperators.successorGraphCoordinates n).graph u ∈
       weightedWeakSubmodule n := by
   rw [mem_weightedWeakSubmodule_iff]
@@ -43672,8 +44517,7 @@ theorem successorSmoothGraph_mem_weightedWeakSubmodule (n : ℤ)
       DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_fst,
       FixedPhaseClosedOperators.successorGraphCoordinates]
     have h :=
-      FixedPhaseClosedOperators.
-        physicalLoweringGreenIdentityOnCore_unconditional
+      FixedPhaseClosedOperators.physicalLoweringGreenIdentityOnCore_unconditional
           (n := n + 1) v u
     linear_combination h
   · intro v
@@ -43682,18 +44526,16 @@ theorem successorSmoothGraph_mem_weightedWeakSubmodule (n : ℤ)
       DefinitionOneSobolev.QuotientHilbertCoordinates.graph_fst,
       DefinitionOneSobolev.QuotientHilbertCoordinates.graph_snd_snd,
       FixedPhaseClosedOperators.successorGraphCoordinates,
-      FixedPhaseClosedOperators.
-        reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate]
+      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate]
     have h :=
-      FixedPhaseClosedOperators.
-        physicalRaisingGreenIdentityOnCore_unconditional
+      FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore_unconditional
           (n := n) v u
     linear_combination h
 
 /-- Canonical linear map from the actual smooth fixed-phase core into the
 independent weak Sobolev space. -/
 noncomputable def smoothCoreMap (n : ℤ) :
-    InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) →ₗ[ℂ]
       WeightedWeakSobolev n :=
   (FixedPhaseClosedOperators.successorGraphCoordinates n).graph.codRestrict
     (weightedWeakSubmodule n)
@@ -43709,14 +44551,14 @@ def JointGraphCoreDensityAt (n : ℤ) : Prop :=
 
 @[simp]
 theorem coe_smoothCoreMap (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (smoothCoreMap n u : WeakCoordinateAmbient n) =
       (FixedPhaseClosedOperators.successorGraphCoordinates n).graph u :=
   rfl
 
 /-- Exact graph norm on the canonical smooth weak vector. -/
 theorem norm_smoothCoreMap_sq (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ‖smoothCoreMap n u‖ ^ 2 =
       ‖l2Coordinate (n + 1) u‖ ^ 2 +
         ‖raisedCoordinate (n + 1) u‖ ^ 2 +
@@ -43724,8 +44566,7 @@ theorem norm_smoothCoreMap_sq (n : ℤ)
   change
     ‖(FixedPhaseClosedOperators.successorGraphCoordinates n).graph u‖ ^ 2 = _
   simpa only [FixedPhaseClosedOperators.successorGraphCoordinates,
-    FixedPhaseClosedOperators.
-      reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate] using
+    FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate] using
     (FixedPhaseClosedOperators.successorGraphCoordinates n).graph_norm_sq u
 
 /-- The successor presentation of the already constructed minimal graph
@@ -43753,35 +44594,28 @@ independently defined maximal weak space. -/
 noncomputable def graphCompletionToWeightedWeak (n : ℤ) :
     SuccessorGraphCompletion n →ₗᵢ[ℂ] WeightedWeakSobolev n where
   toLinearMap :=
-    (FixedPhaseClosedOperators.successorGraphCoordinates n).graphExtension.
-      toLinearMap.codRestrict
+    (FixedPhaseClosedOperators.successorGraphCoordinates n).graphExtension.toLinearMap.codRestrict
         (weightedWeakSubmodule n)
         (graphExtension_mem_weightedWeakSubmodule n)
   norm_map' x :=
-    (FixedPhaseClosedOperators.successorGraphCoordinates n).
-      graphExtension_norm x
+    (FixedPhaseClosedOperators.successorGraphCoordinates n).graphExtension_norm x
 
 /-- The comparison agrees exactly with the two canonical smooth-core maps. -/
 @[simp]
 theorem graphCompletionToWeightedWeak_sectionCoreMap (n : ℤ)
-    (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     graphCompletionToWeightedWeak n
-        ((FixedPhaseClosedOperators.successorGraphCoordinates n).
-          sectionCoreMap u) =
+        ((FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u) =
       smoothCoreMap n u := by
   apply Subtype.ext
   change
     (FixedPhaseClosedOperators.successorGraphCoordinates n).graphExtension
-        ((FixedPhaseClosedOperators.successorGraphCoordinates n).
-          sectionCoreMap u) =
+        ((FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u) =
       (FixedPhaseClosedOperators.successorGraphCoordinates n).graph u
   rw [show
-      (FixedPhaseClosedOperators.successorGraphCoordinates n).
-          sectionCoreMap u =
-        ((FixedPhaseClosedOperators.successorGraphCoordinates n).
-          toGraphRange u : SuccessorGraphCompletion n) from rfl,
-    (FixedPhaseClosedOperators.successorGraphCoordinates n).
-      graphExtension_coe]
+      (FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u =
+        ((FixedPhaseClosedOperators.successorGraphCoordinates n).toGraphRange u : SuccessorGraphCompletion n) from rfl,
+    (FixedPhaseClosedOperators.successorGraphCoordinates n).graphExtension_coe]
   rfl
 
 /-- The comparison range is closed.  Therefore no weak vector can be
@@ -43799,21 +44633,18 @@ theorem denseRange_smoothCoreMap_iff_surjective_comparison (n : ℤ) :
       Function.Surjective (graphCompletionToWeightedWeak n) := by
   constructor
   · intro hCore
-    apply (DefinitionOneSobolev.
-      denseRange_iff_surjective_linearIsometry_of_complete
+    apply (DefinitionOneSobolev.denseRange_iff_surjective_linearIsometry_of_complete
         (graphCompletionToWeightedWeak n)).mp
     apply Dense.mono _ hCore
     rintro _ ⟨u, rfl⟩
     exact ⟨
-      (FixedPhaseClosedOperators.successorGraphCoordinates n).
-        sectionCoreMap u,
+      (FixedPhaseClosedOperators.successorGraphCoordinates n).sectionCoreMap u,
       (graphCompletionToWeightedWeak_sectionCoreMap n u).symm⟩
   · intro hSurj
     have hOuter : DenseRange (graphCompletionToWeightedWeak n) :=
       hSurj.denseRange
     have hComp := hOuter.comp
-      (FixedPhaseClosedOperators.successorGraphCoordinates n).
-        denseRange_sectionCoreMap
+      (FixedPhaseClosedOperators.successorGraphCoordinates n).denseRange_sectionCoreMap
       (graphCompletionToWeightedWeak n).continuous
     simpa only [Function.comp_apply,
       graphCompletionToWeightedWeak_sectionCoreMap] using hComp
@@ -44144,8 +44975,7 @@ theorem finiteHilbertProjection_isCompact
   | @insert i s hi ih =>
       rw [finiteHilbertProjection, Finset.sum_insert hi]
       exact
-        (Mock2FA.PaperCorrections.AutomorphicSobolev.
-          CompactSeparableKernelPotential.hilbertRankOne_isCompact (b i)).add ih
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.hilbertRankOne_isCompact (b i)).add ih
 
 /-- Finite-mode localization of a bounded map into a Hilbert space. -/
 noncomputable def finiteModeLocalization
@@ -44211,7 +45041,7 @@ rectangle periodically. -/
 abbrev TwoTorus := UnitAddTorus (Fin 2)
 
 /-- Its concrete complex `L²` Hilbert space. -/
-abbrev TwoTorusL2 :=
+noncomputable abbrev TwoTorusL2 :=
   MeasureTheory.Lp ℂ 2 (volume : Measure TwoTorus)
 
 /-- The genuine Fourier Hilbert basis supplied by Mathlib's multi-circle
@@ -44362,7 +45192,7 @@ theorem fullPlaneBilinearPair_add
     fullPlaneBilinearPair (v + q) u =
       fullPlaneBilinearPair v u + fullPlaneBilinearPair q u := by
   unfold fullPlaneBilinearPair
-  simpa only [TestFunction.add_apply, add_mul] using
+  simpa only [add_apply, add_mul] using
     integral_add (fullPlaneTest_mul_l2_integrable v u)
       (fullPlaneTest_mul_l2_integrable q u)
 
@@ -44371,7 +45201,7 @@ theorem fullPlaneBilinearPair_sub
     fullPlaneBilinearPair (v - q) u =
       fullPlaneBilinearPair v u - fullPlaneBilinearPair q u := by
   unfold fullPlaneBilinearPair
-  simpa only [TestFunction.sub_apply, sub_mul] using
+  simpa only [sub_apply, sub_mul] using
     integral_sub (fullPlaneTest_mul_l2_integrable v u)
       (fullPlaneTest_mul_l2_integrable q u)
 
@@ -44399,15 +45229,13 @@ theorem fderiv_friedrichsMollifiedRepresentative_apply
   have hRhoOne : ContDiff ℝ 1 (friedrichsMollifierReal j) :=
     (friedrichsMollifierReal_contDiff j).of_le (by simp)
   have hDerivative :=
-    (friedrichsMollifierReal_hasCompactSupport j).
-      hasFDerivAt_convolution_left
+    (friedrichsMollifierReal_hasCompactSupport j).hasFDerivAt_convolution_left
         (lsmul ℝ ℂ) hRhoOne hLocal w
   rw [hDerivative.fderiv]
   have hDerivativeConvolution : ConvolutionExists
       (fderiv ℝ (friedrichsMollifierReal j)) (u : ℂ → ℂ)
       ((lsmul ℝ ℂ).precompL ℂ) (volume : Measure ℂ) :=
-    ((friedrichsMollifierReal_hasCompactSupport j).fderiv ℝ).
-      convolutionExists_left
+    ((friedrichsMollifierReal_hasCompactSupport j).fderiv ℝ).convolutionExists_left
         ((lsmul ℝ ℂ).precompL ℂ)
         hRhoOne.continuous_fderiv (by norm_num) hLocal
   rw [convolution_eq_swap,
@@ -44471,7 +45299,7 @@ theorem friedrichsAffineForwardTranslateTest_apply
           fderiv ℝ (friedrichsMollifier j) (w - x) Complex.I +
         c * friedrichsMollifier j (w - x) := by
   simp only [friedrichsAffineForwardTranslateTest,
-    TestFunction.add_apply, TestFunction.smul_apply,
+    add_apply, smul_apply,
     fullPlaneDirectionalDerivative_apply,
     friedrichsTranslatedMollifierTest_apply, smul_eq_mul]
   rw [fderiv_friedrichsTranslatedMollifierTest,
@@ -44510,7 +45338,7 @@ theorem friedrichsAffineCommutatorTranslateTest_apply
     friedrichsAffineCommutatorTranslateTest sigma c j w x =
       friedrichsAffineCommutatorKernel sigma j (w - x) := by
   rw [friedrichsAffineCommutatorTranslateTest,
-    TestFunction.sub_apply,
+    sub_apply,
     friedrichsAffineForwardTranslateTest_apply,
     fullPlaneAffineTranspose_apply,
     fderiv_friedrichsTranslatedMollifierTest,
@@ -44585,10 +45413,10 @@ coefficient at source orbit `n`; no weight-independent replacement is used. -/
 theorem IsPlanarAffineWeakGraph.friedrichs_raising_identity
     {n : ℤ} {u Ru : AmbientPlaneL2}
     (hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)) u Ru)
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)) u Ru)
     (j : ℕ) (w : ℂ) :
     ambientAffineMaass Complex.I
-        (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+        (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
         (friedrichsMollifiedRepresentative j u) w =
       friedrichsMollifiedRepresentative j Ru w +
         ∫ x : ℂ,
@@ -44599,10 +45427,10 @@ theorem IsPlanarAffineWeakGraph.friedrichs_raising_identity
 theorem IsPlanarAffineWeakGraph.friedrichs_loweringFromSucc_identity
     {n : ℤ} {u Lu : AmbientPlaneL2}
     (hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))) u Lu)
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))) u Lu)
     (j : ℕ) (w : ℂ) :
     ambientAffineMaass (-Complex.I)
-        (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+        (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
         (friedrichsMollifiedRepresentative j u) w =
       friedrichsMollifiedRepresentative j Lu w +
         ∫ x : ℂ,
@@ -44650,7 +45478,7 @@ open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 open GammaTwoQuotientGeometry
 
 /-- Explicit positive error used for the potential tail. -/
-def discriminantCuspEpsilon (N : ℕ) : ℝ :=
+noncomputable def discriminantCuspEpsilon (N : ℕ) : ℝ :=
   1 / ((N : ℝ) + 1)
 
 theorem discriminantCuspEpsilon_pos (N : ℕ) :
@@ -45138,7 +45966,7 @@ theorem associatedFormOperator_isFormalAdjoint
   obtain ⟨uy, huy, hBy⟩ := hyGraph
   calc
     inner ℂ (associatedFormOperator J B hJinj hJdense x) (y : H) =
-        Complex.conj
+        star
           (inner ℂ (y : H)
             (associatedFormOperator J B hJinj hJdense x)) :=
       inner_conj_symm _ _
@@ -45254,8 +46082,7 @@ open DefinitionOneSobolev
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 open ExplicitDiscriminantPotential
-open ExplicitDiscriminantPotential.CorePotentialForm
-open ExplicitDiscriminantPotential.CorePotentialForm.FixedPhaseGraphPotential
+open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 open ActualScalarDiscriminantPDE
 
 /-- The completed base coordinate is injective because the actual physical
@@ -45286,14 +46113,14 @@ theorem graphPotentialOperator_conj_symm
       graphPotentialOperator n u v := by
   refine (denseRange_coreMap n).induction_on u
     (isClosed_eq
-      (continuous_conj.comp
+      (Complex.continuous_conj.comp
         (graphPotentialOperator n v).continuous)
       ((ContinuousLinearMap.apply' ℂ (starRingEnd ℂ) v).continuous.comp
         (graphPotentialOperator n).continuous)) ?_
   intro u₀
   refine (denseRange_coreMap n).induction_on v
     (isClosed_eq
-      (continuous_conj.comp
+      (Complex.continuous_conj.comp
         ((ContinuousLinearMap.apply' ℂ (starRingEnd ℂ)
           (coreMap n u₀)).continuous.comp
             (graphPotentialOperator n).continuous))
@@ -45304,8 +46131,8 @@ theorem graphPotentialOperator_conj_symm
   exact potentialForm_conj_symm
     (M := OrbitMultiplier n)
     GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain
-    (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v₀)
-    (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u₀)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v₀)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u₀)
 
 /-- The actual weak Schrodinger form is Hermitian for every real coupling. -/
 theorem weakSchrodingerOperator_isHermitian
@@ -45515,12 +46342,12 @@ open PhysicalLocalL2
 /-- Euclidean carrier measure restricted to the literal three-cusp stage.
 The repeated restriction is intentional: it makes the carrier and the
 height truncation visible in the type. -/
-abbrev literalStageMeasure (Y : ℝ) : Measure ℍ :=
+noncomputable abbrev literalStageMeasure (Y : ℝ) : Measure ℍ :=
   chosenEuclideanCarrierMeasure.restrict
     (gammaTwoThreeCuspTruncation Y)
 
 /-- Actual scalar `L2` space on one literal cusp-height stage. -/
-abbrev LiteralStageL2 (Y : ℝ) :=
+noncomputable abbrev LiteralStageL2 (Y : ℝ) :=
   MeasureTheory.Lp ℂ 2 (literalStageMeasure Y)
 
 /-- Restriction of the concrete Petersson representative to a literal stage. -/
@@ -45562,7 +46389,7 @@ theorem coeFn_graphLiteralStageRestriction (Y : ℝ) (n : ℤ)
 physical Euclidean gauge, with no selected representative for a completion
 vector. -/
 theorem coeFn_graphLiteralStageRestriction_core
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ⇑(graphLiteralStageRestriction Y n (coreMap n u)) =ᵐ[
         literalStageMeasure Y]
       fixedPhaseEuclideanGauge n u := by
@@ -45687,7 +46514,7 @@ theorem twoTorus_isCompactOperator_of_quantitativeTail
     (hasVanishingFiniteModeTail_of_quantitative modes T delta h hdelta)
 
 /-- The canonical `C/(N+1)` error scale. -/
-def reciprocalFourierTail (C : ℝ) (N : ℕ) : ℝ :=
+noncomputable def reciprocalFourierTail (C : ℝ) (N : ℕ) : ℝ :=
   C / ((N : ℝ) + 1)
 
 theorem reciprocalFourierTail_nonneg {C : ℝ} (hC : 0 ≤ C) (N : ℕ) :
@@ -45778,7 +46605,7 @@ theorem gammaTwoLocalCuspCoordinate_transition
     mul_smul]
 
 /-- The correct local parameter at a `Gamma(2)` cusp uses its width `2`. -/
-def gammaTwoLocalCuspQ (κ : GammaTwoCusp) (z : ℍ) : ℂ :=
+noncomputable def gammaTwoLocalCuspQ (κ : GammaTwoCusp) (z : ℍ) : ℂ :=
   Function.Periodic.qParam 2 (gammaTwoLocalCuspCoordinate κ z)
 
 /-- The local parameter at a second cusp is obtained by applying the exact
@@ -45905,7 +46732,7 @@ def constantUnitaryScatteringJet : ScalarScatteringJet where
   value_unitary := norm_one
 
 /-- Scalar version of the real part of `S'(s) S(s)⁻¹`. -/
-def ScalarScatteringJet.logDerivativeReal
+noncomputable def ScalarScatteringJet.logDerivativeReal
     (J : ScalarScatteringJet) : ℝ :=
   (J.derivative * J.value⁻¹).re
 
@@ -46085,7 +46912,7 @@ theorem norm_le_compact_apply_of_mem_fredholmDefect_range_orthogonal
   exact (mul_le_mul_right (norm_pos_iff.mpr hu)).mp hprod
 
 /-- The restriction of `K` used to control the normalized cokernel. -/
-def compactCokernelControl (K : X →L[ℂ] X) :
+noncomputable def compactCokernelControl (K : X →L[ℂ] X) :
     (fredholmDefect K).rangeᗮ →L[ℂ] X :=
   K.comp (fredholmDefect K).rangeᗮ.subtypeL
 
@@ -46207,7 +47034,7 @@ theorem shiftedEquiv_adjoint_injective
 
 /-- The adjoint kernel of `A` maps into the adjoint kernel of its normalized
 defect by applying `S†`. -/
-def adjointKernelToNormalizedAdjointKernel
+noncomputable def adjointKernelToNormalizedAdjointKernel
     (d : ShiftedCompactDecomposition A) :
     (ContinuousLinearMap.adjoint A).ker →L[ℂ]
       (ContinuousLinearMap.adjoint
@@ -46262,7 +47089,7 @@ theorem adjointKernel_finiteDimensional
 
 /-- The Hilbert-space cokernel model is the orthogonal complement of the
 actual range. -/
-abbrev HilbertCokernel (A : V →L[ℂ] W) := A.rangeᗮ
+noncomputable abbrev HilbertCokernel (A : V →L[ℂ] W) := A.rangeᗮ
 
 /-- The Hilbert cokernel is exactly the adjoint kernel. -/
 theorem hilbertCokernel_eq_adjointKernel
@@ -46281,7 +47108,7 @@ theorem hilbertCokernel_finiteDimensional
 abbrev FredholmCokernel (A : V →L[ℂ] W) := W ⧸ A.range
 
 /-- Orthogonal representatives map canonically to the algebraic cokernel. -/
-def rangeOrthogonalToCokernel
+noncomputable def rangeOrthogonalToCokernel
     (d : ShiftedCompactDecomposition A) :
     HilbertCokernel A →ₗ[ℂ] FredholmCokernel A :=
   A.range.mkQ.comp A.rangeᗮ.subtype
@@ -46659,7 +47486,7 @@ noncomputable def fullPlaneTestToAmbientTestCore
     (v : FullPlaneTest)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       HalfWeightCompactCoordinateGreen.upperPlaneOpen) :
-    PhysicalLocalL2.AmbientTestCore where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore where
   toFun := v
   contDiff' := v.contDiff
   hasCompactSupport' := v.hasCompactSupport
@@ -46684,7 +47511,7 @@ noncomputable def bufferedFriedrichsAmbientTest
       (compactChartBuffer hK hU hKU).radius)
     (u : AmbientPlaneL2)
     (hu : Function.support (u : ℂ → ℂ) ⊆ K) :
-    PhysicalLocalL2.AmbientTestCore :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   fullPlaneTestToAmbientTestCore
     (bufferedFriedrichsFullPlaneTest hK j u hu)
     ((tsupport_bufferedFriedrichsFullPlaneTest_subset_cthickening
@@ -46766,7 +47593,6 @@ open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 open ExplicitDiscriminantPotential
-open ExplicitDiscriminantPotential.CorePotentialForm
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
 
@@ -46795,30 +47621,35 @@ theorem upstairsPotentialComplex_realSmooth :
 presentation.  Quotient compactness comes from `u`; the potential itself is
 not incorrectly declared compactly supported. -/
 noncomputable def potentialTimesWeightCore (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     SmoothCompactWeightCore (OrbitMultiplier n) := by
   let u₀ : SmoothCompactWeightCore (OrbitMultiplier n) :=
-    InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u
   let s : WeightSection (OrbitMultiplier n) :=
-    ⟨fun z ↦ upstairsPotentialComplex z * u₀.toSection z, by
+    ⟨fun z ↦ upstairsPotentialComplex z *
+        SmoothCompactWeightCore.toSection u₀ z, by
       intro γ z
       dsimp only [upstairsPotentialComplex]
-      rw [upstairsPotential_gammaTwo_invariant γ z, u₀.covariance γ z]
+      rw [upstairsPotential_gammaTwo_invariant γ z, SmoothCompactWeightCore.covariance u₀ γ z]
       ring⟩
   refine ⟨s, ?_⟩
   constructor
   · change RealSmooth
-      (upstairsPotentialComplex * (u₀.toSection : ℍ → ℂ))
-    exact upstairsPotentialComplex_realSmooth.mul u₀.realSmooth
+      (upstairsPotentialComplex *
+        (SmoothCompactWeightCore.toSection u₀ : ℍ → ℂ))
+    exact upstairsPotentialComplex_realSmooth.mul
+      (SmoothCompactWeightCore.realSmooth u₀)
   · change HasQuotientCompactSupport
-      (upstairsPotentialComplex * (u₀.toSection : ℍ → ℂ))
+      (upstairsPotentialComplex *
+        (SmoothCompactWeightCore.toSection u₀ : ℍ → ℂ))
     simpa only [mul_comm] using
-      u₀.quotientCompact.mul_right upstairsPotentialComplex
+      (SmoothCompactWeightCore.quotientCompact u₀).mul_right
+        upstairsPotentialComplex
 
 @[simp]
 theorem potentialTimesWeightCore_apply (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    (potentialTimesWeightCore n u).toSection z =
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    SmoothCompactWeightCore.toSection (potentialTimesWeightCore n u) z =
       (upstairsPotential z : ℂ) *
         (u : SmoothQuotientCompactFunction) z :=
   rfl
@@ -46826,7 +47657,7 @@ theorem potentialTimesWeightCore_apply (n : ℤ)
 /-- Multiplication by the explicit potential, as a complex-linear map from
 the fixed-phase core to the ordinary smooth compact weight core. -/
 noncomputable def potentialTimesWeightCoreLinear (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
       SmoothCompactWeightCore (OrbitMultiplier n) where
   toFun := potentialTimesWeightCore n
   map_add' u v := by
@@ -46855,14 +47686,14 @@ noncomputable def potentialTimesWeightCoreLinear (n : ℤ) :
 The equivalence with the ordinary smooth compact weight core supplies all
 iterated covariance obligations; there is no stability certificate. -/
 noncomputable def potentialMultiplicationCore (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore n :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
   (smoothCompactWeightCoreToFixedPhase n).comp
     (potentialTimesWeightCoreLinear n)
 
 @[simp]
 theorem potentialMultiplicationCore_apply (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    ((potentialMultiplicationCore n u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    ((potentialMultiplicationCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
         SmoothQuotientCompactFunction) z =
       (upstairsPotential z : ℂ) *
         (u : SmoothQuotientCompactFunction) z :=
@@ -46871,35 +47702,35 @@ theorem potentialMultiplicationCore_apply (n : ℤ)
 /-- Pointwise multiplication by the descended potential is exactly
 multiplication of the invariant Petersson cross-density in its linear slot. -/
 theorem quotientInnerDensity_potentialMultiplicationCore
-    (n : ℤ) (v u : InverseEtaFixedPhaseCore n)
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (q : GammaTwoQuotientGeometry.GammaTwoQuotient) :
     quotientInnerDensity (OrbitMultiplier n)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n
           (potentialMultiplicationCore n u)) q =
       (potential q : ℂ) *
         quotientInnerDensity (OrbitMultiplier n)
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) q := by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) q := by
   induction q using Quotient.inductionOn'
   simp only [quotientInnerDensity_mk, potential_mk]
   unfold upstairsInnerDensity InvariantFiberMetric.pointwiseInnerDensity
-  simp only [InverseEtaFixedPhaseCore.toSmoothCompactWeightCore_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore_apply,
     potentialMultiplicationCore_apply]
   ring
 
 /-- The core potential integral is a literal Petersson pairing with the
 potential-multiplied section. -/
 theorem potentialForm_eq_peterssonForm_potentialMultiplicationCore
-    (n : ℤ) (v u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     potentialForm (OrbitMultiplier n)
         GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) =
       peterssonForm (OrbitMultiplier n)
         GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n
           (potentialMultiplicationCore n u)) := by
   unfold potentialForm weightedInnerDensity peterssonForm
   apply integral_congr_ae
@@ -46911,30 +47742,30 @@ theorem potentialForm_eq_peterssonForm_potentialMultiplicationCore
 /-- The second-order operator represented by the full graph energy
 `<v,u> + <Rv,Ru> + <Lv,Lu>` on the smooth core. -/
 noncomputable def strongPrincipalCore (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore n :=
-  (LinearMap.id : InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      InverseEtaFixedPhaseCore n) -
-    (InverseEtaFixedPhaseCore.lowerFromSucc n).comp
-      (InverseEtaFixedPhaseCore.raise n) -
-    (InverseEtaFixedPhaseCore.raiseFromPred n).comp
-      (InverseEtaFixedPhaseCore.lower n)
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
+  (LinearMap.id : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) -
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n) -
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n).comp
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n)
 
 @[simp]
 theorem strongPrincipalCore_apply (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     strongPrincipalCore n u =
-      u - InverseEtaFixedPhaseCore.lowerFromSucc n
-          (InverseEtaFixedPhaseCore.raise n u) -
-        InverseEtaFixedPhaseCore.raiseFromPred n
-          (InverseEtaFixedPhaseCore.lower n u) :=
+      u - Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) -
+        Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :=
   rfl
 
 /-- Both exact factorization identities combine to the full (not averaged)
 second-order differential expression.  In particular the constant is
 `1 + physicalExponent`, not an untracked generic shift. -/
 theorem strongPrincipalCore_apply_pointwise (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    ((strongPrincipalCore n u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    ((strongPrincipalCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
         SmoothQuotientCompactFunction) z =
       ((1 : ℂ) + physicalExponent (paperOrbitExponent n)) *
           (u : SmoothQuotientCompactFunction) z +
@@ -46943,31 +47774,31 @@ theorem strongPrincipalCore_apply_pointwise (n : ℤ)
   rw [strongPrincipalCore_apply]
   change
     (u : SmoothQuotientCompactFunction) z -
-        (((InverseEtaFixedPhaseCore.lowerFromSucc n
-            (InverseEtaFixedPhaseCore.raise n u) :
-              InverseEtaFixedPhaseCore n) :
+        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) :
+              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
           SmoothQuotientCompactFunction) z) -
-        (((InverseEtaFixedPhaseCore.raiseFromPred n
-            (InverseEtaFixedPhaseCore.lower n u) :
-              InverseEtaFixedPhaseCore n) :
+        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
+              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
           SmoothQuotientCompactFunction) z) =
       ((1 : ℂ) + physicalExponent (paperOrbitExponent n)) *
           (u : SmoothQuotientCompactFunction) z +
         2 * laplaceRaw (paperOrbitExponent n)
           (u : SmoothQuotientCompactFunction) z
-  have hLR := InverseEtaFixedPhaseCore.lower_raise_factorization n u z
-  have hRL := InverseEtaFixedPhaseCore.raise_lower_factorization n u z
+  have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+  have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
   linear_combination hLR + hRL
 
 /-- The literal strong Schrodinger expression on the actual smooth core. -/
 noncomputable def strongSchrodingerCore (n : ℤ) (t : ℝ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore n :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
   strongPrincipalCore n -
     (t : ℂ) • potentialMultiplicationCore n
 
 @[simp]
 theorem strongSchrodingerCore_apply (n : ℤ) (t : ℝ)
-    (u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     strongSchrodingerCore n t u =
       strongPrincipalCore n u -
         (t : ℂ) • potentialMultiplicationCore n u :=
@@ -46976,7 +47807,7 @@ theorem strongSchrodingerCore_apply (n : ℤ) (t : ℝ)
 /-- The raw differential expression, displayed independently of the bundled
 core endomorphism. -/
 noncomputable def strongSchrodingerDifferentialExpression
-    (n : ℤ) (t : ℝ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) : ℂ :=
+    (n : ℤ) (t : ℝ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) : ℂ :=
   ((1 : ℂ) + physicalExponent (paperOrbitExponent n)) *
       (u : SmoothQuotientCompactFunction) z +
     2 * laplaceRaw (paperOrbitExponent n)
@@ -46987,17 +47818,17 @@ noncomputable def strongSchrodingerDifferentialExpression
 /-- The bundled strong core operator is pointwise exactly the corrected
 Laplacian expression plus the explicit scalar potential. -/
 theorem strongSchrodingerCore_apply_pointwise (n : ℤ) (t : ℝ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    ((strongSchrodingerCore n t u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
         SmoothQuotientCompactFunction) z =
       strongSchrodingerDifferentialExpression n t u z := by
   rw [strongSchrodingerCore_apply]
   change
-    ((strongPrincipalCore n u : InverseEtaFixedPhaseCore n) :
+    ((strongPrincipalCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
         SmoothQuotientCompactFunction) z -
       (t : ℂ) *
           (((potentialMultiplicationCore n u :
-              InverseEtaFixedPhaseCore n) :
+              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
             SmoothQuotientCompactFunction) z) = _
   rw [strongPrincipalCore_apply_pointwise,
     potentialMultiplicationCore_apply]
@@ -47008,11 +47839,11 @@ theorem strongSchrodingerCore_apply_pointwise (n : ℤ) (t : ℝ)
 /-- Reindexing the lower-then-raise composition across `(n+1)-1=n` changes
 neither its function nor its stable-core value. -/
 theorem raiseFromPred_lower_succ_eq_raise_lowerFromSucc
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
-    InverseEtaFixedPhaseCore.raiseFromPred (n + 1)
-        (InverseEtaFixedPhaseCore.lower (n + 1) u) =
-      InverseEtaFixedPhaseCore.raise n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower (n + 1) u) =
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
   apply Subtype.ext
   apply Subtype.ext
   apply Subtype.ext
@@ -47029,34 +47860,34 @@ theorem raiseFromPred_lower_succ_eq_raise_lowerFromSucc
 /-- Successor-indexed energy identity, arranged so both Green formulas have
 definitionally matching source and target spaces. -/
 theorem successorEnergyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     (successorGraphCoordinates n).energyForm v u =
       inner ℂ (l2Coordinate (n + 1) v)
         (l2Coordinate (n + 1) (strongPrincipalCore (n + 1) u)) := by
   have hRaise :
       inner ℂ
           (l2Coordinate ((n + 1) + 1)
-            (InverseEtaFixedPhaseCore.raise (n + 1) v))
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) v))
           (l2Coordinate ((n + 1) + 1)
-            (InverseEtaFixedPhaseCore.raise (n + 1) u)) =
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u)) =
         -inner ℂ (l2Coordinate (n + 1) v)
           (l2Coordinate (n + 1)
-            (InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
-              (InverseEtaFixedPhaseCore.raise (n + 1) u))) := by
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
+              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u))) := by
     simpa only [raisedCoordinate_apply, lowerFromSuccCoordinate_apply] using
       (physicalRaisingGreenIdentityOnCore_unconditional
-        (n := n + 1) v (InverseEtaFixedPhaseCore.raise (n + 1) u))
+        (n := n + 1) v (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u))
   have hLower :
       inner ℂ
-          (l2Coordinate n (InverseEtaFixedPhaseCore.lowerFromSucc n v))
-          (l2Coordinate n (InverseEtaFixedPhaseCore.lowerFromSucc n u)) =
+          (l2Coordinate n (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n v))
+          (l2Coordinate n (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)) =
         -inner ℂ (l2Coordinate (n + 1) v)
           (l2Coordinate (n + 1)
-            (InverseEtaFixedPhaseCore.raise n
-              (InverseEtaFixedPhaseCore.lowerFromSucc n u))) := by
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
+              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))) := by
     simpa only [lowerFromSuccCoordinate_apply, raisedCoordinate_apply] using
       (physicalLoweringGreenIdentityOnCore_unconditional
-        (n := n) v (InverseEtaFixedPhaseCore.lowerFromSucc n u))
+        (n := n) v (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))
   rw [(successorGraphCoordinates n).energyForm_apply]
   simp only [successorGraphCoordinates,
     reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
@@ -47069,7 +47900,7 @@ theorem successorEnergyForm_eq_inner_strongPrincipalCore
 
 /-- The energy identity at an arbitrary integer orbit index. -/
 theorem energyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (coordinates n).energyForm v u =
       inner ℂ (l2Coordinate n v)
         (l2Coordinate n (strongPrincipalCore n u)) := by
@@ -47080,11 +47911,11 @@ theorem energyForm_eq_inner_strongPrincipalCore
 
 /-- The potential form in the same concrete Petersson-coordinate language. -/
 theorem potentialForm_eq_inner_potentialMultiplicationCore
-    (n : ℤ) (v u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     potentialForm (OrbitMultiplier n)
         GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) =
       inner ℂ (l2Coordinate n v)
         (l2Coordinate n (potentialMultiplicationCore n u)) := by
   rw [potentialForm_eq_peterssonForm_potentialMultiplicationCore]
@@ -47095,7 +47926,7 @@ This is the strong/weak identity used by the actual PDE, not an abstract form
 placeholder. -/
 theorem weakSchrodingerOperator_apply_core_eq_inner_strong
     (n : ℤ) (t : ℝ)
-    (u v : InverseEtaFixedPhaseCore n) :
+    (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     weakSchrodingerOperator n t (coreMap n u) (coreMap n v) =
       inner ℂ (l2Coordinate n v)
         (l2Coordinate n (strongSchrodingerCore n t u)) := by
@@ -47110,19 +47941,19 @@ theorem weakSchrodingerOperator_apply_core_eq_inner_strong
 /-- A smooth Petersson forcing, embedded continuously in the strong anti-dual
 through the actual base coordinate of the graph completion. -/
 noncomputable def corePeterssonForcing (n : ℤ)
-    (f : InverseEtaFixedPhaseCore n) : ActualHMinusOne n :=
+    (f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : ActualHMinusOne n :=
   (innerSLFlip ℂ (l2Coordinate n f)).comp (baseExtension n)
 
 @[simp]
 theorem corePeterssonForcing_apply (n : ℤ)
-    (f : InverseEtaFixedPhaseCore n) (v : ActualHOne n) :
+    (f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (v : ActualHOne n) :
     corePeterssonForcing n f v =
       inner ℂ (baseExtension n v) (l2Coordinate n f) :=
   rfl
 
 @[simp]
 theorem corePeterssonForcing_apply_core (n : ℤ)
-    (f v : InverseEtaFixedPhaseCore n) :
+    (f v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     corePeterssonForcing n f (coreMap n v) =
       inner ℂ (l2Coordinate n v) (l2Coordinate n f) := by
   rw [corePeterssonForcing_apply, baseExtension_core]
@@ -47137,12 +47968,12 @@ theorem corePeterssonForcing_zero (n : ℤ) :
 smooth sections.  The proof tests with the difference itself and then uses
 faithfulness of the `L²` coordinate. -/
 theorem corePeterssonPairing_separates (n : ℤ)
-    {g f : InverseEtaFixedPhaseCore n}
-    (hPair : ∀ v : InverseEtaFixedPhaseCore n,
+    {g f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n}
+    (hPair : ∀ v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
       inner ℂ (l2Coordinate n v) (l2Coordinate n g) =
         inner ℂ (l2Coordinate n v) (l2Coordinate n f)) :
     g = f := by
-  let w : InverseEtaFixedPhaseCore n := g - f
+  let w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := g - f
   have hwPair := hPair w
   have hSelf :
       inner ℂ (l2Coordinate n w) (l2Coordinate n w) = 0 := by
@@ -47161,7 +47992,7 @@ theorem corePeterssonPairing_separates (n : ℤ)
 `H⁻¹` anti-dual, not merely equality against smooth tests.  Density of the
 actual graph core extends the core identity to every form-domain test. -/
 theorem strongCoreEquation_implies_weakEquation
-    (n : ℤ) (t : ℝ) (u f : InverseEtaFixedPhaseCore n)
+    (n : ℤ) (t : ℝ) (u f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (hStrong : strongSchrodingerCore n t u = f) :
     weakSchrodingerOperator n t (coreMap n u) =
       corePeterssonForcing n f := by
@@ -47179,7 +48010,7 @@ section satisfies the literal strong differential equation.  This is test
 separation, not an unproved elliptic-regularity upgrade for an arbitrary
 completed weak solution. -/
 theorem weakEquation_implies_strongCoreEquation
-    (n : ℤ) (t : ℝ) (u f : InverseEtaFixedPhaseCore n)
+    (n : ℤ) (t : ℝ) (u f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (hWeak : weakSchrodingerOperator n t (coreMap n u) =
       corePeterssonForcing n f) :
     strongSchrodingerCore n t u = f := by
@@ -47193,7 +48024,7 @@ theorem weakEquation_implies_strongCoreEquation
 
 /-- Exact strong/weak equivalence on the actual smooth automorphic core. -/
 theorem strongCoreEquation_iff_weakEquation
-    (n : ℤ) (t : ℝ) (u f : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (t : ℝ) (u f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     strongSchrodingerCore n t u = f ↔
       weakSchrodingerOperator n t (coreMap n u) =
         corePeterssonForcing n f := by
@@ -47204,7 +48035,7 @@ theorem strongCoreEquation_iff_weakEquation
 /-- Homogeneous smooth weak solutions are exactly the zeros of the literal
 strong differential expression. -/
 theorem smoothHomogeneousWeak_iff_strong
-    (n : ℤ) (t : ℝ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (t : ℝ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     weakSchrodingerOperator n t (coreMap n u) = 0 ↔
       strongSchrodingerCore n t u = 0 := by
   simpa only [corePeterssonForcing_zero] using
@@ -47537,8 +48368,7 @@ theorem pointwiseKernelConvolution_affine_contDiff
   change ContDiff ℝ ∞
     (friedrichsAffineCommutatorKernel sigma j
       ⋆[mul ℂ ℂ, volume] (u : ℂ → ℂ))
-  exact (friedrichsAffineCommutatorKernel_hasCompactSupport sigma j).
-    contDiff_convolution_left (mul ℂ ℂ)
+  exact (friedrichsAffineCommutatorKernel_hasCompactSupport sigma j).contDiff_convolution_left (mul ℂ ℂ)
       (friedrichsAffineCommutatorKernel_contDiff sigma j)
       ((MeasureTheory.Lp.memLp u).locallyIntegrable (by norm_num))
 
@@ -47551,10 +48381,8 @@ theorem friedrichsMollifierAction_ae_eq_mollifiedRepresentative
         (volume : Measure ℂ)]
       friedrichsMollifiedRepresentative j u := by
   apply ae_eq_of_integral_contDiff_smul_eq
-    ((MeasureTheory.Lp.memLp (friedrichsMollifierAction j u)).
-      locallyIntegrable (by norm_num))
-    ((friedrichsMollifiedRepresentative_contDiff j u).continuous.
-      locallyIntegrable)
+    ((MeasureTheory.Lp.memLp (friedrichsMollifierAction j u)).locallyIntegrable (by norm_num))
+    ((friedrichsMollifiedRepresentative_contDiff j u).continuous.locallyIntegrable)
   intro g hg hcompact
   let v : FullPlaneTest := realFullPlaneTest g hg hcompact
   have hPair := fullPlaneBilinearPair_friedrichsMollifierAction j v u
@@ -47570,10 +48398,8 @@ theorem friedrichsAffineCommutatorAction_ae_eq_pointwise
         (friedrichsAffineCommutatorKernel sigma j) u := by
   apply ae_eq_of_integral_contDiff_smul_eq
     ((MeasureTheory.Lp.memLp
-      (friedrichsAffineCommutatorAction sigma j u)).
-        locallyIntegrable (by norm_num))
-    ((pointwiseKernelConvolution_affine_contDiff sigma j u).continuous.
-      locallyIntegrable)
+      (friedrichsAffineCommutatorAction sigma j u)).locallyIntegrable (by norm_num))
+    ((pointwiseKernelConvolution_affine_contDiff sigma j u).continuous.locallyIntegrable)
   intro g hg hcompact
   let v : FullPlaneTest := realFullPlaneTest g hg hcompact
   have hPair :=
@@ -47634,47 +48460,46 @@ raising/lowering commutator on the fixed-phase stable core.  Writing the
 source as `n+1` avoids every transport across a merely propositionally equal
 integer index. -/
 theorem lowerRaise_add_mass_eq_raiseLower
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
-    InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
-          (InverseEtaFixedPhaseCore.raise (n + 1) u) +
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u) +
         physicalExponent (paperOrbitExponent (n + 1)) • u =
-      InverseEtaFixedPhaseCore.raise n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
   apply Subtype.ext
   apply Subtype.ext
   apply Subtype.ext
   funext z
   have hLR :=
-    InverseEtaFixedPhaseCore.lower_raise_factorization (n + 1) u z
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization (n + 1) u z
   have hRL :=
-    InverseEtaFixedPhaseCore.raise_lower_factorization (n + 1) u z
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization (n + 1) u z
   have hReindex := congrArg
-    (fun w : InverseEtaFixedPhaseCore (n + 1) ↦
+    (fun w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) ↦
       ((w : SmoothQuotientCompactFunction) : ℍ → ℂ) z)
-    (ActualScalarDiscriminantPDE.
-      raiseFromPred_lower_succ_eq_raise_lowerFromSucc n u)
+    (ActualScalarDiscriminantPDE.raiseFromPred_lower_succ_eq_raise_lowerFromSucc n u)
   change
-    (((InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
-          (InverseEtaFixedPhaseCore.raise (n + 1) u) :
-            InverseEtaFixedPhaseCore (n + 1)) :
+    (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u) :
+            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
         SmoothQuotientCompactFunction) : ℍ → ℂ) z +
         physicalExponent (paperOrbitExponent (n + 1)) *
           (u : SmoothQuotientCompactFunction) z =
-      (((InverseEtaFixedPhaseCore.raise n
-          (InverseEtaFixedPhaseCore.lowerFromSucc n u) :
-            InverseEtaFixedPhaseCore (n + 1)) :
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) :
+            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
         SmoothQuotientCompactFunction) : ℍ → ℂ) z
   exact hLR.symm.trans (hRL.trans hReindex)
 
 /-- Petersson-coordinate form of the preceding commutator. -/
 theorem lowerRaiseCoordinate_add_mass_eq_raiseLowerCoordinate
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     lowerFromSuccCoordinate (n + 1)
-          (InverseEtaFixedPhaseCore.raise (n + 1) u) +
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u) +
         physicalExponent (paperOrbitExponent (n + 1)) •
           l2Coordinate (n + 1) u =
       raisedCoordinate n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) := by
   have h := congrArg (l2Coordinate (n + 1))
     (lowerRaise_add_mass_eq_raiseLower n u)
   simpa only [map_add, map_smul,
@@ -47684,7 +48509,7 @@ theorem lowerRaiseCoordinate_add_mass_eq_raiseLowerCoordinate
 constant is the genuine physical exponent at the source orbit, including
 its half-integral `1/2` normalization. -/
 theorem raised_norm_sq_sub_lowered_norm_sq
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ‖raisedCoordinate (n + 1) u‖ ^ 2 -
         ‖lowerFromSuccCoordinate n u‖ ^ 2 =
       (((paperOrbitExponent (n + 1) : ℤ) : ℝ) / 2) *
@@ -47693,9 +48518,9 @@ theorem raised_norm_sq_sub_lowered_norm_sq
   let R := raisedCoordinate (n + 1) u
   let L := lowerFromSuccCoordinate n u
   let LR := lowerFromSuccCoordinate (n + 1)
-    (InverseEtaFixedPhaseCore.raise (n + 1) u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u)
   let RL := raisedCoordinate n
-    (InverseEtaFixedPhaseCore.lowerFromSucc n u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)
   have hCoord :
       LR + physicalExponent (paperOrbitExponent (n + 1)) • U = RL := by
     simpa only [U, LR, RL] using
@@ -47704,12 +48529,12 @@ theorem raised_norm_sq_sub_lowered_norm_sq
     simpa only [U, R, LR, raisedCoordinate_apply] using
       (physicalRaisingGreenIdentityOnCore_unconditional
         (n := n + 1) u
-        (InverseEtaFixedPhaseCore.raise (n + 1) u))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise (n + 1) u))
   have hLower : inner ℂ RL U = -inner ℂ L L := by
     simpa only [U, L, RL] using
       (physicalRaisingGreenIdentityOnCore_unconditional
         (n := n)
-        (InverseEtaFixedPhaseCore.lowerFromSucc n u) u)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) u)
   have hPair := congrArg (fun w ↦ inner ℂ U w) hCoord
   simp only [inner_add_right, inner_smul_right, smul_eq_mul] at hPair
   have hPairRe := congrArg Complex.re hPair
@@ -47725,7 +48550,7 @@ theorem raised_norm_sq_sub_lowered_norm_sq
 
 /-- Rearranged form used for the Cauchy argument. -/
 theorem lowered_norm_sq_eq_raised_sub_mass
-    (n : ℤ) (u : InverseEtaFixedPhaseCore (n + 1)) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :
     ‖lowerFromSuccCoordinate n u‖ ^ 2 =
       ‖raisedCoordinate (n + 1) u‖ ^ 2 -
         (((paperOrbitExponent (n + 1) : ℤ) : ℝ) / 2) *
@@ -47738,26 +48563,26 @@ theorem lowered_norm_sq_eq_raised_sub_mass
 then its lowering coordinates are Cauchy.  No subsequence or diagonal choice
 is made. -/
 theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
-    (n : ℤ) (u : ℕ → InverseEtaFixedPhaseCore (n + 1))
+    (n : ℤ) (u : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))
     {x : OrbitPeterssonHilbert (n + 1)}
     {r : OrbitPeterssonHilbert ((n + 1) + 1)}
     (hBase : Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (u j))
-      Filter.atTop (𝒩 x))
+      Filter.atTop (𝓝 x))
     (hRaise : Filter.Tendsto (fun j ↦ raisedCoordinate (n + 1) (u j))
-      Filter.atTop (𝒩 r)) :
+      Filter.atTop (𝓝 r)) :
     CauchySeq (fun j ↦ lowerFromSuccCoordinate n (u j)) := by
   have hBaseDist : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖l2Coordinate (n + 1) (u jk.1) -
           l2Coordinate (n + 1) (u jk.2)‖)
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
     simpa only [dist_eq_norm] using
       (cauchySeq_iff_tendsto_dist_atTop_0.mp hBase.cauchySeq)
   have hRaiseDist : Filter.Tendsto
       (fun jk : ℕ × ℕ ↦
         ‖raisedCoordinate (n + 1) (u jk.1) -
           raisedCoordinate (n + 1) (u jk.2)‖)
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
     simpa only [dist_eq_norm] using
       (cauchySeq_iff_tendsto_dist_atTop_0.mp hRaise.cauchySeq)
   let c : ℝ := (((paperOrbitExponent (n + 1) : ℤ) : ℝ) / 2)
@@ -47765,7 +48590,7 @@ theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
       (fun jk : ℕ × ℕ ↦
         ‖lowerFromSuccCoordinate n (u jk.1) -
           lowerFromSuccCoordinate n (u jk.2)‖ ^ 2)
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
     have hModel := (hRaiseDist.pow 2).sub
       ((hBaseDist.pow 2).const_mul c)
     simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
@@ -47778,7 +48603,7 @@ theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
       (fun jk : ℕ × ℕ ↦
         ‖lowerFromSuccCoordinate n (u jk.1) -
           lowerFromSuccCoordinate n (u jk.2)‖)
-      Filter.atTop (𝒩 0) := by
+      Filter.atTop (𝓝 0) := by
     have hSqrt := Real.continuous_sqrt.continuousAt.tendsto.comp hLowerSq
     simpa only [Real.sqrt_sq (norm_nonneg _), Real.sqrt_zero] using hSqrt
   apply cauchySeq_iff_tendsto_dist_atTop_0.mpr
@@ -47817,7 +48642,7 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
   obtain ⟨q, hqGraph, hqLimit⟩ :=
     hSequential (baseCoordinate n x, raiseCoordinate n x) hxMaxRaise
   have hCore : ∀ j : ℕ,
-      ∃ w : InverseEtaFixedPhaseCore (n + 1),
+      ∃ w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1),
         l2Coordinate (n + 1) w = (q j).1 ∧
           raisedCoordinate (n + 1) w = (q j).2 := by
     intro j
@@ -47832,12 +48657,12 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
   choose w hwBase hwRaise using hCore
   have hBase : Filter.Tendsto
       (fun j ↦ l2Coordinate (n + 1) (w j)) Filter.atTop
-      (𝒩 (baseCoordinate n x)) :=
+      (𝓝 (baseCoordinate n x)) :=
     (continuous_fst.tendsto _).comp hqLimit |>.congr'
       (Filter.Eventually.of_forall fun j ↦ hwBase j |>.symm)
   have hRaiseCoord : Filter.Tendsto
       (fun j ↦ raisedCoordinate (n + 1) (w j)) Filter.atTop
-      (𝒩 (raiseCoordinate n x)) :=
+      (𝓝 (raiseCoordinate n x)) :=
     (continuous_snd.tendsto _).comp hqLimit |>.congr'
       (Filter.Eventually.of_forall fun j ↦ hwRaise j |>.symm)
   have hLowerCauchy :
@@ -47875,15 +48700,14 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
       ((closedLowerFromSucc n).graph_fst_eq_zero_snd hSub rfl)
   have hLowerCoord : Filter.Tendsto
       (fun j ↦ lowerFromSuccCoordinate n (w j)) Filter.atTop
-      (𝒩 (lowerCoordinate n x)) := by
+      (𝓝 (lowerCoordinate n x)) := by
     simpa only [hlEq] using hl
   have hSmooth : Filter.Tendsto (fun j ↦ smoothCoreMap n (w j))
-      Filter.atTop (𝒩 x) := by
+      Filter.atTop (𝓝 x) := by
     rw [tendsto_subtype_rng]
     simpa only [coe_smoothCoreMap,
       FixedPhaseClosedOperators.successorGraphCoordinates,
-      FixedPhaseClosedOperators.
-        reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
+      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
       baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply]
       using hBase.prodMk_nhds
         (hRaiseCoord.prodMk_nhds hLowerCoord)
@@ -48042,7 +48866,7 @@ theorem peterssonPivotEmbedding_injective (n : ℤ) :
 Petersson coordinate; the two interfaces are not merely propositionally
 compatible after testing. -/
 theorem corePeterssonForcing_eq_peterssonPivotEmbedding
-    (n : ℤ) (f : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (f : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     corePeterssonForcing n f =
       peterssonPivotEmbedding n (l2Coordinate n f) := by
   ext v
@@ -48051,7 +48875,7 @@ theorem corePeterssonForcing_eq_peterssonPivotEmbedding
 @[simp]
 theorem peterssonPivotEmbedding_apply_core
     (n : ℤ) (y : OrbitPeterssonHilbert n)
-    (v : InverseEtaFixedPhaseCore n) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     peterssonPivotEmbedding n y (coreMap n v) =
       inner ℂ (l2Coordinate n v) y := by
   rw [peterssonPivotEmbedding_apply, baseExtension_core]
@@ -48086,7 +48910,7 @@ theorem minimalStrongSchrodinger_apply
 
 @[simp]
 theorem minimalStrongSchrodinger_on_core
-    (n : ℤ) (t : ℝ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (t : ℝ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     minimalStrongSchrodinger n t (l2CoreRangeEquiv n u) =
       l2Coordinate n (strongSchrodingerCore n t u) := by
   simp only [minimalStrongSchrodinger_apply, LinearEquiv.symm_apply_apply]
@@ -48105,7 +48929,7 @@ theorem minimalStrongSchrodinger_dense_domain (n : ℤ) (t : ℝ) :
 is the exact bridge from the P6 differential expression to the P9 associated
 operator. -/
 theorem strongCore_pair_mem_modularAssociatedOperator_graph
-    (n : ℤ) (t : ℝ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (t : ℝ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (l2Coordinate n u,
         l2Coordinate n (strongSchrodingerCore n t u)) ∈
       (modularAssociatedOperator n t).graph := by
@@ -48121,7 +48945,7 @@ theorem strongCore_pair_mem_modularAssociatedOperator_graph
 
 /-- Core pairs are graph points of the minimal operator itself. -/
 theorem strongCore_pair_mem_minimalStrongSchrodinger_graph
-    (n : ℤ) (t : ℝ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (t : ℝ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (l2Coordinate n u,
         l2Coordinate n (strongSchrodingerCore n t u)) ∈
       (minimalStrongSchrodinger n t).graph := by
@@ -48134,14 +48958,14 @@ fixed-phase core representative. -/
 theorem mem_minimalStrongSchrodinger_graph_iff
     (n : ℤ) (t : ℝ) (x f : OrbitPeterssonHilbert n) :
     (x, f) ∈ (minimalStrongSchrodinger n t).graph ↔
-      ∃ u : InverseEtaFixedPhaseCore n,
+      ∃ u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
         l2Coordinate n u = x ∧
           l2Coordinate n (strongSchrodingerCore n t u) = f := by
   constructor
   · intro hGraph
     rcases (LinearPMap.mem_graph_iff (minimalStrongSchrodinger n t)).mp
         hGraph with ⟨y, hy, hf⟩
-    let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm y
+    let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm y
     refine ⟨u, ?_, ?_⟩
     · exact (l2Coordinate_l2CoreRangeEquiv_symm n y).trans hy
     · rw [← hf]
@@ -48361,7 +49185,7 @@ theorem mem_maximalStrongSchrodinger_graph_iff_domain_tests
         inner ℂ f (y : OrbitPeterssonHilbert n) =
             star (inner ℂ (y : OrbitPeterssonHilbert n) f) :=
           inner_conj_symm _ _
-        _ = Complex.conj
+        _ = star
             (inner ℂ (minimalStrongSchrodinger n t y) x) :=
           congrArg star (hTest y).symm
         _ = inner ℂ x (minimalStrongSchrodinger n t y) :=
@@ -48382,7 +49206,7 @@ the first Petersson slot. -/
 theorem mem_maximalStrongSchrodinger_graph_iff_core_tests
     (n : ℤ) (t : ℝ) (x f : OrbitPeterssonHilbert n) :
     (x, f) ∈ (maximalStrongSchrodinger n t).graph ↔
-      ∀ u : InverseEtaFixedPhaseCore n,
+      ∀ u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
         inner ℂ (l2Coordinate n (strongSchrodingerCore n t u)) x =
           inner ℂ (l2Coordinate n u) f := by
   rw [mem_maximalStrongSchrodinger_graph_iff_domain_tests]
@@ -48391,7 +49215,7 @@ theorem mem_maximalStrongSchrodinger_graph_iff_core_tests
     simpa only [minimalStrongSchrodinger_on_core,
       l2CoreRangeEquiv_coe] using h (l2CoreRangeEquiv n u)
   · intro h y
-    let u : InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm y
+    let u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := (l2CoreRangeEquiv n).symm y
     simpa only [u, minimalStrongSchrodinger_apply,
       l2Coordinate_l2CoreRangeEquiv_symm] using h u
 
@@ -48881,7 +49705,7 @@ theorem literalStageCutoffReal_eq_one (Y : ℝ) {z : ℍ}
 
 /-- Complexified localization as an actual ambient `C_c^∞` test. -/
 noncomputable def literalStageCutoff (Y : ℝ) :
-    PhysicalLocalL2.AmbientTestCore where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore where
   toFun := Complex.ofRealCLM ∘ literalStageCutoffReal Y
   contDiff' := Complex.ofRealCLM.contDiff.comp
     (literalStageCutoffReal_contDiff Y)
@@ -48910,8 +49734,8 @@ theorem literalStageCutoff_eq_one (Y : ℝ) {z : ℍ}
 localization.  `localizeLeft` performs the zero extension only after the
 compact factor has been shown to live in the open upper half-plane. -/
 noncomputable def literalStageLocalizedGauge
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
-    PhysicalLocalL2.AmbientTestCore :=
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   HalfWeightCompactCoordinateGreen.localizeLeft
     (fixedPhaseEuclideanGauge n u)
     (fixedPhaseEuclideanGauge_realSmooth n u)
@@ -48919,14 +49743,14 @@ noncomputable def literalStageLocalizedGauge
 
 @[simp]
 theorem literalStageLocalizedGauge_apply
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (w : ℂ) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (w : ℂ) :
     literalStageLocalizedGauge Y n u w =
       upperLift (fixedPhaseEuclideanGauge n u) w *
         literalStageCutoff Y w :=
   rfl
 
 theorem literalStageLocalizedGauge_eq_gauge
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     {z : ℍ} (hz : z ∈ gammaTwoThreeCuspTruncation Y) :
     literalStageLocalizedGauge Y n u (z : ℂ) =
       fixedPhaseEuclideanGauge n u z := by
@@ -48936,7 +49760,7 @@ theorem literalStageLocalizedGauge_eq_gauge
 /-- The support of every localized gauge lies in one fixed compact set,
 independent of the graph-core vector. -/
 theorem tsupport_literalStageLocalizedGauge_subset_cutoff
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     tsupport (literalStageLocalizedGauge Y n u : ℂ → ℂ) ⊆
       tsupport (literalStageCutoff Y : ℂ → ℂ) :=
   tsupport_mul_subset_right
@@ -49062,7 +49886,7 @@ theorem literalStageCutoffSupportLowerHeight_le_im (Y : ℝ) {w : ℂ}
 This is a specialization of the already proved one-sided compact-localization
 product rule. -/
 theorem dx_literalStageLocalizedGauge_apply_upper
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     HalfWeightCompactCoordinateGreen.dx
         (literalStageLocalizedGauge Y n u) (z : ℂ) =
       dx (fixedPhaseEuclideanGauge n u) z * literalStageCutoff Y (z : ℂ) +
@@ -49078,7 +49902,7 @@ theorem dx_literalStageLocalizedGauge_apply_upper
 
 /-- Vertical derivative counterpart. -/
 theorem dy_literalStageLocalizedGauge_apply_upper
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     HalfWeightCompactCoordinateGreen.dy
         (literalStageLocalizedGauge Y n u) (z : ℂ) =
       dy (fixedPhaseEuclideanGauge n u) z * literalStageCutoff Y (z : ℂ) +
@@ -49176,14 +50000,14 @@ theorem three_quarters_horizontalDrift_sq_le_baseCoeff (n : ℤ) :
 derivative pointwise.  Raising and lowering are the actual fixed-phase
 operators, not independent derivative certificates. -/
 theorem norm_height_mul_dx_sq_le_fixedPhaseEuclideanGraphDensity
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ‖heightC z * dx (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       fixedPhaseEuclideanGraphDensity n u z := by
   let F := ‖fixedPhaseEuclideanGauge n u z‖
   let R := ‖fixedPhaseEuclideanGauge (n + 1)
-    (InverseEtaFixedPhaseCore.raise n u) z‖
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) z‖
   let L := ‖fixedPhaseEuclideanGauge (n - 1)
-    (InverseEtaFixedPhaseCore.lower n u) z‖
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) z‖
   let d := euclideanHorizontalDrift n
   have hpoint := norm_height_mul_dx_le_euclideanGraph n
     (fixedPhaseEuclideanGauge n u) z
@@ -49212,14 +50036,14 @@ theorem norm_height_mul_dx_sq_le_fixedPhaseEuclideanGraphDensity
 
 /-- Vertical logarithmic derivative counterpart of the preceding estimate. -/
 theorem norm_height_mul_dy_sq_le_fixedPhaseEuclideanGraphDensity
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ‖heightC z * dy (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       fixedPhaseEuclideanGraphDensity n u z := by
   let F := ‖fixedPhaseEuclideanGauge n u z‖
   let R := ‖fixedPhaseEuclideanGauge (n + 1)
-    (InverseEtaFixedPhaseCore.raise n u) z‖
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) z‖
   let L := ‖fixedPhaseEuclideanGauge (n - 1)
-    (InverseEtaFixedPhaseCore.lower n u) z‖
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) z‖
   have hpoint := norm_height_mul_dy_le_euclideanGraph n
     (fixedPhaseEuclideanGauge n u) z
   rw [← fixedPhaseEuclideanGauge_raise n u,
@@ -49247,7 +50071,7 @@ theorem norm_height_mul_dy_sq_le_fixedPhaseEuclideanGraphDensity
 /-- On the literal stage, the ordinary horizontal derivative is controlled
 by the same graph density with the explicit inverse lower-height factor. -/
 theorem norm_dx_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     {z : ℍ} (hz : z ∈ gammaTwoThreeCuspTruncation Y) :
     ‖dx (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       (literalStageLowerHeight Y)⁻¹ ^ 2 *
@@ -49282,7 +50106,7 @@ theorem norm_dx_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity
 
 /-- Vertical ordinary derivative counterpart. -/
 theorem norm_dy_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     {z : ℍ} (hz : z ∈ gammaTwoThreeCuspTruncation Y) :
     ‖dy (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       (literalStageLowerHeight Y)⁻¹ ^ 2 *
@@ -49320,20 +50144,20 @@ theorem norm_dy_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity
 /-- The zero-order coordinate is itself dominated by the literal graph
 density. -/
 theorem norm_fixedPhaseEuclideanGauge_sq_le_graphDensity
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 ≤
       fixedPhaseEuclideanGraphDensity n u z := by
   have hbase := three_le_logHeightTraceBaseCoeff n
   unfold fixedPhaseEuclideanGraphDensity
   nlinarith [sq_nonneg ‖fixedPhaseEuclideanGauge n u z‖,
     sq_nonneg ‖fixedPhaseEuclideanGauge (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u) z‖,
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) z‖,
     sq_nonneg ‖fixedPhaseEuclideanGauge (n - 1)
-      (InverseEtaFixedPhaseCore.lower n u) z‖]
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) z‖]
 
 /-- Ordinary horizontal derivative control on the entire cutoff support. -/
 theorem norm_dx_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) {z : ℍ}
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) {z : ℍ}
     (hz : (z : ℂ) ∈ tsupport (literalStageCutoff Y : ℂ → ℂ)) :
     ‖dx (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       (literalStageCutoffSupportLowerHeight Y)⁻¹ ^ 2 *
@@ -49366,7 +50190,7 @@ theorem norm_dx_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity
 
 /-- Ordinary vertical derivative control on the entire cutoff support. -/
 theorem norm_dy_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) {z : ℍ}
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) {z : ℍ}
     (hz : (z : ℂ) ∈ tsupport (literalStageCutoff Y : ℂ → ℂ)) :
     ‖dy (fixedPhaseEuclideanGauge n u) z‖ ^ 2 ≤
       (literalStageCutoffSupportLowerHeight Y)⁻¹ ^ 2 *
@@ -49411,7 +50235,7 @@ theorem literalStageLocalizationDensityConstant_nonneg (Y : ℝ) :
 /-- Pointwise `L² + dx + dy` estimate on `tsupport χ_Y`.  All three terms
 come from the actual physical gauge and the actual cutoff product rule. -/
 theorem localizedGauge_planarDensity_le_on_cutoffSupport
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ)
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ)
     (hz : (z : ℂ) ∈ tsupport (literalStageCutoff Y : ℂ → ℂ)) :
     ‖literalStageLocalizedGauge Y n u (z : ℂ)‖ ^ 2 +
         ‖HalfWeightCompactCoordinateGreen.dx
@@ -49511,7 +50335,7 @@ theorem localizedGauge_planarDensity_le_on_cutoffSupport
 /-- Global upper-half-plane version.  Off `tsupport χ_Y`, the localized test
 and both of its test-function derivatives vanish on a neighbourhood. -/
 theorem localizedGauge_planarDensity_le
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ‖literalStageLocalizedGauge Y n u (z : ℂ)‖ ^ 2 +
         ‖HalfWeightCompactCoordinateGreen.dx
           (literalStageLocalizedGauge Y n u) (z : ℂ)‖ ^ 2 +
@@ -49648,46 +50472,46 @@ theorem literalStageCutoffUpperSupport_subset_activeTranslates (Y : ℝ) :
 /-- The same three physical coordinates before the Euclidean `y⁻²` gauge is
 absorbed into area measure. -/
 noncomputable def fixedPhaseHyperbolicGraphDensity
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) : ℍ → ℝ :=
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : ℍ → ℝ :=
   fun z =>
     logHeightTraceBaseCoeff n *
         WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier n)
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) z +
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) z +
       3 * WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier (n + 1))
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
-          (InverseEtaFixedPhaseCore.raise n u)) z +
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) z +
       3 * WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier (n - 1))
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
-          (InverseEtaFixedPhaseCore.lower n u)) z
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) z
 
 theorem fixedPhaseHyperbolicGraphDensity_nonneg
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     0 ≤ fixedPhaseHyperbolicGraphDensity n u z := by
   unfold fixedPhaseHyperbolicGraphDensity
   positivity
 
 theorem fixedPhaseHyperbolicGraphDensity_continuous
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     Continuous (fixedPhaseHyperbolicGraphDensity n u) := by
   unfold fixedPhaseHyperbolicGraphDensity
   exact
     (((continuous_const.mul
       (WeightCorePetersson.upstairsNormSqDensity_continuous
         (OrbitMultiplier n)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u))).add
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u))).add
       (continuous_const.mul
         (WeightCorePetersson.upstairsNormSqDensity_continuous
           (OrbitMultiplier (n + 1))
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
-            (InverseEtaFixedPhaseCore.raise n u))))).add
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u))))).add
       (continuous_const.mul
         (WeightCorePetersson.upstairsNormSqDensity_continuous
           (OrbitMultiplier (n - 1))
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
-            (InverseEtaFixedPhaseCore.lower n u)))))
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)))))
 
 theorem fixedPhaseHyperbolicGraphDensity_effective_invariant
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (a : GammaTwoEffective) (z : ℍ) :
     fixedPhaseHyperbolicGraphDensity n u (a • z) =
       fixedPhaseHyperbolicGraphDensity n u z := by
@@ -49699,7 +50523,7 @@ theorem fixedPhaseHyperbolicGraphDensity_effective_invariant
 /-- Exact relation between Euclidean and invariant hyperbolic graph
 densities. -/
 theorem fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     fixedPhaseEuclideanGraphDensity n u z =
       (hyperbolicDensity z : ℝ) *
         fixedPhaseHyperbolicGraphDensity n u z := by
@@ -49707,83 +50531,83 @@ theorem fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul
   rw [show ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 =
       hyperbolicDensity z •
         WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier n)
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) z by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) z by
         simpa only [fixedPhaseEuclideanGauge,
           coreEmbedding_toSmoothCore] using
             orbitEuclideanGauge_norm_sq n (coreEmbedding n u) z,
     show ‖fixedPhaseEuclideanGauge (n + 1)
-        (InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2 =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2 =
       hyperbolicDensity z •
         WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier (n + 1))
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
-            (InverseEtaFixedPhaseCore.raise n u)) z by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n + 1)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) z by
         simpa only [fixedPhaseEuclideanGauge,
           coreEmbedding_toSmoothCore] using
             orbitEuclideanGauge_norm_sq (n + 1)
               (coreEmbedding (n + 1)
-                (InverseEtaFixedPhaseCore.raise n u)) z,
+                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) z,
     show ‖fixedPhaseEuclideanGauge (n - 1)
-        (InverseEtaFixedPhaseCore.lower n u) z‖ ^ 2 =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) z‖ ^ 2 =
       hyperbolicDensity z •
         WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier (n - 1))
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
-            (InverseEtaFixedPhaseCore.lower n u)) z by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore (n - 1)
+            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) z by
         simpa only [fixedPhaseEuclideanGauge,
           coreEmbedding_toSmoothCore] using
             orbitEuclideanGauge_norm_sq (n - 1)
               (coreEmbedding (n - 1)
-                (InverseEtaFixedPhaseCore.lower n u)) z]
+                (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)) z]
   simp only [NNReal.smul_def]
   ring
 
 /-- Real diagonal Petersson norm as the invariant upstairs integral on the
 chosen carrier. -/
 theorem peterssonNormSq_eq_integral_upstairsNormSqDensity
-    (m : ℤ) (v : InverseEtaFixedPhaseCore m) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
     WeightCorePetersson.peterssonNormSq (OrbitMultiplier m)
         chosenGammaTwoFundamentalDomain
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v) =
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v) =
       ∫ z in chosenGammaTwoFundamentalDomain.carrier,
         WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier m)
-          (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v) z
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v) z
           ∂hyperbolicMeasure := by
   unfold WeightCorePetersson.peterssonNormSq
     WeightCorePetersson.quotientNormSqDensity
   exact chosenGammaTwoFundamentalDomain.integral_descendInvariant_eq _ _
     ((WeightCorePetersson.quotientNormSqDensity_integrable
       (OrbitMultiplier m)
-      (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
       chosenGammaTwoFundamentalDomain).aestronglyMeasurable)
 
 /-- Integrability of the real diagonal density, derived from the already
 proved complex Petersson integrability rather than assumed separately. -/
 theorem upstairsNormSqDensity_integrableOn_chosenCarrier
-    (m : ℤ) (v : InverseEtaFixedPhaseCore m) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
     IntegrableOn
       (WeightCorePetersson.upstairsNormSqDensity (OrbitMultiplier m)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v))
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v))
       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure := by
   have hInner := WeightCorePetersson.upstairsInnerDensity_integrableOn
     (OrbitMultiplier m)
-    (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
-    (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore m v)
     chosenGammaTwoFundamentalDomain
   simpa only [WeightCorePetersson.upstairsInnerDensity_self,
     Complex.ofReal_re] using hInner.re
 
 theorem fixedPhaseHyperbolicGraphDensity_integrableOn_chosenCarrier
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     IntegrableOn (fixedPhaseHyperbolicGraphDensity n u)
       chosenGammaTwoFundamentalDomain.carrier hyperbolicMeasure := by
   unfold fixedPhaseHyperbolicGraphDensity
   exact (((upstairsNormSqDensity_integrableOn_chosenCarrier n u).const_mul _).add
     ((upstairsNormSqDensity_integrableOn_chosenCarrier (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u)).const_mul _)).add
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)).const_mul _)).add
     ((upstairsNormSqDensity_integrableOn_chosenCarrier (n - 1)
-      (InverseEtaFixedPhaseCore.lower n u)).const_mul _)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)).const_mul _)
 
 theorem integral_fixedPhaseHyperbolicGraphDensity_chosenCarrier
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ z in chosenGammaTwoFundamentalDomain.carrier,
         fixedPhaseHyperbolicGraphDensity n u z ∂hyperbolicMeasure) =
       logHeightTraceBaseCoeff n * ‖l2Coordinate n u‖ ^ 2 +
@@ -49791,9 +50615,9 @@ theorem integral_fixedPhaseHyperbolicGraphDensity_chosenCarrier
         3 * ‖loweredCoordinate n u‖ ^ 2 := by
   have hBase := upstairsNormSqDensity_integrableOn_chosenCarrier n u
   have hRaise := upstairsNormSqDensity_integrableOn_chosenCarrier (n + 1)
-    (InverseEtaFixedPhaseCore.raise n u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)
   have hLower := upstairsNormSqDensity_integrableOn_chosenCarrier (n - 1)
-    (InverseEtaFixedPhaseCore.lower n u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)
   unfold fixedPhaseHyperbolicGraphDensity
   rw [integral_add ((hBase.const_mul _).add (hRaise.const_mul _))
       (hLower.const_mul _),
@@ -49801,9 +50625,9 @@ theorem integral_fixedPhaseHyperbolicGraphDensity_chosenCarrier
     integral_const_mul, integral_const_mul, integral_const_mul,
     ← peterssonNormSq_eq_integral_upstairsNormSqDensity n u,
     ← peterssonNormSq_eq_integral_upstairsNormSqDensity (n + 1)
-      (InverseEtaFixedPhaseCore.raise n u),
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u),
     ← peterssonNormSq_eq_integral_upstairsNormSqDensity (n - 1)
-      (InverseEtaFixedPhaseCore.lower n u),
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u),
     ← l2Coordinate_norm_sq_eq_peterssonNormSq,
     ← l2Coordinate_norm_sq_eq_peterssonNormSq,
     ← l2Coordinate_norm_sq_eq_peterssonNormSq,
@@ -49814,7 +50638,7 @@ theorem integral_fixedPhaseHyperbolicGraphDensity_chosenCarrier
 /-- Set integration of the invariant graph density is unchanged by one
 effective translate. -/
 theorem setIntegral_fixedPhaseHyperbolicGraphDensity_image_smul
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n)
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (a : GammaTwoEffective) (S : Set ℍ) :
     (∫ z in (a • ·) '' S,
         fixedPhaseHyperbolicGraphDensity n u z ∂hyperbolicMeasure) =
@@ -49888,7 +50712,7 @@ theorem setIntegral_biUnion_finset_le_sum_of_nonneg
 
 /-- The active finite orbit cover has an explicit integral multiplicity. -/
 theorem integral_cutoffSupport_hyperbolicGraphDensity_le
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ z in literalStageCutoffUpperSupport Y,
         fixedPhaseHyperbolicGraphDensity n u z ∂hyperbolicMeasure) ≤
       (literalStageActiveTranslates Y).card *
@@ -49902,8 +50726,7 @@ theorem integral_cutoffSupport_hyperbolicGraphDensity_le
     hL.image (continuous_const_smul a)
   have hUInt : IntegrableOn (fixedPhaseHyperbolicGraphDensity n u) U
       hyperbolicMeasure :=
-    (fixedPhaseHyperbolicGraphDensity_continuous n u).continuousOn.
-      integrableOn_compact hU
+    (fixedPhaseHyperbolicGraphDensity_continuous n u).continuousOn.integrableOn_compact hU
   have hSupportLeUnion :
       (∫ z in literalStageCutoffUpperSupport Y,
           fixedPhaseHyperbolicGraphDensity n u z ∂hyperbolicMeasure) ≤
@@ -49912,8 +50735,7 @@ theorem integral_cutoffSupport_hyperbolicGraphDensity_le
     apply setIntegral_mono_set hUInt
     · exact Filter.Eventually.of_forall fun z ↦
         fixedPhaseHyperbolicGraphDensity_nonneg n u z
-    · exact (literalStageCutoffUpperSupport_subset_activeTranslates Y).
-        eventuallyLE
+    · exact (literalStageCutoffUpperSupport_subset_activeTranslates Y).eventuallyLE
   have hUnionLeSum :
       (∫ z in U, fixedPhaseHyperbolicGraphDensity n u z
           ∂hyperbolicMeasure) ≤
@@ -49972,7 +50794,7 @@ theorem integral_cutoffSupport_hyperbolicGraphDensity_le
 
 /-- Euclidean and hyperbolic graph integrals agree on the cutoff support. -/
 theorem integral_euclideanGraphDensity_cutoffSupport_eq_hyperbolic
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ z in literalStageCutoffUpperSupport Y,
         fixedPhaseEuclideanGraphDensity n u z ∂upperEuclideanMeasure) =
       ∫ z in literalStageCutoffUpperSupport Y,
@@ -49992,7 +50814,7 @@ theorem integral_euclideanGraphDensity_cutoffSupport_eq_hyperbolic
 
 /-- Literal planar `L² + dx + dy` density of the localized gauge. -/
 noncomputable def literalStageLocalizedPlanarDensity
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) : ℂ → ℝ :=
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : ℂ → ℝ :=
   fun w =>
     ‖literalStageLocalizedGauge Y n u w‖ ^ 2 +
       ‖HalfWeightCompactCoordinateGreen.dx
@@ -50001,7 +50823,7 @@ noncomputable def literalStageLocalizedPlanarDensity
         (literalStageLocalizedGauge Y n u) w‖ ^ 2
 
 theorem literalStageLocalizedPlanarDensity_continuous
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     Continuous (literalStageLocalizedPlanarDensity Y n u) := by
   unfold literalStageLocalizedPlanarDensity
   exact (((literalStageLocalizedGauge Y n u).continuous.norm.pow 2).add
@@ -50011,7 +50833,7 @@ theorem literalStageLocalizedPlanarDensity_continuous
       (literalStageLocalizedGauge Y n u)).continuous.norm.pow 2)
 
 theorem literalStageLocalizedPlanarDensity_eq_zero_of_not_mem_cutoff
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) {w : ℂ}
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) {w : ℂ}
     (hw : w ∉ tsupport (literalStageCutoff Y : ℂ → ℂ)) :
     literalStageLocalizedPlanarDensity Y n u w = 0 := by
   have hlocal : w ∉
@@ -50032,7 +50854,7 @@ theorem literalStageLocalizedPlanarDensity_eq_zero_of_not_mem_cutoff
   norm_num
 
 theorem support_literalStageLocalizedPlanarDensity_subset_cutoff
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     Function.support (literalStageLocalizedPlanarDensity Y n u) ⊆
       tsupport (literalStageCutoff Y : ℂ → ℂ) := by
   intro w hw
@@ -50041,7 +50863,7 @@ theorem support_literalStageLocalizedPlanarDensity_subset_cutoff
     Y n u hnot)
 
 theorem literalStageLocalizedPlanarDensity_hasCompactSupport
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     HasCompactSupport (literalStageLocalizedPlanarDensity Y n u) :=
   (literalStageCutoff Y).hasCompactSupport.of_isClosed_subset
     isClosed_closure
@@ -50050,17 +50872,16 @@ theorem literalStageLocalizedPlanarDensity_hasCompactSupport
       (literalStageCutoff Y).hasCompactSupport.isClosed)
 
 theorem literalStageLocalizedPlanarDensity_integrable
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     Integrable (literalStageLocalizedPlanarDensity Y n u)
       (volume : Measure ℂ) :=
-  (literalStageLocalizedPlanarDensity_continuous Y n u).
-    integrable_of_hasCompactSupport
+  (literalStageLocalizedPlanarDensity_continuous Y n u).integrable_of_hasCompactSupport
       (literalStageLocalizedPlanarDensity_hasCompactSupport Y n u)
 
 /-- Pulling the compact planar density back through the upper-half-plane
 embedding preserves its integral. -/
 theorem integral_literalStageLocalizedPlanarDensity_eq_upperSupport
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ w : ℂ, literalStageLocalizedPlanarDensity Y n u w) =
       ∫ z in literalStageCutoffUpperSupport Y,
         literalStageLocalizedPlanarDensity Y n u (z : ℂ)
@@ -50105,7 +50926,7 @@ theorem integral_literalStageLocalizedPlanarDensity_eq_upperSupport
 /-- The actual compactly supported planar localization is bounded by the
 Definition-1 graph norm, with an explicit finite-orbit multiplicity. -/
 theorem integral_literalStageLocalizedPlanarDensity_le_coreMap
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ w : ℂ, literalStageLocalizedPlanarDensity Y n u w) ≤
       literalStageLocalizationDensityConstant Y *
         ((literalStageActiveTranslates Y).card *
@@ -50122,8 +50943,7 @@ theorem integral_literalStageLocalizedPlanarDensity_le_coreMap
         fixedPhaseEuclideanGraphDensity n u z)
       (literalStageCutoffUpperSupport Y) upperEuclideanMeasure :=
     (((fixedPhaseEuclideanGraphDensity_continuous n u).const_mul
-      (literalStageLocalizationDensityConstant Y)).continuousOn.
-        integrableOn_compact hK)
+      (literalStageLocalizationDensityConstant Y)).continuousOn.integrableOn_compact hK)
   calc
     (∫ z in literalStageCutoffUpperSupport Y,
         literalStageLocalizedPlanarDensity Y n u (z : ℂ)
@@ -50164,7 +50984,7 @@ theorem literalStageLocalizationEnergyConstant_nonneg
   positivity
 
 theorem integral_literalStageLocalizedPlanarDensity_le_energyConstant
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     (∫ w : ℂ, literalStageLocalizedPlanarDensity Y n u w) ≤
       literalStageLocalizationEnergyConstant Y n * ‖coreMap n u‖ ^ 2 := by
   have h := integral_literalStageLocalizedPlanarDensity_le_coreMap Y n u
@@ -50174,7 +50994,7 @@ theorem integral_literalStageLocalizedPlanarDensity_le_energyConstant
 /-! #### The three genuine planar `L²` coordinates -/
 
 theorem ambientTestCore_memLp_volume
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     MemLp (v : ℂ → ℂ) 2 (volume : Measure ℂ) := by
   apply (memLp_two_iff_integrable_sq_norm
     v.continuous.aestronglyMeasurable).2
@@ -50195,7 +51015,7 @@ theorem ambientTestCore_memLp_volume
 ordinary plane.  Keeping this consequence separate prevents the three
 coordinate estimates below from depending on the implementation of `MemLp`. -/
 theorem ambientTestCore_normSq_integrable
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     Integrable (fun w : ℂ ↦ ‖v w‖ ^ 2) (volume : Measure ℂ) :=
   (memLp_two_iff_integrable_sq_norm
     v.continuous.aestronglyMeasurable).mp
@@ -50203,18 +51023,18 @@ theorem ambientTestCore_normSq_integrable
 
 /-- Forget a compact upper-plane test to ordinary full-plane `L²`. -/
 noncomputable def ambientTestCoreToPlaneL2Linear :
-    PhysicalLocalL2.AmbientTestCore →ₗ[ℂ] AmbientPlaneL2 where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore →ₗ[ℂ] AmbientPlaneL2 where
   toFun v := (ambientTestCore_memLp_volume v).toLp (v : ℂ → ℂ)
   map_add' v w := by
-    simpa only [TestFunction.add_apply] using
+    simpa only [add_apply] using
       MemLp.toLp_add (ambientTestCore_memLp_volume v)
         (ambientTestCore_memLp_volume w)
   map_smul' c v := by
-    simpa only [TestFunction.smul_apply, smul_eq_mul] using
+    simpa only [smul_apply, smul_eq_mul] using
       MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)
 
 theorem coeFn_ambientTestCoreToPlaneL2Linear
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ⇑(ambientTestCoreToPlaneL2Linear v) =ᵐ[(volume : Measure ℂ)]
       (v : ℂ → ℂ) :=
   MemLp.coeFn_toLp (ambientTestCore_memLp_volume v)
@@ -50228,7 +51048,7 @@ theorem ambientPlaneL2_norm_sq_eq_integral (F : AmbientPlaneL2) :
     inner_self_eq_norm_sq (𝕜 := ℂ) (F w)
 
 theorem norm_ambientTestCoreToPlaneL2Linear_sq
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖ambientTestCoreToPlaneL2Linear v‖ ^ 2 =
       ∫ w : ℂ, ‖v w‖ ^ 2 := by
   rw [ambientPlaneL2_norm_sq_eq_integral]
@@ -50238,13 +51058,13 @@ theorem norm_ambientTestCoreToPlaneL2Linear_sq
 
 @[simp]
 theorem literalStageLocalizedGauge_add
-    (Y : ℝ) (n : ℤ) (u v : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     literalStageLocalizedGauge Y n (u + v) =
       literalStageLocalizedGauge Y n u +
         literalStageLocalizedGauge Y n v := by
   apply TestFunction.ext
   intro w
-  simp only [literalStageLocalizedGauge_apply, TestFunction.add_apply]
+  simp only [literalStageLocalizedGauge_apply, add_apply]
   have hg : fixedPhaseEuclideanGauge n (u + v) =
       fixedPhaseEuclideanGauge n u + fixedPhaseEuclideanGauge n v := by
     simp only [fixedPhaseEuclideanGauge, map_add, orbitEuclideanGauge_add]
@@ -50254,12 +51074,12 @@ theorem literalStageLocalizedGauge_add
 
 @[simp]
 theorem literalStageLocalizedGauge_smul
-    (Y : ℝ) (n : ℤ) (c : ℂ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (c : ℂ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     literalStageLocalizedGauge Y n (c • u) =
       c • literalStageLocalizedGauge Y n u := by
   apply TestFunction.ext
   intro w
-  simp only [literalStageLocalizedGauge_apply, TestFunction.smul_apply,
+  simp only [literalStageLocalizedGauge_apply, smul_apply,
     smul_eq_mul]
   have hg : fixedPhaseEuclideanGauge n (c • u) =
       c • fixedPhaseEuclideanGauge n u := by
@@ -50271,42 +51091,42 @@ theorem literalStageLocalizedGauge_smul
 
 /-- Linear compact localization on the smooth fixed-phase graph core. -/
 noncomputable def literalStageLocalizedGaugeLinear (Y : ℝ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ]
-      PhysicalLocalL2.AmbientTestCore where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore where
   toFun := literalStageLocalizedGauge Y n
   map_add' := literalStageLocalizedGauge_add Y n
   map_smul' := literalStageLocalizedGauge_smul Y n
 
 /-- Base planar `L²` coordinate. -/
 noncomputable def literalStagePlaneBaseCore (Y : ℝ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
   ambientTestCoreToPlaneL2Linear.comp
     (literalStageLocalizedGaugeLinear Y n)
 
 /-- Horizontal-derivative planar `L²` coordinate. -/
 noncomputable def literalStagePlaneDxCore (Y : ℝ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
   ambientTestCoreToPlaneL2Linear.comp
     ((TestFunction.lineDerivCLM ℂ (1 : ℂ)).toLinearMap.comp
       (literalStageLocalizedGaugeLinear Y n))
 
 /-- Vertical-derivative planar `L²` coordinate. -/
 noncomputable def literalStagePlaneDyCore (Y : ℝ) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] AmbientPlaneL2 :=
   ambientTestCoreToPlaneL2Linear.comp
     ((TestFunction.lineDerivCLM ℂ Complex.I).toLinearMap.comp
       (literalStageLocalizedGaugeLinear Y n))
 
 @[simp]
 theorem literalStagePlaneBaseCore_apply
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     literalStagePlaneBaseCore Y n u =
       ambientTestCoreToPlaneL2Linear (literalStageLocalizedGauge Y n u) :=
   rfl
 
 @[simp]
 theorem literalStagePlaneDxCore_apply
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     literalStagePlaneDxCore Y n u =
       ambientTestCoreToPlaneL2Linear
         (HalfWeightCompactCoordinateGreen.dx
@@ -50315,7 +51135,7 @@ theorem literalStagePlaneDxCore_apply
 
 @[simp]
 theorem literalStagePlaneDyCore_apply
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     literalStagePlaneDyCore Y n u =
       ambientTestCoreToPlaneL2Linear
         (HalfWeightCompactCoordinateGreen.dy
@@ -50323,7 +51143,7 @@ theorem literalStagePlaneDyCore_apply
   rfl
 
 theorem norm_literalStagePlaneBaseCore_sq_le_energy
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneBaseCore Y n u‖ ^ 2 ≤
       literalStageLocalizationEnergyConstant Y n * ‖coreMap n u‖ ^ 2 := by
   rw [literalStagePlaneBaseCore_apply,
@@ -50339,7 +51159,7 @@ theorem norm_literalStagePlaneBaseCore_sq_le_energy
       positivity
 
 theorem norm_literalStagePlaneDxCore_sq_le_energy
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneDxCore Y n u‖ ^ 2 ≤
       literalStageLocalizationEnergyConstant Y n * ‖coreMap n u‖ ^ 2 := by
   rw [literalStagePlaneDxCore_apply,
@@ -50356,7 +51176,7 @@ theorem norm_literalStagePlaneDxCore_sq_le_energy
       positivity
 
 theorem norm_literalStagePlaneDyCore_sq_le_energy
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneDyCore Y n u‖ ^ 2 ≤
       literalStageLocalizationEnergyConstant Y n * ‖coreMap n u‖ ^ 2 := by
   rw [literalStagePlaneDyCore_apply,
@@ -50386,7 +51206,7 @@ theorem literalStageLocalizationConstant_sq (Y : ℝ) (n : ℤ) :
   Real.sq_sqrt (literalStageLocalizationEnergyConstant_nonneg Y n)
 
 theorem norm_literalStagePlaneBaseCore_le
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneBaseCore Y n u‖ ≤
       literalStageLocalizationConstant Y n * ‖coreMap n u‖ := by
   apply (sq_le_sq₀ (norm_nonneg _)
@@ -50396,7 +51216,7 @@ theorem norm_literalStagePlaneBaseCore_le
   exact norm_literalStagePlaneBaseCore_sq_le_energy Y n u
 
 theorem norm_literalStagePlaneDxCore_le
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneDxCore Y n u‖ ≤
       literalStageLocalizationConstant Y n * ‖coreMap n u‖ := by
   apply (sq_le_sq₀ (norm_nonneg _)
@@ -50406,7 +51226,7 @@ theorem norm_literalStagePlaneDxCore_le
   exact norm_literalStagePlaneDxCore_sq_le_energy Y n u
 
 theorem norm_literalStagePlaneDyCore_le
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneDyCore Y n u‖ ≤
       literalStageLocalizationConstant Y n * ‖coreMap n u‖ := by
   apply (sq_le_sq₀ (norm_nonneg _)
@@ -50430,7 +51250,7 @@ noncomputable def completedLiteralStagePlaneDy (Y : ℝ) (n : ℤ) :
 
 @[simp]
 theorem completedLiteralStagePlaneBase_core
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     completedLiteralStagePlaneBase Y n (coreMap n u) =
       literalStagePlaneBaseCore Y n u :=
   LinearMap.extendOfNorm_eq (denseRange_coreMap n)
@@ -50439,7 +51259,7 @@ theorem completedLiteralStagePlaneBase_core
 
 @[simp]
 theorem completedLiteralStagePlaneDx_core
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     completedLiteralStagePlaneDx Y n (coreMap n u) =
       literalStagePlaneDxCore Y n u :=
   LinearMap.extendOfNorm_eq (denseRange_coreMap n)
@@ -50448,7 +51268,7 @@ theorem completedLiteralStagePlaneDx_core
 
 @[simp]
 theorem completedLiteralStagePlaneDy_core
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     completedLiteralStagePlaneDy Y n (coreMap n u) =
       literalStagePlaneDyCore Y n u :=
   LinearMap.extendOfNorm_eq (denseRange_coreMap n)
@@ -50571,7 +51391,7 @@ theorem tsupport_literalStageCutoff_subset_fourierBox (Y : ℝ) :
     (le_of_lt (lt_of_abs_lt (hcoord.trans_lt (hnorm.trans hhalf))))⟩
 
 theorem tsupport_literalStageLocalizedGauge_subset_fourierBox
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     tsupport (literalStageLocalizedGauge Y n u : ℂ → ℂ) ⊆
       literalStageFourierBox Y :=
   (tsupport_literalStageLocalizedGauge_subset_cutoff Y n u).trans
@@ -50706,19 +51526,19 @@ theorem literalStageTorusPoint_measurable (Y : ℝ) :
 
 /-- Pull an actual compact plane test back to the genuine two-torus. -/
 noncomputable def literalStageTorusRepresentative
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     P5LocalFourierRellich.TwoTorus → ℂ :=
   fun t ↦ v (literalStageTorusPoint Y t)
 
 theorem literalStageTorusRepresentative_aestronglyMeasurable
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     AEStronglyMeasurable (literalStageTorusRepresentative Y v)
       (volume : Measure P5LocalFourierRellich.TwoTorus) :=
   (v.continuous.measurable.comp
     (literalStageTorusPoint_measurable Y)).aestronglyMeasurable
 
 theorem literalStageTorusRepresentative_memLp
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     MemLp (literalStageTorusRepresentative Y v) 2
       (volume : Measure P5LocalFourierRellich.TwoTorus) := by
   obtain ⟨C, hC⟩ :=
@@ -50729,13 +51549,13 @@ theorem literalStageTorusRepresentative_memLp
 
 /-- The scaled plane test as an honest member of torus `L²`. -/
 noncomputable def literalStageTorusTest
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     P5LocalFourierRellich.TwoTorusL2 :=
   (literalStageTorusRepresentative_memLp Y v).toLp
     (literalStageTorusRepresentative Y v)
 
 theorem coeFn_literalStageTorusTest
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ⇑(literalStageTorusTest Y v) =ᵐ[
         (volume : Measure P5LocalFourierRellich.TwoTorus)]
       literalStageTorusRepresentative Y v :=
@@ -50743,7 +51563,7 @@ theorem coeFn_literalStageTorusTest
 
 @[simp]
 theorem literalStageTorusTest_add
-    (Y : ℝ) (v w : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v w : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     literalStageTorusTest Y (v + w) =
       literalStageTorusTest Y v + literalStageTorusTest Y w := by
   apply Lp.ext fun t ↦ ?_
@@ -50753,18 +51573,18 @@ theorem literalStageTorusTest_add
     Lp.coeFn_add (literalStageTorusTest Y v)
       (literalStageTorusTest Y w)] with t ht hv hw hadd
   simp only [ht, hv, hw, hadd, literalStageTorusRepresentative,
-    TestFunction.add_apply]
+    add_apply]
 
 @[simp]
 theorem literalStageTorusTest_smul
-    (Y : ℝ) (c : ℂ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (c : ℂ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     literalStageTorusTest Y (c • v) = c • literalStageTorusTest Y v := by
   apply Lp.ext fun t ↦ ?_
   filter_upwards [coeFn_literalStageTorusTest Y (c • v),
     coeFn_literalStageTorusTest Y v,
     Lp.coeFn_smul c (literalStageTorusTest Y v)] with t ht hv hsmul
   simp only [ht, hv, hsmul, literalStageTorusRepresentative,
-    TestFunction.smul_apply, Pi.smul_apply, smul_eq_mul]
+    smul_apply, Pi.smul_apply, smul_eq_mul]
 
 /-- `L²` norm formula on the genuine two-torus. -/
 theorem twoTorusL2_norm_sq_eq_integral
@@ -50778,7 +51598,7 @@ theorem twoTorusL2_norm_sq_eq_integral
 
 /-- Exact torus-to-box integral for the scaled representative. -/
 theorem integral_literalStageTorusRepresentative_normSq_eq_box
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     (∫ t : P5LocalFourierRellich.TwoTorus,
         ‖literalStageTorusRepresentative Y v t‖ ^ 2) =
       ∫ x in literalStageUnitPiBox,
@@ -50802,7 +51622,7 @@ theorem integral_literalStageTorusRepresentative_normSq_eq_box
 /-- Scaling and restriction of a nonnegative integrable plane density give
 the required torus norm bound. -/
 theorem norm_literalStageTorusTest_sq_le_plane
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖literalStageTorusTest Y v‖ ^ 2 ≤
       (literalStageFourierScale Y) ^ (-2 : ℤ) *
         ∫ w : ℂ, ‖v w‖ ^ 2 := by
@@ -50844,7 +51664,7 @@ theorem norm_literalStageTorusTest_sq_le_plane
 of variables is an equality.  This is the exact Jacobian statement used in
 the Fourier remainder comparison below. -/
 theorem norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_scaledBox
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖literalStageTorusTest Y v‖ ^ 2 =
       (literalStageFourierScale Y) ^ (-2 : ℤ) *
         ∫ w in literalStageFourierScale Y •
@@ -50882,7 +51702,7 @@ theorem norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_scaledBox
 that rectangle.  The statement is kept at the level of the actual integral,
 so no representative of an abstract `L²` class is chosen. -/
 theorem integral_normSq_eq_setIntegral_fourierBox_of_tsupport_subset
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore)
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     (∫ w : ℂ, ‖v w‖ ^ 2) =
       ∫ w in literalStageFourierBox Y, ‖v w‖ ^ 2 := by
@@ -51066,7 +51886,7 @@ theorem literalStageFourierBox_eq_smul_unitPiBox (Y : ℝ) :
           (literalStageFourierScale_pos Y).le)
 
 theorem norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_box
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖literalStageTorusTest Y v‖ ^ 2 =
       (literalStageFourierScale Y) ^ (-2 : ℤ) *
         ∫ w in literalStageFourierBox Y, ‖v w‖ ^ 2 := by
@@ -51076,7 +51896,7 @@ theorem norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_box
 /-- Exact norm scaling between a rectangle-supported physical test and its
 periodization on the genuine two-torus. -/
 theorem norm_ambientTestCoreToPlaneL2Linear_eq_scale_mul_torusTest
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore)
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     ‖ambientTestCoreToPlaneL2Linear v‖ =
       literalStageFourierScale Y * ‖literalStageTorusTest Y v‖ := by
@@ -51233,7 +52053,7 @@ identity without a boundary term.  Compact support is carried by `v`; the
 plane wave itself is intentionally not compactly supported. -/
 theorem integral_negativePlaneWave_mul_dx
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     (∫ w : ℂ, literalStageNegativePlaneWave Y k w *
         HalfWeightCompactCoordinateGreen.dx v w) =
       (2 * Real.pi * Complex.I * (k 0 : ℂ) /
@@ -51258,7 +52078,7 @@ theorem integral_negativePlaneWave_mul_dx
 /-- Vertical counterpart of `integral_negativePlaneWave_mul_dx`. -/
 theorem integral_negativePlaneWave_mul_dy
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     (∫ w : ℂ, literalStageNegativePlaneWave Y k w *
         HalfWeightCompactCoordinateGreen.dy v w) =
       (2 * Real.pi * Complex.I * (k 1 : ℂ) /
@@ -51285,7 +52105,7 @@ the smooth negative plane wave on the whole plane.  Compact support of the
 test kills the zero-extension complement exactly. -/
 theorem inner_planeWave_ambientTestCore_eq_integral_negativePlaneWave
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     inner ℂ (literalStagePlaneWave Y k)
         (ambientTestCoreToPlaneL2Linear v) =
@@ -51308,7 +52128,7 @@ theorem inner_planeWave_ambientTestCore_eq_integral_negativePlaneWave
 side length: Jacobian `L²` times wave normalization `L⁻¹`. -/
 theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     inner ℂ (literalStagePlaneWave Y k)
         (ambientTestCoreToPlaneL2Linear v) =
@@ -51351,7 +52171,7 @@ theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff
 This is the horizontal identity on the genuine two-torus. -/
 theorem mFourierCoeff_scaled_dx
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     UnitAddTorus.mFourierCoeff
         ((literalStageFourierScale Y : ℂ) •
@@ -51400,7 +52220,7 @@ theorem mFourierCoeff_scaled_dx
 /-- Vertical integer-frequency identity. -/
 theorem mFourierCoeff_scaled_dy
     (Y : ℝ) (k : Fin 2 → ℤ)
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     UnitAddTorus.mFourierCoeff
         ((literalStageFourierScale Y : ℂ) •
@@ -51574,7 +52394,7 @@ theorem inner_finiteOrthonormalProjection_sub
 /-- Exact equality of the physical Fourier remainder with the rescaled
 torus remainder for a test supported in the rectangle. -/
 theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
-    (Y : ℝ) (N : ℕ) (v : PhysicalLocalL2.AmbientTestCore)
+    (Y : ℝ) (N : ℕ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     ‖literalStagePlaneFiniteProjection Y N
         (ambientTestCoreToPlaneL2Linear v) -
@@ -51668,7 +52488,7 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
 /-- The rescaled horizontal torus derivative is bounded by the literal
 full-plane derivative norm. -/
 theorem norm_scale_smul_torusTest_dx_le_plane
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖(literalStageFourierScale Y : ℂ) •
         literalStageTorusTest Y
           (HalfWeightCompactCoordinateGreen.dx v)‖ ≤
@@ -51693,7 +52513,7 @@ theorem norm_scale_smul_torusTest_dx_le_plane
         (HalfWeightCompactCoordinateGreen.dx v)‖)]
 
 theorem norm_scale_smul_torusTest_dy_le_plane
-    (Y : ℝ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (Y : ℝ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     ‖(literalStageFourierScale Y : ℂ) •
         literalStageTorusTest Y
           (HalfWeightCompactCoordinateGreen.dy v)‖ ≤
@@ -51721,7 +52541,7 @@ theorem norm_scale_smul_torusTest_dy_le_plane
 theorem torusFourierCoeff_sq_le_of_not_mem
     (Y : ℝ) (N : ℕ) (k : Fin 2 → ℤ)
     (hk : k ∉ literalStageFourierModes N)
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     ‖P5LocalFourierRellich.twoTorusFourierBasis.repr
         (literalStageTorusTest Y v) k‖ ^ 2 ≤
@@ -51819,7 +52639,7 @@ theorem torusFourierCoeff_sq_le_of_not_mem
 
 /-- Quantitative physical rectangle tail for one compact test. -/
 theorem norm_planeFourierRemainder_le_derivatives
-    (Y : ℝ) (N : ℕ) (v : PhysicalLocalL2.AmbientTestCore)
+    (Y : ℝ) (N : ℕ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :
     ‖literalStagePlaneFiniteProjection Y N
         (ambientTestCoreToPlaneL2Linear v) -
@@ -51882,7 +52702,7 @@ theorem literalStagePlaneTailConstant_nonneg (Y : ℝ) (n : ℤ) :
   positivity
 
 theorem norm_literalStagePlaneFiniteApproximation_sub_core_le
-    (Y : ℝ) (n : ℤ) (N : ℕ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (N : ℕ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖literalStagePlaneFiniteApproximation Y n N (coreMap n u) -
         completedLiteralStagePlaneBase Y n (coreMap n u)‖ ≤
       (literalStagePlaneTailConstant Y n / ((N : ℝ) + 1)) *
@@ -51986,7 +52806,7 @@ theorem completedLiteralStagePlaneBase_isCompact
 
 /-- Restriction of full-plane `L²` to the upper-half-plane subtype. -/
 abbrev AmbientUpperPlaneL2 :=
-  MeasureTheory.Lp ℂ 2 PhysicalLocalL2.upperEuclideanMeasure
+  MeasureTheory.Lp ℂ 2 Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure
 
 theorem upperHalfPlaneCoe_measurableEmbedding :
     MeasurableEmbedding (fun z : ℍ ↦ (z : ℂ)) :=
@@ -51996,7 +52816,7 @@ theorem upperHalfPlaneCoe_measurableEmbedding :
 theorem upperHalfPlaneCoe_quasiMeasurePreserving :
     MeasureTheory.Measure.QuasiMeasurePreserving
       (fun z : ℍ ↦ (z : ℂ))
-      PhysicalLocalL2.upperEuclideanMeasure (volume : Measure ℂ) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure (volume : Measure ℂ) := by
   refine ⟨upperHalfPlaneCoe_measurableEmbedding.measurable, ?_⟩
   change (Measure.map (fun z : ℍ ↦ (z : ℂ))
     (Measure.comap (fun z : ℍ ↦ (z : ℂ)) volume)).AbsolutelyContinuous
@@ -52006,7 +52826,7 @@ theorem upperHalfPlaneCoe_quasiMeasurePreserving :
 
 theorem ambientPlane_comp_upper_memLp (F : AmbientPlaneL2) :
     MemLp (fun z : ℍ ↦ F (z : ℂ)) 2
-      PhysicalLocalL2.upperEuclideanMeasure := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
   apply (memLp_two_iff_integrable_sq_norm
     ((Lp.aestronglyMeasurable F).comp_quasiMeasurePreserving
       upperHalfPlaneCoe_quasiMeasurePreserving)).2
@@ -52042,7 +52862,7 @@ theorem norm_ambientPlaneToUpperLinear_le (F : AmbientPlaneL2) :
     MeasureTheory.L2.norm_sq_eq_integral]
   calc
     (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure) =
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) =
       ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by
         rw [← integral_subtype_comap
           UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]
@@ -52065,10 +52885,10 @@ three-cusp stage. -/
 noncomputable def ambientPlaneToLiteralStage (Y : ℝ) :
     AmbientPlaneL2 →L[ℂ] LiteralStageL2 Y :=
   (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-      PhysicalLocalL2.chosenEuclideanCarrierMeasure 2
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure 2
       (gammaTwoThreeCuspTruncation Y)).comp
     ((MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-      PhysicalLocalL2.upperEuclideanMeasure 2
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2
       chosenGammaTwoFundamentalDomain.carrier).comp
         ambientPlaneToUpper)
 
@@ -52078,7 +52898,7 @@ theorem norm_ambientPlaneToLiteralStage_le
   calc
     ‖ambientPlaneToLiteralStage Y F‖ ≤
       ‖MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-          PhysicalLocalL2.upperEuclideanMeasure 2
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2
           chosenGammaTwoFundamentalDomain.carrier
           (ambientPlaneToUpper F)‖ :=
       MeasureTheory.norm_Lp_toLp_restrict_le _ _
@@ -52089,7 +52909,7 @@ theorem norm_ambientPlaneToLiteralStage_le
 /-- On the dense graph core, plane localization followed by literal
 restriction is exactly the original physical stage restriction. -/
 theorem ambientPlaneToLiteralStage_completedPlaneBase_core
-    (Y : ℝ) (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (Y : ℝ) (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ambientPlaneToLiteralStage Y
         (completedLiteralStagePlaneBase Y n (coreMap n u)) =
       graphLiteralStageRestriction Y n (coreMap n u) := by
@@ -52108,7 +52928,7 @@ theorem ambientPlaneToLiteralStage_completedPlaneBase_core
       (fun z : ℍ ↦
         ambientTestCoreToPlaneL2Linear
           (literalStageLocalizedGauge Y n u) (z : ℂ)) =ᵐ[
-            PhysicalLocalL2.upperEuclideanMeasure]
+            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure]
         fun z : ℍ ↦ literalStageLocalizedGauge Y n u (z : ℂ) := by
     simpa only [Function.comp_apply] using
       upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp
@@ -52122,7 +52942,7 @@ theorem ambientPlaneToLiteralStage_completedPlaneBase_core
     MeasureTheory.LpToLpRestrictCLM_coeFn ℂ
       (gammaTwoThreeCuspTruncation Y)
       (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ
-        PhysicalLocalL2.upperEuclideanMeasure 2
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2
         chosenGammaTwoFundamentalDomain.carrier
         (ambientPlaneToUpper
           (completedLiteralStagePlaneBase Y n (coreMap n u)))),
@@ -52184,7 +53004,6 @@ open GammaTwoQuotientGeometry
 open FixedPhaseClosedOperators
 open FixedPhaseClosedOperators.PhysicalLocalL2
 open ExplicitDiscriminantPotential
-open ExplicitDiscriminantPotential.CorePotentialForm
 open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 open P5PhysicalHardStageRestriction
 
@@ -52498,7 +53317,7 @@ theorem norm_graphEuclideanBase_le (n : ℤ)
   exact norm_baseExtension_le n u
 
 theorem coeFn_graphEuclideanBase_core
-    (n : ℤ) (u : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ⇑(graphEuclideanBase n (coreMap n u)) =ᵐ[
       chosenEuclideanCarrierMeasure]
       fixedPhaseEuclideanGauge n u := by
@@ -52637,15 +53456,15 @@ theorem discriminantHardStageOperator_isCompact
 /-- On the smooth graph core, the full carrier multiplier is the original
 quotient potential integral. -/
 theorem weightedFull_apply_core
-    (n : ℤ) (u v : InverseEtaFixedPhaseCore n) :
+    (n : ℤ) (u v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     weightedGraphOperator n discriminantFullCarrierWeightLp
         (coreMap n u) (coreMap n v) =
       potentialForm (OrbitMultiplier n)
         chosenGammaTwoFundamentalDomain
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
-        (InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) := by
-  let U := InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u
-  let V := InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u) := by
+  let U := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n u
+  let V := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothCompactWeightCore n v
   calc
     weightedGraphOperator n discriminantFullCarrierWeightLp
         (coreMap n u) (coreMap n v) =
@@ -52836,8 +53655,7 @@ stages and the explicit discriminant cusp tail; there is no abstract Rellich
 certificate, no rank-one replacement, and no residual hypothesis. -/
 theorem graphPotentialOperator_isCompact_unconditional (n : ℤ) :
     IsCompactOperator
-      (ExplicitDiscriminantPotential.FixedPhaseGraphPotential.
-        graphPotentialOperator n) := by
+      (ExplicitDiscriminantPotential.FixedPhaseGraphPotential.graphPotentialOperator n) := by
   exact graphPotentialOperator_isCompact_of_literalStageFactorization n
     (fun N ↦ graphLiteralStageRestriction
       (discriminantHardLiteralStage N) n)
@@ -53377,13 +54195,12 @@ namespace Mock2FA.PaperCorrections.AutomorphicSobolev
 namespace ActualScalarDiscriminantPDE
 
 open ComplexLaxMilgram FredholmBypass
-open ExplicitDiscriminantPotential.CorePotentialForm.FixedPhaseGraphPotential
+open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 
 /-- P5 compactness, re-exported at the exact weak PDE type. -/
 theorem actualScalarPotential_isCompact (n : ℤ) :
     IsCompactOperator (graphPotentialOperator n) :=
-  P5DiscriminantHardTruncation.
-    graphPotentialOperator_isCompact_unconditional n
+  P5DiscriminantHardTruncation.graphPotentialOperator_isCompact_unconditional n
 
 /-- The actual shifted decomposition now has no analytic premise. -/
 noncomputable def unconditionalShiftedCompactDecomposition
@@ -54184,7 +55001,7 @@ open ComplexLaxMilgram
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open DefinitionOneSobolev.FixedPhaseGraphCompletion
 open ActualScalarDiscriminantPDE
-open ExplicitDiscriminantPotential.CorePotentialForm.FixedPhaseGraphPotential
+open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
 open P9ClosedFormRealization
 open P9ClosedFormRealization.ActualModularEndpoint
 open P9MinimalMaximalCore
@@ -54698,8 +55515,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped Pointwise ENNReal
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
@@ -54813,8 +55630,7 @@ theorem gammaTwoReducedChartCompletedCarrier_isFundamental (z₀ : ℍ) :
       simpa only [U, mul_smul] using hb
     · exact ⟨a, Set.mem_union_right _ ⟨haD, haS⟩⟩
   refine IsFundamentalDomain.mk''
-    (gammaTwoReducedChartCompletedCarrier_measurable z₀).
-      nullMeasurableSet hCover ?_ ?_
+    (gammaTwoReducedChartCompletedCarrier_measurable z₀).nullMeasurableSet hCover ?_ ?_
   · intro a ha
     have hUU : Disjoint (a • U) U := by
       simpa only [one_smul] using hPair ha
@@ -54845,8 +55661,7 @@ theorem gammaTwoReducedChartCompletedCarrier_isFundamental (z₀ : ℍ) :
     simpa only [gammaTwoReducedChartCompletedCarrier, U, D, S, R,
       smul_set_union] using hLeftU.union_left hLeftR
   · intro a
-    exact (measurePreserving_smul a hyperbolicMeasure).
-      quasiMeasurePreserving
+    exact (measurePreserving_smul a hyperbolicMeasure).quasiMeasurePreserving
 
 /-! ### Reduced-chart integral bounds -/
 
@@ -54917,41 +55732,40 @@ density integrated against hyperbolic area. -/
 theorem setIntegral_orbitEuclideanGauge_norm_sq_eq_density
     (n : ℤ) (u : OrbitPeterssonCore n)
     (s : Set ℍ) (hs : MeasurableSet s) :
-    (∫ z in s, ‖PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure) =
+    (∫ z in s, ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) =
       ∫ z in s,
         upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore z
         ∂hyperbolicMeasure := by
-  rw [PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
     setIntegral_withDensity_eq_setIntegral_smul
-      PhysicalLocalL2.hyperbolicDensity_measurable _ hs]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicDensity_measurable _ hs]
   apply integral_congr_ae
   exact Filter.Eventually.of_forall fun z ↦
-    PhysicalLocalL2.orbitEuclideanGauge_norm_sq n u z
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_norm_sq n u z
 
 theorem orbitEuclideanGauge_memLp_reducedChart
     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) :
-    MemLp (PhysicalLocalL2.orbitEuclideanGauge n u) 2
-      (PhysicalLocalL2.upperEuclideanMeasure.restrict
+    MemLp (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u) 2
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure.restrict
         (gammaTwoReducedChart z₀)) := by
   apply (memLp_two_iff_integrable_sq_norm
-    (PhysicalLocalL2.orbitEuclideanGauge_continuous n u).
-      aestronglyMeasurable.restrict).2
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_continuous n u).aestronglyMeasurable.restrict).2
   have hHyperbolic :=
     upstairsNormSqDensity_integrableOn_reducedChart n z₀ u
   change Integrable
     (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
     (hyperbolicMeasure.restrict (gammaTwoReducedChart z₀)) at
       hHyperbolic
-  rw [PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
     Measure.restrict_withDensity
       (gammaTwoReducedChart_isOpen z₀).measurableSet] at hHyperbolic
   have hWeighted :=
     (integrable_withDensity_iff_integrable_smul
-      (mu := PhysicalLocalL2.upperEuclideanMeasure.restrict
+      (mu := Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure.restrict
         (gammaTwoReducedChart z₀))
-      PhysicalLocalL2.hyperbolicDensity_measurable).mp hHyperbolic
-  simpa only [PhysicalLocalL2.orbitEuclideanGauge_norm_sq] using hWeighted
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicDensity_measurable).mp hHyperbolic
+  simpa only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_norm_sq] using hWeighted
 
 /-! ### The completed chart restriction in planar `L2` -/
 
@@ -54960,13 +55774,13 @@ ambient complex plane. -/
 noncomputable def ambientReducedChartGauge
     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) : ℂ → ℂ :=
   (ambientGammaTwoReducedChart z₀).indicator
-    (upperLift (PhysicalLocalL2.orbitEuclideanGauge n u))
+    (upperLift (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u))
 
 theorem ambientReducedChartGauge_comp_coe
     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) (z : ℍ) :
     ambientReducedChartGauge n z₀ u (z : ℂ) =
       (gammaTwoReducedChart z₀).indicator
-        (PhysicalLocalL2.orbitEuclideanGauge n u) z := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u) z := by
   have hz : (z : ℂ) ∈ ambientGammaTwoReducedChart z₀ ↔
       z ∈ gammaTwoReducedChart z₀ := by
     constructor
@@ -54997,21 +55811,21 @@ theorem ambientReducedChartGauge_memLp
       (volume : Measure ℂ) := by
   have hUpper : MemLp
       ((gammaTwoReducedChart z₀).indicator
-        (PhysicalLocalL2.orbitEuclideanGauge n u)) 2
-      PhysicalLocalL2.upperEuclideanMeasure := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u)) 2
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
     exact (memLp_indicator_iff_restrict
       (gammaTwoReducedChart_isOpen z₀).measurableSet).2
         (orbitEuclideanGauge_memLp_reducedChart n z₀ u)
   have hMapped : MemLp (ambientReducedChartGauge n z₀ u) 2
       (Measure.map UpperHalfPlane.coe
-        PhysicalLocalL2.upperEuclideanMeasure) := by
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) := by
     apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.2
     simpa only [Function.comp_apply,
       ambientReducedChartGauge_comp_coe] using hUpper
   have hRestricted : MemLp (ambientReducedChartGauge n z₀ u) 2
       ((volume : Measure ℂ).restrict
         (Set.range UpperHalfPlane.coe)) := by
-    simpa only [PhysicalLocalL2.upperEuclideanMeasure,
+    simpa only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure,
       UpperHalfPlane.measurableEmbedding_coe.map_comap] using hMapped
   have hRangeMeas : MeasurableSet (Set.range UpperHalfPlane.coe) :=
     UpperHalfPlane.measurableEmbedding_coe.measurableSet_range
@@ -55054,7 +55868,7 @@ noncomputable def orbitPeterssonCoreToReducedChartL2
         with w hsum hadd hu hv
     rw [hsum, hadd, hu, hv]
     simp only [ambientReducedChartGauge,
-      PhysicalLocalL2.orbitEuclideanGauge_add, Pi.add_apply,
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_add, Pi.add_apply,
       Set.indicator_add]
   map_smul' c u := by
     apply MeasureTheory.Lp.ext
@@ -55068,7 +55882,7 @@ noncomputable def orbitPeterssonCoreToReducedChartL2
     rw [hsmul, hlp, hu]
     by_cases hw : w ∈ ambientGammaTwoReducedChart z₀ <;>
       simp [ambientReducedChartGauge, hw,
-        PhysicalLocalL2.orbitEuclideanGauge_smul]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul]
 
 theorem coeFn_orbitPeterssonCoreToReducedChartL2
     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) :
@@ -55082,17 +55896,17 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) :
     ‖orbitPeterssonCoreToReducedChartL2 n z₀ u‖ ^ 2 =
       ∫ z in gammaTwoReducedChart z₀,
-        ‖PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure := by
-  let g : ℍ → ℂ := PhysicalLocalL2.orbitEuclideanGauge n u
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
+  let g : ℍ → ℂ := Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u
   have hUpper : MemLp
       ((gammaTwoReducedChart z₀).indicator g) 2
-      PhysicalLocalL2.upperEuclideanMeasure := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
     exact (memLp_indicator_iff_restrict
       (gammaTwoReducedChart_isOpen z₀).measurableSet).2
         (orbitEuclideanGauge_memLp_reducedChart n z₀ u)
   let qUpper : MeasureTheory.Lp ℂ 2
-      PhysicalLocalL2.upperEuclideanMeasure :=
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure :=
     hUpper.toLp ((gammaTwoReducedChart z₀).indicator g)
   let q := orbitPeterssonCoreToReducedChartL2 n z₀ u
   have hNorm : ‖q‖ = ‖qUpper‖ := by
@@ -55108,15 +55922,15 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
           (ambientReducedChartGauge_support_subset_range n z₀ u)).symm
       _ = eLpNorm (ambientReducedChartGauge n z₀ u) 2
           (Measure.map UpperHalfPlane.coe
-            PhysicalLocalL2.upperEuclideanMeasure) := by
-        simp only [PhysicalLocalL2.upperEuclideanMeasure,
+            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) := by
+        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure,
           UpperHalfPlane.measurableEmbedding_coe.map_comap]
       _ = eLpNorm
           (ambientReducedChartGauge n z₀ u ∘ UpperHalfPlane.coe) 2
-          PhysicalLocalL2.upperEuclideanMeasure :=
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure :=
         UpperHalfPlane.measurableEmbedding_coe.eLpNorm_map_measure
       _ = eLpNorm ((gammaTwoReducedChart z₀).indicator g) 2
-          PhysicalLocalL2.upperEuclideanMeasure := by
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
         apply eLpNorm_congr_ae
         exact Filter.Eventually.of_forall fun z ↦ by
           simpa only [Function.comp_apply, g] using
@@ -55124,7 +55938,7 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
   calc
     ‖q‖ ^ 2 = ‖qUpper‖ ^ 2 := by rw [hNorm]
     _ = ∫ z : ℍ, ‖qUpper z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure := by
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
       rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
         ← integral_re (MeasureTheory.L2.integrable_inner qUpper qUpper)]
       apply integral_congr_ae
@@ -55132,12 +55946,12 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
         inner_self_eq_norm_sq (𝕜 := ℂ) (qUpper z)
     _ = ∫ z : ℍ,
         ‖(gammaTwoReducedChart z₀).indicator g z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure := by
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
       apply integral_congr_ae
       filter_upwards [MemLp.coeFn_toLp hUpper] with z hz
       rw [hz]
     _ = ∫ z in gammaTwoReducedChart z₀, ‖g z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure := by
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
       rw [← integral_indicator
         (gammaTwoReducedChart_isOpen z₀).measurableSet]
       apply integral_congr_ae
@@ -55145,8 +55959,8 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
         by_cases hz : z ∈ gammaTwoReducedChart z₀ <;>
           simp [hz]
     _ = ∫ z in gammaTwoReducedChart z₀,
-        ‖PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
-        ∂PhysicalLocalL2.upperEuclideanMeasure := rfl
+        ‖Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u z‖ ^ 2
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := rfl
 
 theorem orbitPeterssonCore_norm_sq_eq_density_integral
     (n : ℤ) (u : OrbitPeterssonCore n) :
@@ -55327,7 +56141,7 @@ theorem fullPlaneAffinePrincipalCutoff_apply
         (sigma * fderiv ℝ (phi : ℂ → ℂ) x 1 +
           fderiv ℝ (phi : ℂ → ℂ) x Complex.I) := by
   simp only [fullPlaneAffinePrincipalCutoff, fullPlaneHeightMul_apply,
-    TestFunction.add_apply, TestFunction.smul_apply,
+    add_apply, smul_apply,
     fullPlaneDirectionalDerivative_apply, smul_eq_mul]
 
 theorem tsupport_fullPlaneAffinePrincipalCutoff_subset
@@ -55347,7 +56161,7 @@ theorem tsupport_fullPlaneAffinePrincipalCutoff_subset
         tsupport (phi : ℂ → ℂ) :=
     tsupport_mul_subset_right.trans hOne
   refine tsupport_mul_subset_right.trans ?_
-  simpa only [TestFunction.add_apply, TestFunction.smul_apply,
+  simpa only [add_apply, smul_apply,
     smul_eq_mul] using
       (tsupport_add _ _).trans (union_subset hSigma hI)
 
@@ -55556,8 +56370,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseEssentialCoreRoute
 open FixedPhaseClosedOperators
@@ -55688,7 +56502,7 @@ theorem gammaTwoReducedChart_disjoint_translate
 /-! ### Exact Poincare extension on every reduced chart -/
 
 theorem gammaTwoPeriodizationSeedSupport_subset_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     gammaTwoPeriodizationSeedSupport m v ⊆
@@ -55704,7 +56518,7 @@ theorem gammaTwoPeriodizationSeedSupport_subset_reducedChart
 of the effective identity can contribute to a seed supported in that chart.
 -/
 theorem support_periodizationIndex_at_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
@@ -55744,7 +56558,7 @@ theorem support_periodizationIndex_at_reducedChart
 /-- Normalized periodization is literally the inverse-gauge seed throughout
 an arbitrary reduced chart. -/
 theorem gammaTwoPoincarePeriodization_eq_seed_on_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
@@ -55759,23 +56573,23 @@ theorem gammaTwoPoincarePeriodization_eq_seed_on_reducedChart
 /-- The Euclidean gauge of the periodized physical core agrees with its
 ambient seed on the reduced chart, including across every paired side. -/
 theorem fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge m
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
         (gammaTwoPeriodizedPhysicalCore m v) x = v (x : ℂ) := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
-  change (((x.im ^ PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+  change (((x.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
       gammaTwoPoincarePeriodization m v x) = v (x : ℂ)
   rw [gammaTwoPoincarePeriodization_eq_seed_on_reducedChart hv hx,
     gammaTwoPeriodizationSeed_apply,
     Real.rpow_neg x.im_pos.le]
-  have hp : x.im ^ PhysicalLocalL2.euclideanGaugeExponent m ≠ 0 :=
+  have hp : x.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m ≠ 0 :=
     ne_of_gt (Real.rpow_pos_of_pos x.im_pos _)
   have hcancel :
-      ((x.im ^ PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
-          (((x.im ^ PhysicalLocalL2.euclideanGaugeExponent m)⁻¹ : ℝ) : ℂ) = 1 := by
+      ((x.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
+          (((x.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m)⁻¹ : ℝ) : ℂ) = 1 := by
     rw [← Complex.ofReal_mul]
     simp [hp]
   rw [← mul_assoc, hcancel, one_mul]
@@ -55783,12 +56597,12 @@ theorem fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
 /-- `EqOn` packaging used by every subsequent reduced-chart synthesis and
 Friedrichs lemma. -/
 theorem gammaTwoPeriodizedPhysicalCore_gauge_eqOn_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     Set.EqOn
       (SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
           (gammaTwoPeriodizedPhysicalCore m v)))
       (v : ℂ → ℂ)
       (ambientGammaTwoReducedChart z₀) := by
@@ -55808,12 +56622,12 @@ so real Frechet derivatives may be transported without a boundary trace.
 -/
 
 theorem periodizedGauge_eventuallyEq_ambientTest_on_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
     SmoothCompactCoreGeometry.upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
           (gammaTwoPeriodizedPhysicalCore m v)) =ᶠ[nhds (x : ℂ)]
       (v : ℂ → ℂ) := by
   apply
@@ -55823,12 +56637,12 @@ theorem periodizedGauge_eventuallyEq_ambientTest_on_reducedChart
     ⟨x, hx, rfl⟩
 
 theorem dx_periodizedGauge_eq_ambientTest_on_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
     HalfWeightDifferentialOperators.dx
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
           (gammaTwoPeriodizedPhysicalCore m v)) x =
       HalfWeightCompactCoordinateGreen.dx v (x : ℂ) := by
   unfold HalfWeightDifferentialOperators.dx
@@ -55840,12 +56654,12 @@ theorem dx_periodizedGauge_eq_ambientTest_on_reducedChart
       1 v (x : ℂ)).symm
 
 theorem dy_periodizedGauge_eq_ambientTest_on_reducedChart
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
     HalfWeightDifferentialOperators.dy
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
           (gammaTwoPeriodizedPhysicalCore m v)) x =
       HalfWeightCompactCoordinateGreen.dy v (x : ℂ) := by
   unfold HalfWeightDifferentialOperators.dy
@@ -55859,12 +56673,12 @@ theorem dy_periodizedGauge_eq_ambientTest_on_reducedChart
 /-- Forward raising of a reduced-chart periodization is literally the
 ambient forward affine Maass expression throughout that chart. -/
 theorem euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart
-    {n : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {n : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
-    PhysicalLocalL2.euclideanRaiseGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
           (gammaTwoPeriodizedPhysicalCore n v)) x =
       euclideanRaiseForwardTest n v (x : ℂ) := by
   have hdx := dx_periodizedGauge_eq_ambientTest_on_reducedChart
@@ -55874,9 +56688,9 @@ theorem euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart
   have hval :=
     fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
       (m := n) hv hx
-  simp only [PhysicalLocalL2.euclideanRaiseGauge,
-    euclideanRaiseForwardTest, TestFunction.add_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,
+    euclideanRaiseForwardTest, add_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -55886,12 +56700,12 @@ theorem euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart
 /-- Forward lowering from the successor gauge satisfies the identical
 seam-safe chart formula. -/
 theorem euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart
-    {n : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {n : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
-    PhysicalLocalL2.euclideanLowerFromSuccGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
           (gammaTwoPeriodizedPhysicalCore (n + 1) v)) x =
       euclideanLowerFromSuccForwardTest n v (x : ℂ) := by
   have hdx := dx_periodizedGauge_eq_ambientTest_on_reducedChart
@@ -55901,9 +56715,9 @@ theorem euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart
   have hval :=
     fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
       (m := n + 1) hv hx
-  simp only [PhysicalLocalL2.euclideanLowerFromSuccGauge,
-    euclideanLowerFromSuccForwardTest, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,
+    euclideanLowerFromSuccForwardTest, add_apply,
+    sub_apply, smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -55916,14 +56730,14 @@ theorem euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart
 gauge is exactly the Hermitian test transpose of raising.  The coefficient
 `p + 1` is retained literally. -/
 theorem neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart
-    {n : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {n : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
-    -PhysicalLocalL2.euclideanLowerFromSuccGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+    -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
           (gammaTwoPeriodizedPhysicalCore (n + 1) v)) x =
-      PhysicalLocalL2.euclideanRaiseTestAdjoint n v (x : ℂ) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n v (x : ℂ) := by
   have hdx := dx_periodizedGauge_eq_ambientTest_on_reducedChart
     (m := n + 1) hv hx
   have hdy := dy_periodizedGauge_eq_ambientTest_on_reducedChart
@@ -55931,10 +56745,10 @@ theorem neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reduce
   have hval :=
     fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
       (m := n + 1) hv hx
-  simp only [PhysicalLocalL2.euclideanLowerFromSuccGauge,
-    PhysicalLocalL2.euclideanRaiseTestAdjoint,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -55944,14 +56758,14 @@ theorem neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reduce
 /-- Dually, signed raising on a reduced-chart periodization is the exact
 lowering-from-successor test transpose, including its `p + 2` coefficient. -/
 theorem neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart
-    {n : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {n : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∈ gammaTwoReducedChart z₀) :
-    -PhysicalLocalL2.euclideanRaiseGauge n
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge n
+    -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
           (gammaTwoPeriodizedPhysicalCore n v)) x =
-      PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v (x : ℂ) := by
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n v (x : ℂ) := by
   have hdx := dx_periodizedGauge_eq_ambientTest_on_reducedChart
     (m := n) hv hx
   have hdy := dy_periodizedGauge_eq_ambientTest_on_reducedChart
@@ -55959,10 +56773,10 @@ theorem neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reduce
   have hval :=
     fixedPhaseEuclideanGauge_periodized_eq_ambientTest_on_reducedChart
       (m := n) hv hx
-  simp only [PhysicalLocalL2.euclideanRaiseGauge,
-    PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
-    TestFunction.add_apply, TestFunction.sub_apply,
-    TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
+    add_apply, sub_apply,
+    smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightDifferentialOperators.heightC, smul_eq_mul]
@@ -56088,8 +56902,7 @@ theorem localizedAffineTarget_hasEssentialSupport
         sigma phi : ℂ → ℂ) := by
     intro hxPrincipal
     exact hxSupport
-      (FixedPhasePlanarLocalization.
-        tsupport_fullPlaneAffinePrincipalCutoff_subset
+      (FixedPhasePlanarLocalization.tsupport_fullPlaneAffinePrincipalCutoff_subset
           sigma phi hxPrincipal)
   have hprincipal :
       FixedPhasePlanarLocalization.fullPlaneAffinePrincipalCutoff
@@ -56134,8 +56947,7 @@ theorem essentialFriedrichsRepresentative_contDiff
     {K : Set ℂ} (j : ℕ) (u : AmbientPlaneL2)
     (hu : HasEssentialSupportIn u K) :
     ContDiff ℝ ∞ (essentialFriedrichsRepresentative K j u) := by
-  exact (friedrichsMollifierReal_hasCompactSupport j).
-    contDiff_convolution_left (lsmul ℝ ℂ)
+  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left (lsmul ℝ ℂ)
       (friedrichsMollifierReal_contDiff j)
       (compactIndicatorRepresentative_locallyIntegrable hu)
 
@@ -56203,7 +57015,7 @@ noncomputable def bufferedEssentialFriedrichsAmbientTest
     (hj : friedrichsRadius j <
       (compactChartBuffer hK hU hKU).radius)
     (u : AmbientPlaneL2) (hu : HasEssentialSupportIn u K) :
-    PhysicalLocalL2.AmbientTestCore :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   fullPlaneTestToAmbientTestCore
     (bufferedEssentialFriedrichsFullPlaneTest hK j u hu)
     ((tsupport_bufferedEssentialFriedrichsFullPlaneTest_subset
@@ -56274,8 +57086,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators Convolution ContDiff Distributions LinearPMap ENNReal
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
@@ -56332,8 +57144,8 @@ theorem tsupport_fullPlaneAffineTranspose_subset
   have hc : tsupport (fun z : ℂ ↦ (c - 1) * v z) ⊆
       tsupport (v : ℂ → ℂ) :=
     tsupport_mul_subset_right
-  simpa only [fullPlaneAffineTranspose, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply, smul_eq_mul] using
+  simpa only [fullPlaneAffineTranspose, add_apply,
+    sub_apply, smul_apply, smul_eq_mul] using
       (tsupport_add
         (fun z : ℂ ↦ -sigma *
           fullPlaneHeightMul (fullPlaneDirectionalDerivative 1 v) z -
@@ -56349,7 +57161,7 @@ noncomputable def reducedChartAmbientTest
     {z₀ : ℍ} (v : FullPlaneTest)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
-    PhysicalLocalL2.AmbientTestCore :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   fullPlaneTestToAmbientTestCore v
     (hv.trans (ambientGammaTwoReducedChart_subset_upperPlaneOpen z₀))
 
@@ -56366,7 +57178,7 @@ noncomputable def reducedChartConjugateAmbientTest
     {z₀ : ℍ} (v : FullPlaneTest)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
-    PhysicalLocalL2.AmbientTestCore :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   HalfWeightCompactCoordinateGreen.conjugate
     (reducedChartAmbientTest v hv)
 
@@ -56394,12 +57206,12 @@ theorem tsupport_reducedChartConjugateAmbientTest_subset
 /-- Union of the actual compact seed supports, before passing to the
 effective action. -/
 def gammaTwoPeriodizationOrbitSupport
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
   ⋃ gamma : GammaTwo,
     ((gamma : SL(2, ℤ)) • ·) '' gammaTwoPeriodizationSeedSupport m v
 
 theorem gammaTwoPeriodizationOrbitSupport_isClosed
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsClosed (gammaTwoPeriodizationOrbitSupport m v) := by
   unfold gammaTwoPeriodizationOrbitSupport
   apply (gammaTwo_compact_translates_locallyFinite
@@ -56413,7 +57225,7 @@ theorem gammaTwoPeriodizationOrbitSupport_isClosed
   exact hCompact.isClosed
 
 theorem support_gammaTwoPoincarePeriodization_subset_orbitSupport
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     Function.support (gammaTwoPoincarePeriodization m v) ⊆
       gammaTwoPeriodizationOrbitSupport m v := by
   intro x hx
@@ -56429,7 +57241,7 @@ theorem support_gammaTwoPoincarePeriodization_subset_orbitSupport
   rw [finsum_eq_zero_of_forall_eq_zero hTerm, mul_zero]
 
 theorem tsupport_gammaTwoPoincarePeriodization_subset_orbitSupport
-    (m : ℤ) (v : PhysicalLocalL2.AmbientTestCore) :
+    (m : ℤ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     tsupport (gammaTwoPoincarePeriodization m v) ⊆
       gammaTwoPeriodizationOrbitSupport m v := by
   exact closure_minimal
@@ -56437,7 +57249,7 @@ theorem tsupport_gammaTwoPoincarePeriodization_subset_orbitSupport
     (gammaTwoPeriodizationOrbitSupport_isClosed m v)
 
 theorem gammaTwoPeriodizationOrbitSupport_subset_saturation
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     gammaTwoPeriodizationOrbitSupport m v ⊆
@@ -56455,13 +57267,13 @@ outside the orbit saturation of its reduced chart.  The proof uses the closed
 locally-finite union of compact seed supports, not a claim that an arbitrary
 open chart has null boundary. -/
 theorem periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
-    {m : ℤ} {v : PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
+    {m : ℤ} {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ x : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hx : x ∉ gammaTwoOrbitSaturation (gammaTwoReducedChart z₀)) :
     upperLift
-        (PhysicalLocalL2.fixedPhaseEuclideanGauge m
-          (gammaTwoPeriodizedPhysicalCore m v)) =ᶠ[𝒩 (x : ℂ)]
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
+          (gammaTwoPeriodizedPhysicalCore m v)) =ᶠ[𝓝 (x : ℂ)]
       (0 : ℂ → ℂ) := by
   have hxOrbit : x ∉ gammaTwoPeriodizationOrbitSupport m v :=
     fun h ↦ hx (gammaTwoPeriodizationOrbitSupport_subset_saturation hv h)
@@ -56469,20 +57281,20 @@ theorem periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
       tsupport (gammaTwoPoincarePeriodization m v) :=
     fun h ↦ hxOrbit
       (tsupport_gammaTwoPoincarePeriodization_subset_orbitSupport m v h)
-  have hRaw : gammaTwoPoincarePeriodization m v =ᶠ[𝒩 x]
+  have hRaw : gammaTwoPoincarePeriodization m v =ᶠ[𝓝 x]
       (0 : ℍ → ℂ) :=
     notMem_tsupport_iff_eventuallyEq.mp hxSupport
   have hGauge :
-      PhysicalLocalL2.fixedPhaseEuclideanGauge m
-          (gammaTwoPeriodizedPhysicalCore m v) =ᶠ[𝒩 x]
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m
+          (gammaTwoPeriodizedPhysicalCore m v) =ᶠ[𝓝 x]
         (0 : ℍ → ℂ) := by
     filter_upwards [hRaw] with y hy
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
-    change ((y.im ^ PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+    change ((y.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ) *
         gammaTwoPoincarePeriodization m v y = 0
     rw [hy, mul_zero]
   rcases mem_nhds_iff.mp hGauge with ⟨U, hU, hUopen, hxU⟩
-  have hImage : UpperHalfPlane.coe '' U ∈ 𝒩 (x : ℂ) :=
+  have hImage : UpperHalfPlane.coe '' U ∈ 𝓝 (x : ℂ) :=
     (UpperHalfPlane.isOpenEmbedding_coe.isOpenMap U hUopen).mem_nhds
       ⟨x, hxU, rfl⟩
   filter_upwards [hImage] with w hw
@@ -56491,9 +57303,9 @@ theorem periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
 
 theorem euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero
     (n : ℤ) (f : ℍ → ℂ) (x : ℍ)
-    (hzero : upperLift f =ᶠ[𝒩 (x : ℂ)] (0 : ℂ → ℂ)) :
-    PhysicalLocalL2.euclideanRaiseGauge n f x = 0 := by
-  unfold PhysicalLocalL2.euclideanRaiseGauge
+    (hzero : upperLift f =ᶠ[𝓝 (x : ℂ)] (0 : ℂ → ℂ)) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge n f x = 0 := by
+  unfold Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge
     HalfWeightDifferentialOperators.dx
     HalfWeightDifferentialOperators.dy
     HalfWeightDifferentialOperators.d1
@@ -56502,9 +57314,9 @@ theorem euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero
 
 theorem euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero
     (n : ℤ) (f : ℍ → ℂ) (x : ℍ)
-    (hzero : upperLift f =ᶠ[𝒩 (x : ℂ)] (0 : ℂ → ℂ)) :
-    PhysicalLocalL2.euclideanLowerFromSuccGauge n f x = 0 := by
-  unfold PhysicalLocalL2.euclideanLowerFromSuccGauge
+    (hzero : upperLift f =ᶠ[𝓝 (x : ℂ)] (0 : ℂ → ℂ)) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge n f x = 0 := by
+  unfold Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge
     HalfWeightDifferentialOperators.dx
     HalfWeightDifferentialOperators.dy
     HalfWeightDifferentialOperators.d1
@@ -56521,9 +57333,9 @@ theorem inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest
     inner ℂ (orbitPeterssonCoreToReducedChartL2 m z₀ u)
         (fullPlaneTestToL2 v) =
       ∫ z in gammaTwoReducedChart z₀,
-        inner ℂ (PhysicalLocalL2.orbitEuclideanGauge m u z)
+        inner ℂ (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge m u z)
           (v (z : ℂ))
-        ∂PhysicalLocalL2.upperEuclideanMeasure := by
+        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
   rw [MeasureTheory.L2.inner_def,
     GammaTwoCurvilinearTileStokes.setIntegral_comap_eq_complexImage]
   rw [← integral_indicator
@@ -56540,19 +57352,19 @@ theorem inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest
 /-- Exact data needed to use a smooth physical core as a model for one
 full-plane compact test on a reduced chart. -/
 def IsReducedChartGaugeModel
-    (m : ℤ) (z₀ : ℍ) (q : InverseEtaFixedPhaseCore m)
+    (m : ℤ) (z₀ : ℍ) (q : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
     (v : FullPlaneTest) : Prop :=
   (∀ z ∈ gammaTwoReducedChart z₀,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge m q z = v (z : ℂ)) ∧
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m q z = v (z : ℂ)) ∧
   (∀ z ∉ gammaTwoOrbitSaturation (gammaTwoReducedChart z₀),
-    PhysicalLocalL2.fixedPhaseEuclideanGauge m q z = 0) ∧
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m q z = 0) ∧
   tsupport (v : ℂ → ℂ) ⊆ ambientGammaTwoReducedChart z₀
 
 /-- A chart gauge model gives the exact Petersson/planar pairing on the
 smooth Petersson core.  The remainder of the completed carrier contributes
 zero pointwise. -/
 theorem inner_coreEmbedding_eq_reducedChart_pair
-    {m : ℤ} {z₀ : ℍ} {q : InverseEtaFixedPhaseCore m}
+    {m : ℤ} {z₀ : ℍ} {q : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
     {v : FullPlaneTest}
     (hModel : IsReducedChartGaugeModel m z₀ q v)
     (u : OrbitPeterssonCore m) :
@@ -56580,11 +57392,11 @@ theorem inner_coreEmbedding_eq_reducedChart_pair
     intro z hz
     have hGauge := hModel.2.1 z hz.2
     have hScale :
-        (((z.im ^ PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ)) ≠ 0 :=
+        (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent m : ℝ) : ℂ)) ≠ 0 :=
       Complex.ofReal_ne_zero.mpr
         (ne_of_gt (Real.rpow_pos_of_pos z.im_pos _))
     have hSection : ((q : SmoothQuotientCompactFunction) z) = 0 := by
-      rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply] at hGauge
+      rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply] at hGauge
       exact (mul_eq_zero.mp hGauge).resolve_left hScale
     change _ * star _ *
       ((q : SmoothQuotientCompactFunction) z) = 0
@@ -56598,25 +57410,25 @@ theorem inner_coreEmbedding_eq_reducedChart_pair
     (chosenGammaTwoFundamentalDomain.carrier_measurable.diff
       (gammaTwoOrbitSaturation_measurable
         (gammaTwoReducedChart_isOpen z₀).measurableSet)) hZeroR]
-  rw [PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
     setIntegral_withDensity_eq_setIntegral_smul
-      PhysicalLocalL2.hyperbolicDensity_measurable _
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicDensity_measurable _
       (gammaTwoReducedChart_isOpen z₀).measurableSet]
   rw [inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest]
   apply setIntegral_congr_fun
     (gammaTwoReducedChart_isOpen z₀).measurableSet
   intro z hz
-  have hInner := PhysicalLocalL2.orbitEuclideanGauge_inner
+  have hInner := Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_inner
     m u (coreEmbedding m q) z
-  change inner ℂ (PhysicalLocalL2.orbitEuclideanGauge m u z)
-      (PhysicalLocalL2.fixedPhaseEuclideanGauge m q z) = _ at hInner
+  change inner ℂ (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge m u z)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m q z) = _ at hInner
   rw [hModel.1 z hz] at hInner
   exact hInner.symm
 
 /-- Continuous extension of the preceding pairing identity to every
 completed Petersson vector. -/
 theorem inner_l2Coordinate_eq_reducedChart_pair
-    {m : ℤ} {z₀ : ℍ} {q : InverseEtaFixedPhaseCore m}
+    {m : ℤ} {z₀ : ℍ} {q : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
     {v : FullPlaneTest}
     (hModel : IsReducedChartGaugeModel m z₀ q v)
     (x : OrbitPeterssonHilbert m) :
@@ -56658,15 +57470,15 @@ theorem euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose
     {z₀ : ℍ} (n : ℤ) (v : FullPlaneTest)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) (w : ℂ) :
-    PhysicalLocalL2.euclideanRaiseTestAdjoint n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint n
         (reducedChartConjugateAmbientTest v hv) w =
-      Complex.conj
+      star
         (fullPlaneAffineTranspose Complex.I
-          (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+          (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
           v w) := by
-  simp only [PhysicalLocalL2.euclideanRaiseTestAdjoint,
-    fullPlaneAffineTranspose_apply, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,
+    fullPlaneAffineTranspose_apply, add_apply,
+    sub_apply, smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightCompactCoordinateGreen.dx_conjugate_apply,
@@ -56684,15 +57496,15 @@ theorem euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose
     {z₀ : ℍ} (n : ℤ) (v : FullPlaneTest)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) (w : ℂ) :
-    PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint n
         (reducedChartConjugateAmbientTest v hv) w =
-      Complex.conj
+      star
         (fullPlaneAffineTranspose (-Complex.I)
-          (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+          (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
           v w) := by
-  simp only [PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
-    fullPlaneAffineTranspose_apply, TestFunction.add_apply,
-    TestFunction.sub_apply, TestFunction.smul_apply,
+  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,
+    fullPlaneAffineTranspose_apply, add_apply,
+    sub_apply, smul_apply,
     HalfWeightCompactCoordinateGreen.rpowMul_apply,
     HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,
     HalfWeightCompactCoordinateGreen.dx_conjugate_apply,
@@ -56711,22 +57523,22 @@ theorem signedLowerPeriodization_isReducedChartGaugeModel
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     IsReducedChartGaugeModel n z₀
-      (-InverseEtaFixedPhaseCore.lowerFromSucc n
+      (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         (gammaTwoPeriodizedPhysicalCore (n + 1)
           (reducedChartConjugateAmbientTest v hv)))
       (fullPlaneConjugate
         (fullPlaneAffineTranspose Complex.I
-          (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)) v)) := by
+          (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ)) v)) := by
   let a := reducedChartConjugateAmbientTest v hv
   have ha : tsupport (a : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀ :=
     tsupport_reducedChartConjugateAmbientTest_subset v hv
   refine ⟨?_, ?_, ?_⟩
   · intro z hz
-    change -PhysicalLocalL2.fixedPhaseEuclideanGauge n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n
+    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
           (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = _
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
     rw [neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart
       ha hz]
     rw [euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose
@@ -56737,17 +57549,17 @@ theorem signedLowerPeriodization_isReducedChartGaugeModel
       periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
         (m := n + 1) (v := a) ha hz
     have hLower := euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero
-      n (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+      n (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
         (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z hBase
-    change -PhysicalLocalL2.fixedPhaseEuclideanGauge n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n
+    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
           (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = 0
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc, hLower,
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc, hLower,
       neg_zero]
   · exact (tsupport_fullPlaneConjugate_subset _).trans <|
       (tsupport_fullPlaneAffineTranspose_subset
         Complex.I
-        (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+        (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
         v).trans hv
 
 /-- Signed raising of the periodized conjugate is the lowering bilinear
@@ -56757,22 +57569,22 @@ theorem signedRaisePeriodization_isReducedChartGaugeModel
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     IsReducedChartGaugeModel (n + 1) z₀
-      (-InverseEtaFixedPhaseCore.raise n
+      (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
         (gammaTwoPeriodizedPhysicalCore n
           (reducedChartConjugateAmbientTest v hv)))
       (fullPlaneConjugate
         (fullPlaneAffineTranspose (-Complex.I)
-          (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))) v)) := by
+          (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ))) v)) := by
   let a := reducedChartConjugateAmbientTest v hv
   have ha : tsupport (a : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀ :=
     tsupport_reducedChartConjugateAmbientTest_subset v hv
   refine ⟨?_, ?_, ?_⟩
   · intro z hz
-    change -PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
-        (InverseEtaFixedPhaseCore.raise n
+    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
           (gammaTwoPeriodizedPhysicalCore n a)) z = _
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
     rw [neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart
       ha hz]
     rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose
@@ -56783,16 +57595,16 @@ theorem signedRaisePeriodization_isReducedChartGaugeModel
       periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
         (m := n) (v := a) ha hz
     have hRaise := euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero
-      n (PhysicalLocalL2.fixedPhaseEuclideanGauge n
+      n (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
         (gammaTwoPeriodizedPhysicalCore n a)) z hBase
-    change -PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
-        (InverseEtaFixedPhaseCore.raise n
+    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
           (gammaTwoPeriodizedPhysicalCore n a)) z = 0
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_raise, hRaise, neg_zero]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise, hRaise, neg_zero]
   · exact (tsupport_fullPlaneConjugate_subset _).trans <|
       (tsupport_fullPlaneAffineTranspose_subset
         (-Complex.I)
-        (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+        (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
         v).trans hv
 
 /-! ### Maximal adjoints give chart-local planar weak graphs -/
@@ -56823,7 +57635,7 @@ theorem raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
     (hp : p ∈ ((-physicalLowerFromSucc n)†).graph) :
     IsPlanarAffineWeakGraphOn (ambientGammaTwoReducedChart z₀)
       Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       (orbitPeterssonReducedChartEmbedding n z₀ p.1)
       (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.2) := by
   intro v hv
@@ -56865,7 +57677,7 @@ theorem raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
     hSignedModel p.1
   have hSignedCoordinate :
       l2Coordinate n
-          (-InverseEtaFixedPhaseCore.lowerFromSucc n q) =
+          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n q) =
         -lowerFromSuccCoordinate n q := by
     simp only [map_neg, lowerFromSuccCoordinate_apply]
   rw [hSignedCoordinate] at hSignedPair
@@ -56875,7 +57687,7 @@ theorem raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
         inner ℂ (fullPlaneTestToL2 (fullPlaneConjugate v))
           (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.2) :=
       integral_mul_eq_inner_fullPlaneConjugate v _
-    _ = Complex.conj
+    _ = star
         (inner ℂ (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.2)
           (fullPlaneTestToL2 (fullPlaneConjugate v))) := by
       rw [inner_conj_symm]
@@ -56883,25 +57695,25 @@ theorem raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
       rw [hBasePair]
     _ = star (inner ℂ p.1 (-lowerFromSuccCoordinate n q)) := by
       rw [hPetersson]
-    _ = Complex.conj
+    _ = star
         (inner ℂ (orbitPeterssonReducedChartEmbedding n z₀ p.1)
           (fullPlaneTestToL2
             (fullPlaneConjugate
               (fullPlaneAffineTranspose Complex.I
-                (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+                (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
                 v)))) := by
       rw [hSignedPair]
     _ = inner ℂ
         (fullPlaneTestToL2
           (fullPlaneConjugate
             (fullPlaneAffineTranspose Complex.I
-              (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+              (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
               v)))
         (orbitPeterssonReducedChartEmbedding n z₀ p.1) := by
       rw [inner_conj_symm]
     _ = ∫ t : ℂ,
         fullPlaneAffineTranspose Complex.I
-            (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+            (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
             v t *
           orbitPeterssonReducedChartEmbedding n z₀ p.1 t := by
       rw [inner_fullPlaneTestToL2_eq_integral_conj_mul]
@@ -56916,7 +57728,7 @@ theorem loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
     (hp : p ∈ ((-physicalRaise n)†).graph) :
     IsPlanarAffineWeakGraphOn (ambientGammaTwoReducedChart z₀)
       (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1)
       (orbitPeterssonReducedChartEmbedding n z₀ p.2) := by
   intro v hv
@@ -56958,7 +57770,7 @@ theorem loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
     hSignedModel p.1
   have hSignedCoordinate :
       l2Coordinate (n + 1)
-          (-InverseEtaFixedPhaseCore.raise n q) =
+          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n q) =
         -raisedCoordinate n q := by
     simp only [map_neg, raisedCoordinate_apply]
   rw [hSignedCoordinate] at hSignedPair
@@ -56967,7 +57779,7 @@ theorem loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
         inner ℂ (fullPlaneTestToL2 (fullPlaneConjugate v))
           (orbitPeterssonReducedChartEmbedding n z₀ p.2) :=
       integral_mul_eq_inner_fullPlaneConjugate v _
-    _ = Complex.conj
+    _ = star
         (inner ℂ (orbitPeterssonReducedChartEmbedding n z₀ p.2)
           (fullPlaneTestToL2 (fullPlaneConjugate v))) := by
       rw [inner_conj_symm]
@@ -56975,25 +57787,25 @@ theorem loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
       rw [hBasePair]
     _ = star (inner ℂ p.1 (-raisedCoordinate n q)) := by
       rw [hPetersson]
-    _ = Complex.conj
+    _ = star
         (inner ℂ (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1)
           (fullPlaneTestToL2
             (fullPlaneConjugate
               (fullPlaneAffineTranspose (-Complex.I)
-                (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+                (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
                 v)))) := by
       rw [hSignedPair]
     _ = inner ℂ
         (fullPlaneTestToL2
           (fullPlaneConjugate
             (fullPlaneAffineTranspose (-Complex.I)
-              (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+              (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
               v)))
         (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1) := by
       rw [inner_conj_symm]
     _ = ∫ t : ℂ,
         fullPlaneAffineTranspose (-Complex.I)
-            (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+            (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
             v t *
           orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1 t := by
       rw [inner_fullPlaneTestToL2_eq_integral_conj_mul]
@@ -57035,8 +57847,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators Convolution ContDiff Distributions LinearPMap ENNReal
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.WeightCorePetersson
 open DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
@@ -57053,7 +57865,7 @@ noncomputable section
 /-- Forget only the support-open parameter of an upper-half-plane test.  The
 function, smoothness, and compact support are unchanged. -/
 noncomputable def ambientTestCoreToFullPlaneTest
-    (v : PhysicalLocalL2.AmbientTestCore) : FullPlaneTest where
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) : FullPlaneTest where
   toFun := v
   contDiff' := v.contDiff
   hasCompactSupport' := v.hasCompactSupport
@@ -57061,7 +57873,7 @@ noncomputable def ambientTestCoreToFullPlaneTest
 
 @[simp]
 theorem ambientTestCoreToFullPlaneTest_apply
-    (v : PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (w : ℂ) :
     ambientTestCoreToFullPlaneTest v w = v w :=
   rfl
 
@@ -57105,7 +57917,7 @@ theorem fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs
         (bufferedEssentialFriedrichsFullPlaneTest hK j u hu : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       u Ru) :
     fullPlaneTestToL2
         (ambientTestCoreToFullPlaneTest
@@ -57116,7 +57928,7 @@ theorem fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs
       friedrichsAffineForwardCoordinate Complex.I j u Ru := by
   let b : FullPlaneTest :=
     bufferedEssentialFriedrichsFullPlaneTest hK j u hu
-  let a : PhysicalLocalL2.AmbientTestCore :=
+  let a : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
     reducedChartAmbientTest b hb
   apply MeasureTheory.Lp.ext
   filter_upwards [
@@ -57152,7 +57964,7 @@ theorem fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs
         (bufferedEssentialFriedrichsFullPlaneTest hK j u hu : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       u Lu) :
     fullPlaneTestToL2
         (ambientTestCoreToFullPlaneTest
@@ -57163,7 +57975,7 @@ theorem fullPlaneTestToL2_lowerForward_bufferedEssentialFriedrichs
       friedrichsAffineForwardCoordinate (-Complex.I) j u Lu := by
   let b : FullPlaneTest :=
     bufferedEssentialFriedrichsFullPlaneTest hK j u hu
-  let a : PhysicalLocalL2.AmbientTestCore :=
+  let a : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
     reducedChartAmbientTest b hb
   apply MeasureTheory.Lp.ext
   filter_upwards [
@@ -57214,18 +58026,18 @@ theorem exists_bufferedLocalRaisingApproximation
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Ru : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       u Ru) :
     ∃ v : ℕ → FullPlaneTest,
       ∃ hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
         ambientGammaTwoReducedChart z₀,
-      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝓝 u) ∧
       Filter.Tendsto
         (fun j ↦ fullPlaneTestToL2
           (ambientTestCoreToFullPlaneTest
             (euclideanRaiseForwardTest n
               (reducedChartAmbientTest (v j) (hv j)))))
-        Filter.atTop (𝒩 Ru) := by
+        Filter.atTop (𝓝 Ru) := by
   let U : Set ℂ := ambientGammaTwoReducedChart z₀
   have hU : IsOpen U := ambientGammaTwoReducedChart_isOpen z₀
   obtain ⟨N, hN⟩ := exists_friedrichsBufferStart hK hU hKU
@@ -57259,18 +58071,18 @@ theorem exists_bufferedLocalLoweringApproximation
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Lu : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       u Lu) :
     ∃ v : ℕ → FullPlaneTest,
       ∃ hv : ∀ j : ℕ, tsupport (v j : ℂ → ℂ) ⊆
         ambientGammaTwoReducedChart z₀,
-      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝓝 u) ∧
       Filter.Tendsto
         (fun j ↦ fullPlaneTestToL2
           (ambientTestCoreToFullPlaneTest
             (euclideanLowerFromSuccForwardTest n
               (reducedChartAmbientTest (v j) (hv j)))))
-        Filter.atTop (𝒩 Lu) := by
+        Filter.atTop (𝓝 Lu) := by
   let U : Set ℂ := ambientGammaTwoReducedChart z₀
   have hU : IsOpen U := ambientGammaTwoReducedChart_isOpen z₀
   obtain ⟨N, hN⟩ := exists_friedrichsBufferStart hK hU hKU
@@ -57307,7 +58119,7 @@ theorem raisedPeriodization_isReducedChartGaugeModel
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     IsReducedChartGaugeModel (n + 1) z₀
-      (InverseEtaFixedPhaseCore.raise n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n
         (gammaTwoPeriodizedPhysicalCore n
           (reducedChartAmbientTest v hv)))
       (ambientTestCoreToFullPlaneTest
@@ -57319,16 +58131,16 @@ theorem raisedPeriodization_isReducedChartGaugeModel
     simpa only [a, reducedChartAmbientTest] using hv
   refine ⟨?_, ?_, ?_⟩
   · intro z hz
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
     exact euclideanRaiseGauge_periodized_eq_forwardTest_on_reducedChart
       ha hz
   · intro z hz
     have hBase :=
       periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
         (m := n) (v := a) ha hz
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]
     exact euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero
-      n (PhysicalLocalL2.fixedPhaseEuclideanGauge n
+      n (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
         (gammaTwoPeriodizedPhysicalCore n a)) z hBase
   · change tsupport
         (euclideanRaiseForwardTest n a : ℂ → ℂ) ⊆
@@ -57342,7 +58154,7 @@ theorem loweredPeriodization_isReducedChartGaugeModel
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     IsReducedChartGaugeModel n z₀
-      (InverseEtaFixedPhaseCore.lowerFromSucc n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
         (gammaTwoPeriodizedPhysicalCore (n + 1)
           (reducedChartAmbientTest v hv)))
       (ambientTestCoreToFullPlaneTest
@@ -57354,16 +58166,16 @@ theorem loweredPeriodization_isReducedChartGaugeModel
     simpa only [a, reducedChartAmbientTest] using hv
   refine ⟨?_, ?_, ?_⟩
   · intro z hz
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
     exact euclideanLowerFromSuccGauge_periodized_eq_forwardTest_on_reducedChart
       ha hz
   · intro z hz
     have hBase :=
       periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation
         (m := n + 1) (v := a) ha hz
-    rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
+    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]
     exact euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero
-      n (PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
+      n (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)
         (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z hBase
   · change tsupport
         (euclideanLowerFromSuccForwardTest n a : ℂ → ℂ) ⊆
@@ -57375,7 +58187,7 @@ theorem loweredPeriodization_isReducedChartGaugeModel
 /-- A reduced-chart model has exactly the advertised planar chart
 restriction after completion. -/
 theorem reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
-    {m : ℤ} {z₀ : ℍ} {q : InverseEtaFixedPhaseCore m}
+    {m : ℤ} {z₀ : ℍ} {q : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m}
     {v : FullPlaneTest}
     (hModel : IsReducedChartGaugeModel m z₀ q v) :
     orbitPeterssonReducedChartEmbedding m z₀
@@ -57393,7 +58205,7 @@ theorem reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
   · rcases hw with ⟨z, hz, rfl⟩
     rw [ambientReducedChartGauge_comp_coe]
     simp only [Set.indicator_of_mem hz,
-      PhysicalLocalL2.fixedPhaseEuclideanGauge,
+      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge,
       hModel.1 z hz]
   · have hvzero : v w = 0 := by
       apply image_eq_zero_of_notMem_tsupport
@@ -57406,7 +58218,7 @@ inner products.  The second model supplies the completed-carrier support
 statement; the first model identifies the chart restriction. -/
 theorem inner_l2Coordinate_eq_inner_fullPlaneTestToL2
     {m : ℤ} {z₀ : ℍ}
-    {q r : InverseEtaFixedPhaseCore m} {v w : FullPlaneTest}
+    {q r : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m} {v w : FullPlaneTest}
     (hq : IsReducedChartGaugeModel m z₀ q v)
     (hr : IsReducedChartGaugeModel m z₀ r w) :
     inner ℂ (l2Coordinate m q) (l2Coordinate m r) =
@@ -57416,7 +58228,7 @@ theorem inner_l2Coordinate_eq_inner_fullPlaneTestToL2
 
 theorem norm_l2Coordinate_sq_eq_fullPlaneTestToL2_sq
     {m : ℤ} {z₀ : ℍ}
-    {q : InverseEtaFixedPhaseCore m} {v : FullPlaneTest}
+    {q : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m} {v : FullPlaneTest}
     (hq : IsReducedChartGaugeModel m z₀ q v) :
     ‖l2Coordinate m q‖ ^ 2 = ‖fullPlaneTestToL2 v‖ ^ 2 := by
   have h := inner_l2Coordinate_eq_inner_fullPlaneTestToL2 hq hq
@@ -57427,7 +58239,7 @@ theorem norm_l2Coordinate_sq_eq_fullPlaneTestToL2_sq
 precise Cauchy-transfer statement used after local mollification. -/
 theorem dist_l2Coordinate_eq_dist_fullPlaneTestToL2
     {m : ℤ} {z₀ : ℍ}
-    {q r : InverseEtaFixedPhaseCore m} {v w : FullPlaneTest}
+    {q r : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m} {v w : FullPlaneTest}
     (hq : IsReducedChartGaugeModel m z₀ q v)
     (hr : IsReducedChartGaugeModel m z₀ r w) :
     dist (l2Coordinate m q) (l2Coordinate m r) =
@@ -57448,7 +58260,7 @@ theorem dist_l2Coordinate_eq_dist_fullPlaneTestToL2
 actual Petersson Hilbert space. -/
 theorem cauchySeq_l2Coordinate_of_reducedChartModels
     {m : ℤ} {z₀ : ℍ}
-    (q : ℕ → InverseEtaFixedPhaseCore m)
+    (q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
     (v : ℕ → FullPlaneTest)
     (hModel : ∀ j : ℕ, IsReducedChartGaugeModel m z₀ (q j) (v j))
     (hv : CauchySeq (fun j ↦ fullPlaneTestToL2 (v j))) :
@@ -57469,22 +58281,22 @@ theorem exists_periodizedLocalRaisingGraphLimit
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Ru : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       u Ru) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore n,
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
       (∀ j : ℕ,
         (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
           (physicalRaise n).graph) ∧
       ∃ x : OrbitPeterssonHilbert n,
       ∃ y : OrbitPeterssonHilbert (n + 1),
-        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
-        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝓝 x) ∧
+        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
         orbitPeterssonReducedChartEmbedding n z₀ x = u ∧
         orbitPeterssonReducedChartEmbedding (n + 1) z₀ y = Ru := by
   obtain ⟨v, hv, hBase, hRaise⟩ :=
     exists_bufferedLocalRaisingApproximation
       hK hKU u Ru hu hWeak
-  let q : ℕ → InverseEtaFixedPhaseCore n := fun j ↦
+  let q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := fun j ↦
     gammaTwoPeriodizedPhysicalCore n
       (reducedChartAmbientTest (v j) (hv j))
   let r : ℕ → FullPlaneTest := fun j ↦
@@ -57496,30 +58308,30 @@ theorem exists_periodizedLocalRaisingGraphLimit
     exact periodizedPhysicalCore_isReducedChartGaugeModel (v j) (hv j)
   have hrModel (j : ℕ) :
       IsReducedChartGaugeModel (n + 1) z₀
-        (InverseEtaFixedPhaseCore.raise n (q j)) (r j) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j)) (r j) := by
     exact raisedPeriodization_isReducedChartGaugeModel (v j) (hv j)
   have hqCauchy : CauchySeq (fun j ↦ l2Coordinate n (q j)) :=
     cauchySeq_l2Coordinate_of_reducedChartModels q v hqModel
       hBase.cauchySeq
   have hrCauchy : CauchySeq
       (fun j ↦ l2Coordinate (n + 1)
-        (InverseEtaFixedPhaseCore.raise n (q j))) :=
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j))) :=
     cauchySeq_l2Coordinate_of_reducedChartModels
-      (fun j ↦ InverseEtaFixedPhaseCore.raise n (q j)) r hrModel
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j)) r hrModel
       hRaise.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
   have hChartBase : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding n z₀
-        (l2Coordinate n (q j))) Filter.atTop (𝒩 u) := by
+        (l2Coordinate n (q j))) Filter.atTop (𝓝 u) := by
     exact hBase.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hqModel j)).symm
   have hChartRaise : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding (n + 1) z₀
         (l2Coordinate (n + 1)
-          (InverseEtaFixedPhaseCore.raise n (q j))))
-      Filter.atTop (𝒩 Ru) := by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j))))
+      Filter.atTop (𝓝 Ru) := by
     exact hRaise.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hrModel j)).symm
@@ -57535,7 +58347,7 @@ theorem exists_periodizedLocalRaisingGraphLimit
   · intro j
     change (l2Coordinate n (q j),
       l2Coordinate (n + 1)
-        (InverseEtaFixedPhaseCore.raise n (q j))) ∈
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j))) ∈
         (physicalRaise n).graph
     simpa only [l2CoreRangeEquiv_coe,
       physicalRaise_on_core] using
@@ -57549,22 +58361,22 @@ theorem exists_periodizedLocalLoweringGraphLimit
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Lu : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       u Lu) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore (n + 1),
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1),
       (∀ j : ℕ,
         (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
           (physicalLowerFromSucc n).graph) ∧
       ∃ x : OrbitPeterssonHilbert (n + 1),
       ∃ y : OrbitPeterssonHilbert n,
-        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
-        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝓝 x) ∧
+        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
         orbitPeterssonReducedChartEmbedding (n + 1) z₀ x = u ∧
         orbitPeterssonReducedChartEmbedding n z₀ y = Lu := by
   obtain ⟨v, hv, hBase, hLower⟩ :=
     exists_bufferedLocalLoweringApproximation
       hK hKU u Lu hu hWeak
-  let q : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
+  let q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1)
       (reducedChartAmbientTest (v j) (hv j))
   let r : ℕ → FullPlaneTest := fun j ↦
@@ -57576,7 +58388,7 @@ theorem exists_periodizedLocalLoweringGraphLimit
     exact periodizedPhysicalCore_isReducedChartGaugeModel (v j) (hv j)
   have hrModel (j : ℕ) :
       IsReducedChartGaugeModel n z₀
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j)) (r j) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j)) (r j) := by
     exact loweredPeriodization_isReducedChartGaugeModel (v j) (hv j)
   have hqCauchy : CauchySeq
       (fun j ↦ l2Coordinate (n + 1) (q j)) :=
@@ -57584,23 +58396,23 @@ theorem exists_periodizedLocalLoweringGraphLimit
       hBase.cauchySeq
   have hrCauchy : CauchySeq
       (fun j ↦ l2Coordinate n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) :=
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) :=
     cauchySeq_l2Coordinate_of_reducedChartModels
-      (fun j ↦ InverseEtaFixedPhaseCore.lowerFromSucc n (q j))
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))
       r hrModel hLower.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
   have hChartBase : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding (n + 1) z₀
-        (l2Coordinate (n + 1) (q j))) Filter.atTop (𝒩 u) := by
+        (l2Coordinate (n + 1) (q j))) Filter.atTop (𝓝 u) := by
     exact hBase.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hqModel j)).symm
   have hChartLower : Filter.Tendsto
       (fun j ↦ orbitPeterssonReducedChartEmbedding n z₀
         (l2Coordinate n
-          (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))))
-      Filter.atTop (𝒩 Lu) := by
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))))
+      Filter.atTop (𝓝 Lu) := by
     exact hLower.congr' <| Filter.Eventually.of_forall fun j ↦
       (reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2
         (hrModel j)).symm
@@ -57617,7 +58429,7 @@ theorem exists_periodizedLocalLoweringGraphLimit
   · intro j
     change (l2Coordinate (n + 1) (q j),
       l2Coordinate n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) ∈
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) ∈
         (physicalLowerFromSucc n).graph
     simpa only [l2CoreRangeEquiv_coe,
       physicalLowerFromSucc_on_core] using
@@ -57660,8 +58472,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseEssentialCoreRoute
 open FixedPhaseClosedOperators
@@ -57683,9 +58495,9 @@ theorem exists_periodizedLocalRaisingGraphLimitWithModels
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Ru : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       u Ru) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore n,
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
     ∃ v : ℕ → FullPlaneTest,
     ∃ x : OrbitPeterssonHilbert n,
     ∃ y : OrbitPeterssonHilbert (n + 1),
@@ -57694,13 +58506,13 @@ theorem exists_periodizedLocalRaisingGraphLimitWithModels
           (physicalRaise n).graph) ∧
       (∀ j : ℕ,
         IsReducedChartGaugeModel n z₀ (q j) (v j)) ∧
-      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
-      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
-      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) := by
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝓝 u) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝓝 x) ∧
+      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝓝 y) := by
   obtain ⟨v, hv, hBase, hRaise⟩ :=
     exists_bufferedLocalRaisingApproximation
       hK hKU u Ru hu hWeak
-  let q : ℕ → InverseEtaFixedPhaseCore n := fun j ↦
+  let q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := fun j ↦
     gammaTwoPeriodizedPhysicalCore n
       (reducedChartAmbientTest (v j) (hv j))
   let r : ℕ → FullPlaneTest := fun j ↦
@@ -57712,16 +58524,16 @@ theorem exists_periodizedLocalRaisingGraphLimitWithModels
     exact periodizedPhysicalCore_isReducedChartGaugeModel (v j) (hv j)
   have hrModel (j : ℕ) :
       IsReducedChartGaugeModel (n + 1) z₀
-        (InverseEtaFixedPhaseCore.raise n (q j)) (r j) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j)) (r j) := by
     exact raisedPeriodization_isReducedChartGaugeModel (v j) (hv j)
   have hqCauchy : CauchySeq (fun j ↦ l2Coordinate n (q j)) :=
     cauchySeq_l2Coordinate_of_reducedChartModels q v hqModel
       hBase.cauchySeq
   have hrCauchy : CauchySeq
       (fun j ↦ l2Coordinate (n + 1)
-        (InverseEtaFixedPhaseCore.raise n (q j))) :=
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j))) :=
     cauchySeq_l2Coordinate_of_reducedChartModels
-      (fun j ↦ InverseEtaFixedPhaseCore.raise n (q j)) r hrModel
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j)) r hrModel
       hRaise.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
@@ -57729,7 +58541,7 @@ theorem exists_periodizedLocalRaisingGraphLimitWithModels
   · intro j
     change (l2Coordinate n (q j),
       l2Coordinate (n + 1)
-        (InverseEtaFixedPhaseCore.raise n (q j))) ∈
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n (q j))) ∈
         (physicalRaise n).graph
     simpa only [l2CoreRangeEquiv_coe,
       physicalRaise_on_core] using
@@ -57745,9 +58557,9 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
     (hKU : K ⊆ ambientGammaTwoReducedChart z₀)
     (u Lu : AmbientPlaneL2) (hu : HasEssentialSupportIn u K)
     (hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       u Lu) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore (n + 1),
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1),
     ∃ v : ℕ → FullPlaneTest,
     ∃ x : OrbitPeterssonHilbert (n + 1),
     ∃ y : OrbitPeterssonHilbert n,
@@ -57756,13 +58568,13 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
           (physicalLowerFromSucc n).graph) ∧
       (∀ j : ℕ,
         IsReducedChartGaugeModel (n + 1) z₀ (q j) (v j)) ∧
-      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝒩 u) ∧
-      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
-      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) := by
+      Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop (𝓝 u) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝓝 x) ∧
+      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝓝 y) := by
   obtain ⟨v, hv, hBase, hLower⟩ :=
     exists_bufferedLocalLoweringApproximation
       hK hKU u Lu hu hWeak
-  let q : ℕ → InverseEtaFixedPhaseCore (n + 1) := fun j ↦
+  let q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1) := fun j ↦
     gammaTwoPeriodizedPhysicalCore (n + 1)
       (reducedChartAmbientTest (v j) (hv j))
   let r : ℕ → FullPlaneTest := fun j ↦
@@ -57774,7 +58586,7 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
     exact periodizedPhysicalCore_isReducedChartGaugeModel (v j) (hv j)
   have hrModel (j : ℕ) :
       IsReducedChartGaugeModel n z₀
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j)) (r j) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j)) (r j) := by
     exact loweredPeriodization_isReducedChartGaugeModel (v j) (hv j)
   have hqCauchy : CauchySeq
       (fun j ↦ l2Coordinate (n + 1) (q j)) :=
@@ -57782,9 +58594,9 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
       hBase.cauchySeq
   have hrCauchy : CauchySeq
       (fun j ↦ l2Coordinate n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) :=
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) :=
     cauchySeq_l2Coordinate_of_reducedChartModels
-      (fun j ↦ InverseEtaFixedPhaseCore.lowerFromSucc n (q j))
+      (fun j ↦ Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))
       r hrModel hLower.cauchySeq
   obtain ⟨x, hx⟩ := cauchySeq_tendsto_of_complete hqCauchy
   obtain ⟨y, hy⟩ := cauchySeq_tendsto_of_complete hrCauchy
@@ -57792,7 +58604,7 @@ theorem exists_periodizedLocalLoweringGraphLimitWithModels
   · intro j
     change (l2Coordinate (n + 1) (q j),
       l2Coordinate n
-        (InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) ∈
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n (q j))) ∈
         (physicalLowerFromSucc n).graph
     simpa only [l2CoreRangeEquiv_coe,
       physicalLowerFromSucc_on_core] using
@@ -57839,8 +58651,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators ContDiff ENNReal
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open PhysicalLocalL2
 
 theorem realSmooth_const (c : ℂ) :
@@ -57867,11 +58679,11 @@ theorem RealSmooth.finset_sum
 /-- The compact upstairs support used by the effective scalar
 periodization. -/
 def effectiveScalarSeedSupport
-    (v : PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
   UpperHalfPlane.coe ⁻¹' tsupport (v : ℂ → ℂ)
 
 theorem effectiveScalarSeedSupport_isCompact
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsCompact (effectiveScalarSeedSupport v) := by
   apply UpperHalfPlane.isOpenEmbedding_coe.isInducing.isCompact_preimage'
     v.hasCompactSupport
@@ -57883,12 +58695,12 @@ theorem effectiveScalarSeedSupport_isCompact
 /-- One translate of a scalar seed.  There is no multiplier factor: this is
 the weight-zero localization algebra, not a physical half-weight section. -/
 noncomputable def effectiveScalarPeriodizationTerm
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (a : GammaTwoEffective) (z : ℍ) : ℂ :=
   v ((((a⁻¹ • z : ℍ) : ℂ)))
 
 theorem support_effectiveScalarPeriodizationTerm_subset
-    (v : PhysicalLocalL2.AmbientTestCore) (a : GammaTwoEffective) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (a : GammaTwoEffective) :
     Function.support (effectiveScalarPeriodizationTerm v a) ⊆
       (a • ·) '' effectiveScalarSeedSupport v := by
   intro z hz
@@ -57898,7 +58710,7 @@ theorem support_effectiveScalarPeriodizationTerm_subset
   exact subset_tsupport hz
 
 theorem effectiveScalarPeriodizationTerm_locallyFinite
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     LocallyFinite (fun a : GammaTwoEffective ↦
       Function.support (effectiveScalarPeriodizationTerm v a)) :=
   (gammaTwoEffective_compact_translates_locallyFinite
@@ -57906,13 +58718,13 @@ theorem effectiveScalarPeriodizationTerm_locallyFinite
     (support_effectiveScalarPeriodizationTerm_subset v)
 
 theorem effectiveScalarSeed_realSmooth
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     RealSmooth (fun z : ℍ ↦ v (z : ℂ)) := by
   unfold RealSmooth upperLift
   simpa [Function.comp_def] using v.contDiff.contDiffOn
 
 theorem effectiveScalarPeriodizationTerm_realSmooth
-    (v : PhysicalLocalL2.AmbientTestCore) (a : GammaTwoEffective) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (a : GammaTwoEffective) :
     RealSmooth (effectiveScalarPeriodizationTerm v a) := by
   rcases effective_exists_gamma a⁻¹ with ⟨gamma, hgamma⟩
   have h := (effectiveScalarSeed_realSmooth v).comp_gammaTwo_smul gamma
@@ -57920,26 +58732,26 @@ theorem effectiveScalarPeriodizationTerm_realSmooth
 
 /-- Locally finite weight-zero periodization over the faithful action. -/
 noncomputable def effectiveScalarPoincarePeriodization
-    (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) : ℂ :=
   ∑ᶠ a : GammaTwoEffective,
     effectiveScalarPeriodizationTerm v a z
 
 theorem effectiveScalarPoincarePeriodization_realSmooth
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     RealSmooth (effectiveScalarPoincarePeriodization v) := by
   exact realSmooth_finsum_of_locallyFinite_support
     (effectiveScalarPeriodizationTerm_locallyFinite v)
     (effectiveScalarPeriodizationTerm_realSmooth v)
 
 theorem effectiveScalarPeriodizationTerm_mul_smul
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (b a : GammaTwoEffective) (z : ℍ) :
     effectiveScalarPeriodizationTerm v (b * a) (b • z) =
       effectiveScalarPeriodizationTerm v a z := by
   simp [effectiveScalarPeriodizationTerm, mul_smul]
 
 theorem effectiveScalarPoincarePeriodization_invariant
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (b : GammaTwoEffective) (z : ℍ) :
     effectiveScalarPoincarePeriodization v (b • z) =
       effectiveScalarPoincarePeriodization v z := by
@@ -57959,7 +58771,7 @@ theorem effectiveScalarPoincarePeriodization_invariant
 /-- On a reduced chart, a seed supported in that chart has only the identity
 effective translate. -/
 theorem effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
-    {z₀ : ℍ} (v : PhysicalLocalL2.AmbientTestCore)
+    {z₀ : ℍ} (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     {z : ℍ} (hz : z ∈ gammaTwoReducedChart z₀) :
@@ -57985,12 +58797,12 @@ theorem effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
 /-- Closed locally finite union of the effective translates of the compact
 scalar seed support. -/
 def effectiveScalarPeriodizationOrbitSupport
-    (v : PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) : Set ℍ :=
   ⋃ a : GammaTwoEffective,
     (a • ·) '' effectiveScalarSeedSupport v
 
 theorem effectiveScalarPeriodizationOrbitSupport_isClosed
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsClosed (effectiveScalarPeriodizationOrbitSupport v) := by
   unfold effectiveScalarPeriodizationOrbitSupport
   apply (gammaTwoEffective_compact_translates_locallyFinite
@@ -57999,7 +58811,7 @@ theorem effectiveScalarPeriodizationOrbitSupport_isClosed
   exact ((effectiveScalarSeedSupport_isCompact v).smul a).isClosed
 
 theorem support_effectiveScalarPoincarePeriodization_subset_orbitSupport
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     Function.support (effectiveScalarPoincarePeriodization v) ⊆
       effectiveScalarPeriodizationOrbitSupport v := by
   intro z hz
@@ -58015,7 +58827,7 @@ theorem support_effectiveScalarPoincarePeriodization_subset_orbitSupport
   exact finsum_eq_zero_of_forall_eq_zero hzero
 
 theorem tsupport_effectiveScalarPoincarePeriodization_subset_orbitSupport
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     tsupport (effectiveScalarPoincarePeriodization v) ⊆
       effectiveScalarPeriodizationOrbitSupport v :=
   closure_minimal
@@ -58023,7 +58835,7 @@ theorem tsupport_effectiveScalarPoincarePeriodization_subset_orbitSupport
     (effectiveScalarPeriodizationOrbitSupport_isClosed v)
 
 theorem effectiveScalarPeriodizationOrbitSupport_subset_saturation
-    {v : PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
+    {v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore} {z₀ : ℍ}
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
     effectiveScalarPeriodizationOrbitSupport v ⊆
@@ -58038,7 +58850,7 @@ theorem effectiveScalarPeriodizationOrbitSupport_subset_saturation
   exact ⟨a, x, hxChart, rfl⟩
 
 theorem effectiveScalarPoincarePeriodization_quotientCompact
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     HasQuotientCompactSupport
       (effectiveScalarPoincarePeriodization v) := by
   let K := effectiveScalarSeedSupport v
@@ -58060,7 +58872,7 @@ theorem effectiveScalarPoincarePeriodization_quotientCompact
 /-- The invariant scalar periodization as a genuine smooth
 quotient-compact function. -/
 noncomputable def effectiveScalarSmoothQuotient
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     SmoothQuotientCompactFunction :=
   ⟨⟨effectiveScalarPoincarePeriodization v,
       effectiveScalarPoincarePeriodization_realSmooth v⟩,
@@ -58068,13 +58880,13 @@ noncomputable def effectiveScalarSmoothQuotient
 
 @[simp]
 theorem effectiveScalarSmoothQuotient_apply
-    (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     (effectiveScalarSmoothQuotient v : ℍ → ℂ) z =
       effectiveScalarPoincarePeriodization v z :=
   rfl
 
 theorem effectiveScalarSmoothQuotient_invariant
-    (v : PhysicalLocalL2.AmbientTestCore) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
     IsGammaTwoInvariantCutoff (effectiveScalarSmoothQuotient v) := by
   intro gamma z
   let a : GammaTwoEffective := gammaTwoEffectiveElement gamma
@@ -58083,11 +58895,11 @@ theorem effectiveScalarSmoothQuotient_invariant
       effectiveScalarPoincarePeriodization_invariant v a z
 
 theorem effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart
-    {z₀ z : ℍ} (v : PhysicalLocalL2.AmbientTestCore)
+    {z₀ z : ℍ} (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hz : z ∈ gammaTwoReducedChart z₀) :
-    upperLift (effectiveScalarPoincarePeriodization v) =ᶠ[𝒩 (z : ℂ)]
+    upperLift (effectiveScalarPoincarePeriodization v) =ᶠ[𝓝 (z : ℂ)]
       (v : ℂ → ℂ) := by
   have hOpen : IsOpen (ambientGammaTwoReducedChart z₀) :=
     ambientGammaTwoReducedChart_isOpen z₀
@@ -58097,7 +58909,7 @@ theorem effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart
     effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart v hv hx]
 
 theorem dx_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
-    {z₀ z : ℍ} (v : PhysicalLocalL2.AmbientTestCore)
+    {z₀ z : ℍ} (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hz : z ∈ gammaTwoReducedChart z₀) :
@@ -58111,7 +58923,7 @@ theorem dx_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
       v hv hz) (z : ℂ)
 
 theorem dy_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
-    {z₀ z : ℍ} (v : PhysicalLocalL2.AmbientTestCore)
+    {z₀ z : ℍ} (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : tsupport (v : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (hz : z ∈ gammaTwoReducedChart z₀) :
@@ -58125,7 +58937,7 @@ theorem dy_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart
       v hv hz) (z : ℂ)
 
 theorem effectiveScalarPoincarePeriodization_re_nonneg
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ w : ℂ, 0 ≤ (v w).re) (z : ℍ) :
     0 ≤ (effectiveScalarPoincarePeriodization v z).re := by
   obtain ⟨s, _hsNhds, hsFinite⟩ :=
@@ -58142,7 +58954,7 @@ theorem effectiveScalarPoincarePeriodization_re_nonneg
   exact Finset.sum_nonneg fun a _ ↦ hv _
 
 theorem effectiveScalarPoincarePeriodization_im_eq_zero
-    (v : PhysicalLocalL2.AmbientTestCore)
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hv : ∀ w : ℂ, (v w).im = 0) (z : ℍ) :
     (effectiveScalarPoincarePeriodization v z).im = 0 := by
   obtain ⟨s, _hsNhds, hsFinite⟩ :=
@@ -58452,7 +59264,7 @@ noncomputable def normalizedQuotientChartSeed
       (UpperHalfPlane.coe '' K))
     (hrho : rho.IsSubordinate ambientGammaTwoReducedChart)
     (hfinite : (quotientChartActiveCenterSet rho).Finite)
-    (x : ℍ) : PhysicalLocalL2.AmbientTestCore :=
+    (x : ℍ) : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   HalfWeightCompactCoordinateGreen.localizeLeft
     (quotientChartNormalizer rho hrho hfinite)
     (quotientChartNormalizer_realSmooth rho hrho hfinite)
@@ -58480,7 +59292,7 @@ smooth scalar. -/
 theorem effectiveScalarPeriodization_localizeLeft
     (f : ℍ → ℂ) (hf : RealSmooth f)
     (hinv : ∀ (a : GammaTwoEffective) (z : ℍ), f (a • z) = f z)
-    (v : PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
+    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) (z : ℍ) :
     effectiveScalarPoincarePeriodization
         (HalfWeightCompactCoordinateGreen.localizeLeft f hf v) z =
       f z * effectiveScalarPoincarePeriodization v z := by
@@ -58529,7 +59341,7 @@ argument. -/
 theorem exists_quotientCompatibleFiniteReducedChartLocalization
     {K : Set ℍ} (hK : IsCompact K) :
     ∃ t : Finset ℍ,
-    ∃ theta : ℍ → PhysicalLocalL2.AmbientTestCore,
+    ∃ theta : ℍ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore,
       (∀ x ∈ t,
         tsupport (theta x : ℂ → ℂ) ⊆
           ambientGammaTwoReducedChart x) ∧
@@ -58542,7 +59354,7 @@ theorem exists_quotientCompatibleFiniteReducedChartLocalization
   obtain ⟨rho, hrho, _hcompact, hfinite⟩ :=
     exists_smoothPartitionOfUnity_gammaTwoReducedChart hK
   let t := quotientChartActiveCenters rho hfinite
-  let theta : ℍ → PhysicalLocalL2.AmbientTestCore :=
+  let theta : ℍ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
     normalizedQuotientChartSeed rho hrho hfinite
   refine ⟨t, theta, ?_, ?_, ?_⟩
   · intro x hx
@@ -58582,8 +59394,8 @@ namespace FixedPhaseInvariantScalarMultiplier
 open Set Function Topology Filter MeasureTheory
 open scoped ENNReal BigOperators
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseAdjointCutoffCore
@@ -58596,10 +59408,10 @@ preserves the literal all-word fixed-phase core. -/
 noncomputable def invariantScalarCoreOperator
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] InverseEtaFixedPhaseCore n where
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n where
   toFun u :=
     invariantCutoffTimesOrbitSection n c hc
-      (InverseEtaFixedPhaseCore.toWeightSection n u)
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n u)
       (u : SmoothQuotientCompactFunction).1.2
   map_add' u v := by
     apply Subtype.ext
@@ -58618,9 +59430,9 @@ noncomputable def invariantScalarCoreOperator
 theorem invariantScalarCoreOperator_apply
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
     ((invariantScalarCoreOperator c hc n u :
-        InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
+        Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) : SmoothQuotientCompactFunction) z =
       (c : ℍ → ℂ) z * (u : SmoothQuotientCompactFunction) z :=
   rfl
 
@@ -58651,14 +59463,14 @@ theorem norm_invariantScalar_le_carrierBound
 theorem fixedPhaseEuclideanGauge_invariantScalarCoreOperator
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) (z : ℍ) :
-    PhysicalLocalL2.fixedPhaseEuclideanGauge n
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) (z : ℍ) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n
         (invariantScalarCoreOperator c hc n u) z =
       (c : ℍ → ℂ) z *
-        PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
-  rw [PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n u z := by
+  rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,
     invariantScalarCoreOperator_apply,
-    PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply]
   ring
 
 /-- The core multiplier estimate, with its constant obtained from quotient
@@ -58666,7 +59478,7 @@ compactness rather than supplied as a premise. -/
 theorem norm_l2Coordinate_invariantScalarCoreOperator_le
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     ‖l2Coordinate n (invariantScalarCoreOperator c hc n u)‖ ≤
       invariantScalarCarrierBound c * ‖l2Coordinate n u‖ := by
   exact norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier
@@ -58680,7 +59492,7 @@ theorem norm_l2Coordinate_invariantScalarCoreOperator_le
 noncomputable def invariantScalarPeterssonCoreMap
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ) :
-    InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
+    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n →ₗ[ℂ] OrbitPeterssonHilbert n :=
   (l2Coordinate n).comp (invariantScalarCoreOperator c hc n)
 
 /-- Honest bounded extension to the entire completed Petersson space. -/
@@ -58694,7 +59506,7 @@ noncomputable def invariantScalarPeterssonMultiplier
 theorem invariantScalarPeterssonMultiplier_l2Coordinate
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ)
-    (u : InverseEtaFixedPhaseCore n) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
     invariantScalarPeterssonMultiplier c hc n (l2Coordinate n u) =
       l2Coordinate n (invariantScalarCoreOperator c hc n u) := by
   exact LinearMap.extendOfNorm_eq (denseRange_l2Coordinate n)
@@ -58717,10 +59529,10 @@ theorem norm_invariantScalarPeterssonMultiplier_apply_le
 carrier. -/
 noncomputable def invariantScalarCarrierLInfinity
     (c : SmoothQuotientCompactFunction) :
-    MeasureTheory.Lp ℂ ∞ PhysicalLocalL2.chosenEuclideanCarrierMeasure :=
+    MeasureTheory.Lp ℂ ∞ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure :=
   (memLp_top_of_bound c.1.2.continuous.aestronglyMeasurable
     (invariantScalarCarrierBound c) (by
-      filter_upwards [PhysicalLocalL2.ae_mem_open_chosenEuclidean] with z hz
+      filter_upwards [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean] with z hz
       exact norm_invariantScalar_le_carrierBound c z
         (gammaTwoOpenCarrier_subset_closedTileCarrier hz))).toLp
       (c : ℍ → ℂ)
@@ -58728,12 +59540,12 @@ noncomputable def invariantScalarCarrierLInfinity
 theorem coeFn_invariantScalarCarrierLInfinity
     (c : SmoothQuotientCompactFunction) :
     (invariantScalarCarrierLInfinity c : ℍ → ℂ) =ᶠ[
-        PhysicalLocalL2.chosenEuclideanCarrierMeasure]
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]
       (c : ℍ → ℂ) :=
   MemLp.coeFn_toLp
     (memLp_top_of_bound c.1.2.continuous.aestronglyMeasurable
       (invariantScalarCarrierBound c) (by
-        filter_upwards [PhysicalLocalL2.ae_mem_open_chosenEuclidean] with z hz
+        filter_upwards [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean] with z hz
         exact norm_invariantScalar_le_carrierBound c z
           (gammaTwoOpenCarrier_subset_closedTileCarrier hz)))
 
@@ -58743,27 +59555,27 @@ theorem orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier
     (c : SmoothQuotientCompactFunction)
     (hc : IsGammaTwoInvariantCutoff c) (n : ℤ)
     (x : OrbitPeterssonHilbert n) :
-    PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         (invariantScalarPeterssonMultiplier c hc n x) =
-      lpInfinityMultiplier PhysicalLocalL2.chosenEuclideanCarrierMeasure
+      lpInfinityMultiplier Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
         (invariantScalarCarrierLInfinity c)
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x) := by
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n x) := by
   refine (denseRange_l2Coordinate n).induction_on x
     (isClosed_eq
-      ((PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.comp
+      ((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous.comp
         (invariantScalarPeterssonMultiplier c hc n).continuous)
-      ((lpInfinityMultiplier PhysicalLocalL2.chosenEuclideanCarrierMeasure
+      ((lpInfinityMultiplier Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
         (invariantScalarCarrierLInfinity c)).continuous.comp
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous)) ?_
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n).continuous)) ?_
   intro u
   rw [invariantScalarPeterssonMultiplier_l2Coordinate]
   apply MeasureTheory.Lp.ext
   filter_upwards [
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n
       (invariantScalarCoreOperator c hc n u),
-    PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge n u,
     MeasureTheory.Lp.coeFn_lpSMul (invariantScalarCarrierLInfinity c)
-      (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
+      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n
         (l2Coordinate n u)),
     coeFn_invariantScalarCarrierLInfinity c]
       with z hleft hsource hmul hcval
@@ -58795,8 +59607,8 @@ vector exactly. -/
 theorem finset_sum_invariantScalarMultipliers_eq_of_compactSupport
     {n : ℤ} {K : Set ℍ} (hK : IsCompact K)
     (p : OrbitPeterssonHilbert n)
-    (hp : ∀ᵐ z ∂PhysicalLocalL2.chosenEuclideanCarrierMeasure,
-      z ∉ K → PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z = 0)
+    (hp : ∀ᵐ z ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure,
+      z ∉ K → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z = 0)
     {iota : Type*} (s : Finset iota)
     (c : iota → SmoothQuotientCompactFunction)
     (hc : ∀ i, IsGammaTwoInvariantCutoff (c i))
@@ -58805,29 +59617,29 @@ theorem finset_sum_invariantScalarMultipliers_eq_of_compactSupport
     (∑ i ∈ s, invariantScalarPeterssonMultiplier
       (c i) (hc i) n p) = p := by
   classical
-  apply PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_injective n
+  apply Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding_injective n
   rw [map_sum]
   simp_rw [orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier]
   apply MeasureTheory.Lp.ext
   have hterm : ∀ i ∈ s,
-      (lpInfinityMultiplier PhysicalLocalL2.chosenEuclideanCarrierMeasure
+      (lpInfinityMultiplier Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
           (invariantScalarCarrierLInfinity (c i))
-          (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p) : ℍ → ℂ)
-        =ᶠ[PhysicalLocalL2.chosenEuclideanCarrierMeasure]
+          (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p) : ℍ → ℂ)
+        =ᶠ[Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]
       (fun z ↦ (c i : ℍ → ℂ) z *
-        PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z) := by
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z) := by
     intro i hi
     filter_upwards [
       MeasureTheory.Lp.coeFn_lpSMul (invariantScalarCarrierLInfinity (c i))
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p),
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p),
       coeFn_invariantScalarCarrierLInfinity (c i)] with z hmul hcval
     rw [lpInfinityMultiplier_apply, hmul, hcval]
   filter_upwards [
-    coeFn_finsetSum_Lp PhysicalLocalL2.chosenEuclideanCarrierMeasure s
+    coeFn_finsetSum_Lp Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure s
       (fun i ↦ lpInfinityMultiplier
-        PhysicalLocalL2.chosenEuclideanCarrierMeasure
+        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure
         (invariantScalarCarrierLInfinity (c i))
-        (PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p)),
+        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p)),
     hp,
     (Filter.eventually_all_finset s).mpr hterm]
       with z hfinite hpz hterms
@@ -58871,8 +59683,8 @@ namespace FixedPhaseReducedChartFriedrichs
 open Set Function Topology Filter MeasureTheory Metric
 open scoped ENNReal BigOperators
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseInvariantScalarMultiplier
@@ -58917,30 +59729,30 @@ theorem fullPlaneTestMulCLM_apply
 /-! ### The compact chart test obtained by localizing a smooth core gauge -/
 
 noncomputable def reducedChartGaugeLocalizedAmbientTest
-    (m : ℤ) (phi : PhysicalLocalL2.AmbientTestCore)
-    (u : InverseEtaFixedPhaseCore m) :
-    PhysicalLocalL2.AmbientTestCore :=
+    (m : ℤ) (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
+    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore :=
   HalfWeightCompactCoordinateGreen.localizeLeft
-    (PhysicalLocalL2.fixedPhaseEuclideanGauge m u)
-    (PhysicalLocalL2.fixedPhaseEuclideanGauge_realSmooth m u) phi
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u)
+    (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_realSmooth m u) phi
 
 @[simp]
 theorem reducedChartGaugeLocalizedAmbientTest_apply
-    (m : ℤ) (phi : PhysicalLocalL2.AmbientTestCore)
-    (u : InverseEtaFixedPhaseCore m) (w : ℂ) :
+    (m : ℤ) (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) (w : ℂ) :
     reducedChartGaugeLocalizedAmbientTest m phi u w =
-      upperLift (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) w *
+      upperLift (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u) w *
         phi w :=
   rfl
 
 theorem tsupport_reducedChartGaugeLocalizedAmbientTest_subset
-    (m : ℤ) (phi : PhysicalLocalL2.AmbientTestCore)
-    (u : InverseEtaFixedPhaseCore m) :
+    (m : ℤ) (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
     tsupport
         (reducedChartGaugeLocalizedAmbientTest m phi u : ℂ → ℂ) ⊆
       tsupport (phi : ℂ → ℂ) := by
   change tsupport (fun w : ℂ ↦
-      upperLift (PhysicalLocalL2.fixedPhaseEuclideanGauge m u) w * phi w) ⊆
+      upperLift (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m u) w * phi w) ⊆
     tsupport (phi : ℂ → ℂ)
   exact tsupport_mul_subset_right
 
@@ -58948,10 +59760,10 @@ theorem tsupport_reducedChartGaugeLocalizedAmbientTest_subset
 genuine reduced-chart gauge model of the compact product `phi * u`. -/
 theorem invariantScalarCoreOperator_isReducedChartGaugeModel
     {m : ℤ} {z₀ : ℍ}
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
-    (u : InverseEtaFixedPhaseCore m) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
     IsReducedChartGaugeModel m z₀
       (invariantScalarCoreOperator
         (effectiveScalarSmoothQuotient phi)
@@ -58990,10 +59802,10 @@ theorem invariantScalarCoreOperator_isReducedChartGaugeModel
 exactly multiplication of the completed chart restriction by `phi`. -/
 theorem fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest
     {m : ℤ} {z₀ : ℍ}
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
-    (u : InverseEtaFixedPhaseCore m) :
+    (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m) :
     fullPlaneTestToL2
         (ambientTestCoreToFullPlaneTest
           (reducedChartGaugeLocalizedAmbientTest m phi u)) =
@@ -59016,7 +59828,7 @@ theorem fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest
   by_cases hw : w ∈ ambientGammaTwoReducedChart z₀
   · rcases hw with ⟨z, hz, rfl⟩
     simp only [ambientReducedChartGauge_comp_coe, hz, Set.indicator_of_mem,
-      upperLift_apply, PhysicalLocalL2.fixedPhaseEuclideanGauge]
+      upperLift_apply, Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge]
     ring
   · have hphiZero : phi w = 0 := by
       by_contra hne
@@ -59027,7 +59839,7 @@ theorem fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest
 
 theorem inner_invariantScalarPeterssonMultiplier_eq_localizedChartPair
     {m : ℤ} {z₀ : ℍ}
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (x p : OrbitPeterssonHilbert m) :
@@ -59059,16 +59871,16 @@ multiplier localization.  The proof uses all completed test vectors, so it
 does not infer injectivity from the contractive chart restriction. -/
 theorem localBaseLimit_eq_invariantScalarMultiplier
     {m : ℤ} {z₀ : ℍ}
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀)
     (p x : OrbitPeterssonHilbert m)
-    (q : ℕ → InverseEtaFixedPhaseCore m)
+    (q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore m)
     (v : ℕ → FullPlaneTest)
     (hModel : ∀ j : ℕ, IsReducedChartGaugeModel m z₀ (q j) (v j))
-    (hq : Filter.Tendsto (fun j ↦ l2Coordinate m (q j)) Filter.atTop (𝒩 x))
+    (hq : Filter.Tendsto (fun j ↦ l2Coordinate m (q j)) Filter.atTop (𝓝 x))
     (hv : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j)) Filter.atTop
-      (𝒩 (fullPlaneTestMulCLM (ambientTestCoreToFullPlaneTest phi)
+      (𝓝 (fullPlaneTestMulCLM (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding m z₀ p)))) :
     x = invariantScalarPeterssonMultiplier
       (effectiveScalarSmoothQuotient phi)
@@ -59079,13 +59891,13 @@ theorem localBaseLimit_eq_invariantScalarMultiplier
   have hPair (w : OrbitPeterssonHilbert m) : inner ℂ w x = inner ℂ w y := by
     have hLeft : Filter.Tendsto
         (fun j ↦ inner ℂ w (l2Coordinate m (q j))) Filter.atTop
-        (𝒩 (inner ℂ w x)) :=
+        (𝓝 (inner ℂ w x)) :=
       (continuous_const.inner continuous_id).continuousAt.tendsto.comp hq
     have hRight : Filter.Tendsto
         (fun j ↦ inner ℂ
           (orbitPeterssonReducedChartEmbedding m z₀ w)
           (fullPlaneTestToL2 (v j))) Filter.atTop
-        (𝒩 (inner ℂ
+        (𝓝 (inner ℂ
           (orbitPeterssonReducedChartEmbedding m z₀ w)
           (fullPlaneTestMulCLM (ambientTestCoreToFullPlaneTest phi)
             (orbitPeterssonReducedChartEmbedding m z₀ p)))) :=
@@ -59150,8 +59962,8 @@ open Set Function Topology Filter MeasureTheory Metric
 open scoped BigOperators LinearPMap
 open HalfIntegralMultiplier
 open DefinitionOneSobolev
-open DefinitionOneSobolev.GammaTwoQuotientGeometry
-open DefinitionOneSobolev.SmoothCompactCoreGeometry
+open GammaTwoQuotientGeometry
+open SmoothCompactCoreGeometry
 open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
 open FixedPhaseDensity
 open FixedPhaseClosedOperators
@@ -59194,14 +60006,14 @@ theorem finset_graph_snd_eq_of_sum_fst_eq
 /-- A convergent sequence in the physical raising graph has its limit in the
 closed opposite maximal-adjoint graph. -/
 theorem raising_limit_mem_oppositeMaximalGraph
-    (n : ℤ) (q : ℕ → InverseEtaFixedPhaseCore n)
+    (n : ℤ) (q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)
     (x : OrbitPeterssonHilbert n)
     (y : OrbitPeterssonHilbert (n + 1))
     (hq : ∀ j : ℕ,
       (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
         (physicalRaise n).graph)
-    (hx : Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x))
-    (hy : Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y)) :
+    (hx : Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝓝 x))
+    (hy : Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝓝 y)) :
     (x, y) ∈ ((-physicalLowerFromSucc n)†).graph := by
   apply (LinearPMap.adjoint_isClosed
     (negativePhysicalLowerFromSucc_dense_domain n)).mem_of_tendsto
@@ -59213,14 +60025,14 @@ theorem raising_limit_mem_oppositeMaximalGraph
 
 /-- Lowering counterpart of `raising_limit_mem_oppositeMaximalGraph`. -/
 theorem lowering_limit_mem_oppositeMaximalGraph
-    (n : ℤ) (q : ℕ → InverseEtaFixedPhaseCore (n + 1))
+    (n : ℤ) (q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1))
     (x : OrbitPeterssonHilbert (n + 1))
     (y : OrbitPeterssonHilbert n)
     (hq : ∀ j : ℕ,
       (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
         (physicalLowerFromSucc n).graph)
-    (hx : Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x))
-    (hy : Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y)) :
+    (hx : Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝓝 x))
+    (hy : Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝓝 y)) :
     (x, y) ∈ ((-physicalRaise n)†).graph := by
   apply (LinearPMap.adjoint_isClosed
     (negativePhysicalRaise_dense_domain n)).mem_of_tendsto
@@ -59240,17 +60052,17 @@ theorem exists_localizedRaisingGraphSequence
     (n : ℤ) (z₀ : ℍ)
     (p : OrbitPeterssonHilbert n × OrbitPeterssonHilbert (n + 1))
     (hp : p ∈ ((-physicalLowerFromSucc n)†).graph)
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore n,
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
     ∃ x : OrbitPeterssonHilbert n,
     ∃ y : OrbitPeterssonHilbert (n + 1),
       (∀ j : ℕ,
         (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
           (physicalRaise n).graph) ∧
-      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
-      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝓝 x) ∧
+      Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
       x = invariantScalarPeterssonMultiplier
         (effectiveScalarSmoothQuotient phi)
         (effectiveScalarSmoothQuotient_invariant phi) n p.1 ∧
@@ -59269,7 +60081,7 @@ theorem exists_localizedRaisingGraphSequence
     raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
       n z₀ p hp
   have hWeak : IsPlanarAffineWeakGraph Complex.I
-      (((PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
+      (((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 2 : ℝ) : ℂ))
       u Ru := by
     exact hWeakOn.localizeOn psi hpsi
   let K : Set ℂ := tsupport (psi : ℂ → ℂ)
@@ -59282,7 +60094,7 @@ theorem exists_localizedRaisingGraphSequence
     exists_periodizedLocalRaisingGraphLimitWithModels
       hK hKU u Ru hu hWeak
   have hvMultiplier : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
-      Filter.atTop (𝒩 (fullPlaneTestMulCLM
+      Filter.atTop (𝓝 (fullPlaneTestMulCLM
         (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding n z₀ p.1))) := by
     simpa only [u, psi, fullPlaneTestMulCLM_apply] using hv
@@ -59299,17 +60111,17 @@ theorem exists_localizedLoweringGraphSequence
     (n : ℤ) (z₀ : ℍ)
     (p : OrbitPeterssonHilbert (n + 1) × OrbitPeterssonHilbert n)
     (hp : p ∈ ((-physicalRaise n)†).graph)
-    (phi : PhysicalLocalL2.AmbientTestCore)
+    (phi : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
     (hphi : tsupport (phi : ℂ → ℂ) ⊆
       ambientGammaTwoReducedChart z₀) :
-    ∃ q : ℕ → InverseEtaFixedPhaseCore (n + 1),
+    ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1),
     ∃ x : OrbitPeterssonHilbert (n + 1),
     ∃ y : OrbitPeterssonHilbert n,
       (∀ j : ℕ,
         (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
           (physicalLowerFromSucc n).graph) ∧
-      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
-      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+      Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝓝 x) ∧
+      Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
       x = invariantScalarPeterssonMultiplier
         (effectiveScalarSmoothQuotient phi)
         (effectiveScalarSmoothQuotient_invariant phi) (n + 1) p.1 ∧
@@ -59328,7 +60140,7 @@ theorem exists_localizedLoweringGraphSequence
     loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart
       n z₀ p hp
   have hWeak : IsPlanarAffineWeakGraph (-Complex.I)
-      (-(((PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
+      (-(((Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n + 1 : ℝ) : ℂ)))
       u Lu := by
     exact hWeakOn.localizeOn psi hpsi
   let K : Set ℂ := tsupport (psi : ℂ → ℂ)
@@ -59341,7 +60153,7 @@ theorem exists_localizedLoweringGraphSequence
     exists_periodizedLocalLoweringGraphLimitWithModels
       hK hKU u Lu hu hWeak
   have hvMultiplier : Filter.Tendsto (fun j ↦ fullPlaneTestToL2 (v j))
-      Filter.atTop (𝒩 (fullPlaneTestMulCLM
+      Filter.atTop (𝓝 (fullPlaneTestMulCLM
         (ambientTestCoreToFullPlaneTest phi)
         (orbitPeterssonReducedChartEmbedding (n + 1) z₀ p.1))) := by
     simpa only [u, psi, fullPlaneTestMulCLM_apply] using hv
@@ -59366,12 +60178,12 @@ theorem exists_commonCompactCarrierSupport
     (hx : HasCompactCarrierSupport m₀ x)
     (hy : HasCompactCarrierSupport m₁ y) :
     ∃ K : Set ℍ, IsCompact K ∧
-      (∀ᵐ z ∂PhysicalLocalL2.chosenEuclideanCarrierMeasure,
+      (∀ᵐ z ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure,
         z ∉ K →
-          PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m₀ x z = 0) ∧
-      (∀ᵐ z ∂PhysicalLocalL2.chosenEuclideanCarrierMeasure,
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m₀ x z = 0) ∧
+      (∀ᵐ z ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure,
         z ∉ K →
-          PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m₁ y z = 0) := by
+          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m₁ y z = 0) := by
   obtain ⟨Kx, hKx, hxK⟩ := hx
   obtain ⟨Ky, hKy, hyK⟩ := hy
   refine ⟨Kx ∪ Ky, hKx.union hKy, ?_, ?_⟩
@@ -59386,7 +60198,7 @@ theorem exists_commonCompactCarrierSupport
 index type used for dependent local choices. -/
 theorem effectiveScalarSmoothQuotient_sum_attach_eq_one
     {K : Set ℍ} {t : Finset ℍ}
-    {theta : ℍ → PhysicalLocalL2.AmbientTestCore}
+    {theta : ℍ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hsum : ∀ z ∈ gammaTwoOrbitSaturation K,
       (∑ x ∈ t,
         effectiveScalarPoincarePeriodization (theta x) z) = 1)
@@ -59411,9 +60223,9 @@ reconstructs every vector essentially supported on the compact carrier. -/
 theorem finiteQuotientLocalization_base_reconstruction
     {n : ℤ} {K : Set ℍ} (hK : IsCompact K)
     (p : OrbitPeterssonHilbert n)
-    (hp : ∀ᵐ z ∂PhysicalLocalL2.chosenEuclideanCarrierMeasure,
-      z ∉ K → PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z = 0)
-    {t : Finset ℍ} {theta : ℍ → PhysicalLocalL2.AmbientTestCore}
+    (hp : ∀ᵐ z ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure,
+      z ∉ K → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p z = 0)
+    {t : Finset ℍ} {theta : ℍ → Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore}
     (hsum : ∀ z ∈ gammaTwoOrbitSaturation K,
       (∑ x ∈ t,
         effectiveScalarPoincarePeriodization (theta x) z) = 1) :
@@ -59439,14 +60251,14 @@ theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
   obtain ⟨t, theta, htheta, _hthetaInvariant, hthetaSum⟩ :=
     exists_quotientCompatibleFiniteReducedChartLocalization hK
   have hLocal (i : {z // z ∈ t}) :
-      ∃ q : ℕ → InverseEtaFixedPhaseCore n,
+      ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
       ∃ x : OrbitPeterssonHilbert n,
       ∃ y : OrbitPeterssonHilbert (n + 1),
         (∀ j : ℕ,
           (l2Coordinate n (q j), raisedCoordinate n (q j)) ∈
             (physicalRaise n).graph) ∧
-        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝒩 x) ∧
-        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate n (q j)) Filter.atTop (𝓝 x) ∧
+        Filter.Tendsto (fun j ↦ raisedCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
         x = invariantScalarPeterssonMultiplier
           (effectiveScalarSmoothQuotient (theta i))
           (effectiveScalarSmoothQuotient_invariant (theta i)) n p.1 ∧
@@ -59487,7 +60299,7 @@ theorem raisingCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
         (physicalRaise n).graph
     exact (physicalRaise n).graph.sum_mem fun i _hi ↦ hqGraph i j
   · have hSum : Filter.Tendsto Q Filter.atTop
-        (𝒩 (∑ i : {z // z ∈ t}, (x i, y i))) := by
+        (𝓝 (∑ i : {z // z ∈ t}, (x i, y i))) := by
       simpa only [Q] using
         (tendsto_finset_sum Finset.univ fun i _hi ↦
           (hqBase i).prodMk_nhds (hqRaise i))
@@ -59508,14 +60320,14 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
   obtain ⟨t, theta, htheta, _hthetaInvariant, hthetaSum⟩ :=
     exists_quotientCompatibleFiniteReducedChartLocalization hK
   have hLocal (i : {z // z ∈ t}) :
-      ∃ q : ℕ → InverseEtaFixedPhaseCore (n + 1),
+      ∃ q : ℕ → Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1),
       ∃ x : OrbitPeterssonHilbert (n + 1),
       ∃ y : OrbitPeterssonHilbert n,
         (∀ j : ℕ,
           (l2Coordinate (n + 1) (q j), lowerFromSuccCoordinate n (q j)) ∈
             (physicalLowerFromSucc n).graph) ∧
-        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝒩 x) ∧
-        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝒩 y) ∧
+        Filter.Tendsto (fun j ↦ l2Coordinate (n + 1) (q j)) Filter.atTop (𝓝 x) ∧
+        Filter.Tendsto (fun j ↦ lowerFromSuccCoordinate n (q j)) Filter.atTop (𝓝 y) ∧
         x = invariantScalarPeterssonMultiplier
           (effectiveScalarSmoothQuotient (theta i))
           (effectiveScalarSmoothQuotient_invariant (theta i)) (n + 1) p.1 ∧
@@ -59558,7 +60370,7 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
         (physicalLowerFromSucc n).graph
     exact (physicalLowerFromSucc n).graph.sum_mem fun i _hi ↦ hqGraph i j
   · have hSum : Filter.Tendsto Q Filter.atTop
-        (𝒩 (∑ i : {z // z ∈ t}, (x i, y i))) := by
+        (𝓝 (∑ i : {z // z ∈ t}, (x i, y i))) := by
       simpa only [Q] using
         (tendsto_finset_sum Finset.univ fun i _hi ↦
           (hqBase i).prodMk_nhds (hqLower i))
@@ -59574,15 +60386,11 @@ theorem loweringCompactFriedrichsPeriodizationAt_unconditional (n : ℤ) :
 periodization, cutoff, and compact Friedrichs input discharged internally. -/
 theorem strongCrossAdjointAt_unconditional (n : ℤ) :
     StrongCrossAdjointAt n :=
-  FixedPhaseEssentialCoreRoute.
-    strongCrossAdjointAt_of_periodization_cutoff_Friedrichs
-      FixedPhaseEssentialCoreRoute.
-        ambientTestPhysicalGaugePeriodization_unconditional
-      (FixedPhaseIntrinsicAdjointCutoff.
-        raisingInvariantCutoffGraphControlAt_unconditional n)
+  FixedPhaseEssentialCoreRoute.strongCrossAdjointAt_of_periodization_cutoff_Friedrichs
+      FixedPhaseEssentialCoreRoute.ambientTestPhysicalGaugePeriodization_unconditional
+      (FixedPhaseIntrinsicAdjointCutoff.raisingInvariantCutoffGraphControlAt_unconditional n)
       (raisingCompactFriedrichsPeriodizationAt_unconditional n)
-      (FixedPhaseIntrinsicAdjointCutoff.
-        loweringInvariantCutoffGraphControlAt_unconditional n)
+      (FixedPhaseIntrinsicAdjointCutoff.loweringInvariantCutoffGraphControlAt_unconditional n)
       (loweringCompactFriedrichsPeriodizationAt_unconditional n)
 
 end
@@ -59624,10 +60432,8 @@ Friedrichs construction. -/
 theorem jointGraphCoreDensityAt_unconditional (n : ℤ) :
     JointGraphCoreDensityAt n :=
   jointGraphCoreDensityAt_of_strongCrossAdjoints n
-    (FixedPhaseReducedChartFriedrichs.
-      strongCrossAdjointAt_unconditional n)
-    (FixedPhaseReducedChartFriedrichs.
-      strongCrossAdjointAt_unconditional (n + 1))
+    (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional n)
+    (FixedPhaseReducedChartFriedrichs.strongCrossAdjointAt_unconditional (n + 1))
 
 /-- Canonical isometric identification of the independently defined weak
 Sobolev space with the completion of the literal smooth joint graph. -/
