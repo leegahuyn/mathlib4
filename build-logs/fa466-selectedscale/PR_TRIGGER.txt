@@ -1,0 +1,1 @@
+Draft-only direct Lean cluster from checked b51c2ddc champion plus verified lower proof. Do not merge or mark ready.
