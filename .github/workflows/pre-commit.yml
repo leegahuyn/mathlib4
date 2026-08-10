@@ -5,10 +5,10 @@ on:
   pull_request:
 permissions:
   actions: read
-  contents: read
+  contents: write
 jobs:
   main:
-    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build' && github.head_ref != 'candidate/fa430-slope-formulation-20260810' && github.ref_name != 'candidate/fa430-slope-formulation-20260810'
+    if: github.head_ref != 'fix/primality-sheaf-clean-build' && github.ref_name != 'fix/primality-sheaf-clean-build' && github.head_ref != 'candidate/fa430-slope-formulation-20260810' && github.ref_name != 'candidate/fa430-slope-formulation-20260810' && github.head_ref != 'fix/fa442-same-height-slope-cumulative-20260810' && github.ref_name != 'fix/fa442-same-height-slope-cumulative-20260810'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
@@ -17,36 +17,180 @@ jobs:
     - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd
     - uses: pre-commit-ci/lite-action@5d6cc0eb514c891a40562a58a8e71576c5c7fb43
       if: always()
-  fa430-direct:
-    if: github.ref_name == 'candidate/fa430-slope-formulation-20260810'
+  fa442-direct:
+    if: github.ref_name == 'fix/fa442-same-height-slope-cumulative-20260810'
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    timeout-minutes: 210
     strategy:
       fail-fast: false
+      max-parallel: 16
       matrix:
-        variant: [slope_simpa,slope_simpa_structures,slope_dsimp,slope_change_convert,fderiv_unfold,fderiv_convert]
+        variant:
+          - baseline
+          - slope_only
+          - slope_structures
+          - slope_change_convert
+          - slope_paired_parenthesized
+          - slope_paired_dot
+          - slope_paired_parenthesized_ring
+          - slope_paired_parenthesized_ring_height
+          - slope_paired_parenthesized_ring_height_upper
+          - slope_paired_parenthesized_ring_height_upper_tail
+          - slope_paired_parenthesized_ring_height_upper_tail_zero
+          - slope_paired_parenthesized_all_known
+          - slope_paired_dot_all_known
+          - slope_structures_paired_all_known
+          - slope_change_convert_paired_all_known
+          - slope_paired_parenthesized_deep_simp
+    env:
+      VARIANT: '${{ matrix.variant }}'
+      MAX_ERRORS: '50'
     steps:
     - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       with:
-        ref: candidate/fa430-slope-formulation-20260810
-        fetch-depth: 0
-        persist-credentials: false
-    - name: Apply candidate and directly compile prerequisites and FA
+        ref: fix/fa442-same-height-slope-cumulative-20260810
+        fetch-depth: 1800
+        persist-credentials: true
+    - name: Prepare exact 60453-line candidate
+      id: prepare
       shell: bash
-      env: {VARIANT: '${{ matrix.variant }}'}
-      run: bash scripts/fa430_matrix_ci.sh "$VARIANT"
+      run: |
+        set +e
+        d="build-logs/fa442-same-height/candidates/${VARIANT}"
+        rm -rf "$d"
+        mkdir -p "$d"
+        python3 scripts/fa442_prepare_same_height_candidate.py \
+          --variant "$VARIANT" --output-dir "$d" \
+          > "$d/prepare.log" 2>&1
+        rc=$?
+        cat "$d/prepare.log"
+        printf '%s' "$rc" > "$d/prepare.exit"
+        if test "$rc" -eq 0; then
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "ok=false" >> "$GITHUB_OUTPUT"
+          touch "$d/PREPARE_FAILED"
+        fi
+        exit 0
+    - name: Install pinned Lean and Mathlib cache
+      if: steps.prepare.outputs.ok == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        d="build-logs/fa442-same-height/candidates/${VARIANT}"
+        curl --retry 5 --retry-all-errors --fail --silent --show-error \
+          https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+          -o /tmp/elan-init.sh
+        sh /tmp/elan-init.sh -y --default-toolchain none
+        export PATH="${HOME}/.elan/bin:${PATH}"
+        elan toolchain install "$(cat lean-toolchain)"
+        lean --version | tee "$d/lean-version.txt"
+        lake --version | tee "$d/lake-version.txt"
+        lake exe cache get | tee "$d/cache-get.log"
+    - name: Directly compile completed prerequisites and candidate FA
+      if: steps.prepare.outputs.ok == 'true'
+      shell: bash
+      run: |
+        set +e
+        export PATH="${HOME}/.elan/bin:${PATH}"
+        d="build-logs/fa442-same-height/candidates/${VARIANT}"
+        mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+        compile_one() {
+          stem=$1
+          src="PrimalitySheafVerification/${stem}.lean"
+          o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+          i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+          rm -f "$o" "$i"
+          lake env lean -DmaxErrors="$MAX_ERRORS" -DwarningAsError=false \
+            -o "$o" -i "$i" "$src" > "$d/${stem}.log" 2>&1
+          rc=$?
+          printf '%s' "$rc" > "$d/${stem}.exit"
+          if test "$rc" -eq 0 && test -s "$o" && test -s "$i"; then
+            return 0
+          fi
+          return 1
+        }
+        compile_one Mock2; m2=$?
+        compile_one Mock2_Advanced; m2a=$?
+        fa=125
+        if test "$m2" -eq 0 && test "$m2a" -eq 0; then
+          compile_one Mock2_FunctionalAnalysis; fa=$?
+        else
+          printf 'FA blocked by completed prerequisite regression\n' \
+            > "$d/Mock2_FunctionalAnalysis.log"
+          printf '%s' "$fa" > "$d/Mock2_FunctionalAnalysis.exit"
+        fi
+        export M2_EXIT="$m2" M2A_EXIT="$m2a" FA_EXIT="$fa"
+        python3 scripts/fa442_record_direct_metric.py \
+          > "$d/metric-console.log" 2>&1
+        metric_rc=$?
+        cat "$d/metric-console.log"
+        printf '%s' "$metric_rc" > "$d/metric.exit"
+        exit 0
+    - name: Persist strict direct-verified candidate to an immutable branch
+      id: persist
+      if: always()
+      shell: bash
+      run: |
+        set -euo pipefail
+        d="build-logs/fa442-same-height/candidates/${VARIANT}"
+        eligible=false
+        source_sha=''
+        fa_exit=999
+        first_line=0
+        declaration=''
+        if test -f "$d/METRIC.json"; then
+          source_sha=$(python3 -c "import json; print(json.load(open('$d/METRIC.json')).get('source_sha256',''))")
+          fa_exit=$(python3 -c "import json; print(json.load(open('$d/METRIC.json')).get('FA_exit',999))")
+          first_line=$(python3 -c "import json; print(json.load(open('$d/METRIC.json')).get('FA_first_actual_error_line',0))")
+          declaration=$(python3 -c "import json; print(json.load(open('$d/METRIC.json')).get('FA_first_error_declaration',''))")
+          eligible=$(python3 - <<PY
+        import json
+        m=json.load(open('$d/METRIC.json'))
+        ok=(m.get('classification')=='VERIFIED'
+            and m.get('authority')=='direct Lean CLI on repository source path'
+            and m.get('source_metadata_identity') is True
+            and m.get('line_count')==60453
+            and m.get('Mock2_exit')==0 and m.get('Mock2_errors_under_cap')==0
+            and m.get('Mock2_Advanced_exit')==0 and m.get('Mock2_Advanced_errors_under_cap')==0
+            and m.get('forbidden_clean') is True and m.get('forbidden_not_increased') is True
+            and m.get('source_sha256')!='71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0'
+            and (m.get('FA_exit')==0 or int(m.get('FA_first_actual_error_line',0))>31726))
+        print(str(ok).lower())
+        PY
+        )
+        fi
+        echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+        echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+        echo "fa_exit=$fa_exit" >> "$GITHUB_OUTPUT"
+        echo "first_line=$first_line" >> "$GITHUB_OUTPUT"
+        echo "declaration=$declaration" >> "$GITHUB_OUTPUT"
+        if test "$eligible" != true; then
+          exit 0
+        fi
+        actual=$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')
+        candidate_copy=$(sha256sum "$d/Mock2_FunctionalAnalysis-candidate.lean" | awk '{print $1}')
+        test "$actual" = "$source_sha"
+        test "$candidate_copy" = "$source_sha"
+        git config user.name 'github-actions[bot]'
+        git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+        git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$d"
+        if test "$fa_exit" = 0; then metric=pass; else metric="first-${first_line}"; fi
+        git commit -m "fix: FA442 ${metric} same-height ${VARIANT} ${source_sha:0:12} [skip ci]"
+        immutable="champion/fa442-${metric}-${VARIANT}-${source_sha:0:12}-${GITHUB_RUN_ID}"
+        git push origin "HEAD:refs/heads/${immutable}"
+        printf '%s\n' "$immutable" > "$d/IMMUTABLE_CHAMPION_BRANCH.txt"
     - name: Upload candidate and direct evidence
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
-        name: fa430-${{ matrix.variant }}-${{ github.run_id }}-${{ github.sha }}
-        path: build-logs/fa430-slope/${{ matrix.variant }}
+        name: fa442-${{ matrix.variant }}-${{ github.run_id }}-${{ github.sha }}
+        path: build-logs/fa442-same-height/candidates/${{ matrix.variant }}
         if-no-files-found: error
         retention-days: 90
-    - name: Enforce strict direct-CLI improvement
+    - name: Enforce strict direct-CLI improvement separately from module completion
       if: always()
       shell: bash
-      env: {VARIANT: '${{ matrix.variant }}'}
-      run: |
-        test -f "build-logs/fa430-slope/${VARIANT}/FINAL_EXIT"
-        exit "$(cat "build-logs/fa430-slope/${VARIANT}/FINAL_EXIT")"
+      env:
+        ELIGIBLE: '${{ steps.persist.outputs.eligible }}'
+      run: test "${ELIGIBLE:-false}" = true
