@@ -1,0 +1,1 @@
+Run the complete FA452 direct Lean matrix. Candidate generation is not success: every variant must execute Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis through lake env lean. Select only from direct metrics; preserve theorem headers and trust audit; never merge or mark the draft PR ready.
