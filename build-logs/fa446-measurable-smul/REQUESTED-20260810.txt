@@ -1,0 +1,1 @@
+Run FA446 from the direct-verified slope_paired_parenthesized_ring parent (SHA 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152, first 32590:5). Apply only the same-height proof-local MeasurableConstSMul repair, execute Mock2/Mock2_Advanced/FA direct Lean CLI, and promote only on strict direct improvement.
