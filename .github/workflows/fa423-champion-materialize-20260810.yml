@@ -1,0 +1,240 @@
+name: FA423 exact verified champion materialization
+
+on:
+  push:
+    branches:
+      - ops/fa423-champion-materialize-20260810
+    paths:
+      - fa423-materialize/REQUESTED.txt
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  restore-reverify-materialize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      PASS423_RUN_ID: '31317392557'
+      EXPECTED_SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+      EXPECTED_LINES: '60453'
+      EXPECTED_FIRST_LINE: '31726'
+      EXPECTED_FIRST_COL: '2'
+      SOURCE_PATH: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      CONTROLLER_BRANCH: ops/fa423-champion-materialize-20260810
+      CHAMPION_BRANCH: champion/fa-71dc36-first31726-20260810
+
+    steps:
+      - name: Checkout materializer controller
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ops/fa423-champion-materialize-20260810
+          fetch-depth: 2000
+          persist-credentials: true
+
+      - name: Restore the unique PASS423 file matching the verified SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/fa423-materialize
+          mkdir -p /tmp/fa423-materialize/artifacts /tmp/fa423-materialize/evidence
+          gh api -H 'Accept: application/vnd.github+json' \
+            "/repos/${GITHUB_REPOSITORY}/actions/runs/${PASS423_RUN_ID}/artifacts?per_page=100" \
+            > /tmp/fa423-materialize/artifacts.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          obj=json.loads(Path('/tmp/fa423-materialize/artifacts.json').read_text())
+          ids=[str(a['id']) for a in obj.get('artifacts',[]) if not a.get('expired')]
+          Path('/tmp/fa423-materialize/artifact-ids.txt').write_text('\n'.join(ids)+'\n')
+          PY
+          while IFS= read -r artifact_id; do
+            test -n "$artifact_id" || continue
+            zip="/tmp/fa423-materialize/artifacts/${artifact_id}.zip"
+            dir="/tmp/fa423-materialize/artifacts/${artifact_id}"
+            mkdir -p "$dir"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > "$zip" || continue
+            unzip -q "$zip" -d "$dir" || continue
+          done < /tmp/fa423-materialize/artifact-ids.txt
+
+          mapfile -d '' matches < <(
+            find /tmp/fa423-materialize/artifacts -type f -print0 | while IFS= read -r -d '' file; do
+              actual=$(sha256sum "$file" | awk '{print $1}')
+              if test "$actual" = "$EXPECTED_SHA256"; then printf '%s\0' "$file"; fi
+            done
+          )
+          test "${#matches[@]}" -eq 1
+          cp "${matches[0]}" /tmp/fa423-materialize/Mock2_FunctionalAnalysis.lean
+          test "$(sha256sum /tmp/fa423-materialize/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$EXPECTED_SHA256"
+          test "$(python3 -c "print(len(open('/tmp/fa423-materialize/Mock2_FunctionalAnalysis.lean',encoding='utf-8').read().splitlines()))")" = "$EXPECTED_LINES"
+          cp /tmp/fa423-materialize/Mock2_FunctionalAnalysis.lean "$SOURCE_PATH"
+          printf 'run_id=%s\nsource_sha256=%s\nline_count=%s\nartifact_file=%s\n' \
+            "$PASS423_RUN_ID" "$EXPECTED_SHA256" "$EXPECTED_LINES" "${matches[0]}" \
+            > /tmp/fa423-materialize/evidence/RESTORE.txt
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version | tee /tmp/fa423-materialize/evidence/lean-version.txt
+          lake --version | tee /tmp/fa423-materialize/evidence/lake-version.txt
+          lake exe cache get | tee /tmp/fa423-materialize/evidence/cache-get.log
+
+      - name: Directly compile prerequisites and reproduce the 31726 frontier
+        id: metric
+        shell: bash
+        run: |
+          set +e
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          d=/tmp/fa423-materialize/evidence
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          compile_one() {
+            local stem=$1 max_errors=$2
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local olean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"
+            local ilean=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$olean" "$ilean"
+            lake env lean -DmaxErrors="$max_errors" -DwarningAsError=false \
+              -o "$olean" -i "$ilean" "$src" > "$d/${stem}.log" 2>&1
+            local rc=$?
+            printf '%s' "$rc" > "$d/${stem}.exit"
+            if test "$rc" -eq 0 && test -s "$olean" && test -s "$ilean"; then return 0; fi
+            return 1
+          }
+          compile_one Mock2 500; rc_m2=$?
+          compile_one Mock2_Advanced 500; rc_m2a=$?
+          rc_fa=125
+          if test "$rc_m2" -eq 0 && test "$rc_m2a" -eq 0; then
+            compile_one Mock2_FunctionalAnalysis 1800; rc_fa=$?
+          fi
+          export RC_M2="$rc_m2" RC_M2A="$rc_m2a" RC_FA="$rc_fa"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          d=Path('/tmp/fa423-materialize/evidence')
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          pat=re.compile(r'Mock2_FunctionalAnalysis\.lean:(\d+):(\d+):\s+(?:error(?:\([^)]*\))?:|error:)')
+          text=(d/'Mock2_FunctionalAnalysis.log').read_text(encoding='utf-8',errors='replace')
+          matches=list(pat.finditer(text))
+          first=int(matches[0].group(1)) if matches else 0
+          col=int(matches[0].group(2)) if matches else 0
+          rc_m2=int(os.environ['RC_M2']); rc_m2a=int(os.environ['RC_M2A']); rc_fa=int(os.environ['RC_FA'])
+          sha=hashlib.sha256(src.read_bytes()).hexdigest()
+          verified=(
+              sha==os.environ['EXPECTED_SHA256'] and
+              len(src.read_text(encoding='utf-8').splitlines())==int(os.environ['EXPECTED_LINES']) and
+              rc_m2==0 and rc_m2a==0 and rc_fa==1 and
+              first==int(os.environ['EXPECTED_FIRST_LINE']) and col==int(os.environ['EXPECTED_FIRST_COL'])
+          )
+          status={
+              'classification':'VERIFIED' if verified else 'INFRA FAILURE',
+              'authority':'direct Lean CLI',
+              'source_sha256':sha,
+              'line_count':len(src.read_text(encoding='utf-8').splitlines()),
+              'Mock2_exit':rc_m2,
+              'Mock2_Advanced_exit':rc_m2a,
+              'FA_exit':rc_fa,
+              'FA_first_error_line':first,
+              'FA_first_error_col':col,
+              'FA_error_headers_captured':len(matches),
+              'maxErrors_cap':1800,
+              'maxErrors_interpretation':'capture cap only; not total errors or completion percentage',
+              'verified':verified,
+          }
+          (d/'CURRENT.json').write_text(json.dumps(status,indent=2)+'\n',encoding='utf-8')
+          (d/'CURRENT.txt').write_text('\n'.join(f'{k}={v}' for k,v in status.items())+'\n',encoding='utf-8')
+          Path('/tmp/fa423-materialize/verified').write_text('true' if verified else 'false')
+          print(json.dumps(status,indent=2))
+          PY
+          echo "verified=$(cat /tmp/fa423-materialize/verified)" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Audit forbidden escape tokens in the restored source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          text=p.read_text(encoding='utf-8',errors='replace')
+          out=[]; i=0; block=0; string=False
+          while i<len(text):
+              if block:
+                  if text.startswith('/-',i): block+=1; out.extend('  '); i+=2
+                  elif text.startswith('-/',i): block-=1; out.extend('  '); i+=2
+                  else: out.append('\n' if text[i]=='\n' else ' '); i+=1
+              elif string:
+                  if text[i]=='\\' and i+1<len(text): out.extend('  '); i+=2
+                  elif text[i]=='"': string=False; out.append(' '); i+=1
+                  else: out.append('\n' if text[i]=='\n' else ' '); i+=1
+              elif text.startswith('--',i):
+                  while i<len(text) and text[i]!='\n': out.append(' '); i+=1
+              elif text.startswith('/-',i): block=1; out.extend('  '); i+=2
+              elif text[i]=='"': string=True; out.append(' '); i+=1
+              else: out.append(text[i]); i+=1
+          cleaned=''.join(out)
+          patterns={
+              'sorry':r'\bsorry\b','admit':r'\badmit\b','global_axiom':r'(?m)^\s*axiom\s+',
+              'unsafe':r'(?m)^\s*(?:private\s+|protected\s+)?unsafe\b',
+              'native_decide':r'\bnative_decide\b','Lean.ofReduceBool':r'\bLean\.ofReduceBool\b'}
+          counts={k:len(re.findall(v,cleaned)) for k,v in patterns.items()}
+          result={'counts':counts,'clean':all(v==0 for v in counts.values())}
+          Path('/tmp/fa423-materialize/evidence/TRUST_AUDIT.json').write_text(json.dumps(result,indent=2)+'\n')
+          if not result['clean']: raise SystemExit(result)
+          PY
+
+      - name: Commit verified source and create immutable champion ref
+        if: ${{ steps.metric.outputs.verified == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p verified-records/fa423-champion
+          cp /tmp/fa423-materialize/evidence/CURRENT.json verified-records/fa423-champion/CURRENT.json
+          cp /tmp/fa423-materialize/evidence/CURRENT.txt verified-records/fa423-champion/CURRENT.txt
+          cp /tmp/fa423-materialize/evidence/TRUST_AUDIT.json verified-records/fa423-champion/TRUST_AUDIT.json
+          cp /tmp/fa423-materialize/evidence/RESTORE.txt verified-records/fa423-champion/RESTORE.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$SOURCE_PATH" verified-records/fa423-champion
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: materialize exact FA423 31726 champion [skip ci]'
+            git push origin "HEAD:${CONTROLLER_BRANCH}"
+          fi
+          commit=$(git rev-parse HEAD)
+          if git ls-remote --exit-code --heads origin "$CHAMPION_BRANCH" >/dev/null 2>&1; then
+            git fetch --no-tags --depth=1 origin "+refs/heads/${CHAMPION_BRANCH}:refs/remotes/fa423/champion"
+            git show "refs/remotes/fa423/champion:${SOURCE_PATH}" > /tmp/fa423-materialize/existing.lean
+            test "$(sha256sum /tmp/fa423-materialize/existing.lean | awk '{print $1}')" = "$EXPECTED_SHA256"
+          else
+            gh api -X POST -H 'Accept: application/vnd.github+json' \
+              "/repos/${GITHUB_REPOSITORY}/git/refs" \
+              -f ref="refs/heads/${CHAMPION_BRANCH}" -f sha="$commit"
+          fi
+
+      - name: Upload complete materialization evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa423-champion-materialize-${{ github.run_id }}-${{ github.sha }}
+          path: /tmp/fa423-materialize/evidence
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Enforce exact direct reproduction
+        if: always()
+        env:
+          VERIFIED: ${{ steps.metric.outputs.verified }}
+        shell: bash
+        run: test "${VERIFIED:-false}" = true
