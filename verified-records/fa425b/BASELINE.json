@@ -1,0 +1,53 @@
+{
+  "classification": "VERIFIED",
+  "origin": "branch:fix/fa413-strict-transplant-from-31725-20260809",
+  "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "line_count": 60453,
+  "minimum_frontier": 31726,
+  "Mock2": {
+    "label": "Mock2-prerequisite",
+    "stem": "Mock2",
+    "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+    "line_count": 26607,
+    "exit_code": 0,
+    "error_headers": 0,
+    "first_error_line": 0,
+    "first_error_col": 0,
+    "first_error_declaration": "",
+    "olean": true,
+    "ilean": true,
+    "max_errors": 400,
+    "log": "build-logs/fa425-strict-theorem-tournament/Mock2-prerequisite.log"
+  },
+  "Mock2_Advanced": {
+    "label": "Mock2_Advanced-prerequisite",
+    "stem": "Mock2_Advanced",
+    "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+    "line_count": 31919,
+    "exit_code": 0,
+    "error_headers": 0,
+    "first_error_line": 0,
+    "first_error_col": 0,
+    "first_error_declaration": "",
+    "olean": true,
+    "ilean": true,
+    "max_errors": 400,
+    "log": "build-logs/fa425-strict-theorem-tournament/Mock2_Advanced-prerequisite.log"
+  },
+  "FA": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "verified": true
+}

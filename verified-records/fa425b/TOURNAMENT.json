@@ -1,0 +1,358 @@
+{
+  "authority": "direct Lean CLI",
+  "maxErrors_cap": 1,
+  "maxErrors_interpretation": "cap used only to stop after the first actual error; not a total-error count",
+  "baseline": {
+    "label": "FA-baseline-direct",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 31726,
+    "first_error_col": 2,
+    "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa425-strict-theorem-tournament/FA-baseline-direct.log"
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "preheader-add-remove-local",
+        "provenance": "hand:preheader-add-remove-local",
+        "sha256": "6ef9f1a2c112f82dbd75269f41ffc3f863b330343960c2b090f4f734c69e1362",
+        "file": "00-preheader-add-remove-local.lean"
+      },
+      "metric": {
+        "label": "candidate-00-preheader-add-remove-local",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "6ef9f1a2c112f82dbd75269f41ffc3f863b330343960c2b090f4f734c69e1362",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-00-preheader-add-remove-local.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-remove-local-paired",
+        "provenance": "hand:preheader-add-remove-local+paired",
+        "sha256": "c6fc8afccb1168da8a032bd37ca712793cbd27f7e332374a526a72bf035d367c",
+        "file": "01-preheader-add-remove-local-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-01-preheader-add-remove-local-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "c6fc8afccb1168da8a032bd37ca712793cbd27f7e332374a526a72bf035d367c",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-01-preheader-add-remove-local-paired.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-remove-local-paired-ring",
+        "provenance": "hand:preheader-add-remove-local+paired+ring",
+        "sha256": "82d52eb396ee837891678f973a32abdd0c35e6d6b865812c98c0ca1f98a7090f",
+        "file": "02-preheader-add-remove-local-paired-ring.lean"
+      },
+      "metric": {
+        "label": "candidate-02-preheader-add-remove-local-paired-ring",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "82d52eb396ee837891678f973a32abdd0c35e6d6b865812c98c0ca1f98a7090f",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-02-preheader-add-remove-local-paired-ring.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-local-canonical",
+        "provenance": "hand:preheader-add-local-canonical",
+        "sha256": "360ca4e71bb87f0108235127be9e19cd14cc0e3a680d7f831b7ec2f69f404adb",
+        "file": "03-preheader-add-local-canonical.lean"
+      },
+      "metric": {
+        "label": "candidate-03-preheader-add-local-canonical",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "360ca4e71bb87f0108235127be9e19cd14cc0e3a680d7f831b7ec2f69f404adb",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-03-preheader-add-local-canonical.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-local-canonical-paired",
+        "provenance": "hand:preheader-add-local-canonical+paired",
+        "sha256": "e8900687cbd027c88d0253bd93a6148bf19ed9bb6b462a894439c5a2e6e8a7e8",
+        "file": "04-preheader-add-local-canonical-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-04-preheader-add-local-canonical-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e8900687cbd027c88d0253bd93a6148bf19ed9bb6b462a894439c5a2e6e8a7e8",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-04-preheader-add-local-canonical-paired.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-local-canonical-paired-ring",
+        "provenance": "hand:preheader-add-local-canonical+paired+ring",
+        "sha256": "e96a8f07476adec9381806394789b7fa174ef083f80c52b905e370ff2c161a32",
+        "file": "05-preheader-add-local-canonical-paired-ring.lean"
+      },
+      "metric": {
+        "label": "candidate-05-preheader-add-local-canonical-paired-ring",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "e96a8f07476adec9381806394789b7fa174ef083f80c52b905e370ff2c161a32",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-05-preheader-add-local-canonical-paired-ring.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-normed-remove-local",
+        "provenance": "hand:preheader-normed-remove-local",
+        "sha256": "04b93ab0cde0c9e28b1757e27d3999941bb5d4520f4bf780f4ce319dd05bdcd2",
+        "file": "06-preheader-normed-remove-local.lean"
+      },
+      "metric": {
+        "label": "candidate-06-preheader-normed-remove-local",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "04b93ab0cde0c9e28b1757e27d3999941bb5d4520f4bf780f4ce319dd05bdcd2",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-06-preheader-normed-remove-local.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-normed-remove-local-paired",
+        "provenance": "hand:preheader-normed-remove-local+paired",
+        "sha256": "4469c34c9d5f30fb1c17705a0f8f5da9799fe16d6336b9481cd2dee1338332c0",
+        "file": "07-preheader-normed-remove-local-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-07-preheader-normed-remove-local-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4469c34c9d5f30fb1c17705a0f8f5da9799fe16d6336b9481cd2dee1338332c0",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-07-preheader-normed-remove-local-paired.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-normed-remove-local-paired-ring",
+        "provenance": "hand:preheader-normed-remove-local+paired+ring",
+        "sha256": "344cf65bf374e9036fe49fc4d6870d2ec8503df3fae9a09136f361f9a2175d4f",
+        "file": "08-preheader-normed-remove-local-paired-ring.lean"
+      },
+      "metric": {
+        "label": "candidate-08-preheader-normed-remove-local-paired-ring",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "344cf65bf374e9036fe49fc4d6870d2ec8503df3fae9a09136f361f9a2175d4f",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-08-preheader-normed-remove-local-paired-ring.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-named-remove-local",
+        "provenance": "hand:preheader-add-named-remove-local",
+        "sha256": "4bb9b4eecdf0b22e923743ab7f717f48ba590813cfa8b7dffbba83ef19421685",
+        "file": "09-preheader-add-named-remove-local.lean"
+      },
+      "metric": {
+        "label": "candidate-09-preheader-add-named-remove-local",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "4bb9b4eecdf0b22e923743ab7f717f48ba590813cfa8b7dffbba83ef19421685",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-09-preheader-add-named-remove-local.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-named-remove-local-paired",
+        "provenance": "hand:preheader-add-named-remove-local+paired",
+        "sha256": "8099f41148ed54ca72095f0eae312b77164af931f781db1b46000d85d411059e",
+        "file": "10-preheader-add-named-remove-local-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-10-preheader-add-named-remove-local-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "8099f41148ed54ca72095f0eae312b77164af931f781db1b46000d85d411059e",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-10-preheader-add-named-remove-local-paired.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-named-remove-local-paired-ring",
+        "provenance": "hand:preheader-add-named-remove-local+paired+ring",
+        "sha256": "6b0b33c2a00cbbe7afaa8848fe7ac405bb5cc022779277e5e5977e1a24ab3a34",
+        "file": "11-preheader-add-named-remove-local-paired-ring.lean"
+      },
+      "metric": {
+        "label": "candidate-11-preheader-add-named-remove-local-paired-ring",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "6b0b33c2a00cbbe7afaa8848fe7ac405bb5cc022779277e5e5977e1a24ab3a34",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 15,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-11-preheader-add-named-remove-local-paired-ring.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-priority-remove-local",
+        "provenance": "hand:preheader-add-priority-remove-local",
+        "sha256": "2c73a92f92246f64797e4f4c6353f5ca297dd5472a36671bdfdf074d4fa84c38",
+        "file": "12-preheader-add-priority-remove-local.lean"
+      },
+      "metric": {
+        "label": "candidate-12-preheader-add-priority-remove-local",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "2c73a92f92246f64797e4f4c6353f5ca297dd5472a36671bdfdf074d4fa84c38",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-12-preheader-add-priority-remove-local.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "preheader-add-priority-remove-local-paired",
+        "provenance": "hand:preheader-add-priority-remove-local+paired",
+        "sha256": "662672f8f04de6bfb815751ce8f63322cc968ee5c133d4d457f963ef92eed525",
+        "file": "13-preheader-add-priority-remove-local-paired.lean"
+      },
+      "metric": {
+        "label": "candidate-13-preheader-add-priority-remove-local-paired",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "662672f8f04de6bfb815751ce8f63322cc968ee5c133d4d457f963ef92eed525",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 31711,
+        "first_error_col": 6,
+        "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa425-strict-theorem-tournament/candidate-13-preheader-add-priority-remove-local-paired.log"
+      },
+      "strictly_better": false
+    }
+  ]
+}
