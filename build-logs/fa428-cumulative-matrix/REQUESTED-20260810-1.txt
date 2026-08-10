@@ -1,0 +1,1 @@
+Run exact PASS423 baseline plus blocker-instance, paired-edge, selected-Piola and verified downstream same-height cumulative candidates; direct Lean line-only strict promotion.
