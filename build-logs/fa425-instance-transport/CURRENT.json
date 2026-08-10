@@ -1,0 +1,2220 @@
+{
+  "complete": false,
+  "stage": "Mock2_FunctionalAnalysis",
+  "starting_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "final_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+  "immutable_floor_first_error": 31725,
+  "statement_policy": "declaration header manifest unchanged; only proof bodies may vary",
+  "promotion_policy": "direct CLI exit 0, or raw first error later and genuinely later declaration; same-declaration movement requires same file height",
+  "lsp_policy": "screening only; never promotion authority",
+  "prerequisites": {
+    "Mock2": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "36a034721c389888b2c235d856753e5f2e38f9f6a258fddabbb70fe751ae3594",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2-run1.log"
+    },
+    "Mock2_Advanced": {
+      "exit_code": 0,
+      "errors": 0,
+      "first_line": null,
+      "first_col": null,
+      "first_message": "",
+      "artifacts_ok": true,
+      "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+      "log_path": "build-logs/fa413-strict-transplant/Mock2_Advanced-run1.log"
+    }
+  },
+  "any_promotion": true,
+  "final_fa_metric": {
+    "exit_code": 1,
+    "errors": 501,
+    "first_line": 32035,
+    "first_col": 8,
+    "first_message": "Application type mismatch: The argument",
+    "artifacts_ok": false,
+    "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+    "log_path": "build-logs/fa413-strict-transplant/fa422-final-authoritative.log"
+  },
+  "final_error_decl_index": 2679,
+  "frontiers": [
+    {
+      "frontier": 1,
+      "current_declaration_index": 2679,
+      "current_declaration": {
+        "start": 31712,
+        "end": 31732,
+        "kind": "theorem",
+        "name": "actualEdgeAmbientParam_hasDerivAt",
+        "header": "theorem actualEdgeAmbientParam_hasDerivAt (e : GammaTwoActualPolygonEdge) (t : modularTileEdgeParameterSet e.2) : HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) (t : Real)"
+      },
+      "candidate_count": 72,
+      "promoted": true,
+      "champion_after": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 32035,
+        "first_col": 8,
+        "first_message": "Application type mismatch: The argument",
+        "artifacts_ok": false,
+        "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-043.log"
+      },
+      "tested": [
+        {
+          "number": 1,
+          "label": "transport:instances-current:convert-simp",
+          "sha256": "614fabc75e92b00df2f85d3fd7577995f89c79313b22303edff2409417c1e805",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 99,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "`simp` made no progress",
+            "artifacts_ok": false,
+            "source_sha256": "614fabc75e92b00df2f85d3fd7577995f89c79313b22303edff2409417c1e805",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-001.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 2,
+          "label": "transport:instances-reversed:simpa-current",
+          "sha256": "5e371097b412d5b2d41adc5e5d5d97a7da68e021a303e4b3f02399cdccac85b7",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "5e371097b412d5b2d41adc5e5d5d97a7da68e021a303e4b3f02399cdccac85b7",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-002.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 3,
+          "label": "transport:instances-canonical-only:simpa-current",
+          "sha256": "502dc16cf590c1beffba5f4bc6ce53a546a52c46469f6fdbbf3bc79ac2689f8d",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "502dc16cf590c1beffba5f4bc6ce53a546a52c46469f6fdbbf3bc79ac2689f8d",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-003.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 4,
+          "label": "transport:instances-legacy-only:simpa-current",
+          "sha256": "12e459221be3ab4d811e19b19d981d385f9596337b056494b7381bda1d7b678c",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "12e459221be3ab4d811e19b19d981d385f9596337b056494b7381bda1d7b678c",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-004.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 5,
+          "label": "transport:instances-none:simpa-current",
+          "sha256": "cf2041a5d1ea260da82a2f3cf37201ba2b2ba3bdce2be9e5eb399ab1aa289590",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "cf2041a5d1ea260da82a2f3cf37201ba2b2ba3bdce2be9e5eb399ab1aa289590",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-005.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 6,
+          "label": "transport:instances-reversed:convert-simp",
+          "sha256": "70458c1de9c8039024201b15bc4c974f89ffc6786f29a53f98e96855f04e923d",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "`simp` made no progress",
+            "artifacts_ok": false,
+            "source_sha256": "70458c1de9c8039024201b15bc4c974f89ffc6786f29a53f98e96855f04e923d",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-006.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 7,
+          "label": "transport:instances-canonical-only:convert-simp",
+          "sha256": "69df87ec86fd0dedf8907e075dece306ce69ebb8a0f3e3f22e15f6623f71d8ae",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "`simp` made no progress",
+            "artifacts_ok": false,
+            "source_sha256": "69df87ec86fd0dedf8907e075dece306ce69ebb8a0f3e3f22e15f6623f71d8ae",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-007.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 8,
+          "label": "transport:instances-legacy-only:convert-simp",
+          "sha256": "9056c32f6706d3d7176ffe59414d5312788cb487c3239e895ab06420f1bc460c",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "`simp` made no progress",
+            "artifacts_ok": false,
+            "source_sha256": "9056c32f6706d3d7176ffe59414d5312788cb487c3239e895ab06420f1bc460c",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-008.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 9,
+          "label": "transport:instances-current:convert-rfl",
+          "sha256": "7d1b6b9ea42949722ee745d8947402e10a11ae1581e29677790e3411e9b2d2ef",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis\u271d : AddCommGroup \u2102 := Complex.instNormedAddCommGroup.toAddCommGroup\nthis : AddCommGroup \u2102 := Complex.addCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "Tactic `rfl` failed: The left-hand side",
+            "artifacts_ok": false,
+            "source_sha256": "7d1b6b9ea42949722ee745d8947402e10a11ae1581e29677790e3411e9b2d2ef",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-009.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 10,
+          "label": "transport:instances-current:exact-reducible",
+          "sha256": "37cb97fa604405d5d3434b18796d2b5199aff02746f271f5ce65d3d6cc03efb0",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 31,
+            "first_message": "Type mismatch",
+            "artifacts_ok": false,
+            "source_sha256": "37cb97fa604405d5d3434b18796d2b5199aff02746f271f5ce65d3d6cc03efb0",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-010.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 11,
+          "label": "transport:instances-current:simpa-comp-apply",
+          "sha256": "04705145670e0c0f9939f07376d433b087db210a9053c94e05f5e776e2d7976e",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "04705145670e0c0f9939f07376d433b087db210a9053c94e05f5e776e2d7976e",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-011.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 12,
+          "label": "transport:instances-reversed:convert-rfl",
+          "sha256": "17058f1005a5ee820e9098cc3c4e106604a45c0e0b78abafb08dbaf3c9d2675c",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis\u271d : AddCommGroup \u2102 := Complex.addCommGroup\nthis : AddCommGroup \u2102 := Complex.instNormedAddCommGroup.toAddCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "Tactic `rfl` failed: The left-hand side",
+            "artifacts_ok": false,
+            "source_sha256": "17058f1005a5ee820e9098cc3c4e106604a45c0e0b78abafb08dbaf3c9d2675c",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-012.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 13,
+          "label": "transport:instances-reversed:exact-reducible",
+          "sha256": "be191459e2a272d0a3262bfe8855ca078342e616962d502b56467c152b8e6ac5",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 31,
+            "first_message": "Type mismatch",
+            "artifacts_ok": false,
+            "source_sha256": "be191459e2a272d0a3262bfe8855ca078342e616962d502b56467c152b8e6ac5",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-013.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 14,
+          "label": "transport:instances-reversed:simpa-comp-apply",
+          "sha256": "608b2aaf61d4d279202b7435735f7f828ae04fcf54fc95cc0f22d82c176f5c19",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "608b2aaf61d4d279202b7435735f7f828ae04fcf54fc95cc0f22d82c176f5c19",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-014.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 15,
+          "label": "transport:instances-canonical-only:convert-rfl",
+          "sha256": "8d31ef51305f170cee3eff698c42e213458a39979666a1e7fe9e5511e92de762",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis : AddCommGroup \u2102 := Complex.instNormedAddCommGroup.toAddCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "Tactic `rfl` failed: The left-hand side",
+            "artifacts_ok": false,
+            "source_sha256": "8d31ef51305f170cee3eff698c42e213458a39979666a1e7fe9e5511e92de762",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-015.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 16,
+          "label": "transport:instances-canonical-only:exact-reducible",
+          "sha256": "fd0ff9e5da0fe7678c5a33e3db2056aaaf122e714d7cb90d4a4f8c92009ec25b",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 31,
+            "first_message": "Type mismatch",
+            "artifacts_ok": false,
+            "source_sha256": "fd0ff9e5da0fe7678c5a33e3db2056aaaf122e714d7cb90d4a4f8c92009ec25b",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-016.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 17,
+          "label": "transport:instances-canonical-only:simpa-comp-apply",
+          "sha256": "840119c3101e9c49eeb6e09ad13e13c4af9048ff7fbece2ab111e3fc3d74afe6",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "840119c3101e9c49eeb6e09ad13e13c4af9048ff7fbece2ab111e3fc3d74afe6",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-017.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 18,
+          "label": "transport:instances-legacy-only:convert-rfl",
+          "sha256": "a3a279c954894bb048156f82ca900d36521de33a8b15483ec56f3547f03d6b7e",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis : AddCommGroup \u2102 := Complex.addCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "Tactic `rfl` failed: The left-hand side",
+            "artifacts_ok": false,
+            "source_sha256": "a3a279c954894bb048156f82ca900d36521de33a8b15483ec56f3547f03d6b7e",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-018.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 19,
+          "label": "transport:instances-legacy-only:exact-reducible",
+          "sha256": "132bd14e20d1b1d214d3c80533bd595352ce86b0a3d12d43cbef5fe55dbde9b8",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 31,
+            "first_message": "Type mismatch",
+            "artifacts_ok": false,
+            "source_sha256": "132bd14e20d1b1d214d3c80533bd595352ce86b0a3d12d43cbef5fe55dbde9b8",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-019.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 20,
+          "label": "transport:instances-legacy-only:simpa-comp-apply",
+          "sha256": "f11a2ea57701dbcefe7173f85afac101c87499f2d18349c9092c5d80b23e67de",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "f11a2ea57701dbcefe7173f85afac101c87499f2d18349c9092c5d80b23e67de",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-020.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 21,
+          "label": "transport:instances-both-canonical:simpa-current",
+          "sha256": "49ef5e5f76da62ce301841965a0e80ee33d174150b59f3e0873b933d0ec4f2cd",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 2,
+            "first_message": "Type mismatch: After simplification, term",
+            "artifacts_ok": false,
+            "source_sha256": "49ef5e5f76da62ce301841965a0e80ee33d174150b59f3e0873b933d0ec4f2cd",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-021.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 22,
+          "label": "transport:instances-both-canonical:convert-simp",
+          "sha256": "39ebdfe0a76d681f1ef5423bfc42dca94c7378abcc4800a70ea847986da56463",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "`simp` made no progress",
+            "artifacts_ok": false,
+            "source_sha256": "39ebdfe0a76d681f1ef5423bfc42dca94c7378abcc4800a70ea847986da56463",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-022.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 23,
+          "label": "transport:instances-both-canonical:convert-rfl",
+          "sha256": "338a9cbc46c556970a402fd9879ef2800335094fd659d8c8c1002352c6adc276",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis\u271d : AddCommGroup \u2102 := Complex.instNormedAddCommGroup.toAddCommGroup\nthis : AddCommGroup \u2102 := Complex.instNormedAddCommGroup.toAddCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 28,
+            "first_message": "Tactic `rfl` failed: The left-hand side",
+            "artifacts_ok": false,
+            "source_sha256": "338a9cbc46c556970a402fd9879ef2800335094fd659d8c8c1002352c6adc276",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-023.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 24,
+          "label": "transport:instances-both-canonical:exact-reducible",
+          "sha256": "b5750032f40fa3cae4f5f40275144a8fd829ee807fe3344807f538b58ab69e01",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 31726,
+            "first_col": 31,
+            "first_message": "Type mismatch",
+            "artifacts_ok": false,
+            "source_sha256": "b5750032f40fa3cae4f5f40275144a8fd829ee807fe3344807f538b58ab69e01",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-024.log"
+          },
+          "direct_decl_index": 2658,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 25,
+          "label": "transport:instances-both-canonical:simpa-comp-apply",
+          "sha256": "005281bd3f5517ab91a3d17bd50583c69a573827606107c2906389966ea8addd",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 26,
+          "label": "transport:instances-both-legacy:simpa-current",
+          "sha256": "329d9f6101761cdef3efc2d0819cbddb3033af2aecc0ee71281e9941d8423cb9",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 27,
+          "label": "transport:instances-both-legacy:convert-simp",
+          "sha256": "408cdfae1e26b359e283657768c0be029978760b5ffea3553fbbd7977a7f61d7",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 28,
+          "label": "transport:instances-both-legacy:convert-rfl",
+          "sha256": "964e3af4ad196d006b3475de249220f21f8c7e1173883ddfeae8f1602e1baee1",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nthis\u271d : AddCommGroup \u2102 := Complex.addCommGroup\nthis : AddCommGroup \u2102 := Complex.addCommGroup\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 29,
+          "label": "transport:instances-both-legacy:exact-reducible",
+          "sha256": "f243427c6e4cc5845e1de58782062341ac8e930d856127313214ada666477aa3",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 30,
+          "label": "transport:instances-both-legacy:simpa-comp-apply",
+          "sha256": "ae88dccb37f9a74f691afe5ee7f6b545e6bfe224d31cd99cdfc54c38de203f4d",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 31,
+          "label": "transport:instances-none:convert-simp",
+          "sha256": "f8f4894e38756f0c968cfc153dc15881b099ba431d6ef8cef04e91ba12922541",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "`simp` made no progress",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 32,
+          "label": "transport:instances-none:convert-rfl",
+          "sha256": "1cfbaac291c104d6c667d17923f1d82ffe183b0d1e0062e92b7c9fdc1af35c6e",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 29,
+            "first_message": "Tactic `rfl` failed: The left-hand side\n  actualEdgeNativeVelocity e t\nis not definitionally equal to the right-hand side\n  (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n    (modularTileEdgeAmbientVelocity e.2 \u2191t)\n\ncase e'_9\ne : GammaTwoActualPolygonEdge\nt : \u2191(modularTileEdgeParameterSet e.2)\nhbase : HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nhouter :\n  HasFDerivAt (selectedCosetAmbientMap e.1)\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) \u2191(modularTileEdgeParam e.2 t)\nhcomp :\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\n\u22a2 actualEdgeNativeVelocity e t =\n    (UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t)",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 33,
+          "label": "transport:instances-none:exact-reducible",
+          "sha256": "ce991d88f69e4cf6f132e58150ea11928402cb3dd1ece14978764158e74da81d",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 32,
+            "first_message": "Type mismatch\n  hcomp\nhas type\n  HasDerivAt (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t))\n      (modularTileEdgeAmbientVelocity e.2 \u2191t))\n    \u2191t\nbut is expected to have type\n  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 34,
+          "label": "transport:instances-none:simpa-comp-apply",
+          "sha256": "a26b115fcb4e2e427585fec1278960a289e54fe018abfe8145ff9e968ca6b578",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (selectedCosetAmbientMap e.1 \u2218 modularTileEdgeAmbientParam e.2)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 35,
+          "label": "transport:group-eq-rfl",
+          "sha256": "fab15bfc423ffa0a0e15dd63b0671a941dbee1049e900a35035276d14b39dfa1",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31729,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 36,
+          "label": "transport:group-eq-ext",
+          "sha256": "3643217659fec05c023d05386b6df0b49d213dbd190c45173411b97b603f43c0",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 11,
+            "first_line": 31727,
+            "first_col": 34,
+            "first_message": "No applicable extensionality theorem found for type\n  AddCommGroup \u2102\n\nNote: Extensionality theorems can be registered by marking them with the `[ext]` attribute",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 37,
+          "label": "transport:group-eq-structure-ext",
+          "sha256": "693807190db4b03db75c37b98c0029ca8b5c363a8394e023115c84b2619f008b",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 11,
+            "first_line": 31727,
+            "first_col": 40,
+            "first_message": "Unknown constant `AddCommGroup.ext`",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 38,
+          "label": "transport:group-eq-symm-ext",
+          "sha256": "34bfe2de720b2261556a5907ca93f902acc68e3e09555fa7bd367d7e98a6fa3e",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 11,
+            "first_line": 31727,
+            "first_col": 59,
+            "first_message": "No applicable extensionality theorem found for type\n  AddCommGroup \u2102\n\nNote: Extensionality theorems can be registered by marking them with the `[ext]` attribute",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 39,
+          "label": "cross-atomic:local-instance:drop-complex-addcommgroup",
+          "sha256": "665d029c54bcd63ccbf4d923aeec570ff319cc7a9ca058c2b911206797a49b42",
+          "line_count": 60452,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31725,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 40,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:plan=1",
+          "sha256": "9ab53b1f8e21a290c9c040279ddd586e4f9466579ab36a2b4157c813eef6d9fd",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 8,
+            "first_line": 31726,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 41,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0",
+          "sha256": "fba7e8275452eeed3c48a855a7c459e24eccbb7d1da693a7874ad05064e559af",
+          "line_count": 60451,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31724,
+            "first_col": 3,
+            "first_message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t\nbut is expected to have type\n  @HasDerivAt \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace \u22ef\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) \u2191(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) \u2191t",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 42,
+          "label": "cross-atomic:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "864372512738bda427d2ff0bbede0f959b6d672725431d9b11dc65ea19095cde",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 31724,
+            "first_col": 46,
+            "first_message": "Application type mismatch: The argument\n  hbase\nhas type\n  HasDerivAt (modularTileEdgeAmbientParam e.2) (modularTileEdgeAmbientVelocity e.2 \u2191t) \u2191t\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  @HasFDerivAt.comp_hasDerivAt_of_eq \u211d DenselyNormedField.toNontriviallyNormedField \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace \u2102 Complex.instNormedAddCommGroup\n    instInnerProductSpaceRealComplex.toNormedSpace ?m.51 ?m.52 hbase",
+            "first_decl_index": 2658
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 43,
+          "label": "cross-atomic:history-hunks:history:0a4b7a24a5fdd815ee95983ecef9916cef818725:fix: promote PASS419 FA frontier to line 32035 [skip ci]:plan=1",
+          "sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": true,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-043.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": true
+        }
+      ]
+    },
+    {
+      "frontier": 2,
+      "current_declaration_index": 2679,
+      "current_declaration": {
+        "start": 32030,
+        "end": 32074,
+        "kind": "theorem",
+        "name": "nativeActualEdgeFluxIntegral_paired_circular",
+        "header": "theorem nativeActualEdgeFluxIntegral_paired_circular {X Y : UpperHalfPlane \u2192 Complex} (hInv : IsGammaTwoInvariantFlux X Y) (T : Real) (q : GammaTwoRightCoset) : nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired ((q, GammaTwoModularTileEdge.circularArc) : GammaTwoActualPolygonEdge) = (-1 : Complex) * nativeActualEdgeFluxIntegral T X Y (q, GammaTwoModularTileEdge.circularArc)"
+      },
+      "candidate_count": 66,
+      "promoted": false,
+      "champion_after": {
+        "exit_code": 1,
+        "errors": 2,
+        "first_line": 32035,
+        "first_col": 8,
+        "first_message": "Application type mismatch: The argument",
+        "artifacts_ok": false,
+        "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "log_path": "build-logs/fa413-strict-transplant/frontier-01-candidate-043.log"
+      },
+      "tested": [
+        {
+          "number": 1,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0",
+          "sha256": "9ff1f9aa7082b7a908d76c098f612eda140b3bb21f4600fd7d092348ed49bf79",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "9ff1f9aa7082b7a908d76c098f612eda140b3bb21f4600fd7d092348ed49bf79",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-001.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 2,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1",
+          "sha256": "bc96928f066796224a1a54cb490d00505482c424f63559d1a2af442cea27dae4",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "bc96928f066796224a1a54cb490d00505482c424f63559d1a2af442cea27dae4",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-002.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 3,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2",
+          "sha256": "4f5b8c5b94449d0ffa5540f8b2455cda21dcf28b6f3bd129ed76aa82a40e1c23",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "4f5b8c5b94449d0ffa5540f8b2455cda21dcf28b6f3bd129ed76aa82a40e1c23",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-003.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 4,
+          "label": "cross-atomic:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "79d3fd873090c161baceab18bad2b6bf861fc4934eac87e889efbf9a563b9e3a",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "79d3fd873090c161baceab18bad2b6bf861fc4934eac87e889efbf9a563b9e3a",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-004.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 5,
+          "label": "cross-atomic:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "9aed09b879490776edcd1dcfe51eace839ae841766cba5cc81d37599ed194584",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "9aed09b879490776edcd1dcfe51eace839ae841766cba5cc81d37599ed194584",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-005.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 6,
+          "label": "cross-atomic:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "6b4520ca4caf98ca8162337827eecfb41a1c8df91661ec60e2c2b042e410697e",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "6b4520ca4caf98ca8162337827eecfb41a1c8df91661ec60e2c2b042e410697e",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-006.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 7,
+          "label": "cross-atomic:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "67052b7f930f5ce1fad54cae0c808f383c9864ab38f869b46cbe2ef43c689b81",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "67052b7f930f5ce1fad54cae0c808f383c9864ab38f869b46cbe2ef43c689b81",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-007.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 8,
+          "label": "cross-atomic:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "b93ed6a9c2817a4707773f1ccef2a649d61e03366d9b7da707975a1338db7f64",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "b93ed6a9c2817a4707773f1ccef2a649d61e03366d9b7da707975a1338db7f64",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-008.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 9,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1",
+          "sha256": "04355f389cb6ed94bf421263af74b4fafa9830481f1b20f3076dcf0727e62f93",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "04355f389cb6ed94bf421263af74b4fafa9830481f1b20f3076dcf0727e62f93",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-009.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 10,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2",
+          "sha256": "f14834c0af45debcfd15a0b654ec03edb3de88fcd006c36ca833003b19990bc3",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "f14834c0af45debcfd15a0b654ec03edb3de88fcd006c36ca833003b19990bc3",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-010.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 11,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "03cd5a96b65c9ab791f666dc0e0d4a014d3a2d2dc868c2d37e27c5e99db672f5",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "03cd5a96b65c9ab791f666dc0e0d4a014d3a2d2dc868c2d37e27c5e99db672f5",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-011.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 12,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "a25da324bb7d48d4f61c4d79030345c5e0d55aa939f542813ab107d85046d1aa",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "a25da324bb7d48d4f61c4d79030345c5e0d55aa939f542813ab107d85046d1aa",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-012.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 13,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "9961009f1116b2b4d56bf8de0b26a3bab9570c6822956ad1bc47aeda9c0fb5df",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "9961009f1116b2b4d56bf8de0b26a3bab9570c6822956ad1bc47aeda9c0fb5df",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-013.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 14,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "70289f09fdaa4eb5e02d75ce8275a4a275b7b9a5e57e688ededa8c04a8ca330c",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "70289f09fdaa4eb5e02d75ce8275a4a275b7b9a5e57e688ededa8c04a8ca330c",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-014.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 15,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2",
+          "sha256": "2749ea6dfd28305e031994abba5c01b599222aa0780bc6d2cea67f88f6a87230",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "2749ea6dfd28305e031994abba5c01b599222aa0780bc6d2cea67f88f6a87230",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-015.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 16,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "b65780488236e78df969ee27a49eb558eea27ec2b9d61c480bc4e80d6942c852",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "b65780488236e78df969ee27a49eb558eea27ec2b9d61c480bc4e80d6942c852",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-016.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 17,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "6112931dea569e5c7a46b6a1add8a1022b03dfeff0423a09ab90ebd055c619a6",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "6112931dea569e5c7a46b6a1add8a1022b03dfeff0423a09ab90ebd055c619a6",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-017.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 18,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "363cefc01aeb62abf757b2f1a904f6b2a1087afaf570787e2ce28a5a3b004e7c",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "363cefc01aeb62abf757b2f1a904f6b2a1087afaf570787e2ce28a5a3b004e7c",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-018.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 19,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "a941e68bc4bb56e9fc5ad14ade50720b30cd9f11f9ec9331f02ac562ba052497",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "a941e68bc4bb56e9fc5ad14ade50720b30cd9f11f9ec9331f02ac562ba052497",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-019.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 20,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "3b123ea1e0e92b3dbb3212543360aeb94e826fe50aa3c573fd95551a8d76ceab",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "3b123ea1e0e92b3dbb3212543360aeb94e826fe50aa3c573fd95551a8d76ceab",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-020.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 21,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "b61a82c27070c55ab6a1ecb638ac266cadf47edb7d4867376ad068814f1551b4",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "b61a82c27070c55ab6a1ecb638ac266cadf47edb7d4867376ad068814f1551b4",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-021.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 22,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "ff5eb2c066b892c86c9e87c0cac6f94a692944ff5aa1272da9e36bb11d048e3b",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "ff5eb2c066b892c86c9e87c0cac6f94a692944ff5aa1272da9e36bb11d048e3b",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-022.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 23,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "c3ed87b5a71f00f6e3d7939ca728ecc1619233f86023998d2897f7f2d8e7f7d9",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "c3ed87b5a71f00f6e3d7939ca728ecc1619233f86023998d2897f7f2d8e7f7d9",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-023.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 24,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "e5f01e9e47aa1ffb2f03ddcb96b68fe06152c6f7ad1bb4f38fa5653cb1c90640",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false,
+          "direct_cli": {
+            "exit_code": 1,
+            "errors": 2,
+            "first_line": 32035,
+            "first_col": 8,
+            "first_message": "Application type mismatch: The argument",
+            "artifacts_ok": false,
+            "source_sha256": "e5f01e9e47aa1ffb2f03ddcb96b68fe06152c6f7ad1bb4f38fa5653cb1c90640",
+            "log_path": "build-logs/fa413-strict-transplant/frontier-02-candidate-024.log"
+          },
+          "direct_decl_index": 2679,
+          "direct_strictly_better": false
+        },
+        {
+          "number": 25,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "4a861daf2788d2b606314093261c81eee64f897df24855bda50aaa5e6620a86e",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 7,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 26,
+          "label": "cross-pair:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "856b99255d067c4285046fb1ec2397a5ba3cbd9ce54726d441c6a8a75aca874a",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 27,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "e8e94e8d79c7830997083540409df93fc0e11e436422c26927986dd239622ae6",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 28,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "24729aa39f4d938f3a71557d1793833885b41db0df595142423e4cd1eb918659",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 29,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "69a01251db21330b8ae95613c868c999993a60d6e3f03ed47f01fabe1dd8c21d",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 30,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "4bb518ea351d41c60b3947963d03744ec4cac35c99cf22e40678ae2f41cc202e",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 31,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "2ac7f17753d55dca52de9ee67c6e4b998a35a99f9ca0263a1258dd308ca6cc34",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 32,
+          "label": "cross-pair:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "0e7d89960af56ac5f97ffd39ee8026c7f14dbf59e085134f90b0fe7a7c29082f",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 33,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2",
+          "sha256": "e4f71dee897e6054ad84a7ec4c6dcc94ca8c6a615e46f0de2ab67d9a2e03f79f",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 34,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "bcc8dc5cf3fa9fd840107715531c9d3131c3a33f51fb55e9c96c6b2863bb1934",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 35,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "4b9e8eba48e63fb7348f4a6a1cd96123287e862bd68ac9f67bfe0a84ecb72416",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 36,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "c613a9ec1f5b9d78e9fa587dbc782df06e1df41e37003ff35f567ad6728d3a23",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 37,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "173bd6ac6abc1c5b080b23ce4000edc0e824e7019ac4c0f53f05ca52cdacbf88",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 38,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "87456fc512d08cfe9be362bb445445eff74bc0890909e76e0417a65a1217089f",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 39,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "a1460baf0ecd299ea83a0aee6a4a76d9eaec523aaa1f8bc76bdd19da9b48263f",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 40,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "5063de9117232c490dfa277153d2deb0e00f1f500e00771a3b7275a550547aa4",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 41,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "984a67cf1558be3027cc0da254569d6834ac91b152096beb9f2795caf2446cb9",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 42,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "e0cbf0a90b9f00179304757b1336a72afbb97fac997355993148e09377e27efa",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 43,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "0877c6014107f74b43115bdb06f580549295a4d4908b005f33499a2a93801d57",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 44,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "76d5173d40a44c92895c2d6210ec4bae364a49e613d0ad5a43ac9973628de720",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 45,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3",
+          "sha256": "b81192f439e7c1855bbc701bc69bea4f0d93ee39576edfc8583381152665cfe8",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 46,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "8c19b1fe4969fc5ab8be72898a9ec37cebd1151263c6a83a92c65e28e62a908f",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 47,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "e1ef7844e602a3fdbe6161f5b2c3cb69e3a65382b7c96729c1fa1857f99bef92",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 48,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "7c4c7d08b454fb9f8536b407e055059b95e1223d6ca13904fecea0392afd5eb9",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 49,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "520b6d939584872c5248bc75a392b880b9474f3172b317b0ba737dbd048d1bfd",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 50,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "836bb8902f16128c23e62f4acad7ea712b5a340cf660c13e28aad41ff9fd4ce4",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 51,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "caff86c80ba7a2614ab97243f067cd6687ee851849c238e62e4dad228a4d61fb",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 52,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "537797d2838c71f1b370d53df006632f5e930b5bae43607524a0d4245b00f9bd",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 53,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0",
+          "sha256": "402c33ace287b5f878387b5b809ea6dbf2aa2c1b004caa3f3e84421be3b6abba",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 54,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "4f0235fe129acc056882e411767a658f423480a2df217a0116a291f7b8bd3854",
+          "line_count": 60454,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 55,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "6880bc6ff7d2369de9e7a3cc42912e64aa8eaf2ec23c81a4f34a24a73c282c22",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 56,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "af8c2b04c1fecd5b62cfe9d089d953d64a48c1704fbc0680b9c4fdb893de7916",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 57,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "d61735178f04729c2516c20e59de40cd7f68d541d722f975245b3b61e35ae440",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 58,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1",
+          "sha256": "bfd1cb4491d180765f2ef165bc8b8534d753bc9bb5574f6138fbd487baa0f776",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 59,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "f7616a7450058275308f71fdd0cf5690915d79aa668d7453f9638981cf6dbce1",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 60,
+          "label": "cross-triple:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=3 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "4a003f32c3bb1bf59717fa294425662ac9d8e7f6770d087828a5b61f262757ec",
+          "line_count": 60455,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 61,
+          "label": "cross-triple:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2",
+          "sha256": "9b0e868994e89ac4f0e617dc46a8ca976e42be9092c7bccb2029b22d17ecc108",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 62,
+          "label": "cross-triple:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "a2d6545fd0f0bafd3711d0fa0a146808690b041c079e02df93b1f97722008da8",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 63,
+          "label": "cross-triple:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "808eb937785dae092c90cdc1bfdd15865c1dba7a99e93540543254a952372798",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 10,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 64,
+          "label": "cross-triple:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=1 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=2 + history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=3",
+          "sha256": "b89f7feabcbc3caece23e00117d3762d681b1697123e859a503e7df98cfd70f7",
+          "line_count": 60456,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 65,
+          "label": "seed:history-hunks:origin/fix/fa412-broad-from-pass376-20260809:scripts/fa411_from_pass376_frontier.py:plan=0,1,2,3",
+          "sha256": "1ccdb2258aab05cce8d4867aec718de49d598132c489ee0abcd7e9e041127893",
+          "line_count": 60453,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        },
+        {
+          "number": 66,
+          "label": "seed:history-hunks:history:e1215ff464ab2e1f4538afb25489cf4b18178714:fix: preserve PASS 410 section-instance repair frontier [skip ci]:plan=0,1,2,3",
+          "sha256": "a8729292f5f9c43c19837a562fd7070085dd996edb4fb6524ecacd828a2a1a14",
+          "line_count": 60457,
+          "lsp": {
+            "error_count": 9,
+            "first_line": 32035,
+            "first_col": 9,
+            "first_message": "Application type mismatch: The argument\n  GammaTwoActualPolygonEdge.paired\nhas type\n  GammaTwoActualPolygonEdge \u2192 GammaTwoActualPolygonEdge\nbut is expected to have type\n  GammaTwoActualPolygonEdge\nin the application\n  nativeActualEdgeFluxIntegral T X Y GammaTwoActualPolygonEdge.paired",
+            "first_decl_index": 2679
+          },
+          "lsp_promising": false
+        }
+      ]
+    }
+  ],
+  "forbidden_token_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "two_pass": {},
+  "downstream_failure": null
+}

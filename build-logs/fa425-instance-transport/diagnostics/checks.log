@@ -1,0 +1,4 @@
+/tmp/fa425-checks.lean:2:8: error(lean.unknownIdentifier): Unknown identifier `HasDerivAt`
+/tmp/fa425-checks.lean:3:7: error(lean.unknownIdentifier): Unknown constant `AddCommGroup.ext`
+Complex.addCommGroup : AddCommGroup ℂ
+Complex.instNormedAddCommGroup : NormedAddCommGroup ℂ

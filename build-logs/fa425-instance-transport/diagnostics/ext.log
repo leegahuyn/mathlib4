@@ -1,0 +1,4 @@
+/tmp/fa425-ext.lean:4:2: error: No applicable extensionality theorem found for type
+  AddCommGroup ℂ
+
+Note: Extensionality theorems can be registered by marking them with the `[ext]` attribute
