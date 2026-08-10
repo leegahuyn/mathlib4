@@ -1,4 +1,4 @@
-name: Probe FA444 target run through recognized workflow path
+name: Cancel superseded FA444 workflow runs
 
 on:
   push:
@@ -6,78 +6,48 @@ on:
       - ci/fa444-recognized-run-probe-20260810
 
 permissions:
-  actions: read
+  actions: write
   contents: write
 
+concurrency:
+  group: fa444-superseded-run-canceller
+  cancel-in-progress: true
+
 jobs:
-  probe:
+  cancel:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      TARGET_BRANCH: fix/fa444-fa442-matrix-pipeline-repair-20260810
-      TARGET_SHA: 83277adea72ba5719b978697f432dbd005295e4f
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ github.sha }}
+          ref: ci/fa444-recognized-run-probe-20260810
           persist-credentials: true
-      - name: Locate target push run
+      - name: Cancel only superseded FA444 runs
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p build-logs/fa444-recognized-probe
-          found=false
-          for attempt in $(seq 1 120); do
-            gh api "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&event=push&per_page=100" \
-              > /tmp/runs.json
-            if python3 - <<'PY'
-          import json,os
-          from pathlib import Path
-          raw=json.loads(Path('/tmp/runs.json').read_text(encoding='utf-8'))
-          runs=raw.get('workflow_runs',[])
-          matches=[r for r in runs if r.get('head_sha')==os.environ['TARGET_SHA']]
-          result={
-              'target_sha':os.environ['TARGET_SHA'],
-              'target_branch':os.environ['TARGET_BRANCH'],
-              'found':bool(matches),
-              'matches':[
-                  {k:r.get(k) for k in (
-                      'id','name','path','run_number','run_attempt','event','status',
-                      'conclusion','head_branch','head_sha','html_url','created_at','updated_at'
-                  )}
-                  for r in matches
-              ],
-              'recent_branch_runs':[
-                  {k:r.get(k) for k in (
-                      'id','name','path','run_number','run_attempt','event','status',
-                      'conclusion','head_branch','head_sha','html_url','created_at','updated_at'
-                  )}
-                  for r in runs[:20]
-              ],
-          }
-          Path('build-logs/fa444-recognized-probe/RUN_LOCATOR.json').write_text(
-              json.dumps(result,indent=2)+'\n',encoding='utf-8'
-          )
-          if not matches:
-              raise SystemExit(1)
-          print(json.dumps(result,indent=2))
-          PY
-            then
-              found=true
-              break
-            fi
-            sleep 5
+          set +e
+          mkdir -p build-logs/fa444-cancel
+          : > build-logs/fa444-cancel/CANCEL_RESULTS.txt
+          for run_id in 31349476861 31349626486 31349892084 31349476866; do
+            status=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" \
+              --jq '.status + ":" + (.conclusion // "")' 2>&1)
+            printf 'before run=%s status=%s\n' "$run_id" "$status" \
+              | tee -a build-logs/fa444-cancel/CANCEL_RESULTS.txt
+            gh api -X POST "/repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" \
+              >> build-logs/fa444-cancel/CANCEL_RESULTS.txt 2>&1
+            printf 'cancel_exit=%s\n' "$?" \
+              | tee -a build-logs/fa444-cancel/CANCEL_RESULTS.txt
           done
-          cp /tmp/runs.json build-logs/fa444-recognized-probe/RUNS_RAW.json
-          printf '%s\n' "$found" > build-logs/fa444-recognized-probe/found.txt
-      - name: Persist probe result
+          exit 0
+      - name: Persist cancellation evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f build-logs/fa444-recognized-probe
-          git commit -m 'ci: record FA444 target run locator [skip ci]'
+          git add -f build-logs/fa444-cancel/CANCEL_RESULTS.txt
+          git commit -m 'ci: record superseded FA444 run cancellation [skip ci]'
           git push origin HEAD:ci/fa444-recognized-run-probe-20260810
