@@ -1,0 +1,1 @@
+Draft-only GL-invariant strict direct Lean CI trigger. Do not merge or mark ready.
