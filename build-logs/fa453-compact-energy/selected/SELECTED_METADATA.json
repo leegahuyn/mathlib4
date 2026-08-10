@@ -1,0 +1,25 @@
+{
+  "variant": "baseline",
+  "baseline_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "candidate_sha256": "1f0a7e6c95691a89b3099a829da3e11fbbc731332f87e7c63d24eadade5692eb",
+  "line_count": 60450,
+  "target_header_sha256": "20f8d04dfc32eb6aa027b1523622e01b26feac09d7a78cbafac93f98b0abc84a",
+  "declaration_sequence_sha256": "a9f15910d7e589feb18eac7d42370c5bfa07233a188d32554f5711a8e3446a5b",
+  "baseline_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "candidate_forbidden_counts": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "repairs": []
+}
