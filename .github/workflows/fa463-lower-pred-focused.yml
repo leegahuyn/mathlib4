@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        variant: [gl_cumulative, lower_index_rw, lower_second_rw, lower_second_rw_comm]
+        variant: [gl_cumulative, lower_second_rw, lower_raise_mirror, lower_raise_mirror_norm_index]
     env:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '4'
