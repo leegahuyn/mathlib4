@@ -254,5 +254,5 @@
   "branch": "fix/fa455-compact-support-mul-left-20260810",
   "source_commit": "0d1b2bbe31deaf2e05853006e27cf16f568a330c",
   "workflow_run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31368043755",
-  "artifact_id": "PENDING_UPLOAD"
+  "artifact_id": 9055773803
 }

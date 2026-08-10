@@ -68,4 +68,4 @@ branch: fix/fa455-compact-support-mul-left-20260810
 source commit: 0d1b2bbe31deaf2e05853006e27cf16f568a330c
 verification HEAD: 0d1b2bbe31deaf2e05853006e27cf16f568a330c
 Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31368043755
-Artifact ID: PENDING_UPLOAD
+Artifact ID: 9055773803
