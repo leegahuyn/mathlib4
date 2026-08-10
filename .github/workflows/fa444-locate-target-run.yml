@@ -1,0 +1,93 @@
+name: Locate FA444 target workflow run
+
+on:
+  push:
+    branches:
+      - ci/fa444-run-locator-20260810
+    paths:
+      - build-logs/fa444-locator/LOCATE*.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_HEAD_SHA: 263eb77cdae38f5ebd24da66a131c2efe59ac767
+      TARGET_BRANCH: fix/fa444-fa442-matrix-pipeline-repair-20260810
+      TARGET_PATH: .github/workflows/fa442-same-height-slope-cumulative.yml
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ci/fa444-run-locator-20260810
+          persist-credentials: true
+      - name: Configure identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Locate target run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/fa444-locator
+          found=false
+          for attempt in $(seq 1 120); do
+            gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/runs?branch=${TARGET_BRANCH}&event=push&per_page=100" \
+              > /tmp/runs.json
+            if python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          raw=Path('/tmp/runs.json').read_text(encoding='utf-8')
+          decoder=json.JSONDecoder(); pos=0; pages=[]
+          while pos < len(raw):
+              while pos < len(raw) and raw[pos].isspace(): pos += 1
+              if pos >= len(raw): break
+              page,pos=decoder.raw_decode(raw,pos); pages.append(page)
+          runs=[]
+          for page in pages:
+              if isinstance(page,dict): runs.extend(page.get('workflow_runs',[]))
+          matches=[r for r in runs if r.get('head_sha')==os.environ['TARGET_HEAD_SHA'] and r.get('path')==os.environ['TARGET_PATH']]
+          if not matches: raise SystemExit(1)
+          matches.sort(key=lambda r:r.get('created_at',''),reverse=True)
+          run=matches[0]
+          result={
+              'found':True,
+              'id':run.get('id'),
+              'run_number':run.get('run_number'),
+              'run_attempt':run.get('run_attempt'),
+              'status':run.get('status'),
+              'conclusion':run.get('conclusion'),
+              'head_sha':run.get('head_sha'),
+              'head_branch':run.get('head_branch'),
+              'workflow_id':run.get('workflow_id'),
+              'name':run.get('name'),
+              'path':run.get('path'),
+              'html_url':run.get('html_url'),
+              'created_at':run.get('created_at'),
+              'updated_at':run.get('updated_at'),
+          }
+          Path('build-logs/fa444-locator/RUN_LOCATOR.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(result,indent=2))
+          PY
+            then
+              found=true
+              break
+            fi
+            sleep 5
+          done
+          if test "$found" != true; then
+            printf '{"found":false,"target_head_sha":"%s","target_branch":"%s","target_path":"%s"}\n' \
+              "$TARGET_HEAD_SHA" "$TARGET_BRANCH" "$TARGET_PATH" \
+              > build-logs/fa444-locator/RUN_LOCATOR.json
+          fi
+      - name: Persist locator result
+        if: always()
+        run: |
+          git add -f build-logs/fa444-locator/RUN_LOCATOR.json
+          git commit -m 'ci: record FA444 target run locator [skip ci]'
+          git push origin HEAD:ci/fa444-run-locator-20260810
