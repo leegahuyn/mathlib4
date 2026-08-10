@@ -1,5 +1,5 @@
 {
-  "label": "baseline-record",
+  "label": "retained-baseline-final",
   "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
   "line_count": 60453,
   "exit_code": 1,
@@ -10,6 +10,6 @@
   "max_errors": 1,
   "olean": false,
   "ilean": false,
-  "elapsed_seconds": 138.775,
-  "log_path": "build-logs/fa426-monotone-donor-proof-miner/baseline-record.log"
+  "elapsed_seconds": 138.7,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/retained-baseline-final.log"
 }

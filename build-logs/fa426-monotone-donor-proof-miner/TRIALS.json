@@ -14,7 +14,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 164.675,
+      "elapsed_seconds": 158.299,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-001-local_normed_parent-remove-proof-local.log"
     },
     "strictly_better": false,
@@ -37,7 +37,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 160.093,
+      "elapsed_seconds": 152.023,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-002-local_normed_parent-reuse-proof-local.log"
     },
     "strictly_better": false,
@@ -60,7 +60,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 161.279,
+      "elapsed_seconds": 155.121,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-003-local_inferred_parent-remove-proof-local.log"
     },
     "strictly_better": false,
@@ -83,7 +83,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 165.87,
+      "elapsed_seconds": 154.89,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-004-local_inferred_parent-reuse-proof-local.log"
     },
     "strictly_better": false,
@@ -106,7 +106,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 167.411,
+      "elapsed_seconds": 155.479,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-005-proof-local-normed-parent.log"
     },
     "strictly_better": false,
@@ -129,7 +129,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 166.887,
+      "elapsed_seconds": 153.224,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-006-remove-proof-local-instance.log"
     },
     "strictly_better": false,
@@ -152,7 +152,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 166.906,
+      "elapsed_seconds": 152.993,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-007-base-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -175,7 +175,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 159.469,
+      "elapsed_seconds": 149.201,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-008-base-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -198,7 +198,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 164.246,
+      "elapsed_seconds": 149.65,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-009-base-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -221,7 +221,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 163.978,
+      "elapsed_seconds": 149.244,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-010-local_normed_parent-remove-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -244,7 +244,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 168.508,
+      "elapsed_seconds": 150.409,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-011-local_normed_parent-remove-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -267,7 +267,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 174.14,
+      "elapsed_seconds": 150.194,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-012-local_normed_parent-remove-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -290,7 +290,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 170.041,
+      "elapsed_seconds": 151.184,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-013-local_normed_parent-reuse-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -313,7 +313,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 170.819,
+      "elapsed_seconds": 151.429,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-014-local_normed_parent-reuse-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -336,7 +336,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 164.084,
+      "elapsed_seconds": 149.506,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-015-local_normed_parent-reuse-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -359,7 +359,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 158.709,
+      "elapsed_seconds": 150.708,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-016-local_inferred_parent-remove-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -382,7 +382,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 161.245,
+      "elapsed_seconds": 150.856,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-017-local_inferred_parent-remove-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -405,7 +405,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 167.173,
+      "elapsed_seconds": 151.759,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-018-local_inferred_parent-remove-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -428,7 +428,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 164.3,
+      "elapsed_seconds": 145.119,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-019-local_inferred_parent-reuse-proof-local-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -451,7 +451,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 163.266,
+      "elapsed_seconds": 143.017,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-020-local_inferred_parent-reuse-proof-local-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -474,7 +474,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 162.395,
+      "elapsed_seconds": 149.15,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-021-local_inferred_parent-reuse-proof-local-finish-convert-rfl.log"
     },
     "strictly_better": false,
@@ -497,7 +497,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 160.126,
+      "elapsed_seconds": 141.014,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-022-proof-local-normed-parent-finish-exact-hcomp.log"
     },
     "strictly_better": false,
@@ -520,7 +520,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 169.451,
+      "elapsed_seconds": 139.773,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-023-proof-local-normed-parent-finish-simpa-definitions.log"
     },
     "strictly_better": false,
@@ -543,7 +543,7 @@
       "max_errors": 1,
       "olean": false,
       "ilean": false,
-      "elapsed_seconds": 173.927,
+      "elapsed_seconds": 139.175,
       "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-024-proof-local-normed-parent-finish-convert-rfl.log"
     },
     "strictly_better": false,
