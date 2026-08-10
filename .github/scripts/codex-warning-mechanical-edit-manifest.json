@@ -553,7 +553,260 @@
         "sorry": 0,
         "admit": 0,
         "new_global_axiom": 0,
-        "unsafe"…2210 tokens truncated…: false,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 1901,
+          "start": 39,
+          "end": 54,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 1903,
+          "start": 40,
+          "end": 55,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 1904,
+          "start": 42,
+          "end": 57,
+          "expected": "ENat.coe_ne_top",
+          "replacement": "ENat.natCast_ne_top",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.coe_ne_top",
+          "warning_signature": [
+            "deprecation",
+            "ENat.coe_ne_top"
+          ],
+          "reason": "deprecated symbol"
+        }
+      ]
+    },
+    "Spt6": {
+      "repository_path": "PrimalitySheafVerification/Spt6.lean",
+      "source_sha256": "e8c038b4e1e932914ac4394a036a602c19e1bcb6ac3acedbe518eebf9b95a4fe",
+      "source_git_blob_sha1": "e4832c95c1dddfc7febec5c6b2891b0149a6c7f9",
+      "source_bytes": 435585,
+      "source_lines": 8651,
+      "candidate_sha256": "f563464d073d84439f3307c0c2f36d54504df05c4b6d89b366478807eec84b09",
+      "candidate_git_blob_sha1": "36eaebc0ce61f40ceaf1f4992e6699d1a37c63ae",
+      "candidate_bytes": 435542,
+      "candidate_lines": 8651,
+      "baseline_warning_total": 23,
+      "baseline_warning_by_category": {
+        "deprecation": 3,
+        "haveILetI": 18,
+        "unusedSimpArgs": 2
+      },
+      "expected_removed_warning_total": 5,
+      "expected_removed_warning_by_category": {
+        "deprecation": 3,
+        "unusedSimpArgs": 2
+      },
+      "expected_candidate_warning_total": 18,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 18
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 958,
+        "declaration_sequence_sha256": "e3d156ff35ee19c26c498fc87b2eec06bd2ee508beb97422b6d417b87f9c8190",
+        "all_declaration_headers_sha256": "68e589acbdc889411262782e9fdf62158c0c436011bc6952eb331b5efec30836",
+        "theorem_lemma_count": 488,
+        "theorem_lemma_headers_sha256": "951568d42f9b1779c0fe921c2c7e9d464994aa5f67f835b23e5fdfeb2b091472"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 958,
+        "declaration_sequence_sha256": "e3d156ff35ee19c26c498fc87b2eec06bd2ee508beb97422b6d417b87f9c8190",
+        "all_declaration_headers_sha256": "68e589acbdc889411262782e9fdf62158c0c436011bc6952eb331b5efec30836",
+        "theorem_lemma_count": 488,
+        "theorem_lemma_headers_sha256": "951568d42f9b1779c0fe921c2c7e9d464994aa5f67f835b23e5fdfeb2b091472"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 2231,
+          "start": 47,
+          "end": 61,
+          "expected": "ENat.toNat_coe",
+          "replacement": "ENat.toNat_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 2257,
+          "start": 6,
+          "end": 20,
+          "expected": "ENat.toNat_coe",
+          "replacement": "ENat.toNat_natCast",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "ENat.toNat_coe",
+          "warning_signature": [
+            "deprecation",
+            "ENat.toNat_coe"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 2364,
+          "start": 48,
+          "end": 64,
+          "expected": "Set.mem_setOf_eq",
+          "replacement": "Set.mem_ofPred_eq",
+          "remove_line": false,
+          "category": "deprecation",
+          "subject": "Set.mem_setOf_eq",
+          "warning_signature": [
+            "deprecation",
+            "Set.mem_setOf_eq"
+          ],
+          "reason": "deprecated symbol"
+        },
+        {
+          "line": 3163,
+          "start": 18,
+          "end": 54,
+          "expected": ", HomologicalComplex.mkHomToSingle_f",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "HomologicalComplex.mkHomToSingle_f",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "HomologicalComplex.mkHomToSingle_f"
+          ],
+          "reason": "remove one unused simp argument"
+        },
+        {
+          "line": 3164,
+          "start": 53,
+          "end": 69,
+          "expected": ", Category.assoc",
+          "replacement": "",
+          "remove_line": false,
+          "category": "unusedSimpArgs",
+          "subject": "Category.assoc",
+          "warning_signature": [
+            "unusedSimpArgs",
+            "Category.assoc"
+          ],
+          "reason": "remove one unused simp argument"
+        }
+      ]
+    },
+    "Spt7": {
+      "repository_path": "PrimalitySheafVerification/Spt7.lean",
+      "source_sha256": "a05f56f4fbda508f919e9fe8259a91af464afca35758346d2326f75211a366bd",
+      "source_git_blob_sha1": "1de97d018a37190df3a22824d2ad1d6cf3916955",
+      "source_bytes": 865526,
+      "source_lines": 18114,
+      "candidate_sha256": "8fcbd103756510ae343c3adaebb364d0a2082cdba36db6488db213c0060ed7f2",
+      "candidate_git_blob_sha1": "cbc7d4ecb03a79141b315766a4ca1dd9f5e2aff3",
+      "candidate_bytes": 865574,
+      "candidate_lines": 18114,
+      "baseline_warning_total": 18,
+      "baseline_warning_by_category": {
+        "deprecation": 10,
+        "haveILetI": 8
+      },
+      "expected_removed_warning_total": 10,
+      "expected_removed_warning_by_category": {
+        "deprecation": 10
+      },
+      "expected_candidate_warning_total": 8,
+      "expected_candidate_warning_by_category": {
+        "haveILetI": 8
+      },
+      "source_declaration_header_manifest": {
+        "declaration_count": 1571,
+        "declaration_sequence_sha256": "50188f44132899615399ffabb37647d39c12004c7706c82fbcb8db33ca7bca41",
+        "all_declaration_headers_sha256": "bfdfd8f4c72c70abce5a68dbadef504251c565af862bf05ced5ebdaa1f3a6d0b",
+        "theorem_lemma_count": 947,
+        "theorem_lemma_headers_sha256": "fad9bab42d5109954b509d6ed79a07d2928319ec85c056b4102cb5babf30809b"
+      },
+      "candidate_declaration_header_manifest": {
+        "declaration_count": 1571,
+        "declaration_sequence_sha256": "50188f44132899615399ffabb37647d39c12004c7706c82fbcb8db33ca7bca41",
+        "all_declaration_headers_sha256": "bfdfd8f4c72c70abce5a68dbadef504251c565af862bf05ced5ebdaa1f3a6d0b",
+        "theorem_lemma_count": 947,
+        "theorem_lemma_headers_sha256": "fad9bab42d5109954b509d6ed79a07d2928319ec85c056b4102cb5babf30809b"
+      },
+      "baseline_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_forbidden_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "edits": [
+        {
+          "line": 4293,
+          "start": 3,
+          "end": 42,
+          "expected": "Nat.prod_pow_primeFactors_factorization",
+          "replacement": "Nat.prod_primeFactors_coe_pow_factorization",
+          "remove_line": false,
           "category": "deprecation",
           "subject": "Nat.prod_pow_primeFactors_factorization",
           "warning_signature": [
