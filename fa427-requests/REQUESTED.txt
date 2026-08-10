@@ -1,9 +1,8 @@
-round=1
-parent_round=0
-parent_source_sha256=auto-select-best-verified
-parent_first_error=auto
-parent_declaration=auto
-authority=direct Lean CLI
+round=2
+watch_cycle=1
+expected_best_source_sha256=df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a
+expected_best_score=[0, 32035, 8]
+previous_target_source_sha256=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+previous_target_score=[0, 31725, 2]
+authority=direct Lean CLI source-matched evidence
 fixed_line_count=60453
-max_rounds=12
-matrix_max_candidates=24
