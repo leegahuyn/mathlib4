@@ -1,0 +1,40 @@
+FA MATRIX PIPELINE REPAIR REPORT
+
+Baseline:
+source SHA256: 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+line count: 60453
+direct Lean exit: 1
+first error: 31726:2
+declaration: actualEdgeAmbientParam_hasDerivAt
+
+Pipeline issue found:
+root cause: mutable branch checkout changed the checked-in source before candidate preparation; prepare.ok=false then skipped Lean install and compile; selector received no baseline direct metric; git identity existed only in a skipped step.
+workflow files changed: .github/workflows/fa443-matrix-direct-repair.yml
+scripts changed: scripts/fa443_record_direct_metric.py, scripts/fa443_select_direct_champion.py, scripts/fa443_confirm_selected.py, scripts/fa443_checked_in_fa_gate.py, scripts/fa443_build_pipeline_report.py
+
+Best direct-verified candidate:
+variant: slope_paired_parenthesized_ring
+SHA256: 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+exit: 1
+first error: 32590:5
+declaration: selectedHalfOpenTile_ae_eq_openTile
+strictly better than 31726?: True
+
+Checked-in identity:
+selected SHA: 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+worktree SHA: 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+HEAD source SHA: 4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+identity_ok: True
+
+FA checked-in verification:
+run1: {'run': 1, 'executed': True, 'exit': 1, 'command': 'lake env lean -DmaxErrors=1 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'olean_size': 0, 'ilean_size': 0, 'log_exists': True}
+run2: {'run': 2, 'executed': True, 'exit': 1, 'command': 'lake env lean -DmaxErrors=1 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'olean_size': 0, 'ilean_size': 0, 'log_exists': True}
+FA_TRUE_PASS: False
+
+Downstream:
+Integrated: BLOCKED_BY_FA_TRUE_PASS_GATE
+Mock3 bridges: BLOCKED_BY_FA_TRUE_PASS_GATE
+QYM: BLOCKED_BY_FA_TRUE_PASS_GATE
+
+Final classification: STRICT PROMOTION
+Workflow run URL: https://github.com/leegahuyn/mathlib4/actions/runs/31351622111

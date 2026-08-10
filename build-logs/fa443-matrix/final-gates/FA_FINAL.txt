@@ -1,0 +1,12 @@
+classification=LEAN_FAILURE
+authority=checked-in source direct Lean CLI run twice
+selected_sha256=4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+checked_in_source_sha256=4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152
+source_identity_ok=True
+runs=[{'run': 1, 'executed': True, 'exit': 1, 'command': 'lake env lean -DmaxErrors=1 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'olean_size': 0, 'ilean_size': 0, 'log_exists': True}, {'run': 2, 'executed': True, 'exit': 1, 'command': 'lake env lean -DmaxErrors=1 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'olean_size': 0, 'ilean_size': 0, 'log_exists': True}]
+forbidden_audit={'sorry': 0, 'admit': 0, 'new_global_axiom': 0, 'unsafe': 0, 'native_decide': 0, 'Lean.ofReduceBool': 0}
+forbidden_clean=True
+FA_TRUE_PASS=False
+infra_reasons=[]
+maxErrors_cap=1
+maxErrors_interpretation=first-error cap only; exit 0 plus nonempty olean/ilean is required

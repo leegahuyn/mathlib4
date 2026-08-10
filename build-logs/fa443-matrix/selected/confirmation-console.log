@@ -1,0 +1,48 @@
+{
+  "classification": "VERIFIED",
+  "result_classification": "DECLARATION_BREAKTHROUGH",
+  "authority": "independent actual direct Lean CLI on selected repository source path",
+  "selection_mode": "strict_promotion",
+  "variant": "slope_paired_parenthesized_ring",
+  "source_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+  "selected_sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+  "source_identity_ok": true,
+  "line_count": 60453,
+  "same_height": true,
+  "lean_executed": {
+    "Mock2": true,
+    "Mock2_Advanced": true,
+    "Mock2_FunctionalAnalysis": true
+  },
+  "compile_commands": {
+    "Mock2": "lake env lean -DmaxErrors=120 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean PrimalitySheafVerification/Mock2.lean",
+    "Mock2_Advanced": "lake env lean -DmaxErrors=120 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean PrimalitySheafVerification/Mock2_Advanced.lean",
+    "Mock2_FunctionalAnalysis": "lake env lean -DmaxErrors=120 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+  },
+  "Mock2_exit": 0,
+  "Mock2_errors_under_cap": 0,
+  "Mock2_Advanced_exit": 0,
+  "Mock2_Advanced_errors_under_cap": 0,
+  "FA_exit": 1,
+  "FA_error_headers_captured": 121,
+  "FA_first_actual_error_line": 32590,
+  "FA_first_actual_error_col": 5,
+  "FA_first_error_message": "Mock2_FunctionalAnalysis.lean:32590:5: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  MeasurableConstSMul SL(2, \u2124) \u210d\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+  "FA_first_error_declaration": "selectedHalfOpenTile_ae_eq_openTile",
+  "FA_error_declaration_index": 2671,
+  "matrix_metric_reproduced_or_better": true,
+  "strictly_better_than_31726": true,
+  "forbidden_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_clean": true,
+  "maxErrors_cap": 120,
+  "maxErrors_interpretation": "diagnostic cap only; not total errors or progress",
+  "infra_reasons": [],
+  "verified": true
+}
