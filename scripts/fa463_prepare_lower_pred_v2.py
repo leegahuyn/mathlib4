@@ -25,4 +25,32 @@ mod.PROOFS['lower_index_simp']=mod.COMMON_PREFIX+'''  have hIndex : -1 + n = n -
     ring
 '''+mod.COMMON_BODY+'''  rw [he]
   ring'''
+mod.PROOFS['lower_second_rw']=mod.COMMON_PREFIX+'''  have hIndex : -1 + n = n - 1 := by ring
+  have hExponentNorm :
+      euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
+    rw [hIndex]
+    exact hExponent
+  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    hScale, hExponent, complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply, hExponentNorm]
+  have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  ring'''
+mod.PROOFS['lower_second_rw_comm']=mod.COMMON_PREFIX+'''  have hIndex : n - 1 = -1 + n := by ring
+  have hExponentNorm :
+      euclideanGaugeExponent n = euclideanGaugeExponent (-1 + n) + 1 := by
+    rw [← hIndex]
+    exact hExponent
+  simp only [fixedPhaseEuclideanGauge_apply,
+    InverseEtaFixedPhaseCore.lower_apply]
+  unfold euclideanLowerFromSuccGauge lowerRaw
+  rw [dx_fixedPhaseEuclideanGauge, dy_fixedPhaseEuclideanGauge,
+    hScale, hExponent, complex_rpow_derivative_eq_div,
+    fixedPhaseEuclideanGauge_apply, hExponentNorm]
+  have hz : heightC z ≠ 0 := Complex.ofReal_ne_zero.mpr z.im_ne_zero
+  field_simp [hz]
+  ring'''
 if __name__=='__main__': mod.main()
