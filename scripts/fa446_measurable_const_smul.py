@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +37,17 @@ def line_count(data: bytes) -> int:
     return data.count(b"\n") + (0 if not data or data.endswith(b"\n") else 1)
 
 
+def forbidden_counts(text: str) -> dict[str, int]:
+    module_path = ROOT / "scripts/fa442_prepare_same_height_candidate.py"
+    spec = importlib.util.spec_from_file_location("fa446_trust_audit", module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load trust-audit implementation")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return dict(module.forbidden_counts(text))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", required=True)
@@ -61,6 +74,10 @@ def main() -> None:
     if line_count(output) != EXPECTED_LINES:
         raise RuntimeError("repair changed file height")
 
+    audit = forbidden_counts(repaired)
+    if not audit or any(value != 0 for value in audit.values()):
+        raise RuntimeError(f"forbidden-token audit failed: {audit}")
+
     SOURCE.write_bytes(output)
     candidate_copy = out / "Mock2_FunctionalAnalysis-candidate.lean"
     candidate_copy.write_bytes(output)
@@ -79,6 +96,7 @@ def main() -> None:
     }
     metadata["candidate_sha256"] = OUTPUT_SHA256
     metadata["line_count"] = EXPECTED_LINES
+    metadata["candidate_forbidden_counts"] = audit
     repairs = list(metadata.get("repairs", []))
     repairs.append({
         "repair": "proof_local_MeasurableConstSMul",
@@ -97,6 +115,8 @@ def main() -> None:
         "target_theorem_header_changed": False,
         "changed_declaration": "selectedHalfOpenTile_ae_eq_openTile",
         "repair": "proof-local MeasurableConstSMul SL(2, ℤ) ℍ",
+        "forbidden_audit": audit,
+        "forbidden_clean": True,
     }
     (out / "FA446_REPAIR.json").write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8"
