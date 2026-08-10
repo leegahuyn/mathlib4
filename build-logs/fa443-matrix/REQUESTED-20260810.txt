@@ -1,0 +1,1 @@
+Trigger the repaired FA443 current-run direct Lean matrix. Every variant must restore the immutable 71dc36 baseline, install pinned Lean/cache, execute direct Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis CLI commands, upload complete metrics, and enter the strict selector only after all artifacts exist.
