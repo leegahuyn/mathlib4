@@ -1,0 +1,1256 @@
+{
+  "generated_at_epoch": 1786336305,
+  "repository": "leegahuyn/mathlib4",
+  "targets": [
+    {
+      "branch": "fix/fa442-skip-root-cause-20260810",
+      "workflow_name": "FA442 exact skipped-step root cause",
+      "report_paths": [
+        "build-logs/fa442-skip-root-cause/ROOT_CAUSE.json",
+        "build-logs/fa442-skip-root-cause/ROOT_CAUSE.md"
+      ],
+      "run": {
+        "exists": true,
+        "id": 31355069192,
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31355069192",
+        "status": "queued",
+        "conclusion": null,
+        "head_branch": "fix/fa442-skip-root-cause-20260810",
+        "head_sha": "494120196ef5f083ebc569d9d0307124bde016fb",
+        "created_at": "2026-08-10T04:18:32Z",
+        "updated_at": "2026-08-10T04:18:32Z",
+        "jobs": [
+          {
+            "id": 93353125114,
+            "name": "diagnose",
+            "status": "queued",
+            "conclusion": null,
+            "steps": []
+          }
+        ],
+        "artifacts": []
+      },
+      "reports": [
+        {
+          "path": "build-logs/fa442-skip-root-cause/ROOT_CAUSE.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-skip-root-cause/ROOT_CAUSE.md",
+          "exists": false
+        }
+      ],
+      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+    },
+    {
+      "branch": "fix/fa442-matrix-direct-compile-repair-20260810",
+      "workflow_name": "FA442 direct matrix pipeline repair",
+      "report_paths": [
+        "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.json",
+        "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.md",
+        "build-logs/fa442-pipeline-repair/selection/selection.json"
+      ],
+      "run": {
+        "exists": true,
+        "id": 31354569386,
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31354569386",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_branch": "fix/fa442-matrix-direct-compile-repair-20260810",
+        "head_sha": "8c6c161b2ffc34b613fc50e3517cd87288bc01ce",
+        "created_at": "2026-08-10T04:08:30Z",
+        "updated_at": "2026-08-10T04:11:02Z",
+        "jobs": [
+          {
+            "id": 93351747502,
+            "name": "Diagnose FA442 and recover baseline/candidate sources",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Inspect FA442 workflow, jobs, artifacts, and build matrix",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Upload recovered sources and root-cause evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 10,
+                "name": "Post Checkout pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 11,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 93352099240,
+            "name": "direct metric / git-origin-fix-fa425d-derivative-rebundle-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099244,
+            "name": "direct metric / git-origin-fix-fa425e-isolated-instance-section-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099249,
+            "name": "direct metric / git-origin-fix-fa425-strict-theorem-tournament-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099252,
+            "name": "direct metric / git-origin-fix-fa425i-disable-reenable-custom-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099255,
+            "name": "direct metric / baseline",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099260,
+            "name": "direct metric / git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099262,
+            "name": "direct metric / git-origin-fix-fa444-complete-direct-matrix-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099263,
+            "name": "direct metric / git-origin-fix-fa426b-multiround-importsafe-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099267,
+            "name": "direct metric / git-origin-fix-fa424-cross-donor-controller-20260809",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 93352099270,
+            "name": "direct metric / git-origin-fix-fa429-continuation-after-fa426-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099273,
+            "name": "direct metric / git-origin-ci-fa444-complete-run-locator-20260810",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          },
+          {
+            "id": 93352099275,
+            "name": "direct metric / git-origin-ci-fa447-run-locator-20260810",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download authoritative candidate bundle",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile completed prerequisites and candidate FA",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 7,
+                "name": "Upload candidate source, direct logs, and metric",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 8,
+                "name": "Enforce actual Lean execution or explicit infrastructure failure",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 16,
+                "name": "Post Checkout exact pipeline repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          }
+        ],
+        "artifacts": [
+          {
+            "id": 9050549314,
+            "name": "fa442-metric-git-origin-fix-fa424-cross-donor-controller-20260809-31354569386",
+            "size_in_bytes": 646924,
+            "expired": false,
+            "digest": "sha256:df5530fc6f29a52bd1b90413be6d5516ce0eb75e63c55774fe73457af7865d74"
+          },
+          {
+            "id": 9050533561,
+            "name": "fa442-metric-git-origin-ci-fa447-run-locator-20260810-31354569386",
+            "size_in_bytes": 646325,
+            "expired": false,
+            "digest": "sha256:dec2d594dc348e7edb13c9381851b5c463f7e36be0620f0258c784b65c147947"
+          },
+          {
+            "id": 9050209026,
+            "name": "fa442-prep-31354569386",
+            "size_in_bytes": 6408136,
+            "expired": false,
+            "digest": "sha256:d1c2d27a826a5a8085f0b5fba576aa30cc783bd900ad3208f72deaa7f0aa9813"
+          }
+        ]
+      },
+      "reports": [
+        {
+          "path": "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.md",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-pipeline-repair/selection/selection.json",
+          "exists": false
+        }
+      ],
+      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+    },
+    {
+      "branch": "fix/fa442-sequential-direct-tournament-20260810",
+      "workflow_name": "FA442 sequential direct tournament recovery",
+      "report_paths": [
+        "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.json",
+        "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.md",
+        "build-logs/fa442-pipeline-repair/selection/selection.json"
+      ],
+      "run": {
+        "exists": true,
+        "id": 31354847621,
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31354847621",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_branch": "fix/fa442-sequential-direct-tournament-20260810",
+        "head_sha": "33ef3b6c78499857c73ee0c5a8edd6184ec0825f",
+        "created_at": "2026-08-10T04:14:15Z",
+        "updated_at": "2026-08-10T04:14:44Z",
+        "jobs": [
+          {
+            "id": 93352527137,
+            "name": "direct-tournament",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout sequential repair branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Diagnose FA442 and recover exact baseline/candidates",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Directly compile every recovered baseline/candidate variant",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Strict selector over current-run direct metrics",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Persist selected source with selected/worktree/HEAD identity",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 9,
+                "name": "Checked-in FA direct compile run1/run2 and trust audit",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 10,
+                "name": "Ordered downstream gate only after FA TRUE PASS",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 11,
+                "name": "Generate preliminary report",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 12,
+                "name": "Upload full sequential evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 13,
+                "name": "Finalize and commit report with artifact ID",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 14,
+                "name": "Enforce every variant direct-executed and no current infrastructure failure",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 28,
+                "name": "Post Checkout sequential repair branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          }
+        ],
+        "artifacts": []
+      },
+      "reports": [
+        {
+          "path": "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-pipeline-repair/final-report/FA_MATRIX_PIPELINE_REPAIR_REPORT.md",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-pipeline-repair/selection/selection.json",
+          "exists": false
+        }
+      ],
+      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+    },
+    {
+      "branch": "fix/fa443-blocker-body-tournament-20260810",
+      "workflow_name": "FA443 repaired-pipeline blocker body tournament",
+      "report_paths": [
+        "build-logs/fa443-blocker-tournament/final/STATUS.json",
+        "build-logs/fa443-blocker-tournament/final/STATUS.md",
+        "build-logs/fa443-blocker-tournament/selection/selection.json"
+      ],
+      "run": {
+        "exists": true,
+        "id": 31355435033,
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31355435033",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_branch": "fix/fa443-blocker-body-tournament-20260810",
+        "head_sha": "868b85107b382e47c2ac62b87db8159ca2e9a91f",
+        "created_at": "2026-08-10T04:25:31Z",
+        "updated_at": "2026-08-10T04:29:37Z",
+        "jobs": [
+          {
+            "id": 93354119380,
+            "name": "tournament",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout FA443 branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Recover FA442 baseline and candidate bundle; diagnose skip root cause",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 6,
+                "name": "Re-run baseline and every FA442 candidate by direct Lean CLI",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 7,
+                "name": "Strictly select recovered current-run direct champion",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Persist recovered direct champion before new proof search",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 9,
+                "name": "Reverify materialized recovered champion directly",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 10,
+                "name": "Generate FA443 blocker proof-body candidate set",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 11,
+                "name": "Directly compile every FA443 round-1 proof candidate",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 12,
+                "name": "Strictly select FA443 round-1 candidate",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 13,
+                "name": "Persist FA443 round-1 selection and exact identity",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 14,
+                "name": "Reverify FA443 round-1 checked-in frontier",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 15,
+                "name": "Generate FA443 round-2 cumulative candidates after strict non-pass promotion",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 16,
+                "name": "Directly compile every FA443 round-2 candidate",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 17,
+                "name": "Strictly select FA443 round-2 candidate",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 18,
+                "name": "Persist FA443 round-2 selection",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 19,
+                "name": "Reverify FA443 round-2 checked-in frontier",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 20,
+                "name": "Resolve final checked-in FA443 selection",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 21,
+                "name": "Full checked-in FA compile run1/run2 and trust audit for exit-zero candidate",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 22,
+                "name": "Ordered Integrated, Mock3 bridges, QYM gate after FA TRUE PASS",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 23,
+                "name": "Write FA443 final status",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 24,
+                "name": "Upload complete FA443 evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 25,
+                "name": "Commit final status and compact evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 26,
+                "name": "Enforce pipeline and tournament infrastructure only",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 52,
+                "name": "Post Checkout FA443 branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          }
+        ],
+        "artifacts": []
+      },
+      "reports": [
+        {
+          "path": "build-logs/fa443-blocker-tournament/final/STATUS.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa443-blocker-tournament/final/STATUS.md",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa443-blocker-tournament/selection/selection.json",
+          "exists": false
+        }
+      ],
+      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+    }
+  ]
+}
