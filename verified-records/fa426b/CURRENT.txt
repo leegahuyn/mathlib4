@@ -1,0 +1,10 @@
+classification=VERIFIED
+stage=multiround strict frontier promoted
+selected_source_sha256=7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d
+selected_line_count=60453
+FA_exit=1
+FA_first_error=32079:8
+FA_declaration=nativeActualEdgeFluxIntegral_paired_left
+strict_promotion=true
+fa_true_pass=false
+all_required_targets_2x_pass=false

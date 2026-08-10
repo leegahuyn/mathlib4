@@ -1,0 +1,326 @@
+{
+  "round": 2,
+  "baseline": {
+    "label": "round1-promotion-reverify2",
+    "stem": "Mock2_FunctionalAnalysis",
+    "source_sha256": "7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d",
+    "line_count": 60453,
+    "exit_code": 1,
+    "error_headers": 2,
+    "first_error_line": 32079,
+    "first_error_col": 8,
+    "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_left",
+    "olean": false,
+    "ilean": false,
+    "max_errors": 1,
+    "log": "build-logs/fa426-multiround-cross-donor/round1-promotion-reverify2.log"
+  },
+  "generator": {
+    "baseline_sha256": "7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d",
+    "baseline_line_count": 60453,
+    "first_error_line": 32079,
+    "declaration": "nativeActualEdgeFluxIntegral_paired_left",
+    "declaration_start_line": 32075,
+    "declaration_end_line": 32098,
+    "declaration_header_sha256": "dd28ac85cb79329990a7ed4a2d811ac4d480c17360423c31b83b704a33f3175c",
+    "window": [
+      31999,
+      32578
+    ],
+    "candidate_count": 9,
+    "candidates": [
+      {
+        "name": "decl-body-refs-remotes-fa425-donor-1",
+        "provenance": "refs/remotes/fa425/donor-1",
+        "kind": "declaration-body-transplant",
+        "sha256": "eb8d807639d09045f70f30caea33368e180fa36fa7bacb22b1a149b7b2521cd7",
+        "file": "00-decl-body-refs-remotes-fa425-donor-1.lean"
+      },
+      {
+        "name": "decl-body-refs-remotes-fa425-donor-66",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "declaration-body-transplant",
+        "sha256": "9b691c5e60de91e40f5e48d75e14ceb1f533dd43fa2e4b8e248989afcebdfeea",
+        "file": "01-decl-body-refs-remotes-fa425-donor-66.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-23-0",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "9765c295579e025830e86fbc90ea69bb65ef50981210b7339e0bd9d380169524",
+        "file": "02-hunk-refs-remotes-fa425-donor-23-0.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-23-1",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "1fff09ccc82ab98e142cb483a8ef4183d3b434eb0244f7a7c43ad226a8c8def2",
+        "file": "03-hunk-refs-remotes-fa425-donor-23-1.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-23-2",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "a26f00e31d6202762c552efe630794cb0459ac291ae54a3e57f147570f1f52d3",
+        "file": "04-hunk-refs-remotes-fa425-donor-23-2.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-23-3",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "343d6c66a7591cccab7e534d141644afe659143f705200bbf4c094322e5aea08",
+        "file": "05-hunk-refs-remotes-fa425-donor-23-3.lean"
+      },
+      {
+        "name": "hunks-combined-refs-remotes-fa425-donor-23",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "combined-equal-height-hunks",
+        "sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "file": "06-hunks-combined-refs-remotes-fa425-donor-23.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-66-2",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "single-equal-height-hunk",
+        "sha256": "a68f1a978cba04c27bdbc4aa48b32b3c653677663be1f1e69ec4cf037ef2a72b",
+        "file": "07-hunk-refs-remotes-fa425-donor-66-2.lean"
+      },
+      {
+        "name": "hunk-refs-remotes-fa425-donor-66-3",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "single-equal-height-hunk",
+        "sha256": "8e2c1f84df4acdf7d514f714e03dc18055242c47f064f78d22c3be1c1843fdb5",
+        "file": "08-hunk-refs-remotes-fa425-donor-66-3.lean"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "candidate": {
+        "name": "decl-body-refs-remotes-fa425-donor-1",
+        "provenance": "refs/remotes/fa425/donor-1",
+        "kind": "declaration-body-transplant",
+        "sha256": "eb8d807639d09045f70f30caea33368e180fa36fa7bacb22b1a149b7b2521cd7",
+        "file": "00-decl-body-refs-remotes-fa425-donor-1.lean"
+      },
+      "metric": {
+        "label": "round2-candidate00-decl-body-refs-remotes-fa425-donor-1",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "eb8d807639d09045f70f30caea33368e180fa36fa7bacb22b1a149b7b2521cd7",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32079,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_left",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate00-decl-body-refs-remotes-fa425-donor-1.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "decl-body-refs-remotes-fa425-donor-66",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "declaration-body-transplant",
+        "sha256": "9b691c5e60de91e40f5e48d75e14ceb1f533dd43fa2e4b8e248989afcebdfeea",
+        "file": "01-decl-body-refs-remotes-fa425-donor-66.lean"
+      },
+      "metric": {
+        "label": "round2-candidate01-decl-body-refs-remotes-fa425-donor-66",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9b691c5e60de91e40f5e48d75e14ceb1f533dd43fa2e4b8e248989afcebdfeea",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32079,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_left",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate01-decl-body-refs-remotes-fa425-donor-66.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-23-0",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "9765c295579e025830e86fbc90ea69bb65ef50981210b7339e0bd9d380169524",
+        "file": "02-hunk-refs-remotes-fa425-donor-23-0.lean"
+      },
+      "metric": {
+        "label": "round2-candidate02-hunk-refs-remotes-fa425-donor-23-0",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "9765c295579e025830e86fbc90ea69bb65ef50981210b7339e0bd9d380169524",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate02-hunk-refs-remotes-fa425-donor-23-0.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-23-1",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "1fff09ccc82ab98e142cb483a8ef4183d3b434eb0244f7a7c43ad226a8c8def2",
+        "file": "03-hunk-refs-remotes-fa425-donor-23-1.lean"
+      },
+      "metric": {
+        "label": "round2-candidate03-hunk-refs-remotes-fa425-donor-23-1",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "1fff09ccc82ab98e142cb483a8ef4183d3b434eb0244f7a7c43ad226a8c8def2",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32041,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate03-hunk-refs-remotes-fa425-donor-23-1.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-23-2",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "a26f00e31d6202762c552efe630794cb0459ac291ae54a3e57f147570f1f52d3",
+        "file": "04-hunk-refs-remotes-fa425-donor-23-2.lean"
+      },
+      "metric": {
+        "label": "round2-candidate04-hunk-refs-remotes-fa425-donor-23-2",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "a26f00e31d6202762c552efe630794cb0459ac291ae54a3e57f147570f1f52d3",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32047,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate04-hunk-refs-remotes-fa425-donor-23-2.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-23-3",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "single-equal-height-hunk",
+        "sha256": "343d6c66a7591cccab7e534d141644afe659143f705200bbf4c094322e5aea08",
+        "file": "05-hunk-refs-remotes-fa425-donor-23-3.lean"
+      },
+      "metric": {
+        "label": "round2-candidate05-hunk-refs-remotes-fa425-donor-23-3",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "343d6c66a7591cccab7e534d141644afe659143f705200bbf4c094322e5aea08",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32049,
+        "first_error_col": 10,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate05-hunk-refs-remotes-fa425-donor-23-3.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunks-combined-refs-remotes-fa425-donor-23",
+        "provenance": "refs/remotes/fa425/donor-23",
+        "kind": "combined-equal-height-hunks",
+        "sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "file": "06-hunks-combined-refs-remotes-fa425-donor-23.lean"
+      },
+      "metric": {
+        "label": "round2-candidate06-hunks-combined-refs-remotes-fa425-donor-23",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "42e26617d0896bb4c551a6cfa3705857e58dcd23e44ddcefde58fddbfc7820a5",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32035,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate06-hunks-combined-refs-remotes-fa425-donor-23.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-66-2",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "single-equal-height-hunk",
+        "sha256": "a68f1a978cba04c27bdbc4aa48b32b3c653677663be1f1e69ec4cf037ef2a72b",
+        "file": "07-hunk-refs-remotes-fa425-donor-66-2.lean"
+      },
+      "metric": {
+        "label": "round2-candidate07-hunk-refs-remotes-fa425-donor-66-2",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "a68f1a978cba04c27bdbc4aa48b32b3c653677663be1f1e69ec4cf037ef2a72b",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32079,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_left",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate07-hunk-refs-remotes-fa425-donor-66-2.log"
+      },
+      "strictly_better": false
+    },
+    {
+      "candidate": {
+        "name": "hunk-refs-remotes-fa425-donor-66-3",
+        "provenance": "refs/remotes/fa425/donor-66",
+        "kind": "single-equal-height-hunk",
+        "sha256": "8e2c1f84df4acdf7d514f714e03dc18055242c47f064f78d22c3be1c1843fdb5",
+        "file": "08-hunk-refs-remotes-fa425-donor-66-3.lean"
+      },
+      "metric": {
+        "label": "round2-candidate08-hunk-refs-remotes-fa425-donor-66-3",
+        "stem": "Mock2_FunctionalAnalysis",
+        "source_sha256": "8e2c1f84df4acdf7d514f714e03dc18055242c47f064f78d22c3be1c1843fdb5",
+        "line_count": 60453,
+        "exit_code": 1,
+        "error_headers": 2,
+        "first_error_line": 32079,
+        "first_error_col": 8,
+        "first_error_declaration": "nativeActualEdgeFluxIntegral_paired_left",
+        "olean": false,
+        "ilean": false,
+        "max_errors": 1,
+        "log": "build-logs/fa426-multiround-cross-donor/round2-candidate08-hunk-refs-remotes-fa425-donor-66-3.log"
+      },
+      "strictly_better": false
+    }
+  ],
+  "promotion": null,
+  "result": "no strict improvement"
+}

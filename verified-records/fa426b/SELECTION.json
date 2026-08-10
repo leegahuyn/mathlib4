@@ -1,0 +1,754 @@
+{
+  "selection_rule": "highest source-matched direct evidence metric; final authority is fresh direct Lean CLI reverify",
+  "selected": {
+    "ref": "refs/remotes/fa425/donor-27",
+    "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+    "line_count": 60453,
+    "metric": {
+      "exit_zero": false,
+      "first_error_line": 31726,
+      "first_error_col": 2
+    },
+    "score": [
+      0,
+      31726,
+      2
+    ],
+    "evidence_path": "known-direct-verified-source-sha",
+    "classification": "HISTORICAL+DIRECT-VERIFIED"
+  },
+  "candidate_count": 43,
+  "candidates": [
+    {
+      "ref": "refs/remotes/fa425/donor-23",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-24",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-25",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-26",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-27",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-28",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-29",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-30",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-31",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-32",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-33",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-34",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-35",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-36",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-37",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-38",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-39",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-41",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-42",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-43",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-44",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-45",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-46",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-47",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-48",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-49",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-50",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-51",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-52",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-53",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-54",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-55",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-57",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-59",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-60",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-61",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-62",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-63",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-64",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-65",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-76",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "refs/remotes/fa425/donor-80",
+      "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31725,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31725,
+        2
+      ],
+      "evidence_path": "known-direct-verified-source-sha",
+      "classification": "HISTORICAL+DIRECT-VERIFIED"
+    },
+    {
+      "ref": "resolved-fallback",
+      "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+      "line_count": 60453,
+      "metric": {
+        "exit_zero": false,
+        "first_error_line": 31726,
+        "first_error_col": 2
+      },
+      "score": [
+        0,
+        31726,
+        2
+      ],
+      "evidence_path": "SHA-selected fallback; must be directly reverified",
+      "classification": "CANDIDATE"
+    }
+  ]
+}
