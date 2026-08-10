@@ -1,0 +1,1 @@
+Use exact PASS423 SHA 71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0. Preserve 60453 lines and target theorem header byte-for-byte. Directly compile Mock2, Mock2_Advanced, and FA; promote only strict direct Lean improvement.
