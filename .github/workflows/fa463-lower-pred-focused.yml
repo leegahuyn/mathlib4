@@ -15,9 +15,9 @@ jobs:
     timeout-minutes: 160
     strategy:
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 4
       matrix:
-        variant: [baseline, gl_cumulative, lower_normalized, lower_normalized_pow, lower_index_rw, lower_index_simp]
+        variant: [gl_cumulative, lower_index_rw, lower_second_rw, lower_second_rw_comm]
     env:
       VARIANT: ${{ matrix.variant }}
       MAX_ERRORS: '4'
