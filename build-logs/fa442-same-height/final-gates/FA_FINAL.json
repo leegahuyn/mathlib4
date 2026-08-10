@@ -1,0 +1,16 @@
+{
+  "checked_in_source": true,
+  "FA_run1_exit": 1,
+  "FA_run2_exit": 125,
+  "forbidden_audit": {
+    "sorry": 0,
+    "admit": 0,
+    "new_global_axiom": 0,
+    "unsafe": 0,
+    "native_decide": 0,
+    "Lean.ofReduceBool": 0
+  },
+  "forbidden_clean": true,
+  "FA_TRUE_PASS": false,
+  "maxErrors_cap": 1
+}
