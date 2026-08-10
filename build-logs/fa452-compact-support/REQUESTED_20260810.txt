@@ -1,0 +1,1 @@
+Run the FA452 compact-support direct Lean matrix. Every candidate must compile Mock2, Mock2_Advanced, and Mock2_FunctionalAnalysis with actual lake env lean commands. Missing execution is INFRA_FAILURE. Do not merge or mark the draft PR ready.
