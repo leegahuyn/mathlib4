@@ -1,7 +1,7 @@
 name: FA452 compact support energy direct Lean matrix
 
 on:
-  pull_request:
+  push:
     branches:
       - fix/fa452-compact-support-energy-matrix-20260810
   workflow_dispatch:
@@ -132,37 +132,6 @@ jobs:
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
           if-no-files-found: warn
           retention-days: 90
-
-      - name: Patch final report with artifact identity
-        if: always() && steps.upload.outputs.artifact-id != ''
-        env:
-          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          root = Path('build-logs/fa452-compact-energy/final')
-          summary = root / 'FINAL.json'
-          report = root / 'FA_MATRIX_PIPELINE_REPAIR_REPORT.txt'
-          if summary.exists():
-              data = json.loads(summary.read_text(encoding='utf-8'))
-              data['evidence_artifact_id'] = int(os.environ['ARTIFACT_ID'])
-              summary.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
-          if report.exists():
-              text = report.read_text(encoding='utf-8')
-              text = text.replace('Artifact ID: PENDING_UPLOAD_PATCH', 'Artifact ID: ' + os.environ['ARTIFACT_ID'])
-              report.write_text(text, encoding='utf-8')
-          PY
-          git add -f build-logs/fa452-compact-energy/final/FINAL.json \
-            build-logs/fa452-compact-energy/final/FA_MATRIX_PIPELINE_REPAIR_REPORT.txt
-          if ! git diff --cached --quiet; then
-            git commit -m 'ci: attach FA452 evidence artifact identity [skip ci]'
-            git push origin "HEAD:${ACTIVE_BRANCH}"
-          fi
 
       - name: Enforce infrastructure separately from Lean proof status
         if: always()
