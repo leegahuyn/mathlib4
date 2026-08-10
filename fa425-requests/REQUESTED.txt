@@ -1,0 +1,5 @@
+requested_at=2026-08-10T06:45:00+09:00
+baseline_priority=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+fallback=07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4
+authority=direct Lean CLI
+fixed_line_count=60453
