@@ -1,0 +1,4 @@
+requested_at=2026-08-10T07:45:00+09:00
+scope=FA425,FA425b,FA425c,FA425d,FA426,FA426b
+classification=VERIFIED,CANDIDATE,INFRA FAILURE,HISTORICAL
+authority=direct Lean CLI evidence
