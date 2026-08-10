@@ -1,5 +1,5 @@
 {
-  "generated_at_epoch": 1786336347,
+  "generated_at_epoch": 1786336778,
   "repository": "leegahuyn/mathlib4",
   "targets": [
     {
@@ -13,34 +13,515 @@
         "exists": true,
         "id": 31355069192,
         "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31355069192",
-        "status": "queued",
-        "conclusion": null,
+        "status": "completed",
+        "conclusion": "success",
         "head_branch": "fix/fa442-skip-root-cause-20260810",
         "head_sha": "494120196ef5f083ebc569d9d0307124bde016fb",
         "created_at": "2026-08-10T04:18:32Z",
-        "updated_at": "2026-08-10T04:18:32Z",
+        "updated_at": "2026-08-10T04:34:38Z",
         "jobs": [
           {
             "id": 93353125114,
             "name": "diagnose",
-            "status": "queued",
-            "conclusion": null,
-            "steps": []
+            "status": "completed",
+            "conclusion": "success",
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout diagnostic branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Read FA442 run jobs and exact workflow conditions",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Commit exact root-cause evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Upload root-cause evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 12,
+                "name": "Post Checkout diagnostic branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 13,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
           }
         ],
-        "artifacts": []
+        "artifacts": [
+          {
+            "id": 9050604079,
+            "name": "fa442-skip-root-cause-31355069192",
+            "size_in_bytes": 12245,
+            "expired": false,
+            "digest": "sha256:4981fa516a2386dfc25a7148bec0d30d107aeede544d61276893117c63ebd3fd"
+          }
+        ]
       },
       "reports": [
         {
           "path": "build-logs/fa442-skip-root-cause/ROOT_CAUSE.json",
-          "exists": false
+          "exists": true,
+          "blob_sha": "bb941905416b74b269b1b3ff5b26d817a0f1027b",
+          "bytes": 13692,
+          "text": "{\n  \"classification\": \"INFRA_FAILURE\",\n  \"run_id\": 31345045760,\n  \"run_url\": \"https://github.com/leegahuyn/mathlib4/actions/runs/31345045760\",\n  \"head_branch\": \"fix/fa442-same-height-slope-cumulative-20260810\",\n  \"head_sha\": \"4c8a688568b11755c489e8252b4fb075430dc679\",\n  \"workflow_path\": \".github/workflows/fa442-same-height-slope-cumulative.yml\",\n  \"workflow_name\": \"FA442 same-height slope cumulative direct Lean matrix\",\n  \"skipped_steps\": [\n    {\n      \"job_id\": 93328039423,\n      \"job_name\": \"candidate (slope_change_convert)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039423,\n      \"job_name\": \"candidate (slope_change_convert)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039454,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039454,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039460,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039460,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039464,\n      \"job_name\": \"candidate (slope_change_convert_paired_all_known)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039464,\n      \"job_name\": \"candidate (slope_change_convert_paired_all_known)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039469,\n      \"job_name\": \"candidate (slope_paired_dot)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039469,\n      \"job_name\": \"candidate (slope_paired_dot)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039474,\n      \"job_name\": \"candidate (slope_paired_parenthesized_deep_simp)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039474,\n      \"job_name\": \"candidate (slope_paired_parenthesized_deep_simp)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039478,\n      \"job_name\": \"candidate (slope_paired_dot_all_known)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039478,\n      \"job_name\": \"candidate (slope_paired_dot_all_known)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039482,\n      \"job_name\": \"candidate (slope_only)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039482,\n      \"job_name\": \"candidate (slope_only)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039483,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039483,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039485,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper_tail)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039485,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring_height_upper_tail)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039489,\n      \"job_name\": \"candidate (slope_structures)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039489,\n      \"job_name\": \"candidate (slope_structures)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039494,\n      \"job_name\": \"candidate (baseline)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039494,\n      \"job_name\": \"candidate (baseline)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039497,\n      \"job_name\": \"candidate (slope_paired_parenthesized)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039497,\n      \"job_name\": \"candidate (slope_paired_parenthesized)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039505,\n      \"job_name\": \"candidate (slope_structures_paired_all_known)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039505,\n      \"job_name\": \"candidate (slope_structures_paired_all_known)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039507,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039507,\n      \"job_name\": \"candidate (slope_paired_parenthesized_ring)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328039532,\n      \"job_name\": \"candidate (slope_paired_parenthesized_all_known)\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    },\n    {\n      \"job_id\": 93328039532,\n      \"job_name\": \"candidate (slope_paired_parenthesized_all_known)\",\n      \"step_name\": \"Directly compile completed prerequisites and candidate FA\",\n      \"step_number\": 5,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"steps.prepare.outputs.ok == 'true'\",\n      \"output_references\": [\n        {\n          \"reference\": \"steps.prepare.outputs.ok\",\n          \"owner_exists\": true,\n          \"output_definition_found\": true\n        }\n      ]\n    },\n    {\n      \"job_id\": 93328109303,\n      \"job_name\": \"select-confirm-persist\",\n      \"step_name\": \"Install pinned Lean and Mathlib cache\",\n      \"step_number\": 4,\n      \"conclusion\": \"skipped\",\n      \"condition\": \"\",\n      \"output_references\": []\n    }\n  ],\n  \"undefined_output_references\": [],\n  \"guard_expressions\": [\n    \"steps.prepare.outputs.ok == 'true'\"\n  ],\n  \"selector_failure\": \"RuntimeError: expected one baseline direct metric, found 0\",\n  \"git_identity_failure\": \"Author identity unknown / fatal: empty ident name\",\n  \"root_cause\": \"The skipped Lean setup/compile steps were not unconditional. Their actual FA442 `if:` guards were: steps.prepare.outputs.ok == 'true'. In the candidate jobs the referenced upstream value was empty/false, so GitHub Actions evaluated the guard false. Candidate generation therefore completed while no direct Lean metric was produced.\",\n  \"repair\": {\n    \"candidate_lean_install_unconditional\": true,\n    \"candidate_direct_compile_unconditional\": true,\n    \"missing_metric_classification\": \"INFRA_FAILURE\",\n    \"selector_requires_exactly_one_current_run_baseline_metric\": true,\n    \"git_identity_configured_in_every_commit_job\": true\n  }\n}\n",
+          "json": {
+            "classification": "INFRA_FAILURE",
+            "run_id": 31345045760,
+            "run_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31345045760",
+            "head_branch": "fix/fa442-same-height-slope-cumulative-20260810",
+            "head_sha": "4c8a688568b11755c489e8252b4fb075430dc679",
+            "workflow_path": ".github/workflows/fa442-same-height-slope-cumulative.yml",
+            "workflow_name": "FA442 same-height slope cumulative direct Lean matrix",
+            "skipped_steps": [
+              {
+                "job_id": 93328039423,
+                "job_name": "candidate (slope_change_convert)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039423,
+                "job_name": "candidate (slope_change_convert)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039454,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039454,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039460,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039460,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039464,
+                "job_name": "candidate (slope_change_convert_paired_all_known)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039464,
+                "job_name": "candidate (slope_change_convert_paired_all_known)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039469,
+                "job_name": "candidate (slope_paired_dot)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039469,
+                "job_name": "candidate (slope_paired_dot)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039474,
+                "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039474,
+                "job_name": "candidate (slope_paired_parenthesized_deep_simp)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039478,
+                "job_name": "candidate (slope_paired_dot_all_known)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039478,
+                "job_name": "candidate (slope_paired_dot_all_known)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039482,
+                "job_name": "candidate (slope_only)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039482,
+                "job_name": "candidate (slope_only)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039483,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039483,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039485,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039485,
+                "job_name": "candidate (slope_paired_parenthesized_ring_height_upper_tail)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039489,
+                "job_name": "candidate (slope_structures)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039489,
+                "job_name": "candidate (slope_structures)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039494,
+                "job_name": "candidate (baseline)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039494,
+                "job_name": "candidate (baseline)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039497,
+                "job_name": "candidate (slope_paired_parenthesized)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039497,
+                "job_name": "candidate (slope_paired_parenthesized)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039505,
+                "job_name": "candidate (slope_structures_paired_all_known)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039505,
+                "job_name": "candidate (slope_structures_paired_all_known)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039507,
+                "job_name": "candidate (slope_paired_parenthesized_ring)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039507,
+                "job_name": "candidate (slope_paired_parenthesized_ring)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328039532,
+                "job_name": "candidate (slope_paired_parenthesized_all_known)",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              },
+              {
+                "job_id": 93328039532,
+                "job_name": "candidate (slope_paired_parenthesized_all_known)",
+                "step_name": "Directly compile completed prerequisites and candidate FA",
+                "step_number": 5,
+                "conclusion": "skipped",
+                "condition": "steps.prepare.outputs.ok == 'true'",
+                "output_references": [
+                  {
+                    "reference": "steps.prepare.outputs.ok",
+                    "owner_exists": true,
+                    "output_definition_found": true
+                  }
+                ]
+              },
+              {
+                "job_id": 93328109303,
+                "job_name": "select-confirm-persist",
+                "step_name": "Install pinned Lean and Mathlib cache",
+                "step_number": 4,
+                "conclusion": "skipped",
+                "condition": "",
+                "output_references": []
+              }
+            ],
+            "undefined_output_references": [],
+            "guard_expressions": [
+              "steps.prepare.outputs.ok == 'true'"
+            ],
+            "selector_failure": "RuntimeError: expected one baseline direct metric, found 0",
+            "git_identity_failure": "Author identity unknown / fatal: empty ident name",
+            "root_cause": "The skipped Lean setup/compile steps were not unconditional. Their actual FA442 `if:` guards were: steps.prepare.outputs.ok == 'true'. In the candidate jobs the referenced upstream value was empty/false, so GitHub Actions evaluated the guard false. Candidate generation therefore completed while no direct Lean metric was produced.",
+            "repair": {
+              "candidate_lean_install_unconditional": true,
+              "candidate_direct_compile_unconditional": true,
+              "missing_metric_classification": "INFRA_FAILURE",
+              "selector_requires_exactly_one_current_run_baseline_metric": true,
+              "git_identity_configured_in_every_commit_job": true
+            }
+          }
         },
         {
           "path": "build-logs/fa442-skip-root-cause/ROOT_CAUSE.md",
-          "exists": false
+          "exists": true,
+          "blob_sha": "4f75984bafa5eb10157dcea13b63a5bb202dfc06",
+          "bytes": 8103,
+          "text": "# FA442 SKIP ROOT CAUSE\n\nRun: https://github.com/leegahuyn/mathlib4/actions/runs/31345045760\n\nWorkflow path: `.github/workflows/fa442-same-height-slope-cumulative.yml`\n\n## Verified root cause\n\nThe skipped Lean setup/compile steps were not unconditional. Their actual FA442 `if:` guards were: steps.prepare.outputs.ok == 'true'. In the candidate jobs the referenced upstream value was empty/false, so GitHub Actions evaluated the guard false. Candidate generation therefore completed while no direct Lean metric was produced.\n\n## Skipped direct-compile path\n\n- job `candidate (slope_change_convert)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_change_convert)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_ring_height_upper)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_ring_height_upper)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_ring_height)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_ring_height)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_change_convert_paired_all_known)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_change_convert_paired_all_known)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_dot)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_dot)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_deep_simp)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_deep_simp)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_dot_all_known)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_dot_all_known)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_only)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_only)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_ring_height_upper_tail_zero)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_ring_height_upper_tail)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_ring_height_upper_tail)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_structures)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_structures)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (baseline)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (baseline)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_structures_paired_all_known)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_structures_paired_all_known)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_ring)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_ring)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `candidate (slope_paired_parenthesized_all_known)` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n- job `candidate (slope_paired_parenthesized_all_known)` / step `Directly compile completed prerequisites and candidate FA`\n  - conclusion: `skipped`\n  - actual condition: `steps.prepare.outputs.ok == 'true'`\n  - output `steps.prepare.outputs.ok`: owner_exists=True, definition_found=True\n- job `select-confirm-persist` / step `Install pinned Lean and Mathlib cache`\n  - conclusion: `skipped`\n  - actual condition: `<none>`\n\n## Selector failure\n\n`RuntimeError: expected one baseline direct metric, found 0`\n\n## Evidence commit failure\n\n`Author identity unknown / fatal: empty ident name`\n\n## Repair invariant\n\nThe replacement matrix and sequential fallback run Lean setup and direct compile without candidate-metadata output guards. A nonexecuted direct compile is emitted as `INFRA_FAILURE`, never as a successful candidate.\n"
         }
       ],
-      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+      "lean_or_pipeline_classification": "INFRA_FAILURE"
     },
     {
       "branch": "fix/fa442-matrix-direct-compile-repair-20260810",
@@ -54,12 +535,12 @@
         "exists": true,
         "id": 31354569386,
         "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31354569386",
-        "status": "in_progress",
+        "status": "queued",
         "conclusion": null,
         "head_branch": "fix/fa442-matrix-direct-compile-repair-20260810",
         "head_sha": "8c6c161b2ffc34b613fc50e3517cd87288bc01ce",
         "created_at": "2026-08-10T04:08:30Z",
-        "updated_at": "2026-08-10T04:11:02Z",
+        "updated_at": "2026-08-10T04:39:37Z",
         "jobs": [
           {
             "id": 93351747502,
@@ -114,8 +595,8 @@
           {
             "id": 93352099240,
             "name": "direct metric / git-origin-fix-fa425d-derivative-rebundle-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -150,34 +631,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099244,
             "name": "direct metric / git-origin-fix-fa425e-isolated-instance-section-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -212,34 +699,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099249,
             "name": "direct metric / git-origin-fix-fa425-strict-theorem-tournament-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -274,34 +767,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099252,
             "name": "direct metric / git-origin-fix-fa425i-disable-reenable-custom-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -336,34 +835,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099255,
             "name": "direct metric / baseline",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -398,34 +903,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099260,
             "name": "direct metric / git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -460,34 +971,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099262,
             "name": "direct metric / git-origin-fix-fa444-complete-direct-matrix-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -522,34 +1039,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099263,
             "name": "direct metric / git-origin-fix-fa426b-multiround-importsafe-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -584,26 +1107,32 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
@@ -678,8 +1207,8 @@
           {
             "id": 93352099270,
             "name": "direct metric / git-origin-fix-fa429-continuation-after-fa426-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -714,34 +1243,40 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
           {
             "id": 93352099273,
             "name": "direct metric / git-origin-ci-fa444-complete-run-locator-20260810",
-            "status": "in_progress",
-            "conclusion": null,
+            "status": "completed",
+            "conclusion": "success",
             "steps": [
               {
                 "number": 1,
@@ -776,26 +1311,32 @@
               {
                 "number": 6,
                 "name": "Directly compile completed prerequisites and candidate FA",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 7,
                 "name": "Upload candidate source, direct logs, and metric",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 8,
                 "name": "Enforce actual Lean execution or explicit infrastructure failure",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 16,
                 "name": "Post Checkout exact pipeline repair branch",
-                "status": "pending",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 17,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
               }
             ]
           },
@@ -866,9 +1407,167 @@
                 "conclusion": "success"
               }
             ]
+          },
+          {
+            "id": 93356126607,
+            "name": "Select strict best current-run direct metric",
+            "status": "completed",
+            "conclusion": "success",
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout repair branch for materialization",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Download preparation evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Download all matrix direct metrics",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Strictly select and materialize best direct-verified source",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 7,
+                "name": "Commit materialized checked-in source and selection evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 8,
+                "name": "Upload selection and root-cause evidence",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 9,
+                "name": "Enforce selector and checked-in persistence infrastructure",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 18,
+                "name": "Post Checkout repair branch for materialization",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 19,
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success"
+              }
+            ]
+          },
+          {
+            "id": 93356207276,
+            "name": "Verify checked-in selected FA directly twice",
+            "status": "queued",
+            "conclusion": null,
+            "steps": []
           }
         ],
         "artifacts": [
+          {
+            "id": 9050697450,
+            "name": "fa442-selection-31354569386",
+            "size_in_bytes": 7040,
+            "expired": false,
+            "digest": "sha256:eac991bc66f111e99b071be1cadf252b09b2bbcc9426caa87ef293e73c18a89d"
+          },
+          {
+            "id": 9050687047,
+            "name": "fa442-metric-git-origin-fix-fa426b-multiround-importsafe-20260810-31354569386",
+            "size_in_bytes": 646554,
+            "expired": false,
+            "digest": "sha256:1a8fe8263e8150588e16ed77ab77344f1e5366a5a2e7eff5134d29bf5fc8cbd8"
+          },
+          {
+            "id": 9050685253,
+            "name": "fa442-metric-git-origin-ci-fa444-complete-run-locator-20260810-31354569386",
+            "size_in_bytes": 646284,
+            "expired": false,
+            "digest": "sha256:aa31aa5dc1da4b06adae8044bfb0b0d322e095536d71ef3fb6dbc2e1606fcf93"
+          },
+          {
+            "id": 9050677218,
+            "name": "fa442-metric-git-origin-fix-fa444-complete-direct-matrix-20260810-31354569386",
+            "size_in_bytes": 646385,
+            "expired": false,
+            "digest": "sha256:68ac43bafc4eb125bf507e840741da01f3a7f570db09e6ffcb7fdbd71276bbb0"
+          },
+          {
+            "id": 9050676260,
+            "name": "fa442-metric-git-origin-fix-fa429-continuation-after-fa426-20260810-31354569386",
+            "size_in_bytes": 646607,
+            "expired": false,
+            "digest": "sha256:fbfef502b5405fb4d27025852e1bd3b250ab1d5da6512b8a66d41239f22362a5"
+          },
+          {
+            "id": 9050669286,
+            "name": "fa442-metric-git-origin-fix-fa425-strict-theorem-tournament-20260810-31354569386",
+            "size_in_bytes": 646621,
+            "expired": false,
+            "digest": "sha256:f4f7a9dc9c748e2c3b15c1f1773d1be9fa8ef7163dfdd9e2a69e261aaa7c54e7"
+          },
+          {
+            "id": 9050665039,
+            "name": "fa442-metric-git-origin-fix-fa425e-isolated-instance-section-20260810-31354569386",
+            "size_in_bytes": 687753,
+            "expired": false,
+            "digest": "sha256:b7e697b6b85223677cf4d02736a064762c8b4a8863585f92a90776f7ca0e1b25"
+          },
+          {
+            "id": 9050658878,
+            "name": "fa442-metric-git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810-31354569386",
+            "size_in_bytes": 646488,
+            "expired": false,
+            "digest": "sha256:bc89caba19df73e387fef4cb6d11ba9a0733c885747dcd669b113f17f7f300e5"
+          },
+          {
+            "id": 9050646219,
+            "name": "fa442-metric-git-origin-fix-fa425d-derivative-rebundle-20260810-31354569386",
+            "size_in_bytes": 646813,
+            "expired": false,
+            "digest": "sha256:9d8a539d095fedeadb19153d3f5cb79a12b57a3791af5867ed4e8484c37a2d1a"
+          },
+          {
+            "id": 9050644950,
+            "name": "fa442-metric-baseline-31354569386",
+            "size_in_bytes": 646377,
+            "expired": false,
+            "digest": "sha256:325fead87b28ad193a649f1e932814b5acde3a21cb130040c53f2019a60a6629"
+          },
+          {
+            "id": 9050631878,
+            "name": "fa442-metric-git-origin-fix-fa425i-disable-reenable-custom-20260810-31354569386",
+            "size_in_bytes": 646583,
+            "expired": false,
+            "digest": "sha256:63cb766189e0031e9bd1d285fa45852f0780dab2511634a4908eeb6b400c8573"
+          },
           {
             "id": 9050549314,
             "name": "fa442-metric-git-origin-fix-fa424-cross-donor-controller-20260809-31354569386",
@@ -903,10 +1602,241 @@
         },
         {
           "path": "build-logs/fa442-pipeline-repair/selection/selection.json",
-          "exists": false
+          "exists": true,
+          "blob_sha": "0b036353201257b64ef462e241478223f7f33fd5",
+          "bytes": 9080,
+          "text": "{\n  \"classification\": \"STRICT_PROMOTION\",\n  \"advance_classification\": \"DECLARATION_BREAKTHROUGH\",\n  \"baseline\": {\n    \"variant\": \"baseline-direct\",\n    \"source_sha256\": \"71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0\",\n    \"line_count\": 60453,\n    \"direct_lean_exit\": 1,\n    \"first_error\": {\n      \"line\": 31726,\n      \"column\": 2,\n      \"message\": \"Type mismatch: After simplification, term\\n  hcomp\\n has type\\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup\\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\\nbut is expected to have type\\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup\\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\\n    (actualEdgeAmbientParam e)\\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\",\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"declaration_kind\": \"theorem\",\n      \"declaration_index\": 2631,\n      \"declaration_start_line\": 31713\n    }\n  },\n  \"candidate_metric_count\": 12,\n  \"valid_direct_metric_count\": 12,\n  \"infra_failure_count\": 0,\n  \"strictly_better\": true,\n  \"selected\": {\n    \"variant\": \"git:origin/ci/fa447-run-locator-20260810\",\n    \"slug\": \"git-origin-ci-fa447-run-locator-20260810\",\n    \"source_sha256\": \"c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626\",\n    \"line_count\": 60453,\n    \"exit\": 1,\n    \"first_error\": {\n      \"line\": 32592,\n      \"column\": 5,\n      \"message\": \"failed to synthesize instance of type class\\n  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure\\n\\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\",\n      \"declaration\": \"selectedHalfOpenTile_ae_eq_openTile\",\n      \"declaration_kind\": \"theorem\",\n      \"declaration_index\": 2678,\n      \"declaration_start_line\": 32585\n    },\n    \"trust_audit\": {\n      \"sorry\": 0,\n      \"admit\": 0,\n      \"global_axiom\": 0,\n      \"unsafe\": 0,\n      \"native_decide\": 0,\n      \"Lean.ofReduceBool\": 0\n    },\n    \"worktree_sha256\": \"c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626\",\n    \"selected_artifact_sha256\": \"c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626\",\n    \"identity_ok_before_commit\": true\n  },\n  \"promotion_rule\": [\n    \"exit_code = 0\",\n    \"later first-error declaration index\",\n    \"same declaration: later line/column\"\n  ],\n  \"same_height_enforced\": true,\n  \"theorem_header_unchanged_enforced\": true,\n  \"declaration_sequence_unchanged_enforced\": true,\n  \"candidate_results\": [\n    {\n      \"variant\": \"baseline-direct\",\n      \"slug\": \"baseline\",\n      \"sha256\": \"71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 31726,\n      \"first_col\": 2,\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/ci/fa444-complete-run-locator-20260810\",\n      \"slug\": \"git-origin-ci-fa444-complete-run-locator-20260810\",\n      \"sha256\": \"885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32590,\n      \"first_col\": 5,\n      \"declaration\": \"selectedHalfOpenTile_ae_eq_openTile\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/ci/fa447-run-locator-20260810\",\n      \"slug\": \"git-origin-ci-fa447-run-locator-20260810\",\n      \"sha256\": \"c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32592,\n      \"first_col\": 5,\n      \"declaration\": \"selectedHalfOpenTile_ae_eq_openTile\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa424-cross-donor-controller-20260809\",\n      \"slug\": \"git-origin-fix-fa424-cross-donor-controller-20260809\",\n      \"sha256\": \"07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 31725,\n      \"first_col\": 2,\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa425-strict-theorem-tournament-20260810\",\n      \"slug\": \"git-origin-fix-fa425-strict-theorem-tournament-20260810\",\n      \"sha256\": \"df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32035,\n      \"first_col\": 8,\n      \"declaration\": \"nativeActualEdgeFluxIntegral_paired_circular\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa425d-derivative-rebundle-20260810\",\n      \"slug\": \"git-origin-fix-fa425d-derivative-rebundle-20260810\",\n      \"sha256\": \"0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 31727,\n      \"first_col\": 2,\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa425e-isolated-instance-section-20260810\",\n      \"slug\": \"git-origin-fix-fa425e-isolated-instance-section-20260810\",\n      \"sha256\": \"39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 31727,\n      \"first_col\": 117,\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa425i-disable-reenable-custom-20260810\",\n      \"slug\": \"git-origin-fix-fa425i-disable-reenable-custom-20260810\",\n      \"sha256\": \"0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 31727,\n      \"first_col\": 117,\n      \"declaration\": \"actualEdgeAmbientParam_hasDerivAt\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa426b-multiround-importsafe-20260810\",\n      \"slug\": \"git-origin-fix-fa426b-multiround-importsafe-20260810\",\n      \"sha256\": \"7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32079,\n      \"first_col\": 8,\n      \"declaration\": \"nativeActualEdgeFluxIntegral_paired_left\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa429-continuation-after-fa426-20260810\",\n      \"slug\": \"git-origin-fix-fa429-continuation-after-fa426-20260810\",\n      \"sha256\": \"49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32035,\n      \"first_col\": 8,\n      \"declaration\": \"nativeActualEdgeFluxIntegral_paired_circular\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa444-complete-direct-matrix-20260810\",\n      \"slug\": \"git-origin-fix-fa444-complete-direct-matrix-20260810\",\n      \"sha256\": \"4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32590,\n      \"first_col\": 5,\n      \"declaration\": \"selectedHalfOpenTile_ae_eq_openTile\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    },\n    {\n      \"variant\": \"git:origin/fix/fa444-fa442-matrix-pipeline-repair-20260810\",\n      \"slug\": \"git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810\",\n      \"sha256\": \"1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a\",\n      \"lean_executed\": true,\n      \"exit\": 1,\n      \"first_line\": 32035,\n      \"first_col\": 79,\n      \"declaration\": \"nativeActualEdgeFluxIntegral_paired_circular\",\n      \"classification\": \"LEAN_FAILURE\",\n      \"Mock2_exit\": 0,\n      \"Mock2_Advanced_exit\": 0,\n      \"maxErrors\": 2000\n    }\n  ]\n}\n",
+          "json": {
+            "classification": "STRICT_PROMOTION",
+            "advance_classification": "DECLARATION_BREAKTHROUGH",
+            "baseline": {
+              "variant": "baseline-direct",
+              "source_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+              "line_count": 60453,
+              "direct_lean_exit": 1,
+              "first_error": {
+                "line": 31726,
+                "column": 2,
+                "message": "Type mismatch: After simplification, term\n  hcomp\n has type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.instNormedAddCommGroup.toAddCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (fun x => selectedCosetAmbientMap e.1 (modularTileEdgeAmbientParam e.2 x))\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t\nbut is expected to have type\n  @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℂ Complex.addCommGroup\n    instInnerProductSpaceRealComplex.toModule PseudoMetricSpace.toUniformSpace.toTopologicalSpace ⋯\n    (actualEdgeAmbientParam e)\n    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t)) (modularTileEdgeVelocity e.2 t)) ↑t",
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "declaration_kind": "theorem",
+                "declaration_index": 2631,
+                "declaration_start_line": 31713
+              }
+            },
+            "candidate_metric_count": 12,
+            "valid_direct_metric_count": 12,
+            "infra_failure_count": 0,
+            "strictly_better": true,
+            "selected": {
+              "variant": "git:origin/ci/fa447-run-locator-20260810",
+              "slug": "git-origin-ci-fa447-run-locator-20260810",
+              "source_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+              "line_count": 60453,
+              "exit": 1,
+              "first_error": {
+                "line": 32592,
+                "column": 5,
+                "message": "failed to synthesize instance of type class\n  SMulInvariantMeasure SL(2, ℤ) ℍ hyperbolicMeasure\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.",
+                "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+                "declaration_kind": "theorem",
+                "declaration_index": 2678,
+                "declaration_start_line": 32585
+              },
+              "trust_audit": {
+                "sorry": 0,
+                "admit": 0,
+                "global_axiom": 0,
+                "unsafe": 0,
+                "native_decide": 0,
+                "Lean.ofReduceBool": 0
+              },
+              "worktree_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+              "selected_artifact_sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+              "identity_ok_before_commit": true
+            },
+            "promotion_rule": [
+              "exit_code = 0",
+              "later first-error declaration index",
+              "same declaration: later line/column"
+            ],
+            "same_height_enforced": true,
+            "theorem_header_unchanged_enforced": true,
+            "declaration_sequence_unchanged_enforced": true,
+            "candidate_results": [
+              {
+                "variant": "baseline-direct",
+                "slug": "baseline",
+                "sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 31726,
+                "first_col": 2,
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/ci/fa444-complete-run-locator-20260810",
+                "slug": "git-origin-ci-fa444-complete-run-locator-20260810",
+                "sha256": "885e585d346e81ff15df6f03391913a791d121b7933c3c99a37a557253c87489",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32590,
+                "first_col": 5,
+                "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/ci/fa447-run-locator-20260810",
+                "slug": "git-origin-ci-fa447-run-locator-20260810",
+                "sha256": "c12778aa72fa9541b064e466d59c854283766e73c02fda1a586cf7380e7f7626",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32592,
+                "first_col": 5,
+                "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa424-cross-donor-controller-20260809",
+                "slug": "git-origin-fix-fa424-cross-donor-controller-20260809",
+                "sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 31725,
+                "first_col": 2,
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa425-strict-theorem-tournament-20260810",
+                "slug": "git-origin-fix-fa425-strict-theorem-tournament-20260810",
+                "sha256": "df95374fdd9a3f58b42e4cc9a7a43ee6122ba1391b5d622dd6bbd08a10152b1a",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32035,
+                "first_col": 8,
+                "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa425d-derivative-rebundle-20260810",
+                "slug": "git-origin-fix-fa425d-derivative-rebundle-20260810",
+                "sha256": "0ab17080422c1cf0f57ebf14dd97ca349f2a997276c7dd6fd90a0a1f6e485811",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 31727,
+                "first_col": 2,
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa425e-isolated-instance-section-20260810",
+                "slug": "git-origin-fix-fa425e-isolated-instance-section-20260810",
+                "sha256": "39953828163b197c50d322a6ec245979ccaac56b5ef3beab1cfdc0a7d5f8cb6f",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 31727,
+                "first_col": 117,
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa425i-disable-reenable-custom-20260810",
+                "slug": "git-origin-fix-fa425i-disable-reenable-custom-20260810",
+                "sha256": "0985fe1524fd89727abcb03290227a4e9c12cc461be3e0cdfeafaa3528af518b",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 31727,
+                "first_col": 117,
+                "declaration": "actualEdgeAmbientParam_hasDerivAt",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa426b-multiround-importsafe-20260810",
+                "slug": "git-origin-fix-fa426b-multiround-importsafe-20260810",
+                "sha256": "7c0f8839e8d058f5cde6a76bcc125381135f6869be0ae8d4a1f12ef1ac168a7d",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32079,
+                "first_col": 8,
+                "declaration": "nativeActualEdgeFluxIntegral_paired_left",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa429-continuation-after-fa426-20260810",
+                "slug": "git-origin-fix-fa429-continuation-after-fa426-20260810",
+                "sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32035,
+                "first_col": 8,
+                "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa444-complete-direct-matrix-20260810",
+                "slug": "git-origin-fix-fa444-complete-direct-matrix-20260810",
+                "sha256": "4647a9463e4264a7f0e08405b7ccd1ce9be87e7227fa2b91dc52024e2e198152",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32590,
+                "first_col": 5,
+                "declaration": "selectedHalfOpenTile_ae_eq_openTile",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              },
+              {
+                "variant": "git:origin/fix/fa444-fa442-matrix-pipeline-repair-20260810",
+                "slug": "git-origin-fix-fa444-fa442-matrix-pipeline-repair-20260810",
+                "sha256": "1243b2ba563d364a6977cbf9aa867e628de50a28b0f56677dc70456a210e209a",
+                "lean_executed": true,
+                "exit": 1,
+                "first_line": 32035,
+                "first_col": 79,
+                "declaration": "nativeActualEdgeFluxIntegral_paired_circular",
+                "classification": "LEAN_FAILURE",
+                "Mock2_exit": 0,
+                "Mock2_Advanced_exit": 0,
+                "maxErrors": 2000
+              }
+            ]
+          }
         }
       ],
-      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+      "lean_or_pipeline_classification": "STRICT_PROMOTION"
     },
     {
       "branch": "fix/fa442-sequential-direct-tournament-20260810",
@@ -1096,13 +2026,13 @@
               {
                 "number": 5,
                 "name": "Recover FA442 baseline and candidate bundle; diagnose skip root cause",
-                "status": "in_progress",
-                "conclusion": null
+                "status": "completed",
+                "conclusion": "success"
               },
               {
                 "number": 6,
                 "name": "Re-run baseline and every FA442 candidate by direct Lean CLI",
-                "status": "pending",
+                "status": "in_progress",
                 "conclusion": null
               },
               {
@@ -1257,26 +2187,93 @@
       "workflow_name": "FA442 baseline direct metric smoke gate",
       "report_paths": [
         "build-logs/fa442-baseline-direct-smoke/METRIC.json",
-        "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.json",
-        "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.md"
+        "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.json",
+        "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.md"
       ],
       "run": {
         "exists": true,
         "id": 31355707466,
         "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31355707466",
-        "status": "queued",
+        "status": "in_progress",
         "conclusion": null,
         "head_branch": "fix/fa442-baseline-direct-smoke-20260810",
         "head_sha": "9fe382631ad4a5b3ef46e85777d932712ae5d46c",
         "created_at": "2026-08-10T04:30:38Z",
-        "updated_at": "2026-08-10T04:30:38Z",
+        "updated_at": "2026-08-10T04:32:56Z",
         "jobs": [
           {
             "id": 93354858386,
             "name": "baseline-direct",
-            "status": "queued",
+            "status": "in_progress",
             "conclusion": null,
-            "steps": []
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout smoke branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Recover authoritative baseline and inspect original FA442 skip conditions",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Resolve exactly one baseline bundle entry",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 7,
+                "name": "Directly compile Mock2, Mock2 Advanced, and baseline FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce exact baseline direct metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 9,
+                "name": "Materialize and commit exact baseline checked-in source plus metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 10,
+                "name": "Upload baseline smoke evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 20,
+                "name": "Post Checkout smoke branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
           }
         ],
         "artifacts": []
@@ -1287,11 +2284,123 @@
           "exists": false
         },
         {
-          "path": "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.json",
+          "path": "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.json",
           "exists": false
         },
         {
-          "path": "build-logs/fa442-pipeline-repair/prep/ROOT_CAUSE.md",
+          "path": "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.md",
+          "exists": false
+        }
+      ],
+      "lean_or_pipeline_classification": "NO_COMMITTED_REPORT"
+    },
+    {
+      "branch": "fix/fa442-baseline-direct-smoke-20260810",
+      "workflow_name": "FA442 baseline direct metric smoke gate v2",
+      "report_paths": [
+        "build-logs/fa442-baseline-direct-smoke/METRIC_V2.json",
+        "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.json",
+        "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.md"
+      ],
+      "run": {
+        "exists": true,
+        "id": 31355860937,
+        "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/31355860937",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_branch": "fix/fa442-baseline-direct-smoke-20260810",
+        "head_sha": "ebd7f183e1d119d2f85378bb3e29d2c8042b7392",
+        "created_at": "2026-08-10T04:33:27Z",
+        "updated_at": "2026-08-10T04:33:43Z",
+        "jobs": [
+          {
+            "id": 93355294688,
+            "name": "baseline-direct",
+            "status": "in_progress",
+            "conclusion": null,
+            "steps": [
+              {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 2,
+                "name": "Checkout smoke branch",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 3,
+                "name": "Configure Git identity",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 4,
+                "name": "Install pinned Lean and Mathlib cache",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 5,
+                "name": "Hardened baseline/candidate recovery and exact FA442 condition diagnosis",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 6,
+                "name": "Resolve exactly one baseline bundle entry",
+                "status": "completed",
+                "conclusion": "success"
+              },
+              {
+                "number": 7,
+                "name": "Directly compile Mock2, Mock2 Advanced, and baseline FA",
+                "status": "in_progress",
+                "conclusion": null
+              },
+              {
+                "number": 8,
+                "name": "Enforce exact baseline direct metric and write compact evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 9,
+                "name": "Materialize and commit exact baseline checked-in source plus metric",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 10,
+                "name": "Upload hardened baseline smoke evidence",
+                "status": "pending",
+                "conclusion": null
+              },
+              {
+                "number": 20,
+                "name": "Post Checkout smoke branch",
+                "status": "pending",
+                "conclusion": null
+              }
+            ]
+          }
+        ],
+        "artifacts": []
+      },
+      "reports": [
+        {
+          "path": "build-logs/fa442-baseline-direct-smoke/METRIC_V2.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.json",
+          "exists": false
+        },
+        {
+          "path": "build-logs/fa442-baseline-direct-smoke/ROOT_CAUSE.md",
           "exists": false
         }
       ],
