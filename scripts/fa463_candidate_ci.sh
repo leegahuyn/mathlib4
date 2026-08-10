@@ -4,7 +4,7 @@ set +e
 OUT="build-logs/fa463-lower-pred/candidates/${VARIANT}"; SRC="PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"; MAX_ERRORS="${MAX_ERRORS:-4}"
 rm -rf "$OUT"; mkdir -p "$OUT" .lake/build/lib/lean/PrimalitySheafVerification
 git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'; git rev-parse HEAD > "$OUT/repository-head.txt"
-python3 scripts/fa463_prepare_lower_pred.py --variant "$VARIANT" --output-dir "$OUT" > "$OUT/prepare.log" 2>&1; prepare_rc=$?; printf '%s' "$prepare_rc" > "$OUT/prepare.exit"; cat "$OUT/prepare.log"
+python3 scripts/fa463_prepare_lower_pred_v2.py --variant "$VARIANT" --output-dir "$OUT" > "$OUT/prepare.log" 2>&1; prepare_rc=$?; printf '%s' "$prepare_rc" > "$OUT/prepare.exit"; cat "$OUT/prepare.log"
 curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh > "$OUT/elan-download.log" 2>&1; curl_rc=$?; printf '%s' "$curl_rc" > "$OUT/elan-download.exit"
 install_rc=125
 if test "$curl_rc" -eq 0; then sh /tmp/elan-init.sh -y --default-toolchain none > "$OUT/elan-init.log" 2>&1; elan_rc=$?; printf '%s' "$elan_rc" > "$OUT/elan-init.exit"; if test "$elan_rc" -eq 0; then export PATH="${HOME}/.elan/bin:${PATH}"; elan toolchain install "$(cat lean-toolchain)" > "$OUT/toolchain-install.log" 2>&1; install_rc=$?; fi; fi
