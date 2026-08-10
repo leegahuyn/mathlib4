@@ -1,0 +1,16 @@
+{
+  "source": "PASS423 artifact",
+  "run_id": 31317392557,
+  "expected_sha256": "71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0",
+  "artifact_checks": [
+    {
+      "artifact_id": 9041241598,
+      "artifact_name": "pass423-proof-hunk-round-1-31317392557",
+      "download_exit": 0,
+      "exact_sha_hits": 1,
+      "member": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+    }
+  ],
+  "selected_artifact_id": 9041241598,
+  "selected_member": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+}

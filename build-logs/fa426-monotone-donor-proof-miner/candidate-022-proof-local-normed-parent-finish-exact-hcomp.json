@@ -1,0 +1,15 @@
+{
+  "label": "candidate-022-proof-local-normed-parent-finish-exact-hcomp",
+  "source_sha256": "dd3274254f19d8c92795ad924e49af3f7da4f9054c89bffbaaf011a45dd74544",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 160.126,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-022-proof-local-normed-parent-finish-exact-hcomp.log"
+}

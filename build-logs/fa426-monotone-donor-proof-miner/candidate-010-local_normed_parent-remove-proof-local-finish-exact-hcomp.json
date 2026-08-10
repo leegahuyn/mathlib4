@@ -1,0 +1,15 @@
+{
+  "label": "candidate-010-local_normed_parent-remove-proof-local-finish-exact-hcomp",
+  "source_sha256": "93aec2b5eee792174cb9f314bc286b90215db2ce5680bcb809bc36d063bcd801",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31711,
+  "first_error_col": 15,
+  "first_error_declaration": "actualEdgeNativeVelocity_eq_selectedDerivative_mul",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 163.978,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-010-local_normed_parent-remove-proof-local-finish-exact-hcomp.log"
+}

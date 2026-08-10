@@ -1,0 +1,12 @@
+classification=VERIFIED
+authority=direct Lean CLI
+baseline_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+selected_sha256=71dc36f16ebea92d537aa40a5d420443e4bcb93ccb76fea31efb40a6cb5c3aa0
+FA_exit=1
+FA_first_error=31726:2
+FA_first_declaration=actualEdgeAmbientParam_hasDerivAt
+line_count=60453
+strict_promotion=false
+materialized_verified_baseline=true
+candidate_trials=24
+maxErrors_cap=1

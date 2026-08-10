@@ -1,0 +1,37 @@
+[
+  {
+    "label": "fa413-canonical-paired-from-pass376-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "c500aeef3f920bd8451f0c2926c9cc8e63d87f2b39bb24f982f338b7f33370a8",
+    "provenance": "refs/remotes/origin/fix/fa413-canonical-paired-from-pass376-20260809:build-logs/fa377-exact-proven-runner/Mock2_FunctionalAnalysis-candidate.lean"
+  },
+  {
+    "label": "fa413-canonical-paired-from-pass376-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "580a9924dac76884e56cb3773c0d7f49055a26ee96ea494f06ef35777addc1ab",
+    "provenance": "refs/remotes/origin/fix/fa413-canonical-paired-from-pass376-20260809:build-logs/fa413-canonical-paired/Mock2_FunctionalAnalysis-candidate.lean"
+  },
+  {
+    "label": "fa413-fa414-apis-20260809",
+    "source_sha256": "07f6efd3309c3cc23b86adf5811918b752b72c33a3f7a76213ce9beb10796da4",
+    "provenance": "refs/remotes/origin/probe/fa413-fa414-apis-20260809:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+  },
+  {
+    "label": "fa414-analytic-cluster-from-pass376-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "d159a9d5981fba4ef3dcecc93b4ef98bb139eb81954e0f4c28b94e391ae61806",
+    "provenance": "refs/remotes/origin/fix/fa414-analytic-cluster-from-pass376-20260809:build-logs/fa414-analytic/Mock2_FunctionalAnalysis-candidate.lean"
+  },
+  {
+    "label": "fa414-generic-proof-challenger-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "2d7297e2f69bb51434b19d63eeb3abddc3f7d1311da0157b7981c7e7477cee83",
+    "provenance": "refs/remotes/origin/fix/fa414-generic-proof-challenger-20260809:build-logs/fa411-from-pass376/Mock2_FunctionalAnalysis-candidate.lean"
+  },
+  {
+    "label": "fa415-declaration-scope-instance-20260809::Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "2fb2da7f8c84db02e2ec42a1ef4b839b6341258cf12db1192b1fd6e5435a6ccd",
+    "provenance": "refs/remotes/origin/fix/fa415-declaration-scope-instance-20260809:build-logs/fa415-declaration-scope/Mock2_FunctionalAnalysis-candidate.lean"
+  },
+  {
+    "label": "fa419-unfold-deriv-instance-20260809",
+    "source_sha256": "49c1c0eac33f5e758d66a99955a1690592803406a21277d5b4b4d230072d1f74",
+    "provenance": "refs/remotes/origin/fix/fa419-unfold-deriv-instance-20260809:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "label": "candidate-004-local_inferred_parent-reuse-proof-local",
+  "source_sha256": "7c3ed00407c89627a03007331f15be2cc26c8c6c9a537e7ea433f7f145389851",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 165.87,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-004-local_inferred_parent-reuse-proof-local.log"
+}

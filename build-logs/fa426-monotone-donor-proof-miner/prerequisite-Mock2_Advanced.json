@@ -1,0 +1,15 @@
+{
+  "label": "prerequisite-Mock2_Advanced",
+  "source_sha256": "cf44063abca1d5b47331a9001a3cff45a86b5e889865812fe4e7826c6af41526",
+  "line_count": 31919,
+  "exit_code": 0,
+  "error_headers": 0,
+  "first_error_line": 0,
+  "first_error_col": 0,
+  "first_error_declaration": "<none>",
+  "max_errors": 1,
+  "olean": true,
+  "ilean": true,
+  "elapsed_seconds": 235.545,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/prerequisite-Mock2_Advanced.log"
+}

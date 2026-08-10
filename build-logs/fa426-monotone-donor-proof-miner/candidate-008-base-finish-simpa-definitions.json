@@ -1,0 +1,15 @@
+{
+  "label": "candidate-008-base-finish-simpa-definitions",
+  "source_sha256": "6ee0b438f0ef0de1dd93674449044c7fec2d19a13f6c349f6e55fb0371abb6ff",
+  "line_count": 60453,
+  "exit_code": 1,
+  "error_headers": 2,
+  "first_error_line": 31726,
+  "first_error_col": 2,
+  "first_error_declaration": "actualEdgeAmbientParam_hasDerivAt",
+  "max_errors": 1,
+  "olean": false,
+  "ilean": false,
+  "elapsed_seconds": 159.469,
+  "log_path": "build-logs/fa426-monotone-donor-proof-miner/candidate-008-base-finish-simpa-definitions.log"
+}

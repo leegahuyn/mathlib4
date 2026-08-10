@@ -1,0 +1,2587 @@
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:210:0: warning: 
+'Mathlib.Analysis.Normed.Operator.FredholmAlternative' has been deprecated: please replace this import by
+
+import Mathlib.Analysis.Normed.Operator.Compact.FredholmAlternative
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:731:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:972:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:980:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_smul`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:989:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.linearTestIntegrand_density_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:997:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1005:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_smul`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1015:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.antiTestIntegrand_density_add`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1190:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.integral_eq_setIntegral_of_support_subset`:
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1198:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.support_linearTestIntegrand_subset_test`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1207:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.support_antiTestIntegrand_subset_test`:
+  [MeasurableSpace X]
+  [TopologicalSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] [TopologicalSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1278:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.tsupport_subset_interior_compactExhaustion`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1292:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.eventually_tsupport_subset_compactExhaustion`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1354:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.mem_truncatedTestCore`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1360:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.truncatedTestCore_subset_core`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1365:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.truncatedTestCore_mono`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1372:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.iUnion_truncatedTestCore_eq`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1409:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.compactExhaustion_covers_compactlySupported_tests`:
+  [MeasurableSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [MeasurableSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1839:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1840:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1872:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:1873:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:2703:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.compactPerturbation_isCompact`:
+  [CompleteSpace V]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:2708:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.normalized_hasTrivialKernel`:
+  [CompleteSpace V]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3098:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_apply`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3106:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_injective`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3127:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_antilipschitz`:
+  [CompleteSpace X]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace X] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3263:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.ShiftedCompactDecomposition.range_isClosed`:
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3299:47: warning: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3305:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_apply`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3312:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_injective`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3330:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.kernelComplementRestriction_surjective`:
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3427:5: warning: Variable name `d` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _d
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3481:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.compactPerturbation_isCompact`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:3488:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.factorization`:
+  [CompleteSpace V]
+  [CompleteSpace W]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace V] [CompleteSpace W] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4293:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4296:19: warning: 'norm_num' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4296:19: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4420:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4488:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4488:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4537:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4589:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:4672:43: warning: This simp argument is unused:
+  zpow_neg_one
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [weightFiberScale, halfWeightScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5284:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5284:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5632:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5689:15: warning: `Set.preimage_setOf_eq` has been deprecated: Use `Set.preimage_ofPred_eq` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5782:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:5944:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6011:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6084:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6158:10: warning: `Set.mem_diff` has been deprecated: Use `Set.mem_sdiff` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6554:4: warning: Try `simp at hback` instead of `simpa using hback`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6778:39: warning: `Set.mem_diff` has been deprecated: Use `Set.mem_sdiff` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6990:42: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.neg_im, Complex.ofReal_im, sub_zero, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:26: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, sub_zero, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:45: warning: This simp argument is unused:
+  sub_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, neg_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6991:55: warning: This simp argument is unused:
+  neg_neg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoLeftCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:26: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_im, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:45: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_re, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7014:64: warning: This simp argument is unused:
+  sub_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, gammaTwoRightCircleCenter, UpperHalfPlane.coe_mk, Complex.normSq_apply,
+    Complex.sub_re, Complex.sub_im, Complex.ofReal_re, Complex.ofReal_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7074:6: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7074:25: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7075:22: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7075:32: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7081:6: warning: This simp argument is unused:
+  Complex.ofReal_re
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7081:25: warning: This simp argument is unused:
+  Complex.ofReal_im
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.one_re, Complex.one_im, zero_mul, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7082:22: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, mul_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7082:32: warning: This simp argument is unused:
+  mul_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [gammaTwoStandardEdgeParam, UpperHalfPlane.coe_mk, Complex.mul_re, Complex.mul_im, Complex.add_re,
+    Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.one_re, Complex.one_im, zero_mul, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7883:14: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairingMatrix
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.paired, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7884:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.paired
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7885:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairedParameter
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7886:10: warning: This simp argument is unused:
+  modularTileEdgeParam
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7886:57: warning: This simp argument is unused:
+  hnormSq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam, modularCircularArcParam, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7888:14: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairingMatrix
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.paired, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7889:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.paired
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7890:10: warning: This simp argument is unused:
+  GammaTwoModularTileEdge.pairedParameter
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired, modularTileEdgeParam,
+    modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7891:10: warning: This simp argument is unused:
+  modularTileEdgeParam
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularCircularArcParam, hnormSq, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:7891:57: warning: This simp argument is unused:
+  hnormSq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [GammaTwoModularTileEdge.pairingMatrix, GammaTwoModularTileEdge.paired,
+    GammaTwoModularTileEdge.pairedParameter, modularTileEdgeParam, modularCircularArcParam, hden]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8371:12: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8519:8: warning: `continuous_finset_sum` has been deprecated: Use `continuous_finsetSum` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:8893:8: warning: `continuous_finset_sum` has been deprecated: Use `continuous_finsetSum` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9027:15: warning: `Set.preimage_setOf_eq` has been deprecated: Use `Set.preimage_ofPred_eq` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9360:10: warning: `Set.diff_subset` has been deprecated: Use `Set.sdiff_subset` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9955:10: warning: `Set.diff_subset` has been deprecated: Use `Set.sdiff_subset` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10093:27: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10385:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10402:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10419:8: warning: `Polynomial.finite_setOf_isRoot` has been deprecated: Use `Polynomial.finite_setOfPred_isRoot` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10780:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10789:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10969:19: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12021:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12022:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12049:10: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12049:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12358:30: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12382:28: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, heightC, UpperHalfPlane.ofComplex_apply_of_im_pos hw, heightCoordinateCLM]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12664:2: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12677:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12677:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13363:8: warning: This simp argument is unused:
+  IsInverseEtaPaperOrbitCovariant
+
+Hint: Omit it from the simp argument list.
+  [apply] simp
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13435:8: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, etaSqrtFactor, g, UpperHalfPlane.denom, hc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13456:41: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, etaSqrtFactor, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13628:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13664:6: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, inverseEtaPaperOrbitDenom, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13688:51: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, inverseEtaPaperOrbitDenom, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13716:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13723:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13743:2: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13754:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13754:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13903:42: warning: This simp argument is unused:
+  Complex.I_sq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Complex.mul_re, Complex.mul_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13914:42: warning: This simp argument is unused:
+  Complex.I_sq
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Complex.mul_re, Complex.mul_im]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13961:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14040:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14041:55: warning: This simp argument is unused:
+  hg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, inverseEtaPaperOrbitDenom, inverseEtaPaperOrbit_det_eq_one,
+    g, smul_eq_mul, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14042:33: warning: This simp argument is unused:
+  inverseEtaPaperOrbit_det_eq_one
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, hg, inverseEtaPaperOrbitDenom, g, smul_eq_mul, mul_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14059:6: warning: This simp argument is unused:
+  GammaTwoQuotientGeometry.gammaTwoToSL2Real_smul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, Function.comp_def, G, g, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14150:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14165:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14191:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14206:10: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14310:31: warning: Variable name `hr` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hr
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14341:4: warning: 'change star (j ^ 2) = star j ^ 2' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15042:11: warning: Variable name `a` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _a
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15258:4: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [conjugate, TestFunction.postcompCLM_apply, Complex.conjCLE_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15258:23: warning: This simp argument is unused:
+  Complex.conjCLE_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [conjugate, TestFunction.postcompCLM_apply, Function.comp_def]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15348:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15349:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15502:13: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15503:4: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15521:8: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15660:41: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [rpowMul_apply, rpowScale, Complex.ofReal_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15875:35: warning: This simp argument is unused:
+  Complex.conj_I
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, conj_exponentC, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15902:21: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15942:45: warning: This simp argument is unused:
+  Complex.conj_I
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, conj_exponentC, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15943:6: warning: This simp argument is unused:
+  conj_exponentC
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, Complex.conj_I, conj_rpowScale]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15943:22: warning: This simp argument is unused:
+  conj_rpowScale
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [star_add, star_mul, star_neg, Complex.conj_I, conj_exponentC]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15971:21: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16015:36: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, restrictToUpper, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16088:19: warning: This simp argument is unused:
+  Real.rpow_two
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [rpowScale, heightC]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16230:19: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, HalfWeightCompactCoordinateGreen.rpowScale, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16243:21: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, HalfWeightCompactCoordinateGreen.rpowScale, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17188:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.peterssonInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17206:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.chosenPeterssonInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17306:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.wrappedInnerProductCore` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17967:6: warning: 'ring_nf' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:17967:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18038:42: warning: This simp argument is unused:
+  one_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re,
+    Complex.mul_im, Complex.I_re, Complex.I_im, zero_mul, mul_zero, add_zero, zero_add, sub_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+Q.sobolevCompletionNormedAddCommGroup
+Q.sobolevCompletionNormedSpace
+Q.sobolevCompletionInnerProductSpace
+sobolevCompletionCompleteSpace Q
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18797:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:18986:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.completionEnergyOperator_apply`:
+  [CompleteSpace H₀]
+  [CompleteSpace HR]
+  [CompleteSpace HL]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19209:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.precomp_graph`:
+  [CompleteSpace H₀]
+  [CompleteSpace HR]
+  [CompleteSpace HL]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace H₀] [CompleteSpace HR] [CompleteSpace HL] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19937:31: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19938:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19945:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19946:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19956:17: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19959:21: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19975:28: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:19976:13: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20032:16: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20033:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20067:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20068:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20071:35: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20072:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20201:11: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20204:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20207:11: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20211:6: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20220:20: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20228:14: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20235:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20236:8: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20242:14: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20243:21: warning: `ModularForm.discriminantCuspForm` has been deprecated: Use `CuspForm.discriminant` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.discriminantCuspForm` to `CuspForm.discriminant x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20393:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20883:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21065:47: warning: `ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.add_apply` to `add_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21075:47: warning: `ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.smul_apply` to `smul_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:21845:4: warning: `ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead
+
+Note: The updated constant is in a different namespace. Dot notation may need to be changed (e.g., from `x.sub_apply` to `sub_apply x`).
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23006:51: warning: This simp argument is unused:
+  Pi.mul_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [lowerRaw, dx_mul hχ hf, dy_mul hχ hf]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23045:74: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23091:74: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [map_smul, HalfIntegralMultiplier.WeightSection.smul_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23367:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23382:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23405:29: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23407:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23798:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23968:10: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23968:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23998:33: warning: This simp argument is unused:
+  Complex.conj_ofReal
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [RCLike.inner_apply, starRingEnd_apply, NNReal.smul_def, smul_eq_mul, Complex.ofReal_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23999:21: warning: This simp argument is unused:
+  smul_eq_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [RCLike.inner_apply, Complex.conj_ofReal, starRingEnd_apply, NNReal.smul_def, Complex.ofReal_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:23999:34: warning: This simp argument is unused:
+  Complex.ofReal_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [RCLike.inner_apply, Complex.conj_ofReal, starRingEnd_apply, NNReal.smul_def, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24578:6: warning: This simp argument is unused:
+  HalfWeightCompactCoordinateGreen.rpowMul_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [HalfWeightCompactCoordinateGreen.localizeLeft_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24580:6: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanRaiseGauge, map_add, map_mul, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24580:29: warning: This simp argument is unused:
+  dif_pos
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanRaiseGauge, map_add, map_mul, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24581:48: warning: This simp argument is unused:
+  z
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, euclideanRaiseGauge, map_add, map_mul, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24582:27: warning: This simp argument is unused:
+  map_add
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanRaiseGauge, map_mul, Complex.conj_I, Complex.conj_ofReal,
+    heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24582:36: warning: This simp argument is unused:
+  map_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanRaiseGauge, map_add, Complex.conj_I, Complex.conj_ofReal,
+    heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24593:4: warning: 'norm_num' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24621:6: warning: This simp argument is unused:
+  HalfWeightCompactCoordinateGreen.rpowMul_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [HalfWeightCompactCoordinateGreen.localizeLeft_apply]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24623:6: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_add, map_sub, map_mul, map_neg,
+    Complex.conj_I, Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24623:29: warning: This simp argument is unused:
+  dif_pos
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_add, map_sub, map_mul, map_neg,
+    Complex.conj_I, Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24624:48: warning: This simp argument is unused:
+  z
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, euclideanLowerFromSuccGauge, map_add, map_sub, map_mul, map_neg,
+    Complex.conj_I, Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24625:35: warning: This simp argument is unused:
+  map_add
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_sub, map_mul, map_neg, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24625:44: warning: This simp argument is unused:
+  map_sub
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_add, map_mul, map_neg, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24625:53: warning: This simp argument is unused:
+  map_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_add, map_sub, map_neg, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24625:62: warning: This simp argument is unused:
+  map_neg
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [HalfWeightCompactCoordinateGreen.rpowScale, upperLift, Function.comp_def, hw, dif_pos,
+    UpperHalfPlane.ofComplex_apply_of_im_pos, z, euclideanLowerFromSuccGauge, map_add, map_sub, map_mul, Complex.conj_I,
+    Complex.conj_ofReal, heightC, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24636:4: warning: 'norm_num' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24884:38: warning: Variable name `n` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _n
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:24944:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25007:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25181:15: warning: This simp argument is unused:
+  Function.comp_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [ambientStarRepresentative_apply, Pi.zero_apply] at hz
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25256:33: warning: This simp argument is unused:
+  WithLp.ofLp_fst
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply, WithLp.prod_inner_apply, WithLp.ofLp_snd,
+    inner_neg_left] at hDouble
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25256:50: warning: This simp argument is unused:
+  WithLp.ofLp_snd
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [e, WithLp.prodContinuousLinearEquiv_symm_apply, WithLp.prod_inner_apply, WithLp.ofLp_fst,
+    inner_neg_left] at hDouble
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25319:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.FormalAdjointClosure.left_isClosable`:
+  [CompleteSpace E]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace E] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:25326:0: warning: automatically included section variable(s) unused in theorem `Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.FormalAdjointClosure.closure_eq_self`:
+  [CompleteSpace E]
+  [CompleteSpace F]
+consider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:
+  omit [CompleteSpace E] [CompleteSpace F] in theorem ...
+
+Note: This linter can be disabled with `set_option linter.unusedSectionVars false`
+'Mock2FA.cauchy_schwarz' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_holder' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.lax_milgram' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_holder_complex' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_norm_eq_sSup_unit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_norm_eq_sSup_ratio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_norm_eq_coreRatioNorm_of_dense' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.dual_norm_eq_iSup_coreRatio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.DualCoreExhaustion.norm_eq_iSup_coreRatio' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.UnitaryAutomorphyFactor.norm_apply_smul_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.antiDual_holder' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.weakAntiEquation_iff_forall' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakWithPotential_iff_forall' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakAntiWithPotential_iff_forall' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.linear_and_conjugate_scalar_laws_force_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakWithPotential_coreBochnerPairing' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakAntiWithPotential_coreBochnerPairing' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.integral_eq_setIntegral_of_support_subset' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.coreBochnerPairing_eq_setIntegral' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.coreAntiBochnerPairing_eq_setIntegral' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.tsupport_subset_interior_compactExhaustion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.eventually_tsupport_subset_compactExhaustion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.dual_norm_eq_iSup_truncatedTestCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.dual_norm_eq_iSup_compactExhaustion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.dual_norm_eq_iSup_interior_compactExhaustion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakWithPotential_on_truncatedTestCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.solvesWeakAntiWithPotential_on_truncatedTestCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.continuous_bilinear_ext_of_dense' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.continuous_sesquilinear_ext_of_dense' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.realifiedFunctional_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.realifiedForm_isCoercive' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.forall_re_eq_iff_weakAntiEquation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solve_spec' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solve_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solve_existsUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solve_norm_le' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.shiftedForm_equation_iff_residual' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solveShifted_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solveShifted_existsUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.ComplexLaxMilgram.solveShifted_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.HasTrivialKernel.of_lowerBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.SesquilinearCuspTailControl.isCompactOperator' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.factoredLowerOrder_isCompact_of_finiteDimensional' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.fredholmDefect_hasTrivialKernel_of_norm_lt_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.one_mem_resolventSet' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.fredholmDefect_bijective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.ShiftedCompactDecomposition.factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.ShiftedCompactDecomposition.compactPerturbation_fixedPoint_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.fredholmDefectKernelComplementRestriction_antilipschitz' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.fredholmDefect_range_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.ShiftedCompactDecomposition.range_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.range_eq_orthogonal_adjointKernel' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.solvable_iff_forall_adjointKernel_inner_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.NontrivialKernelFredholmData.canonicalSolution_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.solve_existsUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.FredholmBypassData.solve_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.coerciveFormEquiv_symm_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.solveOfShiftedForm_spec' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.solveOfShiftedForm_existsUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.FredholmBypass.shiftedFredholm_inverseNorm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.halfWeight_averaged_factorization_shift' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.no_uniform_finite_cutoff' depends on axioms: [propext, Quot.sound]
+'Mock2FA.PaperCorrections.discretePotential_not_uniformly_bounded' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.discretePotentialForm_not_uniformly_bounded' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.shifted_not_unshifted_counterexample' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.no_poincare_with_nonzero_jointKernel' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.fixed_lower_compatible_with_polynomial_upper' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.firstCoordinateCutoff_destroys_orthogonality' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.positive_average_not_pointwise_nonvanishing' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.bounded_closedBall_not_precompact' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.gammaTwoHyperbolic_mem' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.qParam_norm_not_GammaTwo_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.qParam_not_GammaTwo_invariant' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.gammaTwo_qParam_counterexample' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mock2FA.PaperCorrections.claimedRadiusFiber_eq_solution' depends on axioms: [propext, Quot.sound]
+'Mock2FA.PaperCorrections.claimedRadiusFiber_eq_empty' depends on axioms: [propext, Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.factor_mul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.sqrtFactor_zpow_four_mul_cocycle' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.shiftByFour_factor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.etaPhaseRatio_pow_twentyFour' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.etaPhaseRatio_eq_at_I' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaPowerMultiplier_factor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaPowerSection_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaExponentMultiplier_raise_shift_ratio' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaExponentMultiplier_raise_shift_phase' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaExponentMultiplier_lower_shift_ratio' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaExponentMultiplier_lower_shift_phase' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaMultiplier_factor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaHalfOrbitMultiplier_factor_add_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaPaperCertificate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.inverseEtaSection_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNorm_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNormSq_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNormSq_smul_sub' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNormSq_smul_halfWeight' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNorm_ne_of_factor_norm_ne_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.WeightSection.rawPointwiseNormSq_ne_of_factor_norm_ne_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.InvariantFiberMetric.pointwiseNormSq_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.InvariantFiberMetric.rawPointwiseNormSq_noninvariant_but_metric_invariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.PaperHalfWeightCertificate.factor_gammaTwoNegOne' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.hyperbolicMeasure_isOpenPosMeasure' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientCompactExhaustion_iUnion_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularBoundary_null' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoOpenCarrier_disjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoOpenCarrier_isFundamental' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoOpenCarrier_frontier_null' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.chosenGammaTwoFundamentalDomain' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoStandardEdge_pairing_param' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParam_range' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modularTileEdgeParamToEdge_surjective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdgeParam_mem' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdgeParam_range' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoActualPolygonEdge.pairingElement_mul_cosetRep' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdgePairing_param' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdgePairing_set' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoActualPolygonEdge.pairedParameter_mem_endpoints' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.chosenGammaTwoExplicitFundamentalPolygon' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoHalfOpenTileCarrier_unique_translate_of_not_boundaryOrbit' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspTruncation_frontier_subset_finitePieces' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoSelectedHorocycleParam_range' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoLiteralFrontierCorners_eq_iUnion_paramImages' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspTruncation_frontier_eq_paramImages' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdges_sum_integral_remove_literalCorners_of_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modular_normSq_denom_eq_lowerRowQuadratic' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoVerticalIncidencePolynomial_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoCircularIncidencePolynomial_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualEdgeSelectedCurveParameters_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualEdgeLiteralCornerParametersAt_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoLiteralFrontierCorners_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdge_integral_remove_literalCorners' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdges_sum_integral_remove_literalCorners' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.setIntegral_diff_finset_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdge_integral_remove_vertices' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoActualPolygonEdges_sum_integral_remove_vertices' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoSelectedHorocycleSegment_integral_remove_vertices' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.chosenGammaTwoThreeCuspTruncationExhaustion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoTopologicalTruncation_exhausts_compacts' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoFundamentalDomain.quotientMeasure_isOpenPosMeasure' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoFundamentalDomain.quotientMeasure_isFiniteMeasureOnCompacts' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoFundamentalDomain.integral_descendInvariant_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.continuous_inverseEtaSection' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.inverseEtaRatio_effective_invariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.inverseEtaRatioQuotient_tsupport' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.inverseEtaQuotientLinear_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.exists_quotientSupport_subset_interior_compactStage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.quotientIntegral_eq_fundamentalDomainIntegral' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.support_orbit_has_truncated_representative' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.support_orbit_has_topologicalTruncation_representative' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.paperDisplayedRaising_defect_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.realJetChainRuleCertificate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.lower_raise_factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.ExponentIndexedDifferentialCore.typed_lower_raise_factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.ExponentIndexedDifferentialCore.typed_raise_lower_factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.greenIdentity_iff_isFormalAdjoint_neg' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.ambientCcInfinity_raising_green_identity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.ambientCcInfinity_green_half_average_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.realSmooth_complexHeightRpow' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoQuotientCompactFluxTailTightness_of_closedCarrierCompactPreimage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoCompactFluxStokes_of_tailTightness_of_pairedPolygon' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoCompactFluxStokes_of_closedCarrierCompactPreimage_of_pairedPolygon' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.planarNullity_does_not_imply_zeroBoundaryIntegral' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.threeCusp_boundary_geometry_available' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.invariantFlux_actualPolygonEdge_pairing' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.IsSmoothQuotientCompactFlux.actualPolygonEdge_pairing' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.weightFiberScale_neg_eq_heightRpow' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreen_sourceFiberFactor_cancellation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreen_targetFactor_reindex' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenScalarDensity_covariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenScalarDensity_mul_moebiusDifferential' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenOneForm_pullback' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_invariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_actualPolygonEdge_orientedCancellation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenScalarDensity_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_quotientCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_isSmoothQuotientCompact_iff_invariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFluxBridge' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.greenBoundaryDefect_eq_zero_of_compactFluxStokes' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.energyDefinite_iff_graph_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.CompactCoreL2.toL2_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.CompactCoreL2.gammaTwoQuotientToL2_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.CompactCoreL2.inverseEtaCoreToL2_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.CompactCoreL2.chosenInverseEtaCoreToL2_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.peterssonInnerProductCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.peterssonForm_self_eq_zero_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.peterssonNormSq_pos' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.wrappedInnerProductCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.norm_sq_eq_peterssonNormSq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.toCompletion_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.denseRange_toCompletion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.isDenseInducing_toCompletion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.closure_range_toCompletion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.inner_toCompletion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.norm_toCompletion' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.WeightCorePetersson.PeterssonCoreSpace.hilbertSpaceWitness' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.completionEnergyOperator_coercive' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.solveCompletionEnergy_existsUnique' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.solveCompletionEnergy_norm_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.graphExtension_norm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.range_graphExtension_eq_closure_range_graph' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.jointExtensions_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.closedJointGraphParametrization_range_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.denseRange_iff_surjective_energyCompletionIsometry' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.CompatibleCoreInclusion.denseRange_graphRange_iff_completion_surjective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.QuotientHilbertCoordinates.CompatibleCoreInclusion.completionEquiv_apply' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.TypedDifferentialAdapter.paperFourCoordinates_energyDefinite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.TypedDifferentialAdapter.denseRange_paperFourCoreMap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.TypedDifferentialAdapter.paperFourCoreMap_injective' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potential_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.discriminant_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.upstairsCoreCutoff_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.quotientCoreCutoff_hasCompactSupport' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.compactInverseEtaPaperCore_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.compactInverseEtaOrbitZeroWeightCore_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.upstairsPotential_scaledCuspTail' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.upstairsPotential_closedTileCarrier_diff_threeCuspTruncation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potential_quotientOutside_threeCuspTruncationImage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potentialForm_conj_symm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potentialEnergy_le_peterssonNormSq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potentialForm_norm_sq_le_energy_mul_energy' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.potentialForm_norm_le_uniformBound_mul_peterssonNorm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.norm_peterssonPotentialOperator_le_uniformBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.peterssonPotentialOperator_apply_core' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.FixedPhaseGraphPotential.graphPotentialOperator_apply_core' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.FixedPhaseGraphPotential.norm_graphPotentialOperator_le_uniformBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.negativePartEnergy_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.hilbertRankOne_isCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.rankOneForm_conj_symm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.rankOneForm_self_nonneg' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.rankOneCuspTail_tail_norm_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitKernelVector_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitCompactKernelForm_isCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitKernelUnitVector_norm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitKernelProjection_idempotent' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitKernelProjection_isCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitShifted_eq_unshifted_add_projection' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmData' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmOperator_unitVector' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmOperator_ker' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmOperator_ker_ne_bot' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmOperator_range_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholmOperator_range' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitUnshiftedFredholm_solvable_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitCanonicalSolution_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitCanonicalSolution_range_eq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.explicitCanonicalInverseNorm_le_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.FixedPhaseGraphKernel.compactCoreKernelForm_core_apply' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.FixedPhaseGraphKernel.compactCoreKernelNontrivialFredholmData' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspTruncation_isCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspTruncation_frontier_null' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspFiniteTileCofinal' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoToSL2Real_isClosedEmbedding' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoEffective_finite_translates_inter_compact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoEffective_stabilizer_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoEffective_exists_compact_nhds_image_smul_eq_self' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwo_compact_translates_locallyFinite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoEffective_compact_translates_locallyFinite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.modular_im_smul_le_heightEnvelope' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.compact_uniform_modularHeight' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoClosedCarrier_inter_preimage_isCompact' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoGeometricCompactCofinal_unconditional' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoThreeCuspCompactCofinal_unconditional' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.compact_relativeQuotientPreimage_subset_truncationInterior' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoGlobalCuspTruncation_exhausts_compacts' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.exists_quotientSupport_subset_threeCuspTruncation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.exists_relativeQuotientSupport_subset_truncationInterior' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.SmoothCompactCore.exists_quotientSupport_subset_globalCuspTruncation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_covariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfIntegralMultiplier.factor_sq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.inverseEtaPaperOrbitFactor_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.d1_inverseEtaPaperOrbitFactor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.gammaTwoMoebiusCoordinate_eq_fraction' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.gammaTwoMoebiusChart_hasStrictDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.d1_comp_gammaTwo_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.wirtingerZ_comp_gammaTwo_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.wirtingerBar_comp_gammaTwo_smul' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.raiseRaw_covariance_of_inverseEtaPaperOrbitCovariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.lowerRaw_covariance_of_inverseEtaPaperOrbitCovariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.FixedPhaseDifferentialWord.eval_covariant' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.mem_inverseEtaFixedPhaseStableCoreSubmodule_iff' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.SmoothCompactCoreGeometry.HasQuotientCompactSupport.mul_right' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.invariantCutoffTimesOrbitSectionRaw_mem' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.invariantCutoffTimesOrbitSection_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.inverseEtaPaperOrbitZeroSeedSection_apply_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.compactInverseEtaFixedPhaseCoreZero_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.compact_green_identity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.compact_lowering_green_identity' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.compact_green_half_average_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightCompactCoordinateGreen.coordinate_averaged_factorization' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoClosedCarrierCompactPreimage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.gammaTwoQuotientCompactFluxTailTightness' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.denseRange_coreMap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.paperPageFour_norm_sq' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhaseGraphCompletion.pageFourHOneEquivPageTwelveGraph' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEquivSmoothCompactWeightCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.denseRange_l2Coordinate' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.denseRange_fullSmoothCoreL2Map' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.denseRange_fullSmoothCoreGraphMap' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.quotientCuspPartitionPiece_hasSum_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.exists_cutoff_eq_one_on_quotientTSupport' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.exists_exactCutoff_fixedPhase_lift' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.coreMap_cuspCutoffOperator_tendsto' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.dense_iUnion_range_coreMap_cuspCutoffOperator' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.exists_raiseCuspCutoffCommutator_eventually_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.potentialShellCoreZero_linearIndependent' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.inverseEtaFixedPhaseCoreZero_not_finiteDimensional' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_dense_domain' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalGreenIdentityAt_iff_isFormalAdjoint_negativeLower' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_isClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalLowerFromSucc_isClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedRaise_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedRaise_le_negativeLower_adjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalJointFromSucc_isClosable_of_components' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedJointFromSucc_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.all_physical_operators_closable_of_pairedPolygon' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.GeometricKernelSupport.explicitQuotientKernel_at_I_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.GeometricKernelSupport.explicitQuotientKernel_hasCompactSupport' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.CompactSeparableKernelPotential.GeometricKernelSupport.explicitQuotientKernel_eq_zero_outside_truncationProduct' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26518:29: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26520:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26534:2: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26631:2: warning: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26702:4: warning: 'change star (inverseEtaPaperOrbitDenom γ z ^ 2) = star (inverseEtaPaperOrbitDenom γ z) ^ 2' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26814:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26814:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26877:18: warning: 'omega' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:26877:18: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27142:0: warning: Definition `Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.inverseEtaFixedPhaseCoreNontrivial` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this
+definition with `@[instance_reducible]`. If it is intentionally semireducible, this warning can be disabled with `set_option warn.classDefReducibility false`.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:27142:0: warning: Definition `inverseEtaFixedPhaseCoreNontrivial` is a proposition; use `theorem` instead of `def`
+
+Note: This linter can be disabled with `set_option linter.defProp false`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.exists_fderiv_upstairsCoreCutoff_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.fixedPhasePositiveWeightGenerator_covariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.fixedPhaseNegativeWeightGenerator_covariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.fixedPhaseIntegralWeightFactor_covariance' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.inverseEtaPaperOrbitAllIndexSeedSection_at_point_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.compactInverseEtaFixedPhaseCoreAllIndex_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.exists_ne_zero_inverseEtaFixedPhaseCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclidean_eq_zero_of_ambient_test_pairings' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_isClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalLowerFromSucc_isClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalJointFromSucc_isClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedRaise_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedLowerFromSucc_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closedJointFromSucc_isClosed' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.all_physical_operators_closable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_adjoint_adjoint_eq_closedRaise' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalLowerFromSucc_adjoint_adjoint_eq_closedLowerFromSucc' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalJointFromSucc_adjoint_adjoint_eq_closedJointFromSucc' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaise_le_adjoint_adjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalLowerFromSucc_le_adjoint_adjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalJointFromSucc_le_adjoint_adjoint' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.quotientCoordinates_jointlyClosable_of_jointGraph' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.coordinates_jointlyClosable' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.successorGraphUnwrap_image_range_graphExtension_eq_closedJointGraph' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.closedCarrier_mem_diff_threeCuspTruncation_of_mem_laterHorocycle' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGreenBoundary.HasZeroThreeCuspTail.eventually_selectedHorocycle_fluxIntegral_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_hasZeroThreeCuspTail' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.DefinitionOneSobolev.FixedPhasePeterssonCoordinates.fixedPhaseGreenFlux_eventually_selectedHorocycle_integral_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalRaisingGreenIdentityOnCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalLoweringGreenIdentityOnCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.physicalGreenHalfAverageOnCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.closure_eq_iff_isEssentialGraphCoreFor' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.eq_domRestrict_of_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.strongCrossAdjointAt_iff_essentialCores' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.strongCrossAdjointAt_iff_maximalAdjointsHavePhysicalCores' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.strongCrossAdjointAt_iff_reverseInclusions' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28337:25: warning: This simp argument is unused:
+  one_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [mul_smul, one_smul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28517:6: warning: 'change
+  (∫ w, upperLift f w ∂((volume.restrict (Set.range UpperHalfPlane.coe)).restrict (UpperHalfPlane.coe '' s))) =
+    ∫ w, upperLift f w ∂((volume : Measure ℂ).restrict (UpperHalfPlane.coe '' s))' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28560:13: warning: Variable name `hx` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _hx
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28577:51: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28577:51: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28644:22: warning: `Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28759:31: warning: This simp argument is unused:
+  pow_two
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.normSq_apply, UpperHalfPlane.coe_re, UpperHalfPlane.coe_im] at hnorm
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28869:14: warning: This simp argument is unused:
+  curvedTileRectangleMap
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [curvedTileJacobian, smul_smul, add_comm, mul_comm, mul_left_comm, mul_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28870:27: warning: This simp argument is unused:
+  mul_comm
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [curvedTileRectangleMap, curvedTileJacobian, smul_smul, add_comm, mul_left_comm, mul_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28870:37: warning: This simp argument is unused:
+  mul_left_comm
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [curvedTileRectangleMap, curvedTileJacobian, smul_smul, add_comm, mul_comm, mul_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28870:52: warning: This simp argument is unused:
+  mul_assoc
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [curvedTileRectangleMap, curvedTileJacobian, smul_smul, add_comm, mul_comm, mul_left_comm]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28871:13: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28909:4: warning: 'simp [curvedTileRectangleMap, curvedTileJacobian, Function.comp_apply, sub_eq_add_neg]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28909:4: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28930:10: warning: This simp argument is unused:
+  curvedTileJacobian
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [sub_eq_add_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:28929:49: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29264:4: warning: 'simp [curvedTilePiolaX, Complex.real_smul, Function.comp_apply, sub_eq_add_neg]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29266:4: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29264:4: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29266:4: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29296:10: warning: This simp argument is unused:
+  curvedTilePiolaY
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Function.comp_apply, Complex.real_smul, sub_eq_add_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29297:6: warning: This simp argument is unused:
+  Complex.real_smul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [curvedTilePiolaY, Function.comp_apply, sub_eq_add_neg]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29295:21: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29297:41: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29316:4: warning: 'simp [curvedTilePiolaX, curvedTileJacobian, Function.comp_apply, sub_eq_add_neg]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29316:4: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29344:4: warning: 'simp [curvedTilePiolaY, Function.comp_apply, Complex.real_smul, sub_eq_add_neg]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29344:4: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29386:10: warning: 'simp [Function.comp_apply]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29397:10: warning: 'simp [Function.comp_apply]' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29386:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29397:10: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:29522:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.setIntegral_heightSq_mul_hyperbolic_eq_complexImage' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.integral_modularCurvedTileTruncation_eq_rectangle' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.integrableOn_heightSq_modularClosedTile_iff_rectangle' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.integral_rectangle_piola_divergence_eq_boundary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.curvedTilePiolaBoundaryIntegral_eq_baseModular' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoCurvilinearTileStokes.setIntegral_heightSq_divergence_modularClosedTile_eq_boundary' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30036:53: warning: This simp argument is unused:
+  hdet
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [UpperHalfPlane.smulFDeriv, UpperHalfPlane.σ, selectedCosetDerivative, selectedCosetDenom,
+    selectedCosetGL_det, smul_eq_mul]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30056:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30074:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30089:41: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, selectedCosetDenom, UpperHalfPlane.ofComplex_apply_of_im_pos hw]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30133:12: warning: This simp argument is unused:
+  Function.comp_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [mul_comm, mul_left_comm, mul_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30133:43: warning: This simp argument is unused:
+  mul_left_comm
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [Function.comp_apply, mul_comm, mul_assoc]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30141:6: warning: This simp argument is unused:
+  Function.comp_def
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [upperLift, selectedCosetDerivative, selectedCosetDenom, UpperHalfPlane.ofComplex_apply_of_im_pos hw,
+    zpow_neg, one_div]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30132:65: warning: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice
+
+Note: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30386:37: warning: This simp argument is unused:
+  sub_zero
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30386:47: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, sub_zero, add_zero]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30472:6: warning: 'ring' tactic does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30472:6: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:30563:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.selectedCoset_smulFDeriv_apply' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.selectedCosetAmbientMap_hasStrictFDerivAt' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.selectedCosetPiola_fluxOneFormValue' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.selectedCosetPiolaX_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.selectedCosetPiolaY_realSmooth' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.divergence_selectedCosetPiola' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.integral_complexImage_selectedCoset_smul_eq_jacobian' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.integral_divergence_selectedHalfOpenTile_eq_piola' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoMoebiusPiola.integral_heightSq_divergence_selectedHalfOpenTile_eq_basePiola' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31162:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.fluxOneFormCLM_apply' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.upperFluxCurveIntegral_symm' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.upperFluxCurveIntegral_trans' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.orientedFluxParameterIntegral_gammaTwo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.orientedFluxSetIntegral_diff_finite' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.modularCircularArc_velocityDenominator_ne_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.modularCircularArc_flux_formula' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.baseHorocycle_fluxIntegral_formula' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.invariantFlux_actualPairedEdge_integral_cancel' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.ComplexBoundaryChain.append_reverse_fluxIntegral_eq_zero' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoOrientedBoundaryIntegral.rectangle_flux_stokes' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreAudit.isEssentialGraphCoreFor_iff_hasSequentialGraphCore' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreAudit.raisingEssentialAdjointCoreAt_iff_sequentialApproximation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreAudit.loweringEssentialAdjointCoreAt_iff_sequentialApproximation' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseEssentialCoreAudit.strongCrossAdjointAt_iff_sequentialApproximations' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31666:57: warning: This simp argument is unused:
+  zero_mul
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re,
+    Complex.mul_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, sub_zero, add_zero, zero_add]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31696:2: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31718:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31719:2: warning: Try this: 
+  letI̵
+
+The goal is a proposition, so `let` is preferred over `letI`.
+The difference between `let` and `letI` is that `letI` inlines the value.
+But this is not relevant for proofs because of proof irrelevance.
+
+Note: This linter can be disabled with `set_option linter.style.haveILetI false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:31726:2: error: Type mismatch
+  hcomp
+has type
+  HasDerivAt (selectedCosetAmbientMap e.1 ∘ modularTileEdgeAmbientParam e.2)
+    ((UpperHalfPlane.smulFDeriv (selectedCosetGL e.1) ↑(modularTileEdgeParam e.2 t))
+      (modularTileEdgeAmbientVelocity e.2 ↑t))
+    ↑t
+but is expected to have type
+  HasDerivAt (actualEdgeAmbientParam e) (actualEdgeNativeVelocity e t) ↑t
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32006:6: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+/home/runner/work/mathlib4/mathlib4/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:32035:8: error: maximum number of errors (1; from option `maxErrors`) reached, exiting
