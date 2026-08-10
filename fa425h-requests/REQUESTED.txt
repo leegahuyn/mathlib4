@@ -1,0 +1,5 @@
+requested_at=2026-08-10T08:55:00+09:00
+strategy=inline hcomp expression under expected theorem target
+fixed_theorem_header=true
+fixed_line_count=60453
+authority=direct Lean CLI
