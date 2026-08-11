@@ -1,0 +1,18 @@
+{
+  "schema": "fa-dynamic-cluster-3194-3195-ringnf-v1",
+  "status": "DIRECT_DIAGNOSTIC_SUGGESTED_PENDING_RECOMPILE",
+  "repairs": [
+    {
+      "declaration_index": 3194,
+      "declaration_name": "euclideanRaiseGauge_periodized_eq_forwardTest",
+      "old_fragment": "  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  rw [hx, hy, hv]\n  ring_nf"
+    },
+    {
+      "declaration_index": 3195,
+      "declaration_name": "euclideanLowerFromSuccGauge_periodized_eq_forwardTest",
+      "old_fragment": "  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  rw [hx, hy, hv]\n  ring_nf"
+    }
+  ]
+}
