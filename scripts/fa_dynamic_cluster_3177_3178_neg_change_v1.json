@@ -1,0 +1,39 @@
+{
+  "schema": "fa-dynamic-cluster-3177-3178-neg-change-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_runs": [31531938880, 31531967553],
+  "repairs": [
+    {
+      "declaration_index": 3177,
+      "declaration_name": "negativePhysicalRaise_intrinsicCutoff_commutator",
+      "replacements": [
+        {
+          "id": "unfold-negated-physical-raise-at-input",
+          "old_fragment": "        (-raisedCoordinate n u) := by\n          rw [LinearPMap.neg_apply, physicalRaise_apply]",
+          "new_fragment": "        (-raisedCoordinate n u) := by\n          change intrinsicPeterssonCuspCutoff N (n + 1)\n            (-(physicalRaise n x)) =\n            intrinsicPeterssonCuspCutoff N (n + 1)\n              (-raisedCoordinate n u)\n          rw [physicalRaise_apply]"
+        },
+        {
+          "id": "unfold-negated-physical-raise-on-core",
+          "old_fragment": "          (x : OrbitPeterssonHilbert n) := by\n      rw [hxCut, LinearPMap.neg_apply, physicalRaise_on_core, hx]",
+          "new_fragment": "          (x : OrbitPeterssonHilbert n) := by\n      rw [hxCut]\n      change -raisedCoordinate n\n          (intrinsicCuspCutoffOperator N n u) +\n          intrinsicRaisePeterssonCommutator N n\n            (l2Coordinate n u) =\n        -(physicalRaise n\n            (l2CoreRangeEquiv n\n              (intrinsicCuspCutoffOperator N n u))) +\n          intrinsicRaisePeterssonCommutator N n\n            (x : OrbitPeterssonHilbert n)\n      rw [physicalRaise_on_core, hx]"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3178,
+      "declaration_name": "negativePhysicalLowerFromSucc_intrinsicCutoff_commutator",
+      "replacements": [
+        {
+          "id": "unfold-negated-physical-lower-at-input",
+          "old_fragment": "        (-lowerFromSuccCoordinate n u) := by\n          rw [LinearPMap.neg_apply, physicalLowerFromSucc_apply]",
+          "new_fragment": "        (-lowerFromSuccCoordinate n u) := by\n          change intrinsicPeterssonCuspCutoff N n\n            (-(physicalLowerFromSucc n x)) =\n            intrinsicPeterssonCuspCutoff N n\n              (-lowerFromSuccCoordinate n u)\n          rw [physicalLowerFromSucc_apply]"
+        },
+        {
+          "id": "unfold-negated-physical-lower-on-core",
+          "old_fragment": "          (x : OrbitPeterssonHilbert (n + 1)) := by\n      rw [hxCut, LinearPMap.neg_apply,\n        physicalLowerFromSucc_on_core, hx]",
+          "new_fragment": "          (x : OrbitPeterssonHilbert (n + 1)) := by\n      rw [hxCut]\n      change -lowerFromSuccCoordinate n\n          (intrinsicCuspCutoffOperator N (n + 1) u) +\n          intrinsicLowerFromSuccPeterssonCommutator N n\n            (l2Coordinate (n + 1) u) =\n        -(physicalLowerFromSucc n\n            (l2CoreRangeEquiv (n + 1)\n              (intrinsicCuspCutoffOperator N (n + 1) u))) +\n          intrinsicLowerFromSuccPeterssonCommutator N n\n            (x : OrbitPeterssonHilbert (n + 1))\n      rw [physicalLowerFromSucc_on_core, hx]"
+        }
+      ]
+    }
+  ]
+}
