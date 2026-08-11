@@ -1,0 +1,30 @@
+{
+  "schema": "fa-dynamic-cluster-2982-3002-followup-v2",
+  "base_direct_tested_source_sha256": "cf3967d80771adb87338c10afb0f33b14c852d1099092e872545b039655dcc6d",
+  "repairs": [
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, Complex.conj_ofReal]",
+      "new_fragment": "      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, starRingEnd_apply,\n          Complex.star_def, Complex.conj_ofReal]"
+    },
+    {
+      "declaration_index": 2990,
+      "declaration_name": "raiseCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [raiseCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.raiseRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right heightC",
+      "new_fragment": "  change HasQuotientCompactSupport\n    (heightC * raiseRaw 0 (upstairsCuspCutoff N))\n  rw [show heightC * raiseRaw 0 (upstairsCuspCutoff N) =\n      raiseRaw 0 (upstairsCuspCutoff N) * heightC by\n    funext z\n    exact mul_comm _ _]\n  exact (HasQuotientCompactSupport.raiseRaw\n    (upstairsCuspCutoff_quotientCompact N) 0).mul_right heightC"
+    },
+    {
+      "declaration_index": 2991,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [lowerCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.lowerRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)",
+      "new_fragment": "  change HasQuotientCompactSupport\n    ((fun z ↦ (heightC z)⁻¹) * lowerRaw 0 (upstairsCuspCutoff N))\n  rw [show (fun z ↦ (heightC z)⁻¹) * lowerRaw 0 (upstairsCuspCutoff N) =\n      lowerRaw 0 (upstairsCuspCutoff N) * (fun z ↦ (heightC z)⁻¹) by\n    funext z\n    exact mul_comm _ _]\n  exact (HasQuotientCompactSupport.lowerRaw\n    (upstairsCuspCutoff_quotientCompact N) 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)"
+    },
+    {
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "old_fragment": "      simp only [norm_mul, Complex.norm_real, abs_of_nonneg hC]\n      exact mul_le_mul_of_nonneg_right\n        (hBound z (gammaTwoOpenCarrier_subset_closedTileCarrier hzOpen))\n        (norm_nonneg _)",
+      "new_fragment": "      simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs,\n        abs_of_nonneg hC]\n      exact mul_le_mul_of_nonneg_right\n        (hBound z (gammaTwoOpenCarrier_subset_closedTileCarrier hzOpen))\n        (norm_nonneg _)"
+    }
+  ]
+}
