@@ -22,45 +22,14 @@ REQUIRED_DECL_INDEX = 2821
 REQUIRED_LINES = 60535
 DECL = "integral_fixedPhaseEuclideanGraphDensity_eq_coordinates"
 
-OLD = '''  have hBase := fixedPhaseEuclideanGauge_normSq_integrable n u
-  have hRaise := fixedPhaseEuclideanGauge_normSq_integrable (n + 1)
-    (InverseEtaFixedPhaseCore.raise n u)
-  have hLower := fixedPhaseEuclideanGauge_normSq_integrable (n - 1)
-    (InverseEtaFixedPhaseCore.lower n u)
-  unfold fixedPhaseEuclideanGraphDensity
-  rw [integral_add ((hBase.const_mul _).add (hRaise.const_mul _))
+OLD = '''  rw [integral_add ((hBase.const_mul _).add (hRaise.const_mul _))
       (hLower.const_mul _),
     integral_add (hBase.const_mul _) (hRaise.const_mul _),
 '''
 
-NEW = '''  have hBase := fixedPhaseEuclideanGauge_normSq_integrable n u
-  have hRaise := fixedPhaseEuclideanGauge_normSq_integrable (n + 1)
-    (InverseEtaFixedPhaseCore.raise n u)
-  have hLower := fixedPhaseEuclideanGauge_normSq_integrable (n - 1)
-    (InverseEtaFixedPhaseCore.lower n u)
-  have hBaseScaled : Integrable (fun z =>
-      logHeightTraceBaseCoeff n * ‖fixedPhaseEuclideanGauge n u z‖ ^ 2)
-      chosenEuclideanCarrierMeasure :=
-    hBase.const_mul (logHeightTraceBaseCoeff n)
-  have hRaiseScaled : Integrable (fun z =>
-      3 * ‖fixedPhaseEuclideanGauge (n + 1)
-        (InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2)
-      chosenEuclideanCarrierMeasure :=
-    hRaise.const_mul 3
-  have hLowerScaled : Integrable (fun z =>
-      3 * ‖fixedPhaseEuclideanGauge (n - 1)
-        (InverseEtaFixedPhaseCore.lower n u) z‖ ^ 2)
-      chosenEuclideanCarrierMeasure :=
-    hLower.const_mul 3
-  have hBaseRaise : Integrable (fun z =>
-      logHeightTraceBaseCoeff n * ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 +
-        3 * ‖fixedPhaseEuclideanGauge (n + 1)
-          (InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2)
-      chosenEuclideanCarrierMeasure :=
-    hBaseScaled.add hRaiseScaled
-  unfold fixedPhaseEuclideanGraphDensity
-  rw [integral_add hBaseRaise hLowerScaled,
-    integral_add hBaseScaled hRaiseScaled,
+NEW = '''  rw [integral_add (f := fun z => logHeightTraceBaseCoeff n * ‖fixedPhaseEuclideanGauge n u z‖ ^ 2 + 3 * ‖fixedPhaseEuclideanGauge (n + 1) (InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2) (g := fun z => 3 * ‖fixedPhaseEuclideanGauge (n - 1) (InverseEtaFixedPhaseCore.lower n u) z‖ ^ 2) ((hBase.const_mul _).add (hRaise.const_mul _))
+      (hLower.const_mul _),
+    integral_add (f := fun z => logHeightTraceBaseCoeff n * ‖fixedPhaseEuclideanGauge n u z‖ ^ 2) (g := fun z => 3 * ‖fixedPhaseEuclideanGauge (n + 1) (InverseEtaFixedPhaseCore.raise n u) z‖ ^ 2) (hBase.const_mul _) (hRaise.const_mul _),
 '''
 
 
@@ -95,13 +64,15 @@ def main() -> None:
         raise RuntimeError(f"expected one target fragment in {DECL}, got {region.count(OLD)}")
     replaced = region.replace(OLD, NEW, 1)
     out = text[:start] + replaced + text[region_end:]
+    if len(out.splitlines()) != REQUIRED_LINES:
+        raise RuntimeError(f"FA496 must preserve line count: {len(out.splitlines())}")
     SRC.write_text(out)
     after_sha = sha(out)
     meta = {
         "declaration": DECL,
         "declaration_index": REQUIRED_DECL_INDEX,
-        "strategy": "type the three scaled integrable witnesses and their pointwise sum before integral_add so rewrite inference uses lambda-shaped integrands",
-        "matrix_variant": "typed_pointwise_integrable_witnesses",
+        "strategy": "pin integral_add implicit f/g to the exact pointwise lambda shapes while reusing the existing integrability witnesses",
+        "matrix_variant": "named_pointwise_integrands",
         "required_fa495_evidence_run_id": REQUIRED_FA495_RUN,
         "required_fa495_evidence_job_id": REQUIRED_FA495_JOB,
         "required_fa495_evidence_head_sha": REQUIRED_FA495_HEAD,
