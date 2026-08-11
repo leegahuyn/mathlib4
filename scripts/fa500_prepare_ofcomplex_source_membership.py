@@ -36,13 +36,13 @@ OLD_FRAGMENT = """  intro y hy
   change 0 < (Complex.mk t y).im
   simpa using hy"""
 NEW_FRAGMENT = """  intro y hy
-  simpa [UpperHalfPlane.ofComplex] using
-    (show Complex.mk t y ∈ Set.range ((↑) : ℍ → ℂ) from ⟨(⟨Complex.mk t y, by simpa using hy⟩ : ℍ), rfl⟩)"""
+  have hy' : 0 < y := by simpa using hy
+  simpa [UpperHalfPlane.ofComplex] using hy'"""
 
 VARIANTS = {
     "explicit_range_witness": (
         ((OLD_FRAGMENT, NEW_FRAGMENT),),
-        "reduce ofComplex.source to the coercion range and provide the positive-imaginary UpperHalfPlane witness explicitly",
+        "simplify ofComplex.source membership to positive imaginary part and close it with the Ioi hypothesis",
     ),
 }
 
