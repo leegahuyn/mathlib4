@@ -1,0 +1,55 @@
+name: Codex FA490 next-context diagnostic
+
+on:
+  push:
+    branches:
+      - fix/fa489-hderiv-explicit-continuity-20260811
+    paths:
+      - .github/workflows/codex-fa490-next-context.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  context:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Materialize exact FA488 candidate then FA489 patch and print next context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          export FA488_EVIDENCE_RUN_ID=31456106488
+          export FA488_EVIDENCE_JOB_ID=93670098634
+          export FA488_EVIDENCE_HEAD_SHA=ca9f7071476b843379f67765ca43ba7cc327d6be
+          export FA488_EVIDENCE_SOURCE_SHA256=efabb4d229666d7a6e292e853aa583833ae6c99d0bb6d65689168015eccb93ca
+          export FA488_FIRST_ERROR_LINE=35337
+          export FA488_FIRST_ERROR_COL=4
+          export FA488_FRONTIER_DECLARATION=selectedLogHeightEnergyDensity_continuous
+          export FA488_FRONTIER_INDEX=2806
+          export FA489_VARIANT=reuse_local_continuity
+          python3 scripts/fa489_prepare_hderiv_explicit_continuity.py > /tmp/prepare.txt
+          {
+            echo '## FA490 next-context diagnostic'
+            echo
+            echo "- run_id: \`${GITHUB_RUN_ID}\`"
+            echo "- head_sha: \`${GITHUB_SHA}\`"
+            echo '- authority: source context only; no Lean PASS claim'
+            echo
+            echo '```lean'
+            sed -n '35320,35460p' PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | nl -ba -v35320 -w5 -s': '
+            echo '```'
+            echo
+            echo '### prepare metadata'
+            echo '```text'
+            tail -80 /tmp/prepare.txt
+            echo '```'
+          } > /tmp/context.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/context.md)"
