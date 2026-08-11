@@ -9,7 +9,7 @@ export FA491_FIRST_ERROR_LINE=35507
 export FA491_FIRST_ERROR_COL=6
 export FA491_FRONTIER_DECLARATION=norm_selectedCuspCoreTrace_sq_le_logHeightEnergy
 export FA491_FRONTIER_INDEX=2812
-export FA492_VARIANT=reuse_hh_endpoint
+export FA492_VARIANT=typed_pointwise_endpoint
 
 python3 - <<'PY'
 from pathlib import Path
