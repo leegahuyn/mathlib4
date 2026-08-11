@@ -23,6 +23,14 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Publish probe start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA487 mk_eq_add_mul_I probe started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- scope: standalone API proof only; not FA PASS"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
       - name: Install pinned Lean and Mathlib cache
         shell: bash
         run: |
@@ -76,7 +84,7 @@ jobs:
         shell: bash
         run: |
           body=$(cat <<EOF
-          ## FA487 mk_eq_add_mul_I continuity proof probe v2
+          ## FA487 mk_eq_add_mul_I continuity proof probe v3
 
           - run_id: \`${GITHUB_RUN_ID}\`
           - head_sha: \`${GITHUB_SHA}\`
