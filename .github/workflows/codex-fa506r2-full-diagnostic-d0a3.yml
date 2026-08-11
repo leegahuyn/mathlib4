@@ -1,0 +1,446 @@
+name: Codex FA506-r2 d0a3 full direct Lean diagnostics
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa506r2-full-diagnostic-d0a3.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: codex-fa506r2-full-diagnostic-d0a3
+  cancel-in-progress: true
+
+env:
+  FA_COMPILE_MAX_ERRORS: "2000"
+  FA505_EVIDENCE_STATUS: "VERIFIED"
+  FA505_EVIDENCE_LIVE_ATTESTED: "PENDING_LIVE_ATTESTATION"
+  FA505_EVIDENCE_RUN_ID: "31491148625"
+  FA505_EVIDENCE_JOB_ID: "93777709713"
+  FA505_EVIDENCE_HEAD_SHA: "c028874f5fbec87834cb1d88813e0709eca6a156"
+  FA505_EVIDENCE_ARTIFACT_ID: "9101313453"
+  FA505_EVIDENCE_ARTIFACT_NAME: "codex-fa505-height-graph-strip-fubini-c028874f5fbec87834cb1d88813e0709eca6a156"
+  FA505_EVIDENCE_ARTIFACT_SIZE: "1166886"
+  FA505_EVIDENCE_ARTIFACT_DIGEST: "sha256:446db5534f507b16aef407d383e79df42b32f4790644b7cf2cefeeff9abf1596"
+  FA505_EVIDENCE_SOURCE_SHA256: "c56e320e31dbb4c2d80a7b6c05e3417b9683fe982a9f006bbd6166add95ea9e7"
+  FA505_EVIDENCE_SOURCE_BYTES: "2700162"
+  FA505_EVIDENCE_SOURCE_LINES: "60539"
+  FA505_CLASSIFICATION: "LEAN_FAILURE"
+  FA505_INFRA_REASONS: "[]"
+  FA505_MOCK2_EXIT: "0"
+  FA505_MOCK2_ADVANCED_EXIT: "0"
+  FA505_FA_EXIT: "1"
+  FA505_PREVIOUS_FRONTIER_DECLARATION: "integral_selectedHeightGraphDensity_stripTail_eq_iterated"
+  FA505_PREVIOUS_FRONTIER_INDEX: "2835"
+  FA505_FIRST_ERROR_DECLARATION: "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip"
+  FA505_FIRST_ERROR_INDEX: "2839"
+  FA505_FIRST_ERROR_LINE: "36111"
+  FA505_FIRST_ERROR_COL: "4"
+
+  FA506_EVIDENCE_STATUS: "VERIFIED"
+  FA506_EVIDENCE_LIVE_ATTESTED: "PENDING_LIVE_ATTESTATION"
+  FA506_EVIDENCE_RUN_ID: "31491992855"
+  FA506_EVIDENCE_JOB_ID: "93780446502"
+  FA506_EVIDENCE_HEAD_SHA: "156dfc13d32a2b08a00d6d0e65bf98c3d8a90555"
+  FA506_EVIDENCE_ARTIFACT_ID: "9101728556"
+  FA506_EVIDENCE_ARTIFACT_NAME: "codex-fa506-complex-height-strip-coe-156dfc13d32a2b08a00d6d0e65bf98c3d8a90555"
+  FA506_EVIDENCE_ARTIFACT_SIZE: "1173001"
+  FA506_EVIDENCE_ARTIFACT_DIGEST: "sha256:d4c11c80465f0e1661effce847602c982a2419d941aa4d99e57fc697f8814d50"
+  FA506_EVIDENCE_SOURCE_SHA256: "fbf76ffa75885c76492c6795ac907d47693d964d30043fd8cced93ca71719611"
+  FA506_EVIDENCE_SOURCE_BYTES: "2700268"
+  FA506_EVIDENCE_SOURCE_LINES: "60541"
+  FA506_CLASSIFICATION: "LEAN_FAILURE"
+  FA506_INFRA_REASONS: "[]"
+  FA506_MOCK2_EXIT: "0"
+  FA506_MOCK2_ADVANCED_EXIT: "0"
+  FA506_FA_EXIT: "1"
+  FA506_PREVIOUS_FRONTIER_DECLARATION: "integral_selectedHeightGraphDensity_stripTail_eq_iterated"
+  FA506_PREVIOUS_FRONTIER_INDEX: "2835"
+  FA506_FIRST_ERROR_DECLARATION: "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip"
+  FA506_FIRST_ERROR_INDEX: "2839"
+  FA506_FIRST_ERROR_LINE: "36111"
+  FA506_FIRST_ERROR_COL: "4"
+
+jobs:
+  direct:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: membership_plus_frontier_batch
+            expected_sha256: d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec
+            expected_bytes: "2702252"
+            expected_lines: "60573"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA506R2_VARIANT: ${{ matrix.variant }}
+      FA506R2_EXPECTED_SHA256: ${{ matrix.expected_sha256 }}
+      FA506R2_EXPECTED_BYTES: ${{ matrix.expected_bytes }}
+      FA506R2_EXPECTED_LINES: ${{ matrix.expected_lines }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Gate exact hydrated identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+
+          exact = {
+              "FA505_EVIDENCE_STATUS": "VERIFIED",
+              "FA505_EVIDENCE_RUN_ID": "31491148625",
+              "FA505_EVIDENCE_JOB_ID": "93777709713",
+              "FA505_EVIDENCE_HEAD_SHA": "c028874f5fbec87834cb1d88813e0709eca6a156",
+              "FA505_EVIDENCE_ARTIFACT_ID": "9101313453",
+              "FA505_EVIDENCE_ARTIFACT_NAME": "codex-fa505-height-graph-strip-fubini-c028874f5fbec87834cb1d88813e0709eca6a156",
+              "FA505_EVIDENCE_ARTIFACT_SIZE": "1166886",
+              "FA505_EVIDENCE_ARTIFACT_DIGEST": "sha256:446db5534f507b16aef407d383e79df42b32f4790644b7cf2cefeeff9abf1596",
+              "FA505_EVIDENCE_SOURCE_SHA256": "c56e320e31dbb4c2d80a7b6c05e3417b9683fe982a9f006bbd6166add95ea9e7",
+              "FA506_EVIDENCE_STATUS": "VERIFIED",
+              "FA506_EVIDENCE_RUN_ID": "31491992855",
+              "FA506_EVIDENCE_JOB_ID": "93780446502",
+              "FA506_EVIDENCE_HEAD_SHA": "156dfc13d32a2b08a00d6d0e65bf98c3d8a90555",
+              "FA506_EVIDENCE_ARTIFACT_ID": "9101728556",
+              "FA506_EVIDENCE_ARTIFACT_NAME": "codex-fa506-complex-height-strip-coe-156dfc13d32a2b08a00d6d0e65bf98c3d8a90555",
+              "FA506_EVIDENCE_ARTIFACT_SIZE": "1173001",
+              "FA506_EVIDENCE_ARTIFACT_DIGEST": "sha256:d4c11c80465f0e1661effce847602c982a2419d941aa4d99e57fc697f8814d50",
+              "FA506_EVIDENCE_SOURCE_SHA256": "fbf76ffa75885c76492c6795ac907d47693d964d30043fd8cced93ca71719611",
+              "FA_COMPILE_MAX_ERRORS": "2000",
+          }
+          for key, expected in exact.items():
+              actual = os.environ.get(key)
+              if actual != expected:
+                  raise SystemExit(f"{key}: {actual!r} != {expected!r}")
+          common = {
+              "CLASSIFICATION": "LEAN_FAILURE",
+              "INFRA_REASONS": "[]",
+              "MOCK2_EXIT": "0",
+              "MOCK2_ADVANCED_EXIT": "0",
+              "FA_EXIT": "1",
+              "PREVIOUS_FRONTIER_DECLARATION": "integral_selectedHeightGraphDensity_stripTail_eq_iterated",
+              "PREVIOUS_FRONTIER_INDEX": "2835",
+              "FIRST_ERROR_DECLARATION": "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip",
+              "FIRST_ERROR_INDEX": "2839",
+              "FIRST_ERROR_LINE": "36111",
+              "FIRST_ERROR_COL": "4",
+          }
+          for prefix in ("FA505", "FA506"):
+              for suffix, expected in common.items():
+                  key = f"{prefix}_{suffix}"
+                  if os.environ.get(key) != expected:
+                      raise SystemExit(f"{key} mismatch")
+          variants = {
+              "membership_plus_frontier_batch": (
+                  "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+                  "2702252", "60573",
+              ),
+          }
+          variant = os.environ.get("FA506R2_VARIANT", "")
+          if variant not in variants:
+              raise SystemExit("unsupported matrix variant")
+          observed = (
+              os.environ.get("FA506R2_EXPECTED_SHA256"),
+              os.environ.get("FA506R2_EXPECTED_BYTES"),
+              os.environ.get("FA506R2_EXPECTED_LINES"),
+          )
+          if observed != variants[variant]:
+              raise SystemExit("matrix candidate identity mismatch")
+          for prefix in ("FA505", "FA506"):
+              if os.environ.get(f"{prefix}_EVIDENCE_LIVE_ATTESTED") != \
+                      "PENDING_LIVE_ATTESTATION":
+                  raise SystemExit("live attestation sentinel drift")
+          PY
+          printf '%s  %s\n' \
+            0ecf4d6ee1b0a4e1aef094fe35e76c8c62a6693065b7efa4f572a4907ddcc648 \
+            scripts/fa506r2_collect_full_diagnostics.py \
+            2426f9f0e6fa23290928e1c8f03e0e291d6b1014c07b2fd75c3f628c4a2b99f3 \
+            scripts/fa506r2_full_diagnostic_d0a3_candidate_ci.sh | sha256sum -c -
+
+      - name: Live-attest FA505 and FA506 evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for prefix in FA505 FA506; do
+            lower="${prefix,,}"
+            run_var="${prefix}_EVIDENCE_RUN_ID"
+            job_var="${prefix}_EVIDENCE_JOB_ID"
+            artifact_var="${prefix}_EVIDENCE_ARTIFACT_ID"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${!run_var}" \
+              > "/tmp/fa506r2-${lower}-run.json"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${!job_var}" \
+              > "/tmp/fa506r2-${lower}-job.json"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${!artifact_var}" \
+              > "/tmp/fa506r2-${lower}-artifact.json"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${!artifact_var}/zip" \
+              > "/tmp/fa506r2-${lower}-artifact.zip"
+            mkdir -p "/tmp/fa506r2-${lower}-artifact"
+            unzip -q "/tmp/fa506r2-${lower}-artifact.zip" \
+              -d "/tmp/fa506r2-${lower}-artifact"
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          branch = "codex/fa-qym-cleanbuild-final-20260811-fast"
+          repository = os.environ["GITHUB_REPOSITORY"]
+          specs = {
+              "fa505": {
+                  "prefix": "FA505",
+                  "workflow": ".github/workflows/codex-fa505-height-graph-strip-fubini.yml",
+                  "marker": "codex-fa505-height-graph-strip-fubini",
+                  "source": "c56e320e31dbb4c2d80a7b6c05e3417b9683fe982a9f006bbd6166add95ea9e7",
+                  "bytes": 2700162,
+                  "lines": 60539,
+              },
+              "fa506": {
+                  "prefix": "FA506",
+                  "workflow": ".github/workflows/codex-fa506-complex-height-strip-coe.yml",
+                  "marker": "codex-fa506-complex-height-strip-coe",
+                  "source": "fbf76ffa75885c76492c6795ac907d47693d964d30043fd8cced93ca71719611",
+                  "bytes": 2700268,
+                  "lines": 60541,
+              },
+          }
+
+          def sha256(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          result = {
+              "schema": "fa506r2-upstream-evidence-v1",
+              "repository": repository,
+              "target_branch": branch,
+          }
+          all_pass = True
+          for key, spec in specs.items():
+              prefix = spec["prefix"]
+              run_id = int(os.environ[f"{prefix}_EVIDENCE_RUN_ID"])
+              job_id = int(os.environ[f"{prefix}_EVIDENCE_JOB_ID"])
+              head = os.environ[f"{prefix}_EVIDENCE_HEAD_SHA"]
+              artifact_id = int(os.environ[f"{prefix}_EVIDENCE_ARTIFACT_ID"])
+              artifact_name = os.environ[f"{prefix}_EVIDENCE_ARTIFACT_NAME"]
+              artifact_size = int(os.environ[f"{prefix}_EVIDENCE_ARTIFACT_SIZE"])
+              artifact_digest = os.environ[f"{prefix}_EVIDENCE_ARTIFACT_DIGEST"]
+              run = json.loads(Path(f"/tmp/fa506r2-{key}-run.json").read_text())
+              job = json.loads(Path(f"/tmp/fa506r2-{key}-job.json").read_text())
+              artifact = json.loads(
+                  Path(f"/tmp/fa506r2-{key}-artifact.json").read_text()
+              )
+              archive = Path(f"/tmp/fa506r2-{key}-artifact.zip").read_bytes()
+              extracted = Path(f"/tmp/fa506r2-{key}-artifact")
+              metric_hits = [
+                  path for path in extracted.rglob("METRIC.json")
+                  if spec["marker"] in path.as_posix()
+              ]
+              source_hits = [
+                  path for path in extracted.rglob("Mock2_FunctionalAnalysis.lean")
+                  if "PrimalitySheafVerification" in path.as_posix()
+              ]
+              if len(metric_hits) != 1 or not source_hits:
+                  raise RuntimeError(f"{prefix}: artifact evidence files missing")
+              metric = json.loads(metric_hits[0].read_text())
+              source_payloads = [path.read_bytes() for path in source_hits]
+              workflow_run = artifact.get("workflow_run") or {}
+              checks = {
+                  "run_id": run.get("id") == run_id,
+                  "run_repo": (run.get("repository") or {}).get("full_name")
+                      == repository,
+                  "run_completed_failure": run.get("status") == "completed"
+                      and run.get("conclusion") == "failure",
+                  "run_branch_head": run.get("head_branch") == branch
+                      and run.get("head_sha") == head,
+                  "run_workflow": run.get("path") == spec["workflow"],
+                  "job_id_link": job.get("id") == job_id
+                      and job.get("run_id") == run_id,
+                  "job_completed_failure": job.get("status") == "completed"
+                      and job.get("conclusion") == "failure",
+                  "job_branch_head": job.get("head_branch") == branch
+                      and job.get("head_sha") == head,
+                  "artifact_identity": artifact.get("id") == artifact_id
+                      and artifact.get("name") == artifact_name
+                      and artifact.get("size_in_bytes") == artifact_size
+                      and artifact.get("digest") == artifact_digest,
+                  "artifact_live": artifact.get("expired") is False,
+                  "artifact_run": workflow_run.get("id") == run_id
+                      and workflow_run.get("head_branch") == branch
+                      and workflow_run.get("head_sha") == head,
+                  "archive_digest": "sha256:" + sha256(archive)
+                      == artifact_digest,
+                  "metric_identity": metric.get("classification") == "LEAN_FAILURE"
+                      and metric.get("source_sha256") == spec["source"]
+                      and metric.get("source_metadata_identity") is True
+                      and metric.get("line_count") == spec["lines"],
+                  "metric_direct_exits": metric.get("Mock2_exit") == 0
+                      and metric.get("Mock2_Advanced_exit") == 0
+                      and metric.get("FA_exit") == 1
+                      and metric.get("infra_reasons") == []
+                      and metric.get("all_required_lean_executed") is True
+                      and metric.get("maxErrors_cap") == 32,
+                  "metric_frontier": metric.get("FA_first_actual_error_line")
+                      == 36111
+                      and metric.get("FA_first_actual_error_col") == 4
+                      and metric.get("FA_first_error_declaration")
+                      == "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip"
+                      and metric.get("FA_error_declaration_index") == 2839,
+                  "source_sha": all(
+                      sha256(data) == spec["source"] for data in source_payloads
+                  ),
+                  "source_bytes": all(
+                      len(data) == spec["bytes"] for data in source_payloads
+                  ),
+                  "source_lines": all(
+                      len(data.decode("utf-8").splitlines()) == spec["lines"]
+                      for data in source_payloads
+                  ),
+              }
+              passed = all(checks.values())
+              all_pass = all_pass and passed
+              result[key] = {
+                  "run_id": run_id,
+                  "job_id": job_id,
+                  "head_sha": head,
+                  "artifact_id": artifact_id,
+                  "artifact_name": artifact_name,
+                  "artifact_size": artifact_size,
+                  "artifact_digest": artifact_digest,
+                  "checks": checks,
+                  "all_checks_passed": passed,
+              }
+          result["all_checks_passed"] = all_pass
+          path = Path("/tmp/fa506r2-upstream-attestation.json")
+          path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          if not all_pass:
+              raise SystemExit("FA506-r2 upstream attestation failed")
+          PY
+
+          attestation_sha="$(sha256sum /tmp/fa506r2-upstream-attestation.json | awk '{print $1}')"
+          {
+            echo "FA505_EVIDENCE_LIVE_ATTESTED=VERIFIED"
+            echo "FA506_EVIDENCE_LIVE_ATTESTED=VERIFIED"
+            echo "FA506R2_UPSTREAM_ATTESTATION_PATH=/tmp/fa506r2-upstream-attestation.json"
+            echo "FA506R2_UPSTREAM_ATTESTATION_SHA256=${attestation_sha}"
+          } >> "$GITHUB_ENV"
+
+      - name: Run exact d0a3 candidate with full direct Lean diagnostics
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa506r2_full_diagnostic_d0a3_candidate_ci.sh \
+            2>&1 | tee "/tmp/fa506r2-full-diagnostic-d0a3.log"
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "script_exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Build FA506-r2 full-run evidence report
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.script_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          variant = os.environ["FA506R2_VARIANT"]
+          root = Path("build-logs/codex-fa506r2-full-diagnostic-d0a3")
+          metric_path = root / "candidates/norms/METRIC.json"
+          report = {
+              "schema": "fa506r2-full-diagnostic-result-v1",
+              "variant": variant,
+              "run_id": os.environ.get("GITHUB_RUN_ID"),
+              "head_sha": os.environ.get("GITHUB_SHA"),
+              "script_exit": os.environ.get("SCRIPT_EXIT"),
+              "expected_candidate_sha256": os.environ["FA506R2_EXPECTED_SHA256"],
+              "expected_candidate_bytes": int(os.environ["FA506R2_EXPECTED_BYTES"]),
+              "expected_candidate_lines": int(os.environ["FA506R2_EXPECTED_LINES"]),
+          }
+          if metric_path.exists():
+              report["metric"] = json.loads(metric_path.read_text())
+          else:
+              report["metric"] = None
+              report["metric_missing"] = True
+          Path("/tmp/fa506r2-full-diagnostic-d0a3-report.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Index every direct Lean diagnostic without a parse cap
+        if: always()
+        id: inventory
+        shell: bash
+        run: |
+          set +e
+          root="build-logs/codex-fa506r2-full-diagnostic-d0a3/candidates/norms"
+          python3 scripts/fa506r2_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --log "${root}/Mock2_FunctionalAnalysis.log" \
+            --metric "${root}/METRIC.json" \
+            --command "${root}/Mock2_FunctionalAnalysis.command" \
+            --executed "${root}/Mock2_FunctionalAnalysis.executed" \
+            --output "${root}/FULL_DIAGNOSTICS.json"
+          code=$?
+          set -e
+          echo "inventory_exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload exact d0a3 source and complete direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa506r2-full-diagnostic-d0a3-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa506r2-full-diagnostic-d0a3
+            /tmp/fa506r2-full-diagnostic-d0a3.log
+            /tmp/fa506r2-full-diagnostic-d0a3-report.json
+            /tmp/fa506r2-upstream-attestation.json
+            /tmp/fa506r2-fa505-run.json
+            /tmp/fa506r2-fa505-job.json
+            /tmp/fa506r2-fa505-artifact.json
+            /tmp/fa506r2-fa506-run.json
+            /tmp/fa506r2-fa506-job.json
+            /tmp/fa506r2-fa506-artifact.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Preserve direct FA exit
+        if: always()
+        env:
+          INVENTORY_EXIT: ${{ steps.inventory.outputs.inventory_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          inventory_exit = os.environ.get("INVENTORY_EXIT", "")
+          if inventory_exit != "0":
+              raise SystemExit(86)
+          path = Path(
+              "build-logs/codex-fa506r2-full-diagnostic-d0a3/"
+              "candidates/norms/METRIC.json"
+          )
+          if not path.exists():
+              raise SystemExit(2)
+          raise SystemExit(int(json.loads(path.read_text()).get("FA_exit", 2)))
+          PY
