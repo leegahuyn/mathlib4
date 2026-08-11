@@ -1,0 +1,53 @@
+name: Codex FA500 UpperHalfPlane membership smoke
+
+on:
+  push:
+    branches:
+      - fix/fa500-height-basepoint-source-membership-20260811
+    paths:
+      - .github/workflows/codex-fa500-membership-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          $HOME/.elan/bin/lake exe cache get
+      - name: Test membership proof variants
+        id: smoke
+        shell: bash
+        run: |
+          cat > /tmp/fa500_smoke.lean <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
+          open Complex Set
+          open scoped UpperHalfPlane
+
+          example (t y : ℝ) (hy : y ∈ Set.Ioi 0) :
+              Complex.mk t y ∈ UpperHalfPlane.ofComplex.source := by
+            simpa [UpperHalfPlane.ofComplex] using hy
+          LEAN
+          lake env lean /tmp/fa500_smoke.lean
+      - name: Report smoke
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          body="## FA500 membership smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- status: \`${STATUS}\`\n- proof: \`simpa [UpperHalfPlane.ofComplex] using hy\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
