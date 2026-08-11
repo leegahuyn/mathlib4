@@ -1,0 +1,82 @@
+# Independent authoritative FA491 run bound to the latest FA490 evidence.
+name: Codex FA491 latest-authority strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa491-strip-fubini-prod-restrict-20260811
+    paths:
+      - .github/workflows/codex-fa491-latest-authority.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa491-latest-authority
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish latest-authority identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA491 latest-authority observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- upstream_FA490_run: \`31457497428\`\n- upstream_FA490_job: \`93674247669\`\n- upstream_FA490_source: \`e1fd4d4370c14185f81faea26e09b8611bf78e19e583026e55d8ee7adbccd40d\`\n- frontier: \`35483:2 integral_selectedLogHeightEnergyDensity_stripTail_eq_iterated / index 2811\`\n- candidate: \`rewrite prod_restrict then integral_prod\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA491 direct Lean loop
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa491_strip_fubini_prod_restrict_candidate_ci.sh 2>&1 | tee /tmp/fa491-latest.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report latest-authority evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa491-latest.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa491-strip-fubini-prod-restrict/candidates/norms')
+          p=out/'METRIC.json'; srcp=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa491-latest.log')
+          xs=['## FA491 latest-authority observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error', '```text', str(m.get('FA_first_error_message',''))[:6000], '```']
+          else: xs.append('- METRIC.json: `MISSING`')
+          if srcp.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=srcp.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+28)
+              xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists(): xs += ['', '### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])[-12000:],'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa491-latest.md)"
+      - name: Preserve result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
