@@ -19,15 +19,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BASE_RUN_ID: "31521280578"
-  BASE_EXPECTED_HEAD: "61ef537b9eab9217866682f9bce02c7a1773ea83"
-  BASE_EXPECTED_WORKFLOW: ".github/workflows/codex-fa-frontier-2982-3047-v2.yml"
+  BASE_RUN_ID: "31522791760"
+  BASE_EXPECTED_HEAD: "2966a7242635b5637988c7e392eef0747b44459c"
+  BASE_EXPECTED_WORKFLOW: ".github/workflows/codex-fa-frontier-3029-3047-v3.yml"
   BASE_EXPECTED_FIRST_INDEX: "3068"
 
 jobs:
   frontier:
     runs-on: ubuntu-24.04
-    timeout-minutes: 320
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -43,7 +43,7 @@ jobs:
           set -euo pipefail
           OUT=build-logs/codex-fa-frontier-3068-3074-v1
           mkdir -p "$OUT" /tmp/fa-3068-base
-          for _ in $(seq 1 120); do
+          for _ in $(seq 1 150); do
             gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" > "$OUT/base-run.json"
             status="$(python3 - <<'PY'
           import json
@@ -69,9 +69,9 @@ jobs:
           js=[j for j in jobs if j.get('name')=='frontier']
           if len(js)!=1: raise SystemExit('expected one frontier job')
           j=js[0]; steps={s.get('name'):s for s in j.get('steps',[])}
-          if steps.get('Direct full-source cumulative diagnostic compile',{}).get('conclusion')!='success': raise SystemExit('base direct compile step not successful')
+          if steps.get('Direct full-source diagnostic compile',{}).get('conclusion')!='success': raise SystemExit('base direct compile step not successful')
           arts=json.load(open('build-logs/codex-fa-frontier-3068-3074-v1/base-artifacts.json')).get('artifacts',[])
-          xs=[a for a in arts if a.get('name','').startswith('codex-fa-frontier-2982-3047-v2-') and a.get('expired') is False]
+          xs=[a for a in arts if a.get('name','').startswith('codex-fa-frontier-3029-3047-v3-') and a.get('expired') is False]
           if len(xs)!=1: raise SystemExit('expected one live base artifact')
           a=xs[0]
           print('BASE_JOB_ID='+str(j['id']))
