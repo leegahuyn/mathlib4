@@ -1,0 +1,40 @@
+name: Codex FA next source context 2
+
+on:
+  push:
+    branches:
+      - fix/fa499-eta-authority-stable-20260811
+    paths:
+      - .github/workflows/codex-fa-next-source-context-2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Post source context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          {
+            echo '## FA source-only context 35980-36550'
+            echo
+            echo "- run_id: \`${GITHUB_RUN_ID}\`"
+            echo '- purpose: read-only next-frontier preparation; no Lean compile'
+            echo
+            echo '```lean'
+            sed -n '35980,36550p' PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | nl -ba -v35980
+            echo '```'
+          } >/tmp/context.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/context.md)"
