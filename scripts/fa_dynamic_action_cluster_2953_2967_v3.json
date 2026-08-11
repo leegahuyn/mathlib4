@@ -1,0 +1,24 @@
+{
+  "schema": "fa-dynamic-action-cluster-2953-2967-v3",
+  "base_direct_tested_source_sha256": "c6dcb06320c09036b8810944c5f4e0f35e467783427df6fd8d5c29576b18d679",
+  "repairs": [
+    {
+      "declaration_index": 2953,
+      "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
+      "old_fragment": "  · change gamma • ((gamma⁻¹ : GammaTwo) • z) = z\n    rw [← mul_smul, mul_inv, one_smul]",
+      "new_fragment": "  · change (gamma * gamma⁻¹) • z = z\n    rw [mul_inv, one_smul]"
+    },
+    {
+      "declaration_index": 2958,
+      "declaration_name": "gammaTwoPeriodizationTerm_mul_smul",
+      "old_fragment": "    have hact :\n        (gamma : GammaTwo) • ((gamma⁻¹ : GammaTwo) • z) = z := by\n      rw [← mul_smul, mul_inv, one_smul]",
+      "new_fragment": "    have hact :\n        (gamma : GammaTwo) • ((gamma⁻¹ : GammaTwo) • z) = z := by\n      change (gamma * gamma⁻¹) • z = z\n      rw [mul_inv, one_smul]"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "old_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    rw [← mul_smul, mul_inv, one_smul]",
+      "new_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    change (gamma * gamma⁻¹) • z = z\n    rw [mul_inv, one_smul]"
+    }
+  ]
+}
