@@ -1,0 +1,50 @@
+name: Codex FA suffix risk index
+
+on:
+  push:
+    branches:
+      - fix/fa499-eta-authority-stable-20260811
+    paths:
+      - .github/workflows/codex-fa-suffix-risk-index.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  index:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build compact suffix index
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/index.md
+          from pathlib import Path
+          import re, os
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          lines=p.read_text(encoding='utf-8',errors='replace').splitlines()
+          start=35690
+          decl=re.compile(r'^\s*(?:(?:noncomputable|private|protected|local)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([A-Za-z_][A-Za-z0-9_\'.]*)')
+          risks=re.compile(r'fun_prop|continuous_subtype_mk|Complex\.mk_im|apply Subtype\.ext|rw \[hlevel\]|inner_self_eq_norm_sq|integral_add|change 0 <|UpperHalfPlane\.ofComplex\.continuousOn\.comp')
+          ds=[]; rs=[]
+          for i,s in enumerate(lines[start-1:],start):
+              m=decl.match(s)
+              if m: ds.append((i,m.group(1)))
+              if risks.search(s): rs.append((i,s.strip()))
+          out=['## FA suffix index after 35690','',f'- run_id: `{os.environ.get("GITHUB_RUN_ID","")}`',f'- declarations: `{len(ds)}`',f'- risk-pattern hits: `{len(rs)}`','','### declarations','```text']
+          out += [f'{i}: {n}' for i,n in ds[:900]]
+          out += ['```','','### recurring API-risk hits','```text']
+          out += [f'{i}: {s}' for i,s in rs[:700]]
+          out += ['```']
+          print('\n'.join(out)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/index.md)"
