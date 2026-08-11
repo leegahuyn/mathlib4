@@ -1,0 +1,59 @@
+name: Codex FA joint basepoint continuity smoke
+
+on:
+  push:
+    branches:
+      - fix/fa499-eta-authority-stable-20260811
+    paths:
+      - .github/workflows/codex-fa-joint-basepoint-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install Lean and cache
+        shell: bash
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          $HOME/.elan/bin/lake exe cache get
+      - name: Prove joint continuity pattern
+        shell: bash
+        run: |
+          cat >/tmp/joint.lean <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
+          open Complex Set
+          open scoped UpperHalfPlane
+
+          example : ContinuousOn (fun p : ℝ × ℝ =>
+              UpperHalfPlane.ofComplex (Complex.mk p.1 p.2))
+              (Set.univ ×ˢ Set.Ioi (0 : ℝ)) := by
+            refine UpperHalfPlane.ofComplex.continuousOn.comp ?_ ?_
+            · change ContinuousOn (fun p : ℝ × ℝ => Complex.mk p.1 p.2)
+                (Set.univ ×ˢ Set.Ioi (0 : ℝ))
+              simpa only [Complex.mk_eq_add_mul_I] using
+                ((by fun_prop : Continuous (fun p : ℝ × ℝ =>
+                  (p.1 : ℂ) + (p.2 : ℂ) * Complex.I)).continuousOn)
+            · intro p hp
+              have hp2 : 0 < p.2 := by simpa using hp.2
+              simpa [UpperHalfPlane.ofComplex] using hp2
+          LEAN
+          lake env lean /tmp/joint.lean
+      - name: Report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ job.status }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="## FA joint basepoint smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- status: \`${STATUS}\`\n- target-risk: \`35845 selectedHeightBasePoint_joint_continuousOn_positive\`"
