@@ -1,0 +1,79 @@
+name: Diagnostic FA489 typed predicate gate-fixed direct Lean
+
+on:
+  push:
+    branches:
+      - diag/fa489-predicate-gate-fixed-20260811
+    paths:
+      - .github/workflows/diag-fa489-predicate-gate-fixed.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: diag-fa489-predicate-gate-fixed
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish diagnostic start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## DIAG FA489 gate-fixed started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- authority: diagnostic only; not authoritative FA chain\n- upstream_FA488_run: \`31455142823\`\n- upstream_FA488_source: \`d36d5b7b57ba9f4d6e830ff5c7baf909aeae508d57a61e637e24e087c0548f96\`\n- patch: \`typed p : ℝ × ℝ in Continuous.subtype_mk predicate\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run corrected diagnostic direct Lean
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa489_hpoint_predicate_annotation_candidate_ci.sh 2>&1 | tee /tmp/diag-fa489.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report diagnostic evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/diag-fa489-comment.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa489-hpoint-predicate-annotation/candidates/norms')
+          metric=out/'METRIC.json'; candidate=out/'CANDIDATE.json'; source=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/diag-fa489.log')
+          parts=['## DIAG FA489 gate-fixed — actual remote execution','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`",'- authority: diagnostic only; not authoritative FA chain','']; md=None
+          if metric.exists():
+              raw=metric.read_text(encoding='utf-8'); parts += ['### METRIC.json','```json',raw[:32000],'```','']
+              try: md=json.loads(raw)
+              except Exception: pass
+          else: parts += ['### METRIC.json','`MISSING`','']
+          if candidate.exists(): parts += ['### CANDIDATE.json','```json',candidate.read_text(encoding='utf-8')[:16000],'```','']
+          if source.exists():
+              lines=source.read_text(encoding='utf-8',errors='replace').splitlines(); center=md.get('FA_first_actual_error_line',35311) if isinstance(md,dict) else 35311; lo,hi=max(1,center-16),min(len(lines),center+30); parts += [f'### Exact diagnostic candidate source around line {center}','```lean','\n'.join(f'{i}: {lines[i-1]}' for i in range(lo,hi+1)),'```','']
+          if log.exists(): parts += ['### Tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-150:])[-18000:],'```']
+          print('\n'.join(parts)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/diag-fa489-comment.md)"
+      - name: Preserve diagnostic script result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
