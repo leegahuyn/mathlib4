@@ -1,13 +1,22 @@
 name: Codex FA492B explicit rw endpoint strict direct Lean
+
 on:
   push:
-    branches: [fix/fa492b-endpoint-explicit-rw-20260811]
-    paths: [.github/workflows/codex-fa492b-observe.yml]
+    branches:
+      - fix/fa492b-endpoint-explicit-rw-20260811
+    paths:
+      - .github/workflows/codex-fa492b-observe.yml
   workflow_dispatch:
+
 permissions:
   contents: read
   actions: read
   issues: write
+
+concurrency:
+  group: codex-fa492b-observe
+  cancel-in-progress: true
+
 jobs:
   observe:
     runs-on: ubuntu-24.04
@@ -19,10 +28,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
       - name: Publish FA492B start identity
-        env: {GH_TOKEN: ${{ github.token }}}
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA492B sibling observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- stage: \`FA492 sibling, not FA493\`\n- upstream_FA491_run: \`31458257120\`\n- upstream_FA491_job: \`93676458948\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`typed explicit rw/show Complex.mk endpoint continuity + hh.continuous\`"
+          body="## FA492B sibling observer started — retrigger\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- stage: \`FA492 sibling, not FA493\`\n- upstream_FA491_run: \`31458257120\`\n- upstream_FA491_job: \`93676458948\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`typed explicit rw/show Complex.mk endpoint continuity + hh.continuous\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
       - name: Run exact FA492B direct Lean
         id: run
@@ -43,23 +53,31 @@ jobs:
         run: |
           python3 - <<'PY' > /tmp/fa492b.md
           from pathlib import Path
-          import json,os
-          p=Path('build-logs/codex-fa492b-endpoint-explicit-rw/candidates/norms/METRIC.json'); s=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa492b.log')
-          xs=['## FA492B sibling observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]; m=None
+          import json, os
+          p=Path('build-logs/codex-fa492b-endpoint-explicit-rw/candidates/norms/METRIC.json')
+          s=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log=Path('/tmp/fa492b.log')
+          xs=['## FA492B sibling observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
           if p.exists():
-            m=json.loads(p.read_text())
-            for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']: xs.append(f'- {k}: `{m.get(k)}`')
-            xs += ['','### first error','```text',str(m.get('FA_first_error_message',''))[:6000],'```']
-          else: xs.append('- METRIC.json: `MISSING`')
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:6000],'```']
+          else:
+              xs.append('- METRIC.json: `MISSING`')
           if s.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
-            a=s.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+28); xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
-          if log.exists(): xs += ['','### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])[-12000:],'```']
+              a=s.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+28)
+              xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists():
+              xs += ['','### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])[-12000:],'```']
           print('\n'.join(xs)[:32000])
           PY
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa492b.md)"
       - name: Preserve result
         if: always()
-        env: {SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}}
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
         shell: bash
         run: |
           test -n "$SCRIPT_EXIT"
