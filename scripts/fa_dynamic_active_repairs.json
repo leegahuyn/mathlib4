@@ -1,0 +1,56 @@
+{
+  "schema": "fa-dynamic-active-repairs-v1",
+  "base_source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "base_declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+  "repairs": [
+    {
+      "declaration_index": 2839,
+      "declaration_name": "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip",
+      "header_sha256": "ef51fe9f45f0f59082b903746131a8bad8142c502ca0449017a237cb6b75a32d",
+      "old_fragment": "    simpa only [Set.mem_prod, z, Complex.measurableEquivRealProd_symm_apply,\n      UpperHalfPlane.coe_re, UpperHalfPlane.coe_im] using hp",
+      "new_fragment": "    rcases Set.mem_prod.mp hp with ⟨hp_re, hp_im⟩\n    constructor\n    · simpa only [z, UpperHalfPlane.mk_re,\n        Complex.measurableEquivRealProd_symm_apply] using hp_re\n    · simpa only [z, UpperHalfPlane.mk_im,\n        Complex.measurableEquivRealProd_symm_apply] using\n        (Set.mem_Ioi.mp hp_im)"
+    },
+    {
+      "declaration_index": 2903,
+      "declaration_name": "neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint",
+      "header_sha256": "414a1c240310e7d531d15df0271072bb9052b3f4486a3dca543f46c9cdf008d5",
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]"
+    },
+    {
+      "declaration_index": 2904,
+      "declaration_name": "neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint",
+      "header_sha256": "8f5d899087928fc557bacea5bda0ffc97df7b9a71bdcbb3c46819570361688b5",
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]"
+    },
+    {
+      "declaration_index": 2906,
+      "declaration_name": "embedded_neg_lowerFromSuccCoordinate_eq_raiseTestAdjoint",
+      "header_sha256": "d7600da79cf0193b7a3985641b3780af03c6b845e60835c4ce3740c840d45c88",
+      "old_fragment": "  rw [hzNeg, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]",
+      "new_fragment": "  rw [hzNeg, Pi.neg_apply, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]"
+    },
+    {
+      "declaration_index": 2907,
+      "declaration_name": "embedded_neg_raisedCoordinate_eq_lowerFromSuccTestAdjoint",
+      "header_sha256": "afaab0fd9d232c146e9949f2ef273b104d72930f05032cc68c341698217284c2",
+      "old_fragment": "  rw [hzNeg, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]",
+      "new_fragment": "  rw [hzNeg, Pi.neg_apply, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]"
+    },
+    {
+      "declaration_index": 2910,
+      "declaration_name": "raisingMaximalAdjointWeakMaassIdentificationAt_of_periodization",
+      "header_sha256": "e6b3a82e791b0eeae715c278002e1d1e65b2af3db28e3ae9b8e6bd388c7df789",
+      "old_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate (n + 1) u) =\n        inner ℂ p.1 (-lowerFromSuccCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalLowerFromSucc_on_core] using hFormal",
+      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate (n + 1) u) =\n        inner ℂ p.1 (-lowerFromSuccCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    },
+    {
+      "declaration_index": 2911,
+      "declaration_name": "loweringMaximalAdjointWeakMaassIdentificationAt_of_periodization",
+      "header_sha256": "d136fd9115ab456c72b241c7eb45b86e874346dd22ac0b8fa502ec0635e4d22f",
+      "old_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate n u) =\n        inner ℂ p.1 (-raisedCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalRaise_on_core] using hFormal",
+      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate n u) =\n        inner ℂ p.1 (-raisedCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    }
+  ]
+}
