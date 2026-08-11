@@ -1,4 +1,5 @@
 name: Codex FA486 hpoint fun_prop strict direct Lean
+# isolated retrigger after confirming unrelated push workflows were no-op
 
 on:
   push:
