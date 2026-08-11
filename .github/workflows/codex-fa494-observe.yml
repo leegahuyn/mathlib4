@@ -17,6 +17,7 @@ concurrency:
   group: codex-fa494-observe
   cancel-in-progress: true
 
+# Retrigger marker: authoritative FA493 run 31460205923.
 jobs:
   observe:
     runs-on: ubuntu-24.04
