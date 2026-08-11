@@ -19,9 +19,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BASE_RUN_ID: "31522445844"
-  BASE_EXPECTED_HEAD: "80751d936d788fd24702400226dca9df33b2ef88"
-  BASE_EXPECTED_WORKFLOW: ".github/workflows/codex-fa-frontier-2982-star-v2.yml"
+  BASE_RUN_ID: "31523628986"
+  BASE_EXPECTED_HEAD: "c3fb0231f32e7b3472be1c8d4a14dfbad162b852"
+  BASE_EXPECTED_WORKFLOW: ".github/workflows/codex-fa-frontier-2982-ring-v1.yml"
   BASE_EXPECTED_FIRST_INDEX: "3029"
 
 jobs:
@@ -64,9 +64,8 @@ jobs:
           jobs=json.load(open('build-logs/codex-fa-frontier-3029-3047-v3/base-jobs.json')).get('jobs',[]); js=[j for j in jobs if j.get('name')=='frontier']
           if len(js)!=1: raise SystemExit('expected one frontier job')
           j=js[0]; steps={s.get('name'):s for s in j.get('steps',[])}
-          if steps.get('Probe exact complex-star bridge',{}).get('conclusion')!='success': raise SystemExit('base star probe did not pass')
           if steps.get('Direct full-source diagnostic compile',{}).get('conclusion')!='success': raise SystemExit('base direct compile did not execute successfully')
-          arts=json.load(open('build-logs/codex-fa-frontier-3029-3047-v3/base-artifacts.json')).get('artifacts',[]); xs=[a for a in arts if a.get('name','').startswith('codex-fa-frontier-2982-star-v2-') and a.get('expired') is False]
+          arts=json.load(open('build-logs/codex-fa-frontier-3029-3047-v3/base-artifacts.json')).get('artifacts',[]); xs=[a for a in arts if a.get('name','').startswith('codex-fa-frontier-2982-ring-v1-') and a.get('expired') is False]
           if len(xs)!=1: raise SystemExit('expected one live base artifact')
           a=xs[0]; print('BASE_ARTIFACT_ID='+str(a['id'])); print('BASE_ARTIFACT_DIGEST='+a['digest'])
           PY
