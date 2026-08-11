@@ -1,0 +1,11 @@
+{
+  "schema": "fa-dynamic-idx2953-followup-v1",
+  "repairs": [
+    {
+      "declaration_index": 2953,
+      "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
+      "old_fragment": "  · simp only [mul_smul, mul_inv, one_smul]",
+      "new_fragment": "  · rw [← mul_smul, mul_inv, one_smul]"
+    }
+  ]
+}
