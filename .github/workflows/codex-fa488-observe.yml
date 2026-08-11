@@ -1,0 +1,78 @@
+name: Codex FA488 explicit complex continuity strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa488-hpoint-explicit-complex-continuity-20260811
+    paths:
+      - .github/workflows/codex-fa488-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa488-observe-00698e6
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA488 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA488 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA487 -> FA488\`\n- upstream_FA487_run: \`31454231182\`\n- upstream_FA487_job: \`93664635881\`\n- upstream_FA487_source: \`9c38c6e6a405f6f3f117b9c3085938d52287ac34bc6a2e247460209b2df09404\`\n- frontier: \`35312:4 selectedLogHeightEnergyDensity_continuous / index 2806\`\n- patch: \`Continuous.subtype_mk + explicit Complex.mk continuity via ofReal/add/mul/I\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA488 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa488_hpoint_explicit_complex_candidate_ci.sh 2>&1 | tee /tmp/fa488-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report exact FA488 evidence to issue 14
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa488-comment.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa488-hpoint-explicit-complex/candidates/norms'); metric=out/'METRIC.json'; candidate=out/'CANDIDATE.json'; source=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa488-observe.log')
+          parts=['## FA488 observer — actual remote execution','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`",'']; md=None
+          if metric.exists():
+              raw=metric.read_text(encoding='utf-8'); parts += ['### METRIC.json','```json',raw[:32000],'```','']
+              try: md=json.loads(raw)
+              except Exception: pass
+          else: parts += ['### METRIC.json','`MISSING`','']
+          if candidate.exists(): parts += ['### CANDIDATE.json','```json',candidate.read_text(encoding='utf-8')[:16000],'```','']
+          if source.exists():
+              lines=source.read_text(encoding='utf-8',errors='replace').splitlines(); center=md.get('FA_first_actual_error_line',35312) if isinstance(md,dict) else 35312; lo,hi=max(1,center-16),min(len(lines),center+30); parts += [f'### Exact FA488 candidate source around line {center}','```lean','\n'.join(f'{i}: {lines[i-1]}' for i in range(lo,hi+1)),'```','']
+          if log.exists(): parts += ['### Tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-150:])[-18000:],'```']
+          print('\n'.join(parts)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa488-comment.md)"
+      - name: Preserve FA488 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
