@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 env:
-  TARGET_SHA: "3d4a5a8faf5ac57c17314130e5bb2f146ca6e189"
-  TARGET_WORKFLOW: "codex-fa-dynamic-extended-3002.yml"
-  TARGET_CONTEXT: "codex/fa-dynamic-extended-3002-locator"
+  TARGET_SHA: "9fd5f27cb788ba4e69e0d5cb0791e78889840d9b"
+  TARGET_WORKFLOW: "codex-fa-active-frontier.yml"
+  TARGET_CONTEXT: "codex/fa-active-frontier-locator"
 
 jobs:
   locate:
@@ -38,23 +38,15 @@ jobs:
           run = max(runs, key=lambda r: int(r['id']))
           status = run.get('status') or 'unknown'
           conclusion = run.get('conclusion') or 'none'
-          if status != 'completed':
-              state = 'pending'
-          elif conclusion == 'success':
-              state = 'success'
-          elif conclusion in {'failure', 'cancelled', 'timed_out', 'action_required'}:
-              state = 'failure'
-          else:
-              state = 'error'
+          if status != 'completed': state = 'pending'
+          elif conclusion == 'success': state = 'success'
+          elif conclusion in {'failure','cancelled','timed_out','action_required'}: state = 'failure'
+          else: state = 'error'
           print('RUN_ID=' + str(run['id']))
           print('RUN_STATUS=' + status)
           print('RUN_CONCLUSION=' + conclusion)
           print('STATE=' + state)
           PY
           source /tmp/status.env
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" \
-            -f state="$STATE" \
-            -f context="$TARGET_CONTEXT" \
-            -f description="run=${RUN_ID} status=${RUN_STATUS} conclusion=${RUN_CONCLUSION}" \
-            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" > /tmp/status.json
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${TARGET_SHA}" -f state="$STATE" -f context="$TARGET_CONTEXT" -f description="run=${RUN_ID} status=${RUN_STATUS} conclusion=${RUN_CONCLUSION}" -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" > /tmp/status.json
           cat /tmp/status.json
