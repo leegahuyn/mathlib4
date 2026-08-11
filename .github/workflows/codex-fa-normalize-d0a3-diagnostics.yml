@@ -1,0 +1,189 @@
+name: Codex normalize d0a3 FA diagnostics
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-normalize-d0a3-diagnostics.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+
+env:
+  BASE_ARTIFACT_ID: "9103368138"
+  BASE_SOURCE_SHA256: "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec"
+
+jobs:
+  normalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download exact full diagnostic artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fa-d0a3 build-logs/codex-fa-normalize-d0a3
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" > /tmp/fa-d0a3.zip
+          unzip -q /tmp/fa-d0a3.zip -d /tmp/fa-d0a3
+
+      - name: Normalize and cluster diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          from collections import Counter, defaultdict
+          import hashlib
+          import json
+          import os
+          import re
+
+          root = Path('/tmp/fa-d0a3')
+          out = Path('build-logs/codex-fa-normalize-d0a3')
+          source_hits = sorted(root.rglob('Mock2_FunctionalAnalysis.lean'))
+          log_hits = sorted(root.rglob('Mock2_FunctionalAnalysis.log'))
+          if not source_hits or not log_hits:
+              raise SystemExit('source/log missing from authoritative artifact')
+          source_path = min(source_hits, key=lambda p: (len(p.parts), p.as_posix()))
+          log_path = min(log_hits, key=lambda p: (len(p.parts), p.as_posix()))
+          source_bytes = source_path.read_bytes()
+          if hashlib.sha256(source_bytes).hexdigest() != os.environ['BASE_SOURCE_SHA256']:
+              raise SystemExit('d0a3 source SHA drift')
+          source = source_bytes.decode('utf-8')
+          log_lines = log_path.read_text(encoding='utf-8', errors='replace').splitlines()
+
+          decl_re = re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
+          diag_re = re.compile(r'^(?P<file>.+?\.lean):(?P<line>[0-9]+):(?P<col>[0-9]+): error(?:\((?P<code>[^)\r\n]+)\))?:(?P<message>.*)$')
+          any_diag_re = re.compile(r'^.+?\.lean:[0-9]+:[0-9]+: (?:error|warning)')
+          decls = list(decl_re.finditer(source))
+          starts = [source.count('\n', 0, m.start()) + 1 for m in decls]
+
+          def family(text):
+              low = text.lower()
+              if 'maximum number of heartbeats' in low or 'deterministic) timeout' in low:
+                  return 'resource-heartbeat'
+              if 'unknown identifier' in low:
+                  return 'api-unknown-identifier'
+              if 'invalid field' in low and 'environment does not contain' in low:
+                  return 'api-invalid-field'
+              if 'type mismatch: after simplification' in low:
+                  return 'simp-target-shape'
+              if 'tactic `rewrite` failed' in low:
+                  return 'rw-motive-or-pattern'
+              if 'application type mismatch' in low:
+                  return 'application-type-mismatch'
+              if "don't know how to synthesize" in low or 'failed to synthesize' in low:
+                  return 'typeclass-inference'
+              if 'function expected at' in low:
+                  return 'function-coercion-shape'
+              if 'invalid `⟨...⟩` notation' in low:
+                  return 'constructor-expected-type'
+              if 'unsolved goals' in low:
+                  if '↑z.im' in text or '↑(↑z).im' in text or 'upperhalfplane' in low:
+                      return 'upper-half-plane-coercion'
+                  return 'unsolved-goal'
+              if 'type mismatch' in low:
+                  return 'type-mismatch'
+              return 'other'
+
+          def normalized_signature(text):
+              first = text.splitlines()[0] if text else ''
+              first = re.sub(r'0x[0-9a-fA-F]+', '<hex>', first)
+              first = re.sub(r'\b[0-9]+\b', '<n>', first)
+              first = re.sub(r'\s+', ' ', first).strip()
+              return first[:220]
+
+          records = []
+          i = 0
+          while i < len(log_lines):
+              m = diag_re.match(log_lines[i])
+              if not m:
+                  i += 1
+                  continue
+              line = int(m.group('line'))
+              pos = bisect_right(starts, line) - 1
+              body = [m.group('message').lstrip()]
+              j = i + 1
+              while j < len(log_lines) and not any_diag_re.match(log_lines[j]):
+                  if log_lines[j].strip():
+                      body.append(log_lines[j])
+                  j += 1
+              text = '\n'.join(body)
+              records.append({
+                  'ordinal': len(records) + 1,
+                  'line': line,
+                  'col': int(m.group('col')),
+                  'diagnostic_code': m.group('code'),
+                  'declaration': decls[pos].group('name') if pos >= 0 else None,
+                  'declaration_index': pos if pos >= 0 else None,
+                  'declaration_start_line': starts[pos] if pos >= 0 else None,
+                  'family': family(text),
+                  'normalized_signature': normalized_signature(text),
+                  'message_excerpt': text[:1800],
+              })
+              i = j
+
+          if len(records) != 1157:
+              raise SystemExit('expected 1157 error headers, got ' + str(len(records)))
+
+          by_family = Counter(r['family'] for r in records)
+          by_decl = Counter(r['declaration_index'] for r in records)
+          cluster_map = defaultdict(list)
+          for r in records:
+              cluster_map[(r['family'], r['normalized_signature'])].append(r)
+          clusters = []
+          for n, ((fam, sig), members) in enumerate(sorted(cluster_map.items(), key=lambda item: (min((m['declaration_index'] if m['declaration_index'] is not None else 10**9) for m in item[1]), item[0][0], item[0][1])), 1):
+              idxs = [m['declaration_index'] for m in members if m['declaration_index'] is not None]
+              clusters.append({
+                  'cluster_id': 'C' + str(n).zfill(4),
+                  'family': fam,
+                  'normalized_signature': sig,
+                  'diagnostic_count': len(members),
+                  'earliest_declaration_index': min(idxs) if idxs else None,
+                  'member_declaration_indices': sorted(set(idxs)),
+                  'member_declarations': sorted(set(m['declaration'] for m in members if m['declaration'])),
+                  'cascade_risk': 'high' if len(set(idxs)) > 8 else 'medium' if len(set(idxs)) > 2 else 'low-or-unknown',
+              })
+
+          summary = {
+              'schema': 'fa-d0a3-normalized-diagnostic-inventory-v1',
+              'source_sha256': hashlib.sha256(source_bytes).hexdigest(),
+              'source_lines': len(source.splitlines()),
+              'declaration_count': len(decls),
+              'raw_error_headers': len(records),
+              'affected_declarations': len(by_decl),
+              'normalized_clusters': len(clusters),
+              'family_counts': dict(sorted(by_family.items())),
+              'first_actual_error': records[0],
+              'first_40_error_declaration_indices': sorted(by_decl)[:40],
+              'interpretation': 'Later diagnostics are inventory only until earlier authoritative root causes are closed.',
+          }
+          (out / 'NORMALIZED_DIAGNOSTICS.json').write_text(json.dumps(records, indent=2, sort_keys=True) + '\n')
+          (out / 'CLUSTERS.json').write_text(json.dumps(clusters, indent=2, sort_keys=True) + '\n')
+          (out / 'SUMMARY.json').write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Upload normalized inventory
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-normalized-d0a3-${{ github.sha }}
+          path: build-logs/codex-fa-normalize-d0a3
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish inventory locator
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=success \
+            -f context='codex/fa-d0a3-cluster-inventory' \
+            -f description="normalized inventory run ${GITHUB_RUN_ID}" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
