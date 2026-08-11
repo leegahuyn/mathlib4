@@ -1,0 +1,78 @@
+name: Codex FA489 predicate annotation strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa489-hpoint-predicate-annotation-20260811
+    paths:
+      - .github/workflows/codex-fa489-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa489-observe-7b41dc3
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA489 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA489 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA488 -> FA489\`\n- upstream_FA488_run: \`31455142823\`\n- upstream_FA488_job: \`93667256223\`\n- upstream_FA488_source: \`701d7a7218cb73aeded5090f813487d07f384f38a08b67a0a9518f1dd54ef89a\`\n- frontier: \`35311:59 selectedLogHeightEnergyDensity_continuous / index 2806\`\n- patch: \`annotate predicate lambda p : ℝ × ℝ\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA489 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa489_hpoint_predicate_annotation_candidate_ci.sh 2>&1 | tee /tmp/fa489-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report exact FA489 evidence to issue 14
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa489-comment.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa489-hpoint-predicate-annotation/candidates/norms'); metric=out/'METRIC.json'; candidate=out/'CANDIDATE.json'; source=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa489-observe.log')
+          parts=['## FA489 observer — actual remote execution','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`",'']; md=None
+          if metric.exists():
+              raw=metric.read_text(encoding='utf-8'); parts += ['### METRIC.json','```json',raw[:32000],'```','']
+              try: md=json.loads(raw)
+              except Exception: pass
+          else: parts += ['### METRIC.json','`MISSING`','']
+          if candidate.exists(): parts += ['### CANDIDATE.json','```json',candidate.read_text(encoding='utf-8')[:16000],'```','']
+          if source.exists():
+              lines=source.read_text(encoding='utf-8',errors='replace').splitlines(); center=md.get('FA_first_actual_error_line',35311) if isinstance(md,dict) else 35311; lo,hi=max(1,center-16),min(len(lines),center+30); parts += [f'### Exact FA489 candidate source around line {center}','```lean','\n'.join(f'{i}: {lines[i-1]}' for i in range(lo,hi+1)),'```','']
+          if log.exists(): parts += ['### Tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-150:])[-18000:],'```']
+          print('\n'.join(parts)[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa489-comment.md)"
+      - name: Preserve FA489 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
