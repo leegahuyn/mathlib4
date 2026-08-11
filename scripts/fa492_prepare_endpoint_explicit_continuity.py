@@ -21,9 +21,9 @@ fa466 = fa491.fa466
 orig_norm_repairs = fa491.norm_repairs
 
 EXACT_FA491_VARIANT = "rewrite_prod_restrict_then_fubini"
-REQUIRED_FA491_EVIDENCE_RUN_ID = "31458123965"
-REQUIRED_FA491_EVIDENCE_JOB_ID = "93676038026"
-REQUIRED_FA491_EVIDENCE_HEAD_SHA = "8250e752dac4808f7cd1b367548726cb3b3d4780"
+REQUIRED_FA491_EVIDENCE_RUN_ID = "31458257120"
+REQUIRED_FA491_EVIDENCE_JOB_ID = "93676458948"
+REQUIRED_FA491_EVIDENCE_HEAD_SHA = "d030aecf662d3f8ff36d5d0776a7ddc93f4c1e70"
 REQUIRED_FA491_SOURCE_SHA256 = "ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d"
 REQUIRED_FA491_FIRST_ERROR_LINE = "35507"
 REQUIRED_FA491_FIRST_ERROR_COL = "6"
@@ -43,7 +43,7 @@ _DECL_START = re.compile(
 
 OLD_FRAGMENT = """      unfold selectedLogHeightNaturalGauge
       fun_prop"""
-NEW_FRAGMENT = """      have hpoint : Continuous (fun t : ℝ => logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y))) := by unfold logHeightBasePoint; exact ((by simpa only [Complex.mk_eq_add_mul_I] using (by fun_prop : Continuous (fun t : ℝ => ((t : ℝ) : ℂ) + ((Real.exp (Real.log (gammaTwoCuspLevel Y)) : ℝ) : ℂ) * Complex.I))) : Continuous (fun t : ℝ => Complex.mk t (Real.exp (Real.log (gammaTwoCuspLevel Y))))).upperHalfPlaneMk (fun _ => Real.exp_pos _)
+NEW_FRAGMENT = """      have hpoint : Continuous (fun t : ℝ => logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y))) := by unfold logHeightBasePoint; exact (((by simpa only [Complex.mk_eq_add_mul_I] using (by fun_prop : Continuous (fun t : ℝ => ((t : ℝ) : ℂ) + ((Real.exp (Real.log (gammaTwoCuspLevel Y)) : ℝ) : ℂ) * Complex.I))) : Continuous (fun t : ℝ => Complex.mk t (Real.exp (Real.log (gammaTwoCuspLevel Y))))).upperHalfPlaneMk (fun (_ : ℝ) => Real.exp_pos (Real.log (gammaTwoCuspLevel Y))))
       unfold selectedLogHeightNaturalGauge; simpa only [h] using ((continuous_const.mul (hh.continuous.comp hpoint)).norm.pow 2)"""
 
 VARIANTS = {
