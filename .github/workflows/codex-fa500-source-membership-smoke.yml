@@ -1,0 +1,62 @@
+name: Codex FA500 ofComplex source membership smoke
+
+on:
+  push:
+    branches:
+      - fix/fa500-ofcomplex-source-membership-20260811
+    paths:
+      - .github/workflows/codex-fa500-source-membership-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+      - name: Compile source-membership candidates
+        id: smoke
+        shell: bash
+        run: |
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          cat > /tmp/FA500Smoke.lean <<'LEAN'
+          import Mathlib
+          open Set
+
+          example (t y : ℝ) (hy : y ∈ Ioi 0) :
+              Complex.mk t y ∈ UpperHalfPlane.ofComplex.source := by
+            simpa [UpperHalfPlane.ofComplex] using
+              (show Complex.mk t y ∈ Set.range ((↑) : ℍ → ℂ) from
+                ⟨(⟨Complex.mk t y, by simpa using hy⟩ : ℍ), rfl⟩)
+
+          example (t y : ℝ) (hy : y ∈ Ioi 0) :
+              Complex.mk t y ∈ UpperHalfPlane.ofComplex.source := by
+            simp [UpperHalfPlane.ofComplex]
+            exact ⟨(⟨Complex.mk t y, by simpa using hy⟩ : ℍ), rfl⟩
+          LEAN
+          lake env lean /tmp/FA500Smoke.lean 2>&1 | tee /tmp/fa500-smoke.log
+      - name: Post smoke result
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA500 ofComplex source-membership smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- result: \`${{ steps.smoke.outcome }}\`\n\n\`\`\`text\n$(tail -100 /tmp/fa500-smoke.log 2>/dev/null || true)\n\`\`\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
