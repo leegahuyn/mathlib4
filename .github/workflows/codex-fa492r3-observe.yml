@@ -1,0 +1,84 @@
+name: Codex FA492-r3 explicit lambdas strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa492r3-endpoint-explicit-lambdas-20260811
+    paths:
+      - .github/workflows/codex-fa492r3-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa492r3-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA492-r3 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA492-r3 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- stage: \`FA492-r3; same idx2812\`\n- upstream_FA492_run: \`31459011892\`\n- upstream_FA492_job: \`93678608893\`\n- upstream_FA492_source: \`91a277662a1cee06b849445865d8a85331a1cef250c150d5c3f5e4c1b66fe7f7\`\n- frontier: \`35507:44 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`explicit typed hconst/hcomp'/hprod lambda continuity\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA492-r3 direct Lean loop
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa492r3_endpoint_explicit_lambdas_candidate_ci.sh 2>&1 | tee /tmp/fa492r3.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA492-r3 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa492r3.md
+          from pathlib import Path
+          import json, os
+          p=Path('build-logs/codex-fa492r3-endpoint-explicit-lambdas/candidates/norms/METRIC.json')
+          s=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log=Path('/tmp/fa492r3.log')
+          xs=['## FA492-r3 authoritative observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:7000],'```']
+          else:
+              xs.append('- METRIC.json: `MISSING`')
+          if s.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=s.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+30)
+              xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists():
+              xs += ['','### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-120:])[-14000:],'```']
+          print('\n'.join(xs)[:36000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa492r3.md)"
+      - name: Preserve result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
