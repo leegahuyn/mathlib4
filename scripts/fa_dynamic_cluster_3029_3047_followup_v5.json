@@ -1,0 +1,31 @@
+{
+  "schema": "fa-dynamic-cluster-3029-3047-followup-v5",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "base_direct_tested_source_sha256": "c316c8076c945ad38d522a5c1cfbfbbcbd67f0b7a2f13c41323468dbb08611b7",
+  "repairs": [
+    {
+      "declaration_index": 3029,
+      "declaration_name": "negativePhysicalRaise_peterssonCuspCutoff_commutator",
+      "old_fragment": "      rw [physicalRaise_apply]\n      rfl",
+      "new_fragment": "      rw [physicalRaise_apply]"
+    },
+    {
+      "declaration_index": 3031,
+      "declaration_name": "negativePhysicalLowerFromSucc_peterssonCuspCutoff_commutator",
+      "old_fragment": "      rw [physicalLowerFromSucc_apply]\n      rfl",
+      "new_fragment": "      rw [physicalLowerFromSucc_apply]"
+    },
+    {
+      "declaration_index": 3046,
+      "declaration_name": "raising_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    · intro p hp\n    obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n    exact isClosed_closure.mem_of_tendsto hqLimit\n      (Filter.Eventually.of_forall fun j ↦\n        subset_closure\n          (physicalRaise_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)",
+      "new_fragment": "    · intro p hp\n      obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n      exact isClosed_closure.mem_of_tendsto hqLimit\n        (Filter.Eventually.of_forall fun j ↦\n          subset_closure\n            (physicalRaise_graph_subset_compactWeakMaximalGraph n\n              (hqGraph j)).1)"
+    },
+    {
+      "declaration_index": 3047,
+      "declaration_name": "lowering_cutoff_and_Friedrichs_of_sequentialApproximation",
+      "old_fragment": "    · intro p hp\n    obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n    exact isClosed_closure.mem_of_tendsto hqLimit\n      (Filter.Eventually.of_forall fun j ↦\n        subset_closure\n          (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n            (hqGraph j)).1)",
+      "new_fragment": "    · intro p hp\n      obtain ⟨q, hqGraph, hqLimit⟩ := hCore p hp\n      exact isClosed_closure.mem_of_tendsto hqLimit\n        (Filter.Eventually.of_forall fun j ↦\n          subset_closure\n            (physicalLowerFromSucc_graph_subset_compactWeakMaximalGraph n\n              (hqGraph j)).1)"
+    }
+  ]
+}
