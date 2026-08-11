@@ -1,0 +1,22 @@
+{
+  "schema": "fa-dynamic-cluster-3225-3226-translation-continuity-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_evidence": {
+    "probe_run": 31534427373,
+    "fact": "DomAddAct.continuous_mk : Continuous ⇑DomAddAct.mk; Continuous.vadd and continuous_const are present in the pinned toolchain"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3225,
+      "declaration_name": "ambientTranslationStronglyContinuous",
+      "old_fragment": "  toFun := fun f t ↦ DomAddAct.mk t +ᵥ f\n  map_add' := by\n    intro f g\n    rfl\n  map_smul' := by\n    intro c f\n    rfl\n  cont' := by\n    intro f\n    fun_prop",
+      "new_fragment": "  toFun := fun f t ↦ DomAddAct.mk t +ᵥ f\n  map_add' := by\n    intro f g\n    rfl\n  map_smul' := by\n    intro c f\n    rfl\n  cont' := by\n    intro f\n    exact DomAddAct.continuous_mk.vadd continuous_const"
+    },
+    {
+      "declaration_index": 3226,
+      "declaration_name": "weightedTranslationStronglyContinuous",
+      "old_fragment": "  toFun := fun f t ↦ DomAddAct.mk t +ᵥ f\n  map_add' := by\n    intro f g\n    rfl\n  map_smul' := by\n    intro c f\n    rfl\n  cont' := by\n    intro f\n    fun_prop",
+      "new_fragment": "  toFun := fun f t ↦ DomAddAct.mk t +ᵥ f\n  map_add' := by\n    intro f g\n    rfl\n  map_smul' := by\n    intro c f\n    rfl\n  cont' := by\n    intro f\n    exact DomAddAct.continuous_mk.vadd continuous_const"
+    }
+  ]
+}
