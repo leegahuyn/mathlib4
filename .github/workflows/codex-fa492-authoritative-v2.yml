@@ -32,7 +32,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA492 authoritative-v2 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- upstream_FA491_run: \`31458337236\`\n- upstream_FA491_job: \`93676647064\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`explicit fixed-height point continuity; hh.continuous.comp; norm.pow\`"
+          body="## FA492 authoritative-v2 observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- upstream_FA491_run: \`31458337236\`\n- upstream_FA491_job: \`93676647064\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- variant: \`typed_pointwise_endpoint\`\n- patch: \`target-shaped change + exact pointwise continuity; no final simpa\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
       - name: Run exact FA492 candidate/direct Lean
         id: run
