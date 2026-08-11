@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-lower-from-succ-commutator-idx3012-v1",
+  "status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3012,
+      "declaration_name": "lowerFromSuccCuspCutoffCommutator_apply",
+      "old_fragment": "  change\n    lowerRaw (paperOrbitExponent (n + 1))\n        (upstairsCuspCutoff N *\n          (u : SmoothQuotientCompactFunction)) z -\n      upstairsCuspCutoff N z *\n        lowerRaw (paperOrbitExponent (n + 1))\n          (u : SmoothQuotientCompactFunction) z = _\n  rw [lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)\n    (u : SmoothQuotientCompactFunction).1.2]\n  ring",
+      "new_fragment": "  simp only [lowerFromSuccCuspCutoffCommutator, LinearMap.sub_apply,\n    LinearMap.comp_apply]\n  change\n    (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toWeightSection n\n      ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)\n          (cuspCutoffOperator N (n + 1) u) -\n        (cuspCutoffOperator N n)\n          (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))) z = _\n  rw [map_sub]\n  change\n    lowerRaw (paperOrbitExponent (n + 1))\n        (((cuspCutoffOperator N (n + 1) u :\n            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :\n          SmoothQuotientCompactFunction) : ℍ → ℂ) z -\n      upstairsCuspCutoff N z *\n        lowerRaw (paperOrbitExponent (n + 1))\n          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) z = _\n  rw [show\n      (((cuspCutoffOperator N (n + 1) u :\n          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore (n + 1)) :\n        SmoothQuotientCompactFunction) : ℍ → ℂ) =\n        upstairsCuspCutoff N *\n          ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) from rfl,\n    lowerRaw_mul_cutoff (upstairsCuspCutoff_realSmooth N)\n      (u : SmoothQuotientCompactFunction).1.2]\n  ring"
+    }
+  ]
+}
