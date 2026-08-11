@@ -1,0 +1,30 @@
+{
+  "schema": "fa-dynamic-cluster-3088-3095-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3088,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_one_of_logHeight_le",
+      "old_fragment": "  apply Real.smoothTransition.one_of_one_le\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+      "new_fragment": "  apply Real.smoothTransition.one_of_one_le\n  linarith"
+    },
+    {
+      "declaration_index": 3089,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_zero_of_level_le_logHeight",
+      "old_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+      "new_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  linarith"
+    },
+    {
+      "declaration_index": 3095,
+      "declaration_name": "intrinsicQuotientCuspCutoffReal_support_subset_truncation",
+      "old_fragment": "  induction q using Quotient.inductionOn'\n  rename_i z\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z",
+      "new_fragment": "  induction q using Quotient.inductionOn'\n  rename_i z\n  simp only [Function.mem_support] at hq\n  obtain ⟨a, haCarrier⟩ := gammaTwoClosedTileCarrier_orbit_covers z"
+    },
+    {
+      "declaration_index": 3095,
+      "declaration_name": "intrinsicQuotientCuspCutoffReal_support_subset_truncation",
+      "old_fragment": "    refine ⟨haCarrier, ?_⟩\n    intro r\n    rw [gammaTwoCuspLevel_of_one_le hY]\n    simpa only [gammaTwoTileHeight] using\n      (modularHeightMaximizer_spec w\n        (gammaTwoCosetRep r)⁻¹).trans hMax.le",
+      "new_fragment": "    refine ⟨haCarrier, ?_⟩\n    intro κ r _hr\n    rw [gammaTwoCuspLevel_of_one_le hY]\n    simpa only [gammaTwoTileHeight] using\n      (modularHeightMaximizer_spec w\n        (gammaTwoCosetRep r)⁻¹).trans hMax.le"
+    }
+  ]
+}
