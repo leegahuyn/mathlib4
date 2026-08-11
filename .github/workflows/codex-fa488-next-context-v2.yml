@@ -1,0 +1,52 @@
+name: Codex FA488 next frontier context v2
+
+on:
+  push:
+    branches:
+      - diag/fa488-next-frontier-context-20260811
+    paths:
+      - .github/workflows/codex-fa488-next-context-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  context:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish diagnostic identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA488 next-context diagnostic v2 started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- scope: source-only, no Lean PASS claim"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Capture source
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/context.txt
+          from pathlib import Path
+          lines = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8', errors='replace').splitlines()
+          for i in range(35335, min(35620, len(lines)) + 1):
+              print(f'{i}: {lines[i-1]}')
+          PY
+      - name: Post source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/comment.md
+          from pathlib import Path
+          import os
+          text = Path('/tmp/context.txt').read_text(encoding='utf-8', errors='replace')
+          print('\n'.join(['## FA488 next-context diagnostic v2 — source','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",'','```lean',text[:56000],'```'])[:62000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/comment.md)"
