@@ -1,0 +1,98 @@
+{
+  "schema": "fa-dynamic-cluster-3105-3114-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "intrinsic-cutoff-local-notation-and-nnreal-scope",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal notation \"nhds[\" s \"]\" x => nhdsWithin x s"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3105,
+      "declaration_name": "modularLogMaxHeight_upperLift_eventuallyEq_chart",
+      "replacements": [
+        {
+          "id": "ofcomplex-source-tendsto",
+          "old_fragment": "  have hMap : Filter.Tendsto UpperHalfPlane.ofComplex\n      (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by\n    simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using\n      (UpperHalfPlane.ofComplex.continuousOn\n        (x := (z : ℂ)) z.im_pos)",
+          "new_fragment": "  have hSource : UpperHalfPlane.ofComplex.source =\n      UpperHalfPlane.upperHalfPlaneSet := by\n    ext w\n    simp [UpperHalfPlane.ofComplex, UpperHalfPlane.range_coe]\n  have hzSource : (z : ℂ) ∈ UpperHalfPlane.ofComplex.source := by\n    rw [hSource]\n    exact z.im_pos\n  have hCont := UpperHalfPlane.ofComplex.continuousOn\n    (x := (z : ℂ)) hzSource\n  change Filter.Tendsto UpperHalfPlane.ofComplex\n    (nhdsWithin (z : ℂ) UpperHalfPlane.ofComplex.source)\n    (nhds (UpperHalfPlane.ofComplex (z : ℂ))) at hCont\n  rw [hSource] at hCont\n  have hMap : Filter.Tendsto UpperHalfPlane.ofComplex\n      (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by\n    simpa only [UpperHalfPlane.ofComplex_apply z] using hCont"
+        },
+        {
+          "id": "integral-chart-sl-action-normalization",
+          "old_fragment": "  filter_upwards [hLocal] with w hw\n  simpa only [integralLogHeightChart, integralMoebiusChart] using hw",
+          "new_fragment": "  filter_upwards [hLocal] with w hw\n  simpa only [integralLogHeightChart, integralMoebiusChart,\n    ModularGroup.sl_moeb] using hw"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3106,
+      "declaration_name": "intrinsicCuspCutoff_realSmooth",
+      "replacements": [
+        {
+          "id": "ofreal-clm-comp-apply",
+          "old_fragment": "      simpa only [chartCutoff, Complex.ofRealCLM_apply] using\n        Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt\n          (z : ℂ) hReal",
+          "new_fragment": "      simpa only [chartCutoff, Function.comp_apply,\n        Complex.ofRealCLM_apply] using\n        Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt\n          (z : ℂ) hReal"
+        },
+        {
+          "id": "correct-open-set-order",
+          "old_fragment": "    have hRhoNhds : {q : ℍ | modularLogMaxHeight q < 1} ∈ nhds z := by\n      exact (isOpen_lt continuous_const modularLogMaxHeight_continuous).mem_nhds (by simpa only [Set.mem_setOf_eq] using hzle.trans_lt zero_lt_one)",
+          "new_fragment": "    have hRhoNhds : {q : ℍ | modularLogMaxHeight q < 1} ∈ nhds z := by\n      exact (isOpen_lt modularLogMaxHeight_continuous continuous_const).mem_nhds (by\n        change modularLogMaxHeight z < 1\n        linarith)"
+        },
+        {
+          "id": "ofcomplex-source-tendsto-nonpositive",
+          "old_fragment": "    have hMap : Filter.Tendsto UpperHalfPlane.ofComplex\n        (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by\n      simpa only [UpperHalfPlane.ofComplex_apply_of_im_pos z.im_pos] using\n        (UpperHalfPlane.ofComplex.continuousOn\n          (x := (z : ℂ)) z.im_pos)",
+          "new_fragment": "    have hSource : UpperHalfPlane.ofComplex.source =\n        UpperHalfPlane.upperHalfPlaneSet := by\n      ext v\n      simp [UpperHalfPlane.ofComplex, UpperHalfPlane.range_coe]\n    have hzSource : (z : ℂ) ∈ UpperHalfPlane.ofComplex.source := by\n      rw [hSource]\n      exact z.im_pos\n    have hCont := UpperHalfPlane.ofComplex.continuousOn\n      (x := (z : ℂ)) hzSource\n    change Filter.Tendsto UpperHalfPlane.ofComplex\n      (nhdsWithin (z : ℂ) UpperHalfPlane.ofComplex.source)\n      (nhds (UpperHalfPlane.ofComplex (z : ℂ))) at hCont\n    rw [hSource] at hCont\n    have hMap : Filter.Tendsto UpperHalfPlane.ofComplex\n        (nhds[UpperHalfPlane.upperHalfPlaneSet] (z : ℂ)) (nhds z) := by\n      simpa only [UpperHalfPlane.ofComplex_apply z] using hCont"
+        },
+        {
+          "id": "nat-cast-nonneg",
+          "old_fragment": "      have hN : (1 : ℝ) ≤ (N : ℝ) + 1 := by positivity\n      exact hv.le.trans hN",
+          "new_fragment": "      have hN0 : (0 : ℝ) ≤ (N : ℝ) := Nat.cast_nonneg N\n      have hN : (1 : ℝ) ≤ (N : ℝ) + 1 := by linarith\n      exact hv.le.trans hN"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3107,
+      "declaration_name": "exists_smoothTransition_lipschitz",
+      "old_fragment": "  obtain ⟨K, hK⟩ :=\n    Real.smoothTransition.contDiff.contDiffOn.exists_lipschitzOnWith\n      (by simp) convex_Icc isCompact_Icc\n  refine ⟨K, ?_⟩\n  rw [lipschitzWith_iff_dist_le_mul]\n  intro x y\n  let px := projIcc (0 : ℝ) 1 zero_le_one x\n  let py := projIcc (0 : ℝ) 1 zero_le_one y\n  have hpx : (px : ℝ) ∈ Icc (0 : ℝ) 1 := px.property\n  have hpy : (py : ℝ) ∈ Icc (0 : ℝ) 1 := py.property\n  have hProj : dist (px : ℝ) (py : ℝ) ≤ 1 * dist x y := by\n    simpa only [px, py, Subtype.dist_eq] using\n      (LipschitzWith.projIcc zero_le_one).dist_le x y\n  calc\n    dist (Real.smoothTransition x) (Real.smoothTransition y) =\n        dist (Real.smoothTransition (px : ℝ))\n          (Real.smoothTransition (py : ℝ)) := by\n      rw [Real.smoothTransition.projIcc, Real.smoothTransition.projIcc]\n    _ ≤ (K : ℝ) * dist (px : ℝ) (py : ℝ) := hK.dist_le hpx hpy\n    _ ≤ (K : ℝ) * (1 * dist x y) :=\n      mul_le_mul_of_nonneg_left hProj K.coe_nonneg\n    _ = (K : ℝ) * dist x y := by ring",
+      "new_fragment": "  have hSmooth : ContDiffOn ℝ 1 Real.smoothTransition\n      (Icc (0 : ℝ) 1) :=\n    Real.smoothTransition.contDiff.contDiffOn\n  obtain ⟨K, hK⟩ := hSmooth.exists_lipschitzOnWith\n    (by norm_num) (convex_Icc (0 : ℝ) 1) isCompact_Icc\n  refine ⟨K, LipschitzWith.of_dist_le_mul ?_⟩\n  intro x y\n  let px := projIcc (0 : ℝ) 1 zero_le_one x\n  let py := projIcc (0 : ℝ) 1 zero_le_one y\n  have hpx : (px : ℝ) ∈ Icc (0 : ℝ) 1 := px.property\n  have hpy : (py : ℝ) ∈ Icc (0 : ℝ) 1 := py.property\n  have hProj : dist (px : ℝ) (py : ℝ) ≤ (1 : ℝ) * dist x y := by\n    simpa only [px, py, Subtype.dist_eq, NNReal.coe_one] using\n      (LipschitzWith.projIcc zero_le_one).dist_le_mul x y\n  calc\n    dist (Real.smoothTransition x) (Real.smoothTransition y) =\n        dist (Real.smoothTransition (px : ℝ))\n          (Real.smoothTransition (py : ℝ)) := by\n      rw [Real.smoothTransition.projIcc, Real.smoothTransition.projIcc]\n    _ ≤ (K : ℝ) * dist (px : ℝ) (py : ℝ) :=\n      hK.dist_le_mul (px : ℝ) hpx (py : ℝ) hpy\n    _ ≤ (K : ℝ) * ((1 : ℝ) * dist x y) :=\n      mul_le_mul_of_nonneg_left hProj K.coe_nonneg\n    _ = (K : ℝ) * dist x y := by ring"
+    },
+    {
+      "declaration_index": 3110,
+      "declaration_name": "intrinsicCuspCutoffReal_lipschitz",
+      "old_fragment": "  calc\n    dist (intrinsicCuspCutoffReal N z)\n        (intrinsicCuspCutoffReal N w) ≤\n      (intrinsicTransitionLipschitzConstant : ℝ) *\n        dist (((N : ℝ) + 2) - modularLogMaxHeight z)\n          (((N : ℝ) + 2) - modularLogMaxHeight w) :=\n      smoothTransition_lipschitz.dist_le _ _\n    _ = (intrinsicTransitionLipschitzConstant : ℝ) *\n        dist (modularLogMaxHeight z) (modularLogMaxHeight w) := by\n      congr 1\n      simpa only [Real.dist_eq] using\n        abs_neg (modularLogMaxHeight z - modularLogMaxHeight w)\n    _ ≤ (intrinsicTransitionLipschitzConstant : ℝ) * dist z w :=\n      mul_le_mul_of_nonneg_left\n        (modularLogMaxHeight_dist_le z w)\n        intrinsicTransitionLipschitzConstant.coe_nonneg",
+      "new_fragment": "  calc\n    dist (intrinsicCuspCutoffReal N z)\n        (intrinsicCuspCutoffReal N w) ≤\n      (intrinsicTransitionLipschitzConstant : ℝ) *\n        dist (((N : ℝ) + 2) - modularLogMaxHeight z)\n          (((N : ℝ) + 2) - modularLogMaxHeight w) :=\n      smoothTransition_lipschitz.dist_le_mul _ _\n    _ = (intrinsicTransitionLipschitzConstant : ℝ) *\n        dist (modularLogMaxHeight z) (modularLogMaxHeight w) := by\n      congr 1\n      rw [Real.dist_eq, Real.dist_eq]\n      rw [show\n        ((N : ℝ) + 2 - modularLogMaxHeight z) -\n            ((N : ℝ) + 2 - modularLogMaxHeight w) =\n          -(modularLogMaxHeight z - modularLogMaxHeight w) by ring,\n        abs_neg]\n    _ ≤ (intrinsicTransitionLipschitzConstant : ℝ) * dist z w :=\n      mul_le_mul_of_nonneg_left\n        (modularLogMaxHeight_dist_le z w)\n        intrinsicTransitionLipschitzConstant.coe_nonneg"
+    },
+    {
+      "declaration_index": 3111,
+      "declaration_name": "upperHalfPlane_dist_le_two_div_im_mul_dist",
+      "old_fragment": "    _ = dist w (z : ℂ) / Real.sqrt (w.im * z.im) := by\n      rw [UpperHalfPlane.ofComplex_apply_of_im_pos hwpos]",
+      "new_fragment": "    _ = dist w (z : ℂ) / Real.sqrt (w.im * z.im) := by\n      rw [UpperHalfPlane.ofComplex_apply_of_im_pos hwpos]\n      change dist w (z : ℂ) / Real.sqrt (w.im * z.im) = _\n      rfl"
+    },
+    {
+      "declaration_index": 3112,
+      "declaration_name": "intrinsicCuspCutoff_fderiv_hyperbolic_bound",
+      "replacements": [
+        {
+          "id": "im-neighborhood-coercion",
+          "old_fragment": "    have hImNhds : {w : ℂ | z.im / 2 < w.im} ∈ nhds (z : ℂ) := by\n      exact (isOpen_lt continuous_const Complex.continuous_im).mem_nhds (by simpa only [Set.mem_setOf_eq] using\n          (by linarith [z.im_pos] : z.im / 2 < z.im))",
+          "new_fragment": "    have hImNhds : {w : ℂ | z.im / 2 < w.im} ∈ nhds (z : ℂ) := by\n      exact (isOpen_lt continuous_const Complex.continuous_im).mem_nhds (by\n        change z.im / 2 < z.im\n        linarith [z.im_pos])"
+        },
+        {
+          "id": "lipschitz-dist-api",
+          "old_fragment": "    have hLip := (intrinsicCuspCutoffReal_lipschitz N).dist_le\n      (UpperHalfPlane.ofComplex w) z",
+          "new_fragment": "    have hLip := (intrinsicCuspCutoffReal_lipschitz N).dist_le_mul\n      (UpperHalfPlane.ofComplex w) z"
+        },
+        {
+          "id": "scale-derivative-bound",
+          "old_fragment": "  dsimp only [C] at hDeriv\n  have hy := z.im_pos\n  nlinarith [mul_le_mul_of_nonneg_left hDeriv hy.le]",
+          "new_fragment": "  have hScaled := mul_le_mul_of_nonneg_left hDeriv z.im_pos.le\n  calc\n    z.im * ‖fderiv ℝ (upperLift (intrinsicCuspCutoff N)) (z : ℂ)‖ ≤\n        z.im * C := hScaled\n    _ = 2 * (intrinsicTransitionLipschitzConstant : ℝ) := by\n      dsimp only [C]\n      field_simp [z.im_ne_zero]"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3114,
+      "declaration_name": "intrinsicCuspCutoff_dy_hyperbolic_bound",
+      "old_fragment": "  simp only [norm_I, mul_one] at hApply",
+      "new_fragment": "  simp only [Complex.norm_I, mul_one] at hApply"
+    }
+  ]
+}
