@@ -1,0 +1,146 @@
+name: Codex FA frontier idx2982 star-mul v2
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-frontier-2982-star-mul-v2.yml
+      - scripts/fa_dynamic_idx2982_star_mul_followup_v2.json
+      - scripts/fa_dynamic_apply_staged_library_strict.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+
+concurrency:
+  group: codex-fa-frontier-2982-star-mul-v2
+  cancel-in-progress: true
+
+env:
+  BASE_RUN_ID: "31523628986"
+  BASE_JOB_ID: "93886501809"
+  BASE_HEAD_SHA: "c3fb0231f32e7b3472be1c8d4a14dfbad162b852"
+  BASE_ARTIFACT_ID: "9114261901"
+  BASE_ARTIFACT_NAME: "codex-fa-frontier-2982-ring-v1-c3fb0231f32e7b3472be1c8d4a14dfbad162b852"
+  BASE_ARTIFACT_SIZE: "1083915"
+  BASE_ARTIFACT_DIGEST: "sha256:532896d00ee9c36f4de58a740bca2917d57d0063cd3197067680e19a406db81f"
+  BASE_SOURCE_SHA256: "150b775748c59f7198b8efd79acc90106e9e1996b027a0f75c879135f2473689"
+  BASE_SOURCE_BYTES: "2706963"
+  BASE_SOURCE_LINES: "60685"
+
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Attest exact direct-tested idx2982 algebra frontier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-frontier-2982-star-mul-v2; mkdir -p "$OUT" /tmp/fa2982mul
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" > "$OUT/run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" > "$OUT/job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" > "$OUT/artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" > /tmp/fa2982mul.zip
+          test "sha256:$(sha256sum /tmp/fa2982mul.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/fa2982mul.zip -d /tmp/fa2982mul
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path('build-logs/codex-fa-frontier-2982-star-mul-v2'); run=json.loads((out/'run.json').read_text()); job=json.loads((out/'job.json').read_text()); art=json.loads((out/'artifact.json').read_text())
+          if not (run.get('id')==int(os.environ['BASE_RUN_ID']) and run.get('head_sha')==os.environ['BASE_HEAD_SHA'] and run.get('status')=='completed' and run.get('conclusion')=='failure'): raise SystemExit('base run gate failed')
+          if not (job.get('id')==int(os.environ['BASE_JOB_ID']) and job.get('run_id')==int(os.environ['BASE_RUN_ID']) and job.get('status')=='completed' and job.get('conclusion')=='failure'): raise SystemExit('base job gate failed')
+          if not (art.get('id')==int(os.environ['BASE_ARTIFACT_ID']) and art.get('name')==os.environ['BASE_ARTIFACT_NAME'] and art.get('size_in_bytes')==int(os.environ['BASE_ARTIFACT_SIZE']) and art.get('digest')==os.environ['BASE_ARTIFACT_DIGEST'] and art.get('expired') is False): raise SystemExit('base artifact gate failed')
+          ms=list(Path('/tmp/fa2982mul').rglob('METRIC.json')); m=json.loads(ms[0].read_text())
+          if not (m.get('Mock2_exit')==0 and m.get('Mock2_Advanced_exit')==0 and m.get('FA_exit')==1 and m.get('all_required_lean_executed') is True and m.get('FA_error_declaration_index')==2982 and m.get('source_sha256')==os.environ['BASE_SOURCE_SHA256'] and m.get('source_identity_locked_after_materialization') is True): raise SystemExit('base metric gate failed')
+          valid=[]
+          for p in Path('/tmp/fa2982mul').rglob('Mock2_FunctionalAnalysis.lean'):
+            if 'PrimalitySheafVerification' not in p.as_posix(): continue
+            b=p.read_bytes()
+            if hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256'] and len(b)==int(os.environ['BASE_SOURCE_BYTES']) and len(b.decode('utf-8').splitlines())==int(os.environ['BASE_SOURCE_LINES']) and b'\r' not in b: valid.append(p)
+          if not valid: raise SystemExit('exact base source missing')
+          p=min(valid,key=lambda q:(len(q.parts),q.as_posix())); (out/'BASE_SOURCE.txt').write_text(str(p.resolve())+'\n')
+          PY
+      - name: Apply strict idx2982 star-mul repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-frontier-2982-star-mul-v2
+          python3 scripts/fa_dynamic_apply_staged_library_strict.py --base-source "$(cat "$OUT/BASE_SOURCE.txt")" --library scripts/fa_dynamic_idx2982_star_mul_followup_v2.json --no-environment --target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean --audit-out "$OUT/PREPARATION.json"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          a=json.loads(Path('build-logs/codex-fa-frontier-2982-star-mul-v2/PREPARATION.json').read_text())
+          if not (a['public_declaration_headers_preserved'] and a['declaration_sequence_preserved'] and a['strict_staged_header_hash_check']['passed']): raise SystemExit('semantic audit failed')
+          with Path(os.environ['GITHUB_ENV']).open('a') as f: f.write(f"CANDIDATE_SHA={a['candidate_source_sha256']}\nCANDIDATE_BYTES={a['candidate_bytes']}\nCANDIDATE_LINES={a['candidate_lines']}\n")
+          PY
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-frontier-2982-star-mul-v2
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none > "$OUT/elan-init.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain-install.log" 2>&1; lake exe cache get > "$OUT/cache-get.log" 2>&1; lean --version > "$OUT/lean-version.txt"; lake --version > "$OUT/lake-version.txt"
+      - name: Probe exact star algebra
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"; OUT=build-logs/codex-fa-frontier-2982-star-mul-v2
+          cat >/tmp/ProbeStarMul2982.lean <<'LEAN'
+          import Mathlib
+          example (a c : ℝ) (u v : ℂ) :
+              (a : ℂ) * v * star ((a : ℂ) * (c : ℂ) * u) =
+                (a : ℂ) * v * (c : ℂ) * star ((a : ℂ) * u) := by
+            have ha : star (a : ℂ) = (a : ℂ) := by
+              rw [Complex.star_def, Complex.conj_ofReal]
+            have hc : star (c : ℂ) = (c : ℂ) := by
+              rw [Complex.star_def, Complex.conj_ofReal]
+            simp only [star_mul', ha, hc]
+            ring
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeStarMul2982.lean > "$OUT/ProbeStarMul2982.log" 2>&1
+      - name: Direct full-source diagnostic compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"; OUT=build-logs/codex-fa-frontier-2982-star-mul-v2; mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){ s=$1;c=$2;o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean;i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean;rm -f "$o" "$i";:>"$OUT/$s.executed";set +e;lake env lean "-DmaxErrors=$c" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1;x=$?;set -e;echo $x>"$OUT/$s.exit";}
+          one Mock2 3; one Mock2_Advanced 3; test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean|awk '{print $1}')" = "$CANDIDATE_SHA"; test "$(wc -c < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq "$CANDIDATE_BYTES"; one Mock2_FunctionalAnalysis 128
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-frontier-2982-star-mul-v2'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); s=p.read_text(); ds=list(re.finditer(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)',s)); starts=[s.count('\n',0,m.start())+1 for m in ds]; er=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$'); es=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+            m=er.match(raw)
+            if m: ln=int(m.group(1));j=bisect_right(starts,ln)-1;es.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[j].group('name') if j>=0 else None,'declaration_index':j if j>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')};first=es[0] if es else {};b=p.read_bytes();prep=json.loads((out/'PREPARATION.json').read_text());m={'schema':'fa-frontier-2982-star-mul-v2','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_executed':(out/'Mock2.executed').exists(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_executed':(out/'Mock2_Advanced.executed').exists(),'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_executed':(out/'Mock2_FunctionalAnalysis.executed').exists(),'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ex),'FA_error_headers_captured':len(es),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'public_declaration_headers_preserved':prep['public_declaration_headers_preserved'],'declaration_sequence_preserved':prep['declaration_sequence_preserved']};(out/'METRIC.json').write_text(json.dumps(m,indent=2,sort_keys=True)+'\n');(out/'ERROR_HEADERS.json').write_text(json.dumps(es,indent=2)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-frontier-2982-star-mul-v2-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-frontier-2982-star-mul-v2
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Preserve FA exit
+        if: always()
+        env: {FA_EXIT: "${{ steps.direct.outputs.fa_exit }}"}
+        shell: bash
+        run: test -n "${FA_EXIT:-}" || exit 86; exit "$FA_EXIT"
