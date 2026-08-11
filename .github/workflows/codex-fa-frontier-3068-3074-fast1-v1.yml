@@ -15,8 +15,8 @@ concurrency:
   group: codex-fa-frontier-3068-3074-fast1-v1
   cancel-in-progress: true
 env:
-  BASE_RUN_ID: "31526614364"
-  BASE_HEAD_SHA: "443cd48220889fd4d01b21d9195e917ff33b91ab"
+  BASE_RUN_ID: "31526732564"
+  BASE_HEAD_SHA: "896f4dc030c06ca9d554a52d5b4c5da2ae606701"
   BASE_WORKFLOW: ".github/workflows/codex-fa-frontier-3029-3047-fast1-v1.yml"
   BASE_FIRST_INDEX: "3068"
 jobs:
