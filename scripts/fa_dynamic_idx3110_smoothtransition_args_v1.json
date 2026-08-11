@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-idx3110-smoothtransition-args-v1",
+  "status": "DIRECT_GOAL_DIAGNOSED_PENDING_MODULE_DIRECT_LEAN",
+  "base_direct_run_id": 31530464611,
+  "base_direct_source_sha256": "a258803cec66253288cec6f4a38b4b18c46ae0e93cf9861022d1bcef98e29f94",
+  "repairs": [
+    {
+      "declaration_index": 3110,
+      "declaration_name": "intrinsicCuspCutoffReal_lipschitz",
+      "old_fragment": "      smoothTransition_lipschitz.dist_le_mul z w",
+      "new_fragment": "      smoothTransition_lipschitz.dist_le_mul\n        (((N : ℝ) + 2) - modularLogMaxHeight z)\n        (((N : ℝ) + 2) - modularLogMaxHeight w)"
+    }
+  ]
+}
