@@ -1,0 +1,76 @@
+name: Codex FA501 lookahead maxErrors32
+
+on:
+  push:
+    branches:
+      - diag/fa501-lookahead32-20260811
+    paths:
+      - .github/workflows/codex-fa501-lookahead32.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  FA_COMPILE_MAX_ERRORS: "32"
+
+jobs:
+  lookahead:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Run FA501 lookahead
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa501_height_density_dependent_hlevel_candidate_ci.sh 2>&1 | tee /tmp/lookahead.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report lookahead
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/report.md
+          from pathlib import Path
+          import json, os, re
+          p=Path('build-logs/codex-fa501-height-density-dependent-hlevel/candidates/norms/METRIC.json')
+          src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          log=Path('/tmp/lookahead.log')
+          xs=['## FA501 lookahead diagnostics maxErrors=32','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_error_headers_captured','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+          text=log.read_text(encoding='utf-8',errors='replace') if log.exists() else ''
+          headers=[]
+          for line in text.splitlines():
+              if re.search(r'\.lean:\d+:\d+: error:', line):
+                  headers.append(line)
+          xs += ['', '### error headers','```text','\n'.join(headers[:40]),'```']
+          if isinstance(m,dict) and m.get('FA_first_actual_error_line') and src.exists():
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=int(m['FA_first_actual_error_line']); lo=max(1,c-16); hi=min(len(a),c+50)
+              xs += ['',f'### source around first error {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/report.md)"
+      - name: Preserve runner result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
