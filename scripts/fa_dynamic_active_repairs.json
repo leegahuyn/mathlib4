@@ -43,14 +43,14 @@
       "declaration_name": "raisingMaximalAdjointWeakMaassIdentificationAt_of_periodization",
       "header_sha256": "e6b3a82e791b0eeae715c278002e1d1e65b2af3db28e3ae9b8e6bd388c7df789",
       "old_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate (n + 1) u) =\n        inner ℂ p.1 (-lowerFromSuccCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalLowerFromSucc_on_core] using hFormal",
-      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate (n + 1) u) =\n        inner ℂ p.1 (-lowerFromSuccCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate (n + 1) u) =\n        inner ℂ p.1 (-lowerFromSuccCoordinate n u) := by\n    have hNeg :\n        (-physicalLowerFromSucc n) (l2CoreRangeEquiv (n + 1) u) =\n          -(physicalLowerFromSucc n (l2CoreRangeEquiv (n + 1) u)) :=\n      LinearPMap.neg_apply (physicalLowerFromSucc n)\n        (l2CoreRangeEquiv (n + 1) u)\n    rw [hNeg, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
     },
     {
       "declaration_index": 2911,
       "declaration_name": "loweringMaximalAdjointWeakMaassIdentificationAt_of_periodization",
       "header_sha256": "d136fd9115ab456c72b241c7eb45b86e874346dd22ac0b8fa502ec0635e4d22f",
       "old_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate n u) =\n        inner ℂ p.1 (-raisedCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalRaise_on_core] using hFormal",
-      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate n u) =\n        inner ℂ p.1 (-raisedCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+      "new_fragment": "  have hPetersson :\n      inner ℂ p.2 (l2Coordinate n u) =\n        inner ℂ p.1 (-raisedCoordinate n u) := by\n    have hNeg :\n        (-physicalRaise n) (l2CoreRangeEquiv n u) =\n          -(physicalRaise n (l2CoreRangeEquiv n u)) :=\n      LinearPMap.neg_apply (physicalRaise n)\n        (l2CoreRangeEquiv n u)\n    rw [hNeg, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
     }
   ]
 }
