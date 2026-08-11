@@ -1,0 +1,84 @@
+name: Codex FA488 typed-by strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa488-hpoint-typed-by-20260811
+    paths:
+      - .github/workflows/codex-fa488-authoritative-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa488-authoritative-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA488 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA488 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- upstream_FA487_run: \`31455433347\`\n- upstream_FA487_job: \`93668113536\`\n- upstream_FA487_source: \`6a478ada53be28bbe1335f440f9663e8a0faaa3576a8b1a602cf7a7330556d03\`\n- frontier: \`35312:11 selectedLogHeightEnergyDensity_continuous / index 2806\`\n- patch: \`add explicit expected Continuous type to outer by-term\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA488 candidate/direct Lean loop and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa488_hpoint_typed_by_candidate_ci.sh 2>&1 | tee /tmp/fa488-observe.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report compact FA488 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa488-comment.md
+          from pathlib import Path
+          import json, os
+          p = Path('build-logs/codex-fa488-hpoint-typed-by/candidates/norms/METRIC.json')
+          lines = ['## FA488 authoritative observer — compact evidence', '',
+                   f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",
+                   f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",
+                   f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          if p.exists():
+              m = json.loads(p.read_text(encoding='utf-8'))
+              for key in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  lines.append(f"- {key}: `{m.get(key)}`")
+              msg = str(m.get('FA_first_error_message','')).replace('`','\\`')[:4000]
+              lines += ['', '### first error', '```text', msg, '```']
+          else:
+              lines.append('- METRIC.json: `MISSING`')
+          print('\n'.join(lines)[:12000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa488-comment.md)"
+
+      - name: Preserve FA488 script result as workflow conclusion
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
