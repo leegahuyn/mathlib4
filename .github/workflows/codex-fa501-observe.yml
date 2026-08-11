@@ -34,7 +34,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA501 authoritative fast observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA500 -> FA501\`\n- upstream_FA500_run: \`31470489635\`\n- upstream_FA500_job: \`93712581127\`\n- upstream_FA500_source: \`1227fa3cfc64d930aab57e883725380944444100844200161156e6bfbf60f22c\`\n- frontier: \`35735:8 selectedHeightGraphDensity_uniform_eventually_zero / index 2825\`\n- patch: \`rw [hlevel] -> simp only [hlevel]\`\n- maxErrors: \`1\`"
+          body="## FA501 authoritative fast observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA500 -> FA501\`\n- upstream_FA500_run: \`31470489635\`\n- upstream_FA500_job: \`93712581127\`\n- upstream_FA500_source: \`1227fa2790152efa58c5f4e4acc14bde93a29259c5951c890eab80db6eedcc95\`\n- frontier: \`35735:8 selectedHeightGraphDensity_uniform_eventually_zero / index 2825\`\n- patch: \`rw [hlevel] -> simp only [hlevel]\`\n- maxErrors: \`1\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
       - name: Run exact FA501 candidate/direct Lean and retain exit
         id: run
