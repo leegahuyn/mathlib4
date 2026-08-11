@@ -10,6 +10,7 @@ on:
       - scripts/fa_dynamic_cluster_3152_3157_extendofnorm_v1.json
       - scripts/fa_d0a3_r003_high_confidence_overrides.json
       - scripts/fa_dynamic_apply_staged_library_strict.py
+      - scripts/fa_dynamic_apply_staged_library_strict_where.py
   workflow_dispatch:
 permissions: {actions: read, contents: read, statuses: write}
 concurrency: {group: codex-fa-frontier-after-nnreal-3162-v1, cancel-in-progress: true}
@@ -76,12 +77,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail; OUT=build-logs/codex-fa-frontier-after-nnreal-3162-v1; base="$(cat "$OUT/BASE_SOURCE.txt")"
-          apply(){ tag=$1;lib=$2;next=/tmp/$tag.lean;python3 scripts/fa_dynamic_apply_staged_library_strict.py --base-source "$base" --library "$lib" --no-environment --target "$next" --audit-out "$OUT/$tag.json";base=$next;}
-          apply F3112_3135 scripts/fa_dynamic_cluster_3112_3135_followup_v1.json
-          apply F3127 scripts/fa_dynamic_cluster_3125_3127_extendofnorm_v2.json
-          apply F3142 scripts/fa_dynamic_cluster_3142_3159_homogeneous_sub_v1.json
-          apply F3157 scripts/fa_dynamic_cluster_3152_3157_extendofnorm_v1.json
-          apply F3162 /tmp/r003-3162.json
+          proof(){ tag=$1;lib=$2;next=/tmp/$tag.lean;python3 scripts/fa_dynamic_apply_staged_library_strict.py --base-source "$base" --library "$lib" --no-environment --target "$next" --audit-out "$OUT/$tag.json";base=$next;}
+          decl(){ tag=$1;lib=$2;next=/tmp/$tag.lean;python3 scripts/fa_dynamic_apply_staged_library_strict_where.py --base-source "$base" --library "$lib" --no-environment --target "$next" --audit-out "$OUT/$tag.json";base=$next;}
+          proof F3112_3135 scripts/fa_dynamic_cluster_3112_3135_followup_v1.json
+          decl F3127 scripts/fa_dynamic_cluster_3125_3127_extendofnorm_v2.json
+          decl F3142 scripts/fa_dynamic_cluster_3142_3159_homogeneous_sub_v1.json
+          decl F3157 scripts/fa_dynamic_cluster_3152_3157_extendofnorm_v1.json
+          proof F3162 /tmp/r003-3162.json
           cp "$base" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; cp "$base" "$OUT/Mock2_FunctionalAnalysis-candidate.lean"
           python3 - <<'PY'
           from pathlib import Path
