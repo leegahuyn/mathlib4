@@ -1,3 +1,4 @@
+# Authority: FA490 run 31457497428 / job 93674247669.
 name: Codex FA491 strip Fubini prod restrict strict direct Lean
 
 on:
@@ -33,7 +34,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA491 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA490 -> FA491\`\n- upstream_FA490_run: \`31457497428\`\n- upstream_FA490_job: \`93674247669\`\n- upstream_FA490_source: \`e1fd4d4370c14185f81faea26e09b8611bf78e19e583026e55d8ee7adbccd40d\`\n- frontier: \`35483:2 integral_selectedLogHeightEnergyDensity_stripTail_eq_iterated / index 2811\`\n- patch: \`rw [← Measure.prod_restrict]; reuse integral_prod hProd\`"
+          body="## FA491 authoritative observer started — latest FA490 evidence\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA490 -> FA491\`\n- upstream_FA490_run: \`31457497428\`\n- upstream_FA490_job: \`93674247669\`\n- upstream_FA490_source: \`e1fd4d4370c14185f81faea26e09b8611bf78e19e583026e55d8ee7adbccd40d\`\n- frontier: \`35483:2 integral_selectedLogHeightEnergyDensity_stripTail_eq_iterated / index 2811\`\n- patch: \`rw [← Measure.prod_restrict]; reuse integral_prod hProd\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
 
       - name: Run exact FA491 candidate/direct Lean loop and retain exit
@@ -59,7 +60,7 @@ jobs:
           import json, os
           out=Path('build-logs/codex-fa491-strip-fubini-prod-restrict/candidates/norms')
           p=out/'METRIC.json'; source=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa491.log')
-          lines=['## FA491 authoritative observer — actual remote execution','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          lines=['## FA491 authoritative observer — actual remote execution — latest FA490 evidence','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
           m=None
           if p.exists():
               m=json.loads(p.read_text())
