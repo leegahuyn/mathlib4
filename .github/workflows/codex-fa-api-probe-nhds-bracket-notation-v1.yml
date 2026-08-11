@@ -1,0 +1,50 @@
+name: Codex FA API probe nhds bracket notation v1
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-nhds-bracket-notation-v1.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe notation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeNhdsBracket.lean <<'LEAN'
+          import Mathlib
+          open Set Filter Topology
+          local notation "nhds[" s "]" x => nhdsWithin x s
+          example (x : ℝ) (s : Set ℝ) : nhds[s] x = 𝓝[s] x := by rfl
+          example (f g : ℝ → ℝ) (x : ℝ) (s : Set ℝ)
+              (h : f =ᶠ[𝓝[s] x] g) : f =ᶠ[nhds[s] x] g := h
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeNhdsBracket.lean | tee /tmp/nhds-bracket.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-nhds-bracket-${{ github.sha }}
+          path: /tmp/nhds-bracket.log
+          if-no-files-found: warn
+          retention-days: 7
