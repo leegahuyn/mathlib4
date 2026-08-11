@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 env:
-  TARGET_SHA: "71992e1974bc3295fbf4e5f686087a87c1bf4c7d"
-  TARGET_WORKFLOW: "codex-fa-frontier-extended-2967.yml"
-  TARGET_CONTEXT: "codex/fa-frontier-extended-2967-locator"
+  TARGET_SHA: "fa7ca526c63939f3945e8662e67f8a34391a0eed"
+  TARGET_WORKFLOW: "codex-fa-frontier-extended-2967-v2.yml"
+  TARGET_CONTEXT: "codex/fa-frontier-extended-2967-v2-locator"
 
 jobs:
   locate:
