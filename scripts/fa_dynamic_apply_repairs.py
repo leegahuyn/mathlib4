@@ -23,12 +23,8 @@ def header_for(text: str, start: int, end: int) -> str:
     segment = text[start:end]
     marker = segment.find(":= by")
     if marker < 0:
-        marker = segment.find(" where\n")
-        if marker < 0:
-            raise RuntimeError("cannot identify declaration header terminator")
-        marker += len(" where")
-    else:
-        marker += len(":= by")
+        raise RuntimeError("repaired declaration has no := by header terminator")
+    marker += len(":= by")
     return segment[:marker]
 
 
@@ -42,14 +38,14 @@ def declarations(text: str):
             "name": m.group("name"),
             "start": m.start(),
             "end": end,
-            "header": header_for(text, m.start(), end),
         })
     return result
 
 
 def executable_forbidden_counts(text: str) -> dict[str, int]:
-    # Baseline is already directly audited. This conservative delta guard rejects
-    # any new lexical occurrence in proof text; comments therefore cannot hide growth.
+    # The attested d0a3 baseline already passed the strict executable audit.
+    # Rejecting lexical-count growth is deliberately conservative: proof repairs
+    # cannot smuggle a newly forbidden mechanism through comments or local text.
     return {token: text.count(token) for token in FORBIDDEN}
 
 
@@ -90,7 +86,8 @@ def main() -> int:
             raise RuntimeError(
                 f"declaration identity drift at {idx}: {decl['name']} != {repair['declaration_name']}"
             )
-        header_sha = sha(decl["header"].encode())
+        header = header_for(text, decl["start"], decl["end"])
+        header_sha = sha(header.encode())
         if header_sha != repair["header_sha256"]:
             raise RuntimeError(f"public declaration header drift before repair {idx}")
 
@@ -104,10 +101,12 @@ def main() -> int:
         absolute = decl["start"] + body.index(old)
         text = text[:absolute] + new + text[absolute + len(old):]
 
-        after_decl = declarations(text)[idx]
+        after_current = declarations(text)
+        after_decl = after_current[idx]
         if after_decl["name"] != repair["declaration_name"]:
             raise RuntimeError(f"declaration name changed by repair {idx}")
-        if after_decl["header"] != decl["header"]:
+        after_header = header_for(text, after_decl["start"], after_decl["end"])
+        if after_header != header:
             raise RuntimeError(f"public declaration proposition/header changed by repair {idx}")
         applied.append({
             "declaration_index": idx,
@@ -134,7 +133,7 @@ def main() -> int:
         )
 
     audit = {
-        "schema": "fa-dynamic-repair-audit-v1",
+        "schema": "fa-dynamic-repair-audit-v2",
         "base_source_sha256": sha(base_bytes),
         "candidate_source_sha256": sha(data),
         "candidate_bytes": len(data),
@@ -147,7 +146,9 @@ def main() -> int:
         "forbidden_counts_after": after_forbidden,
         "repairs_applied": applied,
     }
-    Path(args.audit_out).write_text(json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    Path(args.audit_out).write_text(
+        json.dumps(audit, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return 0
 
 
