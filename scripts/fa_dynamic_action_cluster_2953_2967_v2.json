@@ -1,11 +1,11 @@
 {
-  "schema": "fa-dynamic-action-cluster-2953-2967-v2",
+  "schema": "fa-dynamic-action-cluster-2953-2967-v3",
   "repairs": [
     {
       "declaration_index": 2953,
       "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
       "old_fragment": "  · simp only [mul_smul, mul_inv, one_smul]",
-      "new_fragment": "  · change gamma • ((gamma⁻¹ : GammaTwo) • z) = z\n    rw [← mul_smul, mul_inv, one_smul]"
+      "new_fragment": "  · change gamma • ((gamma⁻¹ : GammaTwo) • z) = z\n    rw [← mul_smul]\n    simp"
     },
     {
       "declaration_index": 2957,
@@ -17,13 +17,13 @@
       "declaration_index": 2958,
       "declaration_name": "gammaTwoPeriodizationTerm_mul_smul",
       "old_fragment": "    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    simpa only [mul_smul, mul_inv, one_smul] using hraw",
-      "new_fragment": "    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    have hact :\n        (gamma : GammaTwo) • ((gamma⁻¹ : GammaTwo) • z) = z := by\n      rw [← mul_smul, mul_inv, one_smul]\n    rw [hact] at hraw\n    exact hraw"
+      "new_fragment": "    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    have hact :\n        (gamma : GammaTwo) • ((gamma⁻¹ : GammaTwo) • z) = z := by\n      rw [← mul_smul]\n      simp\n    rw [hact] at hraw\n    exact hraw"
     },
     {
       "declaration_index": 2967,
       "declaration_name": "support_periodizationIndex_at_openCarrier",
       "old_fragment": "    simp only [a, gammaTwoEffectiveElement_smul,\n      mul_smul, mul_inv, one_smul]",
-      "new_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    rw [← mul_smul, mul_inv, one_smul]"
+      "new_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    rw [← mul_smul]\n    simp"
     }
   ]
 }
