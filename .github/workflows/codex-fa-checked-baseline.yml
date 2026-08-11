@@ -4,6 +4,9 @@ name: Codex checked-in FA direct baseline
   push:
     branches:
       - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-checked-baseline.yml
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
 
 permissions:
   contents: read
