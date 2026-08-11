@@ -1,0 +1,68 @@
+name: Codex FA499 materialized source window
+
+on:
+  push:
+    branches:
+      - fix/fa499-eta-authority-stable-20260811
+    paths:
+      - .github/workflows/codex-fa499-source-window.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Materialize cumulative FA499 candidate only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/fa465_candidate_ci.sh')
+          s=p.read_text()
+          needle='python3 scripts/fa465_prepare_checked_lower.py --variant "$VARIANT" --output-dir "$OUT" > "$OUT/prepare.log" 2>&1;prepare_rc=$?;printf \'%s\' "$prepare_rc" > "$OUT/prepare.exit";cat "$OUT/prepare.log"'
+          if s.count(needle) != 1:
+              raise SystemExit(f'prepare hook count={s.count(needle)}')
+          s=s.replace(needle, needle+'\nexit "$prepare_rc"', 1)
+          p.write_text(s)
+          PY
+          set +e
+          bash scripts/fa499_height_basepoint_eta_continuity_candidate_ci.sh > /tmp/materialize.log 2>&1
+          rc=$?
+          set -e
+          echo "materialize_rc=$rc"
+          test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sed -n '35645,36050p' PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > /tmp/window.txt
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > /tmp/source.sha
+      - name: Post materialized window
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          {
+            echo '## FA499 materialized source window 35645-36050'
+            echo
+            echo "- run_id: \`${GITHUB_RUN_ID}\`"
+            echo "- head_sha: \`${GITHUB_SHA}\`"
+            echo "- source: \`$(cat /tmp/source.sha)\`"
+            echo
+            echo '```lean'
+            cat /tmp/window.txt
+            echo '```'
+            echo
+            echo '### materialize tail'
+            echo '```text'
+            tail -60 /tmp/materialize.log
+            echo '```'
+          } > /tmp/comment.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(head -c 60000 /tmp/comment.md)"
