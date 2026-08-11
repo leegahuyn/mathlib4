@@ -1,0 +1,32 @@
+{
+  "schema": "fa-dynamic-cluster-3179-restricted-measure-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_evidence": {
+    "ae_restrict_probe_run": 31531344841,
+    "lp_zero_probe_run": 31532027530,
+    "notes": "ae_mono Measure.restrict_le_self passed; Lp.coeFn_zero signature is positional (E) (p) (μ)"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3179,
+      "declaration_name": "completedGaugeMultiplier_hasCompactCarrierSupport",
+      "replacements": [
+        {
+          "id": "restrict-ae-facts-explicitly",
+          "old_fragment": "    filter_upwards [\n      MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m\n          (l2Coordinate m (Acore u))),\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m\n        (Acore u)).restrict,\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean.restrict,\n      ae_restrict_mem hK.measurableSet.compl]\n        with z hzRestr hzGauge hzOpen hzCompl",
+          "new_fragment": "    filter_upwards [\n      MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m\n          (l2Coordinate m (Acore u))),\n      ae_mono Measure.restrict_le_self\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m\n          (Acore u)),\n      ae_mono Measure.restrict_le_self\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean,\n      ae_restrict_mem hK.measurableSet.compl,\n      MeasureTheory.Lp.coeFn_zero ℂ 2\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ)]\n        with z hzRestr hzGauge hzOpen hzCompl hzZero"
+        },
+        {
+          "id": "close-pointwise-zero-representative",
+          "old_fragment": "    simp only [hcZero, zero_mul, Pi.zero_apply]",
+          "new_fragment": "    rw [hcZero, zero_mul, Pi.zero_apply, hzZero]"
+        },
+        {
+          "id": "explicit-lp-zero-measure",
+          "old_fragment": "    rw [hAllZero x]\n    exact MeasureTheory.Lp.coeFn_zero",
+          "new_fragment": "    rw [hAllZero x]\n    exact MeasureTheory.Lp.coeFn_zero ℂ 2\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ)"
+        }
+      ]
+    }
+  ]
+}
