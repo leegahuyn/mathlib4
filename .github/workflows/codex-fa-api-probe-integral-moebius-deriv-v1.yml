@@ -1,0 +1,70 @@
+name: Codex FA API probe integral Moebius derivative
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-integral-moebius-deriv-v1.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe exact derivative bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeIntegralMoebiusDeriv.lean <<'LEAN'
+          import Mathlib
+          open Matrix Matrix.SpecialLinearGroup UpperHalfPlane
+          open scoped MatrixGroups UpperHalfPlane
+
+          noncomputable def chart (g : SL(2, ℤ)) (w : ℂ) : ℂ :=
+            (((g : GL (Fin 2) ℝ) • UpperHalfPlane.ofComplex w : ℍ) : ℂ)
+
+          theorem detPos (g : SL(2, ℤ)) :
+              0 < ((g : GL (Fin 2) ℝ)).val.det := by
+            change 0 < Matrix.det
+              ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ) g : SL(2, ℝ)) :
+                Matrix (Fin 2) (Fin 2) ℝ)
+            rw [Matrix.SpecialLinearGroup.det_coe]
+            norm_num
+
+          example (g : SL(2, ℤ)) (z : ℍ) :
+              HasStrictDerivAt (chart g)
+                (((g : GL (Fin 2) ℝ)).val.det /
+                  UpperHalfPlane.denom (g : GL (Fin 2) ℝ) z ^ 2) (z : ℂ) := by
+            change HasStrictDerivAt
+              (fun w : ℂ => (((g : GL (Fin 2) ℝ) • UpperHalfPlane.ofComplex w : ℍ) : ℂ))
+              (((g : GL (Fin 2) ℝ)).val.det /
+                UpperHalfPlane.denom (g : GL (Fin 2) ℝ) z ^ 2) (z : ℂ)
+            exact UpperHalfPlane.hasStrictDerivAt_smul (detPos g) z
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeIntegralMoebiusDeriv.lean | tee /tmp/integral-moebius-deriv.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-integral-moebius-deriv-${{ github.sha }}
+          path: /tmp/integral-moebius-deriv.log
+          if-no-files-found: warn
+          retention-days: 7
