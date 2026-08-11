@@ -1,0 +1,73 @@
+name: Codex FA API probe smoothTransition Lipschitz v2
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-smoothtransition-lipschitz-v2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe corrected global Lipschitz proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeSmoothTransitionLipschitzV2.lean <<'LEAN'
+          import Mathlib
+          open Set Function
+
+          example : ∃ K : NNReal, LipschitzWith K Real.smoothTransition := by
+            obtain ⟨K, hK⟩ :=
+              Real.smoothTransition.contDiff.contDiffOn.exists_lipschitzOnWith
+                (n := ⊤) (by simp) (convex_Icc (0 : ℝ) 1) isCompact_Icc
+            refine ⟨K, ?_⟩
+            rw [lipschitzWith_iff_dist_le_mul]
+            intro x y
+            let px := projIcc (0 : ℝ) 1 zero_le_one x
+            let py := projIcc (0 : ℝ) 1 zero_le_one y
+            have hpx : (px : ℝ) ∈ Icc (0 : ℝ) 1 := px.property
+            have hpy : (py : ℝ) ∈ Icc (0 : ℝ) 1 := py.property
+            have hProj : dist (px : ℝ) (py : ℝ) ≤ 1 * dist x y := by
+              simpa only [px, py, Subtype.dist_eq] using
+                (LipschitzWith.projIcc zero_le_one).dist_le_mul x y
+            calc
+              dist (Real.smoothTransition x) (Real.smoothTransition y) =
+                  dist (Real.smoothTransition (px : ℝ))
+                    (Real.smoothTransition (py : ℝ)) := by
+                rw [Real.smoothTransition.projIcc, Real.smoothTransition.projIcc]
+              _ ≤ (K : ℝ) * dist (px : ℝ) (py : ℝ) :=
+                hK.dist_le_mul (px : ℝ) hpx (py : ℝ) hpy
+              _ ≤ (K : ℝ) * (1 * dist x y) :=
+                mul_le_mul_of_nonneg_left hProj K.coe_nonneg
+              _ = (K : ℝ) * dist x y := by ring
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeSmoothTransitionLipschitzV2.lean | tee /tmp/smoothtransition-lipschitz-v2.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-smoothtransition-lipschitz-v2-${{ github.sha }}
+          path: /tmp/smoothtransition-lipschitz-v2.log
+          if-no-files-found: warn
+          retention-days: 7
