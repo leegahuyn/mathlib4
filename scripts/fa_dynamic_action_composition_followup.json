@@ -1,0 +1,23 @@
+{
+  "schema": "fa-dynamic-action-composition-followup-v1",
+  "repairs": [
+    {
+      "declaration_index": 2953,
+      "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
+      "old_fragment": "  · simp only [mul_smul, mul_inv, one_smul]",
+      "new_fragment": "  · rw [← mul_smul, mul_inv, one_smul]"
+    },
+    {
+      "declaration_index": 2958,
+      "declaration_name": "gammaTwoPeriodizationTerm_mul_smul",
+      "old_fragment": "    simpa only [mul_smul, mul_inv, one_smul] using hraw",
+      "new_fragment": "    rw [← mul_smul, mul_inv, one_smul] at hraw\n    exact hraw"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "old_fragment": "    simp only [a, gammaTwoEffectiveElement_smul,\n      mul_smul, mul_inv, one_smul]",
+      "new_fragment": "    simp only [a, gammaTwoEffectiveElement_smul]\n    rw [← mul_smul, mul_inv, one_smul]"
+    }
+  ]
+}
