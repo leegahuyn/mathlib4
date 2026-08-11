@@ -1,0 +1,119 @@
+{
+  "schema": "fa-dynamic-supplemental-repairs-2939-2967-v1",
+  "base_source_sha256": "509439b3e471d067c79100a2a54811387db6f02a683451b57d935114cabebfb1",
+  "base_declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+  "repairs": [
+    {
+      "declaration_index": 2939,
+      "declaration_name": "gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one",
+      "header_sha256": "eb37a6c802281211c0445c517e5fc7b89874c1b4bec5b2c01e6375277785ea53",
+      "old_fragment": "  have hfix : ((gamma : SL(2, ℤ)) • gammaTwoKernelTestPoint) =\n      gammaTwoKernelTestPoint := by\n    have h := congrArg\n      (fun a : GammaTwoEffective ↦ a • gammaTwoKernelTestPoint) hgamma\n    simpa only [gammaTwoEffectiveElement_smul, one_smul] using h",
+      "new_fragment": "  have hfix : ((gamma : SL(2, ℤ)) • gammaTwoKernelTestPoint) =\n      gammaTwoKernelTestPoint := by\n    change gamma • gammaTwoKernelTestPoint = gammaTwoKernelTestPoint\n    have h := congrArg\n      (fun a : GammaTwoEffective ↦ a • gammaTwoKernelTestPoint) hgamma\n    simpa only [gammaTwoEffectiveElement_smul, one_smul] using h"
+    },
+    {
+      "declaration_index": 2941,
+      "declaration_name": "inverseEtaPaperOrbitFactor_centralNegOne",
+      "header_sha256": "217d46a174ddbd8f5633a3db85ccc399f8b94f3620c99a8b1015fd7822863796",
+      "old_fragment": "  rw [inverseEtaPaperOrbitFactor,\n    inverseEtaPaperOrbitMultiplier_factor,\n    inverseEtaMultiplier_factor,\n    gammaTwoCentralNegOne_smul,\n    div_self (ModularForm.eta_ne_zero z.im_pos),\n    inverseEtaPaperOrbitDenom_centralNegOne,\n    heven, mul_one]",
+      "new_fragment": "  rw [inverseEtaPaperOrbitFactor_eq_eta,\n    gammaTwoCentralNegOne_smul,\n    div_self (ModularForm.eta_ne_zero z.im_pos),\n    inverseEtaPaperOrbitDenom_centralNegOne,\n    heven, mul_one]"
+    },
+    {
+      "declaration_index": 2950,
+      "declaration_name": "RealSmooth.comp_gammaTwo_smul",
+      "header_sha256": "270b9afd20f8d90b72e9908641b42165a6fe2d1cbab97fddb4d963d387060b3f",
+      "old_fragment": "  have hInner : ContDiffOn ℝ ∞ (gammaTwoMoebiusChart gamma)\n      UpperHalfPlane.upperHalfPlaneSet := by\n    simpa [RealSmooth, upperLift, gammaTwoMoebiusChart,\n      Function.comp_def] using\n      gammaTwoMoebiusCoordinate_realSmooth gamma",
+      "new_fragment": "  have hInner : ContDiffOn ℝ ∞ (gammaTwoMoebiusChart gamma)\n      UpperHalfPlane.upperHalfPlaneSet := by\n    change RealSmooth (gammaTwoMoebiusCoordinate gamma)\n    exact gammaTwoMoebiusCoordinate_realSmooth gamma"
+    },
+    {
+      "declaration_index": 2952,
+      "declaration_name": "gammaTwoPeriodizationTerm_realSmooth",
+      "header_sha256": "ec32a06d1bf1a299061baa85db2fb5cc2e6bfbe7acfc384366e0002d4eb6c7aa",
+      "old_fragment": "  exact\n    ((inverseEtaPaperOrbitFactor_realSmooth m gamma).comp_gammaTwo_smul gamma⁻¹).mul\n    ((gammaTwoPeriodizationSeed_realSmooth m v).comp_gammaTwo_smul gamma⁻¹)",
+      "new_fragment": "  exact\n    (RealSmooth.comp_gammaTwo_smul\n      (inverseEtaPaperOrbitFactor_realSmooth m gamma) gamma⁻¹).mul\n    (RealSmooth.comp_gammaTwo_smul\n      (gammaTwoPeriodizationSeed_realSmooth m v) gamma⁻¹)"
+    },
+    {
+      "declaration_index": 2953,
+      "declaration_name": "support_gammaTwoPeriodizationTerm_subset",
+      "header_sha256": "dfb9667c04e4f714a9a3774891c1157cd993cf0a32bb3ff1d22951aee1bb971e",
+      "old_fragment": "  have hseed : gammaTwoPeriodizationSeed m v\n      (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ≠ 0 := by\n    intro hzero\n    apply hz\n    simp [gammaTwoPeriodizationTerm, hzero]\n  refine ⟨((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z, ?_, ?_⟩\n  · change\n      ((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ)\n    exact subset_tsupport hseed\n  · simp",
+      "new_fragment": "  have hseed : gammaTwoPeriodizationSeed m v\n      (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ≠ 0 := by\n    intro hzero\n    apply hz\n    simp only [gammaTwoPeriodizationTerm, hzero, mul_zero]\n  refine ⟨(gamma⁻¹ : GammaTwo) • z, ?_, ?_⟩\n  · change\n      ((((gamma⁻¹ : GammaTwo) • z : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))\n    exact subset_tsupport\n      (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ) hseed\n  · simp only [mul_smul, mul_inv, one_smul]"
+    },
+    {
+      "declaration_index": 2955,
+      "declaration_name": "realSmooth_finsum_of_locallyFinite_support",
+      "header_sha256": "e276bc8630531f65cec2fae7ca128868e27b309d9df82110ef7bb0c7c29b24cb",
+      "old_fragment": "    rw [htfinite.mem_toFinset]\n    exact ⟨x, hi, hUt hxU⟩",
+      "new_fragment": "    change i ∈ I\n    rw [show I = htfinite.toFinset from rfl, htfinite.mem_toFinset]\n    exact ⟨x, hi, hUt hxU⟩"
+    },
+    {
+      "declaration_index": 2957,
+      "declaration_name": "gammaTwoPoincarePeriodization_realSmooth",
+      "header_sha256": "da16cd96466a8038b051f89d0ebb5e46df952a96139e145d6c6eeb6280e4c2df",
+      "old_fragment": "  simpa [gammaTwoPoincarePeriodization, Pi.smul_apply, smul_eq_mul] using\n    hsum.const_complex_smul (1 / 2 : ℂ)",
+      "new_fragment": "  change RealSmooth\n    (fun z : ℍ ↦ (1 / 2 : ℂ) *\n      ∑ᶠ gamma : GammaTwo, gammaTwoPeriodizationTerm m v gamma z)\n  simpa only [Pi.smul_apply, smul_eq_mul] using\n    hsum.const_complex_smul (1 / 2 : ℂ)"
+    },
+    {
+      "declaration_index": 2958,
+      "declaration_name": "gammaTwoPeriodizationTerm_mul_smul",
+      "header_sha256": "c02f0ad108d866f00c4bffa68c65873be151fb0554af28527eba1ea102110daf",
+      "old_fragment": "  have hfactor :\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta z *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) := by\n    simpa only [inverseEtaPaperOrbitFactor, map_inv, smul_inv_smul] using\n      (HalfIntegralMultiplier.factor_mul\n        (inverseEtaPaperOrbitMultiplier GammaTwo m)\n        delta gamma\n        (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z))",
+      "new_fragment": "  have hfactor :\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta z *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) := by\n    have hraw :=\n      HalfIntegralMultiplier.factor_mul\n        (inverseEtaPaperOrbitMultiplier GammaTwo m)\n        delta gamma\n        (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z)\n    change\n      inverseEtaPaperOrbitFactor m (delta * gamma)\n          (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) =\n        inverseEtaPaperOrbitFactor m delta\n            ((gamma : GammaTwo) •\n              ((gamma⁻¹ : GammaTwo) • z)) *\n          inverseEtaPaperOrbitFactor m gamma\n            (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) at hraw\n    simpa only [mul_smul, mul_inv, one_smul] using hraw"
+    },
+    {
+      "declaration_index": 2959,
+      "declaration_name": "gammaTwoPoincarePeriodization_covariance",
+      "header_sha256": "e3b7e3b7df3b20a8118062062143ac1779042685f2c6339d1a9ace9320618a8c",
+      "old_fragment": "  unfold inverseEtaPaperOrbitFactor\n  ring",
+      "new_fragment": "  unfold inverseEtaPaperOrbitFactor\n  unfold gammaTwoPoincarePeriodization\n  ring"
+    },
+    {
+      "declaration_index": 2960,
+      "declaration_name": "support_gammaTwoPoincarePeriodization_subset_iUnion",
+      "header_sha256": "8becd5ff63d47c59699a391ab288564ef61bdce19b219ca2a682a78ab267f3bd",
+      "old_fragment": "    exact Set.mem_iUnion.2\n      ⟨gamma, support_gammaTwoPeriodizationTerm_subset m v hterm⟩",
+      "new_fragment": "    exact Set.mem_iUnion.2\n      ⟨gamma, support_gammaTwoPeriodizationTerm_subset m v gamma hterm⟩"
+    },
+    {
+      "declaration_index": 2966,
+      "declaration_name": "gammaTwoPeriodizationTerm_centralNegOne",
+      "header_sha256": "645f4e31282defc03d4d8e3f1892930df2c4a404b5f29db4b92edbf0b1fa11fa",
+      "old_fragment": "  simp [gammaTwoPeriodizationTerm]",
+      "new_fragment": "  simp only [gammaTwoPeriodizationTerm,\n    gammaTwoCentralNegOne_inv, gammaTwoCentralNegOne_smul,\n    inverseEtaPaperOrbitFactor_centralNegOne, one_mul]"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "header_sha256": "1d3c075fea877115195c877a38f59927d67e9c0f4c4584af1a95eece09925a19",
+      "old_fragment": "  have hseed : gammaTwoPeriodizationSeed m v\n      (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ≠ 0 := by\n    intro hzero\n    apply hgamma\n    simp [gammaTwoPeriodizationTerm, hzero]",
+      "new_fragment": "  have hseed : gammaTwoPeriodizationSeed m v\n      (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ≠ 0 := by\n    intro hzero\n    apply hgamma\n    simp only [gammaTwoPeriodizationTerm, hzero, mul_zero]"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "header_sha256": "1d3c075fea877115195c877a38f59927d67e9c0f4c4584af1a95eece09925a19",
+      "old_fragment": "  have hxK : (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ∈\n      gammaTwoPeriodizationSeedSupport m v := by\n    change\n      (((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))\n    exact subset_tsupport hseed",
+      "new_fragment": "  have hxK : (((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z) ∈\n      gammaTwoPeriodizationSeedSupport m v := by\n    change\n      (((((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z : ℍ) : ℂ) ∈\n        tsupport\n          (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ))\n    exact subset_tsupport\n      (gammaTwoPeriodizationSeedCore m v : ℂ → ℂ) hseed"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "header_sha256": "1d3c075fea877115195c877a38f59927d67e9c0f4c4584af1a95eece09925a19",
+      "old_fragment": "  have hzTranslate : z ∈ a • gammaTwoOpenCarrier := by\n    rw [Set.mem_smul_set]\n    refine ⟨((gamma⁻¹ : GammaTwo) : SL(2, ℤ)) • z,\n      hxOpen, ?_⟩\n    simp [a, gammaTwoEffectiveElement_smul]",
+      "new_fragment": "  have hzTranslate : z ∈ a • gammaTwoOpenCarrier := by\n    rw [Set.mem_smul_set]\n    refine ⟨(gamma⁻¹ : GammaTwo) • z, hxOpen, ?_⟩\n    simp only [a, gammaTwoEffectiveElement_smul,\n      mul_smul, mul_inv, one_smul]"
+    },
+    {
+      "declaration_index": 2961,
+      "declaration_name": "gammaTwoPoincarePeriodization_quotientCompact",
+      "header_sha256": "1122295d2f3d63052d47aa765d331f353e7d2e9f6cfcebd049cf1b440378b480",
+      "old_fragment": "    rw [← hzx]\n    exact gammaTwoQuotientMk_gamma_smul gamma x",
+      "new_fragment": "    rw [← hzx]\n    exact (gammaTwoQuotientMk_gamma_smul gamma x).symm"
+    },
+    {
+      "declaration_index": 2967,
+      "declaration_name": "support_periodizationIndex_at_openCarrier",
+      "header_sha256": "1d3c075fea877115195c877a38f59927d67e9c0f4c4584af1a95eece09925a19",
+      "old_fragment": "  have ha : a = 1 := by\n    by_contra hane\n    exact Set.disjoint_left.1\n      (gammaTwoOpenCarrier_disjoint a hane) hzTranslate hz\n  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel",
+      "new_fragment": "  have ha : a = 1 := by\n    by_contra hane\n    exact Set.disjoint_left.1\n      (gammaTwoOpenCarrier_disjoint a hane) hzTranslate hz\n  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  change gamma ∈ ({1, gammaTwoCentralNegOne} : Finset GammaTwo)\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel"
+    }
+  ]
+}
