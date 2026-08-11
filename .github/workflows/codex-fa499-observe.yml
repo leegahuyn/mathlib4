@@ -1,5 +1,5 @@
 name: Codex FA499 eta-expanded Complex.mk fast strict direct Lean
-# retrigger after eta-expanded API smoke success
+# retrigger eta candidate after smoke success; prioritize full direct Lean
 
 on:
   push:
