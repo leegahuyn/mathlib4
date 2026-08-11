@@ -1,0 +1,92 @@
+name: Codex FA486 UpperHalfPlane continuity proof probe
+
+on:
+  push:
+    branches:
+      - diag/fa486-logheight-continuity-context-20260811
+    paths:
+      - .github/workflows/codex-fa486-upperhalfplane-proof-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Compile explicit continuity proof probe
+        id: probe
+        shell: bash
+        run: |
+          set +e
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat > /tmp/FA486UpperHalfPlaneProofProbe.lean <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
+
+          noncomputable section
+          open Complex Topology
+
+          noncomputable def probeLogHeightBasePoint (t r : ℝ) : ℍ :=
+            ⟨Complex.mk t (Real.exp r), Real.exp_pos r⟩
+
+          example : Continuous
+              (fun p : ℝ × ℝ => probeLogHeightBasePoint p.1 p.2) := by
+            unfold probeLogHeightBasePoint
+            apply Continuous.upperHalfPlaneMk
+            fun_prop
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/FA486UpperHalfPlaneProofProbe.lean 2>&1 | tee /tmp/probe.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report probe
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROBE_EXIT: ${{ steps.probe.outputs.exit_code }}
+        shell: bash
+        run: |
+          body=$(cat <<EOF
+          ## FA486 explicit UpperHalfPlane continuity proof probe
+
+          - run_id: \`${GITHUB_RUN_ID}\`
+          - head_sha: \`${GITHUB_SHA}\`
+          - probe_exit: \`${PROBE_EXIT}\`
+          - scope: standalone mathlib API proof only; not FA PASS
+
+          \`\`\`text
+          $(tail -n 80 /tmp/probe.log 2>/dev/null || true)
+          \`\`\`
+          EOF
+          )
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Preserve probe conclusion
+        if: always()
+        env:
+          PROBE_EXIT: ${{ steps.probe.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$PROBE_EXIT"
+          exit "$PROBE_EXIT"
