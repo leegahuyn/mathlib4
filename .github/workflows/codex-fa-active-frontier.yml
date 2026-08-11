@@ -1,0 +1,169 @@
+name: Codex FA active frontier gate
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-active-frontier.yml
+      - scripts/fa_dynamic_active_repairs.json
+      - scripts/fa_dynamic_apply_repairs.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+
+env:
+  BASE_RUN_ID: "31495034235"
+  BASE_JOB_ID: "93790488049"
+  BASE_ARTIFACT_ID: "9103368138"
+  BASE_SOURCE_SHA256: "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec"
+  BASE_SOURCE_BYTES: "2702252"
+  BASE_SOURCE_LINES: "60573"
+
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Attest and extract exact d0a3 source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-active-frontier
+          mkdir -p "$OUT" /tmp/fa-active-base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" > "$OUT/base-run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" > "$OUT/base-job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" > "$OUT/base-artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" > /tmp/fa-active-base.zip
+          unzip -q /tmp/fa-active-base.zip -d /tmp/fa-active-base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path('build-logs/codex-fa-active-frontier')
+          run=json.loads((out/'base-run.json').read_text()); job=json.loads((out/'base-job.json').read_text()); art=json.loads((out/'base-artifact.json').read_text())
+          if run.get('id')!=int(os.environ['BASE_RUN_ID']) or job.get('id')!=int(os.environ['BASE_JOB_ID']) or art.get('id')!=int(os.environ['BASE_ARTIFACT_ID']) or art.get('expired') is not False:
+              raise SystemExit('baseline live-attestation failed')
+          hits=sorted(p for p in Path('/tmp/fa-active-base').rglob('Mock2_FunctionalAnalysis.lean') if 'PrimalitySheafVerification' in p.as_posix())
+          if not hits: raise SystemExit('baseline source missing')
+          valid=[]
+          for p in hits:
+              b=p.read_bytes()
+              if hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256'] and len(b)==int(os.environ['BASE_SOURCE_BYTES']) and len(b.decode('utf-8').splitlines())==int(os.environ['BASE_SOURCE_LINES']) and b'\r' not in b:
+                  valid.append(p)
+          if not valid: raise SystemExit('no exact d0a3 source in attested artifact')
+          p=min(valid,key=lambda x:(len(x.parts),x.as_posix()))
+          (out/'BASE_SOURCE.txt').write_text(str(p.resolve())+'\n')
+          PY
+
+      - name: Materialize audited active candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-active-frontier
+          python3 scripts/fa_dynamic_apply_repairs.py \
+            --base-source "$(cat "$OUT/BASE_SOURCE.txt")" \
+            --manifest scripts/fa_dynamic_active_repairs.json \
+            --target PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --audit-out "$OUT/PREPARATION.json"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os
+          a=json.loads(Path('build-logs/codex-fa-active-frontier/PREPARATION.json').read_text())
+          with Path(os.environ['GITHUB_ENV']).open('a') as f:
+              f.write('CANDIDATE_SHA='+a['candidate_source_sha256']+'\n')
+              f.write('CANDIDATE_BYTES='+str(a['candidate_bytes'])+'\n')
+              f.write('CANDIDATE_LINES='+str(a['candidate_lines'])+'\n')
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-active-frontier
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain none > "$OUT/elan-init.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain-install.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          lake exe cache get > "$OUT/cache-get.log" 2>&1
+
+      - name: Direct full-source frontier compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          OUT=build-logs/codex-fa-active-frontier
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          compile_one() {
+            stem="$1"; src="PrimalitySheafVerification/${stem}.lean"; o=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.olean"; i=".lake/build/lib/lean/PrimalitySheafVerification/${stem}.ilean"
+            rm -f "$o" "$i"; : > "$OUT/${stem}.executed"
+            set +e; lake env lean -DmaxErrors=1 -DwarningAsError=false -o "$o" -i "$i" "$src" > "$OUT/${stem}.log" 2>&1; code=$?; set -e
+            echo "$code" > "$OUT/${stem}.exit"
+          }
+          compile_one Mock2
+          compile_one Mock2_Advanced
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$CANDIDATE_SHA"
+          test "$(wc -c < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq "$CANDIDATE_BYTES"
+          test "$(wc -l < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean)" -eq "$CANDIDATE_LINES"
+          compile_one Mock2_FunctionalAnalysis
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$CANDIDATE_SHA"
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-active-frontier'); srcp=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); s=srcp.read_text()
+          dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)'); ds=list(dr.finditer(s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
+          er=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$'); errors=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+              m=er.match(raw)
+              if m:
+                  ln=int(m.group(1)); j=bisect_right(starts,ln)-1; errors.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[j].group('name') if j>=0 else None,'declaration_index':j if j>=0 else None,'declaration_start_line':starts[j] if j>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')}; first=errors[0] if errors else {}; b=srcp.read_bytes(); prep=json.loads((out/'PREPARATION.json').read_text())
+          metric={'schema':'fa-active-frontier-v1','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_executed':(out/'Mock2.executed').is_file(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_executed':(out/'Mock2_Advanced.executed').is_file(),'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_executed':(out/'Mock2_FunctionalAnalysis.executed').is_file(),'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').is_file() for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'repair_declaration_indices':[x['declaration_index'] for x in prep['repairs_applied']],'public_declaration_headers_preserved':prep['public_declaration_headers_preserved'],'declaration_sequence_preserved':prep['declaration_sequence_preserved'],'maxErrors_cap':1}
+          (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n'); (out/'ERROR_HEADERS.json').write_text(json.dumps(errors,indent=2)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload frontier evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-active-frontier-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-active-frontier
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish run locator
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FA_EXIT: ${{ steps.direct.outputs.fa_exit }}
+        shell: bash
+        run: |
+          state=failure; [[ "${FA_EXIT:-}" == 0 ]] && state=success
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" -f state="$state" -f context='codex/fa-active-frontier' -f description="run=${GITHUB_RUN_ID} FA=${FA_EXIT:-infra}" -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+      - name: Preserve FA exit
+        if: always()
+        env:
+          FA_EXIT: ${{ steps.direct.outputs.fa_exit }}
+        shell: bash
+        run: |
+          test -n "${FA_EXIT:-}" || exit 86
+          exit "$FA_EXIT"
