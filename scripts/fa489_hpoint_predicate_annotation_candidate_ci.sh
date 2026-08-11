@@ -25,7 +25,9 @@ def once(old,new):
 
 once('build-logs/codex-fa488-hpoint-explicit-complex','build-logs/codex-fa489-hpoint-predicate-annotation')
 once('scripts/fa488_prepare_hpoint_explicit_complex.py','scripts/fa489_prepare_hpoint_predicate_annotation.py')
-once('/tmp/fa488_hpoint_explicit_complex_candidate_ci.sh','/tmp/fa489_inner_candidate_ci.sh')
+old='/tmp/fa488_hpoint_explicit_complex_candidate_ci.sh'; new='/tmp/fa489_inner_candidate_ci.sh'
+if text.count(old) != 2: raise RuntimeError(f'expected two temp runner path occurrences, found {text.count(old)}')
+text=text.replace(old,new)
 dst.write_text(text,encoding='utf-8')
 PY
 
