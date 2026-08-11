@@ -1,13 +1,13 @@
 {
-  "schema": "fa-dynamic-idx3127-unfold-extendofnorm-v2",
+  "schema": "fa-dynamic-idx3127-unfold-extendofnorm-v3",
   "status": "DIRECT_GOAL_SHAPE_MATCH_PENDING_RECOMPILE",
   "base_direct_tested_source_sha256": "94418f254e3965803197e60ac8d52cfbf66ab61efc3f04ecb44afdc97451a926",
   "repairs": [
     {
       "declaration_index": 3127,
       "declaration_name": "norm_intrinsicPeterssonCuspCutoff_apply_le",
-      "old_fragment": "theorem norm_intrinsicPeterssonCuspCutoff_apply_le (N : ℕ) (n : ℤ)\n    (x : OrbitPeterssonHilbert n) :\n    ‖intrinsicPeterssonCuspCutoff N n x‖ ≤ ‖x‖ := by\n  simpa only [one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le",
-      "new_fragment": "theorem norm_intrinsicPeterssonCuspCutoff_apply_le (N : ℕ) (n : ℤ)\n    (x : OrbitPeterssonHilbert n) :\n    ‖intrinsicPeterssonCuspCutoff N n x‖ ≤ ‖x‖ := by\n  simpa only [intrinsicPeterssonCuspCutoff, one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le"
+      "old_fragment": "    ‖intrinsicPeterssonCuspCutoff N n x‖ ≤ ‖x‖ := by\n  simpa only [one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le",
+      "new_fragment": "    ‖intrinsicPeterssonCuspCutoff N n x‖ ≤ ‖x‖ := by\n  simpa only [intrinsicPeterssonCuspCutoff, one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le"
     }
   ]
 }
