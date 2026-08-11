@@ -1,0 +1,560 @@
+name: Codex checked-in FA direct baseline
+
+"on":
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codex-fa-checked-baseline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checked-in-direct-baseline:
+    name: checked-in Mock2 then Mock2 Advanced then full FA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      EXPECTED_REPOSITORY: leegahuyn/mathlib4
+      EXPECTED_BASE_SHA: abb10a69c70e9077f17ca7aa9f27f3ca63f31070
+      EXPECTED_TOOLCHAIN: leanprover/lean4:v4.33.0-rc1
+      EVIDENCE_ROOT: /tmp/codex-fa-checked-baseline
+
+    steps:
+      - name: Prepare durable evidence directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p \
+            "${EVIDENCE_ROOT}/setup" \
+            "${EVIDENCE_ROOT}/provenance" \
+            "${EVIDENCE_ROOT}/direct"
+          printf '%s\n' \
+            "repository=${GITHUB_REPOSITORY}" \
+            "event=${GITHUB_EVENT_NAME}" \
+            "ref=${GITHUB_REF}" \
+            "sha=${GITHUB_SHA}" \
+            "run_id=${GITHUB_RUN_ID}" \
+            "run_attempt=${GITHUB_RUN_ATTEMPT}" \
+            > "${EVIDENCE_ROOT}/provenance/trigger.txt"
+
+      - name: Checkout exact triggering commit without credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Attest repository base checked-in source and pinned toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = "${EXPECTED_REPOSITORY}"
+          test "$(tr -d '\r\n' < lean-toolchain)" = "${EXPECTED_TOOLCHAIN}"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git cat-file -e "${EXPECTED_BASE_SHA}^{commit}"
+          git merge-base --is-ancestor "${EXPECTED_BASE_SHA}" HEAD
+
+          git rev-parse HEAD \
+            > "${EVIDENCE_ROOT}/provenance/head-sha.txt"
+          git rev-parse "${EXPECTED_BASE_SHA}^{commit}" \
+            > "${EVIDENCE_ROOT}/provenance/expected-base-sha.txt"
+          git branch --show-current \
+            > "${EVIDENCE_ROOT}/provenance/branch.txt"
+          git status --short --untracked-files=all \
+            > "${EVIDENCE_ROOT}/provenance/status-before.txt"
+          git show -s --format=fuller HEAD \
+            > "${EVIDENCE_ROOT}/provenance/head.txt"
+          cp lean-toolchain lake-manifest.json \
+            "${EVIDENCE_ROOT}/provenance/"
+          sha256sum lean-toolchain lake-manifest.json \
+            > "${EVIDENCE_ROOT}/provenance/environment-sha256.txt"
+
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            src="PrimalitySheafVerification/${stem}.lean"
+            test -f "${src}"
+            head_blob="$(git rev-parse "HEAD:${src}")"
+            worktree_blob="$(git hash-object "${src}")"
+            test "${head_blob}" = "${worktree_blob}"
+            printf '%s\t%s\t%s\n' \
+              "${stem}" "${head_blob}" "${worktree_blob}" \
+              >> "${EVIDENCE_ROOT}/provenance/head-worktree-blobs-before.tsv"
+          done
+
+      - name: Install repository-pinned Lean and restore Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan-init.sh
+          sha256sum /tmp/elan-init.sh \
+            > "${EVIDENCE_ROOT}/setup/elan-init-sha256.txt"
+          sh /tmp/elan-init.sh -y --default-toolchain none \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/elan-install.log"
+          printf '%s\n' "${HOME}/.elan/bin" >> "${GITHUB_PATH}"
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          elan toolchain install "$(cat lean-toolchain)" \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/toolchain-install.log"
+          lake env lean --version \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/lean-version.txt"
+          lake --version \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/lake-version.txt"
+          lake exe cache get \
+            2>&1 | tee "${EVIDENCE_ROOT}/setup/cache-get.log"
+
+      - name: Directly compile the three current checked-in full sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.elan/bin:${PATH}"
+          mkdir -p "${EVIDENCE_ROOT}/direct"
+
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            src="PrimalitySheafVerification/${stem}.lean"
+            sha256="$(sha256sum "${src}" | cut -d' ' -f1)"
+            bytes="$(stat -c '%s' "${src}")"
+            lines="$(python3 -c \
+              'from pathlib import Path; import sys; print(len(Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()))' \
+              "${src}")"
+            printf '%s\t%s\t%s\t%s\n' \
+              "${stem}" "${sha256}" "${bytes}" "${lines}" \
+              >> "${EVIDENCE_ROOT}/provenance/source-identity-before.tsv"
+          done
+
+          run_direct() {
+            local stem="$1"
+            local max_errors="$2"
+            local src="PrimalitySheafVerification/${stem}.lean"
+            local out_dir=".lake/build/lib/lean/PrimalitySheafVerification"
+            local olean="${out_dir}/${stem}.olean"
+            local ilean="${out_dir}/${stem}.ilean"
+            local module_dir="${EVIDENCE_ROOT}/direct/${stem}"
+            local code
+
+            mkdir -p "${module_dir}" "${out_dir}"
+            rm -f -- "${olean}" "${ilean}"
+            test ! -e "${olean}"
+            test ! -e "${ilean}"
+
+            printf '%s\n' \
+              "lake env lean -DmaxErrors=${max_errors} -DwarningAsError=false -o ${olean} -i ${ilean} ${src}" \
+              > "${module_dir}/command.txt"
+            printf '%s\n' "${max_errors}" \
+              > "${module_dir}/max-errors.txt"
+            printf '%s\n' "artifacts_deleted_before_command=true" \
+              > "${module_dir}/precondition.txt"
+
+            set +e
+            lake env lean \
+              "-DmaxErrors=${max_errors}" \
+              -DwarningAsError=false \
+              -o "${olean}" \
+              -i "${ilean}" \
+              "${src}" \
+              2>&1 | tee "${module_dir}/lean.log"
+            code="${PIPESTATUS[0]}"
+            set -e
+            printf '%s\n' "${code}" > "${module_dir}/exit.txt"
+
+            if test -e "${olean}"; then
+              printf 'exists=true\nbytes=%s\n' "$(stat -c '%s' "${olean}")" \
+                > "${module_dir}/olean.txt"
+            else
+              printf 'exists=false\nbytes=0\n' \
+                > "${module_dir}/olean.txt"
+            fi
+            if test -e "${ilean}"; then
+              printf 'exists=true\nbytes=%s\n' "$(stat -c '%s' "${ilean}")" \
+                > "${module_dir}/ilean.txt"
+            else
+              printf 'exists=false\nbytes=0\n' \
+                > "${module_dir}/ilean.txt"
+            fi
+          }
+
+          # Deliberate prerequisite order, followed by the full checked-in FA source.
+          run_direct Mock2 3
+          run_direct Mock2_Advanced 3
+          run_direct Mock2_FunctionalAnalysis 32
+
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            src="PrimalitySheafVerification/${stem}.lean"
+            head_blob="$(git rev-parse "HEAD:${src}")"
+            worktree_blob="$(git hash-object "${src}")"
+            printf '%s\t%s\t%s\n' \
+              "${stem}" "${head_blob}" "${worktree_blob}" \
+              >> "${EVIDENCE_ROOT}/provenance/head-worktree-blobs-after.tsv"
+          done
+          git status --short --untracked-files=all \
+            > "${EVIDENCE_ROOT}/provenance/status-after.txt"
+
+          python3 - "${EVIDENCE_ROOT}" "${GITHUB_SHA}" \
+            "${EXPECTED_BASE_SHA}" "${EXPECTED_TOOLCHAIN}" <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import re
+          import sys
+
+          root = Path(sys.argv[1])
+          head_sha, base_sha, toolchain = sys.argv[2:]
+          source_root = Path("PrimalitySheafVerification")
+          stems = ["Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"]
+          expected_max_errors = {
+              "Mock2": 3,
+              "Mock2_Advanced": 3,
+              "Mock2_FunctionalAnalysis": 32,
+          }
+
+          def sha256_bytes(data):
+              return hashlib.sha256(data).hexdigest()
+
+          def strip_comments_and_strings(text):
+              out = []
+              i = 0
+              block_depth = 0
+              in_string = False
+              while i < len(text):
+                  if block_depth:
+                      if text.startswith("/-", i):
+                          block_depth += 1
+                          out.extend("  ")
+                          i += 2
+                      elif text.startswith("-/", i):
+                          block_depth -= 1
+                          out.extend("  ")
+                          i += 2
+                      else:
+                          out.append("\n" if text[i] == "\n" else " ")
+                          i += 1
+                      continue
+                  if in_string:
+                      if text[i] == "\\" and i + 1 < len(text):
+                          out.extend("  ")
+                          i += 2
+                      elif text[i] == '"':
+                          in_string = False
+                          out.append(" ")
+                          i += 1
+                      else:
+                          out.append("\n" if text[i] == "\n" else " ")
+                          i += 1
+                      continue
+                  if text.startswith("--", i):
+                      end = text.find("\n", i)
+                      if end < 0:
+                          out.extend(" " * (len(text) - i))
+                          break
+                      out.extend(" " * (end - i))
+                      i = end
+                  elif text.startswith("/-", i):
+                      block_depth = 1
+                      out.extend("  ")
+                      i += 2
+                  elif text[i] == '"':
+                      in_string = True
+                      out.append(" ")
+                      i += 1
+                  else:
+                      out.append(text[i])
+                      i += 1
+              if block_depth or in_string:
+                  raise RuntimeError("unterminated Lean comment or string")
+              return "".join(out)
+
+          declaration_re = re.compile(
+              r"(?m)^[ \t]*"
+              r"(?:(?:private|protected|noncomputable|local|scoped)\s+)*"
+              r"(theorem|lemma|def|abbrev|opaque|axiom|structure|class|"
+              r"inductive|coinductive|instance|example)\b"
+              r"(?:[ \t]+([^\s(:=\[{]+))?"
+          )
+
+          def declarations(stripped):
+              rows = []
+              for index, match in enumerate(declaration_re.finditer(stripped), 1):
+                  line = stripped.count("\n", 0, match.start()) + 1
+                  name = match.group(2) or f"<anonymous@{line}>"
+                  rows.append({
+                      "lexical_index": index,
+                      "line": line,
+                      "kind": match.group(1),
+                      "name": name,
+                  })
+              return rows
+
+          def forbidden_counts(stripped):
+              return {
+                  "sorry": len(re.findall(r"\bsorry\b", stripped)),
+                  "admit": len(re.findall(r"\badmit\b", stripped)),
+                  "new_global_axiom": len(re.findall(
+                      r"(?m)^[ \t]*(?:(?:private|protected)\s+)*axiom\b",
+                      stripped,
+                  )),
+                  "unsafe": len(re.findall(r"\bunsafe\b", stripped)),
+                  "native_decide": len(re.findall(r"\bnative_decide\b", stripped)),
+                  "Lean.ofReduceBool": stripped.count("Lean.ofReduceBool"),
+              }
+
+          before = {}
+          before_path = root / "provenance" / "source-identity-before.tsv"
+          for line in before_path.read_text(encoding="utf-8").splitlines():
+              stem, digest, byte_text, line_text = line.split("\t")
+              before[stem] = {
+                  "sha256": digest,
+                  "bytes": int(byte_text),
+                  "lines": int(line_text),
+              }
+
+          head_blobs_before = {}
+          for line in (root / "provenance" / "head-worktree-blobs-before.tsv").read_text(
+              encoding="utf-8"
+          ).splitlines():
+              stem, head_blob, worktree_blob = line.split("\t")
+              head_blobs_before[stem] = (head_blob, worktree_blob)
+          head_blobs_after = {}
+          for line in (root / "provenance" / "head-worktree-blobs-after.tsv").read_text(
+              encoding="utf-8"
+          ).splitlines():
+              stem, head_blob, worktree_blob = line.split("\t")
+              head_blobs_after[stem] = (head_blob, worktree_blob)
+
+          sources = {}
+          modules = {}
+          aggregate_forbidden = {
+              "sorry": 0,
+              "admit": 0,
+              "new_global_axiom": 0,
+              "unsafe": 0,
+              "native_decide": 0,
+              "Lean.ofReduceBool": 0,
+          }
+          error_header_re = re.compile(
+              r"(?m)^[^\n]*\.lean:(\d+):(\d+): error:"
+          )
+          warning_header_re = re.compile(
+              r"(?m)^[^\n]*\.lean:\d+:\d+: warning:"
+          )
+
+          for stem in stems:
+              source_path = source_root / f"{stem}.lean"
+              data = source_path.read_bytes()
+              text = data.decode("utf-8")
+              stripped = strip_comments_and_strings(text)
+              decls = declarations(stripped)
+              declaration_sequence = "\n".join(
+                  f"{row['kind']}\t{row['name']}\t{row['line']}" for row in decls
+              ).encode("utf-8")
+              counts = forbidden_counts(stripped)
+              for key, value in counts.items():
+                  aggregate_forbidden[key] += value
+
+              current = {
+                  "sha256": sha256_bytes(data),
+                  "bytes": len(data),
+                  "lines": len(text.splitlines()),
+              }
+              head_before, worktree_before = head_blobs_before[stem]
+              head_after, worktree_after = head_blobs_after[stem]
+              source_identity_preserved = (
+                  current == before[stem]
+                  and head_before == worktree_before
+                  and head_after == worktree_after
+                  and head_before == head_after
+              )
+              sources[stem] = {
+                  **current,
+                  "head_git_blob_sha1": head_after,
+                  "checked_in_worktree_identity_before": head_before == worktree_before,
+                  "checked_in_worktree_identity_after": head_after == worktree_after,
+                  "source_identity_preserved": source_identity_preserved,
+                  "lexical_declaration_count": len(decls),
+                  "lexical_declaration_sequence_sha256": sha256_bytes(
+                      declaration_sequence
+                  ),
+                  "first_declaration": decls[0] if decls else None,
+                  "last_declaration": decls[-1] if decls else None,
+                  "forbidden_code_counts": counts,
+              }
+
+              module_dir = root / "direct" / stem
+              log = (module_dir / "lean.log").read_text(
+                  encoding="utf-8", errors="replace"
+              )
+              exit_code = int((module_dir / "exit.txt").read_text().strip())
+              error_matches = list(error_header_re.finditer(log))
+              first_error = None
+              if error_matches:
+                  error_line = int(error_matches[0].group(1))
+                  error_column = int(error_matches[0].group(2))
+                  preceding = [row for row in decls if row["line"] <= error_line]
+                  owner = preceding[-1] if preceding else None
+                  first_error = {
+                      "line": error_line,
+                      "column": error_column,
+                      "lexical_declaration": owner,
+                  }
+
+              def artifact(label):
+                  values = {}
+                  for row in (module_dir / f"{label}.txt").read_text().splitlines():
+                      key, value = row.split("=", 1)
+                      values[key] = value
+                  return {
+                      "exists": values["exists"] == "true",
+                      "bytes": int(values["bytes"]),
+                      "nonempty": (
+                          values["exists"] == "true" and int(values["bytes"]) > 0
+                      ),
+                  }
+
+              modules[stem] = {
+                  "executed": True,
+                  "source": str(source_path),
+                  "command": (module_dir / "command.txt").read_text().strip(),
+                  "max_errors": int((module_dir / "max-errors.txt").read_text()),
+                  "artifacts_deleted_before_command": True,
+                  "exit": exit_code,
+                  "error_headers": len(error_matches),
+                  "warning_headers": len(warning_header_re.findall(log)),
+                  "sorry_warning_mentions": len(re.findall(
+                      r"(?i)declaration uses [^\n]*sorry|sorryAx", log
+                  )),
+                  "panic_mentions": len(re.findall(r"(?i)\bPANIC\b", log)),
+                  "first_error": first_error,
+                  "olean": artifact("olean"),
+                  "ilean": artifact("ilean"),
+              }
+
+          fa = modules["Mock2_FunctionalAnalysis"]
+          source_identity_clean = all(
+              row["source_identity_preserved"] for row in sources.values()
+          )
+          forbidden_clean = all(value == 0 for value in aggregate_forbidden.values())
+          fa_direct_pass = (
+              fa["exit"] == 0
+              and fa["error_headers"] == 0
+              and fa["olean"]["nonempty"]
+              and fa["ilean"]["nonempty"]
+              and source_identity_clean
+              and forbidden_clean
+          )
+          if fa["exit"] != 0:
+              classification = "LEAN_FAILURE"
+          elif fa_direct_pass:
+              classification = "DIRECT_PASS_ONE_RUN_ONLY"
+          else:
+              classification = "EVIDENCE_CONTRACT_FAILURE"
+
+          metric = {
+              "schema": "codex-fa-checked-baseline-v1",
+              "repository": "leegahuyn/mathlib4",
+              "head_sha": head_sha,
+              "required_base_ancestor_sha": base_sha,
+              "toolchain": toolchain,
+              "authority": "current checked-in triggering commit source",
+              "candidate_materialized": False,
+              "source_edited_by_workflow": False,
+              "direct_execution_order": stems,
+              "expected_max_errors": expected_max_errors,
+              "sources": sources,
+              "aggregate_forbidden_code_counts": aggregate_forbidden,
+              "forbidden_clean": forbidden_clean,
+              "source_identity_preserved": source_identity_clean,
+              "modules": modules,
+              "classification": classification,
+              "fa_direct_pass_this_single_run": fa_direct_pass,
+              "fa_true_pass_two_runs_claimed": False,
+              "job_final_exit_source": "Mock2_FunctionalAnalysis.exit",
+          }
+          (root / "SOURCES.json").write_text(
+              json.dumps(sources, indent=2) + "\n", encoding="utf-8"
+          )
+          (root / "METRIC.json").write_text(
+              json.dumps(metric, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(metric, indent=2))
+          PY
+
+      - name: Print concise checked-in FA frontier evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if test -s "${EVIDENCE_ROOT}/METRIC.json"; then
+            python3 - "${EVIDENCE_ROOT}/METRIC.json" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as stream:
+              metric = json.load(stream)
+          fa = metric["modules"]["Mock2_FunctionalAnalysis"]
+          print(json.dumps({
+              "head_sha": metric["head_sha"],
+              "classification": metric["classification"],
+              "source_sha256": metric["sources"]["Mock2_FunctionalAnalysis"]["sha256"],
+              "source_bytes": metric["sources"]["Mock2_FunctionalAnalysis"]["bytes"],
+              "source_lines": metric["sources"]["Mock2_FunctionalAnalysis"]["lines"],
+              "lexical_declaration_count": metric["sources"]["Mock2_FunctionalAnalysis"]["lexical_declaration_count"],
+              "exit": fa["exit"],
+              "errors": fa["error_headers"],
+              "warnings": fa["warning_headers"],
+              "sorry_warning_mentions": fa["sorry_warning_mentions"],
+              "panic_mentions": fa["panic_mentions"],
+              "first_error": fa["first_error"],
+              "olean": fa["olean"],
+              "ilean": fa["ilean"],
+              "forbidden": metric["aggregate_forbidden_code_counts"],
+          }, indent=2))
+          PY
+          else
+            echo "METRIC.json missing; setup or direct-run infrastructure failed"
+          fi
+
+      - name: Upload checked-in direct baseline evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-checked-baseline-${{ github.sha }}-${{ github.run_attempt }}
+          path: /tmp/codex-fa-checked-baseline
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Fail the job according to the direct FA exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          metric="${EVIDENCE_ROOT}/METRIC.json"
+          if ! test -s "${metric}"; then
+            echo "No direct FA metric exists; classify as infrastructure failure" >&2
+            exit 2
+          fi
+          python3 - "${metric}" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as stream:
+              metric = json.load(stream)
+          expected_order = ["Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"]
+          if metric.get("direct_execution_order") != expected_order:
+              raise SystemExit("direct execution order contract failed")
+          modules = metric.get("modules", {})
+          if any(not modules.get(stem, {}).get("executed") for stem in expected_order):
+              raise SystemExit("one or more required full-source commands did not execute")
+          if modules["Mock2_FunctionalAnalysis"].get("max_errors") != 32:
+              raise SystemExit("FA did not execute with -DmaxErrors=32")
+          if metric.get("candidate_materialized") is not False:
+              raise SystemExit("candidate materialization is forbidden in this baseline")
+          if metric.get("source_identity_preserved") is not True:
+              raise SystemExit("checked-in source identity changed during baseline")
+          fa_exit = modules["Mock2_FunctionalAnalysis"].get("exit")
+          if not isinstance(fa_exit, int) or not 0 <= fa_exit <= 255:
+              raise SystemExit("invalid FA exit metric")
+          print(f"Final job status follows direct FA exit: {fa_exit}")
+          raise SystemExit(fa_exit)
+          PY
