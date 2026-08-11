@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-idx2982-ring-followup-v1",
+  "base_direct_tested_source_sha256": "38d9442500f5d8d364be32c5eeae9ca00d77e1fa86ca352b36a609300b5ac19d",
+  "repairs": [
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        unfold upstairsCuspCutoff\n        rw [Complex.star_def]\n        exact Complex.conj_ofReal _\n      simp only [map_mul, hReal]\n      ring",
+      "new_fragment": "      ring"
+    }
+  ]
+}
