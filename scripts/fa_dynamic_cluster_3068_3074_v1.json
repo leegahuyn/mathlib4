@@ -1,0 +1,18 @@
+{
+  "schema": "fa-dynamic-cluster-3068-3074-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3068,
+      "declaration_name": "dist_SL_smul",
+      "old_fragment": "  have hAction : ∀ x : ℍ, g • x = gReal • x := by\n    intro x\n    apply UpperHalfPlane.ext\n    simp [gReal, UpperHalfPlane.coe_specialLinearGroup_apply]",
+      "new_fragment": "  have hAction : ∀ x : ℍ, g • x = gReal • x := by\n    intro x\n    apply UpperHalfPlane.ext\n    rw [UpperHalfPlane.coe_specialLinearGroup_apply,\n      UpperHalfPlane.coe_specialLinearGroup_apply]\n    simp [gReal]"
+    },
+    {
+      "declaration_index": 3074,
+      "declaration_name": "modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt",
+      "old_fragment": "  let g : SL(2, ℤ) := modularHeightMaximizer z\n  let U : Set ℍ := {w | 1 < (g • w).im}\n  have hUOpen : IsOpen U := by\n    exact isOpen_lt continuous_const\n      (UpperHalfPlane.continuous_im.comp (continuous_const_smul g))\n  have hzU : z ∈ U := by\n    simpa only [U, g, modularMaxHeight] using hz",
+      "new_fragment": "  let g : SL(2, ℤ) := modularHeightMaximizer z\n  let gReal : SL(2, ℝ) :=\n    Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ) g\n  have hAction : ∀ x : ℍ, g • x = gReal • x := by\n    intro x\n    apply UpperHalfPlane.ext\n    rw [UpperHalfPlane.coe_specialLinearGroup_apply,\n      UpperHalfPlane.coe_specialLinearGroup_apply]\n    simp [gReal]\n  have hActionFn :\n      (fun w : ℍ ↦ (g • w).im) = (fun w : ℍ ↦ (gReal • w).im) := by\n    funext w\n    rw [hAction w]\n  let U : Set ℍ := {w | 1 < (g • w).im}\n  have hUOpen : IsOpen U := by\n    have hCont : Continuous (fun w : ℍ ↦ (g • w).im) := by\n      rw [hActionFn]\n      exact continuous_im.comp (continuous_const_smul gReal)\n    exact isOpen_lt continuous_const hCont\n  have hzU : z ∈ U := by\n    change 1 < (g • z).im\n    simpa only [g, modularMaxHeight] using hz"
+    }
+  ]
+}
