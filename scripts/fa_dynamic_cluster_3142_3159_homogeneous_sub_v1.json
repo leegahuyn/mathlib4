@@ -1,0 +1,31 @@
+{
+  "schema": "fa-dynamic-cluster-3142-3159-homogeneous-sub-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31529769725,
+  "repairs": [
+    {
+      "declaration_index": 3142,
+      "declaration_name": "intrinsicRaiseCuspCutoffCommutator",
+      "old_fragment": "  (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n).comp\n      (intrinsicCuspCutoffOperator N n) -\n    (intrinsicCuspCutoffOperator N (n + 1)).comp\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n)",
+      "new_fragment": "  Sub.sub\n    ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n).comp\n      (intrinsicCuspCutoffOperator N n))\n    ((intrinsicCuspCutoffOperator N (n + 1)).comp\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n))"
+    },
+    {
+      "declaration_index": 3143,
+      "declaration_name": "intrinsicLowerFromSuccCuspCutoffCommutator",
+      "old_fragment": "  (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp\n      (intrinsicCuspCutoffOperator N (n + 1)) -\n    (intrinsicCuspCutoffOperator N n).comp\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)",
+      "new_fragment": "  Sub.sub\n    ((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp\n      (intrinsicCuspCutoffOperator N (n + 1)))\n    ((intrinsicCuspCutoffOperator N n).comp\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n))"
+    },
+    {
+      "declaration_index": 3158,
+      "declaration_name": "intrinsicRaiseCuspCutoffCommutator_eventuallyEq_zero",
+      "old_fragment": "  change Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n      (intrinsicCuspCutoffOperator M n u) -\n    intrinsicCuspCutoffOperator M (n + 1)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) = 0\n  rw [hu, hr, sub_self]",
+      "new_fragment": "  change Sub.sub\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n        (intrinsicCuspCutoffOperator M n u))\n      (intrinsicCuspCutoffOperator M (n + 1)\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) = 0\n  rw [hu, hr]\n  exact sub_self _"
+    },
+    {
+      "declaration_index": 3159,
+      "declaration_name": "intrinsicLowerFromSuccCuspCutoffCommutator_eventuallyEq_zero",
+      "old_fragment": "  change Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n      (intrinsicCuspCutoffOperator M (n + 1) u) -\n    intrinsicCuspCutoffOperator M n\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u) = 0\n  rw [hu, hl, sub_self]",
+      "new_fragment": "  change Sub.sub\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n        (intrinsicCuspCutoffOperator M (n + 1) u))\n      (intrinsicCuspCutoffOperator M n\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u)) = 0\n  rw [hu, hl]\n  exact sub_self _"
+    }
+  ]
+}
