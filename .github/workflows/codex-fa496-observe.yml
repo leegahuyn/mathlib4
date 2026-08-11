@@ -1,0 +1,79 @@
+name: Codex FA496 graph integral shape strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa496-graph-integral-shape-20260811
+    paths:
+      - .github/workflows/codex-fa496-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa496-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Publish FA496 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA496 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA495 -> FA496\`\n- upstream_FA495_run: \`31464238170\`\n- upstream_FA495_job: \`93693691898\`\n- upstream_FA495_source: \`0cea98064a3970aa66099eec020fc787910584231a7dac68f5e27c71d5aa32bd\`\n- frontier: \`35642:6 integral_fixedPhaseEuclideanGraphDensity_eq_coordinates / index 2821\`\n- patch: \`pin integral_add f/g to pointwise lambda integrands\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+      - name: Run exact FA496 candidate/direct Lean and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa496_graph_integral_shape_candidate_ci.sh 2>&1 | tee /tmp/fa496.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Report FA496 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa496.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa496-graph-integral-shape/candidates/norms'); p=out/'METRIC.json'; src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa496.log')
+          xs=['## FA496 authoritative observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:6000],'```']
+          else: xs.append('- METRIC.json: `MISSING`')
+          if src.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+28); xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists(): xs += ['', '### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])[-12000:],'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa496.md)"
+      - name: Preserve result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
