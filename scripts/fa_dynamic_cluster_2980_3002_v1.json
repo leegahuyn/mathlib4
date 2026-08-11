@@ -1,0 +1,65 @@
+{
+  "schema": "fa-dynamic-cluster-2980-3002-v1",
+  "repairs": [
+    {
+      "declaration_index": 2980,
+      "declaration_name": "norm_peterssonCuspCutoff_apply_le",
+      "old_fragment": "  simpa only [one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by\n        simpa only [one_mul] using\n          norm_peterssonCuspCutoffCoreMap_le N n v) x",
+      "new_fragment": "  change\n    ‖((peterssonCuspCutoffCoreMap N n).extendOfNorm (l2Coordinate n)) x‖ ≤ ‖x‖\n  simpa only [one_mul] using\n    LinearMap.norm_extendOfNorm_apply_le\n      (denseRange_l2Coordinate n) 1\n      (fun v ↦ by\n        simpa only [one_mul] using\n          norm_peterssonCuspCutoffCoreMap_le N n v) x"
+    },
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      change star\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (upstairsCuspCutoff N z *\n              (u : SmoothQuotientCompactFunction) z)) *\n            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n              (v : SmoothQuotientCompactFunction) z) =\n        star\n          (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n            (u : SmoothQuotientCompactFunction) z) *\n            (((z.im ^ Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ) : ℂ) *\n              (upstairsCuspCutoff N z *\n                (v : SmoothQuotientCompactFunction) z))\n      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, Complex.conj_ofReal]\n      simp only [map_mul, hReal]\n      ring",
+      "new_fragment": "      simp only [RCLike.inner_apply, starRingEnd_apply]\n      have hReal : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        simp only [upstairsCuspCutoff, Complex.conj_ofReal]\n      simp only [map_mul, hReal]\n      ring"
+    },
+    {
+      "declaration_index": 2985,
+      "declaration_name": "peterssonCuspCutoff_tendsto_id",
+      "old_fragment": "  have hApproxTwo : ‖l2Coordinate n u - x‖ < ε / 2 := by\n    simpa only [dist_eq_norm] using hu",
+      "new_fragment": "  have hApproxTwo : ‖l2Coordinate n u - x‖ < ε / 2 := by\n    simpa only [norm_sub_rev] using hApproxOne"
+    },
+    {
+      "declaration_index": 2985,
+      "declaration_name": "peterssonCuspCutoff_tendsto_id",
+      "old_fragment": "    _ ≤ ‖x - l2Coordinate n u‖ +\n          ‖l2Coordinate n u - x‖ :=\n      add_le_add_right\n        (norm_peterssonCuspCutoff_apply_le M n\n          (x - l2Coordinate n u)) _",
+      "new_fragment": "    _ ≤ ‖x - l2Coordinate n u‖ +\n          ‖l2Coordinate n u - x‖ :=\n      add_le_add\n        (norm_peterssonCuspCutoff_apply_le M n\n          (x - l2Coordinate n u)) le_rfl"
+    },
+    {
+      "declaration_index": 2989,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_realSmooth",
+      "old_fragment": "  exact (realSmooth_heightC.inv heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (upstairsCuspCutoff_realSmooth N))",
+      "new_fragment": "  exact (RealSmooth.inv realSmooth_heightC heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (upstairsCuspCutoff_realSmooth N))"
+    },
+    {
+      "declaration_index": 2990,
+      "declaration_name": "raiseCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [raiseCuspEuclideanCommutatorCoefficient, mul_comm] using\n    ((upstairsCuspCutoff_quotientCompact N).raiseRaw 0).mul_right heightC",
+      "new_fragment": "  simpa only [raiseCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.raiseRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right heightC"
+    },
+    {
+      "declaration_index": 2991,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [lowerCuspEuclideanCommutatorCoefficient, mul_comm] using\n    ((upstairsCuspCutoff_quotientCompact N).lowerRaw 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)",
+      "new_fragment": "  simpa only [lowerCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.lowerRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)"
+    },
+    {
+      "declaration_index": 2992,
+      "declaration_name": "exists_closedCarrier_norm_bound_of_quotientCompact",
+      "old_fragment": "    simp only [hz, norm_zero]",
+      "new_fragment": "    simp only [hz, norm_zero]\n    exact le_rfl"
+    },
+    {
+      "declaration_index": 2999,
+      "declaration_name": "euclideanGaugeScale_pred_inv",
+      "old_fragment": "  simp only [heightC, Complex.ofReal_div, div_eq_mul_inv]\n  ring",
+      "new_fragment": "  simp only [heightC, div_eq_mul_inv]\n  push_cast\n  ring_nf"
+    },
+    {
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "old_fragment": "      rw [hzTarget, hzSmul, hzSource, hGauge]\n      simp only [Pi.smul_apply, smul_eq_mul, norm_mul,\n        Complex.norm_real, abs_of_nonneg hC]",
+      "new_fragment": "      rw [hzTarget, hzSmul]\n      simp only [Pi.smul_apply, smul_eq_mul]\n      rw [hzSource, hGauge]\n      simp only [norm_mul, Complex.norm_real, abs_of_nonneg hC]"
+    }
+  ]
+}
