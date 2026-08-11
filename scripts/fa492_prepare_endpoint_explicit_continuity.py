@@ -44,12 +44,12 @@ _DECL_START = re.compile(
 OLD_FRAGMENT = """      unfold selectedLogHeightNaturalGauge
       fun_prop"""
 NEW_FRAGMENT = """      have hpoint : Continuous (fun t : ℝ => logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y))) := by unfold logHeightBasePoint; exact (((by simpa only [Complex.mk_eq_add_mul_I] using (by fun_prop : Continuous (fun t : ℝ => ((t : ℝ) : ℂ) + ((Real.exp (Real.log (gammaTwoCuspLevel Y)) : ℝ) : ℂ) * Complex.I))) : Continuous (fun t : ℝ => Complex.mk t (Real.exp (Real.log (gammaTwoCuspLevel Y))))).upperHalfPlaneMk (fun (_ : ℝ) => Real.exp_pos (Real.log (gammaTwoCuspLevel Y))))
-      unfold selectedLogHeightNaturalGauge; simpa only [h] using ((continuous_const.mul (hh.continuous.comp hpoint)).norm.pow 2)"""
+      unfold selectedLogHeightNaturalGauge; change Continuous (fun t : ℝ => ‖((Real.exp (Real.log (gammaTwoCuspLevel Y) / 2) : ℝ) : ℂ) * h (logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y)))‖ ^ 2); exact (continuous_const.mul (show Continuous (fun t : ℝ => h (logHeightBasePoint t (Real.log (gammaTwoCuspLevel Y)))) from hh.continuous.comp hpoint)).norm.pow 2"""
 
 VARIANTS = {
-    "reuse_hh_endpoint": (
+    "typed_pointwise_endpoint": (
         ((OLD_FRAGMENT, NEW_FRAGMENT),),
-        "replace failing fun_prop with explicit fixed-height logHeightBasePoint continuity and compose the already proved RealSmooth pullback continuity",
+        "replace the failing endpoint fun_prop with explicit point continuity and a target-shaped pointwise change/exact proof, avoiding Function.comp/function-multiplication simplifier shape mismatch",
     ),
 }
 
