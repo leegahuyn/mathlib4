@@ -32,7 +32,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA492 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA491 -> FA492\`\n- upstream_FA491_run: \`31458257120\`\n- upstream_FA491_job: \`93676458948\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`explicit fixed-height logHeightBasePoint continuity + hh.continuous composition\`"
+          body="## FA492 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA491 -> FA492\`\n- upstream_FA491_run: \`31458337236\`\n- upstream_FA491_job: \`93676647064\`\n- upstream_FA491_source: \`ccea869bcd941660cf537806e8ce53a8af242685751bc81e16ff4a6256a8023d\`\n- frontier: \`35507:6 norm_selectedCuspCoreTrace_sq_le_logHeightEnergy / index 2812\`\n- patch: \`explicit fixed-height logHeightBasePoint continuity + hh.continuous composition\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
       - name: Run exact FA492 candidate/direct Lean loop and retain exit
         id: run
