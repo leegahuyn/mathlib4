@@ -1,0 +1,165 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Seven high-confidence R010 proof-body/API normalizations: use the exact RCLike complex inner formula; remove a Fourier-basis rewrite that cannot occur before mFourierCoeff is unfolded; rewrite dx and dy core applications in their own hypotheses; normalize one_mul in the Tendsto expression; reuse the fork's established UpperHalfPlane measurable embedding; pass an AE equality directly to Lp.ext; and use the exact heterogeneous Lp scalar-commutation theorem in the required symmetric orientation. All fragments are unique in d0a3 and direct Lean verification remains pending.",
+  "repairs": [
+    {
+      "declaration_index": 3910,
+      "declaration_name": "inner_planeWave_ambientTestCore_eq_integral_negativePlaneWave",
+      "header_sha256": "53f6e3339bab99411e80a6354cad8ad7091887251c7e06c3172062c877ef6d7d",
+      "diagnostic_ids": ["E0664"],
+      "replacements": [
+        {
+          "old_fragment": "  · rw [literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative\n      Y k hw]\n    rfl",
+          "new_fragment": "  · rw [literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative\n      Y k hw]\n    simpa only [RCLike.inner_apply', starRingEnd_apply]",
+          "old_sha256": "c1d6024846c7538838c8f1342fce123977be7e4afd15d0527bb23349b0a20bea",
+          "new_sha256": "6fee12b112b7adec89aea71b52a6128785fe49b6b9f8faa2df61428a3ac5692f",
+          "old_bytes": 92,
+          "new_bytes": 140,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3911,
+      "declaration_name": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "header_sha256": "96deb859ab92316c8a42cf5b5b924168c1f8c800cdd270dec3e088b625c83e70",
+      "diagnostic_ids": ["E0665"],
+      "replacements": [
+        {
+          "old_fragment": "  rw [MeasureTheory.L2.inner_def,\n    UnitAddTorus.mFourierBasis_repr]\n  unfold UnitAddTorus.mFourierCoeff",
+          "new_fragment": "  rw [MeasureTheory.L2.inner_def]\n  unfold UnitAddTorus.mFourierCoeff",
+          "old_sha256": "c94464ba623c1d739cf04435969a61cd1a35e0a3da97f2f7e93fa721b6f32e07",
+          "new_sha256": "8c3798a6cf512f10b06dc3b6aa8c89fb0f73ed0b7c2d558707c907b4d2b8ca7c",
+          "old_bytes": 106,
+          "new_bytes": 69,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3927,
+      "declaration_name": "norm_literalStagePlaneFiniteApproximation_sub_core_le",
+      "header_sha256": "ee75ea516e9893ff9b879f5e3e1b502442dc3172d7ce9d56a44a4d018e4d8415",
+      "diagnostic_ids": ["E0683"],
+      "replacements": [
+        {
+          "old_fragment": "  rw [literalStagePlaneDxCore_apply, literalStagePlaneDyCore_apply] at hdx hdy",
+          "new_fragment": "  rw [literalStagePlaneDxCore_apply] at hdx\n  rw [literalStagePlaneDyCore_apply] at hdy",
+          "old_sha256": "03dec531ba059c7c27d21750917eab7b7da7770e4c830bf0580ad20abc513bb3",
+          "new_sha256": "4fb67ecbda8186b36cc1c245329c0227d1ea05215dcaefd39404318cc1204403",
+          "old_bytes": 78,
+          "new_bytes": 87,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3930,
+      "declaration_name": "literalStagePlaneFiniteApproximation_tendsto",
+      "header_sha256": "042f5a62d7ca606b84d4a705700d2833f1f7d42828b7a59d972902ee498556fa",
+      "diagnostic_ids": ["E0687"],
+      "replacements": [
+        {
+          "old_fragment": "      simpa only [div_eq_mul_inv, mul_zero, Nat.cast_add, Nat.cast_one] using",
+          "new_fragment": "      simpa only [div_eq_mul_inv, mul_zero, one_mul, Nat.cast_add, Nat.cast_one] using",
+          "old_sha256": "840a80a469cfa49dde42790d38dc5ac5b2ec56c57c8f642ea836e9329d7e1af8",
+          "new_sha256": "11837ec010a79a768b06ede3f172b0cf4c6b658ba05099f2c3a8d8d0a26211cd",
+          "old_bytes": 77,
+          "new_bytes": 86,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3933,
+      "declaration_name": "upperHalfPlaneCoe_measurableEmbedding",
+      "header_sha256": "6230ead7281b2f1f30158e93d33117ffc673a7caac03a1dc81c6b1855afb3c4f",
+      "diagnostic_ids": ["E0689"],
+      "replacements": [
+        {
+          "old_fragment": "  MeasurableEmbedding.subtype_coe\n    UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet",
+          "new_fragment": "  UpperHalfPlane.measurableEmbedding_coe",
+          "old_sha256": "ec04db51e4e5c30562eb795e5ea7b08f871d1fd77d652f771037d04a2de64bff",
+          "new_sha256": "3714234610a03bcac7f744f0eb283f8173e883ac5b13e5ddd6d3577d004d168f",
+          "old_bytes": 91,
+          "new_bytes": 40,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3936,
+      "declaration_name": "ambientPlaneToUpperLinear",
+      "header_sha256": "814a21f7fb79a3814881433bf5a00ab27fbdb4aec1cef024ccbca00d777d8102",
+      "diagnostic_ids": ["E0691", "E0692", "E0693", "E0694"],
+      "replacements": [
+        {
+          "old_fragment": "  map_add' F G := by\n    apply Lp.ext fun z ↦ ?_",
+          "new_fragment": "  map_add' F G := by\n    apply Lp.ext",
+          "old_sha256": "4e09b0eccc644f6f7e769aaa527470fa488cf2c5000efa2194596b56703e84dc",
+          "new_sha256": "59439fb8c94094f448009ff709ea0969b00ae4fe751f8dc2bba23c56aca2d1a9",
+          "old_bytes": 50,
+          "new_bytes": 37,
+          "target_old_count": 1,
+          "global_old_count": 1
+        },
+        {
+          "old_fragment": "  map_smul' c F := by\n    apply Lp.ext fun z ↦ ?_",
+          "new_fragment": "  map_smul' c F := by\n    apply Lp.ext",
+          "old_sha256": "f838416d878f2ab6ffbe435592e5d87f38f25ade5a0bb4708db011962b11fb36",
+          "new_sha256": "cee2d83b97741def8a71cb7145e932ebdef0a2109067c80526c9838facf5592d",
+          "old_bytes": 51,
+          "new_bytes": 38,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3944,
+      "declaration_name": "lpInfinityMultiplierLinear",
+      "header_sha256": "d3da3f41a361ba35cf7c0020c6dd269e8a93f477c81c01210011c99a3efa6f88",
+      "diagnostic_ids": ["E0704"],
+      "replacements": [
+        {
+          "old_fragment": "  map_smul' c f := by\n    rw [← MeasureTheory.Lp.smul_comm c a f,\n      MeasureTheory.Lp.smul_assoc]",
+          "new_fragment": "  map_smul' c f := by\n    exact (MeasureTheory.Lp.smul_comm c a f).symm",
+          "old_sha256": "c8299a93495d95db24f535a81cbce7253824fceb4f8f128611179d8a77f21b41",
+          "new_sha256": "c18445673fdca87554ee91753f409180976bd8aee72e441408803c36e4ad6118",
+          "old_bytes": 102,
+          "new_bytes": 71,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "1df2e73cb2b6f665122c90c0fd1372165ce09c41b4012835173369305da6e6eb",
+    "bytes": 2702173,
+    "splitlines": 60573,
+    "changed_declaration_indices": [3910, 3911, 3927, 3930, 3933, 3936, 3944],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOT_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The obsolete nonexistent MeasureTheory.L2.norm_sq_eq_integral is replaced by an inline proof copied structurally from the three already checked-in L2 norm-square lemmas in this exact source. The RHS then uses the existing local ambientPlaneL2_norm_sq_eq_integral theorem.",
+  "repairs": [
+    {
+      "declaration_index": 3937,
+      "declaration_name": "norm_ambientPlaneToUpperLinear_le",
+      "header_sha256": "d5b77ee5a9a5470c63e1ac5f4da4311868cfb118a99c598ed97dd3e15a871c3c",
+      "diagnostic_ids": ["E0695", "E0696"],
+      "replacements": [
+        {
+          "old_fragment": "  rw [← sq_le_sq₀ (norm_nonneg _) (norm_nonneg _),\n    MeasureTheory.L2.norm_sq_eq_integral]\n  calc\n    (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) =\n      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        rw [← integral_subtype_comap\n          UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]\n        apply integral_congr_ae\n        filter_upwards [MemLp.coeFn_toLp\n          (ambientPlane_comp_upper_memLp F)] with z hz\n        rw [hz]\n    _ ≤ ∫ w : ℂ, ‖F w‖ ^ 2 :=\n      setIntegral_le_integral (Lp.memLp F).integrable_sq_norm\n        (Filter.Eventually.of_forall fun _ ↦ sq_nonneg _)\n    _ = ‖F‖ ^ 2 := (MeasureTheory.L2.norm_sq_eq_integral F).symm",
+          "new_fragment": "  rw [← sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)]\n  have hUpper :\n      ‖ambientPlaneToUpperLinear F‖ ^ 2 =\n        ∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n          ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by\n    rw [← inner_self_eq_norm_sq (𝕜 := ℂ), MeasureTheory.L2.inner_def,\n      ← integral_re (MeasureTheory.L2.integrable_inner\n        (ambientPlaneToUpperLinear F) (ambientPlaneToUpperLinear F))]\n    apply integral_congr_ae\n    exact Filter.Eventually.of_forall fun z ↦\n      inner_self_eq_norm_sq (𝕜 := ℂ) (ambientPlaneToUpperLinear F z)\n  rw [hUpper]\n  calc\n    (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n        ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure) =\n      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        rw [← integral_subtype_comap\n          UpperHalfPlane.isOpen_upperHalfPlaneSet.measurableSet]\n        apply integral_congr_ae\n        filter_upwards [MemLp.coeFn_toLp\n          (ambientPlane_comp_upper_memLp F)] with z hz\n        rw [hz]\n    _ ≤ ∫ w : ℂ, ‖F w‖ ^ 2 :=\n      setIntegral_le_integral (Lp.memLp F).integrable_sq_norm\n        (Filter.Eventually.of_forall fun _ ↦ sq_nonneg _)\n    _ = ‖F‖ ^ 2 := (ambientPlaneL2_norm_sq_eq_integral F).symm",
+          "old_sha256": "77e5e765b15383b4500f09cba569122bc6bf173a33628b9fce7ccebc255f8234",
+          "new_sha256": "8069bec7eaaf6d90b0978d7de905b3257ff6ac892fa3ee5fb1ceb00e76d5b6d9",
+          "old_bytes": 831,
+          "new_bytes": 1405
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "80a0c13cc159b6313e7aaa4b3d9fe1fe8f1428271f7beca872933f2a81a1ac4e",
+    "bytes": 2702826,
+    "splitlines": 60583,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

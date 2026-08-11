@@ -1,0 +1,42 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "P5DiscriminantHardTruncation namespace only, source lines 53116-53789",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The discriminant hard-stage section opens DefinitionOneSobolev but not its WeightCorePetersson child, even though weightedFull_apply_core uses upstairsInnerDensity and quotientInnerDensity_mk. Add the exact owner namespace only within this bounded section.",
+  "confirmed_root_selectors": {
+    "diagnostic_ids": ["E0723", "E0724", "E0727", "E0729"],
+    "declaration_indices": [3996],
+    "owner_namespace": "DefinitionOneSobolev.WeightCorePetersson",
+    "symbols": ["upstairsInnerDensity", "quotientInnerDensity_mk"]
+  },
+  "environment_replacement": {
+    "old_fragment": "namespace P5DiscriminantHardTruncation\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped ENNReal NNReal\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion",
+    "new_fragment": "namespace P5DiscriminantHardTruncation\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped ENNReal NNReal\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.WeightCorePetersson\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion",
+    "old_sha256": "33c8718ef3c8893058093bd2f17aa51cac70862b753638e77cd35036804bf726",
+    "new_sha256": "7ff73652c709b540f993404b0b940e9ea36d93a38e6cc8371a33f64cf4573227",
+    "old_bytes": 249,
+    "new_bytes": 295,
+    "old_global_count": 1,
+    "new_global_count_before": 0
+  },
+  "standalone_candidate": {
+    "sha256": "c6ea7518e9774fb6ccf9fbb16f59361f161441eb3a8da78bd64ffd446c447c90",
+    "bytes": 2702298,
+    "splitlines": 60574,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

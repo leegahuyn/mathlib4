@@ -37,7 +37,9 @@ DECLARATION_PATTERN_TEXT = (
 DECLARATION_PATTERN = re.compile(DECLARATION_PATTERN_TEXT)
 DIAGNOSTIC_PATTERN = re.compile(
     r"^(?P<file>.+?\.lean):(?P<line>[0-9]+):(?P<col>[0-9]+): "
-    r"(?P<severity>error|warning|info):(?P<message>.*)$"
+    r"(?P<severity>error|warning|info)"
+    r"(?:\((?P<diagnostic_code>[^)\r\n]+)\))?:"
+    r"(?P<message>.*)$"
 )
 
 
@@ -99,6 +101,7 @@ def parse_diagnostics(
             current = {
                 "ordinal": len(entries),
                 "severity": match.group("severity"),
+                "diagnostic_code": match.group("diagnostic_code"),
                 "file": match.group("file"),
                 "line": line,
                 "col": int(match.group("col")),

@@ -1,0 +1,426 @@
+name: Codex full cumulative Mock2 FA direct diagnostics
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-full-cumulative-max2000.yml
+      - scripts/fa_full_cumulative_prepare.py
+      - scripts/fa_full_cumulative_candidate_ci.sh
+      - scripts/fa_full_cumulative_collect_full_diagnostics.py
+      - scripts/fa506r2_collect_full_diagnostics.py
+      - scripts/fa_full_compile_inventory.py
+      - scripts/fa_full_compile_combined_known_overrides.json
+      - scripts/fa_d0a3_idx2974_3002_full_inventory_gated_overrides.json
+      - scripts/fa_full_compile_global_core_instance_environment_override.json
+      - scripts/fa_full_compile_finrank_real_complex_overrides.json
+      - scripts/fa_full_cumulative_standard_library_index.json
+      - scripts/fa_d0a3_r013_r014_late_root_library.json
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: codex-fa-full-cumulative-max2000
+  cancel-in-progress: true
+
+env:
+  FA_COMPILE_MAX_ERRORS: "2000"
+
+  FA_FULL_BASE_RUN_ID: "31495034235"
+  FA_FULL_BASE_JOB_ID: "93790488049"
+  FA_FULL_BASE_HEAD_SHA: "989132c0ac49fdfd7ff637a5b77c45b73e02f32f"
+  FA_FULL_BASE_ARTIFACT_ID: "9103368138"
+  FA_FULL_BASE_ARTIFACT_NAME: "codex-fa506r2-full-diagnostic-d0a3-989132c0ac49fdfd7ff637a5b77c45b73e02f32f"
+  FA_FULL_BASE_ARTIFACT_SIZE: "1446570"
+  FA_FULL_BASE_ARTIFACT_DIGEST: "sha256:eb21e1d4fe0c0652e6d8463592fd4c550005f29bcb9611f18c8533ba888bd6f4"
+  FA_FULL_BASE_SOURCE_SHA256: "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec"
+  FA_FULL_BASE_SOURCE_BYTES: "2702252"
+  FA_FULL_BASE_SOURCE_LINES: "60573"
+  FA_FULL_BASE_ATTESTATION_PATH: "/tmp/fa-full-base-artifact-attestation.json"
+  FA_FULL_INVENTORY_PATH: "/tmp/fa-full-replayed/fa_full_compile_error_inventory.json"
+
+  # Exact, fail-closed identities for the statically audited cumulative package.
+  FA_FULL_LATE_LIBRARY_SHA256: "20c27c41e40351d0fdb2cb636fc57e5f4e6595b22a743e8c2a9794c33ffba2a3"
+  FA_FULL_SUPPLEMENTAL_INDEX_SHA256: "9acd27824c1bbd41d630b8ffaef209e2504e4762335e70571bf1898beeb5b25c"
+  FA_FULL_EXPECTED_SHA256: "83e5f35d98046554a6d6b0c48341739bc9a84cf343114ddc984ec3a45cedc650"
+  FA_FULL_EXPECTED_BYTES: "2716163"
+  FA_FULL_EXPECTED_LINES: "60872"
+  FA_FULL_PREPARER_SHA256: "b530f31f5eaf3be377b3d3f42752d96907f52f5f21263f434fc295148f150fd0"
+  FA_FULL_COLLECTOR_WRAPPER_SHA256: "2855b08ca1fd1108b7d974be7a3584e0099bff29186c5b705233bd06f630a5a9"
+  FA_FULL_RUNNER_SHA256: "18114ddd6bdf1b720fe4d9cb8582457990149755e7298922988993f4d41c15c1"
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Gate hydrated package identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import re
+
+          exact = {
+              "FA_COMPILE_MAX_ERRORS": "2000",
+              "FA_FULL_BASE_RUN_ID": "31495034235",
+              "FA_FULL_BASE_JOB_ID": "93790488049",
+              "FA_FULL_BASE_HEAD_SHA": "989132c0ac49fdfd7ff637a5b77c45b73e02f32f",
+              "FA_FULL_BASE_ARTIFACT_ID": "9103368138",
+              "FA_FULL_BASE_ARTIFACT_NAME": (
+                  "codex-fa506r2-full-diagnostic-d0a3-"
+                  "989132c0ac49fdfd7ff637a5b77c45b73e02f32f"
+              ),
+              "FA_FULL_BASE_ARTIFACT_SIZE": "1446570",
+              "FA_FULL_BASE_ARTIFACT_DIGEST": (
+                  "sha256:eb21e1d4fe0c0652e6d8463592fd4c550005f29bcb9611f18c8533ba888bd6f4"
+              ),
+              "FA_FULL_BASE_SOURCE_SHA256": (
+                  "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec"
+              ),
+              "FA_FULL_BASE_SOURCE_BYTES": "2702252",
+              "FA_FULL_BASE_SOURCE_LINES": "60573",
+              "FA_FULL_BASE_ATTESTATION_PATH": "/tmp/fa-full-base-artifact-attestation.json",
+              "FA_FULL_INVENTORY_PATH": (
+                  "/tmp/fa-full-replayed/fa_full_compile_error_inventory.json"
+              ),
+          }
+          for key, expected in exact.items():
+              if os.environ.get(key) != expected:
+                  raise SystemExit(f"{key} identity drift")
+          for key in (
+              "FA_FULL_LATE_LIBRARY_SHA256",
+              "FA_FULL_SUPPLEMENTAL_INDEX_SHA256",
+              "FA_FULL_EXPECTED_SHA256",
+              "FA_FULL_PREPARER_SHA256",
+              "FA_FULL_COLLECTOR_WRAPPER_SHA256",
+              "FA_FULL_RUNNER_SHA256",
+          ):
+              value = os.environ.get(key, "")
+              if (
+                  value.startswith("PENDING")
+                  or value == "0" * 64
+                  or re.fullmatch(r"[0-9a-f]{64}", value) is None
+              ):
+                  raise SystemExit(f"{key} is not hydrated")
+          for key in ("FA_FULL_EXPECTED_BYTES", "FA_FULL_EXPECTED_LINES"):
+              value = os.environ.get(key, "")
+              if value.startswith("PENDING") or re.fullmatch(r"[1-9][0-9]*", value) is None:
+                  raise SystemExit(f"{key} is not hydrated")
+          PY
+          printf '%s  %s\n' \
+            "${FA_FULL_PREPARER_SHA256}" scripts/fa_full_cumulative_prepare.py \
+            "${FA_FULL_RUNNER_SHA256}" scripts/fa_full_cumulative_candidate_ci.sh \
+            "${FA_FULL_COLLECTOR_WRAPPER_SHA256}" scripts/fa_full_cumulative_collect_full_diagnostics.py \
+            e6e065fedb359ee7a1fa329d5633ce9ea2d05bf8a20ac2e58f9e37ea96ee81a6 scripts/fa506r2_collect_full_diagnostics.py \
+            4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76 scripts/fa_full_compile_inventory.py \
+            c503ca6383d74537a058280410a013d77691b0812e57be360afd38ea20fb8da0 scripts/fa_full_compile_combined_known_overrides.json \
+            3b22e7cff8ba4c502852b17f074bb22a431b17e4b93fd8b8af6f6a5da4a61243 scripts/fa_d0a3_idx2974_3002_full_inventory_gated_overrides.json \
+            4c90fa27cfa482dfc9ffc9588a4d3742ccc32b77519f0510715feeb2b94d6e23 scripts/fa_full_compile_global_core_instance_environment_override.json \
+            847133cc01d9d6551f289a80f107821aba3072e2488468ce231002496c8be3e0 scripts/fa_full_compile_finrank_real_complex_overrides.json \
+            "${FA_FULL_SUPPLEMENTAL_INDEX_SHA256}" scripts/fa_full_cumulative_standard_library_index.json \
+            "${FA_FULL_LATE_LIBRARY_SHA256}" scripts/fa_d0a3_r013_r014_late_root_library.json | sha256sum -c -
+
+      - name: Live-attest and extract exact d0a3 full-run source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_FULL_BASE_RUN_ID}" \
+            > /tmp/fa-full-base-run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_FULL_BASE_JOB_ID}" \
+            > /tmp/fa-full-base-job.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_FULL_BASE_ARTIFACT_ID}" \
+            > /tmp/fa-full-base-artifact.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_FULL_BASE_ARTIFACT_ID}/zip" \
+            > /tmp/fa-full-base-artifact.zip
+          mkdir -p /tmp/fa506r2-full-diagnostic-9103368138
+          unzip -q /tmp/fa-full-base-artifact.zip \
+            -d /tmp/fa506r2-full-diagnostic-9103368138
+
+          python3 - <<'PY'
+          from pathlib import Path, PureWindowsPath
+          import hashlib
+          import json
+          import os
+
+          repository = os.environ["GITHUB_REPOSITORY"]
+          branch = "codex/fa-qym-cleanbuild-final-20260811-fast"
+          run_id = int(os.environ["FA_FULL_BASE_RUN_ID"])
+          job_id = int(os.environ["FA_FULL_BASE_JOB_ID"])
+          head = os.environ["FA_FULL_BASE_HEAD_SHA"]
+          artifact_id = int(os.environ["FA_FULL_BASE_ARTIFACT_ID"])
+          artifact_name = os.environ["FA_FULL_BASE_ARTIFACT_NAME"]
+          artifact_size = int(os.environ["FA_FULL_BASE_ARTIFACT_SIZE"])
+          artifact_digest = os.environ["FA_FULL_BASE_ARTIFACT_DIGEST"]
+          expected_source = os.environ["FA_FULL_BASE_SOURCE_SHA256"]
+          expected_bytes = int(os.environ["FA_FULL_BASE_SOURCE_BYTES"])
+          expected_lines = int(os.environ["FA_FULL_BASE_SOURCE_LINES"])
+
+          run = json.loads(Path("/tmp/fa-full-base-run.json").read_text())
+          job = json.loads(Path("/tmp/fa-full-base-job.json").read_text())
+          artifact = json.loads(Path("/tmp/fa-full-base-artifact.json").read_text())
+          archive = Path("/tmp/fa-full-base-artifact.zip").read_bytes()
+          workflow_run = artifact.get("workflow_run") or {}
+          source_hits = sorted(
+              path
+              for path in Path("/tmp/fa506r2-full-diagnostic-9103368138").rglob(
+                  "Mock2_FunctionalAnalysis.lean"
+              )
+              if "PrimalitySheafVerification" in path.as_posix()
+          )
+          source_payloads = [path.read_bytes() for path in source_hits]
+          source_checks = [
+              hashlib.sha256(data).hexdigest() == expected_source
+              and len(data) == expected_bytes
+              and len(data.decode("utf-8").splitlines()) == expected_lines
+              and b"\r" not in data
+              for data in source_payloads
+          ]
+          checks = {
+              "run_identity": run.get("id") == run_id,
+              "run_repository": (run.get("repository") or {}).get("full_name") == repository,
+              "run_completed_failure": run.get("status") == "completed"
+              and run.get("conclusion") == "failure",
+              "run_branch_head": run.get("head_branch") == branch
+              and run.get("head_sha") == head,
+              "run_workflow": run.get("path")
+              == ".github/workflows/codex-fa506r2-full-diagnostic-d0a3.yml",
+              "job_identity": job.get("id") == job_id and job.get("run_id") == run_id,
+              "job_completed_failure": job.get("status") == "completed"
+              and job.get("conclusion") == "failure",
+              "job_branch_head": job.get("head_branch") == branch
+              and job.get("head_sha") == head,
+              "artifact_identity": artifact.get("id") == artifact_id
+              and artifact.get("name") == artifact_name
+              and artifact.get("size_in_bytes") == artifact_size
+              and artifact.get("digest") == artifact_digest,
+              "artifact_live": artifact.get("expired") is False,
+              "artifact_run": workflow_run.get("id") == run_id
+              and workflow_run.get("head_branch") == branch
+              and workflow_run.get("head_sha") == head,
+              "archive_digest": "sha256:" + hashlib.sha256(archive).hexdigest()
+              == artifact_digest,
+              "source_hits_present": bool(source_hits),
+              "all_source_hits_exact": bool(source_checks) and all(source_checks),
+          }
+          if not all(checks.values()):
+              raise SystemExit(
+                  "base full-run attestation failed: "
+                  + repr([key for key, passed in checks.items() if not passed])
+              )
+          selected = min(source_hits, key=lambda path: (len(path.parts), path.as_posix()))
+          payload = {
+              "schema": "fa-full-base-artifact-attestation-v1",
+              "repository": repository,
+              "target_branch": branch,
+              "run_id": run_id,
+              "job_id": job_id,
+              "head_sha": head,
+              "artifact_id": artifact_id,
+              "artifact_name": artifact_name,
+              "artifact_size": artifact_size,
+              "artifact_digest": artifact_digest,
+              "checks": checks,
+              "source": {
+                  "path": str(selected.resolve()),
+                  "sha256": expected_source,
+                  "bytes": expected_bytes,
+                  "lines": expected_lines,
+                  "identical_hit_count": len(source_hits),
+              },
+              "all_checks_passed": True,
+          }
+          attestation = Path(os.environ["FA_FULL_BASE_ATTESTATION_PATH"])
+          attestation.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+          digest = hashlib.sha256(attestation.read_bytes()).hexdigest()
+          with Path(os.environ["GITHUB_ENV"]).open("a") as stream:
+              stream.write(f"FA_FULL_BASE_SOURCE_PATH={selected.resolve()}\n")
+              stream.write(f"FA_FULL_BASE_ATTESTATION_SHA256={digest}\n")
+          PY
+
+      - name: Replay and verify exact 1157-error inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=/tmp/fa506r2-full-diagnostic-9103368138
+          norms="${base}/home/runner/work/mathlib4/mathlib4/build-logs/codex-fa506r2-full-diagnostic-d0a3/candidates/norms"
+          replay=/tmp/fa-full-replayed
+          mkdir -p "$replay"
+          python3 scripts/fa506r2_collect_full_diagnostics.py \
+            --source "$norms/Mock2_FunctionalAnalysis-candidate.lean" \
+            --log "$norms/Mock2_FunctionalAnalysis.log" \
+            --metric "$norms/METRIC.json" \
+            --command "$norms/Mock2_FunctionalAnalysis.command" \
+            --executed "$norms/Mock2_FunctionalAnalysis.executed" \
+            --output "$replay/FULL_DIAGNOSTICS.replayed.lf.json"
+
+          FA_REPLAY_NORMS="$norms" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+
+          replay = Path("/tmp/fa-full-replayed/FULL_DIAGNOSTICS.replayed.lf.json")
+          payload = json.loads(replay.read_text(encoding="utf-8"))
+          historical = str(
+              PureWindowsPath(r"C:\Users\사용자\Documents\Codex\2026-08-10")
+              / "https-github-com-leegahuyn-mathlib4-pull"
+              / "work"
+              / "fa506r2-full-diagnostic-9103368138"
+              / "home"
+              / "runner"
+              / "work"
+              / "mathlib4"
+              / "mathlib4"
+              / "build-logs"
+              / "codex-fa506r2-full-diagnostic-d0a3"
+              / "candidates"
+              / "norms"
+          )
+          payload["source"]["path"] = (
+              historical + r"\Mock2_FunctionalAnalysis-candidate.lean"
+          )
+          payload["log"]["path"] = historical + r"\Mock2_FunctionalAnalysis.log"
+          payload["metric_path"] = historical + r"\METRIC.json"
+          payload["compile"]["command_path"] = (
+              historical + r"\Mock2_FunctionalAnalysis.command"
+          )
+          payload["compile"]["executed_marker_path"] = (
+              historical + r"\Mock2_FunctionalAnalysis.executed"
+          )
+          lf = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode()
+          if len(lf) != 1_824_789 or hashlib.sha256(lf).hexdigest() != (
+              "1208de333eb92ba2101294cdf900386040dc407ac73c0652afd6efe5d98ba609"
+          ):
+              raise SystemExit("corrected LF collector replay identity drift")
+          crlf = lf.replace(b"\n", b"\r\n")
+          if len(crlf) != 1_850_645 or hashlib.sha256(crlf).hexdigest() != (
+              "26da4c2641c5065689d6a5e1adb4e154492e5cc3880419ff9a22361204609a99"
+          ):
+              raise SystemExit("corrected CRLF collector replay identity drift")
+          corrected = Path(os.environ["FA_REPLAY_NORMS"]) / (
+              "FULL_DIAGNOSTICS.corrected.json"
+          )
+          corrected.write_bytes(crlf)
+          PY
+
+          python3 scripts/fa_full_compile_inventory.py inventory \
+            --artifact "$base" \
+            --full-diagnostics-member \
+              home/runner/work/mathlib4/mathlib4/build-logs/codex-fa506r2-full-diagnostic-d0a3/candidates/norms/FULL_DIAGNOSTICS.corrected.json \
+            --expected-max-errors 2000 \
+            --expected-declaration-count 4397 \
+            --inventory-out "$FA_FULL_INVENTORY_PATH" \
+            --manifest-out "$replay/fa_full_compile_replayed_manifest.json" \
+            > "$replay/inventory-replay-console.json"
+          printf '%s  %s\n' \
+            3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648 \
+              "$FA_FULL_INVENTORY_PATH" \
+            e56cafcdf7049787dff8eb46acc8137ae56bcac33d13a00796d3ae12edea1846 \
+              "$replay/fa_full_compile_replayed_manifest.json" | sha256sum -c -
+          test "$(wc -c < "$FA_FULL_INVENTORY_PATH")" -eq 1853952
+
+      - name: Run one cumulative M2 to M2A to FA direct compile
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa_full_cumulative_candidate_ci.sh \
+            2>&1 | tee /tmp/fa-full-cumulative-runner.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "script_exit=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Build cumulative result report
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.script_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          root = Path("build-logs/codex-fa-full-cumulative-max2000/candidates/norms")
+          report = {
+              "schema": "fa-full-cumulative-workflow-result-v1",
+              "run_id": os.environ.get("GITHUB_RUN_ID"),
+              "head_sha": os.environ.get("GITHUB_SHA"),
+              "script_exit": os.environ.get("SCRIPT_EXIT"),
+              "expected_candidate": {
+                  "sha256": os.environ.get("FA_FULL_EXPECTED_SHA256"),
+                  "bytes": os.environ.get("FA_FULL_EXPECTED_BYTES"),
+                  "lines": os.environ.get("FA_FULL_EXPECTED_LINES"),
+              },
+          }
+          for name, filename in (
+              ("preparation", "PREPARATION.json"),
+              ("metric", "METRIC.json"),
+              ("diagnostics", "FULL_DIAGNOSTICS.json"),
+          ):
+              path = root / filename
+              report[name] = json.loads(path.read_text()) if path.exists() else None
+          Path("/tmp/fa-full-cumulative-result.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload source, raw FA log, and complete evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-full-cumulative-max2000-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-full-cumulative-max2000
+            /tmp/fa-full-cumulative-runner.log
+            /tmp/fa-full-cumulative-result.json
+            /tmp/fa-full-base-artifact-attestation.json
+            /tmp/fa-full-base-run.json
+            /tmp/fa-full-base-job.json
+            /tmp/fa-full-base-artifact.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Preserve authoritative FA exit
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.script_exit }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          root = Path("build-logs/codex-fa-full-cumulative-max2000/candidates/norms")
+          metric_path = root / "METRIC.json"
+          collector_exit_path = root / "collector.exit"
+          if not metric_path.is_file() or not collector_exit_path.is_file():
+              raise SystemExit(86)
+          if collector_exit_path.read_text().strip() != "0":
+              raise SystemExit(86)
+          metric = json.loads(metric_path.read_text())
+          fa_exit = metric.get("FA_exit")
+          if not isinstance(fa_exit, int) or not 0 <= fa_exit <= 255:
+              raise SystemExit(86)
+          script_exit = os.environ.get("SCRIPT_EXIT", "")
+          if script_exit != str(fa_exit):
+              raise SystemExit(86)
+          raise SystemExit(fa_exit)
+          PY

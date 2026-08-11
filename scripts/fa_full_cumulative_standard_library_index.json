@@ -1,0 +1,134 @@
+{
+  "schema": "fa-full-cumulative-standard-library-index-v1",
+  "status": "STATIC_ONLY_UNVERIFIED_PROMOTED_LIBRARIES",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "lines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb"
+  },
+  "libraries": [
+    {
+      "basename": "fa_d0a3_r002_high_confidence_overrides.json",
+      "sha256": "7ce35a28e31b601c30261c73b4377938d254e2932bbb2a90dd0193f7ca3f87e6"
+    },
+    {
+      "basename": "fa_d0a3_r003_high_confidence_overrides.json",
+      "sha256": "9f1b623c8f7f53b899b17386368a437bc6bf901a22c22ee651d940928ca15d32"
+    },
+    {
+      "basename": "fa_d0a3_r004_high_confidence_overrides.json",
+      "sha256": "307590c7bd0b7a623422bd4e585a991eff1ab7b7ce6af2a76a2f33b22a268bc9"
+    },
+    {
+      "basename": "fa_d0a3_r005_high_confidence_overrides.json",
+      "sha256": "0d49ff2975918d8312b24b8f976fd82ef3c4a4828e6eeed5840a140117c3501e"
+    },
+    {
+      "basename": "fa_d0a3_r006_high_confidence_overrides.json",
+      "sha256": "85462fe75dab1848c0e584dc9a848896da3095eb7aeedda2772a74d812a2cd6e"
+    },
+    {
+      "basename": "fa_d0a3_r007_high_confidence_overrides.json",
+      "sha256": "880e1c6b53a7c1c10418c302969c09b313dc63756f7d42e5040e115a336b7b4d"
+    },
+    {
+      "basename": "fa_d0a3_r008_high_confidence_overrides.json",
+      "sha256": "fc12abfbf84d54842ce9f8c2db9c4661948be24da75d38ec51a866b706c74551"
+    },
+    {
+      "basename": "fa_d0a3_r009_high_confidence_overrides.json",
+      "sha256": "0f14f9f15cc2256399d5201648c157764f7db800cbed32125f0ba9b5b9a3c5e2"
+    },
+    {
+      "basename": "fa_d0a3_r010_remaining_high_confidence_overrides.json",
+      "sha256": "b8d2f8ee675079757381d46b77742da64427129f95be24ee7f86177c5c9b8142"
+    },
+    {
+      "basename": "fa_d0a3_r011_remaining_root_library.json",
+      "sha256": "66b10da2cad998db97591b5234e87e4c9b698fffa65478fd9f2be022b606df6c"
+    },
+    {
+      "basename": "fa_full_compile_two_torus_fourier_basis_type_overrides.json",
+      "sha256": "693ac1aa6abe54b60dacda3771b1be1ec8d05d9b5066aae3fe2dca972bbfc7cb"
+    },
+    {
+      "basename": "fa_d0a3_bounded_continuous_linear_map_environment_overlay.json",
+      "sha256": "2a4ddfc4f494e3495d21892c0273e6b9a46ff05d7281f5a9fed973e708899878"
+    },
+    {
+      "basename": "fa_full_compile_gamma_cusp_namespace_environment_override.json",
+      "sha256": "6d814b06806a1624a64e9e8b92ea4cbd20bd0e97fa8896be62a0c98c6607c2bd"
+    },
+    {
+      "basename": "fa_full_compile_p5_physical_namespace_environment_override.json",
+      "sha256": "5af6655154b8885cef11c655dcfce83b4c35fcc02ddff587322650e9274886c4"
+    },
+    {
+      "basename": "fa_full_compile_plane_wave_integration_by_parts_overrides.json",
+      "sha256": "68f2617fc8737bb73e30cafc438754fc25a05803d4b039bb0a771ee9241529d9"
+    },
+    {
+      "basename": "fa_full_compile_negative_plane_wave_differentiability_overrides.json",
+      "sha256": "61fc196385c6c6a0c3555f2f7f845a69c07643d1e9a47840956e6671b026ebab"
+    },
+    {
+      "basename": "fa_full_compile_literal_stage_scaling_coordinate_overrides.json",
+      "sha256": "4a66c879cd7f004c35a307a84bd1ef535dd48bf7722b84f182c07ca02d4721b3"
+    },
+    {
+      "basename": "fa_full_compile_norm_square_arithmetic_overrides.json",
+      "sha256": "f4569aa500203eb4fdff075b7e0ee5d491c3769fe77e2b00bd7a96208ccabfc5"
+    },
+    {
+      "basename": "fa_full_compile_inner_finite_projection_overrides.json",
+      "sha256": "ad1caa0e531d8a2aab73b2db4eb2cad006dfa789ef9f3a25b2c9c6be5289f7fc"
+    },
+    {
+      "basename": "fa_full_compile_complex_inner_self_overrides.json",
+      "sha256": "06d4134b58b382b99113eca5583fae1da61074f687438d4c46461bf35e710a2e"
+    },
+    {
+      "basename": "fa_full_compile_r010_structural_overrides.json",
+      "sha256": "5f6bfb0424555d58caffdf4946950ac4e50066e2f4c1c59b82c412b6b008d21a"
+    },
+    {
+      "basename": "fa_full_compile_r010_dense_linearity_overrides.json",
+      "sha256": "a9555bf577ca96344708cb157563e7e8afba121374882a10bf1212397a6c7b9f"
+    },
+    {
+      "basename": "fa_full_compile_ambient_upper_l2_norm_override.json",
+      "sha256": "5ace51c856b683a8d2863da8faeb122fd0165da0ebd9d9c263ed8099a51bb1e7"
+    },
+    {
+      "basename": "fa_full_compile_ambient_upper_noncomputable_environment_override.json",
+      "sha256": "bdfe52e2c97ac291490a0c40d55ec8c7bef61003127cb1326c40f5bdca24b1ad"
+    },
+    {
+      "basename": "fa_full_compile_discriminant_weight_namespace_environment_override.json",
+      "sha256": "f815c5240328badee859d956cb5ae5430327b3f161622ce92443ef191777368f"
+    },
+    {
+      "basename": "fa_full_compile_actual_scalar_fredholm_namespace_environment_override.json",
+      "sha256": "e920f1742ad7d1bd3cd2934563a947f217aa5e4f4e369e593ce7ad218725e66f"
+    },
+    {
+      "basename": "fa_full_compile_completion_uniform_inducing_override.json",
+      "sha256": "3c8a5c7a0180997fe374af59d0138e40a34ac45dda91a73f948dece60488882e"
+    },
+    {
+      "basename": "fa_d0a3_r012_remaining_root_library.json",
+      "sha256": "c34a6e3e34034f9b8d87d7fa0822e9ec1a953fc5361e8e0bb1b578d7b0591552"
+    }
+  ],
+  "selection_policy": {
+    "ordered_literal_application": true,
+    "all_inputs_exact_d0a3_bound": true,
+    "direct_lean_verified": false,
+    "broad_continuous_linear_map_open_selected": false,
+    "fragment_or_bounded_environment_only": true,
+    "headers_documents_attributes_skeleton_preserved_required": true,
+    "executable_forbidden_six_zero_required": true
+  }
+}

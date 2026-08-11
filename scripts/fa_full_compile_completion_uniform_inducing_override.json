@@ -1,0 +1,43 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOT_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The `simpa using` term is parsed before its explicit type argument, producing both the syntax-recovery header and a recovered type mismatch. Parenthesize the complete application of the exact theorem whose recovered signature is printed by Lean.",
+  "repairs": [
+    {
+      "declaration_index": 4199,
+      "declaration_name": "orbitPeterssonReducedChartEmbedding_coe",
+      "header_sha256": "6940769b087c7104a255a21f7c6672ad887ab38540e9f61410d12c59c642a831",
+      "diagnostic_ids": ["E0805", "E0806"],
+      "replacements": [
+        {
+          "old_fragment": "    (by simpa using UniformSpace.Completion.isUniformInducing_coe\n      (OrbitPeterssonCore n)) u",
+          "new_fragment": "    (by\n      simpa using\n        (UniformSpace.Completion.isUniformInducing_coe\n          (OrbitPeterssonCore n))) u",
+          "old_sha256": "b19d9af193a41be6fa689e32754151ae892b205fb362c781cb4fdce91c2ed79e",
+          "new_sha256": "fcd10ff3e416e4447e3f7247a57253b77cf55c36076ef051b338f8709bae0636",
+          "old_bytes": 97,
+          "new_bytes": 117
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "59d0bf2c3019f9786152d67f0edd9a97c8f6104da22b349834a595eec9e05d3f",
+    "bytes": 2702272,
+    "splitlines": 60575,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Use the ordered-group-with-zero equivalences that exactly match an inverse on the left, instead of the incorrectly elaborated mul_lt_mul_left/mul_le_mul_left calls. Split the reverse conjunction explicitly. For the torus-point inverse, first prove the whole representative-coordinate function equality and only then use the measurable equivalence injection; this avoids rewriting beneath dependent AddCircle representative proofs.",
+  "repairs": [
+    {
+      "declaration_index": 3898,
+      "declaration_name": "literalStageFourierBox_eq_smul_unitPiBox",
+      "header_sha256": "0a2751caeb97387fc07def6b5da3bc46f46950ed4ec11a95879a5e8cb69e3532",
+      "diagnostic_ids": ["E0640", "E0642", "E0643", "E0644"],
+      "replacements": [
+        {
+          "old_fragment": "      · apply (mul_lt_mul_left (literalStageFourierScale_pos Y)).mp\n        simpa [x, literalStageFourierScale_ne_zero Y] using hi.1\n      · apply (mul_le_mul_left (literalStageFourierScale_pos Y)).mp\n        simpa [x, literalStageFourierScale_ne_zero Y] using hi.2",
+          "new_fragment": "      · apply (lt_inv_mul_iff₀ (literalStageFourierScale_pos Y)).2\n        convert hi.1 using 1 <;> ring\n      · apply (inv_mul_le_iff₀ (literalStageFourierScale_pos Y)).2\n        convert hi.2 using 1 <;> ring",
+          "old_sha256": "9b8f9845720ee978c4edcdb59de7f523cda274f8400623d5447bd2675a39558e",
+          "new_sha256": "8a8d0d9cd6b4905c16d8fdf74b069073b9566bfcdf5620783720b4dd6430b885",
+          "old_bytes": 267,
+          "new_bytes": 215,
+          "target_old_count": 1,
+          "global_old_count": 1
+        },
+        {
+          "old_fragment": "    simpa [literalStageFourierScale_pos Y, mul_assoc] using\n      (mul_lt_mul_of_pos_left hi.1 (literalStageFourierScale_pos Y)).and\n        (mul_le_mul_of_nonneg_left hi.2\n          (literalStageFourierScale_pos Y).le)",
+          "new_fragment": "    constructor\n    · simpa [literalStageFourierScale_pos Y, mul_assoc] using\n        mul_lt_mul_of_pos_left hi.1 (literalStageFourierScale_pos Y)\n    · simpa [literalStageFourierScale_pos Y, mul_assoc] using\n        mul_le_mul_of_nonneg_left hi.2\n          (literalStageFourierScale_pos Y).le",
+          "old_sha256": "57c4d27fd8366f5cd92f0e8a5a0c96b2cf71023be7829435d2f18ef211becd56",
+          "new_sha256": "0cc832fb4893ec40a05b2c192ef282c4ef2fbadad2c29adde7e2ea5d998d5d43",
+          "old_bytes": 219,
+          "new_bytes": 295,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3901,
+      "declaration_name": "literalStageTorusPoint_physicalTorusPoint",
+      "header_sha256": "66767df807df01947e773f14e8584fb8cd13718762126c703b555db6bf42670e",
+      "diagnostic_ids": ["E0646", "E0648", "E0649", "E0650"],
+      "replacements": [
+        {
+          "old_fragment": "  apply Complex.measurableEquivPi.injective\n  ext i\n  simp only [literalStageTorusPoint, literalStageTorusCoordinate,\n    literalStagePhysicalTorusPoint, Complex.measurableEquivPi_apply]\n  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  have hi := hw i\n  have hscaled :\n      (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i ∈ Set.Ioc (-(1 / 2 : ℝ)) (1 / 2) := by\n    rw [Set.mem_Ioc] at hi ⊢\n    constructor\n    · apply (mul_lt_mul_left (literalStageFourierScale_pos Y)).mp\n      simpa [literalStageFourierScale_ne_zero Y] using hi.1\n    · apply (mul_le_mul_left (literalStageFourierScale_pos Y)).mp\n      simpa [literalStageFourierScale_ne_zero Y] using hi.2\n  rw [show\n      (AddCircle.equivIoc 1 (-(1 / 2 : ℝ))\n          (((literalStageFourierScale Y)⁻¹ *\n            Complex.measurableEquivPi w i : ℝ) : UnitAddCircle)).1 =\n        (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i by\n    exact congrArg Subtype.val (AddCircle.equivIoc_coe_eq hscaled)]\n  field_simp [literalStageFourierScale_ne_zero Y]",
+          "new_fragment": "  have hcoord :\n      literalStageTorusCoordinate (literalStagePhysicalTorusPoint Y w) =\n        fun i => (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i := by\n    funext i\n    have hi := hw i\n    have hscaled :\n        (literalStageFourierScale Y)⁻¹ *\n            Complex.measurableEquivPi w i ∈ Set.Ioc (-(1 / 2 : ℝ)) (1 / 2) := by\n      rw [Set.mem_Ioc] at hi ⊢\n      constructor\n      · apply (lt_inv_mul_iff₀ (literalStageFourierScale_pos Y)).2\n        convert hi.1 using 1 <;> ring\n      · apply (inv_mul_le_iff₀ (literalStageFourierScale_pos Y)).2\n        convert hi.2 using 1 <;> ring\n    unfold literalStageTorusCoordinate literalStagePhysicalTorusPoint\n    rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n    exact congrArg Subtype.val (AddCircle.equivIoc_coe_eq hscaled)\n  unfold literalStageTorusPoint\n  rw [hcoord]\n  apply Complex.measurableEquivPi.injective\n  ext i\n  simp [literalStageFourierScale_ne_zero Y]",
+          "old_sha256": "a6fde5f12e439c1eabae755265b06b11c4aab66ffe0c6e5655f1190021d39087",
+          "new_sha256": "b1cf1742ef5d8d1ee810d2b789b118aaeff81165de186f368be427100ea28207",
+          "old_bytes": 1078,
+          "new_bytes": 967,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "e63c6796585ec8174c7e4cd2c99a2d9d4545dc843ee2424196dd106df2585122",
+    "bytes": 2702165,
+    "splitlines": 60575,
+    "changed_declaration_indices": [3898, 3901],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "The current proof supplies f*g as the first argument to integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable, but the exact API requires f'*g, f*g', then f*g. Name all three integrability witnesses, derive f'*g from the compactly-supported base product using the already proved exact wave-derivative formula, and normalize dx/dy through their checked-in apply lemmas.",
+  "repairs": [
+    {
+      "declaration_index": 3908,
+      "declaration_name": "integral_negativePlaneWave_mul_dx",
+      "header_sha256": "89a3a04819effbf968ec80dc10a6a59f2f19cd8e25b5189ece330a14f60852bc",
+      "diagnostic_ids": ["E0656", "E0657", "E0658", "E0659"],
+      "replacements": [
+        {
+          "old_fragment": "  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ))\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dx v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+          "new_fragment": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) 1 * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_one, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 0 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) 1)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dx v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ))\n    hLeft hRight hBase\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+          "old_sha256": "dd61188a5f78e0bcc4a68bf98750fddba09525b578cec3045f9a3ad9fec8236f",
+          "new_sha256": "4dfad3ec95e12368c44926a5c41cb11967b526f9fe7a5d8d766d7722ba0853da",
+          "old_bytes": 768,
+          "new_bytes": 1355
+        }
+      ]
+    },
+    {
+      "declaration_index": 3909,
+      "declaration_name": "integral_negativePlaneWave_mul_dy",
+      "header_sha256": "a21df72b9e38bc8840e115fd49c6f8ace7cd3f07b0fb8a60775aa0e263a56145",
+      "diagnostic_ids": ["E0660", "E0661", "E0662", "E0663"],
+      "replacements": [
+        {
+          "old_fragment": "  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := Complex.I)\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dy v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+          "new_fragment": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) Complex.I * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_I, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 1 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dy v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := Complex.I)\n    hLeft hRight hBase\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+          "old_sha256": "0773afb8af4da0b476a648f1c916fa6c81cf973d4db5515be2497d8acff01a9c",
+          "new_sha256": "8d1f44b01ba032d377013755bc7d61393a5443c68142c18860f09a9f7cd15265",
+          "old_bytes": 768,
+          "new_bytes": 1369
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "4a0e3f4c69db144b52e7cba6350c7101f301c422484bcfac80d42223580f83ee",
+    "bytes": 2703440,
+    "splitlines": 60603,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

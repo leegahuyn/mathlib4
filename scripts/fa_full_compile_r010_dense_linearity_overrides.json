@@ -1,0 +1,101 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Four bounded R010 repairs: make nonnegativity of the literal tail constant explicit; use the current DenseRange.induction_on API with the target point and closed predicate in the documented order in two declarations; and expose the four exact add/smul laws needed to construct the weighted sesquilinear map. These preserve every declaration header and remain direct-Lean unverified until the cumulative remote run.",
+  "repairs": [
+    {
+      "declaration_index": 3926,
+      "declaration_name": "literalStagePlaneTailConstant_nonneg",
+      "header_sha256": "29f381951ab0f15ad6db18ae887aba912e3ff746c29e24175dad540ac72bd840",
+      "diagnostic_ids": ["E0682"],
+      "replacements": [
+        {
+          "old_fragment": "  unfold literalStagePlaneTailConstant\n  positivity",
+          "new_fragment": "  unfold literalStagePlaneTailConstant\n  exact div_nonneg\n    (mul_nonneg\n      (mul_nonneg (literalStageFourierScale_pos Y).le (Real.sqrt_nonneg 2))\n      (literalStageLocalizationConstant_nonneg Y n))\n    (mul_nonneg (by norm_num) Real.pi_pos.le)",
+          "old_sha256": "76512ce16c53ebf2b89edd5543016c3f604dacd99e67c8835433b4ee9d232d31",
+          "new_sha256": "951c97d965b263ec2a139d78fcc02c6fd7f62a38309b65d20b7c5ab496f190c1",
+          "old_bytes": 51,
+          "new_bytes": 248,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3928,
+      "declaration_name": "norm_literalStagePlaneFiniteApproximation_sub_le",
+      "header_sha256": "8c5d1955880d8d099a660fc12113cf8c0cfed10e678266f4b83af6914ba1ebd3",
+      "diagnostic_ids": ["E0685"],
+      "replacements": [
+        {
+          "old_fragment": "  exact (denseRange_coreMap n).induction\n    (fun _ ⟨u, rfl⟩ ↦\n      norm_literalStagePlaneFiniteApproximation_sub_core_le Y n N u)\n    (isClosed_le\n      (((literalStagePlaneFiniteApproximation Y n N) -\n        completedLiteralStagePlaneBase Y n).continuous.norm)\n      (continuous_const.mul continuous_norm)) x",
+          "new_fragment": "  refine (denseRange_coreMap n).induction_on x\n    (isClosed_le\n      (((literalStagePlaneFiniteApproximation Y n N) -\n        completedLiteralStagePlaneBase Y n).continuous.norm)\n      (continuous_const.mul continuous_norm)) ?_\n  intro u\n  exact norm_literalStagePlaneFiniteApproximation_sub_core_le Y n N u",
+          "old_sha256": "89051f8d6e9c7594e90d91838db4cbac398b97d442f67ca9ac889c93e6722d8d",
+          "new_sha256": "cf532d6c5578940faf84a2c97bc7f8b3bed6138a56fbd656c00e4079cc33123c",
+          "old_bytes": 318,
+          "new_bytes": 308,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3942,
+      "declaration_name": "ambientPlaneToLiteralStage_comp_completedPlaneBase",
+      "header_sha256": "2a9915a155fe44ab0a02f799c3c5e28ae582f8f83ae5dcb78726c53db50b2b2f",
+      "diagnostic_ids": ["E0702", "E0703"],
+      "replacements": [
+        {
+          "old_fragment": "  ext x\n  exact (denseRange_coreMap n).induction\n    (fun _ ⟨u, rfl⟩ ↦\n      ambientPlaneToLiteralStage_completedPlaneBase_core Y n u)\n    (isClosed_eq\n      ((ambientPlaneToLiteralStage Y).continuous.comp\n        (completedLiteralStagePlaneBase Y n).continuous)\n      (graphLiteralStageRestriction Y n).continuous) x",
+          "new_fragment": "  ext x\n  refine (denseRange_coreMap n).induction_on x\n    (isClosed_eq\n      ((ambientPlaneToLiteralStage Y).continuous.comp\n        (completedLiteralStagePlaneBase Y n).continuous)\n      (graphLiteralStageRestriction Y n).continuous) ?_\n  intro u\n  exact ambientPlaneToLiteralStage_completedPlaneBase_core Y n u",
+          "old_sha256": "f2ad1d733b8a5cdf941e4f5fbc570c43240cea246982be473e996551e26ba7bc",
+          "new_sha256": "ae81fe185303f5aec0b1a9e2ecce975db91eb56c1a2a76bd76f89a03d144dcb7",
+          "old_bytes": 323,
+          "new_bytes": 313,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    },
+    {
+      "declaration_index": 3987,
+      "declaration_name": "weightedGraphLinear",
+      "header_sha256": "d047ec10bc77ea2593ef8c2168310a927c47eac88e6aea0dd23748a2f4089fa0",
+      "diagnostic_ids": ["E0712", "E0713", "E0714", "E0715"],
+      "replacements": [
+        {
+          "old_fragment": "      map_add' := fun v w ↦ by simp\n      map_smul' := fun c v ↦ by simp }\n  map_add' u w := by\n    ext v\n    simp [lpInfinityMultiplier_apply, MeasureTheory.Lp.add_smul]\n  map_smul' c u := by\n    ext v\n    simp [lpInfinityMultiplier_apply, ← MeasureTheory.Lp.smul_comm,\n      MeasureTheory.Lp.smul_assoc]",
+          "new_fragment": "      map_add' := fun v w ↦ by\n        rw [map_add, inner_add_left]\n      map_smul' := fun c v ↦ by\n        rw [map_smul, inner_smul_left] }\n  map_add' u w := by\n    ext v\n    rw [map_add, map_add, inner_add_right]\n  map_smul' c u := by\n    ext v\n    rw [map_smul, map_smul, inner_smul_right]",
+          "old_sha256": "5b48451e83c332686bbe429f9091a4399de04037a54571a87c3c62dd1cb8e785",
+          "new_sha256": "ad4f68ab1c081f51f337c24ae7fdc272960aee12c75372104c1983b28ba8aaf2",
+          "old_bytes": 311,
+          "new_bytes": 296,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "535439f603903bc728b7426b6e70519bc77948df096a92b1a50d63a3142c1510",
+    "bytes": 2702414,
+    "splitlines": 60578,
+    "changed_declaration_indices": [3926, 3928, 3942, 3987],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

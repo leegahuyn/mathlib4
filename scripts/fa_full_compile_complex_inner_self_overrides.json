@@ -1,0 +1,57 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Use inner_self_eq_norm_sq_to_K for equalities in the complex scalar field. The existing inner_self_eq_norm_sq lemma rewrites only the real part of an inner product, which is why the two rewrites in idx3920 fail. The to_K lemma has the exact equality inner C x x = (norm x : C)^2. This is a proof-body-only repair and remains direct-Lean unverified until the cumulative remote run.",
+  "repairs": [
+    {
+      "declaration_index": 3920,
+      "declaration_name": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "header_sha256": "bce022113369aa6b1ea8c561382a81b8163dca85b91199a780a835f7bbbbc470",
+      "diagnostic_ids": ["E0672", "E0675"],
+      "replacements": [
+        {
+          "old_fragment": "    rw [inner_self_eq_norm_sq, inner_self_eq_norm_sq, hbase]",
+          "new_fragment": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]",
+          "old_sha256": "9c79395430f7a9b54b70bdcf3e653d76675f344a8fd3c5d22d8653fa5bf99bdb",
+          "new_sha256": "2f799e9ba4d1a762d5f69768d5b64f65fe12cf97824e95c156decba6fbca4ae7",
+          "old_bytes": 60,
+          "new_bytes": 70,
+          "target_old_count": 1,
+          "global_old_count": 1
+        },
+        {
+          "old_fragment": "    rw [inner_self_eq_norm_sq, inner_self_eq_norm_sq] at hresInner",
+          "new_fragment": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K] at hresInner",
+          "old_sha256": "a32580e8eed541cbcbf044b285ba460c0147d1ceb3c4dfbfa0d56d951b8a3a69",
+          "new_sha256": "266e96689238bda63c4f2ed78e3d56b63e89451617e6f48066ad7850eb18c009",
+          "old_bytes": 66,
+          "new_bytes": 76,
+          "target_old_count": 1,
+          "global_old_count": 1
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "1e37de231df249d285e6954f709b5eaac617dd501344c57d4e09fd135443d72b",
+    "bytes": 2702272,
+    "splitlines": 60573,
+    "changed_declaration_indices": [3920],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target_and_source": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

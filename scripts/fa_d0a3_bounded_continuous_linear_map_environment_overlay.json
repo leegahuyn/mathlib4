@@ -1,0 +1,249 @@
+{
+  "schema": "fa-full-cumulative-bounded-environment-overlay-v1",
+  "status": "STATIC_CANDIDATE_HEADER_PRESERVING_DIRECT_LEAN_UNVERIFIED",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "lines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235
+  },
+  "purpose": "Resolve unqualified ContinuousLinearMap.lsmul and ContinuousLinearMap.mul only inside the six exact namespace sections that contain the failing uses. No declaration statement token is rewritten.",
+  "candidate_expected": {
+    "sha256": "038f639b9fe16580eb6309af3badabfbe162e5fd880998faaa8b962547654247",
+    "bytes": 2702402,
+    "lines": 60579,
+    "direct_lean_verified": false
+  },
+  "composite_with_revised_late_library": {
+    "library_path": "work/fa_d0a3_r013_r014_late_root_library.json",
+    "sha256": "54b6784c11594f4629914d8f288d627d97d55b250c40310061346873341cea94",
+    "bytes": 2702888,
+    "lines": 60594,
+    "direct_lean_verified": false
+  },
+  "edit_count": 6,
+  "edits": [
+    {
+      "id": "open_clm_fixed_phase_normalized_friedrichs_p3_23",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\ntheorem friedrichsMollifierReal_hasCompactSupport",
+      "new_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\ntheorem friedrichsMollifierReal_hasCompactSupport",
+      "old_sha256": "01b2ace41e79036b4cb9030712f0716859e2941db1f2c02bb42bf99cd564463d",
+      "new_sha256": "84fd3a650dab3b48d72f294d97831f7e90ff20c4b1c23f117a745de0f4b3302a",
+      "old_bytes": 249,
+      "new_bytes": 274,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseNormalizedFriedrichs",
+      "anchor": "line 43590; bounded until end FixedPhaseNormalizedFriedrichs at line 43712",
+      "affected_declaration_indices": [
+        3308,
+        3309
+      ],
+      "diagnostic_ids": [
+        "E0264",
+        "E0265"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "open_clm_fixed_phase_normalized_friedrichs_pairing",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-- Complex-bilinear pairing",
+      "new_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-- Complex-bilinear pairing",
+      "old_sha256": "82383a75acee128a1693536f857b0fccf3d39a797c3da3210f9aac72d08028dd",
+      "new_sha256": "ed19a653bdc60cd53b35d1d1183d36201767f8eb02544ee047779b285d75e029",
+      "old_bytes": 228,
+      "new_bytes": 253,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseNormalizedFriedrichs",
+      "anchor": "line 45295; bounded until end FixedPhaseNormalizedFriedrichs at line 45561",
+      "affected_declaration_indices": [
+        3441
+      ],
+      "diagnostic_ids": [
+        "E0361"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "open_clm_reduced_chart_support_bookkeeping",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff\nopen FixedPhaseAffineFriedrichs\nopen FixedPhaseNormalizedFriedrichs\n\nnoncomputable section\n\n/-- A compact carrier",
+      "new_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\nopen scoped Convolution ContDiff\nopen FixedPhaseAffineFriedrichs\nopen FixedPhaseNormalizedFriedrichs\n\nnoncomputable section\n\n/-- A compact carrier",
+      "old_sha256": "316a519015a59b939d2cb942f9270b7105e2ed2e210b520a4a2ad695bb2a1218",
+      "new_sha256": "c8951bd108bf8e05fed2c609fab6e6feee46f54fbdfa843de6da3b260468ff93",
+      "old_bytes": 245,
+      "new_bytes": 270,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseReducedChartFriedrichs",
+      "anchor": "line 47430; bounded until the matching namespace end",
+      "affected_declaration_indices": [
+        3601,
+        3602,
+        3605
+      ],
+      "diagnostic_ids": [
+        "E0442"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "open_clm_fixed_phase_normalized_friedrichs_planar_l2",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-! ### Compact smooth tests",
+      "new_fragment": "namespace FixedPhaseNormalizedFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-! ### Compact smooth tests",
+      "old_sha256": "91fab7b3a7d4123e38380aca4f0967e8529148cc252aee9775431d487382b30e",
+      "new_sha256": "04b4622df8aa08244058d0720fcfea5bba284e55fb1da37b38a9c227dcb82322",
+      "old_bytes": 228,
+      "new_bytes": 253,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseNormalizedFriedrichs",
+      "anchor": "line 48194; bounded until end FixedPhaseNormalizedFriedrichs at line 48537",
+      "affected_declaration_indices": [
+        3648,
+        3650,
+        3652,
+        3663
+      ],
+      "diagnostic_ids": [
+        "E0483",
+        "E0496"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "open_clm_reduced_chart_essential_support",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen FixedPhaseNormalizedFriedrichs\nopen FixedPhasePlanarLocalization\n\nnoncomputable section\n\n/-- Representative-independent compact support",
+      "new_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen FixedPhaseNormalizedFriedrichs\nopen FixedPhasePlanarLocalization\n\nnoncomputable section\n\n/-- Representative-independent compact support",
+      "old_sha256": "e6dfbf63e3dbbe9c16828267b3921cf0d4abf1c03b29720ce4a97de0fde7e2a0",
+      "new_sha256": "5eb67e37ac16111c150dd7630c5d224274004fa4f73331e4e4123778312d0f93",
+      "old_bytes": 318,
+      "new_bytes": 343,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseReducedChartFriedrichs",
+      "anchor": "line 56938; bounded until the matching namespace end",
+      "affected_declaration_indices": [
+        4243,
+        4244,
+        4245,
+        4246,
+        4247
+      ],
+      "diagnostic_ids": [
+        "E0885",
+        "E0886",
+        "E0887"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    },
+    {
+      "id": "open_clm_reduced_chart_rebundling",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "open FixedPhaseNormalizedFriedrichs\nopen FixedPhasePlanarLocalization\n\nnoncomputable section\n\n/-! ### Re-bundling upper-plane tests",
+      "new_fragment": "open FixedPhaseNormalizedFriedrichs\nopen FixedPhasePlanarLocalization\nopen ContinuousLinearMap\n\nnoncomputable section\n\n/-! ### Re-bundling upper-plane tests",
+      "old_sha256": "0bd5649e3a805cdc6518cce7398b539fb60ad0f6f7d794fe252176495127171a",
+      "new_sha256": "c57da8c4ba58c1278677e2187906a7e99c0b681ef1f3e68df89b85ef334f54bf",
+      "old_bytes": 131,
+      "new_bytes": 156,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "namespace": "Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseReducedChartFriedrichs",
+      "anchor": "line 57964; bounded until end FixedPhaseReducedChartFriedrichs",
+      "affected_declaration_indices": [
+        4287
+      ],
+      "diagnostic_ids": [
+        "E0966"
+      ],
+      "declaration_headers_modified": false,
+      "direct_lean_verified": false
+    }
+  ],
+  "excluded_global_header_rewrites": {
+    "edit_ids_from_superseded_library": [
+      "qualify_clm_lsmul_real",
+      "qualify_clm_lsmul_complex",
+      "qualify_clm_mul_parenthesized",
+      "qualify_clm_mul_convolution"
+    ],
+    "header_declaration_indices_preserved": [
+      3602,
+      3605,
+      3648,
+      3652,
+      4243,
+      4244
+    ]
+  },
+  "guards": {
+    "fail_closed_source_identity": true,
+    "each_old_fragment_count_exact": true,
+    "each_new_fragment_precount_recorded": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "all_declaration_headers_and_claims_preserved_byte_for_byte": true,
+    "declaration_sequence_must_remain": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "executable_forbidden_six": {
+      "keys": [
+        "sorry",
+        "admit",
+        "new_global_axiom",
+        "unsafe",
+        "native_decide",
+        "Lean.ofReduceBool"
+      ],
+      "source_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_counts_required": "identical absolute zero"
+    },
+    "raw_forbidden_mention_ledger_must_be_unchanged": true
+  },
+  "static_validation": {
+    "all_old_fragment_counts": 1,
+    "all_new_fragment_precounts": 0,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "comment_lexeme_count": 3129,
+    "comment_lexeme_sequence_sha256": "288b6b48424171e317dc36b350fdff740ccc704ddff8779d13ec466f64c48a32",
+    "attribute_lexeme_count": 498,
+    "attribute_lexeme_sequence_sha256": "acf6b8604a2f7a7ee9e63882c7b9045a77a46bfb0a436987861606e3dd8708e5",
+    "comments_preserved": true,
+    "attributes_preserved": true,
+    "declaration_sequence_preserved": true,
+    "declaration_headers_preserved": true,
+    "direct_lean_verified": false
+  },
+  "execution": {
+    "local_lean": false,
+    "local_lake": false,
+    "local_git": false,
+    "github_read": false,
+    "github_write": false
+  }
+}

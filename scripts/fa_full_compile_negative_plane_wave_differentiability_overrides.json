@@ -1,0 +1,84 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "fun_prop has no differentiability rule for AddCircle.fourier. Build the two real-coordinate factors from the exact hasDerivAt_fourier_neg theorem, compose them with the real and imaginary coordinate maps, and multiply by the constant scale. The two fderiv declarations also incorrectly apply a global Differentiable theorem to w before projecting differentiableAt; remove that extra application.",
+  "repairs": [
+    {
+      "declaration_index": 3904,
+      "declaration_name": "literalStageNegativePlaneWave_differentiable",
+      "header_sha256": "7f1501271da4a34a64e4021a296fa9994dd59ce99804ba4c9c24d897c668fcef",
+      "diagnostic_ids": ["E0651"],
+      "replacements": [
+        {
+          "old_fragment": "  unfold literalStageNegativePlaneWave\n  fun_prop",
+          "new_fragment": "  unfold literalStageNegativePlaneWave\n  have hFourier (i : Fin 2) :\n      Differentiable ℝ (fun x : ℝ =>\n        fourier (-(k i)) ((x : ℝ) : UnitAddCircle)) :=\n    fun x =>\n      (hasDerivAt_fourier_neg (1 : ℝ) (k i) x).differentiableAt\n  have hRe : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 0))\n        (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 0).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.re))\n  have hIm : Differentiable ℝ (fun w : ℂ =>\n      fourier (-(k 1))\n        (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle)) := by\n    simpa only [Function.comp_apply] using\n      (hFourier 1).comp\n        (by fun_prop : Differentiable ℝ (fun w : ℂ =>\n          (literalStageFourierScale Y)⁻¹ * w.im))\n  have hScale : Differentiable ℝ (fun _ : ℂ =>\n      (((literalStageFourierScale Y)⁻¹ : ℝ) : ℂ)) :=\n    differentiable_const\n  exact (hScale.mul hRe).mul hIm",
+          "old_sha256": "1afd6864163fc5463db70cc668068136c88f1a4c9be800987418e197bd5c92fc",
+          "new_sha256": "19b2e5f8f7f67b5def5c4984d7c833d9633dd6eeb70aa3169f38978fe25a1967",
+          "old_bytes": 49,
+          "new_bytes": 1076,
+          "target_old_count": 1,
+          "global_old_count": 2
+        }
+      ]
+    },
+    {
+      "declaration_index": 3906,
+      "declaration_name": "fderiv_literalStageNegativePlaneWave_one",
+      "header_sha256": "cd2ec00b26f6745d8f94ddb5c8e49833fe0a687400e00bac5a755e9f47d92038",
+      "diagnostic_ids": ["E0652", "E0653"],
+      "replacements": [
+        {
+          "old_fragment": "    (literalStageNegativePlaneWave_differentiable Y k w).differentiableAt",
+          "new_fragment": "    (literalStageNegativePlaneWave_differentiable Y k).differentiableAt",
+          "old_sha256": "6778deb87659c293d9091d44e024f0f783f57a2a8929b284587e84cd738bf55f",
+          "new_sha256": "4d9836d26620f2546c7da52c57d0654271be37ddff616b9d01f2f0e653878a33",
+          "old_bytes": 73,
+          "new_bytes": 71,
+          "target_old_count": 1,
+          "global_old_count": 2
+        }
+      ]
+    },
+    {
+      "declaration_index": 3907,
+      "declaration_name": "fderiv_literalStageNegativePlaneWave_I",
+      "header_sha256": "db36421512f8b84cf3e9bb1c20b4a4c0c2b138382a54a040be2cc18776c81e9c",
+      "diagnostic_ids": ["E0654", "E0655"],
+      "replacements": [
+        {
+          "old_fragment": "    (literalStageNegativePlaneWave_differentiable Y k w).differentiableAt",
+          "new_fragment": "    (literalStageNegativePlaneWave_differentiable Y k).differentiableAt",
+          "old_sha256": "6778deb87659c293d9091d44e024f0f783f57a2a8929b284587e84cd738bf55f",
+          "new_sha256": "4d9836d26620f2546c7da52c57d0654271be37ddff616b9d01f2f0e653878a33",
+          "old_bytes": 73,
+          "new_bytes": 71,
+          "target_old_count": 1,
+          "global_old_count": 2
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "a65228bf59b61c4705699aea7da85094d9377532c4909f5ad6e7cdd1ad88d182",
+    "bytes": 2703275,
+    "splitlines": 60595,
+    "changed_declaration_indices": [3904, 3906, 3907],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "all_old_fragments_unique_in_target": true,
+    "target_region_replacement_required_for_nonunique_global_fragments": true,
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R002",
+  "scope": {
+    "start_declaration_index": 3010,
+    "end_declaration_index": 3135,
+    "selected_repair_indices": [
+      3088,
+      3089,
+      3128,
+      3130,
+      3135
+    ],
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3088,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_one_of_logHeight_le",
+      "header_sha256": "290a355769a87c85a6d99c1c69755920157277a57251fb6298451a95b1c78cb9",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Delete the no-progress dsimp after applying the transition one_of_one_le theorem; the remaining affine inequality is exactly the existing linarith goal.",
+      "confidence": "HIGH_EXACT_NO_PROGRESS_TACTIC",
+      "root_selector_ids": [
+        "E0090"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  apply Real.smoothTransition.one_of_one_le\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+          "new_fragment": "  apply Real.smoothTransition.one_of_one_le\n  linarith",
+          "old_sha256": "3737d9ecbb761cede55896aa0802112d3c78569cc3a10ccd54f27e55511badc2",
+          "new_sha256": "6e0016e45ce313bff15267c4520cc2cdde5e3aefb3dd531b106abec10bcd3527",
+          "old_bytes": 93,
+          "new_bytes": 54,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "1c9cb4b56d39acb085230209b92add9f94608d25794ddba3ff3e015647a0febb",
+        "bytes": 2702213,
+        "lines": 60572,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0090",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 39933,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "a41d584a43e3726e4769ac3068b4b9c26f767ae7af48019038ce27e8590d3a1a"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3089,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_zero_of_level_le_logHeight",
+      "header_sha256": "bb14fad179e675986711d4c93b0c3edf729411c86e9338d90dd90d83effe6b17",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Delete the symmetric no-progress dsimp after applying zero_of_nonpos; linarith receives the already-reduced affine inequality.",
+      "confidence": "HIGH_EXACT_NO_PROGRESS_TACTIC",
+      "root_selector_ids": [
+        "E0091"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+          "new_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  linarith",
+          "old_sha256": "eb68a64872351605943124be22c4f3cff35f3776aeecf1c1efb18af3dbb0274e",
+          "new_sha256": "470a21b20169156fae9893c1eed7df9947c75d1a5a4f201fdb4f7a1332529610",
+          "old_bytes": 94,
+          "new_bytes": 55,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "0c5c02241259c919a4a0ed1f34d3ccd12105a02fc4a5b767b8b66fc8f51194c5",
+        "bytes": 2702213,
+        "lines": 60572,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0091",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 39941,
+            "column": 2,
+            "diagnostic_code": null,
+            "message_sha256": "a41d584a43e3726e4769ac3068b4b9c26f767ae7af48019038ce27e8590d3a1a"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3128,
+      "declaration_name": "intrinsicPeterssonCuspCutoff_tendsto_id",
+      "header_sha256": "6da58db83d8f53631fce354452d899a174ccf1f6628f295bd2d717a3f9354747",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: DenseRange.exists_dist_lt expects positivity evidence, not the radius term; half_pos heps fixes the exact API mismatch and leaves eps/2 inferred.",
+      "confidence": "HIGH_MATCHES_E0136_AND_EARLIER_ANALOGUE",
+      "root_selector_ids": [
+        "E0136"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  obtain ⟨u, hu⟩ :=\n    (denseRange_l2Coordinate n).exists_dist_lt x (eps / 2)",
+          "new_fragment": "  obtain ⟨u, hu⟩ :=\n    (denseRange_l2Coordinate n).exists_dist_lt x (half_pos heps)",
+          "old_sha256": "8600b5fd0944091c1795a2b26c148161de833f881f636430ac7872869bc2d368",
+          "new_sha256": "98becf343b85d2c2e4151bb017cc44273dca2830495ac52632e491302f0165ee",
+          "old_bytes": 82,
+          "new_bytes": 88,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "ed533d683206932d36c9cc2ea842e42dfcf0b1df41e5dc15e40b202d134ff2f1",
+        "bytes": 2702258,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0136",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 40623,
+            "column": 50,
+            "diagnostic_code": null,
+            "message_sha256": "ba737795209e3d51d3185138d37789401e2e79a0d6fdd8b2cd8393f07bf2e806"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3130,
+      "declaration_name": "intrinsicPeterssonCuspCutoff_isSelfAdjoint",
+      "header_sha256": "c9d01d285feea9b4c8fe903fdb5dddcbb4f522488796f950f067212c1e88409f",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose direct ContinuousLinearMap application in the dense-core inner-product goal before rewriting the l2Coordinate lemmas; this is the intrinsic analogue of the earlier idx2983 repair.",
+      "confidence": "HIGH_EXACT_COERCION_BRIDGE_ANALOGUE",
+      "root_selector_ids": [
+        "E0139"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  intro v\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate,\n    intrinsicPeterssonCuspCutoff_l2Coordinate]\n  exact inner_intrinsicPeterssonCuspCutoffCoreMap N n u v",
+          "new_fragment": "  intro v\n  change inner ℂ\n      (intrinsicPeterssonCuspCutoff N n (l2Coordinate n u))\n      (l2Coordinate n v) =\n    inner ℂ (l2Coordinate n u)\n      (intrinsicPeterssonCuspCutoff N n (l2Coordinate n v))\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate,\n    intrinsicPeterssonCuspCutoff_l2Coordinate]\n  exact inner_intrinsicPeterssonCuspCutoffCoreMap N n u v",
+          "old_sha256": "a5acffdc741f377d80411609c1a97b6e80650730c23231786a13534cbbab2814",
+          "new_sha256": "ede6af485a23fe84ed53dadfdb2fa0ef30f7eb5aef5895c2b8238ae254b7f9db",
+          "old_bytes": 163,
+          "new_bytes": 362,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "b225b22271268c7220a935b0a5e5a7c23908314d7a2cff261f5d25818a4249b7",
+        "bytes": 2702451,
+        "lines": 60578,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0139",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 40714,
+            "column": 6,
+            "diagnostic_code": null,
+            "message_sha256": "830a874ecf3ea09d894ce160360dbbad06f7dbf184244867ba9b0ae01f024f3e"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3135,
+      "declaration_name": "intrinsicLowerCommutatorCoefficient_realSmooth",
+      "header_sha256": "b24693236611236d1325f1aae243c357a7f557d876048f3231656f125c7da2d5",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Adapt heightC_ne_zero to RealSmooth.inv exact pinned signature by constructing the UpperHalfPlane point from the upperHalfPlaneSet membership proof.",
+      "confidence": "HIGH_EXACT_SIGNATURE_ADAPTER",
+      "root_selector_ids": [
+        "E0140"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  (realSmooth_heightC.inv heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))",
+          "new_fragment": "  (realSmooth_heightC.inv (fun z hz ↦ by\n    change heightC ⟨z, hz⟩ ≠ 0\n    exact heightC_ne_zero _)).mul\n    (realSmooth_lowerRaw 0 (intrinsicCuspCutoff_realSmooth N))",
+          "old_sha256": "05226d389ceed0bc103e0e6a1379543600bdee17de41aef50322d39564a32d1f",
+          "new_sha256": "8a8f38a9f0db48b068c45a515b058be6100084c5532120c07b5c2ec5e6915c26",
+          "old_bytes": 109,
+          "new_bytes": 176,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "c4c01f32734f9bf89c7215377deb39f5a88d5aed6f65c95884f5e9fdc40ef548",
+        "bytes": 2702319,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0140",
+            "classification": "root_candidate",
+            "category": "application_type_mismatch",
+            "line": 40741,
+            "column": 26,
+            "diagnostic_code": null,
+            "message_sha256": "953ffb8dab92222c2e4c2c7b8cee235376abfee4ff740110f0aee99ad324b9ad"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "0270985cc3e62d172f7fbac6d805a91028b45b55e667cdcd301181372eb0c190",
+    "bytes": 2702446,
+    "lines": 60578,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "replacement_order_within_each_repair_is_list_order": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

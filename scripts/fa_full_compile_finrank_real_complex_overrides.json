@@ -1,0 +1,77 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "status": "FULL_INVENTORY_ROOTS_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "Replace the obsolete/nonexistent Module.finrank_complex_real constant with the exact pinned-fork theorem Complex.finrank_real_complex. The third occurrence is downstream in a declaration whose earlier rewrite currently aborts before Lean reaches its simp line, so it is included as a same-API preventative repair rather than falsely labeled as an already-emitted diagnostic.",
+  "repairs": [
+    {
+      "declaration_index": 3881,
+      "declaration_name": "norm_literalStageTorusTest_sq_le_plane",
+      "header_sha256": "b50165fdbeb0fc27dd2e72069ba7857928c85bc2571b9981a87d90d159ab3be6",
+      "diagnostic_ids": ["E0631"],
+      "replacements": [
+        {
+          "old_fragment": "      simp only [Module.finrank_complex_real, zpow_neg, zpow_ofNat]",
+          "new_fragment": "      simp only [Complex.finrank_real_complex, zpow_neg, zpow_ofNat]",
+          "old_sha256": "0c30b187a90fd1365c2db32b4b3bae3d8a7126ff9fdbc3374741022445a48167",
+          "new_sha256": "bdaa752d03f796b70c9c3525d28cdf6c215c4160415a6ac8ed000f770e7707ec",
+          "old_bytes": 67,
+          "new_bytes": 68
+        }
+      ]
+    },
+    {
+      "declaration_index": 3882,
+      "declaration_name": "norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_scaledBox",
+      "header_sha256": "36f5085162257fc1e13e37572dec806635a3ca22547818b3a6b95652f5cc546f",
+      "diagnostic_ids": ["E0634"],
+      "replacements": [
+        {
+          "old_fragment": "      simp only [Module.finrank_complex_real, zpow_neg, zpow_ofNat]",
+          "new_fragment": "      simp only [Complex.finrank_real_complex, zpow_neg, zpow_ofNat]",
+          "old_sha256": "0c30b187a90fd1365c2db32b4b3bae3d8a7126ff9fdbc3374741022445a48167",
+          "new_sha256": "bdaa752d03f796b70c9c3525d28cdf6c215c4160415a6ac8ed000f770e7707ec",
+          "old_bytes": 67,
+          "new_bytes": 68
+        }
+      ]
+    },
+    {
+      "declaration_index": 3911,
+      "declaration_name": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "header_sha256": "96deb859ab92316c8a42cf5b5b924168c1f8c800cdd270dec3e088b625c83e70",
+      "diagnostic_ids": [],
+      "downstream_after_current_root": "E0665",
+      "replacements": [
+        {
+          "old_fragment": "  simp only [Module.finrank_complex_real, literalStageTorusRepresentative,",
+          "new_fragment": "  simp only [Complex.finrank_real_complex, literalStageTorusRepresentative,",
+          "old_sha256": "c2ed05079998cbc2c86d60e6e7816ac29030965a6907b7dffb9f2c240ed5ccb9",
+          "new_sha256": "7c30d991e551b331f8fd89b7dd67a66c758ab39b03d9a1a973412669b37e8e1c",
+          "old_bytes": 74,
+          "new_bytes": 75
+        }
+      ]
+    }
+  ],
+  "standalone_candidate": {
+    "sha256": "3c1b576044d1922f6e0d664e5c10a2faa24d6d2b594e2edd46e2ba9975b7d087",
+    "bytes": 2702255,
+    "splitlines": 60573,
+    "changed_declaration_indices": [3881, 3882, 3911],
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

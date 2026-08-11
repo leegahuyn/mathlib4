@@ -1,0 +1,270 @@
+{
+  "repairs": [
+    {
+      "analysis_note": "Preferred explicit split after run 31493920437 proved Set.mem_prod alone leaves constructed UpperHalfPlane projections unresolved; direct Lean validation is still pending",
+      "declaration_index": 2839,
+      "declaration_name": "complex_image_heightStrip_eq_coe_image_selectedBaseCuspStrip",
+      "evidence": {
+        "cumulative_artifact_id": 9102478785,
+        "cumulative_job_id": 93786800943,
+        "membership_only_artifact_id": 9102408664,
+        "membership_only_job_id": 93786800858,
+        "observed_first_error_column": 4,
+        "observed_first_error_line": 36111,
+        "preferred_fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "run_id": 31493920437,
+        "set_mem_prod_only_result": "FAILED_SAME_FRONTIER"
+      },
+      "header_sha256": "6db97e0cf6486b6082cef2f127c3e47d5e6ba6253abfb16afdc374cc5cff0569",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 310,
+          "new_fragment": "    rcases Set.mem_prod.mp hp with âŸ¨hp_re, hp_imâŸ©\n    constructor\n    Â· simpa only [z, UpperHalfPlane.mk_re,\n        Complex.measurableEquivRealProd_symm_apply] using hp_re\n    Â· simpa only [z, UpperHalfPlane.mk_im,\n        Complex.measurableEquivRealProd_symm_apply] using\n        (Set.mem_Ioi.mp hp_im)",
+          "new_sha256": "33fd4292393d56039721e4e05917dd804e5f40333874de1e2090ab665866ca6b",
+          "old_bytes": 137,
+          "old_fragment": "    simpa only [Set.mem_prod, z, Complex.measurableEquivRealProd_symm_apply,\n      UpperHalfPlane.coe_re, UpperHalfPlane.coe_im] using hp",
+          "old_sha256": "e42e0708a6aa4e554cf4af31323101429c60e4d8bfa400622272ad5fd84495c3"
+        }
+      ],
+      "standalone_candidate": {
+        "bytes": 2702425,
+        "direct_lean_verified": false,
+        "lines": 60578,
+        "scope": "idx2839-only over exact d0a3 input",
+        "sha256": "6814cc95c2258c1bef329ef3f2af6bbd8b2aaa42556b3c3ab9c33be0cf958787"
+      }
+    },
+    {
+      "analysis_note": "STATIC_ONLY_UNVERIFIED: normalize the UHP/Complex height projection in the lowering adjoint identity",
+      "declaration_index": 2903,
+      "declaration_name": "neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "diagnostic_ids": [
+          "E0002"
+        ],
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN"
+      },
+      "header_sha256": "4e28947f8d898ae964b90556261cd9b0ff0c00bc9388854267c45da46e70393a",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 561,
+          "new_fragment": "  have hv := periodizedGauge_apply_eq_ambientTest hEq hz\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]",
+          "new_sha256": "d3f5f058b57a39037c862829410cbe9516f6fbe64cad14c42cf8be9dda4d5e41",
+          "old_bytes": 534,
+          "old_fragment": "  have hv := periodizedGauge_apply_eq_ambientTest hEq hz\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]",
+          "old_sha256": "308e6e0e21dea71115caba0ce8e54077266a66bc9ec0a11b2973c3058481a036"
+        }
+      ]
+    },
+    {
+      "analysis_note": "STATIC_ONLY_UNVERIFIED: normalize the UHP/Complex height projection in the dual raising identity",
+      "declaration_index": 2904,
+      "declaration_name": "neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "diagnostic_ids": [
+          "E0003"
+        ],
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN"
+      },
+      "header_sha256": "ee4c3043c72d6ba569dca79440f3a3a233ff4153bc5ba0048d00cd6920385c71",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 561,
+          "new_fragment": "  have hv := periodizedGauge_apply_eq_ambientTest hEq hz\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]",
+          "new_sha256": "1c733aa39c9132c55714f2eef070e8c9575a507d4a6ead011df2f142fb73b714",
+          "old_bytes": 534,
+          "old_fragment": "  have hv := periodizedGauge_apply_eq_ambientTest hEq hz\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]",
+          "old_sha256": "23ee64c3391e6eef08bffcb399f04ada413c2543b8d28bc9a74d1038f7062b92"
+        }
+      ]
+    },
+    {
+      "analysis_note": "UNVERIFIED: after hzNeg the target contains pointwise application of a negated function; expose that application with Pi.neg_apply before rewriting hzPhysical.",
+      "declaration_index": 2906,
+      "declaration_name": "embedded_neg_lowerFromSuccCoordinate_eq_raiseTestAdjoint",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "observed_error_column": 13,
+        "observed_error_line": 37247,
+        "requested_pre_shift_line": 37215
+      },
+      "header_sha256": "96bbf77251b0b57428af14756c941fc93f2a4f4c7f8308d077000eef3c616a46",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 182,
+          "new_fragment": "  rw [hzNeg, Pi.neg_apply, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]",
+          "new_sha256": "b861468b52d6f3bbf9764144578523481e69322b4e7727d63707a6ba8ee5ea48",
+          "old_bytes": 168,
+          "old_fragment": "  rw [hzNeg, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc n u z]",
+          "old_sha256": "1fedbe77580120b972674032f88835d99597719f6a7fff606cfb823f346e7dc0"
+        }
+      ],
+      "standalone_candidate": {
+        "bytes": 2702266,
+        "direct_lean_verified": false,
+        "lines": 60573,
+        "scope": "idx2906-only over exact d0a3 input",
+        "sha256": "ea1525011b2a838c5fdd30b72d3276643e925cd88707e2f6372a6c806e6d9f97"
+      }
+    },
+    {
+      "analysis_note": "UNVERIFIED: symmetric signed-raising failure; normalize pointwise function negation with Pi.neg_apply before hzPhysical.",
+      "declaration_index": 2907,
+      "declaration_name": "embedded_neg_raisedCoordinate_eq_lowerFromSuccTestAdjoint",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "observed_error_column": 13,
+        "observed_error_line": 37279,
+        "requested_pre_shift_line": 37247
+      },
+      "header_sha256": "a73a7c69d613584bec927f65ed62a7f7f773373adcbab4cad1e0a82dd40463fa",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 174,
+          "new_fragment": "  rw [hzNeg, Pi.neg_apply, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]",
+          "new_sha256": "018c8747462e5eaa04625975a511b8b214b7b4598baf9aeb9361725b72dec0ea",
+          "old_bytes": 160,
+          "old_fragment": "  rw [hzNeg, hzPhysical, hzTest,\n    Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise n u z]",
+          "old_sha256": "995303bbf290c11ac90ea3ac280d33a70dc71f1c58c4ed8c4838cce891b4b421"
+        }
+      ],
+      "standalone_candidate": {
+        "bytes": 2702266,
+        "direct_lean_verified": false,
+        "lines": 60573,
+        "scope": "idx2907-only over exact d0a3 input",
+        "sha256": "e57158ba459db94518277f7d23bcfc42bb039ddcf6a5a81b60d75a528dbdcfa2"
+      }
+    },
+    {
+      "analysis_note": "UNVERIFIED: force the negative LinearPMap application and core evaluation rewrites on hFormal before simplifying the source coordinate coercion.",
+      "declaration_index": 2910,
+      "declaration_name": "raisingMaximalAdjointWeakMaassIdentificationAt_of_periodization",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "observed_error_column": 4,
+        "observed_error_line": 37322,
+        "requested_pre_shift_line": 37290
+      },
+      "header_sha256": "491116bf94f3a15f3c6ddfdcf51dc2c189aade34b7d35be930f5d7657b7a124d",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 249,
+          "new_fragment": "  have hPetersson :\n      inner â„‚ p.2 (l2Coordinate (n + 1) u) =\n        inner â„‚ p.1 (-lowerFromSuccCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal",
+          "new_sha256": "7264846c2a1698a49c7ab4a2813a5fa3f72028c68a1d047c7638fbe31d778335",
+          "old_bytes": 236,
+          "old_fragment": "  have hPetersson :\n      inner â„‚ p.2 (l2Coordinate (n + 1) u) =\n        inner â„‚ p.1 (-lowerFromSuccCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalLowerFromSucc_on_core] using hFormal",
+          "old_sha256": "b4e0504c8d960b4ea4ecf30d0fb0b75d56d1b727ed379be18982c10b8b5e74bd"
+        }
+      ],
+      "standalone_candidate": {
+        "bytes": 2702265,
+        "direct_lean_verified": false,
+        "lines": 60573,
+        "scope": "idx2910-only over exact d0a3 input",
+        "sha256": "be776b4de37c4f261887207478f88460fa172fb4d1c57e7ac7cb44bc47a685ba"
+      }
+    },
+    {
+      "analysis_note": "UNVERIFIED: symmetric hFormal bridge; rewrite negative LinearPMap application and physicalRaise core evaluation before l2CoreRangeEquiv coercion simplification.",
+      "declaration_index": 2911,
+      "declaration_name": "loweringMaximalAdjointWeakMaassIdentificationAt_of_periodization",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "observed_error_column": 4,
+        "observed_error_line": 37370,
+        "requested_pre_shift_line": 37338
+      },
+      "header_sha256": "d9246bc2501cf841379a60e27d2859220a794f0339ad3de6fc76778f4dd5956d",
+      "merged_override_components": [
+        {
+          "replacement_count": 1,
+          "source_library": "C:\\Users\\ì‚¬ìš©ì\\Documents\\Codex\\2026-08-10\\https-github-com-leegahuyn-mathlib4-pull\\work\\fa_d0a3_max32_visible_root_overrides.json"
+        }
+      ],
+      "replacements": [
+        {
+          "new_bytes": 228,
+          "new_fragment": "  have hPetersson :\n      inner â„‚ p.2 (l2Coordinate n u) =\n        inner â„‚ p.1 (-raisedCoordinate n u) := by\n    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal",
+          "new_sha256": "944782560e6ff7a8e1ccf413740b4e59a39a89374a0b61b2a70f7d8d687912da",
+          "old_bytes": 215,
+          "old_fragment": "  have hPetersson :\n      inner â„‚ p.2 (l2Coordinate n u) =\n        inner â„‚ p.1 (-raisedCoordinate n u) := by\n    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalRaise_on_core] using hFormal",
+          "old_sha256": "d78e96260b9ed3ad40235d67e57b78bf269a57af7b66db9759c90e51cc81fa6c"
+        }
+      ],
+      "standalone_candidate": {
+        "bytes": 2702265,
+        "direct_lean_verified": false,
+        "lines": 60573,
+        "scope": "idx2911-only over exact d0a3 input",
+        "sha256": "5208504d552fdf8b1ee446c1f4ec30269c3625ea6e0614ae327f3942751d357f"
+      }
+    },
+    {
+      "analysis_note": "STATIC_ONLY_UNVERIFIED: change the fixed-point goal to the bundled GammaTwo action before simplifying h",
+      "declaration_index": 2939,
+      "declaration_name": "gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one",
+      "evidence": {
+        "artifact_id": 9102478785,
+        "diagnostic_ids": [
+          "E0008"
+        ],
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN"
+   ÷ow¶‰ËkºwµçqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}¹½Éµ}%}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ĞÜ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm½µÁ±•à¹¹½Éµ}$°µÕ±}½¹•t…Ğ¡ÁÁ±äˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€‰•‘Œå˜ÄÌÍ„Ù™•ŒÔÁ˜Ñ™ÈÁ„ÄĞàÌÉÉ„İ˜á„ÜåÔäÔÀÜÀĞÜÑˆØÈÈÍŒÅ„äààØÈØÀäÌˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€Ìä°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm¹½Éµ}$°µÕ±}½¹•t…Ğ¡ÁÁ±äˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆÄÜÀáˆàÈàÀå•ŒØàäÀÑ‘…˜ĞàÄÄÔÜÕ”ÄÕ”ÔÅŒØÌØÔÔÅ˜á•”ØÀİ„ØàÅ‘‘Œá˜á„ÁáŒäˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌÄĞÀ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰¹½Éµ}¥¹ÑÉ¥¹Í¥I…¥Í•½µµÕÑ…Ñ½É½•™™¥¥•¹Ñ}±”ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀÄĞÌˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€‰…”Õ™…˜İˆÜÔÀÑ”ÈÉ˜á”ÌÉˆàÀàÀå‰ĞÌá…”ÄÔÜÀÈÉŒàØÜÙ”ĞÄÌàäÉ„ØÌÅ„Üäå‰Àˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}¹½Éµ}%}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ÔÄ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€€€Í¥µÀ½¹±äm¹½Éµ}µÕ°°½µÁ±•à¹¹½Éµ}$°½¹•}µÕ±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆİ”ÔĞÙå˜ÍŒÁŒÅ˜Õ”ÈàààÄÜÈÕŒÔåäàáŒÜÉŒÜÉ˜ÑˆÜÔÔá˜Ñ”ÀÔÅ…™”ÈÈäÌÕˆÉ…‰”Øˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ĞÌ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€€€Í¥µÀ½¹±äm¹½Éµ}µÕ°°¹½Éµ}$°½¹•}µÕ±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆäÈÑ‰„ÄÔÈØÀİ…„ÜØÔÙˆå‰„äÌÅ„äĞĞÔÉˆÕˆĞÈå˜ÈÀĞå„ĞÜÄåÀÅ…”ÁˆÜÙ”ØÈÑÕ„ˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰…¹…±åÍ¥Í}¹½Ñ”ˆè€‰Q¡”½µÁ±•Ñ”±½œÉ•Á½ÉÑÌ9¼½…±ÌÑ¼‰”Í½±Ù•½¸Ñ¡”ÍÑ…¹‘…±½¹”É¥¹œ¥µµ•‘¥…Ñ•±ä…™Ñ•È™¥•±‘}Í¥µÀ¸M•ÅÕ•¹”É¥¹œ½Ù•È…¹ä•¹•É…Ñ•½…±Ìİ¥Ñ¡½ÕĞÉ•ÅÕ¥É¥¹œ„É•µ…¥¹¥¹œ½…°¸ğÉ•Ù¥•İ•½Ù•ÉÉ¥‘”ˆ°(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌÄĞÄ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰¹½Éµ}¥¹ÑÉ¥¹Í¥1½İ•É½µµÕÑ…Ñ½É½•™™¥¥•¹Ñ}±”ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}•Ù¥‘•¹”ˆèì(€€€€€€€€‰…ÉÑ¥™…Ñ}¥ˆè€äÄÀÌÌØàÄÌà°(€€€€€€€€‰…Ñ•½Éäˆè€‰¹½}½…±Í}Ñ½}‰•}Í½±Ù•ˆ°(€€€€€€€€‰±…ÍÍ¥™¥…Ñ¥½¸ˆè€‰É½½Ñ}…¹‘¥‘…Ñ”ˆ°(€€€€€€€€‰‘¥…¹½ÍÑ¥}¥ˆè€‰ÀÄĞÔˆ°(€€€€€€€€‰ÉÕ¹}¥ˆè€ÌÄĞäÔÀÌĞÈÌÔ°(€€€€€€€€‰Í½ÕÉ•}±¥¹”ˆè€ĞÀàÀÜ(€€€€€ô°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆİˆÈÍ”Á”ÀÄÌÜÈäĞÌÉ‘˜ÕˆÙ˜ÜàÄÙ…•ŒÀÄÄÀÜá‰‘‰…‰Í”ĞİÄÕÀÌÌÔĞÅ™˜ÔÑˆÜÌˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}¹½}½…±Í}É½½Ñ}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô°(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}¹½Éµ}%}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ĞÌ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€™¥•±‘}Í¥µÀm¡•¥¡Ñ}¹•}é•É¼ét€ğìøÉ¥¹œˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€‰˜ÌĞÄÌÄÜĞÅ„ÀÅ‰ˆå˜Ôİ„ÌÀØÑˆààÙ‘ˆàäå˜äÅ‰˜ÀØàÁ„äÄÀÈå™‘å”ØÌİ”ÔÀØääØØÌˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ĞÌ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€™¥•±‘}Í¥µÀm¡•¥¡Ñ}¹•}é•É¼éuq¸€€€É¥¹œˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆØÅˆÀäÁÜÄÀÔÌäİŒÉˆäÄÄİŒÁŒÜäÕ˜ĞÌÀØàİˆÈÈÔÑŒÈĞÔÁ‘•å”ÔäÍ„Üİ„İ˜Üá„Ìˆ(€€€€€€€ô°(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ØÄ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€€€Í¥µÀ½¹±äm¹½Éµ}µÕ°°¹½Éµ}¹•œ°½µÁ±•à¹¹½Éµ}$°½¹•}µÕ±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€‰„Ìá…™„á…‘„Å™ŒÄå”ÁˆÄÀÄĞÅ•ˆÀäàá„ÔÔÉ˜Èå„á•˜Èİ”äĞİ„ÀØÀÀÍˆÌàÜÕ”ÉŒäÌÌˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ÔÌ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€€€Í¥µÀ½¹±äm¹½Éµ}µÕ°°¹½Éµ}¹•œ°¹½Éµ}$°½¹•}µÕ±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆÈÜÜÀÄå•™àÄÄäÀÀÜØÜØÔİ‘ŒĞàØÙ……ŒäÉ„ØİŒäÔØĞàäÌÑ„äÔÔÍˆĞÈÀÀÑŒØÁ„Å…•ˆàˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰ÍÑ…¹‘…±½¹•}…¹‘¥‘…Ñ”ˆèì(€€€€€€€€‰‰åÑ•Ìˆè€ÈÜÀÈÈÔÈ°(€€€€€€€€‰‘¥É•Ñ}±•…¹}Ù•É¥™¥•ˆè™…±Í”°(€€€€€€€€‰±¥¹•Ìˆè€ØÀÔÜÌ°(€€€€€€€€‰Í½Á”ˆè€‰¥‘àÌÄĞÄµ½¹±ä½Ù•È•á…ĞÁ„Ì¥¹ÁÕĞˆ°(€€€€€€€€‰Í¡„ÈÔØˆè€ˆĞäÜÑ”ÀàÄÀÍ„ÌÑ‰˜É”Ôİ‘‰‰ˆÁ™‘ˆĞÔÜÈØØÕ…ˆÙ”ÜİĞÌÍ„Ùİ„åÙ™•”ÌÜÑ‘™™”ˆ(€€€€€ô(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌĞØØ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰1¥¹•…ÉA5…À¹¥ÍM•±™‘©½¥¹Ñ}½™}É•…±M¡¥™Ñ}ÍÕÉ©•Ñ¥Ù”ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀÌÜØˆ°(€€€€€€€€‰ÀÌÜÜˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆÜÕ”ÜÉˆÈÉŒÜÔÀÅ„ÔÙˆå”ÌÙˆÀÈÉ„Ôá”áŒØäÄÄäÌÁ•ˆá„å„Ğá„ÄÄÔÕÅ…˜Á•ˆÌÄĞÍ™ˆˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€È°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ÄÈĞ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€€€€€ÉÜm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ°¡‘©½¥¹ÑA…¥È±q¸€€€€€€€€€¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}É¥¡Ğ°½µÁ±•à¹½¹©}½™I•…±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆäØĞÜÙ„ÍŒÌÜİÜÈÜİˆØÄÑ™‘”É„Õ‘„İ……™Œá”ÍŒÑÄÈàå…™ŒØÄÜİŒÈÀÄÑˆÅŒˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ÄÄÔ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€€€€€ÉÜm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ°¡‘©½¥¹ÑA…¥È±q¸€€€€€€€€€¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}É¥¡Ğ°µ…Á}½™I•…±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆÁˆÜÕ‰˜ÜÄØÁ˜ĞØĞÈÁ‘˜ÍˆÙ•™‰••É…‰Èäİ‘…”ÔÁ™„Ñ”äÜĞÅ™ˆĞÙÅÈÈÙ™™•ˆ(€€€€€€€ô°(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ÄÈØ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€€€€€ÉÜm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ°¡Måµµ•ÑÉ¥A…¥È±q¸€€€€€€€€€¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}É¥¡Ğ°½µÁ±•à¹½¹©}½™I•…±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆÄå˜åˆÉ„Øåˆå”ÈÄÄÅˆÍ˜àĞÔàåŒäĞÍŒÌÑ‘˜Àİ‰ˆÙ„äĞÀÔÕÁ„Ìá‰•ˆÈá™„İ™ŒàÉŒÈˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ÄÄÜ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€€€€€ÉÜm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ°¡Måµµ•ÑÉ¥A…¥È±q¸€€€€€€€€€¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}É¥¡Ğ°µ…Á}½™I•…±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆäääÔÍ˜İ•ŒÔå…„ÄÍ‰Œäå•˜ÈÌÀÈÌÄàÕÅ™àÅ˜ÌĞÅ•ˆÙŒÀØĞÔÕ™”Á•™„ÌÍĞÈÌÔØØÜˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌĞàÈ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰•µ‰•‘‘•‘M¡¥™Ñ•‘½Éµ}¥Í!•Éµ¥Ñ¥…¸ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀÌäÄˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆÈÕ˜ĞÌäĞå”äá”ÌÅŒÜá‰”Üå˜ØÌäÑ‘‘‰…•‰‘…ˆÀÍ„ÄàÀİ˜å™˜Í‰ˆÌäÄÙ‰‰‘”Ù„ÌÔˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ää°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm•µ‰•‘‘•‘M¡¥™Ñ•‘½Éµ}…ÁÁ±ä°µ…Á}…‘°µ…Á}µÕ°°½µÁ±•à¹½¹©}½™I•…°±q¸€€€¥¹¹•É}½¹©}Íåµµtˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€‰…™‰™„ÜÌĞÅ•‰•”ĞàÄĞÄİ˜àÙŒàĞÁ…‘ˆÄáÔÕ‰˜Å”Á…”ĞĞÙ‰‰ˆÙ„á˜ÜÙŒØØÙ••”ÜÜˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€äÀ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm•µ‰•‘‘•‘M¡¥™Ñ•‘½Éµ}…ÁÁ±ä°µ…Á}…‘°µ…Á}µÕ°°µ…Á}½™I•…°±q¸€€€¥¹¹•É}½¹©}Íåµµtˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆÉÌÌÀÀÀÅ‰„ÔÄÌØÍŒİŒÑˆØÌÁ„ÌÈĞÅŒÍ™ÀÙˆÍ™ˆÈá‘„ÜĞäÙ‰„Å˜åŒĞÍˆäÈäáäÜØÌˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌĞäÔ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰İ•…­M¡É½‘¥¹•É=Á•É…Ñ½É}¥Í!•Éµ¥Ñ¥…¸ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀĞÀÀˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆØÁ…‰Ñ„ÈÅŒå™ŒåˆÌÈÄÜäÁ”Õ„ÅˆÍ˜İ˜Ñ„Ñ”ÀÀÕ˜ØÌÄØÁ”ÔÍŒåŒÈÈÄäÜÍŒÙ™ŒÔİ•Œˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ÄÀÌ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±ämİ•…­M¡É½‘¥¹•É=Á•É…Ñ½É}…ÁÁ±ä°µ…Á}ÍÕˆ°µ…Á}µÕ°±q¸€€€½µÁ±•à¹½¹©}½™I•…°°¥¹¹•É}½¹©}Íåµµtˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆÙ„ÌÑÀÀĞÀäÀÀÈá••‘ˆØÀá„ÄáÌàÀÀÙŒáŒäÜØÄäÄäå˜äÄÄá…ˆÅ™•ŒÈÕ™‰”ÀØÁˆˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€äĞ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±ämİ•…­M¡É½‘¥¹•É=Á•É…Ñ½É}…ÁÁ±ä°µ…Á}ÍÕˆ°µ…Á}µÕ°±q¸€€€µ…Á}½™I•…°°¥¹¹•É}½¹©}Íåµµtˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆÕ…á…˜Õ•ŒÁ…”ÀÀÅ•”ĞĞÉˆÌÔÀØÑ„Ôäá˜ÅˆÄÑˆäàÑ„İˆÀÙ„ÜäÀÈåˆÜÔÕ„ÈÁŒá™ŒÙˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰…¹…±åÍ¥Í}¹½Ñ”ˆè€‰™Ñ•Èµ…Á}é•É¼Ñ¡”Í•½¹¥¹¹•ÈµÁÉ½‘ÕĞ…ÉÕµ•¹Ğ¥Ìé•É¼ìÕÍ”Ñ¡”•á…Ğ•á¥ÍÑ¥¹œ¥¹¹•É}é•É½}É¥¡ĞÑ¡•½É•´¥¹ÍÑ•…½˜Ñ¡”Õ¹­¹½İ¸¥¹¹•É}é•É¼¹…µ”¸ˆ°(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌØĞÀ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰½É•A•Ñ•ÉÍÍ½¹½É¥¹}é•É¼ˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀĞÜÌˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆÙ•”á„ÈÔÉ˜ØÉŒÔäĞÄÀàÙ™‰İÈå˜äØàäáÕŒÅˆİÀääÀäÌÕŒÑ˜Ñ„ÁˆÀàØàäÅ˜ÌÑˆˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}¥¹¹•É}é•É½}É¥¡Ñ}½Ù•ÉÉ¥‘”¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€Øà°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm½É•A•Ñ•ÉÍÍ½¹½É¥¹}…ÁÁ±ä°µ…Á}é•É¼°¥¹¹•É}é•É½}É¥¡Ñtˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€‰„Õ”İ…ŒÍ…İ‘ˆĞÉ˜ÀÉ…”ÌÑˆÄå™ŒàÅ‰‰ŒÀİ‰”åØå˜ÜàäÙˆØäÁ‘™…ˆĞÔĞÈÄÔÈÅˆˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ØÈ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm½É•A•Ñ•ÉÍÍ½¹½É¥¹}…ÁÁ±ä°µ…Á}é•É¼°¥¹¹•É}é•É½tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€‰ŒÑ™ĞÁˆÜàäÌÔåˆÔÔÈÕ•„àÍ•ŒØÄÈÙˆÜÀÔĞÀäØÈÍ‰…Á…”ÑŒÔÜäå™”ÕŒÍÍˆÅ˜ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰ÍÑ…¹‘…±½¹•}…¹‘¥‘…Ñ”ˆèì(€€€€€€€€‰‰åÑ•Ìˆè€ÈÜÀÈÈÔà°(€€€€€€€€‰‘¥É•Ñ}±•…¹}Ù•É¥™¥•ˆè™…±Í”°(€€€€€€€€‰±¥¹•Ìˆè€ØÀÔÜÌ°(€€€€€€€€‰Í¡„ÈÔØˆè€‰ˆàå˜äààÁ•”ÄÈÌØàÈäÍ„á„ÔÁ”ÈØĞå˜ÜÙ”Äİ…ˆáˆàÙ˜Ìá„ÕŒÈØÀÙ™•™•‰ÔÁ•™Œˆ(€€€€€ô(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ÌäÈÀ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰¹½Éµ}Á±…¹•½ÕÉ¥•ÉI•µ…¥¹‘•É}•Å}Í…±•}µÕ±}Ñ½ÉÕÍI•µ…¥¹‘•Èˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀØÜÌˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€‰‰”ÀÈÈÄÄÌÌØå…„ÙˆÅ•„áŒÔØÄÌàÉ„àÅˆàÄØÍ‘„àÕˆäÄÄäå„ÜàÁ„àÌÕ˜İ‰‰‰‰ŒĞÜÀˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ĞĞ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€€€Í¥µÀ½¹±ämµ…Á}µÕ°°½µÁ±•à¹½¹©}½™I•…±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆÌÜÀØÁ‘…ŒÄàÀÈÀÍŒÁÕ…ŒÈÜÉ‰”ÀäÅÙ‰ˆÈİ‰ˆÜÉ™™ŒÕ‘……ÔÍ”ØÑ‰˜å‰”ÌÈÍ”Ğˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€ÌÔ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€€€Í¥µÀ½¹±ämµ…Á}µÕ°°µ…Á}½™I•…±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€ˆØäÔàÈá˜ØäÅ•ˆİ‰”áÌÙ•ˆÜĞÈÑÙ…„ÙŒå„ÌåˆÌÑ”ÀàĞÜÅ™ˆØÍ”ÜÄÁ…ˆÄÕÑ˜áÄåˆ(€€€€€€€ô(€€€€€t(€€€ô°(€€€ì(€€€€€€‰‘•±…É…Ñ¥½¹}¥¹‘•àˆè€ĞÄØÌ°(€€€€€€‰‘•±…É…Ñ¥½¹}¹…µ”ˆè€‰µ½‘Õ±…É5…ÍÍI•Í½±Ù•¹Ñ}¥ÍMåµµ•ÑÉ¥Œˆ°(€€€€€€‰‘¥…¹½ÍÑ¥}¥‘Ìˆèl(€€€€€€€€‰ÀÜÜàˆ(€€€€€t°(€€€€€€‰¡•…‘•É}Í¡„ÈÔØˆè€ˆÌÈÈÑˆÉ‘™˜Ù™™ˆÉ˜Ù„åÌĞäàÑ˜äİ••ˆÙ‘™ŒÉ˜Á„ÅİŒÜÌÈÜØÔÍˆÀÄÌÜÕ‘Œå‘ŒÍ„ˆ°(€€€€€€‰µ•É•‘}½Ù•ÉÉ¥‘•}½µÁ½¹•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰É•Á±…•µ•¹Ñ}½Õ¹Ğˆè€Ä°(€€€€€€€€€€‰Í½ÕÉ•}±¥‰É…Éäˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ(€€€€€€€ô(€€€€€t°(€€€€€€‰É•Á±…•µ•¹ÑÌˆèl(€€€€€€€ì(€€€€€€€€€€‰¹•İ}‰åÑ•Ìˆè€ÄÀÔ°(€€€€€€€€€€‰¹•İ}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ±q¸€€€¥¹¹•É}ÍµÕ±}É¥¡Ğ°½µÁ±•à¹½¹©}½™I•…±tˆ°(€€€€€€€€€€‰¹•İ}Í¡„ÈÔØˆè€ˆÄÜÈÔÉ„ĞÅ„ĞÈÔÁŒàÍŒĞÑÜÅÑ„ÌØÑ”Í™Œäá”ÅˆÈÜÔàÔäàÈäÜÑ˜äĞÅŒÈå”ÙŒÍ˜Ù„Ìˆ°(€€€€€€€€€€‰½±‘}‰åÑ•Ìˆè€äØ°(€€€€€€€€€€‰½±‘}™É…µ•¹Ğˆè€ˆ€Í¥µÀ½¹±äm¥¹¹•É}…‘‘}±•™Ğ°¥¹¹•É}…‘‘}É¥¡Ğ°¥¹¹•É}ÍµÕ±}±•™Ğ±q¸€€€¥¹¹•É}ÍµÕ±}É¥¡Ğ°µ…Á}½™I•…±tˆ°(€€€€€€€€€€‰½±‘}Í¡„ÈÔØˆè€‰ŒääÜÈÄÌÌÈÌÜÉ”ÌÑ”İÌÌàäÔÄÄÀÌàÉˆÅ”Ôá”Í‘ŒĞÜÍ˜İ”Å‘”ÕÔäÁáˆÄÜİ˜Ù”ˆ(€€€€€€€ô(€€€€€t(€€€ô(€t°(€€‰Í¡•µ„ˆè€‰™„µ™É…µ•¹ĞµÉ•Á…¥Èµ½Ù•ÉÉ¥‘•ÌµØÄˆ°(€€‰Í½ÕÉ•}±¥‰É…É¥•Ìˆèl(€€€ì(€€€€€€‰‰åÑ•Ìˆè€ÌÜÄÀĞ°(€€€€€€‰‘•±…É•‘}ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%}5`ÌÉ}AIY%\ˆ°(€€€€€€‰±¥¹•Ìˆè€ÔäÄ°(€€€€€€‰Á…Ñ ˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}Á„Í}µ…àÌÉ}Ù¥Í¥‰±•}É½½Ñ}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ°(€€€€€€‰Í¡„ÈÔØˆè€ˆÜÉ‰‘™˜Àå‰ÈÄÑŒÀÀÙˆÀÉ‘…”Äå˜ØÜåÉŒÄÍ˜ÄÜäØäå‰”äÉ„ÌÙ˜ÄäÌÍ•‰‘ˆÔäÈá…‘„ˆ(€€€ô°(€€€ì(€€€€€€‰‰åÑ•Ìˆè€ÄäĞÈ°(€€€€€€‰‘•±…É•‘}ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%ˆ°(€€€€€€‰±¥¹•Ìˆè€ÔÌ°(€€€€€€‰Á…Ñ ˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}¹½}½…±Í}É½½Ñ}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ°(€€€€€€‰Í¡„ÈÔØˆè€ˆá„ÁˆáŒÅ„İ˜ÜØÀÜÄÕ‰‘ˆÈÉˆÍ„äØàåˆÜÑˆØÔÅ‘‰•ˆÉ‰•”ÜÜá”ÕˆİˆÀá™ŒÜÈÌäÍ•ˆˆ(€€€ô°(€€€ì(€€€€€€‰‰åÑ•Ìˆè€ÔÈĞÀ°(€€€€€€‰‘•±…É•‘}ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%ˆ°(€€€€€€‰±¥¹•Ìˆè€ÄÀä°(€€€€€€‰Á…Ñ ˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}½¹©}½™I•…±}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ°(€€€€€€‰Í¡„ÈÔØˆè€ˆÀÁ‘‘Ù™”äÀÕ”ÜÀàÄÉ”á™˜àİŒÜäÜÌĞÔÉˆÀá˜İ…‰™„Õ‘™‰™‰‰ÑŒÈÅˆÑ˜ÄÀÈÙ„Ìˆ(€€€ô°(€€€ì(€€€€€€‰‰åÑ•Ìˆè€ÈØÀà°(€€€€€€‰‘•±…É•‘}ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%ˆ°(€€€€€€‰±¥¹•Ìˆè€ØÈ°(€€€€€€‰Á…Ñ ˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}½µÁ±•á}¹½Éµ}%}½Ù•ÉÉ¥‘•Ì¹©Í½¸ˆ°(€€€€€€‰Í¡„ÈÔØˆè€‰ˆÈÜàİ„ÜÍÙŒÄØÔİ”Àİ”ÔÔÙàÌØĞØÉ…•ŒàäÕŒäÍˆÍ„ÈÈÄäÜÔÅˆàÄÜÜäØäÍˆØÔÈÜĞˆ(€€€ô°(€€€ì(€€€€€€‰‰åÑ•Ìˆè€ÄÈàÜ°(€€€€€€‰‘•±…É•‘}ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%ˆ°(€€€€€€‰±¥¹•Ìˆè€ÌÀ°(€€€€€€‰Á…Ñ ˆè€‰éqqUÍ•ÉÍqs²
+³²j§²zAqq½Õµ•¹ÑÍqq½‘•áqpÈÀÈØ´Àà´ÄÁqq¡ÑÑÁÌµ¥Ñ¡Õˆµ½´µ±••…¡Õå¸µµ…Ñ¡±¥ˆĞµÁÕ±±qqİ½É­qq™…}™Õ±±}½µÁ¥±•}¥¹¹•É}é•É½}É¥¡Ñ}½Ù•ÉÉ¥‘”¹©Í½¸ˆ°(€€€€€€‰Í¡„ÈÔØˆè€ˆÉ˜É‘„äØÌÕ‰˜ÅŒÁ…‰”Á”ÀĞÀäÄØĞÄääàå˜á„ÄÙ„äÜÅ”á”ÄÕ˜ÄÜÙ™‘…á”ÉˆÍ˜àÔˆ(€€€ô(€t°(€€‰Í½ÕÉ•}Í¡„ÈÔØˆè€‰Á„Í‘••”ÅŒÁ„İ„ÜàÅÄÑ™‘˜ÄÈÉ”ÈÌÕÜÅá˜ÈÄÁ‰ˆØÕ„àäÑ‘ŒÑ”ÔÄààÈÅ‰˜ÀÍ•Œˆ°(€€‰ÍÑ…Ñ¥}Ù…±¥‘…Ñ¥½¸ˆèì(€€€€‰…ÑÑÉ¥‰ÕÑ•Í}ÁÉ•Í•ÉÙ•ˆèÑÉÕ”°(€€€€‰…¹‘¥‘…Ñ”ˆèì(€€€€€€‰‰åÑ•Ìˆè€ÈÜÀÌØÜÔ°(€€€€€€‰±¥¹•Ìˆè€ØÀØÀÀ°(€€€€€€‰Í¡„ÈÔØˆè€‰•‰™™‘‰„ØÌÀÉ‘Üå••İ…™ĞáÜÄÈäÅˆĞÄààÌÈÕ”äÑ”àÌäÀĞá‘ˆÌÙØĞØÜÈÁˆÄˆ(€€€ô°(€€€€‰¡…¹•‘}‘•±…É…Ñ¥½¹}¥¹‘¥•Ìˆèl(€€€€€€ÈàÌä°(€€€€€€ÈäÀÌ°(€€€€€€ÈäÀĞ°(€€€€€€ÈäÀØ°(€€€€€€ÈäÀÜ°(€€€€€€ÈäÄÀ°(€€€€€€ÈäÄÄ°(€€€€€€ÈäÌä°(€€€€€€ÈäĞÄ°(€€€€€€ÈäÔÀ°(€€€€€€ÈäÔÈ°(€€€€€€ÈäÔÌ°(€€€€€€ÈäÔÔ°(€€€€€€ÈäÔÜ°(€€€€€€ÈäÔà°(€€€€€€ÈäÔä°(€€€€€€ÈäØÀ°(€€€€€€ÈäØÄ°(€€€€€€ÈäØØ°(€€€€€€ÈäØÜ°(€€€€€€ÈäÜĞ°(€€€€€€ÈäÜÜ°(€€€€€€ÌÄÄĞ°(€€€€€€ÌÄĞÀ°(€€€€€€ÌÄĞÄ°(€€€€€€ÌĞØØ°(€€€€€€ÌĞàÈ°(€€€€€€ÌĞäÔ°(€€€€€€ÌØĞÀ°(€€€€€€ÌäÈÀ°(€€€€€€ĞÄØÌ(€€€t°(€€€€‰½µµ•¹ÑÍ}ÁÉ•Í•ÉÙ•ˆèÑÉÕ”°(€€€€‰‘•±…É…Ñ¥½¹}Í•ÅÕ•¹•}ÁÉ•Í•ÉÙ•ˆèÑÉÕ”°(€€€€‰‘¥É•Ñ}±•…¹}Ù•É¥™¥•ˆè™…±Í”°(€€€€‰•á•ÕÑ…‰±•}™½É‰¥‘‘•¹}½Õ¹ÑÍ}…™Ñ•Èˆèì(€€€€€€‰1•…¸¹½™I•‘Õ•	½½°ˆè€À°(€€€€€€‰…‘µ¥Ğˆè€À°(€€€€€€‰¹…Ñ¥Ù•}‘•¥‘”ˆè€À°(€€€€€€‰¹•İ}±½‰…±}…á¥½´ˆè€À°(€€€€€€‰Í½ÉÉäˆè€À°(€€€€€€‰Õ¹Í…™”ˆè€À(€€€ô°(€€€€‰•á•ÕÑ…‰±•}™½É‰¥‘‘•¹}½Õ¹ÑÍ}‰•™½É”ˆèì(€€€€€€‰1•…¸¹½™I•‘Õ•	½½°ˆè€À°(€€€€€€‰…‘µ¥Ğˆè€À°(€€€€€€‰¹…Ñ¥Ù•}‘•¥‘”ˆè€À°(€€€€€€‰¹•İ}±½‰…±}…á¥½´ˆè€À°(€€€€€€‰Í½ÉÉäˆè€À°(€€€€€€‰Õ¹Í…™”ˆè€À(€€€ô°(€€€€‰•á•ÕÑ…‰±•}™½É‰¥‘‘•¹}Í¥á}é•É¼ˆèÑÉÕ”°(€€€€‰¥µµÕÑ…‰±•}¹½¹}Ñ…É•Ñ}Í­•±•Ñ½¹}ÁÉ•Í•ÉÙ•ˆèÑÉÕ”°(€€€€‰¥µµÕÑ…‰±•}¹½¹}Ñ…É•Ñ}Í­•±•Ñ½¹}Í¡„ÈÔØˆè€ˆÅ˜ÔÁˆÙ„äÈàİ…‘ŒĞÄÜÌÀÙ•”ÀÜá‘…‘„ÅˆÉ˜ØÙ•ˆÔÜÉÜÕ‘™‰”ÌÁ…Àá”ÜÙÑŒÈÙ˜ˆ°(€€€€‰ÁÕ‰±¥}¡•…‘•ÉÍ}ÁÉ•Í•ÉÙ•ˆèÑÉÕ”°(€€€€‰É…İ}™½É‰¥‘‘•¹}µ•¹Ñ¥½¹Í}…™Ñ•Èˆèì(€€€€€€‰1•…¸¹½™I•‘Õ•	½½°ˆè€À°(€€€€€€‰…‘µ¥Ğˆè€Ğ°(€€€€€€‰¹…Ñ¥Ù•}‘•¥‘”ˆè€À°(€€€€€€‰¹•İ}±½‰…±}…á¥½´ˆè€À°(€€€€€€‰Í½ÉÉäˆè€Ä°(€€€€€€‰Õ¹Í…™”ˆè€Ä(€€€ô°(€€€€‰É…İ}™½É‰¥‘‘•¹}µ•¹Ñ¥½¹Í}‰•™½É”ˆèì(€€€€€€‰1•…¸¹½™I•‘Õ•	½½°ˆè€À°(€€€€€€‰…‘µ¥Ğˆè€Ğ°(€€€€€€‰¹…Ñ¥Ù•}‘•¥‘”ˆè€À°(€€€€€€‰¹•İ}±½‰…±}…á¥½´ˆè€À°(€€€€€€‰Í½ÉÉäˆè€Ä°(€€€€€€‰Õ¹Í…™”ˆè€Ä(€€€ô°(€€€€‰ÍÑ…Ñ¥}½¹±äˆèÑÉÕ”(€ô°(€€‰ÍÑ…ÑÕÌˆè€‰MQQ%}=91e}U9YI%%}=5	%9ˆ)ô(

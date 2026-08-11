@@ -1,0 +1,41 @@
+{
+  "schema": "fa-environment-fragment-repair-override-v1",
+  "status": "FULL_INVENTORY_ROOT_CONFIRMED_STATIC_ONLY_UNVERIFIED",
+  "scope": "AmbientUpperPlaneL2 abbreviation only in P5PhysicalHardStageRestriction",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "analysis_note": "AmbientUpperPlaneL2 depends on the fork's noncomputable UpperHalfPlane measurable-space instance, but its abbreviation is declared outside a noncomputable section. Open and close a bounded anonymous noncomputable section around that single abbreviation so its header and type remain byte-identical.",
+  "confirmed_root_selectors": {
+    "diagnostic_ids": ["E0688"],
+    "declaration_indices": [3932],
+    "diagnostic_code": "lean.dependsOnNoncomputable"
+  },
+  "environment_replacement": {
+    "old_fragment": "/-- Restriction of full-plane `L²` to the upper-half-plane subtype. -/\nabbrev AmbientUpperPlaneL2 :=\n  MeasureTheory.Lp ℂ 2 Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure",
+    "new_fragment": "noncomputable section\n\n/-- Restriction of full-plane `L²` to the upper-half-plane subtype. -/\nabbrev AmbientUpperPlaneL2 :=\n  MeasureTheory.Lp ℂ 2 Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure\n\nend",
+    "old_sha256": "689c7455d67c344218e6895bc998693650b4cbb0a045a8f9852ba0747f5a3945",
+    "new_sha256": "d0feaca2ead44b25b4602d82351b91a319876ccca4685c874dc9704a1654f7a5",
+    "old_bytes": 234,
+    "new_bytes": 262,
+    "old_global_count": 1,
+    "new_global_count_before": 0
+  },
+  "standalone_candidate": {
+    "sha256": "76c3ff636db6db44af3d8e9a66210395f446e31ad21030e5402a4db676c0b3f7",
+    "bytes": 2702280,
+    "splitlines": 60577,
+    "direct_lean_verified": false
+  },
+  "static_validation": {
+    "declaration_sequence_preserved": true,
+    "all_existing_declaration_headers_preserved": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "executable_forbidden_six_zero": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}

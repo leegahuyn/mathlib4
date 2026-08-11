@@ -1,0 +1,317 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R005",
+  "scope": {
+    "start_declaration_index": 3315,
+    "end_declaration_index": 3413,
+    "selected_repair_indices": [
+      3324,
+      3326,
+      3327,
+      3328,
+      3408
+    ],
+    "explicit_exclusions": {
+      "idx3332_3402_core_instance_roots": "owned by global instance overlay except direct idx3408 API-field fix",
+      "idx3407": "cross-root environment dependency not claimed",
+      "FullPlaneTest_dependents": "not hydrated here"
+    },
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3324,
+      "declaration_name": "fderiv_friedrichsTranslatedMollifierTest",
+      "header_sha256": "1bbe9ba4750931193ea32d23afc3636547a67ffbcedc7037561c7d8bb8701ebf",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Use ContDiff.differentiable with the order proof and explicit evaluation point; differentiableAt field projection no longer exists on the Exists representation.",
+      "confidence": "HIGH_PINNED_CONTDIFF_API",
+      "root_selector_ids": [
+        "E0287"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have houter : DifferentiableAt ℝ (friedrichsMollifier j) (w - x) :=\n    (friedrichsMollifier_contDiff j).differentiableAt (by simp)",
+          "new_fragment": "  have houter : DifferentiableAt ℝ (friedrichsMollifier j) (w - x) :=\n    (friedrichsMollifier_contDiff j).differentiable (by simp) (w - x)",
+          "old_sha256": "dfc6b15415dd2e281154f86af589c979ea3235ab307e4771c015c280acc72842",
+          "new_sha256": "d24c00fb5c763b188e1153a890fa0537ea3b3096b8dbfa9b6f78c13f76816af3",
+          "old_bytes": 135,
+          "new_bytes": 141,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "0c2830be68a13cf814aef282cd658fd8ea4266b4fb9bea7a1f6c364f3fb91784",
+        "bytes": 2702258,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0287",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 43825,
+            "column": 37,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "3a24568ec59616c3e66a44402c43db17ca7201c6d3dac5f5a106ef54ea6a79d3"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3326,
+      "declaration_name": "fderiv_friedrichsMollifier",
+      "header_sha256": "6fcd15f810e1fd8a10dad8247f3837ca2bdbc320637cbb8186f53f5ce880dc03",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Use ContDiff.differentiable and evaluate at t for the real mollifier.",
+      "confidence": "HIGH_PINNED_CONTDIFF_API",
+      "root_selector_ids": [
+        "E0290"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hreal :=\n    (friedrichsMollifierReal_contDiff j).differentiableAt (by simp)",
+          "new_fragment": "  have hreal :=\n    (friedrichsMollifierReal_contDiff j).differentiable (by simp) t",
+          "old_sha256": "0b88619f05b222a9e6dfb082c7b995bf8f83bd0c94ac8a50618d543f81d8858c",
+          "new_sha256": "8f6fe71c0cad884078621146a4a08ec6cd690ff7e9007d7252bf3d5ef3517bd4",
+          "old_bytes": 83,
+          "new_bytes": 83,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "a0e542ac5f7eb400b9384a4e83eab98d3fa387608406e734ccb51e0bf6983e6f",
+        "bytes": 2702252,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0290",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 43875,
+            "column": 41,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "9b13c102345fdca9110dba45c5be50eb8197429db0979860784119440b71ae14"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3327,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_one",
+      "header_sha256": "36257e34b88652dc8a3179b1705b3eac7d8b72afd3955ba0b7ce28a713178314",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Use ContDiff.differentiable at t; widened context keeps this exact fragment globally unique.",
+      "confidence": "HIGH_PINNED_CONTDIFF_API",
+      "root_selector_ids": [
+        "E0292"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hrho : DifferentiableAt ℝ (friedrichsMollifier j) t :=\n    (friedrichsMollifier_contDiff j).differentiableAt (by simp)\n  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul,\n    ContinuousLinearMap.comp_apply, Complex.imCLM_apply,\n    Complex.ofRealCLM_apply, Complex.one_im",
+          "new_fragment": "  have hrho : DifferentiableAt ℝ (friedrichsMollifier j) t :=\n    (friedrichsMollifier_contDiff j).differentiable (by simp) t\n  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul,\n    ContinuousLinearMap.comp_apply, Complex.imCLM_apply,\n    Complex.ofRealCLM_apply, Complex.one_im",
+          "old_sha256": "7a6c47b2dcdc52f7584d3b61b2e7272cdd848e185f95e0c6f9ab0025ceefd69d",
+          "new_sha256": "97ae7d8fe18f7496ba27e363cc83a87779071076be321ab36bed8e7d71165cf3",
+          "old_bytes": 348,
+          "new_bytes": 348,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "99426f970637ffaecaf5d2b8375b9eab67c7318320f4ac168fe4dd3d937eefb9",
+        "bytes": 2702252,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0292",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 43890,
+            "column": 37,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "3a24568ec59616c3e66a44402c43db17ca7201c6d3dac5f5a106ef54ea6a79d3"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3328,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_I",
+      "header_sha256": "13a48148be9165ba3dd80b58f22af2b4ef6b0ba7014ca65b943cd8f3696c418a",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Symmetric ContDiff.differentiable correction for the I-direction theorem with unique context.",
+      "confidence": "HIGH_PINNED_CONTDIFF_API",
+      "root_selector_ids": [
+        "E0294"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hrho : DifferentiableAt ℝ (friedrichsMollifier j) t :=\n    (friedrichsMollifier_contDiff j).differentiableAt (by simp)\n  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul,\n    ContinuousLinearMap.comp_apply, Complex.imCLM_apply,\n    Complex.ofRealCLM_apply, Complex.I_im",
+          "new_fragment": "  have hrho : DifferentiableAt ℝ (friedrichsMollifier j) t :=\n    (friedrichsMollifier_contDiff j).differentiable (by simp) t\n  rw [fderiv_mul him hrho]\n  simp only [ContinuousLinearMap.add_apply,\n    ContinuousLinearMap.smul_apply, smul_eq_mul,\n    ContinuousLinearMap.comp_apply, Complex.imCLM_apply,\n    Complex.ofRealCLM_apply, Complex.I_im",
+          "old_sha256": "d76ac0f30918238b85784e1797db9d8b68ea86c978a9bdd4b905d82135f7be60",
+          "new_sha256": "37818ee6a7dadcb813dbd744ba22877084626818fd6ca1bff16d8312bf588357",
+          "old_bytes": 346,
+          "new_bytes": 346,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "ca47c9b31ff05db055bb240fe06c7cea821040104d0a0ac0cd08adad7dce7119",
+        "bytes": 2702252,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0294",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 43909,
+            "column": 37,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "3a24568ec59616c3e66a44402c43db17ca7201c6d3dac5f5a106ef54ea6a79d3"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3408,
+      "declaration_name": "intrinsicJointCutoffTriple_hasJointCompactCarrierSupport",
+      "header_sha256": "84ed07a986f1597e591333608bd6a43f94aa057949890f7528cf81e47c6ad0c4",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Call HasCompactCarrierSupport.add explicitly for both coordinates; dotted notation was incorrectly resolved as Exists.add.",
+      "confidence": "HIGH_EXACT_INVALID_FIELD_OWNER",
+      "root_selector_ids": [
+        "E0346",
+        "E0347"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  · exact (intrinsicPeterssonCuspCutoff_hasCompactCarrierSupport\n      j ((n + 1) + 1) (raiseProjection n x)).add\n        (intrinsicRaisePeterssonCommutator_hasCompactCarrierSupport\n          j (n + 1) (baseProjection n x))\n  · exact (intrinsicPeterssonCuspCutoff_hasCompactCarrierSupport\n      j n (lowerProjection n x)).add\n        (intrinsicLowerFromSuccPeterssonCommutator_hasCompactCarrierSupport\n          j n (baseProjection n x))",
+          "new_fragment": "  · exact HasCompactCarrierSupport.add\n      (intrinsicPeterssonCuspCutoff_hasCompactCarrierSupport\n        j ((n + 1) + 1) (raiseProjection n x))\n      (intrinsicRaisePeterssonCommutator_hasCompactCarrierSupport\n        j (n + 1) (baseProjection n x))\n  · exact HasCompactCarrierSupport.add\n      (intrinsicPeterssonCuspCutoff_hasCompactCarrierSupport\n        j n (lowerProjection n x))\n      (intrinsicLowerFromSuccPeterssonCommutator_hasCompactCarrierSupport\n        j n (baseProjection n x))",
+          "old_sha256": "d83f384d6c67677c2ad8841ea367df288b02c3724e05ed6af1b5e3ab3a64abbc",
+          "new_sha256": "145c7e176e405aeafed482fa1995655e99115913494d093f13547f46ff3cde14",
+          "old_bytes": 439,
+          "new_bytes": 497,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "6b26c2abbdd4f95f018e638801418c5efbabd328d2e4273f81f1909044192991",
+        "bytes": 2702310,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0346",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 44885,
+            "column": 45,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "b3d7d41db3194871da61f55b1b27f51d0775ec64e9568b1e5a62f6116a46112e"
+          },
+          {
+            "id": "E0347",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 44889,
+            "column": 33,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "00b3f1858509af7d7b8c821375ebafac662925ff298e0bd064b6662607eb361b"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "f6537ea5d38d0ae21a862da8fc7cd518845960943917a7388dbf766050808ef1",
+    "bytes": 2702316,
+    "lines": 60575,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "replacement_order_within_each_repair_is_list_order": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}

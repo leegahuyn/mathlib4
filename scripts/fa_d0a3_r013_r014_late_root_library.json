@@ -1,0 +1,571 @@
+{
+  "schema": "fa-full-cumulative-late-root-library-v2",
+  "status": "STATIC_CANDIDATE_HEADER_PRESERVING_DIRECT_LEAN_UNVERIFIED",
+  "source": {
+    "sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+    "bytes": 2702252,
+    "lines": 60573,
+    "declaration_count": 4397,
+    "declaration_sequence_sha256": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235
+  },
+  "batch_authority": {
+    "path": "work/fa_full_compile_independent_root_batches.json",
+    "sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c",
+    "owned_batches": [
+      "R013",
+      "R014"
+    ],
+    "owned_index_ranges": [
+      "4263-4327",
+      "4329-4396"
+    ],
+    "cross_root_index": 3268
+  },
+  "continuous_linear_map_environment_overlay": {
+    "path": "work/fa_d0a3_bounded_continuous_linear_map_environment_overlay.json",
+    "sha256": "2a4ddfc4f494e3495d21892c0273e6b9a46ff05d7281f5a9fed973e708899878",
+    "bytes": 11878,
+    "lines": 249,
+    "purpose": "Resolve unqualified lsmul/mul without changing any declaration header bytes.",
+    "composable": true
+  },
+  "candidate_expected": {
+    "sha256": "787dc29ee940057dec646fbeb4459f5321acc8d7a04719b4e2bf1016aee165e2",
+    "bytes": 2702738,
+    "lines": 60588,
+    "direct_lean_verified": false
+  },
+  "composite_with_continuous_linear_map_overlay_expected": {
+    "sha256": "54b6784c11594f4629914d8f288d627d97d55b250c40310061346873341cea94",
+    "bytes": 2702888,
+    "lines": 60594,
+    "direct_lean_verified": false
+  },
+  "edit_count": 20,
+  "edits": [
+    {
+      "id": "cross_idx3268_full_plane_test_canonical",
+      "mode": "literal_exact",
+      "scope": "declaration",
+      "old_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞",
+      "new_fragment": "abbrev FullPlaneTest :=\n  𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)",
+      "old_sha256": "c446a1c2788d9a4f01f721ebeb98c8f382c678f29d926460bd054fca68dcd1ba",
+      "new_sha256": "9a0e620795cfa8d6a194fb4a62feb0267fb27336051a1ca5a47a8c172ef0d48c",
+      "old_bytes": 62,
+      "new_bytes": 71,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 3268,
+      "declaration_name": "FullPlaneTest",
+      "header_sha256": "6b37bb7281a1381102c02e04e75fcd4265d0de40e07a03eaa06fcb1067afdfb4",
+      "diagnostic_ids": [
+        "E0211",
+        "E0212"
+      ],
+      "anchor": "line 42953",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "env_reduced_chart_open_half_weight",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped BigOperators ContDiff ENNReal",
+      "new_fragment": "namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen HalfWeightDifferentialOperators\nopen scoped BigOperators ContDiff ENNReal",
+      "old_sha256": "5b26a1375ddc733c13d31d04c4d26505a2d41e0b79891d6e2abf2f858eecb172",
+      "new_sha256": "f986defc1baa4a348564ecadbd5bd9ef9064f1fc3c07b0308f787c45dfef415c",
+      "old_bytes": 140,
+      "new_bytes": 177,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": null,
+      "declaration_name": null,
+      "header_sha256": null,
+      "diagnostic_ids": [
+        "E1010",
+        "E1011",
+        "E1012",
+        "E1013",
+        "E1014"
+      ],
+      "anchor": "lines 58768-58771",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "env_reduced_chart_open_scoped_manifold",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "open scoped BigOperators ContDiff ENNReal",
+      "new_fragment": "open scoped BigOperators ContDiff ENNReal Manifold",
+      "old_sha256": "c431189d7603fc340751cd7c2c9f493a18d677ac6e6b810fb0429fd04d0d3bda",
+      "new_sha256": "5f96056371ea7ae97d47d708e86d366dab3ae8cc2d4d5b70c9fff29fbd5419bd",
+      "old_bytes": 41,
+      "new_bytes": 50,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": null,
+      "declaration_name": null,
+      "header_sha256": null,
+      "diagnostic_ids": [
+        "E1021-E1042"
+      ],
+      "anchor": "line 58771; 22 syntax errors",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "env_invariant_multiplier_open_half_weight",
+      "mode": "literal_exact",
+      "scope": "environment",
+      "old_fragment": "namespace FixedPhaseInvariantScalarMultiplier\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped ENNReal BigOperators",
+      "new_fragment": "namespace FixedPhaseInvariantScalarMultiplier\n\nopen Set Function Topology Filter MeasureTheory\nopen HalfWeightDifferentialOperators\nopen scoped ENNReal BigOperators",
+      "old_sha256": "8e7b826a147bf2911e8673b92c0b5d53516aa4b0ccf125516df66ddd113638af",
+      "new_sha256": "83b50c60256d10cb7088a2ecab3bf3a8482ce09ddb91935b47cdc53f970ae0dc",
+      "old_bytes": 127,
+      "new_bytes": 164,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": null,
+      "declaration_name": null,
+      "header_sha256": null,
+      "diagnostic_ids": [
+        "E1047",
+        "E1048"
+      ],
+      "anchor": "lines 59512-59515",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4306_pi_add_apply",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "      simpa only [Finset.sum_insert hi, Finset.sum_apply] using",
+      "new_fragment": "      simpa only [Finset.sum_insert hi, Finset.sum_apply, Pi.add_apply] using",
+      "old_sha256": "1787c5e2a5cf8f0483cd264a856c3b3d16df06d842ba58c4838b7883c00d208e",
+      "new_sha256": "94df8f1a99290fb3cea74b877658164588a0a2db99eced1fe31c64262ec61e5f",
+      "old_bytes": 63,
+      "new_bytes": 77,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4306,
+      "declaration_name": "RealSmooth.finset_sum",
+      "header_sha256": "f3e25f6bffd62fd532e0d752b9d00c4cbae95883bb27f734fc269b2479de2997",
+      "diagnostic_ids": [
+        "E1001"
+      ],
+      "anchor": "line 58793",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4310_subset_tsupport_function_first",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  exact subset_tsupport hz",
+      "new_fragment": "  exact subset_tsupport (v : ℂ → ℂ) hz",
+      "old_sha256": "9aa65a6d6f237236ba064ce8b961f4800d742770f51e196a163bd713fbc0c931",
+      "new_sha256": "443b77a7af930a432cc3e789ad59d9c285392c467e7f788584213bee2f9b7705",
+      "old_bytes": 26,
+      "new_bytes": 44,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4310,
+      "declaration_name": "support_effectiveScalarPeriodizationTerm_subset",
+      "header_sha256": "4cfd1dcee4d933b0f7357e16a238762f398b8d998af08221e0bddc8e0b384d2b",
+      "diagnostic_ids": [
+        "E1002"
+      ],
+      "anchor": "line 58830",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4312_seed_real_smooth_roundtrip",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  unfold RealSmooth upperLift\n  simpa [Function.comp_def] using v.contDiff.contDiffOn",
+      "new_fragment": "  unfold RealSmooth\n  refine v.contDiff.contDiffOn.congr ?_\n  intro w hw\n  simp [upperLift, Function.comp_def,\n    UpperHalfPlane.ofComplex_apply_of_im_pos hw]",
+      "old_sha256": "b6d0bdcae1823c2571c92e247eb7927d9cec405bfd6159e0390be6f00923166a",
+      "new_sha256": "1f58b1256e1e3f39760b42384797a25561a866c1e873683f127ee36990690ea6",
+      "old_bytes": 85,
+      "new_bytes": 159,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4312,
+      "declaration_name": "effectiveScalarSeed_realSmooth",
+      "header_sha256": "26b9f5a796d4008dc092f5f5d548084f8d9a0b863992a8ea4cc982fb63b74461",
+      "diagnostic_ids": [
+        "E1003"
+      ],
+      "anchor": "lines 58843-58844; same-file analogue 37797-37801",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4313_qualify_comp_gamma_two_smul",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  have h := (effectiveScalarSeed_realSmooth v).comp_gammaTwo_smul gamma",
+      "new_fragment": "  have h :=\n    FixedPhaseEssentialCoreRoute.RealSmooth.comp_gammaTwo_smul\n      (effectiveScalarSeed_realSmooth v) gamma",
+      "old_sha256": "f818b6d9f9516823e29e79f786ffce1f8166cf20f660e52e6430bab872f6beb3",
+      "new_sha256": "bb12f6547d00458888805e92ec043a9e40c4b1d99e405dbe4ff4e4b5df1c7378",
+      "old_bytes": 71,
+      "new_bytes": 121,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4313,
+      "declaration_name": "effectiveScalarPeriodizationTerm_realSmooth",
+      "header_sha256": "1474144b38455775fad424ca79c20302a96d9528d6b02c6cc4f93ac3de4932e6",
+      "diagnostic_ids": [
+        "E1004",
+        "E1005"
+      ],
+      "anchor": "line 58850",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4315_qualify_real_smooth_finsum",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  exact realSmooth_finsum_of_locallyFinite_support",
+      "new_fragment": "  exact FixedPhaseEssentialCoreRoute.realSmooth_finsum_of_locallyFinite_support",
+      "old_sha256": "7f4486b5bd67d482cbb03c065a33f4397d9d03aa1d5d4e4e9ecb1579734b9ba0",
+      "new_sha256": "785dcf9c299fcd26ef947da4eb81508cc5e02dec872fad5c904d3f7366efb45a",
+      "old_bytes": 50,
+      "new_bytes": 79,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4315,
+      "declaration_name": "effectiveScalarPoincarePeriodization_realSmooth",
+      "header_sha256": "c18398394857d52426508d8e55051844a816e52ebbc7ea9f44e1030b8a281f01",
+      "diagnostic_ids": [
+        "E1006"
+      ],
+      "anchor": "line 58862",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4317_close_definitional_finsum_goal",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  simp_rw [effectiveScalarPeriodizationTerm_mul_smul]",
+      "new_fragment": "  simp_rw [effectiveScalarPeriodizationTerm_mul_smul]\n  rfl",
+      "old_sha256": "078e48339a72512bd7d9dacf4a515a04e93cde26b86c8266d2a58e685454e5f1",
+      "new_sha256": "ee76b3c57894265d17c7de22bef63176878aab30541891a074e95f1b9798528a",
+      "old_bytes": 53,
+      "new_bytes": 59,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4317,
+      "declaration_name": "effectiveScalarPoincarePeriodization_invariant",
+      "header_sha256": "e78d4572e31c79c580fce8fd36fe2c3f89d018fd3542732cd8ef291a481ba083",
+      "diagnostic_ids": [
+        "E1007"
+      ],
+      "anchor": "line 58889",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4318_finsum_eq_single_function_first",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  apply finsum_eq_single (1 : GammaTwoEffective)",
+      "new_fragment": "  apply finsum_eq_single\n    (fun a : GammaTwoEffective ↦ effectiveScalarPeriodizationTerm v a z)\n    (1 : GammaTwoEffective)",
+      "old_sha256": "e88ee99597a06bb37d44034b373c2ebb788df073de9d1d4453425e1c4f653f53",
+      "new_sha256": "3863b7950ed96f3197fa5cb09833bc1fe105a02fad2a876b6dc686d1b19ae8fd",
+      "old_bytes": 48,
+      "new_bytes": 127,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4318,
+      "declaration_name": "effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+      "header_sha256": "3765d3a0aa875c999c6318a597ca3ea3463cdb7f6fe42b6303b5dc14d8ce3901",
+      "diagnostic_ids": [
+        "E1008"
+      ],
+      "anchor": "line 58900",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4318_subset_tsupport_function_first",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "      subset_tsupport hterm",
+      "new_fragment": "      subset_tsupport (v : ℂ → ℂ) hterm",
+      "old_sha256": "a0746abff1b5acd5c9979638d4d6a41a9bf88964ba089e53835bf660b00b8411",
+      "new_sha256": "ad85a8d7623bcde32466f80e79fdc53b6025631da0085582c903c21770d6c25c",
+      "old_bytes": 27,
+      "new_bytes": 45,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4318,
+      "declaration_name": "effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+      "header_sha256": "3765d3a0aa875c999c6318a597ca3ea3463cdb7f6fe42b6303b5dc14d8ce3901",
+      "diagnostic_ids": [
+        "E1008"
+      ],
+      "anchor": "line 58905",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4324_quotient_orbit_orientation",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "    rw [← hgamma]\n    exact gammaTwoQuotientMk_gamma_smul gamma x",
+      "new_fragment": "    simpa only [hgamma x] using\n      (gammaTwoQuotientMk_gamma_smul gamma x).symm",
+      "old_sha256": "7822d41c241913bfe59cb5a58d52cf74fbf58e312e13e1b70439f3f9897b5cae",
+      "new_sha256": "564ee960e385b9679e18a67a2d3a7818523e7e6407083ba76b3f2110d6719dec",
+      "old_bytes": 67,
+      "new_bytes": 82,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4324,
+      "declaration_name": "effectiveScalarPoincarePeriodization_quotientCompact",
+      "header_sha256": "982f6c09517e67606865e0bee66a70961fc7e2ae9e02d78da3ccd91f88ee23be",
+      "diagnostic_ids": [
+        "E1009"
+      ],
+      "anchor": "lines 58988-58989",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4329_fderiv_eq_apply_one",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  unfold HalfWeightDifferentialOperators.dx\n    HalfWeightDifferentialOperators.d1\n  exact Filter.EventuallyEq.fderiv_eq\n    (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n      v hv hz) (z : ℂ)",
+      "new_fragment": "  unfold HalfWeightDifferentialOperators.dx\n    HalfWeightDifferentialOperators.d1\n  exact congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A 1)\n    (Filter.EventuallyEq.fderiv_eq\n      (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n        v hv hz))",
+      "old_sha256": "8e63f27cb8fd3f324fd6d407130ecd7ed749cca9fec5531d151eda8fe24151f4",
+      "new_sha256": "3805e14e90bad003032b8de2363979c468166b4979776cfe708a63e8c54335d9",
+      "old_bytes": 221,
+      "new_bytes": 266,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4329,
+      "declaration_name": "dx_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+      "header_sha256": "c0c90b45f093aec76d855089f6e5399d9bf56edd605f48f5fb66b4cc16854dcf",
+      "diagnostic_ids": [
+        "E1015"
+      ],
+      "anchor": "lines 59039-59043",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4330_fderiv_eq_apply_I",
+      "mode": "literal_exact",
+      "scope": "proof_body",
+      "old_fragment": "  unfold HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  exact Filter.EventuallyEq.fderiv_eq\n    (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n      v hv hz) (z : ℂ)",
+      "new_fragment": "  unfold HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  exact congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A Complex.I)\n    (Filter.EventuallyEq.fderiv_eq\n      (effectiveScalarPoincarePeriodization_eventuallyEq_seed_on_reducedChart\n        v hv hz))",
+      "old_sha256": "ef3db12b888bef4798d2580c6a1f07691d5e29b80bb2ddb4d47c264ca37150aa",
+      "new_sha256": "f18b1e6279a5b1b8df494b2e423c3781a2d3f5a5b7a2ef8d05963ccd9c04ee98",
+      "old_bytes": 221,
+      "new_bytes": 274,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4330,
+      "declaration_name": "dy_effectiveScalarPoincarePeriodization_eq_seed_on_reducedChart",
+      "header_sha256": "75c644efe587881af75e3295673d46d5b092159132ed4b1428cdbafad7b2f4cd",
+      "diagnostic_ids": [
+        "E1016"
+      ],
+      "anchor": "lines 59053-59057",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4331_4332_unfold_local_finset_membership",
+      "mode": "literal_all",
+      "scope": "proof_body",
+      "old_fragment": "    rw [Set.Finite.mem_toFinset]\n    exact ⟨z, ha, mem_of_mem_nhds _hsNhds⟩",
+      "new_fragment": "    change a ∈ hsFinite.toFinset\n    rw [Set.Finite.mem_toFinset]\n    exact ⟨z, ha, mem_of_mem_nhds _hsNhds⟩",
+      "old_sha256": "44554e097898839679cd685eacdc13f1469425a6e2770425f815714ffeac023f",
+      "new_sha256": "4d620c1bb49c5f500d179ea2211518483ec468c23a1d540fac5e77f3fdbd61ca",
+      "old_bytes": 79,
+      "new_bytes": 114,
+      "expected_global_old_occurrences": 2,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": null,
+      "declaration_name": null,
+      "header_sha256": null,
+      "diagnostic_ids": [
+        "E1017",
+        "E1019"
+      ],
+      "anchor": "two copies at 59070-59071,59087-59088",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "measure_ae_chosen_inline",
+      "mode": "literal_exact",
+      "scope": "notation",
+      "old_fragment": "=ᶠ[Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]",
+      "new_fragment": "=ᵐ[Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure]",
+      "old_sha256": "1ff8dfe40e00e35b20c1664989189a3e3310af2e0a030512226be5e9f621ed14",
+      "new_sha256": "b44119bc0068573536f798e251a990b94435a6f3791ff50c8111bdd2f52c2ea5",
+      "old_bytes": 121,
+      "new_bytes": 121,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4372,
+      "declaration_name": "finset_sum_invariantScalarMultipliers_eq_of_compactSupport",
+      "header_sha256": "18e8234ac13eb7e055a1e0f56a7cb2eb4fc32444b88c07556192c55e2b7a4158",
+      "diagnostic_ids": [],
+      "anchor": "line 59748",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "remove_unknown_prod_fst_mk",
+      "mode": "literal_all",
+      "scope": "proof_body",
+      "old_fragment": "[Prod.fst_sum, Prod.fst_mk]",
+      "new_fragment": "[Prod.fst_sum]",
+      "old_sha256": "c0880f4e3ce87419cc9b5a4d8938f25d767f6ad2b4d531b34e0aa1b62a265bb9",
+      "new_sha256": "7e280afdbc56c5a2c72983e142389e9994fc85c63fac0ef2c733a0f136893bda",
+      "old_bytes": 27,
+      "new_bytes": 14,
+      "expected_global_old_occurrences": 3,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4384,
+      "declaration_name": "finset_graph_snd_eq_of_sum_fst_eq",
+      "header_sha256": "049db61c6da97e6ffc4249b5cc8ca0989a2ecb1d65f61442993079244ae784bc",
+      "diagnostic_ids": [
+        "E1124"
+      ],
+      "anchor": "three copies at 60122,60428,60499",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "remove_unknown_prod_snd_mk",
+      "mode": "literal_all",
+      "scope": "proof_body",
+      "old_fragment": "[Prod.snd_sum, Prod.snd_mk]",
+      "new_fragment": "[Prod.snd_sum]",
+      "old_sha256": "c3be8cd812fa057e961877ca043e247c341bdcc68a82835cfc811e2895107cf9",
+      "new_sha256": "766a2e38ab7012e4fb6328cf2c7c57a699e3b2a971ddeae21ab9a83e64881aae",
+      "old_bytes": 27,
+      "new_bytes": 14,
+      "expected_global_old_occurrences": 3,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4384,
+      "declaration_name": "finset_graph_snd_eq_of_sum_fst_eq",
+      "header_sha256": "049db61c6da97e6ffc4249b5cc8ca0989a2ecb1d65f61442993079244ae784bc",
+      "diagnostic_ids": [
+        "E1125"
+      ],
+      "anchor": "three copies at 60124,60429,60500",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "idx4390_finset_binder_syntax",
+      "mode": "literal_exact",
+      "scope": "syntax",
+      "old_fragment": "∑ i in t.attach,",
+      "new_fragment": "∑ i ∈ t.attach,",
+      "old_sha256": "70a51d55b074d38d36204b9105f0fcd7e9b1dc8a838f0b0d596174168886d2bf",
+      "new_sha256": "7feff656634fee3f7dd4124eba5f7d5ab61680df3472cbf99cb15985b68e682b",
+      "old_bytes": 18,
+      "new_bytes": 19,
+      "expected_global_old_occurrences": 1,
+      "expected_global_new_occurrences_before": 0,
+      "declaration_index": 4390,
+      "declaration_name": "effectiveScalarSmoothQuotient_sum_attach_eq_one",
+      "header_sha256": "47de0589ab67d3711907f214f5c201c0c13d15ba56c588f87eb7cf4446c9872a",
+      "diagnostic_ids": [
+        "E1142"
+      ],
+      "anchor": "line 60332",
+      "direct_lean_verified": false
+    }
+  ],
+  "staged_unverified": [
+    {
+      "id": "claim_level_eventually_eq_to_ae_eq",
+      "permanent_stage": true,
+      "declaration_indices": [
+        4369,
+        4371,
+        4374
+      ],
+      "diagnostic_ids": [
+        "E1080",
+        "E1087",
+        "E1097",
+        "E1098"
+      ],
+      "reason": "Changing =ᶠ to =ᵐ alters exported theorem claims; excluded from executable repair libraries pending an explicit claim-policy decision."
+    },
+    {
+      "id": "global_continuous_linear_map_qualifications",
+      "permanent_stage": true,
+      "affected_header_declaration_indices": [
+        3602,
+        3605,
+        3648,
+        3652,
+        4243,
+        4244
+      ],
+      "reason": "Global literal qualification changes declaration header bytes. Use the separate bounded namespace-open environment overlay instead."
+    },
+    {
+      "id": "idx4331_idx4332_map_sum_projection",
+      "declaration_indices": [
+        4331,
+        4332
+      ],
+      "diagnostic_ids": [
+        "E1018",
+        "E1020"
+      ],
+      "reason": "Complex.re/im map_sum normalization is API-sensitive and excluded."
+    },
+    {
+      "id": "idx4396_successor_graph_instance",
+      "declaration_index": 4396,
+      "diagnostic_ids": [
+        "E1157"
+      ],
+      "reason": "Earlier canonical core-instance root; no late-local executable edit.",
+      "existing_environment_candidate": {
+        "path": "work/fa_full_compile_global_core_instance_environment_override.json",
+        "sha256": "4c90fa27cfa482dfc9ffc9588a4d3742ccc32b77519f0510715feeb2b94d6e23"
+      },
+      "executable_edit_in_this_library": false
+    }
+  ],
+  "guards": {
+    "fail_closed_source_identity": true,
+    "each_old_fragment_count_exact": true,
+    "each_new_fragment_precount_recorded": true,
+    "documentation_and_comments_preserved": true,
+    "existing_at_attributes_preserved": true,
+    "unselected_headers_and_claims_preserved": true,
+    "selected_claim_delta": [
+      "idx3268 FullPlaneTest representation only"
+    ],
+    "declaration_sequence_must_remain": "a33d2a1e132e47c9c6b31924ed1b8a04a50de709ed2149a9f9abfb0b052b25eb",
+    "executable_forbidden_six": {
+      "keys": [
+        "sorry",
+        "admit",
+        "new_global_axiom",
+        "unsafe",
+        "native_decide",
+        "Lean.ofReduceBool"
+      ],
+      "source_counts": {
+        "sorry": 0,
+        "admit": 0,
+        "new_global_axiom": 0,
+        "unsafe": 0,
+        "native_decide": 0,
+        "Lean.ofReduceBool": 0
+      },
+      "candidate_counts_required": "identical absolute zero"
+    },
+    "raw_forbidden_mention_ledger_must_be_unchanged": true,
+    "no_goals_to_be_solved_owned_elsewhere": true
+  },
+  "execution": {
+    "local_lean": false,
+    "local_lake": false,
+    "local_git": false,
+    "github_read": false,
+    "github_write": false
+  }
+}

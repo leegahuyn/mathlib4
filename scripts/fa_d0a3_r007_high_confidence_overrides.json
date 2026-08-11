@@ -1,0 +1,428 @@
+{
+  "schema": "fa-fragment-repair-overrides-v1",
+  "source_sha256": "d0a3decee1c0a7a781d14fdf122e235d71d8f210bb65a894dc4e518821bf03ec",
+  "status": "STATIC_ONLY_UNVERIFIED",
+  "batch_id": "R007",
+  "scope": {
+    "start_declaration_index": 3535,
+    "end_declaration_index": 3658,
+    "selected_repair_indices": [
+      3555,
+      3562,
+      3595,
+      3599,
+      3601,
+      3618,
+      3650
+    ],
+    "explicit_exclusions": {
+      "idx3535_3541": "gamma cusp environment cluster already owned; not duplicated",
+      "idx3625_3641": "global core-instance cluster excluded; idx3640 inner_zero already owned",
+      "FullPlaneTest_cross_root": "idx3608--3613 and idx3647--3658 excluded except independent proof-body lsmul at idx3650",
+      "claim_level_lsmul": "idx3602/3605/3648/3652 require environment or claim qualification and are excluded to preserve public headers",
+      "idx3556": "arithmetic threshold proof not promoted without direct checking",
+      "tail_open": "ContinuousLinearMap broad tail open remains staged and not selected"
+    },
+    "batch_authority_path": "work/fa_full_compile_independent_root_batches.json",
+    "batch_authority_sha256": "dcfd721e0b3653d48d430a448f52aec2766c5fbe97cf7b8f00860830b29f7b1c"
+  },
+  "current_full_inventory_authority": {
+    "path": "work/fa_full_compile_error_inventory.json",
+    "sha256": "3692fd155f6029ad30678668ff83fd5f092facebd9e35829cd680b1644d59648",
+    "artifact_id": 9103368138,
+    "run_id": 31495034235,
+    "error_count": 1157,
+    "warning_count": 659,
+    "cap_reached": false,
+    "parser_sha256": "4804d0d73a01ca1600080f892bbd391bffd092b5a2b529ac302e06fd82079a76"
+  },
+  "repairs": [
+    {
+      "declaration_index": 3555,
+      "declaration_name": "entire_test_eq_zero_of_eventually_zero",
+      "header_sha256": "fb1b1249bf441e5b18ed4f6d2e2099a71f6817d205421ad7076b9fa10a4dec64",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Change the Pi-zero target to the literal zero lambda before applying analyticOnNhd_const.",
+      "confidence": "HIGH_EXACT_DEFINITIONAL_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0424"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have hzeroAnalytic :\n      AnalyticOnNhd ℂ (0 : ℂ → ℂ) Set.univ := by\n    simpa using\n      (analyticOnNhd_const :\n        AnalyticOnNhd ℂ (fun _ : ℂ => (0 : ℂ)) Set.univ)",
+          "new_fragment": "  have hzeroAnalytic :\n      AnalyticOnNhd ℂ (0 : ℂ → ℂ) Set.univ := by\n    change AnalyticOnNhd ℂ (fun _ : ℂ ↦ (0 : ℂ)) Set.univ\n    exact analyticOnNhd_const",
+          "old_sha256": "23ee3b10fdff5fc78d787034c010a2659bb6fde8ada4eb859d11c21850c3cd77",
+          "new_sha256": "136ce575497113ff58857150fb2139106adb60aba3e45810f465624c03a7a431",
+          "old_bytes": 187,
+          "new_bytes": 175,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "d89238e0f7f2f6e4c1a15ec87c935ded2bca1eeae03b63b46c46c0c6231ab6ba",
+        "bytes": 2702240,
+        "lines": 60572,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0424",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 46917,
+            "column": 4,
+            "diagnostic_code": null,
+            "message_sha256": "ebb3baaf599363a421efdbfe11b13b0dffd76afcd81012600446f8d88bb18819"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3562,
+      "declaration_name": "norm_le_compact_apply_of_mem_fredholmDefect_range_orthogonal",
+      "header_sha256": "1bdec7c7d8b52bd4ab9ec50f66cf324d16ebd8479ef0ea51573233d9febf4520",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Bound the complex real part by its norm, then use norm_inner_le_norm; cancel the positive norm with nlinarith instead of the mismatched mul_le_mul_right API.",
+      "confidence": "HIGH_COMPILER_EXACT_TYPE_REPAIR",
+      "root_selector_ids": [
+        "E0426",
+        "E0427",
+        "E0428"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      _ ≤ ‖K (u : X)‖ * ‖(u : X)‖ :=\n        real_inner_le_norm _ _\n  exact (mul_le_mul_right (norm_pos_iff.mpr hu)).mp hprod",
+          "new_fragment": "      _ ≤ ‖inner ℂ (K (u : X)) (u : X)‖ :=\n        Complex.re_le_norm _\n      _ ≤ ‖K (u : X)‖ * ‖(u : X)‖ :=\n        norm_inner_le_norm _ _\n  nlinarith [hprod, norm_pos_iff.mpr hu]",
+          "old_sha256": "df9147305c5eb0057a4726d73d70ba9d5d813d0b08ea6268e0d02226608bc81e",
+          "new_sha256": "b4ff440827882c5259ef68a9e2caa3cbf911846b4eac2c1f96eaa3e3a4a70dab",
+          "old_bytes": 135,
+          "new_bytes": 198,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "8df91cb55666c52a09460ed18e60cd90b5822ae0cfbf0174da55c71a2b81dcdd",
+        "bytes": 2702315,
+        "lines": 60575,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0426",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 47031,
+            "column": 8,
+            "diagnostic_code": null,
+            "message_sha256": "6ac5ab74d29cb5a4814c54568c085b6ccaf013d6118b2c1072f23bf5483f96b5"
+          },
+          {
+            "id": "E0427",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 47032,
+            "column": 49,
+            "diagnostic_code": "lean.invalidField",
+            "message_sha256": "44bc6bcd1fce7945d841d956c99f53fd992bce9be83d93460fe90ea5897febd8"
+          },
+          {
+            "id": "E0428",
+            "classification": "root_candidate",
+            "category": "application_type_mismatch",
+            "line": 47032,
+            "column": 26,
+            "diagnostic_code": null,
+            "message_sha256": "c7208e5d517a2e8b20cf2f2fddbdd3f559d0871a6e7ad5935bccb263e3741528"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3595,
+      "declaration_name": "compactChartBuffer",
+      "header_sha256": "18a3c465c22d384e6364df210ba60130a9800f383a8fe3fda169c56e38f1f713",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Replace forbidden Prop-to-Type existential elimination with Classical.choose inside the existing noncomputable definition.",
+      "confidence": "HIGH_COMPILER_EXACT_LARGE_ELIM_REPAIR",
+      "root_selector_ids": [
+        "E0440"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  obtain ⟨delta, hdelta, hsub⟩ :=\n    hK.exists_cthickening_subset_open hU hKU\n  exact ⟨delta, hdelta, hsub⟩",
+          "new_fragment": "  let hex : ∃ delta, 0 < delta ∧ cthickening delta K ⊆ U :=\n    hK.exists_cthickening_subset_open hU hKU\n  exact ⟨Classical.choose hex, (Classical.choose_spec hex).1,\n    (Classical.choose_spec hex).2⟩",
+          "old_sha256": "2b9aafd407301b61a784e7f5a88b49c847492eba2322484a5b680890897a0eac",
+          "new_sha256": "9d35959e30a3866e2710673efd113dd6ff7c9649bb474d48bcbdd449871d8f13",
+          "old_bytes": 116,
+          "new_bytes": 211,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "6c190a5af7aa307353a87f745c49f27eadb65a0666748cfa4ef0225b8c65f468",
+        "bytes": 2702347,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0440",
+            "classification": "root_candidate",
+            "category": "other",
+            "line": 47451,
+            "column": 9,
+            "diagnostic_code": "nested.lean.propRecLargeElim",
+            "message_sha256": "9315a35d3c4ac55115632f981852d702c3a51994bfb365f41924beab0d83073b"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3599,
+      "declaration_name": "support_friedrichsMollifierReal_subset_closedBall",
+      "header_sha256": "e60e4958e79061a1dbb71060f3f9cfefd9a61c194f1a0775e7a811a24b363650",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Expose Function.support membership as the exact nonzero proposition before complexification.",
+      "confidence": "HIGH_COMPILER_EXACT_TARGET_BRIDGE",
+      "root_selector_ids": [
+        "E0441"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  have htComplex : friedrichsMollifier j t ≠ 0 := by\n    simpa only [friedrichsMollifier, Complex.ofReal_ne_zero] using ht",
+          "new_fragment": "  have htComplex : friedrichsMollifier j t ≠ 0 := by\n    change friedrichsMollifierReal j t ≠ 0 at ht\n    simpa only [friedrichsMollifier, Complex.ofReal_ne_zero] using ht",
+          "old_sha256": "2a0c8635c379bda060bab27057154ffbdbdbf055ee838d59e4ced96afc25a628",
+          "new_sha256": "19af1c214e32ee23974d4820ee31a2293af520d096c74dc69b5f959f5aaeec8b",
+          "old_bytes": 124,
+          "new_bytes": 175,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "8811863a27479770fc3b65124c0fd34b10bcc1aa14effd1833308b1b27d2d874",
+        "bytes": 2702303,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0441",
+            "classification": "root_candidate",
+            "category": "type_mismatch",
+            "line": 47477,
+            "column": 4,
+            "diagnostic_code": null,
+            "message_sha256": "f1a904614a6c4723e41ae2915fe07c23521b758b55e4e7f131a8454463562959"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3601,
+      "declaration_name": "support_friedrichsMollifiedRepresentative_subset_cthickening",
+      "header_sha256": "61c0281c45833f3deac92e4791e4e80f8ff2d83e6dcbfba5fbdc82094f6e3749",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Qualify the proof-body ContinuousLinearMap.lsmul use without selecting the broad tail open.",
+      "confidence": "HIGH_EXACT_NAMESPACE_QUALIFICATION",
+      "root_selector_ids": [
+        "E0442"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  refine (support_convolution_subset_swap (lsmul ℝ ℂ)).trans ?_\n  calc\n    Function.support (u : ℂ → ℂ) +\n          Function.support (friedrichsMollifierReal j) ⊆",
+          "new_fragment": "  refine (support_convolution_subset_swap\n    (ContinuousLinearMap.lsmul ℝ ℂ)).trans ?_\n  calc\n    Function.support (u : ℂ → ℂ) +\n          Function.support (friedrichsMollifierReal j) ⊆",
+          "old_sha256": "5b340f9aa1c2a5853b2d0bebf5f869034f5027cd1cb809e30e31d0572a838715",
+          "new_sha256": "6dde4a5b93bd9185b9c741ed2b70fe18e388137ffbe57ae95809f9b199bc36d5",
+          "old_bytes": 174,
+          "new_bytes": 198,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "a73a34dac6d93685022f4c0cee3b882ceb12ccabdfaee75855bb37cca2ce2542",
+        "bytes": 2702276,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0442",
+            "classification": "root_candidate",
+            "category": "unknown_identifier",
+            "line": 47497,
+            "column": 43,
+            "diagnostic_code": "lean.unknownIdentifier",
+            "message_sha256": "75969f2a4fee3cc78962f522310e7aeb0d80a300fa85677ab4abfe9e53117e85"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3618,
+      "declaration_name": "potentialTimesWeightCore",
+      "header_sha256": "ea4491f635f89e7c6420d3edc496be714f1c0302adbb0c5aa77139a4eea9037c",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Use WeightSection.covariance, whose SL2Z-coerced action exactly matches the WeightSection constructor target; the smoother wrapper uses a distinct GammaTwo action.",
+      "confidence": "HIGH_COMPILER_EXACT_ACTION_BRIDGE",
+      "root_selector_ids": [
+        "E0460"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "      rw [upstairsPotential_gammaTwo_invariant γ z, SmoothCompactWeightCore.covariance u₀ γ z]\n      ring⟩",
+          "new_fragment": "      rw [upstairsPotential_gammaTwo_invariant γ z,\n        WeightSection.covariance (SmoothCompactWeightCore.toSection u₀) γ z]\n      ring",
+          "old_sha256": "874d1ff8d25a42a67c7a23ef3794efb18875060ea7d7d66aaf300bed545a72fe",
+          "new_sha256": "7c23b36561f54039ccbf9129c41ddd21ab8dedfc242c79934370c2ef8827e8de",
+          "old_bytes": 112,
+          "new_bytes": 143,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "67948eb124e4424655fbcf9ac9fc7eb8a0434f7a2a32733869eea1466c005c0f",
+        "bytes": 2702283,
+        "lines": 60574,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0460",
+            "classification": "root_candidate",
+            "category": "rewrite_pattern_miss",
+            "line": 47753,
+            "column": 52,
+            "diagnostic_code": null,
+            "message_sha256": "72d5279213b4f08c735d24bff068085eb50abebcab915348dbfcb9973d792547"
+          }
+        ]
+      }
+    },
+    {
+      "declaration_index": 3650,
+      "declaration_name": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "header_sha256": "86c70c7165d775e1a63245a992d91ba3ccef57c9f42eac456928e75876faa87b",
+      "status": "STATIC_ONLY_UNVERIFIED",
+      "proof_body_only": true,
+      "analysis_note": "UNVERIFIED: Qualify the independent proof-body norm use of ContinuousLinearMap.lsmul; the separate FullPlaneTest CoeFun root remains owned elsewhere.",
+      "confidence": "HIGH_EXACT_NAMESPACE_QUALIFICATION",
+      "root_selector_ids": [
+        "E0483"
+      ],
+      "replacements": [
+        {
+          "old_fragment": "  let C : ℝ := ‖lsmul ℂ ℂ‖ * ‖V‖ * ‖u‖",
+          "new_fragment": "  let C : ℝ := ‖ContinuousLinearMap.lsmul ℂ ℂ‖ * ‖V‖ * ‖u‖",
+          "old_sha256": "d4582ff8696be8564ae42f0e735e42d520773f349e09cf323efe9a9976d8830b",
+          "new_sha256": "e61b7bad86b8b8b23b4d8b8f9f89ab2d5a090917cad085ebbff6fe9db19f9647",
+          "old_bytes": 56,
+          "new_bytes": 76,
+          "target_old_count": 1,
+          "global_old_count": 1,
+          "target_new_count_before": 0,
+          "global_new_count_before": 0
+        }
+      ],
+      "standalone_candidate": {
+        "sha256": "fdf4e353d995f10859ff3c32d05c53457ff74fac10792f84a440d0d910f6abd7",
+        "bytes": 2702272,
+        "lines": 60573,
+        "direct_lean_verified": false
+      },
+      "evidence": {
+        "artifact_id": 9103368138,
+        "run_id": 31495034235,
+        "fragment_status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+        "current_full_inventory_roots": [
+          {
+            "id": "E0483",
+            "classification": "root_candidate",
+            "category": "unknown_identifier",
+            "line": 48256,
+            "column": 16,
+            "diagnostic_code": "lean.unknownIdentifier",
+            "message_sha256": "75969f2a4fee3cc78962f522310e7aeb0d80a300fa85677ab4abfe9e53117e85"
+          }
+        ]
+      }
+    }
+  ],
+  "library_candidate_evidence": {
+    "sha256": "0ecc2acf7d98f9d08025f1b38574f29bdabb4660c1661969a9758d89cf7fd0c8",
+    "bytes": 2702524,
+    "lines": 60578,
+    "direct_lean_verified": false,
+    "not_full_all_error_candidate": true
+  },
+  "preservation_contract": {
+    "all_existing_documentation_and_comments_byte_preserved": true,
+    "all_existing_at_attributes_byte_preserved": true,
+    "new_declarations": 0,
+    "all_theorem_headers_and_claims_byte_preserved": true,
+    "declaration_sequence_preserved": true,
+    "all_unselected_source_bytes_preserved": true,
+    "executable_forbidden_six_zero_before_and_after": true,
+    "raw_forbidden_mention_ledger_unchanged": true
+  },
+  "application_contract": {
+    "apply_only_to_exact_d0a3": true,
+    "repairs_in_ascending_declaration_order": true,
+    "replacement_order_within_each_repair_is_list_order": true,
+    "direct_lean_required_before_promotion": true
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_read": false,
+    "github_write": false,
+    "remote_upload": false
+  }
+}
