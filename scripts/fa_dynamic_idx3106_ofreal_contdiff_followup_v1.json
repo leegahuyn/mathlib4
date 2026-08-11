@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-idx3106-ofreal-contdiff-followup-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "probe_run_id": 31527671544,
+  "repairs": [
+    {
+      "declaration_index": 3106,
+      "declaration_name": "intrinsicCuspCutoff_realSmooth",
+      "old_fragment": "      simpa only [chartCutoff, Function.comp_apply, Complex.ofRealCLM_apply] using\n        Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt\n          (z : ℂ) hReal",
+      "new_fragment": "      dsimp only [chartCutoff]\n      change ContDiffWithinAt ℝ ∞\n        (Complex.ofRealCLM ∘ fun v : ℂ ↦ Real.smoothTransition\n          (((N : ℝ) + 2) - integralLogHeightChart g v))\n        UpperHalfPlane.upperHalfPlaneSet (z : ℂ)\n      exact Complex.ofRealCLM.contDiff.contDiffAt.comp_contDiffWithinAt\n        (z : ℂ) hReal"
+    }
+  ]
+}
