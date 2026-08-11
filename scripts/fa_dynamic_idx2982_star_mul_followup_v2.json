@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-idx2982-star-mul-followup-v2",
+  "base_direct_tested_source_sha256": "150b775748c59f7198b8efd79acc90106e9e1996b027a0f75c879135f2473689",
+  "repairs": [
+    {
+      "declaration_index": 2982,
+      "declaration_name": "inner_peterssonCuspCutoffCoreMap",
+      "old_fragment": "      rw [hCutU, hV, hU, hCutV,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        cuspCutoffOperator_apply, cuspCutoffOperator_apply]\n      simp only [RCLike.inner_apply, starRingEnd_apply]\n      ring",
+      "new_fragment": "      rw [hCutU, hV, hU, hCutV,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n        cuspCutoffOperator_apply, cuspCutoffOperator_apply]\n      simp only [RCLike.inner_apply, starRingEnd_apply]\n      have hHeightStar :\n          star (((z.im ^\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ)) : ℂ) =\n            (((z.im ^\n              Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanGaugeExponent n : ℝ)) : ℂ) := by\n        rw [Complex.star_def, Complex.conj_ofReal]\n      have hCutoffStar : star (upstairsCuspCutoff N z) =\n          upstairsCuspCutoff N z := by\n        unfold upstairsCuspCutoff\n        rw [Complex.star_def, Complex.conj_ofReal]\n      simp only [star_mul', hHeightStar, hCutoffStar]\n      ring"
+    }
+  ]
+}
