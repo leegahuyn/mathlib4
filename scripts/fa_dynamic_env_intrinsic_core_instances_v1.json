@@ -1,13 +1,8 @@
 {
-  "schema": "fa-dynamic-env-intrinsic-core-instances-v2",
+  "schema": "fa-dynamic-env-intrinsic-core-instances-v3",
   "status": "STRUCTURAL_ENVIRONMENT_REPAIR_PENDING_DIRECT_LEAN",
-  "root_cause": "FixedPhaseGraphCompletion defines the canonical Module/AddCommGroup instances locally; each FixedPhaseIntrinsicAdjointCutoff namespace that uses core linear maps must reactivate them.",
+  "root_cause": "FixedPhaseGraphCompletion defines the canonical Module/AddCommGroup instances locally; the two FixedPhaseIntrinsicAdjointCutoff namespace blocks that call extendOfNorm must reactivate them.",
   "environment_replacements": [
-    {
-      "id": "intrinsic-smoothness-core-instances",
-      "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
-      "new_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
-    },
     {
       "id": "intrinsic-cutoff-operator-core-instances",
       "old_fragment": "/-! #### Intrinsic fixed-phase cutoff and its uniformly bounded commutators -/\n\nnamespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
