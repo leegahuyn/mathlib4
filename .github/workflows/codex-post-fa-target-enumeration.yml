@@ -1,0 +1,47 @@
+name: Codex post-FA target enumeration
+
+on:
+  push:
+    branches:
+      - fix/fa489-hderiv-explicit-continuity-20260811
+    paths:
+      - .github/workflows/codex-post-fa-target-enumeration.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  enumerate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Enumerate exact Lean targets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          {
+            echo '## Post-FA exact target enumeration'
+            echo
+            echo "- run_id: \`${GITHUB_RUN_ID}\`"
+            echo "- head_sha: \`${GITHUB_SHA}\`"
+            echo
+            echo '### Mock2 FA / Integrated'
+            find PrimalitySheafVerification -maxdepth 1 -type f \( -name 'Mock2_FunctionalAnalysis*.lean' -o -name 'Mock2*.lean' \) -print | sort
+            echo
+            echo '### Actual Mock3 files'
+            find PrimalitySheafVerification -maxdepth 1 -type f -name 'Mock3*.lean' -print | sort
+            echo
+            echo '### QYM candidates'
+            find PrimalitySheafVerification -maxdepth 1 -type f \( -iname '*QYM*.lean' -o -iname 'QYM*.lean' \) -print | sort
+            echo
+            echo '### Top-level project Lean files'
+            find PrimalitySheafVerification -maxdepth 1 -type f -name '*.lean' -print | sort
+          } > /tmp/targets.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/targets.md)"
