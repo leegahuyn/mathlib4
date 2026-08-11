@@ -1,0 +1,83 @@
+name: Codex FA494 height graph zeta rewrite strict direct Lean
+
+on:
+  push:
+    branches:
+      - fix/fa494-height-graph-zeta-rewrite-20260811
+    paths:
+      - .github/workflows/codex-fa494-observe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: codex-fa494-observe
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Publish FA494 start identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          body="## FA494 authoritative observer started\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- sequence: \`FA475 -> ... -> FA493 -> FA494\`\n- upstream_FA493_run: \`31460205923\`\n- upstream_FA493_job: \`93682055075\`\n- upstream_FA493_source: \`8a0be67731e5cc1314b0ff81829a73b6845612bdf14fa51a648c4442378d3ee9\`\n- frontier: \`35567:6 selectedHeightGraphDensity_eq_scale_mul_fixedPhaseDensity / index 2816\`\n- patch: \`zeta/projection simplification before existing raise/lower rewrites\`"
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
+
+      - name: Run exact FA494 candidate/direct Lean and retain exit
+        id: run
+        shell: bash
+        run: |
+          set +e
+          bash scripts/fa494_height_graph_zeta_rewrite_candidate_ci.sh 2>&1 | tee /tmp/fa494.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Report FA494 evidence
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/fa494.md
+          from pathlib import Path
+          import json, os
+          out=Path('build-logs/codex-fa494-height-graph-zeta-rewrite/candidates/norms'); p=out/'METRIC.json'; src=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); log=Path('/tmp/fa494.log')
+          xs=['## FA494 authoritative observer — actual direct Lean','',f"- run_id: `{os.environ.get('GITHUB_RUN_ID','')}`",f"- head_sha: `{os.environ.get('GITHUB_SHA','')}`",f"- script_exit: `{os.environ.get('SCRIPT_EXIT','')}`"]
+          m=None
+          if p.exists():
+              m=json.loads(p.read_text())
+              for k in ['classification','source_sha256','line_count','Mock2_exit','Mock2_Advanced_exit','FA_exit','FA_first_actual_error_line','FA_first_actual_error_col','FA_first_error_declaration','FA_error_declaration_index','infra_reasons']:
+                  xs.append(f'- {k}: `{m.get(k)}`')
+              xs += ['', '### first error','```text',str(m.get('FA_first_error_message',''))[:6000],'```']
+          else: xs.append('- METRIC.json: `MISSING`')
+          if src.exists() and isinstance(m,dict) and m.get('FA_first_actual_error_line',0):
+              a=src.read_text(encoding='utf-8',errors='replace').splitlines(); c=m['FA_first_actual_error_line']; lo,hi=max(1,c-14),min(len(a),c+28); xs += ['',f'### candidate source around line {c}','```lean','\n'.join(f'{i}: {a[i-1]}' for i in range(lo,hi+1)),'```']
+          if log.exists(): xs += ['', '### tail','```text','\n'.join(log.read_text(encoding='utf-8',errors='replace').splitlines()[-100:])[-12000:],'```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/fa494.md)"
+
+      - name: Preserve result
+        if: always()
+        env:
+          SCRIPT_EXIT: ${{ steps.run.outputs.exit_code }}
+        shell: bash
+        run: |
+          test -n "$SCRIPT_EXIT"
+          exit "$SCRIPT_EXIT"
