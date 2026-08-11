@@ -31,7 +31,7 @@ jobs:
           export PATH="${HOME}/.elan/bin:${PATH}"
           elan toolchain install "$(cat lean-toolchain)"
           lake exe cache get
-      - name: Compile source-membership candidates
+      - name: Compile minimal source-membership proof
         id: smoke
         shell: bash
         run: |
@@ -42,14 +42,8 @@ jobs:
 
           example (t y : ℝ) (hy : y ∈ Ioi 0) :
               Complex.mk t y ∈ UpperHalfPlane.ofComplex.source := by
-            simpa [UpperHalfPlane.ofComplex] using
-              (show Complex.mk t y ∈ Set.range ((↑) : ℍ → ℂ) from
-                ⟨(⟨Complex.mk t y, by simpa using hy⟩ : ℍ), rfl⟩)
-
-          example (t y : ℝ) (hy : y ∈ Ioi 0) :
-              Complex.mk t y ∈ UpperHalfPlane.ofComplex.source := by
-            simp [UpperHalfPlane.ofComplex]
-            exact ⟨(⟨Complex.mk t y, by simpa using hy⟩ : ℍ), rfl⟩
+            have hy' : 0 < y := by simpa using hy
+            simpa [UpperHalfPlane.ofComplex] using hy'
           LEAN
           lake env lean /tmp/FA500Smoke.lean 2>&1 | tee /tmp/fa500-smoke.log
       - name: Post smoke result
@@ -58,5 +52,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          body="## FA500 ofComplex source-membership smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- result: \`${{ steps.smoke.outcome }}\`\n\n\`\`\`text\n$(tail -100 /tmp/fa500-smoke.log 2>/dev/null || true)\n\`\`\`"
+          body="## FA500 minimal ofComplex source-membership smoke\n\n- run_id: \`${GITHUB_RUN_ID}\`\n- head_sha: \`${GITHUB_SHA}\`\n- result: \`${{ steps.smoke.outcome }}\`\n\n\`\`\`text\n$(tail -100 /tmp/fa500-smoke.log 2>/dev/null || true)\n\`\`\`"
           gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$body"
