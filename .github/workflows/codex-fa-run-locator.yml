@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 env:
-  TARGET_SHA: "ac827a3f58f701cc19456ebe24100747004fcb3e"
-  TARGET_WORKFLOW: "codex-fa-dynamic-engine.yml"
-  TARGET_CONTEXT: "codex/fa-dynamic-engine-v2-locator"
+  TARGET_SHA: "4577a97d871ba7ff195abe4e86df486e5ba27920"
+  TARGET_WORKFLOW: "codex-fa-dynamic-extended-2967.yml"
+  TARGET_CONTEXT: "codex/fa-dynamic-extended-2967-locator"
 
 jobs:
   locate:
