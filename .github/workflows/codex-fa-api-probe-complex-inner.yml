@@ -34,26 +34,22 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeComplexInner.lean <<'LEAN'
           import Mathlib
-          #check Complex.instInnerProductSpace
           #check RCLike.inner_apply
-          #check Complex.inner_def
-          #check inner_mul_left
-          #check inner_mul_right
           #check inner_smul_left
           #check inner_smul_right
-          example (a b c u v : ℂ) (hc : star c = c) :
+          #check starRingEnd_apply
+          example (a c u v : ℂ) (hc : star c = c) :
               inner ℂ (a * (c * u)) (a * v) =
                 inner ℂ (a * u) (a * (c * v)) := by
-            simp [inner, hc]
-            ring
-          example (a b c u v : ℂ) (hc : star c = c) :
-              inner ℂ (a * (c * u)) (a * v) =
-                inner ℂ (a * u) (a * (c * v)) := by
-            simpa [hc, mul_assoc, mul_left_comm, mul_comm] using
-              (show star (a * (c * u)) * (a * v) =
-                  star (a * u) * (a * (c * v)) by
-                simp [map_mul, hc]
-                ring)
+            have hLeft : a * (c * u) = c • (a * u) := by
+              simp only [smul_eq_mul]
+              ring
+            have hRight : a * (c * v) = c • (a * v) := by
+              simp only [smul_eq_mul]
+              ring
+            rw [hLeft, hRight, inner_smul_left, inner_smul_right]
+            simpa only [starRingEnd_apply] using
+              congrArg (fun t : ℂ => t * inner ℂ (a * u) (a * v)) hc
           LEAN
           set +e
           lake env lean /tmp/ProbeComplexInner.lean >/tmp/complex-inner-api.log 2>&1
