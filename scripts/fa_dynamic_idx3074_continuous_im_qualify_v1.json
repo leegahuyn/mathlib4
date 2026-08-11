@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-idx3074-continuous-im-qualify-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3074,
+      "declaration_name": "modularMaxHeight_eventuallyEq_maximizer_im_of_one_lt",
+      "old_fragment": "      exact continuous_im.comp (continuous_const_smul gReal)",
+      "new_fragment": "      exact UpperHalfPlane.continuous_im.comp (continuous_const_smul gReal)"
+    }
+  ]
+}
