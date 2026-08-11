@@ -1,0 +1,18 @@
+{
+  "schema": "fa-dynamic-cluster-3097-3098-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3097,
+      "declaration_name": "intrinsicCuspCutoff_projected_support",
+      "old_fragment": "  · intro hz\n    refine ⟨z, ?_, rfl⟩\n    simpa only [Function.mem_support,\n      intrinsicQuotientCuspCutoffReal_mk, intrinsicCuspCutoff,\n      Complex.ofReal_ne_zero] using hz",
+      "new_fragment": "  · intro hz\n    refine ⟨z, ?_, rfl⟩\n    have hz' : intrinsicQuotientCuspCutoffReal N\n        (gammaTwoQuotientMk z) ≠ 0 := by\n      simpa only [Function.mem_support] using hz\n    simp only [Function.mem_support, intrinsicCuspCutoff,\n      Complex.ofReal_ne_zero]\n    simpa only [intrinsicQuotientCuspCutoffReal_mk] using hz'"
+    },
+    {
+      "declaration_index": 3098,
+      "declaration_name": "intrinsicCuspCutoff_quotientCompact",
+      "old_fragment": "  rw [HasQuotientCompactSupport, quotientTSupport, tsupport,\n    intrinsicCuspCutoff_projected_support]\n  exact intrinsicQuotientCuspCutoffReal_hasCompactSupport N",
+      "new_fragment": "  change IsCompact\n    (closure (gammaTwoQuotientMk ''\n      Function.support (intrinsicCuspCutoff N)))\n  rw [intrinsicCuspCutoff_projected_support]\n  change HasCompactSupport (intrinsicQuotientCuspCutoffReal N)\n  exact intrinsicQuotientCuspCutoffReal_hasCompactSupport N"
+    }
+  ]
+}
