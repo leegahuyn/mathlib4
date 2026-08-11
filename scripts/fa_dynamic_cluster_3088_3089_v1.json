@@ -1,0 +1,18 @@
+{
+  "schema": "fa-dynamic-cluster-3088-3089-v1",
+  "status": "STATIC_STAGED_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 3088,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_one_of_logHeight_le",
+      "old_fragment": "  apply Real.smoothTransition.one_of_one_le\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+      "new_fragment": "  apply Real.smoothTransition.one_of_one_le\n  linarith"
+    },
+    {
+      "declaration_index": 3089,
+      "declaration_name": "intrinsicCuspCutoffReal_eq_zero_of_level_le_logHeight",
+      "old_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  dsimp only [intrinsicCuspCutoffReal]\n  linarith",
+      "new_fragment": "  apply Real.smoothTransition.zero_of_nonpos\n  linarith"
+    }
+  ]
+}
