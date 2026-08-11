@@ -41,7 +41,7 @@ jobs:
           set +e
           export PATH="$HOME/.elan/bin:$PATH"
           cat > /tmp/FA487MkEqAddMulIProbe.lean <<'LEAN'
-          import Mathlib.Analysis.Complex.UpperHalfPlane.Topology
+          import Mathlib
 
           noncomputable section
           open Complex Topology
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           body=$(cat <<EOF
-          ## FA487 mk_eq_add_mul_I continuity proof probe
+          ## FA487 mk_eq_add_mul_I continuity proof probe v2
 
           - run_id: \`${GITHUB_RUN_ID}\`
           - head_sha: \`${GITHUB_SHA}\`
