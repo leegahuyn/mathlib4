@@ -1,0 +1,51 @@
+name: Codex FA source-only context 37850-41000
+
+on:
+  push:
+    branches:
+      - diag/fa-source-37850-41000-20260811
+    paths:
+      - .github/workflows/codex-fa-source-37850-41000.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  context:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Post source context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 - <<'PY' >/tmp/context.md
+          from pathlib import Path
+          import re, os
+          a=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text(encoding='utf-8',errors='replace').splitlines()
+          lo,hi=37850,min(41000,len(a))
+          decl=re.compile(r'^(?:(?:noncomputable|private|protected|local)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([A-Za-z_][A-Za-z0-9_\'.]*)')
+          names=[]; risks=[]
+          patterns=('fun_prop','Subtype.ext','rw [','UpperHalfPlane.ofComplex','continuousOn.comp','change 0 <','Complex.mk_im','continuous_subtype_mk')
+          for i in range(lo,hi+1):
+              s=a[i-1]; m=decl.match(s)
+              if m: names.append(f'{i}: {m.group(1)}')
+              if any(x in s for x in patterns): risks.append(i)
+          picks=set()
+          for i in risks: picks.update(range(max(lo,i-3),min(hi,i+5)+1))
+          xs=['## FA source-only context 37850-41000','',f'- run_id: `{os.environ.get("GITHUB_RUN_ID","")}`',f'- declarations: `{len(names)}`',f'- risk-lines: `{len(risks)}`','','### declarations','```text','\n'.join(names),'```','','### risk contexts','```lean']
+          last=None
+          for i in sorted(picks):
+              if last is not None and i>last+1: xs.append('...')
+              xs.append(f'{i}: {a[i-1]}'); last=i
+          xs += ['```']
+          print('\n'.join(xs)[:32000])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/14/comments" -f body="$(cat /tmp/context.md)"
