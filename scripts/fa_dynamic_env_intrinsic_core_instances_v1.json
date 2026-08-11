@@ -1,0 +1,17 @@
+{
+  "schema": "fa-dynamic-env-intrinsic-core-instances-v1",
+  "status": "STRUCTURAL_ENVIRONMENT_REPAIR_PENDING_DIRECT_LEAN",
+  "root_cause": "FixedPhaseGraphCompletion defines the canonical Module/AddCommGroup instances locally; the two FixedPhaseIntrinsicAdjointCutoff namespace blocks failed to reactivate them before extendOfNorm.",
+  "environment_replacements": [
+    {
+      "id": "intrinsic-smoothness-core-instances",
+      "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
+      "new_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen scoped LinearPMap ContDiff NNReal\nlocal syntax:max \"nhds[\" term \"]\" term:max : term\nlocal macro_rules\n  | `(nhds[$s] $x) => `(nhdsWithin $x $s)\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+    },
+    {
+      "id": "intrinsic-commutator-core-instances",
+      "old_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge",
+      "new_fragment": "namespace Mock2FA.PaperCorrections.AutomorphicSobolev\nnamespace FixedPhaseIntrinsicAdjointCutoff\n\nopen Set Function Topology Filter MeasureTheory\nopen scoped LinearPMap\nopen DefinitionOneSobolev\nopen GammaTwoQuotientGeometry\nopen SmoothCompactCoreGeometry\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen FixedPhaseDensity\nopen FixedPhaseClosedOperators\nopen FixedPhaseEssentialCoreRoute\nopen FixedPhaseAdjointCutoffCore\nopen FixedPhaseGoodCuspCutoffBridge\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+    }
+  ]
+}
