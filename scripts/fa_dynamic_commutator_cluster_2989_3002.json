@@ -1,0 +1,42 @@
+{
+  "schema": "fa-dynamic-commutator-cluster-2989-3002-v1",
+  "status": "STATIC_ONLY_PENDING_DIRECT_LEAN",
+  "repairs": [
+    {
+      "declaration_index": 2989,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_realSmooth",
+      "old_fragment": "  exact (realSmooth_heightC.inv heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (upstairsCuspCutoff_realSmooth N))",
+      "new_fragment": "  exact (RealSmooth.inv realSmooth_heightC heightC_ne_zero).mul\n    (realSmooth_lowerRaw 0 (upstairsCuspCutoff_realSmooth N))"
+    },
+    {
+      "declaration_index": 2990,
+      "declaration_name": "raiseCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [raiseCuspEuclideanCommutatorCoefficient, mul_comm] using\n    ((upstairsCuspCutoff_quotientCompact N).raiseRaw 0).mul_right heightC",
+      "new_fragment": "  simpa only [raiseCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.raiseRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right heightC"
+    },
+    {
+      "declaration_index": 2991,
+      "declaration_name": "lowerCuspEuclideanCommutatorCoefficient_quotientCompact",
+      "old_fragment": "  simpa only [lowerCuspEuclideanCommutatorCoefficient, mul_comm] using\n    ((upstairsCuspCutoff_quotientCompact N).lowerRaw 0).mul_right\n      (fun z ↦ (heightC z)⁻¹)",
+      "new_fragment": "  simpa only [lowerCuspEuclideanCommutatorCoefficient, mul_comm] using\n    (HasQuotientCompactSupport.lowerRaw\n      (upstairsCuspCutoff_quotientCompact N) 0).mul_right\n        (fun z ↦ (heightC z)⁻¹)"
+    },
+    {
+      "declaration_index": 2992,
+      "declaration_name": "exists_closedCarrier_norm_bound_of_quotientCompact",
+      "old_fragment": "    simp only [hz, norm_zero]",
+      "new_fragment": "    simpa only [hz, norm_zero] using (le_refl (0 : ℝ))"
+    },
+    {
+      "declaration_index": 2999,
+      "declaration_name": "euclideanGaugeScale_pred_inv",
+      "old_fragment": "  simp only [heightC, Complex.ofReal_div, div_eq_mul_inv]\n  ring",
+      "new_fragment": "  simp only [heightC, div_eq_mul_inv]\n  push_cast\n  ring"
+    },
+    {
+      "declaration_index": 3002,
+      "declaration_name": "norm_l2Coordinate_le_of_fixedPhaseGauge_multiplier",
+      "old_fragment": "      rw [hzTarget, hzSmul, hzSource, hGauge]\n      simp only [Pi.smul_apply, smul_eq_mul, norm_mul,\n        Complex.norm_real, abs_of_nonneg hC]",
+      "new_fragment": "      rw [hzTarget, hGauge, hzSmul]\n      simp only [Pi.smul_apply, smul_eq_mul]\n      rw [hzSource]\n      simp only [norm_mul, Complex.norm_real, abs_of_nonneg hC]"
+    }
+  ]
+}
