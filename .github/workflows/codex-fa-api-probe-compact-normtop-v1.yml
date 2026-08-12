@@ -1,4 +1,4 @@
-name: Codex FA API probe nested anti-dual topology v4
+name: Codex FA API probe nested bounded-convergence v5
 on:
   push:
     branches:
@@ -27,15 +27,15 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile nested anti-dual topology probes
+      - name: Compile direct nested bounded-convergence proof
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/NestedAntiDualProbe.lean <<'LEAN'
+          cat >/tmp/NestedBoundedTendstoProbe.lean <<'LEAN'
           import Mathlib
           noncomputable section
-          open Filter Topology
+          open Filter Topology Bornology
           abbrev SAD (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E] := E →L⋆[ℂ] ℂ
           variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
@@ -43,21 +43,49 @@ jobs:
               (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
               (heps : Tendsto eps atTop (nhds 0)) :
               Tendsto Tn atTop (nhds T) := by
-            change Tendsto Tn atTop
-              (@nhds (E →L[ℂ] SAD E)
-                (@UniformSpace.toTopologicalSpace (E →L[ℂ] SAD E)
-                  (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] SAD E)
-                    SeminormedAddCommGroup.toPseudoMetricSpace)) T)
-            rw [tendsto_iff_norm_sub_tendsto_zero]
-            exact squeeze_zero (fun N => norm_nonneg (Tn N - T)) hTail heps
-
-          example :
-              (@UniformSpace.toTopologicalSpace (E →L[ℂ] SAD E)
-                (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] SAD E)
-                  ContinuousLinearMap.toPseudoMetricSpace)) =
-              (@UniformSpace.toTopologicalSpace (E →L[ℂ] SAD E)
-                (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] SAD E)
-                  SeminormedAddCommGroup.toPseudoMetricSpace)) := by
-            rfl
+            have hInner := ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+              (𝕜₁ := ℂ) (𝕜₂ := ℂ) (E := E) (F := ℂ) (σ := starRingEnd ℂ)
+              Metric.nhds_basis_ball
+            have hOuter := ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+              (𝕜₁ := ℂ) (𝕜₂ := ℂ) (E := E) (F := SAD E) (σ := RingHom.id ℂ)
+              hInner
+            have hzero : Tendsto (fun N => Tn N - T) atTop (nhds 0) := by
+              rw [hOuter.tendsto_right_iff]
+              rintro ⟨s, ⟨t, δ⟩⟩ ⟨hs, ⟨ht, hδ⟩⟩
+              rcases (NormedSpace.isVonNBounded_iff' ℂ).1 hs with ⟨r, hr⟩
+              rcases (NormedSpace.isVonNBounded_iff' ℂ).1 ht with ⟨q, hq⟩
+              let R : ℝ := max r 0
+              let Q : ℝ := max q 0
+              have hR0 : 0 ≤ R := le_max_right _ _
+              have hQ0 : 0 ≤ Q := le_max_right _ _
+              have hrR : ∀ x ∈ s, ‖x‖ ≤ R := by
+                intro x hx
+                exact (hr x hx).trans (le_max_left _ _)
+              have hqQ : ∀ y ∈ t, ‖y‖ ≤ Q := by
+                intro y hy
+                exact (hq y hy).trans (le_max_left _ _)
+              have hCconst : Tendsto (fun _ : ℕ => R * Q) atTop (nhds (R * Q)) :=
+                tendsto_const_nhds
+              have hscaled : Tendsto (fun N => eps N * (R * Q)) atTop (nhds 0) := by
+                simpa using heps.mul hCconst
+              filter_upwards [(tendsto_order.1 hscaled).2 δ hδ] with N hN
+              intro x hx y hy
+              have heN : 0 ≤ eps N :=
+                (norm_nonneg (Tn N - T)).trans (hTail N)
+              have houter : ‖(Tn N - T) x‖ ≤ eps N * R := by
+                calc
+                  ‖(Tn N - T) x‖ ≤ ‖Tn N - T‖ * ‖x‖ := (Tn N - T).le_opNorm x
+                  _ ≤ eps N * R := mul_le_mul (hTail N) (hrR x hx) (norm_nonneg x) heN
+              have hpoint : ‖((Tn N - T) x) y‖ < δ := by
+                calc
+                  ‖((Tn N - T) x) y‖ ≤ ‖(Tn N - T) x‖ * ‖y‖ := ((Tn N - T) x).le_opNorm y
+                  _ ≤ (eps N * R) * Q :=
+                    mul_le_mul houter (hqQ y hy) (norm_nonneg y) (mul_nonneg heN hR0)
+                  _ = eps N * (R * Q) := by ring
+                  _ < δ := hN
+              simpa [Metric.mem_ball, dist_zero_right] using hpoint
+            have hconst : Tendsto (fun _ : ℕ => T) atTop (nhds T) := tendsto_const_nhds
+            have hadd := hzero.add hconst
+            simpa using hadd
           LEAN
-          lake env lean /tmp/NestedAntiDualProbe.lean
+          lake env lean /tmp/NestedBoundedTendstoProbe.lean
