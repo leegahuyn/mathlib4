@@ -54,7 +54,9 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import hashlib,json,os
-          out=Path('build-logs/codex-fa-frontier-after3226-3237-v1');a=json.loads((out/'PREP.json').read_text());assert a['public_declaration_headers_preserved'] and a['declaration_sequence_preserved'] and a['strict_staged_header_hash_check']['passed'];assert sorted(x['declaration_index'] for x in a['proof_replacements_applied'])==[3236,3237]
+          out=Path('build-logs/codex-fa-frontier-after3226-3237-v1');a=json.loads((out/'PREP.json').read_text());assert a['public_declaration_headers_preserved'] and a['declaration_sequence_preserved'] and a['strict_staged_header_hash_check']['passed']
+          applied=[x['declaration_index'] for x in a['proof_replacements_applied']]
+          assert set(applied)=={3236,3237} and applied.count(3236)==1 and applied.count(3237)==3, applied
           p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');b=p.read_bytes();i={'sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b),'lines':len(b.decode().splitlines())};(out/'CANDIDATE_IDENTITY.json').write_text(json.dumps(i,indent=2)+'\n')
           with Path(os.environ['GITHUB_ENV']).open('a') as f:f.write(f"CANDIDATE_SHA={i['sha256']}\nCANDIDATE_BYTES={i['bytes']}\nCANDIDATE_LINES={i['lines']}\n")
           PY
