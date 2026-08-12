@@ -35,7 +35,7 @@ jobs:
             · apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg x)
               intro y
               rw [innerSLFlip_apply_apply]
-              exact norm_inner_le_norm (𝕜 := ℂ) y x
+              simpa [mul_comm] using (norm_inner_le_norm (𝕜 := ℂ) y x)
             · by_cases hx : x = 0
               · simp [hx]
               · have hop := (innerSLFlip ℂ x).le_opNorm x
