@@ -1,0 +1,10 @@
+{
+  "schema": "fa-dynamic-env-fullplane-local-infinity-v2",
+  "status": "DIRECT_SCOPE_PROBE_VERIFIED_PENDING_FULL_SOURCE",
+  "scope_probe_run_id": 31562286408,
+  "environment_replacement": {
+    "id": "fullplane-local-nat-infinity",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen TopologicalSpace\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests.",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\nopen TopologicalSpace\nlocal notation \"∞\" => (⊤ : ℕ∞)\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests."
+  }
+}
