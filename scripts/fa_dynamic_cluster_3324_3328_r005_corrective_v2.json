@@ -1,0 +1,33 @@
+{
+  "schema": "fa-dynamic-cluster-3324-3328-r005-corrective-v2",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31562829364,
+  "source_sha256": "cce0f96167282088ea38dbfa05262830482f4577e5afce171a5f693e0a4dcc68",
+  "api_probe_run_id": 31565674599,
+  "repairs": [
+    {
+      "declaration_index": 3324,
+      "declaration_name": "fderiv_friedrichsTranslatedMollifierTest",
+      "old_fragment": "  have hinner : HasFDerivAt (fun y : ℂ ↦ w - y)\n      (-ContinuousLinearMap.id ℝ ℂ) x := by\n    simpa using (hasFDerivAt_const (x := x) (c := w)).sub\n      (hasFDerivAt_id x)\n  have hcomp := houter.hasFDerivAt.comp x hinner\n  have hEq := congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A xi) hcomp.fderiv\n  simpa only [friedrichsTranslatedMollifierTest_apply,\n    ContinuousLinearMap.comp_apply, ContinuousLinearMap.neg_apply,\n    ContinuousLinearMap.id_apply, map_neg] using hEq",
+      "new_fragment": "  have hinner : HasFDerivAt ((fun _y : ℂ ↦ w) - id)\n      (-ContinuousLinearMap.id ℝ ℂ) x := by\n    exact (hasFDerivAt_const (x := x) (c := w)).sub\n      (hasFDerivAt_id x)\n  have hcomp := houter.hasFDerivAt.comp x hinner\n  have hEq := congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A xi) hcomp.fderiv\n  have hfun : (friedrichsTranslatedMollifierTest j w : ℂ → ℂ) =\n      friedrichsMollifier j ∘ ((fun _y : ℂ ↦ w) - id) := by\n    funext y\n    rfl\n  rw [hfun]\n  simpa only [ContinuousLinearMap.comp_apply, neg_apply,\n    ContinuousLinearMap.id_apply, map_neg] using hEq"
+    },
+    {
+      "declaration_index": 3326,
+      "declaration_name": "fderiv_friedrichsMollifier",
+      "old_fragment": "  have hcomp := Complex.ofRealCLM.hasFDerivAt.comp t hreal.hasFDerivAt\n  have hEq := congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A xi) hcomp.fderiv\n  simpa only [friedrichsMollifier, Function.comp_apply,\n    ContinuousLinearMap.comp_apply] using hEq",
+      "new_fragment": "  have hcomp := Complex.ofRealCLM.hasFDerivAt.comp t hreal.hasFDerivAt\n  have hEq := congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A xi) hcomp.fderiv\n  have hfun : (friedrichsMollifier j : ℂ → ℂ) =\n      Complex.ofRealCLM ∘ friedrichsMollifierReal j := by\n    funext x\n    rfl\n  rw [hfun]\n  simpa only [Function.comp_apply, ContinuousLinearMap.comp_apply,\n    Complex.ofRealCLM_apply] using hEq"
+    },
+    {
+      "declaration_index": 3327,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_one",
+      "old_fragment": "  rw [fderiv_mul him hrho]",
+      "new_fragment": "  change (fderiv ℝ\n      ((fun s : ℂ ↦ (s.im : ℂ)) * friedrichsMollifier j) t) 1 = _\n  rw [fderiv_mul him hrho]"
+    },
+    {
+      "declaration_index": 3328,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier_I",
+      "old_fragment": "  rw [fderiv_mul him hrho]",
+      "new_fragment": "  change (fderiv ℝ\n      ((fun s : ℂ ↦ (s.im : ℂ)) * friedrichsMollifier j) t) Complex.I = _\n  rw [fderiv_mul him hrho]"
+    }
+  ]
+}
