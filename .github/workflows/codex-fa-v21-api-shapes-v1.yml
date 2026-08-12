@@ -1,6 +1,6 @@
 name: Codex FA v21 API shapes v1
 
-# trigger: registered-v21-api-shapes-2
+# trigger: explicit-complex-inner-3
 on:
   push:
     branches:
@@ -55,7 +55,7 @@ jobs:
 
           example (U RL : E) :
               (inner ℂ U RL).re = (inner ℂ RL U).re := by
-            exact inner_re_symm U RL
+            exact inner_re_symm (𝕜 := ℂ) U RL
 
           example (U : E) : inner ℂ U 0 = 0 := by
             simp
