@@ -23,8 +23,6 @@ jobs:
           cat >/tmp/ProbeFDerivSub.lean <<'LEAN'
           import Mathlib
           #check fderiv_comp_sub
-          #check fderiv_const_sub
-          #check fderiv_sub_const
           example (t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
               fderiv ℝ (fun q : ℂ => f (q - t)) w = fderiv ℝ f (w - t) := by
             simpa using (fderiv_comp_sub (𝕜 := ℝ) (f := f) (x := w) t)
@@ -43,7 +41,7 @@ jobs:
             simp only [probeAmbientConstantMaassDerivative]
             change sigma * (fderiv ℝ (fun q : ℂ => f (q - t)) w) 1 +
                 (fderiv ℝ (fun q : ℂ => f (q - t)) w) Complex.I = _
-            rw [fderiv_comp_sub, fderiv_comp_sub]
+            rw [fderiv_comp_sub]
 
           theorem probeAffineTranslate (sigma c t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
               probeAmbientAffineMaass sigma c (probeAmbientTranslate t f) w -
