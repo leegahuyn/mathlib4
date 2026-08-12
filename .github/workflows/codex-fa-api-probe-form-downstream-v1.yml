@@ -43,15 +43,15 @@ jobs:
               (a • p).1 = a • p.1 ∧ (a • p).2 = a • p.2 := by
             simp
 
-          example (a : ℂ) (Jv p2 : H) (h : (0 : ℂ) = 0) :
+          example (a : ℂ) (Jv p2 : H) :
               a • inner ℂ Jv p2 = inner ℂ Jv (a • p2) := by
-            simp [inner_smul_right]
+            simp
 
           example (bvu buv : ℂ) (c : ℝ) (Ju Jv : H)
               (hB : star bvu = buv) :
               star (bvu + (c : ℂ) * inner ℂ Ju Jv) =
                 buv + (c : ℂ) * inner ℂ Jv Ju := by
-            rw [map_add, map_mul, Complex.conj_ofReal, inner_conj_symm, hB]
+            simp only [map_add, map_mul, Complex.conj_ofReal, inner_conj_symm, hB]
 
           example (c : ℂ) (x y : H) : c • x + (y - c • x) = y := by
             abel
