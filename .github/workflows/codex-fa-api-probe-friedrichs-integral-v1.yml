@@ -1,4 +1,4 @@
-name: Codex FA API probe Friedrichs integral v2
+name: Codex FA API probe Friedrichs integral v3
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Prove pinned integral repair shapes
+      - name: Prove fully typed integral repair shapes
         shell: bash
         run: |
           set -euo pipefail
@@ -33,30 +33,28 @@ jobs:
           import Mathlib
           open MeasureTheory
 
-          #check integral_ofReal
-          #check Measure.integral_comp_smul
-          #check integral_const_mul
-
           example (f : ℂ → ℝ) :
-              (∫ x : ℂ, (f x : ℂ)) = ((∫ x : ℂ, f x) : ℂ) := by
-            exact integral_ofReal
+              (∫ x : ℂ, (f x : ℂ)) = (((∫ x : ℂ, f x) : ℝ) : ℂ) := by
+            exact @integral_ofReal ℂ _ (volume : Measure ℂ) ℂ _ f
 
-          example (f : ℂ → ℝ) (h : (∫ x : ℂ, f x) = 1) :
-              (∫ x : ℂ, (f x : ℂ)) = 1 := by
+          example (f : ℂ → ℝ) (h : ((∫ x : ℂ, f x) : ℝ) = 1) :
+              (∫ x : ℂ, (f x : ℂ)) = (1 : ℂ) := by
             calc
-              (∫ x : ℂ, (f x : ℂ)) = ((∫ x : ℂ, f x) : ℂ) := integral_ofReal
+              (∫ x : ℂ, (f x : ℂ)) = (((∫ x : ℂ, f x) : ℝ) : ℂ) :=
+                @integral_ofReal ℂ _ (volume : Measure ℂ) ℂ _ f
               _ = 1 := by rw [h]; norm_num
 
           example (a : ℝ) (ha : 0 < a) (f : ℂ → ℝ)
-              (hchange : (∫ x : ℂ, f (a • x)) = (a ^ 2)⁻¹ * ∫ x : ℂ, f x)
-              (hmass : (∫ x : ℂ, f x) = 1) :
-              (∫ x : ℂ, a ^ 2 * f (a • x)) = 1 := by
+              (hchange : ((∫ x : ℂ, f (a • x)) : ℝ) =
+                (a ^ 2)⁻¹ * ((∫ x : ℂ, f x) : ℝ))
+              (hmass : ((∫ x : ℂ, f x) : ℝ) = 1) :
+              ((∫ x : ℂ, a ^ 2 * f (a • x)) : ℝ) = 1 := by
             rw [integral_const_mul, hchange, hmass]
             field_simp [ha.ne']
 
           example (a L : ℝ) (ha : 0 < a) (g : ℂ → ℝ)
-              (hchange : (∫ x : ℂ, g (a • x)) = (a ^ 2)⁻¹ * L) :
-              (∫ x : ℂ, a ^ 2 * g (a • x)) = L := by
+              (hchange : ((∫ x : ℂ, g (a • x)) : ℝ) = (a ^ 2)⁻¹ * L) :
+              ((∫ x : ℂ, a ^ 2 * g (a • x)) : ℝ) = L := by
             rw [integral_const_mul, hchange]
             field_simp [ha.ne']
           LEAN
@@ -65,6 +63,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-friedrichs-integral-v2-${{ github.sha }}
+          name: codex-fa-api-probe-friedrichs-integral-v3-${{ github.sha }}
           path: /tmp/probe.log
           retention-days: 7
