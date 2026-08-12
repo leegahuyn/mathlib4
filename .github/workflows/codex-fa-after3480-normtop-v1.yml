@@ -1,4 +1,4 @@
-name: Codex FA after3480 normbridge through3519 diagnostic v6
+name: Codex FA after3480 normbridge through3519 diagnostic v7
 on:
   push:
     branches:
@@ -26,7 +26,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           src = Path('scripts/codex_fa_after3480_normtop_v1.sh').read_text()
-          src = src.replace('codex-fa-after3480-normtop-v1', 'codex-fa-after3480-normbridge-through3519-diagnostic-v6')
+          src = src.replace('codex-fa-after3480-normtop-v1', 'codex-fa-after3480-normbridge-through3519-diagnostic-v7')
           marker = 'python3 scripts/codex_fa_apply_compact_normtop_3480_v2.py "$OUT"'
           assert src.count(marker) == 1
           injected = '\n'.join([
@@ -37,20 +37,20 @@ jobs:
           src = src.replace(marker, injected, 1)
           needle = 'one Mock2_FunctionalAnalysis 1'
           assert src.count(needle) == 1
-          src = src.replace(needle, 'one Mock2_FunctionalAnalysis 20', 1)
-          Path('/tmp/codex_fa_after3480_normbridge_through3519_diagnostic_v6.sh').write_text(src)
+          src = src.replace(needle, 'one Mock2_FunctionalAnalysis 100', 1)
+          Path('/tmp/codex_fa_after3480_normbridge_through3519_diagnostic_v7.sh').write_text(src)
           PY
       - name: Attest cumulative patch and direct compile diagnostic full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3480_normbridge_through3519_diagnostic_v6.sh
+        run: bash /tmp/codex_fa_after3480_normbridge_through3519_diagnostic_v7.sh
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3480-normbridge-through3519-diagnostic-v6-${{ github.sha }}
+          name: codex-fa-after3480-normbridge-through3519-diagnostic-v7-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3480-normbridge-through3519-diagnostic-v6
+            build-logs/codex-fa-after3480-normbridge-through3519-diagnostic-v7
           retention-days: 30
