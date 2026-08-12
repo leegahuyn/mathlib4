@@ -29,7 +29,7 @@ jobs:
           src = src.replace('codex-fa-after3394-weighted-closed-v1', 'codex-fa-after3394-weighted-cumulative-v2')
           marker = 'curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh'
           assert src.count(marker) == 1
-          extra = 'python3 scripts/codex_fa_apply_norm_zero_3407.py "$OUT"\npython3 scripts/codex_fa_apply_weak_smooth_3408_3418.py "$OUT"\npython3 scripts/codex_fa_apply_joint_withlp_3432.py "$OUT"\n\n'
+          extra = 'python3 scripts/codex_fa_apply_weak_smooth_3408_3418.py "$OUT"\npython3 scripts/codex_fa_apply_joint_withlp_3432.py "$OUT"\n\n'
           src = src.replace(marker, extra + marker, 1)
           Path('/tmp/codex_fa_after3394_weighted_cumulative_v2.sh').write_text(src)
           PY
