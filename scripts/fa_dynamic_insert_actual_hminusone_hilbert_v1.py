@@ -62,8 +62,8 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
       simpa using h
     calc
       ‖f‖ ^ 2 = ‖(principalEnergyEquiv n).symm f‖ ^ 2 := by rw [hNormSymm]
-      _ = re (inner ℂ ((principalEnergyEquiv n).symm f)
-          ((principalEnergyEquiv n).symm f)) :=
+      _ = (inner ℂ ((principalEnergyEquiv n).symm f)
+          ((principalEnergyEquiv n).symm f)).re :=
         InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ)
           ((principalEnergyEquiv n).symm f)
   conj_inner_symm f g := by
@@ -100,7 +100,7 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
     p.write_text(text, encoding='utf-8', newline='\n')
     b = p.read_bytes()
     audit = {
-        'schema': 'fa-3341-antidual-hilbert-insert-audit-v2',
+        'schema': 'fa-3341-antidual-hilbert-insert-audit-v3',
         'base_sha256': sha256(before.encode()),
         'candidate_sha256': sha256(b),
         'candidate_bytes': len(b),
@@ -111,6 +111,7 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
         'semantic_public_proposition_change': False,
         'forbidden_lexical_counts_preserved': True,
         'norm_lower_bound_proof': 'validated anti-Riesz nlinarith probe pattern',
+        'complex_real_projection_qualified': True,
     }
     Path(args.audit_out).write_text(json.dumps(audit, indent=2, sort_keys=True) + '\n', encoding='utf-8')
 
