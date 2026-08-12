@@ -1,0 +1,25 @@
+{
+  "schema": "fa-dynamic-cluster-3249-3263-integrals-v3",
+  "status": "DIRECT_API_PROBE_VERIFIED_PENDING_FULL_SOURCE_RECOMPILE",
+  "api_probe_run_id": 31560985457,
+  "repairs": [
+    {
+      "declaration_index": 3249,
+      "declaration_name": "friedrichsUnitMollifier_integral",
+      "old_fragment": "  rw [friedrichsUnitMollifier, integral_ofReal,\n    friedrichsUnitMollifierReal_integral]\n  norm_num",
+      "new_fragment": "  change (∫ t : ℂ, (friedrichsUnitMollifierReal t : ℂ)) = 1\n  calc\n    (∫ t : ℂ, (friedrichsUnitMollifierReal t : ℂ)) =\n        (((∫ t : ℂ, friedrichsUnitMollifierReal t) : ℝ) : ℂ) :=\n      @integral_ofReal ℂ _ (volume : Measure ℂ) ℂ _ friedrichsUnitMollifierReal\n    _ = 1 := by rw [friedrichsUnitMollifierReal_integral]; norm_num"
+    },
+    {
+      "declaration_index": 3262,
+      "declaration_name": "friedrichsMollifierReal_integral",
+      "old_fragment": "  rw [friedrichsMollifierReal, integral_const_mul, hchange,\n    friedrichsUnitMollifierReal_integral]\n  change a ^ 2 * (a ^ 2)^{-1} * 1 = 1\n  field_simp [ha.ne']",
+      "new_fragment": "  change (∫ t : ℂ, a ^ 2 *\n    friedrichsUnitMollifierReal (a • t)) = 1\n  rw [integral_const_mul, hchange,\n    friedrichsUnitMollifierReal_integral]\n  field_simp [ha.ne']"
+    },
+    {
+      "declaration_index": 3263,
+      "declaration_name": "friedrichsMollifier_integral",
+      "old_fragment": "  rw [friedrichsMollifier, integral_ofReal,\n    friedrichsMollifierReal_integral]\n  norm_num",
+      "new_fragment": "  change (∫ t : ℂ, (friedrichsMollifierReal j t : ℂ)) = 1\n  calc\n    (∫ t : ℂ, (friedrichsMollifierReal j t : ℂ)) =\n        (((∫ t : ℂ, friedrichsMollifierReal j t) : ℝ) : ℂ) :=\n      @integral_ofReal ℂ _ (volume : Measure ℂ) ℂ _ (friedrichsMollifierReal j)\n    _ = 1 := by rw [friedrichsMollifierReal_integral]; norm_num"
+    }
+  ]
+}
