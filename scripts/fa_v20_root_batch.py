@@ -162,3 +162,5 @@ audit = {
 (out/'PATCH_AUDIT.json').write_text(json.dumps(audit, indent=2, sort_keys=True)+'\n')
 (out/'candidate.sha256').write_text(audit['candidate_sha256']+'\n')
 print(json.dumps(audit, indent=2, sort_keys=True))
+
+# Trigger marker: v20-registered-highcap-1
