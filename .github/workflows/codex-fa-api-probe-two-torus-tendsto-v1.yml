@@ -1,4 +1,4 @@
-name: Codex FA API probe idx3584 uniform-bound v7
+name: Codex FA API probe idx3584 uniform-bound v8
 on:
   push:
     branches:
@@ -27,12 +27,12 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile exact NNReal bound
+      - name: Compile explicit NNReal bound
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/UniformBoundProbeV7.lean <<'LEAN'
+          cat >/tmp/UniformBoundProbeV8.lean <<'LEAN'
           import Mathlib
           noncomputable section
 
@@ -41,15 +41,15 @@ jobs:
           variable [NormedAddCommGroup F] [NormedSpace ℂ F]
 
           example (R : E →L[ℂ] F)
-              (hRbound : ∀ u, ‖u‖ ≤ (↑(1 : ℝ≥0) : ℝ) * ‖R u‖) :
+              (hRbound : ∀ u, ‖u‖ ≤ (↑(1 : NNReal) : ℝ) * ‖R u‖) :
               IsUniformEmbedding R := by
-            exact R.isUniformEmbedding_of_bound (K := (1 : ℝ≥0)) hRbound
+            exact R.isUniformEmbedding_of_bound (K := (1 : NNReal)) hRbound
 
           example (R : E →L[ℂ] F)
               (hRbound : ∀ u, ‖u‖ ≤ ‖R u‖) :
               IsUniformEmbedding R := by
-            apply R.isUniformEmbedding_of_bound (K := (1 : ℝ≥0))
+            apply R.isUniformEmbedding_of_bound (K := (1 : NNReal))
             intro u
             simpa only [NNReal.coe_one, one_mul] using hRbound u
           LEAN
-          lake env lean /tmp/UniformBoundProbeV7.lean
+          lake env lean /tmp/UniformBoundProbeV8.lean
