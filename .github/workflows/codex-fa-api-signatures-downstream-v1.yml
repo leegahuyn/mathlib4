@@ -1,0 +1,44 @@
+name: Codex FA API signatures downstream v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-signatures-downstream-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Print exact pinned signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/DownstreamSignatures.lean <<'LEAN'
+          import Mathlib
+          #print isCompactOperator_of_tendsto
+          #print ContinuousLinearMap.opNorm_le_bound
+          #print inner_conj_symm
+          #print Complex.conj_ofReal
+          #print Prod.fst_smul
+          #print Prod.snd_smul
+          LEAN
+          lake env lean /tmp/DownstreamSignatures.lean
