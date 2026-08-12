@@ -1,0 +1,39 @@
+{
+  "schema": "fa-dynamic-cluster-3369-3388-weak-bridges-v1",
+  "status": "PINNED_GENERIC_API_PROBE_VERIFIED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31566848731,
+  "source_sha256": "bede85c7bf4d00c8ea3321778b1ca09fcf1267409c8f30cc0f1bf10fafaab893",
+  "api_probe_run_id": 31567523417,
+  "repairs": [
+    {
+      "declaration_index": 3369,
+      "declaration_name": "mem_adjoint_graph_iff_swapped_pairing",
+      "old_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    rw [← hy', ← hz']",
+      "new_fragment": "    rcases (LinearPMap.mem_graph_iff (T†)).mp hGraph with\n      ⟨y', hy', hz'⟩\n    simp only [Prod.fst] at hy'\n    simp only [Prod.snd] at hz'\n    rw [← hy', ← hz']"
+    },
+    {
+      "declaration_index": 3374,
+      "declaration_name": "weakRaisingSubmodule_isClosed",
+      "old_fragment": "  exact isClosed_iInter fun v ↦\n    ContinuousLinearMap.isClosed_ker (raisingDefect n v)",
+      "new_fragment": "  exact isClosed_iInter fun\n      (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore ((n + 1) + 1)) ↦\n    ContinuousLinearMap.isClosed_ker (raisingDefect n v)"
+    },
+    {
+      "declaration_index": 3375,
+      "declaration_name": "weakLoweringSubmodule_isClosed",
+      "old_fragment": "  exact isClosed_iInter fun v ↦\n    ContinuousLinearMap.isClosed_ker (loweringDefect n v)",
+      "new_fragment": "  exact isClosed_iInter fun\n      (v : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) ↦\n    ContinuousLinearMap.isClosed_ker (loweringDefect n v)"
+    },
+    {
+      "declaration_index": 3376,
+      "declaration_name": "weightedWeakSubmodule_isClosed",
+      "old_fragment": "    ext x\n    simp only [weightedWeakSubmodule, Submodule.mem_inf, Set.mem_inter_iff]]",
+      "new_fragment": "    ext x\n    exact Submodule.mem_inf]"
+    },
+    {
+      "declaration_index": 3388,
+      "declaration_name": "norm_eq_zero_iff_coordinates",
+      "old_fragment": "    have hx0 : x = 0 := norm_eq_zero.mp hx\n    simp only [hx0, map_zero]",
+      "new_fragment": "    have hx0 : x = 0 := norm_eq_zero.mp hx\n    simpa [hx0]"
+    }
+  ]
+}
