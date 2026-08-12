@@ -40,10 +40,10 @@ jobs:
             assert src.count(a) >= 1, a
             src = src.replace(a,b)
           old = """new='''  rw [← HilbertBasis.repr_apply_apply]\n  simp only [twoTorusFourierBasis]\n  rw [UnitAddTorus.mFourierBasis_repr]\n  simp only [UnitAddTorus.coe_mFourierBasis]'''"""
-          new = """new='''  rw [← HilbertBasis.repr_apply_apply]\n  unfold twoTorusFourierBasis\n  rw [UnitAddTorus.mFourierBasis_repr]\n  simp only [UnitAddTorus.coe_mFourierBasis]'''"""
+          new = """new='''  unfold twoTorusFourierBasis\n  rw [UnitAddTorus.mFourierBasis_repr]\n  simp only [UnitAddTorus.coe_mFourierBasis]'''"""
           assert src.count(old) == 1, src.count(old)
           src = src.replace(old,new,1)
-          src = src.replace("'repair':'unfold_twoTorusFourierBasis_before_mFourierBasis_repr'", "'repair':'explicit_unfold_twoTorusFourierBasis_before_mFourierBasis_repr'")
+          src = src.replace("'repair':'unfold_twoTorusFourierBasis_before_mFourierBasis_repr'", "'repair':'probe_verified_unfold_then_mFourierBasis_repr'")
           Path('/tmp/codex_fa_after3452_fourier_projection_v4_latest_unfold.sh').write_text(src)
           PY
       - name: Attest patch and direct compile exact full source
