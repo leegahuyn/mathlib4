@@ -32,8 +32,11 @@ jobs:
             letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
             have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
               fun_prop
-            have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 := h.continuousAt
-            convert h0 using 1 <;> simp [DomAddAct.mk_zero]
+            have hz : DomAddAct.mk (0 : ℂ) +ᵥ f = f := by
+              rw [DomAddAct.mk_zero]
+              exact zero_vadd _ f
+            rw [← hz]
+            exact h.continuousAt
 
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
