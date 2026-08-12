@@ -1,0 +1,36 @@
+{
+  "schema": "fa-dynamic-cluster-3236-3237-affine-tail-v1",
+  "status": "API_PROBE_VALIDATED_AND_DIRECT_DIAGNOSTIC_DERIVED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31557422969,
+  "source_run_id": 31556830579,
+  "source_sha256": "e23520f4df4c8c1df075667463801511342622cfa1466df3685ca2c7aa71250b",
+  "repairs": [
+    {
+      "declaration_index": 3236,
+      "declaration_name": "integral_kernel_vadd_eq_integral_kernel_vadd_sub_of_mean_zero",
+      "old_fragment": "  have hPointwise :\n      (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f - f)) =\n        (fun t : ℂ ↦\n          K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    rw [smul_sub]",
+      "new_fragment": "  have hPointwise :\n      (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f - f)) =\n        (fun t : ℂ ↦\n          K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    exact smul_sub (K t) (DomAddAct.mk (-t) +ᵥ f) f"
+    },
+    {
+      "declaration_index": 3237,
+      "declaration_name": "integral_shrinkingKernel_smul_translation_sub_tendsto_zero",
+      "replacements": [
+        {
+          "id": "eta-expand-with-dsimp",
+          "old_fragment": "  have hηC : η * C < ε := by\n    rw [η, div_mul_eq_mul_div, div_lt_iff₀ hC1]\n    nlinarith",
+          "new_fragment": "  have hηC : η * C < ε := by\n    dsimp only [η]\n    rw [div_mul_eq_mul_div, div_lt_iff₀ hC1]\n    nlinarith"
+        },
+        {
+          "id": "explicit-negation-tendsto",
+          "old_fragment": "    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      fun_prop",
+          "new_fragment": "    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      have hNeg' : Filter.Tendsto (fun t : ℂ ↦ -t)\n          (nhds 0) (nhds (-(0 : ℂ))) := continuousAt_id.neg\n      simpa only [neg_zero] using hNeg'"
+        },
+        {
+          "id": "normalize-pointwise-product-order",
+          "old_fragment": "      rw [norm_smul]\n      exact mul_le_mul_of_nonneg_left htSmall.le (norm_nonneg _)",
+          "new_fragment": "      rw [norm_smul]\n      simpa only [mul_comm] using\n        (mul_le_mul_of_nonneg_right htSmall.le (norm_nonneg (K n t)))"
+        }
+      ]
+    }
+  ]
+}
