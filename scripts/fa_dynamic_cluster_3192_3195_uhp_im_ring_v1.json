@@ -1,0 +1,31 @@
+{
+  "schema": "fa-dynamic-cluster-3192-3195-uhp-im-ring-v1",
+  "status": "API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run": 31554791901,
+  "repairs": [
+    {
+      "declaration_index": 3192,
+      "declaration_name": "euclideanRaiseForwardTest_apply_upper",
+      "old_fragment": "  simp only [euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  ring",
+      "new_fragment": "  simp only [euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  rw [show (z : ℂ).im = z.im from rfl]\n  ring"
+    },
+    {
+      "declaration_index": 3193,
+      "declaration_name": "euclideanLowerFromSuccForwardTest_apply_upper",
+      "old_fragment": "  simp only [euclideanLowerFromSuccForwardTest,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  ring",
+      "new_fragment": "  simp only [euclideanLowerFromSuccForwardTest,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  rw [show (z : ℂ).im = z.im from rfl]\n  ring"
+    },
+    {
+      "declaration_index": 3194,
+      "declaration_name": "euclideanRaiseGauge_periodized_eq_forwardTest",
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  rw [show (z : ℂ).im = z.im from rfl]\n  ring"
+    },
+    {
+      "declaration_index": 3195,
+      "declaration_name": "euclideanLowerFromSuccGauge_periodized_eq_forwardTest",
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    euclideanLowerFromSuccForwardTest, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    euclideanLowerFromSuccForwardTest, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  rw [show (z : ℂ).im = z.im from rfl]\n  ring"
+    }
+  ]
+}
