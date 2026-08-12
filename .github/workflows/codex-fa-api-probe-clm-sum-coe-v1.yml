@@ -1,0 +1,55 @@
+name: Codex FA API probe CLM sum coe v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-clm-sum-coe-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile CLM sum coercion probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/CLMSumProbe.lean <<'LEAN'
+          import Mathlib.Analysis.Normed.Operator.Compact.Basic
+          noncomputable section
+          open scoped BigOperators
+          open Finset
+          example {J H E : Type*} [Fintype J]
+              [NormedAddCommGroup H] [NormedAddCommGroup E]
+              [NormedSpace ℂ H] [NormedSpace ℂ E]
+              (A : J → H →L[ℂ] E)
+              (h : IsCompactOperator (∑ j, (A j : H → E))) :
+              IsCompactOperator ((∑ j, A j : H →L[ℂ] E) : H → E) := by
+            have heq :
+                (fun x : H => (∑ j, A j) x) =
+                  (∑ j, (A j : H → E)) := by
+              funext x
+              simp
+            change IsCompactOperator (fun x : H => (∑ j, A j) x)
+            rw [heq]
+            exact h
+          LEAN
+          lake env lean /tmp/CLMSumProbe.lean
