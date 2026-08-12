@@ -1,4 +1,4 @@
-name: Codex FA API probe nested bounded-convergence v5
+name: Codex FA API probe nested bounded-convergence v6
 on:
   push:
     branches:
@@ -57,7 +57,6 @@ jobs:
               let R : ℝ := max r 0
               let Q : ℝ := max q 0
               have hR0 : 0 ≤ R := le_max_right _ _
-              have hQ0 : 0 ≤ Q := le_max_right _ _
               have hrR : ∀ x ∈ s, ‖x‖ ≤ R := by
                 intro x hx
                 exact (hr x hx).trans (le_max_left _ _)
@@ -84,8 +83,8 @@ jobs:
                   _ = eps N * (R * Q) := by ring
                   _ < δ := hN
               simpa [Metric.mem_ball, dist_zero_right] using hpoint
-            have hconst : Tendsto (fun _ : ℕ => T) atTop (nhds T) := tendsto_const_nhds
-            have hadd := hzero.add hconst
-            simpa using hadd
+            have htranslated : Tendsto (fun N => (Tn N - T) + T) atTop (nhds (0 + T)) :=
+              (Filter.tendsto_add_const_iff T).2 hzero
+            simpa [sub_add_cancel] using htranslated
           LEAN
           lake env lean /tmp/NestedBoundedTendstoProbe.lean
