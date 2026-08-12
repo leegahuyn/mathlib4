@@ -1,4 +1,4 @@
-name: Codex FA after3484 mass diagnostic v14
+name: Codex FA after3492 mass v15
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ permissions:
   actions: read
   contents: read
 jobs:
-  diagnostic:
+  frontier:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -20,38 +20,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build cumulative v14 diagnostic runner
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          src = Path('scripts/codex_fa_after3484_fourier_v11.sh').read_text()
-          src = src.replace('codex-fa-after3484-fourier-v11', 'codex-fa-after3484-mass-diagnostic-v14')
-          src = src.replace("'fa-after3484-fourier-v11'", "'fa-after3484-mass-diagnostic-v14'")
-          marker = 'curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh'
-          assert src.count(marker) == 1
-          extra = '\n'.join([
-            'python3 scripts/codex_fa_apply_v10_3492_3555.py "$OUT"',
-            'python3 scripts/codex_fa_apply_post3519_scalar_3546_3575.py "$OUT"',
-            '',
-          ])
-          src = src.replace(marker, extra + marker, 1)
-          needle = 'one Mock2_FunctionalAnalysis 1'
-          assert src.count(needle) == 1
-          src = src.replace(needle, 'one Mock2_FunctionalAnalysis 100', 1)
-          Path('/tmp/codex_fa_after3484_mass_diagnostic_v14.sh').write_text(src)
-          PY
-      - name: Attest cumulative repairs and direct compile diagnostic full source
+      - name: Attest latest-authoritative cumulative repairs and direct compile exact full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3484_mass_diagnostic_v14.sh
-      - name: Upload diagnostic evidence
+        run: bash scripts/codex_fa_after3492_mass_v15.sh
+      - name: Upload exact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3484-mass-diagnostic-v14-${{ github.sha }}
+          name: codex-fa-after3492-mass-v15-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3484-mass-diagnostic-v14
+            build-logs/codex-fa-after3492-mass-v15
           retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3492-mass-v15/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3492-mass-v15/Mock2_FunctionalAnalysis.exit)"
