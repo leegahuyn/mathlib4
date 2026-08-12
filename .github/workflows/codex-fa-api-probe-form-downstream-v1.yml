@@ -35,6 +35,7 @@ jobs:
           cat >/tmp/FormDownstreamProbe.lean <<'LEAN'
           import Mathlib
           noncomputable section
+          open scoped ComplexConjugate
           variable {H V : Type*}
           variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
           variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
@@ -51,7 +52,10 @@ jobs:
               (hB : star bvu = buv) :
               star (bvu + (c : ℂ) * inner ℂ Ju Jv) =
                 buv + (c : ℂ) * inner ℂ Jv Ju := by
-            simp only [map_add, map_mul, Complex.conj_ofReal, inner_conj_symm, hB]
+            change conj (bvu + (c : ℂ) * inner ℂ Ju Jv) =
+              buv + (c : ℂ) * inner ℂ Jv Ju
+            rw [map_add, map_mul, Complex.conj_ofReal, inner_conj_symm]
+            exact hB
 
           example (c : ℂ) (x y : H) : c • x + (y - c • x) = y := by
             abel
