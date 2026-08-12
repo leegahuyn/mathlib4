@@ -37,6 +37,7 @@ jobs:
           example (f : ℂ → ℝ) (hf : Integrable f (volume : Measure ℂ))
               (hmass : (∫ x : ℂ, f x) = 1) :
               (∫ x : ℂ, (f x : ℂ)) = 1 := by
+            change (∫ x : ℂ, Complex.ofRealCLM (f x)) = 1
             have hcomm := Complex.ofRealCLM.integral_comp_comm hf
             rw [hcomm, hmass]
             norm_num
