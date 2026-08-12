@@ -1,4 +1,4 @@
-name: Codex FA API probe downstream exact v3
+name: Codex FA API probe downstream exact v4
 on:
   push:
     branches:
@@ -27,47 +27,42 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile exact downstream repair probes
+      - name: Compile normalized downstream repair probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/DownstreamExactProbeV3.lean <<'LEAN'
+          cat >/tmp/DownstreamExactProbeV4.lean <<'LEAN'
           import Mathlib
           noncomputable section
-          open Filter MeasureTheory
-          attribute [local instance 10000] instMeasureSpaceUnitAddCircle
-
-          abbrev ProbeTwoTorus := UnitAddTorus (Fin 2)
-          noncomputable abbrev ProbeTwoTorusL2 :=
-            MeasureTheory.Lp ℂ 2 (volume : Measure ProbeTwoTorus)
-
-          example (modes : ℕ → Finset (Fin 2 → ℤ))
-              (hmodes : Filter.Tendsto modes Filter.atTop Filter.atTop)
-              (f : ProbeTwoTorusL2) :
-              Filter.Tendsto
-                (fun N => ∑ k ∈ modes N,
-                  UnitAddTorus.mFourierCoeff f k • UnitAddTorus.mFourierLp 2 k)
-                Filter.atTop (nhds f) := by
-            change Filter.Tendsto
-              ((fun s => ∑ k ∈ s,
-                UnitAddTorus.mFourierCoeff f k • UnitAddTorus.mFourierLp 2 k) ∘ modes)
-              Filter.atTop (nhds f)
-            exact (UnitAddTorus.hasSum_mFourier_series_L2 f).comp hmodes
+          #check inner_self_eq_norm_sq
+          #check norm_sq_eq_re_inner
 
           variable {V : Type*}
           variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
           example (u : V) : (inner ℂ u u).re = ‖u‖ ^ 2 := by
-            rw [← norm_sq_eq_re_inner (𝕜 := ℂ) u]
+            have hinner : inner ℂ u u = (‖u‖ ^ 2 : ℂ) := by
+              simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) u)
+            rw [hinner]
+            simp
 
           example : Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
             intro w
             unfold Function.Periodic.qParam
-            have harg :
-                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) / (2 : ℂ) =
-                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
-                    2 * (Real.pi : ℂ) * Complex.I := by
-              ring
-            rw [harg, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+            calc
+              Complex.exp
+                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) /
+                    ((2 : ℝ) : ℂ)) =
+                Complex.exp
+                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w /
+                    ((2 : ℝ) : ℂ) +
+                    2 * (Real.pi : ℂ) * Complex.I) := by
+                      congr 1
+                      push_cast
+                      ring
+              _ = Complex.exp
+                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w /
+                    ((2 : ℝ) : ℂ)) := by
+                    rw [Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
           LEAN
-          lake env lean /tmp/DownstreamExactProbeV3.lean
+          lake env lean /tmp/DownstreamExactProbeV4.lean
