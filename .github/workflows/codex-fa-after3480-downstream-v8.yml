@@ -1,4 +1,4 @@
-name: Codex FA after3480 downstream v8
+name: Codex FA after3480 explicit seminorm v9
 on:
   push:
     branches:
@@ -20,36 +20,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build cumulative authoritative runner
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          src = Path('scripts/codex_fa_after3480_distbridge_v7.sh').read_text()
-          src = src.replace('codex-fa-after3480-distbridge-v7', 'codex-fa-after3480-downstream-v8')
-          src = src.replace("'fa-after3480-distbridge-v7'", "'fa-after3480-downstream-v8'")
-          marker = 'python3 scripts/codex_fa_apply_compact_distbridge_3480_v4.py "$OUT"'
-          assert src.count(marker) == 1
-          src = src.replace(marker, marker + '\npython3 scripts/codex_fa_apply_downstream_corrections_3484_3556_v1.py "$OUT"', 1)
-          Path('/tmp/codex_fa_after3480_downstream_v8.sh').write_text(src)
-          PY
-      - name: Attest cumulative patch and direct compile exact full source
+      - name: Attest explicit seminorm topology patch and direct compile exact full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3480_downstream_v8.sh
+        run: bash scripts/codex_fa_after3480_explicit_seminorm_v9.sh
       - name: Upload exact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3480-downstream-v8-${{ github.sha }}
+          name: codex-fa-after3480-explicit-seminorm-v9-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3480-downstream-v8
+            build-logs/codex-fa-after3480-explicit-seminorm-v9
           retention-days: 30
       - name: Preserve FA direct exit
         if: always()
         shell: bash
         run: |
-          test -f build-logs/codex-fa-after3480-downstream-v8/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-after3480-downstream-v8/Mock2_FunctionalAnalysis.exit)"
+          test -f build-logs/codex-fa-after3480-explicit-seminorm-v9/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3480-explicit-seminorm-v9/Mock2_FunctionalAnalysis.exit)"
