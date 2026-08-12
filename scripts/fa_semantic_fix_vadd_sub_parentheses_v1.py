@@ -31,8 +31,8 @@ PROOF_FIXES_3237 = [
     ),
     (
         '    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      fun_prop',
-        '    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      change ContinuousAt (fun t : ℂ ↦ -t) 0\n      exact continuousAt_id.neg',
-        'pin-neg-continuity-shape',
+        '    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      have hNeg\' : Filter.Tendsto (fun t : ℂ ↦ -t)\n          (nhds 0) (nhds (-(0 : ℂ))) := continuousAt_id.neg\n      simpa only [neg_zero] using hNeg\'',
+        'pin-neg-tendsto-endpoint',
     ),
     (
         '      rw [norm_smul]\n      exact mul_le_mul_of_nonneg_left htSmall.le (norm_nonneg _)',
