@@ -1,0 +1,70 @@
+name: Codex FA API probe translated mollifier derivatives v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-translated-mollifier-derivatives-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1; lake exe cache get >/tmp/cache.log 2>&1
+      - name: Prove derivative bridge shapes
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeTranslatedDerivatives.lean <<'LEAN'
+          import Mathlib
+          #check hasFDerivAt_id
+          #check ContinuousLinearMap.hasFDerivAt
+          #check HasFDerivAt.fderiv
+          example (w x : ℂ) :
+              HasFDerivAt (fun y : ℂ ↦ w - y) (-ContinuousLinearMap.id ℝ ℂ) x := by
+            simpa only [Pi.sub_apply, id_eq] using
+              (hasFDerivAt_const (x := x) (c := w)).sub
+                (hasFDerivAt_id (𝕜 := ℝ) x)
+          example (f : ℂ → ℂ) (f' : ℂ →L[ℝ] ℂ) (w x xi : ℂ)
+              (hf : HasFDerivAt f f' (w - x)) :
+              (fderiv ℝ (fun y : ℂ ↦ f (w - y)) x) xi = -(f' xi) := by
+            have hinner : HasFDerivAt (fun y : ℂ ↦ w - y)
+                (-ContinuousLinearMap.id ℝ ℂ) x := by
+              simpa only [Pi.sub_apply, id_eq] using
+                (hasFDerivAt_const (x := x) (c := w)).sub
+                  (hasFDerivAt_id (𝕜 := ℝ) x)
+            have hcomp := hf.comp x hinner
+            have hEq := congrArg (fun A : ℂ →L[ℝ] ℂ ↦ A xi) hcomp.fderiv
+            simpa only [ContinuousLinearMap.comp_apply, neg_apply,
+              ContinuousLinearMap.id_apply, map_neg] using hEq
+          example (t : ℂ) :
+              fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ)) t =
+                Complex.ofRealCLM.comp Complex.imCLM := by
+            exact (Complex.ofRealCLM.comp Complex.imCLM).hasFDerivAt.fderiv
+          example (t : ℂ) :
+              (fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ)) t) 1 = 0 := by
+            rw [(Complex.ofRealCLM.comp Complex.imCLM).hasFDerivAt.fderiv]
+            norm_num [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply,
+              Complex.imCLM_apply]
+          example (t : ℂ) :
+              (fderiv ℝ (fun s : ℂ ↦ (s.im : ℂ)) t) Complex.I = 1 := by
+            rw [(Complex.ofRealCLM.comp Complex.imCLM).hasFDerivAt.fderiv]
+            norm_num [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply,
+              Complex.imCLM_apply]
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeTranslatedDerivatives.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-translated-mollifier-derivatives-v1-${{ github.sha }}
+          path: /tmp/probe.log
+          retention-days: 7
