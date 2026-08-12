@@ -1,0 +1,50 @@
+name: Codex FA API probe opNorm fast v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-opnorm-fast-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile direct-change opNorm bound probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/OpNormFastProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F]
+
+          example (A B : E →L[ℂ] F) (δ : ℝ) (hδ : 0 ≤ δ)
+              (h : ∀ x, ‖A x - B x‖ ≤ δ * ‖x‖) :
+              ‖A - B‖ ≤ δ := by
+            apply ContinuousLinearMap.opNorm_le_bound (A - B) hδ
+            intro x
+            change ‖A x - B x‖ ≤ δ * ‖x‖
+            exact h x
+          LEAN
+          lake env lean /tmp/OpNormFastProbe.lean
