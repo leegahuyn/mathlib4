@@ -55,8 +55,8 @@ old='''noncomputable def hilbertSpaceWitness (n : ℤ) :
     HilbertSpace ℂ (WeightedWeakSobolev n) :=
   by infer_instance'''
 new='''noncomputable def hilbertSpaceWitness (n : ℤ) :
-    HilbertSpace ℂ (WeightedWeakSobolev n) :=
-  weightedWeakSobolevCompleteSpace n'''
+    HilbertSpace ℂ (WeightedWeakSobolev n) := by
+  constructor'''
 assert before.count(old)==1, before.count(old)
 after=before.replace(old,new,1)
 p.write_text(after)
@@ -66,7 +66,7 @@ assert seq0==seq1 and fc0==fc1
 marker='noncomputable def hilbertSpaceWitness'; a0=before.index(marker); a1=after.index(marker)
 assert before[a0:before.index(':=',a0)+2] == after[a1:after.index(':=',a1)+2]
 b=p.read_bytes(); sha=hashlib.sha256(b).hexdigest(); out=Path('build-logs/codex-fa-after3398-hilbert-witness-v1')
-audit={'base_sha256':hashlib.sha256(b0).hexdigest(),'candidate_sha256':sha,'target':'hilbertSpaceWitness','repair':'use_explicit_complete_space_witness_for_HilbertSpace_abbrev','existing_declaration_relative_order_preserved':True,'target_public_header_byte_identical':True,'semantic_public_proposition_change':False,'forbidden_lexical_counts_preserved':True}
+audit={'base_sha256':hashlib.sha256(b0).hexdigest(),'candidate_sha256':sha,'target':'hilbertSpaceWitness','repair':'construct_empty_HilbertSpace_variable_alias_structure','existing_declaration_relative_order_preserved':True,'target_public_header_byte_identical':True,'semantic_public_proposition_change':False,'forbidden_lexical_counts_preserved':True}
 (out/'PATCH_AUDIT.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n')
 (out/'CANDIDATE_IDENTITY.json').write_text(json.dumps({'sha256':sha,'bytes':len(b),'lines':len(after.splitlines())},indent=2)+'\n')
 (out/'candidate.sha256').write_text(sha+'\n')
