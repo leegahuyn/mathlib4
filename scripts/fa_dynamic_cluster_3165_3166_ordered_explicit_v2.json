@@ -1,0 +1,20 @@
+{
+  "schema": "fa-dynamic-cluster-3165-3166-ordered-explicit-v2",
+  "status": "DIRECT_FRONTIER_REPAIR_PENDING_RECOMPILE",
+  "source_run_id": 31553234087,
+  "source_sha256": "1487389a6242c200f6b7282db997b0dce3b831cccf08c568c0c2fc2d527aa954",
+  "repairs": [
+    {
+      "declaration_index": 3165,
+      "declaration_name": "intrinsicRaisePeterssonCommutator_l2Coordinate_eq_sub",
+      "old_fragment": "  rw [intrinsicRaisePeterssonCommutator_l2Coordinate,\n    raisedCoordinate_apply, intrinsicPeterssonCuspCutoff_l2Coordinate,\n    raisedCoordinate_apply]\n  rw [← map_sub]\n  rfl",
+      "new_fragment": "  rw [intrinsicRaisePeterssonCommutator_l2Coordinate]\n  rw [raisedCoordinate_apply]\n  rw [raisedCoordinate_apply]\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate]\n  simp only [intrinsicRaiseCuspCutoffCommutator, LinearMap.sub_apply,\n    LinearMap.comp_apply]\n  exact (l2Coordinate (n + 1)).map_sub _ _"
+    },
+    {
+      "declaration_index": 3166,
+      "declaration_name": "intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate_eq_sub",
+      "old_fragment": "  rw [intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate,\n    lowerFromSuccCoordinate_apply,\n    intrinsicPeterssonCuspCutoff_l2Coordinate,\n    lowerFromSuccCoordinate_apply]\n  rw [← map_sub]\n  rfl",
+      "new_fragment": "  rw [intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate]\n  rw [lowerFromSuccCoordinate_apply]\n  rw [lowerFromSuccCoordinate_apply]\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate]\n  simp only [intrinsicLowerFromSuccCuspCutoffCommutator, LinearMap.sub_apply,\n    LinearMap.comp_apply]\n  exact (l2Coordinate n).map_sub _ _"
+    }
+  ]
+}
