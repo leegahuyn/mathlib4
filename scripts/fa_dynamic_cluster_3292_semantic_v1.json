@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3292-semantic-v1",
+  "status": "SEMANTIC_SOURCE_PROOF_BODY_PENDING_DIRECT_LEAN",
+  "source_run_id": 31561568521,
+  "source_sha256": "8709441789c6b021a9ef6b6495be722723a9cac66747432ece58d60461041e7e",
+  "repairs": [
+    {
+      "declaration_index": 3292,
+      "declaration_name": "integrable_kernel_smul_translation_sub",
+      "old_fragment": "  simpa only [smul_sub] using hTranslate.sub hConst",
+      "new_fragment": "  simpa only [Pi.sub_apply, smul_sub] using hTranslate.sub hConst"
+    }
+  ]
+}
