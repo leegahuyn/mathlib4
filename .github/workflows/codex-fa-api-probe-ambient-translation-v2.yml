@@ -1,3 +1,4 @@
+# registration-retrigger: 2026-08-12T10:24+09:00
 name: Codex FA API probe ambient translation v2
 on:
   push:
