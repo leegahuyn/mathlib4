@@ -40,3 +40,4 @@ jobs:
         run: |
           test -f build-logs/codex-fa-after3467-affine-attop-v1/Mock2_FunctionalAnalysis.exit || exit 86
           exit "$(cat build-logs/codex-fa-after3467-affine-attop-v1/Mock2_FunctionalAnalysis.exit)"
+# trigger: exact-authoritative-3467-v1
