@@ -64,5 +64,21 @@ jobs:
 
           example (a b : ℂ) (hab : a = 0) : star a = 0 := by
             simp [hab]
+
+          example (J : V →L[ℂ] H) (B : ContinuousSesquilinearForm V)
+              (a : ℂ) (p : H × H) (u : V)
+              (hu : J u = p.1)
+              (hBu : ∀ v : V, B u v = inner ℂ (J v) p.2) :
+              ∃ w : V, J w = (a • p).1 ∧
+                ∀ v : V, B w v = inner ℂ (J v) (a • p).2 := by
+            refine ⟨a • u, ?_, ?_⟩
+            · simpa [hu]
+            · intro v
+              simpa [hBu v]
+
+          example (u b : H) (t s : ℝ) (q : ℂ) :
+              (inner ℂ u u).re - t * q.re + s * (inner ℂ b b).re =
+                ‖u‖ ^ 2 - t * q.re + s * ‖b‖ ^ 2 := by
+            rw [← norm_sq_eq_re_inner u, ← norm_sq_eq_re_inner b]
           LEAN
           lake env lean /tmp/FormDownstreamProbe2.lean
