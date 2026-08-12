@@ -1,0 +1,10 @@
+{
+  "schema": "fa-dynamic-env-two-torus-canonical-measure-v1",
+  "status": "PINNED_API_PROBE_VERIFIED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_runs": [31565665291, 31565776721],
+  "environment_replacement": {
+    "id": "two-torus-canonical-unit-add-circle-measure",
+    "old_fragment": "end FiniteHilbertProjections\n\n/-! ### The actual two-torus Fourier basis -/\n\n/-- The two-dimensional unit additive torus used after extending a bounded\nrectangle periodically. -/",
+    "new_fragment": "end FiniteHilbertProjections\n\n/-! ### The actual two-torus Fourier basis -/\n\nattribute [local instance] instMeasureSpaceUnitAddCircle\n\n/-- The two-dimensional unit additive torus used after extending a bounded\nrectangle periodically. -/"
+  }
+}
