@@ -1,6 +1,6 @@
 name: Codex FA v21 API shapes v1
 
-# trigger: complex-real-contdiff-mul-funprop-9
+# trigger: real-to-complex-compact-support-10
 on:
   push:
     branches:
@@ -31,7 +31,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile complex-real ContDiff multiplication probe
+      - name: Compile real-to-complex compact-support probes
         shell: bash
         run: |
           set -euo pipefail
@@ -39,14 +39,23 @@ jobs:
           cat >/tmp/V21ApiShapes.lean <<'LEAN'
           import Mathlib
 
-          open scoped ContDiff
+          open Set Function
 
-          example (c : ℂ) (f : ℂ → ℂ) (hf : ContDiff ℝ ∞ f) :
-              ContDiff ℝ ∞ (fun z : ℂ ↦ c * f z) := by
-            fun_prop
+          #check HasCompactSupport.comp_left
+          #check HasCompactSupport.mono
+          #check HasCompactSupport.congr
+
+          example (g : ℂ → ℝ) (hg : HasCompactSupport g) :
+              HasCompactSupport (fun x : ℂ ↦ (g x : ℂ)) := by
+            exact hg.comp_left (by
+              intro x
+              norm_num)
+
+          example (x : ℂ) : x ∈ (Set.univ : Set ℂ) := by
+            exact Set.mem_univ x
           LEAN
           set +e
-          lake env lean -DmaxErrors=20 -DwarningAsError=false /tmp/V21ApiShapes.lean 2>&1 | tee /tmp/v21-api-shapes.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/V21ApiShapes.lean 2>&1 | tee /tmp/v21-api-shapes.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/v21-api-shapes.exit
