@@ -1,4 +1,4 @@
-name: Codex FA API probe AddGroup priority v1
+name: Codex FA API probe antiDual Hilbert APIs via registered path
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -8,7 +8,7 @@ permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
@@ -21,26 +21,32 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Check local instance priority syntax and selection
+      - name: Inspect anti-dual Riesz and Hilbert transport APIs
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeAddGroupPriority.lean <<'LEAN'
+          cat >/tmp/ProbeAntiDualHilbert.lean <<'LEAN'
           import Mathlib
-          section
-          variable {X : Type*} [NormedAddCommGroup X]
-          attribute [local instance 10000] NormedAddCommGroup.toAddCommGroup
-          set_option pp.all true in
-          #synth AddCommGroup X
-          example (x y : X) : x - y + y = x := by exact sub_add_cancel x y
-          end
+          #check innerSLFlip
+          #check innerSL_apply_norm
+          #check ContinuousLinearMap.flipₗᵢ'
+          #check LinearIsometryEquiv.ofSurjective
+          #check LinearEquiv.isometryOfInner
+          #check InnerProductSpace.toCore
+          #check InnerProductSpace.Core
+          #check PreInnerProductSpace.ofCore
+          #check InnerProductSpace.ofCore
+          #check LinearIsometryEquiv.toLinearEquiv
+          #check LinearIsometryEquiv.norm_map
+          #check LinearIsometryEquiv.inner_map_map
+          #check InnerProductSpace.toDual
           LEAN
-          lake env lean -DwarningAsError=false /tmp/ProbeAddGroupPriority.lean | tee /tmp/probe.log
+          lake env lean -DwarningAsError=false /tmp/ProbeAntiDualHilbert.lean | tee /tmp/probe.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-addgroup-priority-v1-${{ github.sha }}
+          name: codex-fa-api-probe-antidual-hilbert-via-addgroup-${{ github.sha }}
           path: /tmp/probe.log
           retention-days: 7
