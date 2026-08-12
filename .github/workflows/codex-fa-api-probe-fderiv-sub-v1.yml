@@ -16,13 +16,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
-      - name: Probe exact L2 domain-action prerequisites and FullPlane type
+      - name: Probe exact L2 domain-action continuity and FullPlane type
         shell: bash
         run: |
           set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeFDerivSub.lean <<'LEAN'
           import Mathlib
           open Topology Filter MeasureTheory
+          open scoped ENNReal Distributions
           #synth R1Space ℂ
           #synth OpensMeasurableSpace ℂ
           #synth ContinuousVAdd ℂ ℂ
@@ -30,26 +31,28 @@ jobs:
           #synth (volume : Measure ℂ).InnerRegularCompactLTTop
           #synth VAddInvariantMeasure ℂ ℂ (volume : Measure ℂ)
           #synth Fact (1 ≤ (2 : ℝ≥0∞))
-          #synth Fact ((2 : ℝ≥0∞) ≠ ⊤)
+          #synth Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞))
           #synth ContinuousVAdd ℂᵈᵃᵃ (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ))
 
           noncomputable abbrev AmbientPlaneL2Probe := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
-            have h : Continuous (fun p : ℂᵈᵃᵃ × AmbientPlaneL2Probe ↦ p.1 +ᵥ p.2) :=
-              continuous_vadd
             have hm : Continuous (fun t : ℂ ↦ (DomAddAct.mk t, f)) :=
-              DomAddAct.continuous_mk.prod_mk continuous_const
-            simpa using (h.comp hm).continuousAt
+              DomAddAct.continuous_mk.prodMk continuous_const
+            have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
+              continuous_vadd.comp hm
+            simpa using (show ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 from h.continuousAt)
+
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
-            have ht : Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
-              have h : Continuous (fun p : ℂᵈᵃᵃ × AmbientPlaneL2Probe ↦ p.1 +ᵥ p.2) := continuous_vadd
-              have hm : Continuous (fun t : ℂ ↦ (DomAddAct.mk t, f)) := DomAddAct.continuous_mk.prod_mk continuous_const
-              simpa using (h.comp hm).continuousAt
-            exact (tendsto_norm.comp ((ht.sub_const f))).congr' (Filter.Eventually.of_forall (fun _ => rfl))
+            have hm : Continuous (fun t : ℂ ↦ (DomAddAct.mk t, f)) :=
+              DomAddAct.continuous_mk.prodMk continuous_const
+            have ht : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
+              continuous_vadd.comp hm
+            have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) :=
+              (ht.sub continuous_const).norm
+            simpa using (show ContinuousAt (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) 0 from h.continuousAt)
 
-          open scoped Distributions
           abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ (⊤ : ℕ∞)
           example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
           LEAN
