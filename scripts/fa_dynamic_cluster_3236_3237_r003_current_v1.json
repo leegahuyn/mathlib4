@@ -1,0 +1,35 @@
+{
+  "schema": "fa-dynamic-cluster-3236-3237-r003-current-v1",
+  "status": "DIRECT_FRONTIER_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31558337270,
+  "source_sha256": "ed43b7f89d9cd2128150cc2f2499ba475ff5ef417ef61adaa5b856df9293f6d8",
+  "repairs": [
+    {
+      "declaration_index": 3236,
+      "declaration_name": "integral_kernel_vadd_eq_integral_kernel_vadd_sub_of_mean_zero",
+      "old_fragment": "    funext t\n    rw [smul_sub]",
+      "new_fragment": "    funext t\n    exact smul_sub _ _ _"
+    },
+    {
+      "declaration_index": 3237,
+      "declaration_name": "integral_shrinkingKernel_smul_translation_sub_tendsto_zero",
+      "replacements": [
+        {
+          "id": "unfold-eta",
+          "old_fragment": "  have hηC : η * C < ε := by\n    rw [η, div_mul_eq_mul_div, div_lt_iff₀ hC1]\n    nlinarith",
+          "new_fragment": "  have hηC : η * C < ε := by\n    dsimp only [η]\n    rw [div_mul_eq_mul_div, div_lt_iff₀ hC1]\n    nlinarith"
+        },
+        {
+          "id": "explicit-neg-tendsto",
+          "old_fragment": "    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      fun_prop",
+          "new_fragment": "    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      simpa only [neg_zero] using\n        (continuousAt_id.neg : ContinuousAt (fun t : ℂ ↦ -t) 0)"
+        },
+        {
+          "id": "align-norm-smul-order",
+          "old_fragment": "      rw [norm_smul]\n      exact mul_le_mul_of_nonneg_left htSmall.le (norm_nonneg _)",
+          "new_fragment": "      rw [norm_smul]\n      calc\n        ‖K n t‖ * ‖DomAddAct.mk (-t) +ᵥ f - f‖ ≤ ‖K n t‖ * η :=\n          mul_le_mul_of_nonneg_left htSmall.le (norm_nonneg _)\n        _ = η * ‖K n t‖ := mul_comm _ _"
+        }
+      ]
+    }
+  ]
+}
