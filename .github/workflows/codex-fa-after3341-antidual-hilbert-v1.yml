@@ -1,0 +1,95 @@
+name: Codex FA after3341 antiDual Hilbert v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-after3341-antidual-hilbert-v1.yml]
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+env:
+  BASE_RUN_ID: "31571384486"
+  BASE_JOB_ID: "94033939393"
+  BASE_HEAD_SHA: "a9b68eb3a67cc5bf482c4ee1f2db3a8e2a7f71e7"
+  BASE_ARTIFACT_ID: "9131771075"
+  BASE_ARTIFACT_NAME: "codex-fa-after3327-3328-highcap-v2-a9b68eb3a67cc5bf482c4ee1f2db3a8e2a7f71e7"
+  BASE_ARTIFACT_DIGEST: "sha256:34fe3752fc3d05f0d1fb46c9b5ea7581f37bb8d17bdd9e7837b791b163f9ed07"
+  BASE_SOURCE_SHA256: "61afe5d593f26fad577b7522bb4c1d74f261ea347fbeb97db8e3ae0101ec45c7"
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 600
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Attest exact idx3341 direct source
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-antidual-hilbert-v1; mkdir -p "$OUT" /tmp/base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" >"$OUT/run.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" >"$OUT/job.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/artifact.json"; gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/base.zip
+          test "sha256:$(sha256sum /tmp/base.zip|awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"; unzip -q /tmp/base.zip -d /tmp/base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,shutil
+          out=Path('build-logs/codex-fa-after3341-antidual-hilbert-v1'); r=json.loads((out/'run.json').read_text()); j=json.loads((out/'job.json').read_text()); a=json.loads((out/'artifact.json').read_text()); m=json.loads(next(Path('/tmp/base').rglob('METRIC.json')).read_text())
+          assert r['id']==int(os.environ['BASE_RUN_ID']) and r['head_sha']==os.environ['BASE_HEAD_SHA'] and r['status']=='completed' and r['conclusion']=='failure'; assert j['id']==int(os.environ['BASE_JOB_ID']) and j['run_id']==int(os.environ['BASE_RUN_ID']) and j['conclusion']=='failure'; assert a['id']==int(os.environ['BASE_ARTIFACT_ID']) and a['name']==os.environ['BASE_ARTIFACT_NAME'] and a['digest']==os.environ['BASE_ARTIFACT_DIGEST'] and not a['expired']; assert m['Mock2_exit']==0 and m['Mock2_Advanced_exit']==0 and m['FA_exit']==1 and m['all_required_lean_executed'] is True and m['FA_error_declaration_index']==3341 and m['source_sha256']==os.environ['BASE_SOURCE_SHA256'] and m['source_identity_locked_after_materialization'] is True and m['public_proposition_changes_explicitly_audited'] is True and m['declaration_sequence_preserved'] is True
+          hits=[]
+          for p in Path('/tmp/base').rglob('Mock2_FunctionalAnalysis.lean'):
+            b=p.read_bytes()
+            if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256']: hits.append(p)
+          assert len(hits)==1; shutil.copy2(hits[0],'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); (out/'ALLOWED.json').write_text(json.dumps(m['allowed_public_proposition_changes'],indent=2)+'\n')
+          PY
+      - name: Install Riesz-compatible local antiDual Hilbert structure
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-antidual-hilbert-v1
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,os
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); before=p.read_text(); anchor='''@[simp]\ntheorem principalEnergyEquiv_apply (n : ℤ) (u : ActualHOne n) :\n    principalEnergyEquiv n u = principalEnergyOperator n u :=\n  rfl\n'''
+          assert before.count(anchor)==1
+          helper='''\n/-- Local Riesz-transported Hilbert structure on the strong anti-dual.\nIt uses the already proved principal energy equivalence and the existing anti-dual norm. -/\nnoncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :\n    InnerProductSpace ℂ (ActualHMinusOne n) where\n  toNormedSpace := inferInstance\n  toInner :=\n    ⟨fun f g ↦ inner ℂ ((principalEnergyEquiv n).symm f)\n      ((principalEnergyEquiv n).symm g)⟩\n  norm_sq_eq_re_inner f := by\n    have hIso : ∀ u : ActualHOne n, ‖principalEnergyEquiv n u‖ = ‖u‖ := by\n      intro u\n      rw [principalEnergyEquiv_apply]\n      apply le_antisymm\n      · exact (principalEnergyOperator n u).opNorm_le_bound (norm_nonneg u) fun v ↦ by\n          rw [principalEnergyOperator_apply]\n          exact norm_inner_le_norm v u\n      · rcases (norm_nonneg u).eq_or_lt' with h | h\n        · simp [h]\n        · refine (mul_le_mul_right h).mp ?_\n          calc\n            ‖u‖ * ‖u‖ = ‖(inner ℂ u u)‖ := by\n              rw [← sq, inner_self_eq_norm_sq_to_K, norm_pow, norm_ofReal, abs_norm]\n            _ ≤ ‖principalEnergyOperator n u‖ * ‖u‖ := by\n              simpa only [principalEnergyOperator_apply] using\n                (principalEnergyOperator n u).le_opNorm u\n    have hSymm := hIso ((principalEnergyEquiv n).symm f)\n    rw [ContinuousLinearEquiv.apply_symm_apply] at hSymm\n    rw [hSymm]\n    exact InnerProductSpace.norm_sq_eq_re_inner (𝕜 := ℂ)\n      ((principalEnergyEquiv n).symm f)\n  conj_inner_symm f g := by\n    exact inner_conj_symm _ _\n  add_left f g h := by\n    simp only [map_add, inner_add_left]\n  smul_left f g c := by\n    simp only [map_smul, inner_smul_left]\n\n'''
+          text=before.replace(anchor,anchor+helper,1)
+          decl_re=re.compile(r'(?m)^(?:protected\\s+|private\\s+|noncomputable\\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\\s+(?P<name>[^\\s(:]+)')
+          bseq=[m.group('name') for m in decl_re.finditer(before)]; aseq=[m.group('name') for m in decl_re.finditer(text)]
+          # Existing public declaration order must be an exact subsequence; the only addition is the local helper instance.
+          it=iter(aseq); assert all(any(y==x for y in it) for x in bseq)
+          for tok in ('sorry','admit','native_decide','Lean.ofReduceBool','unsafe'):
+            assert before.count(tok)==text.count(tok)
+          p.write_text(text,encoding='utf-8',newline='\n'); b=p.read_bytes(); sha=hashlib.sha256(b).hexdigest(); audit={'schema':'fa-3341-antidual-hilbert-audit-v1','base_sha256':hashlib.sha256(before.encode()).hexdigest(),'candidate_sha256':sha,'candidate_bytes':len(b),'candidate_lines':len(text.splitlines()),'existing_declaration_relative_order_preserved':True,'added_helper':'local instance actualHMinusOneInnerProductSpace','public_theorem_source_headers_changed':False,'semantic_public_proposition_change':False,'forbidden_lexical_counts_preserved':True}; Path(OUT+'/HILBERT_AUDIT.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n'); Path(OUT+'/CANDIDATE_IDENTITY.json').write_text(json.dumps({'sha256':sha,'bytes':len(b),'lines':len(text.splitlines())},indent=2)+'\n')\n          with Path(os.environ['GITHUB_ENV']).open('a') as f:f.write(f'CANDIDATE_SHA={sha}\\n')\n          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-antidual-hilbert-v1; curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh; sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1; export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1; lake exe cache get >"$OUT/cache.log" 2>&1
+      - name: Direct full-source first frontier compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail; export PATH="$HOME/.elan/bin:$PATH"; OUT=build-logs/codex-fa-after3341-antidual-hilbert-v1; mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){ s=$1;c=$2;o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean;i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean;rm -f "$o" "$i";:>"$OUT/$s.executed";set +e;lake env lean "-DmaxErrors=$c" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1;x=$?;set -e;echo $x>"$OUT/$s.exit";}
+          one Mock2 1; one Mock2_Advanced 1; test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean|awk '{print $1}')" = "$CANDIDATE_SHA"; one Mock2_FunctionalAnalysis 1
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-after3341-antidual-hilbert-v1'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); s=p.read_text(); b=p.read_bytes(); ds=list(re.finditer(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)',s)); starts=[s.count('\n',0,m.start())+1 for m in ds]; rx=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$'); es=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+            m=rx.match(raw)
+            if m:
+              ln=int(m.group(1)); i=bisect_right(starts,ln)-1; es.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[i].group('name') if i>=0 else None,'declaration_index':i if i>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')}; first=es[0] if es else {}; au=json.loads((out/'HILBERT_AUDIT.json').read_text()); metric={'schema':'fa-after3341-antidual-hilbert-v1','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ex),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'existing_declaration_relative_order_preserved':au['existing_declaration_relative_order_preserved'],'added_local_helper_instance_audited':True,'public_proposition_changes_explicitly_audited':True,'semantic_public_proposition_change':False,'allowed_public_proposition_changes':json.loads((out/'ALLOWED.json').read_text())}; (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT"; exit 0
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3341-antidual-hilbert-v1-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3341-antidual-hilbert-v1
+          retention-days: 30
+      - name: Preserve FA exit
+        if: always()
+        env: {FA_EXIT: "${{ steps.direct.outputs.fa_exit }}"}
+        shell: bash
+        run: test -n "${FA_EXIT:-}" || exit 86; exit "$FA_EXIT"
