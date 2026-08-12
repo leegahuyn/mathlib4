@@ -4,7 +4,7 @@ base = Path('scripts/codex_fa_after3388_weak_graph_v3.sh').read_text()
 base = base.replace('codex-fa-after3388-weak-graph-v3', 'codex-fa-after3388-weak-graph-v4')
 marker = "curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh"
 assert base.count(marker) == 1
-extra = r'''python3 - <<'PY4'
+extra = r"""python3 - <<'PY4'
 from pathlib import Path
 import hashlib,json,re
 p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
@@ -43,6 +43,6 @@ audit['forbidden_lexical_counts_preserved']=True
 (out/'candidate.sha256').write_text(sha+'\n')
 PY4
 
-'''
+"""
 out = base.replace(marker, extra + marker, 1)
 Path('/tmp/codex_fa_after3388_weak_graph_v4.sh').write_text(out)
