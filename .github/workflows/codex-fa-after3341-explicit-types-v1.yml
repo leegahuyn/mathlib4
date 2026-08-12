@@ -1,0 +1,144 @@
+name: Codex FA after3341 explicit types v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-after3341-explicit-types-v1.yml]
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+env:
+  BASE_RUN_ID: "31571686215"
+  BASE_JOB_ID: "94034842694"
+  BASE_HEAD_SHA: "0480477493900214f387a7494031960d183dcf84"
+  BASE_ARTIFACT_ID: "9131762628"
+  BASE_ARTIFACT_NAME: "codex-fa-after3327-3328-fast1-v4-0480477493900214f387a7494031960d183dcf84"
+  BASE_ARTIFACT_DIGEST: "sha256:10b708fe68db44dd974dbfe06bb602a0663e9bdbb00453afc555b94cc1ca2551"
+  BASE_SOURCE_SHA256: "61afe5d593f26fad577b7522bb4c1d74f261ea347fbeb97db8e3ae0101ec45c7"
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 420
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Attest exact idx3341 parent
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-explicit-types-v1; mkdir -p "$OUT" /tmp/base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" >"$OUT/run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" >"$OUT/job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/base.zip
+          test "sha256:$(sha256sum /tmp/base.zip|awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/base.zip -d /tmp/base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,shutil
+          out=Path('build-logs/codex-fa-after3341-explicit-types-v1')
+          r=json.loads((out/'run.json').read_text()); j=json.loads((out/'job.json').read_text()); a=json.loads((out/'artifact.json').read_text())
+          m=json.loads(next(Path('/tmp/base').rglob('METRIC.json')).read_text())
+          assert r['id']==int(os.environ['BASE_RUN_ID']) and r['head_sha']==os.environ['BASE_HEAD_SHA'] and r['status']=='completed' and r['conclusion']=='failure'
+          assert j['id']==int(os.environ['BASE_JOB_ID']) and j['run_id']==int(os.environ['BASE_RUN_ID']) and j['conclusion']=='failure'
+          assert a['id']==int(os.environ['BASE_ARTIFACT_ID']) and a['name']==os.environ['BASE_ARTIFACT_NAME'] and a['digest']==os.environ['BASE_ARTIFACT_DIGEST'] and not a['expired']
+          assert m['Mock2_exit']==0 and m['Mock2_Advanced_exit']==0 and m['FA_exit']==1 and m['all_required_lean_executed'] is True
+          assert m['FA_error_declaration_index']==3341 and m['FA_first_error_declaration']=='fredholmData_of_compactPotential'
+          assert m['source_sha256']==os.environ['BASE_SOURCE_SHA256'] and m['source_identity_locked_after_materialization'] is True
+          assert m['public_proposition_changes_explicitly_audited'] is True and m['declaration_sequence_preserved'] is True
+          hits=[]
+          for p in Path('/tmp/base').rglob('Mock2_FunctionalAnalysis.lean'):
+            b=p.read_bytes()
+            if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256']: hits.append(p)
+          assert len(hits)==1
+          shutil.copy2(hits[0],'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          (out/'ALLOWED.json').write_text(json.dumps(m['allowed_public_proposition_changes'],indent=2)+'\n')
+          PY
+      - name: Apply annotation-only Fredholm type repair
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-explicit-types-v1
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,os
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          text=p.read_text(); before=text
+          old='''noncomputable def fredholmData_of_compactPotential
+              (n : ℤ) (t : ℝ)
+              (hcompact : IsCompactOperator (graphPotentialOperator n)) :
+              NontrivialKernelFredholmData (weakSchrodingerOperator n t) :=
+            NontrivialKernelFredholmData.ofShiftedCompactDecomposition
+              (shiftedCompactDecomposition_of_compactPotential n t hcompact)'''
+          new='''noncomputable def fredholmData_of_compactPotential
+              (n : ℤ) (t : ℝ)
+              (hcompact : IsCompactOperator (graphPotentialOperator n)) :
+              NontrivialKernelFredholmData
+                (V := ActualHOne n) (W := ActualHMinusOne n)
+                (weakSchrodingerOperator n t) :=
+            NontrivialKernelFredholmData.ofShiftedCompactDecomposition
+              (V := ActualHOne n) (W := ActualHMinusOne n)
+              (shiftedCompactDecomposition_of_compactPotential n t hcompact)'''
+          assert text.count(old)==1
+          text=text.replace(old,new,1)
+          decl_re=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
+          def seq(s): return [m.group('name') for m in decl_re.finditer(s)]
+          assert seq(text)==seq(before)
+          def span(s,name):
+            ms=list(decl_re.finditer(s)); i=next(i for i,m in enumerate(ms) if m.group('name')==name); a=ms[i].start(); b=ms[i+1].start() if i+1<len(ms) else len(s); seg=s[a:b]; k=seg.find(':='); assert k>=0; return seg[:k+2]
+          hb=span(before,'fredholmData_of_compactPotential'); ha=span(text,'fredholmData_of_compactPotential')
+          def semantic_norm(h):
+            x=''.join(h.split())
+            x=x.replace('(V:=ActualHOnen)(W:=ActualHMinusOnen)','')
+            return x
+          assert semantic_norm(hb)==semantic_norm(ha)
+          forbidden=('sorry','admit','native_decide','Lean.ofReduceBool','unsafe')
+          assert {x:before.count(x) for x in forbidden}=={x:text.count(x) for x in forbidden}
+          p.write_text(text,encoding='utf-8',newline='\n'); b=p.read_bytes(); sha=hashlib.sha256(b).hexdigest()
+          audit={'schema':'fa-3341-explicit-type-annotation-audit-v1','declaration_index':3341,'declaration_name':'fredholmData_of_compactPotential','base_source_sha256':hashlib.sha256(before.encode()).hexdigest(),'candidate_source_sha256':sha,'candidate_bytes':len(b),'candidate_lines':len(text.splitlines()),'declaration_sequence_preserved':True,'public_header_text_changed':True,'header_change_kind':'explicit implicit-type arguments only','semantic_header_normalization_preserved':True,'semantic_public_proposition_change':False,'new_allowed_public_proposition_change_indices':[],'forbidden_lexical_counts_preserved':True}
+          out=Path('build-logs/codex-fa-after3341-explicit-types-v1'); (out/'ANNOTATION_AUDIT.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n')
+          (out/'CANDIDATE_IDENTITY.json').write_text(json.dumps({'sha256':sha,'bytes':len(b),'lines':len(text.splitlines())},indent=2)+'\n')
+          with Path(os.environ['GITHUB_ENV']).open('a') as f: f.write(f'CANDIDATE_SHA={sha}\n')
+          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail; OUT=build-logs/codex-fa-after3341-explicit-types-v1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+      - name: Direct full-source first frontier compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail; export PATH="$HOME/.elan/bin:$PATH"; OUT=build-logs/codex-fa-after3341-explicit-types-v1; mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){ s=$1;c=$2;o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean;i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean;rm -f "$o" "$i";:>"$OUT/$s.executed";set +e;lake env lean "-DmaxErrors=$c" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1;x=$?;set -e;echo $x>"$OUT/$s.exit";}
+          one Mock2 1; one Mock2_Advanced 1; test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean|awk '{print $1}')" = "$CANDIDATE_SHA"; one Mock2_FunctionalAnalysis 1
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-after3341-explicit-types-v1'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); s=p.read_text(); b=p.read_bytes()
+          ds=list(re.finditer(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)',s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
+          rx=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$'); es=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+            m=rx.match(raw)
+            if m:
+              ln=int(m.group(1)); i=bisect_right(starts,ln)-1; es.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[i].group('name') if i>=0 else None,'declaration_index':i if i>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')}; first=es[0] if es else {}; ann=json.loads((out/'ANNOTATION_AUDIT.json').read_text())
+          metric={'schema':'fa-after3341-explicit-types-v1','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ex),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'declaration_sequence_preserved':ann['declaration_sequence_preserved'],'public_proposition_changes_explicitly_audited':True,'semantic_public_proposition_change':ann['semantic_public_proposition_change'],'header_elaboration_annotation_audited':True,'allowed_public_proposition_changes':json.loads((out/'ALLOWED.json').read_text())}; (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT"; exit 0
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3341-explicit-types-v1-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3341-explicit-types-v1
+          retention-days: 30
+      - name: Preserve FA exit
+        if: always()
+        env: {FA_EXIT: "${{ steps.direct.outputs.fa_exit }}"}
+        shell: bash
+        run: test -n "${FA_EXIT:-}" || exit 86; exit "$FA_EXIT"
