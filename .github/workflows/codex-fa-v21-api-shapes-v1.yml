@@ -1,6 +1,6 @@
 name: Codex FA v21 API shapes v1
 
-# trigger: registered-v21-api-shapes-1
+# trigger: registered-v21-api-shapes-2
 on:
   push:
     branches:
