@@ -1,0 +1,59 @@
+name: Codex FA API probe 3460 3467 v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-3460-3467-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile repair probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/DownstreamProbe.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          open scoped Convolution
+          noncomputable section
+          example (f : ℂ → ℝ) (g : ℂ → ℂ)
+              (hcf : HasCompactSupport f) (hf : ContDiff ℝ 1 f)
+              (hg : LocallyIntegrable g (volume : Measure ℂ)) (w : ℂ) :
+              HasFDerivAt
+                (f ⋆[(ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ), volume] g)
+                (MeasureTheory.convolution (fderiv ℝ f) g
+                  ((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ).precompL ℂ)
+                  volume w) w := by
+            exact hcf.hasFDerivAt_convolution_left
+              (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ) hf hg w
+
+          example (sigma c A B M : ℂ) (wr xr : ℝ) :
+              sigma * (wr : ℂ) * A - sigma * A * (xr : ℂ) +
+                    (wr : ℂ) * B - B * (xr : ℂ) + c * M - c * M + M =
+                sigma * A * ((wr - xr : ℝ) : ℂ) +
+                    B * ((wr - xr : ℝ) : ℂ) + M := by
+            push_cast
+            ring
+          LEAN
+          lake env lean /tmp/DownstreamProbe.lean
