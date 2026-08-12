@@ -1,4 +1,4 @@
-name: Codex FA after3480 diamond diagnostic v10
+name: Codex FA after3484 Fourier registered v11
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ permissions:
   actions: read
   contents: read
 jobs:
-  diagnostic:
+  frontier:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -20,29 +20,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build topology-diamond diagnostic runner
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          src = Path('scripts/codex_fa_after3480_diamond_v8.sh').read_text()
-          src = src.replace('codex-fa-after3480-diamond-v8', 'codex-fa-after3480-diamond-diagnostic-v10')
-          needle = 'one Mock2_FunctionalAnalysis 1'
-          assert src.count(needle) == 1
-          src = src.replace(needle, 'one Mock2_FunctionalAnalysis 100', 1)
-          Path('/tmp/codex_fa_after3480_diamond_diagnostic_v10.sh').write_text(src)
-          PY
-      - name: Attest topology-diamond patch and direct compile diagnostic full source
+      - name: Attest Fourier cast repair and direct compile exact full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3480_diamond_diagnostic_v10.sh
-      - name: Upload diagnostic evidence
+        run: bash scripts/codex_fa_after3484_fourier_v11.sh
+      - name: Upload exact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3480-diamond-diagnostic-v10-${{ github.sha }}
+          name: codex-fa-after3484-fourier-registered-v11-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3480-diamond-diagnostic-v10
+            build-logs/codex-fa-after3484-fourier-v11
           retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3484-fourier-v11/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3484-fourier-v11/Mock2_FunctionalAnalysis.exit)"
