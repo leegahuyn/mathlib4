@@ -1,0 +1,57 @@
+name: Codex FA probe CLM sum coercion 3455 v2
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-probe-clm-sum-coe-3455-v2.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe extensional compact-operator normalization
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ClmSumCoe3455ProbeV2.lean <<'LEAN'
+          import Mathlib
+          open scoped BigOperators
+          variable {H E : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          variable [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+          example {J : Type*} [Fintype J]
+              (F : J → H →L[ℂ] E)
+              (h : IsCompactOperator (∑ j, ⇑(F j))) :
+              IsCompactOperator ⇑(∑ j, F j) := by
+            classical
+            convert h using 1
+            funext x
+            simp
+          LEAN
+          lake env lean /tmp/ClmSumCoe3455ProbeV2.lean | tee /tmp/clm-sum-coe-3455-probe-v2.log
+      - name: Upload probe log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-clm-sum-coe-3455-v2-${{ github.sha }}
+          path: /tmp/clm-sum-coe-3455-probe-v2.log
+          retention-days: 14
