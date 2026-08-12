@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-idx3162-mul-div-assoc-direction-v1",
+  "status": "DIRECT_GOAL_SHAPE_REPAIR_PENDING_RECOMPILE",
+  "source_run_id": 31552158108,
+  "source_sha256": "8bce382021bd85e7dd68b75f8a6ae87445d56f453629f1ffbc4053923e48cc79",
+  "repairs": [
+    {
+      "declaration_index": 3162,
+      "declaration_name": "tendsto_zero_of_uniform_bound_of_eventuallyEq_on_denseRange",
+      "old_fragment": "    _ < eps := by\n      dsimp only [eta]\n      rw [mul_div_assoc, div_lt_iff₀ hB1]\n      nlinarith",
+      "new_fragment": "    _ < eps := by\n      dsimp only [eta]\n      rw [← mul_div_assoc, div_lt_iff₀ hB1]\n      nlinarith"
+    }
+  ]
+}
