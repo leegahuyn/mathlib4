@@ -1,4 +1,4 @@
-name: Codex FA API probe Lp smul sub v2
+name: Codex FA API probe Lp smul sub v3
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Reproduce exact Lp subtraction shapes
+      - name: Prove parser shape and explicit-left smul_sub
         shell: bash
         run: |
           set -euo pipefail
@@ -44,18 +44,14 @@ jobs:
           #synth AddCommGroup A
           #synth Module ℂ A
 
-          example (c : ℂ) (x y : A) : c • (x - y) = c • x - c • y := by
-            exact smul_sub c x y
+          example (t : ℂ) (f : A) :
+              (DomAddAct.mk (-t) +ᵥ f - f) =
+                (DomAddAct.mk (-t) +ᵥ (f - f)) := by
+            rfl
 
           example (K t : ℂ) (f : A) :
-              K • (DomAddAct.mk (-t) +ᵥ f - f) =
+              K • ((DomAddAct.mk (-t) +ᵥ f) - f) =
                 K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
-            exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
-
-          example (K t : ℂ) (f : A) :
-              K • (DomAddAct.mk (-t) +ᵥ f - f) =
-                K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
-            letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩
             exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeLpSmulSub.lean | tee /tmp/probe.log
@@ -63,7 +59,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-lp-smul-sub-v2-${{ github.sha }}
+          name: codex-fa-api-probe-lp-smul-sub-v3-${{ github.sha }}
           path: /tmp/probe.log
           retention-days: 7
           if-no-files-found: warn
