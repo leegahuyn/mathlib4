@@ -40,7 +40,7 @@
       "declaration_index": 3292,
       "declaration_name": "integrable_kernel_smul_translation_sub",
       "old_fragment": "  simpa only [Pi.sub_apply, smul_sub] using hTranslate.sub hConst",
-      "new_fragment": "  have hPointwise :\n      (fun t : ℂ ↦ K t • ((DomAddAct.mk (-t) +ᵥ f) - f)) =\n        (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    exact smul_sub K t (DomAddAct.mk (-t) +ᵥ f) f\n  rw [hPointwise]\n  simpa only [Pi.sub_apply] using hTranslate.sub hConst"
+      "new_fragment": "  have hPointwise :\n      (fun t : ℂ ↦ K t • ((DomAddAct.mk (-t) +ᵥ f) - f)) =\n        (fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f) - K t • f) := by\n    funext t\n    exact smul_sub (K t) (DomAddAct.mk (-t) +ᵥ f) f\n  rw [hPointwise]\n  simpa only [Pi.sub_apply] using hTranslate.sub hConst"
     },
     {
       "declaration_index": 3293,
