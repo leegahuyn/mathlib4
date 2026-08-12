@@ -1,4 +1,4 @@
-name: Codex FA API probe downstream exact v4
+name: Codex FA API probe downstream exact v5
 on:
   push:
     branches:
@@ -27,42 +27,26 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile normalized downstream repair probes
+      - name: Compile exact RCLike real-part bridge
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/DownstreamExactProbeV4.lean <<'LEAN'
+          cat >/tmp/DownstreamExactProbeV5.lean <<'LEAN'
           import Mathlib
           noncomputable section
-          #check inner_self_eq_norm_sq
-          #check norm_sq_eq_re_inner
 
-          variable {V : Type*}
+          variable {V W : Type*}
           variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-          example (u : V) : (inner ℂ u u).re = ‖u‖ ^ 2 := by
-            have hinner : inner ℂ u u = (‖u‖ ^ 2 : ℂ) := by
-              simpa using (inner_self_eq_norm_sq (𝕜 := ℂ) u)
-            rw [hinner]
-            simp
+          variable [NormedAddCommGroup W] [InnerProductSpace ℂ W]
 
-          example : Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
-            intro w
-            unfold Function.Periodic.qParam
-            calc
-              Complex.exp
-                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) /
-                    ((2 : ℝ) : ℂ)) =
-                Complex.exp
-                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w /
-                    ((2 : ℝ) : ℂ) +
-                    2 * (Real.pi : ℂ) * Complex.I) := by
-                      congr 1
-                      push_cast
-                      ring
-              _ = Complex.exp
-                  ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w /
-                    ((2 : ℝ) : ℂ)) := by
-                    rw [Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+          example (u : V) : (inner ℂ u u).re = ‖u‖ ^ 2 := by
+            change RCLike.re (inner ℂ u u) = ‖u‖ ^ 2
+            exact inner_self_eq_norm_sq (𝕜 := ℂ) u
+
+          example (E : V →L[ℂ] W) (u : V) :
+              (inner ℂ (E u) (E u)).re = ‖E u‖ ^ 2 := by
+            change RCLike.re (inner ℂ (E u) (E u)) = ‖E u‖ ^ 2
+            exact inner_self_eq_norm_sq (𝕜 := ℂ) (E u)
           LEAN
-          lake env lean /tmp/DownstreamExactProbeV4.lean
+          lake env lean /tmp/DownstreamExactProbeV5.lean
