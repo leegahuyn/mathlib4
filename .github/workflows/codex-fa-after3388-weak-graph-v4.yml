@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build cumulative v4 runner
+      - name: Build fixed cumulative v4 runner
         shell: bash
         run: python3 scripts/codex_build_fa_after3388_weak_graph_v4.py
       - name: Attest, patch, and direct-compile exact full source
