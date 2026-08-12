@@ -1,0 +1,87 @@
+name: Codex FA qParam two-periodic cast bridge probe v1
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-qparam-two-periodic-probe-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile qParam cast-bridge proof variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat > /tmp/QParamProbe.lean <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Exp
+
+          open Real Complex Function
+
+          theorem qParam_two_periodic_probe_cast_bridge :
+              Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
+            intro w
+            unfold Function.Periodic.qParam
+            have htwo : ((2 : ℝ) : ℂ) = (2 : ℂ) := by norm_num
+            rw [htwo]
+            have harg :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + (2 : ℂ)) / (2 : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
+                    (2 : ℂ) * (Real.pi : ℂ) * Complex.I := by
+              ring
+            rw [harg, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+
+          theorem qParam_two_periodic_probe_simpa_bridge :
+              Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
+            intro w
+            unfold Function.Periodic.qParam
+            have harg :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + (2 : ℂ)) / (2 : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
+                    (2 : ℂ) * (Real.pi : ℂ) * Complex.I := by
+              ring
+            have harg' :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + (2 : ℂ)) / ((2 : ℝ) : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / ((2 : ℝ) : ℂ) +
+                    (2 : ℂ) * (Real.pi : ℂ) * Complex.I := by
+              simpa using harg
+            rw [harg', Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=20 -DwarningAsError=false /tmp/QParamProbe.lean 2>&1 | tee /tmp/qparam-probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/qparam-probe.exit
+          exit "$x"
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-qparam-two-periodic-probe-v1-${{ github.sha }}
+          path: |
+            /tmp/QParamProbe.lean
+            /tmp/qparam-probe.log
+            /tmp/qparam-probe.exit
+          retention-days: 30
