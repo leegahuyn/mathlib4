@@ -1,0 +1,69 @@
+name: Codex FA API probe v10 fixes v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-v10-fixes-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile v10 repair micro-probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/V10FixProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter MeasureTheory
+
+          variable {H : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          example (a : ℂ) (x y : H) :
+              a * inner ℂ x y = inner ℂ x (a • y) := by
+            simp [inner_smul_right]
+
+          example (u : H) :
+              (inner ℂ u u).re = ‖u‖ ^ 2 := by
+            exact (norm_sq_eq_re_inner (𝕜 := ℂ) u).symm
+
+          example :
+              Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
+            intro w
+            unfold Function.Periodic.qParam
+            change Complex.exp
+                ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) / (2 : ℂ)) =
+              Complex.exp
+                ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ))
+            have harg :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) / (2 : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
+                    2 * (Real.pi : ℂ) * Complex.I := by
+              ring
+            rw [harg, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+
+          #check ContinuousLinearMap.isUniformEmbedding_of_bound
+          #check IsCompactOperator.isCompact_closure_image_closedBall
+          LEAN
+          lake env lean /tmp/V10FixProbe.lean
