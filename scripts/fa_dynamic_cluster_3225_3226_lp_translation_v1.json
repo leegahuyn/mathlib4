@@ -1,6 +1,6 @@
 {
-  "schema": "fa-dynamic-cluster-3225-3226-lp-translation-v2",
-  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "schema": "fa-dynamic-cluster-3225-3226-lp-translation-v3",
+  "status": "PINNED_API_PROBE_VALIDATED_MODULE_AMBIGUITY_CORRECTED_PENDING_DIRECT_LEAN",
   "api_probe_run_id": 31556898468,
   "source_run_id": 31556830579,
   "source_sha256": "e23520f4df4c8c1df075667463801511342622cfa1466df3685ca2c7aa71250b",
@@ -9,13 +9,13 @@
       "declaration_index": 3225,
       "declaration_name": "ambientPlaneL2_translation_tendsto",
       "old_fragment": "  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by\n    fun_prop\n  simpa using h.continuousAt",
-      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩\n  let F : ℂ → AmbientPlaneL2 := fun t ↦ DomAddAct.mk t +ᵥ f\n  have h : Continuous F := by\n    dsimp [F]\n    fun_prop\n  have h0 : Filter.Tendsto F (nhds 0) (nhds (F 0)) := h.continuousAt\n  have hz : F 0 = f := by\n    dsimp [F]\n    exact zero_vadd _ f\n  rw [hz] at h0\n  exact h0"
+      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩\n  let F : ℂ → AmbientPlaneL2 := fun t ↦ DomAddAct.mk t +ᵥ f\n  have h : Continuous F := by\n    dsimp [F]\n    fun_prop\n  have h0 : Filter.Tendsto F (nhds 0) (nhds (F 0)) := h.continuousAt\n  have hz : F 0 = f := by\n    dsimp [F]\n    exact zero_vadd _ f\n  rw [hz] at h0\n  exact h0"
     },
     {
       "declaration_index": 3226,
       "declaration_name": "ambientPlaneL2_norm_translation_sub_tendsto_zero",
       "old_fragment": "  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by\n    fun_prop\n  simpa using h.continuousAt",
-      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩\n  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by\n    fun_prop\n  have h0 : ContinuousAt\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) 0 := h.continuousAt\n  simpa using h0"
+      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩\n  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by\n    fun_prop\n  have h0 : ContinuousAt\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) 0 := h.continuousAt\n  simpa using h0"
     }
   ]
 }
