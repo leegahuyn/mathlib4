@@ -72,3 +72,4 @@ jobs:
             simpa using hadd
           LEAN
           lake env lean /tmp/CLMBoundedTendstoProbe.lean
+          # registered workflow retrigger
