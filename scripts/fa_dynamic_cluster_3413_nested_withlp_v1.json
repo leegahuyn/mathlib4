@@ -1,0 +1,15 @@
+{
+  "schema": "fa-dynamic-cluster-3413-nested-withlp-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31562829364,
+  "source_sha256": "cce0f96167282088ea38dbfa05262830482f4577e5afce171a5f693e0a4dcc68",
+  "api_probe_run_id": 31563943793,
+  "repairs": [
+    {
+      "declaration_index": 3413,
+      "declaration_name": "intrinsicJointCutoffTriple_tendsto",
+      "old_fragment": "  have hBase := baseProjection_intrinsicJointCutoffTriple_tendsto n x\n  have hRaise := raiseProjection_intrinsicJointCutoffTriple_tendsto n x\n  have hLower := lowerProjection_intrinsicJointCutoffTriple_tendsto n x\n  simpa only [intrinsicJointCutoffTriple, baseProjection_apply,\n    raiseProjection_apply, lowerProjection_apply] using\n      hBase.prodMk_nhds (hRaise.prodMk_nhds hLower)",
+      "new_fragment": "  have hBase := baseProjection_intrinsicJointCutoffTriple_tendsto n x\n  have hRaise := raiseProjection_intrinsicJointCutoffTriple_tendsto n x\n  have hLower := lowerProjection_intrinsicJointCutoffTriple_tendsto n x\n  have hInner :=\n    ((WithLp.prod_continuous_toLp (p := 2)\n      (OrbitPeterssonHilbert ((n + 1) + 1))\n      (OrbitPeterssonHilbert n)).tendsto\n        (raiseProjection n x, lowerProjection n x)).comp\n      (hRaise.prodMk_nhds hLower)\n  have hOuter :=\n    ((WithLp.prod_continuous_toLp (p := 2)\n      (OrbitPeterssonHilbert (n + 1))\n      (WithLp 2 (OrbitPeterssonHilbert ((n + 1) + 1) ×\n        OrbitPeterssonHilbert n))).tendsto\n        (baseProjection n x,\n          WithLp.toLp 2 (raiseProjection n x, lowerProjection n x))).comp\n      (hBase.prodMk_nhds hInner)\n  simpa only [intrinsicJointCutoffTriple, baseProjection_apply,\n    raiseProjection_apply, lowerProjection_apply] using hOuter"
+    }
+  ]
+}
