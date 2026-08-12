@@ -1,4 +1,4 @@
-name: Codex FA after3492 mass v15
+name: Codex FA after3519 no-ring v16
 on:
   push:
     branches:
@@ -20,23 +20,23 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Attest latest-authoritative cumulative repairs and direct compile exact full source
+      - name: Attest no-ring repair and direct compile exact latest authoritative full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash scripts/codex_fa_after3492_mass_v15.sh
+        run: bash scripts/codex_fa_after3519_noring_v16.sh
       - name: Upload exact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3492-mass-v15-${{ github.sha }}
+          name: codex-fa-after3519-noring-v16-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3492-mass-v15
+            build-logs/codex-fa-after3519-noring-v16
           retention-days: 30
       - name: Preserve FA direct exit
         if: always()
         shell: bash
         run: |
-          test -f build-logs/codex-fa-after3492-mass-v15/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-after3492-mass-v15/Mock2_FunctionalAnalysis.exit)"
+          test -f build-logs/codex-fa-after3519-noring-v16/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3519-noring-v16/Mock2_FunctionalAnalysis.exit)"
