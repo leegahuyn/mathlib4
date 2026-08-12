@@ -21,42 +21,55 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Inspect anti-dual norm and Hilbert transport APIs
+      - name: Validate anti-Riesz isometry and Hilbert transport
         shell: bash
         run: |
           set -uo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeAntiDualHilbert.lean <<'LEAN'
           import Mathlib
-          open ComplexConjugate
-          #check ContinuousLinearMap.opNorm_le_bound
-          #check ContinuousLinearMap.le_opNorm
-          #check inner_norm_le
-          #check norm_inner_le
-          #check innerSLFlip
-          #check innerSLFlip_apply_apply
-          #check innerSL_apply_norm
-          #check LinearIsometry.ofNorm
-          #check LinearIsometryEquiv.ofSurjective
-          #check InnerProductSpace.ofCore
-          #check InnerProductSpace.Core
-          #check PreInnerProductSpace.Core
-          #check StrongDual
-          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
-          #synth CompleteSpace (E →L⋆[ℂ] ℂ)
-          #synth InnerProductSpace ℂ (StrongDual ℂ E)
-          example (x : E) : ‖innerSLFlip ℂ x‖ = ‖x‖ := by
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+
+          theorem probe_innerSLFlip_norm (x : E) : ‖innerSLFlip ℂ x‖ = ‖x‖ := by
             apply le_antisymm
             · apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg x)
               intro y
               rw [innerSLFlip_apply_apply]
-              exact inner_norm_le _ _
+              exact norm_inner_le_norm _ _
             · by_cases hx : x = 0
               · simp [hx]
-              · have h := (innerSLFlip ℂ x).le_opNorm x
-                rw [innerSLFlip_apply_apply, norm_inner_self] at h
+              · have hop := (innerSLFlip ℂ x).le_opNorm x
+                rw [innerSLFlip_apply_apply] at hop
+                have hre : ‖x‖ ^ 2 ≤ ‖inner ℂ x x‖ := by
+                  calc
+                    ‖x‖ ^ 2 = (inner ℂ x x).re := norm_sq_eq_re_inner (𝕜 := ℂ) x
+                    _ ≤ ‖inner ℂ x x‖ := Complex.re_le_norm _
+                have hsquare : ‖x‖ ^ 2 ≤ ‖innerSLFlip ℂ x‖ * ‖x‖ := hre.trans hop
                 have hxn : 0 < ‖x‖ := norm_pos_iff.mpr hx
                 nlinarith [norm_nonneg (innerSLFlip ℂ x)]
+
+          noncomputable def probeAntiRieszLinearIsometry :
+              E →ₗᵢ[ℂ] (E →L⋆[ℂ] ℂ) where
+            toLinearMap := (innerSLFlip ℂ (E := E)).toLinearMap
+            norm_map' := probe_innerSLFlip_norm
+
+          variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
+
+          noncomputable def probeTransportInnerProduct
+              (e : F ≃ₗᵢ[ℂ] E) : InnerProductSpace ℂ F where
+            inner x y := inner ℂ (e x) (e y)
+            norm_sq_eq_re_inner x := by
+              rw [e.norm_map]
+              exact norm_sq_eq_re_inner (𝕜 := ℂ) (e x)
+            conj_inner_symm x y := inner_conj_symm (e x) (e y)
+            add_left x y z := by
+              rw [map_add, inner_add_left]
+            smul_left x y r := by
+              rw [map_smul, inner_smul_left]
+
+          #check probe_innerSLFlip_norm
+          #check probeAntiRieszLinearIsometry
+          #check probeTransportInnerProduct
           LEAN
           set +e
           lake env lean -DwarningAsError=false /tmp/ProbeAntiDualHilbert.lean 2>&1 | tee /tmp/probe.log
@@ -68,7 +81,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-antidual-norm-hilbert-${{ github.sha }}
+          name: codex-fa-api-probe-antiriesz-transport-${{ github.sha }}
           path: |
             /tmp/probe.log
             /tmp/probe.exit
