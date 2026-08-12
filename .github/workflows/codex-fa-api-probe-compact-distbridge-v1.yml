@@ -1,0 +1,56 @@
+name: Codex FA API probe compact distbridge v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-compact-distbridge-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile exact CLM dist convergence bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/CompactDistBridgeProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+
+          example (Tn : ℕ → E →L[ℂ] F) (T : E →L[ℂ] F) (eps : ℕ → ℝ)
+              (hT : ∀ N, IsCompactOperator (Tn N))
+              (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
+              (heps : Tendsto eps atTop (nhds 0)) :
+              IsCompactOperator T := by
+            apply isCompactOperator_of_tendsto (l := (atTop : Filter ℕ))
+            · rw [tendsto_iff_dist_tendsto_zero]
+              exact squeeze_zero
+                (fun N => dist_nonneg)
+                (fun N => by simpa [dist_eq_norm] using hTail N)
+                heps
+            · exact Filter.Eventually.of_forall hT
+          LEAN
+          lake env lean /tmp/CompactDistBridgeProbe.lean
