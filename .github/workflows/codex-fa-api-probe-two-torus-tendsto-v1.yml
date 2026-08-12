@@ -1,4 +1,4 @@
-name: Codex FA API probe post3519 v2
+name: Codex FA API probe downstream exact v3
 on:
   push:
     branches:
@@ -27,53 +27,47 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile repaired post3519 scalar API probes
+      - name: Compile exact downstream repair probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/Post3519ProbeV2.lean <<'LEAN'
+          cat >/tmp/DownstreamExactProbeV3.lean <<'LEAN'
           import Mathlib
           noncomputable section
-          open Filter MeasureTheory Module End
+          open Filter MeasureTheory
+          attribute [local instance 10000] instMeasureSpaceUnitAddCircle
 
-          #check intervalIntegral.integrableOn_Ioo_rpow_iff
+          abbrev ProbeTwoTorus := UnitAddTorus (Fin 2)
+          noncomputable abbrev ProbeTwoTorusL2 :=
+            MeasureTheory.Lp ℂ 2 (volume : Measure ProbeTwoTorus)
 
-          example (C : ℝ) :
-              Filter.Tendsto (fun N : ℕ => C / ((N : ℝ) + 1))
-                Filter.atTop (nhds 0) := by
-            have hconst :
-                Filter.Tendsto (fun _ : ℕ => C) Filter.atTop (nhds C) :=
-              tendsto_const_nhds
-            simpa only [div_eq_mul_inv, one_div, one_mul, mul_zero] using
-              hconst.mul
-                (tendsto_one_div_add_atTop_nhds_zero_nat :
-                  Filter.Tendsto (fun N : ℕ => (1 : ℝ) / (N + 1))
-                    Filter.atTop (nhds 0))
+          example (modes : ℕ → Finset (Fin 2 → ℤ))
+              (hmodes : Filter.Tendsto modes Filter.atTop Filter.atTop)
+              (f : ProbeTwoTorusL2) :
+              Filter.Tendsto
+                (fun N => ∑ k ∈ modes N,
+                  UnitAddTorus.mFourierCoeff f k • UnitAddTorus.mFourierLp 2 k)
+                Filter.atTop (nhds f) := by
+            change Filter.Tendsto
+              ((fun s => ∑ k ∈ s,
+                UnitAddTorus.mFourierCoeff f k • UnitAddTorus.mFourierLp 2 k) ∘ modes)
+              Filter.atTop (nhds f)
+            exact (UnitAddTorus.hasSum_mFourier_series_L2 f).comp hmodes
 
-          example {β T : ℝ} (hT : 0 < T) :
-              IntegrableOn (fun y : ℝ => y ^ (β - 2)) (Set.Ioo 0 T) ↔
-                1 < β := by
-            rw [intervalIntegral.integrableOn_Ioo_rpow_iff hT]
-            constructor <;> intro h <;> linarith
+          variable {V : Type*}
+          variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
+          example (u : V) : (inner ℂ u u).re = ‖u‖ ^ 2 := by
+            rw [← norm_sq_eq_re_inner (𝕜 := ℂ) u]
 
-          example {β : ℝ} (hβ : 1 < β) :
-              IntegrableOn
-                (fun y : ℝ => Real.exp (-y) * y ^ (β - 2))
-                (Set.Ioi 0) := by
-            convert Real.GammaIntegral_convergent (s := β - 1) (by linarith) using 1 <;>
+          example : Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
+            intro w
+            unfold Function.Periodic.qParam
+            have harg :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + 2) / (2 : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
+                    2 * (Real.pi : ℂ) * Complex.I := by
               ring
-
-          variable {X : Type*}
-          variable [NormedAddCommGroup X] [InnerProductSpace ℂ X] [CompleteSpace X]
-          example (K : X →L[ℂ] X) (hK : IsCompactOperator K)
-              (μ : ℂ) (hμ : μ ≠ 0) :
-              FiniteDimensional ℂ (eigenspace K.toLinearMap μ) := by
-            replace hK := hK.restrict'
-              ((mem_invtSubmodule_iff_forall_mem_of_mem _).mp
-                (eigenspace_mem_invtSubmodule K.toLinearMap μ))
-            rw [restrict_eigenspace, LinearMap.coe_smul,
-              IsCompactOperator.smul_iff₀ hμ] at hK
-            rwa [← isCompactOperator_id_iff_finiteDimensional]
+            rw [harg, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
           LEAN
-          lake env lean /tmp/Post3519ProbeV2.lean
+          lake env lean /tmp/DownstreamExactProbeV3.lean
