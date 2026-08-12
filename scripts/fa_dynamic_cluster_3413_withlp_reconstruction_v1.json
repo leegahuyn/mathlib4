@@ -1,0 +1,13 @@
+{
+  "schema": "fa-dynamic-cluster-3413-withlp-reconstruction-v1",
+  "status": "GENERIC_API_PROBE_VERIFIED_PENDING_AUTHORITATIVE_FRONTIER",
+  "api_probe_run_id": 31576675661,
+  "repairs": [
+    {
+      "declaration_index": 3413,
+      "declaration_name": "intrinsicJointCutoffTriple_tendsto",
+      "old_fragment": "  simpa only [intrinsicJointCutoffTriple, baseProjection_apply,\n    raiseProjection_apply, lowerProjection_apply] using hOuter",
+      "new_fragment": "  change Filter.Tendsto (fun j ↦ intrinsicJointCutoffTriple j n x)\n    Filter.atTop (nhds x) at hOuter\n  exact hOuter"
+    }
+  ]
+}
