@@ -27,7 +27,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile TwoTorus Tendsto bridge probes
+      - name: Compile explicit TwoTorus Tendsto bridge
         shell: bash
         run: |
           set -euo pipefail
@@ -40,17 +40,6 @@ jobs:
           abbrev ProbeTwoTorus := UnitAddTorus (Fin 2)
           noncomputable abbrev ProbeTwoTorusL2 :=
             MeasureTheory.Lp ℂ 2 (volume : Measure ProbeTwoTorus)
-
-          example (modes : ℕ → Finset (Fin 2 → ℤ))
-              (hmodes : Filter.Tendsto modes Filter.atTop Filter.atTop)
-              (f : ProbeTwoTorusL2) :
-              Filter.Tendsto
-                (fun N => ∑ k ∈ modes N,
-                  UnitAddTorus.mFourierCoeff (f : ProbeTwoTorus → ℂ) k •
-                    UnitAddTorus.mFourierLp 2 k)
-                Filter.atTop (nhds f) := by
-            simpa only [Function.comp_apply] using
-              (UnitAddTorus.hasSum_mFourier_series_L2 f).comp hmodes
 
           example (modes : ℕ → Finset (Fin 2 → ℤ))
               (hmodes : Filter.Tendsto modes Filter.atTop Filter.atTop)
