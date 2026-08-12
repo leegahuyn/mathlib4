@@ -1,0 +1,15 @@
+{
+  "schema": "fa-dynamic-cluster-3305-withlp-tendsto-v1",
+  "status": "PINNED_API_PROBE_VERIFIED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31562339582,
+  "source_run_id": 31561568521,
+  "source_sha256": "8709441789c6b021a9ef6b6495be722723a9cac66747432ece58d60461041e7e",
+  "repairs": [
+    {
+      "declaration_index": 3305,
+      "declaration_name": "periodize_ambientJointGraphApproximation",
+      "old_fragment": "      have hPair := hRaisePhysical.prodMk_nhds hLowerPhysical\n      exact (WithLp.prod_continuous_toLp (p := 2)).continuousAt.tendsto.comp\n        hPair",
+      "new_fragment": "      have hPair := hRaisePhysical.prodMk_nhds hLowerPhysical\n      exact ((WithLp.prod_continuous_toLp (p := 2)\n        (OrbitPeterssonHilbert ((n + 1) + 1))\n        (OrbitPeterssonHilbert n)).tendsto (p.2.fst, p.2.snd)).comp hPair"
+    }
+  ]
+}
