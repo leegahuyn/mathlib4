@@ -20,18 +20,9 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build cumulative explicit-neg runner
+      - name: Build cumulative v4 runner
         shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          src = Path('scripts/codex_fa_after3388_weak_graph_v2.sh').read_text()
-          src = src.replace('codex-fa-after3388-weak-graph-v2', 'codex-fa-after3388-weak-graph-v4')
-          marker = 'curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh'
-          assert src.count(marker) == 1
-          src = src.replace(marker, 'python3 scripts/codex_fa_apply_weak_downstream_3392_3407.py "$OUT"\n\n' + marker, 1)
-          Path('/tmp/codex_fa_after3388_weak_graph_v4.sh').write_text(src)
-          PY
+        run: python3 scripts/codex_build_fa_after3388_weak_graph_v4.py
       - name: Attest, patch, and direct-compile exact full source
         env:
           GH_TOKEN: ${{ github.token }}
