@@ -1,0 +1,59 @@
+name: Codex FA probe CLM sum coercion v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-probe-clm-sum-coe-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile coercion probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/CLMSumProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open scoped BigOperators
+          variable {H E : Type*}
+          variable [NormedAddCommGroup H] [NormedSpace ℂ H]
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          example {J : Type*} [Fintype J] (f : J → H →L[ℂ] E) :
+              (⇑(∑ j, f j) : H → E) = fun x => ∑ j, f j x := by
+            funext x
+            simp
+          example {J : Type*} [Fintype J] (f : J → H →L[ℂ] E)
+              (h : IsCompactOperator (fun x => ∑ j, f j x)) :
+              IsCompactOperator ⇑(∑ j, f j) := by
+            simpa using h
+          end
+          LEAN
+          lake env lean /tmp/CLMSumProbe.lean | tee /tmp/clm-sum-probe.log
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-clm-sum-coe-v1-${{ github.sha }}
+          path: /tmp/clm-sum-probe.log
+          retention-days: 14
