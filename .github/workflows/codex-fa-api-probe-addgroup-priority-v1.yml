@@ -35,7 +35,7 @@ jobs:
             · apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg x)
               intro y
               rw [innerSLFlip_apply_apply]
-              exact norm_inner_le_norm _ _
+              exact norm_inner_le_norm (𝕜 := ℂ) y x
             · by_cases hx : x = 0
               · simp [hx]
               · have hop := (innerSLFlip ℂ x).le_opNorm x
@@ -55,11 +55,12 @@ jobs:
 
           variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
 
+          @[instance_reducible]
           noncomputable def probeTransportInnerProduct
               (e : F ≃ₗᵢ[ℂ] E) : InnerProductSpace ℂ F where
             inner x y := inner ℂ (e x) (e y)
             norm_sq_eq_re_inner x := by
-              rw [e.norm_map]
+              rw [← e.norm_map x]
               exact norm_sq_eq_re_inner (𝕜 := ℂ) (e x)
             conj_inner_symm x y := inner_conj_symm (e x) (e y)
             add_left x y z := by
