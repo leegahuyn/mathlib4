@@ -1,0 +1,57 @@
+{
+  "schema": "fa-dynamic-cluster-3308-3316-fullplane-mollified-v2",
+  "status": "HIGHCAP_AND_PINNED_API_PROBE_DERIVED_PENDING_DIRECT_LEAN",
+  "source_run_id": 31562829364,
+  "source_sha256": "cce0f96167282088ea38dbfa05262830482f4577e5afce171a5f693e0a4dcc68",
+  "api_probe_runs": [31563082205, 31564815480],
+  "repairs": [
+    {
+      "declaration_index": 3308,
+      "declaration_name": "friedrichsMollifiedRepresentative",
+      "old_fragment": "  friedrichsMollifierReal j ⋆[ContinuousLinearMap.lsmul ℝ ℂ, volume]\n    (f : ℂ → ℂ)",
+      "new_fragment": "  friedrichsMollifierReal j ⋆[\n    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ), volume]\n    (f : ℂ → ℂ)"
+    },
+    {
+      "declaration_index": 3309,
+      "declaration_name": "friedrichsMollifiedRepresentative_contDiff",
+      "old_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left\n      (ContinuousLinearMap.lsmul ℝ ℂ)\n      (friedrichsMollifierReal_contDiff j)\n      ((MeasureTheory.Lp.memLp f).locallyIntegrable (by norm_num))",
+      "new_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left\n      (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)\n      (friedrichsMollifierReal_contDiff j)\n      ((MeasureTheory.Lp.memLp f).locallyIntegrable (by norm_num))"
+    },
+    {
+      "declaration_index": 3310,
+      "declaration_name": "friedrichsMollifiedRepresentative_hasCompactSupport",
+      "old_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).convolution hf",
+      "new_fragment": "  exact (friedrichsMollifierReal_hasCompactSupport j).convolution\n    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ) hf"
+    },
+    {
+      "declaration_index": 3311,
+      "declaration_name": "friedrichsMollifiedFullPlaneTest",
+      "old_fragment": "  tsupport_subset' := subset_univ",
+      "new_fragment": "  tsupport_subset' := by\n    intro x hx\n    simp"
+    },
+    {
+      "declaration_index": 3313,
+      "declaration_name": "height_mul_friedrichsMollifier_eq_scaled_unit",
+      "old_fragment": "  rw [him]\n  push_cast\n  ring",
+      "new_fragment": "  simp only [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,\n    zero_mul, add_zero]\n  push_cast\n  ring"
+    },
+    {
+      "declaration_index": 3314,
+      "declaration_name": "fderiv_height_mul_friedrichsMollifier",
+      "old_fragment": "  have hinner : DifferentiableAt ℝ\n      (fun s : ℂ ↦ friedrichsUnitHeightMollifierTest (a • s)) t :=\n    (friedrichsUnitHeightMollifierTest.contDiff.comp\n      (contDiff_const_smul a)).differentiableAt (by simp)\n  rw [fderiv_fun_const_smul hinner a, fderiv_comp_smul]\n  simp only [ContinuousLinearMap.smul_apply, smul_smul, pow_two,\n    Complex.real_smul]",
+      "new_fragment": "  have hcomp : ContDiff ℝ (⊤ : ℕ∞)\n      (fun s : ℂ ↦ friedrichsUnitHeightMollifierTest (a • s)) :=\n    friedrichsUnitHeightMollifierTest.contDiff.comp\n      (contDiff_const_smul a)\n  have hinner : DifferentiableAt ℝ\n      (fun s : ℂ ↦ friedrichsUnitHeightMollifierTest (a • s)) t :=\n    (hcomp.differentiable (by simp)) t\n  rw [fderiv_fun_const_smul hinner a, fderiv_comp_smul]\n  simp only [ContinuousLinearMap.smul_apply, smul_smul, pow_two,\n    Complex.real_smul]\n  dsimp only [a]\n  ring_nf"
+    },
+    {
+      "declaration_index": 3315,
+      "declaration_name": "friedrichsAffineCommutatorKernel_eq_directionalDerivative",
+      "old_fragment": "  simp only [friedrichsAffineCommutatorKernel,\n    friedrichsUnitAffineCommutatorTest_apply,\n    ambientConstantMaassDerivative]\n  ring",
+      "new_fragment": "  simp only [friedrichsAffineCommutatorKernel,\n    friedrichsUnitAffineCommutatorTest_apply,\n    ambientConstantMaassDerivative]\n  have hheight : (friedrichsUnitHeightMollifierTest : ℂ → ℂ) =\n      (fun s : ℂ ↦ (s.im : ℂ) * friedrichsUnitMollifier s) := by\n    funext s\n    exact friedrichsUnitHeightMollifierTest_apply s\n  rw [hheight]\n  ring"
+    },
+    {
+      "declaration_index": 3316,
+      "declaration_name": "fullPlaneHeightMul",
+      "old_fragment": "  tsupport_subset' := subset_univ",
+      "new_fragment": "  tsupport_subset' := by\n    intro x hx\n    simp"
+    }
+  ]
+}
