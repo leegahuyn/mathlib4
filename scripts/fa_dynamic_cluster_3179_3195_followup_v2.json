@@ -1,0 +1,59 @@
+{
+  "schema": "fa-dynamic-cluster-3179-3195-followup-v2",
+  "status": "DIRECT_DIAGNOSTIC_FOLLOWUP_PENDING_RECOMPILE",
+  "source_run_id": 31553234087,
+  "source_sha256": "1487389a6242c200f6b7282db997b0dce3b831cccf08c568c0c2fc2d527aa954",
+  "repairs": [
+    {
+      "declaration_index": 3179,
+      "declaration_name": "completedGaugeMultiplier_hasCompactCarrierSupport",
+      "replacements": [
+        {
+          "id": "restrict-ae-facts-and-zero-representative-v2",
+          "old_fragment": "    filter_upwards [\n      MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m\n          (l2Coordinate m (Acore u))),\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m\n        (Acore u)).restrict,\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean.restrict,\n      ae_restrict_mem hK.measurableSet.compl]\n        with z hzRestr hzGauge hzOpen hzCompl",
+          "new_fragment": "    filter_upwards [\n      MeasureTheory.LpToLpRestrictCLM_coeFn ℂ Kᶜ\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding m\n          (l2Coordinate m (Acore u))),\n      ae_mono Measure.restrict_le_self\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.coeFn_embedding_l2Coordinate_fixedPhaseGauge m\n          (Acore u)),\n      ae_mono Measure.restrict_le_self\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.ae_mem_open_chosenEuclidean,\n      ae_restrict_mem hK.measurableSet.compl,\n      MeasureTheory.Lp.coeFn_zero ℂ 2\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ)]\n        with z hzRestr hzGauge hzOpen hzCompl hzZero"
+        },
+        {
+          "id": "close-zero-by-symmetric-coefn-zero",
+          "old_fragment": "    simp only [hcZero, zero_mul, Pi.zero_apply]",
+          "new_fragment": "    rw [hcZero, zero_mul]\n    simpa using hzZero.symm"
+        },
+        {
+          "id": "explicit-lp-zero-measure-v2",
+          "old_fragment": "    rw [hAllZero x]\n    exact MeasureTheory.Lp.coeFn_zero",
+          "new_fragment": "    rw [hAllZero x]\n    exact MeasureTheory.Lp.coeFn_zero ℂ 2\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.chosenEuclideanCarrierMeasure.restrict Kᶜ)"
+        }
+      ]
+    },
+    {
+      "declaration_index": 3180,
+      "declaration_name": "HasCompactCarrierSupport.add",
+      "old_fragment": "  rw [hAdd, hxz (fun hzK ↦ hz (Or.inl hzK)),\n    hyz (fun hzL ↦ hz (Or.inr hzL)), add_zero]",
+      "new_fragment": "  rw [map_add, hAdd]\n  simp only [Pi.add_apply]\n  rw [hxz (fun hzK ↦ hz (Or.inl hzK)),\n    hyz (fun hzL ↦ hz (Or.inr hzL)), add_zero]"
+    },
+    {
+      "declaration_index": 3192,
+      "declaration_name": "euclideanRaiseForwardTest_apply_upper",
+      "old_fragment": "  simp only [euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  ring",
+      "new_fragment": "  simp only [euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  ring"
+    },
+    {
+      "declaration_index": 3193,
+      "declaration_name": "euclideanLowerFromSuccForwardTest_apply_upper",
+      "old_fragment": "  simp only [euclideanLowerFromSuccForwardTest,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul]\n  ring",
+      "new_fragment": "  simp only [euclideanLowerFromSuccForwardTest,\n    add_apply, sub_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC,\n    HalfWeightCompactCoordinateGreen.restrictToUpper, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  ring"
+    },
+    {
+      "declaration_index": 3194,
+      "declaration_name": "euclideanRaiseGauge_periodized_eq_forwardTest",
+      "old_fragment": "  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  rw [hx, hy, hv]\n  simp only [UpperHalfPlane.coe_im]\n  ring"
+    },
+    {
+      "declaration_index": 3195,
+      "declaration_name": "euclideanLowerFromSuccGauge_periodized_eq_forwardTest",
+      "old_fragment": "  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  rw [hx, hy, hv]\n  simp only [UpperHalfPlane.coe_im]\n  ring"
+    }
+  ]
+}
