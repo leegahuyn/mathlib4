@@ -1,0 +1,62 @@
+name: Codex FA API probe 3489 mass form v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-3489-mass-form-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile mass-form constructor probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/MassFormProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          abbrev SA (V : Type*) [NormedAddCommGroup V] [NormedSpace ℂ V] := V →L⋆[ℂ] ℂ
+          abbrev WA (V : Type*) [NormedAddCommGroup V] [NormedSpace ℂ V] := V →L[ℂ] SA V
+          variable {H V : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
+          noncomputable def eml (J : V →L[ℂ] H) : V →ₗ[ℂ] SA V where
+            toFun u := (innerSLFlip ℂ (J u)).comp J
+            map_add' u w := by ext v; simp
+            map_smul' c u := by ext v; simp
+          theorem eml_bound (J : V →L[ℂ] H) (u v : V) :
+              ‖eml J u v‖ ≤ ‖J‖ ^ 2 * ‖u‖ * ‖v‖ := by
+            calc
+              ‖eml J u v‖ = ‖inner ℂ (J v) (J u)‖ := rfl
+              _ ≤ ‖J v‖ * ‖J u‖ := norm_inner_le_norm _ _
+              _ ≤ (‖J‖ * ‖v‖) * (‖J‖ * ‖u‖) := by
+                exact mul_le_mul (J.le_opNorm v) (J.le_opNorm u)
+                  (norm_nonneg _) (mul_nonneg (norm_nonneg J) (norm_nonneg v))
+              _ = ‖J‖ ^ 2 * ‖u‖ * ‖v‖ := by ring
+          noncomputable def emf (J : V →L[ℂ] H) : WA V :=
+            LinearMap.mkContinuous₂ (eml J) (‖J‖ ^ 2) (eml_bound J)
+          example (J : V →L[ℂ] H) (u v : V) :
+              emf J u v = inner ℂ (J v) (J u) := by
+            rfl
+          LEAN
+          lake env lean /tmp/MassFormProbe.lean
