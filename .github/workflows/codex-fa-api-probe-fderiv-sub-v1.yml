@@ -16,12 +16,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
-      - name: Probe translation derivative and affine commutator
+      - name: Probe affine translation, L2 continuity, and FullPlane type
         shell: bash
         run: |
           set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeFDerivSub.lean <<'LEAN'
           import Mathlib
+          open Topology Filter MeasureTheory
+          open scoped ContDiff Distributions
           #check fderiv_comp_sub
           example (t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
               fderiv ℝ (fun q : ℂ => f (q - t)) w = fderiv ℝ f (w - t) := by
@@ -52,6 +54,23 @@ jobs:
             simp only [Complex.sub_im]
             push_cast
             ring
+
+          noncomputable abbrev AmbientPlaneL2Probe := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
+          example (f : AmbientPlaneL2Probe) :
+              Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
+            have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
+              DomAddAct.continuous_mk.vadd continuous_const
+            simpa using h.continuousAt
+          example (f : AmbientPlaneL2Probe) :
+              Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
+            have hTranslate : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
+              DomAddAct.continuous_mk.vadd continuous_const
+            have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) :=
+              (hTranslate.sub continuous_const).norm
+            simpa using h.continuousAt
+
+          abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ ∞
+          example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeFDerivSub.lean | tee /tmp/fderiv-sub.log
       - name: Upload evidence
