@@ -1,0 +1,58 @@
+name: Codex FA after3480 pinF frontier v9
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-after3480-pinf-frontier-v9.yml
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build pinned-family authoritative runner
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('scripts/codex_fa_after3480_distbridge_v7.sh').read_text()
+          src=src.replace('codex-fa-after3480-distbridge-v7','codex-fa-after3480-pinf-frontier-v9')
+          src=src.replace("'fa-after3480-distbridge-v7'","'fa-after3480-pinf-frontier-v9'")
+          marker='python3 scripts/codex_fa_apply_compact_distbridge_3480_v4.py "$OUT"'
+          assert src.count(marker)==1
+          injected='\n'.join([marker,
+            'python3 scripts/codex_fa_apply_compact_pinF_3480_v5.py "$OUT"',
+            'python3 scripts/codex_fa_apply_frontier_3484_3492_v2.py "$OUT"'])
+          src=src.replace(marker,injected,1)
+          Path('/tmp/codex_fa_after3480_pinf_frontier_v9.sh').write_text(src)
+          PY
+      - name: Attest cumulative patch and direct compile exact full source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: bash /tmp/codex_fa_after3480_pinf_frontier_v9.sh
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3480-pinf-frontier-v9-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3480-pinf-frontier-v9
+          retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3480-pinf-frontier-v9/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3480-pinf-frontier-v9/Mock2_FunctionalAnalysis.exit)"
