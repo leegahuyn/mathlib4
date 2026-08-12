@@ -1,0 +1,9 @@
+{
+  "schema": "fa-dynamic-env-actual-scalar-core-instances-v1",
+  "status": "STRUCTURAL_INSTANCE_ROOT_PENDING_DIRECT_LEAN",
+  "environment_replacement": {
+    "id": "reactivate-fixed-phase-core-instances-actual-scalar",
+    "old_fragment": "namespace ActualScalarDiscriminantPDE\n\nopen ComplexLaxMilgram FredholmBypass\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen ExplicitDiscriminantPotential\nopen ExplicitDiscriminantPotential.FixedPhaseGraphPotential",
+    "new_fragment": "namespace ActualScalarDiscriminantPDE\n\nopen ComplexLaxMilgram FredholmBypass\nopen HalfWeightDifferentialOperators\nopen DefinitionOneSobolev\nopen DefinitionOneSobolev.FixedPhaseGraphCompletion\nopen DefinitionOneSobolev.FixedPhasePeterssonCoordinates\nopen ExplicitDiscriminantPotential\nopen ExplicitDiscriminantPotential.FixedPhaseGraphPotential\n\nattribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup"
+  }
+}
