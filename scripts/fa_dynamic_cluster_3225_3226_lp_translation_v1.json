@@ -1,0 +1,21 @@
+{
+  "schema": "fa-dynamic-cluster-3225-3226-lp-translation-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31556787824,
+  "source_run_id": 31553234087,
+  "source_sha256": "1487389a6242c200f6b7282db997b0dce3b831cccf08c568c0c2fc2d527aa954",
+  "repairs": [
+    {
+      "declaration_index": 3225,
+      "declaration_name": "ambientPlaneL2_translation_tendsto",
+      "old_fragment": "  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by\n    fun_prop\n  simpa using h.continuousAt",
+      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ ⊤) := ⟨by norm_num⟩\n  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=\n    DomAddAct.continuous_mk.vadd continuous_const\n  have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=\n    h.continuousAt\n  change Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)\n    (nhds 0) (nhds (DomAddAct.mk (0 : ℂ) +ᵥ f)) at h0\n  have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl\n  simpa [hm0] using h0"
+    },
+    {
+      "declaration_index": 3226,
+      "declaration_name": "ambientPlaneL2_norm_translation_sub_tendsto_zero",
+      "old_fragment": "  have h : Continuous\n      (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by\n    fun_prop\n  simpa using h.continuousAt",
+      "new_fragment": "  letI : Fact ((2 : ℝ≥0∞) ≠ ⊤) := ⟨by norm_num⟩\n  have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=\n    DomAddAct.continuous_mk.vadd continuous_const\n  have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=\n    h.continuousAt\n  change Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)\n    (nhds 0) (nhds (DomAddAct.mk (0 : ℂ) +ᵥ f)) at h0\n  have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl\n  have ht : Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)\n      (nhds 0) (nhds f) := by\n    simpa [hm0] using h0\n  have hs := ht.sub_const f\n  have hn := tendsto_norm.comp hs\n  simpa using hn"
+    }
+  ]
+}
