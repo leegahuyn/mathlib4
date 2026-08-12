@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-env-actual-scalar-normed-addgroup-priority-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31565454111,
+  "source_sha256": "d9edddc9fd26eb138b913c9d34300c6fc3de4084a89025aa3c5285988c1b4b8b",
+  "api_probe_run_id": 31566605854,
+  "environment_replacement": {
+    "id": "actual-scalar-prioritize-normed-addcommgroup",
+    "old_fragment": "attribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\n/-- The actual energy/form domain at one fixed-phase orbit index. -/",
+    "new_fragment": "attribute [local instance]\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule\n  DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup\n\nattribute [local instance 10000] NormedAddCommGroup.toAddCommGroup\n\n/-- The actual energy/form domain at one fixed-phase orbit index. -/"
+  }
+}
