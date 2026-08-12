@@ -33,7 +33,7 @@ jobs:
             have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
               fun_prop
             have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 := h.continuousAt
-            simpa using h0
+            convert h0 using 1 <;> simp [DomAddAct.mk_zero]
 
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
