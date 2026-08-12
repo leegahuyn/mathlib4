@@ -1,0 +1,140 @@
+name: Codex FA parser followup 3236-3237 v1
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-parser-followup-3236-3237-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  BASE_RUN_ID: "31560687838"
+  BASE_JOB_ID: "94002150235"
+  BASE_HEAD_SHA: "1a5c1289ead4d10a8c9531017a19399ab1e6d2d2"
+  BASE_ARTIFACT_ID: "9127801259"
+  BASE_ARTIFACT_NAME: "codex-fa-parser-correct-p318-p319-highcap-v1-1a5c1289ead4d10a8c9531017a19399ab1e6d2d2"
+  BASE_ARTIFACT_DIGEST: "sha256:effbae0f44576ceb6966b46ffd1202c13e58b12e4c0fa09f8a151ebd2e243f04"
+  BASE_SOURCE_SHA256: "16add9ea94f47db52a05b78071f451700867897aaaad25de5c6c346bb3703700"
+  BASE_SOURCE_BYTES: "2722924"
+  BASE_SOURCE_LINES: "60998"
+
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 420
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Attest parser-corrected direct candidate
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-parser-followup-3236-3237-v1
+          mkdir -p "$OUT" /tmp/base
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${BASE_RUN_ID}" >"$OUT/run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${BASE_JOB_ID}" >"$OUT/job.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/base.zip
+          test "sha256:$(sha256sum /tmp/base.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/base.zip -d /tmp/base
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path('build-logs/codex-fa-parser-followup-3236-3237-v1')
+          r=json.loads((out/'run.json').read_text());j=json.loads((out/'job.json').read_text());a=json.loads((out/'artifact.json').read_text());m=json.loads(next(Path('/tmp/base').rglob('METRIC.json')).read_text())
+          assert r['id']==int(os.environ['BASE_RUN_ID']) and r['head_sha']==os.environ['BASE_HEAD_SHA'] and r['status']=='completed' and r['conclusion']=='failure'
+          assert j['id']==int(os.environ['BASE_JOB_ID']) and j['status']=='completed'
+          assert a['id']==int(os.environ['BASE_ARTIFACT_ID']) and a['name']==os.environ['BASE_ARTIFACT_NAME'] and a['digest']==os.environ['BASE_ARTIFACT_DIGEST'] and a['expired'] is False
+          assert m['Mock2_exit']==0 and m['Mock2_Advanced_exit']==0 and m['FA_exit']==1 and m['all_required_lean_executed'] is True
+          assert m['source_sha256']==os.environ['BASE_SOURCE_SHA256'] and m['source_identity_locked_after_materialization'] is True and m['parser_correction_count']==18
+          hits=[]
+          for p in Path('/tmp/base').rglob('Mock2_FunctionalAnalysis.lean'):
+            b=p.read_bytes()
+            if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256'] and len(b)==int(os.environ['BASE_SOURCE_BYTES']) and len(b.decode().splitlines())==int(os.environ['BASE_SOURCE_LINES']) and b'\r' not in b: hits.append(p)
+          assert len(hits)==1
+          (out/'BASE_SOURCE.txt').write_text(str(hits[0].resolve())+'\n')
+          PY
+
+      - name: Apply cheap 3236 and exact Tendsto 3237 proof repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-parser-followup-3236-3237-v1
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-parser-followup-3236-3237-v1');src=Path((out/'BASE_SOURCE.txt').read_text().strip());s=src.read_text()
+          rx=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)');ms=list(rx.finditer(s));blocks=[(m.group('name'),m.start(),ms[i+1].start() if i+1<len(ms) else len(s)) for i,m in enumerate(ms)]
+          fixes={
+            3236:[(
+              '    funext t\n    exact smul_sub (K t) (DomAddAct.mk (-t) +ᵥ f) f',
+              '    funext t\n    rw [smul_sub]',
+              'cheap-smul-sub-rewrite')],
+            3237:[(
+              '    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      change ContinuousAt (fun t : ℂ ↦ -t) 0\n      exact continuousAt_id.neg',
+              "    have hNeg : Filter.Tendsto (fun t : ℂ ↦ -t) (nhds 0) (nhds 0) := by\n      have hNeg' : Filter.Tendsto (fun t : ℂ ↦ -t)\n          (nhds 0) (nhds (-(0 : ℂ))) := continuousAt_id.neg\n      simpa only [neg_zero] using hNeg'",
+              'exact-neg-tendsto-endpoint')]
+          }
+          pieces=[];cursor=0;records=[]
+          for idx,(name,a,b) in enumerate(blocks):
+            pieces.append(s[cursor:a]);blk=s[a:b]
+            if idx in fixes:
+              for old,new,rid in fixes[idx]:
+                if blk.count(old)!=1: raise SystemExit(f'fragment drift idx={idx} id={rid} count={blk.count(old)}')
+                blk=blk.replace(old,new);records.append({'idx':idx,'name':name,'id':rid})
+            pieces.append(blk);cursor=b
+          pieces.append(s[cursor:]);t=''.join(pieces)
+          seq1=[x[0] for x in blocks];seq2=[m.group('name') for m in rx.finditer(t)];assert seq1==seq2
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');p.write_text(t);bb=p.read_bytes();ident={'sha256':hashlib.sha256(bb).hexdigest(),'bytes':len(bb),'lines':len(t.splitlines())};(out/'PREP.json').write_text(json.dumps({'records':records,'declaration_sequence_preserved':True,'public_headers_changed':False},indent=2)+'\n');(out/'CANDIDATE_IDENTITY.json').write_text(json.dumps(ident,indent=2)+'\n')
+          with Path(os.environ['GITHUB_ENV']).open('a') as f:f.write(f"CANDIDATE_SHA={ident['sha256']}\nCANDIDATE_BYTES={ident['bytes']}\nCANDIDATE_LINES={ident['lines']}\n")
+          PY
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail;OUT=build-logs/codex-fa-parser-followup-3236-3237-v1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1;lake exe cache get >"$OUT/cache.log" 2>&1
+
+      - name: Direct full-source first-frontier compile
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH";OUT=build-logs/codex-fa-parser-followup-3236-3237-v1;mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){ s=$1;c=$2;o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean;i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean;rm -f "$o" "$i";:>"$OUT/$s.executed";set +e;lake env lean "-DmaxErrors=$c" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1;x=$?;set -e;echo $x>"$OUT/$s.exit";}
+          one Mock2 1;one Mock2_Advanced 1;test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean|awk '{print $1}')" = "$CANDIDATE_SHA";one Mock2_FunctionalAnalysis 32
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import hashlib,json,os,re
+          out=Path('build-logs/codex-fa-parser-followup-3236-3237-v1');p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');s=p.read_text();b=p.read_bytes();ds=list(re.finditer(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)',s));starts=[s.count('\n',0,m.start())+1 for m in ds];er=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$');es=[]
+          for raw in (out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace').splitlines():
+            m=er.match(raw)
+            if m:
+              ln=int(m.group(1));j=bisect_right(starts,ln)-1;es.append({'line':ln,'col':int(m.group(2)),'message':m.group(3).strip(),'declaration':ds[j].group('name') if j>=0 else None,'declaration_index':j if j>=0 else None})
+          ex={x:int((out/f'{x}.exit').read_text()) for x in ('Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis')};first=es[0] if es else {};metric={'schema':'fa-parser-followup-3236-3237-v1','run_id':os.environ['GITHUB_RUN_ID'],'head_sha':os.environ['GITHUB_SHA'],'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':hashlib.sha256(b).hexdigest()==os.environ['CANDIDATE_SHA'],'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ex),'FA_error_headers_captured':len(es),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('col'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'maxErrors_cap':32};(out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n');(out/'ERROR_HEADERS.json').write_text(json.dumps(es,indent=2)+'\n')
+          PY
+          echo "fa_exit=$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" >> "$GITHUB_OUTPUT";exit 0
+
+      - name: Upload exact candidate and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-parser-followup-3236-3237-v1-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-parser-followup-3236-3237-v1
+          retention-days: 30
+      - name: Preserve FA exit
+        if: always()
+        env: {FA_EXIT: "${{ steps.direct.outputs.fa_exit }}"}
+        shell: bash
+        run: test -n "${FA_EXIT:-}" || exit 86;exit "$FA_EXIT"
