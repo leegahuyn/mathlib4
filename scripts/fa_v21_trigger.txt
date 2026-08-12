@@ -1,2 +1,3 @@
-trigger=v21-cumulative-highcap2000-1
+trigger=v21-cumulative-highcap2000-2
 base_source_sha256=f06a90307f19d1748880b5c00f0578332d77392fcd5f5a81984dbbc6e6fdb00c
+candidate_sha256=8f6cc2461efb07d09c07ecea6c6651f23ab3ccc2fa2989d6224afc7afe5167d0
