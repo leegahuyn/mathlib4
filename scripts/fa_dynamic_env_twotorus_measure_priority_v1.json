@@ -1,0 +1,12 @@
+{
+  "schema": "fa-dynamic-env-twotorus-measure-priority-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "source_run_id": 31565454111,
+  "source_sha256": "d9edddc9fd26eb138b913c9d34300c6fc3de4084a89025aa3c5285988c1b4b8b",
+  "api_probe_run_id": 31566704340,
+  "environment_replacement": {
+    "id": "twotorus-prioritize-unit-add-circle-measure",
+    "old_fragment": "end FiniteHilbertProjections\n\n/-! ### The actual two-torus Fourier basis -/\n\n/-- The two-dimensional unit additive torus used after extending a bounded\nrectangle periodically. -/",
+    "new_fragment": "end FiniteHilbertProjections\n\n/-! ### The actual two-torus Fourier basis -/\n\nattribute [local instance 10000] instMeasureSpaceUnitAddCircle\n\n/-- The two-dimensional unit additive torus used after extending a bounded\nrectangle periodically. -/"
+  }
+}
