@@ -1,0 +1,10 @@
+{
+  "schema": "fa-dynamic-env-fullplane-header-preserving-v1",
+  "status": "PINNED_API_PROBE_VALIDATED_PENDING_MODULE_DIRECT_LEAN",
+  "api_probe_run_id": 31558088177,
+  "environment_replacement": {
+    "id": "fullplane-order-notation-local-section",
+    "old_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\n/-- Full-plane compact smooth tests.  Unlike the earlier upper-plane test\ncore, this type is appropriate for a translation-invariant convolution\nkernel centred at the origin. -/\nabbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞",
+    "new_fragment": "open Set Function Topology Filter MeasureTheory Metric\nopen scoped Convolution ContDiff Distributions\nopen FixedPhaseAffineFriedrichs\n\nnoncomputable section\n\nsection FullPlaneOrderNotation\nopen TopologicalSpace\nlocal notation \"∞\" => (⊤ : ℕ∞)\n\n/-- Full-plane compact smooth tests.  Unlike the earlier upper-plane test\ncore, this type is appropriate for a translation-invariant convolution\nkernel centred at the origin. -/\nabbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞\n\nend FullPlaneOrderNotation"
+  }
+}
