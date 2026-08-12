@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/codex-fa-v19-early-root-batch-highcap2000.yml
       - scripts/fa_v21_cumulative_batch.py
+      - scripts/fa_v21_trigger.txt
   workflow_dispatch:
 
 permissions:
