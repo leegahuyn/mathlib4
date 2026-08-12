@@ -24,7 +24,7 @@
       "declaration_index": 3268,
       "declaration_name": "FullPlaneTest",
       "old_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞",
-      "new_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ ∞"
+      "new_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ (⊤ : ℕ∞)"
     }
   ]
 }
