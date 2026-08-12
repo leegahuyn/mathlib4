@@ -1,0 +1,30 @@
+{
+  "schema": "fa-dynamic-cluster-3249-3268-pre-r004-v1",
+  "status": "DIRECT_DIAGNOSTIC_SHAPE_PENDING_RECOMPILE",
+  "repairs": [
+    {
+      "declaration_index": 3249,
+      "declaration_name": "friedrichsUnitMollifier_integral",
+      "old_fragment": "  rw [friedrichsUnitMollifier, integral_ofReal,\n    friedrichsUnitMollifierReal_integral]\n  norm_num",
+      "new_fragment": "  change (∫ t : ℂ, (friedrichsUnitMollifierReal t : ℂ)) = 1\n  rw [integral_ofReal, friedrichsUnitMollifierReal_integral]\n  norm_num"
+    },
+    {
+      "declaration_index": 3262,
+      "declaration_name": "friedrichsMollifierReal_integral",
+      "old_fragment": "  rw [friedrichsMollifierReal, integral_const_mul, hchange,\n    friedrichsUnitMollifierReal_integral]\n  change a ^ 2 * (a ^ 2)^{-1} * 1 = 1",
+      "new_fragment": "  change (∫ t : ℂ, a ^ 2 *\n    friedrichsUnitMollifierReal (a • t)) = 1\n  rw [integral_const_mul, hchange,\n    friedrichsUnitMollifierReal_integral]\n  change a ^ 2 * (a ^ 2)^{-1} * 1 = 1"
+    },
+    {
+      "declaration_index": 3263,
+      "declaration_name": "friedrichsMollifier_integral",
+      "old_fragment": "  rw [friedrichsMollifier, integral_ofReal,\n    friedrichsMollifierReal_integral]\n  norm_num",
+      "new_fragment": "  change (∫ t : ℂ, (friedrichsMollifierReal j t : ℂ)) = 1\n  rw [integral_ofReal, friedrichsMollifierReal_integral]\n  norm_num"
+    },
+    {
+      "declaration_index": 3268,
+      "declaration_name": "FullPlaneTest",
+      "old_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞",
+      "new_fragment": "abbrev FullPlaneTest := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ ∞"
+    }
+  ]
+}
