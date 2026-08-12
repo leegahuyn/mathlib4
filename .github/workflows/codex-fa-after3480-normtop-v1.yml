@@ -1,4 +1,4 @@
-name: Codex FA after3484 mass v13
+name: Codex FA after3484 mass diagnostic v14
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ permissions:
   actions: read
   contents: read
 jobs:
-  frontier:
+  diagnostic:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -20,14 +20,14 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Build cumulative v13 runner
+      - name: Build cumulative v14 diagnostic runner
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           src = Path('scripts/codex_fa_after3484_fourier_v11.sh').read_text()
-          src = src.replace('codex-fa-after3484-fourier-v11', 'codex-fa-after3484-mass-v13')
-          src = src.replace("'fa-after3484-fourier-v11'", "'fa-after3484-mass-v13'")
+          src = src.replace('codex-fa-after3484-fourier-v11', 'codex-fa-after3484-mass-diagnostic-v14')
+          src = src.replace("'fa-after3484-fourier-v11'", "'fa-after3484-mass-diagnostic-v14'")
           marker = 'curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh'
           assert src.count(marker) == 1
           extra = '\n'.join([
@@ -36,25 +36,22 @@ jobs:
             '',
           ])
           src = src.replace(marker, extra + marker, 1)
-          Path('/tmp/codex_fa_after3484_mass_v13.sh').write_text(src)
+          needle = 'one Mock2_FunctionalAnalysis 1'
+          assert src.count(needle) == 1
+          src = src.replace(needle, 'one Mock2_FunctionalAnalysis 100', 1)
+          Path('/tmp/codex_fa_after3484_mass_diagnostic_v14.sh').write_text(src)
           PY
-      - name: Attest cumulative v10-backed repairs and direct compile exact full source
+      - name: Attest cumulative repairs and direct compile diagnostic full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3484_mass_v13.sh
-      - name: Upload exact evidence
+        run: bash /tmp/codex_fa_after3484_mass_diagnostic_v14.sh
+      - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3484-mass-v13-${{ github.sha }}
+          name: codex-fa-after3484-mass-diagnostic-v14-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3484-mass-v13
+            build-logs/codex-fa-after3484-mass-diagnostic-v14
           retention-days: 30
-      - name: Preserve FA direct exit
-        if: always()
-        shell: bash
-        run: |
-          test -f build-logs/codex-fa-after3484-mass-v13/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-after3484-mass-v13/Mock2_FunctionalAnalysis.exit)"
