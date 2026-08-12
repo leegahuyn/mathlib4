@@ -1,4 +1,4 @@
-name: Codex FA API probe hasFDerivAt id v1
+name: Codex FA API probe hasFDerivAt id v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,24 +21,24 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Prove scalar-pinned identity derivative
+      - name: Prove scalar-pinned identity derivative with zero_sub normalization
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeHasFDerivId.lean <<'LEAN'
           import Mathlib
-          #check hasFDerivAt_id
           example (w x : ℂ) : HasFDerivAt ((fun _y : ℂ ↦ w) - id)
               (-ContinuousLinearMap.id ℝ ℂ) x := by
-            exact (hasFDerivAt_const (x := x) (c := w)).sub
-              (hasFDerivAt_id (𝕜 := ℝ) x)
+            simpa only [zero_sub] using
+              (hasFDerivAt_const (x := x) (c := w)).sub
+                (hasFDerivAt_id (𝕜 := ℝ) x)
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeHasFDerivId.lean | tee /tmp/probe.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-hasfderivat-id-v1-${{ github.sha }}
+          name: codex-fa-api-probe-hasfderivat-id-v2-${{ github.sha }}
           path: /tmp/probe.log
           retention-days: 7
