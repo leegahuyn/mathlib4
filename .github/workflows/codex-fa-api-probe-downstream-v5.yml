@@ -1,0 +1,63 @@
+name: Codex FA API probe downstream v5
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-downstream-v5.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile refined downstream bridges
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/DownstreamV5.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          example (u b : H) (t s : ℝ) (q : ℂ) :
+              (inner ℂ u u).re - t * q.re + s * (inner ℂ b b).re =
+                ‖u‖ ^ 2 - t * q.re + s * ‖b‖ ^ 2 := by
+            have hu : (inner ℂ u u).re = ‖u‖ ^ 2 := by
+              simpa using (norm_sq_eq_re_inner (𝕜 := ℂ) u).symm
+            have hb : (inner ℂ b b).re = ‖b‖ ^ 2 := by
+              simpa using (norm_sq_eq_re_inner (𝕜 := ℂ) b).symm
+            rw [hu, hb]
+
+          example : Function.Periodic (Function.Periodic.qParam 2) (2 : ℂ) := by
+            intro w
+            unfold Function.Periodic.qParam
+            change Complex.exp
+                ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + (2 : ℂ)) / (2 : ℂ)) =
+              Complex.exp
+                ((2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ))
+            have harg :
+                (2 : ℂ) * (Real.pi : ℂ) * Complex.I * (w + (2 : ℂ)) / (2 : ℂ) =
+                  (2 : ℂ) * (Real.pi : ℂ) * Complex.I * w / (2 : ℂ) +
+                    (2 : ℂ) * (Real.pi : ℂ) * Complex.I := by
+              ring
+            rw [harg, Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+          LEAN
+          lake env lean /tmp/DownstreamV5.lean
