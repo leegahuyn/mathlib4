@@ -79,7 +79,7 @@ PATCH = r"""diff --git a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lea
  
  /-- Both exact factorization identities combine to the full (not averaged)
 @@ -48666,15 +48679,15 @@
- /-- The literal strong Schrodinger expression on the actual smooth core. -/
+ /-- The literal strong SchrodingerCore on the actual smooth core. -/
  noncomputable def strongSchrodingerCore (n : ‚Ñ§) (t : ‚Ñù) :
      Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n ‚Üí‚Çó[‚ÑÇ] Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n :=
 -  strongPrincipalCore n -
@@ -87,63 +87,4 @@ PATCH = r"""diff --git a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lea
 +  Sub.sub (strongPrincipalCore n)
 +    ((t : ‚ÑÇ) ‚Ä¢ potentialMultiplicationCore n)
  
- @[simp]
- theorem strongSchrodingerCore_apply (n : ‚Ñ§) (t : ‚Ñù)
-     (u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
-     strongSchrodingerCore n t u =
--      strongPrincipalCore n u -
--        (t : ‚ÑÇ) ‚Ä¢ potentialMultiplicationCore n u :=
-+      Sub.sub (strongPrincipalCore n u)
-+        ((t : ‚ÑÇ) ‚Ä¢ potentialMultiplicationCore n u) :=
-   rfl
- 
- /-- The raw differential expression, displayed independently of the bundled
-@@ -48835,7 +48848,7 @@
- theorem corePeterssonForcing_zero (n : ‚Ñ§) :
-     corePeterssonForcing n 0 = 0 := by
-   ext v
--  simp only [corePeterssonForcing_apply, map_zero, inner_zero]
-+  simp [corePeterssonForcing_apply]
- 
- /-- Petersson pairings against the actual smooth fixed-phase core separate
- smooth sections.  The proof tests with the difference itself and then uses
-@@ -48846,7 +48859,7 @@
-       inner ‚ÑÇ (l2Coordinate n v) (l2Coordinate n g) =
-         inner ‚ÑÇ (l2Coordinate n v) (l2Coordinate n f)) :
-     g = f := by
--  let w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := g - f
-+  let w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := Sub.sub g f
-   have hwPair := hPair w
-  have hSelf :
-      inner ‚ÑÇ (l2Coordinate n w) (l2Coordinate n w) = 0 := by
-@@ -48858,7 +48871,7 @@
-   have hw : w = 0 := by
-     apply l2Coordinate_injective n
-    simpa only [map_zero] using hwCoordinate
--  change g - f = 0 at hw
-+  change Sub.sub g f = 0 at hw
-   exact sub_eq_zero.mp hw
- 
- /-- Every literal smooth strong solution gives an equality in the full
-@@ -48977,7 +48990,7 @@
-   unfold fullPlaneBilinearPair
-   apply integral_congr_ae
-   filter_upwards [coeFn_fullPlaneTestToL2 v] with x hx
--  simp only [lsmul_apply, hx]
-+  simp only [lsmul_apply, hx, smul_eq_mul]
- 
- /-- Translation of an `L¬≤` representative can be used inside a compact-test
- pairing as the literal function `x ‚Üí u (x - t)`. -/
-@@ -49116,7 +49129,6 @@
-   apply integral_congr_ae
-   filter_upwards [coeFn_fullPlaneTestToL2 v,
-     DomAddAct.vadd_Lp_ae_eq (DomAddAct.mk (-t)) u] with x hv hut
--  simp only [lsmul_apply] at *
-   rw [hv]
-   have hut' : (DomAddAct.mk (-t) +‚Çä u) x = u (x - t) := by
-     change (DomAddAct.mk (-t) +‚Ç¢ u) x = u (-t + x) at hut
-@@ -49195,8 +49207,13 @@
-     hcompact : HasCompactSupport g) : FullPlaneTest where
-   toFun := fun x ‚Üπ (g x : ‚ÑÇ)
-   contDiff' := Complex.ofRealCLM.contDiff.comp hg
--  hasCompactSupport' := hcompact.comp_left s_4„«!jª-ÆÈ‹j◊ù
+ @[sjV´ÅÊ⁄±Ó∏•¨•°ßpj Z≤«ùÖÍﬁ
