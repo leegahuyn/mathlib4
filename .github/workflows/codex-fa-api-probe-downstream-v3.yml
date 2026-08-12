@@ -1,0 +1,58 @@
+name: Codex FA API probe downstream v3
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-downstream-v3.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile downstream exact bridges
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/DownstreamV3.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology
+          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          example (a : ℂ) (x y : H) :
+              a * inner ℂ x y = inner ℂ x (a • y) := by
+            rw [inner_smul_right]
+
+          example (u b : H) (t s : ℝ) (q : ℂ) :
+              (inner ℂ u u).re - t * q.re + s * (inner ℂ b b).re =
+                ‖u‖ ^ 2 - t * q.re + s * ‖b‖ ^ 2 := by
+            rw [norm_sq_eq_re_inner u, norm_sq_eq_re_inner b]
+
+          example (C : ℝ) :
+              Tendsto (fun N : ℕ => C / ((N : ℝ) + 1)) atTop (nhds 0) := by
+            have hC : Tendsto (fun _ : ℕ => C) atTop (nhds C) := tendsto_const_nhds
+            have hOne : Tendsto (fun N : ℕ => (1 : ℝ) / (N + 1)) atTop (nhds 0) :=
+              tendsto_one_div_add_atTop_nhds_zero_nat
+            have h := hC.mul hOne
+            simpa [div_eq_mul_inv] using h
+          LEAN
+          lake env lean /tmp/DownstreamV3.lean
