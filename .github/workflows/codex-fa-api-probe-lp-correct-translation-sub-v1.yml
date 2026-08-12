@@ -43,7 +43,10 @@ jobs:
             have h : Continuous (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖) := by
               fun_prop
             have h0 : ContinuousAt (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖) 0 := h.continuousAt
-            simpa using h0
+            change Filter.Tendsto (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖)
+              (nhds 0) (nhds ‖(DomAddAct.mk (0 : ℂ) +ᵥ f) - f‖) at h0
+            have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl
+            simpa [hm0] using h0
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeCorrectTranslationSub.lean | tee /tmp/probe.log
       - name: Upload evidence
