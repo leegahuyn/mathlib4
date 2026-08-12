@@ -23,6 +23,7 @@ jobs:
           cat >/tmp/ProbeCompactConvolution.lean <<'LEAN'
           import Mathlib
           open MeasureTheory
+          open scoped Convolution
           #check HasCompactSupport.convolution
           example (f : ℂ → ℝ) (g : ℂ → ℂ)
               (hf : HasCompactSupport f) (hg : HasCompactSupport g) :
