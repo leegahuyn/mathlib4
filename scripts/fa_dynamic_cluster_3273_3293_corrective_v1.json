@@ -1,10 +1,11 @@
 {
   "schema": "fa-dynamic-cluster-3273-3293-corrective-v1",
-  "status": "DIRECT_HIGHCAP_AND_API_PROBE_DERIVED_PENDING_RECOMPILE",
+  "status": "DIRECT_FAST1_DERIVED_WITH_IDX3286_NORMALIZATION_PENDING_RECOMPILE",
   "source_run_id": 31563561591,
   "source_sha256": "cce0f96167282088ea38dbfa05262830482f4577e5afce171a5f693e0a4dcc68",
   "diagnostic_run_id": 31562829364,
   "fderiv_const_probe_run_id": 31564233847,
+  "direct_fast1_followup_run_id": 31564594410,
   "repairs": [
     {
       "declaration_index": 3273,
@@ -27,8 +28,16 @@
     {
       "declaration_index": 3286,
       "declaration_name": "integral_friedrichsAffineCommutatorKernel_eq_zero",
-      "old_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), smul_eq_mul] at hchange",
-      "new_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), Complex.real_smul] at hchange"
+      "replacements": [
+        {
+          "old_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), smul_eq_mul] at hchange",
+          "new_fragment": "  rw [Complex.finrank_real_complex,\n    abs_of_pos (inv_pos.mpr (pow_pos ha 2)), Complex.real_smul] at hchange"
+        },
+        {
+          "old_fragment": "  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero, mul_zero]",
+          "new_fragment": "  rw [integral_const_mul, hchange,\n    integral_friedrichsUnitAffineCommutatorTest_eq_zero]\n  simp"
+        }
+      ]
     },
     {
       "declaration_index": 3289,
