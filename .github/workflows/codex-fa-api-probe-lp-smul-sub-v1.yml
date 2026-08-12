@@ -33,6 +33,9 @@ jobs:
           open MeasureTheory
           open scoped ENNReal
           noncomputable abbrev A := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
+          #synth AddCommGroup A
+          #synth Module ℂ A
+          #synth SMul ℂ A
 
           example (c : ℂ) (x y : A) : c • (x - y) = c • x - c • y := by
             exact smul_sub c x y
