@@ -1,4 +1,4 @@
-name: Codex FA API probe antiDual Hilbert APIs via registered path
+name: Codex FA API probe WithLp reconstruction
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,59 +21,37 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Validate anti-Riesz isometry and Hilbert transport
+      - name: Validate WithLp reconstruction bridges
         shell: bash
         run: |
           set -uo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeAntiDualHilbert.lean <<'LEAN'
+          cat >/tmp/ProbeWithLp.lean <<'LEAN'
           import Mathlib
-          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 
-          theorem probe_innerSLFlip_norm (x : E) : ‖innerSLFlip ℂ x‖ = ‖x‖ := by
-            apply le_antisymm
-            · apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg x)
-              intro y
-              rw [innerSLFlip_apply_apply]
-              simpa [mul_comm] using (norm_inner_le_norm (𝕜 := ℂ) y x)
-            · by_cases hx : x = 0
-              · simp [hx]
-              · have hop := (innerSLFlip ℂ x).le_opNorm x
-                rw [innerSLFlip_apply_apply] at hop
-                have hre : ‖x‖ ^ 2 ≤ ‖inner ℂ x x‖ := by
-                  calc
-                    ‖x‖ ^ 2 = (inner ℂ x x).re := norm_sq_eq_re_inner (𝕜 := ℂ) x
-                    _ ≤ ‖inner ℂ x x‖ := Complex.re_le_norm _
-                have hsquare : ‖x‖ ^ 2 ≤ ‖innerSLFlip ℂ x‖ * ‖x‖ := hre.trans hop
-                have hxn : 0 < ‖x‖ := norm_pos_iff.mpr hx
-                nlinarith [norm_nonneg (innerSLFlip ℂ x)]
+          variable {A B C : Type*}
 
-          noncomputable def probeAntiRieszLinearIsometry :
-              E →ₗᵢ[ℂ] (E →L⋆[ℂ] ℂ) where
-            toLinearMap := (innerSLFlip ℂ (E := E)).toLinearMap
-            norm_map' := probe_innerSLFlip_norm
+          example (x : WithLp 2 (A × B)) :
+              WithLp.toLp 2 (WithLp.fst x, WithLp.snd x) = x := by
+            rfl
 
-          variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℂ F]
+          example (x : WithLp 2 (A × WithLp 2 (B × C))) :
+              WithLp.toLp 2
+                (WithLp.fst x,
+                  WithLp.toLp 2 ((WithLp.snd x).fst, (WithLp.snd x).snd)) = x := by
+            rfl
 
-          @[instance_reducible]
-          noncomputable def probeTransportInnerProduct
-              (e : F ≃ₗᵢ[ℂ] E) : InnerProductSpace ℂ F where
-            inner x y := inner ℂ (e x) (e y)
-            norm_sq_eq_re_inner x := by
-              rw [← e.norm_map x]
-              exact norm_sq_eq_re_inner (𝕜 := ℂ) (e x)
-            conj_inner_symm x y := inner_conj_symm (e x) (e y)
-            add_left x y z := by
-              rw [map_add, inner_add_left]
-            smul_left x y r := by
-              rw [map_smul, inner_smul_left]
+          variable {D : Type*} (f : ℕ → WithLp 2 (A × WithLp 2 (B × C)))
 
-          #check probe_innerSLFlip_norm
-          #check probeAntiRieszLinearIsometry
-          #check probeTransportInnerProduct
+          example :
+              (WithLp.toLp 2 ∘ fun j =>
+                (WithLp.fst (f j),
+                  WithLp.toLp 2 ((WithLp.snd (f j)).fst, (WithLp.snd (f j)).snd))) = f := by
+            funext j
+            rfl
           LEAN
           set +e
-          lake env lean -DwarningAsError=false /tmp/ProbeAntiDualHilbert.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DwarningAsError=false /tmp/ProbeWithLp.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -82,7 +60,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-antiriesz-transport-${{ github.sha }}
+          name: codex-fa-api-probe-withlp-reconstruction-${{ github.sha }}
           path: |
             /tmp/probe.log
             /tmp/probe.exit
