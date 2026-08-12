@@ -48,14 +48,15 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
         simpa only [mul_comm] using (norm_inner_le_norm (𝕜 := ℂ) v u)
       · by_cases hu : u = 0
         · simp [hu]
-        · have hpos : 0 < ‖u‖ := norm_pos_iff.mpr hu
-          refine (mul_le_mul_right hpos).mp ?_
-          calc
-            ‖u‖ * ‖u‖ = ‖(inner ℂ u u)‖ := by
-              rw [← sq, inner_self_eq_norm_sq_to_K, norm_pow, norm_ofReal, abs_norm]
-            _ ≤ ‖principalEnergyOperator n u‖ * ‖u‖ := by
-              simpa only [principalEnergyOperator_apply] using
-                (principalEnergyOperator n u).le_opNorm u
+        · have hop := (principalEnergyOperator n u).le_opNorm u
+          rw [principalEnergyOperator_apply] at hop
+          have hre : ‖u‖ ^ 2 ≤ ‖inner ℂ u u‖ := by
+            calc
+              ‖u‖ ^ 2 = (inner ℂ u u).re := norm_sq_eq_re_inner (𝕜 := ℂ) u
+              _ ≤ ‖inner ℂ u u‖ := Complex.re_le_norm _
+          have hsquare : ‖u‖ ^ 2 ≤ ‖principalEnergyOperator n u‖ * ‖u‖ := hre.trans hop
+          have hpos : 0 < ‖u‖ := norm_pos_iff.mpr hu
+          nlinarith [norm_nonneg (principalEnergyOperator n u)]
     have hNormSymm : ‖f‖ = ‖(principalEnergyEquiv n).symm f‖ := by
       have h := hIso ((principalEnergyEquiv n).symm f)
       simpa using h
@@ -99,7 +100,7 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
     p.write_text(text, encoding='utf-8', newline='\n')
     b = p.read_bytes()
     audit = {
-        'schema': 'fa-3341-antidual-hilbert-insert-audit-v1',
+        'schema': 'fa-3341-antidual-hilbert-insert-audit-v2',
         'base_sha256': sha256(before.encode()),
         'candidate_sha256': sha256(b),
         'candidate_bytes': len(b),
@@ -109,6 +110,7 @@ noncomputable local instance actualHMinusOneInnerProductSpace (n : ℤ) :
         'public_theorem_source_headers_changed': False,
         'semantic_public_proposition_change': False,
         'forbidden_lexical_counts_preserved': True,
+        'norm_lower_bound_proof': 'validated anti-Riesz nlinarith probe pattern',
     }
     Path(args.audit_out).write_text(json.dumps(audit, indent=2, sort_keys=True) + '\n', encoding='utf-8')
 
