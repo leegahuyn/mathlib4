@@ -1,4 +1,4 @@
-name: Codex FA API probe downstream exact v5
+name: Codex FA API probe idx3584 uniform-bound v6
 on:
   push:
     branches:
@@ -27,26 +27,30 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile exact RCLike real-part bridge
+      - name: Compile uniform embedding bound candidates
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/DownstreamExactProbeV5.lean <<'LEAN'
+          cat >/tmp/UniformBoundProbe.lean <<'LEAN'
           import Mathlib
           noncomputable section
+          #check ContinuousLinearMap.isUniformEmbedding_of_bound
 
-          variable {V W : Type*}
-          variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
-          variable [NormedAddCommGroup W] [InnerProductSpace ℂ W]
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F]
 
-          example (u : V) : (inner ℂ u u).re = ‖u‖ ^ 2 := by
-            change RCLike.re (inner ℂ u u) = ‖u‖ ^ 2
-            exact inner_self_eq_norm_sq (𝕜 := ℂ) u
+          example (R : E →L[ℂ] F)
+              (hRbound : ∀ u, ‖u‖ ≤ (1 : ℝ) * ‖R u‖) :
+              IsUniformEmbedding R := by
+            exact R.isUniformEmbedding_of_bound hRbound
 
-          example (E : V →L[ℂ] W) (u : V) :
-              (inner ℂ (E u) (E u)).re = ‖E u‖ ^ 2 := by
-            change RCLike.re (inner ℂ (E u) (E u)) = ‖E u‖ ^ 2
-            exact inner_self_eq_norm_sq (𝕜 := ℂ) (E u)
+          example (R : E →L[ℂ] F)
+              (hRbound : ∀ u, ‖u‖ ≤ ‖R u‖) :
+              IsUniformEmbedding R := by
+            apply R.isUniformEmbedding_of_bound
+            intro u
+            simpa only [one_mul] using hRbound u
           LEAN
-          lake env lean /tmp/DownstreamExactProbeV5.lean
+          lake env lean /tmp/UniformBoundProbe.lean
