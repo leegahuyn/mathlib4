@@ -17,6 +17,12 @@ ALLOWED = {
     3300: ('friedrichsAffineCommutatorError_tendsto_zero', 'DomAddAct.mk (-t) +ᵥ f - f', '(DomAddAct.mk (-t) +ᵥ f) - f', 1),
 }
 
+PROOF_FIX_3226 = (
+    '  have h0 : ContinuousAt\n      (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖) 0 := h.continuousAt\n  simpa using h0',
+    '  have h0 : ContinuousAt\n      (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖) 0 := h.continuousAt\n  change Filter.Tendsto (fun t : ℂ ↦ ‖(DomAddAct.mk t +ᵥ f) - f‖)\n    (nhds 0) (nhds ‖(DomAddAct.mk (0 : ℂ) +ᵥ f) - f‖) at h0\n  have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl\n  simpa [hm0] using h0',
+    'pin-translation-sub-endpoint',
+)
+
 PROOF_FIXES_3237 = [
     (
         '  have hηC : η * C < ε := by\n    rw [η, div_mul_eq_mul_div, div_lt_iff₀ hC1]\n    nlinarith',
@@ -75,6 +81,12 @@ def main():
                 raise SystemExit(f'parenthesis count drift idx={idx} got={got} expected={count}')
             new=new.replace(old,rep)
             records.append({'idx':idx,'name':name,'kind':'semantic_parenthesis','count':count,'old':old,'new':rep})
+        if idx == 3226:
+            old,rep,rid=PROOF_FIX_3226
+            if new.count(old) != 1:
+                raise SystemExit(f'proof fragment drift idx=3226 id={rid} count={new.count(old)}')
+            new=new.replace(old,rep)
+            records.append({'idx':idx,'name':name,'kind':'proof_body','id':rid})
         if idx == 3237:
             for old,rep,rid in PROOF_FIXES_3237:
                 if new.count(old) != 1:
@@ -97,7 +109,6 @@ def main():
     got=sorted(x['idx'] for x in changed_headers)
     if got != expected:
         raise SystemExit(f'public proposition/header change set drift got={got} expected={expected}')
-    # The semantic correction must remove every ambiguous translation-difference spelling.
     if 'DomAddAct.mk t +ᵥ f - f' in after or 'DomAddAct.mk (-t) +ᵥ f - f' in after:
         raise SystemExit('ambiguous vadd/sub spelling remains')
     forbidden=['sorryAx',' by\n  sorry','\nadmit','unsafe axiom','Lean.ofReduceBool','native_decide']
