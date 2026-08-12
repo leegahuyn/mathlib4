@@ -37,7 +37,6 @@ jobs:
             have h0 : Tendsto F (nhds 0) (nhds (F 0)) := h.continuousAt
             have hz : F 0 = f := by
               dsimp [F]
-              rw [DomAddAct.mk_zero]
               exact zero_vadd _ f
             rw [hz] at h0
             exact h0
