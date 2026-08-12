@@ -1,0 +1,68 @@
+name: Codex FA after3452 Fourier projection v4 latest unfold
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-after3452-fourier-projection-v4-latest-unfold.yml
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build latest-parent unfold runner
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('scripts/codex_fa_after3452_fourier_projection_v1.sh').read_text()
+          repl = {
+            'codex-fa-after3452-fourier-projection-v1': 'codex-fa-after3452-fourier-projection-v4-latest-unfold',
+            'BASE_RUN_ID=31589836309': 'BASE_RUN_ID=31589967760',
+            'BASE_JOB_ID=94092004839': 'BASE_JOB_ID=94092413123',
+            'BASE_HEAD_SHA=e3739c0f7f202883e5a758a24887b448f302c61d': 'BASE_HEAD_SHA=fe68f1f127b3ef3b16ee1b42cdc3aabd48976c50',
+            'BASE_ARTIFACT_ID=9138929765': 'BASE_ARTIFACT_ID=9138974072',
+            'BASE_ARTIFACT_NAME=codex-fa-after3398-hilbert-smooth-v1-e3739c0f7f202883e5a758a24887b448f302c61d': 'BASE_ARTIFACT_NAME=codex-fa-after3398-hilbert-weak-joint-v2-fe68f1f127b3ef3b16ee1b42cdc3aabd48976c50',
+            'BASE_ARTIFACT_DIGEST=sha256:f52b9188e8a5d27dc9b6feb745be09c6bddb68b337cafa1ee8619f0512fcd3a0': 'BASE_ARTIFACT_DIGEST=sha256:825445e107162601ebdf19ddf6e10cca95a36b898d9461523d23e21564582137',
+            'BASE_SOURCE_SHA256=fd58032a0cbcae5eba52beaf7ec17985a46789c49e98fbdb0e87b73f5a718eeb': 'BASE_SOURCE_SHA256=3a928f84a67f43b032bb0730d8bb3a3fb1b69810b5d6a933fcc5759120fe69cc',
+          }
+          for a,b in repl.items():
+            assert src.count(a) >= 1, a
+            src = src.replace(a,b)
+          old = """new='''  rw [← HilbertBasis.repr_apply_apply]\n  simp only [twoTorusFourierBasis]\n  rw [UnitAddTorus.mFourierBasis_repr]\n  simp only [UnitAddTorus.coe_mFourierBasis]'''"""
+          new = """new='''  rw [← HilbertBasis.repr_apply_apply]\n  unfold twoTorusFourierBasis\n  rw [UnitAddTorus.mFourierBasis_repr]\n  simp only [UnitAddTorus.coe_mFourierBasis]'''"""
+          assert src.count(old) == 1, src.count(old)
+          src = src.replace(old,new,1)
+          src = src.replace("'repair':'unfold_twoTorusFourierBasis_before_mFourierBasis_repr'", "'repair':'explicit_unfold_twoTorusFourierBasis_before_mFourierBasis_repr'")
+          Path('/tmp/codex_fa_after3452_fourier_projection_v4_latest_unfold.sh').write_text(src)
+          PY
+      - name: Attest patch and direct compile exact full source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: bash /tmp/codex_fa_after3452_fourier_projection_v4_latest_unfold.sh
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3452-fourier-projection-v4-latest-unfold-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3452-fourier-projection-v4-latest-unfold
+          retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3452-fourier-projection-v4-latest-unfold/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3452-fourier-projection-v4-latest-unfold/Mock2_FunctionalAnalysis.exit)"
