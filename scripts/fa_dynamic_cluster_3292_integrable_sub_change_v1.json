@@ -1,0 +1,14 @@
+{
+  "schema": "fa-dynamic-cluster-3292-integrable-sub-change-v1",
+  "status": "DIRECT_FRONTIER_DERIVED_PENDING_RECOMPILE",
+  "source_run_id": 31565378550,
+  "source_sha256": "1d8adc83fd2063e1d7177461088211643f592cdd273a8d86f4c16735d41e0188",
+  "repairs": [
+    {
+      "declaration_index": 3292,
+      "declaration_name": "integrable_kernel_smul_translation_sub",
+      "old_fragment": "  rw [hPointwise]\n  simpa only [Pi.sub_apply] using hTranslate.sub hConst",
+      "new_fragment": "  rw [hPointwise]\n  change Integrable\n    ((fun t : ℂ ↦ K t • (DomAddAct.mk (-t) +ᵥ f)) -\n      (fun t : ℂ ↦ K t • f)) (volume : Measure ℂ)\n  exact hTranslate.sub hConst"
+    }
+  ]
+}
