@@ -1,0 +1,74 @@
+name: Codex FA API probe CLM bounded Tendsto v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-clm-bounded-tendsto-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile bounded-convergence Tendsto probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/CLMBoundedTendstoProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology Bornology
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F]
+
+          example (Tn : ℕ → E →L[ℂ] F) (T : E →L[ℂ] F) (eps : ℕ → ℝ)
+              (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
+              (heps : Tendsto eps atTop (nhds 0)) :
+              Tendsto Tn atTop (nhds T) := by
+            have hzero : Tendsto (fun N => Tn N - T) atTop (nhds 0) := by
+              rw [(ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+                (𝕜₁ := ℂ) (E := E) (F := F) Metric.nhds_basis_ball).tendsto_right_iff]
+              rintro ⟨s, δ⟩ ⟨hs, hδ⟩
+              rcases (NormedSpace.isVonNBounded_iff' ℂ).1 hs with ⟨r, hr⟩
+              let R : ℝ := max r 0
+              have hR0 : 0 ≤ R := le_max_right _ _
+              have hrR : ∀ x ∈ s, ‖x‖ ≤ R := by
+                intro x hx
+                exact (hr x hx).trans (le_max_left _ _)
+              have hRconst : Tendsto (fun _ : ℕ => R) atTop (nhds R) := tendsto_const_nhds
+              have hscaled : Tendsto (fun N => eps N * R) atTop (nhds 0) := by
+                simpa using heps.mul hRconst
+              filter_upwards [(tendsto_order.1 hscaled).2 δ hδ] with N hN
+              intro x hx
+              have heN : 0 ≤ eps N :=
+                (norm_nonneg (Tn N - T)).trans (hTail N)
+              have hpoint : ‖(Tn N - T) x‖ < δ := by
+                calc
+                  ‖(Tn N - T) x‖ ≤ ‖Tn N - T‖ * ‖x‖ := (Tn N - T).le_opNorm x
+                  _ ≤ eps N * R := mul_le_mul (hTail N) (hrR x hx) (norm_nonneg x) heN
+                  _ < δ := hN
+              simpa [Metric.mem_ball, dist_zero_right] using hpoint
+            have hconst : Tendsto (fun _ : ℕ => T) atTop (nhds T) := tendsto_const_nhds
+            have hadd := hzero.add hconst
+            simpa using hadd
+          LEAN
+          lake env lean /tmp/CLMBoundedTendstoProbe.lean
