@@ -1,0 +1,53 @@
+name: Codex FA API probe HilbertSpace v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-hilbertspace-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
+          lake exe cache get
+      - name: Print exact HilbertSpace API
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/HilbertProbe.lean <<'LEAN'
+          import Mathlib
+          #print HilbertSpace
+          #check HilbertSpace.mk
+          #check CompleteSpace
+          #check CompleteSpace.mk
+          #check InnerProductSpace
+          #check IsComplete
+          #check UniformSpace.Complete
+          LEAN
+          lake env lean /tmp/HilbertProbe.lean 2>&1 | tee /tmp/hilbert-probe.log
+      - name: Upload probe log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-hilbertspace-v1-${{ github.sha }}
+          path: /tmp/hilbert-probe.log
+          retention-days: 7
