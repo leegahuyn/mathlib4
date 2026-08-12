@@ -1,6 +1,6 @@
 name: Codex FA v21 API shapes v1
 
-# trigger: real-to-complex-compact-support-11
+# trigger: exact-full-plane-test-record-12
 on:
   push:
     branches:
@@ -31,7 +31,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile real-to-complex compact-support probes
+      - name: Compile exact full-plane TestFunction record probe
         shell: bash
         run: |
           set -euo pipefail
@@ -39,20 +39,22 @@ jobs:
           cat >/tmp/V21ApiShapes.lean <<'LEAN'
           import Mathlib
 
-          open Set Function
+          open Set Function Topology
+          open scoped ContDiff
 
-          #check HasCompactSupport.comp_left
-          #check HasCompactSupport.mono
-          #check HasCompactSupport.congr
+          noncomputable def ProbeFullPlaneTest := TestFunction (⊤ : Opens ℂ) ℂ ∞
 
-          example (g : ℂ → ℝ) (hg : HasCompactSupport g) :
-              HasCompactSupport (fun x : ℂ ↦ (g x : ℂ)) := by
-            exact hg.comp_left (by
-              intro x
-              norm_num)
-
-          example (x : ℂ) : x ∈ (Set.univ : Set ℂ) := by
-            exact Set.mem_univ x
+          noncomputable def probeRealFullPlaneTest
+              (g : ℂ → ℝ) (hg : ContDiff ℝ ∞ g)
+              (hcompact : HasCompactSupport g) : ProbeFullPlaneTest where
+            toFun := fun x ↦ (g x : ℂ)
+            contDiff' := Complex.ofRealCLM.contDiff.comp hg
+            hasCompactSupport' := by
+              simpa only [Function.comp_def] using
+                hcompact.comp_left (g := fun r : ℝ ↦ (r : ℂ)) (by norm_num)
+            tsupport_subset' := by
+              intro x hx
+              exact Set.mem_univ x
           LEAN
           set +e
           lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/V21ApiShapes.lean 2>&1 | tee /tmp/v21-api-shapes.log
