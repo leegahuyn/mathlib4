@@ -46,14 +46,14 @@
     {
       "declaration_index": 3194,
       "declaration_name": "euclideanRaiseGauge_periodized_eq_forwardTest",
-      "old_fragment": "  rw [hx, hy, hv]\n  ring",
-      "new_fragment": "  rw [hx, hy, hv]\n  simp only [UpperHalfPlane.coe_im]\n  ring"
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanRaiseGauge,\n    euclideanRaiseForwardTest, add_apply,\n    smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]\n  ring"
     },
     {
       "declaration_index": 3195,
       "declaration_name": "euclideanLowerFromSuccGauge_periodized_eq_forwardTest",
-      "old_fragment": "  rw [hx, hy, hv]\n  ring",
-      "new_fragment": "  rw [hx, hy, hv]\n  simp only [UpperHalfPlane.coe_im]\n  ring"
+      "old_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    euclideanLowerFromSuccForwardTest, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul]\n  rw [hx, hy, hv]\n  ring",
+      "new_fragment": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccGauge,\n    euclideanLowerFromSuccForwardTest, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightDifferentialOperators.heightC, smul_eq_mul,\n    UpperHalfPlane.coe_im]\n  rw [hx, hy, hv]\n  ring"
     }
   ]
 }
