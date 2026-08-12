@@ -39,7 +39,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash /tmp/codex_fa_after3460_unfold_paren-realshift-mass-diagnostic-v2.sh
+        run: bash /tmp/codex_fa_after3460_unfold_paren_realshift_mass_diagnostic_v2.sh
       - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
