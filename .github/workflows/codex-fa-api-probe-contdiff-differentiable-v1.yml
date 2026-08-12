@@ -38,6 +38,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeContDiffDifferentiable.lean <<'LEAN'
           import Mathlib
+          open scoped ContDiff
           #check ContDiff.differentiable
           example (f : ℂ → ℂ) (t : ℂ) (h : ContDiff ℝ ∞ f) :
               DifferentiableAt ℝ f t := by
