@@ -1,0 +1,83 @@
+name: Codex FA after3455 chart sum latest v2
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-after3455-chart-sum-latest-v2.yml
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  frontier:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout exact trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Build latest-parent extensional chart-sum runner
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src = Path('scripts/codex_fa_after3455_chart_sum_v1.sh').read_text()
+          repl = {
+            'codex-fa-after3455-chart-sum-v1': 'codex-fa-after3455-chart-sum-latest-v2',
+            'BASE_RUN_ID=31590990972': 'BASE_RUN_ID=31591259430',
+            'BASE_JOB_ID=94095640971': 'BASE_JOB_ID=94096517441',
+            'BASE_HEAD_SHA=dfdd3d8b81cd493e0e92ef358853df047a90d744': 'BASE_HEAD_SHA=884dbee349840c2889d09cbe17fdb1073c823815',
+            'BASE_ARTIFACT_ID=9139387288': 'BASE_ARTIFACT_ID=9139459083',
+            'BASE_ARTIFACT_NAME=codex-fa-after3452-fourier-projection-v1-dfdd3d8b81cd493e0e92ef358853df047a90d744': 'BASE_ARTIFACT_NAME=codex-fa-after3452-fourier-repr-v1-884dbee349840c2889d09cbe17fdb1073c823815',
+            'BASE_ARTIFACT_DIGEST=sha256:6396e03d1e6047454caba17ed1360e67c8a718a3812ee0d458b7af5a682354a2': 'BASE_ARTIFACT_DIGEST=sha256:bb64a54166dbec10221730526f84d0d5c63453a136a20c05665b0c73c299f265',
+            'BASE_SOURCE_SHA256=479cfc6af3f8d7a09b3a876dc034556194fc6b4617d431bf717a514997b0a386': 'BASE_SOURCE_SHA256=d396f719edbbb3b986a772dd9f86ba8815262d0acdfaff6f6c269a928b22be2a',
+          }
+          for a,b in repl.items():
+            assert src.count(a) >= 1, a
+            src = src.replace(a,b)
+          old = """new='''  rw [hDecompose]
+          have hcoe :
+              ((∑ j, (reconstruct j).comp (localize j) : H →L[ℂ] E) : H → E) =
+                ∑ j, ((reconstruct j).comp (localize j) : H → E) := by
+            funext x
+            simp
+          rw [hcoe]
+          exact finite_chart_sum_isCompact localize reconstruct fun j ↦
+            twoTorus_isCompactOperator_of_fourierTail
+              (modes j) (localize j) (hTail j)'''"""
+          new = """new='''  rw [hDecompose]
+          have h := finite_chart_sum_isCompact localize reconstruct fun j ↦
+            twoTorus_isCompactOperator_of_fourierTail
+              (modes j) (localize j) (hTail j)
+          convert h using 1
+          funext x
+          simp'''"""
+          assert src.count(old) == 1, src.count(old)
+          src = src.replace(old,new,1)
+          src = src.replace("'repair':'explicit_function_equality_between_clm_sum_and_sum_of_coercions'", "'repair':'convert_compact_operator_sum_by_function_extensionality'")
+          Path('/tmp/codex_fa_after3455_chart_sum_latest_v2.sh').write_text(src)
+          PY
+      - name: Attest patch and direct compile exact latest full source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: bash /tmp/codex_fa_after3455_chart_sum_latest_v2.sh
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-after3455-chart-sum-latest-v2-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-after3455-chart-sum-latest-v2
+          retention-days: 30
+      - name: Preserve FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-after3455-chart-sum-latest-v2/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-after3455-chart-sum-latest-v2/Mock2_FunctionalAnalysis.exit)"
