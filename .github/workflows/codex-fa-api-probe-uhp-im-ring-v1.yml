@@ -1,0 +1,41 @@
+name: Codex FA API probe UHP im ring v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-api-probe-uhp-im-ring-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail; curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh; sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1; export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1; lake exe cache get >/tmp/cache.log 2>&1
+      - name: Probe UHP imag coercion and ring closure
+        shell: bash
+        run: |
+          set -euo pipefail; export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeUHPImRing.lean <<'LEAN'
+          import Mathlib
+          example (z : ℍ) : (z : ℂ).im = z.im := rfl
+          example (z : ℍ) (a b c : ℂ) :
+              Complex.I * (((z : ℂ).im : ℂ)) * a + (((z : ℂ).im : ℂ)) * b + c =
+                Complex.I * a * (z.im : ℂ) + b * (z.im : ℂ) + c := by
+            rw [show (z : ℂ).im = z.im from rfl]
+            ring
+          example (z : ℍ) (a b c : ℂ) :
+              -(Complex.I * (((z : ℂ).im : ℂ)) * a) + (((z : ℂ).im : ℂ)) * b - c =
+                -(Complex.I * a * (z.im : ℂ)) + b * (z.im : ℂ) - c := by
+            rw [show (z : ℂ).im = z.im from rfl]
+            ring
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeUHPImRing.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: {name: "codex-fa-api-probe-uhp-im-ring-v1-${{ github.sha }}", path: /tmp/probe.log, retention-days: 7, if-no-files-found: warn}
