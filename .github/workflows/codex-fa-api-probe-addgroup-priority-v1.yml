@@ -21,32 +21,55 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Inspect anti-dual Riesz and Hilbert transport APIs
+      - name: Inspect anti-dual norm and Hilbert transport APIs
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeAntiDualHilbert.lean <<'LEAN'
           import Mathlib
+          open ComplexConjugate
+          #check ContinuousLinearMap.opNorm_le_bound
+          #check ContinuousLinearMap.le_opNorm
+          #check inner_norm_le
+          #check norm_inner_le
           #check innerSLFlip
+          #check innerSLFlip_apply_apply
           #check innerSL_apply_norm
-          #check ContinuousLinearMap.flipₗᵢ'
+          #check LinearIsometry.ofNorm
           #check LinearIsometryEquiv.ofSurjective
-          #check LinearEquiv.isometryOfInner
-          #check InnerProductSpace.toCore
-          #check InnerProductSpace.Core
-          #check PreInnerProductSpace.ofCore
           #check InnerProductSpace.ofCore
-          #check LinearIsometryEquiv.toLinearEquiv
-          #check LinearIsometryEquiv.norm_map
-          #check LinearIsometryEquiv.inner_map_map
-          #check InnerProductSpace.toDual
+          #check InnerProductSpace.Core
+          #check PreInnerProductSpace.Core
+          #check StrongDual
+          variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
+          #synth CompleteSpace (E →L⋆[ℂ] ℂ)
+          #synth InnerProductSpace ℂ (StrongDual ℂ E)
+          example (x : E) : ‖innerSLFlip ℂ x‖ = ‖x‖ := by
+            apply le_antisymm
+            · apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg x)
+              intro y
+              rw [innerSLFlip_apply_apply]
+              exact inner_norm_le _ _
+            · by_cases hx : x = 0
+              · simp [hx]
+              · have h := (innerSLFlip ℂ x).le_opNorm x
+                rw [innerSLFlip_apply_apply, norm_inner_self] at h
+                have hxn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+                nlinarith [norm_nonneg (innerSLFlip ℂ x)]
           LEAN
-          lake env lean -DwarningAsError=false /tmp/ProbeAntiDualHilbert.lean | tee /tmp/probe.log
+          set +e
+          lake env lean -DwarningAsError=false /tmp/ProbeAntiDualHilbert.lean 2>&1 | tee /tmp/probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/probe.exit
+          exit "$x"
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-api-probe-antidual-hilbert-via-addgroup-${{ github.sha }}
-          path: /tmp/probe.log
+          name: codex-fa-api-probe-antidual-norm-hilbert-${{ github.sha }}
+          path: |
+            /tmp/probe.log
+            /tmp/probe.exit
           retention-days: 7
