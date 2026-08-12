@@ -1,0 +1,19 @@
+{
+  "schema": "fa-dynamic-cluster-3165-3166-add-neg-smul-v3",
+  "status": "DIRECT_FRONTIER_DERIVED_PENDING_RECOMPILE",
+  "root_family": "avoid LinearMap.map_sub dependent AddCommGroup parent by expressing core subtraction as add plus (-1)-smul",
+  "repairs": [
+    {
+      "declaration_index": 3165,
+      "declaration_name": "intrinsicRaisePeterssonCommutator_l2Coordinate_eq_sub",
+      "old_fragment": "  rw [intrinsicRaisePeterssonCommutator_l2Coordinate,\n    raisedCoordinate_apply, intrinsicPeterssonCuspCutoff_l2Coordinate,\n    raisedCoordinate_apply]\n  rw [← map_sub]\n  rfl",
+      "new_fragment": "  rw [intrinsicRaisePeterssonCommutator_l2Coordinate]\n  rw [raisedCoordinate_apply]\n  rw [raisedCoordinate_apply]\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate]\n  change l2Coordinate (n + 1)\n      (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n).comp\n          (intrinsicCuspCutoffOperator N n)) u +\n        (-1 : ℂ) •\n          (((intrinsicCuspCutoffOperator N (n + 1)).comp\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n)) u)) = _\n  rw [map_add, map_smul]\n  simp only [neg_one_smul, sub_eq_add_neg]"
+    },
+    {
+      "declaration_index": 3166,
+      "declaration_name": "intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate_eq_sub",
+      "old_fragment": "  rw [intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate,\n    lowerFromSuccCoordinate_apply,\n    intrinsicPeterssonCuspCutoff_l2Coordinate,\n    lowerFromSuccCoordinate_apply]\n  rw [← map_sub]\n  rfl",
+      "new_fragment": "  rw [intrinsicLowerFromSuccPeterssonCommutator_l2Coordinate]\n  rw [lowerFromSuccCoordinate_apply]\n  rw [lowerFromSuccCoordinate_apply]\n  rw [intrinsicPeterssonCuspCutoff_l2Coordinate]\n  change l2Coordinate n\n      (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n).comp\n          (intrinsicCuspCutoffOperator N (n + 1))) v +\n        (-1 : ℂ) •\n          (((intrinsicCuspCutoffOperator N n).comp\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n)) v)) = _\n  rw [map_add, map_smul]\n  simp only [neg_one_smul, sub_eq_add_neg]"
+    }
+  ]
+}
