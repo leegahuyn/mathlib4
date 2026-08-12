@@ -1,4 +1,4 @@
-name: Codex FA API probe compact normtop v2
+name: Codex FA API probe compact normtop v3
 on:
   push:
     branches:
@@ -27,24 +27,28 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Inspect compactness source and compile topology bridge candidates
+      - name: Compile exact topology-diamond bridge candidates
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          grep -R -n -m 5 "isCompactOperator_of_tendsto" Mathlib || true
-          cat >/tmp/CompactNormTopBridgeA.lean <<'LEAN'
+          grep -R -n -m 20 "ContinuousLinearMap.toPseudoMetricSpace\|SeminormedAddCommGroup.toPseudoMetricSpace" Mathlib/Analysis Mathlib/Topology || true
+          cat >/tmp/DiamondA.lean <<'LEAN'
           import Mathlib
           noncomputable section
           variable {E F : Type*}
           variable [NormedAddCommGroup E] [NormedSpace ℂ E]
           variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
           example :
-              (ContinuousLinearMap.topologicalSpace : TopologicalSpace (E →L[ℂ] F)) =
-                PseudoMetricSpace.toUniformSpace.toTopologicalSpace := by
+              (@UniformSpace.toTopologicalSpace (E →L[ℂ] F)
+                (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] F)
+                  ContinuousLinearMap.toPseudoMetricSpace)) =
+              (@UniformSpace.toTopologicalSpace (E →L[ℂ] F)
+                (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] F)
+                  SeminormedAddCommGroup.toPseudoMetricSpace)) := by
             rfl
           LEAN
-          cat >/tmp/CompactNormTopBridgeB.lean <<'LEAN'
+          cat >/tmp/DiamondB.lean <<'LEAN'
           import Mathlib
           noncomputable section
           open Filter Topology
@@ -59,12 +63,14 @@ jobs:
             apply isCompactOperator_of_tendsto (l := (atTop : Filter ℕ))
             · change Tendsto Tn atTop
                 (@nhds (E →L[ℂ] F)
-                  PseudoMetricSpace.toUniformSpace.toTopologicalSpace T)
+                  (@UniformSpace.toTopologicalSpace (E →L[ℂ] F)
+                    (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] F)
+                      SeminormedAddCommGroup.toPseudoMetricSpace)) T)
               rw [tendsto_iff_norm_sub_tendsto_zero]
               exact squeeze_zero (fun N => norm_nonneg (Tn N - T)) hTail heps
             · exact Filter.Eventually.of_forall hT
           LEAN
-          cat >/tmp/CompactNormTopBridgeC.lean <<'LEAN'
+          cat >/tmp/DiamondC.lean <<'LEAN'
           import Mathlib
           noncomputable section
           open Filter Topology
@@ -78,20 +84,22 @@ jobs:
               IsCompactOperator T := by
             have hconv : Tendsto Tn atTop
                 (@nhds (E →L[ℂ] F)
-                  PseudoMetricSpace.toUniformSpace.toTopologicalSpace T) := by
+                  (@UniformSpace.toTopologicalSpace (E →L[ℂ] F)
+                    (@PseudoMetricSpace.toUniformSpace (E →L[ℂ] F)
+                      SeminormedAddCommGroup.toPseudoMetricSpace)) T) := by
               rw [tendsto_iff_norm_sub_tendsto_zero]
               exact squeeze_zero (fun N => norm_nonneg (Tn N - T)) hTail heps
             apply isCompactOperator_of_tendsto (l := (atTop : Filter ℕ))
-            · simpa only [ContinuousLinearMap.topologicalSpace] using hconv
+            · exact hconv
             · exact Filter.Eventually.of_forall hT
           LEAN
           set +e
-          lake env lean /tmp/CompactNormTopBridgeA.lean >/tmp/a.log 2>&1; A=$?
-          lake env lean /tmp/CompactNormTopBridgeB.lean >/tmp/b.log 2>&1; B=$?
-          lake env lean /tmp/CompactNormTopBridgeC.lean >/tmp/c.log 2>&1; C=$?
+          lake env lean /tmp/DiamondA.lean >/tmp/a.log 2>&1; A=$?
+          lake env lean /tmp/DiamondB.lean >/tmp/b.log 2>&1; B=$?
+          lake env lean /tmp/DiamondC.lean >/tmp/c.log 2>&1; C=$?
           set -e
           echo "A_EXIT=$A"; cat /tmp/a.log
           echo "B_EXIT=$B"; cat /tmp/b.log
           echo "C_EXIT=$C"; cat /tmp/c.log
-          if [ "$B" -eq 0 ] || [ "$C" -eq 0 ]; then exit 0; fi
+          if [ "$A" -eq 0 ] || [ "$B" -eq 0 ] || [ "$C" -eq 0 ]; then exit 0; fi
           exit 1
