@@ -51,9 +51,10 @@ jobs:
               DomAddAct.continuous_mk.vadd continuous_const
             have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=
               h.continuousAt
+            change Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
+              (nhds 0) (nhds (DomAddAct.mk (0 : ℂ) +ᵥ f)) at h0
             have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl
-            rw [hm0] at h0
-            simpa using h0
+            simpa [hm0] using h0
 
           example (f : AmbientPlaneL2Probe) :
               Filter.Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖)
@@ -63,11 +64,12 @@ jobs:
               DomAddAct.continuous_mk.vadd continuous_const
             have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=
               h.continuousAt
+            change Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
+              (nhds 0) (nhds (DomAddAct.mk (0 : ℂ) +ᵥ f)) at h0
             have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl
-            rw [hm0] at h0
             have ht : Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
                 (nhds 0) (nhds f) := by
-              simpa using h0
+              simpa [hm0] using h0
             have hs := ht.sub_const f
             have hn := tendsto_norm.comp hs
             simpa using hn
