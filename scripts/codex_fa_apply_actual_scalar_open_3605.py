@@ -18,7 +18,8 @@ open Mock2FA.PaperCorrections.FredholmBypass'''
 new = '''namespace Mock2FA.PaperCorrections.AutomorphicSobolev.ActualScalarDiscriminantPDE
 
 open Mock2FA.PaperCorrections.FredholmBypass
-open Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.FixedPhaseGraphPotential'''
+open Mock2FA.PaperCorrections.AutomorphicSobolev.ExplicitDiscriminantPotential.FixedPhaseGraphPotential
+attribute [local instance] actualHMinusOneInnerProductSpace'''
 assert before.count(old) == 1, before.count(old)
 after = before.replace(old,new,1)
 p.write_text(after)
@@ -29,8 +30,8 @@ assert seq0==seq1 and fc0==fc1
 b=p.read_bytes(); sha=hashlib.sha256(b).hexdigest()
 audit_path=out/'PATCH_AUDIT.json'; audit=json.loads(audit_path.read_text())
 audit['candidate_sha256']=sha
-audit.setdefault('targets',[]).append('ActualScalarDiscriminantPDE:reopen_FixedPhaseGraphPotential')
-audit['actual_scalar_open_repair']='reopen_FixedPhaseGraphPotential_for_graphPotentialOperator'
+audit.setdefault('targets',[]).append('ActualScalarDiscriminantPDE:reopen_FixedPhaseGraphPotential_and_HMinusOne_inner')
+audit['actual_scalar_open_repair']='reopen_FixedPhaseGraphPotential_and_reenable_actualHMinusOneInnerProductSpace'
 audit['v10_diagnostic_run_id']=31602395683
 audit['existing_declaration_relative_order_preserved']=True
 audit['semantic_public_proposition_change']=False
