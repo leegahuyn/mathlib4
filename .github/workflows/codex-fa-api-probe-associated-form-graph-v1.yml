@@ -1,0 +1,61 @@
+name: Codex FA API probe associated form graph v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-associated-form-graph-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile exact carrier closure pattern
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/AssociatedFormGraphProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          abbrev StrongAntiDual (V : Type*) [NormedAddCommGroup V] [NormedSpace ℂ V] := V →L⋆[ℂ] ℂ
+          abbrev CSF (V : Type*) [NormedAddCommGroup V] [NormedSpace ℂ V] := V →L[ℂ] StrongAntiDual V
+          variable {H V : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          variable [NormedAddCommGroup V] [InnerProductSpace ℂ V]
+          noncomputable def graphProbe (J : V →L[ℂ] H) (B : CSF V) :
+              Submodule ℂ (H × H) where
+            carrier := {p | ∃ u : V, J u = p.1 ∧ ∀ v : V, B u v = inner ℂ (J v) p.2}
+            zero_mem' := by
+              refine ⟨0, by simp, ?_⟩
+              intro v
+              simp
+            add_mem' := by
+              rintro p q ⟨u, hu, hBu⟩ ⟨w, hw, hBw⟩
+              refine ⟨u + w, by simp [hu, hw], ?_⟩
+              intro v
+              simp [hBu v, hBw v]
+            smul_mem' := by
+              rintro a p ⟨u, hu, hBu⟩
+              refine ⟨a • u, by simp [hu], ?_⟩
+              intro v
+              simp [hBu v]
+          LEAN
+          lake env lean /tmp/AssociatedFormGraphProbe.lean
