@@ -1,0 +1,69 @@
+name: Codex FA API probe Lp smul sub v2
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-lp-smul-sub-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Reproduce exact Lp subtraction shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeLpSmulSub.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          open scoped ENNReal
+          noncomputable abbrev A := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
+          #synth AddCommGroup A
+          #synth Module ℂ A
+
+          example (c : ℂ) (x y : A) : c • (x - y) = c • x - c • y := by
+            exact smul_sub c x y
+
+          example (K t : ℂ) (f : A) :
+              K • (DomAddAct.mk (-t) +ᵥ f - f) =
+                K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
+            exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
+
+          example (K t : ℂ) (f : A) :
+              K • (DomAddAct.mk (-t) +ᵥ f - f) =
+                K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
+            letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩
+            exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
+          LEAN
+          lake env lean -DwarningAsError=false /tmp/ProbeLpSmulSub.lean | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-api-probe-lp-smul-sub-v2-${{ github.sha }}
+          path: /tmp/probe.log
+          retention-days: 7
+          if-no-files-found: warn
