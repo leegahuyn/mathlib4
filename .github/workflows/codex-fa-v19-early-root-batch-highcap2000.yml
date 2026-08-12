@@ -1,0 +1,240 @@
+name: Codex FA v19 early-root cumulative batch highcap2000
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v19-early-root-batch-highcap2000.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  direct:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout trigger commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Materialize exact v18 parent and apply audited cumulative early-root batch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v19-early-root-batch-highcap2000
+          mkdir -p "$OUT" /tmp/v18
+          BASE_RUN_ID=31610599401
+          BASE_ARTIFACT_ID=9147888303
+          BASE_ARTIFACT_DIGEST=sha256:d8271b20a503895e3e11ea8d498d4cd5b3f09e95fdedb30b5145f3e434d2c1fd
+          BASE_SOURCE_SHA256=12208d1092dc018df613f21aa532969fb450598b9c481e734e6692832a1e2b7f
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}" >"$OUT/base-artifact.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT_ID}/zip" >/tmp/v18.zip
+          test "sha256:$(sha256sum /tmp/v18.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v18.zip -d /tmp/v18
+          BASE_SOURCE_SHA256="$BASE_SOURCE_SHA256" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, shutil
+
+          root = Path('/tmp/v18')
+          out = Path('build-logs/codex-fa-v19-early-root-batch-highcap2000')
+          hits=[]
+          for p in root.rglob('Mock2_FunctionalAnalysis.lean'):
+              b=p.read_bytes()
+              if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(b).hexdigest()==os.environ['BASE_SOURCE_SHA256']:
+                  hits.append(p)
+          assert len(hits)==1, hits
+          target=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          shutil.copy2(hits[0], target)
+          before=target.read_text()
+          assert hashlib.sha256(target.read_bytes()).hexdigest()==os.environ['BASE_SOURCE_SHA256']
+
+          replacements=[]
+          def replace_once(label, old, new):
+              global before
+              n=before.count(old)
+              assert n==1, (label,n)
+              before=before.replace(old,new,1)
+              replacements.append(label)
+
+          # decl 3555: denominator real-to-complex cast normalization only.
+          replace_once('qParam_two_periodic:explicit_real_complex_two_bridge',
+          '''  unfold Function.Periodic.qParam\n  have harg :\n''',
+          '''  unfold Function.Periodic.qParam\n  have htwo : ((2 : ℝ) : ℂ) = (2 : ℂ) := by norm_num\n  rw [htwo]\n  have harg :\n''')
+
+          # decl 3584: pinned API takes an implicit NNReal K but the inequality is over Real norms.
+          replace_once('fredholmDefect_rangeOrthogonal_finiteDimensional:real_norm_bound',
+          '''  have hRbound : ∀ u, ‖u‖ ≤ (1 : ℝ≥0) * ‖R u‖ := by\n''',
+          '''  have hRbound : ∀ u, ‖u‖ ≤ (1 : ℝ) * ‖R u‖ := by\n''')
+          replace_once('fredholmDefect_rangeOrthogonal_finiteDimensional:explicit_NNReal_K',
+          '''  have hRembedding : IsUniformEmbedding R :=\n    R.isUniformEmbedding_of_bound hRbound\n''',
+          '''  have hRembedding : IsUniformEmbedding R :=\n    R.isUniformEmbedding_of_bound (K := 1) hRbound\n''')
+
+          # decls 3605-3607: restore namespace resolution and the already-defined local Hilbert instance.
+          replace_once('weakSchrodinger_finiteDimensional_cluster:restore_open_and_local_instance',
+          '''namespace Mock2FA.PaperCorrections.AutomorphicSobolev.ActualScalarDiscriminantPDE\n\nopen Mock2FA.PaperCorrections.FredholmBypass\n\n/-- The actual scalar discriminant weak operator has finite-dimensional\n''',
+          '''namespace Mock2FA.PaperCorrections.AutomorphicSobolev.ActualScalarDiscriminantPDE\n\nopen Mock2FA.PaperCorrections.FredholmBypass\nopen ExplicitDiscriminantPotential.FixedPhaseGraphPotential\nattribute [local instance] actualHMinusOneInnerProductSpace\n\n/-- The actual scalar discriminant weak operator has finite-dimensional\n''')
+
+          # decls 3621/3624: preserve theorem text; only restore namespace resolution of lsmul.
+          replace_once('FixedPhaseReducedChartFriedrichs:open_ContinuousLinearMap',
+          '''namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\n''',
+          '''namespace FixedPhaseReducedChartFriedrichs\n\nopen Set Function Topology Filter MeasureTheory Metric\nopen ContinuousLinearMap\n''')
+
+          # decl 3620: explicit support bridge for real mollifier coerced into complex values.
+          replace_once('support_friedrichsMollifiedRepresentative:ofReal_support_bridge',
+          '''  refine (support_convolution_subset_swap\n    (ContinuousLinearMap.lsmul ℝ ℂ)).trans ?_\n  calc\n    Function.support (u : ℂ → ℂ) +\n          Function.support (friedrichsMollifierReal j) ⊆\n        K + closedBall (0 : ℂ) (friedrichsRadius j) :=\n      add_subset_add hu\n        (support_friedrichsMollifierReal_subset_closedBall j)\n''',
+          '''  refine (support_convolution_subset_swap\n    (ContinuousLinearMap.lsmul ℝ ℂ)).trans ?_\n  have hsupp :\n      Function.support (fun t : ℂ ↦ (friedrichsMollifierReal j t : ℂ)) =\n        Function.support (friedrichsMollifierReal j) := by\n    ext t\n    simp only [Function.mem_support, Complex.ofReal_ne_zero]\n  calc\n    Function.support (u : ℂ → ℂ) +\n          Function.support (fun t : ℂ ↦ (friedrichsMollifierReal j t : ℂ)) =\n        Function.support (u : ℂ → ℂ) +\n          Function.support (friedrichsMollifierReal j) := by rw [hsupp]\n    _ ⊆ K + closedBall (0 : ℂ) (friedrichsRadius j) :=\n      add_subset_add hu\n        (support_friedrichsMollifierReal_subset_closedBall j)\n''')
+
+          # decl 3628: avoid trying to simp through Function.support; rewrite pointwise membership.
+          replace_once('tsupport_bufferedFriedrichsFullPlaneTest:pointwise_support_bridge',
+          '''  apply closure_minimal\n  · simpa only [bufferedFriedrichsFullPlaneTest_apply] using\n      support_friedrichsMollifiedRepresentative_subset_cthickening\n        hK j u hu\n  · exact isClosed_cthickening\n''',
+          '''  apply closure_minimal\n  · intro z hz\n    apply support_friedrichsMollifiedRepresentative_subset_cthickening\n      hK j u hu\n    change bufferedFriedrichsFullPlaneTest hK j u hu z ≠ 0 at hz\n    simpa only [bufferedFriedrichsFullPlaneTest_apply] using hz\n  · exact isClosed_cthickening\n''')
+
+          # decl 3637: close the WeightSection structure literal. This is syntax recovery, not a statement change.
+          replace_once('potentialTimesWeightCore:close_WeightSection_literal',
+          '''      rw [upstairsPotential_gammaTwo_invariant γ z,\n        WeightSection.covariance (SmoothCompactWeightCore.toSection u₀) γ z]\n      ring\n  refine ⟨s, ?_⟩\n''',
+          '''      rw [upstairsPotential_gammaTwo_invariant γ z,\n        WeightSection.covariance (SmoothCompactWeightCore.toSection u₀) γ z]\n      ring⟩\n  refine ⟨s, ?_⟩\n''')
+
+          target.write_text(before)
+          b=target.read_bytes()
+          audit={
+            'base_source_sha256': os.environ['BASE_SOURCE_SHA256'],
+            'candidate_sha256': hashlib.sha256(b).hexdigest(),
+            'candidate_bytes': len(b),
+            'candidate_lines': len(before.splitlines()),
+            'replacements': replacements,
+            'replacement_count': len(replacements),
+            'public_theorem_header_text_modified': False,
+            'semantic_public_proposition_change': False,
+            'existing_declaration_relative_order_preserved': True,
+            'new_declarations_added': False,
+            'repair_classes': [
+              'real_complex_coercion_normalization',
+              'NNReal_parameter_vs_Real_norm_inequality',
+              'namespace_and_existing_local_instance_resolution',
+              'real_to_complex_support_coercion',
+              'ContinuousLinearMap_name_resolution',
+              'support_pointwise_target_shape',
+              'structure_literal_delimiter_recovery'
+            ]
+          }
+          (out/'PATCH_AUDIT.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n')
+          (out/'candidate.sha256').write_text(audit['candidate_sha256']+'\n')
+          print(json.dumps(audit,indent=2,sort_keys=True))
+          PY
+
+      - name: Static trust and patch audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v19-early-root-batch-highcap2000
+          F=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          f=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text()
+          a=json.loads(Path('build-logs/codex-fa-v19-early-root-batch-highcap2000/PATCH_AUDIT.json').read_text())
+          assert a['semantic_public_proposition_change'] is False
+          assert a['existing_declaration_relative_order_preserved'] is True
+          # lexical trust counts are attested against exact v18 parent below; no new forbidden tokens allowed.
+          parent=Path('/tmp/v18/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text()
+          pats=['sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool']
+          counts={p:(len(re.findall(r'\\b'+re.escape(p)+r'\\b',parent)),len(re.findall(r'\\b'+re.escape(p)+r'\\b',f))) for p in pats}
+          assert all(x==y for x,y in counts.values()), counts
+          Path('build-logs/codex-fa-v19-early-root-batch-highcap2000/TRUST_COUNTS.json').write_text(json.dumps(counts,indent=2,sort_keys=True)+'\n')
+          PY
+          test "$(sha256sum "$F" | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v19-early-root-batch-highcap2000
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+
+      - name: Direct compile full dependency chain with high cap
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          OUT=build-logs/codex-fa-v19-early-root-batch-highcap2000
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          one(){
+            local s="$1" cap="$2"
+            local o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean
+            local i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean
+            rm -f "$o" "$i"
+            :>"$OUT/$s.executed"
+            printf 'lake env lean -DmaxErrors=%s -DwarningAsError=false -o %s -i %s PrimalitySheafVerification/%s.lean\n' "$cap" "$o" "$i" "$s" >"$OUT/$s.command"
+            set +e
+            lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1
+            x=$?
+            set -e
+            echo "$x" >"$OUT/$s.exit"
+          }
+          one Mock2 1
+          one Mock2_Advanced 1
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
+          one Mock2_FunctionalAnalysis 2000
+
+      - name: Build normalized result inventory
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=build-logs/codex-fa-v19-early-root-batch-highcap2000
+          python3 - <<'PY'
+          from pathlib import Path
+          from bisect import bisect_right
+          import collections,hashlib,json,os,re
+          out=Path('build-logs/codex-fa-v19-early-root-batch-highcap2000')
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          s=p.read_text(errors='replace'); b=p.read_bytes()
+          decl_rx=re.compile(r'(?m)^(?:protected\\s+|private\\s+|noncomputable\\s+|local\\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\\s+(?P<name>[^\\s(:]+)')
+          ds=list(decl_rx.finditer(s)); starts=[s.count('\\n',0,m.start())+1 for m in ds]
+          rx=re.compile(r'^.+?\\.lean:(\\d+):(\\d+): error(?:\\([^)]+\\))?:(.*)$')
+          di=[]; lp=out/'Mock2_FunctionalAnalysis.log'
+          for raw in lp.read_text(errors='replace').splitlines() if lp.exists() else []:
+            m=rx.match(raw)
+            if not m: continue
+            ln=int(m.group(1)); col=int(m.group(2)); msg=m.group(3).strip(); idx=bisect_right(starts,ln)-1
+            sig=re.sub(r'\\b\\d+\\b','<N>',msg); sig=re.sub(r'\\s+',' ',sig).strip()
+            di.append({'ordinal':len(di)+1,'line':ln,'column':col,'declaration':ds[idx].group('name') if idx>=0 else None,'declaration_index':idx if idx>=0 else None,'message':msg,'normalized_message_signature':sig})
+          first=di[0] if di else {}
+          ex={stem:int((out/f'{stem}.exit').read_text()) if (out/f'{stem}.exit').exists() else None for stem in ['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']}
+          metric={'schema':'fa-v19-early-root-batch-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':(out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest()==(out/'candidate.sha256').read_text().strip(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'Mock2_executed':(out/'Mock2.executed').exists(),'Mock2_Advanced_executed':(out/'Mock2_Advanced.executed').exists(),'FA_executed':(out/'Mock2_FunctionalAnalysis.executed').exists(),'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in ['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']),'FA_compile_max_errors':2000,'FA_error_headers_captured':len(di),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'unique_declarations_with_errors':len(set((d['declaration_index'],d['declaration']) for d in di)),'unique_normalized_signatures':len(set(d['normalized_message_signature'] for d in di))}
+          (out/'FULL_DIAGNOSTICS.json').write_text(json.dumps(di,indent=2,sort_keys=True)+'\n')
+          bydecl=collections.Counter((d['declaration_index'],d['declaration']) for d in di)
+          (out/'DIAGNOSTIC_DECLARATION_COUNTS.json').write_text(json.dumps([{'declaration_index':k[0],'declaration':k[1],'count':v} for k,v in sorted(bydecl.items(),key=lambda kv:(kv[0][0] if kv[0][0] is not None else -1,kv[0][1] or ''))],indent=2,sort_keys=True)+'\n')
+          (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(metric,indent=2,sort_keys=True))
+          PY
+
+      - name: Upload exact candidate and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v19-early-root-batch-highcap2000-${{ github.sha }}
+          path: |
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            build-logs/codex-fa-v19-early-root-batch-highcap2000
+          retention-days: 30
+
+      - name: Preserve actual FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          test -f build-logs/codex-fa-v19-early-root-batch-highcap2000/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-v19-early-root-batch-highcap2000/Mock2_FunctionalAnalysis.exit)"
