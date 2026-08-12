@@ -1,4 +1,4 @@
-name: Codex FA API probe post3519 v1
+name: Codex FA API probe post3519 v2
 on:
   push:
     branches:
@@ -27,21 +27,26 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile post3519 API probes
+      - name: Compile repaired post3519 scalar API probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/Post3519Probe.lean <<'LEAN'
+          cat >/tmp/Post3519ProbeV2.lean <<'LEAN'
           import Mathlib
           noncomputable section
           open Filter MeasureTheory Module End
 
+          #check intervalIntegral.integrableOn_Ioo_rpow_iff
+
           example (C : ℝ) :
               Filter.Tendsto (fun N : ℕ => C / ((N : ℝ) + 1))
                 Filter.atTop (nhds 0) := by
-            simpa only [div_eq_mul_inv, one_div, mul_zero] using
-              tendsto_const_nhds.mul
+            have hconst :
+                Filter.Tendsto (fun _ : ℕ => C) Filter.atTop (nhds C) :=
+              tendsto_const_nhds
+            simpa only [div_eq_mul_inv, one_div, one_mul, mul_zero] using
+              hconst.mul
                 (tendsto_one_div_add_atTop_nhds_zero_nat :
                   Filter.Tendsto (fun N : ℕ => (1 : ℝ) / (N + 1))
                     Filter.atTop (nhds 0))
@@ -50,7 +55,7 @@ jobs:
               IntegrableOn (fun y : ℝ => y ^ (β - 2)) (Set.Ioo 0 T) ↔
                 1 < β := by
             rw [intervalIntegral.integrableOn_Ioo_rpow_iff hT]
-            linarith
+            constructor <;> intro h <;> linarith
 
           example {β : ℝ} (hβ : 1 < β) :
               IntegrableOn
@@ -71,4 +76,4 @@ jobs:
               IsCompactOperator.smul_iff₀ hμ] at hK
             rwa [← isCompactOperator_id_iff_finiteDimensional]
           LEAN
-          lake env lean /tmp/Post3519Probe.lean
+          lake env lean /tmp/Post3519ProbeV2.lean
