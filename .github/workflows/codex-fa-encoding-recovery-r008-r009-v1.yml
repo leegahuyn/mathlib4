@@ -1,0 +1,76 @@
+name: Codex FA encoding recovery R008 R009 v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-encoding-recovery-r008-r009-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Generate and exact-hash recovery candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/recovered
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          specs={
+            'R008':(Path('scripts/fa_d0a3_r008_high_confidence_overrides.json'),'fc12abfbf84d54842ce9f8c2db9c4661948be24da75d38ec51a866b706c74551'),
+            'R009':(Path('scripts/fa_d0a3_r009_high_confidence_overrides.json'),'0f14f9f15cc2256399d5201648c157764f7db800cbed32125f0ba9b5b9a3c5e2'),
+          }
+          def sha(b): return hashlib.sha256(b).hexdigest()
+          def repair_mixed(data, enc):
+            out=bytearray(); i=0; repaired=[]
+            while i<len(data):
+              # preserve the longest valid UTF-8 sequence beginning here
+              b=data[i]
+              if b<0x80:
+                out.append(b); i+=1; continue
+              width=2 if 0xC2<=b<=0xDF else 3 if 0xE0<=b<=0xEF else 4 if 0xF0<=b<=0xF4 else 0
+              if width and i+width<=len(data):
+                chunk=data[i:i+width]
+                try:
+                  chunk.decode('utf-8'); out.extend(chunk); i+=width; continue
+                except UnicodeDecodeError: pass
+              try:
+                ch=bytes([b]).decode(enc)
+              except UnicodeDecodeError:
+                return None, repaired
+              out.extend(ch.encode('utf-8')); repaired.append({'offset':i,'byte':b,'char':ch,'encoding':enc}); i+=1
+            return bytes(out),repaired
+          report={}
+          for name,(p,expected) in specs.items():
+            raw=p.read_bytes(); item={'path':str(p),'raw_sha256':sha(raw),'raw_bytes':len(raw),'expected_sha256':expected,'raw_utf8':True,'candidates':[]}
+            try: raw.decode('utf-8')
+            except UnicodeDecodeError as e:
+              item['raw_utf8']=False; item['first_utf8_error']={'start':e.start,'end':e.end,'reason':e.reason,'bytes':raw[e.start:e.end].hex()}
+            for enc in ('cp1252','latin1'):
+              cand,reps=repair_mixed(raw,enc)
+              if cand is None: continue
+              rec={'method':'mixed-invalid-'+enc,'sha256':sha(cand),'bytes':len(cand),'utf8':False,'json':False,'replacement_count':len(reps),'replacements':reps[:50]}
+              try:
+                text=cand.decode('utf-8'); rec['utf8']=True; json.loads(text); rec['json']=True
+              except Exception as e: rec['validation_error']=repr(e)
+              rec['exact_expected']=rec['sha256']==expected
+              item['candidates'].append(rec)
+              if rec['exact_expected'] and rec['utf8'] and rec['json']:
+                Path('/tmp/recovered/'+p.name).write_bytes(cand)
+            report[name]=item
+          Path('/tmp/recovered/REPORT.json').write_text(json.dumps(report,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          # This is a probe only. Do not rewrite repository files unless exact expected hashes match.
+          PY
+      - name: Upload recovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-encoding-recovery-r008-r009-v1-${{ github.sha }}
+          path: /tmp/recovered
+          retention-days: 7
+          if-no-files-found: warn
