@@ -1,6 +1,6 @@
 name: Codex FA v21 API shapes v1
 
-# trigger: explicit-complex-inner-3
+# trigger: lsmul-convolution-signatures-4
 on:
   push:
     branches:
@@ -40,6 +40,7 @@ jobs:
           import Mathlib
 
           open Set Function
+          open ContinuousLinearMap
 
           #check inner_re_symm
           #check ContinuousLinearMap.opNorm_le_bound
@@ -47,6 +48,10 @@ jobs:
           #check DenseRange
           #check DenseRange.closure_range
           #check dense_iff_closure_eq
+          #check ContinuousLinearMap.lsmul
+          #check ContinuousLinearMap.lsmul_apply
+          #check ContinuousLinearMap.mul
+          #check HasCompactSupport.contDiff_convolution_left
 
           section
           variable {E F : Type*}
@@ -75,6 +80,9 @@ jobs:
           example : ‖L.mkContinuous C h‖ ≤ C := by
             exact LinearMap.mkContinuous_norm_le L hC h
           end
+
+          example : ‖(ContinuousLinearMap.lsmul ℂ ℂ)‖ = ‖(ContinuousLinearMap.lsmul ℂ ℂ)‖ := by
+            rfl
           LEAN
           set +e
           lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/V21ApiShapes.lean 2>&1 | tee /tmp/v21-api-shapes.log
