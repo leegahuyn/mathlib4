@@ -73,6 +73,12 @@ jobs:
             have hs := ht.sub_const f
             have hn := tendsto_norm.comp hs
             simpa using hn
+
+          open scoped Distributions
+          open TopologicalSpace
+          local notation "∞" => (⊤ : ℕ∞)
+          abbrev FullPlaneTestProbe := TestFunction (⊤ : Opens ℂ) ℂ ∞
+          example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeLpDomAddV2.lean | tee /tmp/probe.log
       - name: Upload evidence
