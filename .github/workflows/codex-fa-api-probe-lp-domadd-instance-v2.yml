@@ -51,6 +51,8 @@ jobs:
               DomAddAct.continuous_mk.vadd continuous_const
             have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=
               h.continuousAt
+            have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl
+            rw [hm0] at h0
             simpa using h0
 
           example (f : AmbientPlaneL2Probe) :
@@ -61,6 +63,8 @@ jobs:
               DomAddAct.continuous_mk.vadd continuous_const
             have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 :=
               h.continuousAt
+            have hm0 : DomAddAct.mk (0 : ℂ) = 0 := rfl
+            rw [hm0] at h0
             have ht : Filter.Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f)
                 (nhds 0) (nhds f) := by
               simpa using h0
