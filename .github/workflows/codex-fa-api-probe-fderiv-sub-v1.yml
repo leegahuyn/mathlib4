@@ -30,13 +30,17 @@ jobs:
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
             letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
-            have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
+            let F : ℂ → AmbientPlaneL2Probe := fun t ↦ DomAddAct.mk t +ᵥ f
+            have h : Continuous F := by
+              dsimp [F]
               fun_prop
-            have hz : DomAddAct.mk (0 : ℂ) +ᵥ f = f := by
+            have h0 : Tendsto F (nhds 0) (nhds (F 0)) := h.continuousAt
+            have hz : F 0 = f := by
+              dsimp [F]
               rw [DomAddAct.mk_zero]
               exact zero_vadd _ f
-            rw [← hz]
-            exact h.continuousAt
+            rw [hz] at h0
+            exact h0
 
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
