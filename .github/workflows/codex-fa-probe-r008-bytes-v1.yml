@@ -1,0 +1,41 @@
+name: Codex FA probe R008 raw bytes v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-probe-r008-bytes-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BLOB_SHA: "6a858829dcd33ebc355555c8ab6b78413f2f09ad"
+      EXPECTED_SHA256: "4318b50a115cec4d4826374cd0699cd6b09493240a851644ffc210238972097a"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Inspect exact blob bytes
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/git/blobs/${BLOB_SHA}" >/tmp/blob.json
+          jq -r '.content' /tmp/blob.json | tr -d '\n' | base64 -d >/tmp/r008.raw
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          b=Path('/tmp/r008.raw').read_bytes();print('len',len(b),'sha',hashlib.sha256(b).hexdigest())
+          try:b.decode();print('utf8=valid')
+          except UnicodeDecodeError as e:
+            print('utf8_error',e.start,e.end,e.reason);print('hex_window',b[max(0,e.start-80):e.end+80].hex());print('repr_window',repr(b[max(0,e.start-80):e.end+80]))
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-r008-bytes-v1-${{ github.sha }}
+          path: |
+            /tmp/blob.json
+            /tmp/r008.raw
+          retention-days: 7
