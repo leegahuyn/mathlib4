@@ -1,0 +1,93 @@
+name: Codex FA v21 API shapes v1
+
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v21-api-shapes-v1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile combined v21 API shape probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/V21ApiShapes.lean <<'LEAN'
+          import Mathlib
+
+          open Set Function
+
+          #check inner_re_symm
+          #check ContinuousLinearMap.opNorm_le_bound
+          #check LinearMap.mkContinuous_norm_le
+          #check DenseRange
+          #check DenseRange.closure_range
+          #check dense_iff_closure_eq
+
+          section
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [InnerProductSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F]
+
+          example (U RL : E) :
+              (inner ℂ U RL).re = (inner ℂ RL U).re := by
+            exact inner_re_symm U RL
+
+          example (U : E) : inner ℂ U 0 = 0 := by
+            simp
+
+          example (f : E → F) (hf : DenseRange f) :
+              Dense (Set.range f) := by
+            exact hf
+
+          example (T : E →L[ℂ] F) : ‖T‖ ≤ ‖T‖ := by
+            refine ContinuousLinearMap.opNorm_le_bound T (norm_nonneg T) ?_
+            intro x
+            exact T.le_opNorm x
+
+          variable (L : E →ₗ[ℂ] F) (C : ℝ)
+          variable (hC : 0 ≤ C) (h : ∀ x, ‖L x‖ ≤ C * ‖x‖)
+
+          example : ‖L.mkContinuous C h‖ ≤ C := by
+            exact LinearMap.mkContinuous_norm_le L hC h
+          end
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/V21ApiShapes.lean 2>&1 | tee /tmp/v21-api-shapes.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/v21-api-shapes.exit
+          exit "$x"
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v21-api-shapes-v1-${{ github.sha }}
+          path: |
+            /tmp/V21ApiShapes.lean
+            /tmp/v21-api-shapes.log
+            /tmp/v21-api-shapes.exit
+          retention-days: 30
