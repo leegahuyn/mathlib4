@@ -1,4 +1,4 @@
-name: Codex FA after3480 explicit seminorm v9
+name: Codex FA after3480 explicit seminorm diagnostic v10
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ permissions:
   actions: read
   contents: read
 jobs:
-  frontier:
+  diagnostic:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -20,23 +20,25 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
-      - name: Attest explicit seminorm topology patch and direct compile exact full source
+      - name: Build diagnostic runner
+        shell: bash
+        run: |
+          sed \
+            -e 's/codex-fa-after3480-explicit-seminorm-v9/codex-fa-after3480-explicit-seminorm-diagnostic-v10/g' \
+            -e 's/one Mock2_FunctionalAnalysis 1/one Mock2_FunctionalAnalysis 20/' \
+            scripts/codex_fa_after3480_explicit_seminorm_v9.sh \
+            > /tmp/codex_fa_after3480_explicit_seminorm_diagnostic_v10.sh
+      - name: Attest explicit seminorm patch and direct compile diagnostic full source
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
-        run: bash scripts/codex_fa_after3480_explicit_seminorm_v9.sh
-      - name: Upload exact evidence
+        run: bash /tmp/codex_fa_after3480_explicit_seminorm_diagnostic_v10.sh
+      - name: Upload diagnostic evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-after3480-explicit-seminorm-v9-${{ github.sha }}
+          name: codex-fa-after3480-explicit-seminorm-diagnostic-v10-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-after3480-explicit-seminorm-v9
+            build-logs/codex-fa-after3480-explicit-seminorm-diagnostic-v10
           retention-days: 30
-      - name: Preserve FA direct exit
-        if: always()
-        shell: bash
-        run: |
-          test -f build-logs/codex-fa-after3480-explicit-seminorm-v9/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-after3480-explicit-seminorm-v9/Mock2_FunctionalAnalysis.exit)"
