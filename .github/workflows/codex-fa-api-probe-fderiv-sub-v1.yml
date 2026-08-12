@@ -32,14 +32,16 @@ jobs:
             letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
             have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) := by
               fun_prop
-            simpa using h.continuousAt
+            have h0 : ContinuousAt (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) 0 := h.continuousAt
+            simpa using h0
 
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
             letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
             have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) := by
               fun_prop
-            simpa using h.continuousAt
+            have h0 : ContinuousAt (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) 0 := h.continuousAt
+            simpa using h0
 
           abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ (⊤ : ℕ∞)
           example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
