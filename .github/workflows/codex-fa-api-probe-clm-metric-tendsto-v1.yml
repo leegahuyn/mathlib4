@@ -1,0 +1,53 @@
+name: Codex FA API probe CLM metric tendsto v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-clm-metric-tendsto-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile CLM metric tendsto probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/CLMMetricTendstoProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F]
+
+          example (Tn : ℕ → E →L[ℂ] F) (T : E →L[ℂ] F) (eps : ℕ → ℝ)
+              (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
+              (heps : Tendsto eps atTop (nhds 0)) :
+              Tendsto Tn atTop (nhds T) := by
+            refine Metric.tendsto_nhds.mpr ?_
+            intro ε hε
+            filter_upwards [(tendsto_order.1 heps).2 ε hε] with N hN
+            rw [dist_eq_norm]
+            exact lt_of_le_of_lt (hTail N) hN
+          LEAN
+          lake env lean /tmp/CLMMetricTendstoProbe.lean
