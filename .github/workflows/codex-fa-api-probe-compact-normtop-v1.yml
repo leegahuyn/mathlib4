@@ -1,4 +1,4 @@
-name: Codex FA API probe compact normtop v1
+name: Codex FA API probe compact normtop v2
 on:
   push:
     branches:
@@ -27,30 +27,71 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
           lake exe cache get >/dev/null
-      - name: Compile compact norm-topology probe
+      - name: Inspect compactness source and compile topology bridge candidates
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/CompactNormTopProbe.lean <<'LEAN'
+          grep -R -n -m 5 "isCompactOperator_of_tendsto" Mathlib || true
+          cat >/tmp/CompactNormTopBridgeA.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+          example :
+              (ContinuousLinearMap.topologicalSpace : TopologicalSpace (E →L[ℂ] F)) =
+                PseudoMetricSpace.toUniformSpace.toTopologicalSpace := by
+            rfl
+          LEAN
+          cat >/tmp/CompactNormTopBridgeB.lean <<'LEAN'
           import Mathlib
           noncomputable section
           open Filter Topology
           variable {E F : Type*}
           variable [NormedAddCommGroup E] [NormedSpace ℂ E]
           variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
-
           example (Tn : ℕ → E →L[ℂ] F) (T : E →L[ℂ] F) (eps : ℕ → ℝ)
               (hT : ∀ N, IsCompactOperator (Tn N))
               (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
               (heps : Tendsto eps atTop (nhds 0)) :
               IsCompactOperator T := by
-            letI : TopologicalSpace (E →L[ℂ] F) :=
-              PseudoMetricSpace.toUniformSpace.toTopologicalSpace
             apply isCompactOperator_of_tendsto (l := (atTop : Filter ℕ))
-            · rw [tendsto_iff_norm_sub_tendsto_zero]
-              exact squeeze_zero
-                (fun N => norm_nonneg (Tn N - T)) hTail heps
+            · change Tendsto Tn atTop
+                (@nhds (E →L[ℂ] F)
+                  PseudoMetricSpace.toUniformSpace.toTopologicalSpace T)
+              rw [tendsto_iff_norm_sub_tendsto_zero]
+              exact squeeze_zero (fun N => norm_nonneg (Tn N - T)) hTail heps
             · exact Filter.Eventually.of_forall hT
           LEAN
-          lake env lean /tmp/CompactNormTopProbe.lean
+          cat >/tmp/CompactNormTopBridgeC.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter Topology
+          variable {E F : Type*}
+          variable [NormedAddCommGroup E] [NormedSpace ℂ E]
+          variable [NormedAddCommGroup F] [NormedSpace ℂ F] [CompleteSpace F]
+          example (Tn : ℕ → E →L[ℂ] F) (T : E →L[ℂ] F) (eps : ℕ → ℝ)
+              (hT : ∀ N, IsCompactOperator (Tn N))
+              (hTail : ∀ N, ‖Tn N - T‖ ≤ eps N)
+              (heps : Tendsto eps atTop (nhds 0)) :
+              IsCompactOperator T := by
+            have hconv : Tendsto Tn atTop
+                (@nhds (E →L[ℂ] F)
+                  PseudoMetricSpace.toUniformSpace.toTopologicalSpace T) := by
+              rw [tendsto_iff_norm_sub_tendsto_zero]
+              exact squeeze_zero (fun N => norm_nonneg (Tn N - T)) hTail heps
+            apply isCompactOperator_of_tendsto (l := (atTop : Filter ℕ))
+            · simpa only [ContinuousLinearMap.topologicalSpace] using hconv
+            · exact Filter.Eventually.of_forall hT
+          LEAN
+          set +e
+          lake env lean /tmp/CompactNormTopBridgeA.lean >/tmp/a.log 2>&1; A=$?
+          lake env lean /tmp/CompactNormTopBridgeB.lean >/tmp/b.log 2>&1; B=$?
+          lake env lean /tmp/CompactNormTopBridgeC.lean >/tmp/c.log 2>&1; C=$?
+          set -e
+          echo "A_EXIT=$A"; cat /tmp/a.log
+          echo "B_EXIT=$B"; cat /tmp/b.log
+          echo "C_EXIT=$C"; cat /tmp/c.log
+          if [ "$B" -eq 0 ] || [ "$C" -eq 0 ]; then exit 0; fi
+          exit 1
