@@ -1,0 +1,59 @@
+name: Codex FA API probe Fourier Tendsto explicit v2
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-api-probe-fourier-tendsto-explicit-v2.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/dev/null
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/dev/null
+          lake exe cache get >/dev/null
+      - name: Compile explicit TwoTorus Tendsto bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/TwoTorusTendstoExplicitProbe.lean <<'LEAN'
+          import Mathlib
+          noncomputable section
+          open Filter MeasureTheory
+          attribute [local instance 10000] instMeasureSpaceUnitAddCircle
+          abbrev ProbeTwoTorus := UnitAddTorus (Fin 2)
+          noncomputable abbrev ProbeTwoTorusL2 :=
+            MeasureTheory.Lp ℂ 2 (volume : Measure ProbeTwoTorus)
+
+          example (modes : ℕ → Finset (Fin 2 → ℤ))
+              (hmodes : Filter.Tendsto modes Filter.atTop Filter.atTop)
+              (f : ProbeTwoTorusL2) :
+              Filter.Tendsto
+                (fun N => ∑ k ∈ modes N,
+                  UnitAddTorus.mFourierCoeff (f : ProbeTwoTorus → ℂ) k •
+                    UnitAddTorus.mFourierLp 2 k)
+                Filter.atTop (nhds f) := by
+            change Filter.Tendsto
+              ((fun s => ∑ k ∈ s,
+                UnitAddTorus.mFourierCoeff (f : ProbeTwoTorus → ℂ) k •
+                  UnitAddTorus.mFourierLp 2 k) ∘ modes)
+              Filter.atTop (nhds f)
+            exact (UnitAddTorus.hasSum_mFourier_series_L2 f).comp hmodes
+          LEAN
+          lake env lean /tmp/TwoTorusTendstoExplicitProbe.lean
