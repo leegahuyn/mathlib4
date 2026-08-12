@@ -1,0 +1,51 @@
+name: Codex FA probe R009 raw bytes v1
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-probe-r009-bytes-v1.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BLOB_SHA: "fabae553768f51a5f00eaaa85f6bdc502b28c3c0"
+      EXPECTED_SHA256: "0f14f9f15cc2256399d5201648c157764f7db800cbed32125f0ba9b5b9a3c5e2"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Inspect exact blob bytes
+        env: {GH_TOKEN: "${{ github.token }}"}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/git/blobs/${BLOB_SHA}" > /tmp/blob.json
+          jq -r '.content' /tmp/blob.json | tr -d '\n' | base64 -d > /tmp/r009.raw
+          echo "bytes=$(wc -c </tmp/r009.raw)"
+          echo "raw_sha256=$(sha256sum /tmp/r009.raw | awk '{print $1}')"
+          echo "expected=$EXPECTED_SHA256"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          b=Path('/tmp/r009.raw').read_bytes()
+          print('len',len(b),'sha',hashlib.sha256(b).hexdigest())
+          try:
+            b.decode('utf-8'); print('utf8=valid')
+          except UnicodeDecodeError as e:
+            print('utf8_error',e.start,e.end,e.reason)
+            lo=max(0,e.start-100);hi=min(len(b),e.end+100)
+            print('hex_window',b[lo:hi].hex())
+            print('repr_window',repr(b[lo:hi]))
+            for i in range(max(0,e.start-12),min(len(b),e.start+13)):
+              print(i,hex(b[i]))
+          PY
+      - name: Upload raw-byte evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-r009-bytes-v1-${{ github.sha }}
+          path: |
+            /tmp/blob.json
+            /tmp/r009.raw
+          retention-days: 7
