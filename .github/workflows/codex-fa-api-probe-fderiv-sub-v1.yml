@@ -16,60 +16,41 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1;lake exe cache get >/tmp/cache.log 2>&1
-      - name: Probe affine translation, L2 continuity, and FullPlane type
+      - name: Probe exact L2 domain-action prerequisites and FullPlane type
         shell: bash
         run: |
           set -euo pipefail;export PATH="$HOME/.elan/bin:$PATH"
           cat >/tmp/ProbeFDerivSub.lean <<'LEAN'
           import Mathlib
           open Topology Filter MeasureTheory
-          open scoped ContDiff Distributions
-          #check fderiv_comp_sub
-          example (t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
-              fderiv ℝ (fun q : ℂ => f (q - t)) w = fderiv ℝ f (w - t) := by
-            simpa using (fderiv_comp_sub (𝕜 := ℝ) (f := f) (x := w) t)
-
-          noncomputable def probeAmbientConstantMaassDerivative
-              (sigma : ℂ) (f : ℂ → ℂ) (w : ℂ) : ℂ :=
-            sigma * fderiv ℝ f w 1 + fderiv ℝ f w Complex.I
-          noncomputable def probeAmbientAffineMaass
-              (sigma c : ℂ) (f : ℂ → ℂ) (w : ℂ) : ℂ :=
-            (w.im : ℂ) * probeAmbientConstantMaassDerivative sigma f w + c * f w
-          def probeAmbientTranslate (t : ℂ) (f : ℂ → ℂ) (w : ℂ) : ℂ := f (w - t)
-
-          theorem probeConstantTranslate (sigma t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
-              probeAmbientConstantMaassDerivative sigma (probeAmbientTranslate t f) w =
-                probeAmbientConstantMaassDerivative sigma f (w - t) := by
-            simp only [probeAmbientConstantMaassDerivative]
-            change sigma * (fderiv ℝ (fun q : ℂ => f (q - t)) w) 1 +
-                (fderiv ℝ (fun q : ℂ => f (q - t)) w) Complex.I = _
-            rw [fderiv_comp_sub]
-
-          theorem probeAffineTranslate (sigma c t : ℂ) (f : ℂ → ℂ) (w : ℂ) :
-              probeAmbientAffineMaass sigma c (probeAmbientTranslate t f) w -
-                  probeAmbientTranslate t (probeAmbientAffineMaass sigma c f) w =
-                (t.im : ℂ) * probeAmbientConstantMaassDerivative sigma f (w - t) := by
-            simp only [probeAmbientAffineMaass, probeAmbientTranslate]
-            rw [probeConstantTranslate]
-            simp only [Complex.sub_im]
-            push_cast
-            ring
+          #synth R1Space ℂ
+          #synth OpensMeasurableSpace ℂ
+          #synth ContinuousVAdd ℂ ℂ
+          #synth IsLocallyFiniteMeasure (volume : Measure ℂ)
+          #synth (volume : Measure ℂ).InnerRegularCompactLTTop
+          #synth VAddInvariantMeasure ℂ ℂ (volume : Measure ℂ)
+          #synth Fact (1 ≤ (2 : ℝ≥0∞))
+          #synth Fact ((2 : ℝ≥0∞) ≠ ⊤)
+          #synth ContinuousVAdd ℂᵈᵃᵃ (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ))
 
           noncomputable abbrev AmbientPlaneL2Probe := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
-            have h : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
-              DomAddAct.continuous_mk.vadd continuous_const
-            simpa using h.continuousAt
+            have h : Continuous (fun p : ℂᵈᵃᵃ × AmbientPlaneL2Probe ↦ p.1 +ᵥ p.2) :=
+              continuous_vadd
+            have hm : Continuous (fun t : ℂ ↦ (DomAddAct.mk t, f)) :=
+              DomAddAct.continuous_mk.prod_mk continuous_const
+            simpa using (h.comp hm).continuousAt
           example (f : AmbientPlaneL2Probe) :
               Tendsto (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) (nhds 0) (nhds 0) := by
-            have hTranslate : Continuous (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) :=
-              DomAddAct.continuous_mk.vadd continuous_const
-            have h : Continuous (fun t : ℂ ↦ ‖DomAddAct.mk t +ᵥ f - f‖) :=
-              (hTranslate.sub continuous_const).norm
-            simpa using h.continuousAt
+            have ht : Tendsto (fun t : ℂ ↦ DomAddAct.mk t +ᵥ f) (nhds 0) (nhds f) := by
+              have h : Continuous (fun p : ℂᵈᵃᵃ × AmbientPlaneL2Probe ↦ p.1 +ᵥ p.2) := continuous_vadd
+              have hm : Continuous (fun t : ℂ ↦ (DomAddAct.mk t, f)) := DomAddAct.continuous_mk.prod_mk continuous_const
+              simpa using (h.comp hm).continuousAt
+            exact (tendsto_norm.comp ((ht.sub_const f))).congr' (Filter.Eventually.of_forall (fun _ => rfl))
 
-          abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ ∞
+          open scoped Distributions
+          abbrev FullPlaneTestProbe := TestFunction (⊤ : TopologicalSpace.Opens ℂ) ℂ (⊤ : ℕ∞)
           example (v : FullPlaneTestProbe) : Continuous (v : ℂ → ℂ) := v.continuous
           LEAN
           lake env lean -DwarningAsError=false /tmp/ProbeFDerivSub.lean | tee /tmp/fderiv-sub.log
