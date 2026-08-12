@@ -1,0 +1,61 @@
+name: Codex FA probe 3452 proof v1
+on:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-probe-3452-proof-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile exact proof shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/Probe3452.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          noncomputable section
+          noncomputable def testBasis :
+              HilbertBasis (Fin 2 → ℤ) ℂ
+                (Lp ℂ 2 (volume : Measure (UnitAddTorus (Fin 2)))) :=
+            UnitAddTorus.mFourierBasis
+          example
+              (f : Lp ℂ 2 (volume : Measure (UnitAddTorus (Fin 2))))
+              (k : Fin 2 → ℤ) :
+              ↑(testBasis.repr f) k • testBasis k =
+                UnitAddTorus.mFourierCoeff f k •
+                  UnitAddTorus.mFourierLp 2 k := by
+            simp only [testBasis]
+            rw [UnitAddTorus.mFourierBasis_repr]
+            simp only [UnitAddTorus.coe_mFourierBasis]
+          end
+          LEAN
+          lake env lean /tmp/Probe3452.lean | tee /tmp/probe3452.log
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-probe-3452-proof-v1-${{ github.sha }}
+          path: /tmp/probe3452.log
+          retention-days: 14
