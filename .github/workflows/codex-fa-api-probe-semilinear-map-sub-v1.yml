@@ -1,5 +1,5 @@
 name: Codex FA local Submodule subtraction coercion probe
-# trigger: local-submodule-sub-coercion-v1
+# trigger: local-submodule-sub-coercion-v1-fire
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
