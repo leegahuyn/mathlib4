@@ -1,0 +1,69 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_EXACT_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "artifact_zip_bytes": 1683548,
+    "variant": "middle_probe",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v43-run-31719983304/9189354873/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c",
+    "patch_audit_path": "work/v43-run-31719983304/9189354873/PATCH_AUDIT.json",
+    "patch_audit_sha256": "3f4c715041f64b9a607608cc930f5398581a7a7907d686348365f6c3e7657e55"
+  },
+  "repairs": [
+    {
+      "id": "V44-COMMON-HC01-replace-nonexistent-testfunction-apply-names-with-funlike-coe",
+      "owner": "ambientTestCoreToPlaneL2Linear",
+      "declaration_index": 3838,
+      "diagnostic_ordinals": [4, 5, 6, 7],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_API_REPLACEMENT",
+      "confidence": "very-high-remote-unknown-identifiers-plus-authoritative-api-aliases",
+      "expected_count_in_owner": 1,
+      "old": "  map_add' v w := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [TestFunction.add_apply] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [TestFunction.smul_apply, smul_eq_mul, RingHom.id_apply] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "new": "  map_add' v w := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [FunLike.coe_add] using\n      MemLp.toLp_add (ambientTestCore_memLp_volume v)\n        (ambientTestCore_memLp_volume w)\n  map_smul' c v := by\n    change @Eq (MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)) _ _\n    simpa only [FunLike.coe_smul, RingHom.id_apply] using\n      MemLp.toLp_const_smul c (ambientTestCore_memLp_volume v)\n",
+      "supersedes": "V43-E-H05-change-to-raw-lp-and-use-testfunction-evaluation",
+      "rollback_decision": "DO_NOT_ROLL_BACK_RAW_LP_CHANGE_REPLACE_ONLY_INVALID_API_NAMES",
+      "evidence": {
+        "remote_result": "2 baseline coercion mismatches became 4 errors because TestFunction.add_apply and TestFunction.smul_apply do not exist",
+        "authoritative_api_url": "https://raw.githubusercontent.com/leegahuyn/mathlib4/dda6274627f628eca6cbfcef48f0c6e572881f0c/Mathlib/Analysis/Distribution/TestFunction.lean",
+        "authoritative_api_sha256": "ddfbe5ee046c31fc9e51a3ab24668e0bb53c6658d6ff4c10b657aa6925ba23cf",
+        "api_facts": [
+          "line 186 installs IsAddApply for TestFunction",
+          "line 189 aliases TestFunction.coe_add to FunLike.coe_add",
+          "line 214 installs IsSMulApply for TestFunction",
+          "line 217 aliases TestFunction.coe_smul to FunLike.coe_smul"
+        ]
+      }
+    },
+    {
+      "id": "V44-COMMON-HC02-strip-accidental-diff-prefixes-from-typed-tendsto-proof",
+      "owner": "literalStagePlaneFiniteApproximation_tendsto",
+      "declaration_index": 3949,
+      "diagnostic_ordinals": [32, 33, 34, 35],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_SOURCE_DECONTAMINATION",
+      "confidence": "certain-literal-diff-prefix-corruption",
+      "expected_count_in_owner": 1,
+      "old": "      have hconst : Filter.Tendsto\n+          (fun _ : ℕ ↦ literalStagePlaneTailConstant Y n)\n+          Filter.atTop (nhds (literalStagePlaneTailConstant Y n)) :=\n+        tendsto_const_nhds\n+      have hinv : Filter.Tendsto\n+          (fun N : ℕ ↦ ((N : ℝ) + 1)⁻¹)\n+          Filter.atTop (nhds 0) := by\n+        simpa only [div_eq_mul_inv, one_mul, Nat.cast_add, Nat.cast_one] using\n+          (tendsto_one_div_add_atTop_nhds_zero_nat :\n+            Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n+              Filter.atTop (nhds 0))\n+      simpa only [mul_zero] using hconst.mul hinv\n",
+      "new": "      have hconst : Filter.Tendsto\n          (fun _ : ℕ ↦ literalStagePlaneTailConstant Y n)\n          Filter.atTop (nhds (literalStagePlaneTailConstant Y n)) :=\n        tendsto_const_nhds\n      have hinv : Filter.Tendsto\n          (fun N : ℕ ↦ ((N : ℝ) + 1)⁻¹)\n          Filter.atTop (nhds 0) := by\n        simpa only [div_eq_mul_inv, one_mul, Nat.cast_add, Nat.cast_one] using\n          (tendsto_one_div_add_atTop_nhds_zero_nat :\n            Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n              Filter.atTop (nhds 0))\n      simpa only [mul_zero] using hconst.mul hinv\n",
+      "supersedes": "V43-E-H13-type-the-constant-and-inverse-tendsto-factors",
+      "rollback_decision": "DO_NOT_ROLL_BACK_TYPED_FACTORS_STRIP_ONLY_LITERAL_PATCH_MARKERS",
+      "evidence": "Every new remote diagnostic is parser/elaboration fallout from literal leading plus signs copied into the v43 NEW fragment; the intended explicitly typed factors remain unchanged."
+    }
+  ]
+}
