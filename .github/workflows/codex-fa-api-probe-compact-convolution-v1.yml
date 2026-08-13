@@ -1,5 +1,5 @@
-name: Codex FA joint-graph subtraction and Tendsto normalization probe
-# trigger: joint-graph-normalize-v1
+name: Codex FA joint-graph subtraction and Tendsto normalization probe v2
+# trigger: joint-graph-normalize-v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,7 +22,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile joint-graph normalization shapes
+      - name: Compile joint-graph normalization shapes v2
         shell: bash
         run: |
           set -euo pipefail
@@ -52,18 +52,28 @@ jobs:
 
           example (ha : Tendsto fa l (𝓝 a))
               (hb : Tendsto fb l (𝓝 b)) (hc : Tendsto fc l (𝓝 c)) :
-              Tendsto (fun i => (fa i, fb i, fc i)) l (𝓝 (a,b,c)) := by
+              Tendsto (fun i => (fa i, (fb i, fc i))) l (𝓝 (a,(b,c))) := by
+            exact ha.prodMk_nhds (hb.prodMk_nhds hc)
+
+          example (ha : Tendsto fa l (𝓝 a))
+              (hb : Tendsto fb l (𝓝 b)) (hc : Tendsto fc l (𝓝 c)) :
+              Tendsto
+                (fun i => WithLp.toLp 2 (fa i, WithLp.toLp 2 (fb i, fc i)))
+                l
+                (𝓝 (WithLp.toLp 2 (a, WithLp.toLp 2 (b,c)))) := by
             exact ha.prodMk_nhds (hb.prodMk_nhds hc)
 
           variable {X : Type*} [TopologicalSpace X]
           variable (M : X → A × (B × C)) (w : ι → X)
-          example (hM : ∀ x, M x = (M x).1, ((M x).2).1, ((M x).2).2)
+          example
+              (hM : ∀ x, M x = ((M x).1, (((M x).2).1, ((M x).2).2)))
               (ha : Tendsto (fun i => (M (w i)).1) l (𝓝 a))
               (hb : Tendsto (fun i => ((M (w i)).2).1) l (𝓝 b))
               (hc : Tendsto (fun i => ((M (w i)).2).2) l (𝓝 c)) :
-              Tendsto (fun i => M (w i)) l (𝓝 (a,b,c)) := by
+              Tendsto (fun i => M (w i)) l (𝓝 (a,(b,c))) := by
             have h := ha.prodMk_nhds (hb.prodMk_nhds hc)
-            simpa only [Prod.mk.eta] using h
+            refine h.congr' ?_
+            exact Filter.Eventually.of_forall fun i => (hM (w i)).symm
           LEAN
           set +e
           lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeJointGraph.lean 2>&1 | tee /tmp/probe.log
@@ -75,7 +85,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-joint-graph-normalize-${{ github.sha }}
+          name: codex-fa-joint-graph-normalize-v2-${{ github.sha }}
           path: |
             /tmp/ProbeJointGraph.lean
             /tmp/probe.log
