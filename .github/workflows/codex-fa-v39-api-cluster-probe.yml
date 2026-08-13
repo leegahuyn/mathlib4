@@ -1,4 +1,4 @@
-name: Codex FA v39 derivative and spectral API clusters
+name: Codex FA v39 derivative and spectral API clusters v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -27,14 +27,14 @@ jobs:
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
           {
-            echo '=== IBP grep ==='
+            echo '=== IBP ==='
             grep -R -n "integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable" Mathlib | head -20 || true
-            echo '=== compact integrability grep ==='
-            grep -R -n "integrable_of_hasCompactSupport" Mathlib | head -40 || true
-            echo '=== complex real finrank grep ==='
-            grep -R -n -E "finrank.*(Complex|ℂ).*real|finrank.*ℝ.*ℂ|finrank_real" Mathlib | head -60 || true
-            echo '=== eigenspace grep ==='
-            grep -R -n -E "def eigenspace|theorem eigenspace|abbrev eigenspace" Mathlib/LinearAlgebra Mathlib/Analysis | head -80 || true
+            echo '=== Fourier differentiability ==='
+            grep -R -n -E "hasDerivAt_fourier|fourier.*[Cc]ontDiff|fourier.*[Dd]ifferenti|Differentiable.*fourier" Mathlib | head -100 || true
+            echo '=== HasEigenvalue ==='
+            grep -R -n -E "HasEigenvalue|exists_hasEigenvector|mem_eigenspace_iff" Mathlib/LinearAlgebra/Eigenspace Mathlib/Analysis/InnerProductSpace | head -120 || true
+            echo '=== measure smul ==='
+            grep -R -n -E "theorem MeasurableSet.const_smul|MeasurableSet.const_smul" Mathlib | head -40 || true
           } >/tmp/grep.txt
           cat >/tmp/Api.lean <<'LEAN'
           import Mathlib
@@ -42,13 +42,15 @@ jobs:
           #check integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
           #check Differentiable.differentiableAt
           #check Continuous.integrable_of_hasCompactSupport
-          #check HasCompactSupport.integrable_of_continuous
-          #check Module.finrank_self
-          #check Module.finrank_fin
-          #check Module.End
+          #check Complex.finrank_real_complex
           #check Module.End.eigenspace
-          #check Module.End.eigenvalues
-          #check LinearMap.ker
+          #check Module.End.HasEigenvalue
+          #check Module.End.HasEigenvector
+          #check Module.End.mem_eigenspace_iff
+          #check Module.End.HasEigenvalue.exists_hasEigenvector
+          #check MeasurableSet.const_smul
+          #check hasDerivAt_fourier_neg
+          #check hasDerivAt_fourier
           LEAN
           set +e
           lake env lean -DmaxErrors=100 -DwarningAsError=false /tmp/Api.lean >/tmp/api.log 2>&1
@@ -61,7 +63,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v39-api-clusters-${{ github.sha }}
+          name: codex-fa-v39-api-clusters-v2-${{ github.sha }}
           path: |
             /tmp/grep.txt
             /tmp/Api.lean
