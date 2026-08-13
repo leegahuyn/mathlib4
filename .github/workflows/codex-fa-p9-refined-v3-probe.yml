@@ -1,0 +1,87 @@
+name: Codex FA P9 refined v3 probe
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-p9-refined-v3-probe.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile P9 refined v3 probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeP9.lean <<'LEAN'
+          import Mathlib
+          open scoped LinearPMap
+          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
+            carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
+            zero_mem' := by
+              refine ⟨A.domain.zero_mem, ?_⟩
+              simpa only [smul_zero] using (LinearPMap.map_zero A)
+            add_mem' := by
+              rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
+              refine ⟨A.domain.add_mem hx hy, ?_⟩
+              calc
+                A ⟨x + y, A.domain.add_mem hx hy⟩ = A ⟨x, hx⟩ + A ⟨y, hy⟩ := by
+                  exact A.map_add ⟨x, hx⟩ ⟨y, hy⟩
+                _ = μ • x + μ • y := by rw [hAx, hAy]
+                _ = μ • (x + y) := by rw [smul_add]
+            smul_mem' := by
+              rintro c x ⟨hx, hAx⟩
+              refine ⟨A.domain.smul_mem c hx, ?_⟩
+              calc
+                A ⟨c • x, A.domain.smul_mem c hx⟩ = c • A ⟨x, hx⟩ := by
+                  exact A.map_smul c ⟨x, hx⟩
+                _ = c • (μ • x) := by rw [hAx]
+                _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
+
+          example {μ ν z : ℂ} (h : (starRingEnd ℂ) μ * z = ν * z) :
+              (star μ - ν) * z = 0 := by
+            have h' : star μ * z = ν * z := by simpa using h
+            rw [sub_mul, h', sub_self]
+
+          example {μ : ℂ} (h : star μ = μ) : μ.im = 0 := by
+            have hi := congrArg Complex.im h
+            change -μ.im = μ.im at hi
+            linarith
+
+          example (μ : ℂ) (x : H) (d : ℝ) :
+              μ.re * (inner ℂ x x).re + (inner ℂ x x).re * d -
+                  μ.im * (inner ℂ x x).im = μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
+            have hNorm := norm_sq_eq_re_inner (𝕜 := ℂ) x
+            change ‖x‖ ^ 2 = (inner ℂ x x).re at hNorm
+            have hSelf := inner_conj_symm x x
+            have hIm := congrArg Complex.im hSelf
+            simp only [Complex.conj_im] at hIm
+            have hImZero : (inner ℂ x x).im = 0 := by linarith
+            rw [← hNorm, hImZero]
+            ring
+          LEAN
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP9.lean 2>&1 | tee /tmp/probe.log
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-p9-refined-v3-${{ github.sha }}
+          path: |
+            /tmp/ProbeP9.lean
+            /tmp/probe.log
+          retention-days: 30
