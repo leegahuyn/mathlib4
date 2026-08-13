@@ -1,12 +1,10 @@
-name: Codex FA API probe Lp smul_sub v1
-
+name: Codex FA API probe partial eigenspace and spectral algebra
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
     paths: [.github/workflows/codex-fa-api-probe-lp-smul-sub-v1.yml]
   workflow_dispatch:
 permissions: {contents: read}
-
 jobs:
   probe:
     runs-on: ubuntu-24.04
@@ -23,36 +21,62 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Reproduce exact Lp subtraction shapes
+      - name: Compile partial-eigenspace and spectral probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeLpSmulSub.lean <<'LEAN'
+          cat >/tmp/ProbeP9.lean <<'LEAN'
           import Mathlib
-          open MeasureTheory
-          open scoped ENNReal
-          noncomputable abbrev A := MeasureTheory.Lp ℂ 2 (volume : Measure ℂ)
-          #synth AddCommGroup A
-          #synth Module ℂ A
-          #synth SMul ℂ A
+          open scoped LinearPMap
 
-          example (c : ℂ) (x y : A) : c • (x - y) = c • x - c • y := by
-            exact smul_sub c x y
+          variable {H : Type*}
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-          example (K t : ℂ) (f : A) :
-              K • (DomAddAct.mk (-t) +ᵥ f - f) =
-                K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
-            exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
+          def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
+            carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
+            zero_mem' := by
+              refine ⟨A.domain.zero_mem, ?_⟩
+              simpa using A.map_zero
+            add_mem' := by
+              rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
+              refine ⟨A.domain.add_mem hx hy, ?_⟩
+              calc
+                A ⟨x + y, A.domain.add_mem hx hy⟩ =
+                    A ⟨x, hx⟩ + A ⟨y, hy⟩ := by
+                      exact A.map_add ⟨x, hx⟩ ⟨y, hy⟩
+                _ = μ • x + μ • y := by rw [hAx, hAy]
+                _ = μ • (x + y) := by rw [smul_add]
+            smul_mem' := by
+              rintro c x ⟨hx, hAx⟩
+              refine ⟨A.domain.smul_mem c hx, ?_⟩
+              calc
+                A ⟨c • x, A.domain.smul_mem c hx⟩ =
+                    c • A ⟨x, hx⟩ := by
+                      exact A.map_smul c ⟨x, hx⟩
+                _ = c • (μ • x) := by rw [hAx]
+                _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
 
-          example (K t : ℂ) (f : A) :
-              K • (DomAddAct.mk (-t) +ᵥ f - f) =
-                K • (DomAddAct.mk (-t) +ᵥ f) - K • f := by
-            letI : Fact ((2 : ℝ≥0∞) ≠ (⊤ : ℝ≥0∞)) := ⟨by norm_num⟩
-            exact smul_sub K (DomAddAct.mk (-t) +ᵥ f) f
+          example {μ ν z : ℂ}
+              (h : (starRingEnd ℂ) μ * z = ν * z) :
+              (star μ - ν) * z = 0 := by
+            have h' : star μ * z = ν * z := by simpa using h
+            rw [sub_mul, h', sub_self]
+
+          example (μ : ℂ) (x : H) (d : ℝ) :
+              μ.re * (inner ℂ x x).re + (inner ℂ x x).re * d -
+                  μ.im * (inner ℂ x x).im =
+                μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
+            simp [inner_self_eq_norm_sq]
+            ring
           LEAN
-          lake env lean -DwarningAsError=false /tmp/ProbeLpSmulSub.lean | tee /tmp/probe.log
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP9.lean 2>&1 | tee /tmp/probe.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with: {name: codex-fa-api-probe-lp-smul-sub-v1-${{ github.sha }}, path: /tmp/probe.log, retention-days: 7}
+        with:
+          name: codex-fa-p9-spectral-probe-${{ github.sha }}
+          path: |
+            /tmp/ProbeP9.lean
+            /tmp/probe.log
+          retention-days: 30
