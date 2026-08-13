@@ -1,5 +1,5 @@
-name: Codex FA canonical-sub to module-sub bridge probe
-# trigger: canonical-sub-module-bridge-v1
+name: Codex FA canonical-sub to module-sub bridge probe v2
+# trigger: canonical-sub-module-bridge-v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,7 +22,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile canonical-sub bridge probes
+      - name: Compile canonical-sub bridge probes v2
         shell: bash
         run: |
           set -euo pipefail
@@ -43,12 +43,13 @@ jobs:
           theorem canonicalSub_eq_add_negOne_smul (u v : S) :
               Sub.sub u v = u + (-1 : ℂ) • v := by
             apply Subtype.ext
-            rfl
+            simp only [Submodule.coe_sub, Submodule.coe_add, Submodule.coe_smul_of_tower]
+            simp [sub_eq_add_neg]
 
           example (L : S →ₗ[ℂ] W) (u v : S) :
               L (Sub.sub u v) = L u - L v := by
             rw [canonicalSub_eq_add_negOne_smul S u v, map_add, map_smul]
-            simp
+            simp [sub_eq_add_neg]
 
           example (L : S →ₗ[ℂ] W) (u v : S) :
               L (Sub.sub u v) = L u + (-1 : ℂ) • L v := by
@@ -66,9 +67,9 @@ jobs:
                 (u : ℂ → ℂ) z - (v : ℂ → ℂ) z := by
             have h : Sub.sub u v = u + (-1 : ℂ) • v := by
               apply Subtype.ext
-              rfl
+              simp [sub_eq_add_neg]
             rw [h]
-            rfl
+            simp [sub_eq_add_neg]
           LEAN
           set +e
           lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeSubBridge.lean 2>&1 | tee /tmp/probe.log
@@ -80,7 +81,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-canonical-sub-module-bridge-${{ github.sha }}
+          name: codex-fa-canonical-sub-module-bridge-v2-${{ github.sha }}
           path: |
             /tmp/ProbeSubBridge.lean
             /tmp/probe.log
