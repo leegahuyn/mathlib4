@@ -37,7 +37,7 @@ jobs:
           shutil.copy2(hits[0], Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
           python3 scripts/fa_v23_prefix_3646_3650.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
-          test "$(cat "$OUT/candidate.sha256")" = 2b1e61dbc0b25aa6b76d5e6bfcc95044eb5f05550314575ca1aa18810d70cca1
+          test "$(cat "$OUT/candidate.sha256")" = 7d00ee14bea440fb721d2a95133c4dc1506d2439aa58fe44e1d092ebdfab4c16
       - name: Install pinned Lean and cache
         shell: bash
         run: |
