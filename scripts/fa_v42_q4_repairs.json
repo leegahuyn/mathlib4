@@ -1,0 +1,145 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "variant_base": "with_conditional_bodies",
+  "authority": {
+    "run_id": 31699916923,
+    "head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+    "artifact_id": 9181214334,
+    "artifact_digest": "sha256:bb18b117b461a4fd36746685ce4437d835382989d4b7e1cff87bb6ebbcc9c870",
+    "source_path": "work/v41-run-31699916923/9181214334/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "source_bytes": 2774362,
+    "source_lines": 62065,
+    "declaration_count": 4416,
+    "diagnostic_count": 110,
+    "declaration_count_with_errors": 72,
+    "max_errors": 2000,
+    "cap_sentinel_present": false
+  },
+  "queue": {
+    "id": 4,
+    "diagnostic_count": 28,
+    "declaration_count": 18,
+    "queue_index_sha256": "9977b8857fa5199cef1116400d3019a25ff0ff04c129915f67ebc9cefce93128"
+  },
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "owned_declaration_indices": [3949, 4213, 4226, 4291, 4308, 4315, 4389, 4391],
+  "covered_diagnostic_ordinals": [41, 81, 83, 86, 99, 101, 107, 108, 109],
+  "external_owner_exclusions": {
+    "weighted_regression_manifest": "work/v42-workers/weighted-regression/weighted-regression-repairs.json",
+    "declaration_indices": [4010, 4015],
+    "cascade_indices": [4011, 4019]
+  },
+  "repairs": [
+    {
+      "id": "V42-Q4-3949-normalize-tendsto-product",
+      "owner": "literalStagePlaneFiniteApproximation_tendsto",
+      "declaration_index": 3949,
+      "kind": "body",
+      "confidence": "very-high-exact-type-residual",
+      "expected_count_in_owner": 1,
+      "old": "    (by\n      show Filter.Tendsto\n        (fun N : ℕ ↦\n          literalStagePlaneTailConstant Y n * ((N : ℝ) + 1)⁻¹)\n        Filter.atTop (nhds 0)\n      exact tendsto_const_nhds.mul\n        (by simpa only [div_eq_mul_inv, Nat.cast_add, Nat.cast_one] using\n          (tendsto_one_div_add_atTop_nhds_zero_nat :\n            Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n              Filter.atTop (nhds 0))))",
+      "new": "    (by\n      show Filter.Tendsto\n        (fun N : ℕ ↦\n          literalStagePlaneTailConstant Y n * ((N : ℝ) + 1)⁻¹)\n        Filter.atTop (nhds 0)\n      simpa only [one_mul, mul_zero] using\n        tendsto_const_nhds.mul\n          (by simpa only [div_eq_mul_inv, Nat.cast_add, Nat.cast_one] using\n            (tendsto_one_div_add_atTop_nhds_zero_nat :\n              Filter.Tendsto (fun N : ℕ ↦ (1 : ℝ) / (N + 1))\n                Filter.atTop (nhds 0))))",
+      "evidence": "The residual differs only by 1 * ((N:Real)+1)^-1 and constant * 0; one_mul and mul_zero normalize the exact returned Tendsto type."
+    },
+    {
+      "id": "V42-Q4-4213-pin-local-lp-type",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "declaration_index": 4213,
+      "kind": "body",
+      "confidence": "medium-high-explicit-type-static-only",
+      "classification": "STAGE_PROBE",
+      "expected_count_in_owner": 1,
+      "old": "  let q := orbitPeterssonCoreToReducedChartL2 n z₀ u",
+      "new": "  let q : AmbientPlaneL2 :=\n    orbitPeterssonCoreToReducedChartL2 n z₀ u",
+      "evidence": "Lp.norm_toLp is polymorphic in the codomain NormedAddCommGroup. The exact error is a stuck NormedAddCommGroup metavariable after unfolding q; pinning q to AmbientPlaneL2 supplies the missing codomain."
+    },
+    {
+      "id": "V42-Q4-4226-rewrite-product-derivative-once",
+      "owner": "fullPlaneAffineTranspose_product_add_principal",
+      "declaration_index": 4226,
+      "kind": "body",
+      "confidence": "very-high-exact-rewrite-residual",
+      "expected_count_in_owner": 1,
+      "old": "  rw [fderiv_mul hphi hv, fderiv_mul hphi hv]",
+      "new": "  rw [fderiv_mul hphi hv]",
+      "evidence": "The first rw expands both occurrences in the target; the second identical rewrite is the sole failure because no fderiv product occurrence remains."
+    },
+    {
+      "id": "V42-Q4-4291-expose-indicator-membership",
+      "owner": "inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest",
+      "declaration_index": 4291,
+      "kind": "body",
+      "confidence": "very-high-exact-indicator-residual",
+      "expected_count_in_owner": 1,
+      "old": "  · rcases hw with ⟨z, hz, rfl⟩\n    simp [ambientReducedChartGauge_comp_coe, hz, upperLift_apply]",
+      "new": "  · rcases hw with ⟨z, hz, rfl⟩\n    rw [Set.indicator_of_mem\n      (show (z : ℂ) ∈ ambientGammaTwoReducedChart z₀ from ⟨z, hz, rfl⟩)]\n    simp only [ambientReducedChartGauge_comp_coe, hz, upperLift_apply]",
+      "evidence": "The residual is exactly the indicator at the coerced chart point. The ambient chart is the image of gammaTwoReducedChart, witnessed by z, hz, rfl."
+    },
+    {
+      "id": "V42-Q4-4308-expand-pointwise-lp-add",
+      "owner": "fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs",
+      "declaration_index": 4308,
+      "kind": "body",
+      "confidence": "very-high-exact-rewrite-shape",
+      "expected_count_in_owner": 1,
+      "old": "  rw [hadd, hmoll, hcomm,\n    pointwiseKernelConvolution_eq_reflectedPair]",
+      "new": "  rw [hadd, Pi.add_apply, hmoll, hcomm,\n    pointwiseKernelConvolution_eq_reflectedPair]",
+      "evidence": "After hadd the target contains (coe f + coe g) w; Pi.add_apply exposes the individual evaluations required by hmoll and hcomm."
+    },
+    {
+      "id": "V42-Q4-4315-change-orbit-gauge-to-fixed-phase",
+      "owner": "reducedChartEmbedding_l2Coordinate_eq_fullPlaneTestToL2",
+      "declaration_index": 4315,
+      "kind": "body",
+      "confidence": "very-high-definitional-bridge",
+      "expected_count_in_owner": 1,
+      "old": "  · rcases hw with ⟨z, hz, rfl⟩\n    rw [ambientReducedChartGauge_comp_coe]\n    simp only [Set.indicator_of_mem hz,\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge,\n      hModel.1 z hz]",
+      "new": "  · rcases hw with ⟨z, hz, rfl⟩\n    rw [ambientReducedChartGauge_comp_coe, Set.indicator_of_mem hz]\n    change\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge m q z = v (z : ℂ)\n    exact hModel.1 z hz",
+      "evidence": "fixedPhaseEuclideanGauge is definitionally orbitEuclideanGauge on coreEmbedding; changing the residual to the exact first conjunct of hModel closes it without relying on simp orientation."
+    },
+    {
+      "id": "V42-Q4-4389-pin-holder-exponents",
+      "owner": "orbitPeterssonEuclideanEmbedding_invariantScalarMultiplier",
+      "declaration_index": 4389,
+      "kind": "body",
+      "confidence": "very-high-official-api-signature",
+      "expected_count_in_owner": 1,
+      "old": "    MeasureTheory.Lp.coeFn_lpSMul (invariantScalarCarrierLInfinity c)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n\n        (l2Coordinate n u)),",
+      "new": "    MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n      (invariantScalarCarrierLInfinity c)\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n\n        (l2Coordinate n u)),",
+      "evidence": "The exact residual is Infinity.HolderTriple 2 ?m; coeFn_lpSMul has implicit p q r and the surrounding equality fixes the intended result to Lp 2."
+    },
+    {
+      "id": "V42-Q4-4391-pin-holder-exponents",
+      "owner": "finset_sum_invariantScalarMultipliers_eq_of_compactSupport",
+      "declaration_index": 4391,
+      "kind": "body",
+      "confidence": "very-high-official-api-signature",
+      "expected_count_in_owner": 1,
+      "old": "      MeasureTheory.Lp.coeFn_lpSMul (invariantScalarCarrierLInfinity (c i))\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p),",
+      "new": "      MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n        (invariantScalarCarrierLInfinity (c i))\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitPeterssonEuclideanEmbedding n p),",
+      "evidence": "This is the same unresolved HolderTriple root as idx4389. The later simp-made-no-progress diagnostic depends on hterm and is intentionally treated as its cascade."
+    }
+  ],
+  "promotion_groups": {
+    "high_confidence_static": [
+      "V42-Q4-3949-normalize-tendsto-product",
+      "V42-Q4-4226-rewrite-product-derivative-once",
+      "V42-Q4-4291-expose-indicator-membership",
+      "V42-Q4-4308-expand-pointwise-lp-add",
+      "V42-Q4-4315-change-orbit-gauge-to-fixed-phase",
+      "V42-Q4-4389-pin-holder-exponents",
+      "V42-Q4-4391-pin-holder-exponents"
+    ],
+    "staged_probe": [
+      "V42-Q4-4213-pin-local-lp-type"
+    ]
+  },
+  "direct_lean_verified": false
+}
