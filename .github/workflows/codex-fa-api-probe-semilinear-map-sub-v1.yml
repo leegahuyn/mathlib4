@@ -1,4 +1,4 @@
-name: Codex FA API probe semilinear map sub v1
+name: Codex FA probe P4 norm identity algebra
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -15,25 +15,50 @@ jobs:
       - name: Install pinned Lean and cache
         shell: bash
         run: |
-          set -euo pipefail; curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh; sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1; export PATH="$HOME/.elan/bin:$PATH"; elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1; lake exe cache get >/tmp/cache.log 2>&1
-      - name: Probe semilinear subtraction API
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile P4 norm identity algebra probe
         shell: bash
         run: |
-          set -euo pipefail; export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeSemilinearSub.lean <<'LEAN'
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/ProbeP4Norm.lean <<'LEAN'
           import Mathlib
-          #check map_sub
-          #check LinearMap.map_sub
-          #check LinearMap.map_subₛₗ
-          #check LinearMap.map_subₛₗₛₗ
-          variable {R S M M₂ : Type*} [Semiring R] [Semiring S]
-            [AddCommGroup M] [AddCommGroup M₂] [Module R M] [Module S M₂]
-            (σ : R →+* S) (f : M →ₛₗ[σ] M₂) (x y : M)
-          example : f (x - y) = f x - f y := by
-            exact map_sub f x y
+
+          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          example (U R L LR RL : H) (c : ℝ)
+              (hPair : inner ℂ U LR + (c : ℂ) * inner ℂ U U = inner ℂ U RL)
+              (hRaise : inner ℂ R R = - inner ℂ U LR)
+              (hLower : inner ℂ RL U = - inner ℂ L L) :
+              ‖R‖ ^ 2 - ‖L‖ ^ 2 = c * ‖U‖ ^ 2 := by
+            have hPairRe := congrArg Complex.re hPair
+            have hRaiseRe := congrArg Complex.re hRaise
+            have hLowerRe := congrArg Complex.re hLower
+            have hSymm : (inner ℂ U RL).re = (inner ℂ RL U).re :=
+              inner_re_symm (𝕜 := ℂ) U RL
+            have hNormU := norm_sq_eq_re_inner (𝕜 := ℂ) U
+            have hNormR := norm_sq_eq_re_inner (𝕜 := ℂ) R
+            have hNormL := norm_sq_eq_re_inner (𝕜 := ℂ) L
+            change ‖U‖ ^ 2 = (inner ℂ U U).re at hNormU
+            change ‖R‖ ^ 2 = (inner ℂ R R).re at hNormR
+            change ‖L‖ ^ 2 = (inner ℂ L L).re at hNormL
+            simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re,
+              Complex.ofReal_im, zero_mul, sub_zero, Complex.neg_re] at hPairRe hRaiseRe hLowerRe
+            rw [hSymm] at hPairRe
+            nlinarith [hNormU, hNormR, hNormL, hPairRe, hRaiseRe, hLowerRe]
           LEAN
-          lake env lean -DwarningAsError=false /tmp/ProbeSemilinearSub.lean | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeP4Norm.lean 2>&1 | tee /tmp/probe-p4-norm.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with: {name: codex-fa-api-probe-semilinear-map-sub-v1-${{ github.sha }}, path: /tmp/probe.log, retention-days: 7}
+        with:
+          name: codex-fa-probe-p4-norm-${{ github.sha }}
+          path: |
+            /tmp/ProbeP4Norm.lean
+            /tmp/probe-p4-norm.log
+          retention-days: 30
