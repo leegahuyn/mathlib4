@@ -194,79 +194,170 @@
       "new": "    HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  have hvalue : f x = 0 := by\n    have hx := hzero.self_of_nhds\n    simpa only [upperLift_apply, Pi.zero_apply] using hx\n  rw [hzero.fderiv_eq]\n  simp [hvalue]"
     },
     {
-      "id": "G3-4291-eßËh‘éì¶»§q«^tˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÓYX\İ\™U[ÜK“‹š[›™\—ÙY‹ˆØ[[XUÛĞİ\š[[™X\•[TİÚÙ\ËœÙ][YÜ˜[ØÛÛX\Ù\WØÛÛ\^[XYÙWWˆÈø¡¤[YÜ˜[Ú[™XØ]Üˆ‹ˆ›™]ÈˆˆÈÓYX\İ\™U[ÜK“‹š[›™\—ÙY‹ˆØ[[XUÛĞİ\š[[™X\•[TİÚÙ\ËœÙ][YÜ˜[ØÛÛX\Ù\WØÛÛ\^[XYÙWWˆÈÜÚİÈ\\’[”[™K˜ÛÙH	ÉÈØ[[XUÛÔ™YXÙYÚ\¸  Wˆ[XšY[Ø[[XUÛÔ™YXÙYÚ\¸  œ›ÛH™›WˆÈø¡¤[YÜ˜[Ú[™XØ]Üˆ‚ˆKˆÂˆšYˆ‘ÌËMMY^ÜÙK[ÛÛÜ™[˜]KX™Y›Ü™K\™]Üš]H‹ˆ›İÛ™\ˆˆš[›™\—ÛÛÛÜ™[˜]WÙ\WÜ™YXÙYÚ\ÜZ\ˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ[›ÈWˆÈÛÛÛÜ™[˜]WØ\K[šY›Ü›TÜXÙKÛÛ\][Û‹š[›™\—ØÛÙK‹ˆ›™]Èˆˆ[›ÈWˆÚ[™ÙH[›™\ˆ8¡ ˆ
-HˆÜ˜š]]\œÜÛÛ’[™\JH
-ÛÛÜ™[˜]HHJHH×ˆÈÛÛÛÜ™[˜]WØ\K[šY›Ü›TÜXÙKÛÛ\][Û‹š[›™\—ØÛÙK‚ˆKˆÂˆšYˆ‘ÌËMMK\™]\ÙK\˜]Ë\İ\ÜY\]X[]H‹ˆ›İÛ™\ˆˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ\Ô™YXÙYÚ\Ø]YÙS[Ù[H¸  ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HH
-™YXÙYÚ\[XšY[\İˆŠJHˆHWˆ™Yš[™H8§ê×Ë×Ë¸§êH‹ˆ›™]Èˆˆ\Ô™YXÙYÚ\Ø]YÙS[Ù[H¸  ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HH
-™YXÙYÚ\[XšY[\İˆŠJHˆHWˆ]™H˜]Èˆ
-™YXÙYÚ\[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHH
-ˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHHWˆ[™^×ˆ^Xİ™YXÙYÚ\[XšY[\İØ\Hˆˆ×ˆ]™HHˆİ\Ü
-™YXÙYÚ\[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠH8¢¡—ˆ[XšY[Ø[[XUÛÔ™YXÙYÚ\¸  HWˆÈÚ˜]×Wˆ^Xİ—ˆ™Yš[™H8§ê×Ë×Ë¸§êH‚ˆKˆÂˆšYˆ‘ÌËMMK]\ÙK\˜]Ë\İ\Ü\›ÛÙˆ‹ˆ›İÛ™\ˆˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‚ˆKˆ›ÛˆŠHÚ[\HÛ›HÜ™YXÙYÚ\[XšY[\İH\Ú[™ÈŠH‹ˆ›™]ÈˆšH‚ˆKˆÂˆšYˆ‘ÌËMM‹MMË\™]Üš]K]ÚÛKXÛÛšYØ]KY[˜İ[Ûˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆ™]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙH‹ˆ™]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙH‚ˆKˆ›ÛˆˆˆÊHHWˆÚ[\Û›HÈ‹ˆ›™]ÈˆˆˆÊHHWˆ]™H[ˆ—ˆ
-™YXÙYÚ\ÛÛšYØ]P[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHWˆ[ˆˆˆ8¡ ˆ8¡©ˆİ\ˆ
-ˆŠHHWˆ[™^—ˆ^Xİ™YXÙYÚ\ÛÛšYØ]P[XšY[\İØ\Hˆˆ—ˆÈÚ[—WˆÚ[\Û›HÈ‚ˆKˆÂˆšYˆ‘ÌËMN\ÚYÛ™Y[İÙ\‹YØ]YÙK[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™YİÙ\”\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆH×ˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØ×WˆÈÛ™Y×Ù]XÛYX[“İÙ\‘œ›ÛTİXØÑØ]YÙWÜ\š[Ù^™YÙ\WÜ˜Z\ÙU\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—Wˆ™›‹ˆ›™]Èˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHÈHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØ×WˆÈÛ™Y×Ù]XÛYX[“İÙ\‘œ›ÛTİXØÑØ]YÙWÜ\š[Ù^™YÙ\WÜ˜Z\ÙU\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—H‚ˆKˆÂˆšYˆ‘ÌËMN\ÚYÛ™Y[İÙ\‹^™\›Ë[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™YİÙ\”\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆHˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØËİÙ\‹ˆ™Y×Ş™\›×H‹ˆ›™]ÈˆˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
-ˆ
-ÈJHJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØËˆİÙ\‹™Y×Ş™\›×H‚ˆKˆÂˆšYˆ‘ÌËMNK\ÚYÛ™Y\˜Z\ÙKYØ]YÙK[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™Y˜Z\ÙT\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆH×ˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙWWˆÈÛ™Y×Ù]XÛYX[”˜Z\ÙQØ]YÙWÜ\š[Ù^™YÙ\WÛİÙ\‘œ›ÛTİXØÕ\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—Wˆ™›‹ˆ›™]Èˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHÈHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙWWˆÈÛ™Y×Ù]XÛYX[”˜Z\ÙQØ]YÙWÜ\š[Ù^™YÙ\WÛİÙ\‘œ›ÛTİXØÕ\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—H‚ˆKˆÂˆšYˆ‘ÌËMNK\ÚYÛ™Y\˜Z\ÙK^™\›Ë[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™Y˜Z\ÙT\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙK˜Z\ÙK™Y×Ş™\›×H‹ˆ›™]ÈˆˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
-ˆ
-ÈJWˆ
-[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
-Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙKˆ˜Z\ÙK™Y×Ş™\›×H‚ˆKˆÂˆšYˆ‘ÌËMÌXÛÜÙKXÛÛ[]]]]™KZ[YÜ˜[™‹ˆ›İÛ™\ˆˆš[›™\—Ù[[™U\İÓ—Ù\WÚ[YÜ˜[ØÛÛš—Û][‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÚWˆÚ[\Û›HÔÓZÙKš[›™\—Ø\Kİ\”š[™Ñ[™Ø\WWˆ‹ˆ›™]ÈˆˆÈÚWˆÚ[\Û›HÔÓZÙKš[›™\—Ø\Kİ\”š[™Ñ[™Ø\WWˆš[™È‚ˆKˆÂˆšYˆ‘ÌËMÌ‹[›Ü›X[^™K[İÙ\‹Y›Ü›X[XY›Ú[‹ˆ›İÛ™\ˆˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙK[™X\”X\›™Y×Ø\Kˆ\ÚXØ[İÙ\‘œ›ÛTİXØ×ÛÛ—ØÛÜ™WH\Ú[™È›Ü›X[‹ˆ›™]ÈˆˆÈÓ[™X\”X\›™Y×Ø\K\ÚXØ[İÙ\‘œ›ÛTİXØ×ÛÛ—ØÛÜ™WH]›Ü›X[ˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙWH\Ú[™È›Ü›X[‚ˆKˆÂˆšYˆ‘ÌËMÌË[›Ü›X[^™K\˜Z\ÙKY›Ü›X[XY›Ú[‹ˆ›İÛ™\ˆˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙK[™X\”X\›™Y×Ø\Kˆ\ÚXØ[˜Z\ÙWÛÛ—ØÛÜ™WH\Ú[™È›Ü›X[‹ˆ›™]ÈˆˆÈÓ[™X\”X\›™Y×Ø\K\ÚXØ[˜Z\ÙWÛÛ—ØÛÜ™WH]›Ü›X[ˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙWH\Ú[™È›Ü›X[‚ˆKˆÂˆšYˆ‘ÌËMÌ‹MÌË][™›ÛX˜\ÙKYØ]YÙKY]™[X[H‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‚ˆKˆ›Ûˆˆ^Xİ
-\š[Ù^™Yš^Y\ÙQØ]YÙWÙ]™[X[Q\WŞ™\›×ÛÙ—Û›İÛY[WÜØ]\˜][Û—ˆ‹ˆ›™]ÈˆˆÚ[\HÛ›HÜKK\\“YØ\KK™\›×Ø\WH\Ú[™×ˆ
-\š[Ù^™Yš^Y\ÙQØ]YÙWÙ]™[X[Q\WŞ™\›×ÛÙ—Û›İÛY[WÜØ]\˜][Û—ˆ‚ˆKˆÂˆšYˆ‘ÌËMÌ‹MÌËYš\œİZ[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‚ˆKˆ›Ûˆˆ
-[[™U\İÓˆ
-[[™PÛÛšYØ]HŠJJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]Èˆˆ
-[[™U\İÓˆ
-[[™PÛÛšYØ]HŠJJHHWˆ^Xİ
-[›™\—ØÛÛš—ÜŞ[[HÈÊKœŞ[[H‚ˆKˆÂˆšYˆ‘ÌËMÌ‹\ÙXÛÛ™Z[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆ›İÛ™\ˆˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆšÚ[™ˆ˜›ÙH‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆŠJJWˆ
-Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™Èˆ¸  ŒJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]ÈˆˆŠJJWˆ
-Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™Èˆ¸  ŒJHHWˆ^Xİ[›™\—ØÛÛš—ÜŞ[[HÈÈ‚ˆKˆÂˆšYˆ‘ÌËMÌË\ÙXÛÛ™Z[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆ›İÛ™\ˆˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆšÚ[™ˆ˜›ÙH‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆŠJJWˆ
-Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™È
-ˆ
-ÈJH¸  ŒJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]ÈˆˆŠJJWˆ
-Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™È
-ˆ
-ÈJH¸  ŒJHHWˆ^Xİ[›™\—ØÛÛš—ÜŞ[[HÈÈ‚ˆKˆÂˆšYˆ‘ÌËMÌ\™]Üš]K]ÚÛKXY™™\™Y\™\™\Ù[]]™H‹ˆ›İÛ™\ˆˆ™[[™U\İÓ—Ü˜Z\ÙQ›ÜØ\™ØY™™\™Y\ÜÙ[X[œšYYšXÚÈ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÚ\İWˆÚ[™ÙH]XÛYX[”˜Z\ÙQ›ÜØ\™\İˆHÈH×ˆÈÙ]XÛYX[”˜Z\ÙQ›ÜØ\™\İÙ\WØ[XšY[Y™š[™SXX\ÜËˆÚİÈHÈHœšYYšXÚÓ[ÛYšYY™\™\Ù[]]™HˆHÈWˆÚ[\HÛ›HØK‹™YXÙYÚ\[XšY[\İØ\WH\Ú[™×ˆY™™\™Y\ÜÙ[X[œšYYšXÚÑ[[™U\İØ\HÈˆHHËˆÙXZË™œšYYšXÚ×Ü˜Z\Ú[™×ÚY[]WH‹ˆ›™]ÈˆˆÈÚ\İWˆÚ[™ÙH]XÛYX[”˜Z\ÙQ›ÜØ\™\İˆHÈH×ˆ]™HQ[ˆˆ
-Hˆ8¡ ˆ8¡¤ˆ8¡ ŠHWˆœšYYšXÚÓ[ÛYšYY™\™\Ù[]]™HˆHHWˆ[™^ˆÚ[\HÛ›HØK‹™YXÙYÚ\[XšY[\İØ\WH\Ú[™×ˆY™™\™Y\ÜÙ[X[œšYYšXÚÑ[[™U\İØ\HÈˆHHˆÈÙ]XÛYX[”˜Z\ÙQ›ÜØ\™\İÙ\WØ[XšY[Y™š[™SXX\ÜËQ[‹ˆÙXZË™œšYYšXÚ×Ü˜Z\Ú[™×ÚY[]WH‚ˆBˆBŸB
+      "id": "G3-4291-expose-ambient-chart-image",
+      "owner": "inner_orbitPeterssonCoreToReducedChartL2_fullPlaneTest",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [MeasureTheory.L2.inner_def,\n    GammaTwoCurvilinearTileStokes.setIntegral_comap_eq_complexImage]\n  rw [â† integral_indicator",
+      "new": "  rw [MeasureTheory.L2.inner_def,\n    GammaTwoCurvilinearTileStokes.setIntegral_comap_eq_complexImage]\n  rw [show UpperHalfPlane.coe '' gammaTwoReducedChart zâ‚€ =\n    ambientGammaTwoReducedChart zâ‚€ from rfl]\n  rw [â† integral_indicator"
+    },
+    {
+      "id": "G3-4294-expose-l2Coordinate-before-rewrite",
+      "owner": "inner_l2Coordinate_eq_reducedChart_pair",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  intro u\n  rw [l2Coordinate_apply, UniformSpace.Completion.inner_coe,",
+      "new": "  intro u\n  change inner â„‚ (u : OrbitPeterssonHilbert m) (l2Coordinate m q) = _\n  rw [l2Coordinate_apply, UniformSpace.Completion.inner_coe,"
+    },
+    {
+      "id": "G3-4295-reuse-raw-support-equality",
+      "owner": "periodizedPhysicalCore_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    IsReducedChartGaugeModel m zâ‚€\n      (gammaTwoPeriodizedPhysicalCore m (reducedChartAmbientTest v hv)) v := by\n  refine âŸ¨?_, ?_, hvâŸ©",
+      "new": "    IsReducedChartGaugeModel m zâ‚€\n      (gammaTwoPeriodizedPhysicalCore m (reducedChartAmbientTest v hv)) v := by\n  have hraw : (reducedChartAmbientTest v hv : â„‚ â†’ â„‚) = (v : â„‚ â†’ â„‚) := by\n    funext w\n    exact reducedChartAmbientTest_apply v hv w\n  have ha : tsupport (reducedChartAmbientTest v hv : â„‚ â†’ â„‚) âŠ†\n      ambientGammaTwoReducedChart zâ‚€ := by\n    rw [hraw]\n    exact hv\n  refine âŸ¨?_, ?_, hvâŸ©"
+    },
+    {
+      "id": "G3-4295-use-raw-support-proof",
+      "owner": "periodizedPhysicalCore_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "periodizedPhysicalCore_isReducedChartGaugeModel",
+        "periodizedPhysicalCore_isReducedChartGaugeModel"
+      ],
+      "old": "(by simpa only [reducedChartAmbientTest] using hv)",
+      "new": "ha"
+    },
+    {
+      "id": "G3-4296-4297-rewrite-whole-conjugate-function",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose",
+        "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose"
+      ],
+      "old": "          v w) := by\n  simp only [",
+      "new": "          v w) := by\n  have hfun :\n      (reducedChartConjugateAmbientTest v hv : â„‚ â†’ â„‚) =\n        fun z : â„‚ â†¦ star (v z) := by\n    funext z\n    exact reducedChartConjugateAmbientTest_apply v hv z\n  rw [hfun]\n  simp only ["
+    },
+    {
+      "id": "G3-4298-signed-lower-gauge-neg-linearity",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  refine âŸ¨?_, ?_, ?_âŸ©\n  Â· intro z hz\n    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n          (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = _\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]\n    rw [neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart\n      ha hz]\n    rw [euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose\n      n v hv]\n    rfl",
+      "new": "  refine âŸ¨?_, ?_, ?_âŸ©\n  Â· intro z hz\n    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n            (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n              (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = _ := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc]\n        rw [neg_euclideanLowerFromSuccGauge_periodized_eq_raiseTestAdjoint_on_reducedChart\n          ha hz]\n        rw [euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]"
+    },
+    {
+      "id": "G3-4298-signed-lower-zero-neg-linearity",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n          (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z = 0\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc, hLower,\n      neg_zero]",
+      "new": "    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n            (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge n\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n\n              (gammaTwoPeriodizedPhysicalCore (n + 1) a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = 0 := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_lowerFromSucc,\n          hLower, neg_zero]"
+    },
+    {
+      "id": "G3-4299-signed-raise-gauge-neg-linearity",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "  refine âŸ¨?_, ?_, ?_âŸ©\n  Â· intro z hz\n    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n          (gammaTwoPeriodizedPhysicalCore n a)) z = _\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]\n    rw [neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart\n      ha hz]\n    rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n      n v hv]\n    rfl",
+      "new": "  refine âŸ¨?_, ?_, ?_âŸ©\n  Â· intro z hz\n    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n            (gammaTwoPeriodizedPhysicalCore n a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n              (gammaTwoPeriodizedPhysicalCore n a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = _ := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise]\n        rw [neg_euclideanRaiseGauge_periodized_eq_lowerFromSuccTestAdjoint_on_reducedChart\n          ha hz]\n        rw [euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose\n          n v hv]"
+    },
+    {
+      "id": "G3-4299-signed-raise-zero-neg-linearity",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    change -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n        (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n          (gammaTwoPeriodizedPhysicalCore n a)) z = 0\n    rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise, hRaise, neg_zero]",
+      "new": "    calc\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n          (-Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n            (gammaTwoPeriodizedPhysicalCore n a)) z =\n          -Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge (n + 1)\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n\n              (gammaTwoPeriodizedPhysicalCore n a)) z := by\n        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring\n      _ = 0 := by\n        rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_raise,\n          hRaise, neg_zero]"
+    },
+    {
+      "id": "G3-4300-close-commutative-integrand",
+      "owner": "inner_fullPlaneTestToL2_eq_integral_conj_mul",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [hx]\n  simp only [RCLike.inner_apply, starRingEnd_apply]\n        ",
+      "new": "  rw [hx]\n  simp only [RCLike.inner_apply, starRingEnd_apply]\n  ring"
+    },
+    {
+      "id": "G3-4302-normalize-lower-formal-adjoint",
+      "owner": "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalLowerFromSucc_on_core] using hFormal",
+      "new": "    rw [LinearPMap.neg_apply, physicalLowerFromSucc_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    },
+    {
+      "id": "G3-4303-normalize-raise-formal-adjoint",
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [l2CoreRangeEquiv_coe, LinearPMap.neg_apply,\n      physicalRaise_on_core] using hFormal",
+      "new": "    rw [LinearPMap.neg_apply, physicalRaise_on_core] at hFormal\n    simpa only [l2CoreRangeEquiv_coe] using hFormal"
+    },
+    {
+      "id": "G3-4302-4303-unfold-base-gauge-eventually",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+        "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart"
+      ],
+      "old": "      exact (periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation\n",
+      "new": "      simpa only [q, a, upperLift_apply, Pi.zero_apply] using\n        (periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation\n"
+    },
+    {
+      "id": "G3-4302-4303-first-inner-symmetry-proof",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+        "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart"
+      ],
+      "old": "          (fullPlaneTestToL2 (fullPlaneConjugate v))) := by\n      rw [inner_conj_symm]",
+      "new": "          (fullPlaneTestToL2 (fullPlaneConjugate v))) := by\n      exact (inner_conj_symm _ _).symm"
+    },
+    {
+      "id": "G3-4302-second-inner-symmetry-proof",
+      "owner": "raisingMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "confidence": "high",
+      "kind": "body",
+      "expected_count": 1,
+      "old": "              v)))\n        (orbitPeterssonReducedChartEmbedding n zâ‚€ p.1) := by\n      rw [inner_conj_symm]",
+      "new": "              v)))\n        (orbitPeterssonReducedChartEmbedding n zâ‚€ p.1) := by\n      exact inner_conj_symm _ _"
+    },
+    {
+      "id": "G3-4303-second-inner-symmetry-proof",
+      "owner": "loweringMaximalAdjoint_isPlanarAffineWeakGraphOn_reducedChart",
+      "confidence": "high",
+      "kind": "body",
+      "expected_count": 1,
+      "old": "              v)))\n        (orbitPeterssonReducedChartEmbedding (n + 1) zâ‚€ p.1) := by\n      rw [inner_conj_symm]",
+      "new": "              v)))\n        (orbitPeterssonReducedChartEmbedding (n + 1) zâ‚€ p.1) := by\n      exact inner_conj_symm _ _"
+    },
+    {
+      "id": "G3-4308-rewrite-whole-buffered-representative",
+      "owner": "fullPlaneTestToL2_raiseForward_bufferedEssentialFriedrichs",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [htest]\n  change euclideanRaiseForwardTest n a w = _\n  rw [euclideanRaiseForwardTest_eq_ambientAffineMaass,\n    show a w = friedrichsMollifiedRepresentative j u w by\n      simpa only [a, b, reducedChartAmbientTest_apply] using\n        bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu w,\n    hWeak.friedrichs_raising_identity]",
+      "new": "  rw [htest]\n  change euclideanRaiseForwardTest n a w = _\n  have haFun : (a : â„‚ â†’ â„‚) =\n      friedrichsMollifiedRepresentative j u := by\n    funext x\n    simpa only [a, b, reducedChartAmbientTest_apply] using\n      bufferedEssentialFriedrichsFullPlaneTest_apply hK j u hu x\n  rw [euclideanRaiseForwardTest_eq_ambientAffineMaass, haFun,\n    hWeak.friedrichs_raising_identity]"
+    }
+  ]
+}
