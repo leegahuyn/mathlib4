@@ -1,5 +1,5 @@
-name: Codex FA P5 scoped notation matrix
-# trigger: p5-scope-matrix-1
+name: Codex FA residual roots probe v1
+# trigger: fa-residual-roots-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,62 +22,62 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile P5 scope matrix
+      - name: Compile residual root proof shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/P5None.lean <<'LEAN'
+          cat >/tmp/ProbeResidualRoots.lean <<'LEAN'
           import Mathlib
-          open Set Function Topology
-          #check SmoothPartitionOfUnity
-          variable (s : Set ℂ)
-          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
-          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
-          LEAN
-          cat >/tmp/P5ContDiff.lean <<'LEAN'
-          import Mathlib
+
           open Set Function Topology
           open scoped ContDiff
-          #check SmoothPartitionOfUnity
-          variable (s : Set ℂ)
-          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
-          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
+
+          variable {S H : Type*}
+          variable [NormedAddCommGroup S] [InnerProductSpace ℂ S]
+          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+
+          example (L R B : S →ₗ[ℂ] H) (m : ℝ)
+              (hid : ∀ q : S, ‖L q‖ ^ 2 = ‖R q‖ ^ 2 - m * ‖B q‖ ^ 2)
+              (u v : S) :
+              ‖L u - L v‖ ^ 2 = ‖R u - R v‖ ^ 2 - m * ‖B u - B v‖ ^ 2 := by
+            let q : S := u + (-1 : ℂ) • v
+            have h := hid q
+            simpa only [q, map_add, map_smul, neg_smul, one_smul, sub_eq_add_neg] using h
+
+          noncomputable def probeAffineKernel
+              (c : ℂ) (a : ℝ) (f : ℂ → ℂ) (t : ℂ) : ℂ :=
+            c * f (a • t)
+
+          example (c : ℂ) (a : ℝ) (f : ℂ → ℂ) (hf : ContDiff ℝ ∞ f) :
+              ContDiff ℝ ∞ (probeAffineKernel c a f) := by
+            unfold probeAffineKernel
+            fun_prop
+
+          example (f : ℂ → ℝ) :
+              tsupport ((fun r : ℝ => (r : ℂ)) ∘ f) ⊆ tsupport f := by
+            exact tsupport_comp_subset
+              (g := fun r : ℝ => (r : ℂ)) (by norm_num) f
+
+          variable (F : ℍ → ℂ → ℝ) (s : Finset ℍ) (z : ℂ)
+          example (h : ∀ x : ℍ, F x z ≠ (0 : ℝ) → x ∈ s) :
+              Function.support (fun x : ℍ => (F x z : ℝ)) ⊆ (s : Set ℍ) := by
+            intro x hx
+            exact h x hx
           LEAN
-          cat >/tmp/P5Manifold.lean <<'LEAN'
-          import Mathlib
-          open Set Function Topology
-          open scoped Manifold
-          #check SmoothPartitionOfUnity
-          variable (s : Set ℂ)
-          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
-          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
-          LEAN
-          cat >/tmp/P5Both.lean <<'LEAN'
-          import Mathlib
-          open Set Function Topology
-          open scoped Manifold ContDiff
-          #check SmoothPartitionOfUnity
-          variable (s : Set ℂ)
-          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
-          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
-          LEAN
-          : >/tmp/p5-scope-results.txt
-          for x in None ContDiff Manifold Both; do
-            set +e
-            lake env lean -DmaxErrors=20 -DwarningAsError=false "/tmp/P5${x}.lean" >"/tmp/P5${x}.log" 2>&1
-            rc=$?
-            set -e
-            echo "$x=$rc" | tee -a /tmp/p5-scope-results.txt
-          done
-          cat /tmp/p5-scope-results.txt
+          set +e
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeResidualRoots.lean 2>&1 | tee /tmp/probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/probe.exit
+          exit "$x"
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p5-scope-matrix-${{ github.sha }}
+          name: codex-fa-residual-roots-v1-${{ github.sha }}
           path: |
-            /tmp/P5*.lean
-            /tmp/P5*.log
-            /tmp/p5-scope-results.txt
+            /tmp/ProbeResidualRoots.lean
+            /tmp/probe.log
+            /tmp/probe.exit
           retention-days: 30
