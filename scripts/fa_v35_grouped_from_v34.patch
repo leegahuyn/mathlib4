@@ -1,0 +1,179 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48657,26 +48657,31 @@
+           (u : SmoothQuotientCompactFunction) z +
+         2 * laplaceRaw (paperOrbitExponent n)
+           (u : SmoothQuotientCompactFunction) z := by
+-  let a :=
+-    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+-      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)
+-  let b :=
+-    Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+-      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u)
+-  have hSub (x y : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-      Sub.sub x y = x + (-1 : ℂ) • y := by
+-    rfl
+-  rw [strongPrincipalCore_apply]
+-  change (((Sub.sub (Sub.sub u a) b : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-      SmoothQuotientCompactFunction) z) = _
+-  rw [hSub (Sub.sub u a) b, hSub u a]
+-  change (((((u.1 : SmoothQuotientCompactFunction) +
+-      (-1 : ℂ) • (a.1 : SmoothQuotientCompactFunction)) :
+-      SmoothQuotientCompactFunction) +
+-      (-1 : ℂ) • (b.1 : SmoothQuotientCompactFunction) :
+-      SmoothQuotientCompactFunction) z) = _
+-  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction]
+-  simp [sub_eq_add_neg]
++  have hPoint :
++      ((strongPrincipalCore n u :
++          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z =
++        (u : SmoothQuotientCompactFunction) z -
++          (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) z) -
++          (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) z) := by
++    change
++      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++          (strongPrincipalCore n u) =
++        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z u -
++          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) -
++          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u))
++    rw [strongPrincipalCore_apply, map_sub, map_sub]
++  rw [hPoint]
+   have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+   have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
+   linear_combination hLR + hRL
+@@ -48713,20 +48718,30 @@
+     ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+         SmoothQuotientCompactFunction) z =
+       strongSchrodingerDifferentialExpression n t u z := by
+-  have hSub (x y : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-      Sub.sub x y = x + (-1 : ℂ) • y := by
++  have hPoint :
++      ((strongSchrodingerCore n t u :
++          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z =
++        ((strongPrincipalCore n u :
++            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) z -
++        (t : ℂ) *
++          (((potentialMultiplicationCore n u :
++              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) z) := by
++    change
++      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++          (strongSchrodingerCore n t u) =
++        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (strongPrincipalCore n u) -
++          (t : ℂ) *
++            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++              (potentialMultiplicationCore n u)
++    rw [strongSchrodingerCore_apply, map_sub, map_smul]
+     rfl
+-  rw [strongSchrodingerCore_apply]
+-  change (((Sub.sub (strongPrincipalCore n u)
+-      ((t : ℂ) • potentialMultiplicationCore n u) : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-      SmoothQuotientCompactFunction) z) = _
+-  rw [hSub]
+-  change ((((strongPrincipalCore n u).1 : SmoothQuotientCompactFunction) +
+-      (-1 : ℂ) • (((t : ℂ) • potentialMultiplicationCore n u).1 :
+-        SmoothQuotientCompactFunction) : SmoothQuotientCompactFunction) z) = _
+-  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.toSmoothQuotientCompactFunction]
+-  simp [sub_eq_add_neg, smul_smul]
+-  rw [strongPrincipalCore_apply_pointwise, potentialMultiplicationCore_apply]
++  rw [hPoint, strongPrincipalCore_apply_pointwise,
++    potentialMultiplicationCore_apply]
++  unfold strongSchrodingerDifferentialExpression
+   ring
+ 
+ /-- Reindexing the lower-then-raise composition across `(n+1)-1=n` changes
+@@ -49533,7 +49548,7 @@
+       (Filter.Eventually.of_forall fun jk ↦ by
+         have h := lowered_norm_sq_eq_raised_sub_mass n
+           (u jk.1 + (-1 : ℂ) • u jk.2)
+-        simpa only [map_add, map_smul, neg_smul, one_smul,
++        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
+           sub_eq_add_neg, c] using h.symm)
+   have hLowerNorm : Filter.Tendsto
+       (fun jk : ℕ × ℕ ↦
+@@ -58099,6 +58114,7 @@
+ open FixedPhaseAffineFriedrichs
+ open FixedPhaseNormalizedFriedrichs
+ open FixedPhasePlanarLocalization
++open HalfWeightDifferentialOperators
+ 
+ noncomputable section
+ 
+@@ -58120,7 +58136,7 @@
+       tsupport (v : ℂ → ℂ) := by
+   change tsupport (star ∘ (v : ℂ → ℂ)) ⊆
+     tsupport (v : ℂ → ℂ)
+-  exact tsupport_comp_subset rfl v
++  exact tsupport_comp_subset (g := fun z : ℂ ↦ star z) (by simp) v
+ 
+ /-- The affine distributional transpose is local: differentiation and
+ height multiplication cannot enlarge topological support. -/
+@@ -58202,7 +58218,7 @@
+       ambientGammaTwoReducedChart z₀ := by
+   change tsupport (star ∘ (v : ℂ → ℂ)) ⊆
+     ambientGammaTwoReducedChart z₀
+-  exact (tsupport_comp_subset rfl v).trans hv
++  exact (tsupport_comp_subset (g := fun z : ℂ ↦ star z) (by simp) v).trans hv
+ 
+ /-! ### The closed orbit support of a periodized seed -/
+ 
+@@ -58847,6 +58863,7 @@
+ namespace FixedPhaseReducedChartFriedrichs
+ 
+ open Set Function Topology Filter MeasureTheory Metric
++open ContinuousLinearMap
+ open scoped BigOperators Convolution ContDiff Distributions LinearPMap ENNReal
+ open HalfIntegralMultiplier
+ open DefinitionOneSobolev
+@@ -59656,6 +59673,8 @@
+ open DefinitionOneSobolev
+ open GammaTwoQuotientGeometry
+ open SmoothCompactCoreGeometry
++open FixedPhaseClosedOperators
++open FixedPhaseEssentialCoreRoute
+ open PhysicalLocalL2
+ 
+ theorem realSmooth_const (c : ℂ) :
+@@ -59866,10 +59885,8 @@
+     have hzOrbit :=
+       support_effectiveScalarPoincarePeriodization_subset_orbitSupport v hz
+     rcases Set.mem_iUnion.1 hzOrbit with ⟨a, x, hxK, rfl⟩
+-    rcases effective_exists_gamma a with ⟨gamma, hgamma⟩
+     refine ⟨x, hxK, ?_⟩
+-    rw [hgamma x]
+-    exact gammaTwoQuotientMk_gamma_smul gamma x
++    exact (gammaTwoQuotientMk_smul a x).symm
+   · exact hQK.isClosed
+ 
+ /-- The invariant scalar periodization as a genuine smooth
+@@ -60403,6 +60420,7 @@
+ open FixedPhaseDensity
+ open FixedPhaseAdjointCutoffCore
+ open P5DiscriminantHardTruncation
++open HalfWeightDifferentialOperators
+ 
+ noncomputable section
+ 
+@@ -61213,7 +61231,7 @@
+   calc
+     (∑ i : {x // x ∈ t},
+         (effectiveScalarSmoothQuotient (theta i) : ℍ → ℂ) z) =
+-        ∑ i in t.attach,
++        ∑ i ∈ t.attach,
+           effectiveScalarPoincarePeriodization (theta i) z := by
+             rw [Finset.attach_eq_univ]
+             simp only [effectiveScalarSmoothQuotient_apply]
