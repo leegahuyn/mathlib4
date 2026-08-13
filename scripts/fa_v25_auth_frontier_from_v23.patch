@@ -1,0 +1,32 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -19659,7 +19659,7 @@
+ 
+ noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-- The three concrete shifted Petersson coordinates on the canonical
+ fixed-phase differential core. -/
+@@ -48795,9 +48795,9 @@
+       inner ℂ (l2Coordinate n v)
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+   have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+-  have hidx : n - 1 + 1 = n := by omega
+-  rw [hidx] at hs
+-  have h := hs v u
++  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
++  have hs' := hidx ▸ hs
++  have h := hs' v u
+   rw [successorGraphCoordinates_eq_coordinates] at h
+   simpa only [sub_add_cancel] using h
+ 
+@@ -48856,6 +48856,7 @@
+   ext v
+   rw [corePeterssonForcing_apply]
+   rw [map_zero, inner_zero_right]
++  rfl
+ 
+ /-- Petersson pairings against the actual smooth fixed-phase core separate
+ smooth sections.  The proof tests with the difference itself and then uses
