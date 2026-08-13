@@ -1,0 +1,172 @@
+name: Codex FA v38 early-root cumulative probe
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-v38-earlyroots-probe.yml]
+  workflow_dispatch:
+permissions: {actions: read, contents: read}
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [rw_hidx, cast_convert, simp_hidx]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Materialize exact v37 candidate and build cumulative prefix variant
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          VARIANT: "${{ matrix.variant }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          ART=9172306868
+          DIGEST=sha256:f8d9e30cc4c9a972f14bf9cf1d85b1a2c4c7cebb7b39fb0a039af3a6cf7bbc2e
+          BASE=e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05
+          mkdir -p /tmp/v37
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/v37.zip
+          test "sha256:$(sha256sum /tmp/v37.zip | awk '{print $1}')" = "$DIGEST"
+          unzip -q /tmp/v37.zip -d /tmp/v37
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+          base=os.environ.get('BASE','e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05')
+          hits=[p for p in Path('/tmp/v37').rglob('Mock2_FunctionalAnalysis.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==base]
+          assert len(hits)==1,hits
+          s=hits[0].read_text()
+          old='''theorem energyForm_eq_inner_strongPrincipalCore
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+    (coordinates n).energyForm v u =
+      inner ℂ (l2Coordinate n v)
+        (l2Coordinate n (strongPrincipalCore n u)) := by
+  have hs :=
+    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
+    successorIndexEq, sub_add_cancel] using hs
+'''
+          common_head='''theorem energyForm_eq_inner_strongPrincipalCore
+    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+    (coordinates n).energyForm v u =
+      inner ℂ (l2Coordinate n v)
+        (l2Coordinate n (strongPrincipalCore n u)) := by
+'''
+          core='Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore'
+          variants={
+          'rw_hidx': common_head+'''  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
+  rw [hidx] at hs
+  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
+    successorIndexEq, sub_add_cancel] using hs v u
+''',
+          'simp_hidx': common_head+'''  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
+  simp only [hidx] at hs
+  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
+    successorIndexEq, sub_add_cancel] using hs v u
+''',
+          'cast_convert': common_head+f'''  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
+  let v' : {core} (n - 1 + 1) :=
+    Eq.mpr (congrArg {core} hidx) v
+  let u' : {core} (n - 1 + 1) :=
+    Eq.mpr (congrArg {core} hidx) u
+  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1) v' u'
+  convert hs using 1 <;>
+    simp [v', u', hidx, successorGraphCoordinates,
+      transportSuccessorCoordinates, successorIndexEq]
+'''
+          }
+          v=os.environ['VARIANT']; assert old in s; s=s.replace(old,variants[v],1)
+          old3669='''    simpa only [mul_assoc] using hMeasV.mul hMeasBase'''
+          assert old3669 in s
+          s=s.replace(old3669,'''    simpa only [Pi.mul_apply] using hMeasV.mul hMeasBase''',1)
+          old3689='''        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
+          sub_eq_add_neg, c] using h.symm)'''
+          assert old3689 in s
+          s=s.replace(old3689,'''        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
+          sub_eq_add_neg, pow_two, c] using h.symm)''',1)
+          old3755='''theorem literalStageCutoffReal_contDiff (Y : ℝ) :
+    ContDiff ℝ ∞ (literalStageCutoffReal Y) := by
+  classical
+  unfold literalStageCutoffReal
+  fun_prop
+'''
+          new3755='''theorem literalStageCutoffReal_contDiff (Y : ℝ) :
+    ContDiff ℝ ∞ (literalStageCutoffReal Y) := by
+  classical
+  unfold literalStageCutoffReal
+  induction literalStageActiveCenters Y using Finset.induction_on with
+  | empty => exact contDiff_const
+  | @insert z t hz ih =>
+      have hzSmooth : ContDiff ℝ ∞ (literalStagePartition Y z : ℂ → ℝ) := by
+        have hp := (literalStagePartition Y z).property
+        rw [contMDiff_iff_contDiff] at hp
+        have hfun :
+            (↑(literalStagePartition Y z) : ℂ → ℝ) =
+              (literalStagePartition Y z : ℂ → ℝ) := by
+          funext x
+          rfl
+        rw [← hfun]
+        exact hp
+      simp only [Finset.sum_insert hz]
+      change ContDiff ℝ ∞
+        ((literalStagePartition Y z : ℂ → ℝ) +
+          (fun w ↦ ∑ x ∈ t, literalStagePartition Y x w))
+      exact hzSmooth.add ih
+'''
+          assert old3755 in s; s=s.replace(old3755,new3755,1)
+          lines=s.splitlines(True)
+          Path('/tmp/ProbeFA.lean').write_text(''.join(lines[:50690]))
+          Path('/tmp/candidate.sha256').write_text(hashlib.sha256(s.encode()).hexdigest()+'\n')
+          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile cumulative prefix and classify target declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DmaxErrors=1000 -DwarningAsError=false /tmp/ProbeFA.lean >/tmp/probe.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >/tmp/probe.exit
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re,os
+          log=Path('/tmp/probe.log').read_text(errors='replace').splitlines()
+          src=Path('/tmp/ProbeFA.lean').read_text(errors='replace')
+          dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)')
+          ds=list(dr.finditer(src)); starts=[src.count('\n',0,m.start())+1 for m in ds]
+          from bisect import bisect_right
+          er=re.compile(r'^.+?\.lean:(\d+):(\d+): error')
+          counts={}
+          for l in log:
+            m=er.match(l)
+            if m:
+              i=bisect_right(starts,int(m.group(1)))-1
+              n=ds[i].group(1) if i>=0 else '?'; counts[n]=counts.get(n,0)+1
+          targets=['energyForm_eq_inner_strongPrincipalCore','integrable_fullPlaneTest_mul_kernel_mul_translate','cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto','literalStageCutoffReal_contDiff']
+          out={'variant':os.environ['VARIANT'],'lean_exit':int(Path('/tmp/probe.exit').read_text()),'target_error_counts':{x:counts.get(x,0) for x in targets},'total_error_headers':sum(counts.values()),'first_error_declaration':next(iter(counts),None)}
+          Path('/tmp/result.json').write_text(json.dumps(out,indent=2)+'\n'); print(json.dumps(out,indent=2))
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v38-earlyroots-${{ matrix.variant }}-${{ github.sha }}
+          path: |
+            /tmp/probe.log
+            /tmp/probe.exit
+            /tmp/result.json
+            /tmp/candidate.sha256
+          retention-days: 30
