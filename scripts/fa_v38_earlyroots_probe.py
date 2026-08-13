@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import hashlib, json, re, sys
+import hashlib, json, sys
 
 if len(sys.argv) != 3:
     raise SystemExit('usage: fa_v38_earlyroots_probe.py <v37-source> <outdir>')
@@ -31,6 +31,16 @@ head3653 = '''theorem energyForm_eq_inner_strongPrincipalCore
 '''
 core = 'Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore'
 variants = {
+    'helper_cases': head3653 + '''  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+  have htransport :
+      ∀ (m : ℤ) (h : m = m) (Q : successorCoordinateType m m),
+        transportSuccessorCoordinates m m h Q = Q := by
+    intro m h Q
+    cases h
+    rfl
+  simpa only [successorGraphCoordinates, successorIndexEq, sub_add_cancel,
+    htransport] using hs
+''',
     'rw_hidx': head3653 + '''  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
   have hidx : n - 1 + 1 = n := sub_add_cancel n 1
   rw [hidx] at hs
@@ -72,10 +82,43 @@ variants = {
 
 old3669 = '    simpa only [mul_assoc] using hMeasV.mul hMeasBase'
 new3669 = '    simpa only [Pi.mul_apply] using hMeasV.mul hMeasBase'
-old3689 = '''        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
-          sub_eq_add_neg, c] using h.symm)'''
-new3689 = '''        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
-          sub_eq_add_neg, pow_two, c] using h.symm)'''
+
+old3689 = '''  have hLowerSq : Filter.Tendsto
+      (fun jk : ℕ × ℕ ↦
+        ‖lowerFromSuccCoordinate n (u jk.1) -
+          lowerFromSuccCoordinate n (u jk.2)‖ ^ 2)
+      Filter.atTop (𝓝 0) := by
+    have hModel := (hRaiseDist.pow 2).sub
+      ((hBaseDist.pow 2).const_mul c)
+    simpa only [Pi.zero_apply, pow_two, zero_mul, mul_zero,
+      zero_add, add_zero, neg_zero, sub_zero, sub_eq_add_neg] using hModel.congr'
+      (Filter.Eventually.of_forall fun jk ↦ by
+        have h := lowered_norm_sq_eq_raised_sub_mass n
+          (u jk.1 + (-1 : ℂ) • u jk.2)
+        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
+          sub_eq_add_neg, c] using h.symm)
+'''
+new3689 = '''  have hLowerSq : Filter.Tendsto
+      (fun jk : ℕ × ℕ ↦
+        ‖lowerFromSuccCoordinate n (u jk.1) -
+          lowerFromSuccCoordinate n (u jk.2)‖ ^ 2)
+      Filter.atTop (𝓝 0) := by
+    change Filter.Tendsto
+      (fun jk : ℕ × ℕ ↦
+        ‖lowerFromSuccCoordinate n (u jk.1) +
+          -(lowerFromSuccCoordinate n (u jk.2))‖ ^ 2)
+      Filter.atTop (𝓝 0)
+    have hModel := (hRaiseDist.pow 2).sub
+      ((hBaseDist.pow 2).const_mul c)
+    simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
+      sub_zero] using hModel.congr'
+      (Filter.Eventually.of_forall fun jk ↦ by
+        have h := lowered_norm_sq_eq_raised_sub_mass n
+          (u jk.1 + (-1 : ℂ) • u jk.2)
+        simpa only [map_add, map_smul, neg_smul, one_smul, map_neg,
+          sub_eq_add_neg, c] using h.symm)
+'''
+
 old3755 = '''theorem literalStageCutoffReal_contDiff (Y : ℝ) :
     ContDiff ℝ ∞ (literalStageCutoffReal Y) := by
   classical
@@ -87,7 +130,9 @@ new3755 = '''theorem literalStageCutoffReal_contDiff (Y : ℝ) :
   classical
   unfold literalStageCutoffReal
   induction literalStageActiveCenters Y using Finset.induction_on with
-  | empty => exact contDiff_const
+  | empty =>
+      simpa only [Finset.sum_empty] using
+        (contDiff_const : ContDiff ℝ ∞ (fun _ : ℂ ↦ (0 : ℝ)))
   | @insert z t hz ih =>
       have hzSmooth : ContDiff ℝ ∞ (literalStagePartition Y z : ℂ → ℝ) := by
         have hp := (literalStagePartition Y z).property
@@ -115,7 +160,7 @@ for name, body in variants.items():
     s = s.replace(old3689, new3689, 1)
     s = s.replace(old3755, new3755, 1)
     candidate_sha = hashlib.sha256(s.encode()).hexdigest()
-    prefix = ''.join(s.splitlines(True)[:50705])
+    prefix = ''.join(s.splitlines(True)[:50720])
     p = out / f'ProbeFA_{name}.lean'
     p.write_text(prefix)
     manifest['variants'][name] = {
