@@ -1,4 +1,4 @@
-name: Codex FA finite partition sum API probe v2
+name: Codex FA finite partition sum API probe v3
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,11 +21,12 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile finite partition sum proof shapes v2
+      - name: Compile finite partition sum proof shapes v3
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
+          grep -R -n "contMDiff_iff_contDiff" Mathlib | head -30 > /tmp/grep-api.txt || true
           cat >/tmp/ProbePartitionSmooth.lean <<'LEAN'
           import Mathlib
           open Set Function Topology
@@ -33,7 +34,7 @@ jobs:
           variable {ι : Type*} {s : Set ℂ}
           example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
               ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-            exact (ρ i).contDiff
+            simpa only [contMDiff_iff_contDiff] using (ρ i).property
           LEAN
           cat >/tmp/ProbePartitionSum.lean <<'LEAN'
           import Mathlib
@@ -45,9 +46,14 @@ jobs:
             classical
             induction t using Finset.induction_on with
             | empty =>
+                simp only [Finset.sum_empty]
                 exact contDiff_const
             | @insert i t hi ih =>
-                simpa only [Finset.sum_insert hi] using (ρ i).contDiff.add ih
+                simp only [Finset.sum_insert hi]
+                change ContDiff ℝ ∞ ((ρ i : ℂ → ℝ) + (fun w => ∑ j ∈ t, ρ j w))
+                have hpiece : ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
+                  simpa only [contMDiff_iff_contDiff] using (ρ i).property
+                exact hpiece.add ih
           LEAN
           cat >/tmp/ProbePartitionCompact.lean <<'LEAN'
           import Mathlib
@@ -60,7 +66,9 @@ jobs:
             induction t using Finset.induction_on with
             | empty => simp [HasCompactSupport]
             | @insert i t hi ih =>
-                simpa only [Finset.sum_insert hi, Pi.add_apply] using (hf i).add ih
+                simp only [Finset.sum_insert hi]
+                change HasCompactSupport ((f i) + (fun w => ∑ j ∈ t, f j w))
+                exact (hf i).add ih
           LEAN
           : >/tmp/results.txt
           for x in Smooth Sum Compact; do
@@ -75,9 +83,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-finite-partition-sum-v2-${{ github.sha }}
+          name: codex-fa-finite-partition-sum-v3-${{ github.sha }}
           path: |
             /tmp/ProbePartition*.lean
             /tmp/ProbePartition*.log
+            /tmp/grep-api.txt
             /tmp/results.txt
           retention-days: 30
