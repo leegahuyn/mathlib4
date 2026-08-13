@@ -1,0 +1,190 @@
+diff --git a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+index 6c132dc..c70bdb5 100644
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48814,17 +48814,16 @@ theorem energyForm_eq_inner_strongPrincipalCore
+     (coordinates n).energyForm v u =
+       inner ℂ (l2Coordinate n v)
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+-  have hs0 := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+-  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
+-  have hs :
++  have hs :=
++    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
++  rw [successorGraphCoordinates_eq_coordinates] at hs
++  have hs' :
+       ∀ v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
+-        (successorGraphCoordinates (n - 1)).energyForm v u =
++        (coordinates n).energyForm v u =
+           inner ℂ (l2Coordinate n v)
+-            (l2Coordinate n (strongPrincipalCore n u)) :=
+-    hidx ▸ hs0
+-  have h := hs v u
+-  rw [successorGraphCoordinates_eq_coordinates] at h
+-  simpa only [sub_add_cancel] using h
++            (l2Coordinate n (strongPrincipalCore n u)) := by
++    simpa only [sub_add_cancel] using hs
++  exact hs' v u
+ 
+ /-- The potential form in the same concrete Petersson-coordinate language. -/
+ theorem potentialForm_eq_inner_potentialMultiplicationCore
+@@ -49065,10 +49064,8 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+   have hMeas : AEStronglyMeasurable
+       (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))
+       ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
+-    change AEStronglyMeasurable
+-      (fun p : ℂ × ℂ ↦ v p.1 * (K p.2 * u (p.1 - p.2)))
+-      ((volume : Measure ℂ).prod (volume : Measure ℂ))
+-    exact hMeasV.mul hMeasBase
++    simpa only [Function.uncurry_apply_pair, mul_assoc] using
++      hMeasV.mul hMeasBase
+   apply (integrable_prod_iff' hMeas).2
+   constructor
+   · filter_upwards with t
+@@ -49544,7 +49541,7 @@ theorem cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto
+     have hModel := (hRaiseDist.pow 2).sub
+       ((hBaseDist.pow 2).const_mul c)
+     simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
+-      sub_zero] using hModel.congr'
++      sub_zero, sub_eq_add_neg] using hModel.congr'
+       (Filter.Eventually.of_forall fun jk ↦ by
+         have h := lowered_norm_sq_eq_raised_sub_mass n
+           (u jk.1 + (-1 : ℂ) • u jk.2)
+@@ -50579,6 +50576,12 @@ namespace P5PhysicalHardStageRestriction
+ open Set Function Topology Filter MeasureTheory
+ open scoped ENNReal NNReal Manifold ContDiff
+ attribute [local instance 10000] instMeasureSpaceUnitAddCircle
++noncomputable local instance : Measure.IsAddHaarMeasure
++    (volume : Measure UnitAddCircle) :=
++  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
++noncomputable local instance : IsProbabilityMeasure
++    (volume : Measure UnitAddCircle) :=
++  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
+ open DefinitionOneSobolev
+ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ open DefinitionOneSobolev.FixedPhaseGraphCompletion
+@@ -52048,7 +52051,7 @@ theorem coeFn_ambientTestCoreToPlaneL2Linear
+ 
+ theorem ambientPlaneL2_norm_sq_eq_integral (F : AmbientPlaneL2) :
+     ‖F‖ ^ 2 = ∫ w : ℂ, ‖F w‖ ^ 2 := by
+-  rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
++  rw [← inner_self_eq_norm_sq (𝕜 := ℂ), MeasureTheory.L2.inner_def,
+     ← integral_re (MeasureTheory.L2.integrable_inner F F)]
+   apply integral_congr_ae
+   exact Filter.Eventually.of_forall fun w ↦
+@@ -52529,7 +52532,8 @@ theorem literalStageTorusPoint_measurable (Y : ℝ) :
+     Measurable (literalStageTorusPoint Y) := by
+   unfold literalStageTorusPoint
+   exact (Complex.measurableEquivPi.symm.measurable.comp
+-    literalStageTorusCoordinate_measurable).const_smul _
++    literalStageTorusCoordinate_measurable).const_smul
++      (literalStageFourierScale Y : ℝ)
+ 
+ /-- Pull an actual compact plane test back to the genuine two-torus. -/
+ noncomputable def literalStageTorusRepresentative
+@@ -52573,7 +52577,7 @@ theorem literalStageTorusTest_add
+     (Y : ℝ) (v w : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+     literalStageTorusTest Y (v + w) =
+       literalStageTorusTest Y v + literalStageTorusTest Y w := by
+-  apply Lp.ext fun t ↦ ?_
++  apply Lp.ext
+   filter_upwards [coeFn_literalStageTorusTest Y (v + w),
+     coeFn_literalStageTorusTest Y v,
+     coeFn_literalStageTorusTest Y w,
+@@ -52586,7 +52590,7 @@ theorem literalStageTorusTest_add
+ theorem literalStageTorusTest_smul
+     (Y : ℝ) (c : ℂ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore) :
+     literalStageTorusTest Y (c • v) = c • literalStageTorusTest Y v := by
+-  apply Lp.ext fun t ↦ ?_
++  apply Lp.ext
+   filter_upwards [coeFn_literalStageTorusTest Y (c • v),
+     coeFn_literalStageTorusTest Y v,
+     Lp.coeFn_smul c (literalStageTorusTest Y v)] with t ht hv hsmul
+@@ -52597,7 +52601,7 @@ theorem literalStageTorusTest_smul
+ theorem twoTorusL2_norm_sq_eq_integral
+     (F : P5LocalFourierRellich.TwoTorusL2) :
+     ‖F‖ ^ 2 = ∫ t, ‖F t‖ ^ 2 := by
+-  rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
++  rw [← inner_self_eq_norm_sq (𝕜 := ℂ), MeasureTheory.L2.inner_def,
+     ← integral_re (MeasureTheory.L2.integrable_inner F F)]
+   apply integral_congr_ae
+   exact Filter.Eventually.of_forall fun t ↦
+@@ -56775,7 +56779,7 @@ theorem orbitEuclideanGauge_memLp_reducedChart
+     (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
+     (hyperbolicMeasure.restrict (gammaTwoReducedChart z₀)) at hHyperbolic
+   rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
+-    Measure.restrict_withDensity
++    restrict_withDensity
+       (gammaTwoReducedChart_isOpen z₀).measurableSet] at hHyperbolic
+   have hWeighted :=
+     (integrable_withDensity_iff_integrable_smul
+@@ -56956,7 +56960,7 @@ theorem orbitPeterssonCoreToReducedChartL2_norm_sq
+     ‖q‖ ^ 2 = ‖qUpper‖ ^ 2 := by rw [hNorm]
+     _ = ∫ z : ℍ, ‖qUpper z‖ ^ 2
+         ∂Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure := by
+-      rw [← inner_self_eq_norm_sq, MeasureTheory.L2.inner_def,
++      rw [← inner_self_eq_norm_sq (𝕜 := ℂ), MeasureTheory.L2.inner_def,
+         ← integral_re (MeasureTheory.L2.integrable_inner qUpper qUpper)]
+       apply integral_congr_ae
+       exact Filter.Eventually.of_forall fun z ↦
+@@ -57068,8 +57072,11 @@ theorem orbitPeterssonReducedChartEmbedding_coe
+   exact ContinuousLinearMap.extend_eq _
+     (UniformSpace.Completion.denseRange_coe :
+       DenseRange ((↑) : OrbitPeterssonCore n → OrbitPeterssonHilbert n))
+-    (by simpa using UniformSpace.Completion.isUniformInducing_coe
+-      (OrbitPeterssonCore n)) u
++    (by
++      simpa using
++        (UniformSpace.Completion.isUniformInducing_coe :
++          IsUniformInducing
++            ((↑) : OrbitPeterssonCore n → OrbitPeterssonHilbert n))) u
+ 
+ theorem orbitPeterssonReducedChartEmbedding_norm_le
+     (n : ℤ) (z₀ : ℍ) (x : OrbitPeterssonHilbert n) :
+@@ -57958,14 +57965,15 @@ theorem affineCommutator_convolution_compactIndicator_eq
+ representative. -/
+ noncomputable def essentialFriedrichsRepresentative
+     (K : Set ℂ) (j : ℕ) (u : AmbientPlaneL2) : ℂ → ℂ :=
+-  friedrichsMollifierReal j ⋆[lsmul ℝ ℂ, volume]
++  friedrichsMollifierReal j ⋆[(ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ), volume]
+     compactIndicatorRepresentative K u
+ 
+ theorem essentialFriedrichsRepresentative_contDiff
+     {K : Set ℂ} (j : ℕ) (u : AmbientPlaneL2)
+     (hu : HasEssentialSupportIn u K) :
+     ContDiff ℝ ∞ (essentialFriedrichsRepresentative K j u) := by
+-  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left (lsmul ℝ ℂ)
++  exact (friedrichsMollifierReal_hasCompactSupport j).contDiff_convolution_left
++      (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)
+       (friedrichsMollifierReal_contDiff j)
+       (compactIndicatorRepresentative_locallyIntegrable hu)
+ 
+@@ -57973,7 +57981,8 @@ theorem support_essentialFriedrichsRepresentative_subset_cthickening
+     {K : Set ℂ} (hK : IsCompact K) (j : ℕ) (u : AmbientPlaneL2) :
+     Function.support (essentialFriedrichsRepresentative K j u) ⊆
+       cthickening (friedrichsRadius j) K := by
+-  refine (support_convolution_subset_swap (lsmul ℝ ℂ)).trans ?_
++  refine (support_convolution_subset_swap
++    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)).trans ?_
+   calc
+     Function.support (compactIndicatorRepresentative K u) +
+           Function.support (friedrichsMollifierReal j) ⊆
+@@ -57989,6 +57998,7 @@ theorem essentialFriedrichsRepresentative_hasCompactSupport
+     (u : AmbientPlaneL2) :
+     HasCompactSupport (essentialFriedrichsRepresentative K j u) := by
+   exact (friedrichsMollifierReal_hasCompactSupport j).convolution
++    (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)
+     (compactIndicatorRepresentative_hasCompactSupport hK u)
+ 
+ /-- The essential-support version of the buffered full-plane test. -/
+@@ -58000,7 +58010,9 @@ noncomputable def bufferedEssentialFriedrichsFullPlaneTest
+   contDiff' := essentialFriedrichsRepresentative_contDiff j u hu
+   hasCompactSupport' :=
+     essentialFriedrichsRepresentative_hasCompactSupport hK j u
+-  tsupport_subset' := subset_univ
++  tsupport_subset' := by
++    intro x hx
++    simp
+ 
+ @[simp]
+ theorem bufferedEssentialFriedrichsFullPlaneTest_apply
