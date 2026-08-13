@@ -1,0 +1,24 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -49596,9 +49596,20 @@
+     simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
+       sub_zero] using hModel.congr'
+       (Filter.Eventually.of_forall fun jk ↦ by
++        have hSub :
++            Sub.sub (u jk.1) (u jk.2) =
++              u jk.1 + (-1 : ℂ) • u jk.2 := by
++          apply Subtype.ext
++          change
++            (u jk.1 : SmoothQuotientCompactFunction) -
++                (u jk.2 : SmoothQuotientCompactFunction) =
++              (u jk.1 : SmoothQuotientCompactFunction) +
++                (-1 : ℂ) • (u jk.2 : SmoothQuotientCompactFunction)
++          simp [sub_eq_add_neg]
+         have h := lowered_norm_sq_eq_raised_sub_mass n
+           (Sub.sub (u jk.1) (u jk.2))
+-        simpa only [map_sub, c] using h.symm)
++        rw [hSub] at h
++        simpa [map_add, map_smul, sub_eq_add_neg, c] using h.symm)
+   have hLowerNorm : Filter.Tendsto
+       (fun jk : ℕ × ℕ ↦
+         ‖lowerFromSuccCoordinate n (u jk.1) -
