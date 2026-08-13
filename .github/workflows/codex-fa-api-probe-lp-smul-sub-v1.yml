@@ -1,5 +1,5 @@
-name: Codex FA canonical Submodule AddCommGroup coherence probe
-# trigger: canonical-submodule-addgroup-v1
+name: Codex FA two-level ambient/core AddCommGroup coherence probe
+# trigger: two-level-ambient-core-addgroup-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,50 +22,46 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile canonical instance coherence probes
+      - name: Compile two-level instance coherence probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeCanonicalGroup.lean <<'LEAN'
+          cat >/tmp/ProbeTwoLevelGroup.lean <<'LEAN'
           import Mathlib
 
           noncomputable section
-          variable {V W : Type*} [AddCommGroup V] [Module ℂ V]
-            [AddCommGroup W] [Module ℂ W]
-          variable (S : Submodule ℂ V)
+          variable {X W : Type*}
+          variable [AddCommMonoid X] [Module ℂ X]
+          variable [AddCommGroup W] [Module ℂ W]
 
-          noncomputable local instance coreModule : Module ℂ S := by
-            exact Submodule.module S
-          noncomputable local instance coreAddCommGroup : AddCommGroup S := by
-            exact Submodule.addCommGroup S
+          def AmbientSub : Submodule ℂ X := ⊤
+          abbrev Ambient := AmbientSub (X := X)
 
-          example (u v : S) : ((u - v : S) : V) = (u : V) - (v : V) := by
+          noncomputable local instance ambientAddCommGroup : AddCommGroup Ambient := by
+            exact Module.addCommMonoidToAddCommGroup ℂ
+
+          def CoreSub : Submodule ℂ Ambient := ⊤
+          abbrev Core := CoreSub (X := X)
+
+          noncomputable local instance coreAddCommGroup : AddCommGroup Core := by
+            exact Submodule.addCommGroup (CoreSub (X := X))
+
+          example (u v : Core) :
+              (((u - v : Core) : Ambient)) = (u : Ambient) - (v : Ambient) := by
             rfl
 
-          example (L : S →ₗ[ℂ] W) (u v : S) : L (u - v) = L u - L v := by
+          example (L : Core →ₗ[ℂ] W) (u v : Core) :
+              L (u - v) = L u - L v := by
             exact map_sub L u v
 
-          abbrev F := ℂ → ℂ
-          def SmoothSub : Submodule ℂ F := ⊤
-          abbrev Smooth := SmoothSub
-          instance : CoeFun Smooth (fun _ => ℂ → ℂ) where coe f := f.1
-          def CoreSub : Submodule ℂ Smooth := ⊤
-          abbrev Core := CoreSub
-
-          noncomputable local instance core2Module : Module ℂ Core := by
-            exact Submodule.module CoreSub
-          noncomputable local instance core2AddCommGroup : AddCommGroup Core := by
-            exact Submodule.addCommGroup CoreSub
-
-          example (u a b : Core) (z : ℂ) :
-              ((((u - a - b : Core) : Smooth) : F) z) =
-                (((u : Smooth) : F) z - (((a : Smooth) : F) z) -
-                  (((b : Smooth) : F) z)) := by
-            rfl
+          example (E : Ambient →ₗ[ℂ] W) (u v : Core) :
+              E ((u - v : Core) : Ambient) = E (u : Ambient) - E (v : Ambient) := by
+            rw [show ((u - v : Core) : Ambient) = (u : Ambient) - (v : Ambient) by rfl]
+            exact map_sub E (u : Ambient) (v : Ambient)
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeCanonicalGroup.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeTwoLevelGroup.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -74,9 +70,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-canonical-submodule-addgroup-${{ github.sha }}
+          name: codex-fa-two-level-ambient-core-addgroup-${{ github.sha }}
           path: |
-            /tmp/ProbeCanonicalGroup.lean
+            /tmp/ProbeTwoLevelGroup.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
