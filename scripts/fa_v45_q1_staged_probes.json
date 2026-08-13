@@ -1,0 +1,56 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q1",
+  "variant_base": "v43_middle_probe_authority",
+  "authority": {
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V44-Q1-S01-expose-upper-Euclidean-comap-before-subtype-integral",
+      "owner": "norm_ambientPlaneToUpperLinear_le",
+      "declaration_index": 3956,
+      "diagnostics": [37],
+      "kind": "body",
+      "classification": "STAGED_MEASURE_NORMALIZATION_PROBE",
+      "confidence": "medium-exact-definition-but-rewrite-orientation-runtime-sensitive",
+      "expected_count_in_owner": 1,
+      "old": "      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        rw [← integral_subtype_comap",
+      "new": "      ∫ w in UpperHalfPlane.upperHalfPlaneSet, ‖F w‖ ^ 2 := by\n        change (∫ z : ℍ, ‖ambientPlaneToUpperLinear F z‖ ^ 2\n          ∂volume.comap UpperHalfPlane.coe) = _\n        rw [← integral_subtype_comap"
+    },
+    {
+      "id": "V44-Q1-S02-materialize-hard-stage-linear-map-before-mkContinuous2",
+      "owner": "discriminantHardStagePotentialPairing",
+      "declaration_index": 4012,
+      "diagnostics": [40],
+      "kind": "body",
+      "classification": "STAGED_EXPLICIT_ELABORATION_PROBE",
+      "confidence": "medium-remote-metavariable-is-linear-map-receiver",
+      "expected_count_in_owner": 1,
+      "old": "  (discriminantHardStagePairingLinear N n).mkContinuous₂ uniformBound\n    (discriminantHardStagePairingLinear_bound N n)",
+      "new": "  LinearMap.mkContinuous₂ (discriminantHardStagePairingLinear N n)\n    uniformBound (discriminantHardStagePairingLinear_bound N n)"
+    }
+  ],
+  "deferred": {
+    "paired_q3_index": [3925],
+    "common_hc_indices": [3949, 4015],
+    "dependent_coercion_index": [3960],
+    "source_order_index": [4198]
+  },
+  "direct_lean_verified": false
+}
