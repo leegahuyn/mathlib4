@@ -1,5 +1,5 @@
-name: Codex FA explicit two-submodule AddCommGroup coherence probe
-# trigger: explicit-two-submodule-addgroup-v2
+name: Codex FA local evaluation LinearMap subtraction probe
+# trigger: local-eval-linearmap-sub-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,42 +22,75 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile explicit two-submodule coherence probes
+      - name: Compile local evaluation map subtraction shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeTwoLevelGroup.lean <<'LEAN'
+          cat >/tmp/ProbeLocalEval.lean <<'LEAN'
           import Mathlib
 
           noncomputable section
-          variable {X W : Type*} [AddCommMonoid X] [Module ℂ X]
-            [AddCommGroup W] [Module ℂ W]
-          variable (S : Submodule ℂ X)
 
-          noncomputable local instance ambientAddCommGroup : AddCommGroup S := by
+          variable {X : Type*} [AddCommMonoid X] [Module ℂ X]
+          variable (S : Submodule ℂ X)
+          variable (phi : X →ₗ[ℂ] ℂ)
+
+          noncomputable local instance coreModule : Module ℂ S := by
+            exact Submodule.module S
+          noncomputable local instance coreAddCommGroup : AddCommGroup S := by
             exact Module.addCommMonoidToAddCommGroup ℂ
 
-          variable (T : Submodule ℂ S)
+          example (u v : S) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by
+                    intro x y
+                    exact phi.map_add x.1 y.1
+                  map_smul' := by
+                    intro c x
+                    exact phi.map_smul c x.1 }
+              ev (u - v) = ev u - ev v := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by
+                  intro x y
+                  exact phi.map_add x.1 y.1
+                map_smul' := by
+                  intro c x
+                  exact phi.map_smul c x.1 }
+            exact map_sub ev u v
 
-          noncomputable local instance coreAddCommGroup : AddCommGroup T := by
-            exact Submodule.addCommGroup T
+          example (u a b : S) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by intro x y; exact phi.map_add x.1 y.1
+                  map_smul' := by intro c x; exact phi.map_smul c x.1 }
+              ev (u - a - b) = ev u - ev a - ev b := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by intro x y; exact phi.map_add x.1 y.1
+                map_smul' := by intro c x; exact phi.map_smul c x.1 }
+            rw [map_sub, map_sub]
 
-          example (u v : T) :
-              (((u - v : T) : S)) = (u : S) - (v : S) := by
+          example (u a : S) (t : ℂ) :
+              let ev : S →ₗ[ℂ] ℂ :=
+                { toFun := fun x => phi x.1
+                  map_add' := by intro x y; exact phi.map_add x.1 y.1
+                  map_smul' := by intro c x; exact phi.map_smul c x.1 }
+              ev (u - t • a) = ev u - t * ev a := by
+            dsimp only
+            let ev : S →ₗ[ℂ] ℂ :=
+              { toFun := fun x => phi x.1
+                map_add' := by intro x y; exact phi.map_add x.1 y.1
+                map_smul' := by intro c x; exact phi.map_smul c x.1 }
+            rw [map_sub, map_smul]
             rfl
-
-          example (L : T →ₗ[ℂ] W) (u v : T) :
-              L (u - v) = L u - L v := by
-            exact map_sub L u v
-
-          example (E : S →ₗ[ℂ] W) (u v : T) :
-              E ((u - v : T) : S) = E (u : S) - E (v : S) := by
-            rw [show ((u - v : T) : S) = (u : S) - (v : S) by rfl]
-            exact map_sub E (u : S) (v : S)
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeTwoLevelGroup.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeLocalEval.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -66,9 +99,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-explicit-two-submodule-addgroup-${{ github.sha }}
+          name: codex-fa-local-eval-linearmap-sub-${{ github.sha }}
           path: |
-            /tmp/ProbeTwoLevelGroup.lean
+            /tmp/ProbeLocalEval.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
