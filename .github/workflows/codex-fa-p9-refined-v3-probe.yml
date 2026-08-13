@@ -1,122 +1,76 @@
-name: Codex FA v28 two-level verified first-frontier fast check
+name: Codex FA P5 finite-sum smooth compact-support probe
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
     paths: [.github/workflows/codex-fa-p9-refined-v3-probe.yml]
   workflow_dispatch:
-permissions: {actions: read, contents: read}
+permissions: {contents: read}
 jobs:
-  direct:
+  probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Materialize exact filtered source and apply inline-locked v28 batch
-        env:
-          GH_TOKEN: "${{ github.token }}"
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT=build-logs/codex-fa-v28-twolevel-first-frontier
-          mkdir -p "$OUT" /tmp/filtered
-          ART=9166681094
-          DIGEST=sha256:cfdf7f4ffc83812ac23c1f29c5c4c1eda53c54ca62d31aedd159e7e2d3db655a
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/filtered.zip
-          test "sha256:$(sha256sum /tmp/filtered.zip | awk '{print $1}')" = "$DIGEST"
-          unzip -q /tmp/filtered.zip -d /tmp/filtered
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64,gzip,hashlib,json,re,shutil,subprocess
-          BASE='931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4'
-          PATCH='fa50e7aa1991d772c6873209626350e9e22f778c934343279018f9fdcc51ef8d'
-          CAND='af401407100a275d93fd3f9bf92e6bdea600fee4e44d6601f9f671fec8442f64'
-          PAYLOAD='H4sIAIc5fWoC/71W3W7bNhS+np/i3M2ubUW2E8cOECBumrTFGiyDi+xiCARaoi1iEqmRlGPvqiiKYrvbVfcCxV5hu97exE+yc0jLUboERddhBpxIJM/v952P7na7wPYutchZJux6mnI2v+JazEXMrFBy70LF3/ej81LG9MqyCX7XRpgg40x+0Q/7w2446vYGEA6O+sOjg37QG4fhfng4GEA7xE+j3W7D7L8O0R/0w+HwcBvi5AS6vfHwYNzBFf8whpOTBjRAKhmrvCgtm2UcMhWzDIQ0lsmYw1yseHKZMsOfalakp0rzSZKcqjx/qlVZQFPCEWzevG/BUQPoc3f3uVxybfiZZec7R+QDJBocw2zd6ALwFYstXKikzHjAvP2FkkokL9Udd5s3rxttgIzb5xj1ztY0V8qm35TKCi4trhfos2oYhiI7+IQYPqdpOcvvmGzLEveUNXX9o+J2VlglNXgPGfQy5WBTzTnE2G7NLQeTirnlCVziizYG04yV0omQzHID+GrRJmYID9Iga3gougXFgkTM51xjpQLBijFmAN09B/L+6HA8Qmzb+6NRGHZ6+w5l+jTr7mUr4JLrxfpc6RyWUMKxPwWIPW5QH6CZ9U93NiBh2arOwD/2msZqJRdIYhmLgmUeZShbNaBTtuSQGlowZRxzLFqf7bKI+A+Rix3d5wqJ1oVe69aNSFZIArcKbfweg/SRQOV8weigvoHv6Nw1MItxCddtCuFn5dD+SA6mnEVImCimEcpwrVcLjYPS9i3c/PTKdf4I3HyfT4JLVnCNoTR3vDXBpLQqV7pIRTxVM5XxZfCMZfNvuVik9kmNBF+jIbNKm+DhketUgRG9Xe3bsb5lxrbIe/ixs/4IR2rnPpEn3tS1dfPuD8KJCOcbR43F7mEqtEbQPlgDoVgju4efrIxAXcDRytZkXQfpGkoj5AKP+SEaDQeklPhwGOJDNUO1umfY17OV5dKQwtSH44OSazMT/m9YYzuPIayGIGdF9CPXquMLcM/X1OyHNiNNQa8r9bqVqIIJRG5hgC0YXRJOpFAqS9Qh4zT4jk6RNIHhBcOEeaM6YaqSwelioZWaAwJlDdwI3CeflcLhHSSs4dkcmExoB7liuPEwjcP9odO6cXgw2F5o21ZX2h/g/1LrNcxLCSuw7rp6DZu3vyGVVvAIvsK1R8jv5gp5b1u3KDaXKitzTpBxZkosBA1bAWabwP17ldQ5+zhlcsFhcjZ1hM/W/iRdEgSLC0E5FduM/vq1llgR9FxqRdD3ydFCl15bu/n6mHXzfvPPKtBnXh+jvMwihtSIdxNEBlcBrvvHx8gDn7K/U+/dx11WFOgPr1bLF65LESUSIQ2+9AdbQZ/O4f2JElLGOAD0+ufvSLgM6RmVxQ3TSUWhiiCjoZvjcTge1ObYM3/z9hdIr66rJfS80NDfvXoAS4s0OaYmdi2K/Krl1KS0FYgfagpqD8mK5IsOOH3Bnw273qBZ+1+ZBWad5z4zL4fPVJZw/ViVOBVIgVfvqFvYlRc9fIbNz+/htM7Guoo2M0Pdd3whwCVdfKnzFzkUtn/xB8wVll85qGe8C9aB0w48UTn+hprE1rtaUv4viltJ/Rv2aEUHQwsAAA=='
-          root=Path('/tmp/filtered')
-          hits=[p for p in root.rglob('Mock2_FunctionalAnalysis.lean') if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(p.read_bytes()).hexdigest()==BASE]
-          assert len(hits)==1,hits
-          target=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); shutil.copy2(hits[0],target)
-          before=target.read_bytes(); bt=before.decode(); assert hashlib.sha256(before).hexdigest()==BASE
-          pb=gzip.decompress(base64.b64decode(PAYLOAD)); assert hashlib.sha256(pb).hexdigest()==PATCH
-          Path('build-logs/codex-fa-v28-twolevel-first-frontier/decoded.patch').write_bytes(pb)
-          q=subprocess.run(['patch','-p1','--batch','--forward'],input=pb,capture_output=True)
-          Path('build-logs/codex-fa-v28-twolevel-first-frontier/patch.stdout').write_bytes(q.stdout); Path('build-logs/codex-fa-v28-twolevel-first-frontier/patch.stderr').write_bytes(q.stderr)
-          assert q.returncode==0,(q.returncode,q.stdout,q.stderr)
-          after=target.read_bytes(); at=after.decode(); assert hashlib.sha256(after).hexdigest()==CAND
-          decl=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)')
-          assert decl.findall(bt)==decl.findall(at)
-          th=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(theorem|lemma)\s+([^\s(:]+)')
-          def headers(s):
-            starts=[m.start() for m in decl.finditer(s)]; r=[]
-            for m in th.finditer(s):
-              nxt=next((x for x in starts if x>m.start()),len(s)); block=s[m.start():nxt]; cut=block.find(':= by')
-              if cut<0: cut=block.find(':=')
-              r.append((m.group(2),re.sub(r'\s+',' ',block if cut<0 else block[:cut]).strip()))
-            return r
-          assert headers(bt)==headers(at)
-          forbidden=['sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool','set_option']; counts={}
-          for w in forbidden:
-            pat=r'(?<![A-Za-z0-9_])'+re.escape(w)+r'(?![A-Za-z0-9_])'; counts[w]=[len(re.findall(pat,bt)),len(re.findall(pat,at))]
-          assert all(a==b for a,b in counts.values()),counts
-          audit={'schema':'fa-v28-twolevel-verified-inline-strict-v1','base_source_sha256':BASE,'patch_sha256':PATCH,'candidate_sha256':CAND,'candidate_bytes':len(after),'candidate_lines':len(at.splitlines()),'repairs':['two_level_parent_addcommgroup_then_submodule_canonical_group','3653_dependent_index_Eq_transport','3659_inner_zero_right','3669_measurable_mul_normal_form','3669_translation_ae_orientation'],'semantic_public_proposition_change':False,'theorem_lemma_headers_identical':True,'declaration_sequence_identical':True,'forbidden_lexical_counts_preserved':True,'forbidden_lexical_counts_before_after':counts}
-          out=Path('build-logs/codex-fa-v28-twolevel-first-frontier'); (out/'PATCH_AUDIT.json').write_text(json.dumps(audit,indent=2,sort_keys=True)+'\n'); (out/'candidate.sha256').write_text(CAND+'\n')
-          print(json.dumps(audit,indent=2,sort_keys=True))
-          PY
       - name: Install pinned Lean and cache
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v28-twolevel-first-frontier
           curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
-          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
-          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
-          lake exe cache get >"$OUT/cache.log" 2>&1
-      - name: Direct compile dependency chain maxErrors1
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile P5 finite-sum proof shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          OUT=build-logs/codex-fa-v28-twolevel-first-frontier
-          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
-          one(){ local s="$1" o=.lake/build/lib/lean/PrimalitySheafVerification/$1.olean i=.lake/build/lib/lean/PrimalitySheafVerification/$1.ilean; rm -f "$o" "$i"; :>"$OUT/$s.executed"; set +e; lake env lean -DmaxErrors=1 -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1; x=$?; set -e; echo "$x" >"$OUT/$s.exit"; }
-          one Mock2
-          one Mock2_Advanced
-          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = af401407100a275d93fd3f9bf92e6bdea600fee4e44d6601f9f671fec8442f64
-          one Mock2_FunctionalAnalysis
-      - name: Build first-frontier metric
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT=build-logs/codex-fa-v28-twolevel-first-frontier
-          python3 - <<'PY'
-          from pathlib import Path
-          from bisect import bisect_right
-          import hashlib,json,os,re
-          out=Path('build-logs/codex-fa-v28-twolevel-first-frontier'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); s=p.read_text(errors='replace'); b=p.read_bytes()
-          dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)'); ds=list(dr.finditer(s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
-          er=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:(.*)$'); first={}; log=out/'Mock2_FunctionalAnalysis.log'
-          for raw in log.read_text(errors='replace').splitlines() if log.exists() else []:
-            m=er.match(raw)
-            if m:
-              ln=int(m.group(1)); idx=bisect_right(starts,ln)-1; first={'line':ln,'column':int(m.group(2)),'declaration':ds[idx].group('name') if idx>=0 else None,'declaration_index':idx if idx>=0 else None,'message':m.group(3).strip()}; break
-          stems=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']; ex={x:int((out/f'{x}.exit').read_text()) if (out/f'{x}.exit').exists() else None for x in stems}
-          metric={'schema':'fa-v28-twolevel-first-frontier','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in stems),'FA_compile_max_errors':1,'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message')}
-          (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n'); print(json.dumps(metric,indent=2,sort_keys=True))
-          PY
+          cat >/tmp/ProbeP5FiniteSum.lean <<'LEAN'
+          import Mathlib
+
+          open Set Function Topology
+          open scoped Manifold ContDiff
+          noncomputable section
+
+          variable {ι : Type*} [DecidableEq ι]
+          variable (f : ι → ℂ → ℝ) (s : Finset ι)
+
+          example (hf : ∀ i, ContDiff ℝ ∞ (f i)) :
+              ContDiff ℝ ∞ (fun z : ℂ => ∑ i ∈ s, f i z) := by
+            induction s using Finset.induction_on with
+            | empty => simp
+            | @insert a s ha ih =>
+                simp only [Finset.sum_insert ha]
+                exact (hf a).add ih
+
+          example (hf : ∀ i, HasCompactSupport (f i)) :
+              HasCompactSupport (fun z : ℂ => ∑ i ∈ s, f i z) := by
+            induction s using Finset.induction_on with
+            | empty => simp
+            | @insert a s ha ih =>
+                simp only [Finset.sum_insert ha]
+                exact (hf a).add ih
+
+          example (g h : ℂ → ℝ) (hg : HasCompactSupport g)
+              (hh : HasCompactSupport h) :
+              HasCompactSupport (fun z => g z + h z) := by
+            change HasCompactSupport (g + h)
+            exact hg.add hh
+          LEAN
+          set +e
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeP5FiniteSum.lean 2>&1 | tee /tmp/probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/probe.exit
+          exit "$x"
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v28-twolevel-first-frontier-${{ github.sha }}
+          name: codex-fa-p5-finite-sum-${{ github.sha }}
           path: |
-            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-v28-twolevel-first-frontier
+            /tmp/ProbeP5FiniteSum.lean
+            /tmp/probe.log
+            /tmp/probe.exit
           retention-days: 30
-      - name: Preserve actual FA exit
-        if: always()
-        shell: bash
-        run: |
-          test -f build-logs/codex-fa-v28-twolevel-first-frontier/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-v28-twolevel-first-frontier/Mock2_FunctionalAnalysis.exit)"
