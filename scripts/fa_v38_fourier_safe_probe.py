@@ -20,7 +20,7 @@ repls.append(('''theorem literalStageFourierScale_pos (Y : ℝ) :
 ''','''theorem literalStageFourierScale_pos (Y : ℝ) :
     0 < literalStageFourierScale Y := by
   unfold literalStageFourierScale
-  nlinarith [literalStageFourierRadius_pos Y]
+  exact mul_pos (by norm_num) (literalStageFourierRadius_pos Y)
 '''))
 repls.append(('''theorem literalStageFourierBox_measurableSet (Y : ℝ) :
     MeasurableSet (literalStageFourierBox Y) := by
@@ -83,7 +83,6 @@ repls.append(('''    simpa [literalStageFourierScale_pos Y, mul_assoc] using
         (literalStageFourierScale_pos Y).le
       simpa [div_eq_mul_inv, mul_assoc] using h
 '''))
-# The same inverse-rescaling root occurs in literalStageTorusPoint_physicalTorusPoint.
 repls.append(('''    constructor
     · apply (mul_lt_mul_left (literalStageFourierScale_pos Y)).mp
       simpa [literalStageFourierScale_ne_zero Y] using hi.1
