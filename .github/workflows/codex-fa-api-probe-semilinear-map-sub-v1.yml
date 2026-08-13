@@ -1,5 +1,5 @@
-name: Codex FA P5 localized product-density algebra probe
-# trigger: p5-localized-density-v1
+name: Codex FA predecessor dependent binder normalization probe
+# trigger: pred-dependent-binder-normalize-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,45 +22,38 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile localized-density algebra shapes
+      - name: Compile dependent binder normalization shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeP5Density.lean <<'LEAN'
+          cat >/tmp/ProbePredBinder.lean <<'LEAN'
           import Mathlib
 
-          example (r : ℝ) (hr : 0 < r) : ‖r‖ = r := by
-            rw [Real.norm_eq_abs, abs_of_pos hr]
+          variable (F : ℤ → Type*)
+          variable (P : (k : ℤ) → F k → F k → Prop)
 
-          example (A C h G F Fx X Xx : ℝ)
-              (hA : 0 ≤ A) (hC : 0 ≤ C) (hh : 0 ≤ h) (hG : 0 ≤ G)
-              (hF : 0 ≤ F) (hFx : 0 ≤ Fx) (hX : 0 ≤ X) (hXx : 0 ≤ Xx)
-              (hXle : X ≤ C) (hXxle : Xx ≤ C)
-              (hFgraph : F ^ 2 ≤ G) (hFxgraph : Fx ^ 2 ≤ h * G)
-              (hadd : A ≤ Fx * X + F * Xx) :
-              A ^ 2 ≤ 2 * C ^ 2 * (h + 1) * G := by
-            have hXsq : X ^ 2 ≤ C ^ 2 := (sq_le_sq₀ hX hC).2 hXle
-            have hXxsq : Xx ^ 2 ≤ C ^ 2 := (sq_le_sq₀ hXx hC).2 hXxle
-            have h1 : Fx ^ 2 * X ^ 2 ≤ (h * G) * C ^ 2 :=
-              mul_le_mul hFxgraph hXsq (sq_nonneg X) (mul_nonneg hh hG)
-            have h2 : F ^ 2 * Xx ^ 2 ≤ G * C ^ 2 :=
-              mul_le_mul hFgraph hXxsq (sq_nonneg Xx) hG
-            have hB : 0 ≤ Fx * X + F * Xx := by positivity
-            have haddsq : A ^ 2 ≤ (Fx * X + F * Xx) ^ 2 := by
-              nlinarith [sq_nonneg (A - (Fx * X + F * Xx))]
-            have hsum : (Fx * X + F * Xx) ^ 2 ≤
-                2 * ((Fx * X) ^ 2 + (F * Xx) ^ 2) := by
-              nlinarith [sq_nonneg (Fx * X - F * Xx)]
-            rw [mul_pow] at h1 h2
-            nlinarith
+          example (n : ℤ)
+              (hs : ∀ v u : F ((n - 1) + 1), P ((n - 1) + 1) v u) :
+              ∀ v u : F n, P n v u := by
+            simpa only [sub_add_cancel] using hs
 
-          example (D G : ℝ) (hD : 0 ≤ D) (hG : 0 ≤ G) :
-              0 + 0 ≤ D * G := by
-            simpa only [zero_add] using mul_nonneg hD hG
+          example (n : ℤ) (v u : F n)
+              (hs : ∀ v u : F ((n - 1) + 1), P ((n - 1) + 1) v u) :
+              P n v u := by
+            have hs' : ∀ v u : F n, P n v u := by
+              simpa only [sub_add_cancel] using hs
+            exact hs' v u
+
+          variable (A : (k : ℤ) → F k → Nat)
+          example (n : ℤ)
+              (hs : ∀ v u : F ((n - 1) + 1),
+                A ((n - 1) + 1) v = A ((n - 1) + 1) u) :
+              ∀ v u : F n, A n v = A n u := by
+            simpa only [sub_add_cancel] using hs
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeP5Density.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbePredBinder.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -69,9 +62,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p5-localized-density-${{ github.sha }}
+          name: codex-fa-pred-dependent-binder-${{ github.sha }}
           path: |
-            /tmp/ProbeP5Density.lean
+            /tmp/ProbePredBinder.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
