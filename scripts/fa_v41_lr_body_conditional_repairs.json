@@ -1,0 +1,178 @@
+{
+  "schema": "fa-v40-conditional-fragment-repairs-v1",
+  "section": "staged-l-r25-r26-original-location-body-repairs",
+  "status": "DIRECT_LEAN_UNVERIFIED",
+  "activation_default": "FAIL_CLOSED",
+  "authority_v39": {
+    "path": "work/v39-artifact-9175492925/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "sha256": "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03",
+    "bytes": 2748007,
+    "lines": 61552
+  },
+  "base_candidate": {
+    "path": "work/v39-workers/v40-s01-three-way-candidate.lean",
+    "sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+    "bytes": 2755606,
+    "lines": 61693
+  },
+  "observed_v40_evidence": {
+    "diagnostics_path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc",
+    "compile_source_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+    "root_declarations_confirmed": {
+      "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one": [119, 120, 121, 122, 123, 124, 125, 126, 127],
+      "gammaTwoEffective_eq_one_of_smul_eq": [128, 129]
+    },
+    "inference": "both body roots survive unchanged in v40; original-location EXIT0 probes remain mandatory"
+  },
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "preserve_exact_executable_counts": true,
+    "tokens": [
+      "sorry",
+      "admit",
+      "axiom",
+      "unsafe",
+      "native_decide",
+      "Lean.ofReduceBool"
+    ]
+  },
+  "application_order": [
+    "L-R25-BODY",
+    "L-R26-BODY"
+  ],
+  "cumulative_stage_previews": {
+    "L-R25-BODY": {
+      "sha256": "ea1529748137e783ca839d1ead50e5d474aa656304e4b3ba6f5362ca1e2332e1",
+      "bytes": 2756968,
+      "lines": 61720,
+      "required_probe_location": "ORIGINAL"
+    },
+    "L-R26-BODY": {
+      "sha256": "e1e3142459a4b9b58c18277661d2b6609588ee04e81d863af7b98371b37392d8",
+      "bytes": 2757053,
+      "lines": 61722,
+      "required_probe_location": "ORIGINAL_AFTER_L_R25"
+    }
+  },
+  "static_preview": {
+    "sha256": "e1e3142459a4b9b58c18277661d2b6609588ee04e81d863af7b98371b37392d8",
+    "bytes": 2757053,
+    "lines": 61722,
+    "declaration_sequence_identical": true,
+    "headers_identical": true,
+    "trust_token_counts_identical": true,
+    "direct_lean_verified": false,
+    "exact_repaired_move_block": {
+      "sha256": "2794b86f8bdf1668208885acd22f383bf42fb7cea21257dde1ffeebfa86129b0",
+      "bytes": 6210,
+      "split_lines": 141
+    }
+  },
+  "cumulative_activation_requires": [
+    "new v40 log confirms gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one remains a root",
+    "L-R25 declaration-local original-location probe PASS",
+    "new v40 log confirms gammaTwoEffective_eq_one_of_smul_eq remains a root",
+    "L-R26 declaration-local original-location probe PASS after L-R25",
+    "no source move is performed during either body probe",
+    "exact owner/header/trust checks pass"
+  ],
+  "repair_operation_count": 3,
+  "repairs": [
+    {
+      "id": "L-R25-BODY-explicit-matrix-coercion-normalization",
+      "bundle_id": "L-R25-BODY",
+      "stage": 1,
+      "kind": "body",
+      "confidence": "medium-static-api-direct-lean-unverified",
+      "owner": "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one",
+      "declaration_index_c88": 4236,
+      "span_c88": [
+        57590,
+        57625
+      ],
+      "span_v39": [
+        57474,
+        57509
+      ],
+      "v39_diagnostic_ordinals": [
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188
+      ],
+      "activation_requires_root_declaration": "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one",
+      "api_evidence": [
+        "Matrix.SpecialLinearGroup.coe_neg",
+        "Matrix.SpecialLinearGroup.coe_mul",
+        "ModularGroup.coe_S",
+        "ModularGroup.coe_T",
+        "ModularGroup.coe_T_inv",
+        "Matrix.mul_fin_two",
+        "CongruenceSubgroup.Gamma_mem"
+      ],
+      "expected_count": 1,
+      "old": "private theorem gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one\n    {g : SL(2, ℤ)} (hgΓ : g ∈ CongruenceSubgroup.Gamma 2)\n    {z : ℍ} (hz : z ∈ ModularGroup.fd) (hgz : g • z = z) :\n    g = 1 ∨ g = -1 := by\n  have hcases := ModularGroup.cases_of_mem_fd_smul_mem_fd\n    (g := g) hz (hgz.symm ▸ hz)\n  rcases hcases with hpm | hT | hTinv | hS | hTS | hTinvSTinv |\n      hSTinv | hST | hTST | hTinvS\n  · exact hpm\n  · rcases hT.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T] at hgΓ\n  · rcases hTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T] at hgΓ\n  · rcases hS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.S] at hgΓ\n  · rcases hTS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ\n  · rcases hTinvSTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ\n  · rcases hSTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ\n  · rcases hST.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ\n  · rcases hTST.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ\n  · rcases hTinvS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [ModularGroup.T, ModularGroup.S] at hgΓ",
+      "new": "private theorem gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one\n    {g : SL(2, ℤ)} (hgΓ : g ∈ CongruenceSubgroup.Gamma 2)\n    {z : ℍ} (hz : z ∈ ModularGroup.fd) (hgz : g • z = z) :\n    g = 1 ∨ g = -1 := by\n  have hcases := ModularGroup.cases_of_mem_fd_smul_mem_fd\n    (g := g) hz (hgz.symm ▸ hz)\n  rcases hcases with hpm | hT | hTinv | hS | hTS | hTinvSTinv |\n      hSTinv | hST | hTST | hTinvS\n  · exact hpm\n  · rcases hT.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hTS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hTinvSTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hSTinv.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hST.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hTST.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ\n  · rcases hTinvS.1 with rfl | rfl <;>\n      rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>\n      norm_num [Matrix.SpecialLinearGroup.coe_neg,\n        Matrix.SpecialLinearGroup.coe_mul,\n        ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,\n        Matrix.mul_fin_two] at hgΓ"
+    },
+    {
+      "id": "L-R26-BODY-raw-effective-action-bridge",
+      "bundle_id": "L-R26-BODY",
+      "stage": 2,
+      "kind": "body",
+      "confidence": "very-high-static-shape-direct-lean-unverified",
+      "owner": "gammaTwoEffective_eq_one_of_smul_eq",
+      "declaration_index_c88": 4238,
+      "span_c88": [
+        57662,
+        57676
+      ],
+      "span_v39": [
+        57546,
+        57560
+      ],
+      "v39_diagnostic_ordinals": [
+        189
+      ],
+      "activation_requires_root_declaration": "gammaTwoEffective_eq_one_of_smul_eq",
+      "requires_probe_pass": [
+        "L-R25-BODY"
+      ],
+      "expected_count": 1,
+      "old": "  have hfix : ((gamma : SL(2, ℤ)) • z) = z := by\n    rw [← hgamma z, ha]",
+      "new": "  have hfix : ((gamma : SL(2, ℤ)) • z) = z := by\n    change gamma • z = z\n    exact (hgamma z).symm.trans ha"
+    },
+    {
+      "id": "L-R26-BODY-central-neg-one-coercion-bridge",
+      "bundle_id": "L-R26-BODY",
+      "stage": 2,
+      "kind": "body",
+      "confidence": "very-high-static-shape-direct-lean-unverified",
+      "owner": "gammaTwoEffective_eq_one_of_smul_eq",
+      "declaration_index_c88": 4238,
+      "span_c88": [
+        57662,
+        57676
+      ],
+      "span_v39": [
+        57546,
+        57560
+      ],
+      "v39_diagnostic_ordinals": [
+        190
+      ],
+      "activation_requires_root_declaration": "gammaTwoEffective_eq_one_of_smul_eq",
+      "requires_probe_pass": [
+        "L-R25-BODY"
+      ],
+      "expected_count": 1,
+      "old": "  · simpa only [one_smul] using gammaTwoCentralNegOne_smul w",
+      "new": "  · change ((gammaTwoCentralNegOne : GammaTwo) : SL(2, ℤ)) • w = w\n    exact gammaTwoCentralNegOne_smul w"
+    }
+  ]
+}

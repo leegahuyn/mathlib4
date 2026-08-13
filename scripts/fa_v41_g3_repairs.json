@@ -1,0 +1,272 @@
+{
+  "schema": "fa-v41-section-repairs-v1",
+  "section": "v40-residual-g3-high-confidence",
+  "authority_source": "work/v40-artifact-9178173556/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "authority_source_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+  "authority_error_inventory": {
+    "path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc",
+    "range": [4202, 4308],
+    "failed_declarations": 28,
+    "error_headers": 54
+  },
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED",
+  "header_policy": "NO_NEW_HEADER_CHANGES",
+  "allowed_header_change_names": [],
+  "excluded_conditional_owners": [
+    "gammaTwo_mem_stabilizer_fd_eq_one_or_neg_one",
+    "gammaTwoEffective_eq_one_of_smul_eq",
+    "gammaTwoReducedChart_pairwise_disjoint_translates"
+  ],
+  "notes": [
+    "L-R25/L-R26 and the M13 source move are owned by work/v40-staged and remain fail-closed until direct probes pass.",
+    "Every operation below is declaration-local and preserves exported theorem statements.",
+    "A later direct high-cap compile is the only authority for closure."
+  ],
+  "repairs": [
+    {
+      "id": "G3-4202-expose-onFun",
+      "owner": "gammaTwoReducedChartCompletedCarrier_isFundamental",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "      simpa only [one_smul] using hPair ha",
+      "new": "      simpa only [Function.onFun, one_smul] using hPair ha"
+    },
+    {
+      "id": "G3-4204-integrable-real-density-congr",
+      "owner": "upstairsNormSqDensity_integrableOn_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [f, upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using\n      hSelf.re",
+      "new": "    refine hSelf.re.congr (Filter.Eventually.of_forall fun z => ?_)\n    simp only [f, upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re]"
+    },
+    {
+      "id": "G3-4210-explicit-composed-gauge-function",
+      "owner": "ambientReducedChartGauge_memLp",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.2\n    simpa only [Function.comp_apply,\n      ambientReducedChartGauge_comp_coe] using hUpper",
+      "new": "    apply UpperHalfPlane.measurableEmbedding_coe.memLp_map_measure_iff.2\n    have hfun :\n        ambientReducedChartGauge n zâ‚€ u âˆ˜ UpperHalfPlane.coe =\n          (gammaTwoReducedChart zâ‚€).indicator\n            (Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge n u) := by\n      funext z\n      exact ambientReducedChartGauge_comp_coe n zâ‚€ u z\n    rw [hfun]\n    exact hUpper"
+    },
+    {
+      "id": "G3-4210-indicator-notMem-api",
+      "owner": "ambientReducedChartGauge_memLp",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "        simp only [Set.indicator_of_not_mem hw, hzero]",
+      "new": "        simp only [Set.indicator_of_notMem hw, hzero]"
+    },
+    {
+      "id": "G3-4211-map-add-pointwise-chart-split",
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    rw [hsum, hadd, Pi.add_apply, hu, hv]\n    simp only [ambientReducedChartGauge,\n      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_add, Pi.add_apply,\n      Set.indicator_add]",
+      "new": "    rw [hsum, hadd, Pi.add_apply, hu, hv]\n    by_cases hw : w âˆˆ ambientGammaTwoReducedChart zâ‚€ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_add,\n        Pi.add_apply]"
+    },
+    {
+      "id": "G3-4211-map-smul-ringhom-pointwise",
+      "owner": "orbitPeterssonCoreToReducedChartL2",
+      "kind": "body",
+      "confidence": "medium-high",
+      "expected_count": 1,
+      "old": "    rw [hsmul, hlp, hu]\n    by_cases hw : w âˆˆ ambientGammaTwoReducedChart zâ‚€ <;>\n      simp [ambientReducedChartGauge, hw,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul]",
+      "new": "    rw [hsmul]\n    have hlp' :\n        â†‘â†‘((RingHom.id â„‚) c â€¢\n            (ambientReducedChartGauge_memLp n zâ‚€ u).toLp\n              (ambientReducedChartGauge n zâ‚€ u)) w =\n          (c â€¢ â†‘â†‘((ambientReducedChartGauge_memLp n zâ‚€ u).toLp\n            (ambientReducedChartGauge n zâ‚€ u))) w := by\n      simpa only [RingHom.id_apply] using hlp\n    rw [hlp', hu]\n    by_cases hw : w âˆˆ ambientGammaTwoReducedChart zâ‚€ <;>\n      simp [ambientReducedChartGauge, hw, upperLift, Function.comp_apply,\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_smul,\n        Pi.smul_apply, smul_eq_mul]"
+    },
+    {
+      "id": "G3-4213-unfold-local-norm-lets",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_sq",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hNorm : â€–qâ€– = â€–qUpperâ€– := by\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]",
+      "new": "  have hNorm : â€–qâ€– = â€–qUpperâ€– := by\n    dsimp only [q, qUpper, orbitPeterssonCoreToReducedChartL2]\n    rw [MeasureTheory.Lp.norm_toLp, MeasureTheory.Lp.norm_toLp]"
+    },
+    {
+      "id": "G3-4215-integrable-real-density-congr",
+      "owner": "orbitPeterssonCoreToReducedChartL2_norm_le",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re] using hSelf.re",
+      "new": "    refine hSelf.re.congr (Filter.Eventually.of_forall fun z => ?_)\n    simp only [upstairsInnerDensity_self, upstairsNormSqDensity,\n      Complex.ofReal_re]"
+    },
+    {
+      "id": "G3-4226-expose-Pi-product-fderiv",
+      "owner": "fullPlaneAffineTranspose_product_add_principal",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "fullPlaneAffineTranspose_product_add_principal",
+        "fullPlaneAffineTranspose_product_add_principal"
+      ],
+      "old": "fderiv â„ (fun y : â„‚ => phi y * v y) x",
+      "new": "fderiv â„ ((phi : â„‚ â†’ â„‚) * (v : â„‚ â†’ â„‚)) x"
+    },
+    {
+      "id": "G3-4233-explicit-localized-left-integral-calc",
+      "owner": "IsPlanarAffineWeakGraphOn.localizeOn",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hLocalizedLeft :\n      (âˆ« x : â„‚, v x * localizedAffineTarget sigma phi u Pu x) =\n        (âˆ« x : â„‚, (fullPlaneTestProduct phi v) x * Pu x) +\n          âˆ« x : â„‚,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n    rw [integral_congr_ae <|\n      (coeFn_localizedAffineTarget sigma phi u Pu).mono\n        (fun x hx => by rw [hx]; ring), integral_add]\n    Â· congr 1\n      Â· apply integral_congr_ae\n        exact Filter.Eventually.of_forall fun x => by\n          simp only [fullPlaneTestProduct_apply]\n          ring\n      Â· apply integral_congr_ae\n        filter_upwards [coeFn_fullPlaneTestMulL2\n          (fullPlaneAffinePrincipalCutoff sigma phi) u]\n            with x hx\n        rw [hx]\n        ring\n    Â· simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n        mul_comm] using hBaseInt\n    Â· simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n        mul_comm] using hCommInt",
+      "new": "  have hLocalizedLeft :\n      (âˆ« x : â„‚, v x * localizedAffineTarget sigma phi u Pu x) =\n        (âˆ« x : â„‚, (fullPlaneTestProduct phi v) x * Pu x) +\n          âˆ« x : â„‚,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n    calc\n      _ = âˆ« x : â„‚, v x *\n            (phi x * Pu x +\n              fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n        apply integral_congr_ae\n        filter_upwards [coeFn_localizedAffineTarget sigma phi u Pu]\n          with x hx\n        rw [hx]\n      _ = âˆ« x : â„‚,\n            (fullPlaneTestProduct phi v) x * Pu x +\n              v x *\n                (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n        apply integral_congr_ae\n        exact Filter.Eventually.of_forall fun x => by\n          simp only [fullPlaneTestProduct_apply]\n          ring\n      _ = _ := by\n        exact integral_add hBaseInt\n          (by\n            simpa only [fullPlaneTestProduct_apply, mul_assoc,\n              mul_left_comm, mul_comm] using hCommInt)"
+    },
+    {
+      "id": "G3-4233-explicit-final-integral-calc",
+      "owner": "IsPlanarAffineWeakGraphOn.localizeOn",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  rw [hLocalizedLeft,\n    hWeak (fullPlaneTestProduct phi v) hProductSupport, hLocalizedRight]\n  rw [â† integral_add]\n  Â· apply integral_congr_ae\n    exact Filter.Eventually.of_forall fun x => by\n      rw [â† fullPlaneAffineTranspose_product_add_principal\n        sigma c phi v x]\n      ring\n  Â· exact fullPlaneTest_mul_l2_integrable\n      (fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v)) u\n  Â· simpa only [fullPlaneTestProduct_apply, mul_assoc, mul_left_comm,\n      mul_comm] using hCommInt",
+      "new": "  calc\n    _ = (âˆ« x : â„‚, (fullPlaneTestProduct phi v) x * Pu x) +\n          âˆ« x : â„‚,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) :=\n      hLocalizedLeft\n    _ = (âˆ« x : â„‚,\n          fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v) x *\n            u x) +\n          âˆ« x : â„‚,\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n      rw [hWeak (fullPlaneTestProduct phi v) hProductSupport]\n    _ = âˆ« x : â„‚,\n          fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v) x *\n              u x +\n            v x * (fullPlaneAffinePrincipalCutoff sigma phi x * u x) := by\n      exact (integral_add\n        (fullPlaneTest_mul_l2_integrable\n          (fullPlaneAffineTranspose sigma c (fullPlaneTestProduct phi v)) u)\n        (by\n          simpa only [fullPlaneTestProduct_apply, mul_assoc,\n            mul_left_comm, mul_comm] using hCommInt)).symm\n    _ = âˆ« x : â„‚,\n          (phi x * fullPlaneAffineTranspose sigma c v x) * u x := by\n      apply integral_congr_ae\n      exact Filter.Eventually.of_forall fun x => by\n        have h := congrArg (fun y : â„‚ => y * u x)\n          (fullPlaneAffineTranspose_product_add_principal\n            sigma c phi v x)\n        simpa only [add_mul, mul_assoc] using h\n    _ = _ := hLocalizedRight.symm"
+    },
+    {
+      "id": "G3-4243-translate-via-set-smul",
+      "owner": "support_periodizationIndex_at_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hxTranslate : x âˆˆ (a â€¢ Â·) '' gammaTwoReducedChart zâ‚€ := by\n    refine âŸ¨((gammaâ»Â¹ : GammaTwo) : SL(2, â„¤)) â€¢ x,\n      hpreChart, ?_âŸ©\n    simp [a, gammaTwoEffectiveElement_smul]",
+      "new": "  have hxTranslate : x âˆˆ a â€¢ gammaTwoReducedChart zâ‚€ := by\n    rw [Set.mem_smul_set]\n    refine âŸ¨(gammaâ»Â¹ : GammaTwo) â€¢ x, hpreChart, ?_âŸ©\n    simp only [a, gammaTwoEffectiveElement_smul, mul_smul]\n    exact smul_inv_smul gamma x"
+    },
+    {
+      "id": "G3-4243-expose-finset-membership",
+      "owner": "support_periodizationIndex_at_reducedChart",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel",
+      "new": "  have hkernel :=\n    gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one gamma ha\n  change gamma âˆˆ ({1, gammaTwoCentralNegOne} : Finset GammaTwo)\n  simpa only [Finset.mem_insert, Finset.mem_singleton] using hkernel"
+    },
+    {
+      "id": "G3-4277-expose-raw-transpose-function",
+      "owner": "tsupport_fullPlaneAffineTranspose_subset",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simpa only [fullPlaneAffineTranspose, add_apply,\n    sub_apply, smul_apply, smul_eq_mul] using\n      (tsupport_add",
+      "new": "  change tsupport\n      (fun z : â„‚ â†¦\n        -sigma * fullPlaneHeightMul\n            (fullPlaneDirectionalDerivative 1 v) z -\n          fullPlaneHeightMul\n            (fullPlaneDirectionalDerivative Complex.I v) z +\n          (c - 1) * v z) âŠ† tsupport (v : â„‚ â†’ â„‚)\n  exact (tsupport_add"
+    },
+    {
+      "id": "G3-4284-pin-raw-SL-action",
+      "owner": "gammaTwoPeriodizationOrbitSupport_isClosed",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    simpa only [image_smul] using\n      (gammaTwoPeriodizationSeedSupport_isCompact m v).smul gamma",
+      "new": "    simpa only [image_smul] using\n      (gammaTwoPeriodizationSeedSupport_isCompact m v).smul\n        (gamma : SL(2, â„¤))"
+    },
+    {
+      "id": "G3-4287-bridge-raw-and-subgroup-actions",
+      "owner": "gammaTwoPeriodizationOrbitSupport_subset_saturation",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "  simp only [gammaTwoEffectiveElement_smul]",
+      "new": "  simp only [gammaTwoEffectiveElement_smul]\n  exact (show gamma â€¢ y = ((gamma : SL(2, â„¤)) â€¢ y) from rfl)"
+    },
+    {
+      "id": "G3-4288-normalize-zero-function-value",
+      "owner": "periodizedFixedPhaseGauge_eventuallyEq_zero_of_not_mem_saturation",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "old": "    rw [hy, mul_zero]\n  rcases mem_nhds_iff.mp hGauge",
+      "new": "    rw [hy, Pi.zero_apply, mul_zero]\n  rcases _root_.mem_nhds_iff.mp hGauge"
+    },
+    {
+      "id": "G3-4289-4290-derive-eventual-base-value",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 2,
+      "owners": [
+        "euclideanRaiseGauge_eq_zero_of_eventuallyEq_zero",
+        "euclideanLowerFromSuccGauge_eq_zero_of_eventuallyEq_zero"
+      ],
+      "old": "    HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  rw [hzero.fderiv_eq]\n  simp",
+      "new": "    HalfWeightDifferentialOperators.dy\n    HalfWeightDifferentialOperators.d1\n  have hvalue : f x = 0 := by\n    have hx := hzero.self_of_nhds\n    simpa only [upperLift_apply, Pi.zero_apply] using hx\n  rw [hzero.fderiv_eq]\n  simp [hvalue]"
+    },
+    {
+      "id": "G3-4291-eßËh‘éì¶»§q«^tˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÓYX\İ\™U[ÜK“‹š[›™\—ÙY‹ˆØ[[XUÛĞİ\š[[™X\•[TİÚÙ\ËœÙ][YÜ˜[ØÛÛX\Ù\WØÛÛ\^[XYÙWWˆÈø¡¤[YÜ˜[Ú[™XØ]Üˆ‹ˆ›™]ÈˆˆÈÓYX\İ\™U[ÜK“‹š[›™\—ÙY‹ˆØ[[XUÛĞİ\š[[™X\•[TİÚÙ\ËœÙ][YÜ˜[ØÛÛX\Ù\WØÛÛ\^[XYÙWWˆÈÜÚİÈ\\’[”[™K˜ÛÙH	ÉÈØ[[XUÛÔ™YXÙYÚ\¸  Wˆ[XšY[Ø[[XUÛÔ™YXÙYÚ\¸  œ›ÛH™›WˆÈø¡¤[YÜ˜[Ú[™XØ]Üˆ‚ˆKˆÂˆšYˆ‘ÌËMMY^ÜÙK[ÛÛÜ™[˜]KX™Y›Ü™K\™]Üš]H‹ˆ›İÛ™\ˆˆš[›™\—ÛÛÛÜ™[˜]WÙ\WÜ™YXÙYÚ\ÜZ\ˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ[›ÈWˆÈÛÛÛÜ™[˜]WØ\K[šY›Ü›TÜXÙKÛÛ\][Û‹š[›™\—ØÛÙK‹ˆ›™]Èˆˆ[›ÈWˆÚ[™ÙH[›™\ˆ8¡ ˆ
+HˆÜ˜š]]\œÜÛÛ’[™\JH
+ÛÛÜ™[˜]HHJHH×ˆÈÛÛÛÜ™[˜]WØ\K[šY›Ü›TÜXÙKÛÛ\][Û‹š[›™\—ØÛÙK‚ˆKˆÂˆšYˆ‘ÌËMMK\™]\ÙK\˜]Ë\İ\ÜY\]X[]H‹ˆ›İÛ™\ˆˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ\Ô™YXÙYÚ\Ø]YÙS[Ù[H¸  ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HH
+™YXÙYÚ\[XšY[\İˆŠJHˆHWˆ™Yš[™H8§ê×Ë×Ë¸§êH‹ˆ›™]Èˆˆ\Ô™YXÙYÚ\Ø]YÙS[Ù[H¸  ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HH
+™YXÙYÚ\[XšY[\İˆŠJHˆHWˆ]™H˜]Èˆ
+™YXÙYÚ\[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHH
+ˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHHWˆ[™^×ˆ^Xİ™YXÙYÚ\[XšY[\İØ\Hˆˆ×ˆ]™HHˆİ\Ü
+™YXÙYÚ\[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠH8¢¡—ˆ[XšY[Ø[[XUÛÔ™YXÙYÚ\¸  HWˆÈÚ˜]×Wˆ^Xİ—ˆ™Yš[™H8§ê×Ë×Ë¸§êH‚ˆKˆÂˆšYˆ‘ÌËMMK]\ÙK\˜]Ë\İ\Ü\›ÛÙˆ‹ˆ›İÛ™\ˆˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆœ\š[Ù^™Y\ÚXØ[ÛÜ™WÚ\Ô™YXÙYÚ\Ø]YÙS[Ù[‚ˆKˆ›ÛˆŠHÚ[\HÛ›HÜ™YXÙYÚ\[XšY[\İH\Ú[™ÈŠH‹ˆ›™]ÈˆšH‚ˆKˆÂˆšYˆ‘ÌËMM‹MMË\™]Üš]K]ÚÛKXÛÛšYØ]KY[˜İ[Ûˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆ™]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙH‹ˆ™]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙH‚ˆKˆ›ÛˆˆˆÊHHWˆÚ[\Û›HÈ‹ˆ›™]ÈˆˆˆÊHHWˆ]™H[ˆ—ˆ
+™YXÙYÚ\ÛÛšYØ]P[XšY[\İˆˆˆ8¡ ˆ8¡¤ˆ8¡ ŠHWˆ[ˆˆˆ8¡ ˆ8¡©ˆİ\ˆ
+ˆŠHHWˆ[™^—ˆ^Xİ™YXÙYÚ\ÛÛšYØ]P[XšY[\İØ\Hˆˆ—ˆÈÚ[—WˆÚ[\Û›HÈ‚ˆKˆÂˆšYˆ‘ÌËMN\ÚYÛ™Y[İÙ\‹YØ]YÙK[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™YİÙ\”\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆH×ˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØ×WˆÈÛ™Y×Ù]XÛYX[“İÙ\‘œ›ÛTİXØÑØ]YÙWÜ\š[Ù^™YÙ\WÜ˜Z\ÙU\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—Wˆ™›‹ˆ›™]Èˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHÈHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØ×WˆÈÛ™Y×Ù]XÛYX[“İÙ\‘œ›ÛTİXØÑØ]YÙWÜ\š[Ù^™YÙ\WÜ˜Z\ÙU\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[”˜Z\ÙU\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—H‚ˆKˆÂˆšYˆ‘ÌËMN\ÚYÛ™Y[İÙ\‹^™\›Ë[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™YİÙ\”\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆHˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØËİÙ\‹ˆ™Y×Ş™\›×H‹ˆ›™]ÈˆˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH—ˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™K›İÙ\‘œ›ÛTİXØÈ—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™H
+ˆ
+ÈJHJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÛİÙ\‘œ›ÛTİXØËˆİÙ\‹™Y×Ş™\›×H‚ˆKˆÂˆšYˆ‘ÌËMNK\ÚYÛ™Y\˜Z\ÙKYØ]YÙK[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™Y˜Z\ÙT\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›Ûˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆH×ˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙWWˆÈÛ™Y×Ù]XÛYX[”˜Z\ÙQØ]YÙWÜ\š[Ù^™YÙ\WÛİÙ\‘œ›ÛTİXØÕ\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—Wˆ™›‹ˆ›™]Èˆˆ™Yš[™H8§ê×Ë×Ë×ø§êWˆ0­È[›Èˆ—ˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHÈHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙWWˆÈÛ™Y×Ù]XÛYX[”˜Z\ÙQØ]YÙWÜ\š[Ù^™YÙ\WÛİÙ\‘œ›ÛTİXØÕ\İY›Ú[ÛÛ—Ü™YXÙYÚ\ˆH—WˆÈÙ]XÛYX[“İÙ\‘œ›ÛTİXØÕ\İY›Ú[ØÛÛšYØ]WÙ\WØÛÛš—ØY™š[™U˜[œÜÜÙWˆˆˆ—H‚ˆKˆÂˆšYˆ‘ÌËMNK\ÚYÛ™Y\˜Z\ÙK^™\›Ë[™YË[[™X\š]H‹ˆ›İÛ™\ˆˆœÚYÛ™Y˜Z\ÙT\š[Ù^˜][Û—Ú\Ô™YXÙYÚ\Ø]YÙS[Ù[‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆ›YY][KZYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[™ÙHS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙK˜Z\ÙK™Y×Ş™\›×H‹ˆ›™]ÈˆˆØ[×ˆ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+S[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆWˆS[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙH
+ˆ
+ÈJWˆ
+[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹’[•ÙZYÚY™™\™[X[Ü\˜]ÜœË’[™\œÙQ]Qš^Y\ÙPÛÜ™Kœ˜Z\ÙH—ˆ
+Ø[[XUÛÔ\š[Ù^™Y\ÚXØ[ÛÜ™HˆJJHˆHWˆÚ[\Û›HÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWØ\KˆX\Û™YËK›™Y×Ø\WWˆš[™×ˆÈHHWˆÈÓ[ØÚÌ‘K”\\ÛÜœ™Xİ[ÛœË]]Û[ÜœXÔÛØ›Û]‹‘š^Y\ÙPÛÜÙYÜ\˜]ÜœË”\ÚXØ[ØØ[‹™š^Y\ÙQ]XÛYX[‘Ø]YÙWÜ˜Z\ÙKˆ˜Z\ÙK™Y×Ş™\›×H‚ˆKˆÂˆšYˆ‘ÌËMÌXÛÜÙKXÛÛ[]]]]™KZ[YÜ˜[™‹ˆ›İÛ™\ˆˆš[›™\—Ù[[™U\İÓ—Ù\WÚ[YÜ˜[ØÛÛš—Û][‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÚWˆÚ[\Û›HÔÓZÙKš[›™\—Ø\Kİ\”š[™Ñ[™Ø\WWˆ‹ˆ›™]ÈˆˆÈÚWˆÚ[\Û›HÔÓZÙKš[›™\—Ø\Kİ\”š[™Ñ[™Ø\WWˆš[™È‚ˆKˆÂˆšYˆ‘ÌËMÌ‹[›Ü›X[^™K[İÙ\‹Y›Ü›X[XY›Ú[‹ˆ›İÛ™\ˆˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙK[™X\”X\›™Y×Ø\Kˆ\ÚXØ[İÙ\‘œ›ÛTİXØ×ÛÛ—ØÛÜ™WH\Ú[™È›Ü›X[‹ˆ›™]ÈˆˆÈÓ[™X\”X\›™Y×Ø\K\ÚXØ[İÙ\‘œ›ÛTİXØ×ÛÛ—ØÛÜ™WH]›Ü›X[ˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙWH\Ú[™È›Ü›X[‚ˆKˆÂˆšYˆ‘ÌËMÌË[›Ü›X[^™K\˜Z\ÙKY›Ü›X[XY›Ú[‹ˆ›İÛ™\ˆˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙK[™X\”X\›™Y×Ø\Kˆ\ÚXØ[˜Z\ÙWÛÛ—ØÛÜ™WH\Ú[™È›Ü›X[‹ˆ›™]ÈˆˆÈÓ[™X\”X\›™Y×Ø\K\ÚXØ[˜Z\ÙWÛÛ—ØÛÜ™WH]›Ü›X[ˆÚ[\HÛ›HÛÛÜ™T˜[™ÙQ\]Z]—ØÛÙWH\Ú[™È›Ü›X[‚ˆKˆÂˆšYˆ‘ÌËMÌ‹MÌË][™›ÛX˜\ÙKYØ]YÙKY]™[X[H‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‚ˆKˆ›Ûˆˆ^Xİ
+\š[Ù^™Yš^Y\ÙQØ]YÙWÙ]™[X[Q\WŞ™\›×ÛÙ—Û›İÛY[WÜØ]\˜][Û—ˆ‹ˆ›™]ÈˆˆÚ[\HÛ›HÜKK\\“YØ\KK™\›×Ø\WH\Ú[™×ˆ
+\š[Ù^™Yš^Y\ÙQØ]YÙWÙ]™[X[Q\WŞ™\›×ÛÙ—Û›İÛY[WÜØ]\˜][Û—ˆ‚ˆKˆÂˆšYˆ‘ÌËMÌ‹MÌËYš\œİZ[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆ‹ˆ›İÛ™\œÈˆÂˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‚ˆKˆ›Ûˆˆ
+[[™U\İÓˆ
+[[™PÛÛšYØ]HŠJJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]Èˆˆ
+[[™U\İÓˆ
+[[™PÛÛšYØ]HŠJJHHWˆ^Xİ
+[›™\—ØÛÛš—ÜŞ[[HÈÊKœŞ[[H‚ˆKˆÂˆšYˆ‘ÌËMÌ‹\ÙXÛÛ™Z[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆ›İÛ™\ˆˆœ˜Z\Ú[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆšÚ[™ˆ˜›ÙH‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆŠJJWˆ
+Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™Èˆ¸  ŒJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]ÈˆˆŠJJWˆ
+Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™Èˆ¸  ŒJHHWˆ^Xİ[›™\—ØÛÛš—ÜŞ[[HÈÈ‚ˆKˆÂˆšYˆ‘ÌËMÌË\ÙXÛÛ™Z[›™\‹\Ş[[Y]K\›ÛÙˆ‹ˆ›İÛ™\ˆˆ›İÙ\š[™ÓX^[X[Y›Ú[Ú\Ô[˜\Y™š[™UÙXZÑÜ˜\Û—Ü™YXÙYÚ\‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆšÚ[™ˆ˜›ÙH‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆŠJJWˆ
+Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™È
+ˆ
+ÈJH¸  ŒJHHWˆÈÚ[›™\—ØÛÛš—ÜŞ[[WH‹ˆ›™]ÈˆˆŠJJWˆ
+Ü˜š]]\œÜÛÛ”™YXÙYÚ\[X™Y[™È
+ˆ
+ÈJH¸  ŒJHHWˆ^Xİ[›™\—ØÛÛš—ÜŞ[[HÈÈ‚ˆKˆÂˆšYˆ‘ÌËMÌ\™]Üš]K]ÚÛKXY™™\™Y\™\™\Ù[]]™H‹ˆ›İÛ™\ˆˆ™[[™U\İÓ—Ü˜Z\ÙQ›ÜØ\™ØY™™\™Y\ÜÙ[X[œšYYšXÚÈ‹ˆšÚ[™ˆ˜›ÙH‹ˆ˜ÛÛ™šY[˜ÙHˆšYÚ‹ˆ™^XİYØÛİ[ˆKˆ›ÛˆˆÈÚ\İWˆÚ[™ÙH]XÛYX[”˜Z\ÙQ›ÜØ\™\İˆHÈH×ˆÈÙ]XÛYX[”˜Z\ÙQ›ÜØ\™\İÙ\WØ[XšY[Y™š[™SXX\ÜËˆÚİÈHÈHœšYYšXÚÓ[ÛYšYY™\™\Ù[]]™HˆHÈWˆÚ[\HÛ›HØK‹™YXÙYÚ\[XšY[\İØ\WH\Ú[™×ˆY™™\™Y\ÜÙ[X[œšYYšXÚÑ[[™U\İØ\HÈˆHHËˆÙXZË™œšYYšXÚ×Ü˜Z\Ú[™×ÚY[]WH‹ˆ›™]ÈˆˆÈÚ\İWˆÚ[™ÙH]XÛYX[”˜Z\ÙQ›ÜØ\™\İˆHÈH×ˆ]™HQ[ˆˆ
+Hˆ8¡ ˆ8¡¤ˆ8¡ ŠHWˆœšYYšXÚÓ[ÛYšYY™\™\Ù[]]™HˆHHWˆ[™^ˆÚ[\HÛ›HØK‹™YXÙYÚ\[XšY[\İØ\WH\Ú[™×ˆY™™\™Y\ÜÙ[X[œšYYšXÚÑ[[™U\İØ\HÈˆHHˆÈÙ]XÛYX[”˜Z\ÙQ›ÜØ\™\İÙ\WØ[XšY[Y™š[™SXX\ÜËQ[‹ˆÙXZË™œšYYšXÚ×Ü˜Z\Ú[™×ÚY[]WH‚ˆBˆBŸB

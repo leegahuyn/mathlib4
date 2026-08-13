@@ -1,0 +1,426 @@
+{
+  "schema": "fa-v40-conditional-fragment-repairs-v1",
+  "section": "staged-m05-m06-chain",
+  "status": "DIRECT_LEAN_UNVERIFIED",
+  "activation_default": "FAIL_CLOSED",
+  "authority_v39": {
+    "path": "work/v39-artifact-9175492925/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "sha256": "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03",
+    "bytes": 2748007,
+    "lines": 61552
+  },
+  "base_candidate": {
+    "path": "work/v39-workers/v40-s01-three-way-candidate.lean",
+    "sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+    "bytes": 2755606,
+    "lines": 61693
+  },
+  "observed_v40_evidence": {
+    "diagnostics_path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc",
+    "compile_source_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+    "root_declarations_confirmed": {
+      "weightedGraphLinear": [78, 79, 80, 81],
+      "discriminantHardStagePairingLinear": [83, 84, 85, 86]
+    },
+    "downstream_declarations_still_present": {
+      "weightedGraphLinear_bound": [82],
+      "discriminantHardStagePairingLinear_bound": [87],
+      "weightedFull_apply_core": [89, 90, 91, 92],
+      "norm_discriminantHardStageOperator_sub_graphPotential_le": [95, 96]
+    },
+    "inference": "the new log confirms the chain is still needed; it does not validate any proposed repair"
+  },
+  "header_policy": "NO_HEADER_CHANGES",
+  "trust_policy": {
+    "preserve_exact_executable_counts": true,
+    "tokens": [
+      "sorry",
+      "admit",
+      "axiom",
+      "unsafe",
+      "native_decide",
+      "Lean.ofReduceBool"
+    ]
+  },
+  "cumulative_activation_requires": [
+    "nonempty observed_v40_diagnostics_sha256",
+    "all root declarations named by activated repair entries confirmed in the new v40 log",
+    "M05-P1 and M05-P2 declaration-local probe results PASS before M05-P3",
+    "M05-P1/P2/P3 declaration-local probe results PASS before M06-P1",
+    "M06-P1/P2/P3 body probe PASS before accepting weightedFull_apply_core",
+    "M06-P4 split theorem probe PASS before M06-P5",
+    "all old fragments match exactly once inside their enclosing declaration",
+    "all theorem/lemma/definition headers unchanged",
+    "executable trust-token counts unchanged"
+  ],
+  "bundle_order": [
+    "M05-P1",
+    "M05-P2",
+    "M05-P3",
+    "M06-P1",
+    "M06-P2",
+    "M06-P3",
+    "M06-P4",
+    "M06-P5"
+  ],
+  "cumulative_stage_previews": {
+    "M05-P1": {
+      "sha256": "b7e599e9a3b8950b591411f35735269a8b2a71b653f54c87f6356c095bf8f4ea",
+      "bytes": 2755766,
+      "lines": 61697
+    },
+    "M05-P2": {
+      "sha256": "ea85b2e3f0898749d038a3ebb59127db806f0f6bd4ae2e71cd2d0274ce4fa743",
+      "bytes": 2755599,
+      "lines": 61695
+    },
+    "M05-P3": {
+      "sha256": "4cd8464f2462a6220511ab44db6045616f61ba676c501b0a91b18529da43d74c",
+      "bytes": 2755643,
+      "lines": 61697
+    },
+    "M06-P1": {
+      "sha256": "1fb7fab804d2a9efad1eca4ca7dc8a0c68c759fc0be2d6896a0fb484c7bc5fab",
+      "bytes": 2755740,
+      "lines": 61699
+    },
+    "M06-P2": {
+      "sha256": "c7d7c1dd1b2f30cb011d254d37014d8cd4d2a1d554fcb4522de94dae2f345631",
+      "bytes": 2755889,
+      "lines": 61702
+    },
+    "M06-P3": {
+      "sha256": "c3ae09f2870bc6e17f5c032078a998723adbad7f2162ef25d0d39e3587f55983",
+      "bytes": 2755927,
+      "lines": 61703
+    },
+    "M06-P4": {
+      "sha256": "f39ace8248f7c339b3d2003c0189b8a9dd5fca44d5b03d28415a1eef57493fa5",
+      "bytes": 2755914,
+      "lines": 61703
+    },
+    "M06-P5": {
+      "sha256": "217f07f162bd1f48a26913dc64bb84ecddb8f5f30c9dca18219f1935d1a3373b",
+      "bytes": 2756425,
+      "lines": 61714
+    }
+  },
+  "static_preview": {
+    "sha256": "217f07f162bd1f48a26913dc64bb84ecddb8f5f30c9dca18219f1935d1a3373b",
+    "bytes": 2756425,
+    "lines": 61714,
+    "declaration_sequence_identical": true,
+    "headers_identical": true,
+    "trust_token_counts_identical": true,
+    "direct_lean_verified": false
+  },
+  "repair_operation_count": 11,
+  "repairs": [
+    {
+      "id": "M05-P1-weighted-inner-fields",
+      "bundle_id": "M05-P1",
+      "stage": 1,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "weightedGraphLinear",
+      "declaration_index_c88": 4006,
+      "span_c88": [
+        54497,
+        54513
+      ],
+      "span_v39": [
+        54411,
+        54427
+      ],
+      "v39_diagnostic_ordinals": [
+        116,
+        117
+      ],
+      "activation_requires_root_declaration": "weightedGraphLinear",
+      "expected_count": 1,
+      "old": "      map_add' := fun v w ↦ by simp\n      map_smul' := fun c v ↦ by simp }",
+      "new": "      map_add' := fun v w ↦ by\n        simp only [map_add, inner_add_left]\n      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left] }"
+    },
+    {
+      "id": "M05-P1-hard-stage-inner-fields",
+      "bundle_id": "M05-P1",
+      "stage": 1,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "discriminantHardStagePairingLinear",
+      "declaration_index_c88": 4010,
+      "span_c88": [
+        54549,
+        54571
+      ],
+      "span_v39": [
+        54463,
+        54485
+      ],
+      "v39_diagnostic_ordinals": [
+        121,
+        122
+      ],
+      "activation_requires_root_declaration": "discriminantHardStagePairingLinear",
+      "expected_count": 1,
+      "old": "      map_add' := fun v w ↦ by simp\n      map_smul' := fun c v ↦ by simp }",
+      "new": "      map_add' := fun v w ↦ by\n        simp only [map_add, inner_add_left]\n      map_smul' := fun c v ↦ by\n        simp only [map_smul, inner_smul_left] }"
+    },
+    {
+      "id": "M05-P2-weighted-outer-fields",
+      "bundle_id": "M05-P2",
+      "stage": 2,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "weightedGraphLinear",
+      "declaration_index_c88": 4006,
+      "span_c88": [
+        54497,
+        54513
+      ],
+      "span_v39": [
+        54411,
+        54427
+      ],
+      "v39_diagnostic_ordinals": [
+        118,
+        119
+      ],
+      "activation_requires_root_declaration": "weightedGraphLinear",
+      "requires_probe_pass": [
+        "M05-P1"
+      ],
+      "expected_count": 1,
+      "old": "  map_add' u w := by\n    ext v\n    simp [lpInfinityMultiplier_apply, MeasureTheory.Lp.add_smul]\n  map_smul' c u := by\n    ext v\n    simp [lpInfinityMultiplier_apply, ← MeasureTheory.Lp.smul_comm,\n      MeasureTheory.Lp.smul_assoc]",
+      "new": "  map_add' u w := by\n    ext v\n    rw [map_add, map_add, inner_add_right]\n  map_smul' c u := by\n    ext v\n    rw [map_smul, map_smul, inner_smul_right]"
+    },
+    {
+      "id": "M05-P2-hard-stage-outer-fields",
+      "bundle_id": "M05-P2",
+      "stage": 2,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "discriminantHardStagePairingLinear",
+      "declaration_index_c88": 4010,
+      "span_c88": [
+        54549,
+        54571
+      ],
+      "span_v39": [
+        54463,
+        54485
+      ],
+      "v39_diagnostic_ordinals": [
+        123,
+        124
+      ],
+      "activation_requires_root_declaration": "discriminantHardStagePairingLinear",
+      "requires_probe_pass": [
+        "M05-P1"
+      ],
+      "expected_count": 1,
+      "old": "  map_add' f g := by\n    ext v\n    simp [lpInfinityMultiplier_apply, MeasureTheory.Lp.add_smul]\n  map_smul' c f := by\n    ext v\n    simp [lpInfinityMultiplier_apply, ← MeasureTheory.Lp.smul_comm,\n      MeasureTheory.Lp.smul_assoc]",
+      "new": "  map_add' f g := by\n    ext v\n    simp only [map_add, inner_add_right]\n  map_smul' c f := by\n    ext v\n    simp only [map_smul, inner_smul_right]"
+    },
+    {
+      "id": "M05-P3-weighted-pin-complex-inner",
+      "bundle_id": "M05-P3",
+      "stage": 3,
+      "kind": "body",
+      "confidence": "very-high-static-api-direct-lean-unverified",
+      "owner": "weightedGraphLinear_bound",
+      "declaration_index_c88": 4007,
+      "span_c88": [
+        54515,
+        54534
+      ],
+      "span_v39": [
+        54429,
+        54448
+      ],
+      "v39_diagnostic_ordinals": [
+        120
+      ],
+      "activation_requires_root_declaration": "weightedGraphLinear_bound",
+      "requires_probe_pass": [
+        "M05-P1",
+        "M05-P2"
+      ],
+      "expected_count": 1,
+      "old": "          (graphEuclideanBase n u)‖ := norm_inner_le_norm _ _",
+      "new": "          (graphEuclideanBase n u)‖ :=\n        norm_inner_le_norm (𝕜 := ℂ) _ _"
+    },
+    {
+      "id": "M05-P3-hard-stage-pin-complex-inner",
+      "bundle_id": "M05-P3",
+      "stage": 3,
+      "kind": "body",
+      "confidence": "very-high-static-api-direct-lean-unverified",
+      "owner": "discriminantHardStagePairingLinear_bound",
+      "declaration_index_c88": 4011,
+      "span_c88": [
+        54573,
+        54594
+      ],
+      "span_v39": [
+        54487,
+        54508
+      ],
+      "v39_diagnostic_ordinals": [
+        125
+      ],
+      "activation_requires_root_declaration": "discriminantHardStagePairingLinear_bound",
+      "requires_probe_pass": [
+        "M05-P1",
+        "M05-P2"
+      ],
+      "expected_count": 1,
+      "old": "          (discriminantHardStageWeightLp N) f‖ := norm_inner_le_norm _ _",
+      "new": "          (discriminantHardStageWeightLp N) f‖ :=\n        norm_inner_le_norm (𝕜 := ℂ) _ _"
+    },
+    {
+      "id": "M06-P1-unfold-weighted-operator-before-inner-def",
+      "bundle_id": "M06-P1",
+      "stage": 4,
+      "kind": "body",
+      "confidence": "high-static-direct-lean-unverified",
+      "owner": "weightedFull_apply_core",
+      "declaration_index_c88": 4015,
+      "span_c88": [
+        54626,
+        54697
+      ],
+      "span_v39": [
+        54540,
+        54611
+      ],
+      "v39_diagnostic_ordinals": [
+        127
+      ],
+      "activation_requires_root_declaration": "weightedFull_apply_core",
+      "requires_probe_pass": [
+        "M05-P1",
+        "M05-P2",
+        "M05-P3"
+      ],
+      "expected_count": 1,
+      "old": "        ∂upperEuclideanMeasure := by\n      rw [MeasureTheory.L2.inner_def]",
+      "new": "        ∂upperEuclideanMeasure := by\n      simp only [weightedGraphOperator, weightedGraphLinear,\n        lpInfinityMultiplier_apply]\n      rw [MeasureTheory.L2.inner_def]"
+    },
+    {
+      "id": "M06-P2-explicit-inner-smul-right",
+      "bundle_id": "M06-P2",
+      "stage": 5,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "weightedFull_apply_core",
+      "declaration_index_c88": 4015,
+      "span_c88": [
+        54626,
+        54697
+      ],
+      "span_v39": [
+        54540,
+        54611
+      ],
+      "v39_diagnostic_ordinals": [
+        128,
+        130
+      ],
+      "activation_requires_root_declaration": "weightedFull_apply_core",
+      "requires_probe_pass": [
+        "M06-P1"
+      ],
+      "expected_count": 1,
+      "old": "        (upstairsPotential z : ℂ) *\n          inner ℂ (fixedPhaseEuclideanGauge n v z)\n            (fixedPhaseEuclideanGauge n u z) by\n          rw [inner_smul_right, smul_eq_mul]]",
+      "new": "        (upstairsPotential z : ℂ) *\n          inner ℂ (fixedPhaseEuclideanGauge n v z)\n            (fixedPhaseEuclideanGauge n u z) by\n          simpa only [smul_eq_mul] using\n            (inner_smul_right (fixedPhaseEuclideanGauge n v z)\n              (fixedPhaseEuclideanGauge n u z)\n              (upstairsPotential z : ℂ))]"
+    },
+    {
+      "id": "M06-P3-core-embedding-to-smooth-core-normalization",
+      "bundle_id": "M06-P3",
+      "stage": 6,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "weightedFull_apply_core",
+      "declaration_index_c88": 4015,
+      "span_c88": [
+        54626,
+        54697
+      ],
+      "span_v39": [
+        54540,
+        54611
+      ],
+      "v39_diagnostic_ordinals": [
+        129
+      ],
+      "activation_requires_root_declaration": "weightedFull_apply_core",
+      "requires_probe_pass": [
+        "M06-P1"
+      ],
+      "expected_count": 1,
+      "old": "        simpa only [fixedPhaseEuclideanGauge, V, U] using\n          orbitEuclideanGauge_inner n (coreEmbedding n v)\n            (coreEmbedding n u) z]",
+      "new": "        simpa only [fixedPhaseEuclideanGauge, V, U,\n          coreEmbedding_toSmoothCore] using\n          orbitEuclideanGauge_inner n (coreEmbedding n v)\n            (coreEmbedding n u) z]"
+    },
+    {
+      "id": "M06-P4-lp-ext-current-api",
+      "bundle_id": "M06-P4",
+      "stage": 7,
+      "kind": "body",
+      "confidence": "very-high-static-api-direct-lean-unverified",
+      "owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "declaration_index_c88": 4018,
+      "span_c88": [
+        54784,
+        54806
+      ],
+      "span_v39": [
+        54698,
+        54720
+      ],
+      "v39_diagnostic_ordinals": [
+        132,
+        133,
+        134
+      ],
+      "activation_requires_root_declaration": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "requires_probe_pass": [
+        "M05-P1",
+        "M05-P2",
+        "M05-P3"
+      ],
+      "expected_count": 1,
+      "old": "  apply Lp.ext fun z ↦ ?_",
+      "new": "  apply Lp.ext"
+    },
+    {
+      "id": "M06-P5-explicit-norm-subtraction-chain",
+      "bundle_id": "M06-P5",
+      "stage": 8,
+      "kind": "body",
+      "confidence": "high-static-api-direct-lean-unverified",
+      "owner": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+      "declaration_index_c88": 4019,
+      "span_c88": [
+        54808,
+        54817
+      ],
+      "span_v39": [
+        54722,
+        54731
+      ],
+      "v39_diagnostic_ordinals": [
+        133,
+        134
+      ],
+      "activation_requires_root_declaration": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+      "requires_probe_pass": [
+        "M06-P4"
+      ],
+      "expected_count": 1,
+      "old": "  rw [graphPotentialOperator_eq_weightedFull]\n  have hsplit := weightedFull_sub_weightedHard_eq_weightedTail N n\n  rw [← neg_sub, norm_neg, hsplit]\n  exact (norm_weightedGraphOperator_le n\n    (discriminantTailCarrierWeightLp N)).trans\n      (norm_discriminantTailCarrierWeightLp_le N)",
+      "new": "  rw [graphPotentialOperator_eq_weightedFull]\n  have hsplit := weightedFull_sub_weightedHard_eq_weightedTail N n\n  calc\n    ‖discriminantHardStageOperator N n -\n        weightedGraphOperator n discriminantFullCarrierWeightLp‖ =\n      ‖-(weightedGraphOperator n discriminantFullCarrierWeightLp -\n        discriminantHardStageOperator N n)‖ := by\n        congr 1\n        abel\n    _ = ‖weightedGraphOperator n discriminantFullCarrierWeightLp -\n        discriminantHardStageOperator N n‖ := norm_neg _\n    _ = ‖weightedGraphOperator n\n        (discriminantTailCarrierWeightLp N)‖ := congrArg norm hsplit\n    _ ≤ discriminantCuspEpsilon N :=\n      (norm_weightedGraphOperator_le n\n        (discriminantTailCarrierWeightLp N)).trans\n          (norm_discriminantTailCarrierWeightLp_le N)"
+    }
+  ]
+}

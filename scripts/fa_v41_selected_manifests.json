@@ -1,0 +1,42 @@
+{
+  "schema": "fa-v41-selected-manifests-v1",
+  "status": "STATIC_INPUTS_LOCKED_DIRECT_LEAN_UNVERIFIED",
+  "authority": {
+    "path": "work/v40-artifact-9178173556/extracted/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+    "sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+    "diagnostics_path": "work/v40-artifact-9178173556/extracted/build-logs/codex-fa-v40-saturation-highcap2000/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "fe09d7ad50bfebb6fbc13e03e2bb58cfde0f7116e4ed624f97a7204c2de38efc"
+  },
+  "manifests": [
+    {
+      "section": "G1",
+      "path": "work/v40-workers/G1-promoted-repairs.json",
+      "schema": "fa-v40-section-repairs-v1",
+      "sha256": "fe6045bd0f8288f98f59442a7398ab1433d06deb29a4e15779ea458bd0706cc9"
+    },
+    {
+      "section": "G2",
+      "path": "work/v40-workers/g2-high-confidence-conditional-repairs.json",
+      "schema": "fa-v40-g2-conditional-fragment-repairs-v1",
+      "sha256": "da9b31d9b928dc519c666d498c14ec30e88306b30d0f3262168191cb83712598"
+    },
+    {
+      "section": "G3",
+      "path": "work/v40-workers/g3-high-confidence-repairs.json",
+      "schema": "fa-v41-section-repairs-v1",
+      "sha256": "b7a67e1adfe2183dc24364463af3c68ea15972d0b502aee771eae0c52587114d"
+    },
+    {
+      "section": "G4",
+      "path": "work/v40-workers/g4-high-confidence-repairs.json",
+      "schema": "fa-v41-section-repairs-v1",
+      "sha256": "e3e2c90d5c02cda76a5b74c81995cfe8e3475597130f653b670d401b5656ff5e"
+    }
+  ],
+  "excluded_conditional_chains": [
+    "work/v40-staged/m05-m06-conditional-repairs.json",
+    "work/v40-staged/l-r25-r26-conditional-body-repairs.json",
+    "work/v40-staged/m13-p2-conditional-source-move.json"
+  ],
+  "direct_lean_verified": false
+}
