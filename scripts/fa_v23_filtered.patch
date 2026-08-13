@@ -1,0 +1,399 @@
+@@ -48657,24 +48657,28 @@ theorem strongPrincipalCore_apply_pointwise (n : ℤ)
+           (u : SmoothQuotientCompactFunction) z +
+         2 * laplaceRaw (paperOrbitExponent n)
+           (u : SmoothQuotientCompactFunction) z := by
+-  rw [strongPrincipalCore_apply]
+-  change
+-    (u : SmoothQuotientCompactFunction) z -
+-        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
+-            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) :
+-              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-          SmoothQuotientCompactFunction) z) -
+-        (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
+-            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
+-              Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-          SmoothQuotientCompactFunction) z) =
+-      ((1 : ℂ) + physicalExponent (paperOrbitExponent n)) *
+-          (u : SmoothQuotientCompactFunction) z +
+-        2 * laplaceRaw (paperOrbitExponent n)
+-          (u : SmoothQuotientCompactFunction) z
++  have hPoint :
++      ((strongPrincipalCore n u :
++          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z =
++        (u : SmoothQuotientCompactFunction) z -
++          (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) z) -
++          (((Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
++                Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++            SmoothQuotientCompactFunction) z) := by
++    rw [strongPrincipalCore_apply]
++    rfl
++  rw [hPoint]
+   have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+   have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
+   linear_combination hLR + hRL
+@@ -48708,14 +48712,18 @@ theorem strongSchrodingerCore_apply_pointwise (n : ℤ) (t : ℝ)
+     ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+         SmoothQuotientCompactFunction) z =
+       strongSchrodingerDifferentialExpression n t u z := by
+-  rw [strongSchrodingerCore_apply]
+-  change
+-    ((strongPrincipalCore n u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-        SmoothQuotientCompactFunction) z -
+-      (t : ℂ) *
++  have hPoint :
++      ((strongSchrodingerCore n t u :
++          Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++        SmoothQuotientCompactFunction) z =
++        ((strongPrincipalCore n u :
++            Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
++          SmoothQuotientCompactFunction) z -
++        (t : ℂ) *
+           (((potentialMultiplicationCore n u :
+               Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+-            SmoothQuotientCompactFunction) z) = _
+-  rw [strongPrincipalCore_apply_pointwise,
++            SmoothQuotientCompactFunction) z) := by
++    rw [strongSchrodingerCore_apply]
++    rfl
++  rw [hPoint, strongPrincipalCore_apply_pointwise,
+     potentialMultiplicationCore_apply]
+   ring
+ 
+@@ -48775,7 +48783,9 @@ theorem successorEnergyForm_eq_inner_strongPrincipalCore
+     simpa only [lowerFromSuccCoordinate_apply, raisedCoordinate_apply] using
+       (physicalLoweringGreenIdentityOnCore_unconditional
+         (n := n) v (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))
+   rw [(successorGraphCoordinates n).energyForm_apply]
+-  simp only [successorGraphCoordinates,
++  simp only [successorGraphCoordinates_base,
++    successorGraphCoordinates_raised,
++    successorGraphCoordinates_lowered,
+     reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
+     raisedCoordinate_apply, lowerFromSuccCoordinate_apply,
+     strongPrincipalCore_apply,
+@@ -48790,9 +48800,11 @@ theorem energyForm_eq_inner_strongPrincipalCore
+     (coordinates n).energyForm v u =
+       inner ℂ (l2Coordinate n v)
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+-  have h := successorEnergyForm_eq_inner_strongPrincipalCore
+-    (n - 1) v u
++  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
++  have hidx : n - 1 + 1 = n := by omega
++  rw [hidx] at hs
++  have h := hs v u
+   rw [successorGraphCoordinates_eq_coordinates] at h
+   simpa only [sub_add_cancel] using h
+ 
+@@ -48847,29 +48859,31 @@ theorem corePeterssonForcing_apply_core (n : ℤ)
+ @[simp]
+ theorem corePeterssonForcing_zero (n : ℤ) :
+     corePeterssonForcing n 0 = 0 := by
+   ext v
+-  simp [corePeterssonForcing_apply]
++  rw [corePeterssonForcing_apply]
++  change
++    inner ℂ (baseExtension n v)
++      (l2Coordinate n
++        (0 : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)) = 0
++  rw [map_zero, inner_zero]
+ 
+ /-- Petersson pairings against the actual smooth fixed-phase core separate
+ smooth sections.  The proof tests with the difference itself and then uses
+ faithfulness of the `L²` coordinate. -/
+ theorem corePeterssonPairing_separates (n : ℤ)
+@@ -48859,17 +48873,16 @@ theorem corePeterssonPairing_separates (n : ℤ)
+       inner ℂ (l2Coordinate n v) (l2Coordinate n g) =
+         inner ℂ (l2Coordinate n v) (l2Coordinate n f)) :
+     g = f := by
+-  let w : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n := Sub.sub g f
+-  have hwPair := hPair w
++  have hG := hPair g
++  have hF := hPair f
+   have hSelf :
+-      inner ℂ (l2Coordinate n w) (l2Coordinate n w) = 0 := by
+-    dsimp only [w]
+-    rw [map_sub, inner_sub_right]
+-    exact sub_eq_zero.mpr hwPair
+-  have hwCoordinate : l2Coordinate n w = 0 :=
++      inner ℂ (l2Coordinate n g - l2Coordinate n f)
++        (l2Coordinate n g - l2Coordinate n f) = 0 := by
++    rw [inner_sub_left, inner_sub_right, inner_sub_right, hG, hF]
++    ring
++  have hCoord :
++      l2Coordinate n g - l2Coordinate n f = 0 :=
+     (inner_self_eq_zero (𝕜 := ℂ)).mp hSelf
+-  have hw : w = 0 := by
+-    apply l2Coordinate_injective n
+-    simpa only [map_zero] using hwCoordinate
+-  change Sub.sub g f = 0 at hw
+-  exact sub_eq_zero.mp hw
++  exact l2Coordinate_injective n (sub_eq_zero.mp hCoord)
+ 
+ /-- Every literal smooth strong solution gives an equality in the full
+ strong anti-dual. -/
+@@ -49031,10 +49044,12 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+       (fun p : ℂ × ℂ ↦ v p.1)
+       ((volume : Measure ℂ).prod (volume : Measure ℂ)) :=
+     v.continuous.aestronglyMeasurable.comp_fst
+   have hMeas : AEStronglyMeasurable
+       (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))
+       ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
+-    simpa only [Function.uncurry_apply_pair, mul_assoc] using
+-      hMeasV.mul hMeasBase
++    change AEStronglyMeasurable
++      (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2))
++      ((volume : Measure ℂ).prod (volume : Measure ℂ))
++    simpa only [mul_assoc] using hMeasV.mul hMeasBase
+   apply (integrable_prod_iff' hMeas).2
+   constructor
+   · filter_upwards with t
+@@ -49046,8 +49061,13 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+         (fun t : ℂ ↦ ∫ x : ℂ,
+           ‖v x * K t * u (x - t)‖ ∂(volume : Measure ℂ))
+         (volume : Measure ℂ) := by
+-      simpa only [Function.uncurry_apply_pair] using
+-        hMeas.prod_swap.norm.integral_prod_right'
++      have hs := hMeas.prod_swap.norm.integral_prod_right'
++      change AEStronglyMeasurable
++        (fun t : ℂ ↦ ∫ x : ℂ,
++          ‖v x * K t * u (x - t)‖ ∂(volume : Measure ℂ))
++        (volume : Measure ℂ) at hs
++      exact hs
+     refine Integrable.mono' (hK.norm.mul_const C) hOuterMeas ?_
+     filter_upwards with t
+     let ut : AmbientPlaneL2 := DomAddAct.mk (-t) +ᵥ u
+@@ -49064,8 +49084,9 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+         DomAddAct.vadd_Lp_ae_eq (DomAddAct.mk (-t)) u] with x hHolder hV hut
+       change ‖v x * u (x - t)‖ = ‖productL1 x‖
+       rw [hHolder]
+-      simp only [lsmul_apply, hV]
++      simp only [lsmul_apply]
++      rw [← hV]
+       congr 2
+       change ut x = u (-t + x) at hut
+       simpa only [sub_eq_add_neg, add_comm] using hut
+@@ -49075,6 +49096,9 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+         0 ≤ ∫ x : ℂ, ‖v x * K t * u (x - t)‖
+           ∂(volume : Measure ℂ) :=
+       integral_nonneg fun _ ↦ norm_nonneg _
++    change
++      ‖∫ x : ℂ, ‖v x * K t * u (x - t)‖ ∂(volume : Measure ℂ)‖ ≤
++        ‖K t‖ * C
+     rw [Real.norm_of_nonneg hIntegralNonneg]
+     calc
+       (∫ x : ℂ, ‖v x * K t * u (x - t)‖
+@@ -49247,7 +49271,10 @@ theorem friedrichsAffineCommutatorKernel_contDiff
+   have hConst : ContDiff ℝ ∞
+       (fun _t : ℂ ↦ (((friedrichsScale j ^ 2 : ℝ) : ℂ))) :=
+     contDiff_const
+-  fun_prop
++  change ContDiff ℝ ∞
++    (fun t : ℂ ↦ (((friedrichsScale j ^ 2 : ℝ) : ℂ)) *
++      friedrichsUnitAffineCommutatorTest sigma (friedrichsScale j • t))
++  exact hConst.mul hScaled
+ 
+ /-- Pointwise convolution by the affine kernel is a genuine smooth
+ function, hence locally integrable. -/
+@@ -49437,11 +49464,21 @@ theorem raised_norm_sq_sub_lowered_norm_sq (n : ℤ)
+   have hLowerRe := congrArg Complex.re hLower
+   have hSymm : (inner ℂ U RL).re = (inner ℂ RL U).re :=
+     inner_re_symm (𝕜 := ℂ) U RL
+-  simp only [inner_self_eq_norm_sq, Complex.ofReal_re,
+-    Complex.neg_re, physicalExponent] at hPairRe hRaiseRe hLowerRe
++  have hNormU := norm_sq_eq_re_inner (𝕜 := ℂ) U
++  have hNormR := norm_sq_eq_re_inner (𝕜 := ℂ) R
++  have hNormL := norm_sq_eq_re_inner (𝕜 := ℂ) L
++  change ‖U‖ ^ 2 = (inner ℂ U U).re at hNormU
++  change ‖R‖ ^ 2 = (inner ℂ R R).re at hNormR
++  change ‖L‖ ^ 2 = (inner ℂ L L).re at hNormL
++  simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re,
++    Complex.ofReal_im, zero_mul, sub_zero, Complex.neg_re,
++    physicalExponent] at hPairRe hRaiseRe hLowerRe
+   dsimp only [U, R, L, LR, RL] at *
+   rw [hSymm] at hPairRe
+-  nlinarith
++  rw [← hNormU] at hPairRe
++  rw [← hNormR] at hRaiseRe
++  rw [← hNormL] at hLowerRe
++  linarith
+ 
+ /-- Rearranged form used for the Cauchy argument. -/
+ theorem lowered_norm_sq_eq_raised_sub_mass
+@@ -49546,7 +49583,7 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+     rcases (LinearPMap.mem_graph_iff (physicalRaise (n + 1))).mp
+         (hqGraph j) with ⟨y, hyBase, hyValue⟩
+     refine ⟨(l2CoreRangeEquiv (n + 1)).symm y, ?_, ?_⟩
+-    · simpa only [l2Coordinate_l2CoreRangeEquiv_symm] using hyBase
++    · exact (l2Coordinate_l2CoreRangeEquiv_symm (n + 1) y).trans hyBase
+     · calc
+         raisedCoordinate (n + 1) ((l2CoreRangeEquiv (n + 1)).symm y) =
+             physicalRaise (n + 1) y := rfl
+@@ -49592,7 +49629,7 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+     have hSub : (0, l - lowerCoordinate n x) ∈
+         (closedLowerFromSucc n).graph := by
+       simpa only [Prod.fst_sub, Prod.snd_sub, sub_self] using
+-        (closedLowerFromSucc n).graph.sub hLimitLower hTargetLower
++        (closedLowerFromSucc n).graph.sub_mem hLimitLower hTargetLower
+     exact sub_eq_zero.mp
+       ((closedLowerFromSucc n).graph_fst_eq_zero_snd hSub rfl)
+   have hLowerCoord : Filter.Tendsto
+@@ -49603,7 +49640,10 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+       Filter.atTop (𝓝 x) := by
+     rw [tendsto_subtype_rng]
+     simpa only [coe_smoothCoreMap,
+-      FixedPhaseClosedOperators.successorGraphCoordinates,
++      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,
++      FixedPhaseClosedOperators.successorGraphCoordinates_base,
++      FixedPhaseClosedOperators.successorGraphCoordinates_raised,
++      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,
+       FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
+       baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply]
+       using hBase.prodMk_nhds
+@@ -50120,9 +50160,8 @@ theorem mem_maximalStrongSchrodinger_graph_iff_core_tests
+     change
+       inner ℂ (minimalStrongSchrodinger n t y) x =
+         inner ℂ (y : OrbitPeterssonHilbert n) f
+-    rw [minimalStrongSchrodinger_apply,
+-      ← l2Coordinate_l2CoreRangeEquiv_symm n y]
+-    simpa only [u] using hu
++    simpa only [minimalStrongSchrodinger_apply,
++      l2Coordinate_l2CoreRangeEquiv_symm, u] using hu
+ 
+ /-! ### What operator-core density would mean, exactly -/
+ 
+@@ -50292,16 +50331,40 @@ def partialEigenspace (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
+   carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
+   zero_mem' := by
+     refine ⟨A.domain.zero_mem, ?_⟩
+-    simp
++    have hSub : (⟨(0 : H), A.domain.zero_mem⟩ : A.domain) = 0 := by
++      apply Subtype.ext
++      rfl
++    rw [hSub]
++    simpa only [smul_zero] using (LinearPMap.map_zero A)
+   add_mem' := by
+     rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
+     refine ⟨A.domain.add_mem hx hy, ?_⟩
+-    simp only [LinearPMap.map_add, hAx, hAy, smul_add]
++    have hSub :
++        (⟨x, hx⟩ : A.domain) + (⟨y, hy⟩ : A.domain) =
++          (⟨x + y, A.domain.add_mem hx hy⟩ : A.domain) := by
++      apply Subtype.ext
++      rfl
++    have hMap := LinearPMap.map_add A (⟨x, hx⟩ : A.domain) (⟨y, hy⟩ : A.domain)
++    rw [hSub] at hMap
++    calc
++      A ⟨x + y, A.domain.add_mem hx hy⟩ =
++          A ⟨x, hx⟩ + A ⟨y, hy⟩ := hMap
++      _ = μ • x + μ • y := by rw [hAx, hAy]
++      _ = μ • (x + y) := by rw [smul_add]
+   smul_mem' := by
+     rintro c x ⟨hx, hAx⟩
+     refine ⟨A.domain.smul_mem c hx, ?_⟩
+-    simp only [LinearPMap.map_smul, hAx, smul_smul]
+-    rw [mul_comm]
++    have hSub :
++        c • (⟨x, hx⟩ : A.domain) =
++          (⟨c • x, A.domain.smul_mem c hx⟩ : A.domain) := by
++      apply Subtype.ext
++      rfl
++    have hMap := LinearPMap.map_smul A c (⟨x, hx⟩ : A.domain)
++    rw [hSub] at hMap
++    calc
++      A ⟨c • x, A.domain.smul_mem c hx⟩ = c • A ⟨x, hx⟩ := hMap
++      _ = c • (μ • x) := by rw [hAx]
++      _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
+ 
+ @[simp]
+ theorem mem_partialEigenspace_iff
+@@ -50336,7 +50399,8 @@ theorem im_eq_zero_of_hasPartialEigenvalue
+     μ.im = 0 := by
+   have hReal := congrArg Complex.im
+     (conj_eq_self_of_hasPartialEigenvalue hA hμ)
+-  simp only [Complex.conj_im] at hReal
++  change ((starRingEnd ℂ) μ).im = μ.im at hReal
++  rw [Complex.conj_im] at hReal
+   linarith
+ 
+ /-- Eigenspaces whose spectral parameters are not conjugate are orthogonal.
+@@ -50356,7 +50420,8 @@ theorem inner_eq_zero_of_mem_partialEigenspaces
+   have hSymm := hA xd yd
+   change inner ℂ (A xd) y = inner ℂ x (A yd) at hSymm
+   rw [hAx, hAy, inner_smul_left, inner_smul_right] at hSymm
+-  have hz : (star μ - ν) * inner ℂ x y = 0 := by
++  change (starRingEnd ℂ) μ ≠ ν at hμν
++  have hz : ((starRingEnd ℂ) μ - ν) * inner ℂ x y = 0 := by
+     rw [sub_mul, hSymm, sub_self]
+   exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hμν)
+ 
+@@ -50427,22 +50492,34 @@ theorem modularAssociatedOperator_eigenvalue_re_lower_bound
+   have hGraph :
+       (x, μ • x) ∈ (modularAssociatedOperator n t).graph := by
+     have hRaw := (modularAssociatedOperator n t).mem_graph xd
+-    simpa only [hAx] using hRaw
++    change
++      (x, (modularAssociatedOperator n t) ⟨x, hx⟩) ∈
++        (modularAssociatedOperator n t).graph at hRaw
++    rw [hAx] at hRaw
++    exact hRaw
+   rcases (mem_modularAssociatedOperator_graph_iff n t x (μ • x)).mp
+       hGraph with ⟨u, hu, hForm⟩
+   have hWeak :
+       weakSchrodingerOperator n t u u =
+         inner ℂ (baseExtension n u) (μ • x) := by
+     simpa only [weakSchrodingerOperator_apply] using hForm u
++  have hSelfRe : (inner ℂ x x).re = ‖x‖ ^ 2 := by
++    symm
++    exact norm_sq_eq_re_inner (𝕜 := ℂ) x
++  have hSelfIm : (inner ℂ x x).im = 0 := by
++    exact inner_self_im (𝕜 := ℂ) x
+   have hShift :
+       (embeddedShiftedForm (baseExtension n)
+           (weakSchrodingerOperator n t) (discriminantMassShift t)
+           u u).re =
+         (μ.re + discriminantMassShift t) * ‖x‖ ^ 2 := by
+     rw [embeddedShiftedForm_apply, hWeak, hu]
+-    simp only [inner_smul_right, inner_self_eq_norm_sq,
++    simp only [inner_smul_right,
+       Complex.add_re, Complex.mul_re, Complex.ofReal_re,
+       Complex.ofReal_im, zero_mul, sub_zero]
++    rw [hSelfRe, hSelfIm]
+     ring
+   have hCoercive :=
+     (weakSchrodinger_embeddedMassShift_coercive n t).2 u
+@@ -50483,7 +50560,7 @@ namespace P5PhysicalHardStageRestriction
+ 
+ open Set Function Topology Filter MeasureTheory
+-open scoped ENNReal NNReal
++open scoped ENNReal NNReal Manifold ContDiff
+ open DefinitionOneSobolev
+ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ open DefinitionOneSobolev.FixedPhaseGraphCompletion
+@@ -50534,10 +50611,11 @@ noncomputable def literalStageActiveCenterSet (Y : ℝ) : Set ℍ :=
+       (UpperHalfPlane.coe '' gammaTwoThreeCuspTruncation Y)).Nonempty}
+ 
+ theorem literalStageActiveCenterSet_finite (Y : ℝ) :
+-    (literalStageActiveCenterSet Y).Finite :=
+-  (Classical.choose_spec
+-    (exists_smoothPartitionOfUnity_gammaTwoReducedChart
+-      (gammaTwoThreeCuspTruncation_isCompact Y))).2.2
++    (literalStageActiveCenterSet Y).Finite := by
++  simpa only [literalStageActiveCenterSet, literalStagePartition] using
++    (Classical.choose_spec
++      (exists_smoothPartitionOfUnity_gammaTwoReducedChart
++        (gammaTwoThreeCuspTruncation_isCompact Y))).2.2
+ 
+ /-- The active center set as a literal finite index set. -/
+ noncomputable def literalStageActiveCenters (Y : ℝ) : Finset ℍ :=
+@@ -53911,6 +53989,7 @@ open DefinitionOneSobolev
+ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ open DefinitionOneSobolev.FixedPhaseGraphCompletion
++open DefinitionOneSobolev.WeightCorePetersson
+ open GammaTwoQuotientGeometry
+ open FixedPhaseClosedOperators
+ open FixedPhaseClosedOperators.PhysicalLocalL2
