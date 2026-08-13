@@ -1,4 +1,4 @@
-name: Codex FA API probe partial eigenspace and spectral algebra
+name: Codex FA API probe partial eigenspace zero and inner-self normal form
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,7 +21,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile partial-eigenspace and spectral probes
+      - name: Compile refined probes
         shell: bash
         run: |
           set -euo pipefail
@@ -33,11 +33,31 @@ jobs:
           variable {H : Type*}
           variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
+          #check LinearPMap.map_zero
+          #check LinearPMap.map_add
+          #check LinearPMap.map_smul
+
+          example (A : H →ₗ.[ℂ] H) : A (0 : A.domain) = 0 := by
+            have h := A.map_add (0 : A.domain) (0 : A.domain)
+            have h' : A (0 : A.domain) = A (0 : A.domain) + A (0 : A.domain) := by
+              simpa using h
+            have hz : (0 : H) = A (0 : A.domain) := by
+              apply add_left_cancel (a := A (0 : A.domain))
+              simpa using h'
+            exact hz.symm
+
           def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
             carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
             zero_mem' := by
               refine ⟨A.domain.zero_mem, ?_⟩
-              simpa using A.map_zero
+              change A (0 : A.domain) = 0
+              have h := A.map_add (0 : A.domain) (0 : A.domain)
+              have h' : A (0 : A.domain) = A (0 : A.domain) + A (0 : A.domain) := by
+                simpa using h
+              have hz : (0 : H) = A (0 : A.domain) := by
+                apply add_left_cancel (a := A (0 : A.domain))
+                simpa using h'
+              exact hz.symm
             add_mem' := by
               rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
               refine ⟨A.domain.add_mem hx hy, ?_⟩
@@ -57,17 +77,18 @@ jobs:
                 _ = c • (μ • x) := by rw [hAx]
                 _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
 
-          example {μ ν z : ℂ}
-              (h : (starRingEnd ℂ) μ * z = ν * z) :
-              (star μ - ν) * z = 0 := by
-            have h' : star μ * z = ν * z := by simpa using h
-            rw [sub_mul, h', sub_self]
+          example (r : ℝ) : (((r : ℂ) ^ 2).re) = r ^ 2 := by
+            norm_num
+
+          example (r : ℝ) : (((r : ℂ) ^ 2).im) = 0 := by
+            norm_num
 
           example (μ : ℂ) (x : H) (d : ℝ) :
               μ.re * (inner ℂ x x).re + (inner ℂ x x).re * d -
                   μ.im * (inner ℂ x x).im =
                 μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
-            simp [inner_self_eq_norm_sq]
+            rw [inner_self_eq_norm_sq]
+            norm_num
             ring
           LEAN
           lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP9.lean 2>&1 | tee /tmp/probe.log
@@ -75,7 +96,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p9-spectral-probe-${{ github.sha }}
+          name: codex-fa-p9-refined-probe-${{ github.sha }}
           path: |
             /tmp/ProbeP9.lean
             /tmp/probe.log
