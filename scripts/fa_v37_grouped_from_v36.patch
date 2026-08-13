@@ -1,0 +1,116 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48816,14 +48816,8 @@
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+   have hs :=
+     successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+-  rw [successorGraphCoordinates_eq_coordinates] at hs
+-  have hs' :
+-      ∀ v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
+-        (coordinates n).energyForm v u =
+-          inner ℂ (l2Coordinate n v)
+-            (l2Coordinate n (strongPrincipalCore n u)) := by
+-    simpa only [sub_add_cancel] using hs
+-  exact hs' v u
++  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
++    successorIndexEq, sub_add_cancel] using hs
+ 
+ /-- The potential form in the same concrete Petersson-coordinate language. -/
+ theorem potentialForm_eq_inner_potentialMultiplicationCore
+@@ -49064,8 +49058,10 @@
+   have hMeas : AEStronglyMeasurable
+       (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))
+       ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
+-    simpa only [Function.uncurry_apply_pair, mul_assoc] using
+-      hMeasV.mul hMeasBase
++    change AEStronglyMeasurable
++      (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2))
++      ((volume : Measure ℂ).prod (volume : Measure ℂ))
++    simpa only [mul_assoc] using hMeasV.mul hMeasBase
+   apply (integrable_prod_iff' hMeas).2
+   constructor
+   · filter_upwards with t
+@@ -49540,8 +49536,8 @@
+       Filter.atTop (𝓝 0) := by
+     have hModel := (hRaiseDist.pow 2).sub
+       ((hBaseDist.pow 2).const_mul c)
+-    simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,
+-      sub_zero, sub_eq_add_neg] using hModel.congr'
++    simpa only [Pi.zero_apply, pow_two, zero_mul, mul_zero,
++      zero_add, add_zero, neg_zero, sub_zero, sub_eq_add_neg] using hModel.congr'
+       (Filter.Eventually.of_forall fun jk ↦ by
+         have h := lowered_norm_sq_eq_raised_sub_mass n
+           (u jk.1 + (-1 : ℂ) • u jk.2)
+@@ -49644,8 +49640,15 @@
+   have hlEq : l = lowerCoordinate n x := by
+     have hSub : (0, l - lowerCoordinate n x) ∈
+         (closedLowerFromSucc n).graph := by
+-      simpa only [Prod.fst_sub, Prod.snd_sub, sub_self] using
++      have hRaw :=
+         (closedLowerFromSucc n).graph.sub_mem hLimitLower hTargetLower
++      have hPair :
++          ((baseCoordinate n x, l) -
++              (baseCoordinate n x, lowerCoordinate n x)) =
++            (0, l - lowerCoordinate n x) := by
++        ext <;> simp
++      rw [hPair] at hRaw
++      exact hRaw
+     exact sub_eq_zero.mp
+       ((closedLowerFromSucc n).graph_fst_eq_zero_snd hSub rfl)
+   have hLowerCoord : Filter.Tendsto
+@@ -50670,8 +50673,11 @@
+   induction literalStageActiveCenters Y using Finset.induction_on with
+   | empty => simp [HasCompactSupport]
+   | @insert z s hz ih =>
+-      simpa only [Finset.sum_insert hz, Finset.sum_apply] using
+-        (literalStagePartition_hasCompactSupport Y z).add ih
++      simp only [Finset.sum_insert hz]
++      change HasCompactSupport
++        ((literalStagePartition Y z : ℂ → ℝ) +
++          (fun w ↦ ∑ x ∈ s, literalStagePartition Y x w))
++      exact (literalStagePartition_hasCompactSupport Y z).add ih
+ 
+ theorem tsupport_literalStageCutoffReal_subset_upperPlaneOpen (Y : ℝ) :
+     tsupport (literalStageCutoffReal Y) ⊆
+@@ -52583,8 +52589,8 @@
+     coeFn_literalStageTorusTest Y w,
+     Lp.coeFn_add (literalStageTorusTest Y v)
+       (literalStageTorusTest Y w)] with t ht hv hw hadd
+-  simp only [ht, hv, hw, hadd, literalStageTorusRepresentative,
+-    add_apply]
++  simp only [ht, hadd, Pi.add_apply, hv, hw,
++    literalStageTorusRepresentative, add_apply]
+ 
+ @[simp]
+ theorem literalStageTorusTest_smul
+@@ -56783,7 +56789,7 @@
+       (gammaTwoReducedChart_isOpen z₀).measurableSet] at hHyperbolic
+   have hWeighted :=
+     (integrable_withDensity_iff_integrable_smul
+-      (mu := Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure.restrict
++      (μ := Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure.restrict
+         (gammaTwoReducedChart z₀))
+       Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicDensity_measurable).mp hHyperbolic
+   simpa only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.orbitEuclideanGauge_norm_sq] using hWeighted
+@@ -56811,7 +56817,9 @@
+       exact ⟨z, hz, rfl⟩
+   by_cases h : z ∈ gammaTwoReducedChart z₀
+   · simp [ambientReducedChartGauge, h, hz.2 h, upperLift_apply]
+-  · simp [ambientReducedChartGauge, h, fun hw ↦ h (hz.1 hw)]
++  · have hcoe : (z : ℂ) ∉ ambientGammaTwoReducedChart z₀ :=
++      fun hw ↦ h (hz.1 hw)
++    simp [ambientReducedChartGauge, h, hcoe]
+ 
+ theorem ambientReducedChartGauge_support_subset_range
+     (n : ℤ) (z₀ : ℍ) (u : OrbitPeterssonCore n) :
+@@ -57074,9 +57082,7 @@
+       DenseRange ((↑) : OrbitPeterssonCore n → OrbitPeterssonHilbert n))
+     (by
+       simpa using
+-        (UniformSpace.Completion.isUniformInducing_coe :
+-          IsUniformInducing
+-            ((↑) : OrbitPeterssonCore n → OrbitPeterssonHilbert n))) u
++        UniformSpace.Completion.isUniformInducing_coe (OrbitPeterssonCore n)) u
+ 
+ theorem orbitPeterssonReducedChartEmbedding_norm_le
+     (n : ℤ) (z₀ : ℍ) (x : OrbitPeterssonHilbert n) :
