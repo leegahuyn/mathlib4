@@ -1,4 +1,4 @@
-name: Codex FA Friedrichs real-complex convolution API probe
+name: Codex FA finite partition sum API probe
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,47 +21,72 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile real-complex convolution API shapes
+      - name: Compile finite partition sum proof shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeFriedrichsConv.lean <<'LEAN'
+          cat >/tmp/ProbePartitionA.lean <<'LEAN'
           import Mathlib
-          open MeasureTheory
-          #check ContinuousLinearMap.lsmul
-          #check HasCompactSupport.contDiff_convolution_left
-          #check HasCompactSupport.convolution
-
-          def realSmulComplex : ℝ →L[ℝ] (ℂ →L[ℝ] ℂ) :=
-            ContinuousLinearMap.lsmul ℝ ℂ
-
-          example (f : ℂ → ℝ) (g : ℂ → ℂ) : ℂ → ℂ :=
-            f ⋆[realSmulComplex, volume] g
-
-          example (f : ℂ → ℝ) (g : ℂ → ℂ)
-              (hf : HasCompactSupport f) (hfd : ContDiff ℝ ∞ f) :
-              ContDiff ℝ ∞ (f ⋆[realSmulComplex, volume] g) := by
-            exact hf.contDiff_convolution_left realSmulComplex volume hfd
-
-          example (f : ℂ → ℝ) (g : ℂ → ℂ)
-              (hg : HasCompactSupport g) :
-              HasCompactSupport (f ⋆[realSmulComplex, volume] g) := by
-            exact hg.convolution realSmulComplex f
+          open Set Function Topology
+          open scoped Manifold ContDiff
+          variable {ι : Type*} {s : Set ℂ}
+          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (t : Finset ι) :
+              ContDiff ℝ ∞ (fun w : ℂ => ∑ i ∈ t, ρ i w) := by
+            classical
+            induction t using Finset.induction_on with
+            | empty => simp
+            | @insert i t hi ih =>
+                rw [Finset.sum_insert hi]
+                exact (ρ i).contDiff.add ih
           LEAN
-          set +e
-          lake env lean -DmaxErrors=40 -DwarningAsError=false /tmp/ProbeFriedrichsConv.lean 2>&1 | tee /tmp/probe.log
-          x=${PIPESTATUS[0]}
-          set -e
-          echo "$x" >/tmp/probe.exit
-          exit "$x"
+          cat >/tmp/ProbePartitionB.lean <<'LEAN'
+          import Mathlib
+          open Set Function Topology
+          open scoped Manifold ContDiff
+          variable {ι : Type*} {s : Set ℂ}
+          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (t : Finset ι) :
+              ContDiff ℝ ∞ (fun w : ℂ => ∑ i ∈ t, ρ i w) := by
+            classical
+            induction t using Finset.induction_on with
+            | empty => simp
+            | @insert i t hi ih =>
+                rw [Finset.sum_insert hi]
+                have hiSmooth : ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
+                  simpa only [contMDiff_iff_contDiff] using (ρ i).contMDiff
+                exact hiSmooth.add ih
+          LEAN
+          cat >/tmp/ProbePartitionCompact.lean <<'LEAN'
+          import Mathlib
+          open Set Function Topology
+          variable {ι : Type*}
+          example (f : ι → ℂ → ℝ) (t : Finset ι)
+              (hf : ∀ i, HasCompactSupport (f i)) :
+              HasCompactSupport (fun w : ℂ => ∑ i ∈ t, f i w) := by
+            classical
+            induction t using Finset.induction_on with
+            | empty => simp [HasCompactSupport]
+            | @insert i t hi ih =>
+                rw [Finset.sum_insert hi]
+                change HasCompactSupport (f i + fun w => ∑ j ∈ t, f j w)
+                exact (hf i).add ih
+          LEAN
+          : >/tmp/results.txt
+          for x in A B Compact; do
+            set +e
+            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/ProbePartition${x}.lean" >"/tmp/ProbePartition${x}.log" 2>&1
+            rc=$?
+            set -e
+            echo "$x=$rc" | tee -a /tmp/results.txt
+          done
+          cat /tmp/results.txt
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-friedrichs-real-complex-conv-${{ github.sha }}
+          name: codex-fa-finite-partition-sum-${{ github.sha }}
           path: |
-            /tmp/ProbeFriedrichsConv.lean
-            /tmp/probe.log
-            /tmp/probe.exit
+            /tmp/ProbePartition*.lean
+            /tmp/ProbePartition*.log
+            /tmp/results.txt
           retention-days: 30
