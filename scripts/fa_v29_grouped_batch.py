@@ -10,7 +10,7 @@ base=hashlib.sha256(before).hexdigest(); expected_base='931c8656a880307acc6f871f
 assert base==expected_base,(base,expected_base)
 if os.environ.get('BASE_SOURCE_SHA256'):
     assert base==os.environ['BASE_SOURCE_SHA256'],(base,os.environ['BASE_SOURCE_SHA256'])
-pb=patch.read_bytes(); ps=hashlib.sha256(pb).hexdigest(); expected_patch='9119548ffc14cdbcd86de90e156668f05aeadadcdfb0b83a3f37351a30b0196d'
+pb=patch.read_bytes(); ps=hashlib.sha256(pb).hexdigest(); expected_patch='6c36386b9d96e5dc173c4fd0af4430d1fc95fc4a06d516e1329eab4ee09a2fa0'
 assert ps==expected_patch,(ps,expected_patch)
 p=subprocess.run(['patch','-p1','--batch','--forward'],input=pb,capture_output=True)
 (out/'patch.stdout').write_bytes(p.stdout); (out/'patch.stderr').write_bytes(p.stderr)
