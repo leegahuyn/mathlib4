@@ -1,6 +1,8 @@
 --- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
 +++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-@@ -48657,20 +48657,34 @@
+@@ -48657,22 +48657,29 @@
+           (u : SmoothQuotientCompactFunction) z +
+         2 * laplaceRaw (paperOrbitExponent n)
            (u : SmoothQuotientCompactFunction) z := by
 -  have hPoint :
 -      ((strongPrincipalCore n u :
@@ -44,7 +46,7 @@
    have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
    have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
    linear_combination hLR + hRL
-@@ -48708,21 +48722,29 @@
+@@ -48709,24 +48716,27 @@
      ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
          SmoothQuotientCompactFunction) z =
        strongSchrodingerDifferentialExpression n t u z := by
@@ -84,5 +86,8 @@
 +  simp [sub_eq_add_neg, smul_smul]
 +  rw [strongPrincipalCore_apply_pointwise, potentialMultiplicationCore_apply]
    ring
+-
+-/-! #### Moving both graph derivatives onto the trial section -/
  
- /-! #### Moving both graph derivatives onto the trial section -/
+ /-- Reindexing the lower-then-raise composition across `(n+1)-1=n` changes
+ neither its function nor its stable-core value. -/
