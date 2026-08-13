@@ -1,0 +1,95 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -19659,7 +19659,7 @@
+ 
+ noncomputable local instance fixedPhaseGraphCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-- The three concrete shifted Petersson coordinates on the canonical
+ fixed-phase differential core. -/
+@@ -22325,7 +22325,7 @@
+ 
+ noncomputable local instance fixedPhaseDensityCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-- Forget the bundled covariance of a smooth compact weight section while
+ retaining its actual function, real smoothness, and quotient-compact support. -/
+@@ -27190,7 +27190,7 @@
+ 
+ noncomputable local instance fixedPhaseClosedTowerCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-! ### Canonical double-adjoint closures on the physical tower -/
+ 
+@@ -27854,7 +27854,7 @@
+ 
+ noncomputable local instance fixedPhaseGreenCoreAddCommGroup (n : ℤ) :
+     AddCommGroup (InverseEtaFixedPhaseCore n) := by
+-  exact Module.addCommMonoidToAddCommGroup ℂ
++  exact Submodule.addCommGroup (inverseEtaFixedPhaseStableCoreSubmodule n)
+ 
+ /-! ### The actual raising, lowering, and one-half Green identities -/
+ 
+@@ -48798,9 +48798,14 @@
+     (coordinates n).energyForm v u =
+       inner ℂ (l2Coordinate n v)
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+-  have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+-  have hidx : n - 1 + 1 = n := by omega
+-  rw [hidx] at hs
++  have hs0 := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
++  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
++  have hs :
++      ∀ v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n,
++        (successorGraphCoordinates (n - 1)).energyForm v u =
++          inner ℂ (l2Coordinate n v)
++            (l2Coordinate n (strongPrincipalCore n u)) :=
++    hidx ▸ hs0
+   have h := hs v u
+   rw [successorGraphCoordinates_eq_coordinates] at h
+   simpa only [sub_add_cancel] using h
+@@ -48863,7 +48868,7 @@
+     inner ℂ (baseExtension n v)
+       (l2Coordinate n
+         (0 : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n)) = 0
+-  rw [map_zero, inner_zero]
++  rw [map_zero, inner_zero_right]
+ 
+ /-- Petersson pairings against the actual smooth fixed-phase core separate
+ smooth sections.  The proof tests with the difference itself and then uses
+@@ -49046,9 +49051,9 @@
+       (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))
+       ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
+     change AEStronglyMeasurable
+-      (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2))
++      (fun p : ℂ × ℂ ↦ v p.1 * (K p.2 * u (p.1 - p.2)))
+       ((volume : Measure ℂ).prod (volume : Measure ℂ))
+-    simpa only [mul_assoc] using hMeasV.mul hMeasBase
++    exact hMeasV.mul hMeasBase
+   apply (integrable_prod_iff' hMeas).2
+   constructor
+   · filter_upwards with t
+@@ -49086,7 +49091,7 @@
+       rw [← hV]
+       congr 2
+       change ut x = u (-t + x) at hut
+-      simpa only [sub_eq_add_neg, add_comm] using hut
++      simpa only [sub_eq_add_neg, add_comm] using hut.symm
+     have hHolderBound : ‖productL1‖ ≤ C := by
+       have h := (lsmul ℂ ℂ).norm_holder_apply_apply_le V ut
+       simpa only [productL1, C, DomAddAct.norm_vadd_Lp] using h
+@@ -59644,7 +59649,7 @@
+ namespace FixedPhaseReducedChartFriedrichs
+ 
+ open Set Function Topology Filter MeasureTheory Metric
+-open scoped BigOperators ContDiff ENNReal
++open scoped BigOperators ContDiff ENNReal Manifold
+ open HalfIntegralMultiplier
+ open DefinitionOneSobolev
+ open GammaTwoQuotientGeometry
