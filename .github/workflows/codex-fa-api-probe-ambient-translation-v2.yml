@@ -1,10 +1,9 @@
-name: Codex FA v23 prefix 3646-3650 fast frontier
+name: Codex FA v23 filtered first-frontier fast check
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
     paths:
       - .github/workflows/codex-fa-api-probe-ambient-translation-v2.yml
-      - scripts/fa_v23_prefix_3646_3650.py
   workflow_dispatch:
 permissions: {actions: read, contents: read}
 jobs:
@@ -14,70 +13,67 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Materialize exact r2 and apply audited prefix patch
+      - name: Materialize exact v22 and apply audited filtered v23
         env:
           GH_TOKEN: "${{ github.token }}"
-          BASE_SOURCE_SHA256: 6b73cb7d68157c861830dbefd30ae7bb0ddcc68b911fc89b49802836752bc965
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v23-prefix-3646-3650
-          mkdir -p "$OUT" /tmp/r2
+          OUT=build-logs/codex-fa-v23-filtered-first-frontier
+          mkdir -p "$OUT" /tmp/v22
           ART=9165519294
           DIGEST=sha256:3c632d36677759dde1c86fd9cd7efc06a7a4eca981a7c8524b0d788e1f3e1c60
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/r2.zip
-          test "sha256:$(sha256sum /tmp/r2.zip | awk '{print $1}')" = "$DIGEST"
-          unzip -q /tmp/r2.zip -d /tmp/r2
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/v22.zip
+          test "sha256:$(sha256sum /tmp/v22.zip | awk '{print $1}')" = "$DIGEST"
+          unzip -q /tmp/v22.zip -d /tmp/v22
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, os, shutil
-          root=Path('/tmp/r2'); sha=os.environ['BASE_SOURCE_SHA256']
-          hits=[p for p in root.rglob('Mock2_FunctionalAnalysis.lean') if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(p.read_bytes()).hexdigest()==sha]
-          assert len(hits)==1, hits
-          shutil.copy2(hits[0], Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
+          import hashlib, shutil
+          sha='6b73cb7d68157c861830dbefd30ae7bb0ddcc68b911fc89b49802836752bc965'
+          hits=[p for p in Path('/tmp/v22').rglob('Mock2_FunctionalAnalysis.lean') if 'PrimalitySheafVerification' in p.as_posix() and hashlib.sha256(p.read_bytes()).hexdigest()==sha]
+          assert len(hits)==1,hits
+          shutil.copy2(hits[0],Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
-          python3 scripts/fa_v23_prefix_3646_3650.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
-          test "$(cat "$OUT/candidate.sha256")" = 7d00ee14bea440fb721d2a95133c4dc1506d2439aa58fe44e1d092ebdfab4c16
+          python3 scripts/fa_v23_filtered_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
+          test "$(cat "$OUT/candidate.sha256")" = 931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4
       - name: Install pinned Lean and cache
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v23-prefix-3646-3650
+          OUT=build-logs/codex-fa-v23-filtered-first-frontier
           curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
           sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
           lake exe cache get >"$OUT/cache.log" 2>&1
-      - name: Direct compile dependency chain and FA first frontier
+      - name: Direct compile dependency chain maxErrors1
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          OUT=build-logs/codex-fa-v23-prefix-3646-3650
+          OUT=build-logs/codex-fa-v23-filtered-first-frontier
           mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
           one(){
-            local s="$1"
-            local o=.lake/build/lib/lean/PrimalitySheafVerification/$s.olean
-            local i=.lake/build/lib/lean/PrimalitySheafVerification/$s.ilean
+            local s="$1" o=.lake/build/lib/lean/PrimalitySheafVerification/$1.olean i=.lake/build/lib/lean/PrimalitySheafVerification/$1.ilean
             rm -f "$o" "$i"; :>"$OUT/$s.executed"; set +e
             lake env lean -DmaxErrors=1 -DwarningAsError=false -o "$o" -i "$i" "PrimalitySheafVerification/$s.lean" >"$OUT/$s.log" 2>&1
             x=$?; set -e; echo "$x" >"$OUT/$s.exit"
           }
           one Mock2
           one Mock2_Advanced
-          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = 931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4
           one Mock2_FunctionalAnalysis
       - name: Build first-frontier metric
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v23-prefix-3646-3650
+          OUT=build-logs/codex-fa-v23-filtered-first-frontier
           python3 - <<'PY'
           from pathlib import Path
           from bisect import bisect_right
           import hashlib,json,os,re
-          out=Path('build-logs/codex-fa-v23-prefix-3646-3650'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          out=Path('build-logs/codex-fa-v23-filtered-first-frontier'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
           s=p.read_text(errors='replace'); b=p.read_bytes()
           dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
           ds=list(dr.finditer(s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
@@ -89,21 +85,21 @@ jobs:
               ln=int(m.group(1)); idx=bisect_right(starts,ln)-1
               first={'line':ln,'column':int(m.group(2)),'declaration':ds[idx].group('name') if idx>=0 else None,'declaration_index':idx if idx>=0 else None,'message':m.group(3).strip()}; break
           stems=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']; ex={x:int((out/f'{x}.exit').read_text()) if (out/f'{x}.exit').exists() else None for x in stems}
-          metric={'schema':'fa-v23-prefix-3646-3650-fast','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in stems),'FA_compile_max_errors':1,'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message')}
+          metric={'schema':'fa-v23-filtered-first-frontier','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in stems),'FA_compile_max_errors':1,'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message')}
           (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n'); print(json.dumps(metric,indent=2,sort_keys=True))
           PY
-      - name: Upload exact candidate and evidence
+      - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v23-prefix-3646-3650-${{ github.sha }}
+          name: codex-fa-v23-filtered-first-frontier-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-v23-prefix-3646-3650
+            build-logs/codex-fa-v23-filtered-first-frontier
           retention-days: 30
       - name: Preserve actual FA exit
         if: always()
         shell: bash
         run: |
-          test -f build-logs/codex-fa-v23-prefix-3646-3650/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-v23-prefix-3646-3650/Mock2_FunctionalAnalysis.exit)"
+          test -f build-logs/codex-fa-v23-filtered-first-frontier/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-v23-filtered-first-frontier/Mock2_FunctionalAnalysis.exit)"
