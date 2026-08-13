@@ -1,4 +1,4 @@
-name: Codex FA finite partition sum API probe v3
+name: Codex FA finite partition coercion API probe v4
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,59 +21,54 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile finite partition sum proof shapes v3
+      - name: Compile partition coercion bridge variants
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          grep -R -n "contMDiff_iff_contDiff" Mathlib | head -30 > /tmp/grep-api.txt || true
-          cat >/tmp/ProbePartitionSmooth.lean <<'LEAN'
+          cat >/tmp/ProbeA.lean <<'LEAN'
           import Mathlib
           open Set Function Topology
           open scoped Manifold ContDiff
           variable {ι : Type*} {s : Set ℂ}
           example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
               ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-            simpa only [contMDiff_iff_contDiff] using (ρ i).property
+            have hp := (ρ i).property
+            rw [contMDiff_iff_contDiff] at hp
+            convert hp using 1
           LEAN
-          cat >/tmp/ProbePartitionSum.lean <<'LEAN'
+          cat >/tmp/ProbeB.lean <<'LEAN'
           import Mathlib
           open Set Function Topology
           open scoped Manifold ContDiff
           variable {ι : Type*} {s : Set ℂ}
-          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (t : Finset ι) :
-              ContDiff ℝ ∞ (fun w : ℂ => ∑ i ∈ t, ρ i w) := by
-            classical
-            induction t using Finset.induction_on with
-            | empty =>
-                simp only [Finset.sum_empty]
-                exact contDiff_const
-            | @insert i t hi ih =>
-                simp only [Finset.sum_insert hi]
-                change ContDiff ℝ ∞ ((ρ i : ℂ → ℝ) + (fun w => ∑ j ∈ t, ρ j w))
-                have hpiece : ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-                  simpa only [contMDiff_iff_contDiff] using (ρ i).property
-                exact hpiece.add ih
+          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
+              ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
+            have hp := (ρ i).property
+            rw [contMDiff_iff_contDiff] at hp
+            have hfun : (↑(ρ i) : ℂ → ℝ) = (ρ i : ℂ → ℝ) := by
+              funext x
+              rfl
+            rw [← hfun]
+            exact hp
           LEAN
-          cat >/tmp/ProbePartitionCompact.lean <<'LEAN'
+          cat >/tmp/ProbeC.lean <<'LEAN'
           import Mathlib
           open Set Function Topology
-          variable {ι : Type*}
-          example (f : ι → ℂ → ℝ) (t : Finset ι)
-              (hf : ∀ i, HasCompactSupport (f i)) :
-              HasCompactSupport (fun w : ℂ => ∑ i ∈ t, f i w) := by
-            classical
-            induction t using Finset.induction_on with
-            | empty => simp [HasCompactSupport]
-            | @insert i t hi ih =>
-                simp only [Finset.sum_insert hi]
-                change HasCompactSupport ((f i) + (fun w => ∑ j ∈ t, f j w))
-                exact (hf i).add ih
+          open scoped Manifold ContDiff
+          variable {ι : Type*} {s : Set ℂ}
+          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
+              ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
+            have hp := (ρ i).property
+            rw [contMDiff_iff_contDiff] at hp
+            apply hp.congr
+            intro x
+            rfl
           LEAN
           : >/tmp/results.txt
-          for x in Smooth Sum Compact; do
+          for x in A B C; do
             set +e
-            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/ProbePartition${x}.lean" >"/tmp/ProbePartition${x}.log" 2>&1
+            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/Probe${x}.lean" >"/tmp/Probe${x}.log" 2>&1
             rc=$?
             set -e
             echo "$x=$rc" | tee -a /tmp/results.txt
@@ -83,10 +78,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-finite-partition-sum-v3-${{ github.sha }}
+          name: codex-fa-partition-coercion-v4-${{ github.sha }}
           path: |
-            /tmp/ProbePartition*.lean
-            /tmp/ProbePartition*.log
-            /tmp/grep-api.txt
+            /tmp/Probe*.lean
+            /tmp/Probe*.log
             /tmp/results.txt
           retention-days: 30
