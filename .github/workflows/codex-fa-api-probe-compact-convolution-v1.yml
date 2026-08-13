@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [rw_hidx, simp_hidx, cast_convert, coord_eq_first, coord_eq_n]
+        variant: [helper_cases, rw_hidx, simp_hidx, cast_convert, coord_eq_first, coord_eq_n]
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
