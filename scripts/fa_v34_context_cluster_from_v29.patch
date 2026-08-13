@@ -1,0 +1,28 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -50563,6 +50563,7 @@
+ 
+ open Set Function Topology Filter MeasureTheory
+ open scoped ENNReal NNReal Manifold ContDiff
++attribute [local instance 10000] instMeasureSpaceUnitAddCircle
+ open DefinitionOneSobolev
+ open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
+ open DefinitionOneSobolev.FixedPhaseGraphCompletion
+@@ -55197,6 +55198,7 @@
+ 
+ open ComplexLaxMilgram FredholmBypass
+ open ExplicitDiscriminantPotential.FixedPhaseGraphPotential
++attribute [local instance] actualHMinusOneInnerProductSpace
+ 
+ /-- P5 compactness, re-exported at the exact weak PDE type. -/
+ theorem actualScalarPotential_isCompact (n : ℤ) :
+@@ -56756,8 +56758,7 @@
+     upstairsNormSqDensity_integrableOn_reducedChart n z₀ u
+   change Integrable
+     (upstairsNormSqDensity (OrbitMultiplier n) u.toSmoothCore)
+-    (hyperbolicMeasure.restrict (gammaTwoReducedChart z₀)) at
+-      hHyperbolic
++    (hyperbolicMeasure.restrict (gammaTwoReducedChart z₀)) at hHyperbolic
+   rw [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.hyperbolicMeasure_eq_euclidean_withDensity,
+     Measure.restrict_withDensity
+       (gammaTwoReducedChart_isOpen z₀).measurableSet] at hHyperbolic
