@@ -1,5 +1,5 @@
-name: Codex FA 3669 Fubini and Holder API probe v3
-# trigger: fa3669-holder-uncurry-v3
+name: Codex FA quotient orientation and density nonneg probe
+# trigger: quotient-density-nonneg-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,57 +22,28 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile 3669 proof shapes v3
+      - name: Compile quotient and density shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/Probe3669.lean <<'LEAN'
+          cat >/tmp/ProbeQuotDensity.lean <<'LEAN'
           import Mathlib
 
-          open MeasureTheory Function
+          #print Quotient.exact'
 
-          variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-          variable (f : ℂ × ℂ → E)
-          variable (hf : AEStronglyMeasurable f ((volume : Measure ℂ).prod (volume : Measure ℂ)))
+          example (c a b d : ℝ) (hc : 0 ≤ c) (ha : 0 ≤ a)
+              (hb : 0 ≤ b) (hd : 0 ≤ d) :
+              0 ≤ c * a + 3 * b + 3 * d := by
+            exact add_nonneg
+              (add_nonneg (mul_nonneg hc ha) (mul_nonneg (by norm_num) hb))
+              (mul_nonneg (by norm_num) hd)
 
-          example : AEStronglyMeasurable
-              (fun t : ℂ => ∫ x : ℂ, ‖f (x,t)‖ ∂(volume : Measure ℂ))
-              (volume : Measure ℂ) := by
-            have hs := hf.prod_swap.norm.integral_prod_right'
-            change AEStronglyMeasurable
-              (fun t : ℂ => ∫ x : ℂ, ‖f (x,t)‖ ∂(volume : Measure ℂ))
-              (volume : Measure ℂ) at hs
-            exact hs
-
-          variable (a b : ℂ × ℂ → ℂ)
-          variable (ha : AEStronglyMeasurable a ((volume : Measure ℂ).prod (volume : Measure ℂ)))
-          variable (hb : AEStronglyMeasurable b ((volume : Measure ℂ).prod (volume : Measure ℂ)))
-
-          example : AEStronglyMeasurable
-              (Function.uncurry fun x t : ℂ => a (x,t) * b (x,t))
-              ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
-            change AEStronglyMeasurable (fun p : ℂ × ℂ => a p * b p)
-              ((volume : Measure ℂ).prod (volume : Measure ℂ))
-            exact ha.mul hb
-
-          example (v u V ut product : ℂ → ℂ) (x t : ℂ)
-              (hHolder : product x = V x * ut x)
-              (hV : V x = v x)
-              (hut : ut x = u (x - t)) :
-              ‖v x * u (x - t)‖ = ‖product x‖ := by
-            rw [hHolder, hV, hut]
-
-          example (v K u : ℂ → ℂ) (t : ℂ) (C : ℝ)
-              (h : ‖∫ x : ℂ, ‖v x * K t * u (x - t)‖ ∂(volume : Measure ℂ)‖ ≤
-                ‖K t‖ * C) :
-              ‖∫ x : ℂ,
-                  ‖(Function.uncurry fun x t : ℂ => v x * K t * u (x - t)) (x,t)‖
-                    ∂(volume : Measure ℂ)‖ ≤ ‖K t‖ * C := by
-            simpa only [Function.uncurry_apply_pair] using h
+          example (r : ℝ) (hr : 0 < r) : ‖r‖ = r := by
+            rw [Real.norm_eq_abs, abs_of_pos hr]
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/Probe3669.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeQuotDensity.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -81,9 +52,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-3669-holder-uncurry-v3-${{ github.sha }}
+          name: codex-fa-quotient-density-nonneg-${{ github.sha }}
           path: |
-            /tmp/Probe3669.lean
+            /tmp/ProbeQuotDensity.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
