@@ -1,5 +1,5 @@
 name: Codex FA probe P9 and joint proof shapes v3
-# trigger: p9-joint-proof-shapes-3
+# trigger: p9-joint-proof-shapes-3-fire
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
