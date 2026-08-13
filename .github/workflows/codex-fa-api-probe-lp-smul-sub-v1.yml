@@ -1,5 +1,5 @@
-name: Codex FA residual roots probe v2
-# trigger: fa-residual-roots-v2
+name: Codex FA canonical Submodule AddCommGroup coherence probe
+# trigger: canonical-submodule-addgroup-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -9,7 +9,7 @@ permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
@@ -22,52 +22,50 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile corrected residual root proof shapes
+      - name: Compile canonical instance coherence probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeResidualRoots.lean <<'LEAN'
+          cat >/tmp/ProbeCanonicalGroup.lean <<'LEAN'
           import Mathlib
 
-          open Set Function Topology
-          open scoped ContDiff
+          noncomputable section
+          variable {V W : Type*} [AddCommGroup V] [Module ℂ V]
+            [AddCommGroup W] [Module ℂ W]
+          variable (S : Submodule ℂ V)
 
-          variable {S H : Type*}
-          variable [NormedAddCommGroup S] [InnerProductSpace ℂ S]
-          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          noncomputable local instance coreModule : Module ℂ S := by
+            exact Submodule.module S
+          noncomputable local instance coreAddCommGroup : AddCommGroup S := by
+            exact Submodule.addCommGroup S
 
-          example (L R B : S →ₗ[ℂ] H) (m : ℝ)
-              (hid : ∀ q : S, ‖L q‖ ^ 2 = ‖R q‖ ^ 2 - m * ‖B q‖ ^ 2)
-              (u v : S) :
-              ‖L u - L v‖ ^ 2 = ‖R u - R v‖ ^ 2 - m * ‖B u - B v‖ ^ 2 := by
-            let q : S := u + (-1 : ℂ) • v
-            have h := hid q
-            simpa only [q, map_add, map_smul, neg_smul, one_smul, map_neg,
-              sub_eq_add_neg] using h
+          example (u v : S) : ((u - v : S) : V) = (u : V) - (v : V) := by
+            rfl
 
-          noncomputable def probeAffineKernel
-              (c : ℂ) (a : ℝ) (f : ℂ → ℂ) (t : ℂ) : ℂ :=
-            c * f (a • t)
+          example (L : S →ₗ[ℂ] W) (u v : S) : L (u - v) = L u - L v := by
+            exact map_sub L u v
 
-          example (c : ℂ) (a : ℝ) (f : ℂ → ℂ) (hf : ContDiff ℝ ∞ f) :
-              ContDiff ℝ ∞ (probeAffineKernel c a f) := by
-            unfold probeAffineKernel
-            fun_prop
+          abbrev F := ℂ → ℂ
+          def SmoothSub : Submodule ℂ F := ⊤
+          abbrev Smooth := SmoothSub
+          instance : CoeFun Smooth (fun _ => ℂ → ℂ) where coe f := f.1
+          def CoreSub : Submodule ℂ Smooth := ⊤
+          abbrev Core := CoreSub
 
-          example (f : ℂ → ℝ) :
-              tsupport ((fun r : ℝ => (r : ℂ)) ∘ f) ⊆ tsupport f := by
-            exact tsupport_comp_subset
-              (g := fun r : ℝ => (r : ℂ)) (by norm_num) f
+          noncomputable local instance core2Module : Module ℂ Core := by
+            exact Submodule.module CoreSub
+          noncomputable local instance core2AddCommGroup : AddCommGroup Core := by
+            exact Submodule.addCommGroup CoreSub
 
-          variable (F : ℍ → ℂ → ℝ) (s : Finset ℍ) (z : ℂ)
-          example (h : ∀ x : ℍ, F x z ≠ (0 : ℝ) → x ∈ s) :
-              Function.support (fun x : ℍ => (F x z : ℝ)) ⊆ (s : Set ℍ) := by
-            intro x hx
-            exact h x hx
+          example (u a b : Core) (z : ℂ) :
+              ((((u - a - b : Core) : Smooth) : F) z) =
+                (((u : Smooth) : F) z - (((a : Smooth) : F) z) -
+                  (((b : Smooth) : F) z)) := by
+            rfl
           LEAN
           set +e
-          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeResidualRoots.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeCanonicalGroup.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -76,9 +74,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-residual-roots-v2-${{ github.sha }}
+          name: codex-fa-canonical-submodule-addgroup-${{ github.sha }}
           path: |
-            /tmp/ProbeResidualRoots.lean
+            /tmp/ProbeCanonicalGroup.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
