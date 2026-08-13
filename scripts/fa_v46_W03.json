@@ -1,0 +1,76 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V46_W03",
+  "worker_id": "W03",
+  "cluster_id": "V46-IDX3899-SET-RESTRICTED-TORUS-COORDINATE-NORMALIZATION",
+  "authority": {
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3899,
+    "declaration": "integral_literalStageTorusRepresentative_normSq_eq_box",
+    "v45_error_ordinal": 5,
+    "line": 52853,
+    "column": 47,
+    "diagnostic": "Invalid projection: Projections cannot be used on functions, and x has function type Fin 2 → ℝ",
+    "new_error_relative_to_v43": true,
+    "root_or_cascade": "ROOT_FROM_PRIOR_REPAIR_INTERACTION"
+  },
+  "diagnosis": {
+    "prior_v44_repair": "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+    "prior_repair_effect": "The outer scalar congrArg correctly closed the v43 common-scalar-action obstruction.",
+    "remaining_root": "The subsequent congr/ext proof asks for equality of the two integrand functions at every x : Fin 2 → ℝ. That binder is not a subtype carrying box membership, so x.2 i is an invalid projection. Coordinate normalization is only justified on literalStageUnitPiBox.",
+    "repair_strategy": "Use setIntegral_congr_fun on literalStageUnitPiBox, retain the pointwise box-membership hypothesis hx, and feed hx i to AddCircle.equivIoc_coe_eq. Retain the successful outer scalar congrArg from v44.",
+    "expected_sibling_errors_closed": 1,
+    "required_imports": [],
+    "dependency_assumptions": [
+      "literalStageUnitPiBox_measurableSet remains available before declaration 3899",
+      "setIntegral_congr_fun has the same API already used repeatedly in this source",
+      "hx i reduces to the Ioc membership expected by AddCircle.equivIoc_coe_eq up to the existing simpa normalization"
+    ],
+    "merge_order_requirements": [
+      "Apply after the v44 Q1 HC02 outer-scale congrArg repair, or use this manifest directly against the locked v45 all_probes candidate where it is already present."
+    ],
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_API_AND_GOAL_EVIDENCE_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W03-IDX3899-restrict-coordinate-normalization-to-unit-box",
+      "owner": "integral_literalStageTorusRepresentative_normSq_eq_box",
+      "declaration_index": 3899,
+      "diagnostics": [5],
+      "kind": "body",
+      "classification": "SET_RESTRICTED_INTEGRAND_CONGRUENCE_WITH_MEMBERSHIP_EVIDENCE",
+      "confidence": "high-static-exact-goal-and-same-file-api-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  congr 1\n  ext x\n  simp only [literalStageUnitPiBox, literalStageTorusRepresentative,\n    literalStageTorusPoint, literalStageTorusCoordinate]\n  congr 3\n  apply congrArg (fun z : ℂ ↦ literalStageFourierScale Y • z)\n  apply congrArg Complex.measurableEquivPi.symm\n  funext i\n  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  exact congrArg Subtype.val\n    (AddCircle.equivIoc_coe_eq (by simpa using x.2 i))",
+      "new": "  apply setIntegral_congr_fun literalStageUnitPiBox_measurableSet\n  intro x hx\n  simp only [literalStageTorusRepresentative, literalStageTorusPoint,\n    literalStageTorusCoordinate]\n  congr 3\n  apply congrArg (fun z : ℂ ↦ literalStageFourierScale Y • z)\n  apply congrArg Complex.measurableEquivPi.symm\n  funext i\n  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  exact congrArg Subtype.val\n    (AddCircle.equivIoc_coe_eq (by simpa using hx i))",
+      "evidence": "The v45 log proves x is a plain function and the failing x.2 projection is the only owner diagnostic. The theorem states equality of set integrals over literalStageUnitPiBox, whose measurable-set theorem is available immediately before this owner; setIntegral_congr_fun supplies exactly the missing hx needed by the existing AddCircle coordinate normalization proof."
+    }
+  ],
+  "promotion_rule": "Compose only against the exact v45 all_probes source. Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, inventory comparison, trust-six zero, and no new owner-local regression before cumulative promotion.",
+  "direct_lean_verified": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

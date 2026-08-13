@@ -1,0 +1,198 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_MKCONTINUOUS2_EVALUATION_DIRECT_LEAN_REQUIRED_V46_W19",
+  "worker_id": "W19",
+  "cluster_id": "V46-IDX4017-NARROW-MKCONTINUOUS2-EVALUATION",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888",
+    "patch_audit_path": "work/v45-results/run-31728453514/all_probes/PATCH_AUDIT.json",
+    "patch_audit_sha256": "045fe75a7b0b7691e58b01dd97e87d1e9d76d4f84648b34745870d902df7ec94"
+  },
+  "assignment": {
+    "declaration_index": 4017,
+    "declaration": "discriminantHardStageOperator_eq_weightedHard",
+    "authority_diagnostic_ordinals": [30, 31],
+    "diagnostic_count": 2,
+    "lines": [55123, 55182],
+    "columns": [2, 0],
+    "normalized_signatures": [
+      "'change' tactic failed, pattern",
+      "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+    ],
+    "root_or_cascade": "OWNER_LOCAL_EXPOSURE_ROOT_WITH_OWNER_CLOSING_TIMEOUT_CASCADE",
+    "ownership": "W19-only"
+  },
+  "variant_stability": {
+    "v45_core": {
+      "diagnostic_count": 1,
+      "diagnostic_ordinal": 35,
+      "line": 55130,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+      "synthetic_sorry_warnings": 1,
+      "opening_shape": "broad simp only without LinearMap.mkContinuous₂_apply"
+    },
+    "v45_common_probe": {
+      "diagnostic_count": 2,
+      "diagnostic_ordinals": [34, 35],
+      "lines": [55084, 55143],
+      "signatures": [
+        "'change' tactic failed, pattern",
+        "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+      ],
+      "synthetic_sorry_warnings": 0,
+      "opening_shape": "V44 common staged direct inner change"
+    },
+    "v45_q1_probe": {
+      "diagnostic_count": 1,
+      "diagnostic_ordinal": 35,
+      "line": 55132,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+      "synthetic_sorry_warnings": 1
+    },
+    "v45_q2_probe": {
+      "diagnostic_count": 1,
+      "diagnostic_ordinal": 35,
+      "line": 55131,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+      "synthetic_sorry_warnings": 1
+    },
+    "v45_q3_probe": {
+      "diagnostic_count": 1,
+      "diagnostic_ordinal": 31,
+      "line": 55166,
+      "signature": "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached",
+      "synthetic_sorry_warnings": 1
+    },
+    "v45_all_probes": {
+      "diagnostic_count": 2,
+      "diagnostic_ordinals": [30, 31],
+      "lines": [55123, 55182],
+      "signatures": [
+        "'change' tactic failed, pattern",
+        "(deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached"
+      ],
+      "synthetic_sorry_warnings": 0,
+      "opening_shape": "V44 common staged direct inner change"
+    },
+    "reading": "The broad-simp variants time out and synthesize one declaration-uses-sorry warning during elaborator recovery. The staged-change variants remove that warning but replace the opening with a non-definitional direct change, producing a local change failure followed by the same owner-closing timeout. This identifies the missing bounded evaluation step rather than a mathematical downstream dependency."
+  },
+  "diagnosis": {
+    "ordinal_30_local_root": "After ext u v, the actual target still applies discriminantHardStagePotentialPairing and weightedGraphOperator as continuous bilinear maps. The staged change asks immediately for their inner-product implementation. Those targets are propositionally exposed by the mkContinuous₂ application theorem but are not definitionally equal at the point where change is invoked.",
+    "ordinal_31_classification": "Owner-local cascade from the failed opening exposure, with corroborating evidence from the broad-simp variants where the analogous opening exhausts whnf and the diagnostic is reported at the next declaration boundary.",
+    "repair": "Replace the failed direct change with a narrow simp-only exposure. Unfold only the two outer operators, their comp/application shells, and their underlying linear maps, while explicitly supplying LinearMap.mkContinuous₂_apply so the simplifier removes each continuous bilinear wrapper before attempting deeper weak-head normalization. Preserve the existing two L2.inner_def rewrites and the entire integral proof.",
+    "mathlib_api": {
+      "path": "C:/Users/사용자/Desktop/mathlib4_spt2/Mathlib/Analysis/Normed/Operator/Bilinear.lean",
+      "lines": "121-124",
+      "theorem": "LinearMap.mkContinuous₂_apply",
+      "signature_shape": "f.mkContinuous₂ C hC x y = f x y",
+      "reduction": "rfl",
+      "attribute": "simp"
+    },
+    "same_file_definitions": [
+      {
+        "name": "weightedGraphOperator",
+        "authority_lines": "54869-54873",
+        "shape": "(weightedGraphLinear n a).mkContinuous₂ ..."
+      },
+      {
+        "name": "discriminantHardStagePotentialPairing",
+        "authority_lines": "54973-54979",
+        "shape": "LinearMap.mkContinuous₂ (discriminantHardStagePairingLinear N n) ..."
+      },
+      {
+        "name": "discriminantHardStageOperator",
+        "authority_lines": "54982-54987",
+        "shape": "discriminantHardStagePotentialPairing composed with graphLiteralStageRestriction"
+      }
+    ],
+    "why_old_broad_simp_timed_out": "It unfolded discriminantHardStagePotentialPairing but did not include LinearMap.mkContinuous₂_apply, leaving simplification/unification to weak-head-normalize the continuous wrapper implementation. The current repair adds the exact public evaluation theorem and otherwise keeps the same intended body exposure bounded.",
+    "why_staged_change_failed": "V44-COMMON-S02 skipped the required evaluation theorem and assumed the unreduced continuous-map target was definitionally identical to the displayed inner equality. Remote ordinal 30 disproves that assumption; the failed change must not be retained.",
+    "required_imports": [],
+    "expected_errors_closed": 2,
+    "semantic_risk": "LOW_MATHEMATICAL_RISK_MEDIUM_STATIC_ELABORATION_RISK",
+    "confidence": "HIGH_EXACT_PUBLIC_EVALUATION_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "dependency_classification": {
+    "diagnostic_is_upstream_cascade": false,
+    "idx4015": {
+      "declaration": "weightedFull_apply_core",
+      "authority_diagnostic_ordinals": [28, 29],
+      "current_diagnostic_count": 2,
+      "referenced_by_idx4017_body": false,
+      "reason": "idx4017 uses weightedGraphOperator and shared definitions directly; it never invokes weightedFull_apply_core. The two owners therefore need independent repairs even though both expose weighted continuous bilinear maps."
+    },
+    "prior_producer_repairs": {
+      "ids": [
+        "V43-MID-HC05-hard-stage-outer-add-change",
+        "V43-MID-HC06-hard-stage-outer-smul-change",
+        "V43-MID-HC07-hard-stage-bound-unfold-by-change"
+      ],
+      "decision": "DO_NOT_ROLL_BACK",
+      "reason": "Those repairs address producer-map construction owners. The present failure is solely in evaluating the already constructed map in idx4017."
+    },
+    "downstream": {
+      "declaration_index": 4018,
+      "declaration": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "current_diagnostic_count": 0,
+      "dependency": "uses idx4017 by rw; runtime promotion must verify it remains clean after composing W19"
+    },
+    "promotion_policy": "Compose W19 independently of the idx4015 body repair but include both before cumulative probing of the weighted/hard chain."
+  },
+  "history": {
+    "v43": "The hard-stage producer changes HC05-HC07 were retained because their producer owners became runtime clean. The consumer idx4017 still opened with a broad simp and timed out, generating one synthetic declaration-uses-sorry warning during error recovery.",
+    "v44_common_s02": "Replaced the broad opening with a direct inner-product change. This was a bounded diagnostic probe, not a proven repair.",
+    "v45_remote_result": "common_probe and all_probes show the direct change fails, while synthetic-sorry falls from one to zero. The same whnf timeout remains at owner close. Therefore S02 must be superseded, not promoted unchanged.",
+    "w19_decision": "Keep the successful producer repairs and the no-heartbeat-wrapper policy. Replace only S02's failed change by an exact mkContinuous₂ evaluation sequence."
+  },
+  "synthetic_sorry_effect": {
+    "authority_before": 0,
+    "authority_expected_after": 0,
+    "lexical_trust_tokens_before": 0,
+    "lexical_trust_tokens_expected_after": 0,
+    "expected_mechanism": "The patch does not introduce any trust token or recovery placeholder. Unlike the old broad simp, its exact mkContinuous₂ evaluation is expected not to trigger the elaborator-recovery synthetic sorry. Unlike the failed direct change, it should also expose the intended inner goal.",
+    "cross_variant_expectation": "If rebased onto core/q1/q2/q3 rather than exact-replaced against all_probes, the same narrow exposure is expected to change this owner's synthetic warning count from one to zero. This remains a direct-Lean runtime expectation, not a static verification claim.",
+    "hard_gate": "Any synthetic declaration-uses-sorry warning after remote composition rejects promotion."
+  },
+  "header_policy": "NO_HEADER_OR_ATTRIBUTE_OR_COMMENT_CHANGES_BODY_ONLY_NO_HEARTBEAT_WRAPPER",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W19-IDX4017-evaluate-mkContinuous2-before-inner-rewrite",
+      "owner": "discriminantHardStageOperator_eq_weightedHard",
+      "declaration_index": 4017,
+      "diagnostics": [30, 31],
+      "kind": "body",
+      "classification": "NARROW-EXACT-MKCONTINUOUS2-EVALUATION-SUPERSEDES-FAILED-DIRECT-CHANGE",
+      "confidence": "high-exact-public-api-and-same-file-definition-shapes-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  ext u v\n  change inner ℂ\n      (graphLiteralStageRestriction (discriminantHardLiteralStage N) n v)\n      (lpInfinityMultiplier\n        (P5PhysicalHardStageRestriction.literalStageMeasure\n          (discriminantHardLiteralStage N))\n        (discriminantHardStageWeightLp N)\n        (graphLiteralStageRestriction\n          (discriminantHardLiteralStage N) n u)) =\n    inner ℂ (graphEuclideanBase n v)\n      (lpInfinityMultiplier chosenEuclideanCarrierMeasure\n        (discriminantHardCarrierWeightLp N)\n        (graphEuclideanBase n u))",
+      "new": "  ext u v\n  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    LinearMap.mkContinuous₂_apply,\n    discriminantHardStagePairingLinear,\n    weightedGraphOperator, weightedGraphLinear,\n    lpInfinityMultiplier_apply]",
+      "evidence": "The exact old staged-change fragment occurs once globally and once in idx4017. LinearMap.mkContinuous₂_apply is the rfl evaluation theorem for both continuous bilinear wrappers. The unchanged following L2.inner_def rewrites and calc then receive the same scalar-action integral goal intended by the original proof."
+    }
+  ],
+  "promotion_rule": "Compose the one exact body replacement and require ordinals 30-31 to disappear with no new idx4017 or idx4018 diagnostic at the default 200000 heartbeat budget. Require synthetic-sorry zero, then Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000, 4416 headers/order/comments/attributes unchanged, and trust-six zero. Do not restore the failed direct change, broad heartbeat-only simp, or any theorem-level maxHeartbeats wrapper.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

@@ -1,0 +1,116 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_PROBE_STATIC_EXACT_CURRENT_ROOTS_LATENT_FINAL_TIMEOUT_DIRECT_LEAN_REQUIRED_V46_W27",
+  "worker_id": "W27",
+  "cluster_id": "V46-IDX4015-HOLDER-EXPONENTS-AND-NNREAL-COMPLEX-SMUL",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4015,
+    "declaration": "weightedFull_apply_core",
+    "v45_error_ordinals": [28, 29],
+    "v45_error_lines": [55036, 55068],
+    "v45_error_columns": [8, 6],
+    "v45_error_signatures": [
+      "typeclass instance problem is stuck, it is often due to metavariables",
+      "'change' tactic failed, pattern"
+    ],
+    "root_or_cascade": "TWO_CURRENT_OWNER_LOCAL_ROOTS_WITH_HISTORICALLY_OBSERVED_LATENT_OWNER_FOLLOWON",
+    "ownership": "W27-only"
+  },
+  "diagnosis": {
+    "ordinal_28": "Lp.coeFn_lpSMul exposes implicit Holder exponents p q r. The multiplier is L-infinity, graphEuclideanBase is L2, and lpInfinityMultiplier returns L2, but the standalone filter event leaves r as a metavariable and instance search stops at `∞.HolderTriple 2 ?m`. Pinning `(p := ∞) (q := 2) (r := 2)` is the exact established repair shape.",
+    "ordinal_29": "After the two inner-product rewrites, the target contains NNReal scalar actions on complex values. The existing `change` asks these actions to be definitionally equal to multiplication by a Complex cast; v45 proves they are not definitionally equal. `NNReal.smul_def` first exposes the real scalar action and `Complex.real_smul` then rewrites it to complex multiplication, after which the unchanged ring tactic closes associativity/commutativity.",
+    "common_staged_history": "V44-COMMON-S01 replaced a failed broad structure simplification with the exact initial inner/set-integral change. V45 common_probe and all_probes applied S01 and moved the first failure forward to ordinal 28. The S01 opening is preserved.",
+    "weighted_regression_history": "V42-W07 introduced the explicit Complex-valued change now failing at ordinal 29. An older remote v42 run accepted that change and reached a later synthesize-pending-MVars timeout, so the algebraic intent is valid but the current elaborator requires public scalar-action rewrite lemmas instead of definitional change.",
+    "latent_followon": "Core/q1/q2/q3 v45 variants pair the pre-S01 L2.inner_def failure with a final `synthesize pending MVars` timeout, and earlier weighted-regression runs reached the same final timeout after accepting W07. The current all_probes errors may mask that follow-on. Therefore this pair is STAGED_PROBE rather than a static clean-owner claim.",
+    "theorem_proposition_changed": false,
+    "semantic_risk": "LOW_LOCAL_API_NORMALIZATION",
+    "confidence_current_diagnostics": "VERY_HIGH_EXACT_API_AND_PRINTED_TARGET",
+    "confidence_owner_clean_after_pair": "MEDIUM_LOW_DUE_TO_LATENT_FINAL_TIMEOUT",
+    "disposition": "STAGED_PROBE"
+  },
+  "prior_evidence": {
+    "v44_common_followons_path": "work/v44-workers/common-hc/common-hc-staged-followons.json",
+    "v44_common_followons_sha256": "e7ae2f13f44f8722ebda362da45c1b89f0fd4e4f680de8d09981d8fc13ce12e0",
+    "v44_root_cascade_audit_path": "work/v44-workers/common-hc/common-hc-root-cascade-audit.md",
+    "v44_root_cascade_audit_sha256": "f8d6743e3b78a10d56ebe8148412ad978ce0fc1308bf8981a9e12585569c7fa6",
+    "weighted_regression_path": "work/v42-workers/weighted-regression/weighted-regression-repairs.json",
+    "weighted_regression_sha256": "01108c134cc2318891c9c06a10178809b2f3cb671d2b00c4541103b05b448360",
+    "holder_api_parallel_path": "work/v42-workers/q4/q4-high-confidence-repairs.json",
+    "holder_api_parallel_sha256": "a9e91c571958ae68f73912b12f90cbfc5bdb006e10441ac2038d09c68c156e79"
+  },
+  "dependency_policy": {
+    "atomic_group": "V46-W27-IDX4015-ORD28-29-ALL-OR-NONE-STAGED",
+    "atomicity": "ALL_OR_NONE",
+    "reason": "Both current owner roots must be removed before the latent final branch and downstream declarations can be evaluated meaningfully.",
+    "idx4016": "graphPotentialOperator_eq_weightedFull uses weightedFull_apply_core. It currently owns no v45 diagnostic, but must be replayed so its proof depends on a real trust-clean idx4015 declaration rather than error recovery.",
+    "w19_idx4017": "Independent hard-stage branch. W27 does not subsume W19.",
+    "idx4018": "weightedFull_sub_weightedHard_eq_weightedTail joins idx4016/W27 and idx4017/W19. W27 is necessary but not sufficient for idx4018.",
+    "idx4019": "W23 correctly defers until both producer branches install idx4018 as a real kernel declaration.",
+    "recommended_cumulative_order": [4015, 4016, 4017, 4018, 4019]
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W27-IDX4015-pin-linfinity-l2-l2-holder-exponents",
+      "atomic_group": "V46-W27-IDX4015-ORD28-29-ALL-OR-NONE-STAGED",
+      "owner": "weightedFull_apply_core",
+      "declaration_index": 4015,
+      "diagnostics": [28],
+      "kind": "body",
+      "classification": "PIN-LP-SMUL-HOLDER-EXPONENTS-INFINITY-TWO-TWO",
+      "confidence": "very-high-exact-typeclass-and-established-parallel-repairs",
+      "expected_count_in_owner": 1,
+      "expected_global_old_count": 1,
+      "old": "        MeasureTheory.Lp.coeFn_lpSMul\n          discriminantFullCarrierWeightLp\n          (graphEuclideanBase n (coreMap n u))",
+      "new": "        MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)\n          discriminantFullCarrierWeightLp\n          (graphEuclideanBase n (coreMap n u))",
+      "evidence": "The exact OLD occurs once in idx4015 and once globally. Existing q2/q4 repairs use the identical p=∞, q=2, r=2 annotation for the same `∞.HolderTriple 2 ?m` signature."
+    },
+    {
+      "id": "V46-W27-IDX4015-normalize-nnreal-and-real-actions-before-ring",
+      "atomic_group": "V46-W27-IDX4015-ORD28-29-ALL-OR-NONE-STAGED",
+      "owner": "weightedFull_apply_core",
+      "declaration_index": 4015,
+      "diagnostics": [29],
+      "kind": "body",
+      "classification": "REPLACE-NONDEFINITIONAL-COMPLEX-CHANGE-WITH-EXACT-SCALAR-ACTION-LEMMAS",
+      "confidence": "high-exact-v45-target-and-same-file-api",
+      "expected_count_in_owner": 1,
+      "expected_global_old_count": 1,
+      "old": "      change (upstairsPotential z : ℂ) * (hyperbolicDensity z : ℂ) *\n          upstairsInnerDensity (OrbitMultiplier n) V U z =\n        (hyperbolicDensity z : ℂ) * ((upstairsPotential z : ℂ) *\n          upstairsInnerDensity (OrbitMultiplier n) V U z)\n      ring",
+      "new": "      simp only [NNReal.smul_def, Complex.real_smul]\n      ring",
+      "evidence": "The OLD occurs once in idx4015 and once globally. The authority already uses NNReal.smul_def and Complex.real_smul to pass from NNReal actions through real actions to complex multiplication."
+    }
+  ],
+  "contamination_policy": {
+    "scan_new_lines_for_prefixes": ["+", "-"],
+    "required_new_prefix_count": 0,
+    "authority_owner_leading_diff_prefix_count": 0
+  },
+  "promotion_rule": "Compose both W27 entries atomically against exact v45 all_probes SHA 726f40d1. First require ordinals 28 and 29 to disappear. If the historically observed final synthesize-pending-MVars timeout reappears, retain W27 as progress but do not promote idx4015 as clean; capture its exact new goal for a bounded follow-on. A successful chain run must then keep idx4016 diagnostic-free, compose independent W19, install idx4018 without synthetic sorry, and replay W23/idx4019. Final promotion requires Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 exit 0, 4416 identical headers/order, identical comments/attributes, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

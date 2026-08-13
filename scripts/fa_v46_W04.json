@@ -1,0 +1,73 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_DIRECT_LEAN_REQUIRED_V46_W04",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "max_errors": 2000,
+    "inventory_complete": true
+  },
+  "slice": {
+    "worker": "W04",
+    "selected_owner_count": 1,
+    "selected_diagnostic_count": 1,
+    "selected_declaration_indices": [3669],
+    "selected_diagnostic_ordinals": [2],
+    "new_error_from_v44_repair": true
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W04-3669-transport-measurability-by-explicit-associativity-equality",
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "declaration_index": 3669,
+      "diagnostics": [2],
+      "kind": "body",
+      "classification": "PATCH_READY_STATIC_EXPLICIT_FUNCTION_EQUALITY",
+      "confidence": "high-static-direct-lean-required",
+      "semantic_risk": "LOW",
+      "expected_count_in_owner": 1,
+      "old": "    change AEStronglyMeasurable\n      ((fun p : ℂ × ℂ ↦ v p.1) *\n        fun p : ℂ × ℂ ↦ K p.2 * u (p.1 - p.2))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ))\n    exact hMeasV.mul hMeasBase",
+      "new": "    have hPointwiseAssoc :\n        (fun p : ℂ × ℂ ↦ v p.1 * K p.2 * u (p.1 - p.2)) =\n          ((fun p : ℂ × ℂ ↦ v p.1) *\n            fun p : ℂ × ℂ ↦ K p.2 * u (p.1 - p.2)) := by\n      funext p\n      exact mul_assoc _ _ _\n    rw [hPointwiseAssoc]\n    exact hMeasV.mul hMeasBase",
+      "root_cause": "The v44 repair changed the left-associated lambda target to a pointwise function product, but those functions differ by associativity and therefore are not definitionally equal. The direct v45 compiler rejected the second change before the existing measurability proof could be used.",
+      "why_this_shape": "Prove the required function equality propositionally by funext and mul_assoc, rewrite the measurable-function target to the exact function-product type, then reuse hMeasV.mul hMeasBase without relying on simp or definitional equality under AEStronglyMeasurable.",
+      "rejected_predecessors": [
+        {
+          "candidate": "simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase",
+          "remote_run": 31719983304,
+          "remote_result": "Type mismatch after simplification; the term retained the pointwise function-product presentation."
+        },
+        {
+          "candidate": "change AEStronglyMeasurable (pointwise function product) ...",
+          "remote_run": 31728453514,
+          "remote_result": "change tactic failed because the pointwise product is right-associated while the target lambda is left-associated."
+        }
+      ],
+      "theorem_proposition_changed": false,
+      "required_imports": [],
+      "merge_dependencies": [],
+      "expected_effect": "Remove the sole idx3669 error by an explicit associativity transport; no claim is made for later independent diagnostics."
+    }
+  ],
+  "promotion_rule": "Compose only against the exact v45 all_probes source SHA. Require remote direct Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 compile and complete residual comparison before promotion.",
+  "disposition": "PATCH_READY"
+}

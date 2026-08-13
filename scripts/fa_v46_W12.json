@@ -1,0 +1,100 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_SYMMETRIC_IBP_FOLLOWON_DIRECT_LEAN_REQUIRED_V46_W12",
+  "worker_id": "W12",
+  "cluster_id": "V46-IDX3927-HORIZONTAL-NEGATIVE-WAVE-IBP-FOLLOWON",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3927,
+    "declaration": "integral_negativePlaneWave_mul_dx",
+    "v45_error_ordinals": [11, 12],
+    "v45_error_lines": [53338, 53348],
+    "v45_error_columns": [6, 2],
+    "v45_error_signatures": [
+      "Function expected at",
+      "Type mismatch: After simplification, term"
+    ],
+    "root_or_cascade": "TWO_OWNER_LOCAL_FOLLOWONS_AFTER_SUCCESSFUL_V44_Q3_API_ORDER_PROBE",
+    "ownership": "W12-only"
+  },
+  "diagnosis": {
+    "prior_state": "V44-Q3-S03 replaced four malformed API-order diagnostics with named hBase/hLeft/hRight witnesses and a correctly inferred hIBP. V45 proves that progress: only two later owner-local diagnostics remain.",
+    "diagnostic_11_root": "The leading-dot line break after a parenthesized Continuous.mul term is parsed as an argument rather than field notation. The log therefore says the Continuous proof is being applied to `.integrable_of_hasCompactSupport`.",
+    "diagnostic_11_repair": "Attach `.integrable_of_hasCompactSupport` directly to the closing parenthesis, exactly as the already-elaborating hBase expression and same-file product_integrable theorem do.",
+    "diagnostic_12_root": "After all requested simplifications, hIBP has the correct integral equality but its scalar is printed as `-(-(2 * pi * (I * k0)) / scale * integral)`. The target is the ring-equal positive-coefficient product; simp does not reassociate and cancel this outer/inner negation across division and multiplication.",
+      "diagnostic_12_repair": "Rewrite dx to fderiv, use hIBP unchanged as the first calc equality, then unfold the negative-wave derivative, pull out the constant integral, and close only the isolated coefficient identity with ring.",
+    "same_file_api_evidence": [
+      "HalfWeightCompactCoordinateGreen.product_integrable attaches `.integrable_of_hasCompactSupport` to the Continuous.mul expression before the support argument.",
+      "compactPair_directionalDerivative_right invokes integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable with the same hLeft/hRight/hBase order.",
+      "The v45 printed hIBP type establishes that the integration-by-parts theorem and both differentiability arguments already elaborate; only the final algebraic normal form differs."
+    ],
+    "required_imports": [],
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_REMOTE_TYPES_AND_SAME_FILE_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "atomic_sibling_group": {
+    "policy": "ALL_OR_NONE",
+    "this_owner": 3927,
+    "sibling_worker": "W11",
+    "sibling_owner": 3928,
+    "sibling_declaration": "integral_negativePlaneWave_mul_dy",
+    "reason": "The dx/dy declarations have byte-structurally symmetric residuals and feed the paired Fourier coefficient derivative identities. Although their textual replacements are disjoint, cumulative promotion should preserve coordinate symmetry by selecting both sibling repair products or neither."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W12-IDX3927-attach-integrability-method-to-horizontal-product",
+      "owner": "integral_negativePlaneWave_mul_dx",
+      "declaration_index": 3927,
+      "diagnostics": [11],
+      "kind": "body",
+      "classification": "REPAIR_LEADING_DOT_METHOD_CHAIN_PARSE_BOUNDARY",
+      "confidence": "very-high-exact-parser-diagnostic-and-same-file-syntax",
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dx v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left",
+      "new": "    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left",
+      "evidence": "The error explicitly says the Continuous.mul proof is being applied to `.integrable_of_hasCompactSupport`. Joining the field notation to its receiver restores the intended method call without changing any mathematical term."
+    },
+    {
+      "id": "V46-W12-IDX3927-isolate-horizontal-IBP-sign-ring-normalization",
+      "owner": "integral_negativePlaneWave_mul_dx",
+      "declaration_index": 3927,
+      "diagnostics": [12],
+      "kind": "body",
+      "classification": "PRESERVE_IBP_EQUALITY_THEN_NORMALIZE_SCALAR_SIGN_BY_RING",
+      "confidence": "high-static-exact-printed-hIBP-type-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  simpa only [HalfWeightCompactCoordinateGreen.dx_apply,\n    fderiv_literalStageNegativePlaneWave_one, neg_mul, neg_neg,\n    integral_const_mul, mul_assoc] using hIBP",
+      "new": "  rw [HalfWeightCompactCoordinateGreen.dx_apply]\n  calc\n    (∫ w : ℂ, literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) 1) =\n      - ∫ w : ℂ, (fderiv ℝ\n          (literalStageNegativePlaneWave Y k) w) 1 * v w := hIBP\n    _ = (2 * Real.pi * Complex.I * (k 0 : ℂ) /\n          literalStageFourierScale Y) *\n        ∫ w : ℂ, literalStageNegativePlaneWave Y k w * v w := by\n      simp only [fderiv_literalStageNegativePlaneWave_one, mul_assoc,\n        integral_const_mul]\n      ring",
+      "evidence": "The first calc equality is the exact inferred hIBP type printed by v45 before terminal simplification. The second step has the displayed `-(negativeCoefficient * integral) = positiveCoefficient * integral` residual and delegates only that unconditional commutative-ring identity to ring. This is coordinate-symmetric with W11 idx3928."
+    }
+  ],
+  "promotion_rule": "Compose only against the exact v45 all_probes source and only together with the W11 idx3928 symmetric repair product. Require remote direct Mock2=0, Mock2_Advanced=0, whole-FA maxErrors=2000 execution, disappearance of ordinals 11-14 without sibling-local replacements, complete residual comparison, 4416 byte-identical declaration headers, and trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

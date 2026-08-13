@@ -1,0 +1,81 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_SAME_FILE_API_EVIDENCE_DIRECT_LEAN_REQUIRED_V46_W05",
+  "worker_id": "W05",
+  "cluster_id": "V46-IDX3883-HILBERT-BASIS-FINITE-PROJECTION-COEFFICIENT",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3883,
+    "declaration": "repr_finiteHilbertProjection_sub_apply",
+    "v45_error_ordinal": 4,
+    "line": 52664,
+    "column": 42,
+    "diagnostic": "unsolved goals",
+    "root_or_cascade": "ROOT_FROM_INCOMPLETE_V44_Q2_STAGED_REPAIR",
+    "ownership": "W05-only"
+  },
+  "diagnosis": {
+    "prior_v44_repair": "V44-Q2-S01-normalize-hilbert-repr-coefficient-before-single-sum",
+    "prior_repair_effect": "It successfully changed each coefficient from inner product notation to b.repr f, but left both finite-sum coordinate goals unsolved.",
+    "exact_positive_goal": "(sum j in s, b.repr f j scalar-multiplied by coe (lp.single 2 j 1)) i - b.repr f i = 0, under hi : i in s",
+    "exact_negative_goal": "(sum j in s, b.repr f j scalar-multiplied by coe (lp.single 2 j 1)) i = 0, under hi : i notin s",
+    "root_cause": "The proof maps the projection through b.repr too early, producing an Lp-valued sum whose coercion to a coordinate function is not reduced by Finset.sum_apply, Pi.smul_apply, or lp.single_apply. The v45 unused-simp warnings confirm those three arguments do not perform the required coercion step.",
+    "repair_strategy": "Avoid the fragile Lp coercion entirely. Rewrite both repr applications to inner products, unfold the finite projection in E, use the same-file-proven Orthonormal.inner_right_sum API in the membership branch, and use inner_sum plus orthonormal_iff_ite termwise in the nonmembership branch.",
+    "same_file_api_evidence": [
+      "inner_literalStagePlaneWave_finiteProjection_of_mem uses Orthonormal.inner_right_sum with exactly a finite rank-one coefficient sum.",
+      "inner_finiteOrthonormalProjection_sub uses inner_sum, sum_inner, and Orthonormal.inner_sum in the same source region.",
+      "inner_literalStagePlaneWave proves and consumes orthonormal_iff_ite pointwise in the same file."
+    ],
+    "required_imports": [],
+    "expected_sibling_errors_closed": 1,
+    "merge_order_requirements": [
+      "Compose against the exact v45 all_probes source, where the incomplete V44-Q2-S01 probe is present; this body replacement supersedes that probe rather than stacking another lp simplifier."
+    ],
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_GOALS_AND_SAME_FILE_API_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W05-IDX3883-prove-projection-coefficient-in-E-before-repr",
+      "owner": "repr_finiteHilbertProjection_sub_apply",
+      "declaration_index": 3883,
+      "diagnostics": [4],
+      "kind": "body",
+      "classification": "BYPASS-LP-COERCION-USING-ORTHONORMAL-INNER-SUM",
+      "confidence": "high-static-exact-v45-goals-and-same-file-compiled-api-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  classical\n  by_cases hi : i ∈ s <;>\n    simp [P5LocalFourierRellich.finiteHilbertProjection_apply,\n      map_sub, map_sum, map_smul, b.repr_self,\n      ← HilbertBasis.repr_apply_apply, Finset.sum_apply, Pi.smul_apply,\n      lp.single_apply, hi]",
+      "new": "  classical\n  simp only [HilbertBasis.repr_apply_apply]\n  rw [P5LocalFourierRellich.finiteHilbertProjection_apply, inner_sub_right]\n  by_cases hi : i ∈ s\n  · rw [if_pos hi,\n      b.orthonormal.inner_right_sum (fun j ↦ inner ℂ (b j) f) hi,\n      sub_self]\n  · rw [if_neg hi]\n    have hzero :\n        inner ℂ (b i) (∑ j ∈ s, inner ℂ (b j) f • b j) = 0 := by\n      rw [inner_sum]\n      apply Finset.sum_eq_zero\n      intro j hj\n      have hij : i ≠ j := by\n        intro hij\n        apply hi\n        rwa [hij]\n      rw [inner_smul_right,\n        (orthonormal_iff_ite.mp b.orthonormal) i j, if_neg hij, mul_zero]\n    rw [hzero, zero_sub]",
+      "evidence": "The remote residual contains no remaining HilbertBasis coefficient mismatch; it contains only an unevaluated coerced Lp finite sum. The replacement proves the mathematical coefficient identity in E, where the source already demonstrates the exact orthonormal finite-sum APIs, and converts repr to inner without altering the theorem statement."
+    }
+  ],
+  "promotion_rule": "Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, owner diagnostic disappearance without new owner-local errors, inventory comparison, source identity, 4416 declaration headers, and trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

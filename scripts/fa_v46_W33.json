@@ -1,0 +1,95 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_W26_MIRROR_ATOMIC_PAIR_DIRECT_LEAN_REQUIRED_V46_W33",
+  "worker_id": "W33",
+  "cluster_id": "V46-IDX4297-ORDER-SPECIALIZED-CONJUGATE-DERIVATIVES-BEFORE-GENERAL-FDERIV",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4297,
+    "declaration": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose",
+    "v45_error_ordinals": [39],
+    "diagnostic_count": 1,
+    "lines": [59250],
+    "columns": [18],
+    "normalized_signatures": ["unsolved goals"],
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_SIMPLIFICATION_ORDER_ROOT_EXACT_MIRROR_OF_IDX4296",
+    "ownership": "W33-only-with-W26-atomic-promotion-contract"
+  },
+  "diagnosis": {
+    "exact_residual_shape": "The left side retains fderiv of HalfWeightCompactCoordinateGreen.conjugate (reducedChartAmbientTest v hv) in the real-one and I directions. The right side contains star of the corresponding fderiv terms of v, together with the lowering coefficient algebra.",
+    "root_cause": "The authority places specialized dx_conjugate_apply/dy_conjugate_apply and general dx_apply/dy_apply in one simp set. General derivative exposure fires first, destroys the structured conjugate dx/dy redexes, and leaves the specialized lemmas unused. Ring cannot relate opaque raw fderiv of the conjugated bundle to the starred raw derivatives.",
+    "exact_mirror_basis": "W26's locked contract requires the identical ordered five-phase repair, changing only the outer operator from euclideanRaiseTestAdjoint to euclideanLowerFromSuccTestAdjoint while preserving idx4297's existing -I and negative coefficient theorem statement.",
+    "repair_strategy": "Unfold reducedChartConjugateAmbientTest; expose the lowering adjoint and rpow shells without general derivative rules; explicitly rewrite dx_conjugate_apply, dy_conjugate_apply, and conjugate_apply; unfold reducedChartAmbientTest/fullPlaneTestToAmbientTestCore; only then reduce general derivatives and normalize star algebra before ring.",
+    "theorem_proposition_changed": false,
+    "semantic_risk": "LOW",
+    "confidence": "HIGH_STATIC_EXACT_W26_MIRROR_AND_IDENTICAL_REMOTE_RESIDUAL_DIRECT_LEAN_REQUIRED",
+    "disposition": "PATCH_READY"
+  },
+  "symmetric_atomic_pair": {
+    "pair_id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+    "selection_policy": "ALL_OR_NONE",
+    "application_order": [
+      "V46-W26-IDX4296-order-specialized-conjugate-derivatives-before-general-fderiv",
+      "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv"
+    ],
+    "owners": [
+      {"declaration_index": 4296, "declaration": "euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose", "worker": "W26"},
+      {"declaration_index": 4297, "declaration": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose", "worker": "W33"}
+    ],
+    "W26_manifest_path": "work/v46-workers/W26-idx4296/W26-idx4296-repair-manifest.json",
+    "W26_manifest_sha256": "4b1b4b598a3fcbb1831c57b90d709d24db4e8113fbbf9a7fc35ff6c2d81db505",
+    "contract_path": "work/v46-workers/W26-idx4296/W26-W33-atomic-pair-contract.json",
+    "contract_sha256": "e4bb400e28954c86cf14e6336a7fd880fca6a35f0c31cba9658ee4b6eb23e033",
+    "reason": "The sibling bodies exhibit the same simplifier-order failure and feed symmetric downstream model theorems idx4298/idx4299. Promotion must preserve the paired proof-trust surface."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W33-IDX4297-order-specialized-conjugate-derivatives-before-general-fderiv",
+      "pair_id": "V46-PAIR-4296-4297-ORDERED-CONJUGATE-DERIVATIVES",
+      "owner": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4297,
+      "diagnostics": [39],
+      "kind": "body",
+      "classification": "ORDERED_OUTER_EXPOSURE_THEN_SPECIALIZED_CONJUGATE_DERIVATIVE_REWRITE_EXACT_LOWERING_MIRROR",
+      "confidence": "high-static-exact-W26-mirror-and-v45-residual-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "expected_global_old_count": 1,
+      "old": " := by\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    reducedChartConjugateAmbientTest, fullPlaneAffineTranspose_apply, add_apply,\n    sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one,\n    HalfWeightCompactCoordinateGreen.dx_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dy_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dx_apply,\n    HalfWeightCompactCoordinateGreen.dy_apply,\n    reducedChartAmbientTest_apply, map_sub, map_add, map_mul,\n    map_neg, Complex.conj_I, Complex.conj_ofReal, smul_eq_mul]\n  ring",
+      "new": " := by\n  unfold reducedChartConjugateAmbientTest\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    fullPlaneAffineTranspose_apply, add_apply, sub_apply, smul_apply,\n    HalfWeightCompactCoordinateGreen.rpowMul_apply,\n    HalfWeightCompactCoordinateGreen.rpowScale, Real.rpow_one]\n  rw [HalfWeightCompactCoordinateGreen.dx_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.dy_conjugate_apply,\n    HalfWeightCompactCoordinateGreen.conjugate_apply]\n  unfold reducedChartAmbientTest fullPlaneTestToAmbientTestCore\n  simp only [HalfWeightCompactCoordinateGreen.dx_apply,\n    HalfWeightCompactCoordinateGreen.dy_apply, sub_eq_add_neg,\n    star_add, star_mul, star_neg, Complex.conj_I,\n    Complex.conj_ofReal, smul_eq_mul]\n  ring",
+      "evidence": "The exact idx4297 goal and unused-simp warnings mirror idx4296. This is W26's ordered body with only the required raising-to-lowering outer operator substitution, anchored to the exact idx4297 OLD fragment.",
+      "expected_effect": "Remove authoritative ordinal 39 and its obsolete specialized-simp warnings. Direct paired replay with W26 is required."
+    }
+  ],
+  "contamination_policy": {
+    "scan_new_lines_for_prefixes": ["+", "-"],
+    "required_new_prefix_count": 0,
+    "authority_owner_leading_diff_prefix_count": 0
+  },
+  "promotion_rule": "Select W26 and W33 ALL_OR_NONE, compose canonically in declaration order W26→W33, and require reverse-order composition to be byte-identical. Remote promotion requires idx4296 ordinal 38 and idx4297 ordinal 39 both to disappear without replacement diagnostics or synthetic sorry; downstream idx4298/idx4299 must replay; Mock2=0, Mock2_Advanced=0, whole FA maxErrors=2000 exit 0; all 4416 headers/order/comments/attributes remain identical and trust-six remains zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

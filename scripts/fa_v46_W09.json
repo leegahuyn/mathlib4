@@ -1,0 +1,117 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_ATOMIC_PAIR_DIRECT_LEAN_REQUIRED_V46_W09",
+  "worker_id": "W09",
+  "cluster_id": "V46-IDX3925-3926-SCOMP-BASEPOINT-ALIGNMENT",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3926,
+    "declaration": "fderiv_literalStageNegativePlaneWave_I",
+    "v45_error_ordinal": 10,
+    "line": 53297,
+    "column": 6,
+    "diagnostic": "Application type mismatch: the outer hasDerivAt_fourier_neg is fixed at scale^-1 * w.im, but HasDerivAt.scomp expects the unsimplified inner-path basepoint scale^-1 * (w.im + id 0)",
+    "baseline_status": "persisting",
+    "root_or_cascade": "ROOT_AFTER_SUCCESSFUL_COMP_TO_SCOMP_API_CORRECTION",
+    "ownership": "W09-only; atomic promotion with W08 idx3925"
+  },
+  "comparison": {
+    "pre_v45_error": {
+      "normalized_signature": "Application type mismatch: The argument",
+      "root": "HasDerivAt.comp used the wrong algebra-valued chain-rule API for a real-domain, complex-codomain derivative."
+    },
+    "v45_all_probes_error": {
+      "line": 53297,
+      "column": 6,
+      "normalized_signature": "Application type mismatch: The argument",
+      "actual_basepoint": "(literalStageFourierScale Y)^-1 * w.im",
+      "expected_basepoint": "(literalStageFourierScale Y)^-1 * (w.im + id 0)",
+      "root": "The V44 comp-to-scomp repair selected the correct scalar chain-rule API and advanced elaboration to a sole basepoint-unification mismatch occurring before the trailing simp can reduce id 0."
+    },
+    "decision": "COMPLETE_PRIOR_API_REPAIR_NOT_ROLLBACK",
+    "reason": "The remote expected type is now explicitly a HasDerivAt at the unsimplified output of the inner path. Aligning only the outer derivative's basepoint lets scomp elaborate; the existing trailing simp then normalizes id 0."
+  },
+  "diagnosis": {
+    "prior_v44_repair": "V44-Q3-HC02-vertical-fourier-real-to-complex-scomp",
+    "prior_repair_effect": "It correctly replaced HasDerivAt.comp by HasDerivAt.scomp, so the complex Fourier derivative is composed through a real scalar path using scalar multiplication.",
+    "exact_root_cause": "Lean must unify the basepoint of hasDerivAt_fourier_neg with the output point of `(((hasDerivAt_id (0 : R)).const_add w.im).const_mul scale^-1)` before any proof produced by the trailing `simp only` is available. The inner HasDerivAt retains `id 0` syntactically, while the outer HasDerivAt was instantiated at its manually pre-simplified value.",
+    "repair_strategy": "Instantiate hasDerivAt_fourier_neg at the exact unsimplified inner-path output `scale^-1 * (w.im + id 0)`. Retain scomp, all constant-multiplication orientation, the convert proof, and the existing simp/field_simp/ring closure unchanged.",
+    "remote_type_evidence": [
+      "The v45 all_probes FA log says the supplied derivative is based at `(literalStageFourierScale Y)^-1 * w.im`.",
+      "The same error says HasDerivAt.scomp expects a derivative based at `(literalStageFourierScale Y)^-1 * (w.im + id 0)`.",
+      "The immediately preceding horizontal sibling idx3925 reports the exact analogous `.re` mismatch, proving this is a symmetric two-declaration root."
+    ],
+    "required_imports": [],
+    "expected_owner_errors_closed": 1,
+    "expected_downstream_effect": "Allows idx3928's vertical integration-by-parts proof to use fderiv_literalStageNegativePlaneWave_I once the independent idx3928 body is repaired.",
+    "dependency_assumptions": [
+      "V44-Q3-HC02's `.scomp` remains present.",
+      "The existing trailing simplifier continues to reduce `id 0`, as its simp set already includes the arithmetic and coordinate reductions used by this proof."
+    ],
+    "merge_order_requirements": [
+      "Compose against the exact v45 all_probes source SHA 726f40d1.",
+      "Select this W09 repair if and only if the paired W08 idx3925 repair is selected."
+    ],
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_STATIC_EXACT_REMOTE_EXPECTED_TYPE_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY_ATOMIC_PAIR"
+  },
+  "pair_contracts": [
+    {
+      "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+      "declaration_indices": [3925, 3926],
+      "repair_ids": [
+        "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+        "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+      ],
+      "selection": "ALL_OR_NONE",
+      "companion_worker": "W08",
+      "companion_manifest": "work/v46-workers/W08-idx3925/W08-idx3925-repair-manifest.json",
+      "companion_manifest_sha256": "a6edd52ed24165ad49c76b5e36a9ced463a6c3c96c55c803e8a2870c6dc5e4d1"
+    }
+  ],
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp",
+      "pair_id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+      "owner": "fderiv_literalStageNegativePlaneWave_I",
+      "declaration_index": 3926,
+      "diagnostics": [10],
+      "kind": "body",
+      "classification": "ALIGN-OUTER-HASDERIVAT-BASEPOINT-WITH-UNSIMPLIFIED-INNER-PATH",
+      "confidence": "very-high-static-exact-v45-actual-versus-expected-type-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "    (((hasDerivAt_fourier_neg (1 : ℝ) (k 1)\n        ((literalStageFourierScale Y)⁻¹ * w.im)).scomp 0",
+      "new": "    (((hasDerivAt_fourier_neg (1 : ℝ) (k 1)\n        ((literalStageFourierScale Y)⁻¹ * (w.im + id 0))).scomp 0",
+      "evidence": "The remote compiler prints these exact actual and expected HasDerivAt basepoints. The change does not alter the function or derivative formula; it merely postpones `id 0 = 0` normalization until the proof's existing trailing simplifier, after scomp has elaborated."
+    }
+  ],
+  "promotion_rule": "ALL_OR_NONE with W08 idx3925. Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of both idx3925 and idx3926 without new owner-local diagnostics, complete inventory comparison, source identity, all 4416 declaration headers/comments/attributes preserved, and executable trust-six zero before promotion.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

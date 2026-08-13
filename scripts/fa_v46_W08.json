@@ -1,0 +1,88 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_ATOMIC_PAIR_DIRECT_LEAN_REQUIRED_V46_W08",
+  "worker_id": "W08",
+  "cluster_id": "V46-IDX3925-FOURIER-SCOMP-BASEPOINT-ALIGNMENT",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3925,
+    "declaration": "fderiv_literalStageNegativePlaneWave_one",
+    "v45_error_ordinal": 9,
+    "line": 53271,
+    "column": 6,
+    "normalized_signature": "Application type mismatch: The argument",
+    "diagnostic_count": 1,
+    "ownership": "W08-only"
+  },
+  "pair_contracts": [
+    {
+      "id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+      "declaration_indices": [3925, 3926],
+      "repair_ids": [
+        "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+        "V46-W09-IDX3926-align-outer-fourier-basepoint-before-scomp"
+      ],
+      "selection": "ALL_OR_NONE",
+      "reason": "The horizontal and vertical declarations are syntactic coordinate mirrors and retain the same post-V44 elaboration failure. Promotion of only one would deliberately leave the paired root unresolved."
+    }
+  ],
+  "diagnosis": {
+    "prior_v44_repair": "V44-Q3-HC01-horizontal-fourier-real-to-complex-scomp",
+    "prior_repair_effect": "Changing HasDerivAt.comp to HasDerivAt.scomp selected the correct real-scalar chain rule for a complex-valued Fourier factor, but exposed a stricter pre-simplification basepoint unification requirement.",
+    "exact_root_cause": "The inner derivative `((hasDerivAt_id 0).const_add w.re).const_mul scale^-1` is based at `scale^-1 * (w.re + id 0)`. The outer `hasDerivAt_fourier_neg` was explicitly instantiated at the propositionally equal but not definitionally identical point `scale^-1 * w.re`. `scomp` must unify the two basepoints before the trailing `simp only [..., add_zero, ...]` can normalize them, so elaboration stops at the application.",
+    "repair_strategy": "Instantiate the outer Fourier derivative at the exact unsimplified basepoint produced by the inner derivative. Keep `scomp`, all later algebra, and the theorem statement unchanged; the existing `add_zero` simplification then normalizes the derivative coefficient and value.",
+    "remote_evidence": [
+      "The v45 log says the supplied outer derivative is based at `(literalStageFourierScale Y)^-1 * w.re` but the expected derivative is based at `(literalStageFourierScale Y)^-1 * (w.re + id 0)`.",
+      "No later diagnostic is emitted for idx3925, so this failed `scomp` application is the sole persisting owner-local frontier.",
+      "The adjacent idx3926 diagnostic is the exact `w.im` mirror, establishing an atomic two-coordinate cluster."
+    ],
+    "required_imports": [],
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_STATIC_EXACT_REMOTE_EXPECTED-TYPE_ALIGNMENT_DIRECT_LEAN_REQUIRED",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY_ATOMIC_WITH_W09"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W08-IDX3925-align-outer-fourier-basepoint-before-scomp",
+      "pair_id": "V46-PAIR-3925-3926-ALIGN-SCOMP-BASEPOINT",
+      "owner": "fderiv_literalStageNegativePlaneWave_one",
+      "declaration_index": 3925,
+      "diagnostics": [9],
+      "kind": "body",
+      "classification": "EXACT-SCOMP-BASEPOINT-ALIGNMENT",
+      "confidence": "very-high-static-exact-v45-expected-type-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "    (((hasDerivAt_fourier_neg (1 : ℝ) (k 0)\n        ((literalStageFourierScale Y)⁻¹ * w.re)).scomp 0",
+      "new": "    (((hasDerivAt_fourier_neg (1 : ℝ) (k 0)\n        ((literalStageFourierScale Y)⁻¹ * (w.re + id 0))).scomp 0",
+      "evidence": "This makes the outer HasDerivAt basepoint byte-for-expression identical to the basepoint printed by Lean for the inner const_add/const_mul derivative. The existing trailing `simp only` includes `add_zero`, so no theorem-level or final algebra change is needed."
+    }
+  ],
+  "promotion_rule": "Compose this repair only together with the W09 idx3926 mirror under the ALL_OR_NONE pair contract. Require direct remote Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of both idx3925 and idx3926 without new owner-local diagnostics, full inventory comparison, exact source identity, all 4416 declaration headers, comments and attributes preserved, and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

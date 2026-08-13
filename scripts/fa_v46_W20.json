@@ -1,0 +1,95 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_INTERFACE_BRIDGE_DIRECT_LEAN_REQUIRED_V46_W20",
+  "worker_id": "W20",
+  "cluster_id": "V46-IDX4012-CONTINUOUS-ANTIDUAL-TO-ALGEBRAIC-SEMILINEAR-BRIDGE",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 4012,
+    "declaration": "discriminantHardStagePotentialPairing",
+    "v45_error_ordinals": [27],
+    "v45_error_lines": [54978],
+    "v45_error_columns": [26],
+    "normalized_signatures": [
+      "Application type mismatch: The argument"
+    ],
+    "diagnostic_count": 1,
+    "baseline_status": "persisting",
+    "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_INTERFACE_ADAPTER_ROOT_EXPOSED_AFTER_PRODUCER_REPAIRS",
+    "ownership": "W20-only"
+  },
+  "diagnosis": {
+    "exact_actual_type": "LiteralStageL2 (discriminantHardLiteralStage N) →ₗ[ℂ] StrongAntiDual (GraphSobolevCompletion n)",
+    "exact_expected_type": "LiteralStageL2 (discriminantHardLiteralStage N) →ₗ[ℂ] GraphSobolevCompletion n →ₗ⋆[ℂ] ℂ",
+    "root_cause": "StrongAntiDual is an abbreviation for a continuous conjugate-linear map, E →L⋆[ℂ] ℂ. LinearMap.mkContinuous₂ instead takes an outer LinearMap whose values are algebraic conjugate-linear maps, E →ₗ⋆[ℂ] ℂ, and then constructs continuity in both variables. The continuous anti-dual value does not definitionally unify with that algebraic codomain at the first argument.",
+    "historical_progression": [
+      {
+        "stage": "V43-MID-HC05-HC07",
+        "effect": "The idx4010 outer add/smul structure evaluations and idx4011 bound unfolding were repaired. In the locked v45 authority both declarations elaborate without diagnostics, so idx4012 is no longer a producer cascade."
+      },
+      {
+        "stage": "V44-Q1-S02",
+        "effect": "Replacing receiver syntax `(producer).mkContinuous₂` by explicit `LinearMap.mkContinuous₂ producer` exposed the exact continuous-versus-algebraic conjugate-linear codomain mismatch; it did not supply the required adapter."
+      },
+      {
+        "stage": "V45 six-variant matrix",
+        "effect": "all_probes, common_probe, core, q1_probe, q2_probe, and q3_probe each retain exactly one owner-local application type mismatch, with no idx4010 or idx4011 residual."
+      }
+    ],
+    "same_file_api_evidence": [
+      "StrongAntiDual is defined in the locked source as E →L⋆[ℂ] ℂ.",
+      "embeddedMassForm in the same locked source supplies the exact working bridge: it wraps `(embeddedMassLinear J u).toLinearMap` in an explicitly typed outer LinearMap and then calls LinearMap.mkContinuous₂.",
+      "weightedGraphLinear works directly because its declared codomain is already the algebraic `GraphSobolevCompletion n →ₗ⋆[ℂ] ℂ`."
+    ],
+    "repair_strategy": "Copy the compiled same-file embeddedMassForm adapter pattern in the idx4012 body: map every StrongAntiDual value to its `.toLinearMap`, prove the outer add/smul laws extensionally by simp, type-ascribe the algebraic conjugate-linear codomain, and discharge the unchanged norm bound with the existing idx4011 theorem by simpa.",
+    "required_imports": [],
+    "merge_dependencies": [],
+    "semantic_risk": "LOW",
+    "confidence": "VERY_HIGH_STATIC_EXACT_DIAGNOSTIC_AND_COMPILED_SAME_FILE_ADAPTER_DIRECT_LEAN_REQUIRED",
+    "definition_type_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W20-IDX4012-lower-strong-antidual-values-before-mkContinuous2",
+      "owner": "discriminantHardStagePotentialPairing",
+      "declaration_index": 4012,
+      "diagnostics": [27],
+      "kind": "body",
+      "classification": "EXPLICIT_CONTINUOUS_ANTIDUAL_TO_ALGEBRAIC_CONJUGATE_LINEAR_MAP_ADAPTER",
+      "confidence": "very-high-static-exact-v45-type-mismatch-and-same-file-compiled-pattern-direct-Lean-required",
+      "expected_count_in_owner": 1,
+      "old": "  LinearMap.mkContinuous₂ (discriminantHardStagePairingLinear N n)\n    uniformBound (discriminantHardStagePairingLinear_bound N n)",
+      "new": "  LinearMap.mkContinuous₂\n    ({ toFun := fun f ↦\n         (discriminantHardStagePairingLinear N n f).toLinearMap\n       map_add' := by\n         intro f g\n         ext v\n         simp\n       map_smul' := by\n         intro c f\n         ext v\n         simp } :\n      P5PhysicalHardStageRestriction.LiteralStageL2\n          (discriminantHardLiteralStage N) →ₗ[ℂ]\n        GraphSobolevCompletion n →ₗ⋆[ℂ] ℂ)\n    uniformBound\n    (by\n      intro f v\n      simpa using discriminantHardStagePairingLinear_bound N n f v)",
+      "evidence": "The error identifies only the first mkContinuous₂ argument and prints the exact codomain mismatch. This replacement is the same adapter construction already used by embeddedMassForm in the authority source.",
+      "expected_effect": "Remove authoritative v45 all_probes ordinal 27 at idx4012 without changing the declaration header, the produced bounded pairing, or any downstream API. Direct Lean remains the promotion gate."
+    }
+  ],
+  "promotion_rule": "Compose only against exact v45 all_probes SHA 726f40d1 and select this one owner-local fragment. Require remote direct Mock2=0, Mock2_Advanced=0, full FA maxErrors=2000 execution, disappearance of idx4012 ordinal 27 without any new owner-local diagnostic, complete residual-inventory comparison, 4416 byte-identical declaration headers, comments and attributes preserved, trust-six zero, and synthetic-sorry zero before promotion.",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

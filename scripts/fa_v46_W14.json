@@ -1,0 +1,125 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_NO_GOALS_RESIDUAL_DIRECT_LEAN_REQUIRED_V46_W14",
+  "worker_id": "W14",
+  "cluster_id": "V46-IDX3932-DY-FOURIER-SCALAR-DROP-REDUNDANT-RING",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31728453514,
+    "head_sha": "5ec44f3d343955f3124e7efecc048b648dccc5ab",
+    "job_id": 94542617528,
+    "artifact_id": 9192669673,
+    "artifact_digest": "sha256:8f07a678145b62342aaa9cb94ebbce6c9f7cc1a45c400560918d42499e67f2f3",
+    "variant": "all_probes",
+    "source_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "726f40d1dd03d32f03592adf4f6b02e3f7f52e7e1f71087ee53bdb83c4bb0caf",
+    "source_bytes": 2788764,
+    "source_lines": 62383,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v45-results/run-31728453514/all_probes/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "1fb14600849d7281df6ff65ae9213b6671b19a396cf539041f864fea157476a1",
+    "fa_log_path": "work/v45-results/run-31728453514/all_probes/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "bcc92a247a531419b25677cfdd5e28ce1705e6c3fb87301b93e24510932b4888"
+  },
+  "assignment": {
+    "declaration_index": 3932,
+    "declaration": "mFourierCoeff_scaled_dy",
+    "requested_diagnostic_ordinals": [17],
+    "authority_diagnostic_ordinals": [16],
+    "ordinal_correction": "In the locked all_probes FULL_DIAGNOSTICS, ordinal 16 belongs to idx3932 and ordinal 17 belongs to idx3933 inner_literalStagePlaneWave.",
+    "diagnostic_count": 1,
+    "lines": [53604],
+    "columns": [6],
+    "normalized_signatures": ["No goals to be solved"],
+    "root_or_cascade": "OWNER_LOCAL_FOLLOW_ON_AFTER_SUCCESSFUL_V44_Q1_HC03_SCALAR_COERCION_BRIDGE",
+    "ownership": "W14-only"
+  },
+  "variant_stability": {
+    "v45_core": {
+      "diagnostic_count": 1,
+      "ordinal": 20,
+      "line": 53568,
+      "signature": "No goals to be solved"
+    },
+    "v45_q3_probe": {
+      "diagnostic_count": 1,
+      "ordinal": 16,
+      "line": 53603,
+      "signature": "No goals to be solved"
+    },
+    "v45_all_probes": {
+      "diagnostic_count": 1,
+      "ordinal": 16,
+      "line": 53604,
+      "signature": "No goals to be solved"
+    },
+    "decision": "REMOVE_ONLY_THE_TACTIC_IDENTIFIED_BY_THE_EXACT_REMOTE_DIAGNOSTIC",
+    "reason": "The residual is unchanged across all three variants. It is emitted on the final ring immediately after field_simp; Lean reports that field_simp already closed the equality."
+  },
+  "diagnosis": {
+    "exact_remote_failure": "No goals to be solved at the final `ring` tactic.",
+    "root": "After rw [hbase], field_simp [literalStageFourierScale_ne_zero Y] completely proves the final scale-cancellation equality. The following ring is therefore executed with no goals.",
+    "repair": "Delete only the redundant final ring and retain rw [hbase] plus field_simp unchanged.",
+    "same_file_sibling": {
+      "declaration_index": 3931,
+      "declaration": "mFourierCoeff_scaled_dx",
+      "authority_lines": "53534-53537",
+      "evidence": "The immediately preceding horizontal theorem has the identical terminal equality pattern with k 0 and ends successfully at field_simp without a trailing ring."
+    },
+    "prior_attempts": {
+      "v42": "V42-Q4-S3932 staged the a.e. Lp-coercion scalar bridge.",
+      "v43": "V43-E-H09/H10 proved the exact horizontal progression: after the scalar bridge, remote Lean reached No goals to be solved at the trailing ring, and removing that ring completed idx3931. V43 left the vertical twin staged because it had not yet materialized the bridge.",
+      "v44": "V44-Q1-HC03 reused the working dx scalar proof for dy. V45 now supplies the predicted exact No goals residual at dy's trailing ring. W14 is the direct vertical H10 completion."
+    },
+    "required_imports": [],
+    "expected_errors_closed": 1,
+    "semantic_risk": "VERY_LOW_STATIC_ELABORATION_RISK",
+    "confidence": "VERY_HIGH_EXACT_REMOTE_NO_GOALS_AND_ACCEPTED_SAME_FILE_SIBLING",
+    "theorem_proposition_changed": false,
+    "disposition": "PATCH_READY"
+  },
+  "dependency_classification": {
+    "diagnostic_is_cascade": false,
+    "reason": "The owner reaches its final tactic and field_simp closes the goal, so ordinal 16 is an independently demonstrated redundant-tactic residual rather than an elaboration cascade.",
+    "compile_dependencies": [
+      {
+        "worker": "W11",
+        "declaration_index": 3928,
+        "declaration": "integral_negativePlaneWave_mul_dy",
+        "use": "The calc invokes integral_negativePlaneWave_mul_dy directly."
+      },
+      {
+        "worker": "W13",
+        "declaration_index": 3930,
+        "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "use": "The proof constructs hbase and hder from idx3930. W13 classifies idx3930 as an independent deferred domain-normalization root."
+      }
+    ],
+    "promotion_policy": "The W14 edit is independently exact, but a clean owner probe must compose it after W11 and after a future executable idx3930 repair. Do not misreport the remaining dependency failures as a W14 regression."
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V46-W14-IDX3932-drop-redundant-dy-ring-after-field-simp",
+      "owner": "mFourierCoeff_scaled_dy",
+      "declaration_index": 3932,
+      "diagnostics": [16],
+      "kind": "body",
+      "classification": "EXACT-REMOTE-NO-GOALS-TRAILING-TACTIC-REMOVAL",
+      "confidence": "very-high-exact-remote-and-same-file-horizontal-sibling",
+      "expected_count_in_owner": 1,
+      "old": "      rw [hbase]\n      field_simp [literalStageFourierScale_ne_zero Y]\n      ring",
+      "new": "      rw [hbase]\n      field_simp [literalStageFourierScale_ne_zero Y]",
+      "evidence": "The locked log points exactly to ring with No goals to be solved. The same fragment occurs once globally and once in idx3932; idx3931 already ends at field_simp."
+    }
+  ],
+  "promotion_rule": "Compose after W11 and a future exact idx3930 repair. Require the idx3932 authority diagnostic 16 to disappear with no new owner-local diagnostic, then Mock2=0, Mock2_Advanced=0 and full FA maxErrors=2000. Recheck all 4416 headers/order/comments/attributes byte-identical and trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}
