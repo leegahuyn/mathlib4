@@ -1,4 +1,4 @@
-name: Codex FA v29 grouped root-cluster highcap2000
+name: Codex FA v31 grouped safe full-inventory highcap2000
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - codex/fa-qym-cleanbuild-final-20260811-fast
     paths:
       - .github/workflows/codex-fa-api-probe-fullplane-notation-v1.yml
-      - scripts/fa_v29_grouped_batch.py
-      - scripts/fa_v29_grouped_from_filtered.patch
+      - scripts/fa_v31_grouped_safe_batch.py
+      - scripts/fa_v31_grouped_safe_from_filtered.patch
   workflow_dispatch:
 
 permissions:
@@ -25,14 +25,14 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Materialize exact authoritative filtered v23 and apply grouped v29 batch
+      - name: Materialize exact authoritative filtered v23 and apply audited grouped v31 batch
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_SOURCE_SHA256: 931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v29-grouped-highcap2000
+          OUT=build-logs/codex-fa-v31-grouped-safe-highcap2000
           mkdir -p "$OUT" /tmp/base
           ART=9166681094
           DIGEST=sha256:cfdf7f4ffc83812ac23c1f29c5c4c1eda53c54ca62d31aedd159e7e2d3db655a
@@ -49,15 +49,15 @@ jobs:
           assert len(hits)==1,hits
           shutil.copy2(hits[0],Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
-          python3 scripts/fa_v29_grouped_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
-          test "$(cat "$OUT/candidate.sha256")" = c0bc540977afc978a8964690dc4996759c622f000fb9a45b2647d825b0e26b07
-          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = c0bc540977afc978a8964690dc4996759c622f000fb9a45b2647d825b0e26b07
+          python3 scripts/fa_v31_grouped_safe_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
+          test "$(cat "$OUT/candidate.sha256")" = af67698d4b42f28b6abc7abd1203a78b3aac0d2d950ab1e646bd5d79e7d6a7e2
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = af67698d4b42f28b6abc7abd1203a78b3aac0d2d950ab1e646bd5d79e7d6a7e2
 
       - name: Install pinned Lean and cache
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v29-grouped-highcap2000
+          OUT=build-logs/codex-fa-v31-grouped-safe-highcap2000
           curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
           sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
@@ -69,7 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          OUT=build-logs/codex-fa-v29-grouped-highcap2000
+          OUT=build-logs/codex-fa-v31-grouped-safe-highcap2000
           mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
           one(){
             local s="$1" cap="$2"
@@ -89,12 +89,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v29-grouped-highcap2000
+          OUT=build-logs/codex-fa-v31-grouped-safe-highcap2000
           python3 - <<'PY'
           from pathlib import Path
           from bisect import bisect_right
           import collections, hashlib, json, os, re
-          out=Path('build-logs/codex-fa-v29-grouped-highcap2000'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          out=Path('build-logs/codex-fa-v31-grouped-safe-highcap2000'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
           s=p.read_text(errors='replace'); b=p.read_bytes()
           dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
           ds=list(dr.finditer(s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
@@ -107,7 +107,7 @@ jobs:
               'declaration_index':idx if idx>=0 else None,'message':msg,'normalized_message_signature':re.sub(r'\s+',' ',msg)})
           first=di[0] if di else {}; stems=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']
           ex={x:int((out/f'{x}.exit').read_text()) if (out/f'{x}.exit').exists() else None for x in stems}
-          metric={'schema':'fa-v29-grouped-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),
+          metric={'schema':'fa-v31-grouped-safe-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),
             'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),
             'source_identity_locked_after_materialization':(out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest()==(out/'candidate.sha256').read_text().strip(),
             'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],
@@ -128,15 +128,15 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v29-grouped-highcap2000-${{ github.sha }}
+          name: codex-fa-v31-grouped-safe-highcap2000-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-v29-grouped-highcap2000
+            build-logs/codex-fa-v31-grouped-safe-highcap2000
           retention-days: 30
 
       - name: Preserve actual FA exit
         if: always()
         shell: bash
         run: |
-          test -f build-logs/codex-fa-v29-grouped-highcap2000/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-v29-grouped-highcap2000/Mock2_FunctionalAnalysis.exit)"
+          test -f build-logs/codex-fa-v31-grouped-safe-highcap2000/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-v31-grouped-safe-highcap2000/Mock2_FunctionalAnalysis.exit)"
