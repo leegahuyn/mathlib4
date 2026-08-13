@@ -1,4 +1,4 @@
-name: Codex FA v38 cumulative early-root probe
+name: Codex FA v38 parallel early-root probes
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -9,12 +9,16 @@ on:
 permissions: {actions: read, contents: read}
 jobs:
   probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [rw_hidx, simp_hidx, cast_convert, coord_eq_first, coord_eq_n]
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Materialize exact v37 and generate cumulative variants
+      - name: Materialize exact v37 and generate variants
         env:
           GH_TOKEN: "${{ github.token }}"
         shell: bash
@@ -41,24 +45,26 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile all cumulative prefix variants
+      - name: Compile selected cumulative prefix
+        env:
+          VARIANT: "${{ matrix.variant }}"
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          : >/tmp/v38probe/results.txt
-          for variant in rw_hidx simp_hidx cast_convert coord_eq_first coord_eq_n; do
-            set +e
-            lake env lean -DmaxErrors=1000 -DwarningAsError=false "/tmp/v38probe/ProbeFA_${variant}.lean" >"/tmp/v38probe/${variant}.log" 2>&1
-            rc=$?
-            set -e
-            echo "${variant}=${rc}" | tee -a /tmp/v38probe/results.txt
-          done
-          cat /tmp/v38probe/results.txt
-      - name: Upload evidence
+          set +e
+          lake env lean -DmaxErrors=1000 -DwarningAsError=false "/tmp/v38probe/ProbeFA_${VARIANT}.lean" >"/tmp/v38probe/${VARIANT}.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >"/tmp/v38probe/${VARIANT}.exit"
+          echo "${VARIANT}=${rc}"
+      - name: Upload selected evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v38-earlyroots-${{ github.sha }}
-          path: /tmp/v38probe
+          name: codex-fa-v38-earlyroot-${{ matrix.variant }}-${{ github.sha }}
+          path: |
+            /tmp/v38probe/${{ matrix.variant }}.log
+            /tmp/v38probe/${{ matrix.variant }}.exit
+            /tmp/v38probe/manifest.json
           retention-days: 30
