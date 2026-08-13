@@ -1,0 +1,153 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_ONLY_DIRECT_LEAN_REQUIRED_V44_Q3",
+  "direct_lean_verified": false,
+  "full_fa_clean_claimed": false,
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "variant": "middle_probe",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v43-run-31719983304/9189354873/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c"
+  },
+  "ancestry": {
+    "base_authority_source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+    "predecessor_middle_source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109"
+  },
+  "scope": {
+    "q3_queue_path": "work/v44-results/run-31719983304/middle_probe/RESIDUAL_QUEUE_3.json",
+    "q3_queue_sha256": "d9aac168e73b00c41b6d326dc1437e59cbd115a160868522b9856dd3d752ef6a",
+    "q3_owner_count": 12,
+    "q3_diagnostic_count": 20
+  },
+  "overlap_exclusions": {
+    "q1_high_confidence_owners": [3669, 3899, 3932, 3946, 4297, 4298, 4395],
+    "common_owners": [3838, 3949, 4015, 4017],
+    "required_intersection": []
+  },
+  "repairs": [
+    {
+      "id": "V44-Q3-S01-change-nested-withlp-carrier",
+      "owner": "jointGraphCoreDensityAt_of_strongCrossAdjoints",
+      "declaration_index": 3690,
+      "diagnostic_ordinals": [3],
+      "kind": "body",
+      "classification": "STAGE_DEFINITIONAL_CARRIER_PROBE",
+      "confidence": "medium-high-exact-remote-carrier-shape",
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [coe_smoothCoreMap,\n      DefinitionOneSobolev.QuotientHilbertCoordinates.graph,\n      FixedPhaseClosedOperators.successorGraphCoordinates_base,\n      FixedPhaseClosedOperators.successorGraphCoordinates_raised,\n      FixedPhaseClosedOperators.successorGraphCoordinates_lowered,\n      FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,\n      baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply,\n      Function.comp_apply, LinearMap.coe_mk, AddHom.coe_mk] using hOuter",
+      "new": "    change Filter.Tendsto\n      (fun j : ℕ ↦ WithLp.toLp 2\n        (l2Coordinate (n + 1) (w j),\n          WithLp.toLp 2\n            (raisedCoordinate (n + 1) (w j),\n              lowerFromSuccCoordinate n (w j))))\n      Filter.atTop\n      (𝓝 (WithLp.toLp 2\n        (baseCoordinate n x,\n          WithLp.toLp 2\n            (raiseCoordinate n x, lowerCoordinate n x))))\n    simpa only [Function.comp_apply] using hOuter",
+      "staging_reason": "The remote types differ only by WeakCoordinateAmbient versus the exact nested WithLp carrier, but definitional unfolding of the quotient coordinate projections remains elaborator-sensitive.",
+      "prior_relation": "Rebases V42-Q4-S3690 onto the exact middle source; the selected parent idx3689 repair is preserved."
+    },
+    {
+      "id": "V44-Q3-S02-prove-whole-torus-coordinate-function-before-injectivity",
+      "owner": "literalStageTorusPoint_physicalTorusPoint",
+      "declaration_index": 3920,
+      "diagnostic_ordinals": [10],
+      "kind": "body",
+      "classification": "STAGE_DEPENDENT_REWRITE_BOUNDARY_PROBE",
+      "confidence": "medium-high-existing-static-root-repair-rebased",
+      "expected_count_in_owner": 1,
+      "old": "  apply Complex.measurableEquivPi.injective\n  ext i\n  simp only [literalStageTorusPoint, literalStageTorusCoordinate,\n    literalStagePhysicalTorusPoint, Complex.measurableEquivPi_apply]\n  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  simp only [literalStagePhysicalTorusPoint]\n  have hi := hw i\n  have hscaled :\n      (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i ∈ Set.Ioc (-(1 / 2 : ℝ)) (1 / 2) := by\n    rw [Set.mem_Ioc] at hi ⊢\n    constructor\n    · have h := mul_lt_mul_of_pos_left hi.1\n        (inv_pos.mpr (literalStageFourierScale_pos Y))\n      simpa [literalStageFourierScale_ne_zero Y,\n        div_eq_mul_inv, mul_assoc] using h\n    · have h := mul_le_mul_of_nonneg_left hi.2\n        (inv_pos.mpr (literalStageFourierScale_pos Y)).le\n      simpa [literalStageFourierScale_ne_zero Y,\n        div_eq_mul_inv, mul_assoc] using h\n  rw [show\n      (AddCircle.equivIoc 1 (-(1 / 2 : ℝ))\n          (((literalStageFourierScale Y)⁻¹ *\n            Complex.measurableEquivPi w i : ℝ) : UnitAddCircle)).1 =\n        (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i by\n    exact congrArg Subtype.val (AddCircle.equivIoc_coe_eq hscaled)]\n  field_simp [literalStageFourierScale_ne_zero Y]",
+      "new": "  have hcoord :\n      literalStageTorusCoordinate (literalStagePhysicalTorusPoint Y w) =\n        fun i => (literalStageFourierScale Y)⁻¹ *\n          Complex.measurableEquivPi w i := by\n    funext i\n    have hi := hw i\n    have hscaled :\n        (literalStageFourierScale Y)⁻¹ *\n            Complex.measurableEquivPi w i ∈ Set.Ioc (-(1 / 2 : ℝ)) (1 / 2) := by\n      rw [Set.mem_Ioc] at hi ⊢\n      constructor\n      · have h := mul_lt_mul_of_pos_left hi.1\n          (inv_pos.mpr (literalStageFourierScale_pos Y))\n        simpa [literalStageFourierScale_ne_zero Y,\n          div_eq_mul_inv, mul_assoc] using h\n      · have h := mul_le_mul_of_nonneg_left hi.2\n          (inv_pos.mpr (literalStageFourierScale_pos Y)).le\n        simpa [literalStageFourierScale_ne_zero Y,\n          div_eq_mul_inv, mul_assoc] using h\n    unfold literalStageTorusCoordinate literalStagePhysicalTorusPoint\n    rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n    exact congrArg Subtype.val (AddCircle.equivIoc_coe_eq hscaled)\n  unfold literalStageTorusPoint\n  rw [hcoord]\n  apply Complex.measurableEquivPi.injective\n  ext i\n  simp [literalStageFourierScale_ne_zero Y]",
+      "staging_reason": "The remote target is a Fin-2 vector assembled under measurableEquivPi.symm, so coordinate rewriting under its dependent representative proof cannot match. The whole coordinate-function equality removes that boundary, but final simplification needs direct Lean confirmation.",
+      "prior_relation": "Rebases the old literal-stage scaling override onto the current hscaled proof and current declaration index."
+    },
+    {
+      "id": "V44-Q3-S03-name-horizontal-ibp-integrability-in-api-order",
+      "owner": "integral_negativePlaneWave_mul_dx",
+      "declaration_index": 3927,
+      "diagnostic_ordinals": [15, 16, 17, 18],
+      "kind": "body",
+      "classification": "STAGE_AFTER_PAIRED_DERIVATIVE_ROOT",
+      "confidence": "medium-high-exact-api-argument-order",
+      "expected_count_in_owner": 1,
+      "old": "  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ))\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dx v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+      "new": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) 1 * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_one, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 0 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) 1)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dx v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ))\n    hLeft hRight hBase\n    (fun _ _ ↦\n      (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+      "staging_reason": "The first remote mismatch proves the API expects f' * g, then f * g', then f * g. The named witnesses enforce that order, but this probe depends on the paired idx3925/3926 repair and coercion elaboration.",
+      "prior_relation": "Rebases V42-Q4-S3927 and corrects its dependency to the atomic idx3925/3926 pair."
+    },
+    {
+      "id": "V44-Q3-S04-name-vertical-ibp-integrability-in-api-order",
+      "owner": "integral_negativePlaneWave_mul_dy",
+      "declaration_index": 3928,
+      "diagnostic_ordinals": [19, 20, 21, 22],
+      "kind": "body",
+      "classification": "STAGE_AFTER_PAIRED_DERIVATIVE_ROOT",
+      "confidence": "medium-high-exact-api-argument-order",
+      "expected_count_in_owner": 1,
+      "old": "  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))\n    (f := literalStageNegativePlaneWave Y k) (g := (v : ℂ → ℂ))\n    (v := Complex.I)\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dy v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+      "new": "  have hBase : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n  have hLeft : Integrable\n      (fun w : ℂ ↦\n        (fderiv ℝ (literalStageNegativePlaneWave Y k) w) Complex.I * v w)\n      (volume : Measure ℂ) := by\n    simpa only [fderiv_literalStageNegativePlaneWave_I, mul_assoc] using\n      hBase.const_mul\n        (-2 * Real.pi * Complex.I * (k 1 : ℂ) /\n          literalStageFourierScale Y)\n  have hRight : Integrable\n      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I)\n      (volume : Measure ℂ) := by\n    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using\n      ((literalStageNegativePlaneWave_continuous Y k).mul\n        (HalfWeightCompactCoordinateGreen.dy v).continuous)\n          .integrable_of_hasCompactSupport\n            (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ))\n    (f := literalStageNegativePlaneWave Y k) (g := (v : ℂ → ℂ))\n    (v := Complex.I)\n    hLeft hRight hBase\n    (fun _ _ ↦\n      (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)",
+      "staging_reason": "This is the vertical symmetric API-order repair. It is intentionally staged with idx3927 because both depend on the paired Fourier derivative declarations.",
+      "prior_relation": "Supersedes the V42 dy f/g pin, which fixed inference only far enough to expose the same argument-order mismatch."
+    },
+    {
+      "id": "V44-Q3-S05-local-heartbeat-budget-for-dense-range-extensionality",
+      "owner": "graphPotentialOperator_eq_weightedFull",
+      "declaration_index": 4016,
+      "diagnostic_ordinals": [43],
+      "kind": "body",
+      "classification": "STAGE_RESOURCE_PROBE",
+      "confidence": "medium-deterministic-timeout-only",
+      "expected_count_in_owner": 1,
+      "old": "  ext u v\n  refine (denseRange_coreMap n).induction_on u",
+      "new": "  set_option maxHeartbeats 800000 in\n  ext u v\n  refine (denseRange_coreMap n).induction_on u",
+      "staging_reason": "The declaration has no logical diagnostic and times out exactly at the following declaration boundary after two dense-range inductions. A fourfold declaration-local budget is isolated from the rest of FA and must be measured remotely.",
+      "prior_relation": "Preserves all weightedGraph/common-HC repairs and does not touch idx4017 or the idx4019 synthetic dependency chain."
+    },
+    {
+      "id": "V44-Q3-S06-use-ring-normal-form-for-negated-submodule-coercions",
+      "owner": "signedRaisePeriodization_isReducedChartGaugeModel",
+      "declaration_index": 4299,
+      "diagnostic_ordinals": [56, 57],
+      "kind": "body",
+      "classification": "STAGE_EXACT_TACTIC_SUGGESTION",
+      "confidence": "medium-high-identical-two-branch-residuals",
+      "expected_count_in_owner": 2,
+      "old": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring",
+      "new": "        simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge_apply,\n          map_neg, Pi.neg_apply]\n        ring_nf",
+      "staging_reason": "Both remote goals are identical negated submodule-coercion normalizations and Lean explicitly suggests ring_nf after ring fails. The prior explicit-change probe progressed but then used a nonmatching Pi.neg_apply; this minimal follow-on retains the simpler middle body.",
+      "prior_relation": "Rolls back V43-LATE-STAGE-4299 explicit subtype change and changes only the exact failing normalizer in both branches."
+    }
+  ],
+  "deferred_owners": [
+    {
+      "declaration_index": 3933,
+      "owner": "inner_literalStagePlaneWave",
+      "diagnostic_ordinals": [25],
+      "classification": "DEPENDENCY_DEFER",
+      "reason": "The set-integral scaling rewrite is absent from the full-plane integral target. It depends on upstream literal-stage support/set-integral normalization and has no exact owner-local fragment yet."
+    },
+    {
+      "declaration_index": 4019,
+      "owner": "norm_discriminantHardStageOperator_sub_graphPotential_le",
+      "diagnostic_ordinals": [45, 46],
+      "classification": "COMMON_SYNTHETIC_CHAIN_DEPENDENCY_DEFER",
+      "reason": "One error is the missing predecessor weightedFull_sub_weightedHard_eq_weightedTail and the other is its whnf timeout cascade. Explicitly excluded from Q3 edits to avoid common-HC ownership overlap."
+    }
+  ],
+  "diagnostic_conservation": {
+    "q3_staged": [3, 10, 15, 16, 17, 18, 19, 20, 21, 22, 43, 56, 57],
+    "q3_deferred": [25, 45, 46],
+    "q3_hc_external_manifest": [14, 50, 51, 58],
+    "q3_union_count": 20
+  },
+  "local_execution": {
+    "lean": false,
+    "lake": false,
+    "git": false,
+    "github_write": false
+  }
+}
