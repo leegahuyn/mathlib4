@@ -1,4 +1,4 @@
-name: Codex FA 3690 pair subtraction normalization probe
+name: Codex FA Friedrichs real-complex convolution API probe
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,35 +21,36 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile pair subtraction proof shapes
+      - name: Compile real-complex convolution API shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbePairSub.lean <<'LEAN'
+          cat >/tmp/ProbeFriedrichsConv.lean <<'LEAN'
           import Mathlib
+          open MeasureTheory
+          #check ContinuousLinearMap.lsmul
+          #check HasCompactSupport.contDiff_convolution_left
+          #check HasCompactSupport.convolution
 
-          variable {A B : Type*} [AddCommGroup A] [AddCommGroup B]
+          def realSmulComplex : ℝ →L[ℝ] (ℂ →L[ℝ] ℂ) :=
+            ContinuousLinearMap.lsmul ℝ ℂ
 
-          example (a : A) (b c : B) :
-              (a,b) - (a,c) = ((0 : A), b - c) := by
-            ext <;> simp
+          example (f : ℂ → ℝ) (g : ℂ → ℂ) : ℂ → ℂ :=
+            f ⋆[realSmulComplex, volume] g
 
-          variable {R : Type*} [Ring R]
-          variable {M : Type*} [AddCommGroup M] [Module R M]
-          variable (G : Submodule R (A × B))
+          example (f : ℂ → ℝ) (g : ℂ → ℂ)
+              (hf : HasCompactSupport f) (hfd : ContDiff ℝ ∞ f) :
+              ContDiff ℝ ∞ (f ⋆[realSmulComplex, volume] g) := by
+            exact hf.contDiff_convolution_left realSmulComplex volume hfd
 
-          example (a : A) (b c : B)
-              (hab : (a,b) ∈ G) (hac : (a,c) ∈ G) :
-              ((0 : A), b - c) ∈ G := by
-            have hRaw := G.sub_mem hab hac
-            have hPairEq : (a,b) - (a,c) = ((0 : A), b - c) := by
-              ext <;> simp
-            rw [hPairEq] at hRaw
-            exact hRaw
+          example (f : ℂ → ℝ) (g : ℂ → ℂ)
+              (hg : HasCompactSupport g) :
+              HasCompactSupport (f ⋆[realSmulComplex, volume] g) := by
+            exact hg.convolution realSmulComplex f
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbePairSub.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=40 -DwarningAsError=false /tmp/ProbeFriedrichsConv.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -58,9 +59,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-3690-pair-sub-${{ github.sha }}
+          name: codex-fa-friedrichs-real-complex-conv-${{ github.sha }}
           path: |
-            /tmp/ProbePairSub.lean
+            /tmp/ProbeFriedrichsConv.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
