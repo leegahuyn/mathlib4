@@ -1,4 +1,4 @@
-name: Codex FA pinned Mathlib API source grep
+name: Codex FA pinned P5 torus measure API grep
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -12,24 +12,22 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Grep pinned Mathlib APIs for next full-inventory clusters
+      - name: Grep torus finite-measure and smul APIs
         shell: bash
         run: |
           set -euo pipefail
-          : >/tmp/api-grep.txt
-          echo '=== withDensity / restrict ===' | tee -a /tmp/api-grep.txt
-          grep -R -n -E 'restrict.*withDensity|withDensity.*restrict' Mathlib/MeasureTheory 2>/dev/null | head -80 | tee -a /tmp/api-grep.txt || true
-          echo '=== mul_lt_mul_left / mul_le_mul_left declarations ===' | tee -a /tmp/api-grep.txt
-          grep -R -n -E 'theorem mul_lt_mul_left|lemma mul_lt_mul_left|theorem mul_le_mul_left|lemma mul_le_mul_left' Mathlib 2>/dev/null | head -80 | tee -a /tmp/api-grep.txt || true
-          echo '=== integrable_of_hasCompactSupport ===' | tee -a /tmp/api-grep.txt
-          grep -R -n -E 'integrable_of_hasCompactSupport|memLp_of_bound' Mathlib/MeasureTheory Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/api-grep.txt || true
-          echo '=== Completion extend_eq / DenseRange ===' | tee -a /tmp/api-grep.txt
-          grep -R -n -E 'extend_eq|denseRange_coe' Mathlib/Topology Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/api-grep.txt || true
-          test -s /tmp/api-grep.txt
+          : >/tmp/p5-measure-grep.txt
+          echo '=== UnitAddCircle/Torus measure instances ===' | tee -a /tmp/p5-measure-grep.txt
+          grep -R -n -E 'UnitAddCircle|UnitAddTorus' Mathlib | grep -E 'IsFiniteMeasure|instMeasureSpace|isFiniteMeasure|volume' | head -160 | tee -a /tmp/p5-measure-grep.txt || true
+          echo '=== IsFiniteMeasure compact Haar ===' | tee -a /tmp/p5-measure-grep.txt
+          grep -R -n -E 'IsFiniteMeasure.*Haar|Haar.*IsFiniteMeasure|isFiniteMeasure.*Haar|CompactSpace.*IsFiniteMeasure' Mathlib/MeasureTheory Mathlib/Topology 2>/dev/null | head -160 | tee -a /tmp/p5-measure-grep.txt || true
+          echo '=== Measurable.const_smul ===' | tee -a /tmp/p5-measure-grep.txt
+          grep -R -n -E 'theorem.*const_smul|lemma.*const_smul' Mathlib/MeasureTheory Mathlib/Topology Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/p5-measure-grep.txt || true
+          test -s /tmp/p5-measure-grep.txt
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-pinned-api-grep-${{ github.sha }}
-          path: /tmp/api-grep.txt
+          name: codex-fa-p5-measure-grep-${{ github.sha }}
+          path: /tmp/p5-measure-grep.txt
           retention-days: 30
