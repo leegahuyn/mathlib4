@@ -1,5 +1,5 @@
-name: Codex FA ambient coercion and separation proof shapes
-# trigger: ambient-sub-coercion-separation-v2
+name: Codex FA predecessor theorem-function transport v2
+# trigger: predecessor-function-transport-v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,56 +22,39 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile proof-shape probes
+      - name: Compile predecessor theorem-function transport shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeAmbientSub.lean <<'LEAN'
+          cat >/tmp/ProbePredFunction.lean <<'LEAN'
           import Mathlib
 
-          noncomputable section
+          variable (F : ℤ → Type*)
+          variable (P : (n : ℤ) → F n → Prop)
+          variable (Q : (n : ℤ) → F n → F n → Prop)
 
-          abbrev F := ℂ → ℂ
-          def P1 : Submodule ℂ F := ⊤
-          abbrev E := P1
-          def P2 : Submodule ℂ E := ⊤
-          abbrev Core := P2
+          example (n : ℤ) (v : F n)
+              (hSucc : ∀ k : ℤ, ∀ w : F (k + 1), P (k + 1) w) :
+              P n v := by
+            have hs := hSucc (n - 1)
+            simp only [sub_add_cancel] at hs
+            exact hs v
 
-          noncomputable local instance coreModule : Module ℂ Core := by
-            change Module ℂ ↥P2
-            exact Submodule.module P2
-          noncomputable local instance coreAddCommGroup : AddCommGroup Core := by
-            exact Module.addCommMonoidToAddCommGroup ℂ
+          example (n : ℤ) (v u : F n)
+              (hSucc : ∀ k : ℤ, ∀ a b : F (k + 1), Q (k + 1) a b) :
+              Q n v u := by
+            have hs := hSucc (n - 1)
+            simp only [sub_add_cancel] at hs
+            exact hs v u
 
-          example (u a b : Core) :
-              (((Sub.sub (Sub.sub u a) b : Core) : E) : F) =
-                (((u : E) : F) - ((a : E) : F) - ((b : E) : F)) := by
-            rfl
-
-          example (u a b : Core) (z : ℂ) :
-              ((((Sub.sub (Sub.sub u a) b : Core) : E) : F) z) =
-                (((u : E) : F) z - ((a : E) : F) z - ((b : E) : F) z) := by
-            rfl
-
-          example (u a : Core) (t z : ℂ) :
-              ((((Sub.sub u (t • a) : Core) : E) : F) z) =
-                (((u : E) : F) z - t * ((a : E) : F) z) := by
-            rfl
-
-          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-
-          example (G Q : H)
-              (hG : inner ℂ G G = inner ℂ G Q)
-              (hQ : inner ℂ Q G = inner ℂ Q Q) :
-              G = Q := by
-            have hSelf : inner ℂ (G - Q) (G - Q) = 0 := by
-              rw [inner_sub_left, inner_sub_right, inner_sub_right, hG, hQ]
-              ring
-            exact sub_eq_zero.mp ((inner_self_eq_zero (𝕜 := ℂ)).mp hSelf)
+          example (n : ℤ) (v u : F n)
+              (hSucc : ∀ k : ℤ, ∀ a b : F (k + 1), Q (k + 1) a b) :
+              Q n v u := by
+            simpa only [sub_add_cancel] using (hSucc (n - 1) : ∀ a b, Q (n - 1 + 1) a b) v u
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeAmbientSub.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbePredFunction.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -80,9 +63,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-ambient-sub-separation-${{ github.sha }}
+          name: codex-fa-predecessor-function-transport-v2-${{ github.sha }}
           path: |
-            /tmp/ProbeAmbientSub.lean
+            /tmp/ProbePredFunction.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
