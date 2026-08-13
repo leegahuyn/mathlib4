@@ -1,0 +1,79 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STAGED_STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V43_MID",
+  "variant_base": "v42_conservative_authority",
+  "authority": {
+    "run_id": 31709054520,
+    "head_sha": "d6e8e7d12bbf76bf371bb0f21c085f0ebd4ba199",
+    "artifact_id": 9184978707,
+    "artifact_digest": "sha256:a587808a5ca47993bba554673c4b24d2f8c6cbea08415be69db7f9f11923e042",
+    "source_path": "work/v42-run-31709054520/9184978707/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "442dc2841f80b6814a16396a9b08ec27e90d3bd3d1913c4edd417137d8d1bbe7",
+    "source_bytes": 2776625,
+    "source_lines": 62113,
+    "declaration_count": 4416
+  },
+  "owned_declaration_indices": [3955, 3960],
+  "observed_diagnostic_ordinals": [37, 38, 42, 43, 44, 45, 46],
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "negative_remote_evidence": {
+    "owner": "ambientPlaneToUpperLinear",
+    "declaration_index": 3955,
+    "conservative_error_count": 2,
+    "extended_error_count": 12,
+    "failed_prior_probe_ids": ["V42-Q3-S02-explicit-upper-lp-add-chain", "V42-Q3-S03-explicit-upper-lp-smul-chain"],
+    "decision": "DO_NOT_PROMOTE_OR_REUSE_PRIOR_Q3_CALC_FRAGMENTS",
+    "reason": "The v42 extended candidate produced ten additional coercion/elaboration diagnostics at this owner. The probes below avoid double-coercion notation and add the missing pointwise coeFn_smul eventual equality."
+  },
+  "repairs": [
+    {
+      "id": "V43-MID-S01-minimal-upper-lp-add-chain-with-typed-applications",
+      "owner": "ambientPlaneToUpperLinear",
+      "declaration_index": 3955,
+      "diagnostics": [37],
+      "kind": "body",
+      "classification": "STAGE_COERCION_PROBE_AFTER_NEGATIVE_REMOTE_DELTA",
+      "confidence": "medium-explicit-but-overload-sensitive",
+      "expected_count_in_owner": 1,
+      "old": "        (Lp.coeFn_add F G)] with z hfg hf hg hadd hFG\n    simpa [hfg, hf, hg, hadd, hFG]",
+      "new": "        (Lp.coeFn_add F G)] with z hfg hf hg hadd hFG\n    calc\n      _ = (F + G) (z : ℂ) := hfg\n      _ = F (z : ℂ) + G (z : ℂ) := by\n        simpa only [Function.comp_apply, Pi.add_apply] using hFG\n      _ = ((ambientPlane_comp_upper_memLp F).toLp\n              (fun z : ℍ ↦ F (z : ℂ))) z +\n          ((ambientPlane_comp_upper_memLp G).toLp\n              (fun z : ℍ ↦ G (z : ℂ))) z :=\n        (congrArg₂ (fun x y : ℂ ↦ x + y) hf hg).symm\n      _ = _ := by\n        simpa only [Pi.add_apply] using hadd.symm",
+      "evidence": "The conservative goal is exactly toLp(F+G) = coe(toLp F + toLp G). This chain uses only typed function applications, hfg/hFG/hf/hg/hadd, and avoids the invalid double-coercion notation that caused the extended 12-error regression.",
+      "probe_risk": "The toLp application notation and final Pi.add_apply normalization must be confirmed in the pinned remote toolchain."
+    },
+    {
+      "id": "V43-MID-S02-minimal-upper-lp-smul-with-coeFn-event",
+      "owner": "ambientPlaneToUpperLinear",
+      "declaration_index": 3955,
+      "diagnostics": [38],
+      "kind": "body",
+      "classification": "STAGE_COERCION_PROBE_AFTER_NEGATIVE_REMOTE_DELTA",
+      "confidence": "medium-high-missing-ae-hypothesis-identified",
+      "expected_count_in_owner": 1,
+      "old": "      MemLp.coeFn_toLp (ambientPlane_comp_upper_memLp F),\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (Lp.coeFn_smul c F)] with z hcf hf hc\n    simpa [hcf, hf, hc]",
+      "new": "      MemLp.coeFn_toLp (ambientPlane_comp_upper_memLp F),\n      Lp.coeFn_smul c\n        ((ambientPlane_comp_upper_memLp F).toLp\n          (fun z : ℍ ↦ F (z : ℂ))),\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (Lp.coeFn_smul c F)] with z hcf hf hsmul hc\n    calc\n      _ = (c • F) (z : ℂ) := hcf\n      _ = c * F (z : ℂ) := by\n        simpa only [Function.comp_apply, Pi.smul_apply, smul_eq_mul] using hc\n      _ = c * ((ambientPlane_comp_upper_memLp F).toLp\n          (fun z : ℍ ↦ F (z : ℂ))) z :=\n        congrArg (fun x : ℂ ↦ c * x) hf.symm\n      _ = _ := by\n        simpa only [Pi.smul_apply, smul_eq_mul] using hsmul.symm",
+      "evidence": "The conservative context lacked an eventual equality for the selected representative of c • toLp(F). The exact same-file literalStageTorusTest_smul proof includes Lp.coeFn_smul in filter_upwards before pointwise simplification.",
+      "probe_risk": "The order of implicit Lp/measure parameters and final selected-representative normalization require direct replay."
+    },
+    {
+      "id": "V43-MID-S03-stage-restriction-ae-inference-inside-filter",
+      "owner": "ambientPlaneToLiteralStage_completedPlaneBase_core",
+      "declaration_index": 3960,
+      "diagnostics": [42, 43, 44, 45, 46],
+      "kind": "body",
+      "classification": "STAGE_FILTER_INFERENCE_PROBE",
+      "confidence": "high-static-exact-prior-root-repair-direct-Lean-unverified",
+      "expected_count_in_owner": 1,
+      "old": "  have hcarrier :=\n    (MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      chosenGammaTwoFundamentalDomain.carrier\n      (ambientPlaneToUpper\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono Measure.restrict_le_self)\n  have hupper :=\n    (MemLp.coeFn_toLp\n      (ambientPlane_comp_upper_memLp\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self))\n  have hplaneUpper :\n      (fun z : ℍ ↦\n        ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u) (z : ℂ)) =ᵐ[\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure]\n        fun z : ℍ ↦ literalStageLocalizedGauge Y n u (z : ℂ) := by\n    simpa only [Function.comp_apply] using\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (coeFn_ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u))\n  have hplane := hplaneUpper.filter_mono\n    (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self))\n  apply Lp.ext fun z ↦ ?_\n  filter_upwards [\n    coeFn_graphLiteralStageRestriction_core Y n u,\n    MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      (gammaTwoThreeCuspTruncation Y)\n      (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2\n        chosenGammaTwoFundamentalDomain.carrier\n        (ambientPlaneToUpper\n          (completedLiteralStagePlaneBase Y n (coreMap n u)))),\n    hcarrier, hupper, hplane,\n    ae_restrict_mem\n      (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]\n      with z hgraph hstage hcarrier hupper hplane hzStage",
+      "new": "  have hplaneUpper :\n      (fun z : ℍ ↦\n        ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u) (z : ℂ)) =ᵐ[\n            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure]\n        fun z : ℍ ↦ literalStageLocalizedGauge Y n u (z : ℂ) := by\n    simpa only [Function.comp_apply] using\n      upperHalfPlaneCoe_quasiMeasurePreserving.ae_eq_comp\n        (coeFn_ambientTestCoreToPlaneL2Linear\n          (literalStageLocalizedGauge Y n u))\n  apply Lp.ext\n  filter_upwards [\n    coeFn_graphLiteralStageRestriction_core Y n u,\n    MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      (gammaTwoThreeCuspTruncation Y)\n      (MeasureTheory.LpToLpRestrictCLM ℍ ℂ ℂ\n        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.upperEuclideanMeasure 2\n        chosenGammaTwoFundamentalDomain.carrier\n        (ambientPlaneToUpper\n          (completedLiteralStagePlaneBase Y n (coreMap n u)))),\n    (MeasureTheory.LpToLpRestrictCLM_coeFn ℂ\n      chosenGammaTwoFundamentalDomain.carrier\n      (ambientPlaneToUpper\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono Measure.restrict_le_self),\n    (MemLp.coeFn_toLp\n      (ambientPlane_comp_upper_memLp\n        (completedLiteralStagePlaneBase Y n (coreMap n u)))).filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self)),\n    hplaneUpper.filter_mono\n      (ae_mono (Measure.restrict_le_self.trans Measure.restrict_le_self)),\n    ae_restrict_mem\n      (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]\n      with z hgraph hstage hcarrier hupper hplane hzStage",
+      "evidence": "The free intermediate have declarations leave the final restricted filter metavariable unknown. Moving the narrowed eventual equalities into filter_upwards provides the final literalStageMeasure context before filter_mono inference.",
+      "probe_risk": "This exact prior static repair was never directly compiled and remains staged despite strong inference evidence."
+    }
+  ],
+  "promotion_rule": "Never co-bundle these probes with the high-confidence authority candidate on first replay. Test a separately named extended MID candidate after the high-confidence full matrix. Promote entries one at a time only when their owner residual disappears without new diagnostics.",
+  "direct_lean_verified": false
+}

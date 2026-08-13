@@ -1,0 +1,593 @@
+name: Codex FA v43 five-variant highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-v43-five-variant-highcap2000.yml
+      - scripts/fa_v43_materialize_candidate.py
+      - scripts/fa_v43_compose_repairs.py
+      - scripts/fa_v43_direct_compile_ci.sh
+      - scripts/fa_v43_collect_full_diagnostics.py
+      - scripts/fa_v43_variants.json
+      - scripts/fa_v43_early_high_confidence_repairs.json
+      - scripts/fa_v43_early_staged_body_probes.json
+      - scripts/fa_v43_middle_high_confidence_repairs.json
+      - scripts/fa_v43_middle_staged_body_probes.json
+      - scripts/fa_v43_late_high_confidence_repairs.json
+      - scripts/fa_v43_late_staged_repairs.json
+      - scripts/fa_v42_validate_local_repairs.py
+      - scripts/fa_v42_direct_compile_ci.sh
+      - scripts/fa_v42_collect_full_diagnostics.py
+  workflow_dispatch: {}
+
+permissions: {actions: read, contents: read}
+
+# The materializer and preflight retain a fail-closed exit-86 branch for any
+# incomplete or drifted index.  This promoted package uses the independently
+# replayed READY index; M13 is excluded from all five regular variants.
+env:
+  FA_V43_AUTHORITY_RUN_ID: "31709054520"
+  FA_V43_AUTHORITY_JOB_ID: "94476949087"
+  FA_V43_AUTHORITY_HEAD_SHA: d6e8e7d12bbf76bf371bb0f21c085f0ebd4ba199
+  FA_V43_AUTHORITY_ARTIFACT_ID: "9184978707"
+  FA_V43_AUTHORITY_ARTIFACT_DIGEST: sha256:a587808a5ca47993bba554673c4b24d2f8c6cbea08415be69db7f9f11923e042
+  FA_V43_AUTHORITY_SOURCE_SHA256: 442dc2841f80b6814a16396a9b08ec27e90d3bd3d1913c4edd417137d8d1bbe7
+  FA_V43_AUTHORITY_DIAGNOSTICS_SHA256: d71f00c9181ff3bdce00ca39d0bbb33367c3f939ee1ad2c47d4982f639406a8a
+  FA_V43_AUTHORITY_FA_LOG_SHA256: 63b5dacbe7a6d40280ad0dea17001ef730a99a17400da72d8665d97b7d49c899
+  FA_V43_AUTHORITY_METRIC_SHA256: 35f48eb733f4802eb4784ba4f19bd4bfa298b2803b8c8d822d9e302b5d4ae11d
+  FA_V43_INDEX_SHA256: 22223fb67d23e25f0b3251e08374064309258943b6fba8f3887a83566f8f5116
+  FA_V43_MATERIALIZER_SHA256: 3b30d05f40286f25b9f2649e479c4edd3d4a82049289476e8a110898ea835768
+  FA_V43_COMPOSER_WRAPPER_SHA256: 883e7583f868b59cd62ad11da961d8f1719beb661dae46bf748c7b11b9e9eb94
+  FA_V43_RUNNER_WRAPPER_SHA256: 1e2b6189c157a49386bf1c5f4d5d06b4f4e35d55761664bbba71b479a9faf79c
+  FA_V43_COLLECTOR_WRAPPER_SHA256: 8a3a212c2eb09ba2358640919024f1f67f89d8ebceb566ea3652fd17d8ac8630
+  FA_V43_V42_COMPOSER_SHA256: 3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7
+  FA_V43_V42_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  FA_V43_V42_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+
+jobs:
+  direct:
+    if: github.ref == 'refs/heads/codex/fa-qym-cleanbuild-final-20260811-fast'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [all_hc, early_probe, middle_probe, late_probe, all_probes]
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA_V43_VARIANT: "${{ matrix.variant }}"
+      FA_V43_OUT: build-logs/codex-fa-v43-five-variant-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Fail-closed package, manifest, and variant-index preflight
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V43_OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ["FA_V43_OUT"])
+          variant_name = os.environ["FA_V43_VARIANT"]
+          locked_files = {
+              "materializer": (
+                  Path("scripts/fa_v43_materialize_candidate.py"),
+                  os.environ["FA_V43_MATERIALIZER_SHA256"],
+              ),
+              "composer_wrapper": (
+                  Path("scripts/fa_v43_compose_repairs.py"),
+                  os.environ["FA_V43_COMPOSER_WRAPPER_SHA256"],
+              ),
+              "runner_wrapper": (
+                  Path("scripts/fa_v43_direct_compile_ci.sh"),
+                  os.environ["FA_V43_RUNNER_WRAPPER_SHA256"],
+              ),
+              "collector_wrapper": (
+                  Path("scripts/fa_v43_collect_full_diagnostics.py"),
+                  os.environ["FA_V43_COLLECTOR_WRAPPER_SHA256"],
+              ),
+              "base_composer": (
+                  Path("scripts/fa_v42_validate_local_repairs.py"),
+                  os.environ["FA_V43_V42_COMPOSER_SHA256"],
+              ),
+              "base_runner": (
+                  Path("scripts/fa_v42_direct_compile_ci.sh"),
+                  os.environ["FA_V43_V42_RUNNER_SHA256"],
+              ),
+              "base_collector": (
+                  Path("scripts/fa_v42_collect_full_diagnostics.py"),
+                  os.environ["FA_V43_V42_COLLECTOR_SHA256"],
+              ),
+              "index": (
+                  Path("scripts/fa_v43_variants.json"),
+                  os.environ["FA_V43_INDEX_SHA256"],
+              ),
+          }
+          evidence = {
+              "schema": "fa-v43-ci-package-preflight-v1",
+              "variant": variant_name,
+              "status": "CHECKING",
+              "files": {},
+              "exit_code_if_stopped": 86,
+          }
+
+          try:
+              for label, (path, expected) in locked_files.items():
+                  payload = path.read_bytes()
+                  actual = hashlib.sha256(payload).hexdigest()
+                  assert re.fullmatch(r"[0-9a-f]{64}", expected)
+                  assert expected != "0" * 64
+                  assert actual == expected, (label, actual, expected)
+                  evidence["files"][label] = {
+                      "path": path.as_posix(),
+                      "sha256": actual,
+                      "bytes": len(payload),
+                  }
+
+              index = json.loads(locked_files["index"][0].read_text())
+              assert index["schema"] == "fa-v43-five-variant-index-v1"
+              assert index["target_branch"] == (
+                  "codex/fa-qym-cleanbuild-final-20260811-fast"
+              )
+              assert index["direct_lean_verified"] is False
+              assert index["clean_build_claimed"] is False
+              assert index["runnable"] is True
+              assert [row["source"] for row in index["direct_compile_chain"]] == [
+                  "Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"
+              ]
+              assert [row["max_errors"] for row in index["direct_compile_chain"]] == [
+                  1, 1, 2000
+              ]
+              authority = index["authority"]
+              expected_authority = {
+                  "run_id": int(os.environ["FA_V43_AUTHORITY_RUN_ID"]),
+                  "job_id": int(os.environ["FA_V43_AUTHORITY_JOB_ID"]),
+                  "head_sha": os.environ["FA_V43_AUTHORITY_HEAD_SHA"],
+                  "artifact_id": int(os.environ["FA_V43_AUTHORITY_ARTIFACT_ID"]),
+                  "artifact_digest": os.environ[
+                      "FA_V43_AUTHORITY_ARTIFACT_DIGEST"
+                  ],
+                  "source_sha256": os.environ[
+                      "FA_V43_AUTHORITY_SOURCE_SHA256"
+                  ],
+                  "diagnostics_sha256": os.environ[
+                      "FA_V43_AUTHORITY_DIAGNOSTICS_SHA256"
+                  ],
+                  "fa_log_sha256": os.environ[
+                      "FA_V43_AUTHORITY_FA_LOG_SHA256"
+                  ],
+                  "metric_sha256": os.environ[
+                      "FA_V43_AUTHORITY_METRIC_SHA256"
+                  ],
+              }
+              for key, expected in expected_authority.items():
+                  assert authority[key] == expected, (
+                      key, authority[key], expected
+                  )
+              assert set(index["variants"]) == {
+                  "all_hc", "early_probe", "middle_probe",
+                  "late_probe", "all_probes",
+              }
+              assert variant_name in index["variants"]
+
+              def contains_pending(value):
+                  if value is None:
+                      return True
+                  if isinstance(value, str):
+                      return value.startswith("PENDING")
+                  if isinstance(value, list):
+                      return any(contains_pending(item) for item in value)
+                  if isinstance(value, dict):
+                      return any(contains_pending(item) for item in value.values())
+                  return False
+
+              if (
+                  index["status"]
+                  != "STATIC_INPUTS_LOCKED_DIRECT_LEAN_UNVERIFIED"
+                  or contains_pending(index)
+              ):
+                  row = index["variants"][variant_name]
+                  evidence.update({
+                      "status": "PENDING_FAIL_CLOSED",
+                      "index_status": index["status"],
+                      "variant_status": row.get("status"),
+                      "manifest_order": row.get("manifest_order"),
+                      "pending_dependencies": index.get("pending_locks", []),
+                      "authority": expected_authority,
+                      "candidate_created": False,
+                      "patch_audit_created": False,
+                      "direct_lean_invoked": False,
+                  })
+                  (out / "PACKAGE_PREFLIGHT.json").write_text(
+                      json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+                  )
+                  raise SystemExit(86)
+
+              row = index["variants"][variant_name]
+              assert row["status"] == "LOCKED"
+              assert row["runnable"] is True
+              assert row["source_moves"] == []
+              selected = row["selected_repair_ids"]
+              assert len(selected) == len(set(selected)) == row["repair_count"]
+              manifests = {}
+              available = set()
+              accepted_layouts = {
+                  (
+                      "fa-v43-early-repair-manifest-v1",
+                      "STATIC_PASS_DIRECT_LEAN_UNVERIFIED",
+                  ): "repairs",
+                  (
+                      "fa-v43-early-repair-manifest-v1",
+                      "STAGED_DIRECT_LEAN_REQUIRED",
+                  ): "proposals",
+                  (
+                      "fa-v42-declaration-local-repairs-v1",
+                      "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V43_MID_HIGH_CONFIDENCE",
+                  ): "repairs",
+                  (
+                      "fa-v42-declaration-local-repairs-v1",
+                      "STAGED_STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V43_MID",
+                  ): "repairs",
+                  (
+                      "fa-v43-late-repair-manifest-v1",
+                      "HIGH_CONFIDENCE_STATIC_DIRECT_LEAN_UNVERIFIED",
+                  ): "repairs",
+                  (
+                      "fa-v43-late-repair-manifest-v1",
+                      "STAGE_PROBE_DIRECT_LEAN_REQUIRED",
+                  ): "repairs",
+              }
+
+              def normalize_manifest(parsed):
+                  layout = (parsed.get("schema"), parsed.get("status"))
+                  assert layout in accepted_layouts, layout
+                  field = accepted_layouts[layout]
+                  source_entries = parsed.get(field)
+                  assert isinstance(source_entries, list)
+                  if field == "repairs":
+                      repairs = list(source_entries)
+                  else:
+                      repairs = []
+                      for proposal in source_entries:
+                          if proposal.get("apply_to_simulation") is not True:
+                              continue
+                          assert proposal.get("kind") == "body"
+                          if "old" in proposal and "new" in proposal:
+                              repairs.append(proposal)
+                          else:
+                              children = proposal.get("replacements")
+                              assert isinstance(children, list) and children
+                              for child in children:
+                                  repairs.append({
+                                      "owner": proposal["owner"],
+                                      "declaration_index": proposal[
+                                          "declaration_index"
+                                      ],
+                                      **child,
+                                  })
+                  for repair in repairs:
+                      assert repair.get("kind", "body") == "body"
+                      for required in (
+                          "id", "owner", "declaration_index", "old", "new"
+                      ):
+                          assert required in repair
+                  return source_entries, repairs
+
+              for key in row["manifest_order"]:
+                  record = index["manifests"][key]
+                  assert record["status"] == "LOCKED"
+                  path = Path(record["promoted_path"])
+                  payload = path.read_bytes()
+                  actual = hashlib.sha256(payload).hexdigest()
+                  assert actual == record["sha256"], (key, actual)
+                  assert len(payload) == record["bytes"]
+                  parsed = json.loads(payload)
+                  source_entries, repairs = normalize_manifest(parsed)
+                  assert parsed["schema"] == record["schema"]
+                  assert parsed["status"] == record["manifest_status"]
+                  assert len(source_entries) == record["source_entries"]
+                  assert len(repairs) == record["repair_entries"]
+                  ids = [repair["id"] for repair in repairs]
+                  assert len(ids) == len(set(ids))
+                  assert ids == record["repair_ids"]
+                  assert len({repair["owner"] for repair in repairs}) == record[
+                      "owner_count"
+                  ]
+                  assert not available.intersection(ids)
+                  available.update(ids)
+                  manifests[key] = {
+                      "path": path.as_posix(),
+                      "sha256": actual,
+                      "bytes": len(payload),
+                      "source_entries": len(source_entries),
+                      "repair_entries": len(repairs),
+                  }
+              assert set(selected) <= available
+              for relation in row.get("supersedes", []):
+                  assert relation["replacement"] in selected
+                  assert relation["excluded"] not in selected
+              evidence.update({
+                  "status": "READY",
+                  "authority": expected_authority,
+                  "manifests": manifests,
+                  "candidate_sha256": row["candidate_sha256"],
+                  "audit_sha256": row["audit_sha256"],
+                  "repair_count": row["repair_count"],
+                  "owner_count": row["owner_count"],
+                  "direct_lean_verified": False,
+              })
+              (out / "PACKAGE_PREFLIGHT.json").write_text(
+                  json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+              )
+              with Path(os.environ["GITHUB_ENV"]).open("a") as handle:
+                  handle.write(
+                      "FA_V43_INDEX_ACTUAL_SHA256="
+                      + evidence["files"]["index"]["sha256"] + "\n"
+                  )
+                  handle.write(
+                      "FA_V43_EXPECTED_CANDIDATE_SHA256="
+                      + row["candidate_sha256"] + "\n"
+                  )
+                  handle.write(
+                      "FA_V43_EXPECTED_AUDIT_SHA256="
+                      + row["audit_sha256"] + "\n"
+                  )
+          except BaseException:
+              if not (out / "PACKAGE_PREFLIGHT.json").exists():
+                  evidence["status"] = "INVALID_FAIL_CLOSED"
+                  (out / "PACKAGE_PREFLIGHT.json").write_text(
+                      json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+                  )
+              raise
+          PY
+
+      - name: Re-prove exact v42 authority artifact and materialize v43 variant
+        id: materialize
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          authority_root="/tmp/fa-v43-authority-${GITHUB_RUN_ID}-${FA_V43_VARIANT}"
+          authority_zip="/tmp/fa-v43-authority-${GITHUB_RUN_ID}-${FA_V43_VARIANT}.zip"
+          mkdir -p "$FA_V43_OUT" "$authority_root"
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V43_AUTHORITY_RUN_ID}" >"$FA_V43_OUT/V42_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V43_AUTHORITY_JOB_ID}" >"$FA_V43_OUT/V42_JOB.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V43_AUTHORITY_ARTIFACT_ID}" >"$FA_V43_OUT/V42_ARTIFACT.json"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V43_OUT"])
+          run = json.loads((out / "V42_RUN.json").read_text())
+          job = json.loads((out / "V42_JOB.json").read_text())
+          artifact = json.loads((out / "V42_ARTIFACT.json").read_text())
+          run_id = int(os.environ["FA_V43_AUTHORITY_RUN_ID"])
+          job_id = int(os.environ["FA_V43_AUTHORITY_JOB_ID"])
+          artifact_id = int(os.environ["FA_V43_AUTHORITY_ARTIFACT_ID"])
+          head = os.environ["FA_V43_AUTHORITY_HEAD_SHA"]
+          branch = "codex/fa-qym-cleanbuild-final-20260811-fast"
+          artifact_name = "codex-fa-v42-conservative-highcap2000-" + head
+
+          assert run["id"] == run_id
+          assert run["name"] == "Codex FA v42 residual two-variant highcap2000"
+          assert run["path"] == (
+              ".github/workflows/codex-fa-v42-two-variant-highcap2000.yml"
+          )
+          assert run["head_sha"] == head and run["head_branch"] == branch
+          assert run["status"] == "completed" and run["conclusion"] == "failure"
+          assert job["id"] == job_id and job["run_id"] == run_id
+          assert job["name"] == "direct-conservative"
+          assert job["head_sha"] == head
+          assert job["status"] == "completed" and job["conclusion"] == "failure"
+          assert artifact["id"] == artifact_id
+          assert artifact["name"] == artifact_name
+          assert artifact["size_in_bytes"] == 1_712_188
+          assert artifact["expired"] is False
+          assert artifact["digest"] == os.environ[
+              "FA_V43_AUTHORITY_ARTIFACT_DIGEST"
+          ]
+          assert artifact["workflow_run"]["id"] == run_id
+          assert artifact["workflow_run"]["head_sha"] == head
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V43_AUTHORITY_ARTIFACT_ID}/zip" >"$authority_zip"
+          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V43_AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$authority_zip" -d "$authority_root"
+
+          AUTHORITY_ROOT="$authority_root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+
+          root = Path(os.environ["AUTHORITY_ROOT"])
+          out = Path(os.environ["FA_V43_OUT"])
+
+          def one(name, expected_sha, expected_bytes, expected_lines):
+              hits = [
+                  path for path in root.rglob(name)
+                  if hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha
+              ]
+              assert len(hits) == 1, (name, hits)
+              payload = hits[0].read_bytes()
+              assert len(payload) == expected_bytes, (name, len(payload))
+              assert len(payload.decode("utf-8").splitlines()) == expected_lines
+              return hits[0]
+
+          source = one(
+              "Mock2_FunctionalAnalysis-candidate.lean",
+              os.environ["FA_V43_AUTHORITY_SOURCE_SHA256"],
+              2_776_625,
+              62_113,
+          )
+          diagnostics = one(
+              "FULL_DIAGNOSTICS.json",
+              os.environ["FA_V43_AUTHORITY_DIAGNOSTICS_SHA256"],
+              49_990,
+              1_136,
+          )
+          fa_log = one(
+              "Mock2_FunctionalAnalysis.log",
+              os.environ["FA_V43_AUTHORITY_FA_LOG_SHA256"],
+              346_268,
+              5_889,
+          )
+          metric = one(
+              "METRIC.json",
+              os.environ["FA_V43_AUTHORITY_METRIC_SHA256"],
+              3_052,
+              74,
+          )
+          parsed = json.loads(diagnostics.read_text())
+          assert isinstance(parsed, list) and len(parsed) == 81
+          metric_data = json.loads(metric.read_text())
+          assert metric_data["github_run_id"] == "31709054520"
+          assert metric_data["github_head_sha"] == (
+              "d6e8e7d12bbf76bf371bb0f21c085f0ebd4ba199"
+          )
+          assert metric_data["variant"] == "conservative"
+          assert metric_data["Mock2_exit"] == 0
+          assert metric_data["Mock2_Advanced_exit"] == 0
+          assert metric_data["FA_exit"] == 1
+
+          runtime_source = Path(
+              "work/v42-run-31709054520/9184978707/"
+              "Mock2_FunctionalAnalysis-candidate.lean"
+          )
+          runtime_source.parent.mkdir(parents=True, exist_ok=True)
+          shutil.copyfile(source, runtime_source)
+          shutil.copyfile(source, out / "V42_AUTHORITY_SOURCE.lean")
+          shutil.copyfile(diagnostics, out / "V42_FULL_DIAGNOSTICS.json")
+          shutil.copyfile(fa_log, out / "V42_Mock2_FunctionalAnalysis.log")
+          shutil.copyfile(metric, out / "V42_METRIC.json")
+          PY
+
+          python3 scripts/fa_v43_materialize_candidate.py \
+            --index scripts/fa_v43_variants.json \
+            --variant "$FA_V43_VARIANT" \
+            --composer-wrapper scripts/fa_v43_compose_repairs.py \
+            --base-composer scripts/fa_v42_validate_local_repairs.py \
+            --output /tmp/fa-v43-final.lean \
+            --audit "$FA_V43_OUT/PATCH_AUDIT.json" \
+            --evidence "$FA_V43_OUT/MATERIALIZATION.json" \
+            >"$FA_V43_OUT/MATERIALIZATION.stdout.json"
+
+          test "$(sha256sum /tmp/fa-v43-final.lean | awk '{print $1}')" = "$FA_V43_EXPECTED_CANDIDATE_SHA256"
+          test "$(sha256sum "$FA_V43_OUT/PATCH_AUDIT.json" | awk '{print $1}')" = "$FA_V43_EXPECTED_AUDIT_SHA256"
+          cp /tmp/fa-v43-final.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp /tmp/fa-v43-final.lean "$FA_V43_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          cp scripts/fa_v43_variants.json "$FA_V43_OUT/VARIANT_INDEX.json"
+          sha256sum /tmp/fa-v43-final.lean | awk '{print $1}' >"$FA_V43_OUT/candidate.sha256"
+          sha256sum "$FA_V43_OUT/PATCH_AUDIT.json" | awk '{print $1}' >"$FA_V43_OUT/audit.sha256"
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V43_OUT"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V43_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V43_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V43_OUT/cache.log" 2>&1
+          lean --version >"$FA_V43_OUT/lean-version.txt" 2>&1
+          lake --version >"$FA_V43_OUT/lake-version.txt" 2>&1
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v43_direct_compile_ci.sh
+
+      - name: Build exact metrics and full diagnostic inventory
+        if: always() && steps.materialize.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V43_OUT"
+          if [[ -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean ]]; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V43_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          python3 scripts/fa_v43_collect_full_diagnostics.py \
+            --base-collector scripts/fa_v42_collect_full_diagnostics.py \
+            --base-collector-sha256 "$FA_V43_V42_COLLECTOR_SHA256" \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_V43_OUT" \
+            --max-errors 2000 \
+            >"$FA_V43_OUT/metric-console.log"
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v43-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v43-five-variant-highcap2000/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve fail-closed state or mirror strict direct-chain exits
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FA_V43_OUT/PACKAGE_PREFLIGHT.json" || exit 86
+          preflight_status="$(python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          print(json.loads(
+              (Path(os.environ["FA_V43_OUT"]) / "PACKAGE_PREFLIGHT.json").read_text()
+          )["status"])
+          PY
+          )"
+          [[ "$preflight_status" == READY ]] || exit 86
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis; do
+            test -f "$FA_V43_OUT/${stem}.exit" || exit 86
+            status="$(tr -d '\r\n' < "$FA_V43_OUT/${stem}.exit")"
+            [[ "$status" =~ ^[0-9]+$ ]] || exit 86
+            (( status >= 0 && status <= 255 )) || exit 86
+          done
+          for lock in candidate.before.sha256 candidate.before-fa.sha256 candidate.after.sha256 candidate.sha256; do
+            test -f "$FA_V43_OUT/$lock" || exit 86
+            test "$(tr -d '\r\n' < "$FA_V43_OUT/$lock")" = "$FA_V43_EXPECTED_CANDIDATE_SHA256" || exit 86
+          done
+          test -f "$FA_V43_OUT/METRIC.json" || exit 86
+          mirrored_fa_exit="$(python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V43_OUT"])
+          metric = json.loads((out / "METRIC.json").read_text())
+          fa_exit = int((out / "Mock2_FunctionalAnalysis.exit").read_text().strip())
+          assert metric["schema"] == "fa-v43-five-variant-highcap2000-metric-v1"
+          assert metric["source_identity_locked"] is True
+          assert metric["source_executable_trust_six_zero"] is True
+          assert metric["all_required_lean_executed"] is True
+          assert metric["direct_lean_verified"] is True
+          assert metric["FA_exit"] == fa_exit
+          if fa_exit == 0:
+              assert metric["synthetic_declaration_uses_sorry_warning_count"] == 0
+              assert metric["synthetic_trust_clean"] is True
+              assert metric["semantic_clean"] is True
+          print(fa_exit)
+          PY
+          )" || exit 86
+          [[ "$mirrored_fa_exit" =~ ^[0-9]+$ ]] || exit 86
+          test "$(cat "$FA_V43_OUT/Mock2.exit")" = 0 || exit 1
+          test "$(cat "$FA_V43_OUT/Mock2_Advanced.exit")" = 0 || exit 1
+          exit "$mirrored_fa_exit"
