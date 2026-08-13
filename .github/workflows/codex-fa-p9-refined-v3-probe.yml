@@ -1,5 +1,5 @@
-name: Codex FA P9 refined v4 probe
-# trigger: canonical-domain-zero-and-explicit-inner-scalar
+name: Codex FA nested core module-native subtraction probe v2
+# trigger: nested-core-module-native-sub-v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -9,7 +9,7 @@ permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
@@ -22,67 +22,90 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile P9 refined v4 probes
+      - name: Compile module-native subtraction normalization probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeP9.lean <<'LEAN'
+          cat >/tmp/ProbeNestedModuleSub.lean <<'LEAN'
           import Mathlib
-          open scoped LinearPMap
-          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-          def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
-            carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
-            zero_mem' := by
-              refine ⟨(0 : A.domain).property, ?_⟩
-              simpa only [smul_zero] using (LinearPMap.map_zero A)
-            add_mem' := by
-              rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
-              refine ⟨A.domain.add_mem hx hy, ?_⟩
-              calc
-                A ⟨x + y, A.domain.add_mem hx hy⟩ = A ⟨x, hx⟩ + A ⟨y, hy⟩ := by
-                  exact A.map_add ⟨x, hx⟩ ⟨y, hy⟩
-                _ = μ • x + μ • y := by rw [hAx, hAy]
-                _ = μ • (x + y) := by rw [smul_add]
-            smul_mem' := by
-              rintro c x ⟨hx, hAx⟩
-              refine ⟨A.domain.smul_mem c hx, ?_⟩
-              calc
-                A ⟨c • x, A.domain.smul_mem c hx⟩ = c • A ⟨x, hx⟩ := by
-                  exact A.map_smul c ⟨x, hx⟩
-                _ = c • (μ • x) := by rw [hAx]
-                _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
+          noncomputable section
+          abbrev F := ℂ → ℂ
+          def P0 : Submodule ℂ F := ⊤
+          abbrev SmoothLike := P0
+          def P1 : Submodule ℂ SmoothLike := ⊤
+          abbrev E := P1
+          def P2 : Submodule ℂ E := ⊤
+          abbrev Core := P2
 
-          example {μ ν z : ℂ} (h : (starRingEnd ℂ) μ * z = ν * z) :
-              (star μ - ν) * z = 0 := by
-            have h' : star μ * z = ν * z := by simpa using h
-            rw [sub_mul, h', sub_self]
+          instance : CoeFun E (fun _ => ℂ → ℂ) where
+            coe f := ((f.1 : SmoothLike) : F)
 
-          example {μ : ℂ} (h : star μ = μ) : μ.im = 0 := by
-            have hi := congrArg Complex.im h
-            change -μ.im = μ.im at hi
-            linarith
+          def toE (u : Core) : E := u.1
+          noncomputable instance : CoeOut Core E := ⟨toE⟩
 
-          example (μ : ℂ) (x : H) (d : ℝ) :
-              μ.re * (inner ℂ x x).re + (inner ℂ x x).re * d -
-                  μ.im * (inner ℂ x x).im = μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
-            have hNorm := norm_sq_eq_re_inner (𝕜 := ℂ) x
-            change ‖x‖ ^ 2 = (inner ℂ x x).re at hNorm
-            have hSelf := inner_conj_symm (𝕜 := ℂ) x x
-            have hIm := congrArg Complex.im hSelf
-            simp only [Complex.conj_im] at hIm
-            have hImZero : (inner ℂ x x).im = 0 := by linarith
-            rw [← hNorm, hImZero]
-            ring
+          noncomputable local instance coreModule : Module ℂ Core := by
+            change Module ℂ ↥P2
+            exact Submodule.module P2
+          noncomputable local instance coreAddCommGroup : AddCommGroup Core := by
+            exact Module.addCommMonoidToAddCommGroup ℂ
+
+          example (a : Core) : -a = (-1 : ℂ) • a := by
+            rfl
+
+          example (u a : Core) : Sub.sub u a = u + (-1 : ℂ) • a := by
+            change u - a = u + (-1 : ℂ) • a
+            rw [sub_eq_add_neg]
+            rfl
+
+          example (u a : Core) (z : ℂ) :
+              (((u + (-1 : ℂ) • a : Core) : E) z) =
+                (u : E) z - (a : E) z := by
+            rfl
+
+          example (u a b : Core) (z : ℂ) :
+              ((((u + (-1 : ℂ) • a) + (-1 : ℂ) • b : Core) : E) z) =
+                (u : E) z - (a : E) z - (b : E) z := by
+            rfl
+
+          example (u a b : Core) (z : ℂ) :
+              ((Sub.sub (Sub.sub u a) b : Core) : E) z =
+                (u : E) z - (a : E) z - (b : E) z := by
+            have h1 : Sub.sub u a = u + (-1 : ℂ) • a := by
+              change u - a = u + (-1 : ℂ) • a
+              rw [sub_eq_add_neg]
+              rfl
+            have h2 : Sub.sub (Sub.sub u a) b = Sub.sub u a + (-1 : ℂ) • b := by
+              change Sub.sub u a - b = Sub.sub u a + (-1 : ℂ) • b
+              rw [sub_eq_add_neg]
+              rfl
+            rw [h2, h1]
+            rfl
+
+          example (u a : Core) (t z : ℂ) :
+              ((Sub.sub u (t • a) : Core) : E) z =
+                (u : E) z - t * (a : E) z := by
+            have h : Sub.sub u (t • a) = u + (-1 : ℂ) • (t • a) := by
+              change u - t • a = u + (-1 : ℂ) • (t • a)
+              rw [sub_eq_add_neg]
+              rfl
+            rw [h]
+            rfl
           LEAN
-          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP9.lean 2>&1 | tee /tmp/probe.log
+          set +e
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeNestedModuleSub.lean 2>&1 | tee /tmp/probe.log
+          x=${PIPESTATUS[0]}
+          set -e
+          echo "$x" >/tmp/probe.exit
+          exit "$x"
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p9-refined-v4-${{ github.sha }}
+          name: codex-fa-nested-module-native-sub-v2-${{ github.sha }}
           path: |
-            /tmp/ProbeP9.lean
+            /tmp/ProbeNestedModuleSub.lean
             /tmp/probe.log
+            /tmp/probe.exit
           retention-days: 30
