@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/codex-fa-v21-api-shapes-v1.yml
       - scripts/fa_v22_cumulative_batch.py
+      - scripts/fa_v22_49ab_wrapper.py
       - scripts/fa_v22_trigger.txt
   workflow_dispatch:
 
@@ -49,7 +50,7 @@ jobs:
           assert len(hits)==1, hits
           shutil.copy2(hits[0], Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
-          python3 scripts/fa_v22_cumulative_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
+          python3 scripts/fa_v22_49ab_wrapper.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
           test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
 
       - name: Install pinned Lean and cache
@@ -143,7 +144,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v22-cumulative-highcap2000-${{ github.sha }}
+          name: codex-fa-v22-49ab-highcap2000-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
             build-logs/codex-fa-v22-cumulative-highcap2000
