@@ -7,7 +7,6 @@ on:
     paths:
       - .github/workflows/codex-fa-v21-api-shapes-v1.yml
       - scripts/fa_v22_cumulative_batch.py
-      - scripts/fa_v22_49ab_wrapper.py
       - scripts/fa_v22_trigger.txt
   workflow_dispatch:
 
@@ -50,7 +49,7 @@ jobs:
           assert len(hits)==1, hits
           shutil.copy2(hits[0], Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
-          python3 scripts/fa_v22_49ab_wrapper.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
+          python3 scripts/fa_v22_cumulative_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
           test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(cat "$OUT/candidate.sha256")"
 
       - name: Install pinned Lean and cache
@@ -117,7 +116,7 @@ jobs:
           first=di[0] if di else {}
           stems=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']
           ex={x:int((out/f'{x}.exit').read_text()) if (out/f'{x}.exit').exists() else None for x in stems}
-          metric={'schema':'fa-v22-cumulative-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),
+          metric={'schema':'fa-v22-cumulative-highcap2000-r2','run_id':os.environ.get('GITHUB_RUN_ID'),
             'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),
             'source_bytes':len(b),'source_lines':len(s.splitlines()),
             'source_identity_locked_after_materialization':(out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest()==(out/'candidate.sha256').read_text().strip(),
@@ -144,7 +143,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v22-49ab-highcap2000-${{ github.sha }}
+          name: codex-fa-v22-r2-highcap2000-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
             build-logs/codex-fa-v22-cumulative-highcap2000
