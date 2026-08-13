@@ -5,7 +5,7 @@ if len(sys.argv)!=3: raise SystemExit('usage: fa_v34_evalmap_immutable_batch.py 
 source=Path(sys.argv[1]); out=Path(sys.argv[2]); out.mkdir(parents=True,exist_ok=True)
 patch=Path('scripts/fa_v34_evalmap_immutable.patch')
 BASE='931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4'
-PATCH='b7e8e248bd9e8055f5406076995d0acf6852462b156d80d60aceb52ea8b398f0'
+PATCH='2a3a07764986e24dd99650b8dac3b6f602bfd253b0c7dd200242e8f860331092'
 CAND='31b9a085ddc116364065467164a9a42628fe8a2759c17ccd479a7bbd90886123'
 before=source.read_bytes(); bt=before.decode('utf-8'); base=hashlib.sha256(before).hexdigest(); assert base==BASE,(base,BASE)
 pb=patch.read_bytes(); ps=hashlib.sha256(pb).hexdigest(); assert ps==PATCH,(ps,PATCH)
