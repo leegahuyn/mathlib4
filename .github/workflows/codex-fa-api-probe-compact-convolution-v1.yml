@@ -1,4 +1,4 @@
-name: Codex FA Fourier rectangle API probe v5
+name: Codex FA pinned Mathlib API drift probe v6
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,92 +21,46 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile Fourier rectangle root patterns
+      - name: Locate and compile drifted API names
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeScale.lean <<'LEAN'
+          {
+            echo '=== finrank complex real ==='
+            grep -R -n -E 'finrank.*real.*complex|finrank.*ℝ.*ℂ|finrank_real_complex|finrank_complex' Mathlib | head -80 || true
+            echo '=== map_ofReal ==='
+            grep -R -n -E 'map_ofReal|ofReal.*map|map.*ofReal' Mathlib | head -80 || true
+            echo '=== L2 norm integral ==='
+            grep -R -n -E 'norm_sq.*integral|integral.*norm_sq|norm.*toLp|Lp.*norm' Mathlib/MeasureTheory Mathlib/Analysis | head -120 || true
+            echo '=== eigenspace ==='
+            grep -R -n -E 'def eigenspace|theorem eigenspace|eigenspace ' Mathlib/LinearAlgebra Mathlib/Analysis | head -120 || true
+          } | tee /tmp/api-grep.txt
+          cat >/tmp/ProbeAPI.lean <<'LEAN'
           import Mathlib
-          example {L x : ℝ} (hL : 0 < L) (hlo : -(L / 2) < x) (hhi : x ≤ L / 2) :
-              -(1 / 2 : ℝ) < L⁻¹ * x ∧ L⁻¹ * x ≤ (1 / 2 : ℝ) := by
-            constructor
-            · have h := mul_lt_mul_of_pos_left hlo (inv_pos.mpr hL)
-              simpa [hL.ne', div_eq_mul_inv, mul_assoc] using h
-            · have h := mul_le_mul_of_nonneg_left hhi (inv_pos.mpr hL).le
-              simpa [hL.ne', div_eq_mul_inv, mul_assoc] using h
-
-          example {L x : ℝ} (hL : 0 < L) (hlo : -(1 / 2 : ℝ) < x) (hhi : x ≤ (1 / 2 : ℝ)) :
-              -(L / 2) < L * x ∧ L * x ≤ L / 2 := by
-            constructor
-            · have h := mul_lt_mul_of_pos_left hlo hL
-              simpa [div_eq_mul_inv, mul_assoc] using h
-            · have h := mul_le_mul_of_nonneg_left hhi hL.le
-              simpa [div_eq_mul_inv, mul_assoc] using h
+          #check Complex.finrank_real_complex
+          #check Module.finrank
+          #check LinearMap.ker
+          #check Module.End.eigenspace
+          #check ContinuousLinearMap.map_smul
+          #check RCLike.ofReal_re
+          #check MeasureTheory.MemLp.toLp
+          #check MeasureTheory.Lp.norm_def
           LEAN
-          cat >/tmp/ProbeBox.lean <<'LEAN'
-          import Mathlib
-          open MeasureTheory Set
-          def box (L : ℝ) : Set ℂ :=
-            {w | ∀ i : Fin 2, Complex.measurableEquivPi w i ∈ Set.Ioc (-(L/2)) (L/2)}
-          example (L : ℝ) : MeasurableSet (box L) := by
-            rw [show box L = ⋂ i : Fin 2,
-                (fun w : ℂ => Complex.measurableEquivPi w i) ⁻¹' Set.Ioc (-(L/2)) (L/2) by
-              ext w
-              simp [box]]
-            exact MeasurableSet.iInter fun i =>
-              measurableSet_Ioc.preimage
-                ((measurable_pi_apply i).comp Complex.measurableEquivPi.measurable)
-          LEAN
-          cat >/tmp/ProbeCoord.lean <<'LEAN'
-          import Mathlib
-          example (w : ℂ) (i : Fin 2) : |Complex.measurableEquivPi w i| ≤ ‖w‖ := by
-            fin_cases i
-            · change |w.re| ≤ ‖w‖
-              exact Complex.abs_re_le_norm w
-            · change |w.im| ≤ ‖w‖
-              exact Complex.abs_im_le_norm w
-          LEAN
-          cat >/tmp/ProbeModes.lean <<'LEAN'
-          import Mathlib
-          noncomputable def modes (N : ℕ) : Finset (Fin 2 → ℤ) := by
-            classical
-            exact ((Finset.Icc (-(N : ℤ)) (N : ℤ)).product
-              (Finset.Icc (-(N : ℤ)) (N : ℤ))).image
-                (fun p => ![p.1, p.2])
-          example (N : ℕ) (k : Fin 2 → ℤ) :
-              k ∈ modes N ↔ ∀ i : Fin 2, |k i| ≤ (N : ℤ) := by
-            classical
-            simp only [modes, Finset.mem_image, Finset.mem_product, Finset.mem_Icc]
-            constructor
-            · rintro ⟨p, ⟨hp0, hp1⟩, rfl⟩ i
-              fin_cases i
-              · exact (abs_le).2 hp0
-              · exact (abs_le).2 hp1
-            · intro hk
-              refine ⟨(k 0, k 1), ?_, ?_⟩
-              · constructor
-                · exact (abs_le).1 (hk 0)
-                · exact (abs_le).1 (hk 1)
-              · funext i
-                fin_cases i <;> rfl
-          LEAN
-          : >/tmp/results.txt
-          for x in Scale Box Coord Modes; do
-            set +e
-            lake env lean -DmaxErrors=50 -DwarningAsError=false "/tmp/Probe${x}.lean" >"/tmp/Probe${x}.log" 2>&1
-            rc=$?
-            set -e
-            echo "$x=$rc" | tee -a /tmp/results.txt
-          done
-          cat /tmp/results.txt
+          set +e
+          lake env lean -DmaxErrors=80 -DwarningAsError=false /tmp/ProbeAPI.lean > /tmp/probe-api.log 2>&1
+          rc=$?
+          set -e
+          echo "ProbeAPI=$rc" | tee /tmp/results.txt
+          cat /tmp/probe-api.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-fourier-rectangle-v5-${{ github.sha }}
+          name: codex-fa-api-drift-v6-${{ github.sha }}
           path: |
-            /tmp/Probe*.lean
-            /tmp/Probe*.log
+            /tmp/ProbeAPI.lean
+            /tmp/probe-api.log
+            /tmp/api-grep.txt
             /tmp/results.txt
           retention-days: 30
