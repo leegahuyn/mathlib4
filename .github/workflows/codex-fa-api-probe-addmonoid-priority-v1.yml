@@ -1,5 +1,5 @@
-name: Codex FA canonical-sub to module-sub bridge probe v2
-# trigger: canonical-sub-module-bridge-v2
+name: Codex FA canonical-sub to module-sub bridge probe v3
+# trigger: canonical-sub-module-bridge-v3
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,7 +22,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile canonical-sub bridge probes v2
+      - name: Compile canonical-sub bridge probes v3
         shell: bash
         run: |
           set -euo pipefail
@@ -31,6 +31,7 @@ jobs:
           import Mathlib
 
           noncomputable section
+
           variable {V W : Type*} [AddCommGroup V] [Module ℂ V]
             [AddCommGroup W] [Module ℂ W]
           variable (S : Submodule ℂ V)
@@ -43,7 +44,7 @@ jobs:
           theorem canonicalSub_eq_add_negOne_smul (u v : S) :
               Sub.sub u v = u + (-1 : ℂ) • v := by
             apply Subtype.ext
-            simp only [Submodule.coe_sub, Submodule.coe_add, Submodule.coe_smul_of_tower]
+            change (u : V) - (v : V) = (u : V) + (-1 : ℂ) • (v : V)
             simp [sub_eq_add_neg]
 
           example (L : S →ₗ[ℂ] W) (u v : S) :
@@ -51,24 +52,42 @@ jobs:
             rw [canonicalSub_eq_add_negOne_smul S u v, map_add, map_smul]
             simp [sub_eq_add_neg]
 
-          example (L : S →ₗ[ℂ] W) (u v : S) :
-              L (Sub.sub u v) = L u + (-1 : ℂ) • L v := by
-            rw [canonicalSub_eq_add_negOne_smul S u v, map_add, map_smul]
+          abbrev F := ℂ → ℂ
+          def SmoothSub : Submodule ℂ F := ⊤
+          abbrev Smooth := SmoothSub
+          instance : CoeFun Smooth (fun _ => ℂ → ℂ) where
+            coe f := f.1
+          def CoreSub : Submodule ℂ Smooth := ⊤
+          abbrev Core := CoreSub
+          def toSmooth (u : Core) : Smooth := u.1
+          noncomputable instance : CoeOut Core Smooth := ⟨toSmooth⟩
 
-          def FS : Submodule ℂ (ℂ → ℂ) := ⊤
-          abbrev CoreF := FS
-          noncomputable local instance coreFModule : Module ℂ CoreF := by
-            exact Submodule.module FS
-          noncomputable local instance coreFAddCommGroup : AddCommGroup CoreF := by
+          noncomputable local instance nestedCoreModule : Module ℂ Core := by
+            exact Submodule.module CoreSub
+          noncomputable local instance nestedCoreAddCommGroup : AddCommGroup Core := by
             exact Module.addCommMonoidToAddCommGroup ℂ
 
-          example (u v : CoreF) (z : ℂ) :
-              ((Sub.sub u v : CoreF) : ℂ → ℂ) z =
-                (u : ℂ → ℂ) z - (v : ℂ → ℂ) z := by
-            have h : Sub.sub u v = u + (-1 : ℂ) • v := by
-              apply Subtype.ext
-              simp [sub_eq_add_neg]
-            rw [h]
+          theorem nestedCanonicalSub_eq_add_negOne_smul (u v : Core) :
+              Sub.sub u v = u + (-1 : ℂ) • v := by
+            apply Subtype.ext
+            change (u : Smooth) - (v : Smooth) =
+              (u : Smooth) + (-1 : ℂ) • (v : Smooth)
+            simp [sub_eq_add_neg]
+
+          example (u v : Core) (z : ℂ) :
+              ((Sub.sub u v : Core) : Smooth) z =
+                (u : Smooth) z - (v : Smooth) z := by
+            rw [nestedCanonicalSub_eq_add_negOne_smul u v]
+            change (((u : Smooth) + (-1 : ℂ) • (v : Smooth) : Smooth) : F) z = _
+            simp [sub_eq_add_neg]
+
+          example (u a b : Core) (z : ℂ) :
+              ((Sub.sub (Sub.sub u a) b : Core) : Smooth) z =
+                (u : Smooth) z - (a : Smooth) z - (b : Smooth) z := by
+            rw [nestedCanonicalSub_eq_add_negOne_smul (Sub.sub u a) b,
+              nestedCanonicalSub_eq_add_negOne_smul u a]
+            change (((((u : Smooth) + (-1 : ℂ) • (a : Smooth)) : Smooth) +
+              (-1 : ℂ) • (b : Smooth) : Smooth) : F) z = _
             simp [sub_eq_add_neg]
           LEAN
           set +e
@@ -81,7 +100,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-canonical-sub-module-bridge-v2-${{ github.sha }}
+          name: codex-fa-canonical-sub-module-bridge-v3-${{ github.sha }}
           path: |
             /tmp/ProbeSubBridge.lean
             /tmp/probe.log
