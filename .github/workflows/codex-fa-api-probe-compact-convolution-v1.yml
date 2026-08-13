@@ -1,4 +1,4 @@
-name: Codex FA finite partition coercion API probe v4
+name: Codex FA Fourier rectangle API probe v5
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,54 +21,80 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile partition coercion bridge variants
+      - name: Compile Fourier rectangle root patterns
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeA.lean <<'LEAN'
+          cat >/tmp/ProbeScale.lean <<'LEAN'
           import Mathlib
-          open Set Function Topology
-          open scoped Manifold ContDiff
-          variable {ι : Type*} {s : Set ℂ}
-          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
-              ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-            have hp := (ρ i).property
-            rw [contMDiff_iff_contDiff] at hp
-            convert hp using 1
+          example {L x : ℝ} (hL : 0 < L) (hlo : -(L / 2) < x) (hhi : x ≤ L / 2) :
+              -(1 / 2 : ℝ) < L⁻¹ * x ∧ L⁻¹ * x ≤ (1 / 2 : ℝ) := by
+            constructor
+            · have h := mul_lt_mul_of_pos_left hlo (inv_pos.mpr hL)
+              simpa [hL.ne', div_eq_mul_inv, mul_assoc] using h
+            · have h := mul_le_mul_of_nonneg_left hhi (inv_pos.mpr hL).le
+              simpa [hL.ne', div_eq_mul_inv, mul_assoc] using h
+
+          example {L x : ℝ} (hL : 0 < L) (hlo : -(1 / 2 : ℝ) < x) (hhi : x ≤ (1 / 2 : ℝ)) :
+              -(L / 2) < L * x ∧ L * x ≤ L / 2 := by
+            constructor
+            · have h := mul_lt_mul_of_pos_left hlo hL
+              simpa [div_eq_mul_inv, mul_assoc] using h
+            · have h := mul_le_mul_of_nonneg_left hhi hL.le
+              simpa [div_eq_mul_inv, mul_assoc] using h
           LEAN
-          cat >/tmp/ProbeB.lean <<'LEAN'
+          cat >/tmp/ProbeBox.lean <<'LEAN'
           import Mathlib
-          open Set Function Topology
-          open scoped Manifold ContDiff
-          variable {ι : Type*} {s : Set ℂ}
-          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
-              ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-            have hp := (ρ i).property
-            rw [contMDiff_iff_contDiff] at hp
-            have hfun : (↑(ρ i) : ℂ → ℝ) = (ρ i : ℂ → ℝ) := by
-              funext x
-              rfl
-            rw [← hfun]
-            exact hp
+          open MeasureTheory Set
+          def box (L : ℝ) : Set ℂ :=
+            {w | ∀ i : Fin 2, Complex.measurableEquivPi w i ∈ Set.Ioc (-(L/2)) (L/2)}
+          example (L : ℝ) : MeasurableSet (box L) := by
+            rw [show box L = ⋂ i : Fin 2,
+                (fun w : ℂ => Complex.measurableEquivPi w i) ⁻¹' Set.Ioc (-(L/2)) (L/2) by
+              ext w
+              simp [box]]
+            exact MeasurableSet.iInter fun i =>
+              measurableSet_Ioc.preimage
+                ((measurable_pi_apply i).comp Complex.measurableEquivPi.measurable)
           LEAN
-          cat >/tmp/ProbeC.lean <<'LEAN'
+          cat >/tmp/ProbeCoord.lean <<'LEAN'
           import Mathlib
-          open Set Function Topology
-          open scoped Manifold ContDiff
-          variable {ι : Type*} {s : Set ℂ}
-          example (ρ : SmoothPartitionOfUnity ι 𝓘(ℝ, ℂ) ℂ s) (i : ι) :
-              ContDiff ℝ ∞ (ρ i : ℂ → ℝ) := by
-            have hp := (ρ i).property
-            rw [contMDiff_iff_contDiff] at hp
-            apply hp.congr
-            intro x
-            rfl
+          example (w : ℂ) (i : Fin 2) : |Complex.measurableEquivPi w i| ≤ ‖w‖ := by
+            fin_cases i
+            · change |w.re| ≤ ‖w‖
+              exact Complex.abs_re_le_norm w
+            · change |w.im| ≤ ‖w‖
+              exact Complex.abs_im_le_norm w
+          LEAN
+          cat >/tmp/ProbeModes.lean <<'LEAN'
+          import Mathlib
+          noncomputable def modes (N : ℕ) : Finset (Fin 2 → ℤ) := by
+            classical
+            exact ((Finset.Icc (-(N : ℤ)) (N : ℤ)).product
+              (Finset.Icc (-(N : ℤ)) (N : ℤ))).image
+                (fun p => ![p.1, p.2])
+          example (N : ℕ) (k : Fin 2 → ℤ) :
+              k ∈ modes N ↔ ∀ i : Fin 2, |k i| ≤ (N : ℤ) := by
+            classical
+            simp only [modes, Finset.mem_image, Finset.mem_product, Finset.mem_Icc]
+            constructor
+            · rintro ⟨p, ⟨hp0, hp1⟩, rfl⟩ i
+              fin_cases i
+              · exact (abs_le).2 hp0
+              · exact (abs_le).2 hp1
+            · intro hk
+              refine ⟨(k 0, k 1), ?_, ?_⟩
+              · constructor
+                · exact (abs_le).1 (hk 0)
+                · exact (abs_le).1 (hk 1)
+              · funext i
+                fin_cases i <;> rfl
           LEAN
           : >/tmp/results.txt
-          for x in A B C; do
+          for x in Scale Box Coord Modes; do
             set +e
-            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/Probe${x}.lean" >"/tmp/Probe${x}.log" 2>&1
+            lake env lean -DmaxErrors=50 -DwarningAsError=false "/tmp/Probe${x}.lean" >"/tmp/Probe${x}.log" 2>&1
             rc=$?
             set -e
             echo "$x=$rc" | tee -a /tmp/results.txt
@@ -78,7 +104,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-partition-coercion-v4-${{ github.sha }}
+          name: codex-fa-fourier-rectangle-v5-${{ github.sha }}
           path: |
             /tmp/Probe*.lean
             /tmp/Probe*.log
