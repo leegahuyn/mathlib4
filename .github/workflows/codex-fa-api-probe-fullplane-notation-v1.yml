@@ -24,7 +24,7 @@ jobs:
           OUT=build-logs/codex-fa-v33-threeext-first-frontier
           mkdir -p "$OUT" /tmp/base
           ART=9166681094
-          DIGEST=sha256:53ec5b8cf7cbe8a6c371c151a231ac13266ab92809ea7cbc2bb4517b4ffca5ec
+          DIGEST=sha256:cfdf7f4ffc83812ac23c1f29c5c4c1eda53c54ca62d31aedd159e7e2d3db655a
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/base.zip
           test "sha256:$(sha256sum /tmp/base.zip | awk '{print $1}')" = "$DIGEST"
           unzip -q /tmp/base.zip -d /tmp/base
