@@ -1,4 +1,4 @@
-name: Codex FA API probe partial eigenspace zero and inner-self normal form
+name: Codex FA API probe P5 manifold scoped partition type
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,83 +21,29 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile refined probes
+      - name: Compile P5 scoped notation probe
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeP9.lean <<'LEAN'
+          cat >/tmp/ProbeP5Scope.lean <<'LEAN'
           import Mathlib
-          open scoped LinearPMap
+          open Set Function Topology
+          open scoped Manifold ContDiff
 
-          variable {H : Type*}
-          variable [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+          #check SmoothPartitionOfUnity
+          variable (s : Set ℂ)
+          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
 
-          #check LinearPMap.map_zero
-          #check LinearPMap.map_add
-          #check LinearPMap.map_smul
-
-          example (A : H →ₗ.[ℂ] H) : A (0 : A.domain) = 0 := by
-            have h := A.map_add (0 : A.domain) (0 : A.domain)
-            have h' : A (0 : A.domain) = A (0 : A.domain) + A (0 : A.domain) := by
-              simpa using h
-            have hz : (0 : H) = A (0 : A.domain) := by
-              apply add_left_cancel (a := A (0 : A.domain))
-              simpa using h'
-            exact hz.symm
-
-          def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
-            carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
-            zero_mem' := by
-              refine ⟨A.domain.zero_mem, ?_⟩
-              change A (0 : A.domain) = 0
-              have h := A.map_add (0 : A.domain) (0 : A.domain)
-              have h' : A (0 : A.domain) = A (0 : A.domain) + A (0 : A.domain) := by
-                simpa using h
-              have hz : (0 : H) = A (0 : A.domain) := by
-                apply add_left_cancel (a := A (0 : A.domain))
-                simpa using h'
-              exact hz.symm
-            add_mem' := by
-              rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
-              refine ⟨A.domain.add_mem hx hy, ?_⟩
-              calc
-                A ⟨x + y, A.domain.add_mem hx hy⟩ =
-                    A ⟨x, hx⟩ + A ⟨y, hy⟩ := by
-                      exact A.map_add ⟨x, hx⟩ ⟨y, hy⟩
-                _ = μ • x + μ • y := by rw [hAx, hAy]
-                _ = μ • (x + y) := by rw [smul_add]
-            smul_mem' := by
-              rintro c x ⟨hx, hAx⟩
-              refine ⟨A.domain.smul_mem c hx, ?_⟩
-              calc
-                A ⟨c • x, A.domain.smul_mem c hx⟩ =
-                    c • A ⟨x, hx⟩ := by
-                      exact A.map_smul c ⟨x, hx⟩
-                _ = c • (μ • x) := by rw [hAx]
-                _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
-
-          example (r : ℝ) : (((r : ℂ) ^ 2).re) = r ^ 2 := by
-            norm_num
-
-          example (r : ℝ) : (((r : ℂ) ^ 2).im) = 0 := by
-            norm_num
-
-          example (μ : ℂ) (x : H) (d : ℝ) :
-              μ.re * (inner ℂ x x).re + (inner ℂ x x).re * d -
-                  μ.im * (inner ℂ x x).im =
-                μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
-            rw [inner_self_eq_norm_sq]
-            norm_num
-            ring
+          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
           LEAN
-          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP9.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=20 -DwarningAsError=false /tmp/ProbeP5Scope.lean 2>&1 | tee /tmp/probe.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p9-refined-probe-${{ github.sha }}
+          name: codex-fa-p5-manifold-scope-probe-${{ github.sha }}
           path: |
-            /tmp/ProbeP9.lean
+            /tmp/ProbeP5Scope.lean
             /tmp/probe.log
           retention-days: 30
