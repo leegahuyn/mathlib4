@@ -1,4 +1,5 @@
-name: Codex FA API probe partial eigenspace subtype ext constructors
+name: Codex FA P5 scoped notation matrix
+# trigger: p5-scope-matrix-1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,56 +22,62 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile subtype ext constructor probe
+      - name: Compile P5 scope matrix
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbePartialEig.lean <<'LEAN'
+          cat >/tmp/P5None.lean <<'LEAN'
           import Mathlib
-          open scoped LinearPMap
-
-          variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-
-          def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
-            carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
-            zero_mem' := by
-              refine ⟨A.domain.zero_mem, ?_⟩
-              rw [smul_zero]
-              have h0 : (⟨(0 : H), A.domain.zero_mem⟩ : A.domain) = 0 := by
-                apply Subtype.ext
-                rfl
-              rw [h0]
-              exact LinearPMap.map_zero A
-            add_mem' := by
-              rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
-              refine ⟨A.domain.add_mem hx hy, ?_⟩
-              have hadd :
-                  (⟨x + y, A.domain.add_mem hx hy⟩ : A.domain) =
-                    (⟨x, hx⟩ : A.domain) + (⟨y, hy⟩ : A.domain) := by
-                apply Subtype.ext
-                rfl
-              rw [hadd, LinearPMap.map_add, hAx, hAy, smul_add]
-            smul_mem' := by
-              rintro c x ⟨hx, hAx⟩
-              refine ⟨A.domain.smul_mem c hx, ?_⟩
-              have hsmul :
-                  (⟨c • x, A.domain.smul_mem c hx⟩ : A.domain) =
-                    c • (⟨x, hx⟩ : A.domain) := by
-                apply Subtype.ext
-                rfl
-              rw [hsmul, LinearPMap.map_smul, hAx, smul_smul, mul_comm]
-
-          example (A : H →ₗ.[ℂ] H) (μ : ℂ) :
-              partialEigenspaceProbe A μ = partialEigenspaceProbe A μ := by rfl
+          open Set Function Topology
+          #check SmoothPartitionOfUnity
+          variable (s : Set ℂ)
+          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
+          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
           LEAN
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbePartialEig.lean 2>&1 | tee /tmp/probe.log
+          cat >/tmp/P5ContDiff.lean <<'LEAN'
+          import Mathlib
+          open Set Function Topology
+          open scoped ContDiff
+          #check SmoothPartitionOfUnity
+          variable (s : Set ℂ)
+          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
+          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
+          LEAN
+          cat >/tmp/P5Manifold.lean <<'LEAN'
+          import Mathlib
+          open Set Function Topology
+          open scoped Manifold
+          #check SmoothPartitionOfUnity
+          variable (s : Set ℂ)
+          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
+          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
+          LEAN
+          cat >/tmp/P5Both.lean <<'LEAN'
+          import Mathlib
+          open Set Function Topology
+          open scoped Manifold ContDiff
+          #check SmoothPartitionOfUnity
+          variable (s : Set ℂ)
+          variable (P : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s)
+          example : SmoothPartitionOfUnity ℍ 𝓘(ℝ, ℂ) ℂ s := P
+          LEAN
+          : >/tmp/p5-scope-results.txt
+          for x in None ContDiff Manifold Both; do
+            set +e
+            lake env lean -DmaxErrors=20 -DwarningAsError=false "/tmp/P5${x}.lean" >"/tmp/P5${x}.log" 2>&1
+            rc=$?
+            set -e
+            echo "$x=$rc" | tee -a /tmp/p5-scope-results.txt
+          done
+          cat /tmp/p5-scope-results.txt
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-partial-eigenspace-subtype-ext-${{ github.sha }}
+          name: codex-fa-p5-scope-matrix-${{ github.sha }}
           path: |
-            /tmp/ProbePartialEig.lean
-            /tmp/probe.log
+            /tmp/P5*.lean
+            /tmp/P5*.log
+            /tmp/p5-scope-results.txt
           retention-days: 30
