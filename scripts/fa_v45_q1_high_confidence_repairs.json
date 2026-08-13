@@ -1,0 +1,148 @@
+{
+  "schema": "fa-v42-declaration-local-repairs-v1",
+  "status": "STATIC_ONLY_DIRECT_LEAN_UNVERIFIED_V44_Q1_HIGH_CONFIDENCE",
+  "variant_base": "v43_middle_probe_authority",
+  "authority": {
+    "run_id": 31719983304,
+    "head_sha": "dda6274627f628eca6cbfcef48f0c6e572881f0c",
+    "job_id": 94514229853,
+    "artifact_id": 9189354873,
+    "artifact_digest": "sha256:78416b511693fe68bd556674246cc0815015f8fddb46afcdc1e34673eefe87e5",
+    "source_path": "work/v43-run-31719983304/9189354873/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "f8d1b152e1c12639e4fc4f126e501a2a309333c5b8a6f3c8645df3e433572109",
+    "source_bytes": 2785412,
+    "source_lines": 62304,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "baab8be659f062f26d4b7563073c18480263747bfa45de88c642aeb13e1f4d07",
+    "fa_log_sha256": "4edd03f6c327dda4fa5a49cc3fac56e85004199d3a5dfa7aca0c726ab533a73c"
+  },
+  "slice": {
+    "queue": 1,
+    "residual_owner_count": 14,
+    "residual_diagnostic_count": 20,
+    "selected_owner_count": 7,
+    "selected_diagnostic_count": 8,
+    "selected_declaration_indices": [3669, 3899, 3932, 3946, 4297, 4298, 4395],
+    "selected_diagnostic_ordinals": [2, 9, 24, 30, 53, 54, 55, 60]
+  },
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "trust_policy": {
+    "tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "required_before": 0,
+    "required_after": 0
+  },
+  "repairs": [
+    {
+      "id": "V44-Q1-HC01-function-product-associativity-by-change",
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "declaration_index": 3669,
+      "diagnostics": [2],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_NORMALIZATION",
+      "confidence": "very-high-displayed-functions-differ-only-by-Pi-multiplication-elaboration",
+      "expected_count_in_owner": 1,
+      "old": "    simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase",
+      "new": "    change AEStronglyMeasurable\n      ((fun p : ℂ × ℂ ↦ v p.1) *\n        fun p : ℂ × ℂ ↦ K p.2 * u (p.1 - p.2))\n      ((volume : Measure ℂ).prod (volume : Measure ℂ))\n    exact hMeasV.mul hMeasBase",
+      "evidence": "The remote diagnostic prints exactly the RHS function-product form as the type of hMeasV.mul hMeasBase; changing the goal to that type avoids a failed simp conversion without changing the claim."
+    },
+    {
+      "id": "V44-Q1-HC02-preserve-scale-around-measurable-equivalence-congruence",
+      "owner": "integral_literalStageTorusRepresentative_normSq_eq_box",
+      "declaration_index": 3899,
+      "diagnostics": [9],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_CONGRUENCE",
+      "confidence": "very-high-remote-goal-is-common-scalar-action-around-existing-congruence",
+      "expected_count_in_owner": 1,
+      "old": "  apply congrArg Complex.measurableEquivPi.symm\n  funext i",
+      "new": "  apply congrArg (fun z : ℂ ↦ literalStageFourierScale Y • z)\n  apply congrArg Complex.measurableEquivPi.symm\n  funext i",
+      "evidence": "The remote goal has the identical scalar action on both sides; congrArg for that action reduces it to the existing measurableEquivPi.symm equality."
+    },
+    {
+      "id": "V44-Q1-HC03-reuse-working-dx-Fourier-scalar-proof-for-dy",
+      "owner": "mFourierCoeff_scaled_dy",
+      "declaration_index": 3932,
+      "diagnostics": [24],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_SAME_FILE_SIBLING",
+      "confidence": "very-high-verbatim-horizontal-proof-pattern-with-dy-substitution",
+      "expected_count_in_owner": 1,
+      "old": "  rw [map_smul]\n  simp only [smul_eq_mul]",
+      "new": "  have hScaled :\n      UnitAddTorus.mFourierCoeff\n          ((literalStageFourierScale Y : ℂ) •\n            literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dy v)) k =\n        (literalStageFourierScale Y : ℂ) *\n          UnitAddTorus.mFourierCoeff\n            (literalStageTorusTest Y\n              (HalfWeightCompactCoordinateGreen.dy v)) k := by\n    unfold UnitAddTorus.mFourierCoeff\n    rw [← integral_const_mul]\n    apply integral_congr_ae\n    filter_upwards [MeasureTheory.Lp.coeFn_smul\n      (literalStageFourierScale Y : ℂ)\n      (literalStageTorusTest Y\n        (HalfWeightCompactCoordinateGreen.dy v))] with t ht\n    rw [ht]\n    simp only [Pi.smul_apply, smul_eq_mul]\n    ring\n  rw [hScaled]",
+      "evidence": "The immediately preceding horizontal theorem proves the identical scalar/Fourier statement with dx. The failed map_smul expected a bundled map application that is absent after coercion; the sibling proof works at the integral/coercion layer."
+    },
+    {
+      "id": "V44-Q1-HC04-pass-square-term-not-proof-to-sq-nonneg",
+      "owner": "norm_literalStagePlaneFiniteApproximation_sub_core_le",
+      "declaration_index": 3946,
+      "diagnostics": [30],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_TYPE_CORRECTION",
+      "confidence": "certain-remote-error-says-Prop-passed-where-term-required",
+      "expected_count_in_owner": 1,
+      "old": "    nlinarith [hdx2, hdy2, hsqrt2sq, sq_nonneg hC]",
+      "new": "    nlinarith [hdx2, hdy2, hsqrt2sq,\n      sq_nonneg (literalStageLocalizationConstant Y n * ‖coreMap n u‖)]",
+      "evidence": "hC is a proof of nonnegativity, while sq_nonneg expects the real expression itself. The replacement supplies the exact expression whose square occurs in hdx2 and hdy2."
+    },
+    {
+      "id": "V44-Q1-HC05-simp-conjugated-test-after-operator-unfold",
+      "owner": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4297,
+      "diagnostics": [53],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_NORMALIZATION",
+      "confidence": "high-rw-fails-under-differential-operators-and-final-simp-already-has-pointwise-lemma",
+      "expected_count_in_owner": 1,
+      "old": "  have hfun :\n      (reducedChartConjugateAmbientTest v hv : ℂ → ℂ) =\n        fun z : ℂ ↦ star (v z) := by\n    funext z\n    exact reducedChartConjugateAmbientTest_apply v hv z\n  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint]\n  rw [hfun]\n  simp only [fullPlaneAffineTranspose_apply, add_apply,",
+      "new": "  simp only [Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.euclideanLowerFromSuccTestAdjoint,\n    reducedChartConjugateAmbientTest, fullPlaneAffineTranspose_apply, add_apply,",
+      "evidence": "The symmetric raising theorem proves that rewriting the coerced function hfun does not match the bundled AmbientTestCore argument either before or after operator unfolding. Unfolding reducedChartConjugateAmbientTest exposes HalfWeightCompactCoordinateGreen.conjugate directly, allowing the existing dx_conjugate_apply and dy_conjugate_apply rules to normalize the body without a structure-to-function rewrite."
+    },
+    {
+      "id": "V44-Q1-HC05b-remove-obsolete-pointwise-conjugate-simp",
+      "owner": "euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose",
+      "declaration_index": 4297,
+      "diagnostics": [53],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_UNUSED_SIMP_PREVENTION",
+      "confidence": "very-high-definition-is-now-unfolded-before-the-simp-set",
+      "expected_count_in_owner": 1,
+      "old": "    reducedChartConjugateAmbientTest_apply,\n    reducedChartAmbientTest_apply,",
+      "new": "    reducedChartAmbientTest_apply,",
+      "evidence": "After HC05 unfolds reducedChartConjugateAmbientTest, its pointwise theorem no longer has an occurrence. Removing it avoids introducing a new unused-simp warning."
+    },
+    {
+      "id": "V44-Q1-HC06-normalize-negated-gauge-products",
+      "owner": "signedLowerPeriodization_isReducedChartGaugeModel",
+      "declaration_index": 4298,
+      "diagnostics": [54, 55],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_TACTIC_DIAGNOSTIC_RECOMMENDATION",
+      "confidence": "very-high-Lean-explicitly-recommends-ring_nf-for-both-identical-goals",
+      "expected_count_in_owner": 2,
+      "old": "        ring",
+      "new": "        ring_nf",
+      "evidence": "Both remote goals are a*(-x)=-(a*x), and Lean explicitly reports that ring_nf closes the normalization that ring left unsolved."
+    },
+    {
+      "id": "V44-Q1-HC07-rewrite-lp-smul-before-pointwise-scalar-action",
+      "owner": "fullPlaneTestMulCLM_apply",
+      "declaration_index": 4395,
+      "diagnostics": [60],
+      "kind": "body",
+      "classification": "HIGH_CONFIDENCE_EXACT_RESIDUAL_STAGING",
+      "confidence": "very-high-hmul-rewrites-bundled-Lp-application-before-pointwise-simp",
+      "expected_count_in_owner": 1,
+      "old": "  rw [lpInfinityMultiplier_apply, hmul, Pi.smul_apply,\n    smul_eq_mul, hphi, htarget]\n  rfl",
+      "new": "  rw [lpInfinityMultiplier_apply, hmul]\n  change ↑↑(fullPlaneTestToLInfinity phi) z * ↑↑u z =\n    ↑↑(fullPlaneTestMulL2 phi u) z\n  rw [hphi, htarget]",
+      "evidence": "After hmul the remote target is pointwise scalar action on coerced functions, where Pi.smul_apply does not match. An explicit scalar multiplication goal then closes exactly with hphi and htarget."
+    }
+  ],
+  "excluded_from_high_confidence": {
+    "common_hc_indices": [3949, 4015],
+    "paired_q3_index": [3925],
+    "staged_api_indices": [3956, 3960, 4012],
+    "source_order_index": [4198]
+  },
+  "promotion_rule": "Compose only against the exact middle_probe authority. Require direct remote Mock2=0, Mock2 Advanced=0, FA maxErrors=2000 inventory complete, trust-six zero, and compare the complete residual inventory before selecting this bundle.",
+  "direct_lean_verified": false
+}
