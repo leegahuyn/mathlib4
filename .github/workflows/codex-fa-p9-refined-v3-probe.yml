@@ -1,4 +1,4 @@
-name: Codex FA AE filter and product projection API probe
+name: Codex FA AE measure-to-filter coercion probe v2
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,37 +21,31 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile AE coercion and product projection proof shapes
+      - name: Compile AE coercion variants
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeMeasureFilter.lean <<'LEAN'
+          cat >/tmp/ProbeMeasureFilterA.lean <<'LEAN'
           import Mathlib
           open MeasureTheory Filter
           local instance {α : Type*} [MeasurableSpace α] : Coe (Measure α) (Filter α) :=
-            ⟨Measure.ae⟩
+            ⟨ae⟩
           variable {α β : Type*} [MeasurableSpace α]
-          example (μ : Measure α) (f g : α → β) :
-              f =ᶠ[μ] g ↔ f =ᵐ[μ] g := by
-            rfl
+          example (μ : Measure α) (f g : α → β) : f =ᶠ[μ] g ↔ f =ᵐ[μ] g := by rfl
           LEAN
-          cat >/tmp/ProbeProdProjection.lean <<'LEAN'
+          cat >/tmp/ProbeMeasureFilterB.lean <<'LEAN'
           import Mathlib
-          variable {E F ι : Type*} [AddCommMonoid E] [AddCommMonoid F]
-          example (s : Finset ι) (x : ι → E) (y : ι → F) (p : E × F)
-              (hx : (∑ i ∈ s, x i) = p.1) :
-              (∑ i ∈ s, (x i, y i)).1 = p.1 := by
-            simpa only [Prod.fst_sum] using hx
-          example (s : Finset ι) (x : ι → E) (y : ι → F) (p : E × F)
-              (hy : (∑ i ∈ s, y i) = p.2) :
-              (∑ i ∈ s, (x i, y i)).2 = p.2 := by
-            simpa only [Prod.snd_sum] using hy
+          open MeasureTheory Filter
+          local instance {α : Type*} [MeasurableSpace α] : Coe (Measure α) (Filter α) :=
+            ⟨fun μ => ae μ⟩
+          variable {α β : Type*} [MeasurableSpace α]
+          example (μ : Measure α) (f g : α → β) : f =ᶠ[μ] g ↔ f =ᵐ[μ] g := by rfl
           LEAN
           : >/tmp/results.txt
-          for x in MeasureFilter ProdProjection; do
+          for x in A B; do
             set +e
-            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/Probe${x}.lean" >"/tmp/Probe${x}.log" 2>&1
+            lake env lean -DmaxErrors=40 -DwarningAsError=false "/tmp/ProbeMeasureFilter${x}.lean" >"/tmp/ProbeMeasureFilter${x}.log" 2>&1
             rc=$?
             set -e
             echo "$x=$rc" | tee -a /tmp/results.txt
@@ -61,9 +55,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-ae-filter-prod-projection-${{ github.sha }}
+          name: codex-fa-ae-measure-filter-v2-${{ github.sha }}
           path: |
-            /tmp/Probe*.lean
-            /tmp/Probe*.log
+            /tmp/ProbeMeasureFilter*.lean
+            /tmp/ProbeMeasureFilter*.log
             /tmp/results.txt
           retention-days: 30
