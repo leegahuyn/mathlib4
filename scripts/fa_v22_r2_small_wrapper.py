@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# trigger: blob-stable-r2-6b73-1
 from pathlib import Path
 import hashlib, json, os, re, subprocess, sys, tempfile
 
