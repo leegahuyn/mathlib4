@@ -1,0 +1,15 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48799,9 +48799,9 @@
+       inner ℂ (l2Coordinate n v)
+         (l2Coordinate n (strongPrincipalCore n u)) := by
+   have hs := successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
+-  have hidx : n - 1 + 1 = n := by omega
+-  rw [hidx] at hs
+-  have h := hs v u
++  have hidx : n - 1 + 1 = n := sub_add_cancel n 1
++  have hs' := hidx ▸ hs
++  have h := hs' v u
+   rw [successorGraphCoordinates_eq_coordinates] at h
+   simpa only [sub_add_cancel] using h
+ 
