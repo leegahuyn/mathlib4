@@ -1,5 +1,5 @@
-name: Codex FA nested core custom coercion pointwise probe
-# trigger: nested-core-custom-coe-pointwise-v1
+name: Codex FA P5 finsum support and localization API probe
+# trigger: p5-finsum-support-localize-v1
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,57 +22,44 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile nested custom coercion probes
+      - name: Compile P5 support and unfold probes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeNestedCoe.lean <<'LEAN'
+          cat >/tmp/ProbeP5Support.lean <<'LEAN'
           import Mathlib
 
-          noncomputable section
-          abbrev F := ℂ → ℂ
-          def P0 : Submodule ℂ F := ⊤
-          abbrev SmoothLike := P0
-          def P1 : Submodule ℂ SmoothLike := ⊤
-          abbrev E := P1
-          def P2 : Submodule ℂ E := ⊤
-          abbrev Core := P2
+          open Set Function
 
-          instance : CoeFun E (fun _ => ℂ → ℂ) where
-            coe f := ((f.1 : SmoothLike) : F)
+          #print finsum_eq_sum_of_support_subset
+          #print tsupport_comp_subset
 
-          def toE (u : Core) : E := u.1
-          noncomputable instance : CoeOut Core E := ⟨toE⟩
+          variable {α : Type*} [DecidableEq α]
+          variable (f : α → ℝ) (s : Finset α)
 
-          noncomputable local instance coreModule : Module ℂ Core := by
-            change Module ℂ ↥P2
-            exact Submodule.module P2
-          noncomputable local instance coreAddCommGroup : AddCommGroup Core := by
-            exact Module.addCommMonoidToAddCommGroup ℂ
+          example (hs : Function.support f ⊆ (s : Set α)) :
+              (∑ x ∈ s, f x) = ∑ᶠ x, f x := by
+            simpa only using (finsum_eq_sum_of_support_subset (f := f) (s := s) hs).symm
 
-          example (u a b : Core) (z : ℂ) :
-              ((Sub.sub (Sub.sub u a) b : Core) : E) z =
-                (u : E) z - (a : E) z - (b : E) z := by
-            rfl
+          example (f : ℂ → ℝ) :
+              tsupport ((fun r : ℝ => (r : ℂ)) ∘ f) ⊆ tsupport f := by
+            exact tsupport_comp_subset
+              (g := fun r : ℝ => (r : ℂ)) (by norm_num) f
 
-          example (u a b : Core) (z : ℂ) :
-              (Sub.sub (Sub.sub u a) b : Core).1.1.1 z =
-                u.1.1.1 z - a.1.1.1 z - b.1.1.1 z := by
-            rfl
+          def localizeProbe (a b : ℂ → ℂ) : ℂ → ℂ := fun z => a z * b z
 
-          example (u a : Core) (t z : ℂ) :
-              ((Sub.sub u (t • a) : Core) : E) z =
-                (u : E) z - t * (a : E) z := by
-            rfl
+          theorem localizeProbe_rule (a b : ℂ → ℂ) (z : ℂ) :
+              localizeProbe a b z = a z * b z := by rfl
 
-          example (u a : Core) (t z : ℂ) :
-              (Sub.sub u (t • a) : Core).1.1.1 z =
-                u.1.1.1 z - t * a.1.1.1 z := by
-            rfl
+          def namedLocalized (a b : ℂ → ℂ) : ℂ → ℂ := localizeProbe a b
+
+          example (a b : ℂ → ℂ) (z : ℂ) : namedLocalized a b z = a z * b z := by
+            unfold namedLocalized
+            exact localizeProbe_rule a b z
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeNestedCoe.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=50 -DwarningAsError=false /tmp/ProbeP5Support.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -81,9 +68,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-nested-custom-coe-pointwise-${{ github.sha }}
+          name: codex-fa-p5-finsum-localize-${{ github.sha }}
           path: |
-            /tmp/ProbeNestedCoe.lean
+            /tmp/ProbeP5Support.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
