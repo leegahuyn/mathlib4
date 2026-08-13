@@ -1,11 +1,11 @@
-name: Codex FA v36 grouped full-inventory highcap2000
+name: Codex FA v37 grouped full-inventory highcap2000
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
     paths:
       - .github/workflows/codex-fa-api-probe-fullplane-notation-v1.yml
-      - scripts/fa_v36_grouped_batch.py
-      - scripts/fa_v36_grouped_from_v35.patch
+      - scripts/fa_v37_grouped_batch.py
+      - scripts/fa_v37_grouped_from_v36.patch
   workflow_dispatch:
 permissions: {actions: read, contents: read}
 jobs:
@@ -15,17 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Materialize exact authoritative v35 and apply audited grouped v36 batch
+      - name: Materialize exact authoritative v36 and apply audited grouped v37 batch
         env:
           GH_TOKEN: "${{ github.token }}"
-          BASE_SOURCE_SHA256: 6b065f7bbe63d1f1eda74688ae6c9ed458a5c29072597fdf8949afbfc1ddd1f1
+          BASE_SOURCE_SHA256: b453b65cb6b25b27a7ab6bf32fa657b4b15cadf97d5efdcb9c13ce748eb443aa
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v36-grouped-highcap2000
+          OUT=build-logs/codex-fa-v37-grouped-highcap2000
           mkdir -p "$OUT" /tmp/base
-          ART=9168915109
-          DIGEST=sha256:77fa6abbd81ed7601f3ee912b99f854553e00dd9f3cb6c73b8f280a37304c488
+          ART=9171330647
+          DIGEST=sha256:986037ab367faacbc004943edb473528f94f50c484df6bb1fade650deda0b21a
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/base.zip
           test "sha256:$(sha256sum /tmp/base.zip | awk '{print $1}')" = "$DIGEST"
           unzip -q /tmp/base.zip -d /tmp/base
@@ -37,14 +37,14 @@ jobs:
           assert len(hits)==1,hits
           shutil.copy2(hits[0],Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
-          python3 scripts/fa_v36_grouped_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
-          test "$(cat "$OUT/candidate.sha256")" = b453b65cb6b25b27a7ab6bf32fa657b4b15cadf97d5efdcb9c13ce748eb443aa
-          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = b453b65cb6b25b27a7ab6bf32fa657b4b15cadf97d5efdcb9c13ce748eb443aa
+          python3 scripts/fa_v37_grouped_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
+          test "$(cat "$OUT/candidate.sha256")" = e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05
       - name: Install pinned Lean and cache
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v36-grouped-highcap2000
+          OUT=build-logs/codex-fa-v37-grouped-highcap2000
           curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
           sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          OUT=build-logs/codex-fa-v36-grouped-highcap2000
+          OUT=build-logs/codex-fa-v37-grouped-highcap2000
           mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
           one(){
             local s="$1" cap="$2" o=.lake/build/lib/lean/PrimalitySheafVerification/$1.olean i=.lake/build/lib/lean/PrimalitySheafVerification/$1.ilean
@@ -72,12 +72,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          OUT=build-logs/codex-fa-v36-grouped-highcap2000
+          OUT=build-logs/codex-fa-v37-grouped-highcap2000
           python3 - <<'PY'
           from pathlib import Path
           from bisect import bisect_right
           import collections,hashlib,json,os,re
-          out=Path('build-logs/codex-fa-v36-grouped-highcap2000'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          out=Path('build-logs/codex-fa-v37-grouped-highcap2000'); p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
           s=p.read_text(errors='replace'); b=p.read_bytes()
           dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s(:]+)')
           ds=list(dr.finditer(s)); starts=[s.count('\n',0,m.start())+1 for m in ds]
@@ -88,7 +88,7 @@ jobs:
             ln=int(m.group(1)); idx=bisect_right(starts,ln)-1; msg=m.group(3).strip()
             di.append({'ordinal':len(di)+1,'line':ln,'column':int(m.group(2)),'declaration':ds[idx].group('name') if idx>=0 else None,'declaration_index':idx if idx>=0 else None,'message':msg,'normalized_message_signature':re.sub(r'\s+',' ',msg)})
           first=di[0] if di else {}; stems=['Mock2','Mock2_Advanced','Mock2_FunctionalAnalysis']; ex={x:int((out/f'{x}.exit').read_text()) if (out/f'{x}.exit').exists() else None for x in stems}
-          metric={'schema':'fa-v36-grouped-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':(out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest()==(out/'candidate.sha256').read_text().strip(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in stems),'FA_compile_max_errors':2000,'FA_error_headers_captured':len(di),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'unique_declarations_with_errors':len(set((d['declaration_index'],d['declaration']) for d in di)),'unique_normalized_message_signatures':len(set(d['normalized_message_signature'] for d in di))}
+          metric={'schema':'fa-v37-grouped-highcap2000','run_id':os.environ.get('GITHUB_RUN_ID'),'head_sha':os.environ.get('GITHUB_SHA'),'source_sha256':hashlib.sha256(b).hexdigest(),'source_bytes':len(b),'source_lines':len(s.splitlines()),'source_identity_locked_after_materialization':(out/'candidate.sha256').exists() and hashlib.sha256(b).hexdigest()==(out/'candidate.sha256').read_text().strip(),'Mock2_exit':ex['Mock2'],'Mock2_Advanced_exit':ex['Mock2_Advanced'],'FA_exit':ex['Mock2_FunctionalAnalysis'],'all_required_lean_executed':all((out/f'{x}.executed').exists() for x in stems),'FA_compile_max_errors':2000,'FA_error_headers_captured':len(di),'FA_first_actual_error_line':first.get('line'),'FA_first_actual_error_col':first.get('column'),'FA_first_error_declaration':first.get('declaration'),'FA_error_declaration_index':first.get('declaration_index'),'FA_first_error_message':first.get('message'),'unique_declarations_with_errors':len(set((d['declaration_index'],d['declaration']) for d in di)),'unique_normalized_message_signatures':len(set(d['normalized_message_signature'] for d in di))}
           (out/'FULL_DIAGNOSTICS.json').write_text(json.dumps(di,indent=2,sort_keys=True)+'\n'); (out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
           dc=collections.Counter((d['declaration_index'],d['declaration']) for d in di); (out/'DIAGNOSTIC_DECLARATION_COUNTS.json').write_text(json.dumps([{'declaration_index':k[0],'declaration':k[1],'count':v} for k,v in sorted(dc.items(),key=lambda kv:(kv[0][0] if kv[0][0] is not None else -1,kv[0][1] or ''))],indent=2,sort_keys=True)+'\n')
           print(json.dumps(metric,indent=2,sort_keys=True))
@@ -97,14 +97,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v36-grouped-highcap2000-${{ github.sha }}
+          name: codex-fa-v37-grouped-highcap2000-${{ github.sha }}
           path: |
             PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-            build-logs/codex-fa-v36-grouped-highcap2000
+            build-logs/codex-fa-v37-grouped-highcap2000
           retention-days: 30
       - name: Preserve actual FA exit
         if: always()
         shell: bash
         run: |
-          test -f build-logs/codex-fa-v36-grouped-highcap2000/Mock2_FunctionalAnalysis.exit || exit 86
-          exit "$(cat build-logs/codex-fa-v36-grouped-highcap2000/Mock2_FunctionalAnalysis.exit)"
+          test -f build-logs/codex-fa-v37-grouped-highcap2000/Mock2_FunctionalAnalysis.exit || exit 86
+          exit "$(cat build-logs/codex-fa-v37-grouped-highcap2000/Mock2_FunctionalAnalysis.exit)"
