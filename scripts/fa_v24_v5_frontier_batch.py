@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib,json,os,re,subprocess,sys
 if len(sys.argv)!=3: raise SystemExit('usage: fa_v24_v5_frontier_batch.py <source> <outdir>')
 source=Path(sys.argv[1]); out=Path(sys.argv[2]); out.mkdir(parents=True,exist_ok=True)
-patch_path=Path('scripts/fa_v24_frontier_from_v23.patch')
+patch_path=Path('scripts/fa_v27_theorem_v5_b590.patch')
 base_locked='a26135f6674fb4111307c471b92b036b2d2f4a529dba3bb67bbfd7a7e35a90ce'
 patch_locked='b590a8598fbb45bc7c83707157487e788730e739cf4ca949b40e0fb22d46a93c'
 candidate_locked='eadf1d9b129babe4a67f1cd5352f82a72fc844f3c0c0aa1578fdb35e7dc89d5f'
