@@ -1,4 +1,4 @@
-name: Codex FA actual-core Sub.sub three-ext probe
+name: Codex FA actual-core Sub.sub three-ext probe safe-cutoff
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -34,7 +34,7 @@ jobs:
           PY
           python3 scripts/fa_v23_filtered_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/audit/filtered
           test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = 931c8656a880307acc6f871f63a4c7751fdf6ccf4c57e02f5363ab7943a61fa4
-          head -n 19664 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean >/tmp/ProbeThreeExt.lean
+          head -n 19663 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean >/tmp/ProbeThreeExt.lean
           cat >>/tmp/ProbeThreeExt.lean <<'LEAN'
 
           example (n : ℤ) (x y : InverseEtaFixedPhaseCore n) :
@@ -87,7 +87,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-actual-core-three-ext-${{ github.sha }}
+          name: codex-fa-actual-core-three-ext-safe-${{ github.sha }}
           path: |
             /tmp/ProbeThreeExt.lean
             /tmp/probe.log
