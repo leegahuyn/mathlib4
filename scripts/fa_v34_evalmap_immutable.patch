@@ -1,0 +1,39 @@
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48670,8 +48670,19 @@
+               (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u) :
+                 Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+             SmoothQuotientCompactFunction) z) := by
+-    rw [strongPrincipalCore_apply]
+-    rfl
++    change
++      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++          (strongPrincipalCore n u) =
++        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z u -
++          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise n u)) -
++          Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raiseFromPred n
++              (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower n u))
++    rw [strongPrincipalCore_apply, map_sub, map_sub]
+   rw [hPoint]
+   have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
+   have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
+@@ -48720,8 +48731,17 @@
+           (((potentialMultiplicationCore n u :
+               Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
+             SmoothQuotientCompactFunction) z) := by
+-    rw [strongSchrodingerCore_apply]
++    change
++      Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++          (strongSchrodingerCore n t u) =
++        Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++            (strongPrincipalCore n u) -
++          (t : ℂ) *
++            Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseDensity.fixedPhaseCoreEvaluation n z
++              (potentialMultiplicationCore n u)
++    rw [strongSchrodingerCore_apply, map_sub, map_smul]
+     rfl
+   rw [hPoint, strongPrincipalCore_apply_pointwise,
+     potentialMultiplicationCore_apply]
