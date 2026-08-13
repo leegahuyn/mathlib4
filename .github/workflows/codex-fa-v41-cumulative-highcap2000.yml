@@ -36,7 +36,7 @@ env:
   FA_V41_SELECTED_INDEX_SHA256: 5bcb95973890efa0024ec48ff704ab03d7d77f6fb6a72df8596e48246887a1b9
   FA_V41_RUNTIME_INDEX_SHA256: 6aa6c8a08377eafde23addb94bfa72308b8ad7ac36249a3cdc4e546b06469140
   FA_V41_MAIN_CANDIDATE_SHA256: 091c9c5ab9e2efcabaca6a93d1ceeea056ad2163255efe8078cd0ce18fc3aaef
-  FA_V41_MAIN_AUDIT_SHA256: 64289cd7ea06e6af90286b75b76ebb248376e723b77cc74606e9b32111821c48
+  FA_V41_MAIN_AUDIT_SHA256: ac8962e2fd9bd80f774ade8970039d77f767af0eb99c26a4bb906f825c95f96f
   FA_V41_CONDITIONAL_INDEX_SHA256: 7d7e4ebb43f1dbc3d05ba5269f659bc3717a632a48d69ef313543c333c2953aa
 
 jobs:
@@ -49,11 +49,11 @@ jobs:
           - variant: high_confidence
             include_conditional: "false"
             expected_candidate_sha256: 091c9c5ab9e2efcabaca6a93d1ceeea056ad2163255efe8078cd0ce18fc3aaef
-            expected_audit_sha256: 64289cd7ea06e6af90286b75b76ebb248376e723b77cc74606e9b32111821c48
+            expected_audit_sha256: ac8962e2fd9bd80f774ade8970039d77f767af0eb99c26a4bb906f825c95f96f
           - variant: with_conditional_bodies
             include_conditional: "true"
             expected_candidate_sha256: d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937
-            expected_audit_sha256: 6231b1269c130fe568d0bc0e2f3be6524fca1312c36f23823a77822d35dcb5ea
+            expected_audit_sha256: 25a4b3c34041bb9d7278aeef1569204c8b7ee2f9ef2a5dfbd2cba3d68a57bf77
     name: direct-${{ matrix.variant }}
     runs-on: ubuntu-24.04
     timeout-minutes: 360
