@@ -1,4 +1,4 @@
-name: Codex FA pinned P5 torus measure API grep
+name: Codex FA P5 torus probability/measure probe
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -8,26 +8,69 @@ permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Grep torus finite-measure and smul APIs
+      - name: Install pinned Lean and cache
         shell: bash
         run: |
           set -euo pipefail
-          : >/tmp/p5-measure-grep.txt
-          echo '=== UnitAddCircle/Torus measure instances ===' | tee -a /tmp/p5-measure-grep.txt
-          grep -R -n -E 'UnitAddCircle|UnitAddTorus' Mathlib | grep -E 'IsFiniteMeasure|instMeasureSpace|isFiniteMeasure|volume' | head -160 | tee -a /tmp/p5-measure-grep.txt || true
-          echo '=== IsFiniteMeasure compact Haar ===' | tee -a /tmp/p5-measure-grep.txt
-          grep -R -n -E 'IsFiniteMeasure.*Haar|Haar.*IsFiniteMeasure|isFiniteMeasure.*Haar|CompactSpace.*IsFiniteMeasure' Mathlib/MeasureTheory Mathlib/Topology 2>/dev/null | head -160 | tee -a /tmp/p5-measure-grep.txt || true
-          echo '=== Measurable.const_smul ===' | tee -a /tmp/p5-measure-grep.txt
-          grep -R -n -E 'theorem.*const_smul|lemma.*const_smul' Mathlib/MeasureTheory Mathlib/Topology Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/p5-measure-grep.txt || true
-          test -s /tmp/p5-measure-grep.txt
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile P5 torus measure variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          cat >/tmp/P5MeasureOnly.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          attribute [local instance 10000] instMeasureSpaceUnitAddCircle
+          abbrev T := UnitAddTorus (Fin 2)
+          #synth MeasureSpace T
+          #synth IsFiniteMeasure (volume : Measure T)
+          LEAN
+          cat >/tmp/P5Probability.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
+          local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
+            inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
+          local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
+            inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
+          abbrev T := UnitAddTorus (Fin 2)
+          #synth MeasureSpace T
+          #synth IsProbabilityMeasure (volume : Measure T)
+          #synth IsFiniteMeasure (volume : Measure T)
+          LEAN
+          cat >/tmp/P5Smul.lean <<'LEAN'
+          import Mathlib
+          open MeasureTheory
+          variable {X : Type*} [MeasurableSpace X]
+          example (s : ℝ) (f : X → ℂ) (hf : Measurable f) :
+              Measurable (fun x => s • f x) := by
+            exact hf.const_smul (s : ℝ)
+          LEAN
+          : >/tmp/p5-measure-results.txt
+          for x in MeasureOnly Probability Smul; do
+            set +e
+            lake env lean -DmaxErrors=30 -DwarningAsError=false "/tmp/P5${x}.lean" >"/tmp/P5${x}.log" 2>&1
+            rc=$?
+            set -e
+            echo "$x=$rc" | tee -a /tmp/p5-measure-results.txt
+          done
+          cat /tmp/p5-measure-results.txt
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p5-measure-grep-${{ github.sha }}
-          path: /tmp/p5-measure-grep.txt
+          name: codex-fa-p5-probability-measure-${{ github.sha }}
+          path: |
+            /tmp/P5*.lean
+            /tmp/P5*.log
+            /tmp/p5-measure-results.txt
           retention-days: 30
