@@ -1,5 +1,5 @@
-name: Codex FA probe P9 and joint proof shapes v3
-# trigger: p9-joint-proof-shapes-3-fire
+name: Codex FA probe P9 and joint proof shapes v4
+# trigger: p9-joint-proof-shapes-4
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,7 +22,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile corrected proof-shape probes
+      - name: Compile corrected proof-shape probes v4
         shell: bash
         run: |
           set -euo pipefail
@@ -39,17 +39,40 @@ jobs:
             carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
             zero_mem' := by
               refine ⟨A.domain.zero_mem, ?_⟩
-              simpa using (LinearPMap.map_zero A)
+              have hSub : (⟨(0 : H), A.domain.zero_mem⟩ : A.domain) = 0 := by
+                apply Subtype.ext
+                rfl
+              rw [hSub]
+              simpa only [smul_zero] using (LinearPMap.map_zero A)
             add_mem' := by
               rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
               refine ⟨A.domain.add_mem hx hy, ?_⟩
-              simpa only [hAx, hAy, smul_add] using
-                (LinearPMap.map_add A (⟨x, hx⟩ : A.domain) (⟨y, hy⟩ : A.domain))
+              have hSub :
+                  (⟨x, hx⟩ : A.domain) + (⟨y, hy⟩ : A.domain) =
+                    (⟨x + y, A.domain.add_mem hx hy⟩ : A.domain) := by
+                apply Subtype.ext
+                rfl
+              have hMap := LinearPMap.map_add A (⟨x, hx⟩ : A.domain) (⟨y, hy⟩ : A.domain)
+              rw [hSub] at hMap
+              calc
+                A ⟨x + y, A.domain.add_mem hx hy⟩ =
+                    A ⟨x, hx⟩ + A ⟨y, hy⟩ := hMap
+                _ = μ • x + μ • y := by rw [hAx, hAy]
+                _ = μ • (x + y) := by rw [smul_add]
             smul_mem' := by
               rintro c x ⟨hx, hAx⟩
               refine ⟨A.domain.smul_mem c hx, ?_⟩
-              simpa only [hAx, smul_smul, mul_comm] using
-                (LinearPMap.map_smul A c (⟨x, hx⟩ : A.domain))
+              have hSub :
+                  c • (⟨x, hx⟩ : A.domain) =
+                    (⟨c • x, A.domain.smul_mem c hx⟩ : A.domain) := by
+                apply Subtype.ext
+                rfl
+              have hMap := LinearPMap.map_smul A c (⟨x, hx⟩ : A.domain)
+              rw [hSub] at hMap
+              calc
+                A ⟨c • x, A.domain.smul_mem c hx⟩ = c • A ⟨x, hx⟩ := hMap
+                _ = c • (μ • x) := by rw [hAx]
+                _ = μ • (c • x) := by simp only [smul_smul, mul_comm]
 
           example {μ : ℂ} (h : star μ = μ) : μ.im = 0 := by
             have hReal := congrArg Complex.im h
@@ -86,18 +109,27 @@ jobs:
 
           example (U R L LR RL : H) (k : ℝ)
               (hPair : inner ℂ U LR + (k : ℂ) * inner ℂ U U = inner ℂ U RL)
-              (hRaise : inner ℂ R R = -inner ℂ U LR)
-              (hLower : inner ℂ RL U = -inner ℂ L L)
-              (hSymm : (inner ℂ U RL).re = (inner ℂ RL U).re) :
+              (hRaise : inner ℂ R R = - inner ℂ U LR)
+              (hLower : inner ℂ RL U = - inner ℂ L L) :
               ‖R‖ ^ 2 - ‖L‖ ^ 2 = k * ‖U‖ ^ 2 := by
             have hPairRe := congrArg Complex.re hPair
             have hRaiseRe := congrArg Complex.re hRaise
             have hLowerRe := congrArg Complex.re hLower
+            have hSymm : (inner ℂ U RL).re = (inner ℂ RL U).re :=
+              inner_re_symm (𝕜 := ℂ) U RL
+            have hNormU := norm_sq_eq_re_inner (𝕜 := ℂ) U
+            have hNormR := norm_sq_eq_re_inner (𝕜 := ℂ) R
+            have hNormL := norm_sq_eq_re_inner (𝕜 := ℂ) L
+            change ‖U‖ ^ 2 = (inner ℂ U U).re at hNormU
+            change ‖R‖ ^ 2 = (inner ℂ R R).re at hNormR
+            change ‖L‖ ^ 2 = (inner ℂ L L).re at hNormL
             simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-              Complex.ofReal_im, zero_mul, sub_zero, inner_self_eq_norm_sq,
-              Complex.neg_re] at hPairRe hRaiseRe hLowerRe
+              Complex.ofReal_im, zero_mul, sub_zero, Complex.neg_re] at hPairRe hRaiseRe hLowerRe
             rw [hSymm] at hPairRe
-            nlinarith
+            rw [← hNormU] at hPairRe
+            rw [← hNormR] at hRaiseRe
+            rw [← hNormL] at hLowerRe
+            linarith
 
           example {E : Type*} [NormedAddCommGroup E] [TopologicalSpace E]
               (f : E → E) (hf : DenseRange f) : Dense (Set.range f) := by
@@ -117,7 +149,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-probe-p9-joint-proofs-v3-${{ github.sha }}
+          name: codex-fa-probe-p9-joint-proofs-v4-${{ github.sha }}
           path: |
             /tmp/ProbeP9Proofs.lean
             /tmp/probe-p9-proofs.log
