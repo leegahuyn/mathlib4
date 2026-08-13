@@ -1,4 +1,4 @@
-name: Codex FA P5 finite-sum smooth compact-support probe
+name: Codex FA pinned Mathlib API source grep
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -8,69 +8,28 @@ permissions: {contents: read}
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
-      - name: Install pinned Lean and cache
+      - name: Grep pinned Mathlib APIs for next full-inventory clusters
         shell: bash
         run: |
           set -euo pipefail
-          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
-          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
-          export PATH="$HOME/.elan/bin:$PATH"
-          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
-          lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile P5 finite-sum proof shapes
-        shell: bash
-        run: |
-          set -euo pipefail
-          export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeP5FiniteSum.lean <<'LEAN'
-          import Mathlib
-
-          open Set Function Topology
-          open scoped Manifold ContDiff
-          noncomputable section
-
-          variable {ι : Type*} [DecidableEq ι]
-          variable (f : ι → ℂ → ℝ) (s : Finset ι)
-
-          example (hf : ∀ i, ContDiff ℝ ∞ (f i)) :
-              ContDiff ℝ ∞ (fun z : ℂ => ∑ i ∈ s, f i z) := by
-            induction s using Finset.induction_on with
-            | empty => simp
-            | @insert a s ha ih =>
-                simp only [Finset.sum_insert ha]
-                exact (hf a).add ih
-
-          example (hf : ∀ i, HasCompactSupport (f i)) :
-              HasCompactSupport (fun z : ℂ => ∑ i ∈ s, f i z) := by
-            induction s using Finset.induction_on with
-            | empty => simp
-            | @insert a s ha ih =>
-                simp only [Finset.sum_insert ha]
-                exact (hf a).add ih
-
-          example (g h : ℂ → ℝ) (hg : HasCompactSupport g)
-              (hh : HasCompactSupport h) :
-              HasCompactSupport (fun z => g z + h z) := by
-            change HasCompactSupport (g + h)
-            exact hg.add hh
-          LEAN
-          set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeP5FiniteSum.lean 2>&1 | tee /tmp/probe.log
-          x=${PIPESTATUS[0]}
-          set -e
-          echo "$x" >/tmp/probe.exit
-          exit "$x"
+          : >/tmp/api-grep.txt
+          echo '=== withDensity / restrict ===' | tee -a /tmp/api-grep.txt
+          grep -R -n -E 'restrict.*withDensity|withDensity.*restrict' Mathlib/MeasureTheory 2>/dev/null | head -80 | tee -a /tmp/api-grep.txt || true
+          echo '=== mul_lt_mul_left / mul_le_mul_left declarations ===' | tee -a /tmp/api-grep.txt
+          grep -R -n -E 'theorem mul_lt_mul_left|lemma mul_lt_mul_left|theorem mul_le_mul_left|lemma mul_le_mul_left' Mathlib 2>/dev/null | head -80 | tee -a /tmp/api-grep.txt || true
+          echo '=== integrable_of_hasCompactSupport ===' | tee -a /tmp/api-grep.txt
+          grep -R -n -E 'integrable_of_hasCompactSupport|memLp_of_bound' Mathlib/MeasureTheory Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/api-grep.txt || true
+          echo '=== Completion extend_eq / DenseRange ===' | tee -a /tmp/api-grep.txt
+          grep -R -n -E 'extend_eq|denseRange_coe' Mathlib/Topology Mathlib/Analysis 2>/dev/null | head -120 | tee -a /tmp/api-grep.txt || true
+          test -s /tmp/api-grep.txt
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p5-finite-sum-${{ github.sha }}
-          path: |
-            /tmp/ProbeP5FiniteSum.lean
-            /tmp/probe.log
-            /tmp/probe.exit
+          name: codex-fa-pinned-api-grep-${{ github.sha }}
+          path: /tmp/api-grep.txt
           retention-days: 30
