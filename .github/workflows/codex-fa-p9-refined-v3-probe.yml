@@ -1,5 +1,5 @@
-name: Codex FA P9 refined v3 probe
-# trigger: register-v3-1
+name: Codex FA P9 refined v4 probe
+# trigger: canonical-domain-zero-and-explicit-inner-scalar
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,7 +22,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile P9 refined v3 probes
+      - name: Compile P9 refined v4 probes
         shell: bash
         run: |
           set -euo pipefail
@@ -35,7 +35,7 @@ jobs:
           def partialEigenspaceProbe (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
             carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
             zero_mem' := by
-              refine ⟨A.domain.zero_mem, ?_⟩
+              refine ⟨(0 : A.domain).property, ?_⟩
               simpa only [smul_zero] using (LinearPMap.map_zero A)
             add_mem' := by
               rintro x y ⟨hx, hAx⟩ ⟨hy, hAy⟩
@@ -69,7 +69,7 @@ jobs:
                   μ.im * (inner ℂ x x).im = μ.re * ‖x‖ ^ 2 + d * ‖x‖ ^ 2 := by
             have hNorm := norm_sq_eq_re_inner (𝕜 := ℂ) x
             change ‖x‖ ^ 2 = (inner ℂ x x).re at hNorm
-            have hSelf := inner_conj_symm x x
+            have hSelf := inner_conj_symm (𝕜 := ℂ) x x
             have hIm := congrArg Complex.im hSelf
             simp only [Complex.conj_im] at hIm
             have hImZero : (inner ℂ x x).im = 0 := by linarith
@@ -81,7 +81,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-p9-refined-v3-${{ github.sha }}
+          name: codex-fa-p9-refined-v4-${{ github.sha }}
           path: |
             /tmp/ProbeP9.lean
             /tmp/probe.log
