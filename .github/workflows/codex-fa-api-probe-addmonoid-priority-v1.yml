@@ -1,4 +1,4 @@
-name: Codex FA API probe evaluation linear map custom core instances
+name: Codex FA API probe add-neg normalization custom core
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -21,7 +21,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile custom-core evaluation probe
+      - name: Compile add-neg custom-core probe
         shell: bash
         run: |
           set -euo pipefail
@@ -30,35 +30,32 @@ jobs:
           import Mathlib
 
           noncomputable section
-
           abbrev F := ℂ → ℂ
           def P1 : Submodule ℂ F := ⊤
           abbrev E := P1
           def P2 : Submodule ℂ E := ⊤
           abbrev Core := P2
-
           noncomputable local instance coreModule : Module ℂ Core := by
             change Module ℂ ↥P2
             exact Submodule.module P2
-
           noncomputable local instance coreAddCommGroup : AddCommGroup Core := by
             exact Module.addCommMonoidToAddCommGroup ℂ
-
           noncomputable def evalE (z : ℂ) : E →ₗ[ℂ] ℂ where
             toFun f := f.1 z
             map_add' f g := by rfl
             map_smul' c f := by rfl
-
           noncomputable def evalCore (z : ℂ) : Core →ₗ[ℂ] ℂ :=
             (evalE z).comp P2.subtype
 
           example (u a b : Core) (z : ℂ) :
               evalCore z (u - a - b) = evalCore z u - evalCore z a - evalCore z b := by
-            rw [map_sub, map_sub]
+            simp only [sub_eq_add_neg]
+            rw [map_add, map_neg, map_add, map_neg]
 
           example (u a : Core) (t : ℂ) (z : ℂ) :
               evalCore z (u - t • a) = evalCore z u - t * evalCore z a := by
-            rw [map_sub, map_smul]
+            simp only [sub_eq_add_neg]
+            rw [map_add, map_neg, map_smul]
             rfl
           LEAN
           lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeEvalCore.lean 2>&1 | tee /tmp/probe.log
@@ -66,7 +63,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-eval-custom-core-${{ github.sha }}
+          name: codex-fa-add-neg-custom-core-${{ github.sha }}
           path: |
             /tmp/ProbeEvalCore.lean
             /tmp/probe.log
