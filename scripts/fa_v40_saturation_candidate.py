@@ -1,175 +1,337 @@
-­r‡^Ñf¥–Ø¦{[r‰Ý°ë­¦ëHÈKÝ\Ü‹Øš[‹Ù[ˆ]ÛŒÂˆˆˆZ[[™Ý]XØ[H]Y]Û™HÝ[][]]™HHØ[™Y]K‚‚•\ÈÛÛ™]™\ˆ[›ÚÙ\ÈX[‹ZÙKÚ]ÜˆÚ]X‹ˆ]\Y\È[ˆ^XÝœÛÝ\˜ÙK[ØÚÙY™\Z\ˆX[šY™\ÝÈH]]Üš]]]™HŒÎH\Y˜XÝ[™™Z™XÝÂ˜[XšYÝ[Ý\È™\XÙ[Y[ËÝÛ™\ˆšY[™XÛ\™Y[Ü™[KZXY\ˆÚ[™Ù\ËÜ‚›™]È^XÝ]X›H\ÝÚÙ[œË‚ˆˆˆ‚‚™œ›ÛH×Ù]\™W×È[\Ü[››Ý][ÛœÂ‚š[\Ü\™Ü\œÙBš[\Ü\ÚX‚š[\ÜœÛÛ‚š[\Ü™B™œ›ÛH]Xˆ[\Ü]™œ›ÛH\[™È[\Ü[žB‚‚UUÔ’UWÔÓÕTÑWÔÒLMˆH
-ˆLÌ˜XMÍØN™YMÎÌŽLŒYMŽY™ÌØ™ŽYYŒÍLNLMÎMŒÌÙÌÈ‚ŠB‚‘PÓÔ‘HH™K˜ÛÛ\[JˆˆŠÛJWŠÎœ›ÝXÝYÊßš]˜]WÊß›Û˜ÛÛ\]X›WÊßØØ[ÊÊJˆ‚ˆˆŠÎ[Ü™[_[[X_YŸX˜œ™]Ÿ[œÝ[˜Ù_ÝXÝ\™_Û\ÜÊWÊÊ×—Ê—JÊH‚ŠB•SÔ‘SWÔ‘HH™K˜ÛÛ\[JˆˆŠÛJWŠÎœ›ÝXÝYÊßš]˜]WÊß›Û˜ÛÛ\]X›WÊßØØ[ÊÊJˆ‚ˆˆŠ[Ü™[_[[XJWÊÊ×—Ê—JÊH‚ŠB••TÕÕÒÑS”ÈH
-ˆœÛÜœžH‹ˆ˜YZ]‹ˆ˜^[ÛH‹ˆ[œØY™H‹ˆ›˜]]™WÙXÚYH‹ˆ“X[‹›Ù”™YXÙP›ÛÛ‹ŠB‚‚™YˆÚLM—Øž]\Ê]Nˆž]\ÊHOˆÝŽ‚ˆ™]\›ˆ\ÚX‹œÚLMŠ]JKš^YÙ\Ý
+#!/usr/bin/env python3
+"""Build and statically audit one cumulative FA v40 candidate.
 
-B‚‚™YˆXÛ\˜][Û—Ü™YÚ[ÛœÊ^ˆÝŠHOˆ\ÝÙXÝÜÝ‹[žWWN‚ˆX]Ú\ÈH\Ý
-PÓÔ‘K™š[™]\Š^
-JBˆ™\Ý[ˆ\ÝÙXÝÜÝ‹[žWWHH×Bˆ›Üˆ[™^X]Ú[ˆ[[Y\˜]JX]Ú\ÊN‚ˆ[™HX]Ú\ÖÚ[™^
-ÈWKœÝ\
+This tool never invokes Lean, Lake, git, or GitHub.  It applies an exact,
+source-locked repair manifest to the authoritative v39 artifact and rejects
+ambiguous replacements, owner drift, undeclared theorem-header changes, or
+new executable trust tokens.
+"""
 
-HYˆ[™^
-ÈH[ŠX]Ú\ÊH[ÙH[Š^
-Bˆ™\Ý[˜\[™
-ˆÂˆš[™^Žˆ[™^ˆ›˜[YHŽˆX]Ú™Ü›Ý\
-JKˆœÝ\ŽˆX]ÚœÝ\
+from __future__ import annotations
 
-Kˆ™[™Žˆ[™ˆ^Žˆ^ÛX]ÚœÝ\
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+from typing import Any
 
-Hˆ[™KˆBˆ
-Bˆ™]\›ˆ™\Ý[‚‚™YˆÝÛ™\—Ø]
-^ˆÝ‹Ù™œÙ]ˆ[
-HOˆ\VÚ[Ý—H›Û™N‚ˆ™YÚ[ÛœÈHXÛ\˜][Û—Ü™YÚ[ÛœÊ^
-Bˆ›Üˆ™YÚ[Ûˆ[ˆ™YÚ[ÛœÎ‚ˆYˆ™YÚ[Û–ÈœÝ\—HHÙ™œÙ]™YÚ[Û–È™[™—N‚ˆ™]\›ˆ™YÚ[Û–Èš[™^—K™YÚ[Û–È›˜[YH—Bˆ™]\›ˆ›Û™B‚‚™Yˆ[Ü™[WÚXY\œÊ^ˆÝŠHOˆXÝÜÝ‹Ý—N‚ˆXÛ\˜][Û—ÛX]Ú\ÈH\Ý
-PÓÔ‘K™š[™]\Š^
-JBˆXÛ\˜][Û—ÜÝ\ÈHÛKœÝ\
 
-H›ÜˆH[ˆXÛ\˜][Û—ÛX]Ú\×Bˆ™\Ý[ˆXÝÜÝ‹Ý—HHßBˆ›ÜˆX]Ú[ˆSÔ‘SWÔ‘K™š[™]\Š^
-N‚ˆ™^ÜÝ\H™^
-ˆ
-Ý\›ÜˆÝ\[ˆXÛ\˜][Û—ÜÝ\ÈYˆÝ\ˆX]ÚœÝ\
+AUTHORITY_SOURCE_SHA256 = (
+    "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03"
+)
 
-JK[Š^
-Bˆ
-Bˆ›ØÚÈH^ÛX]ÚœÝ\
+DECL_RE = re.compile(
+    r"(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*"
+    r"(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)"
+)
+THEOREM_RE = re.compile(
+    r"(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*"
+    r"(theorem|lemma)\s+([^\s(:]+)"
+)
+TRUST_TOKENS = (
+    "sorry",
+    "admit",
+    "axiom",
+    "unsafe",
+    "native_decide",
+    "Lean.ofReduceBool",
+)
 
-Hˆ™^ÜÝ\BˆÝ]ÈHÜÜÈ›ÜˆÜÈ[ˆ
-›ØÚË™š[™
-ŽHžHŠK›ØÚË™š[™
-ŽHŠJHYˆÜÈHBˆXY\ˆH›ØÚÈYˆ›ÝÝ]È[ÙH›ØÚÖÎˆZ[ŠÝ]ÊWBˆ[™^HXÛ\˜][Û—ÜÝ\Ëš[™^
-X]ÚœÝ\
 
-JBˆ˜[YHHX]Ú™Ü›Ý\
-ŠBˆÙ^HHˆžÚ[™^NžÛ˜[Y_H‚ˆ™\Ý[ÚÙ^WHH™KœÝXŠˆ—ÊÈ‹ˆ‹XY\ŠKœÝš\
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
-Bˆ™]\›ˆ™\Ý[‚‚™YˆÝš\Û›Û˜ÛÙJ^ˆÝŠHOˆÝŽ‚ˆˆˆ“X\ÚÈ™\ÝYÛÛ[Y[Ë[™HÛÛ[Y[ËÚ\ˆ]\˜[Ë[™Ýš[™ÜËˆˆˆ‚‚ˆÚ\œÈH\Ý
-^
-BˆHHˆ\Hˆ[—ÜÝš[™ÈH˜[ÙBˆ[—ØÚ\ˆH˜[ÙBˆ\ØØ\YH˜[ÙBˆÚ[HH[ŠÚ\œÊN‚ˆYˆ\‚ˆYˆH
-ÈH[ŠÚ\œÊH[™^ÚHˆH
-È—HOH‹ËHŽ‚ˆÚ\œÖÚWHHÚ\œÖÚH
-ÈWHHˆ‚ˆ\
-ÏHBˆH
-ÏH‚ˆÛÛ[YBˆYˆH
-ÈH[ŠÚ\œÊH[™^ÚHˆH
-È—HOH‹KÈŽ‚ˆÚ\œÖÚWHHÚ\œÖÚH
-ÈWHHˆ‚ˆ\OHBˆH
-ÏH‚ˆÛÛ[YBˆYˆÚ\œÖÚWHOH—ˆŽ‚ˆÚ\œÖÚWHHˆ‚ˆH
-ÏHBˆÛÛ[YBˆYˆ[—ÜÝš[™ÈÜˆ[—ØÚ\Ž‚ˆ][ÝHH	È‰ÈYˆ[—ÜÝš[™È[ÙH‰È‚ˆYˆÚ\œÖÚWHOH—ˆŽ‚ˆÜšYÚ[˜[HÚ\œÖÚWBˆÚ\œÖÚWHHˆ‚ˆ[ÙN‚ˆÜšYÚ[˜[HÚ\œÖÚWBˆYˆ\ØØ\Y‚ˆ\ØØ\YH˜[ÙBˆ[YˆÜšYÚ[˜[OH—Ž‚ˆ\ØØ\YHYBˆ[YˆÜšYÚ[˜[OH][ÝN‚ˆ[—ÜÝš[™ÈH[—ØÚ\ˆH˜[ÙBˆH
-ÏHBˆÛÛ[YBˆYˆH
-ÈH[ŠÚ\œÊH[™^ÚHˆH
-È—HOH‹ËHŽ‚ˆÚ\œÖÚWHHÚ\œÖÚH
-ÈWHHˆ‚ˆ\HBˆH
-ÏH‚ˆÛÛ[YBˆYˆH
-ÈH[ŠÚ\œÊH[™^ÚHˆH
-È—HOH‹KHŽ‚ˆÚ[HH[ŠÚ\œÊH[™Ú\œÖÚWHOH—ˆŽ‚ˆÚ\œÖÚWHHˆ‚ˆH
-ÏHBˆÛÛ[YBˆYˆÚ\œÖÚWHOH	È‰Î‚ˆÚ\œÖÚWHHˆ‚ˆ[—ÜÝš[™ÈHYBˆH
-ÏHBˆÛÛ[YBˆYˆÚ\œÖÚWHOH‰ÈŽ‚ˆÈX[ˆY[YšY\œÈØ[ˆÛÛZ[ˆ\ÜÝ›Ü\Ëˆ™X]H][ÝH\ÈBˆÈÚ\˜XÝ\ˆ]\˜[Û›HÚ[ˆHÛÜÚ[™È][ÝH\È™X\˜žK‚ˆÛÜÙHH^™š[™
-‰È‹H
-ÈKZ[Š[Š^
-KH
-È
-JBˆYˆÛÜÙHH‚ˆÚ\œÖÚWHHˆ‚ˆ[—ØÚ\ˆHYBˆH
-ÏHBˆÛÛ[YBˆH
-ÏHBˆYˆ\Üˆ[—ÜÝš[™ÈÜˆ[—ØÚ\Ž‚ˆ˜Z\ÙHÞ\Ý[Q^]
-››Û˜ÛÙHØØ[›™\ˆ[™Y[ˆ[ˆ[\›Z[˜]YÚÙ[ˆŠBˆ™]\›ˆˆ‹š›Ú[ŠÚ\œÊB‚‚™Yˆ\ÝØÛÝ[Ê^ˆÝŠHOˆXÝÜÝ‹[N‚ˆÛÙHHÝš\Û›Û˜ÛÙJ^
-BˆÛÝ[ÎˆXÝÜÝ‹[HHßBˆ›ÜˆÚÙ[ˆ[ˆ•TÕÕÒÑS”Î‚ˆ]\›ˆHˆŠÏVÐKV˜K^ŒNW×JHˆ
-È™K™\ØØ\JÚÙ[ŠH
-ÈˆŠÈVÐKV˜K^ŒNW×JH‚ˆÛÝ[ÖÝÚÙ[—HH[Š™K™š[™[
-]\›‹ÛÙJJBˆ™]\›ˆÛÝ[Â‚‚™YˆXZ[Š
-HOˆ[‚ˆ\œÙ\ˆH\™Ü\œÙK\™Ý[Y[\œÙ\Š
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-œÛÝ\˜ÙH‹\OT]
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-›X[šY™\Ý‹\OT]
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-›Ý]]‹\OT]
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-˜]Y]‹\OT]
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-ˆ‹KX[ÝË][›ØÚÙYXØ[™Y]H‹ˆXÝ[ÛHœÝÜ™WÝYH‹ˆ[HœÝ]XÈ˜Y[™ÈÛ›NÈ›Û[Ý[ÛˆÛÜšÙ›ÝÜÈ]\Ý™]™\ˆ\ÙH\È‹ˆ
-Bˆ\™ÜÈH\œÙ\‹œ\œÙWØ\™ÜÊ
-B‚ˆÛÝ\˜ÙWØž]\ÈH\™ÜËœÛÝ\˜ÙKœ™XYØž]\Ê
-BˆÛÝ\˜ÙWÜÚHHÚLM—Øž]\ÊÛÝ\˜ÙWØž]\ÊBˆYˆÛÝ\˜ÙWÜÚHOHUUÔ’UWÔÓÕTÑWÔÒLMŽ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆ˜]]Üš]HÛÝ\˜ÙHZ\ÛX]ÚˆÜÛÝ\˜ÙWÜÚ_HOHÐUUÔ’UWÔÓÕTÑWÔÒLMŸH‚ˆ
-BˆÛÝ\˜ÙHHÛÝ\˜ÙWØž]\Ë™XÛÙJ]‹NŠBˆX[šY™\ÝHœÛÛ‹›ØYÊ\™ÜË›X[šY™\Ýœ™XYÝ^
-[˜ÛÙ[™ÏH]‹NŠJBˆYˆX[šY™\Ý™Ù]
-œØÚ[XHŠHOH™˜K]\Ø]\˜][Û‹\™\Z\œË]ŒHŽ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-[™^XÝYX[šY™\ÝØÚ[XHŠBˆYˆX[šY™\Ý™Ù]
-˜]]Üš]WÜÛÝ\˜ÙWÜÚLMˆŠHOHÛÝ\˜ÙWÜÚN‚ˆ˜Z\ÙHÞ\Ý[Q^]
-›X[šY™\Ý]]Üš]HZ\ÛX]ÚŠB‚ˆÜšYÚ[˜[ÙXÛ\˜][ÛœÈHÛK™Ü›Ý\
-JH›ÜˆH[ˆPÓÔ‘K™š[™]\ŠÛÝ\˜ÙJWBˆÜšYÚ[˜[ÚXY\œÈH[Ü™[WÚXY\œÊÛÝ\˜ÙJBˆÜšYÚ[˜[Ý\ÝH\ÝØÛÝ[ÊÛÝ\˜ÙJBˆYˆ[žJÜšYÚ[˜[Ý\Ý˜[Y\Ê
-JN‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆ˜]]Üš]HÛÝ\˜ÙH^XÝ]X›H\ÝÚÙ[œÎˆÛÜšYÚ[˜[Ý\ÝHŠB‚ˆÝ\œ™[HÛÝ\˜ÙBˆ\YYˆ\ÝÙXÝÜÝ‹[žWWHH×BˆÙY[—ÚYÎˆÙ]ÜÝ—HHÙ]
 
-Bˆ›Üˆ™\Z\ˆ[ˆX[šY™\Ý™Ù]
-œ™\Z\œÈ‹×JN‚ˆ™\Z\—ÚYH™\Z\–ÈšY—BˆYˆ™\Z\—ÚY[ˆÙY[—ÚYÎ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆ™\XØ]H™\Z\ˆYˆÜ™\Z\—ÚYHŠBˆÙY[—ÚYË˜Y
-™\Z\—ÚY
-BˆÛH™\Z\–È›Û—Bˆ™]ÈH™\Z\–È›™]È—Bˆ^XÝYH[
-™\Z\‹™Ù]
-™^XÝYØÛÝ[‹JJBˆÛÝ[HÝ\œ™[˜ÛÝ[
-Û
-BˆYˆÛÝ[OH^XÝY‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆÛœ˜YÛY[ÛÝ[ØÛÝ[K^XÝYÙ^XÝYH‚ˆ
-BˆÙ™œÙ]Îˆ\ÝÚ[HH×BˆÙX\˜ÚÙœ›ÛHHˆÚ[HYN‚ˆÙ™œÙ]HÝ\œ™[™š[™
-ÛÙX\˜ÚÙœ›ÛJBˆYˆÙ™œÙ]‚ˆœ™XZÂˆÙ™œÙ]Ë˜\[™
-Ù™œÙ]
-BˆÙX\˜ÚÙœ›ÛHHÙ™œÙ]
-È[ŠÛ
-BˆXÝX[ÛÝÛ™\œÈHÛÝÛ™\—Ø]
-Ý\œ™[Ù™œÙ]
-H›ÜˆÙ™œÙ][ˆÙ™œÙ]×BˆXÛ\™YÛÝÛ™\ˆH™\Z\‹™Ù]
-›ÝÛ™\ˆŠBˆXÛ\™YÛÝÛ™\œÈH™\Z\‹™Ù]
-›ÝÛ™\œÈŠBˆYˆ^XÝYOHN‚ˆXÝX[ÛÝÛ™\ˆHXÝX[ÛÝÛ™\œÖÌBˆYˆXÛ\™YÛÝÛ™\ˆ\È›Û™N‚ˆYˆ™\Z\‹™Ù]
-šÚ[™ŠHOH™[š\›Û›Y[Ž‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆÛ›H[š\›Û›Y[Y]ÈX^HÛZ][ˆÝÛ™\ˆ‚ˆ
-Bˆ[YˆXÝX[ÛÝÛ™\ˆ\È›Û™HÜˆXÝX[ÛÝÛ™\–ÌWHOHXÛ\™YÛÝÛ™\Ž‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆÝÛ™\ˆZ\ÛX]ÚØXÝX[ÛÝÛ™\ŸK^XÝYÙXÛ\™YÛÝÛ™\ŸH‚ˆ
-Bˆ[ÙN‚ˆYˆXÛ\™YÛÝÛ™\ˆ\È›Ý›Û™HÜˆ›Ý\Ú[œÝ[˜ÙJXÛ\™YÛÝÛ™\œË\Ý
-N‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆ][K\™\Z\ˆ™\]Z\™\È[ˆ^XÝÝÛ™\œÈ\Ý‚ˆ
-Bˆ˜[Y\ÈHÛÝÛ™\–ÌWHYˆÝÛ™\ˆ[ÙH›Û™H›ÜˆÝÛ™\ˆ[ˆXÝX[ÛÝÛ™\œ×BˆYˆ˜[Y\ÈOHXÛ\™YÛÝÛ™\œÎ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆÝÛ™\œÈZ\ÛX]ÚÛ˜[Y\ßK^XÝYÙXÛ\™YÛÝÛ™\œßH‚ˆ
-BˆÝ\œ™[HÝ\œ™[œ™\XÙJÛ™]ÊBˆÈHYÚ][X]H›Ý[™Y[š\›Û›Y[[œÙ\[ÛˆØ[ˆ™]Z[ˆÛ\ÈBˆÈ]\˜[™Yš^Ùˆ™]Øˆ˜[Y]HH^XÝ[ÙXœ˜ZXÈÜÝXÛÝ[ˆÈ[œÝXYÙˆ\ÜÝ[Z[™È]™\žH™\XÙ[Y[]\ÝXZÙHHÛÝXœÝš[™ÂˆÈ\Ø\X\ˆÛØ˜[K‚ˆ^XÝYÛÛØY\ˆH^XÝY
-ˆ™]Ë˜ÛÝ[
-Û
-BˆXÝX[ÛÛØY\ˆHÝ\œ™[˜ÛÝ[
-Û
-BˆYˆXÝX[ÛÛØY\ˆOH^XÝYÛÛØY\Ž‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆžÜ™\Z\—ÚYNˆÛœ˜YÛY[ÜÝXÛÝ[ØXÝX[ÛÛØY\ŸK‚ˆˆ™^XÝYÙ^XÝYÛÛØY\ŸH‚ˆ
-Bˆ\YY˜\[™
-ˆÂˆšYŽˆ™\Z\—ÚYˆšÚ[™Žˆ™\Z\‹™Ù]
-šÚ[™‹˜›ÙHŠKˆ›ÝÛ™\ˆŽˆXÛ\™YÛÝÛ™\‹ˆ›ÝÛ™\œÈŽˆXÛ\™YÛÝÛ™\œËˆ˜ÛÛ™šY[˜ÙHŽˆ™\Z\‹™Ù]
-˜ÛÛ™šY[˜ÙHŠKˆ›ÛÜÚLMˆŽˆÚLM—Øž]\ÊÛ™[˜ÛÙJ
-JKˆ›™]×ÜÚLMˆŽˆÚLM—Øž]\Ê™]Ë™[˜ÛÙJ
-JKˆBˆ
-B‚ˆØ[™Y]WØž]\ÈHÝ\œ™[™[˜ÛÙJ]‹NŠBˆØ[™Y]WÜÚHHÚLM—Øž]\ÊØ[™Y]WØž]\ÊBˆ^XÝYØØ[™Y]HHX[šY™\Ý™Ù]
-™^XÝYØØ[™Y]WÜÚLMˆŠBˆYˆ›Ý^XÝYØØ[™Y]H[™›Ý\™ÜË˜[Ý×Ý[›ØÚÙYØØ[™Y]N‚ˆ˜Z\ÙHÞ\Ý[Q^]
-›X[šY™\Ý\È›È^XÝYØ[™Y]HÒHŠBˆYˆ^XÝYØØ[™Y]H[™Ø[™Y]WÜÚHOH^XÝYØØ[™Y]N‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆ˜Ø[™Y]HÒHZ\ÛX]ÚˆØØ[™Y]WÜÚ_HOHÙ^XÝYØØ[™Y]_H‚ˆ
-B‚ˆØ[™Y]WÙXÛ\˜][ÛœÈHÛK™Ü›Ý\
-JH›ÜˆH[ˆPÓÔ‘K™š[™]\ŠÝ\œ™[
-WBˆYˆØ[™Y]WÙXÛ\˜][ÛœÈOHÜšYÚ[˜[ÙXÛ\˜][ÛœÎ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-™XÛ\˜][Ûˆ˜[YKÛÜ™\ˆÚ[™ÙYŠB‚ˆØ[™Y]WÚXY\œÈH[Ü™[WÚXY\œÊÝ\œ™[
-BˆYˆÙ]
-Ø[™Y]WÚXY\œÊHOHÙ]
-ÜšYÚ[˜[ÚXY\œÊN‚ˆ˜Z\ÙHÞ\Ý[Q^]
-[Ü™[KÛ[[XHÙ]Ú[™ÙYŠBˆXY\—ØÚ[™Ù\ÈHÂˆ˜[YNˆÈ˜™Y›Ü™HŽˆÜšYÚ[˜[ÚXY\œÖÛ˜[YWK˜Y\ˆŽˆØ[™Y]WÚXY\œÖÛ˜[YW_Bˆ›Üˆ˜[YH[ˆÜšYÚ[˜[ÚXY\œÂˆYˆÜšYÚ[˜[ÚXY\œÖÛ˜[YWHOHØ[™Y]WÚXY\œÖÛ˜[YWBˆBˆ[ÝÙYÚXY\—ØÚ[™Ù\ÈHÙ]
-X[šY™\Ý™Ù]
-˜[ÝÙYÚXY\—ØÚ[™Ù\È‹×JJBˆYˆÙ]
-XY\—ØÚ[™Ù\ÊHOH[ÝÙYÚXY\—ØÚ[™Ù\Î‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆšXY\ˆ[HZ\ÛX]Úˆ‚ˆˆ˜XÝX[^ÜÛÜY
-XY\—ØÚ[™Ù\Ê_H[ÝÙY^ÜÛÜY
-[ÝÙYÚXY\—ØÚ[™Ù\Ê_H‚ˆ
-B‚ˆØ[™Y]WÝ\ÝH\ÝØÛÝ[ÊÝ\œ™[
-BˆYˆ[žJØ[™Y]WÝ\Ý˜[Y\Ê
-JHÜˆØ[™Y]WÝ\ÝOHÜšYÚ[˜[Ý\Ý‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆˆ˜Ø[™Y]H^XÝ]X›H\ÝZ\ÛX]ÚˆÛÜšYÚ[˜[Ý\ÝHOˆØØ[™Y]WÝ\ÝH‚ˆ
-B‚ˆ\™ÜË›Ý]]œ\™[›ZÙ\Š\™[ÏUYK^\ÝÛÚÏUYJBˆ\™ÜË˜]Y]œ\™[›ZÙ\Š\™[ÏUYK^\ÝÛÚÏUYJBˆ\™ÜË›Ý]]Üš]WØž]\ÊØ[™Y]WØž]\ÊBˆ]Y]HÂˆœØÚ[XHŽˆ™˜K]\Ø]\˜][Û‹XØ[™Y]KX]Y]]ŒH‹ˆ˜]]Üš]WÜÛÝ\˜ÙWÜÚLMˆŽˆÛÝ\˜ÙWÜÚKˆ˜Ø[™Y]WÜÚLMˆŽˆØ[™Y]WÜÚKˆ˜Ø[™Y]WØž]\ÈŽˆ[ŠØ[™Y]WØž]\ÊKˆ˜Ø[™Y]WÛ[™\ÈŽˆ[ŠÝ\œ™[œÜ][™\Ê
-JKˆ™XÛ\˜][Û—ØÛÝ[Žˆ[ŠØ[™Y]WÙXÛ\˜][ÛœÊKˆ™XÛ\˜][Û—ÜÙ\]Y[˜ÙWÚY[XØ[ŽˆYKˆ[Ü™[WÛ[[XWØÛÝ[Žˆ[ŠØ[™Y]WÚXY\œÊKˆšXY\—ØÚ[™Ù\ÈŽˆXY\—ØÚ[™Ù\Ëˆ˜[ÝÙYÚXY\—ØÚ[™Ù\×Ù^XÝŽˆYKˆ™^XÝ]X›WÝ\ÝØÛÝ[×Ø™Y›Ü™HŽˆÜšYÚ[˜[Ý\Ýˆ™^XÝ]X›WÝ\ÝØÛÝ[×ØY\ˆŽˆØ[™Y]WÝ\Ýˆ˜\YYÜ™\Z\—ØÛÝ[Žˆ[Š\YY
-Kˆ˜\YYÜ™\Z\œÈŽˆ\YYˆ›X[—ÛZÙWÙÚ]ÙÚ]X—Ú[›ÚÙYŽˆ˜[ÙKˆ™\™XÝÛX[—Ý™\šYšYYŽˆ˜[ÙKˆBˆ\™ÜË˜]Y]Üš]WÝ^
-ˆœÛÛ‹™[\Ê]Y][œÝ\™WØ\ØÚZOQ˜[ÙK[™[L‹ÛÜÚÙ^\ÏUYJH
-È—ˆ‹ˆ[˜ÛÙ[™ÏH]‹N‹ˆ
-Bˆš[
-œÛÛ‹™[\Ê]Y][œÝ\™WØ\ØÚZOQ˜[ÙK[™[L‹ÛÜÚÙ^\ÏUYJJBˆ™]\›ˆ‚‚šYˆ×Û˜[YW×ÈOH—×ÛXZ[—×ÈŽ‚ˆ˜Z\ÙHÞ\Ý[Q^]
-XZ[Š
-JB
+def declaration_regions(text: str) -> list[dict[str, Any]]:
+    matches = list(DECL_RE.finditer(text))
+    result: list[dict[str, Any]] = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
+        result.append(
+            {
+                "index": index,
+                "name": match.group(1),
+                "start": match.start(),
+                "end": end,
+                "text": text[match.start() : end],
+            }
+        )
+    return result
+
+
+def owner_at(text: str, offset: int) -> tuple[int, str] | None:
+    regions = declaration_regions(text)
+    for region in regions:
+        if region["start"] <= offset < region["end"]:
+            return region["index"], region["name"]
+    return None
+
+
+def theorem_headers(text: str) -> dict[str, str]:
+    declaration_matches = list(DECL_RE.finditer(text))
+    declaration_starts = [m.start() for m in declaration_matches]
+    result: dict[str, str] = {}
+    for match in THEOREM_RE.finditer(text):
+        next_start = next(
+            (start for start in declaration_starts if start > match.start()), len(text)
+        )
+        block = text[match.start() : next_start]
+        cuts = [pos for pos in (block.find(":= by"), block.find(":=")) if pos >= 0]
+        header = block if not cuts else block[: min(cuts)]
+        index = declaration_starts.index(match.start())
+        name = match.group(2)
+        key = f"{index}:{name}"
+        result[key] = re.sub(r"\s+", " ", header).strip()
+    return result
+
+
+def strip_noncode(text: str) -> str:
+    """Mask nested comments, line comments, char literals, and strings."""
+
+    chars = list(text)
+    i = 0
+    depth = 0
+    in_string = False
+    in_char = False
+    escaped = False
+    while i < len(chars):
+        if depth:
+            if i + 1 < len(chars) and text[i : i + 2] == "/-":
+                chars[i] = chars[i + 1] = " "
+                depth += 1
+                i += 2
+                continue
+            if i + 1 < len(chars) and text[i : i + 2] == "-/":
+                chars[i] = chars[i + 1] = " "
+                depth -= 1
+                i += 2
+                continue
+            if chars[i] != "\n":
+                chars[i] = " "
+            i += 1
+            continue
+        if in_string or in_char:
+            quote = '"' if in_string else "'"
+            if chars[i] != "\n":
+                original = chars[i]
+                chars[i] = " "
+            else:
+                original = chars[i]
+            if escaped:
+                escaped = False
+            elif original == "\\":
+                escaped = True
+            elif original == quote:
+                in_string = in_char = False
+            i += 1
+            continue
+        if i + 1 < len(chars) and text[i : i + 2] == "/-":
+            chars[i] = chars[i + 1] = " "
+            depth = 1
+            i += 2
+            continue
+        if i + 1 < len(chars) and text[i : i + 2] == "--":
+            while i < len(chars) and chars[i] != "\n":
+                chars[i] = " "
+                i += 1
+            continue
+        if chars[i] == '"':
+            chars[i] = " "
+            in_string = True
+            i += 1
+            continue
+        if chars[i] == "'":
+            # Lean identifiers can contain apostrophes.  Treat a quote as a
+            # character literal only when a closing quote is nearby.
+            close = text.find("'", i + 1, min(len(text), i + 8))
+            if close >= 0:
+                chars[i] = " "
+                in_char = True
+            i += 1
+            continue
+        i += 1
+    if depth or in_string or in_char:
+        raise SystemExit("noncode scanner ended in an unterminated token")
+    return "".join(chars)
+
+
+def trust_counts(text: str) -> dict[str, int]:
+    code = strip_noncode(text)
+    counts: dict[str, int] = {}
+    for token in TRUST_TOKENS:
+        pattern = r"(?<![A-Za-z0-9_])" + re.escape(token) + r"(?![A-Za-z0-9_])"
+        counts[token] = len(re.findall(pattern, code))
+    return counts
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", type=Path)
+    parser.add_argument("manifest", type=Path)
+    parser.add_argument("output", type=Path)
+    parser.add_argument("audit", type=Path)
+    parser.add_argument(
+        "--allow-unlocked-candidate",
+        action="store_true",
+        help="static drafting only; promotion workflows must never use this",
+    )
+    args = parser.parse_args()
+
+    source_bytes = args.source.read_bytes()
+    source_sha = sha256_bytes(source_bytes)
+    if source_sha != AUTHORITY_SOURCE_SHA256:
+        raise SystemExit(
+            f"authority source mismatch: {source_sha} != {AUTHORITY_SOURCE_SHA256}"
+        )
+    source = source_bytes.decode("utf-8")
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    if manifest.get("schema") != "fa-v40-saturation-repairs-v1":
+        raise SystemExit("unexpected manifest schema")
+    if manifest.get("authority_source_sha256") != source_sha:
+        raise SystemExit("manifest authority mismatch")
+
+    original_declarations = [m.group(1) for m in DECL_RE.finditer(source)]
+    original_headers = theorem_headers(source)
+    original_trust = trust_counts(source)
+    if any(original_trust.values()):
+        raise SystemExit(f"authority source executable trust tokens: {original_trust}")
+
+    current = source
+    applied: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+    for repair in manifest.get("repairs", []):
+        repair_id = repair["id"]
+        if repair_id in seen_ids:
+            raise SystemExit(f"duplicate repair id: {repair_id}")
+        seen_ids.add(repair_id)
+        old = repair["old"]
+        new = repair["new"]
+        expected = int(repair.get("expected_count", 1))
+        count = current.count(old)
+        if count != expected:
+            raise SystemExit(
+                f"{repair_id}: old fragment count {count}, expected {expected}"
+            )
+        offsets: list[int] = []
+        search_from = 0
+        while True:
+            offset = current.find(old, search_from)
+            if offset < 0:
+                break
+            offsets.append(offset)
+            search_from = offset + len(old)
+        actual_owners = [owner_at(current, offset) for offset in offsets]
+        declared_owner = repair.get("owner")
+        declared_owners = repair.get("owners")
+        if expected == 1:
+            actual_owner = actual_owners[0]
+            if declared_owner is None:
+                if repair.get("kind") != "environment":
+                    raise SystemExit(
+                        f"{repair_id}: only environment edits may omit an owner"
+                    )
+            elif actual_owner is None or actual_owner[1] != declared_owner:
+                raise SystemExit(
+                    f"{repair_id}: owner mismatch {actual_owner}, expected {declared_owner}"
+                )
+        else:
+            if declared_owner is not None or not isinstance(declared_owners, list):
+                raise SystemExit(
+                    f"{repair_id}: multi-repair requires an exact owners list"
+                )
+            names = [owner[1] if owner else None for owner in actual_owners]
+            if names != declared_owners:
+                raise SystemExit(
+                    f"{repair_id}: owners mismatch {names}, expected {declared_owners}"
+                )
+        current = current.replace(old, new)
+        # A legitimate bounded environment insertion can retain `old` as a
+        # literal prefix of `new`.  Validate the exact algebraic post-count
+        # instead of assuming every replacement must make the old substring
+        # disappear globally.
+        expected_old_after = expected * new.count(old)
+        actual_old_after = current.count(old)
+        if actual_old_after != expected_old_after:
+            raise SystemExit(
+                f"{repair_id}: old fragment post-count {actual_old_after}, "
+                f"expected {expected_old_after}"
+            )
+        applied.append(
+            {
+                "id": repair_id,
+                "kind": repair.get("kind", "body"),
+                "owner": declared_owner,
+                "owners": declared_owners,
+                "confidence": repair.get("confidence"),
+                "old_sha256": sha256_bytes(old.encode()),
+                "new_sha256": sha256_bytes(new.encode()),
+            }
+        )
+
+    candidate_bytes = current.encode("utf-8")
+    candidate_sha = sha256_bytes(candidate_bytes)
+    expected_candidate = manifest.get("expected_candidate_sha256")
+    if not expected_candidate and not args.allow_unlocked_candidate:
+        raise SystemExit("manifest has no expected candidate SHA")
+    if expected_candidate and candidate_sha != expected_candidate:
+        raise SystemExit(
+            f"candidate SHA mismatch: {candidate_sha} != {expected_candidate}"
+        )
+
+    candidate_declarations = [m.group(1) for m in DECL_RE.finditer(current)]
+    if candidate_declarations != original_declarations:
+        raise SystemExit("declaration name/order changed")
+
+    candidate_headers = theorem_headers(current)
+    if set(candidate_headers) != set(original_headers):
+        raise SystemExit("theorem/lemma set changed")
+    header_changes = {
+        name: {"before": original_headers[name], "after": candidate_headers[name]}
+        for name in original_headers
+        if original_headers[name] != candidate_headers[name]
+    }
+    allowed_header_changes = set(manifest.get("allowed_header_changes", []))
+    if set(header_changes) != allowed_header_changes:
+        raise SystemExit(
+            "header delta mismatch: "
+            f"actual={sorted(header_changes)} allowed={sorted(allowed_header_changes)}"
+        )
+
+    candidate_trust = trust_counts(current)
+    if any(candidate_trust.values()) or candidate_trust != original_trust:
+        raise SystemExit(
+            f"candidate executable trust mismatch: {original_trust} -> {candidate_trust}"
+        )
+
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.audit.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_bytes(candidate_bytes)
+    audit = {
+        "schema": "fa-v40-saturation-candidate-audit-v1",
+        "authority_source_sha256": source_sha,
+        "candidate_sha256": candidate_sha,
+        "candidate_bytes": len(candidate_bytes),
+        "candidate_lines": len(current.splitlines()),
+        "declaration_count": len(candidate_declarations),
+        "declaration_sequence_identical": True,
+        "theorem_lemma_count": len(candidate_headers),
+        "header_changes": header_changes,
+        "allowed_header_changes_exact": True,
+        "executable_trust_counts_before": original_trust,
+        "executable_trust_counts_after": candidate_trust,
+        "applied_repair_count": len(applied),
+        "applied_repairs": applied,
+        "lean_lake_git_github_invoked": False,
+        "direct_lean_verified": False,
+    }
+    args.audit.write_text(
+        json.dumps(audit, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(json.dumps(audit, ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
