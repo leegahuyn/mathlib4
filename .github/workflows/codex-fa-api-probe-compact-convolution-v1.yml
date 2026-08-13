@@ -1,5 +1,4 @@
-name: Codex FA WithLp Tendsto normalization probe v4
-# trigger: withlp-tendsto-v4
+name: Codex FA 3690 pair subtraction normalization probe
 on:
   push:
     branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
@@ -22,38 +21,35 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
           lake exe cache get >/tmp/cache.log 2>&1
-      - name: Compile WithLp Tendsto shapes v4
+      - name: Compile pair subtraction proof shapes
         shell: bash
         run: |
           set -euo pipefail
           export PATH="$HOME/.elan/bin:$PATH"
-          cat >/tmp/ProbeWithLp.lean <<'LEAN'
+          cat >/tmp/ProbePairSub.lean <<'LEAN'
           import Mathlib
 
-          open Filter Topology
+          variable {A B : Type*} [AddCommGroup A] [AddCommGroup B]
 
-          variable {ι A B C : Type*}
-          variable [TopologicalSpace A] [TopologicalSpace B] [TopologicalSpace C]
-          variable {l : Filter ι} {fa : ι → A} {fb : ι → B} {fc : ι → C}
-          variable {a : A} {b : B} {c : C}
+          example (a : A) (b c : B) :
+              (a,b) - (a,c) = ((0 : A), b - c) := by
+            ext <;> simp
 
-          example (ha : Tendsto fa l (𝓝 a))
-              (hb : Tendsto fb l (𝓝 b)) (hc : Tendsto fc l (𝓝 c)) :
-              Tendsto
-                (fun i => WithLp.toLp 2 (fa i, WithLp.toLp 2 (fb i, fc i)))
-                l
-                (𝓝 (WithLp.toLp 2 (a, WithLp.toLp 2 (b,c)))) := by
-            have hInnerRaw := hb.prodMk_nhds hc
-            have hInnerMap : Continuous (fun p : B × C => WithLp.toLp 2 p) := by
-              fun_prop
-            have hInner := hInnerMap.continuousAt.tendsto.comp hInnerRaw
-            have hOuterRaw := ha.prodMk_nhds hInner
-            have hOuterMap : Continuous (fun p : A × WithLp 2 (B × C) => WithLp.toLp 2 p) := by
-              fun_prop
-            exact hOuterMap.continuousAt.tendsto.comp hOuterRaw
+          variable {R : Type*} [Ring R]
+          variable {M : Type*} [AddCommGroup M] [Module R M]
+          variable (G : Submodule R (A × B))
+
+          example (a : A) (b c : B)
+              (hab : (a,b) ∈ G) (hac : (a,c) ∈ G) :
+              ((0 : A), b - c) ∈ G := by
+            have hRaw := G.sub_mem hab hac
+            have hPairEq : (a,b) - (a,c) = ((0 : A), b - c) := by
+              ext <;> simp
+            rw [hPairEq] at hRaw
+            exact hRaw
           LEAN
           set +e
-          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbeWithLp.lean 2>&1 | tee /tmp/probe.log
+          lake env lean -DmaxErrors=30 -DwarningAsError=false /tmp/ProbePairSub.lean 2>&1 | tee /tmp/probe.log
           x=${PIPESTATUS[0]}
           set -e
           echo "$x" >/tmp/probe.exit
@@ -62,9 +58,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-withlp-tendsto-v4-${{ github.sha }}
+          name: codex-fa-3690-pair-sub-${{ github.sha }}
           path: |
-            /tmp/ProbeWithLp.lean
+            /tmp/ProbePairSub.lean
             /tmp/probe.log
             /tmp/probe.exit
           retention-days: 30
