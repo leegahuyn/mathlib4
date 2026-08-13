@@ -1,4 +1,6 @@
-@@ -48657,24 +48657,28 @@ theorem strongPrincipalCore_apply_pointwise (n : ℤ)
+--- a/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
++++ b/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+@@ -48657,21 +48657,22 @@
            (u : SmoothQuotientCompactFunction) z +
          2 * laplaceRaw (paperOrbitExponent n)
            (u : SmoothQuotientCompactFunction) z := by
@@ -36,7 +38,7 @@
    have hLR := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lower_raise_factorization n u z
    have hRL := Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.raise_lower_factorization n u z
    linear_combination hLR + hRL
-@@ -48708,14 +48712,18 @@ theorem strongSchrodingerCore_apply_pointwise (n : ℤ) (t : ℝ)
+@@ -48708,15 +48709,20 @@
      ((strongSchrodingerCore n t u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
          SmoothQuotientCompactFunction) z =
        strongSchrodingerDifferentialExpression n t u z := by
@@ -64,8 +66,7 @@
      potentialMultiplicationCore_apply]
    ring
  
-@@ -48775,7 +48783,9 @@ theorem successorEnergyForm_eq_inner_strongPrincipalCore
-     simpa only [lowerFromSuccCoordinate_apply, raisedCoordinate_apply] using
+@@ -48775,7 +48781,9 @@
        (physicalLoweringGreenIdentityOnCore_unconditional
          (n := n) v (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore.lowerFromSucc n u))
    rw [(successorGraphCoordinates n).energyForm_apply]
@@ -76,7 +77,7 @@
      reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
      raisedCoordinate_apply, lowerFromSuccCoordinate_apply,
      strongPrincipalCore_apply,
-@@ -48790,9 +48800,11 @@ theorem energyForm_eq_inner_strongPrincipalCore
+@@ -48790,8 +48798,10 @@
      (coordinates n).energyForm v u =
        inner ℂ (l2Coordinate n v)
          (l2Coordinate n (strongPrincipalCore n u)) := by
@@ -89,8 +90,7 @@
    rw [successorGraphCoordinates_eq_coordinates] at h
    simpa only [sub_add_cancel] using h
  
-@@ -48847,29 +48859,31 @@ theorem corePeterssonForcing_apply_core (n : ℤ)
- @[simp]
+@@ -48848,7 +48858,12 @@
  theorem corePeterssonForcing_zero (n : ℤ) :
      corePeterssonForcing n 0 = 0 := by
    ext v
@@ -104,9 +104,7 @@
  
  /-- Petersson pairings against the actual smooth fixed-phase core separate
  smooth sections.  The proof tests with the difference itself and then uses
- faithfulness of the `L²` coordinate. -/
- theorem corePeterssonPairing_separates (n : ℤ)
-@@ -48859,17 +48873,16 @@ theorem corePeterssonPairing_separates (n : ℤ)
+@@ -48859,20 +48874,17 @@
        inner ℂ (l2Coordinate n v) (l2Coordinate n g) =
          inner ℂ (l2Coordinate n v) (l2Coordinate n f)) :
      g = f := by
@@ -135,11 +133,8 @@
 +  exact l2Coordinate_injective n (sub_eq_zero.mp hCoord)
  
  /-- Every literal smooth strong solution gives an equality in the full
- strong anti-dual. -/
-@@ -49031,10 +49044,12 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
-       (fun p : ℂ × ℂ ↦ v p.1)
-       ((volume : Measure ℂ).prod (volume : Measure ℂ)) :=
-     v.continuous.aestronglyMeasurable.comp_fst
+ `H⁻¹` anti-dual, not merely equality against smooth tests.  Density of the
+@@ -49033,8 +49045,10 @@
    have hMeas : AEStronglyMeasurable
        (Function.uncurry fun x t : ℂ ↦ v x * K t * u (x - t))
        ((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
@@ -152,7 +147,7 @@
    apply (integrable_prod_iff' hMeas).2
    constructor
    · filter_upwards with t
-@@ -49046,8 +49061,13 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+@@ -49046,8 +49060,12 @@
          (fun t : ℂ ↦ ∫ x : ℂ,
            ‖v x * K t * u (x - t)‖ ∂(volume : Measure ℂ))
          (volume : Measure ℂ) := by
@@ -167,7 +162,7 @@
      refine Integrable.mono' (hK.norm.mul_const C) hOuterMeas ?_
      filter_upwards with t
      let ut : AmbientPlaneL2 := DomAddAct.mk (-t) +ᵥ u
-@@ -49064,8 +49084,9 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+@@ -49064,7 +49082,8 @@
          DomAddAct.vadd_Lp_ae_eq (DomAddAct.mk (-t)) u] with x hHolder hV hut
        change ‖v x * u (x - t)‖ = ‖productL1 x‖
        rw [hHolder]
@@ -177,7 +172,7 @@
        congr 2
        change ut x = u (-t + x) at hut
        simpa only [sub_eq_add_neg, add_comm] using hut
-@@ -49075,6 +49096,9 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
+@@ -49075,6 +49094,9 @@
          0 ≤ ∫ x : ℂ, ‖v x * K t * u (x - t)‖
            ∂(volume : Measure ℂ) :=
        integral_nonneg fun _ ↦ norm_nonneg _
@@ -187,7 +182,7 @@
      rw [Real.norm_of_nonneg hIntegralNonneg]
      calc
        (∫ x : ℂ, ‖v x * K t * u (x - t)‖
-@@ -49247,7 +49271,10 @@ theorem friedrichsAffineCommutatorKernel_contDiff
+@@ -49247,7 +49269,10 @@
    have hConst : ContDiff ℝ ∞
        (fun _t : ℂ ↦ (((friedrichsScale j ^ 2 : ℝ) : ℂ))) :=
      contDiff_const
@@ -199,7 +194,7 @@
  
  /-- Pointwise convolution by the affine kernel is a genuine smooth
  function, hence locally integrable. -/
-@@ -49437,11 +49464,21 @@ theorem raised_norm_sq_sub_lowered_norm_sq (n : ℤ)
+@@ -49437,11 +49462,21 @@
    have hLowerRe := congrArg Complex.re hLower
    have hSymm : (inner ℂ U RL).re = (inner ℂ RL U).re :=
      inner_re_symm (𝕜 := ℂ) U RL
@@ -224,7 +219,7 @@
  
  /-- Rearranged form used for the Cauchy argument. -/
  theorem lowered_norm_sq_eq_raised_sub_mass
-@@ -49546,7 +49583,7 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+@@ -49546,7 +49581,7 @@
      rcases (LinearPMap.mem_graph_iff (physicalRaise (n + 1))).mp
          (hqGraph j) with ⟨y, hyBase, hyValue⟩
      refine ⟨(l2CoreRangeEquiv (n + 1)).symm y, ?_, ?_⟩
@@ -233,7 +228,7 @@
      · calc
          raisedCoordinate (n + 1) ((l2CoreRangeEquiv (n + 1)).symm y) =
              physicalRaise (n + 1) y := rfl
-@@ -49592,7 +49629,7 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+@@ -49592,7 +49627,7 @@
      have hSub : (0, l - lowerCoordinate n x) ∈
          (closedLowerFromSucc n).graph := by
        simpa only [Prod.fst_sub, Prod.snd_sub, sub_self] using
@@ -242,7 +237,7 @@
      exact sub_eq_zero.mp
        ((closedLowerFromSucc n).graph_fst_eq_zero_snd hSub rfl)
    have hLowerCoord : Filter.Tendsto
-@@ -49603,7 +49640,10 @@ theorem jointGraphCoreDensityAt_of_strongCrossAdjoints
+@@ -49603,7 +49638,10 @@
        Filter.atTop (𝓝 x) := by
      rw [tendsto_subtype_rng]
      simpa only [coe_smoothCoreMap,
@@ -254,7 +249,7 @@
        FixedPhaseClosedOperators.reindexedActualLoweredCoordinate_eq_lowerFromSuccCoordinate,
        baseCoordinate_apply, raiseCoordinate_apply, lowerCoordinate_apply]
        using hBase.prodMk_nhds
-@@ -50120,9 +50160,8 @@ theorem mem_maximalStrongSchrodinger_graph_iff_core_tests
+@@ -50120,9 +50158,8 @@
      change
        inner ℂ (minimalStrongSchrodinger n t y) x =
          inner ℂ (y : OrbitPeterssonHilbert n) f
@@ -266,7 +261,7 @@
  
  /-! ### What operator-core density would mean, exactly -/
  
-@@ -50292,16 +50331,40 @@ def partialEigenspace (A : H →ₗ.[ℂ] H) (μ : ℂ) : Submodule ℂ H where
+@@ -50292,16 +50329,40 @@
    carrier := {x | ∃ hx : x ∈ A.domain, A ⟨x, hx⟩ = μ • x}
    zero_mem' := by
      refine ⟨A.domain.zero_mem, ?_⟩
@@ -311,7 +306,7 @@
  
  @[simp]
  theorem mem_partialEigenspace_iff
-@@ -50336,7 +50399,8 @@ theorem im_eq_zero_of_hasPartialEigenvalue
+@@ -50336,7 +50397,8 @@
      μ.im = 0 := by
    have hReal := congrArg Complex.im
      (conj_eq_self_of_hasPartialEigenvalue hA hμ)
@@ -321,7 +316,7 @@
    linarith
  
  /-- Eigenspaces whose spectral parameters are not conjugate are orthogonal.
-@@ -50356,7 +50420,8 @@ theorem inner_eq_zero_of_mem_partialEigenspaces
+@@ -50356,7 +50418,8 @@
    have hSymm := hA xd yd
    change inner ℂ (A xd) y = inner ℂ x (A yd) at hSymm
    rw [hAx, hAy, inner_smul_left, inner_smul_right] at hSymm
@@ -331,7 +326,7 @@
      rw [sub_mul, hSymm, sub_self]
    exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hμν)
  
-@@ -50427,22 +50492,34 @@ theorem modularAssociatedOperator_eigenvalue_re_lower_bound
+@@ -50427,22 +50490,32 @@
    have hGraph :
        (x, μ • x) ∈ (modularAssociatedOperator n t).graph := by
      have hRaw := (modularAssociatedOperator n t).mem_graph xd
@@ -366,7 +361,8 @@
      ring
    have hCoercive :=
      (weakSchrodinger_embeddedMassShift_coercive n t).2 u
-@@ -50483,7 +50560,7 @@ namespace P5PhysicalHardStageRestriction
+@@ -50483,7 +50556,7 @@
+ namespace P5PhysicalHardStageRestriction
  
  open Set Function Topology Filter MeasureTheory
 -open scoped ENNReal NNReal
@@ -374,7 +370,7 @@
  open DefinitionOneSobolev
  open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
  open DefinitionOneSobolev.FixedPhaseGraphCompletion
-@@ -50534,10 +50611,11 @@ noncomputable def literalStageActiveCenterSet (Y : ℝ) : Set ℍ :=
+@@ -50534,10 +50607,11 @@
        (UpperHalfPlane.coe '' gammaTwoThreeCuspTruncation Y)).Nonempty}
  
  theorem literalStageActiveCenterSet_finite (Y : ℝ) :
@@ -390,7 +386,8 @@
  
  /-- The active center set as a literal finite index set. -/
  noncomputable def literalStageActiveCenters (Y : ℝ) : Finset ℍ :=
-@@ -53911,6 +53989,7 @@ open DefinitionOneSobolev
+@@ -53911,6 +53985,7 @@
+ open DefinitionOneSobolev
  open DefinitionOneSobolev.FixedPhasePeterssonCoordinates
  open DefinitionOneSobolev.FixedPhaseGraphCompletion
 +open DefinitionOneSobolev.WeightCorePetersson
