@@ -1,0 +1,127 @@
+name: Codex FA v39 cumulative early Fourier batch probe
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths: [.github/workflows/codex-fa-v39-early-fourier-batch-probe.yml]
+  workflow_dispatch: {}
+permissions: {actions: read, contents: read}
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [safe, differentiability, ibp]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+      - name: Materialize exact v38 and apply cumulative variant
+        env:
+          GH_TOKEN: "${{ github.token }}"
+          VARIANT: "${{ matrix.variant }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/v38
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/9174274710/zip" >/tmp/v38.zip
+          test "sha256:$(sha256sum /tmp/v38.zip | awk '{print $1}')" = "sha256:11ba7bc68194d4dd7950b72128198097228b3e974606fec9469e44427897ddd6"
+          unzip -q /tmp/v38.zip -d /tmp/v38
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,os,shutil
+          want='bb3d1837dd3df682f8a72e8dc7301d31662b844fceab6b8aba410dc8333edefb'
+          hits=[p for p in Path('/tmp/v38').rglob('Mock2_FunctionalAnalysis.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==want]
+          assert len(hits)==1,hits
+          src=hits[0].read_text(); v=os.environ['VARIANT']
+          def rep(old,new,n=1):
+            global src
+            c=src.count(old); assert c==n,(c,n,old[:100])
+            src=src.replace(old,new)
+          # 3669: pointwise product shape
+          rep('''    simpa only [mul_assoc] using hMeasV.mul hMeasBase\n''','''    simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase\n''')
+          # 3689: do not expand only one side of norm square
+          rep('''    simpa only [Pi.zero_apply, pow_two, zero_mul, mul_zero,\n      zero_add, add_zero, neg_zero, sub_zero, sub_eq_add_neg] using hModel.congr'\n''','''    simpa only [Pi.zero_apply, zero_pow, OfNat.ofNat, mul_zero,\n      sub_zero, sub_eq_add_neg] using hModel.congr'\n''')
+          # Fourier finite mode set: avoid dependent Finset.pi API
+          rep('''noncomputable def literalStageFourierModes (N : ℕ) :\n    Finset (Fin 2 → ℤ) := by\n  classical\n  exact Finset.univ.pi fun _ : Fin 2 ↦\n    Finset.Icc (-(N : ℤ)) (N : ℤ)\n''','''noncomputable def literalStageFourierModes (N : ℕ) :\n    Finset (Fin 2 → ℤ) := by\n  classical\n  exact ((Finset.Icc (-(N : ℤ)) (N : ℤ)).product\n    (Finset.Icc (-(N : ℤ)) (N : ℤ))).image\n      (fun p ↦ ![p.1, p.2])\n''')
+          rep('''theorem mem_literalStageFourierModes_iff (N : ℕ) (k : Fin 2 → ℤ) :\n    k ∈ literalStageFourierModes N ↔\n      ∀ i : Fin 2, |k i| ≤ (N : ℤ) := by\n  classical\n  simp only [literalStageFourierModes, Finset.mem_pi, Finset.mem_univ,\n    true_implies, Finset.mem_Icc, neg_le]\n  exact forall_congr' fun i ↦ abs_le\n''','''theorem mem_literalStageFourierModes_iff (N : ℕ) (k : Fin 2 → ℤ) :\n    k ∈ literalStageFourierModes N ↔\n      ∀ i : Fin 2, |k i| ≤ (N : ℤ) := by\n  classical\n  constructor\n  · intro hk\n    rcases Finset.mem_image.mp hk with ⟨p, hp, hpk⟩\n    have hp' := Finset.mem_product.mp hp\n    intro i\n    fin_cases i\n    · change |k 0| ≤ (N : ℤ)\n      have hb := Finset.mem_Icc.mp hp'.1\n      have heq : k 0 = p.1 := by simpa using congrFun hpk.symm 0\n      rw [heq]\n      exact (abs_le).2 hb\n    · change |k 1| ≤ (N : ℤ)\n      have hb := Finset.mem_Icc.mp hp'.2\n      have heq : k 1 = p.2 := by simpa using congrFun hpk.symm 1\n      rw [heq]\n      exact (abs_le).2 hb\n  · intro hk\n    apply Finset.mem_image.mpr\n    refine ⟨(k 0, k 1), ?_, ?_⟩\n    · apply Finset.mem_product.mpr\n      constructor\n      · exact Finset.mem_Icc.mpr ((abs_le).1 (hk 0))\n      · exact Finset.mem_Icc.mpr ((abs_le).1 (hk 1))\n    · funext i\n      fin_cases i <;> rfl\n''')
+          # torus rectangle endpoint arithmetic
+          rep('''  congr 3\n  apply congrArg Complex.measurableEquivPi.symm\n  funext i\n  rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]\n  exact congrArg Subtype.val\n    (AddCircle.equivIoc_coe_eq (by simpa using x.2 i))\n''','''  congr 3\n  norm_num\n''')
+          # pinned API name and real scalar-action normalization
+          rep('Module.finrank_complex_real','Complex.finrank_real_complex',2)
+          rep('''      simp only [Complex.finrank_real_complex, zpow_neg, zpow_ofNat]\n''','''      simp only [Complex.finrank_real_complex, smul_eq_mul, zpow_neg, zpow_ofNat]\n''',2)
+          # gcongr already reduces set-integral monotonicity to a.e. nonnegativity
+          rep('''      exact MeasureTheory.setIntegral_le_integral\n        (ambientTestCore_normSq_integrable v)\n        (Filter.Eventually.of_forall fun w ↦ sq_nonneg ‖v w‖)\n''','''      exact Filter.Eventually.of_forall fun w ↦ sq_nonneg ‖v w‖\n''')
+          # classical membership decision for zero-extension representative
+          rep('''noncomputable def literalStagePlaneWaveRepresentative\n    (Y : ℝ) (k : Fin 2 → ℤ) (w : ℂ) : ℂ :=\n  if w ∈ literalStageFourierBox Y then\n    ((literalStageFourierScale Y)⁻¹ : ℂ) *\n      UnitAddTorus.mFourier k (literalStagePhysicalTorusPoint Y w)\n  else 0\n''','''noncomputable def literalStagePlaneWaveRepresentative\n    (Y : ℝ) (k : Fin 2 → ℤ) (w : ℂ) : ℂ := by\n  classical\n  exact if w ∈ literalStageFourierBox Y then\n    ((literalStageFourierScale Y)⁻¹ : ℂ) *\n      UnitAddTorus.mFourier k (literalStagePhysicalTorusPoint Y w)\n  else 0\n''')
+          # composition precedence
+          rep('''  exact (measurable_const.mul\n    (UnitAddTorus.mFourier k).continuous.measurable.comp\n      (literalStagePhysicalTorusPoint_measurable Y)).ite\n''','''  exact (measurable_const.mul\n    ((UnitAddTorus.mFourier k).continuous.measurable.comp\n      (literalStagePhysicalTorusPoint_measurable Y))).ite\n''')
+          # derivative theorem uses global differentiability before point specialization
+          rep('(literalStageNegativePlaneWave_differentiable Y k w).differentiableAt','(literalStageNegativePlaneWave_differentiable Y k).differentiableAt',2)
+          if v in ('differentiability','ibp'):
+            rep('''theorem literalStageNegativePlaneWave_differentiable\n    (Y : ℝ) (k : Fin 2 → ℤ) :\n    Differentiable ℝ (literalStageNegativePlaneWave Y k) := by\n  unfold literalStageNegativePlaneWave\n  fun_prop\n''','''theorem literalStageNegativePlaneWave_differentiable\n    (Y : ℝ) (k : Fin 2 → ℤ) :\n    Differentiable ℝ (literalStageNegativePlaneWave Y k) := by\n  unfold literalStageNegativePlaneWave\n  have h0 : Differentiable ℝ (fun w : ℂ ↦\n      fourier (-(k 0))\n        (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle)) := by\n    intro w\n    exact (hasDerivAt_fourier_neg (1 : ℝ) (k 0)\n      ((literalStageFourierScale Y)⁻¹ * w.re)).differentiableAt.comp w (by fun_prop)\n  have h1 : Differentiable ℝ (fun w : ℂ ↦\n      fourier (-(k 1))\n        (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle)) := by\n    intro w\n    exact (hasDerivAt_fourier_neg (1 : ℝ) (k 1)\n      ((literalStageFourierScale Y)⁻¹ * w.im)).differentiableAt.comp w (by fun_prop)\n  have hc : Differentiable ℝ (fun _ : ℂ ↦ ((literalStageFourierScale Y)⁻¹ : ℂ)) := by\n    fun_prop\n  exact (hc.mul h0).mul h1\n''')
+          if v == 'ibp':
+            old_dx='''  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ))\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dx v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)\n'''
+            new_dx='''  let c : ℂ := -2 * Real.pi * Complex.I * (k 0 : ℂ) / literalStageFourierScale Y\n  have hfg : Integrable (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul v.continuous).integrable_of_hasCompactSupport\n      v.hasCompactSupport.mul_left\n  have hf'g : Integrable (fun w : ℂ ↦\n      fderiv ℝ (literalStageNegativePlaneWave Y k) w 1 * v w)\n      (volume : Measure ℂ) := by\n    refine (hfg.const_mul c).congr ?_\n    filter_upwards with w\n    rw [fderiv_literalStageNegativePlaneWave_one]\n    simp only [c]\n    ring\n  have hfg' : Integrable (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n      fderiv ℝ (v : ℂ → ℂ) w 1) (volume : Measure ℂ) := by\n    have h := ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport\n        (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left\n    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using h\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := (1 : ℂ)) hf'g hfg' hfg\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ (v.contDiff.differentiable (by simp)).differentiableAt)\n'''
+            rep(old_dx,new_dx)
+            old_dy=old_dx.replace('(1 : ℂ)','Complex.I').replace('dx v','dy v').replace('dx_apply','dy_apply').replace('(k 0 : ℂ)','(k 1 : ℂ)').replace('fderiv_literalStageNegativePlaneWave_one','fderiv_literalStageNegativePlaneWave_I')
+            # old source dy differs by Complex.I and dy; build directly
+            old_dy='''  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := Complex.I)\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dy v).continuous)\n        .integrable_of_hasCompactSupport\n          (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n    ((literalStageNegativePlaneWave_continuous Y k).mul\n      v.continuous).integrable_of_hasCompactSupport v.hasCompactSupport.mul_left\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k _).differentiableAt)\n    (fun _ _ ↦ v.contDiff.differentiable (by simp) _)\n'''
+            new_dy='''  let c : ℂ := -2 * Real.pi * Complex.I * (k 1 : ℂ) / literalStageFourierScale Y\n  have hfg : Integrable (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)\n      (volume : Measure ℂ) :=\n    ((literalStageNegativePlaneWave_continuous Y k).mul v.continuous).integrable_of_hasCompactSupport\n      v.hasCompactSupport.mul_left\n  have hf'g : Integrable (fun w : ℂ ↦\n      fderiv ℝ (literalStageNegativePlaneWave Y k) w Complex.I * v w)\n      (volume : Measure ℂ) := by\n    refine (hfg.const_mul c).congr ?_\n    filter_upwards with w\n    rw [fderiv_literalStageNegativePlaneWave_I]\n    simp only [c]\n    ring\n  have hfg' : Integrable (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *\n      fderiv ℝ (v : ℂ → ℂ) w Complex.I) (volume : Measure ℂ) := by\n    have h := ((literalStageNegativePlaneWave_continuous Y k).mul\n      (HalfWeightCompactCoordinateGreen.dy v).continuous).integrable_of_hasCompactSupport\n        (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left\n    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using h\n  have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable\n    (μ := (volume : Measure ℂ)) (v := Complex.I) hf'g hfg' hfg\n    (fun _ _ ↦ (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)\n    (fun _ _ ↦ (v.contDiff.differentiable (by simp)).differentiableAt)\n'''
+            rep(old_dy,new_dy)
+          Path('/tmp/Candidate.lean').write_text(src)
+          marker='/-- The `L²` coefficient of a rectangle-supported test is represented by'
+          pos=src.index(marker)
+          Path('/tmp/Probe.lean').write_text(src[:pos]+'\n')
+          Path('/tmp/variant.txt').write_text(v+'\n')
+          Path('/tmp/candidate.sha256').write_text(hashlib.sha256(src.encode()).hexdigest()+'\n')
+          print(v, hashlib.sha256(src.encode()).hexdigest(), len(src.splitlines()))
+          PY
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+      - name: Compile cumulative prefix and count target declarations
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e
+          lake env lean -DmaxErrors=1000 -DwarningAsError=false /tmp/Probe.lean >/tmp/probe.log 2>&1
+          rc=$?
+          set -e
+          echo "$rc" >/tmp/probe.exit
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          log=Path('/tmp/probe.log').read_text(errors='replace')
+          p=Path('/tmp/Probe.lean').read_text(errors='replace')
+          dr=re.compile(r'(?m)^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<n>[^\s(:]+)')
+          ds=list(dr.finditer(p)); starts=[p.count('\n',0,m.start())+1 for m in ds]
+          from bisect import bisect_right
+          er=re.compile(r'^.+?\.lean:(\d+):(\d+): error(?:\([^)]+\))?:',re.M)
+          counts={}
+          for m in er.finditer(log):
+            ln=int(m.group(1)); i=bisect_right(starts,ln)-1; n=ds[i].group('n') if i>=0 else '?'; counts[n]=counts.get(n,0)+1
+          targets=['integrable_fullPlaneTest_mul_kernel_mul_translate','cauchySeq_lowerFromSuccCoordinate_of_base_raise_tendsto','literalStageFourierModes','mem_literalStageFourierModes_iff','integral_literalStageTorusRepresentative_normSq_eq_box','norm_literalStageTorusTest_sq_le_plane','norm_literalStageTorusTest_sq_eq_scale_inv_sq_mul_scaledBox','literalStagePlaneWaveRepresentative','literalStagePlaneWaveRepresentative_aestronglyMeasurable','literalStagePlaneWaveRepresentative_support_subset','literalStagePlaneWaveRepresentative_memLp','literalStageNegativePlaneWave_differentiable','fderiv_literalStageNegativePlaneWave_one','fderiv_literalStageNegativePlaneWave_I','integral_negativePlaneWave_mul_dx','integral_negativePlaneWave_mul_dy']
+          out={'exit':int(Path('/tmp/probe.exit').read_text()),'total_error_headers':len(list(er.finditer(log))),'target_counts':{x:counts.get(x,0) for x in targets}}
+          Path('/tmp/result.json').write_text(json.dumps(out,indent=2)+'\n'); print(json.dumps(out,indent=2))
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v39-early-fourier-${{ matrix.variant }}-${{ github.sha }}
+          path: |
+            /tmp/result.json
+            /tmp/probe.log
+            /tmp/probe.exit
+            /tmp/variant.txt
+            /tmp/candidate.sha256
+            /tmp/Candidate.lean
+          retention-days: 30
