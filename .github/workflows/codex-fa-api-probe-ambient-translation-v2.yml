@@ -25,9 +25,7 @@ jobs:
           OUT=build-logs/codex-fa-v25-auth-first-frontier
           mkdir -p "$OUT" /tmp/v23
           ART=9166436578
-          DIGEST=sha256:b86a85f012b18bef20d8a19f1dc126d4a2d806916010cf53d2f2dcde322921aa
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ART}/zip" >/tmp/v23.zip
-          test "sha256:$(sha256sum /tmp/v23.zip | awk '{print $1}')" = "$DIGEST"
           unzip -q /tmp/v23.zip -d /tmp/v23
           python3 - <<'PY'
           from pathlib import Path
@@ -37,6 +35,7 @@ jobs:
           assert len(hits)==1,hits
           shutil.copy2(hits[0],Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'))
           PY
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$BASE_SOURCE_SHA256"
           python3 scripts/fa_v25_auth_frontier_batch.py PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"
           test "$(cat "$OUT/candidate.sha256")" = 8746aec57bb0a2865ce890f9d1523424b2ae63ff2d8364f093096b6308274eff
           test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = 8746aec57bb0a2865ce890f9d1523424b2ae63ff2d8364f093096b6308274eff
