@@ -1,0 +1,216 @@
+­r‡^Ñf¥–Ø¦{OlyÊ'vÃ®¶›­{
+  "schema": "fa-v40-saturation-repairs-v1",
+  "authority_source_sha256": "530baa644c7a86eda78328920eda4b8f5fd273bd29d9f04351914396303d4c03",
+  "expected_candidate_sha256": "c88cd9832ea095ab22b0f1dd9307c8f43587d85b10688d47c4a534529cebca5c",
+  "allowed_header_changes": [
+    "4187:modularMassResolvent_orthogonalFamily_eigenspaces",
+    "4262:friedrichsMollifier_convolution_compactIndicator_eq",
+    "4388:coeFn_invariantScalarCarrierLInfinity",
+    "4390:coeFn_finsetSum_Lp",
+    "4393:coeFn_fullPlaneTestToLInfinity"
+  ],
+  "sections": [
+    {
+      "path": "work/v39-workers/early-promoted-repairs.json",
+      "section": "early-promoted",
+      "repair_count": 30,
+      "static_candidate_sha256": null
+    },
+    {
+      "path": "work/v39-workers/middle-promoted-repairs.json",
+      "section": "middle-s01-merge-now",
+      "repair_count": 41,
+      "static_candidate_sha256": null
+    },
+    {
+      "path": "work/v39-workers/late-promoted-repairs.json",
+      "section": "late-promoted",
+      "repair_count": 21,
+      "static_candidate_sha256": "8ea1ec919a0a7e97d13fb9d781f00cc3e549530e3173d1e612c4024c3f8f1c73"
+    }
+  ],
+  "repairs": [
+    {
+      "id": "E-P02-function-product-measurability",
+      "candidate_id": "P02",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "old": "  have hMeas : AEStronglyMeasurable\n      (Function.uncurry fun x t : â„‚ â†¦ v x * K t * u (x - t))\n      ((volume : Measure â„‚).prod (volume : Measure â„‚)) := by\n    change AEStronglyMeasurable\n      (fun p : â„‚ Ã— â„‚ â†¦ v p.1 * K p.2 * u (p.1 - p.2))\n      ((volume : Measure â„‚).prod (volume : Measure â„‚))\n    simpa only [Pi.mul_apply, mul_assoc] using hMeasV.mul hMeasBase\n",
+      "new": "  have hMeas : AEStronglyMeasurable\n      (Function.uncurry fun x t : â„‚ â†¦ v x * K t * u (x - t))\n      ((volume : Measure â„‚).prod (volume : Measure â„‚)) := by\n    have h := hMeasV.mul hMeasBase\n    change AEStronglyMeasurable\n      (fun p : â„‚ Ã— â„‚ â†¦ v p.1 * (K p.2 * u (p.1 - p.2)))\n      ((volume : Measure â„‚).prod (volume : Measure â„‚)) at h\n    simpa only [mul_assoc] using h\n"
+    },
+    {
+      "id": "E-P05-explicit-linear-equiv-symm",
+      "candidate_id": "P05",
+      "kind": "body",
+      "confidence": "high",
+      "expected_count": 1,
+      "owner": "mem_maximalStrongSchrodinger_graph_iff_core_tests",
+      "old": "    have hy : l2CoreRangeEquiv n u = y := by\n      simp only [u, LinearEquiv.apply_symm_apply]\n",
+      "new": "    have hy : l2CoreRangeEquiv n u = y := by\n      simpa only [u] using (l2CoreRangeEquiv n).apply_symm_apply y\n"
+    },
+    {
+      "id": "E-P07-real-height-norm-four-sites",
+      "candidate_id": "P07",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 4,
+      "owners": [
+        "norm_dx_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dy_sq_le_literalStageLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dx_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity",
+        "norm_dy_sq_le_cutoffSupportLowerHeight_inv_sq_mul_graphDensity"
+      ],
+      "old": "  have him : â€–heightC zâ€– = z.im := by\n    simp only [heightC, Complex.norm_real, abs_of_pos z.im_pos]\n",
+      "new": "  have him : â€–heightC zâ€– = z.im := by\n    rw [heightC, Complex.norm_real]\n    exact Real.norm_of_nonneg z.im_pos.le\n"
+    },
+    {
+      "id": "E-P08-off-support-zero-add",
+      "candidate_id": "P08-off",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "localizedGauge_planarDensity_le",
+      "old": "    exact mul_nonneg (literalStageLocalizationDensityConstant_nonneg Y)\n      (fixedPhaseEuclideanGraphDensity_nonneg n u z)\n",
+      "new": "    simpa only [zero_add] using\n      (mul_nonneg (literalStageLocalizationDensityConstant_nonneg Y)\n        (fixedPhaseEuclideanGraphDensity_nonneg n u z))\n"
+    },
+    {
+      "id": "E-P09-orient-quotient-exact",
+      "candidate_id": "P09",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStageCutoffUpperSupport_subset_activeTranslates",
+      "old": "  have hOrbit : z âˆˆ MulAction.orbit GammaTwoEffective w :=\n    MulAction.orbitRel_apply.mp (Quotient.exact' hwq)\n",
+      "new": "  have hOrbit : z âˆˆ MulAction.orbit GammaTwoEffective w :=\n    MulAction.orbitRel_apply.mp (Quotient.exact' hwq.symm)\n"
+    },
+    {
+      "id": "E-P10-explicit-hyperbolic-density-nonneg",
+      "candidate_id": "P10",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "fixedPhaseHyperbolicGraphDensity_nonneg",
+      "old": "  unfold fixedPhaseHyperbolicGraphDensity\n  positivity\n",
+      "new": "  unfold fixedPhaseHyperbolicGraphDensity\n  exact add_nonneg\n    (add_nonneg\n      (mul_nonneg (logHeightTraceBaseCoeff_nonneg n)\n        (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _))\n      (mul_nonneg (by norm_num)\n        (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _)))\n    (mul_nonneg (by norm_num)\n      (WeightCorePetersson.upstairsNormSqDensity_nonneg _ _ _))\n"
+    },
+    {
+      "id": "E-P11-diagonal-real-part-conversion",
+      "candidate_id": "P11",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "upstairsNormSqDensity_integrableOn_chosenCarrier",
+      "old": "  simpa only [WeightCorePetersson.upstairsInnerDensity_self,\n    Complex.ofReal_re] using hInner.re\n",
+      "new": "  convert hInner.re using 1\n  funext z\n  simp only [WeightCorePetersson.upstairsInnerDensity_self,\n    WeightCorePetersson.upstairsNormSqDensity]\n  exact (Complex.ofReal_re _).symm\n"
+    },
+    {
+      "id": "E-P13-pointwise-ae-invariance",
+      "candidate_id": "P13",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "setIntegral_fixedPhaseHyperbolicGraphDensity_image_smul",
+      "old": "    _ = âˆ« z in S, fixedPhaseHyperbolicGraphDensity n u z\n          âˆ‚hyperbolicMeasure := by\n      apply setIntegral_congr_ae\n      filter_upwards with z\n      intro _hz\n      exact fixedPhaseHyperbolicGraphDensity_effective_invariant n u a z\n",
+      "new": "    _ = âˆ« z in S, fixedPhaseHyperbolicGraphDensity n u z\n          âˆ‚hyperbolicMeasure := by\n      apply integral_congr_ae\n      exact Filter.Eventually.of_forall fun z â†¦\n        fixedPhaseHyperbolicGraphDensity_effective_invariant n u a z\n"
+    },
+    {
+      "id": "E-P14-nnreal-smul-to-mul",
+      "candidate_id": "P14",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_euclideanGraphDensity_cutoffSupport_eq_hyperbolic",
+      "old": "  rw [fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul]\n  simp only [NNReal.smul_def]\n",
+      "new": "  rw [fixedPhaseEuclideanGraphDensity_eq_hyperbolicDensity_mul]\n  simp only [NNReal.smul_def, smul_eq_mul]\n"
+    },
+    {
+      "id": "E-P15-specialize-integral-const-mul",
+      "candidate_id": "P15",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_literalStageLocalizedPlanarDensity_le_coreMap",
+      "old": "    _ = literalStageLocalizationDensityConstant Y *\n        (âˆ« z in literalStageCutoffUpperSupport Y,\n          fixedPhaseEuclideanGraphDensity n u z\n          âˆ‚upperEuclideanMeasure) := integral_const_mul\n",
+      "new": "    _ = literalStageLocalizationDensityConstant Y *\n        (âˆ« z in literalStageCutoffUpperSupport Y,\n          fixedPhaseEuclideanGraphDensity n u z\n          âˆ‚upperEuclideanMeasure) := by\n      rw [integral_const_mul]\n"
+    },
+    {
+      "id": "E-P15-preserve-mul-inequality-direction",
+      "candidate_id": "P15",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "integral_literalStageLocalizedPlanarDensity_le_coreMap",
+      "old": "          (selectedCuspTraceEnergyConstant n * â€–coreMap n uâ€– ^ 2)) := by\n        gcongr\n        exact integral_cutoffSupport_hyperbolicGraphDensity_le Y n u\n",
+      "new": "          (selectedCuspTraceEnergyConstant n * â€–coreMap n uâ€– ^ 2)) :=\n      mul_le_mul_of_nonneg_left\n        (integral_cutoffSupport_hyperbolicGraphDensity_le Y n u)\n        (literalStageLocalizationDensityConstant_nonneg Y)\n"
+    },
+    {
+      "id": "E-P16-explicit-energy-constant-nonneg",
+      "candidate_id": "P16",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "literalStageLocalizationEnergyConstant_nonneg",
+      "old": "  unfold literalStageLocalizationEnergyConstant\n  positivity\n",
+      "new": "  unfold literalStageLocalizationEnergyConstant\n  exact mul_nonneg\n    (literalStageLocalizationDensityConstant_nonneg Y)\n    (mul_nonneg (Nat.cast_nonneg _)\n      (selectedCuspTraceEnergyConstant_nonneg n))\n"
+    },
+    {
+      "id": "E-P17-expose-support-value",
+      "candidate_id": "P17",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "ambientTestCore_memLp_volume",
+      "old": "    by_contra hnot\n    rw [image_eq_zero_of_notMem_tsupport hnot, norm_zero,\n      zero_pow (by norm_num : (2 : â„•) â‰  0)] at hw\n    exact hw rfl\n",
+      "new": "    by_contra hnot\n    change â€–v wâ€– ^ 2 â‰  0 at hw\n    apply hw\n    rw [image_eq_zero_of_notMem_tsupport hnot, norm_zero,\n      zero_pow (by norm_num : (2 : â„•) â‰  0)]\n"
+    },
+    {
+      "id": "E-P19-base-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneBaseCore_sq_le_energy",
+      "old": "  Â· exact ambientTestCore_normSq_integrable\n      (literalStageLocalizedGauge Y n u)\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  Â· exact ambientTestCore_normSq_integrable\n      (literalStageLocalizedGauge Y n u)\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg â€–HalfWeightCompactCoordinateGreen.dx\n          (literalStageLocalizedGauge Y n u) wâ€–,\n        sq_nonneg â€–HalfWeightCompactCoordinateGreen.dy\n          (literalStageLocalizedGauge Y n u) wâ€–]\n"
+    },
+    {
+      "id": "E-P19-dx-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneDxCore_sq_le_energy",
+      "old": "  Â· exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dx\n        (literalStageLocalizedGauge Y n u))\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  Â· exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dx\n        (literalStageLocalizedGauge Y n u))\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg â€–literalStageLocalizedGauge Y n u wâ€–,\n        sq_nonneg â€–HalfWeightCompactCoordinateGreen.dy\n          (literalStageLocalizedGauge Y n u) wâ€–]\n"
+    },
+    {
+      "id": "E-P19-dy-component-domination",
+      "candidate_id": "P19",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "norm_literalStagePlaneDyCore_sq_le_energy",
+      "old": "  Â· exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dy\n        (literalStageLocalizedGauge Y n u))\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      positivity\n",
+      "new": "  Â· exact ambientTestCore_normSq_integrable\n      (HalfWeightCompactCoordinateGreen.dy\n        (literalStageLocalizedGauge Y n u))\n  Â· exact literalStageLocalizedPlanarDensity_integrable Y n u\n  Â· exact Filter.Eventually.of_forall fun w â†¦ by\n      unfold literalStageLocalizedPlanarDensity\n      nlinarith [\n        sq_nonneg â€–literalStageLocalizedGauge Y n u wâ€–,\n        sq_nonneg â€–HalfWeightCompactCoordinateGreen.dx\n          (literalStageLocalizedGauge Y n u) wâ€–]\n"
+    },
+    {
+      "id": "E-P20-completed-plane-base-definition-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneBase",
+      "old": "noncomputable def completedLiteralStagePlaneBase (Y : â„) (n : â„¤) :\n    GraphSobolevCompletion n â†’L[â„‚] AmbientPlaneL2 :=\n  (literalStagePlaneBaseCore Y n).extendOfNorm (coreMap n)\n",
+      "new": "noncomputable def completedLiteralStagePlaneBase (Y : â„) (n : â„¤) :\n    GraphSobolevCompletion n â†’L[â„‚] AmbientPlaneL2 := by\n  letI : Module â„‚\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreAddCommGroup n\n  exact (literalStagePlaneBaseCore Y n).extendOfNorm (coreMap n)\n"
+    },
+    {
+      "id": "E-P20-completed-plane-dx-definition-instances",
+      "candidate_id": "P20",
+      "kind": "body",
+      "confidence": "very-high",
+      "expected_count": 1,
+      "owner": "completedLiteralStagePlaneDx",
+      "old": "noncomputable def completedLiteralStagePlaneDx (Y : â„) (n : â„¤) :\n    GraphSobolevCompletion n â†’L[â„‚] AmbientPlaneL2 :=\n  (literalStagePlaneDxCore Y n).extendOfNorm (coreMap n)\n",
+      "new": "noncomputable def completedLiteralStagePlaneDx (Y : â„) (n : â„¤) :\n    GraphSobolevCompletion n â†’L[â„‚] AmbientPlaneL2 := by\n  letI : Module â„‚\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\n    DefinitionOneSobolev.FixedPhaseGraphCompletion.fixedPhaseGraphCoreModule n\n  letI : AddCommGroup\n      (Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :=\×^úÖÚ$z{-®éÜj×væW%÷7å÷c3’#¢°Ğ¢Ssc2ÀĞ¢SsĞ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"'r¶÷&&—EWFW'76öä6÷&UFõ&VGV6VD6†'DÃ%öæ÷&Õ÷7ÅÆâ6WD–çFVw&Åö÷&&—DWV6Æ–FVävVvUöæ÷&Õ÷7öWöFVç6—G’ÅÆâ÷&&—EWFW'76öä6÷&Uöæ÷&Õ÷7öWöFVç6—G•ö–çFVw&ÅÕÆâW†7B„–çFVw&ÅÆâ"ÀĞ¢&æWr#¢"'r¶÷&&—EWFW'76öä6÷&UFõ&VGV6VD6†'DÃ%öæ÷&Õ÷7ÅÆâ6WD–çFVw&Åö÷&&—DWV6Æ–FVävVvUöæ÷&Õ÷7öWöFVç6—G’ÅÆâ÷&&—EWFW'76öä6÷&Uöæ÷&Õ÷7öWöFVç6—G•ö–çFVw&ÅÕÆâ+rW†7B„–çFVw&ÅÆâ+rW†7B†vÖÖGvõ&VGV6VD6†'Eö—4÷Vâ®((’æÖV7W&&ÆU6WEÆâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÓRÕÖW‡Æ–6—B×7W÷'B×F÷"ÀĞ¢&'VæFÆUö–B#¢$ÓRÕ"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&÷væW"#¢&gVÆÅÆæUFW7E&öGV7B"ÀĞ¢&÷væW%÷7å÷c3’#¢°Ğ¢Ss“ÀĞ¢Ss“`Ğ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢&æöæ6ö×WF&ÆRFVbgVÆÅÆæUFW7E&öGV7EÆâ‡†’b¢gVÆÅÆæUFW7B’¢gVÆÅÆæUFW7Bv†W&UÆâFôgVâ£ÒgVâ‚¢(H"Óâ†’‚¢b…Æâ6öçDF–fbr£Ò†’æ6öçDF–fbæ×VÂbæ6öçDF–feÆâ†46ö×7E7W÷'Br£Òbæ†46ö×7E7W÷'Bæ×VÅöÆVgEÆâG7W÷'E÷7V'6WBr£Ò7V'6WE÷Væ—eÆâ"ÀĞ¢&æWr#¢&æöæ6ö×WF&ÆRFVbgVÆÅÆæUFW7E&öGV7EÆâ‡†’b¢gVÆÅÆæUFW7B’¢gVÆÅÆæUFW7Bv†W&UÆâFôgVâ£ÒgVâ‚¢(H"Óâ†’‚¢b…Æâ6öçDF–fbr£Ò†’æ6öçDF–fbæ×VÂbæ6öçDF–feÆâ†46ö×7E7W÷'Br£Òbæ†46ö×7E7W÷'Bæ×VÅöÆVgEÆâG7W÷'E÷7V'6WBr£Ò'•Æâ6–×W6–æuÆâ…6WBç7V'6WE÷Væ—b‡G7W÷'B†gVâ‚¢(H"Óâ†’‚¢b‚’’•Æâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÓRÕ"ÖW‡÷6R×&–æ6—Â×7W÷'BÖgVæ7F–öâ"ÀĞ¢&'VæFÆUö–B#¢$ÓRÕ""ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&÷væW"#¢'G7W÷'EögVÆÅÆæTff–æU&–æ6—Ä7WFöfe÷7V'6WB"ÀĞ¢&÷væW%÷7å÷c3’#¢°Ğ¢Ss#3BÀĞ¢Ss#S0Ğ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"&Vf–æRG7W÷'Eö×VÅ÷7V'6WE÷&–v‡BçG&ç2õõÆâ6–×öæÇ’¶FEöÇ’Â6×VÅöÇ’ÅÆâ6×VÅöWö×VÅÒW6–æuÆâ‡G7W÷'EöFBòò’çG&ç2‡Væ–öå÷7V'6WB…6–vÖ„’•Æâ"ÀĞ¢&æWr#¢"&Vf–æRG7W÷'Eö×VÅ÷7V'6WE÷&–v‡BçG&ç2õõÆâ6†ævRG7W÷'EÆâ†gVâ‚¢(H"Óâ6–vÖ¢gVÆÅÆæTF—&V7F–öæÄFW&—fF—fR†’‚µÆâgVÆÅÆæTF—&V7F–öæÄFW&—fF—fR6ö×ÆW‚ä’†’‚’(šEÆâG7W÷'B‡†’¢(H"(i"(H"•ÆâW†7B‡G7W÷'EöFBòò’çG&ç2‡Væ–öå÷7V'6WB…6–vÖ„’•Æâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÓRÕ2Ö6öçFF–fb×FòÖF–ffW&VçF–&ÆRÖB"ÀĞ¢&'VæFÆUö–B#¢$ÓRÕ2"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&÷væW"#¢&gVÆÅÆæTff–æUG&ç7÷6U÷&öGV7EöFE÷&–æ6—Â"ÀĞ¢&÷væW%÷7å÷c3’#¢°Ğ¢Ss#S‚ÀĞ¢Ss#ƒ0Ğ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"†fR‡†’¢F–ffW&VçF–&ÆTB(IÒ‡†’¢(H"(i"(H"’‚£ÕÆâ†’æ6öçDF–fbæF–ffW&VçF–&ÆTB†'’6–×•Æâ†fR‡b¢F–ffW&VçF–&ÆTB(IÒ‡b¢(H"(i"(H"’‚£ÕÆâbæ6öçDF–fbæF–ffW&VçF–&ÆTB†'’6–×•Æâ"ÀĞ¢&æWr#¢"†fR‡†’¢F–ffW&VçF–&ÆTB(IÒ‡†’¢(H"(i"(H"’‚£ÕÆâ‡†’æ6öçDF–fbæF–ffW&VçF–&ÆR†'’6–×’’æF–ffW&VçF–&ÆTEÆâ†fR‡b¢F–ffW&VçF–&ÆTB(IÒ‡b¢(H"(i"(H"’‚£ÕÆâ‡bæ6öçDF–fbæF–ffW&VçF–&ÆR†'’6–×’’æF–ffW&VçF–&ÆTEÆâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÓbÕÖW‡÷6RÖÇÖFBÖWfÇVF–öâ"ÀĞ¢&'VæFÆUö–B#¢$ÓbÕ"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&÷væW"#¢&6öTfåöÆö6Æ—¦VDff–æUF&vWB"ÀĞ¢&÷væW%÷7å÷c3’#¢°Ğ¢Ss3BÀĞ¢Ss3#Ğ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"v—F‚‚†FB†&6R†6öÖÕÆâ'r¶†FBÂ†&6RÂ†6öÖÕÕÆâ"ÀĞ¢&æWr#¢"v—F‚‚†FB†&6R†6öÖÕÆâ6†ævUÆâ‚†gVÆÅÆæUFW7D×VÄÃ"†’RµÆâgVÆÅÆæUFW7D×VÄÃ"†gVÆÅÆæTff–æU&–æ6—Ä7WFöfb6–vÖ†’’R¥ÆâÖ&–VçEÆæTÃ"’¢(H"(i"(H"’‚ÒõÆâ'r¶†FBÂ’æFEöÇ’Â†&6RÂ†6öÖÕÕÆâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÓbÕBÖW‡Æ–6—B×Væ—b×7W÷'B×7V'6WB"ÀĞ¢&'VæFÆUö–B#¢$ÓbÕB"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢'fW'’Ö†–v‚"ÀĞ¢&÷væW"#¢$—5Ææ$ff–æUvV´w&‚æÆö6Æ—¦R"ÀĞ¢&÷væW%÷7å÷c3’#¢°Ğ¢SsCRÀĞ¢SsC#PĞ¢ÒÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"W†7B…vV´öâæÆö6Æ—¦Töâ†’7V'6WE÷Væ—eÆâ"ÀĞ¢&æWr#¢"W†7B…vV´öâæÆö6Æ—¦Töâ†•Æâ…6WBç7V'6WE÷Væ—b‡G7W÷'B‡†’¢(H"(i"(H"’’•Æâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÖVçbÖw&‚Ö–ç7Fæ6W2ÓSƒsb"ÀĞ¢&¶–æB#¢&Vçf—&öæÖVçB"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢&÷Vâf—†VE†6UÆæ$Æö6Æ—¦F–öåÆæ÷Vâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'5ÆåÆææöæ6ö×WF&ÆR6V7F–öåÆâ"ÀĞ¢&æWr#¢&÷Vâf—†VE†6UÆæ$Æö6Æ—¦F–öåÆæ÷Vâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'5ÆåÆæGG&–'WFR¶Æö6Â–ç7Fæ6UÕÆâFVf–æ—F–öäöæU6ö&öÆWbäf—†VE†6Tw&„6ö×ÆWF–öâæf—†VE†6Tw&„6÷&TÖöGVÆUÆâFVf–æ—F–öäöæU6ö&öÆWbäf—†VE†6Tw&„6ö×ÆWF–öâæf—†VE†6Tw&„6÷&TFD6öÖÔw&÷WÆåÆææöæ6ö×WF&ÆR6V7F–öåÆâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÖVçbÖ†ÆgvV–v‡BÖ÷VâÓS“sC2"ÀĞ¢&¶–æB#¢&Vçf—&öæÖVçB"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢&÷Vâf—†VE†6TW76VçF–Ä6÷&U&÷WFUÆæ÷Vâ‡—6–6ÄÆö6ÄÃ%ÆåÆçF†V÷&VÒ&VÅ6Öö÷F…ö6öç7B†2¢(H"’¥Æâ"ÀĞ¢&æWr#¢&÷Vâf—†VE†6TW76VçF–Ä6÷&U&÷WFUÆæ÷Vâ‡—6–6ÄÆö6ÄÃ%Ææ÷Vâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'5ÆåÆçF†V÷&VÒ&VÅ6Öö÷F…ö6öç7B†2¢(H"’¥Æâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÖVçbÖ–çf&–çBÖ×VÇF—Æ–W"Ö–ç7Fæ6W2ÖæBÖ÷Vâ"ÀĞ¢&¶–æB#¢&Vçf—&öæÖVçB"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢&÷VâTF—67&–Ö–æçD†&EG'Væ6F–öåÆæ÷Vâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'5ÆåÆææöæ6ö×WF&ÆR6V7F–öåÆâ"ÀĞ¢&æWr#¢&÷VâTF—67&–Ö–æçD†&EG'Væ6F–öåÆæ÷Vâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'5Ææ÷Vâf—†VE†6U&VGV6VD6†'Dg&–VG&–6‡5ÆåÆæGG&–'WFR¶Æö6Â–ç7Fæ6UÕÆâFVf–æ—F–öäöæU6ö&öÆWbäf—†VE†6Tw&„6ö×ÆWF–öâæf—†VE†6Tw&„6÷&TÖöGVÆUÆâFVf–æ—F–öäöæU6ö&öÆWbäf—†VE†6Tw&„6ö×ÆWF–öâæf—†VE†6Tw&„6÷&TFD6öÖÔw&÷WÆåÆææöæ6ö×WF&ÆR6V7F–öåÆâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC#SÓC#S2Ö6öRÖ–ÒÖæ÷&ÖÆ—¦F–öâ"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢BÀĞ¢&öÆB#¢"†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æ†V–v‡D2Â6×VÅöWö×VÅÕÆâ'r¶†G‚Â†G’Â‡fÅÕÆâ&–æuÆâ"ÀĞ¢&æWr#¢"†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æ†V–v‡D2ÂWW$†ÆeÆæRæ6öUö–ÒÅÆâ6×VÅöWö×VÅÕÆâ'r¶†G‚Â†G’Â‡fÅÕÆâ&–æuÆâ"ÀĞ¢&÷væW'2#¢°Ğ¢&WV6Æ–FVå&—6TvVvU÷W&–öF—¦VEöWöf÷'v&EFW7Eööå÷&VGV6VD6†'B"ÀĞ¢&WV6Æ–FVäÆ÷vW$g&öÕ7V64vVvU÷W&–öF—¦VEöWöf÷'v&EFW7Eööå÷&VGV6VD6†'B"ÀĞ¢&æVuöWV6Æ–FVäÆ÷vW$g&öÕ7V64vVvU÷W&–öF—¦VEöW÷&—6UFW7DF¦ö–çEööå÷&VGV6VD6†'B"ÀĞ¢&æVuöWV6Æ–FVå&—6TvVvU÷W&–öF—¦VEöWöÆ÷vW$g&öÕ7V65FW7DF¦ö–çEööå÷&VGV6VD6†'B Ğ¢ĞĞ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC#c"×G—RÖ6öçF–çV÷W2ÖÇ6×VÂ"ÀĞ¢&¶–æB#¢&†VFW"ÖæBÖ&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"†g&–VG&–6‡4ÖöÆÆ–f–W%&VÂ¢(¸e¶Ç6×VÂ(IÒ(H"ÂföÇVÖUÕÆâ6ö×7D–æF–6F÷%&W&W6VçFF—fR²R’ÕÆâg&–VG&–6‡4ÖöÆÆ–f–VE&W&W6VçFF—fR¢R£Ò'•ÆâVæföÆBg&–VG&–6‡4ÖöÆÆ–f–VE&W&W6VçFF—fUÆâW†7B6öçföÇWF–öåö6öæw"†Ç6×VÂ(IÒ(H"•Æâ"ÀĞ¢&æWr#¢"†g&–VG&–6‡4ÖöÆÆ–f–W%&VÂ¢(¸eµÆâ„6öçF–çV÷W4Æ–æV$ÖæÇ6×VÂ(IÒ(IÒ¢(IÒ(i$Å¾(IÕÒ(H"(i$Å¾(IÕÒ(H"’ÂföÇVÖUÕÆâ6ö×7D–æF–6F÷%&W&W6VçFF—fR²R’ÕÆâg&–VG&–6‡4ÖöÆÆ–f–VE&W&W6VçFF—fR¢R£Ò'•ÆâVæföÆBg&–VG&–6‡4ÖöÆÆ–f–VE&W&W6VçFF—fUÆâW†7B6öçföÇWF–öåö6öæw%Æâ„6öçF–çV÷W4Æ–æV$ÖæÇ6×VÂ(IÒ(IÒ¢(IÒ(i$Å¾(IÕÒ(H"(i$Å¾(IÕÒ(H"•Æâ"ÀĞ¢&÷væW"#¢&g&–VG&–6‡4ÖöÆÆ–f–W%ö6öçföÇWF–öåö6ö×7D–æF–6F÷%öW Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3Ö–ææW"Ö–çFVw&æBÖæ÷&ÖÆ—¦F–öâ"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"'r´ÖV7W&UF†V÷'’äÃ"æ–ææW%öFVeÕÆâÇ’–çFVw&Åö6öæw%öUÆâf–ÇFW%÷Wv&G2¶6öTfåögVÆÅÆæUFW7EFôÃ"eÒv—F‚‚‡…Æâ'r¶‡…ÕÆâ&fÅÆâ"ÀĞ¢&æWr#¢"'r´ÖV7W&UF†V÷'’äÃ"æ–ææW%öFVeÕÆâÇ’–çFVw&Åö6öæw%öUÆâf–ÇFW%÷Wv&G2¶6öTfåögVÆÅÆæUFW7EFôÃ"eÒv—F‚‚‡…Æâ'r¶‡…ÕÆâ6–×öæÇ’µ$4Æ–¶Ræ–ææW%öÇ’Â7F%&–ætVæEöÇ•ÕÆâ"ÀĞ¢&÷væW"#¢&–ææW%ögVÆÅÆæUFW7EFôÃ%öWö–çFVw&Åö6öæ¥ö×VÂ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3BÖW‡Æ–6—B×G7W÷'B×F÷"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"6öçDF–fbr£Òbæ6öçDF–feÆâ†46ö×7E7W÷'Br£Òbæ†46ö×7E7W÷'EÆâG7W÷'E÷7V'6WBr£Ò7V'6WE÷Væ—eÆâ"ÀĞ¢&æWr#¢"6öçDF–fbr£Òbæ6öçDF–feÆâ†46ö×7E7W÷'Br£Òbæ†46ö×7E7W÷'EÆâG7W÷'E÷7V'6WBr£Ò'•Æâ6–×W6–ær…6WBç7V'6WE÷Væ—b‡G7W÷'B‡b¢(H"(i"(H"’’•Æâ"ÀĞ¢&÷væW"#¢&Ö&–VçEFW7D6÷&UFôgVÆÅÆæUFW7B Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3ÖW‡÷6RÖ6ö×÷6—F–öâ×&—6–ær"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"6–×öæÇ’·eÒW6–æuÆâ†gVÆÅÆæUFW7EFôÃ%÷&—6Tf÷'v&Eö'VffW&VDW76VçF–Äg&–VG&–6‡5Æâ"ÀĞ¢&æWr#¢"6–×öæÇ’·bÂgVæ7F–öâæ6ö×öÇ•ÒW6–æuÆâ†gVÆÅÆæUFW7EFôÃ%÷&—6Tf÷'v&Eö'VffW&VDW76VçF–Äg&–VG&–6‡5Æâ"ÀĞ¢&÷væW"#¢&W†—7G5ö'VffW&VDÆö6Å&—6–æt&÷†–ÖF–öâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3"ÖW‡÷6RÖ6ö×÷6—F–öâÖÆ÷vW&–ær"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"6–×öæÇ’·eÒW6–æuÆâ†gVÆÅÆæUFW7EFôÃ%öÆ÷vW$f÷'v&Eö'VffW&VDW76VçF–Äg&–VG&–6‡5Æâ"ÀĞ¢&æWr#¢"6–×öæÇ’·bÂgVæ7F–öâæ6ö×öÇ•ÒW6–æuÆâ†gVÆÅÆæUFW7EFôÃ%öÆ÷vW$f÷'v&Eö'VffW&VDW76VçF–Äg&–VG&–6‡5Æâ"ÀĞ¢&÷væW"#¢&W†—7G5ö'VffW&VDÆö6ÄÆ÷vW&–æt&÷†–ÖF–öâ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3r×–âÖ–ææW"×6VÆb×66Æ""ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"6–×öæÇ’¶–ææW%÷6VÆeöWöæ÷&Õ÷7Â6ö×ÆW‚æöe&VÅ÷&UÒW6–ær‡&UÆâ"ÀĞ¢&æWr#¢"6–×öæÇ’¶–ææW%÷6VÆeöWöæ÷&Õ÷7	ÙYÂ£Ò(H"’Â6ö×ÆW‚æöe&VÅ÷&UÒW6–ær‡&UÆâ"ÀĞ¢&÷væW"#¢&æ÷&ÕöÃ$6ö÷&F–æFU÷7öWögVÆÅÆæUFW7EFôÃ%÷7 Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3‚×–âÖæ÷&Ò×7V"×66Æ""ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"'r¶æ÷&Õ÷7V%÷7Âæ÷&Õ÷7V%÷7ÅÆâ"ÀĞ¢&æWr#¢"'r¶æ÷&Õ÷7V%÷7	ÙYÂ£Ò(H"’Âæ÷&Õ÷7V%÷7	ÙYÂ£Ò(H"’ÅÆâ"ÀĞ¢&÷væW"#¢&F—7EöÃ$6ö÷&F–æFUöWöF—7EögVÆÅÆæUFW7EFôÃ" Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC33ÖVffV7F—fR×6VVB×&VÂ×6Öö÷F‚"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"VæföÆB&VÅ6Öö÷F‚WW$Æ–gEÆâ6–×´gVæ7F–öâæ6ö×öFVeÒW6–ærbæ6öçDF–fbæ6öçDF–fdöåÆâ"ÀĞ¢&æWr#¢"VæföÆB&VÅ6Öö÷F…Æâ&Vf–æRbæ6öçDF–fbæ6öçDF–fdöâæ6öæw"õõÆâ–çG&òr‡uÆâ6–×·WW$Æ–gBÂgVæ7F–öâæ6ö×öFVbÅÆâWW$†ÆeÆæRæöd6ö×ÆW…öÇ•ööeö–Õ÷÷2‡uÕÆâ"ÀĞ¢&÷væW"#¢&VffV7F—fU66Æ%6VVE÷&VÅ6Öö÷F‚ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC33"×VÆ–g’Ö6ö×ÖvÖÖ×Gvò×6×VÂ"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"†fR‚£Ò†VffV7F—fU66Æ%6VVE÷&VÅ6Öö÷F‚b’æ6ö×övÖÖGvõ÷6×VÂvÖÖÆâ"ÀĞ¢&æWr#¢"†fR‚£ÕÆâf—†VE†6TW76VçF–Ä6÷&U&÷WFRå&VÅ6Öö÷F‚æ6ö×övÖÖGvõ÷6×VÅÆâ†VffV7F—fU66Æ%6VVE÷&VÅ6Öö÷F‚b’vÖÖÆâ"ÀĞ¢&÷væW"#¢&VffV7F—fU66Æ%W&–öF—¦F–öåFW&Õ÷&VÅ6Öö÷F‚ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC33bÖ6Æ÷6RÖ–çf&–æ6RÖFVf–æ—F–öæÆÇ’"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"'r¶VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öâÂ‡&V–æFW…ÕÆâ6–×÷'r¶VffV7F—fU66Æ%W&–öF—¦F–öåFW&Õö×VÅ÷6×VÅÕÆâ"ÀĞ¢&æWr#¢"'r¶VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öâÂ‡&V–æFW…ÕÆâ6–×÷'r¶VffV7F—fU66Æ%W&–öF—¦F–öåFW&Õö×VÅ÷6×VÅÕÆâ&fÅÆâ"ÀĞ¢&÷væW"#¢&VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåö–çf&–çB Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3C‚ÖÇ’ÖfFW&—bÖÖÖBÖöæR"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"VæföÆB†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æG…Æâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æCÆâW†7Bf–ÇFW"äWfVçGVÆÇ”WæfFW&—eöWÆâ†VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöWfVçGVÆÇ”W÷6VVEööå÷&VGV6VD6†'EÆâb‡b‡¢’‡¢¢(H"•Æâ"ÀĞ¢&æWr#¢"VæföÆB†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æG…Æâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æCÆâW†7B6öæw$&r†gVâ¢(H"(i$Å¾(IÕÒ(H"(jb•Æâ„f–ÇFW"äWfVçGVÆÇ”WæfFW&—eöWÆâ†VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöWfVçGVÆÇ”W÷6VVEööå÷&VGV6VD6†'EÆâb‡b‡¢’•Æâ"ÀĞ¢&÷væW"#¢&G…öVffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöW÷6VVEööå÷&VGV6VD6†'B Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3C’ÖÇ’ÖfFW&—bÖÖÖBÔ’"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"VæföÆB†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æG•Æâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æCÆâW†7Bf–ÇFW"äWfVçGVÆÇ”WæfFW&—eöWÆâ†VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöWfVçGVÆÇ”W÷6VVEööå÷&VGV6VD6†'EÆâb‡b‡¢’‡¢¢(H"•Æâ"ÀĞ¢&æWr#¢"VæföÆB†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æG•Æâ†ÆevV–v‡DF–ffW&VçF–Ä÷W&F÷'2æCÆâW†7B6öæw$&r†gVâ¢(H"(i$Å¾(IÕÒ(H"(jb6ö×ÆW‚ä’•Æâ„f–ÇFW"äWfVçGVÆÇ”WæfFW&—eöWÆâ†VffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöWfVçGVÆÇ”W÷6VVEööå÷&VGV6VD6†'EÆâb‡b‡¢’•Æâ"ÀĞ¢&÷væW"#¢&G•öVffV7F—fU66Æ%ö–æ6&UW&–öF—¦F–öåöW÷6VVEööå÷&VGV6VD6†'B Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3ƒ‚ÖRÖæ÷FF–öâÖ6'&–W""ÀĞ¢&¶–æB#¢&†VFW"Öæ÷FF–öâ"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"†–çf&–çE66Æ$6'&–W$Ä–æf–æ—G’2¢(HÒ(i"(H"’ŞjµÆâ"ÀĞ¢&æWr#¢"†–çf&–çE66Æ$6'&–W$Ä–æf–æ—G’2¢(HÒ(i"(H"’ŞYµÆâ"ÀĞ¢&÷væW"#¢&6öTfåö–çf&–çE66Æ$6'&–W$Ä–æf–æ—G’ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3“ÖRÖæ÷FF–öâÖf–ç6WBÖÇ"ÀĞ¢&¶–æB#¢&†VFW"Öæ÷FF–öâ"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"‚(‰’(ˆ‚2Âb’¢ÖV7W&UF†V÷'’äÇR×R’¢Ç†(i"R’Şj¶×UÕÆâ"ÀĞ¢&æWr#¢"‚(‰’(ˆ‚2Âb’¢ÖV7W&UF†V÷'’äÇR×R’¢Ç†(i"R’ŞY¶×UÕÆâ"ÀĞ¢&÷væW"#¢&6öTfåöf–ç6WE7VÕôÇ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3“ÖRÖæ÷FF–öâÖÆö6ÂÖ‡FW&Ò"ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"Şj´Öö6³$dåW$6÷'&V7F–öç2äWFöÖ÷'†–56ö&öÆWbäf—†VE†6T6Æ÷6VD÷W&F÷'2å‡—6–6ÄÆö6ÄÃ"æ6†÷6VäWV6Æ–FVä6'&–W$ÖV7W&UÕÆâ"ÀĞ¢&æWr#¢"ŞY´Öö6³$dåW$6÷'&V7F–öç2äWFöÖ÷'†–56ö&öÆWbäf—†VE†6T6Æ÷6VD÷W&F÷'2å‡—6–6ÄÆö6ÄÃ"æ6†÷6VäWV6Æ–FVä6'&–W$ÖV7W&UÕÆâ"ÀĞ¢&÷væW"#¢&f–ç6WE÷7VÕö–çf&–çE66Æ$×VÇF—Æ–W'5öWööeö6ö×7E7W÷'B Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓC3“2ÖRÖæ÷FF–öâÖgVÆÂ×ÆæRÖÆ–ægG’"ÀĞ¢&¶–æB#¢&†VFW"Öæ÷FF–öâ"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"†gVÆÅÆæUFW7EFôÄ–æf–æ—G’†’¢(H"(i"(H"’Şj²‡föÇVÖR¢ÖV7W&R(H"•ÕÆâ"ÀĞ¢&æWr#¢"†gVÆÅÆæUFW7EFôÄ–æf–æ—G’†’¢(H"(i"(H"’ŞY²‡föÇVÖR¢ÖV7W&R(H"•ÕÆâ"ÀĞ¢&÷væW"#¢&6öTfåögVÆÅÆæUFW7EFôÄ–æf–æ—G’ Ğ¢ÒÀĞ¢°Ğ¢&–B#¢$ÂÓCC"×–âÖ–ææW"×6VÆb×66Æ""ÀĞ¢&¶–æB#¢&&öG’"ÀĞ¢&6öæf–FVæ6R#¢&†–v‚"ÀĞ¢&W‡V7FVEö6÷VçB#¢ÀĞ¢&öÆB#¢"Ç’–ææW%÷6VÆeöW÷¦W&òæ×Æâ"ÀĞ¢&æWr#¢"Ç’†–ææW%÷6VÆeöW÷¦W&ò	ÙYÂ£Ò(H"’’æ×Æâ"ÀĞ¢&÷væW"#¢&Æö6Ä&6TÆ–Ö—EöWö–çf&–çE66Æ$×VÇF—Æ–W" Ğ¢ĞĞ¢ĞĞ§ĞĞ 
