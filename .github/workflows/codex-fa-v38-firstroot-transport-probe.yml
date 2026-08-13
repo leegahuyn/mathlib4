@@ -1,25 +1,27 @@
-name: Codex FA v38 first-root transport elimination probe
+name: Codex FA v38 first-root transport probe
 on:
   push:
-    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
-    paths: [.github/workflows/codex-fa-v38-firstroot-transport-probe.yml]
-  workflow_dispatch:
-permissions: {actions: read, contents: read}
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v38-firstroot-transport-probe.yml
+  workflow_dispatch: {}
+permissions:
+  actions: read
+  contents: read
 jobs:
   probe:
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: [helper_cases, helper_proof_irrel, unfold_transport]
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
       - name: Materialize exact v37 candidate and patch first root
         env:
-          GH_TOKEN: "${{ github.token }}"
-          VARIANT: "${{ matrix.variant }}"
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -29,31 +31,19 @@ jobs:
           unzip -q /tmp/v37.zip -d /tmp/v37
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, os, shutil
+          import hashlib, shutil
           want='e17ff90193c6959b15f743ef930446b4cfd45bc6df4d762057c13b4b06602d05'
           hits=[p for p in Path('/tmp/v37').rglob('Mock2_FunctionalAnalysis.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==want]
           assert len(hits)==1,hits
           dst=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
           shutil.copy2(hits[0],dst)
           s=dst.read_text()
-          old='''theorem energyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
-    (coordinates n).energyForm v u =
-      inner ℂ (l2Coordinate n v)
-        (l2Coordinate n (strongPrincipalCore n u)) := by
-  have hs :=
+          old='''  have hs :=
     successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
   simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
     successorIndexEq, sub_add_cancel] using hs
 '''
-          variant=os.environ['VARIANT']
-          if variant=='helper_cases':
-            new='''theorem energyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
-    (coordinates n).energyForm v u =
-      inner ℂ (l2Coordinate n v)
-        (l2Coordinate n (strongPrincipalCore n u)) := by
-  have hs :=
+          new='''  have hs :=
     successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
   have htransport :
       ∀ (m : ℤ) (h : m = m) (Q : successorCoordinateType m m),
@@ -64,38 +54,9 @@ jobs:
   simpa only [successorGraphCoordinates, successorIndexEq, sub_add_cancel,
     htransport] using hs
 '''
-          elif variant=='helper_proof_irrel':
-            new='''theorem energyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
-    (coordinates n).energyForm v u =
-      inner ℂ (l2Coordinate n v)
-        (l2Coordinate n (strongPrincipalCore n u)) := by
-  have hs :=
-    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
-  have htransport :
-      ∀ (m : ℤ) (h : m = m) (Q : successorCoordinateType m m),
-        transportSuccessorCoordinates m m h Q = Q := by
-    intro m h Q
-    have hh : h = (rfl : m = m) := Subsingleton.elim _ _
-    rw [hh]
-    rfl
-  simpa only [successorGraphCoordinates, successorIndexEq, sub_add_cancel,
-    htransport] using hs
-'''
-          else:
-            new='''theorem energyForm_eq_inner_strongPrincipalCore
-    (n : ℤ) (v u : Mock2FA.PaperCorrections.AutomorphicSobolev.HalfWeightDifferentialOperators.InverseEtaFixedPhaseCore n) :
-    (coordinates n).energyForm v u =
-      inner ℂ (l2Coordinate n v)
-        (l2Coordinate n (strongPrincipalCore n u)) := by
-  have hs :=
-    successorEnergyForm_eq_inner_strongPrincipalCore (n - 1)
-  simpa only [successorGraphCoordinates, transportSuccessorCoordinates,
-    successorCoordinateType, successorIndexEq, sub_add_cancel] using hs
-'''
           assert s.count(old)==1
           dst.write_text(s.replace(old,new))
-          print(variant, hashlib.sha256(dst.read_bytes()).hexdigest())
+          print(hashlib.sha256(dst.read_bytes()).hexdigest())
           PY
       - name: Install pinned Lean and cache
         shell: bash
@@ -114,10 +75,7 @@ jobs:
           mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
           rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
           set +e
-          lake env lean -DmaxErrors=3 -DwarningAsError=false \
-            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean \
-            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean \
-            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > /tmp/probe.log 2>&1
+          lake env lean -DmaxErrors=3 -DwarningAsError=false -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > /tmp/probe.log 2>&1
           rc=$?
           set -e
           echo "$rc" >/tmp/probe.exit
@@ -126,7 +84,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v38-firstroot-${{ matrix.variant }}-${{ github.sha }}
+          name: codex-fa-v38-firstroot-${{ github.sha }}
           path: |
             /tmp/probe.log
             /tmp/probe.exit
