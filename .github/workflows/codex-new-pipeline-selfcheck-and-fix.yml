@@ -1,0 +1,149 @@
+name: Codex new FA QYM final-pipeline self-check and fix
+run-name: "Codex: statically validate and repair the new continuation pipeline"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-new-pipeline-selfcheck-and-fix.yml
+      - .github/workflows/codex-final-13files-15checklist.yml
+      - .github/workflows/codex-fa-v48-auto-repair-highcap2000.yml
+      - .github/workflows/codex-fa-v49-iterative-frontier.yml
+      - .github/workflows/codex-qym-v1-iterative-frontier.yml
+      - scripts/fa_v48_auto_repair.py
+      - scripts/fa_iterative_frontier_repair.py
+      - scripts/lean_collect_exact_diagnostics.py
+      - scripts/final13_15checklist.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: codex-new-pipeline-selfcheck-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate_and_fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Repair final-checkout provenance ordering deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/codex-final-13files-15checklist.yml')
+          text = path.read_text()
+          old = '''          mkdir -p "$FINAL_OUT"
+          git rev-parse HEAD | tee "$FINAL_OUT/checkout-head.txt"
+          git status --porcelain=v1 | tee "$FINAL_OUT/checkout-status-before.txt"
+          test "$(tr -d '\\r\\n' < "$FINAL_OUT/checkout-head.txt")" = "$GITHUB_SHA"
+          test ! -s "$FINAL_OUT/checkout-status-before.txt"
+'''
+          new = '''          status_before="$(git status --porcelain=v1)"
+          head_before="$(git rev-parse HEAD)"
+          mkdir -p "$FINAL_OUT"
+          printf '%s\\n' "$head_before" | tee "$FINAL_OUT/checkout-head.txt"
+          printf '%s' "$status_before" >"$FINAL_OUT/checkout-status-before.txt"
+          test "$head_before" = "$GITHUB_SHA"
+          test -z "$status_before"
+'''
+          count = text.count(old)
+          if count == 1:
+              path.write_text(text.replace(old, new, 1))
+          elif count == 0 and 'status_before="$(git status --porcelain=v1)"' in text:
+              print('provenance ordering was already repaired')
+          else:
+              raise SystemExit(f'unexpected provenance block count: {count}')
+          PY
+
+      - name: Compile-check every new Python repair and audit engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile \
+            scripts/fa_v48_auto_repair.py \
+            scripts/fa_iterative_frontier_repair.py \
+            scripts/lean_collect_exact_diagnostics.py \
+            scripts/final13_15checklist.py
+
+      - name: Parse every new workflow as YAML and inventory all jobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --quiet 'PyYAML==6.0.2'
+          mkdir -p build-evidence/new-pipeline-selfcheck
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          import yaml
+          paths = [
+              Path('.github/workflows/codex-fa-v48-auto-repair-highcap2000.yml'),
+              Path('.github/workflows/codex-fa-v49-iterative-frontier.yml'),
+              Path('.github/workflows/codex-qym-v1-iterative-frontier.yml'),
+              Path('.github/workflows/codex-final-13files-15checklist.yml'),
+              Path('.github/workflows/codex-new-pipeline-selfcheck-and-fix.yml'),
+          ]
+          rows = []
+          for path in paths:
+              raw = path.read_bytes()
+              parsed = yaml.safe_load(raw)
+              if not isinstance(parsed, dict):
+                  raise SystemExit(f'{path}: top level is not a mapping')
+              jobs = parsed.get('jobs')
+              if not isinstance(jobs, dict) or not jobs:
+                  raise SystemExit(f'{path}: no jobs mapping')
+              rows.append({
+                  'path': str(path),
+                  'sha256': hashlib.sha256(raw).hexdigest(),
+                  'bytes': len(raw),
+                  'job_count': len(jobs),
+                  'jobs': sorted(map(str, jobs)),
+              })
+          scripts = []
+          for path in [
+              Path('scripts/fa_v48_auto_repair.py'),
+              Path('scripts/fa_iterative_frontier_repair.py'),
+              Path('scripts/lean_collect_exact_diagnostics.py'),
+              Path('scripts/final13_15checklist.py'),
+          ]:
+              raw = path.read_bytes()
+              scripts.append({'path': str(path), 'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)})
+          report = {
+              'schema': 'new-fa-qym-final-pipeline-selfcheck-v1',
+              'status': 'PASS',
+              'workflow_count': len(rows),
+              'script_count': len(scripts),
+              'workflows': rows,
+              'scripts': scripts,
+          }
+          out = Path('build-evidence/new-pipeline-selfcheck/STATIC_VALIDATION.json')
+          out.write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit the deterministic repair and static validation evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/codex-final-13files-15checklist.yml \
+            build-evidence/new-pipeline-selfcheck/STATIC_VALIDATION.json
+          if git diff --cached --quiet; then
+            echo 'No self-check repair or evidence change was required.'
+            exit 0
+          fi
+          git commit -m "Codex: validate new FA QYM final pipeline and fix pristine-check ordering"
+          git push origin HEAD:codex/fa-qym-cleanbuild-final-20260811-fast
