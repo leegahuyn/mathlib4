@@ -36,7 +36,6 @@ jobs:
       BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
       BASE_SOURCE_BYTES: "2798992"
       BASE_SOURCE_LINES: "62637"
-      MATERIALIZER_B64_SHA: 6dc1dc80904ce6e7a746bc3e69a559308241da64fd3d14c099dce77dd595daf5
       MATERIALIZER_SHA: 6b813d631ef74a34719de39c4696aedf1ea86402bc1ba6cf3b0cf97048a539fd
 
     steps:
@@ -75,11 +74,11 @@ jobs:
           test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
           test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
 
-          test "$(sha256sum scripts/fa_v55_materialize.py.gz.b64 | awk '{print $1}')" = "$MATERIALIZER_B64_SHA"
+          sha256sum scripts/fa_v55_materialize.py.gz.b64 | tee "$OUT/materializer.b64.sha256"
           base64 -d scripts/fa_v55_materialize.py.gz.b64 | gzip -d >/tmp/fa_v55_materialize.py
+          sha256sum /tmp/fa_v55_materialize.py | tee "$OUT/materializer.sha256"
           test "$(sha256sum /tmp/fa_v55_materialize.py | awk '{print $1}')" = "$MATERIALIZER_SHA"
           python3 -m py_compile /tmp/fa_v55_materialize.py
-          sha256sum /tmp/fa_v55_materialize.py >"$OUT/materializer.sha256"
 
           python3 /tmp/fa_v55_materialize.py \
             --base "$base" \
