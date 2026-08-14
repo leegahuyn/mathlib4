@@ -1,0 +1,172 @@
+name: Codex FA v55 coordinate weighted matrix highcap2000
+run-name: "Codex: exclusive FA v55 coordinate weighted full compile"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/fa-exclusive-focus-20260814]
+    paths:
+      - .github/workflows/codex-fa-v55-coordinate-weighted-matrix-highcap2000.yml
+      - scripts/fa_v55_materialize.py.gz.b64
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  direct:
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant:
+          - coord_base
+          - coord_hb10m
+          - coord_hb50m
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v55/${{ matrix.variant }}
+      BASE_RUN: "31774351117"
+      BASE_ARTIFACT: "9209647939"
+      BASE_ARTIFACT_NAME: codex-fa-v51-ring_simpa_adj-highcap2000-0c0025aba1e08e59a416cc0d76bb13e4772af6c7
+      BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
+      BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
+      BASE_SOURCE_BYTES: "2798992"
+      BASE_SOURCE_LINES: "62637"
+      MATERIALIZER_B64_SHA: 6dc1dc80904ce6e7a746bc3e69a559308241da64fd3d14c099dce77dd595daf5
+      MATERIALIZER_SHA: 6b813d631ef74a34719de39c4696aedf1ea86402bc1ba6cf3b0cf97048a539fd
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove v51 authority and materialize exact v55 candidate
+        id: materialize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/v55-authority/base
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}" >"$OUT/authority.json"
+          python3 - <<'PY'
+          import json, os
+          a = json.load(open(os.path.join(os.environ['OUT'], 'authority.json')))
+          assert a['id'] == int(os.environ['BASE_ARTIFACT'])
+          assert a['name'] == os.environ['BASE_ARTIFACT_NAME']
+          assert a['digest'] == os.environ['BASE_ARTIFACT_DIGEST']
+          assert a['workflow_run']['id'] == int(os.environ['BASE_RUN'])
+          assert a['expired'] is False
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}/zip" >/tmp/v55-authority/base.zip
+          test "sha256:$(sha256sum /tmp/v55-authority/base.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v55-authority/base.zip -d /tmp/v55-authority/base
+          base="$(find /tmp/v55-authority/base -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test -n "$base"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
+          test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
+          test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
+
+          test "$(sha256sum scripts/fa_v55_materialize.py.gz.b64 | awk '{print $1}')" = "$MATERIALIZER_B64_SHA"
+          base64 -d scripts/fa_v55_materialize.py.gz.b64 | gzip -d >/tmp/fa_v55_materialize.py
+          test "$(sha256sum /tmp/fa_v55_materialize.py | awk '{print $1}')" = "$MATERIALIZER_SHA"
+          python3 -m py_compile /tmp/fa_v55_materialize.py
+          sha256sum /tmp/fa_v55_materialize.py >"$OUT/materializer.sha256"
+
+          python3 /tmp/fa_v55_materialize.py \
+            --base "$base" \
+            --variant "$VARIANT" \
+            --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$OUT/PATCH_AUDIT.json" \
+            | tee "$OUT/MATERIALIZATION.stdout.json"
+
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          bytes="$(wc -c < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | tr -d ' ')"
+          lines="$(wc -l < PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | tr -d ' ')"
+          printf '%s\n' "$sha" >"$OUT/candidate.sha256"
+          printf '%s\n' "$bytes" >"$OUT/candidate.bytes"
+          printf '%s\n' "$lines" >"$OUT/candidate.lines"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$OUT" >>"$GITHUB_ENV"
+
+      - name: Install pinned Lean and Mathlib cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: direct_lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Exact metrics and complete diagnostic inventory
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$OUT" \
+            --max-errors 2000 \
+            | tee "$OUT/metric-console.log"
+
+      - name: Record step outcome snapshot
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          out = os.environ['OUT']
+          def read(name):
+              p = os.path.join(out, name)
+              return open(p).read().strip() if os.path.exists(p) else None
+          json.dump({
+              'github_run_id': os.environ.get('GITHUB_RUN_ID'),
+              'github_head_sha': os.environ.get('GITHUB_SHA'),
+              'variant': os.environ.get('VARIANT'),
+              'candidate_sha256': read('candidate.sha256'),
+              'Mock2_exit': read('Mock2.exit'),
+              'Mock2_Advanced_exit': read('Mock2_Advanced.exit'),
+              'Mock2_FunctionalAnalysis_exit': read('Mock2_FunctionalAnalysis.exit'),
+          }, open(os.path.join(out, 'STEP_OUTCOMES.json'), 'w'), indent=2, sort_keys=True)
+          PY
+
+      - name: Upload exact candidate and all direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v55-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v55/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve actual FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
