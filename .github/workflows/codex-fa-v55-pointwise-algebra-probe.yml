@@ -1,5 +1,5 @@
 name: Codex FA v55 pointwise algebra API probe
-run-name: "Codex: probe pinned FA pointwise Jacobian algebra"
+run-name: "Codex: probe exact FA scaled-coordinate identities"
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
           printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
           lake exe cache get
-      - name: Compile exact algebra alternatives
+      - name: Compile exact coordinate and algebra alternatives
         shell: bash
         run: |
           set -euo pipefail
@@ -42,29 +42,44 @@ jobs:
 
           open scoped ComplexConjugate
 
+          example (L : ℝ) (hL : L ≠ 0) (x : Fin 2 → ℝ) :
+              (L • Complex.measurableEquivPi.symm x).re * L⁻¹ = x 0 := by
+            rw [Complex.measurableEquivPi_symm_apply]
+            simp [hL, mul_assoc]
+
+          example (L : ℝ) (hL : L ≠ 0) (x : Fin 2 → ℝ) :
+              L⁻¹ * (L • Complex.measurableEquivPi.symm x).im = x 1 := by
+            rw [Complex.measurableEquivPi_symm_apply]
+            simp [hL, mul_assoc]
+
+          example (L : ℝ) (hL : L ≠ 0) (x : Fin 2 → ℝ)
+              (f₀ f₁ : UnitAddCircle → ℂ) (z : ℂ) :
+              f₀ (((L • Complex.measurableEquivPi.symm x).re * L⁻¹ : ℝ) : UnitAddCircle) *
+                  f₁ ((L⁻¹ * (L • Complex.measurableEquivPi.symm x).im : ℝ) : UnitAddCircle) * z =
+                z * f₀ ((x 0 : ℝ) : UnitAddCircle) *
+                  f₁ ((x 1 : ℝ) : UnitAddCircle) := by
+            have hre :
+                (L • Complex.measurableEquivPi.symm x).re * L⁻¹ = x 0 := by
+              rw [Complex.measurableEquivPi_symm_apply]
+              simp [hL, mul_assoc]
+            have him :
+                L⁻¹ * (L • Complex.measurableEquivPi.symm x).im = x 1 := by
+              rw [Complex.measurableEquivPi_symm_apply]
+              simp [hL, mul_assoc]
+            rw [hre, him]
+            ring
+
           example (L : ℝ) (hL : L ≠ 0) (z u : ℂ) :
               (L : ℂ) ^ 2 * (star (((L : ℂ)⁻¹) * z) * u) =
                 (L : ℂ) * (star z * u) := by
             simp only [map_mul, starRingEnd_apply, Complex.star_def,
               map_inv₀, Complex.conj_ofReal]
             field_simp [hL]
-            ring
 
           example (L : ℝ) (hL : L ≠ 0) (z u : ℂ) :
               (L : ℂ) ^ 2 * ((((L : ℂ)⁻¹) * z) * u) =
                 (L : ℂ) * (z * u) := by
             field_simp [hL]
-            ring
-
-          example (L : ℝ) (z u : ℂ)
-              (h : star (((L : ℂ)⁻¹) * z) = ((L : ℂ)⁻¹) * star z) :
-              (L : ℂ) ^ 2 * (star (((L : ℂ)⁻¹) * z) * u) =
-                (L : ℂ) * (star z * u) := by
-            rw [h]
-            by_cases hL : L = 0
-            · simp [hL]
-            · field_simp [hL]
-              ring
           LEAN
           lake env lean -DwarningAsError=false /tmp/FAV55PointwiseAlgebra.lean \
             2>&1 | tee /tmp/FAV55PointwiseAlgebra.log
