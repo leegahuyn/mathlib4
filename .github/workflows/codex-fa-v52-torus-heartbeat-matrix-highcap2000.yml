@@ -1,11 +1,10 @@
 name: Codex FA v52 torus heartbeat matrix highcap2000
-run-name: "Codex: exclusive FA v52 torus heartbeat cumulative full compile"
+run-name: "Codex: exclusive FA v52 torus heartbeat full compile"
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - codex/fa-exclusive-focus-20260814
+    branches: [codex/fa-exclusive-focus-20260814]
     paths:
       - .github/workflows/codex-fa-v52-torus-heartbeat-matrix-highcap2000.yml
       - scripts/fa_v52_materialize.py
@@ -13,10 +12,6 @@ on:
 permissions:
   contents: read
   actions: read
-
-concurrency:
-  group: codex-fa-v52-exclusive-${{ github.ref }}
-  cancel-in-progress: false
 
 jobs:
   direct:
@@ -35,19 +30,15 @@ jobs:
           - calc_nohb_star_convert
           - calc_hb5m_star_calc
     env:
-      FA_V52_VARIANT: ${{ matrix.variant }}
-      FA_V52_OUT: build-logs/codex-fa-v52-torus-heartbeat/${{ matrix.variant }}
-      FA_V52_BASE_RUN_ID: "31774351117"
-      FA_V52_BASE_JOB_ID: "94686608330"
-      FA_V52_BASE_ARTIFACT_ID: "9209647939"
-      FA_V52_BASE_ARTIFACT_NAME: codex-fa-v51-ring_simpa_adj-highcap2000-0c0025aba1e08e59a416cc0d76bb13e4772af6c7
-      FA_V52_BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
-      FA_V52_BASE_ARTIFACT_SIZE: "2134899"
-      FA_V52_BASE_HEAD_SHA: 0c0025aba1e08e59a416cc0d76bb13e4772af6c7
-      FA_V52_BASE_SOURCE_SHA256: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
-      FA_V52_BASE_SOURCE_BYTES: "2798992"
-      FA_V52_BASE_SOURCE_LINES: "62637"
-      FA_V52_BASE_SOURCE_DECLARATIONS: "4416"
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v52/${{ matrix.variant }}
+      BASE_RUN: "31774351117"
+      BASE_ARTIFACT: "9209647939"
+      BASE_ARTIFACT_NAME: codex-fa-v51-ring_simpa_adj-highcap2000-0c0025aba1e08e59a416cc0d76bb13e4772af6c7
+      BASE_ARTIFACT_DIGEST: sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0
+      BASE_SOURCE_SHA: 6093e976dd6c4d5217850ab39318eeef50531aef3acd8c6d66dcd0a4426c294d
+      BASE_SOURCE_BYTES: "2798992"
+      BASE_SOURCE_LINES: "62637"
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -56,84 +47,57 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Re-prove exact v51 authority and materialize v52 candidate
+      - name: Verify authority and materialize candidate
         id: materialize
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$FA_V52_OUT"
-          authority_root="/tmp/fa-v52-authority-${GITHUB_RUN_ID}-${FA_V52_VARIANT}"
-          authority_zip="/tmp/fa-v52-authority-${GITHUB_RUN_ID}-${FA_V52_VARIANT}.zip"
-          mkdir -p "$authority_root"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V52_BASE_RUN_ID}" >"$FA_V52_OUT/V51_RUN.json"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V52_BASE_JOB_ID}" >"$FA_V52_OUT/V51_JOB.json"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V52_BASE_ARTIFACT_ID}" >"$FA_V52_OUT/V51_ARTIFACT.json"
+          mkdir -p "$OUT" /tmp/v52-authority
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}" >"$OUT/authority.json"
           python3 - <<'PY'
           import json, os
-          from pathlib import Path
-          out=Path(os.environ['FA_V52_OUT'])
-          run=json.loads((out/'V51_RUN.json').read_text())
-          job=json.loads((out/'V51_JOB.json').read_text())
-          art=json.loads((out/'V51_ARTIFACT.json').read_text())
-          assert run['id']==int(os.environ['FA_V52_BASE_RUN_ID'])
-          assert run['head_sha']==os.environ['FA_V52_BASE_HEAD_SHA']
-          assert run['status']=='completed' and run['conclusion']=='failure'
-          assert job['id']==int(os.environ['FA_V52_BASE_JOB_ID'])
-          assert job['run_id']==int(os.environ['FA_V52_BASE_RUN_ID'])
-          assert job['name']=='direct-ring_simpa_adj'
-          assert job['status']=='completed' and job['conclusion']=='failure'
-          assert art['id']==int(os.environ['FA_V52_BASE_ARTIFACT_ID'])
-          assert art['name']==os.environ['FA_V52_BASE_ARTIFACT_NAME']
-          assert art['size_in_bytes']==int(os.environ['FA_V52_BASE_ARTIFACT_SIZE'])
-          assert art['digest']==os.environ['FA_V52_BASE_ARTIFACT_DIGEST']
-          assert art['expired'] is False
-          assert art['workflow_run']['id']==int(os.environ['FA_V52_BASE_RUN_ID'])
-          assert art['workflow_run']['head_sha']==os.environ['FA_V52_BASE_HEAD_SHA']
+          a=json.load(open(os.path.join(os.environ['OUT'],'authority.json')))
+          assert a['id']==int(os.environ['BASE_ARTIFACT'])
+          assert a['name']==os.environ['BASE_ARTIFACT_NAME']
+          assert a['digest']==os.environ['BASE_ARTIFACT_DIGEST']
+          assert a['workflow_run']['id']==int(os.environ['BASE_RUN'])
+          assert a['expired'] is False
           PY
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V52_BASE_ARTIFACT_ID}/zip" >"$authority_zip"
-          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V52_BASE_ARTIFACT_DIGEST"
-          unzip -q "$authority_zip" -d "$authority_root"
-          base_source="$(find "$authority_root" -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
-          test -n "$base_source"
-          test "$(sha256sum "$base_source" | awk '{print $1}')" = "$FA_V52_BASE_SOURCE_SHA256"
-          test "$(wc -c < "$base_source" | tr -d ' ')" = "$FA_V52_BASE_SOURCE_BYTES"
-          test "$(wc -l < "$base_source" | tr -d ' ')" = "$FA_V52_BASE_SOURCE_LINES"
-          cp "$base_source" "$FA_V52_OUT/V51_BASE.lean"
-          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V52_OUT/Mock2_FunctionalAnalysis-checked-in-before.lean"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${BASE_ARTIFACT}/zip" >/tmp/v52-authority.zip
+          test "sha256:$(sha256sum /tmp/v52-authority.zip | awk '{print $1}')" = "$BASE_ARTIFACT_DIGEST"
+          unzip -q /tmp/v52-authority.zip -d /tmp/v52-authority
+          base="$(find /tmp/v52-authority -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test -n "$base"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
+          test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
+          test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
           python3 scripts/fa_v52_materialize.py \
-            --base "$base_source" \
-            --variant "$FA_V52_VARIANT" \
-            --out "$FA_V52_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
-            --audit "$FA_V52_OUT/PATCH_AUDIT.json" \
-            | tee "$FA_V52_OUT/MATERIALIZATION.stdout.json"
-          cp "$FA_V52_OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V52_OUT/Mock2_FunctionalAnalysis-observed.lean"
-          candidate_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
-          printf '%s\n' "$candidate_sha" >"$FA_V52_OUT/candidate.sha256"
-          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
-          printf 'FA_V42_VARIANT=%s\n' "$FA_V52_VARIANT" >>"$GITHUB_ENV"
-          printf 'FA_V42_OUT=%s\n' "$FA_V52_OUT" >>"$GITHUB_ENV"
-          printf 'FA_V52_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
-          sha256sum scripts/fa_v52_materialize.py >"$FA_V52_OUT/materializer.sha256"
+            --base "$base" --variant "$VARIANT" \
+            --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$OUT/PATCH_AUDIT.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$OUT" >>"$GITHUB_ENV"
+          printf '%s\n' "$sha" >"$OUT/candidate.sha256"
 
-      - name: Install pinned Lean and Mathlib cache
+      - name: Install pinned Lean and cache
         id: install
         shell: bash
         run: |
           set -euo pipefail
           curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
-          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V52_OUT/elan.log" 2>&1
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
           printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
-          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V52_OUT/toolchain.log" 2>&1
-          lake exe cache get >"$FA_V52_OUT/cache.log" 2>&1
-          lean --version | tee "$FA_V52_OUT/lean-version.txt"
-          lake --version | tee "$FA_V52_OUT/lake-version.txt"
-          sha256sum lean-toolchain lake-manifest.json >"$FA_V52_OUT/environment.sha256"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
 
-      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+      - name: Direct full dependency chain highcap2000
         id: direct_lean
         shell: bash
         run: |
@@ -141,7 +105,7 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           bash scripts/fa_v42_direct_compile_ci.sh
 
-      - name: Exact metrics and complete diagnostic inventory
+      - name: Collect complete diagnostics
         id: collect
         if: always()
         shell: bash
@@ -150,13 +114,20 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           python3 scripts/fa_v42_collect_full_diagnostics.py \
             --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
-            --out "$FA_V52_OUT" \
-            --max-errors 2000 \
-            | tee "$FA_V52_OUT/metric-console.log"
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          out=Path(os.environ['FA_V52_OUT']); p=out/'METRIC.json'; m=json.loads(p.read_text())
-          m['schema']='fa-v52-torus-heartbeat-highcap2000-metric-v1'
-          m['variant']=os.environ['FA_V52_VARIANT']
-          m['authority']={'run_id':int(os.environ['FA_V52_BASE_RUN_ID']),'job_id':int(os.environ['FA_V52_BASE_JOB_ID']),'artifact_id':int(os.environ['FA_V52_BASE_ARTIFACT_ID']),'artifact_name':os.environ['FA_V52_BASE_ARTIFACT_NAME'],'artif7EöF–vW7Bs¦÷2æVçf—&öå²tdõcS%ô$4Uô%D”d5EôD”tU5BuÒÂv†VE÷6†s¦÷2æVçf—&öå²tdõcS%ô$4Uô„TEõ4„uÒÂw6÷W&6U÷6†#Sbs¦÷2æVçf—&öå²tdõcS%ô$4Uõ4õU$4Uõ4„#Sbu×Ð¢Õ²vv—F‡V%ö†VE÷6†uÓÖ÷2æVçf—&öå²tt•D…T%õ4„uÓ²Õ²vv—F‡V%÷'Våö–BuÓÖ÷2æVçf—&öå²tt•D…T%õ%Tåô”BuÓ²Õ²v6æF–FFUöW‡V7FVE÷6†#SbuÓÖ÷2æVçf—&öâævWB‚tdõcS%ô4äD”DDUõ4„#Sbr¢çw&—FU÷FW‡B†§6öâæGV×2†ÒÆ–æFVçCÓ"Ç6÷'Eö¶W—3ÕG'VR’²uÆâr¢vFS×²w66†VÖs¢vf×cS"Öf–æÂÖvFR×crÂwf&–çBs¦÷2æVçf—&öå²tdõcS%õd$”åBuÒÂw6÷W&6U÷6†#Sbs¦ÒævWB‚w6÷W&6U÷6†#Sbr’ÂtÖö6³%öW†—Bs¦ÒævWB‚tÖö6³%öW†—Br’ÂtÖö6³%ôGfæ6VEöW†—Bs¦ÒævWB‚tÖö6³%ôGfæ6VEöW†—Br’ÂtdöW†—Bs¦ÒævWB‚tdöW†—Br’ÂvF—&V7EöÆVå÷fW&–f–VBs¦ÒævWB‚vF—&V7EöÆVå÷fW&–f–VBr’ÂvÆÅ÷&WV—&VEöÆVåöW†V7WFVBs¦ÒævWB‚vÆÅ÷&WV—&VEöÆVåöW†V7WFVBr’ÂvW'&÷%ö6÷VçBs¦ÒævWB‚tdöW'&÷%ö†VFW'5ö6GW&VBr’Âvf—'7EöW'&÷%öÆ–æRs¦ÒævWB‚tdöf—'7Eö7GVÅöW'&÷%öÆ–æRr’Âvf—'7EöW'&÷%ö6öÂs¦ÒævWB‚tdöf—'7Eö7GVÅöW'&÷%ö6öÂr’Âvf—'7EöW'&÷%öFV6Æ&F–öâs¦ÒævWB‚tdöf—'7EöW'&÷%öFV6Æ&F–öâr’Âvf—'7EöW'&÷%öFV6Æ&F–öåö–æFW‚s¦ÒævWB‚tdöf—'7EöW'&÷%öFV6Æ&F–öåö–æFW‚r’ÂwVæ—VUöW'&÷%öFV6Æ&F–öç2s¦ÒævWB‚wVæ—VUöFV6Æ&F–öç5÷v—F…öW'&÷'2r’ÂwVæ—VU÷6–væGW&W2s¦ÒævWB‚wVæ—VUöæ÷&ÖÆ—¦VEöÖW76vU÷6–væGW&W2r’ÂwG'W7E÷6—…÷¦W&òs¦ÒævWB‚w6÷W&6UöW†V7WF&ÆU÷G'W7E÷6—…÷¦W&òr’Âw7–çF†WF–5÷6÷''•ö6÷VçBs¦ÒævWB‚w7–çF†WF–5öFV6Æ&F–öå÷W6W5÷6÷''•÷v&æ–æuö6÷VçBr’Âw7FGW2s¢u52r–bÒævWB‚tdöW†—Br“ÓÓæBÒævWB‚tÖö6³%öW†—Br“ÓÓæBÒævWB‚tÖö6³%ôGfæ6VEöW†—Br“ÓÓVÇ6Rtd”ÂwÐ¢†÷WBòtd”äÅôtDRæ§6öâr’çw&—FU÷FW‡B†§6öâæGV×2†vFRÆ–æFVçCÓ"Ç6÷'Eö¶W—3ÕG'VR’²uÆâr“²&–çB†§6öâæGV×2†vFRÆ–æFVçCÓ"Ç6÷'Eö¶W—3ÕG'VR’¢ ¢ÒæÖS¢7FWÖ÷WF6öÖR6æ6†÷@¢–c¢Çv—2‚¢6†VÆÃ¢&6€¢'Vã¢À¢—F†öã2ÒÃÂu’p¢–×÷'B§6öâÂ÷0¢g&öÒF†Æ–"–×÷'BF€¢÷WCÕF‚†÷2æVçf—&öå²tdõcS%ôõUBuÒ¢†÷WBòu5DUôõUD4ôÔU2æ§6öâr’çw&—FU÷FW‡B†§6öâæGV×2‡²vÖFW&–Æ—¦Rs¢rG·²7FW2æÖFW&–Æ—¦Ræ÷WF6öÖR×ÒrÂv–ç7FÆÂs¢rG·²7FW2æ–ç7FÆÂæ÷WF6öÖR×ÒrÂvF—&V7EöÆVâs¢rG·²7FW2æF—&V7EöÆVâæ÷WF6öÖR×ÒrÂv6öÆÆV7Bs¢rG·²7FW2æ6öÆÆV7Bæ÷WF6öÖR×ÒwÒÆ–æFVçCÓ"Ç6÷'Eö¶W—3ÕG'VR’²uÆâr¢ ¢ÒæÖS¢WÆöBW†7Bf&–çB6÷W&6RæBÆÂWf–FVæ6P¢–c¢Çv—2‚¢W6W3¢7F–öç2÷WÆöBÖ'F–f7DVcVc†CcV#fSsV#SCCC–S“&#CƒƒfcC3cvf ¢v—Fƒ ¢æÖS¢6öFW‚Öf×cS"ÒG·²ÖG&—‚çf&–çB×ÒÖ†–v†6#ÒG·²v—F‡V"ç6†×Ð¢Fƒ¢'V–ÆBÖÆöw2ö6öFW‚Öf×cS"×F÷'W2Ö†V'F&VBòG·²ÖG&—‚çf&–çB×Ð¢&WFVçF–öâÖF—3¢3  ¢ÒæÖS¢&W6W'fR7GVÂdF—&V7BW†—@¢–c¢Çv—2‚¢6†VÆÃ¢&6€¢'Vã¢À¢6WBÖWVò—Vf–À¢FW7BÖb"DdõcS%ôõUBôÖö6³%ôgVæ7F–öæÄæÇ—6—2æW†—B ¢föW†—CÒ"B‡G"ÖBuÇ%ÆârÂ"DdõcS%ôõUBôÖö6³%ôgVæ7F–öæÄæÇ—6—2æW†—B"’ ¢66R"FföW†—B"–ârwÂ¥²Ó•Ò¢’W†—Bƒc³²W60¢W†—B"FföW†—B  
+            --out "$OUT" --max-errors 2000 | tee "$OUT/metric-console.log"
+
+      - name: Upload exact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v52-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v52/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve actual FA exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
