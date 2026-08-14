@@ -16,7 +16,7 @@ jobs:
   probe:
     name: probe-${{ matrix.variant }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -45,6 +45,23 @@ jobs:
           lake exe cache get >/tmp/cache.log 2>&1
           lean --version
 
+      - name: Directly compile exact prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean \
+            PrimalitySheafVerification/Mock2.lean >/tmp/Mock2.log 2>&1
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
+            PrimalitySheafVerification/Mock2_Advanced.lean >/tmp/Mock2_Advanced.log 2>&1
+
       - name: Materialize exact bridge probe
         shell: bash
         env:
@@ -55,7 +72,6 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import os, textwrap
-
           bodies = {
             "current_simpa": r'''
               simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
@@ -99,9 +115,9 @@ jobs:
                 (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
             ''',
           }
-          variant = os.environ["VARIANT"]
-          body = textwrap.dedent(bodies[variant]).strip("\n")
-          source = f'''import PrimalitySheafVerification.Mock2_Advanced
+          variant = os.environ['VARIANT']
+          body = textwrap.dedent(bodies[variant]).strip('\n')
+          src = f'''import PrimalitySheafVerification.Mock2_Advanced
 
           open Set Function Topology Filter MeasureTheory Metric
           open Mock2FA.PaperCorrections.AutomorphicSobolev
@@ -117,7 +133,7 @@ jobs:
                 (volume : Measure ℂ) := by
           {body}
           '''
-          Path('/tmp/ProbeDxBridge.lean').write_text(textwrap.dedent(source))
+          Path('/tmp/ProbeDxBridge.lean').write_text(textwrap.dedent(src))
           PY
           cp /tmp/ProbeDxBridge.lean "build-logs/fa-v48-dx-probe/${VARIANT}/ProbeDxBridge.lean"
 
