@@ -1,0 +1,189 @@
+{
+  "authority_artifact_digest": "sha256:3cd13274cbccf6fd952da3b4a8f9df065a3ad1b0efbd299c7a6cf76ac45014f0",
+  "authority_artifact_id": "9198789937",
+  "authority_head_sha": "b7e0ab4b983d55df33f6d4ac49cacf3830584d1a",
+  "authority_run_id": "31744262866",
+  "baseline": {
+    "FA_exit": 1,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_exit": 0,
+    "artifact_directory": "codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+    "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+    "error_count": 33,
+    "failing_declaration_count": 1000000000,
+    "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+    "rank": [
+      1,
+      33,
+      1000000000,
+      1000000000,
+      0
+    ],
+    "source_sha256": "c508cf57c4e0d2cb2ae97a8124a11c876cb6a7674bc6624aa31bfb0b6e62c386",
+    "unique_error_signature_count": 1000000000,
+    "variant": "baseline",
+    "warning_count": 0
+  },
+  "best_observed": {
+    "FA_exit": 1,
+    "Mock2_Advanced_exit": 0,
+    "Mock2_exit": 0,
+    "artifact_directory": "codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+    "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+    "error_count": 33,
+    "failing_declaration_count": 1000000000,
+    "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+    "rank": [
+      1,
+      33,
+      1000000000,
+      1000000000,
+      0
+    ],
+    "source_sha256": "c508cf57c4e0d2cb2ae97a8124a11c876cb6a7674bc6624aa31bfb0b6e62c386",
+    "unique_error_signature_count": 1000000000,
+    "variant": "baseline",
+    "warning_count": 0
+  },
+  "clean_build_claimed": false,
+  "declaration_order_changed": false,
+  "direct_lean_verified": false,
+  "github_run_id": "31762107063",
+  "github_sha": "20201cff3e761dc596daa8fd630ccd18a2882a41",
+  "records": [
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 33,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-baseline-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        33,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "c508cf57c4e0d2cb2ae97a8124a11c876cb6a7674bc6624aa31bfb0b6e62c386",
+      "unique_error_signature_count": 1000000000,
+      "variant": "baseline",
+      "warning_count": 0
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-w06_no_local_instance-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-w06_no_local_instance-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 33,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-w06_no_local_instance-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        33,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "d5da0a1424d0fdc1fc0a0ce5f0935b341f705e97340d471407cdae65b1d7b6ab",
+      "unique_error_signature_count": 1000000000,
+      "variant": "w06_no_local_instance",
+      "warning_count": 0
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-w27_pi_simp-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-w27_pi_simp-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 36,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-w27_pi_simp-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        36,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "a77439980c37dfc199bb762fabaf7d4aa57231c173d2ff9299bc500dbbc894d2",
+      "unique_error_signature_count": 1000000000,
+      "variant": "w27_pi_simp",
+      "warning_count": 0
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-w27_pi_simp_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-w27_pi_simp_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 36,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-w27_pi_simp_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        36,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "25a36ed47a8227a08d712f7110fa6eeb6ff9f7fc4955d5b148959990e1a64a70",
+      "unique_error_signature_count": 1000000000,
+      "variant": "w27_pi_simp_prime",
+      "warning_count": 0
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-combined_w06_w27_pi-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-combined_w06_w27_pi-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 36,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-combined_w06_w27_pi-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        36,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "51272cc5a2bc8dc47df26d4b58c451c975dbcd0981ba16339377e53e8f44ccc3",
+      "unique_error_signature_count": 1000000000,
+      "variant": "combined_w06_w27_pi",
+      "warning_count": 0
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "artifact_directory": "codex-fa-v47b-combined_w06_w27_pi_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41",
+      "candidate_path": "/tmp/v47b-artifacts/codex-fa-v47b-combined_w06_w27_pi_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/Mock2_FunctionalAnalysis-candidate.lean",
+      "error_count": 36,
+      "failing_declaration_count": 1000000000,
+      "patch_report_path": "/tmp/v47b-artifacts/codex-fa-v47b-combined_w06_w27_pi_prime-highcap2000-20201cff3e761dc596daa8fd630ccd18a2882a41/PATCH_REPORT.json",
+      "rank": [
+        1,
+        36,
+        1000000000,
+        1000000000,
+        0
+      ],
+      "source_sha256": "0dc6edcc5c57b9db9c092d200567f1effe51afa1f93046ec78c82e003d872a33",
+      "unique_error_signature_count": 1000000000,
+      "variant": "combined_w06_w27_pi_prime",
+      "warning_count": 0
+    }
+  ],
+  "schema": "fa-v47b-strict-selector-v1",
+  "selected_source_sha256": "c508cf57c4e0d2cb2ae97a8124a11c876cb6a7674bc6624aa31bfb0b6e62c386",
+  "selected_variant": "baseline",
+  "source_moves": [],
+  "source_update_authorized": false,
+  "strictly_better": false,
+  "target_branch": "codex/fa-qym-cleanbuild-final-20260811-fast",
+  "theorem_statements_changed": false
+}
