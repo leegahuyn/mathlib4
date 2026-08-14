@@ -1,0 +1,87 @@
+name: Codex FA v49 Fourier derivative API probe
+run-name: "Codex: print pinned Fourier derivative API"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v49-fourier-deriv-api-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >/tmp/elan.log 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >/tmp/toolchain.log 2>&1
+          lake exe cache get >/tmp/cache.log 2>&1
+          lean --version
+      - name: Directly compile prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean \
+            PrimalitySheafVerification/Mock2.lean >/tmp/Mock2.log 2>&1
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.{olean,ilean}
+          lake env lean -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
+            PrimalitySheafVerification/Mock2_Advanced.lean >/tmp/Mock2_Advanced.log 2>&1
+      - name: Print exact APIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p build-logs/fa-v49-fourier-api
+          cat >/tmp/ProbeFourierAPI.lean <<'EOF'
+          import PrimalitySheafVerification.Mock2_Advanced
+          #check hasDerivAt_fourier_neg
+          #print hasDerivAt_fourier_neg
+          #check HasLineDerivAt
+          #check DifferentiableAt.lineDeriv_eq_fderiv
+          #check HasLineDerivAt.lineDeriv
+          #check Complex.instNormedAddCommGroup
+          #check instCommCStarAlgebraComplex
+          #check @HasDerivAt.const_mul
+          #check @HasDerivAt.mul_const
+          #check @HasDerivAt.scomp
+          EOF
+          sed -i 's/^          //' /tmp/ProbeFourierAPI.lean
+          set +e
+          lake env lean -DwarningAsError=false /tmp/ProbeFourierAPI.lean \
+            >build-logs/fa-v49-fourier-api/probe.log 2>&1
+          rc=$?
+          set -e
+          cp /tmp/ProbeFourierAPI.lean build-logs/fa-v49-fourier-api/ProbeFourierAPI.lean
+          printf '%s\n' "$rc" >build-logs/fa-v49-fourier-api/exit.txt
+          cat build-logs/fa-v49-fourier-api/probe.log
+          exit "$rc"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v49-fourier-api-${{ github.sha }}
+          path: build-logs/fa-v49-fourier-api
+          retention-days: 14
