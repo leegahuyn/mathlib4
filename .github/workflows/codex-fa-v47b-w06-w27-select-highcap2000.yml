@@ -1,0 +1,529 @@
+name: Codex FA v47b W06 W27 select highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/workflows/codex-fa-v47b-w06-w27-select-highcap2000.yml
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  AUTHORITY_RUN_ID: "31744262866"
+  AUTHORITY_HEAD_SHA: b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  AUTHORITY_ARTIFACT_ID: "9198789937"
+  AUTHORITY_ARTIFACT_NAME: codex-fa-v46-all_probes-highcap2000-b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  AUTHORITY_ARTIFACT_DIGEST: sha256:3cd13274cbccf6fd952da3b4a8f9df065a3ad1b0efbd299c7a6cf76ac45014f0
+  LOCKED_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  LOCKED_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+
+jobs:
+  direct:
+    if: github.ref == 'refs/heads/codex/fa-qym-cleanbuild-final-20260811-fast'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - baseline
+          - w06_no_local_instance
+          - w27_pi_simp
+          - w27_pi_simp_prime
+          - combined_w06_w27_pi
+          - combined_w06_w27_pi_prime
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-fa-v47b-w06-w27-select-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove exact v46 all_probes artifact and materialize candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          root="/tmp/fa-v47b-authority-${GITHUB_RUN_ID}-${VARIANT}"
+          zip="/tmp/fa-v47b-authority-${GITHUB_RUN_ID}-${VARIANT}.zip"
+          rm -rf "$root" "$zip"
+          mkdir -p "$root"
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${AUTHORITY_RUN_ID}" >"$OUT/AUTHORITY_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}" >"$OUT/AUTHORITY_ARTIFACT.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, os
+          out = Path(os.environ["OUT"])
+          run = json.loads((out / "AUTHORITY_RUN.json").read_text())
+          artifact = json.loads((out / "AUTHORITY_ARTIFACT.json").read_text())
+          assert int(run["id"]) == int(os.environ["AUTHORITY_RUN_ID"])
+          assert run["head_sha"] == os.environ["AUTHORITY_HEAD_SHA"]
+          assert run["head_branch"] == os.environ["TARGET_BRANCH"]
+          assert run["status"] == "completed" and run["conclusion"] == "failure"
+          assert int(artifact["id"]) == int(os.environ["AUTHORITY_ARTIFACT_ID"])
+          assert artifact["name"] == os.environ["AUTHORITY_ARTIFACT_NAME"]
+          assert artifact["digest"] == os.environ["AUTHORITY_ARTIFACT_DIGEST"]
+          assert artifact["expired"] is False
+          assert int(artifact["workflow_run"]["id"]) == int(os.environ["AUTHORITY_RUN_ID"])
+          assert artifact["workflow_run"]["head_sha"] == os.environ["AUTHORITY_HEAD_SHA"]
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" >"$zip"
+          test "sha256:$(sha256sum "$zip" | awk '{print $1}')" = "$AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$zip" -d "$root"
+
+          ROOT="$root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, shutil
+          root = Path(os.environ["ROOT"])
+          out = Path(os.environ["OUT"])
+          candidates = list(root.rglob("Mock2_FunctionalAnalysis-candidate.lean"))
+          metrics = list(root.rglob("METRIC.json"))
+          assert len(candidates) == 1, candidates
+          assert len(metrics) == 1, metrics
+          source = candidates[0]
+          metric = json.loads(metrics[0].read_text())
+          payload = source.read_bytes()
+          source_sha = hashlib.sha256(payload).hexdigest()
+          assert str(metric["github_run_id"]) == os.environ["AUTHORITY_RUN_ID"]
+          assert metric["github_head_sha"] == os.environ["AUTHORITY_HEAD_SHA"]
+          assert metric["variant"] == "all_probes"
+          assert int(metric["Mock2_exit"]) == 0
+          assert int(metric["Mock2_Advanced_exit"]) == 0
+          assert int(metric["FA_exit"]) == 1
+          assert int(metric["FA_compile_max_errors"]) == 2000
+          assert metric["FA_error_cap_sentinel_present"] is False
+          assert metric["FA_inventory_complete_by_header_evidence"] is True
+          assert metric["source_executable_trust_six_zero"] is True
+          assert int(metric["synthetic_declaration_uses_sorry_warning_count"]) == 0
+          assert metric["source_sha256"] == source_sha
+          shutil.copyfile(source, out / "V46_ALL_PROBES_AUTHORITY.lean")
+          shutil.copyfile(metrics[0], out / "V46_METRIC.json")
+          target = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          shutil.copyfile(source, target)
+          (out / "authority-source.sha256").write_text(source_sha + "\n")
+          PY
+
+      - name: Apply one body-only correction variant
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          out = Path(os.environ["OUT"])
+          variant = os.environ["VARIANT"]
+          before = source.read_text(encoding="utf-8")
+          lines = before.splitlines(keepends=True)
+          decl_re = re.compile(
+              r"^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*"
+              r"(?:theorem|lemma|def|abbrev|instance|structure|class)\s+"
+          )
+
+          def locate(name: str) -> tuple[int, int]:
+              hits = [i for i, line in enumerate(lines) if decl_re.match(line) and name in line]
+              assert len(hits) == 1, (name, hits)
+              start = hits[0]
+              end = len(lines)
+              for j in range(start + 1, len(lines)):
+                  if decl_re.match(lines[j]):
+                      end = j
+                      break
+              return start, end
+
+          report = {
+              "schema": "fa-v47b-w06-w27-body-only-probe-v1",
+              "variant": variant,
+              "authority_source_sha256": hashlib.sha256(before.encode()).hexdigest(),
+              "theorem_statements_changed": False,
+              "declaration_order_changed": False,
+              "source_moves": [],
+              "edits": [],
+          }
+
+          def patch_w06() -> None:
+              start, end = locate("literalStageNegativePlaneWave_differentiable")
+              block = "".join(lines[start:end])
+              needle = "  letI : AddCommGroup ℂ := Complex.addCommGroup\n"
+              assert block.count(needle) == 1, block
+              new_block = block.replace(needle, "", 1)
+              lines[start:end] = new_block.splitlines(keepends=True)
+              report["edits"].append({
+                  "owner": "literalStageNegativePlaneWave_differentiable",
+                  "classification": "DROP_LOCAL_COMPLEX_ADDCOMMGROUP_INSTANCE_ONLY",
+                  "old_block_sha256": hashlib.sha256(block.encode()).hexdigest(),
+                  "new_block_sha256": hashlib.sha256(new_block.encode()).hexdigest(),
+              })
+
+          def patch_w27(lemma: str) -> None:
+              start, end = locate("weightedFull_apply_core")
+              block_lines = list(lines[start:end])
+              tactic_hits = [i for i, line in enumerate(block_lines) if line.strip() in {"ring", "ring_nf"}]
+              assert tactic_hits, "weightedFull_apply_core has no ring/ring_nf tactic"
+              at = tactic_hits[-1]
+              old_block = "".join(block_lines)
+              injected = f"  simp only [{lemma}]\n"
+              assert injected not in old_block
+              block_lines.insert(at, injected)
+              new_block = "".join(block_lines)
+              lines[start:end] = block_lines
+              report["edits"].append({
+                  "owner": "weightedFull_apply_core",
+                  "classification": "POINTWISE_PI_SMUL_NORMALIZATION_BEFORE_RING",
+                  "lemma": lemma,
+                  "old_block_sha256": hashlib.sha256(old_block.encode()).hexdigest(),
+                  "new_block_sha256": hashlib.sha256(new_block.encode()).hexdigest(),
+              })
+
+          if variant == "baseline":
+              pass
+          elif variant == "w06_no_local_instance":
+              patch_w06()
+          elif variant == "w27_pi_simp":
+              patch_w27("Pi.smul_apply")
+          elif variant == "w27_pi_simp_prime":
+              patch_w27("Pi.smul_apply'")
+          elif variant == "combined_w06_w27_pi":
+              patch_w06(); patch_w27("Pi.smul_apply")
+          elif variant == "combined_w06_w27_pi_prime":
+              patch_w06(); patch_w27("Pi.smul_apply'")
+          else:
+              raise AssertionError(variant)
+
+          after = "".join(lines)
+          if variant == "baseline":
+              assert after == before
+          else:
+              assert after != before
+          source.write_text(after, encoding="utf-8")
+          report["candidate_sha256"] = hashlib.sha256(after.encode()).hexdigest()
+          report["source_bytes"] = len(after.encode())
+          report["source_lines"] = len(after.splitlines())
+          report["edit_count"] = len(report["edits"])
+          (out / "PATCH_REPORT.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          (out / "candidate.sha256").write_text(report["candidate_sha256"] + "\n")
+          (out / "Mock2_FunctionalAnalysis-candidate.lean").write_text(after, encoding="utf-8")
+          PY
+
+      - name: Fail-closed source trust and locked runner preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum scripts/fa_v42_direct_compile_ci.sh | awk '{print $1}')" = "$LOCKED_RUNNER_SHA256"
+          test "$(sha256sum scripts/fa_v42_collect_full_diagnostics.py | awk '{print $1}')" = "$LOCKED_COLLECTOR_SHA256"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re, os
+          source = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean").read_text()
+          report_path = Path(os.environ["OUT"]) / "PATCH_REPORT.json"
+          report = json.loads(report_path.read_text())
+          def strip_noncode(text: str) -> str:
+              chars = list(text)
+              i = 0; depth = 0; string = False; escaped = False
+              while i < len(chars):
+                  if depth:
+                      if text.startswith("/-", i):
+                          chars[i] = chars[i+1] = " "; depth += 1; i += 2; continue
+                      if text.startswith("-/", i):
+                          chars[i] = chars[i+1] = " "; depth -= 1; i += 2; continue
+                      if chars[i] != "\n": chars[i] = " "
+                      i += 1; continue
+                  if string:
+                      old = chars[i]
+                      if old != "\n": chars[i] = " "
+                      if escaped: escaped = False
+                      elif old == "\\": escaped = True
+                      elif old == '"': string = False
+                      i += 1; continue
+                  if text.startswith("/-", i):
+                      chars[i] = chars[i+1] = " "; depth = 1; i += 2; continue
+                  if text.startswith("--", i):
+                      while i < len(chars) and chars[i] != "\n": chars[i] = " "; i += 1
+                      continue
+                  if chars[i] == '"': chars[i] = " "; string = True
+                  i += 1
+              return "".join(chars)
+          code = strip_noncode(source)
+          tokens = ("sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool")
+          counts = {t: len(re.findall(r"(?<![A-Za-z0-9_])" + re.escape(t) + r"(?![A-Za-z0-9_])", code)) for t in tokens}
+          assert all(v == 0 for v in counts.values()), counts
+          report["trust_counts_after"] = counts
+          report["trust_six_zero"] = True
+          report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version >"$OUT/lean-version.txt" 2>&1
+          lake --version >"$OUT/lake-version.txt" 2>&1
+
+      - name: Directly compile Mock2 then Mock2 Advanced then full FA highcap2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export FA_V42_OUT="$OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$(tr -d '\r\n' < "$OUT/candidate.sha256")"
+          export FA_V42_VARIANT="$VARIANT"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect complete diagnostics and metrics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if test -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="$(cat "$OUT/candidate.sha256" 2>/dev/null || true)"
+          export FA_V42_VARIANT="$VARIANT"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$OUT" \
+            --max-errors 2000 \
+            >"$OUT/metric-console.log"
+
+      - name: Upload exact candidate and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v47b-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v47b-w06-w27-select-highcap2000/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Mirror strict direct-chain exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$OUT/Mock2.exit" || exit 86
+          test -f "$OUT/Mock2_Advanced.exit" || exit 86
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit" || exit 86
+          test "$(tr -d '\r\n' < "$OUT/Mock2.exit")" = 0 || exit 86
+          test "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" = 0 || exit 86
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
+
+  select:
+    name: select-strictly-better-body-only-candidate
+    if: always()
+    needs: [direct]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download this run's exact variant artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/v47b-artifacts
+          mkdir -p /tmp/v47b-artifacts
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --dir /tmp/v47b-artifacts
+          find /tmp/v47b-artifacts -maxdepth 3 -type f -print | sort > /tmp/v47b-artifacts/FILES.txt
+
+      - name: Select only a structurally identical and strictly better candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/codex
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, shutil
+
+          root = Path('/tmp/v47b-artifacts')
+          variants = [
+              'baseline',
+              'w06_no_local_instance',
+              'w27_pi_simp',
+              'w27_pi_simp_prime',
+              'combined_w06_w27_pi',
+              'combined_w06_w27_pi_prime',
+          ]
+          decl_re = re.compile(
+              r"^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*"
+              r"(?:theorem|lemma|def|abbrev|instance|structure|class)\s+"
+          )
+
+          def one(pattern: str, base: Path) -> Path:
+              xs = list(base.rglob(pattern))
+              assert len(xs) == 1, (pattern, xs)
+              return xs[0]
+
+          def as_int(x, default=10**9):
+              try: return int(x)
+              except Exception: return default
+
+          def find_metric_int(metric, exact, contains):
+              for key in exact:
+                  if key in metric:
+                      value = as_int(metric[key])
+                      if value != 10**9: return value
+              candidates = []
+              for key, value in metric.items():
+                  lk = key.lower()
+                  if all(token in lk for token in contains):
+                      iv = as_int(value)
+                      if iv != 10**9:
+                          candidates.append((0 if lk.startswith('fa_') else 1, len(lk), key, iv))
+              return sorted(candidates)[0][3] if candidates else 10**9
+
+          def log_error_count(base: Path):
+              logs = [p for p in base.rglob('*') if p.is_file() and 'Mock2_FunctionalAnalysis' in p.name and p.suffix in {'.log', '.txt'}]
+              counts = []
+              for p in logs:
+                  text = p.read_text(errors='replace')
+                  counts.append(len(re.findall(r'(?m)^.*error:', text)))
+              positive = [x for x in counts if x > 0]
+              return min(positive) if positive else (0 if counts else 10**9)
+
+          records = []
+          baseline_headers = None
+          baseline_source = None
+          for variant in variants:
+              dirs = [p for p in root.iterdir() if p.is_dir() and f'-{variant}-highcap2000-' in p.name]
+              assert len(dirs) == 1, (variant, dirs)
+              base = dirs[0]
+              metric_path = one('METRIC.json', base)
+              patch_path = one('PATCH_REPORT.json', base)
+              source_path = one('Mock2_FunctionalAnalysis-candidate.lean', base)
+              metric = json.loads(metric_path.read_text())
+              patch = json.loads(patch_path.read_text())
+              source = source_path.read_text()
+              source_sha = hashlib.sha256(source.encode()).hexdigest()
+              assert source_sha == patch['candidate_sha256']
+              if 'source_sha256' in metric:
+                  assert metric['source_sha256'] == source_sha
+              assert patch['variant'] == variant
+              assert patch['theorem_statements_changed'] is False
+              assert patch['declaration_order_changed'] is False
+              assert patch['source_moves'] == []
+              assert patch['trust_six_zero'] is True
+              assert all(int(v) == 0 for v in patch['trust_counts_after'].values())
+              headers = [line.rstrip('\n') for line in source.splitlines(keepends=True) if decl_re.match(line)]
+              if variant == 'baseline':
+                  baseline_headers = headers
+                  baseline_source = source
+              else:
+                  assert headers == baseline_headers, variant
+              mock2 = as_int(metric.get('Mock2_exit'))
+              advanced = as_int(metric.get('Mock2_Advanced_exit'))
+              fa_exit = as_int(metric.get('FA_exit'))
+              assert mock2 == 0 and advanced == 0, (variant, mock2, advanced)
+              assert metric.get('FA_error_cap_sentinel_present') is False
+              assert metric.get('FA_inventory_complete_by_header_evidence') is True
+              error_count = find_metric_int(
+                  metric,
+                  ['FA_error_count', 'FA_compile_error_count', 'FA_total_error_count'],
+                  ['fa', 'error', 'count'],
+              )
+              if error_count == 10**9:
+                  error_count = log_error_count(base)
+              failing_decls = find_metric_int(
+                  metric,
+                  ['FA_failing_declaration_count', 'FA_error_declaration_count'],
+                  ['fa', 'declaration', 'count'],
+              )
+              unique_signatures = find_metric_int(
+                  metric,
+                  ['FA_unique_error_signature_count', 'FA_error_signature_count'],
+                  ['fa', 'signature', 'count'],
+              )
+              warning_count = find_metric_int(
+                  metric,
+                  ['FA_warning_count', 'warning_count'],
+                  ['warning', 'count'],
+              )
+              rank = [0 if fa_exit == 0 else 1, error_count, failing_decls, unique_signatures, warning_count]
+              records.append({
+                  'variant': variant,
+                  'source_sha256': source_sha,
+                  'Mock2_exit': mock2,
+                  'Mock2_Advanced_exit': advanced,
+                  'FA_exit': fa_exit,
+                  'error_count': error_count,
+                  'failing_declaration_count': failing_decls,
+                  'unique_error_signature_count': unique_signatures,
+                  'warning_count': warning_count,
+                  'rank': rank,
+                  'artifact_directory': base.name,
+                  'candidate_path': str(source_path),
+                  'patch_report_path': str(patch_path),
+              })
+
+          baseline = next(r for r in records if r['variant'] == 'baseline')
+          best = min(records, key=lambda r: (r['rank'], variants.index(r['variant'])))
+          strictly_better = best['rank'] < baseline['rank']
+          selected = best if strictly_better else baseline
+          report = {
+              'schema': 'fa-v47b-strict-selector-v1',
+              'github_run_id': os.environ['GITHUB_RUN_ID'],
+              'github_sha': os.environ['GITHUB_SHA'],
+              'target_branch': os.environ['TARGET_BRANCH'],
+              'authority_run_id': os.environ['AUTHORITY_RUN_ID'],
+              'authority_head_sha': os.environ['AUTHORITY_HEAD_SHA'],
+              'authority_artifact_id': os.environ['AUTHORITY_ARTIFACT_ID'],
+              'authority_artifact_digest': os.environ['AUTHORITY_ARTIFACT_DIGEST'],
+              'baseline': baseline,
+              'best_observed': best,
+              'strictly_better': strictly_better,
+              'selected_variant': selected['variant'],
+              'selected_source_sha256': selected['source_sha256'],
+              'source_update_authorized': strictly_better and selected['variant'] != 'baseline',
+              'clean_build_claimed': selected['FA_exit'] == 0,
+              'direct_lean_verified': selected['FA_exit'] == 0,
+              'theorem_statements_changed': False,
+              'declaration_order_changed': False,
+              'source_moves': [],
+              'records': records,
+          }
+          Path('.github/codex/FA_V47B_SELECTION.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          Path('/tmp/v47b-selected-path.txt').write_text(selected['candidate_path'] + '\n')
+          Path('/tmp/v47b-authorized.txt').write_text(('1' if report['source_update_authorized'] else '0') + '\n')
+          if report['source_update_authorized']:
+              shutil.copyfile(selected['candidate_path'], 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          PY
+
+      - name: Commit audit report and only an authorized improved source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/codex/FA_V47B_SELECTION.json
+          if test "$(cat /tmp/v47b-authorized.txt)" = 1; then
+            git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          fi
+          if git diff --cached --quiet; then
+            echo "No selector state change to commit"
+            exit 0
+          fi
+          git commit -m "Codex: record FA v47b selector result"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
