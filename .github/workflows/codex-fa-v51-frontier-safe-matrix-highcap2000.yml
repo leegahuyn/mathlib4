@@ -70,7 +70,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V51_BASE_RUN_ID}" >"$FA_V51_OUT/V50_RUN.json"
           gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V51_BASE_JOB_ID}" >"$FA_V51_OUT/V50_JOB.json"
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V51_BASE_ARTIFACT_ID}" >"$FA_V51_OUT/V50_ARTIFACT.json"
-          python3 - <<'PYI'
+          python3 - <<'PY'
           import json, os
           from pathlib import Path
           out=Path(os.environ['FA_V51_OUT'])
@@ -91,7 +91,7 @@ jobs:
           assert art['expired'] is False
           assert art['workflow_run']['id']==int(os.environ['FA_V51_BASE_RUN_ID'])
           assert art['workflow_run']['head_sha']==os.environ['FA_V51_BASE_HEAD_SHA']
-          PYI
+          PY
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V51_BASE_ARTIFACT_ID}/zip" >"$authority_zip"
           test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V51_BASE_ARTIFACT_DIGEST"
           unzip -q "$authority_zip" -d "$authority_root"
@@ -102,45 +102,95 @@ jobs:
           test "$(wc -l < "$base_source" | tr -d ' ')" = "$FA_V51_BASE_SOURCE_LINES"
           cp "$base_source" "$FA_V51_OUT/V50_BASE.lean"
           cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V51_OUT/Mock2_FunctionalAnalysis-checked-in-before.lean"
-          python3 scripts/fa_v51_materialize.py             --base "$base_source"             --variant "$FA_V51_VARIANT"             --out "$FA_V51_OUT/Mock2_FunctionalAnalysis-candidate.lean"             --audit "$FA_V51_OUT/PATCH_AUDIT.json"             | tee "$FA_V51_OUT/MATERIALIZATION.stdout.json"
-         Ü‰WÕLWÓÕUÓ[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\ËXØ[™Y]K›X[ˆˆš[X[]TÚXY•™\šYšXØ][Û‹Ó[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë›X[‚ˆÜš[X[]TÚXY•™\šYšXØ][Û‹Ó[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë›X[ˆ‰WÕLWÓÕUÓ[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë[ØœÙ\™Y›X[ˆ‚ˆØ[™Y]WÜÚOH‰
-ÚLMœÝ[Hš[X[]TÚXY•™\šYšXØ][Û‹Ó[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë›X[ˆ]ÚÈ	ÞÜš[	_IÊH‚ˆš[ˆ	É\Â‰È‰Ø[™Y]WÜÚHˆˆ‰WÕLWÓÕUØØ[™Y]KœÚLMˆ‚ˆš[ˆ	ÑWÕ—ÑVPÕQÐÐS‘QUWÔÒLMI\Â‰È‰Ø[™Y]WÜÚHˆˆ‰ÒUP—ÑS•ˆ‚ˆš[ˆ	ÑWÕ—ÕT’PS•I\Â‰È‰WÕLWÕT’PS•ˆˆ‰ÒUP—ÑS•ˆ‚ˆš[ˆ	ÑWÕ—ÓÕUI\Â‰È‰WÕLWÓÕUˆˆ‰ÒUP—ÑS•ˆ‚ˆš[ˆ	ÑWÕLWÐÐS‘QUWÔÒLMI\Â‰È‰Ø[™Y]WÜÚHˆˆ‰ÒUP—ÑS•ˆ‚ˆÚLMœÝ[HØÜš\ËÙ˜WÝLWÛX]\šX[^™KœHˆ‰WÕLWÓÕUÛX]\šX[^™\‹œÚLMˆ‚‚ˆH˜[YNˆ[œÝ[[›™YX[ˆ[™X]XˆØXÚBˆYˆ[œÝ[ˆÚ[ˆ˜\Úˆ[ŽˆˆÙ]Y][È\Y˜Z[ˆÝ\›YœÔÓÎ‹ËÜ˜]Ë™Ú]X\Ù\˜ÛÛ[˜ÛÛKÛX[œ›Ý™\‹Ù[[‹ÛX\Ý\‹Ù[[‹Z[š]œÚ[ÈÝ\Ù[[‹œÚˆÚÝ\Ù[[‹œÚ^HKYY˜][]ÛÛÚZ[ˆ›Û™Hˆ‰WÕLWÓÕUÙ[[‹›ÙÈˆ‰ŒBˆ^ÜUH‰ÓQKË™[[‹Øš[Ž‰U‚ˆš[ˆ	É\Â‰È‰ÓQKË™[[‹Øš[ˆˆˆ‰ÒUP—ÔU‚ˆ[[ˆÛÛÚZ[ˆ[œÝ[‰
-ˆY	ÃB‰ÈX[‹]ÛÛÚZ[ŠHˆˆ‰WÕLWÓÕUÝÛÛÚZ[‹›ÙÈˆ‰ŒBˆZÙH^HØXÚHÙ]ˆ‰WÕLWÓÕUØØXÚK›ÙÈˆ‰ŒBˆX[ˆK]™\œÚ[ÛˆYH‰WÕLWÓÕUÛX[‹]™\œÚ[Û‹‚ˆZÙHK]™\œÚ[ÛˆYH‰WÕLWÓÕUÛZÙK]™\œÚ[Û‹‚ˆÚLMœÝ[HX[‹]ÛÛÚZ[ˆZÙK[X[šY™\ÝšœÛÛˆˆ‰WÕLWÓÕUÙ[š\›Û›Y[œÚLMˆ‚‚ˆH˜[YNˆ\™XÝ[ØÚÌˆ[ˆ[ØÚÌˆY˜[˜ÙY[ˆ[HYÚØ\ŒˆYˆ\™XÝÛX[‚ˆÚ[ˆ˜\Úˆ[ŽˆˆÙ]Y][È\Y˜Z[ˆ^ÜUH‰ÓQKË™[[‹Øš[Ž‰U‚ˆ˜\ÚØÜš\ËÙ˜WÝ—Ù\™XÝØÛÛ\[WØÚKœÚ‚ˆH˜[YNˆ^XÝY]šXÜÈ[™ÛÛ\]HXYÛ›ÜÝXÈ[™[ÜžBˆYˆÛÛXÝˆYŽˆ[Ø^\Ê
-BˆÚ[ˆ˜\Úˆ[ŽˆˆÙ]Y][È\Y˜Z[ˆ^ÜUH‰ÓQKË™[[‹Øš[Ž‰U‚ˆ]ÛŒÈØÜš\ËÙ˜WÝ—ØÛÛXÝÙ[ÙXYÛ›ÜÝXÜËœHKXÛÝ\˜ÙHš[X[]TÚXY•™\šYšXØ][Û‹Ó[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë›X[ˆK[Ý]‰WÕLWÓÕUˆK[X^Y\œ›ÜœÈŒYH‰WÕLWÓÕUÛY]šXËXÛÛœÛÛK›ÙÈ‚ˆ]ÛŒÈH	ÔRIÂˆ[\ÜœÛÛ‹ÜÂˆœ›ÛH]Xˆ[\Ü]ˆÝ]T]
-ÜË™[š\›Û–ÉÑWÕLWÓÕU	×JNÈ[Ý]ÉÓQU’PËšœÛÛ‰ÎÈOZœÛÛ‹›ØYÊœ™XYÝ^
+          python3 scripts/fa_v51_materialize.py \
+            --base "$base_source" \
+            --variant "$FA_V51_VARIANT" \
+            --out "$FA_V51_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$FA_V51_OUT/PATCH_AUDIT.json" \
+            | tee "$FA_V51_OUT/MATERIALIZATION.stdout.json"
+          cp "$FA_V51_OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V51_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          candidate_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf '%s\n' "$candidate_sha" >"$FA_V51_OUT/candidate.sha256"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$FA_V51_VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$FA_V51_OUT" >>"$GITHUB_ENV"
+          printf 'FA_V51_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+          sha256sum scripts/fa_v51_materialize.py >"$FA_V51_OUT/materializer.sha256"
 
-JBˆVÉÜØÚ[XI×OIÙ˜K]LKYœ›ÛY\‹\ØY™KZYÚØ\Œ[Y]šXË]ŒIÎÛVÉÝ˜\šX[	×O[ÜË™[š\›Û–ÉÑWÕLWÕT’PS•	×BˆVÉØ]]Üš]I×O^ÉÜ[—ÚY	Îš[
-ÜË™[š\›Û–ÉÑWÕLWÐTÑWÔ•S—ÒQ	×JK	Ú›Ø—ÚY	Îš[
-ÜË™[š\›Û–ÉÑWÕLWÐTÑWÒ“Ð—ÒQ	×JK	Ø\Y˜XÝÚY	Îš[
-ÜË™[š\›Û–ÉÑWÕLWÐTÑWÐT•QPÕÒQ	×JK	Ø\Y˜XÝÛ˜[YIÎ›ÜË™[š\›Û–ÉÑWÕLWÐTÑWÐT•QPÕÓSQI×K	Ø\Y˜XÝÙYÙ\Ý	Î›ÜË™[š\›Û–ÉÑWÕLWÐTÑWÐT•QPÕÑQÑTÕ	×K	ÚXYÜÚIÎ›ÜË™[š\›Û–ÉÑWÕLWÐTÑWÒPQÔÒI×K	ÜÛÝ\˜ÙWÜÚLM‰Î›ÜË™[š\›Û–ÉÑWÕLWÐTÑWÔÓÕTÑWÔÒLM‰×_BˆVÉÙÚ]X—ÚXYÜÚI×O[ÜË™[š\›Û–ÉÑÒUP—ÔÒI×NÛVÉÙÚ]X—Ü[—ÚY	×O[ÜË™[š\›Û–ÉÑÒUP—Ô•S—ÒQ	×NÛVÉØØ[™Y]WÙ^XÝYÜÚLM‰×O[ÜË™[š\›Û‹™Ù]
-	ÑWÕLWÐÐS‘QUWÔÒLM‰ÊBˆÜš]WÝ^
-œÛÛ‹™[\ÊK[™[L‹ÛÜÚÙ^\ÏUYJJÉ×‰ÊBˆØ]O^ÉÜØÚ[XIÎ‰Ù˜K]LKYš[˜[YØ]K]ŒIË	Ý˜\šX[	Î›ÜË™[š\›Û–ÉÑWÕLWÕT’PS•	×K	ÜÛÝ\˜ÙWÜÚLM‰Î›K™Ù]
-	ÜÛÝ\˜ÙWÜÚLM‰ÊK	Ó[ØÚÌ—Ù^]	Î›K™Ù]
-	Ó[ØÚÌ—Ù^]	ÊK	Ó[ØÚÌ—ÐY˜[˜ÙYÙ^]	Î›K™Ù]
-	Ó[ØÚÌ—ÐY˜[˜ÙYÙ^]	ÊK	ÑWÙ^]	Î›K™Ù]
-	ÑWÙ^]	ÊK	Ù\™XÝÛX[—Ý™\šYšYY	Î›K™Ù]
-	Ù\™XÝÛX[—Ý™\šYšYY	ÊK	Ø[Ü™\]Z\™YÛX[—Ù^XÝ]Y	Î›K™Ù]
-	Ø[Ü™\]Z\™YÛX[—Ù^XÝ]Y	ÊK	Ù\œ›Ü—ØÛÝ[	Î›K™Ù]
-	ÑWÙ\œ›Ü—ÚXY\œ×ØØ\\™Y	ÊK	Ùš\œÝÙ\œ›Ü—Û[™IÎ›K™Ù]
-	ÑWÙš\œÝØXÝX[Ù\œ›Ü—Û[™IÊK	Ùš\œÝÙ\œ›Ü—ØÛÛ	Î›K™Ù]
-	ÑWÙš\œÝØXÝX[Ù\œ›Ü—ØÛÛ	ÊK	Ùš\œÝÙ\œ›Ü—ÙXÛ\˜][Û‰Î›K™Ù]
-	ÑWÙš\œÝÙ\œ›Ü—ÙXÛ\˜][Û‰ÊK	Ùš\œÝÙ\œ›Ü—ÙXÛ\˜][Û—Ú[™^	Î›K™Ù]
-	ÑWÙš\œÝÙ\œ›Ü—ÙXÛ\˜][Û—Ú[™^	ÊK	Ý[š\]YWÙ\œ›Ü—ÙXÛ\˜][ÛœÉÎ›K™Ù]
-	Ý[š\]YWÙXÛ\˜][Ûœ×ÝÚ]Ù\œ›ÜœÉÊK	Ý[š\]YWÜÚYÛ˜]\™\ÉÎ›K™Ù]
-	Ý[š\]YWÛ›Ü›X[^™YÛY\ÜØYÙWÜÚYÛ˜]\™\ÉÊK	Ý\ÝÜÚ^Þ™\›ÉÎ›K™Ù]
-	ÜÛÝ\˜ÙWÙ^XÝ]X›WÝ\ÝÜÚ^Þ™\›ÉÊK	ÜÞ[]X×ÜÛÜœžWØÛÝ[	Î›K™Ù]
-	ÜÞ[]X×ÙXÛ\˜][Û—Ý\Ù\×ÜÛÜœžWÝØ\›š[™×ØÛÝ[	ÊK	ÜÝ]\ÉÎ‰ÔTÔÉÈYˆK™Ù]
-	ÑWÙ^]	ÊOOL[™K™Ù]
-	Ó[ØÚÌ—Ù^]	ÊOOL[™K™Ù]
-	Ó[ØÚÌ—ÐY˜[˜ÙYÙ^]	ÊOOL[ÙH	ÑRS	ßBˆ
-Ý]ÉÑ’SSÑÐUKšœÛÛ‰ÊKÜš]WÝ^
-œÛÛ‹™[\ÊØ]K[™[L‹ÛÜÚÙ^\ÏUYJJÉ×‰ÊNÜš[
-œÛÛ‹™[\ÊØ]K[™[L‹ÛÜÚÙ^\ÏUYJJBˆRB‚ˆH˜[YNˆÝ\[Ý]ÛÛYHÛ˜\ÚÝˆYŽˆ[Ø^\Ê
-BˆÚ[ˆ˜\Úˆ[Žˆˆ]ÛŒÈH	ÔRIÂˆ[\ÜœÛÛ‹ÜÂˆœ›ÛH]Xˆ[\Ü]ˆÝ]T]
-ÜË™[š\›Û–ÉÑWÕLWÓÕU	×JBˆ
-Ý]ÉÔÕTÓÕUÓÓQTËšœÛÛ‰ÊKÜš]WÝ^
-œÛÛ‹™[\ÊÉÛX]\šX[^™IÎ‰ÉÞÈÝ\Ë›X]\šX[^™K›Ý]ÛÛYH_IË	Ú[œÝ[	Î‰ÉÞÈÝ\Ëš[œÝ[›Ý]ÛÛYH_IË	Ù\™XÝÛX[‰Î‰ÉÞÈÝ\Ë™\™XÝÛX[‹›Ý]ÛÛYH_IË	ØÛÛXÝ	Î‰ÉÞÈÝ\Ë˜ÛÛXÝ›Ý]ÛÛYH_IßK[™[L‹ÛÜÚÙ^\ÏUYJJÉ×‰ÊBˆRB‚ˆH˜[YNˆ\ØY^XÝ˜\šX[ÛÝ\˜ÙH[™[]šY[˜ÙBˆYŽˆ[Ø^\Ê
-Bˆ\Ù\ÎˆXÝ[ÛœËÝ\ØYX\Y˜XÝXLMYŽX™MÍXMYNL˜™ÍŒÙ˜L‚ˆÚ]‚ˆ˜[YNˆÛÙ^Y˜K]LKIÞÈX]š^˜\šX[_KZYÚØ\ŒIÞÈÚ]X‹œÚH_Bˆ]ˆZ[[ÙÜËØÛÙ^Y˜K]LKYœ›ÛY\‹\ØY™KÉÞÈX]š^˜\šX[_Bˆ™][[Û‹Y^\ÎˆÌ‚ˆH˜[YNˆ™\Ù\™HXÝX[H\™XÝ^]ˆYŽˆ[Ø^\Ê
-BˆÚ[ˆ˜\Úˆ[ŽˆˆÙ]Y][È\Y˜Z[ˆ\ÝYˆ‰WÕLWÓÕUÓ[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë™^]‚ˆ˜WÙ^]H‰
-ˆY	×—‰È‰WÕLWÓÕUÓ[ØÚÌ—Ñ[˜Ý[Û˜[[˜[\Ú\Ë™^]ŠH‚ˆØ\ÙH‰˜WÙ^]ˆ[ˆ	Éß
-–ÈLNWJŠH^]ŽÎÈ\ØXÂˆ^]‰˜WÙ^]‚
+      - name: Install pinned Lean and Mathlib cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V51_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V51_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V51_OUT/cache.log" 2>&1
+          lean --version | tee "$FA_V51_OUT/lean-version.txt"
+          lake --version | tee "$FA_V51_OUT/lake-version.txt"
+          sha256sum lean-toolchain lake-manifest.json >"$FA_V51_OUT/environment.sha256"
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: direct_lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Exact metrics and complete diagnostic inventory
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_V51_OUT" \
+            --max-errors 2000 \
+            | tee "$FA_V51_OUT/metric-console.log"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path(os.environ['FA_V51_OUT']); p=out/'METRIC.json'; m=json.loads(p.read_text())
+          m['schema']='fa-v51-frontier-safe-highcap2000-metric-v1'
+          m['variant']=os.environ['FA_V51_VARIANT']
+          m['authority']={'run_id':int(os.environ['FA_V51_BASE_RUN_ID']),'job_id':int(os.environ['FA_V51_BASE_JOB_ID']),'artifact_id':int(os.environ['FA_V51_BASE_ARTIFACT_ID']),'artifact_name':os.environ['FA_V51_BASE_ARTIFACT_NAME'],'artifact_digest':os.environ['FA_V51_BASE_ARTIFACT_DIGEST'],'head_sha':os.environ['FA_V51_BASE_HEAD_SHA'],'source_sha256':os.environ['FA_V51_BASE_SOURCE_SHA256']}
+          m['github_head_sha']=os.environ['GITHUB_SHA']; m['github_run_id']=os.environ['GITHUB_RUN_ID']; m['candidate_expected_sha256']=os.environ.get('FA_V51_CANDIDATE_SHA256')
+          p.write_text(json.dumps(m,indent=2,sort_keys=True)+'\n')
+          gate={'schema':'fa-v51-final-gate-v1','variant':os.environ['FA_V51_VARIANT'],'source_sha256':m.get('source_sha256'),'Mock2_exit':m.get('Mock2_exit'),'Mock2_Advanced_exit':m.get('Mock2_Advanced_exit'),'FA_exit':m.get('FA_exit'),'direct_lean_verified':m.get('direct_lean_verified'),'all_required_lean_executed':m.get('all_required_lean_executed'),'error_count':m.get('FA_error_headers_captured'),'first_error_line':m.get('FA_first_actual_error_line'),'first_error_col':m.get('FA_first_actual_error_col'),'first_error_declaration':m.get('FA_first_error_declaration'),'first_error_declaration_index':m.get('FA_first_error_declaration_index'),'unique_error_declarations':m.get('unique_declarations_with_errors'),'unique_signatures':m.get('unique_normalized_message_signatures'),'trust_six_zero':m.get('source_executable_trust_six_zero'),'synthetic_sorry_count':m.get('synthetic_declaration_uses_sorry_warning_count'),'status':'PASS' if m.get('FA_exit')==0 and m.get('Mock2_exit')==0 and m.get('Mock2_Advanced_exit')==0 else 'FAIL'}
+          (out/'FINAL_GATE.json').write_text(json.dumps(gate,indent=2,sort_keys=True)+'\n'); print(json.dumps(gate,indent=2,sort_keys=True))
+          PY
+
+      - name: Step-outcome snapshot
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path(os.environ['FA_V51_OUT'])
+          (out/'STEP_OUTCOMES.json').write_text(json.dumps({'materialize':'${{ steps.materialize.outcome }}','install':'${{ steps.install.outcome }}','direct_lean':'${{ steps.direct_lean.outcome }}','collect':'${{ steps.collect.outcome }}'},indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v51-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v51-frontier-safe/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Preserve actual FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FA_V51_OUT/Mock2_FunctionalAnalysis.exit"
+          fa_exit="$(tr -d '\r\n' < "$FA_V51_OUT/Mock2_FunctionalAnalysis.exit")"
+          case "$fa_exit" in ''|*[!0-9]*) exit 86;; esac
+          exit "$fa_exit"
