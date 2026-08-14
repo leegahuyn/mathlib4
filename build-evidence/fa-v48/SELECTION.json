@@ -1,0 +1,194 @@
+{
+  "advance": true,
+  "base": {
+    "FA_exit": 1,
+    "error_count": 35,
+    "first_error_declaration_index": 3669,
+    "score": [
+      0,
+      3669,
+      -35,
+      -19,
+      -11
+    ],
+    "source_sha256": "c255c100f33c09cafc37276f967b9cd535e0ddd76460df149d71d632d8644a63",
+    "unique_error_declarations": 19,
+    "unique_signatures": 11,
+    "variant": "v47-safe_w06_funprop_w27"
+  },
+  "candidates": [
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 24,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -24,
+        -19,
+        -8
+      ],
+      "source_sha256": "1cb1e5c2aba4e76637f8d706ebfbc7cf615b4a5e9b6a2871ef8e992c40e97192",
+      "unique_error_declarations": 19,
+      "unique_signatures": 8,
+      "variant": "frontier_ring"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 24,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -24,
+        -19,
+        -8
+      ],
+      "source_sha256": "5e567b6229bc524bf526d20daa6923fc743de09be1f68c169aae39be2c6df3bd",
+      "unique_error_declarations": 19,
+      "unique_signatures": 8,
+      "variant": "frontier_plane_names"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 27,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -27,
+        -19,
+        -9
+      ],
+      "source_sha256": "7aa02d680d5a6b4674863cce38a0352e3234f0a2138a7c46c06310cea2d6f97a",
+      "unique_error_declarations": 19,
+      "unique_signatures": 9,
+      "variant": "frontier_names"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 29,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -29,
+        -21,
+        -10
+      ],
+      "source_sha256": "0f20cc163d9270d6640614ed52ff0a44ccdb6b488912a2e382518a04d703632c",
+      "unique_error_declarations": 21,
+      "unique_signatures": 10,
+      "variant": "frontier_enrich_ring"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 29,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -29,
+        -21,
+        -10
+      ],
+      "source_sha256": "2aee1b24cb81007be0996dbeb11f7f6aa35f6cc2427fa25c6f53301eea1b9dcc",
+      "unique_error_declarations": 21,
+      "unique_signatures": 10,
+      "variant": "frontier_enrich"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 29,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -29,
+        -21,
+        -10
+      ],
+      "source_sha256": "1169d184cce85282f4a65ec5253f20a2e5f3b6c1414b9642cde59e39f488e853",
+      "unique_error_declarations": 21,
+      "unique_signatures": 10,
+      "variant": "frontier_broad"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 32,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -32,
+        -19,
+        -10
+      ],
+      "source_sha256": "4c7e07331a4d58374d8b1aafe86e4fbb5533cbbc417ea18b74a97c0035501408",
+      "unique_error_declarations": 19,
+      "unique_signatures": 10,
+      "variant": "frontier_plane"
+    },
+    {
+      "FA_exit": 1,
+      "Mock2_Advanced_exit": 0,
+      "Mock2_exit": 0,
+      "error_count": 35,
+      "first_error_declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "first_error_declaration_index": 3669,
+      "pass": false,
+      "score": [
+        0,
+        3669,
+        -35,
+        -19,
+        -11
+      ],
+      "source_sha256": "f212b319d3951db84c1d67202b8918020bae91cd12e5baeb5148399bcb3f2fb6",
+      "unique_error_declarations": 19,
+      "unique_signatures": 11,
+      "variant": "frontier"
+    }
+  ],
+  "github_run_id": "31764096286",
+  "github_sha": "154a0b8890c8e22e07ade7a6c7ce9e2adfc80b9e",
+  "schema": "fa-v48-evidence-selector-v1",
+  "selected_score": [
+    0,
+    3669,
+    -24,
+    -19,
+    -8
+  ],
+  "selected_source_sha256": "1cb1e5c2aba4e76637f8d706ebfbc7cf615b4a5e9b6a2871ef8e992c40e97192",
+  "selected_variant": "frontier_ring",
+  "status": "IMPROVED"
+}

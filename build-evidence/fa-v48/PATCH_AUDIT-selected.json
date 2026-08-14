@@ -1,0 +1,89 @@
+{
+  "attributes_changed": false,
+  "base_bytes": 2795882,
+  "base_declarations": 4416,
+  "base_lines": 62555,
+  "base_sha256": "c255c100f33c09cafc37276f967b9cd535e0ddd76460df149d71d632d8644a63",
+  "comments_changed": false,
+  "declaration_sequence_identical": true,
+  "diagnostic_declarations": [],
+  "operations": [
+    "ut",
+    "plane",
+    "one",
+    "i",
+    "ring"
+  ],
+  "patch_audit": [
+    {
+      "declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+      "frontier_matches": 1,
+      "patch": "frontier_ut_unfold",
+      "selected_match": 1
+    },
+    {
+      "applied": true,
+      "exact_count": 1,
+      "patch": "plane_conj_exact"
+    },
+    {
+      "applied": true,
+      "exact_count": 1,
+      "patch": "complex_one_names"
+    },
+    {
+      "applied": true,
+      "exact_count": 1,
+      "patch": "complex_I_names"
+    },
+    {
+      "changed_declarations": 3,
+      "changes": [
+        {
+          "declaration": "fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest",
+          "extras": [],
+          "negative_wave": false,
+          "ring_nf": true
+        },
+        {
+          "declaration": "inner_fullPlaneTestToL2_eq_integral_conj_mul",
+          "extras": [],
+          "negative_wave": false,
+          "ring_nf": true
+        },
+        {
+          "declaration": "integrable_fullPlaneTest_mul_kernel_mul_translate",
+          "extras": [],
+          "negative_wave": false,
+          "ring_nf": true
+        }
+      ],
+      "patch": "diagnostic_declaration_enrichment",
+      "requested_declarations": 0,
+      "targeted_declarations": 97
+    }
+  ],
+  "public_header_changes": false,
+  "schema": "fa-v48-auto-repair-audit-v1",
+  "source_bytes": 2796055,
+  "source_declarations": 4416,
+  "source_lines": 62559,
+  "source_sha256": "1cb1e5c2aba4e76637f8d706ebfbc7cf615b4a5e9b6a2871ef8e992c40e97192",
+  "trust_after": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "axiom": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "trust_before": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "axiom": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "variant": "frontier_ring"
+}
