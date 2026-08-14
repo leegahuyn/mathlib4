@@ -1,0 +1,130 @@
+name: Codex final bootstrap from latest settled continuation head
+run-name: "Codex: self-check latest head, then dispatch v48 and orchestrator"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-final-bootstrap-latest-head.yml
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: codex-final-bootstrap-latest-head-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+      SELF_CHECK: codex-new-pipeline-selfcheck-and-fix.yml
+      FA_V48: codex-fa-v48-auto-repair-highcap2000.yml
+      ORCHESTRATOR: codex-fa-qym-final-orchestrator.yml
+    steps:
+      - name: Dispatch a self-check from the exact latest branch head
+        id: selfcheck_dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-logs/final-bootstrap
+          gh api "repos/${GITHUB_REPOSITORY}/branches/${TARGET_BRANCH//\//%2F}" \
+            >build-logs/final-bootstrap/branch-before-selfcheck.json
+          before="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${SELF_CHECK}/runs?branch=${TARGET_BRANCH}&per_page=30" \
+            --jq '[.workflow_runs[].id] | join(" ")')"
+          gh workflow run "$SELF_CHECK" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+          run_id=""
+          for attempt in $(seq 1 60); do
+            sleep 3
+            while read -r candidate event; do
+              [[ -z "$candidate" ]] && continue
+              if [[ "$event" == workflow_dispatch && " $before " != *" $candidate "* ]]; then
+                run_id="$candidate"
+                break
+              fi
+            done < <(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${SELF_CHECK}/runs?branch=${TARGET_BRANCH}&per_page=30" \
+              --jq '.workflow_runs[] | "\(.id) \(.event)"')
+            [[ -n "$run_id" ]] && break
+          done
+          test -n "$run_id"
+          printf '%s\n' "$run_id" | tee build-logs/final-bootstrap/selfcheck-run-id.txt
+          printf 'run_id=%s\n' "$run_id" >>"$GITHUB_OUTPUT"
+
+      - name: Wait for the latest-head self-check and require success
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id="${{ steps.selfcheck_dispatch.outputs.run_id }}"
+          for attempt in $(seq 1 180); do
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '.status')"
+            conclusion="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq '.conclusion // ""')"
+            printf '%s\t%s\t%s\n' "$(date -u +%FT%TZ)" "$status" "$conclusion" \
+              >>build-logs/final-bootstrap/selfcheck-poll.tsv
+            if [[ "$status" == completed ]]; then
+              printf '%s\n' "$conclusion" >build-logs/final-bootstrap/selfcheck-conclusion.txt
+              test "$conclusion" = success
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'self-check polling timed out' >&2
+          exit 124
+
+      - name: Record the post-self-check branch head
+        id: settled_head
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/branches/${TARGET_BRANCH//\//%2F}" \
+            >build-logs/final-bootstrap/branch-after-selfcheck.json
+          sha="$(python3 -c 'import json; print(json.load(open("build-logs/final-bootstrap/branch-after-selfcheck.json"))["commit"]["sha"])')"
+          printf '%s\n' "$sha" | tee build-logs/final-bootstrap/settled-head-sha.txt
+          printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
+
+      - name: Dispatch fresh v48 and then a fresh evidence-driven orchestrator
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run "$FA_V48" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+          sleep 5
+          gh workflow run "$ORCHESTRATOR" --repo "$GITHUB_REPOSITORY" --ref "$TARGET_BRANCH"
+          sleep 5
+          gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${FA_V48}/runs?branch=${TARGET_BRANCH}&per_page=5" \
+            >build-logs/final-bootstrap/fa-v48-runs.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${ORCHESTRATOR}/runs?branch=${TARGET_BRANCH}&per_page=5" \
+            >build-logs/final-bootstrap/orchestrator-runs.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          v48 = json.loads(Path('build-logs/final-bootstrap/fa-v48-runs.json').read_text()).get('workflow_runs', [])
+          orch = json.loads(Path('build-logs/final-bootstrap/orchestrator-runs.json').read_text()).get('workflow_runs', [])
+          report = {
+              'schema': 'final-bootstrap-latest-head-v1',
+              'status': 'PASS',
+              'settled_head_sha': Path('build-logs/final-bootstrap/settled-head-sha.txt').read_text().strip(),
+              'latest_v48_runs': [
+                  {'id': row.get('id'), 'status': row.get('status'), 'event': row.get('event'), 'head_sha': row.get('head_sha')}
+                  for row in v48[:5]
+              ],
+              'latest_orchestrator_runs': [
+                  {'id': row.get('id'), 'status': row.get('status'), 'event': row.get('event'), 'head_sha': row.get('head_sha')}
+                  for row in orch[:5]
+              ],
+          }
+          Path('build-logs/final-bootstrap/BOOTSTRAP_GATE.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload bootstrap identities and gates
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-final-bootstrap-${{ github.run_id }}
+          path: build-logs/final-bootstrap
+          retention-days: 90
