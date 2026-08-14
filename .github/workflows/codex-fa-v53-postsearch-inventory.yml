@@ -1,0 +1,78 @@
+name: Codex FA v53 postsearch inventory
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/FA_V52_SELECTION.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Download exact v52 selected artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/codex/FA_V52_SELECTION.json
+          rm -rf /tmp/fa-v53 /tmp/fa-v53.zip;mkdir -p /tmp/fa-v53 .github/codex
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.load(open('.github/codex/FA_V52_SELECTION.json'));assert r['schema']=='fa-v52-strict-selector-v1';rec={x['variant']:x for x in r['records']}[r['selected_variant']];assert rec['source_sha256']==r['selected_source_sha256'];Path('/tmp/v53-run').write_text(str(r['github_run_id']));Path('/tmp/v53-head').write_text(r['github_sha']);Path('/tmp/v53-name').write_text(rec['artifact_directory']);Path('/tmp/v53-sha').write_text(r['selected_source_sha256'])
+          PY
+          run="$(cat /tmp/v53-run)";head="$(cat /tmp/v53-head)";name="$(cat /tmp/v53-name)";gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run}" >/tmp/v53-run.json;gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run}/artifacts?per_page=100" >/tmp/v53-list.json
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          run=json.load(open('/tmp/v53-run.json'));ls=json.load(open('/tmp/v53-list.json'));rid=int(Path('/tmp/v53-run').read_text());head=Path('/tmp/v53-head').read_text();name=Path('/tmp/v53-name').read_text();assert int(run['id'])==rid and run['head_sha']==head and run['head_branch']==os.environ['TARGET_BRANCH'] and run['status']=='completed';xs=[a for a in ls['artifacts'] if a['name']==name];assert len(xs)==1,(name,xs);a=xs[0];assert not a['expired'] and int(a['workflow_run']['id'])==rid and a['workflow_run']['head_sha']==head;Path('/tmp/v53-artifact.json').write_text(json.dumps(a,indent=2,sort_keys=True));Path('/tmp/v53-id').write_text(str(a['id']));Path('/tmp/v53-digest').write_text(a['digest'])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/$(cat /tmp/v53-id)/zip" >/tmp/fa-v53.zip;test "sha256:$(sha256sum /tmp/fa-v53.zip|awk '{print $1}')" = "$(cat /tmp/v53-digest)";unzip -q /tmp/fa-v53.zip -d /tmp/fa-v53
+      - name: Emit complete inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re
+          root=Path('/tmp/fa-v53');ss=list(root.rglob('Mock2_FunctionalAnalysis-candidate.lean'));ms=list(root.rglob('METRIC.json'));assert len(ss)==1 and len(ms)==1;(sfile,mfile)=(ss[0],ms[0]);s=sfile.read_text(errors='replace');sha=hashlib.sha256(s.encode()).hexdigest();assert sha==Path('/tmp/v53-sha').read_text();m=json.loads(mfile.read_text());assert int(m['Mock2_exit'])==0 and int(m['Mock2_Advanced_exit'])==0 and m['FA_error_cap_sentinel_present'] is False and m['FA_inventory_complete_by_header_evidence'] is True and m['source_executable_trust_six_zero'] is True
+          logs=[]
+          for p in root.rglob('*'):
+            if p.is_file() and 'Mock2_FunctionalAnalysis' in p.name and p.suffix in {'.log','.txt'}:
+              t=p.read_text(errors='replace')
+              if 'error:' in t:logs.append((len(t),p,t))
+          log=max(logs,key=lambda z:z[0])[2] if logs else '';lines=s.splitlines();dr=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s:(]+)');decl=[]
+          for i,x in enumerate(lines,1):
+            q=dr.match(x)
+            if q:decl.append((i,q.group(1),x))
+          def owner(n):
+            z=[d for d in decl if d[0]<=n];return z[-1] if z else (None,None,None)
+          hr=re.compile(r'(?m)^.*Mock2_FunctionalAnalysis\.lean:(\d+):(\d+): error:(.*)$');hs=list(hr.finditer(log));errors=[]
+          for i,h in enumerate(hs):
+            n=int(h.group(1));c=int(h.group(2));b=log[h.start():(hs[i+1].start() if i+1<len(hs) else len(log))].strip();dl,dn,dh=owner(n);norm=re.sub(r'\s+',' ',b);sig=hashlib.sha256(norm.encode()).hexdigest();lo=max(1,n-4);hi=min(len(lines),n+4);low=b.lower();classes=[]
+            for k,ts in {'tendsto_eta':['tendsto','function.comp'],'holder_exponent':['coefn_holder','holdertriple'],'scalar_action':['pi.smul','hsmul.hsmul'],'instance_synthesis':['failed to synthesize'],'type_mismatch':['type mismatch'],'unsolved_goals':['unsolved goals'],'arithmetic':['linarith','nlinarith','≤','inequality'],'unknown_identifier':['unknown identifier','invalid field notation']}.items():
+              if any(t.lower() in low for t in ts):classes.append(k)
+            errors.append({'index':i+1,'line':n,'column':c,'declaration_line':dl,'declaration_name':dn,'declaration_header':dh,'code_line':lines[n-1] if 1<=n<=len(lines) else None,'classes':classes,'signature_sha256':sig,'message':b[:12000],'snippet':[{'line':j,'text':lines[j-1]} for j in range(lo,hi+1)]})
+          cnt=collections.Counter(e['declaration_name'] or '<none>' for e in errors);sigs=collections.Counter(e['signature_sha256'] for e in errors);parent=json.load(open('.github/codex/FA_V52_SELECTION.json'));a=json.load(open('/tmp/v53-artifact.json'));r={'schema':'fa-v53-complete-remaining-error-inventory-v1','generated_by_run_id':os.environ['GITHUB_RUN_ID'],'generated_from_branch':os.environ['TARGET_BRANCH'],'parent_selection_run_id':parent['github_run_id'],'parent_selection_head_sha':parent['github_sha'],'selected_variant':parent['selected_variant'],'selected_source_sha256':sha,'selected_artifact_id':a['id'],'selected_artifact_name':a['name'],'selected_artifact_digest':a['digest'],'selected_artifact_expired':a['expired'],'Mock2_exit':int(m['Mock2_exit']),'Mock2_Advanced_exit':int(m['Mock2_Advanced_exit']),'FA_exit':int(m['FA_exit']),'FA_compile_max_errors':int(m['FA_compile_max_errors']),'error_cap_sentinel_present':m['FA_error_cap_sentinel_present'],'inventory_complete_by_header_evidence':m['FA_inventory_complete_by_header_evidence'],'trust_six_zero':m['source_executable_trust_six_zero'],'raw_error_count':len(errors),'failing_declaration_count':len(cnt),'unique_signature_count':len(sigs),'errors_by_declaration':dict(sorted(cnt.items())),'signature_multiplicities':dict(sorted(sigs.items())),'clean_build_claimed':int(m['FA_exit'])==0 and not errors,'direct_lean_verified':int(m['FA_exit'])==0 and not errors,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'errors':errors};assert (int(m['FA_exit'])==0)==(len(errors)==0);Path('.github/codex/FA_V53_REMAINING_ERRORS.json').write_text(json.dumps(r,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          PY
+      - name: Commit inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com";git add .github/codex/FA_V53_REMAINING_ERRORS.json;if git diff --cached --quiet;then exit 0;fi;git commit -m "Codex: record exact FA v53 remaining-error inventory";git pull --rebase origin "$TARGET_BRANCH";git push origin "HEAD:$TARGET_BRANCH"
