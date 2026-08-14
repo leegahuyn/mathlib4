@@ -1,0 +1,406 @@
+name: Codex FA v49 guarded iterative frontier repair
+run-name: "Codex: iterate FA frontier from checked-in improvement"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa-v49-iterative-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    name: exact checked-in FA baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    outputs:
+      fa_exit: ${{ steps.collect.outputs.fa_exit }}
+      base_sha256: ${{ steps.collect.outputs.base_sha256 }}
+      first_index: ${{ steps.collect.outputs.first_index }}
+      error_count: ${{ steps.collect.outputs.error_count }}
+      unique_decls: ${{ steps.collect.outputs.unique_decls }}
+      signatures: ${{ steps.collect.outputs.signatures }}
+    env:
+      FA_BASE_OUT: build-logs/codex-fa-v49-iterative/baseline
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Lock exact checked-in source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_BASE_OUT"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$FA_BASE_OUT/Mock2_FunctionalAnalysis-baseline.lean"
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            | tee "$FA_BASE_OUT/baseline.sha256"
+          wc -c -l PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            | tee "$FA_BASE_OUT/baseline.size.txt"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_BASE_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_BASE_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_BASE_OUT/cache.log" 2>&1
+          lean --version | tee "$FA_BASE_OUT/lean-version.txt"
+          lake --version | tee "$FA_BASE_OUT/lake-version.txt"
+          sha256sum lean-toolchain lake-manifest.json >"$FA_BASE_OUT/environment.sha256"
+
+      - name: Execute Mock2 then Mock2 Advanced then full checked-in FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          base_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$base_sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=checked_in_baseline\n' >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$FA_BASE_OUT" >>"$GITHUB_ENV"
+          FA_V42_EXPECTED_CANDIDATE_SHA256="$base_sha" \
+          FA_V42_VARIANT=checked_in_baseline \
+          FA_V42_OUT="$FA_BASE_OUT" \
+            bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect complete baseline diagnostics and outputs
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_BASE_OUT" \
+            --max-errors 2000 \
+            | tee "$FA_BASE_OUT/metric-console.log"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path(os.environ['FA_BASE_OUT'])
+          p=out/'METRIC.json'; m=json.loads(p.read_text())
+          m['schema']='fa-v49-checked-in-baseline-metric-v1'
+          m['github_sha']=os.environ['GITHUB_SHA']; m['github_run_id']=os.environ['GITHUB_RUN_ID']
+          p.write_text(json.dumps(m,indent=2,sort_keys=True)+'\n')
+          values={
+            'fa_exit':m.get('FA_exit'),
+            'base_sha256':m.get('source_sha256'),
+            'first_index':m.get('FA_first_error_declaration_index'),
+            'error_count':m.get('FA_error_headers_captured'),
+            'unique_decls':m.get('unique_declarations_with_errors'),
+            'signatures':m.get('unique_normalized_message_signatures'),
+          }
+          with open(os.environ['GITHUB_OUTPUT'],'a') as handle:
+            for key,value in values.items():
+              handle.write(f'{key}={"" if value is None else value}\n')
+          print(json.dumps(values,indent=2,sort_keys=True))
+          PY
+
+      - name: Upload immutable baseline source and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v49-baseline-${{ github.sha }}
+          path: build-logs/codex-fa-v49-iterative/baseline
+          retention-days: 30
+
+  candidate:
+    name: direct-${{ matrix.rule }}
+    needs: baseline
+    if: needs.baseline.outputs.fa_exit != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        rule:
+          - first_let
+          - first_relax
+          - first_enrich
+          - first_ring
+          - first_qualify
+          - first_funext
+          - first3_safe
+          - first8_safe
+    env:
+      FA_RULE: ${{ matrix.rule }}
+      FA_CANDIDATE_OUT: build-logs/codex-fa-v49-iterative/${{ matrix.rule }}
+      FA_BASE_SHA256: ${{ needs.baseline.outputs.base_sha256 }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Recover exact baseline artifact from this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_CANDIDATE_OUT"
+          root="/tmp/fa-v49-baseline-${GITHUB_RUN_ID}-${FA_RULE}"
+          mkdir -p "$root"
+          artifact_id=""
+          artifact_digest=""
+          for attempt in $(seq 1 20); do
+            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" >"$root/artifacts.json"
+            read -r artifact_id artifact_digest < <(python3 - "$root/artifacts.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          expected='codex-fa-v49-baseline-'+__import__('os').environ['GITHUB_SHA']
+          for a in data.get('artifacts',[]):
+            if a.get('name')==expected:
+              print(a['id'],a.get('digest',''))
+              break
+          PY
+            )
+            if [[ -n "$artifact_id" ]]; then break; fi
+            sleep 3
+          done
+          test -n "$artifact_id"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" >"$root/base.zip"
+          test "sha256:$(sha256sum "$root/base.zip" | awk '{print $1}')" = "$artifact_digest"
+          unzip -q "$root/base.zip" -d "$root/extracted"
+          base="$(find "$root/extracted" -type f -name 'Mock2_FunctionalAnalysis-baseline.lean' -print -quit)"
+          metric="$(find "$root/extracted" -type f -name 'METRIC.json' -print -quit)"
+          diagnostics="$(find "$root/extracted" -type f \( -iname '*diagnostic*.jsonl' -o -iname '*diagnostics*.jsonl' \) -print -quit || true)"
+          rawlog="$(find "$root/extracted" -type f \( -name 'Mock2_FunctionalAnalysis.stderr.log' -o -name 'Mock2_FunctionalAnalysis.log' \) -print -quit || true)"
+          test -n "$base"; test -n "$metric"
+          test "$(sha256sum "$base" | awk '{print $1}')" = "$FA_BASE_SHA256"
+          cp "$base" "$FA_CANDIDATE_OUT/BASELINE.lean"
+          cp "$metric" "$FA_CANDIDATE_OUT/BASELINE_METRIC.json"
+          args=()
+          if [[ -n "$diagnostics" ]]; then args+=(--diagnostics "$diagnostics"); cp "$diagnostics" "$FA_CANDIDATE_OUT/BASELINE_DIAGNOSTICS.jsonl"; fi
+          if [[ -n "$rawlog" ]]; then args+=(--raw-log "$rawlog"); cp "$rawlog" "$FA_CANDIDATE_OUT/BASELINE_FA.log"; fi
+          python3 scripts/fa_iterative_frontier_repair.py \
+            --base "$base" \
+            --base-sha256 "$FA_BASE_SHA256" \
+            --rule "$FA_RULE" \
+            --out "$FA_CANDIDATE_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$FA_CANDIDATE_OUT/PATCH_AUDIT.json" \
+            "${args[@]}" \
+            | tee "$FA_CANDIDATE_OUT/MATERIALIZATION.stdout.json"
+          cp "$FA_CANDIDATE_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          candidate_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$FA_RULE" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$FA_CANDIDATE_OUT" >>"$GITHUB_ENV"
+          printf 'FA_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_CANDIDATE_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_CANDIDATE_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_CANDIDATE_OUT/cache.log" 2>&1
+          lean --version | tee "$FA_CANDIDATE_OUT/lean-version.txt"
+          lake --version | tee "$FA_CANDIDATE_OUT/lake-version.txt"
+
+      - name: Execute full direct Lean chain for candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Collect candidate metric and gate
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_CANDIDATE_OUT" \
+            --max-errors 2000 \
+            | tee "$FA_CANDIDATE_OUT/metric-console.log"
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path(os.environ['FA_CANDIDATE_OUT']); p=out/'METRIC.json'; m=json.loads(p.read_text())
+          m['schema']='fa-v49-iterative-candidate-metric-v1'; m['rule']=os.environ['FA_RULE']
+          m['baseline_sha256']=os.environ['FA_BASE_SHA256']; m['github_sha']=os.environ['GITHUB_SHA']; m['github_run_id']=os.environ['GITHUB_RUN_ID']
+          p.write_text(json.dumps(m,indent=2,sort_keys=True)+'\n')
+          gate={
+            'schema':'fa-v49-iterative-candidate-gate-v1','rule':os.environ['FA_RULE'],
+            'source_sha256':m.get('source_sha256'),'Mock2_exit':m.get('Mock2_exit'),
+            'Mock2_Advanced_exit':m.get('Mock2_Advanced_exit'),'FA_exit':m.get('FA_exit'),
+            'error_count':m.get('FA_error_headers_captured'),
+            'first_error_declaration':m.get('FA_first_error_declaration'),
+            'first_error_declaration_index':m.get('FA_first_error_declaration_index'),
+            'unique_error_declarations':m.get('unique_declarations_with_errors'),
+            'unique_signatures':m.get('unique_normalized_message_signatures'),
+            'direct_lean_verified':m.get('direct_lean_verified'),
+            'trust_six_zero':m.get('source_executable_trust_six_zero'),
+            'synthetic_sorry_count':m.get('synthetic_declaration_uses_sorry_warning_count'),
+          }
+          (out/'FINAL_GATE.json').write_text(json.dumps(gate,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(gate,indent=2,sort_keys=True))
+          PY
+
+      - name: Preserve actual FA exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FA_CANDIDATE_OUT/Mock2_FunctionalAnalysis.exit"
+          code="$(tr -d '\r\n' < "$FA_CANDIDATE_OUT/Mock2_FunctionalAnalysis.exit")"
+          case "$code" in ''|*[!0-9]*) exit 86;; esac
+          exit "$code"
+
+      - name: Upload exact candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v49-${{ matrix.rule }}-${{ github.sha }}
+          path: build-logs/codex-fa-v49-iterative/${{ matrix.rule }}
+          retention-days: 30
+
+  selector:
+    name: dynamic baseline selector and guarded iteration
+    needs: [baseline, candidate]
+    if: always() && needs.baseline.outputs.fa_exit != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      actions: read
+      contents: write
+    outputs:
+      status: ${{ steps.advance.outputs.status }}
+      fa_clean: ${{ steps.advance.outputs.fa_clean }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+
+      - name: Download baseline and all eight candidate artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="/tmp/fa-v49-selector-${GITHUB_RUN_ID}"
+          mkdir -p "$root/zips" "$root/extracted"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100" >"$root/artifacts.json"
+          python3 - "$root/artifacts.json" "$root/ids.tsv" <<'PY'
+          import json,os,sys
+          data=json.load(open(sys.argv[1])); sha=os.environ['GITHUB_SHA']; rows=[]
+          for a in data.get('artifacts',[]):
+            name=a.get('name','')
+            if name==f'codex-fa-v49-baseline-{sha}' or (name.startswith('codex-fa-v49-') and name.endswith('-'+sha)):
+              rows.append((a['id'],name,a.get('digest','')))
+          if len(rows)!=9: raise SystemExit(f'expected 9 artifacts, found {len(rows)}: {[r[1] for r in rows]}')
+          with open(sys.argv[2],'w') as f:
+            for row in rows: f.write('\t'.join(map(str,row))+'\n')
+          PY
+          while IFS=$'\t' read -r id name digest; do
+            gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" >"$root/zips/${name}.zip"
+            test "sha256:$(sha256sum "$root/zips/${name}.zip" | awk '{print $1}')" = "$digest"
+            mkdir -p "$root/extracted/$name"
+            unzip -q "$root/zips/${name}.zip" -d "$root/extracted/$name"
+          done <"$root/ids.tsv"
+          printf 'FA_V49_SELECTOR_ROOT=%s\n' "$root" >>"$GITHUB_ENV"
+
+      - name: Compare candidates against the exact dynamic baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,shutil
+          from pathlib import Path
+          root=Path(os.environ['FA_V49_SELECTOR_ROOT']); sha=os.environ['GITHUB_SHA']
+          base_metric_path=next((root/f'extracted/codex-fa-v49-baseline-{sha}').glob('**/METRIC.json'))
+          base=json.loads(base_metric_path.read_text())
+          def score(m):
+            passed=m.get('FA_exit')==0 and m.get('Mock2_exit')==0 and m.get('Mock2_Advanced_exit')==0
+            idx=m.get('FA_first_error_declaration_index')
+            err=m.get('FA_error_headers_captured'); decl=m.get('unique_declarations_with_errors'); sig=m.get('unique_normalized_message_signatures')
+            return (1 if passed else 0, (10**9 if passed else int(idx) if isinstance(idx,int) else -1), -int(err) if isinstance(err,int) else -10**9, -int(decl) if isinstance(decl,int) else -10**9, -int(sig) if isinstance(sig,int) else -10**9)
+          base_score=score(base); rows=[]
+          for p in root.glob('extracted/codex-fa-v49-*/**/METRIC.json'):
+            if 'baseline' in str(p): continue
+            m=json.loads(p.read_text()); parent=p.parent
+            source=next(parent.glob('Mock2_FunctionalAnalysis-candidate.lean'),None)
+            audit=parent/'PATCH_AUDIT.json'; gate=parent/'FINAL_GATE.json'
+            if source is None or not audit.exists() or not gate.exists(): continue
+            a=json.loads(audit.read_text())
+            if m.get('source_sha256')!=a.get('source_sha256'): raise SystemExit(f'{p}: metric/audit mismatch')
+            if m.get('baseline_sha256')!=base.get('source_sha256'): raise SystemExit(f'{p}: wrong baseline')
+            if m.get('direct_lean_verified') is not True or m.get('all_required_lean_executed') is not True: raise SystemExit(f'{p}: incomplete direct evidence')
+            if m.get('source_executable_trust_six_zero') is not True or m.get('synthetic_declaration_uses_sorry_warning_count')!=0: raise SystemExit(f'{p}: trust gate failed')
+            rows.append({'rule':m.get('rule'),'metric':m,'score':score(m),'source':source,'audit':audit,'gate':gate})
+          if len(rows)!=8: raise SystemExit(f'expected 8 complete candidates, found {len(rows)}')
+          rows.sort(key=lambda r:(r['score'],r['rule']),reverse=True); best=rows[0]
+          advance=best['score']>base_score; passed=best['score'][0]==1
+          status='PASS' if passed else 'IMPROVED' if advance else 'NO_ADVANCE'
+          out=root/'selection'; out.mkdir(parents=True,exist_ok=True)
+          shutil.copy2(best['source'],out/'Mock2_FunctionalAnalysis-selected.lean')
+          shutil.copy2(best['audit'],out/'PATCH_AUDIT-selected.json')
+          shutil.copy2(best['gate'],out/'FINAL_GATE-selected.json')
+          (out/'METRIC-selected.json').write_text(json.dumps(best['metric'],indent=2,sort_keys=True)+'\n')
+          selection={
+            'schema':'fa-v49-dynamic-selector-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':sha,
+            'base_source_sha256':base.get('source_sha256'),'base_score':list(base_score),
+            'status':status,'advance':advance,'selected_rule':best['rule'],'selected_score':list(best['score']),
+            'selected_source_sha256':best['metric'].get('source_sha256'),
+            'candidates':[{'rule':r['rule'],'score':list(r['score']),'source_sha256':r['metric'].get('source_sha256'),'FA_exit':r['metric'].get('FA_exit'),'error_count':r['metric'].get('FA_error_headers_captured'),'first_error_declaration':r['metric'].get('FA_first_error_declaration'),'first_error_declaration_index':r['metric'].get('FA_first_error_declaration_index'),'unique_error_declarations':r['metric'].get('unique_declarations_with_errors'),'unique_signatures':r['metric'].get('unique_normalized_message_signatures')} for r in rows],
+          }
+          (out/'SELECTION.json').write_text(json.dumps(selection,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(selection,indent=2,sort_keys=True))
+          PY
+
+      - name: Commit only a strict, trust-clean, direct-Lean improvement
+        id: advance
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection="$FA_V49_SELECTOR_ROOT/selection/SELECTION.json"
+          status="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["status"])' "$selection")"
+          advance="$(python3 -c 'import json,sys;print(str(json.load(open(sys.argv[1]))["advance"]).lower())' "$selection")"
+          printf 'status=%s\n' "$status" >>"$GITHUB_OUTPUT"
+          printf 'fa_clean=%s\n' "$([[ "$status" == PASS ]] && echo true || echo false)" >>"$GITHUB_OUTPUT"
+          mkdir -p build-evidence/fa-v49/${GITHUB_RUN_ID}
+          cp "$FA_V49_SELECTOR_ROOT/selection/"*.json build-evidence/fa-v49/${GITHUB_RUN_ID}/
+          if [[ "$advance" == true ]]; then
+            cp "$FA_V49_SELECTOR_ROOT/selection/Mock2_FunctionalAnalysis-selected.lean" \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build-evidence/fa-v49/${GITHUB_RUN_ID}
+          if [[ "$advance" == true ]]; then git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; fi
+          git commit -m "Codex: FA iterative frontier ${status} run ${GITHUB_RUN_ID}"
+          git push origin HEAD:codex/fa-qym-cleanbuild-final-20260811-fast
+
+      - name: Upload iterative selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v49-selector-${{ github.sha }}-${{ github.run_id }}
+          path: ${{ env.FA_V49_SELECTOR_ROOT }}/selection
+          retention-days: 30
