@@ -73,6 +73,22 @@ jobs:
           test "$(sha256sum "$base" | awk '{print $1}')" = "$BASE_SOURCE_SHA"
           test "$(wc -c < "$base" | tr -d ' ')" = "$BASE_SOURCE_BYTES"
           test "$(wc -l < "$base" | tr -d ' ')" = "$BASE_SOURCE_LINES"
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("scripts/fa_v52_materialize.py")
+          s = p.read_text()
+          for next_name in ("REM_CONVERT", "REM_CALC", "ADJ_OLD", "ADJ_STAR"):
+              old = f"\n''\n{next_name}="
+              new = f"\n'''\n{next_name}="
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f"materializer quote-repair anchor {next_name}: count={count}")
+              s = s.replace(old, new, 1)
+          compile(s, str(p), "exec")
+          p.write_text(s)
+          PY
+          python3 -m py_compile scripts/fa_v52_materialize.py
+          sha256sum scripts/fa_v52_materialize.py >"$OUT/materializer-runtime.sha256"
           python3 scripts/fa_v52_materialize.py \
             --base "$base" --variant "$VARIANT" \
             --out "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
