@@ -100,7 +100,7 @@ jobs:
           lake env lean -DwarningAsError=false /tmp/FAV51ChangeVarProbe.lean 2>&1 | tee /tmp/FAV51ChangeVarProbe.log
       - name: Upload probe evidence
         if: always()
-        uses: actions/upload-artifact@eaa165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: codex-fa-v51-changevar-api-probe-v2-${{ github.sha }}
           path: |
