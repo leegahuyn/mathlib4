@@ -1,0 +1,247 @@
+name: Codex FA v48 clustered six-variant highcap2000
+run-name: "Codex: run FA v48 clustered cumulative full compile"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - .github/workflows/codex-fa-v48-clustered-six-variant-highcap2000.yml
+      - scripts/fa_v48_materialize.py
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa-v48-clustered-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  direct:
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        variant:
+          - core
+          - core_dxdy
+          - core_deriv
+          - core_torus
+          - core_dxdy_deriv
+          - max_batch
+    env:
+      FA_V48_VARIANT: ${{ matrix.variant }}
+      FA_V48_OUT: build-logs/codex-fa-v48-clustered-six-variant-highcap2000/${{ matrix.variant }}
+      FA_V48_BASE_RUN_ID: "31758486070"
+      FA_V48_BASE_JOB_ID: "94639466618"
+      FA_V48_BASE_ARTIFACT_ID: "9204046126"
+      FA_V48_BASE_ARTIFACT_NAME: codex-fa-v47-plane_batch-highcap2000-d699d23a23d6676d18880710e6c1fa7d443be482
+      FA_V48_BASE_ARTIFACT_DIGEST: sha256:042d79514723cbfd655fb45eebb4302b8f549b65feb639fdd75c73167e1ad043
+      FA_V48_BASE_ARTIFACT_SIZE: "2122810"
+      FA_V48_BASE_HEAD_SHA: d699d23a23d6676d18880710e6c1fa7d443be482
+      FA_V48_BASE_SOURCE_SHA256: 59418cb02324f5644a52c5a2d1e43820949953736b830a3f955bdc0087c395fc
+      FA_V48_BASE_SOURCE_BYTES: "2796085"
+      FA_V48_BASE_SOURCE_LINES: "62559"
+      FA_V48_BASE_SOURCE_DECLARATIONS: "4416"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove exact v47 authority and materialize v48 candidate
+        id: materialize
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V48_OUT"
+          authority_root="/tmp/fa-v48-authority-${GITHUB_RUN_ID}-${FA_V48_VARIANT}"
+          authority_zip="/tmp/fa-v48-authority-${GITHUB_RUN_ID}-${FA_V48_VARIANT}.zip"
+          mkdir -p "$authority_root"
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${FA_V48_BASE_RUN_ID}" >"$FA_V48_OUT/V47_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${FA_V48_BASE_JOB_ID}" >"$FA_V48_OUT/V47_JOB.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V48_BASE_ARTIFACT_ID}" >"$FA_V48_OUT/V47_ARTIFACT.json"
+
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out = Path(os.environ['FA_V48_OUT'])
+          run = json.loads((out / 'V47_RUN.json').read_text())
+          job = json.loads((out / 'V47_JOB.json').read_text())
+          artifact = json.loads((out / 'V47_ARTIFACT.json').read_text())
+          assert run['id'] == int(os.environ['FA_V48_BASE_RUN_ID'])
+          assert run['head_sha'] == os.environ['FA_V48_BASE_HEAD_SHA']
+          assert run['status'] == 'completed' and run['conclusion'] == 'failure'
+          assert job['id'] == int(os.environ['FA_V48_BASE_JOB_ID'])
+          assert job['run_id'] == int(os.environ['FA_V48_BASE_RUN_ID'])
+          assert job['name'] == 'direct-plane_batch'
+          assert job['status'] == 'completed' and job['conclusion'] == 'failure'
+          assert artifact['id'] == int(os.environ['FA_V48_BASE_ARTIFACT_ID'])
+          assert artifact['name'] == os.environ['FA_V48_BASE_ARTIFACT_NAME']
+          assert artifact['size_in_bytes'] == int(os.environ['FA_V48_BASE_ARTIFACT_SIZE'])
+          assert artifact['digest'] == os.environ['FA_V48_BASE_ARTIFACT_DIGEST']
+          assert artifact['expired'] is False
+          assert artifact['workflow_run']['id'] == int(os.environ['FA_V48_BASE_RUN_ID'])
+          assert artifact['workflow_run']['head_sha'] == os.environ['FA_V48_BASE_HEAD_SHA']
+          PY
+
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V48_BASE_ARTIFACT_ID}/zip" >"$authority_zip"
+          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = "$FA_V48_BASE_ARTIFACT_DIGEST"
+          unzip -q "$authority_zip" -d "$authority_root"
+          base_source="$(find "$authority_root" -type f -name 'Mock2_FunctionalAnalysis-candidate.lean' -print -quit)"
+          test -n "$base_source"
+          test "$(sha256sum "$base_source" | awk '{print $1}')" = "$FA_V48_BASE_SOURCE_SHA256"
+          test "$(wc -c < "$base_source" | tr -d ' ')" = "$FA_V48_BASE_SOURCE_BYTES"
+          test "$(wc -l < "$base_source" | tr -d ' ')" = "$FA_V48_BASE_SOURCE_LINES"
+
+          cp "$base_source" "$FA_V48_OUT/V47_BASE_SOURCE.lean"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$FA_V48_OUT/Mock2_FunctionalAnalysis-checked-in-before.lean"
+
+          python3 scripts/fa_v48_materialize.py \
+            --base "$base_source" \
+            --variant "$FA_V48_VARIANT" \
+            --out "$FA_V48_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --audit "$FA_V48_OUT/PATCH_AUDIT.json" \
+            | tee "$FA_V48_OUT/MATERIALIZATION.stdout.json"
+
+          cp "$FA_V48_OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$FA_V48_OUT/Mock2_FunctionalAnalysis-observed.lean"
+
+          candidate_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
+          printf '%s\n' "$candidate_sha" >"$FA_V48_OUT/candidate.sha256"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+          printf 'FA_V42_VARIANT=%s\n' "$FA_V48_VARIANT" >>"$GITHUB_ENV"
+          printf 'FA_V42_OUT=%s\n' "$FA_V48_OUT" >>"$GITHUB_ENV"
+          printf 'FA_V48_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
+          sha256sum scripts/fa_v48_materialize.py >"$FA_V48_OUT/materializer.sha256"
+
+      - name: Install pinned Lean and Mathlib cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V48_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V48_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V48_OUT/cache.log" 2>&1
+          lean --version | tee "$FA_V48_OUT/lean-version.txt"
+          lake --version | tee "$FA_V48_OUT/lake-version.txt"
+          sha256sum lean-toolchain lake-manifest.json >"$FA_V48_OUT/environment.sha256"
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: direct_lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v42_direct_compile_ci.sh
+
+      - name: Exact metrics and complete diagnostic inventory
+        id: collect
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 scripts/fa_v42_collect_full_diagnostics.py \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_V48_OUT" \
+            --max-errors 2000 \
+            | tee "$FA_V48_OUT/metric-console.log"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out = Path(os.environ['FA_V48_OUT'])
+          p = out / 'METRIC.json'
+          m = json.loads(p.read_text())
+          m['schema'] = 'fa-v48-clustered-six-variant-highcap2000-metric-v1'
+          m['variant'] = os.environ['FA_V48_VARIANT']
+          m['authority'] = {
+            'run_id': int(os.environ['FA_V48_BASE_RUN_ID']),
+            'job_id': int(os.environ['FA_V48_BASE_JOB_ID']),
+            'artifact_id': int(os.environ['FA_V48_BASE_ARTIFACT_ID']),
+            'artifact_name': os.environ['FA_V48_BASE_ARTIFACT_NAME'],
+            'artifact_digest': os.environ['FA_V48_BASE_ARTIFACT_DIGEST'],
+            'head_sha': os.environ['FA_V48_BASE_HEAD_SHA'],
+            'source_sha256': os.environ['FA_V48_BASE_SOURCE_SHA256'],
+          }
+          m['github_head_sha'] = os.environ['GITHUB_SHA']
+          m['github_run_id'] = os.environ['GITHUB_RUN_ID']
+          m['candidate_expected_sha256'] = os.environ.get('FA_V48_CANDIDATE_SHA256')
+          p.write_text(json.dumps(m, indent=2, sort_keys=True) + '\n')
+          fa = m.get('FA_exit')
+          gate = {
+            'schema': 'fa-v48-final-gate-v1',
+            'variant': os.environ['FA_V48_VARIANT'],
+            'source_sha256': m.get('source_sha256'),
+            'Mock2_exit': m.get('Mock2_exit'),
+            'Mock2_Advanced_exit': m.get('Mock2_Advanced_exit'),
+            'FA_exit': fa,
+            'direct_lean_verified': m.get('direct_lean_verified'),
+            'all_required_lean_executed': m.get('all_required_lean_executed'),
+            'error_count': m.get('FA_error_headers_captured'),
+            'first_error_line': m.get('FA_first_actual_error_line'),
+            'first_error_col': m.get('FA_first_actual_error_col'),
+            'first_error_declaration': m.get('FA_first_error_declaration'),
+            'first_error_declaration_index': m.get('FA_first_error_declaration_index'),
+            'unique_error_declarations': m.get('unique_declarations_with_errors'),
+            'unique_signatures': m.get('unique_normalized_message_signatures'),
+            'trust_six_zero': m.get('source_executable_trust_six_zero'),
+            'synthetic_sorry_count': m.get('synthetic_declaration_uses_sorry_warning_count'),
+            'status': 'PASS' if fa == 0 and m.get('Mock2_exit') == 0 and m.get('Mock2_Advanced_exit') == 0 else 'FAIL',
+          }
+          (out / 'FINAL_GATE.json').write_text(json.dumps(gate, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(gate, indent=2, sort_keys=True))
+          PY
+
+      - name: Step-outcome snapshot
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out = Path(os.environ['FA_V48_OUT'])
+          rows = {
+            'materialize': '${{ steps.materialize.outcome }}',
+            'install': '${{ steps.install.outcome }}',
+            'direct_lean': '${{ steps.direct_lean.outcome }}',
+            'collect': '${{ steps.collect.outcome }}',
+          }
+          (out / 'STEP_OUTCOMES.json').write_text(json.dumps(rows, indent=2, sort_keys=True) + '\n')
+          PY
+
+      - name: Preserve actual FA direct exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FA_V48_OUT/Mock2_FunctionalAnalysis.exit"
+          fa_exit="$(tr -d '\r\n' < "$FA_V48_OUT/Mock2_FunctionalAnalysis.exit")"
+          case "$fa_exit" in
+            ''|*[!0-9]*) exit 86 ;;
+          esac
+          exit "$fa_exit"
+
+      - name: Upload exact variant source and all evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v48-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v48-clustered-six-variant-highcap2000/${{ matrix.variant }}
+          retention-days: 30
