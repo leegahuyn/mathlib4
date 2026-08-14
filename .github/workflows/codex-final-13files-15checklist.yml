@@ -1,0 +1,436 @@
+name: Codex final 13-file clean build and 15-checklist gate
+run-name: "Codex: verify all 13 Lean files and all 15 final requirements"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-qym-cleanbuild-final-20260811-fast
+    paths:
+      - PrimalitySheafVerification/Spt1.lean
+      - PrimalitySheafVerification/Spt2.lean
+      - PrimalitySheafVerification/Spt3.lean
+      - PrimalitySheafVerification/Spt4.lean
+      - PrimalitySheafVerification/Spt5.lean
+      - PrimalitySheafVerification/Spt6.lean
+      - PrimalitySheafVerification/Spt7.lean
+      - PrimalitySheafVerification/Mock1.lean
+      - PrimalitySheafVerification/Mock1_Advanced.lean
+      - PrimalitySheafVerification/Mock2.lean
+      - PrimalitySheafVerification/Mock2_Advanced.lean
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      - PrimalitySheafVerification/QYM.lean
+      - scripts/final13_15checklist.py
+      - .github/workflows/codex-final-13files-15checklist.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: codex-final13-15check-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: exact fresh 13-file direct and clean-build verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      FINAL_OUT: build-logs/final13-15check/${{ github.sha }}
+      TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: 1. Lock exact repository identity and pristine checkout
+        id: provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FINAL_OUT"
+          git rev-parse HEAD | tee "$FINAL_OUT/checkout-head.txt"
+          git status --porcelain=v1 | tee "$FINAL_OUT/checkout-status-before.txt"
+          test "$(tr -d '\r\n' < "$FINAL_OUT/checkout-head.txt")" = "$GITHUB_SHA"
+          test ! -s "$FINAL_OUT/checkout-status-before.txt"
+          git log -1 --format=fuller >"$FINAL_OUT/source-commit.txt"
+          git remote -v >"$FINAL_OUT/git-remotes.txt"
+
+      - name: 2-3. Install exact Lean pin and record Mathlib manifest identity
+        id: environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          raw_toolchain="$(tr -d '\r\n' < lean-toolchain)"
+          printf '%s\n' "${raw_toolchain##*:}" | sed 's/^v//' >"$FINAL_OUT/lean-toolchain.txt"
+          cp lean-toolchain "$FINAL_OUT/lean-toolchain.raw.txt"
+          cp lake-manifest.json "$FINAL_OUT/lake-manifest.json"
+          cp lakefile.lean "$FINAL_OUT/lakefile.lean"
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FINAL_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$raw_toolchain" >"$FINAL_OUT/toolchain-install.log" 2>&1
+          lake exe cache get >"$FINAL_OUT/cache-initial.log" 2>&1
+          lean --version | tee "$FINAL_OUT/lean-version.txt"
+          lake --version | tee "$FINAL_OUT/lake-version.txt"
+          sha256sum lean-toolchain lake-manifest.json lakefile.lean \
+            >"$FINAL_OUT/environment.sha256"
+
+      - name: 4-9. Inventory all 13 exact sources and six trust channels
+        id: inventory_before
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/final13_15checklist.py inventory \
+            --repo . \
+            --out "$FINAL_OUT/SOURCE_MANIFEST.before.json" \
+            --phase before
+
+      - name: 10. First direct Lean pass over every required file in canonical order
+        id: pass1
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          out="$FINAL_OUT"
+          files=(
+            PrimalitySheafVerification/Spt1.lean
+            PrimalitySheafVerification/Spt2.lean
+            PrimalitySheafVerification/Spt3.lean
+            PrimalitySheafVerification/Spt4.lean
+            PrimalitySheafVerification/Spt5.lean
+            PrimalitySheafVerification/Spt6.lean
+            PrimalitySheafVerification/Spt7.lean
+            PrimalitySheafVerification/Mock1.lean
+            PrimalitySheafVerification/Mock1_Advanced.lean
+            PrimalitySheafVerification/Mock2.lean
+            PrimalitySheafVerification/Mock2_Advanced.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/QYM.lean
+          )
+          mkdir -p "$out/direct-pass1"
+          : >"$out/direct-pass1.tsv"
+          for file in "${files[@]}"; do
+            key="$(basename "$file" .lean)"
+            if [[ ! -f "$file" ]]; then
+              printf '%s\tMISSING\t127\n' "$file" | tee -a "$out/direct-pass1.tsv"
+              continue
+            fi
+            if lake env lean -DmaxErrors=2000 "$file" >"$out/direct-pass1/${key}.log" 2>&1; then
+              code=0
+            else
+              code=$?
+            fi
+            printf '%s\tEXECUTED\t%s\n' "$file" "$code" | tee -a "$out/direct-pass1.tsv"
+            printf '%s\n' "$code" >"$out/direct-pass1/${key}.exit"
+          done
+          exit 0
+
+      - name: 11. Re-run the strict Mock2 to FA to QYM dependency chain
+        id: core_chain
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          out="$FINAL_OUT"
+          core=(
+            PrimalitySheafVerification/Mock2.lean
+            PrimalitySheafVerification/Mock2_Advanced.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/QYM.lean
+          )
+          mkdir -p "$out/core-chain"
+          rm -f \
+            PrimalitySheafVerification/Mock2.olean \
+            PrimalitySheafVerification/Mock2_Advanced.olean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean \
+            PrimalitySheafVerification/QYM.olean
+          : >"$out/core-chain.tsv"
+          for file in "${core[@]}"; do
+            key="$(basename "$file" .lean)"
+            if lake env lean -DmaxErrors=2000 "$file" >"$out/core-chain/${key}.log" 2>&1; then
+              code=0
+            else
+              code=$?
+            fi
+            printf '%s\tEXECUTED\t%s\n' "$file" "$code" | tee -a "$out/core-chain.tsv"
+            printf '%s\n' "$code" >"$out/core-chain/${key}.exit"
+          done
+          exit 0
+
+      - name: 12. Delete custom build products, lake clean, restore cache, and build pinned project
+        id: lake_clean_build
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          find PrimalitySheafVerification -type f \( -name '*.olean' -o -name '*.ilean' -o -name '*.c' \) -delete
+          if lake clean >"$FINAL_OUT/lake-clean.log" 2>&1; then clean_exit=0; else clean_exit=$?; fi
+          printf '%s\n' "$clean_exit" >"$FINAL_OUT/lake-clean.exit"
+          if lake exe cache get >"$FINAL_OUT/cache-restore-after-clean.log" 2>&1; then cache_exit=0; else cache_exit=$?; fi
+          printf '%s\n' "$cache_exit" >"$FINAL_OUT/cache-restore-after-clean.exit"
+          if lake build >"$FINAL_OUT/lake-build.log" 2>&1; then build_exit=0; else build_exit=$?; fi
+          printf '%s\n' "$build_exit" >"$FINAL_OUT/lake-build.exit"
+          exit 0
+
+      - name: 14a. Second direct Lean pass from the post-clean environment
+        id: pass2
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          out="$FINAL_OUT"
+          files=(
+            PrimalitySheafVerification/Spt1.lean
+            PrimalitySheafVerification/Spt2.lean
+            PrimalitySheafVerification/Spt3.lean
+            PrimalitySheafVerification/Spt4.lean
+            PrimalitySheafVerification/Spt5.lean
+            PrimalitySheafVerification/Spt6.lean
+            PrimalitySheafVerification/Spt7.lean
+            PrimalitySheafVerification/Mock1.lean
+            PrimalitySheafVerification/Mock1_Advanced.lean
+            PrimalitySheafVerification/Mock2.lean
+            PrimalitySheafVerification/Mock2_Advanced.lean
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+            PrimalitySheafVerification/QYM.lean
+          )
+          find PrimalitySheafVerification -type f \( -name '*.olean' -o -name '*.ilean' \) -delete
+          mkdir -p "$out/direct-pass2"
+          : >"$out/direct-pass2.tsv"
+          for file in "${files[@]}"; do
+            key="$(basename "$file" .lean)"
+            if [[ ! -f "$file" ]]; then
+              printf '%s\tMISSING\t127\n' "$file" | tee -a "$out/direct-pass2.tsv"
+              continue
+            fi
+            if lake env lean -DmaxErrors=2000 "$file" >"$out/direct-pass2/${key}.log" 2>&1; then
+              code=0
+            else
+              code=$?
+            fi
+            printf '%s\tEXECUTED\t%s\n' "$file" "$code" | tee -a "$out/direct-pass2.tsv"
+            printf '%s\n' "$code" >"$out/direct-pass2/${key}.exit"
+          done
+          exit 0
+
+      - name: 13. Compile one aggregate module importing all 13 required modules
+        id: aggregate
+        shell: bash
+        run: |
+          set -uo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          mkdir -p "$FINAL_OUT/generated"
+          cat >"$FINAL_OUT/generated/All13Smoke.lean" <<'LEAN'
+          import PrimalitySheafVerification.Spt1
+          import PrimalitySheafVerification.Spt2
+          import PrimalitySheafVerification.Spt3
+          import PrimalitySheafVerification.Spt4
+          import PrimalitySheafVerification.Spt5
+          import PrimalitySheafVerification.Spt6
+          import PrimalitySheafVerification.Spt7
+          import PrimalitySheafVerification.Mock1
+          import PrimalitySheafVerification.Mock1_Advanced
+          import PrimalitySheafVerification.Mock2
+          import PrimalitySheafVerification.Mock2_Advanced
+          import PrimalitySheafVerification.Mock2_FunctionalAnalysis
+          import PrimalitySheafVerification.QYM
+          LEAN
+          if lake env lean -DmaxErrors=2000 "$FINAL_OUT/generated/All13Smoke.lean" \
+              >"$FINAL_OUT/aggregate-import.log" 2>&1; then
+            code=0
+          else
+            code=$?
+          fi
+          printf '%s\n' "$code" >"$FINAL_OUT/aggregate-import.exit"
+          exit 0
+
+      - name: 14b. Re-inventory sources and audit all compiler logs
+        id: inventory_after
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/final13_15checklist.py inventory \
+            --repo . \
+            --out "$FINAL_OUT/SOURCE_MANIFEST.after.json" \
+            --phase after
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          root = Path(os.environ['FINAL_OUT'])
+          logs = list(root.glob('direct-pass1/*.log')) + list(root.glob('direct-pass2/*.log')) + list(root.glob('core-chain/*.log')) + [root / 'aggregate-import.log', root / 'lake-build.log']
+          error_headers = []
+          sorry_warnings = []
+          cap_sentinels = []
+          for path in logs:
+              if not path.exists():
+                  continue
+              text = path.read_text(errors='replace')
+              for line in text.splitlines():
+                  if re.search(r':\d+:\d+:\s+error:', line):
+                      error_headers.append({'file': str(path), 'line': line[:1000]})
+                  if "declaration uses 'sorry'" in line or 'declaration uses ‘sorry’' in line:
+                      sorry_warnings.append({'file': str(path), 'line': line[:1000]})
+                  if 'maximum number of errors' in line.lower():
+                      cap_sentinels.append({'file': str(path), 'line': line[:1000]})
+          report = {
+              'schema': 'final13-compiler-warning-audit-v1',
+              'logs_examined': len([p for p in logs if p.exists()]),
+              'error_header_count': len(error_headers),
+              'synthetic_sorry_warning_count': len(sorry_warnings),
+              'max_error_cap_sentinel_count': len(cap_sentinels),
+              'error_headers': error_headers,
+              'synthetic_sorry_warnings': sorry_warnings,
+              'max_error_cap_sentinels': cap_sentinels,
+          }
+          (root / 'COMPILER_WARNING_AUDIT.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Evaluate checklist items 1 through 14
+        id: first14
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/final13_15checklist.py first14 \
+            --evidence "$FINAL_OUT" \
+            --github-sha "$GITHUB_SHA"
+          status="$(python3 -c 'import json,sys; print(str(json.load(open(sys.argv[1]))["all_first14_pass"]).lower())' "$FINAL_OUT/FIRST14_GATE.json")"
+          printf 'all_first14_pass=%s\n' "$status" >>"$GITHUB_OUTPUT"
+
+      - name: Build a cryptographic manifest for the complete raw evidence set
+        id: bundle
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root = Path(os.environ['FINAL_OUT'])
+          excluded = {'EVIDENCE_BUNDLE_MANIFEST.json', 'TAG_STATUS.json', 'FINAL_15_CHECKLIST.json', 'FINAL_15_CHECKLIST.md'}
+          rows = []
+          for path in sorted(p for p in root.rglob('*') if p.is_file() and p.name not in excluded):
+              raw = path.read_bytes()
+              rows.append({
+                  'path': str(path.relative_to(root)),
+                  'bytes': len(raw),
+                  'sha256': hashlib.sha256(raw).hexdigest(),
+              })
+          report = {
+              'schema': 'final13-evidence-bundle-manifest-v1',
+              'status': 'PASS' if rows else 'FAIL',
+              'github_sha': os.environ['GITHUB_SHA'],
+              'file_count': len(rows),
+              'total_bytes': sum(row['bytes'] for row in rows),
+              'files': rows,
+          }
+          (root / 'EVIDENCE_BUNDLE_MANIFEST.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: 15. Verify current branch identity and create immutable clean-source tag
+        id: tag
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          tag="lean13-clean-15check-${GITHUB_SHA:0:12}"
+          git fetch origin "$TARGET_BRANCH" --depth=1
+          remote_head="$(git rev-parse "origin/$TARGET_BRANCH")"
+          status=FAIL
+          reason=""
+          observed=""
+          if [[ "$(python3 -c 'import json,sys; print(str(json.load(open(sys.argv[1]))["all_first14_pass"]).lower())' "$FINAL_OUT/FIRST14_GATE.json")" != true ]]; then
+            reason="first 14 gates are not all PASS"
+          elif [[ "$remote_head" != "$GITHUB_SHA" ]]; then
+            reason="target branch advanced during verification"
+          elif git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            observed="$(git rev-parse "refs/tags/$tag^{}")"
+            if [[ "$observed" == "$GITHUB_SHA" ]]; then status=PASS; reason="existing tag verified"; else reason="existing tag points elsewhere"; fi
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            if git tag -a "$tag" "$GITHUB_SHA" -m "13 Lean files clean; all 15 final checks verified" \
+                && git push origin "refs/tags/$tag"; then
+              observed="$(git rev-parse "refs/tags/$tag^{}")"
+              if [[ "$observed" == "$GITHUB_SHA" ]]; then status=PASS; reason="new immutable tag created and verified"; else reason="tag dereference mismatch"; fi
+            else
+              reason="tag creation or push failed"
+            fi
+          fi
+          python3 - "$FINAL_OUT/TAG_STATUS.json" "$status" "$tag" "$GITHUB_SHA" "$remote_head" "$observed" "$reason" <<'PY'
+          import json, sys
+          out, status, tag, target, remote, observed, reason = sys.argv[1:]
+          report = {
+              'schema': 'final13-tag-status-v1',
+              'status': status,
+              'tag': tag,
+              'target_sha': target,
+              'remote_branch_sha_at_tag_time': remote,
+              'observed_tag_target': observed or None,
+              'reason': reason,
+          }
+          open(out, 'w').write(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+          exit 0
+
+      - name: Finalize the exact 15-item gate and human-readable report
+        id: final_gate
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/final13_15checklist.py finalize \
+            --evidence "$FINAL_OUT" \
+            --github-sha "$GITHUB_SHA"
+          status="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["status"])' "$FINAL_OUT/FINAL_15_CHECKLIST.json")"
+          printf 'status=%s\n' "$status" >>"$GITHUB_OUTPUT"
+
+      - name: Persist compact final evidence on the branch only for a true 15/15 pass
+        if: always() && steps.final_gate.outputs.status == 'PASS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH" --depth=1
+          test "$(git rev-parse "origin/$TARGET_BRANCH")" = "$GITHUB_SHA"
+          destination="build-evidence/final13/${GITHUB_SHA}"
+          mkdir -p "$destination"
+          cp "$FINAL_OUT/FINAL_15_CHECKLIST.json" "$destination/"
+          cp "$FINAL_OUT/FINAL_15_CHECKLIST.md" "$destination/"
+          cp "$FINAL_OUT/FIRST14_GATE.json" "$destination/"
+          cp "$FINAL_OUT/SOURCE_MANIFEST.before.json" "$destination/SOURCE_MANIFEST.json"
+          cp "$FINAL_OUT/EVIDENCE_BUNDLE_MANIFEST.json" "$destination/"
+          cp "$FINAL_OUT/TAG_STATUS.json" "$destination/"
+          cp "$FINAL_OUT/direct-pass1.tsv" "$destination/"
+          cp "$FINAL_OUT/direct-pass2.tsv" "$destination/"
+          cp "$FINAL_OUT/core-chain.tsv" "$destination/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$destination"
+          git commit -m "Codex: record final Lean 13-file 15/15 clean-build evidence"
+          git push origin HEAD:"$TARGET_BRANCH"
+
+      - name: Upload complete raw 13-file and 15-checklist evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-final13-15check-${{ github.sha }}
+          path: build-logs/final13-15check/${{ github.sha }}
+          retention-days: 90
+
+      - name: Preserve the authoritative final 15-item result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FINAL_OUT/FINAL_15_CHECKLIST.json"
+          status="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["status"])' "$FINAL_OUT/FINAL_15_CHECKLIST.json")"
+          test "$status" = PASS
