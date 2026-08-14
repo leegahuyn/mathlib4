@@ -1,5 +1,5 @@
 name: Codex FA v51 change-of-variables API probe
-run-name: "Codex: probe pinned complex set-integral change-of-variables"
+run-name: "Codex: probe pinned complex set-integral change-of-variables v2"
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)"
           lake exe cache get
           lean --version
-      - name: Compile exact pinned API probes
+      - name: Compile exact pinned proof shapes
         shell: bash
         run: |
           set -euo pipefail
@@ -42,16 +42,11 @@ jobs:
           import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
           import Mathlib.MeasureTheory.Integral.Bochner.Set
           import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
-          import Mathlib.Analysis.InnerProductSpace.PiL2
+          import Mathlib.LinearAlgebra.Complex.FiniteDimensional
           import Mathlib.Tactic
 
           open scoped Pointwise
           open MeasureTheory Set
-
-          #check Measure.setIntegral_comp_smul_of_pos
-          #check Complex.volume_preserving_equiv_pi
-          #check MeasurePreserving.setIntegral_image_emb
-          #check setIntegral_congr_fun
 
           example (R : ℝ) (hR : 0 < R) (f : ℂ → ℂ) (s : Set ℂ) :
               (∫ x in R • s, f x) =
@@ -70,9 +65,8 @@ jobs:
                 rw [h]
 
           example (g : ℂ → ℂ) (s : Set (Fin 2 → ℝ)) :
-              (∫ x in s, g (Complex.measurableEquivPi.symm x)) =
-                ∫ w in Complex.measurableEquivPi.symm '' s, g w := by
-            symm
+              (∫ w in Complex.measurableEquivPi.symm '' s, g w) =
+                ∫ x in s, g (Complex.measurableEquivPi.symm x) := by
             exact Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
               Complex.measurableEquivPi.symm.measurableEmbedding g s
 
@@ -85,36 +79,30 @@ jobs:
               (∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) =
                   (R : ℂ) ^ 2 *
                     ∫ w in Complex.measurableEquivPi.symm '' s, g (R • w) := by
-                exact (show
-                  (∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) =
-                    (R : ℂ) ^ 2 *
-                      ∫ w in Complex.measurableEquivPi.symm '' s, g (R • w) from by
-                    have h := Measure.setIntegral_comp_smul_of_pos
-                      (E := ℂ) (F := ℂ) volume g
-                      (Complex.measurableEquivPi.symm '' s) hR
-                    rw [Complex.finrank_real_complex] at h
-                    calc
-                      _ = (R : ℂ) ^ 2 *
-                          (((R ^ 2)⁻¹ : ℝ) •
-                            ∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) := by
-                        simp only [Complex.real_smul]
-                        push_cast
-                        field_simp [hR.ne']
-                      _ = _ := by rw [h])
+                have h := Measure.setIntegral_comp_smul_of_pos
+                  (E := ℂ) (F := ℂ) volume g
+                  (Complex.measurableEquivPi.symm '' s) hR
+                rw [Complex.finrank_real_complex] at h
+                calc
+                  _ = (R : ℂ) ^ 2 *
+                      (((R ^ 2)⁻¹ : ℝ) •
+                        ∫ w in R • (Complex.measurableEquivPi.symm '' s), g w) := by
+                    simp only [Complex.real_smul]
+                    push_cast
+                    field_simp [hR.ne']
+                  _ = _ := by rw [h]
               _ = (R : ℂ) ^ 2 *
                     ∫ x in s, g (R • Complex.measurableEquivPi.symm x) := by
-                congr 1
-                symm
-                exact Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+                rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
                   Complex.measurableEquivPi.symm.measurableEmbedding
-                  (fun w : ℂ => g (R • w)) s
+                  (fun w : ℂ => g (R • w)) s]
           LEAN
           lake env lean -DwarningAsError=false /tmp/FAV51ChangeVarProbe.lean 2>&1 | tee /tmp/FAV51ChangeVarProbe.log
       - name: Upload probe evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@eaa165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v51-changevar-api-probe-${{ github.sha }}
+          name: codex-fa-v51-changevar-api-probe-v2-${{ github.sha }}
           path: |
             /tmp/FAV51ChangeVarProbe.lean
             /tmp/FAV51ChangeVarProbe.log
