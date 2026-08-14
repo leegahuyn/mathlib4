@@ -1,0 +1,62 @@
+name: Codex QYM v3 postsearch inventory
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/QYM_V2_SELECTION.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Download exact selected QYM v2 artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .github/codex/QYM_V2_SELECTION.json
+          rm -rf /tmp/qym-v3 /tmp/qym-v3.zip;mkdir -p /tmp/qym-v3 .github/codex
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.load(open('.github/codex/QYM_V2_SELECTION.json'));assert r['schema']=='qym-v2-strict-selector-v1';rec={x['variant']:x for x in r['records']}[r['selected_variant']];assert rec['source_sha256']==r['selected_source_sha256'];Path('/tmp/qv3-run').write_text(str(r['github_run_id']));Path('/tmp/qv3-head').write_text(r['github_sha']);Path('/tmp/qv3-name').write_text(rec['artifact_directory']);Path('/tmp/qv3-sha').write_text(r['selected_source_sha256'])
+          PY
+          run="$(cat /tmp/qv3-run)";head="$(cat /tmp/qv3-head)";name="$(cat /tmp/qv3-name)";gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run}" >/tmp/qv3-run.json;gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run}/artifacts?per_page=100" >/tmp/qv3-list.json
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          run=json.load(open('/tmp/qv3-run.json'));ls=json.load(open('/tmp/qv3-list.json'));rid=int(Path('/tmp/qv3-run').read_text());head=Path('/tmp/qv3-head').read_text();name=Path('/tmp/qv3-name').read_text();assert int(run['id'])==rid and run['head_sha']==head and run['head_branch']==os.environ['TARGET_BRANCH'] and run['status']=='completed';xs=[a for a in ls['artifacts'] if a['name']==name];assert len(xs)==1,(name,xs);a=xs[0];assert not a['expired'] and int(a['workflow_run']['id'])==rid and a['workflow_run']['head_sha']==head;Path('/tmp/qv3-artifact.json').write_text(json.dumps(a,indent=2,sort_keys=True));Path('/tmp/qv3-id').write_text(str(a['id']));Path('/tmp/qv3-digest').write_text(a['digest'])
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/$(cat /tmp/qv3-id)/zip" >/tmp/qym-v3.zip;test "sha256:$(sha256sum /tmp/qym-v3.zip|awk '{print $1}')" = "$(cat /tmp/qv3-digest)";unzip -q /tmp/qym-v3.zip -d /tmp/qym-v3
+      - name: Build exact QYM v3 inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os
+          root=Path('/tmp/qym-v3');ss=list(root.rglob('QYM-candidate.lean'));ms=list(root.rglob('METRIC.json'));assert len(ss)==1 and len(ms)==1;s=ss[0].read_text();sha=hashlib.sha256(s.encode()).hexdigest();assert sha==Path('/tmp/qv3-sha').read_text();m=json.loads(ms[0].read_text());assert m['source_sha256']==sha and m['QYM_error_cap_sentinel_present'] is False and m['QYM_inventory_complete_by_header_evidence'] is True and m['source_executable_trust_six_zero'] is True
+          current=[p for p in Path('.').rglob('QYM.lean') if '.lake' not in p.parts and 'build-logs' not in p.parts];assert len(current)==1,current;assert hashlib.sha256(current[0].read_bytes()).hexdigest()==sha
+          parent=json.load(open('.github/codex/QYM_V2_SELECTION.json'));a=json.load(open('/tmp/qv3-artifact.json'));r={'schema':'qym-v3-complete-inventory-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':os.environ['GITHUB_SHA'],'target_branch':os.environ['TARGET_BRANCH'],'parent_selection_run_id':parent['github_run_id'],'parent_selection_head_sha':parent['github_sha'],'selected_variant':parent['selected_variant'],'selected_source_sha256':sha,'selected_artifact_id':a['id'],'selected_artifact_name':a['name'],'selected_artifact_digest':a['digest'],'selected_artifact_expired':a['expired'],'QYM_exit':int(m['QYM_exit']),'QYM_error_count':int(m['QYM_error_count']),'QYM_failing_declaration_count':int(m['QYM_failing_declaration_count']),'QYM_unique_error_signature_count':int(m['QYM_unique_error_signature_count']),'QYM_warning_count':int(m['QYM_warning_count']),'QYM_compile_max_errors':int(m['QYM_compile_max_errors']),'QYM_error_cap_sentinel_present':m['QYM_error_cap_sentinel_present'],'QYM_inventory_complete_by_header_evidence':m['QYM_inventory_complete_by_header_evidence'],'trust_six_zero':m['source_executable_trust_six_zero'],'qym_clean_build_claimed':int(m['QYM_exit'])==0 and int(m['QYM_error_count'])==0,'qym_direct_lean_verified':int(m['QYM_exit'])==0 and int(m['QYM_error_count'])==0,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'errors':m['errors']};assert (r['QYM_exit']==0)==(r['QYM_error_count']==0);Path('.github/codex/QYM_V3_INVENTORY.json').write_text(json.dumps(r,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          PY
+      - name: Commit inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com";git add .github/codex/QYM_V3_INVENTORY.json;if git diff --cached --quiet;then exit 0;fi;git commit -m "Codex: record exact QYM v3 inventory";git pull --rebase origin "$TARGET_BRANCH";git push origin "HEAD:$TARGET_BRANCH"
