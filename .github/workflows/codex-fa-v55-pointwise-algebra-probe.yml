@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
 
+# This is a narrow pinned-Mathlib API/algebra probe, not a module PASS gate.
 jobs:
   probe:
     runs-on: ubuntu-latest
