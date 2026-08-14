@@ -45,77 +45,63 @@ jobs:
           lake exe cache get >/tmp/cache.log 2>&1
           lean --version
 
-      - name: Compile exact bridge probe
+      - name: Materialize exact bridge probe
         shell: bash
         env:
           VARIANT: ${{ matrix.variant }}
         run: |
           set -euo pipefail
-          export PATH="$HOME/.elan/bin:$PATH"
-          mkdir -p build-logs/fa-v48-dx-probe/${VARIANT}
-          body=''
-          case "$VARIANT" in
-            current_simpa)
-              body=$(cat <<'EOF'
-  simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
-    ((hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-      (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left)
-EOF
-              )
-              ;;
-            direct_change)
-              body=$(cat <<'EOF'
-  change Integrable
-    (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
-    (volume : Measure ℂ)
-  exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-    (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
-EOF
-              )
-              ;;
-            integrable_congr)
-              body=$(cat <<'EOF'
-  have h : Integrable
-      (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
-      (volume : Measure ℂ) :=
-    (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-      (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
-  refine h.congr ?_
-  filter_upwards with w
-  rw [HalfWeightCompactCoordinateGreen.dx_apply]
-EOF
-              )
-              ;;
-            function_rw)
-              body=$(cat <<'EOF'
-  have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
-      fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
-    funext w
-    exact HalfWeightCompactCoordinateGreen.dx_apply v w
-  rw [← hdx]
-  exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-    (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
-EOF
-              )
-              ;;
-            local_complex_measurable)
-              body=$(cat <<'EOF'
-  letI : MeasurableSpace ℂ := Complex.measurableSpace
-  have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
-      fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
-    funext w
-    exact HalfWeightCompactCoordinateGreen.dx_apply v w
-  rw [← hdx]
-  exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-    (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
-EOF
-              )
-              ;;
-            *) exit 97 ;;
-          esac
+          mkdir -p "build-logs/fa-v48-dx-probe/${VARIANT}"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, textwrap
 
-          cat > /tmp/ProbeDxBridge.lean <<EOF
-          import PrimalitySheafVerification.Mock2_Advanced
+          bodies = {
+            "current_simpa": r'''
+              simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
+                ((hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                  (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left)
+            ''',
+            "direct_change": r'''
+              change Integrable
+                (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
+                (volume : Measure ℂ)
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+            "integrable_congr": r'''
+              have h : Integrable
+                  (fun w : ℂ ↦ g w * HalfWeightCompactCoordinateGreen.dx v w)
+                  (volume : Measure ℂ) :=
+                (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                  (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+              refine h.congr ?_
+              filter_upwards with w
+              rw [HalfWeightCompactCoordinateGreen.dx_apply]
+            ''',
+            "function_rw": r'''
+              have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+                  fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+                funext w
+                exact HalfWeightCompactCoordinateGreen.dx_apply v w
+              rw [← hdx]
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+            "local_complex_measurable": r'''
+              letI : MeasurableSpace ℂ := Complex.measurableSpace
+              have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+                  fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+                funext w
+                exact HalfWeightCompactCoordinateGreen.dx_apply v w
+              rw [← hdx]
+              exact (hg.mul (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+                (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+            ''',
+          }
+          variant = os.environ["VARIANT"]
+          body = textwrap.dedent(bodies[variant]).strip("\n")
+          source = f'''import PrimalitySheafVerification.Mock2_Advanced
 
           open Set Function Topology Filter MeasureTheory Metric
           open Mock2FA.PaperCorrections.AutomorphicSobolev
@@ -129,17 +115,26 @@ EOF
               Integrable
                 (fun w : ℂ ↦ g w * (fderiv ℝ (v : ℂ → ℂ) w) 1)
                 (volume : Measure ℂ) := by
-          ${body}
-          EOF
-          sed -i 's/^          //' /tmp/ProbeDxBridge.lean
+          {body}
+          '''
+          Path('/tmp/ProbeDxBridge.lean').write_text(textwrap.dedent(source))
+          PY
+          cp /tmp/ProbeDxBridge.lean "build-logs/fa-v48-dx-probe/${VARIANT}/ProbeDxBridge.lean"
+
+      - name: Compile exact bridge probe
+        shell: bash
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
           set +e
           lake env lean -DwarningAsError=false /tmp/ProbeDxBridge.lean \
-            >build-logs/fa-v48-dx-probe/${VARIANT}/probe.log 2>&1
+            >"build-logs/fa-v48-dx-probe/${VARIANT}/probe.log" 2>&1
           rc=$?
           set -e
-          printf '%s\n' "$rc" >build-logs/fa-v48-dx-probe/${VARIANT}/exit.txt
-          cp /tmp/ProbeDxBridge.lean build-logs/fa-v48-dx-probe/${VARIANT}/ProbeDxBridge.lean
-          cat build-logs/fa-v48-dx-probe/${VARIANT}/probe.log
+          printf '%s\n' "$rc" >"build-logs/fa-v48-dx-probe/${VARIANT}/exit.txt"
+          cat "build-logs/fa-v48-dx-probe/${VARIANT}/probe.log"
           exit "$rc"
 
       - name: Upload probe evidence
