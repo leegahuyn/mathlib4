@@ -1,0 +1,264 @@
+name: Codex QYM v2 local search highcap2000
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/QYM_V1_INVENTORY.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  OUT_ROOT: build-logs/codex-qym-v2-local-search-highcap2000
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      has_errors: ${{ steps.state.outputs.has_errors }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+      - id: state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          r=json.load(open('.github/codex/QYM_V1_INVENTORY.json'))
+          assert r['schema']=='qym-v1-13file-direct-complete-inventory-v1'
+          prereq={k:v['exit'] for k,v in r['direct_results'].items() if k!='QYM'}
+          assert all(v==0 for v in prereq.values()),prereq
+          assert r['trust_six_zero_all_13'] is True
+          print('has_errors='+('true' if int(r['qym_raw_error_count'])>0 else 'false'))
+          PY
+
+  direct:
+    needs: [prepare]
+    if: needs.prepare.outputs.has_errors == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - selected_base
+          - exact_to_simpa
+          - simpa_enriched
+          - simp_all_local
+          - aesop_local
+          - linarith_local
+          - nlinarith_local
+          - ring_normalize_local
+          - combined_conservative
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      VARIANT: ${{ matrix.variant }}
+      OUT: build-logs/codex-qym-v2-local-search-highcap2000/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Resolve exact QYM source and apply local recipe
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re
+          inv=json.load(open('.github/codex/QYM_V1_INVENTORY.json'));variant=os.environ['VARIANT'];out=Path(os.environ['OUT'])
+          xs=[p for p in Path('.').rglob('QYM.lean') if '.lake' not in p.parts and 'build-logs' not in p.parts];assert len(xs)==1,xs;sp=xs[0];before=sp.read_text();assert hashlib.sha256(sp.read_bytes()).hexdigest()==inv['qym_source_sha256'];lines=before.splitlines(keepends=True)
+          decl_re=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+')
+          report={'schema':'qym-v2-inventory-local-body-only-search-v1','variant':variant,'parent_qym_source_sha256':inv['qym_source_sha256'],'parent_inventory_sha256':hashlib.sha256(Path('.github/codex/QYM_V1_INVENTORY.json').read_bytes()).hexdigest(),'qym_path':str(sp),'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'edits':[]}
+          def owner_ok(j):
+            starts=[i for i in range(j+1) if decl_re.match(lines[i])]
+            return bool(starts) and ':= by' in ''.join(lines[starts[-1]:j+1])
+          def owner_header(j):
+            starts=[i for i in range(j+1) if decl_re.match(lines[i])];return lines[starts[-1]].strip() if starts else None
+          def body(x):
+            y=x.lstrip();return y[2:].lstrip() if y.startswith('· ') else y
+          def near(n,pred,radius=6):
+            i=max(0,min(len(lines)-1,int(n)-1));order=[0]
+            for k in range(1,radius+1):order += [-k,k]
+            for o in order:
+              j=i+o
+              if 0<=j<len(lines) and owner_ok(j) and pred(lines[j]):return j
+            return None
+          def prefix(x):return re.match(r'^(\s*(?:·\s*)?)',x).group(1)
+          def nl(x):return '\n' if x.endswith('\n') else ''
+          def enrich(x):
+            lemmas='Function.comp_def, Pi.smul_apply'
+            if 'Function.comp_def' in x and 'Pi.smul_apply' in x:return x
+            if 'simpa only [' in x:return x.replace('simpa only [',f'simpa only [{lemmas}, ',1)
+            m=re.search(r'\bsimpa\s*\[',x)
+            if m:
+              p=x.find('[',m.start())+1;return x[:p]+lemmas+', '+x[p:]
+            if 'simpa using' in x:return x.replace('simpa using',f'simpa [{lemmas}] using',1)
+            return x
+          repl={}
+          def stage(j,new,kind,e):
+            old=repl.get(j,lines[j])
+            if new!=old:
+              repl[j]=new;report['edits'].append({'classification':kind,'line':j+1,'owner_header':owner_header(j),'old':old.rstrip('\n'),'new':new.rstrip('\n'),'error_index':e['index'],'error_classes':e['classes']})
+          for e in inv['qym_errors']:
+            classes=set(e['classes']);n=e['line']
+            if variant in {'exact_to_simpa','combined_conservative'}:
+              j=near(n,lambda x:body(x).startswith('exact '))
+              if j is not None:
+                old=repl.get(j,lines[j]);term=body(old).rstrip('\r\n')[len('exact '):]
+                if term and not term.startswith('by'):stage(j,prefix(old)+f'simpa [Function.comp_def, Pi.smul_apply] using {term}'+nl(old),'EXACT_TO_SIMPA_USING',e)
+            if variant in {'simpa_enriched','combined_conservative'}:
+              j=near(n,lambda x:'simpa' in body(x))
+              if j is not None:
+                old=repl.get(j,lines[j]);stage(j,enrich(old),'ENRICH_SIMPA_NORMALIZATION',e)
+            if variant=='simp_all_local' or (variant=='combined_conservative' and 'unsolved_goals' in classes):
+              j=near(n,lambda x:body(x).startswith(('exact ','simpa','simp','aesop','linarith','nlinarith','norm_num','ring','ring_nf','omega')))
+              if j is not None:
+                old=repl.get(j,lines[j]);stage(j,prefix(old)+'simp_all [Function.comp_def, Pi.smul_apply]'+nl(old),'LOCAL_SIMP_ALL',e)
+            if variant=='aesop_local':
+              j=near(n,lambda x:body(x).startswith(('exact ','simpa','simp','aesop','linarith','nlinarith','norm_num','ring','ring_nf','omega')))
+              if j is not None:
+                old=repl.get(j,lines[j]);stage(j,prefix(old)+'aesop'+nl(old),'LOCAL_AESOP',e)
+            if variant in {'linarith_local','nlinarith_local'} or (variant=='combined_conservative' and 'arithmetic' in classes):
+              tactic='linarith' if variant=='linarith_local' else 'nlinarith'
+              if variant=='combined_conservative':tactic='nlinarith'
+              if 'arithmetic' in classes or any(t in e['message'] for t in ('≤','<','>','=')):
+                j=near(n,lambda x:body(x).startswith(('exact ','simpa','linarith','nlinarith','norm_num','omega','positivity','ring','ring_nf')))
+                if j is not None:
+                  old=repl.get(j,lines[j]);stage(j,prefix(old)+tactic+nl(old),'LOCAL_ARITHMETIC_REPLACEMENT',e)
+            if variant=='ring_normalize_local' or (variant=='combined_conservative' and 'scalar_action' in classes):
+              j=near(n,lambda x:body(x).startswith(('ring','ring_nf','simpa','exact ')))
+              if j is not None:
+                old=repl.get(j,lines[j]);new=prefix(old)+'simp only [Pi.smul_apply] at *'+nl(old)+prefix(old)+'ring_nf'+nl(old);stage(j,new,'LOCAL_SCALAR_RING_NORMALIZATION',e)
+          for j,new in repl.items():lines[j]=new
+          after=''.join(lines);sp.write_text(after);report['candidate_sha256']=hashlib.sha256(after.encode()).hexdigest();report['source_bytes']=len(after.encode());report['source_lines']=len(after.splitlines());report['edit_count']=len(report['edits']);(out/'PATCH_REPORT.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n');(out/'candidate.sha256').write_text(report['candidate_sha256']+'\n');(out/'QYM-candidate.lean').write_text(after);(out/'qym-path.txt').write_text(str(sp)+'\n')
+          PY
+
+      - name: Fail-closed trust-six audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          out=Path(os.environ['OUT']);p=out/'PATCH_REPORT.json';r=json.loads(p.read_text());sp=Path((out/'qym-path.txt').read_text().strip());s=sp.read_text()
+          def clean(x):
+            c=list(x);i=0;d=0;q=False;e=False
+            while i<len(c):
+              if d:
+                if x.startswith('/-',i):c[i]=c[i+1]=' ';d+=1;i+=2;continue
+                if x.startswith('-/',i):c[i]=c[i+1]=' ';d-=1;i+=2;continue
+                if c[i]!='\n':c[i]=' '
+                i+=1;continue
+              if q:
+                o=c[i]
+                if o!='\n':c[i]=' '
+                if e:e=False
+                elif o=='\\':e=True
+                elif o=='"':q=False
+                i+=1;continue
+              if x.startswith('/-',i):c[i]=c[i+1]=' ';d=1;i+=2;continue
+              if x.startswith('--',i):
+                while i<len(c) and c[i]!='\n':c[i]=' ';i+=1
+                continue
+              if c[i]=='"':c[i]=' ';q=True
+              i+=1
+            return ''.join(c)
+          code=clean(s);ts=('sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool');cs={t:len(re.findall(r'(?<![A-Za-z0-9_])'+re.escape(t)+r'(?![A-Za-z0-9_])',code)) for t in ts};assert all(v==0 for v in cs.values()),cs;r['trust_counts_after']=cs;r['trust_six_zero']=True;p.write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1;export PATH="$HOME/.elan/bin:$PATH";elan toolchain install "$(tr -d '\r\n'<lean-toolchain)" >"$OUT/toolchain.log" 2>&1;lake exe cache get >"$OUT/cache.log" 2>&1;lean --version >"$OUT/lean-version.txt";lake --version >"$OUT/lake-version.txt"
+
+      - name: Directly compile QYM highcap2000
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH";file="$(cat "$OUT/qym-path.txt")";set +e;lake env lean -DmaxErrors=2000 "$file" >"$OUT/QYM.direct.log" 2>&1;code=$?;set -e;printf '%s\n' "$code" >"$OUT/QYM.exit";sha256sum "$OUT/QYM.direct.log" >"$OUT/QYM.direct.log.sha256"
+
+      - name: Collect complete QYM metric
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re
+          out=Path(os.environ['OUT']);sp=Path((out/'qym-path.txt').read_text().strip());s=sp.read_text();lines=s.splitlines();log=(out/'QYM.direct.log').read_text(errors='replace');exit_code=int((out/'QYM.exit').read_text());dr=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s:(]+)');decl=[]
+          for i,x in enumerate(lines,1):
+            m=dr.match(x)
+            if m:decl.append((i,m.group(1),x))
+          def owner(n):
+            z=[d for d in decl if d[0]<=n];return z[-1] if z else (None,None,None)
+          hr=re.compile(r'(?m)^.*QYM\.lean:(\d+):(\d+): error:(.*)$');hs=list(hr.finditer(log));errs=[]
+          for i,h in enumerate(hs):
+            n=int(h.group(1));c=int(h.group(2));b=log[h.start():(hs[i+1].start() if i+1<len(hs) else len(log))].strip();dl,dn,dh=owner(n);errs.append({'line':n,'column':c,'declaration_name':dn,'declaration_line':dl,'declaration_header':dh,'signature_sha256':hashlib.sha256(re.sub(r'\s+',' ',b).encode()).hexdigest(),'message':b[:12000]})
+          cnt=collections.Counter(e['declaration_name'] or '<none>' for e in errs);sigs=collections.Counter(e['signature_sha256'] for e in errs);warnings=len(re.findall(r'(?m)^.*warning:',log));cap=any(x in log.lower() for x in ('maximum number of errors','maxerrors','too many errors'));patch=json.loads((out/'PATCH_REPORT.json').read_text());metric={'schema':'qym-v2-direct-metric-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':os.environ['GITHUB_SHA'],'variant':os.environ['VARIANT'],'source_sha256':hashlib.sha256(s.encode()).hexdigest(),'source_lines':len(lines),'declaration_header_count':len(decl),'QYM_exit':exit_code,'QYM_error_count':len(errs),'QYM_failing_declaration_count':len(cnt),'QYM_unique_error_signature_count':len(sigs),'QYM_warning_count':warnings,'QYM_compile_max_errors':2000,'QYM_error_cap_sentinel_present':cap,'QYM_inventory_complete_by_header_evidence':not cap,'source_executable_trust_six_zero':patch['trust_six_zero'],'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'errors':errs};assert (exit_code==0)==(len(errs)==0);(out/'METRIC.json').write_text(json.dumps(metric,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Upload exact QYM candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-qym-v2-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-qym-v2-local-search-highcap2000/${{ matrix.variant }}
+          retention-days: 30
+
+      - name: Mirror QYM exit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          exit "$(tr -d '\r\n'<"$OUT/QYM.exit")"
+
+  select:
+    needs: [prepare,direct]
+    if: always() && needs.prepare.outputs.has_errors == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+      - shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qym-v2;mkdir -p /tmp/qym-v2;gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --dir /tmp/qym-v2
+      - shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/codex
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,re,shutil
+          root=Path('/tmp/qym-v2');vs=['selected_base','exact_to_simpa','simpa_enriched','simp_all_local','aesop_local','linarith_local','nlinarith_local','ring_normalize_local','combined_conservative'];dr=re.compile(r'^(?:protected\s+|private\s+|noncomputable\s+|local\s+)*(?:theorem|lemma|def|abbrev|instance|structure|class)\s+')
+          def one(x,b):z=list(b.rglob(x));assert len(z)==1,(x,z);return z[0]
+          rec=[];headers0=None
+          for v in vs:
+            ds=[p for p in root.iterdir() if p.is_dir() and f'-{v}-highcap2000-' in p.name];assert len(ds)==1,(v,ds);d=ds[0];m=json.loads(one('METRIC.json',d).read_text());p=json.loads(one('PATCH_REPORT.json',d).read_text());sp=one('QYM-candidate.lean',d);s=sp.read_text();sha=hashlib.sha256(s.encode()).hexdigest();assert sha==p['candidate_sha256']==m['source_sha256'];assert p['variant']==v==m['variant'];assert p['theorem_statements_changed'] is False and p['declaration_order_changed'] is False and p['source_moves']==[] and p['trust_six_zero'] is True and all(int(x)==0 for x in p['trust_counts_after'].values());assert m['QYM_error_cap_sentinel_present'] is False and m['QYM_inventory_complete_by_header_evidence'] is True;h=[x.rstrip('\n') for x in s.splitlines(keepends=True) if dr.match(x)];headers0=h if v=='selected_base' else headers0;assert h==headers0,v;rank=[0 if int(m['QYM_exit'])==0 else 1,int(m['QYM_error_count']),int(m['QYM_failing_declaration_count']),int(m['QYM_unique_error_signature_count']),int(m['QYM_warning_count'])];rec.append({'variant':v,'source_sha256':sha,'QYM_exit':int(m['QYM_exit']),'error_count':int(m['QYM_error_count']),'failing_declaration_count':int(m['QYM_failing_declaration_count']),'unique_error_signature_count':int(m['QYM_unique_error_signature_count']),'warning_count':int(m['QYM_warning_count']),'rank':rank,'artifact_directory':d.name,'candidate_path':str(sp)})
+          base=next(r for r in rec if r['variant']=='selected_base');best=min(rec,key=lambda r:(r['rank'],vs.index(r['variant'])));better=best['rank']<base['rank'];sel=best if better else base;r={'schema':'qym-v2-strict-selector-v1','github_run_id':os.environ['GITHUB_RUN_ID'],'github_sha':os.environ['GITHUB_SHA'],'target_branch':os.environ['TARGET_BRANCH'],'parent_inventory':json.loads(Path('.github/codex/QYM_V1_INVENTORY.json').read_text()),'baseline':base,'best_observed':best,'strictly_better':better,'selected_variant':sel['variant'],'selected_source_sha256':sel['source_sha256'],'source_update_authorized':better and sel['variant']!='selected_base','qym_clean_build_claimed':sel['QYM_exit']==0,'qym_direct_lean_verified':sel['QYM_exit']==0,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[],'records':rec};Path('.github/codex/QYM_V2_SELECTION.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');Path('/tmp/qym-v2-auth').write_text('1' if r['source_update_authorized'] else '0');
+          if r['source_update_authorized']:
+            xs=[p for p in Path('.').rglob('QYM.lean') if '.lake' not in p.parts and 'build-logs' not in p.parts];assert len(xs)==1;shutil.copyfile(sel['candidate_path'],xs[0])
+          PY
+      - shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]";git config user.email "41898282+github-actions[bot]@users.noreply.github.com";git add .github/codex/QYM_V2_SELECTION.json;if test "$(cat /tmp/qym-v2-auth)" = 1;then git add "$(find . -path './.lake' -prune -o -path './build-logs' -prune -o -name QYM.lean -print -quit)";fi;if git diff --cached --quiet;then exit 0;fi;git commit -m "Codex: record QYM v2 local-search selector result";git pull --rebase origin "$TARGET_BRANCH";git push origin "HEAD:$TARGET_BRANCH"
