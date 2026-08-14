@@ -1,0 +1,321 @@
+name: Codex final 13-file 15-check clean build
+
+on:
+  push:
+    branches: [codex/fa-qym-cleanbuild-final-20260811-fast]
+    paths:
+      - .github/codex/QYM_V1_INVENTORY.json
+      - .github/codex/QYM_V3_INVENTORY.json
+      - .github/codex/QYM_V5_INVENTORY.json
+  workflow_dispatch: {}
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  TARGET_BRANCH: codex/fa-qym-cleanbuild-final-20260811-fast
+  BASELINE_HEAD_SHA: b7e0ab4b983d55df33f6d4ac49cacf3830584d1a
+  OUT: build-logs/codex-final-13file-15check-cleanbuild
+  ALLOWED_AXIOMS: propext,Classical.choice,Quot.sound
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    outputs:
+      qym_clean: ${{ steps.pick.outputs.qym_clean }}
+      inventory_path: ${{ steps.pick.outputs.inventory_path }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 1
+          persist-credentials: false
+      - id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          from pathlib import Path
+          import hashlib,json,re
+          xs=[]
+          for p in Path('.github/codex').glob('QYM_V*_INVENTORY.json'):
+            m=re.fullmatch(r'QYM_V(\d+)_INVENTORY\.json',p.name)
+            if m:xs.append((int(m.group(1)),p))
+          assert xs,'No QYM inventory found'
+          _,p=max(xs);r=json.loads(p.read_text())
+          if r['schema']=='qym-v1-13file-direct-complete-inventory-v1':
+            clean=bool(r['qym_clean_build_claimed'] and r['qym_direct_lean_verified'] and int(r['qym_exit'])==0 and int(r['qym_raw_error_count'])==0);sha=r['qym_source_sha256']
+          else:
+            clean=bool(r['qym_clean_build_claimed'] and r['qym_direct_lean_verified'] and int(r['QYM_exit'])==0 and int(r['QYM_error_count'])==0);sha=r['selected_source_sha256']
+          q=[x for x in Path('.').rglob('QYM.lean') if '.lake' not in x.parts and 'build-logs' not in x.parts];assert len(q)==1,q;assert hashlib.sha256(q[0].read_bytes()).hexdigest()==sha
+          print('qym_clean='+('true' if clean else 'false'));print('inventory_path='+str(p))
+          PY
+
+  audit:
+    needs: [gate]
+    if: needs.gate.outputs.qym_clean == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    env:
+      QYM_INVENTORY_PATH: ${{ needs.gate.outputs.inventory_path }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-qym-cleanbuild-final-20260811-fast
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Check 01-08 provenance files preservation trust and theorem map
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT";mkdir -p "$OUT/direct-pass1" "$OUT/direct-pass2" "$OUT/axioms" "$OUT/builds" .github/codex
+          git cat-file -e "${BASELINE_HEAD_SHA}^{commit}"
+          python3 - <<'PY'
+          from pathlib import Path
+          import csv,hashlib,json,os,re,subprocess
+          out=Path(os.environ['OUT']);names=['Spt1.lean','Spt2.lean','Spt3.lean','Spt4.lean','Spt5.lean','Spt6.lean','Spt7.lean','Mock1.lean','Mock1_Advanced.lean','Mock2.lean','Mock2_Advanced.lean','Mock2_FunctionalAnalysis.lean','QYM.lean']
+          decl_re=re.compile(r'^(?P<prefix>(?:protected\s+|private\s+|noncomputable\s+|local\s+)*)(?P<kind>theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s:(]+)')
+          def strip_noncode(x):
+            c=list(x);i=0;d=0;q=False;e=False
+            while i<len(c):
+              if d:
+                if x.startswith('/-',i):c[i]=c[i+1]=' ';d+=1;i+=2;continue
+                if x.startswith('-/',i):c[i]=c[i+1]=' ';d-=1;i+=2;continue
+                if c[i]!='\n':c[i]=' '
+                i+=1;continue
+              if q:
+                old=c[i]
+                if old!='\n':c[i]=' '
+                if e:e=False
+                elif old=='\\':e=True
+                elif old=='"':q=False
+                i+=1;continue
+              if x.startswith('/-',i):c[i]=c[i+1]=' ';d=1;i+=2;continue
+              if x.startswith('--',i):
+                while i<len(c) and c[i]!='\n':c[i]=' ';i+=1
+                continue
+              if c[i]=='"':c[i]=' ';q=True
+              i+=1
+            return ''.join(c)
+          tokens=('sorry','admit','axiom','unsafe','native_decide','Lean.ofReduceBool')
+          files=[];theorem_map=[];baseline_comparisons=[]
+          for index,name in enumerate(names,1):
+            xs=[p for p in Path('.').rglob(name) if '.lake' not in p.parts and 'build-logs' not in p.parts];assert len(xs)==1,(name,xs);p=xs[0];raw=p.read_bytes();text=raw.decode();code=strip_noncode(text);counts={t:len(re.findall(r'(?<![A-Za-z0-9_])'+re.escape(t)+r'(?![A-Za-z0-9_])',code)) for t in tokens};assert all(v==0 for v in counts.values()),(name,counts)
+            lines=text.splitlines();decls=[]
+            for ln,line in enumerate(lines,1):
+              m=decl_re.match(line)
+              if m:decls.append({'line':ln,'kind':m.group('kind'),'name':m.group('name'),'header':line,'prefix':m.group('prefix')})
+            base=subprocess.check_output(['git','show',f"{os.environ['BASELINE_HEAD_SHA']}:{p.as_posix()}"],text=True);base_decls=[]
+            for ln,line in enumerate(base.splitlines(),1):
+              m=decl_re.match(line)
+              if m:base_decls.append({'line':ln,'kind':m.group('kind'),'name':m.group('name'),'header':line,'prefix':m.group('prefix')})
+            current_headers=[(d['kind'],d['name'],d['header']) for d in decls];base_headers=[(d['kind'],d['name'],d['header']) for d in base_decls];assert current_headers==base_headers,(name,len(base_headers),len(current_headers))
+            row={'index':index,'name':name,'path':p.as_posix(),'module':p.with_suffix('').as_posix().replace('/','.'),'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'lines':len(lines),'declaration_count':len(decls),'trust_counts':counts,'trust_six_zero':True,'baseline_declaration_count':len(base_decls),'baseline_headers_identical':True,'source_moved':False};files.append(row);baseline_comparisons.append({'name':name,'path':p.as_posix(),'baseline_sha':os.environ['BASELINE_HEAD_SHA'],'baseline_declaration_count':len(base_decls),'current_declaration_count':len(decls),'headers_identical_in_order':True})
+            for d in decls:theorem_map.append({'file':name,'path':p.as_posix(),**d})
+          assert len(files)==13 and [r['name'] for r in files]==names
+          (out/'FILES.json').write_text(json.dumps(files,indent=2,sort_keys=True)+'\n');(out/'THEOREM_MAP.json').write_text(json.dumps(theorem_map,indent=2,sort_keys=True,ensure_ascii=False)+'\n');(out/'BASELINE_DECLARATION_PRESERVATION.json').write_text(json.dumps(baseline_comparisons,indent=2,sort_keys=True)+'\n');(out/'file-order.txt').write_text('\n'.join(r['path'] for r in files)+'\n');(out/'SOURCE_HASHES_BEFORE.tsv').write_text('\n'.join(f"{r['sha256']}\t{r['path']}" for r in files)+'\n')
+          with (out/'THEOREM_MAP.csv').open('w',newline='') as f:
+            w=csv.DictWriter(f,fieldnames=['file','path','line','kind','name','header','prefix']);w.writeheader();w.writerows(theorem_map)
+          PY
+          git status --porcelain=v1 >"$OUT/git-status-before.txt"
+          test ! -s "$OUT/git-status-before.txt"
+
+      - name: Check 02-03 install exact pinned Lean and dependency lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s lean-toolchain
+          test -s lake-manifest.json
+          sha256sum lean-toolchain >"$OUT/lean-toolchain.sha256"
+          sha256sum lake-manifest.json >"$OUT/lake-manifest.sha256"
+          test ! -f lakefile.lean || sha256sum lakefile.lean >"$OUT/lakefile.sha256"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n'<lean-toolchain)" >"$OUT/toolchain.log" 2>&1
+          lake exe cache get >"$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          git rev-parse HEAD >"$OUT/audited-head-sha.txt"
+          test "$(cat "$OUT/audited-head-sha.txt")" = "$GITHUB_SHA"
+
+      - name: Check 09 exported declaration axiom audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          out=Path(os.environ['OUT']);files=json.loads((out/'FILES.json').read_text())
+          decl_re=re.compile(r'^(?P<prefix>(?:protected\s+|private\s+|noncomputable\s+|local\s+)*)(?P<kind>theorem|lemma|def|abbrev|instance|structure|class)\s+(?P<name>[^\s:(]+)')
+          generated=[]
+          for f in files:
+            text=Path(f['path']).read_text();blocks=[];names=[]
+            for line in text.splitlines():
+              s=line.strip()
+              mns=re.match(r'^namespace\s+([^\s]+)\s*$',s)
+              msec=re.match(r'^section(?:\s+([^\s]+))?\s*$',s)
+              mend=re.match(r'^end(?:\s+([^\s]+))?\s*$',s)
+              if mns:blocks.append(('namespace',mns.group(1),mns.group(1).split('.')));continue
+              if msec:blocks.append(('section',msec.group(1) or '',[]));continue
+              if mend:
+                label=mend.group(1)
+                if blocks:
+                  if label:
+                    found=None
+                    for i in range(len(blocks)-1,-1,-1):
+                      if blocks[i][1]==label or (blocks[i][2] and blocks[i][2][-1]==label):found=i;break
+                    if found is not None:blocks=blocks[:found]
+                    else:blocks.pop()
+                  else:blocks.pop()
+                continue
+              m=decl_re.match(line)
+              if not m:continue
+              prefix=m.group('prefix');name=m.group('name')
+              if 'private ' in prefix or 'local ' in prefix or name in {':','where'}:continue
+              if name.startswith('_root_.'):qualified=name[len('_root_.'):]
+              else:
+                ns=[]
+                for kind,label,parts in blocks:
+                  if kind=='namespace':ns.extend(parts)
+                qualified='.'.join(ns+[name]) if ns else name
+              names.append({'qualified_name':qualified,'kind':m.group('kind'),'source_name':name})
+            audit=Path('/tmp')/f"axiom_{Path(f['name']).stem}.lean";audit.write_text('import '+f['module']+'\n\n'+'\n'.join('#print axioms '+x['qualified_name'] for x in names)+'\n');generated.append({'file':f['name'],'module':f['module'],'audit_path':str(audit),'declarations':names})
+          (out/'AXIOM_AUDIT_PLAN.json').write_text(json.dumps(generated,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          PY
+          python3 - <<'PY' > /tmp/axiom-plan.tsv
+          import json,os
+          for x in json.load(open(os.environ['OUT']+'/AXIOM_AUDIT_PLAN.json')):print(x['file']+'\t'+x['audit_path'])
+          PY
+          : >"$OUT/AXIOM_AUDIT_EXIT.tsv"
+          while IFS=$'\t' read -r name audit;do
+            stem="${name%.lean}";set +e;lake env lean "$audit" >"$OUT/axioms/${stem}.axioms.log" 2>&1;code=$?;set -e;printf '%s\t%s\n' "$name" "$code" | tee -a "$OUT/AXIOM_AUDIT_EXIT.tsv";test "$code" = 0;sha256sum "$OUT/axioms/${stem}.axioms.log" >"$OUT/axioms/${stem}.axioms.log.sha256"
+          done </tmp/axiom-plan.tsv
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,re
+          out=Path(os.environ['OUT']);allowed=set(os.environ['ALLOWED_AXIOMS'].split(','));all_axioms=set();rows=[]
+          for p in sorted((out/'axioms').glob('*.axioms.log')):
+            text=p.read_text(errors='replace');used=[]
+            for m in re.finditer(r'depends on axioms:\s*\[([^\]]*)\]',text):
+              for x in m.group(1).split(','):
+                x=x.strip()
+                if x:used.append(x);all_axioms.add(x)
+            assert 'sorryAx' not in text,text[:1000]
+            unexpected=sorted(set(used)-allowed);assert not unexpected,(p,unexpected)
+            rows.append({'log':str(p),'sha256':__import__('hashlib').sha256(p.read_bytes()).hexdigest(),'axioms':sorted(set(used)),'unexpected_axioms':unexpected,'sorryAx_present':False})
+          r={'allowed_axioms':sorted(allowed),'observed_axioms':sorted(all_axioms),'unexpected_axioms':sorted(all_axioms-allowed),'sorryAx_present':False,'all_audit_compiles_exit_zero':True,'logs':rows};(out/'AXIOM_AUDIT_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Check 10-11 first direct Lean pass for all 13
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH";: >"$OUT/DIRECT_PASS1_EXIT.tsv"
+          while IFS= read -r file;do name="$(basename "$file" .lean)";set +e;lake env lean -DmaxErrors=2000 "$file" >"$OUT/direct-pass1/${name}.log" 2>&1;code=$?;set -e;printf '%s\t%s\t%s\n' "$name" "$code" "$file" | tee -a "$OUT/DIRECT_PASS1_EXIT.tsv";test "$code" = 0;! grep -Eq '(^|[[:space:]])error:' "$OUT/direct-pass1/${name}.log";! grep -q 'declaration uses.*sorry' "$OUT/direct-pass1/${name}.log";sha256sum "$OUT/direct-pass1/${name}.log" >"$OUT/direct-pass1/${name}.log.sha256";done <"$OUT/file-order.txt"
+
+      - name: Check 12 cold full lake build
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          lake clean >"$OUT/builds/lake-clean.log" 2>&1
+          set +e;lake build >"$OUT/builds/lake-build-cold.log" 2>&1;code=$?;set -e;printf '%s\n' "$code" >"$OUT/builds/lake-build-cold.exit";test "$code" = 0;! grep -Eq '(^|[[:space:]])error:' "$OUT/builds/lake-build-cold.log";sha256sum "$OUT/builds/lake-build-cold.log" >"$OUT/builds/lake-build-cold.log.sha256"
+
+      - name: Check 13 reproducibility second build and second direct pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          set +e;lake build >"$OUT/builds/lake-build-repeat.log" 2>&1;code=$?;set -e;printf '%s\n' "$code" >"$OUT/builds/lake-build-repeat.exit";test "$code" = 0;! grep -Eq '(^|[[:space:]])error:' "$OUT/builds/lake-build-repeat.log";sha256sum "$OUT/builds/lake-build-repeat.log" >"$OUT/builds/lake-build-repeat.log.sha256";: >"$OUT/DIRECT_PASS2_EXIT.tsv"
+          while IFS= read -r file;do name="$(basename "$file" .lean)";set +e;lake env lean -DmaxErrors=2000 "$file" >"$OUT/direct-pass2/${name}.log" 2>&1;ec=$?;set -e;printf '%s\t%s\t%s\n' "$name" "$ec" "$file" | tee -a "$OUT/DIRECT_PASS2_EXIT.tsv";test "$ec" = 0;! grep -Eq '(^|[[:space:]])error:' "$OUT/direct-pass2/${name}.log";! grep -q 'declaration uses.*sorry' "$OUT/direct-pass2/${name}.log";sha256sum "$OUT/direct-pass2/${name}.log" >"$OUT/direct-pass2/${name}.log.sha256";done <"$OUT/file-order.txt"
+
+      - name: Check 14 source immutability and evidence hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path(os.environ['OUT']);files=json.loads((out/'FILES.json').read_text());after=[]
+          for r in files:
+            sha=hashlib.sha256(Path(r['path']).read_bytes()).hexdigest();assert sha==r['sha256'],(r['path'],sha,r['sha256']);after.append(f"{sha}\t{r['path']}")
+          (out/'SOURCE_HASHES_AFTER.tsv').write_text('\n'.join(after)+'\n');assert (out/'SOURCE_HASHES_BEFORE.tsv').read_text()==(out/'SOURCE_HASHES_AFTER.tsv').read_text()
+          hashes=[]
+          for p in sorted(out.rglob('*')):
+            if p.is_file() and p.name!='EVIDENCE_SHA256SUMS.tsv':hashes.append(f"{hashlib.sha256(p.read_bytes()).hexdigest()}\t{p.relative_to(out)}")
+          (out/'EVIDENCE_SHA256SUMS.tsv').write_text('\n'.join(hashes)+'\n')
+          PY
+          git status --porcelain=v1 >"$OUT/git-status-after-build.txt"
+          test ! -s "$OUT/git-status-after-build.txt"
+
+      - name: Check 15 build final machine and human reports with audited permalinks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path(os.environ['OUT']);files=json.loads((out/'FILES.json').read_text());qym=json.loads(Path(os.environ['QYM_INVENTORY_PATH']).read_text());audited=os.environ['GITHUB_SHA'];repo=os.environ['GITHUB_REPOSITORY'];base=f'https://github.com/{repo}/blob/{audited}/';tag=f"codex-13file-clean-{audited[:12]}-{os.environ['GITHUB_RUN_ID']}"
+          pass1={x.split('\t')[0]:int(x.split('\t')[1]) for x in (out/'DIRECT_PASS1_EXIT.tsv').read_text().splitlines()};pass2={x.split('\t')[0]:int(x.split('\t')[1]) for x in (out/'DIRECT_PASS2_EXIT.tsv').read_text().splitlines()};axiom=json.loads((out/'AXIOM_AUDIT_RESULT.json').read_text());checks=[
+            {'id':1,'name':'repository_branch_head_provenance','pass':True,'evidence':{'repository':repo,'branch':os.environ['TARGET_BRANCH'],'audited_head_sha':audited,'baseline_head_sha':os.environ['BASELINE_HEAD_SHA']}},
+            {'id':2,'name':'lean_toolchain_pin_and_versions','pass':True,'evidence':{'lean_toolchain':Path('lean-toolchain').read_text().strip(),'lean_toolchain_sha256':hashlib.sha256(Path('lean-toolchain').read_bytes()).hexdigest(),'lean_version':(out/'lean-version.txt').read_text().strip(),'lake_version':(out/'lake-version.txt').read_text().strip()}},
+            {'id':3,'name':'mathlib_lake_dependency_lock','pass':True,'evidence':{'lake_manifest_sha256':hashlib.sha256(Path('lake-manifest.json').read_bytes()).hexdigest(),'lakefile_sha256':hashlib.sha256(Path('lakefile.lean').read_bytes()).hexdigest() if Path('lakefile.lean').exists() else None}},
+            {'id':4,'name':'canonical_exact_13_file_set_no_moves_or_duplicates','pass':len(files)==13 and all(not x['source_moved'] for x in files),'evidence':[{'name':x['name'],'path':x['path']} for x in files]},
+            {'id':5,'name':'source_integrity_sha_bytes_lines','pass':True,'evidence':[{'name':x['name'],'sha256':x['sha256'],'bytes':x['bytes'],'lines':x['lines']} for x in files]},
+            {'id':6,'name':'declaration_counts_and_theorem_map','pass':True,'evidence':{'total_declarations':sum(x['declaration_count'] for x in files),'per_file':{x['name']:x['declaration_count'] for x in files},'map_json':'THEOREM_MAP.json','map_csv':'THEOREM_MAP.csv'}},
+            {'id':7,'name':'baseline_declarations_preserved_same_order_and_headers','pass':all(x['baseline_headers_identical'] for x in files),'evidence':'BASELINE_DECLARATION_PRESERVATION.json'},
+            {'id':8,'name':'executable_trust_six_zero_all_13','pass':all(x['trust_six_zero'] for x in files),'evidence':{x['name']:x['trust_counts'] for x in files}},
+            {'id':9,'name':'exported_declaration_axiom_audit','pass':not axiom['unexpected_axioms'] and not axiom['sorryAx_present'] and axiom['all_audit_compiles_exit_zero'],'evidence':axiom},
+            {'id':10,'name':'first_individual_direct_lean_all_13','pass':len(pass1)==13 and all(v==0 for v in pass1.values()),'evidence':pass1},
+            {'id':11,'name':'fa_qym_dedicated_zero_error_direct_evidence','pass':pass1.get('Mock2_FunctionalAnalysis')==0 and pass1.get('QYM')==0,'evidence':{'FA_exit':pass1.get('Mock2_FunctionalAnalysis'),'QYM_exit':pass1.get('QYM'),'qym_gate_inventory':os.environ['QYM_INVENTORY_PATH']}},
+            {'id':12,'name':'cold_full_lake_build_zero_exit','pass':int((out/'builds/lake-build-cold.exit').read_text())==0,'evidence':{'log':'builds/lake-build-cold.log','sha256':hashlib.sha256((out/'builds/lake-build-cold.log').read_bytes()).hexdigest()}},
+            {'id':13,'name':'repeat_build_and_second_direct_reproducibility','pass':int((out/'builds/lake-build-repeat.exit').read_text())==0 and len(pass2)==13 and all(v==0 for v in pass2.values()),'evidence':{'repeat_build_exit':int((out/'builds/lake-build-repeat.exit').read_text()),'direct_pass2':pass2}},
+            {'id':14,'name':'source_immutable_and_complete_hashed_evidence','pass':(out/'SOURCE_HASHES_BEFORE.tsv').read_text()==(out/'SOURCE_HASHES_AFTER.tsv').read_text(),'evidence':{'source_hashes':'SOURCE_HASHES_AFTER.tsv','all_evidence_hashes':'EVIDENCE_SHA256SUMS.tsv'}},
+            {'id':15,'name':'final_reports_permalinks_artifact_and_immutable_tag_gate','pass':True,'evidence':{'planned_tag':tag,'audited_source_permalinks':{x['name']:base+x['path'] for x in files},'artifact_name':f"codex-final-13file-15check-{audited}",'machine_report':'.github/codex/FINAL_13FILE_15_CHECKLIST.json','human_report':'.github/codex/FINAL_13FILE_15_CHECKLIST.md'}},
+          ];assert len(checks)==15 and all(x['pass'] for x in checks),checks
+          report={'schema':'final-13file-15check-cleanbuild-v1','repository':repo,'branch':os.environ['TARGET_BRANCH'],'audited_head_sha':audited,'baseline_head_sha':os.environ['BASELINE_HEAD_SHA'],'github_run_id':os.environ['GITHUB_RUN_ID'],'qym_gate_inventory_path':os.environ['QYM_INVENTORY_PATH'],'qym_gate_inventory':qym,'file_count':13,'all_checks_pass':True,'check_count':15,'checks':checks,'planned_tag':tag,'clean_build_claimed':True,'direct_lean_verified':True,'all_13_direct_pass1_zero':True,'all_13_direct_pass2_zero':True,'cold_lake_build_zero':True,'repeat_lake_build_zero':True,'theorem_statements_changed':False,'declaration_order_changed':False,'source_moves':[]}
+          Path('.github/codex/FINAL_13FILE_15_CHECKLIST.json').write_text(json.dumps(report,indent=2,sort_keys=True,ensure_ascii=False)+'\n');(out/'FINAL_13FILE_15_CHECKLIST.json').write_text(json.dumps(report,indent=2,sort_keys=True,ensure_ascii=False)+'\n')
+          md=['# Final 13-file clean build — 15/15 PASS','',f"- Repository: `{repo}`",f"- Branch: `{os.environ['TARGET_BRANCH']}`",f"- Audited source commit: `{audited}`",f"- Evidence run: `{os.environ['GITHUB_RUN_ID']}`",f"- Planned immutable tag: `{tag}`",'']
+          for c in checks:md.append(f"## {c['id']:02d}. {c['name']} — PASS")
+          md += ['','## Canonical 13 files']+[f"- `{x['path']}` — `{x['sha256']}` — {x['lines']} lines — {x['declaration_count']} declarations" for x in files]
+          Path('.github/codex/FINAL_13FILE_15_CHECKLIST.md').write_text('\n'.join(md)+'\n');(out/'FINAL_13FILE_15_CHECKLIST.md').write_text('\n'.join(md)+'\n');Path('/tmp/final-tag.txt').write_text(tag+'\n')
+          PY
+
+      - name: Commit final reports and create immutable audit tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/codex/FINAL_13FILE_15_CHECKLIST.json .github/codex/FINAL_13FILE_15_CHECKLIST.md
+          git commit -m "Codex: record final 13-file clean build 15-of-15 PASS"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+          report_commit="$(git rev-parse HEAD)";tag="$(cat /tmp/final-tag.txt)"
+          git tag -a "$tag" -m "Verified 13-file Lean clean build and 15-of-15 audit; audited source $GITHUB_SHA; evidence commit $report_commit"
+          git push origin "$tag"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,os,subprocess
+          tag=Path('/tmp/final-tag.txt').read_text().strip();lock={'schema':'final-13file-clean-lock-v1','repository':os.environ['GITHUB_REPOSITORY'],'branch':os.environ['TARGET_BRANCH'],'audited_source_commit':os.environ['GITHUB_SHA'],'evidence_report_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'immutable_tag':tag,'tag_target_commit':subprocess.check_output(['git','rev-list','-n','1',tag],text=True).strip(),'github_run_id':os.environ['GITHUB_RUN_ID'],'all_15_checks_pass':True,'all_13_clean_build':True};Path('.github/codex/FINAL_13FILE_CLEAN_LOCK.json').write_text(json.dumps(lock,indent=2,sort_keys=True)+'\n')
+          PY
+          git add .github/codex/FINAL_13FILE_CLEAN_LOCK.json
+          git commit -m "Codex: lock final 13-file audit tag and evidence commit"
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: Upload final complete evidence bundle
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-final-13file-15check-${{ github.sha }}
+          path: |
+            build-logs/codex-final-13file-15check-cleanbuild
+            .github/codex/FINAL_13FILE_15_CHECKLIST.json
+            .github/codex/FINAL_13FILE_15_CHECKLIST.md
+            .github/codex/FINAL_13FILE_CLEAN_LOCK.json
+          retention-days: 30
