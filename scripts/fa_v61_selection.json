@@ -1,0 +1,208 @@
+{
+  "activation": {
+    "direct_compile_allowed": true,
+    "materialization_allowed": true,
+    "workflow_matrix_allowed": true
+  },
+  "authority": {
+    "declaration_count": 4416,
+    "lock_path": "scripts/fa_v61_authority-lock.json",
+    "lock_sha256": "74f045cf41b955a7b319254cf1bd9c3207d16145c2e4fc2cb6ceb490eaeeccf5",
+    "source_bytes": 2812433,
+    "source_lines": 62933,
+    "source_sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a"
+  },
+  "constraints": {
+    "body_only": true,
+    "diagnostic_coverage_overlap": "SAME_OWNER_ROOT_ORDERED_ONLY",
+    "maxHeartbeats_delta": 0,
+    "missing_or_pending_exit_code": 2,
+    "runtime_evidence_fallback_allowed": false,
+    "source_moves": 0,
+    "trust_six_delta": 0
+  },
+  "cross_audit": {
+    "bytes": 15978,
+    "runtime_path": "scripts/fa_v61_cross-audit.json",
+    "schema": "fa-v61-independent-cross-manifest-audit-v1",
+    "sha256": "5229162586ebb6e1bc1108dcfd1f67e84116ce7b4921e1ad93cd0c7d98ef9514",
+    "status": "PASS_STATIC_ONLY_DIRECT_LEAN_UNVERIFIED"
+  },
+  "manifest_schema": {
+    "bytes": 4375,
+    "runtime_path": "scripts/fa_v61_body-only-manifest.schema.json",
+    "schema": "fa-v61-body-only-repair-manifest-v1",
+    "sha256": "5c99bce6b27d05df2b57b929277bf13fcd57f06842b5221a9cb3844a0a25ea0a"
+  },
+  "manifests": [
+    {
+      "bytes": 5683,
+      "id": "fourier",
+      "runtime_path": "scripts/fa_v61_fourier-manifest.json",
+      "sha256": "74d8d0f28189e9e9ffa159dc48c47863a124a38eae903193d634f9a6c12c583c",
+      "status": "READY"
+    },
+    {
+      "bytes": 6386,
+      "id": "weighted",
+      "runtime_path": "scripts/fa_v61_weighted-manifest.json",
+      "sha256": "fe34e4887479068689b93721e9d8ddf6692d582fa8ec8ee0a94d084fea5bc549",
+      "status": "READY"
+    }
+  ],
+  "note": "Exact cross-audited eight-way direct Lean selection; no clean-build claim.",
+  "pending_inputs": {},
+  "schema": "fa-v61-direct-eight-way-selection-v1",
+  "status": "READY",
+  "variant_order": [
+    "core",
+    "fourier_pair",
+    "fourier_3933_isolated",
+    "weighted_r17",
+    "weighted_r17_r18e",
+    "weighted_r17_r18e_r18t",
+    "all_no_3933",
+    "all_full"
+  ],
+  "variants": [
+    {
+      "expected_candidate": {
+        "bytes": 2812433,
+        "lines": 62933,
+        "sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a"
+      },
+      "expected_diagnostic_coverage": [],
+      "name": "core",
+      "selected_repair_ids": [],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812442,
+        "lines": 62933,
+        "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+      },
+      "expected_diagnostic_coverage": [
+        1,
+        3
+      ],
+      "name": "fourier_pair",
+      "selected_repair_ids": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812457,
+        "lines": 62934,
+        "sha256": "c118058341d4cadecb73dea395d5fcc7c59a07d9173dd503202e15825e60527d"
+      },
+      "expected_diagnostic_coverage": [
+        2
+      ],
+      "name": "fourier_3933_isolated",
+      "selected_repair_ids": [
+        "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812871,
+        "lines": 62943,
+        "sha256": "6b9e3232af984882528a1945788047a8037d42885df00387bae401be79237c5d"
+      },
+      "expected_diagnostic_coverage": [
+        4
+      ],
+      "name": "weighted_r17",
+      "selected_repair_ids": [
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812945,
+        "lines": 62946,
+        "sha256": "0a54b13dc941892e12f5397c2a7975fa7129ffb1cfd1170c2ddc84edb5925707"
+      },
+      "expected_diagnostic_coverage": [
+        4,
+        5
+      ],
+      "name": "weighted_r17_r18e",
+      "selected_repair_ids": [
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+        "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813026,
+        "lines": 62947,
+        "sha256": "99f4c65980d223bfcee493f8912e98a9790b75a0faaa7f0826b2c898d11e2057"
+      },
+      "expected_diagnostic_coverage": [
+        4,
+        5
+      ],
+      "name": "weighted_r17_r18e_r18t",
+      "selected_repair_ids": [
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+        "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT",
+        "V61-IDX4018-TYPED-INNER-CONGRARG"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813035,
+        "lines": 62947,
+        "sha256": "c8720767c6041481ab8c742db46002c4aae738f213c30d70622ae055fcd3ed94"
+      },
+      "expected_diagnostic_coverage": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "name": "all_no_3933",
+      "selected_repair_ids": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+        "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT",
+        "V61-IDX4018-TYPED-INNER-CONGRARG"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813059,
+        "lines": 62948,
+        "sha256": "0b5b6553a3979efa48dac95436e61c559abcd8235d13de90eb5acdeed26b9ec8"
+      },
+      "expected_diagnostic_coverage": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "name": "all_full",
+      "selected_repair_ids": [
+        "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+        "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE",
+        "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+        "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT",
+        "V61-IDX4018-TYPED-INNER-CONGRARG"
+      ],
+      "status": "READY"
+    }
+  ]
+}

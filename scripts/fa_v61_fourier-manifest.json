@@ -1,0 +1,132 @@
+{
+  "authority_source_sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+  "constraints": {
+    "body_only": true,
+    "diagnostic_coverage_overlap": "SAME_OWNER_ROOT_ORDERED_ONLY",
+    "maxHeartbeats_delta": 0,
+    "source_moves": 0,
+    "trust_six_delta": 0
+  },
+  "manifest_id": "fourier",
+  "repairs": [
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          1
+        ],
+        "count": 1,
+        "root_key": "F3930"
+      },
+      "id": "V61-FOURIER-IDX3930-RING-ALL-FIELDSIMP-GOALS",
+      "new": "      rw [hre, him]\n      field_simp [literalStageFourierScale_ne_zero Y] <;> ring",
+      "old": "      rw [hre, him]\n      field_simp [literalStageFourierScale_ne_zero Y]\n      ring",
+      "owner": {
+        "declaration_index": 3930,
+        "declaration_name": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+        "expected_header": "theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff\n    (Y : ℝ) (k : Fin 2 → ℤ)\n    (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)\n    (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (ambientTestCoreToPlaneL2Linear v) =\n      (literalStageFourierScale Y : ℂ) *\n        UnitAddTorus.mFourierCoeff (literalStageTorusTest Y v) k ",
+        "expected_input_region_sha256": "c111b6309213a91e5e9173084a786363594990a54a0a9a5d3549bc1aea255ad4"
+      },
+      "sequence": 0,
+      "stage": 0
+    },
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          2
+        ],
+        "count": 1,
+        "root_key": "F3933"
+      },
+      "id": "V61-FOURIER-IDX3933-STAR-MUL-ISOLATED-PROBE",
+      "new": "          simp only [RCLike.inner_apply, starRingEnd_apply]\n          rw [star_mul]\n          simp only [Complex.star_def, Complex.conj_ofReal]",
+      "old": "          simp only [RCLike.inner_apply, starRingEnd_apply, map_mul,\n            Complex.star_def, Complex.conj_ofReal]",
+      "owner": {
+        "declaration_index": 3933,
+        "declaration_name": "inner_literalStagePlaneWave",
+        "expected_header": "theorem inner_literalStagePlaneWave\n    (Y : ℝ) (k l : Fin 2 → ℤ) :\n    inner ℂ (literalStagePlaneWave Y k)\n        (literalStagePlaneWave Y l) = if k = l then 1 else 0 ",
+        "expected_input_region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"
+      },
+      "sequence": 1,
+      "stage": 0
+    },
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          3
+        ],
+        "count": 1,
+        "root_key": "F3939"
+      },
+      "id": "V61-FOURIER-IDX3939-AC-RFL-AFTER-RING-NF",
+      "new": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring_nf\n    ac_rfl\n  have hsum :",
+      "old": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring_nf\n  have hsum :",
+      "owner": {
+        "declaration_index": 3939,
+        "declaration_name": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+        "expected_header": "theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder\n    (Y : ℝ) (N : ℕ) (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)\n    (hv : tsupport (v : ℂ → ℂ) ⊆ literalStageFourierBox Y) :\n    ‖literalStagePlaneFiniteProjection Y N\n        (ambientTestCoreToPlaneL2Linear v) -\n        ambientTestCoreToPlaneL2Linear v‖ =\n      literalStageFourierScale Y *\n        ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection\n            (literalStageFourierModes N) (literalStageTorusTest Y v) -\n          literalStageTorusTest Y v‖ ",
+        "expected_input_region_sha256": "5e205423d64abefee46c707bcd6ce257b480ea09d92b1d441240da249fa02ee0"
+      },
+      "sequence": 2,
+      "stage": 0
+    }
+  ],
+  "schema": "fa-v61-body-only-repair-manifest-v1",
+  "status": "READY"
+}

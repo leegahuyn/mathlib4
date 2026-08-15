@@ -1,0 +1,136 @@
+{
+  "authority_source_sha256": "84e0a7843de9bcf99a25e51db95d48e9d5feceffe4e1b94f315b11d166792e5a",
+  "constraints": {
+    "body_only": true,
+    "diagnostic_coverage_overlap": "SAME_OWNER_ROOT_ORDERED_ONLY",
+    "maxHeartbeats_delta": 0,
+    "source_moves": 0,
+    "trust_six_delta": 0
+  },
+  "manifest_id": "weighted",
+  "repairs": [
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          4
+        ],
+        "count": 1,
+        "root_key": "W4017"
+      },
+      "id": "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE",
+      "new": "  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    LinearMap.mkContinuous₂_apply,\n    weightedGraphOperator]\n  change inner ℂ\n      (graphLiteralStageRestriction (discriminantHardLiteralStage N) n v)\n      (lpInfinityMultiplier\n        (P5PhysicalHardStageRestriction.literalStageMeasure\n          (discriminantHardLiteralStage N))\n        (discriminantHardStageWeightLp N)\n        (graphLiteralStageRestriction\n          (discriminantHardLiteralStage N) n u)) =\n    inner ℂ (graphEuclideanBase n v)\n      (lpInfinityMultiplier chosenEuclideanCarrierMeasure\n        (discriminantHardCarrierWeightLp N)\n        (graphEuclideanBase n u))\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]",
+      "old": "  simp only [discriminantHardStageOperator,\n    ContinuousLinearMap.comp_apply,\n    discriminantHardStagePotentialPairing,\n    LinearMap.mkContinuous₂_apply,\n    discriminantHardStagePairingLinear,\n    weightedGraphOperator, weightedGraphLinear,\n    lpInfinityMultiplier_apply]\n  rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]",
+      "owner": {
+        "declaration_index": 4017,
+        "declaration_name": "discriminantHardStageOperator_eq_weightedHard",
+        "expected_header": "theorem discriminantHardStageOperator_eq_weightedHard\n    (N : ℕ) (n : ℤ) :\n    discriminantHardStageOperator N n =\n      weightedGraphOperator n (discriminantHardCarrierWeightLp N) ",
+        "expected_input_region_sha256": "cec5e99e9ca1e3b9ad8f2374ac985284f80dfcccac09bbae48106a7b40606f6d"
+      },
+      "sequence": 3,
+      "stage": 0
+    },
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [
+        "V61-IDX4017-WRAPPER-EVAL-THEN-TYPED-INNER-CHANGE"
+      ],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          5
+        ],
+        "count": 1,
+        "root_key": "W4018"
+      },
+      "id": "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT",
+      "new": "  apply ContinuousLinearMap.ext\n  intro u\n  apply ContinuousLinearMap.ext\n  intro v\n  rw [discriminantHardStageOperator_eq_weightedHard]\n  simp only [ContinuousLinearMap.sub_apply, weightedGraphOperator,\n    LinearMap.mkContinuous₂_apply,\n    weightedGraphLinear, lpInfinityMultiplier_apply]",
+      "old": "  ext u v\n  rw [discriminantHardStageOperator_eq_weightedHard]\n  simp only [ContinuousLinearMap.sub_apply, weightedGraphOperator,\n    LinearMap.mkContinuous₂_apply,\n    weightedGraphLinear, lpInfinityMultiplier_apply]",
+      "owner": {
+        "declaration_index": 4018,
+        "declaration_name": "weightedFull_sub_weightedHard_eq_weightedTail",
+        "expected_header": "theorem weightedFull_sub_weightedHard_eq_weightedTail\n    (N : ℕ) (n : ℤ) :\n    weightedGraphOperator n discriminantFullCarrierWeightLp -\n      discriminantHardStageOperator N n =\n    weightedGraphOperator n (discriminantTailCarrierWeightLp N) ",
+        "expected_input_region_sha256": "38c29a93b7dc39ee0ea0dbabb6cbd38552c4e3c64b2e51d3ad387c4665faba99"
+      },
+      "sequence": 4,
+      "stage": 1
+    },
+    {
+      "constraints": {
+        "attributes_unchanged": true,
+        "body_only": true,
+        "comments_unchanged": true,
+        "header_unchanged": true,
+        "maxHeartbeats_unchanged": true,
+        "source_move": false,
+        "statement_unchanged": true,
+        "trust_six_unchanged": true
+      },
+      "counts": {
+        "new_global_after": 1,
+        "new_global_before": 0,
+        "new_in_owner_after": 1,
+        "new_in_owner_before": 0,
+        "old_global": 1,
+        "old_in_owner": 1
+      },
+      "depends_on": [
+        "V61-IDX4018-EXPLICIT-TWO-LEVEL-CLM-EXT"
+      ],
+      "diagnostic_coverage": {
+        "baseline_ordinals": [
+          5
+        ],
+        "count": 1,
+        "root_key": "W4018"
+      },
+      "id": "V61-IDX4018-TYPED-INNER-CONGRARG",
+      "new": "  rw [← inner_sub_right]\n  apply congrArg (fun w : OrbitEuclideanL2 n ↦\n    inner ℂ (graphEuclideanBase n v) w)\n  apply Lp.ext",
+      "old": "  rw [← inner_sub_right]\n  congr 2\n  apply Lp.ext",
+      "owner": {
+        "declaration_index": 4018,
+        "declaration_name": "weightedFull_sub_weightedHard_eq_weightedTail",
+        "expected_header": "theorem weightedFull_sub_weightedHard_eq_weightedTail\n    (N : ℕ) (n : ℤ) :\n    weightedGraphOperator n discriminantFullCarrierWeightLp -\n      discriminantHardStageOperator N n =\n    weightedGraphOperator n (discriminantTailCarrierWeightLp N) ",
+        "expected_input_region_sha256": "764b91736270160912ea2044ced91b1aca5d8084440fe25500436d8b7832e73a"
+      },
+      "sequence": 5,
+      "stage": 2
+    }
+  ],
+  "schema": "fa-v61-body-only-repair-manifest-v1",
+  "status": "READY"
+}
