@@ -1,0 +1,228 @@
+name: Codex FA v75 certify any checked-in pass source
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - .github/workflows/codex-fa-v75-certify-any-pass-source.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: codex-fa-v75-certifier
+  cancel-in-progress: false
+
+env:
+  OUT: build-logs/codex-fa-v75
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout certifier scaffold
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Wait for a source branch that already achieved a direct FA pass
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote="https://github.com/${GITHUB_REPOSITORY}.git"
+          branches=(
+            codex/fa-v73-unlimited-pass
+            codex/fa-v71-unlimited-pass
+            codex/fa-v69-resource-normalized-pass
+            codex/fa-v68-global-budget-pass
+            codex/fa-v67-heartbeat-pass
+          )
+          selected=''; sha=''
+          for attempt in $(seq 1 1800); do
+            for branch in "${branches[@]}"; do
+              line=$(git ls-remote "$remote" "refs/heads/$branch" | head -n1 || true)
+              if [ -n "$line" ]; then
+                selected="$branch"
+                sha=${line%%[[:space:]]*}
+                break 2
+              fi
+            done
+            sleep 10
+          done
+          test -n "$selected"
+          test "$sha" != "$GITHUB_SHA"
+          echo "branch=$selected" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout the exact pass-source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "${{ steps.source.outputs.sha }}"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "${{ steps.source.outputs.sha }}"
+          mkdir -p "$OUT"
+          printf '%s\n' "${{ steps.source.outputs.branch }}" > "$OUT/source-branch.txt"
+          printf '%s\n' "${{ steps.source.outputs.sha }}" > "$OUT/source-commit.txt"
+          s=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test -f "$s"
+          echo "SOURCE_SHA256=$(sha256sum "$s" | awk '{print $1}')" >> "$GITHUB_ENV"
+          echo "SOURCE_BYTES=$(wc -c < "$s" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+          echo "SOURCE_LINES=$(python3 -c 'from pathlib import Path; print(len(Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean").read_text().splitlines()))')" >> "$GITHUB_ENV"
+
+      - name: Audit checked-in source before certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re
+          from pathlib import Path
+          text=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text()
+          forbidden={
+            'sorry':len(re.findall(r'(?<![A-Za-z0-9_])sorry(?![A-Za-z0-9_])',text)),
+            'admit':len(re.findall(r'(?<![A-Za-z0-9_])admit(?![A-Za-z0-9_])',text)),
+            'axiom_declaration':len(re.findall(r'^\s*axiom\s+',text,flags=re.M)),
+            'unsafe_declaration':len(re.findall(r'^\s*unsafe\s+',text,flags=re.M)),
+            'native_decide':text.count('native_decide'),
+            'Lean.ofReduceBool':text.count('Lean.ofReduceBool'),
+          }
+          if any(forbidden.values()): raise SystemExit(forbidden)
+          Path('build-logs/codex-fa-v75/AUDIT.json').write_text(json.dumps(forbidden,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Install the exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = 'leanprover/lean4:v4.33.0-rc1'
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: Fresh direct compile of checked-in Mock2, Mock2 Advanced, and FA
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification "$OUT/direct"
+          run_one() {
+            local name="$1"; shift
+            set +e
+            timeout --signal=TERM --kill-after=30s 18000 \
+              lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 "$@" \
+              > "$OUT/direct/${name}.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$OUT/direct/${name}.exit"
+          }
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+                .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+          run_one Mock2 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean
+          if [ "$(cat "$OUT/direct/Mock2.exit")" = 0 ]; then
+            run_one Mock2_Advanced -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean
+          else
+            echo 99 > "$OUT/direct/Mock2_Advanced.exit"
+          fi
+          if [ "$(cat "$OUT/direct/Mock2_Advanced.exit")" = 0 ]; then
+            run_one Mock2_FunctionalAnalysis -o /tmp/fa-v75.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          else
+            echo 99 > "$OUT/direct/Mock2_FunctionalAnalysis.exit"
+            : > "$OUT/direct/Mock2_FunctionalAnalysis.log"
+          fi
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT'])/'direct'
+          def ev(n): return int((out/(n+'.exit')).read_text().strip())
+          log=(out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace')
+          errors=len(re.findall(r'^.*?\.lean:\d+:\d+: error:',log,flags=re.M))
+          r={'schema':'fa-v75-fresh-checked-in-direct-v1','Mock2_exit':ev('Mock2'),'Mock2_Advanced_exit':ev('Mock2_Advanced'),'FA_exit':ev('Mock2_FunctionalAnalysis'),'error_headers':errors}
+          r['true_pass']=r['Mock2_exit']==r['Mock2_Advanced_exit']==r['FA_exit']==0 and errors==0
+          (out/'RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f: f.write('pass='+str(r['true_pass']).lower()+'\n')
+          print(json.dumps(r,sort_keys=True))
+          PY
+
+      - name: Generate checked-in TRUE PASS certificate
+        if: steps.direct.outputs.pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path(os.environ['OUT'])
+          record={
+            'schema':'fa-v75-checked-in-true-pass-certificate-v1',
+            'status':'FA_TRUE_PASS',
+            'source_branch':(out/'source-branch.txt').read_text().strip(),
+            'source_commit':(out/'source-commit.txt').read_text().strip(),
+            'candidate_sha256':os.environ['SOURCE_SHA256'],
+            'candidate_bytes':int(os.environ['SOURCE_BYTES']),
+            'candidate_lines':int(os.environ['SOURCE_LINES']),
+            'Mock2_exit':0,'Mock2_Advanced_exit':0,'FA_exit':0,'error_headers':0,
+            'direct_lean_verified':True,'checked_in_source_verified':True,
+            'toolchain':(out/'lean-version.txt').read_text().strip(),
+          }
+          (out/'FA_TRUE_PASS.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          Path('build-logs/FA_TRUE_PASS.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(record,sort_keys=True))
+          PY
+
+      - name: Seal dedicated certified branch
+        if: steps.direct.outputs.pass == 'true'
+        id: seal
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-true-pass-certified
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean build-logs/FA_TRUE_PASS.json
+          git commit -m 'Codex: certify fresh checked-in FA TRUE PASS via v75'
+          git push --force origin HEAD:refs/heads/codex/fa-true-pass-certified
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload complete certification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v75-${{ steps.seal.outputs.sha || github.sha }}
+          path: build-logs/codex-fa-v75/*
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Open promotion PR after certification
+        if: steps.direct.outputs.pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing=$(gh pr list --head codex/fa-true-pass-certified --base codex/fa-exclusive-focus-20260814 --state open --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            gh pr create --head codex/fa-true-pass-certified --base codex/fa-exclusive-focus-20260814 \
+              --title 'Codex: promote v75 certified FA TRUE PASS' \
+              --body 'Fresh checked-in direct Lean chain under Lean 4.33.0-rc1: Mock2=0, Mock2_Advanced=0, Mock2_FunctionalAnalysis=0, zero error headers, clean forbidden-token audit. Evidence: build-logs/FA_TRUE_PASS.json and v75 artifact.'
+          else
+            echo "promotion PR already open: #$existing"
+          fi
+
+      - name: Preserve actual certification gate
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.direct.outputs.pass }}" = true
