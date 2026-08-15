@@ -53350,11 +53350,16 @@ theorem fderiv_literalStageNegativePlaneWave_one
             (literalStageFourierScale Y)⁻¹)).mul_const
         (fourier (-(k 1))
           (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle))).const_mul
-      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>
-    try simp only [one_div, Complex.one_re, Complex.one_im,
-      Complex.add_re, Complex.add_im, Complex.real_smul, smul_eq_mul,
-      mul_one, add_zero, zero_mul, Complex.ofReal_inv, Complex.ofReal_mul] <;>
-    field_simp [literalStageFourierScale_ne_zero Y] <;> ring
+      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1
+  case e'_4 => with_unfolding_all rfl
+  case e'_8 =>
+    funext t
+    simp [id, Complex.add_re, Complex.add_im, Complex.real_smul,
+      mul_comm, mul_left_comm, mul_assoc,
+      Complex.ofReal_inv, Complex.ofReal_mul]
+  case e'_9 =>
+    simp [id]
+    ring
 
 /-- Exact vertical derivative of the smooth negative physical wave. -/
 theorem fderiv_literalStageNegativePlaneWave_I
