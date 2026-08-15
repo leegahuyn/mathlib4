@@ -1,11 +1,12 @@
-name: Codex FA v66 timeout-structure direct matrix
+name: Codex FA v66 checked-head authoritative one-lane
 
 on:
   push:
     branches: [codex/fa-exclusive-focus-20260814]
     paths:
-      - scripts/fa_v66_timeout_structure_patch.py
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
       - .github/workflows/codex-fa-v66-timeout-structure-matrix.yml
+      - scripts/fa_v66_checked_head_final_gate.py
   workflow_dispatch: {}
 
 permissions:
@@ -13,153 +14,148 @@ permissions:
   actions: read
 
 concurrency:
-  group: codex-fa-v66-timeout-structure-${{ github.ref }}
+  group: codex-fa-v66-checked-head-one-lane-${{ github.ref }}
   cancel-in-progress: false
 
 env:
-  V66_BASE_ARTIFACT_ID: "9246997507"
-  V66_BASE_ARTIFACT_NAME: codex-fa-v65-all_field_w_primary-highcap2000-e3d340850316b79b837658dad54fbdfc8396ccdf
-  V66_BASE_ARTIFACT_DIGEST: sha256:f26e0ed6283d7e581d5b2fddb7797c35efc4704b2b8c0267f56d82f35daeb788
-  V66_BASE_SOURCE_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
-  V66_BASE_SOURCE_BYTES: "2813986"
-  V66_BASE_SOURCE_LINES: "62963"
+  V66_OUT: build-logs/codex-fa-v66-checked-head/one-lane
   V66_LEAN_VERSION: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
 
 jobs:
-  direct:
-    strategy:
-      fail-fast: false
-      max-parallel: 10
-      matrix:
-        variant:
-          - hb400_all
-          - hb800_all
-          - hb1600_all
-          - hb3200_all
-          - dep_hb400
-          - dep_hb800
-          - dep_hb1600
-          - dep_hb3200
-          - dep_norm_hb800
-          - dep_norm_hb1600
-    name: direct-${{ matrix.variant }}
+  checked-head-direct:
+    name: checked-head-direct-one-lane
     runs-on: ubuntu-24.04
     timeout-minutes: 360
-    env:
-      V66_VARIANT: ${{ matrix.variant }}
-      V66_OUT: build-logs/codex-fa-v66-timeout-structure/${{ matrix.variant }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Checkout exact triggering head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Recover exact v65 winner and materialize one v66 candidate
+      - name: Capture current checkout and exact checked-in FA source
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p "$V66_OUT"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${V66_BASE_ARTIFACT_ID}" >"$V66_OUT/BASE_ARTIFACT.json"
-          python3 - <<'PY'
-          import json, os
-          from pathlib import Path
-          v=json.loads(Path(os.environ['V66_OUT'],'BASE_ARTIFACT.json').read_text())
-          assert v['id'] == int(os.environ['V66_BASE_ARTIFACT_ID'])
-          assert v['name'] == os.environ['V66_BASE_ARTIFACT_NAME']
-          assert v['digest'] == os.environ['V66_BASE_ARTIFACT_DIGEST']
-          assert not v['expired']
-          PY
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${V66_BASE_ARTIFACT_ID}/zip" > /tmp/fa-v66-base.zip
-          [[ "$(sha256sum /tmp/fa-v66-base.zip | awk '{print $1}')" == "${V66_BASE_ARTIFACT_DIGEST#sha256:}" ]]
-          rm -rf /tmp/fa-v66-base
-          mkdir -p /tmp/fa-v66-base
-          unzip -q /tmp/fa-v66-base.zip -d /tmp/fa-v66-base
-          base=/tmp/fa-v66-base/Mock2_FunctionalAnalysis-candidate.lean
-          [[ -f "$base" ]]
-          [[ "$(sha256sum "$base" | awk '{print $1}')" == "$V66_BASE_SOURCE_SHA256" ]]
-          [[ "$(wc -c < "$base" | tr -d '[:space:]')" == "$V66_BASE_SOURCE_BYTES" ]]
-          [[ "$(python3 - "$base" <<'PY'
-          from pathlib import Path
-          import sys
-          print(len(Path(sys.argv[1]).read_text(encoding='utf-8').splitlines()))
-          PY
-          )" == "$V66_BASE_SOURCE_LINES" ]]
-          python3 scripts/fa_v66_timeout_structure_patch.py \
-            --variant "$V66_VARIANT" \
-            --input "$base" \
-            --output PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
-            --audit "$V66_OUT/PATCH_AUDIT.json" \
-            >"$V66_OUT/PATCH_AUDIT.stdout.json"
-          candidate_sha="$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')"
-          printf '%s\n' "$candidate_sha" >"$V66_OUT/candidate.sha256"
-          printf 'V66_CANDIDATE_SHA256=%s\n' "$candidate_sha" >>"$GITHUB_ENV"
-          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
-            "$V66_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          out="$GITHUB_WORKSPACE/$V66_OUT"
+          mkdir -p "$out"
+          python3 scripts/fa_v66_checked_head_final_gate.py \
+            --mode capture \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --source "$GITHUB_WORKSPACE/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" \
+            --out "$out" \
+            --expected-github-sha "$GITHUB_SHA" \
+            --expected-github-ref "$GITHUB_REF" \
+            --expected-run-id "$GITHUB_RUN_ID" \
+            --expected-run-attempt "$GITHUB_RUN_ATTEMPT"
+          source_sha="$(tr -d '\r\n' <"$out/candidate.sha256")"
+          printf 'FA_V42_EXPECTED_CANDIDATE_SHA256=%s\n' "$source_sha" >>"$GITHUB_ENV"
 
       - name: Install exact pinned Lean and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
+          out="$GITHUB_WORKSPACE/$V66_OUT"
+          asset_name="elan-x86_64-unknown-linux-gnu.tar.gz"
+          asset_sha="df0b2b3a439961ffcbb3985214365ffe40f49bc871df04dff268c7d8e21ca8b2"
           curl --retry 5 --retry-all-errors --fail --silent --show-error \
-            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
-          sh /tmp/elan.sh -y --default-toolchain none >"$V66_OUT/elan.log" 2>&1
+            https://github.com/leanprover/elan/releases/download/v4.2.3/elan-x86_64-unknown-linux-gnu.tar.gz \
+            -o "$out/$asset_name" 2>"$out/elan-download.log"
+          [[ "$(wc -c <"$out/$asset_name" | tr -d ' ')" == 4984019 ]]
+          printf '%s  %s\n' "$asset_sha" "$asset_name" >"$out/elan-installer.sha256"
+          (cd "$out" && sha256sum -c elan-installer.sha256)
+          installer_tmp="$(mktemp -d)"
+          tar -xzf "$out/$asset_name" -C "$installer_tmp"
+          "$installer_tmp/elan-init" -y --default-toolchain none >"$out/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
           printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
-          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$V66_OUT/toolchain.log" 2>&1
-          lake exe cache get >"$V66_OUT/cache.log" 2>&1
-          lean --version >"$V66_OUT/lean-version.txt"
-          [[ "$(tr -d '\r\n' <"$V66_OUT/lean-version.txt")" == "$V66_LEAN_VERSION" ]]
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$out/toolchain.log" 2>&1
+          lake exe cache get >"$out/cache.log" 2>&1
+          elan --version >"$out/elan-version.txt"
+          lean --version >"$out/lean-version.txt"
+          lake --version >"$out/lake-version.txt"
+          [[ "$(tr -d '\r\n' <"$out/lean-version.txt")" == "$V66_LEAN_VERSION" ]]
+          [[ "$(tr -d '\r\n' <"$out/lake-version.txt")" == 'Lake version 5.0.0-src+62eed1d (Lean version 4.33.0-rc1)' ]]
 
       - id: direct
-        name: Direct Mock2 then Mock2 Advanced then full FA maxErrors2000
+        name: Compile checked-in Mock2 then Mock2A then FA2000 exactly once
         shell: bash
         run: |
           set -euo pipefail
-          export FA_V42_OUT="$V66_OUT"
-          export FA_V42_EXPECTED_CANDIDATE_SHA256="$V66_CANDIDATE_SHA256"
+          export FA_V42_OUT="$GITHUB_WORKSPACE/$V66_OUT"
+          export FA_V42_EXPECTED_CANDIDATE_SHA256
           set +e
           bash scripts/fa_v42_direct_compile_ci.sh
-          rc=$?
+          wrapper_rc=$?
           set -e
-          printf '%s\n' "$rc" >"$V66_OUT/wrapper.exit"
-          printf 'V66_WRAPPER_RC=%s\n' "$rc" >>"$GITHUB_ENV"
+          printf '%s\n' "$wrapper_rc" >"$FA_V42_OUT/wrapper.exit"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            "$FA_V42_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          printf 'V66_WRAPPER_RC=%s\n' "$wrapper_rc" >>"$GITHUB_ENV"
           exit 0
 
-      - name: Collect complete direct diagnostics
+      - name: Collect full diagnostics, warnings, declarations, and trust-six
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          export FA_V42_OUT="$V66_OUT"
-          export FA_V42_VARIANT="$V66_VARIANT"
-          export FA_V42_EXPECTED_CANDIDATE_SHA256="${V66_CANDIDATE_SHA256:-missing}"
+          export FA_V42_OUT="$GITHUB_WORKSPACE/$V66_OUT"
+          export FA_V42_VARIANT=checked_head
+          export FA_V42_EXPECTED_CANDIDATE_SHA256="${FA_V42_EXPECTED_CANDIDATE_SHA256:-missing}"
           python3 scripts/fa_v42_collect_full_diagnostics.py \
             --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
-            --out "$V66_OUT" --max-errors 2000 \
-            >"$V66_OUT/metric-console.log"
+            --out "$FA_V42_OUT" \
+            --max-errors 2000 \
+            >"$FA_V42_OUT/metric-console.log"
 
-      - name: Upload exact v66 candidate and evidence
+      - id: gate
+        name: Gate current-head authority and isolate the first actual error
         if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$GITHUB_WORKSPACE/$V66_OUT"
+          python3 scripts/fa_v66_checked_head_final_gate.py \
+            --mode final \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --source "$GITHUB_WORKSPACE/PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean" \
+            --out "$out" \
+            --provenance "$out/CHECKOUT_PROVENANCE.json" \
+            --expected-github-sha "$GITHUB_SHA" \
+            --expected-github-ref "$GITHUB_REF" \
+            --expected-run-id "$GITHUB_RUN_ID" \
+            --expected-run-attempt "$GITHUB_RUN_ATTEMPT"
+
+      - name: Upload official exact checked-head evidence artifact
+        if: always() && steps.gate.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: codex-fa-v66-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          name: codex-fa-v66-checked-head-official-${{ github.sha }}-attempt${{ github.run_attempt }}
           path: ${{ env.V66_OUT }}/*
           if-no-files-found: error
           retention-days: 30
           compression-level: 6
 
-      - name: Preserve actual direct result
+      - name: Upload unmistakable incomplete debug evidence only when gate fails
+        if: always() && steps.gate.outcome != 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v66-checked-head-incomplete-debug-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.V66_OUT }}/*
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 6
+
+      - name: Fail closed and mirror the captured FA exit
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${V66_WRAPPER_RC:-86}" == 0 ]]
-          [[ -f "$V66_OUT/Mock2.exit" ]]
-          [[ -f "$V66_OUT/Mock2_Advanced.exit" ]]
-          [[ -f "$V66_OUT/Mock2_FunctionalAnalysis.exit" ]]
-          [[ "$(tr -d '\r\n' <"$V66_OUT/Mock2.exit")" == 0 ]]
-          [[ "$(tr -d '\r\n' <"$V66_OUT/Mock2_Advanced.exit")" == 0 ]]
-          exit "$(tr -d '\r\n' <"$V66_OUT/Mock2_FunctionalAnalysis.exit")"
+          out="$GITHUB_WORKSPACE/$V66_OUT"
+          [[ "${{ steps.gate.outcome }}" == success ]]
+          [[ -s "$out/FINAL_GATE.json" ]]
+          [[ "$(tr -d '\r\n' <"$out/wrapper.exit")" == 0 ]]
+          [[ "$(tr -d '\r\n' <"$out/Mock2.exit")" == 0 ]]
+          [[ "$(tr -d '\r\n' <"$out/Mock2_Advanced.exit")" == 0 ]]
+          exit "$(tr -d '\r\n' <"$out/Mock2_FunctionalAnalysis.exit")"
