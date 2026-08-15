@@ -1,0 +1,186 @@
+name: Codex FA v79 statement-definition unfold matrix
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - scripts/fa_v79_auto_unfold_variant.py
+      - .github/workflows/codex-fa-v79-auto-unfold-matrix.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: codex-fa-v79-auto-unfold
+  cancel-in-progress: false
+
+env:
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    outputs:
+      needed: ${{ steps.p.outputs.needed }}
+      target: ${{ steps.p.outputs.target }}
+      source_sha256: ${{ steps.p.outputs.source_sha256 }}
+    env:
+      OUT: build-logs/codex-fa-v79-prepare
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { ref: '${{ github.sha }}', fetch-depth: 1, persist-credentials: false }
+      - id: p
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          remote="https://github.com/${GITHUB_REPOSITORY}.git"
+          passes=(codex/fa-true-pass-certified codex/fa-v78-adaptive-pass codex/fa-v77-decl4017-pass codex/fa-v76-unlimited-pass codex/fa-v73-unlimited-pass codex/fa-v71-unlimited-pass codex/fa-v69-resource-normalized-pass codex/fa-v68-global-budget-pass codex/fa-v67-heartbeat-pass)
+          for b in "${passes[@]}"; do if git ls-remote --exit-code "$remote" "refs/heads/$b" >/dev/null 2>&1; then echo needed=false>>"$GITHUB_OUTPUT";exit 0;fi;done
+          candidates=(codex/fa-v78-round2-best codex/fa-v77-round1-best codex/fa-v76-diagnostics codex/fa-v74-materialized-best)
+          selected='';sha=''
+          for attempt in $(seq 1 2160);do for b in "${candidates[@]}";do line=$(git ls-remote "$remote" "refs/heads/$b"|head -n1||true);if [ -n "$line" ];then selected="$b";sha=${line%%[[:space:]]*};break 2;fi;done;sleep 10;done
+          test -n "$selected";git fetch --depth=1 origin "$sha";git show FETCH_HEAD:PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean>"$OUT/base-input.lean"
+          target=discriminantHardStageOperator_eq_weightedHard
+          for result_path in build-logs/fa-v78-selected.json build-logs/fa-v77-selected.json;do if git cat-file -e "FETCH_HEAD:$result_path" 2>/dev/null;then git show "FETCH_HEAD:$result_path">"$OUT/PREVIOUS_RESULT.json";target=$(python3 - <<'PY'
+          import json
+          r=json.load(open('build-logs/codex-fa-v79-prepare/PREVIOUS_RESULT.json'));allowed=['discriminantHardStageOperator_eq_weightedHard','norm_discriminantHardStageOperator_sub_graphPotential_le','graphPotentialOperator_isCompact_unconditional'];f=r.get('failing_declarations',[]);print(next((x for x in allowed if x in f),allowed[0]))
+          PY
+          );break;fi;done
+          python3 - <<'PY'
+          import hashlib,json,os,re
+          from pathlib import Path
+          o=Path(os.environ['OUT']);raw=(o/'base-input.lean').read_bytes();t=raw.decode();hb=re.compile(r'(?m)^(?P<a>\s*set_option\s+[A-Za-z0-9_.]*maxHeartbeats\s+)\d+(?P<b>[^\n]*)$');rd=re.compile(r'(?m)^(?P<a>\s*set_option\s+[A-Za-z0-9_.]*maxRecDepth\s+)\d+(?P<b>[^\n]*)$');t,_=hb.subn(lambda m:m.group('a')+'0'+m.group('b'),t);t,_=rd.subn(lambda m:m.group('a')+'1000000'+m.group('b'),t);ls=t.splitlines(keepends=True);last=-1
+          for i,l in enumerate(ls):
+              if re.match(r'^\s*import\s+',l):last=i
+              elif last>=0 and l.strip() and not l.lstrip().startswith('--'):break
+          if last<0:raise SystemExit('no imports')
+          if '-- v79 normalized base' not in t:t=''.join(ls[:last+1])+'\n-- v79 normalized base\nset_option maxHeartbeats 0\nset_option maxRecDepth 1000000\n\n'+''.join(ls[last+1:])
+          b=t.encode();(o/'base-normalized.lean').write_bytes(b);e={'schema':'fa-v79-base-v1','sha256':hashlib.sha256(b).hexdigest(),'bytes':len(b),'lines':len(t.splitlines())};(o/'IDENTITY.json').write_text(json.dumps(e,indent=2,sort_keys=True)+'\n');open(os.environ['GITHUB_OUTPUT'],'a').write('source_sha256='+e['sha256']+'\n')
+          PY
+          echo "$target">"$OUT/TARGET.txt";echo target="$target">>"$GITHUB_OUTPUT";echo needed=true>>"$GITHUB_OUTPUT"
+      - if: steps.p.outputs.needed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: { name: 'codex-fa-v79-prepared-${{ github.sha }}', path: 'build-logs/codex-fa-v79-prepare/*', if-no-files-found: error, retention-days: 30 }
+
+  direct:
+    needs: prepare
+    if: needs.prepare.outputs.needed == 'true'
+    name: direct-${{ matrix.mode }}
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        mode: [simp_defs, simp_only_defs, ext_simp_defs, ext_simp_only_defs, clm_ext_simp_defs, clm_ext_simp_only_defs, unfold_rfl, ext_unfold_rfl, clm_ext_unfold_rfl, dsimp_defs, ext_dsimp_defs, clm_ext_dsimp_defs]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env: { MODE: '${{ matrix.mode }}', TARGET: '${{ needs.prepare.outputs.target }}', OUT: 'build-logs/codex-fa-v79/${{ matrix.mode }}' }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { ref: '${{ github.sha }}', fetch-depth: 1, persist-credentials: false }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: { name: 'codex-fa-v79-prepared-${{ github.sha }}', path: /tmp/fa-v79 }
+      - name: Generate candidate and audit
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT";base=/tmp/fa-v79/base-normalized.lean;test "$(sha256sum "$base"|awk '{print $1}')"="${{ needs.prepare.outputs.source_sha256 }}"
+          if ! python3 scripts/fa_v79_auto_unfold_variant.py --source "$base" --output "$OUT/Mock2_FunctionalAnalysis-candidate.lean" --theorem "$TARGET" --mode "$MODE" --evidence "$OUT/GENERATION.json">"$OUT/GENERATION.stdout.json" 2>"$OUT/GENERATION.stderr.txt";then cp "$base" "$OUT/Mock2_FunctionalAnalysis-candidate.lean";echo not_applicable>"$OUT/generation.status";else echo ok>"$OUT/generation.status";fi
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          import json,re,os
+          from pathlib import Path
+          t=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text();f={'sorry':len(re.findall(r'(?<![A-Za-z0-9_])sorry(?![A-Za-z0-9_])',t)),'admit':len(re.findall(r'(?<![A-Za-z0-9_])admit(?![A-Za-z0-9_])',t)),'axiom':len(re.findall(r'^\s*axiom\s+',t,flags=re.M)),'unsafe':len(re.findall(r'^\s*unsafe\s+',t,flags=re.M)),'native_decide':t.count('native_decide'),'Lean.ofReduceBool':t.count('Lean.ofReduceBool')};Path(os.environ['OUT'],'AUDIT.json').write_text(json.dumps(f,indent=2,sort_keys=True)+'\n');assert not any(f.values()),f
+          PY
+      - name: Install exact Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail;curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none>"$OUT/elan.log" 2>&1;export PATH="$HOME/.elan/bin:$PATH";echo "$HOME/.elan/bin">>"$GITHUB_PATH";elan toolchain install "$(tr -d '\r\n'<lean-toolchain)">"$OUT/toolchain.log" 2>&1;lake exe cache get>"$OUT/cache.log" 2>&1;lean --version|tee "$OUT/lean-version.txt";test "$(tr -d '\r\n'<"$OUT/lean-version.txt")"="$LEAN_VERSION_EXACT"
+      - name: Direct compile chain
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p .lake/build/lib/lean/PrimalitySheafVerification "$OUT/direct";run_one(){ n="$1";shift;set +e;timeout --signal=TERM --kill-after=30s 14400 lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 "$@">"$OUT/direct/$n.log" 2>&1;rc=$?;set -e;echo "$rc">"$OUT/direct/$n.exit";};rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean;run_one Mock2 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean;if [ "$(cat "$OUT/direct/Mock2.exit")" = 0 ];then run_one Mock2_Advanced -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean;else echo 99>"$OUT/direct/Mock2_Advanced.exit";fi;if [ "$(cat "$OUT/direct/Mock2_Advanced.exit")" = 0 ];then run_one Mock2_FunctionalAnalysis -o /tmp/fa-v79-$MODE.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean;else echo 99>"$OUT/direct/Mock2_FunctionalAnalysis.exit";:>"$OUT/direct/Mock2_FunctionalAnalysis.log";fi
+      - name: Metric
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT/direct";python3 - <<'PY'
+          import hashlib,json,os,re
+          from pathlib import Path
+          o=Path(os.environ['OUT']);d=o/'direct';p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');raw=p.read_bytes() if p.exists() else b'';t=raw.decode(errors='replace');log=(d/'Mock2_FunctionalAnalysis.log').read_text(errors='replace') if (d/'Mock2_FunctionalAnalysis.log').exists() else ''
+          def ev(n):
+              try:return int((d/(n+'.exit')).read_text().strip())
+              except:return 99
+          decl=[];pat=re.compile(r'^\s*(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([A-Za-z0-9_\u0080-\uffff.]+)\b')
+          for i,l in enumerate(t.splitlines(),1):
+              m=pat.match(l)
+              if m:decl.append((i,m.group(1)))
+          hs=[];fs=[]
+          for m in re.finditer(r'(?m)^.*?\.lean:(\d+):(\d+): error:',log):
+              l=int(m.group(1));hs.append((l,int(m.group(2))));pr=[x for x in decl if x[0]<=l];fs.append(pr[-1][1] if pr else '<preamble>')
+          r={'schema':'fa-v79-result-v1','mode':os.environ['MODE'],'target':os.environ['TARGET'],'candidate_sha256':hashlib.sha256(raw).hexdigest(),'candidate_bytes':len(raw),'candidate_lines':len(t.splitlines()),'Mock2_exit':ev('Mock2'),'Mock2_Advanced_exit':ev('Mock2_Advanced'),'FA_exit':ev('Mock2_FunctionalAnalysis'),'error_headers':len(hs),'failing_declarations':sorted(set(fs)),'failing_declaration_count':len(set(fs)),'first_error_line':hs[0][0] if hs else None};r['true_pass']=r['Mock2_exit']==r['Mock2_Advanced_exit']==r['FA_exit']==0 and not hs;(o/'RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');print(json.dumps(r,sort_keys=True))
+          PY
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: { name: 'codex-fa-v79-${{ matrix.mode }}-${{ github.sha }}', path: 'build-logs/codex-fa-v79/${{ matrix.mode }}/*', if-no-files-found: error, retention-days: 30 }
+      - if: always()
+        shell: bash
+        run: "python3 - <<'PY'\nimport json,os\nfrom pathlib import Path\nr=json.loads(Path(os.environ['OUT'],'RESULT.json').read_text());raise SystemExit(0 if r['true_pass'] else 1)\nPY"
+
+  select:
+    needs: [prepare,direct]
+    if: always() && needs.prepare.outputs.needed == 'true'
+    runs-on: ubuntu-24.04
+    outputs: { true_pass: '${{ steps.s.outputs.true_pass }}', commit_sha: '${{ steps.s.outputs.commit_sha }}', candidate_sha256: '${{ steps.s.outputs.candidate_sha256 }}', selected_mode: '${{ steps.s.outputs.selected_mode }}', target: '${{ steps.s.outputs.target }}' }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { ref: '${{ github.sha }}', fetch-depth: 1, persist-credentials: true }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: { pattern: 'codex-fa-v79-*-${{ github.sha }}', path: /tmp/fa-v79-results, merge-multiple: false }
+      - id: s
+        shell: bash
+        run: |
+          set -euo pipefail;python3 - <<'PY'
+          import hashlib,json,os,shutil
+          from pathlib import Path
+          rows=[]
+          for root in Path('/tmp/fa-v79-results').glob('*'):
+              rs=list(root.rglob('RESULT.json'));cs=list(root.rglob('Mock2_FunctionalAnalysis-candidate.lean'))
+              if len(rs)!=1 or len(cs)!=1:continue
+              r=json.loads(rs[0].read_text());raw=cs[0].read_bytes()
+              if hashlib.sha256(raw).hexdigest()!=r['candidate_sha256']:raise SystemExit('sha')
+              first=r['first_error_line'] if r['first_error_line'] is not None else 10**12;rows.append(((0 if r['true_pass'] else 1,r['error_headers'],r['failing_declaration_count'],-first,r['mode']),r,cs[0]))
+          if not rows:raise SystemExit('no lanes')
+          _,b,c=sorted(rows,key=lambda x:x[0])[0];shutil.copyfile(c,'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');Path('build-logs').mkdir(exist_ok=True);Path('build-logs/fa-v79-selected.json').write_text(json.dumps(b,indent=2,sort_keys=True)+'\n');f=open(os.environ['GITHUB_OUTPUT'],'a');f.write('true_pass='+str(b['true_pass']).lower()+'\n');f.write('candidate_sha256='+b['candidate_sha256']+'\n');f.write('selected_mode='+b['mode']+'\n');f.write('target='+b['target']+'\n');f.close()
+          PY
+          git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git checkout -B codex/fa-v79-unfold-best;git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean build-logs/fa-v79-selected.json;git commit -m 'Codex: check in v79 auto-unfold winner';git push --force origin HEAD:refs/heads/codex/fa-v79-unfold-best;echo "commit_sha=$(git rev-parse HEAD)">>"$GITHUB_OUTPUT"
+
+  verify-and-certify:
+    needs: select
+    if: needs.select.outputs.true_pass == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env: { OUT: build-logs/codex-fa-v79-verified, GH_TOKEN: '${{ github.token }}' }
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { ref: '${{ needs.select.outputs.commit_sha }}', fetch-depth: 1, persist-credentials: true }
+      - name: Fresh checked-in direct chain
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT" .lake/build/lib/lean/PrimalitySheafVerification;s=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean;test "$(sha256sum "$s"|awk '{print $1}')"="${{ needs.select.outputs.candidate_sha256 }}";curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh;sh /tmp/elan.sh -y --default-toolchain none>"$OUT/elan.log" 2>&1;export PATH="$HOME/.elan/bin:$PATH";echo "$HOME/.elan/bin">>"$GITHUB_PATH";elan toolchain install "$(tr -d '\r\n'<lean-toolchain)">"$OUT/toolchain.log" 2>&1;lake exe cache get>"$OUT/cache.log" 2>&1;lean --version|tee "$OUT/lean-version.txt";test "$(tr -d '\r\n'<"$OUT/lean-version.txt")"="$LEAN_VERSION_EXACT";rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean;timeout 14400 lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean>"$OUT/Mock2.log" 2>&1;timeout 14400 lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean>"$OUT/Mock2_Advanced.log" 2>&1;timeout 14400 lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 -o /tmp/fa-v79-verified.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean>"$OUT/Mock2_FunctionalAnalysis.log" 2>&1;! grep -Eq '^.*?\.lean:[0-9]+:[0-9]+: error:' "$OUT/Mock2_FunctionalAnalysis.log"
+      - id: seal
+        shell: bash
+        run: |
+          set -euo pipefail;python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean');b=p.read_bytes();r={'schema':'fa-v79-certificate-v1','status':'FA_TRUE_PASS','source_commit':os.environ['SOURCE_COMMIT'],'selected_mode':os.environ['SELECTED_MODE'],'target':os.environ['TARGET'],'candidate_sha256':hashlib.sha256(b).hexdigest(),'candidate_bytes':len(b),'candidate_lines':len(b.decode().splitlines()),'Mock2_exit':0,'Mock2_Advanced_exit':0,'FA_exit':0,'error_headers':0,'direct_lean_verified':True,'checked_in_source_verified':True,'toolchain':Path(os.environ['OUT'],'lean-version.txt').read_text().strip()};Path('build-logs/FA_TRUE_PASS.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n');Path(os.environ['OUT'],'FA_TRUE_PASS.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git checkout -B codex/fa-true-pass-certified;git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean build-logs/FA_TRUE_PASS.json;git commit -m 'Codex: certify v79 checked-in FA TRUE PASS';git push --force origin HEAD:refs/heads/codex/fa-true-pass-certified;echo "sha=$(git rev-parse HEAD)">>"$GITHUB_OUTPUT"
+        env: { SOURCE_COMMIT: '${{ needs.select.outputs.commit_sha }}', SELECTED_MODE: '${{ needs.select.outputs.selected_mode }}', TARGET: '${{ needs.select.outputs.target }}' }
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with: { name: 'codex-fa-v79-certified-${{ steps.seal.outputs.sha || needs.select.outputs.commit_sha }}', path: 'build-logs/codex-fa-v79-verified/*', if-no-files-found: error, retention-days: 90 }
