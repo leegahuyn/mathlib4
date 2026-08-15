@@ -1,11 +1,7 @@
 name: Codex FA v61 bounded eight-way direct Lean matrix
 
 on:
-  push:
-    branches:
-      - codex/fa-exclusive-focus-20260814
   workflow_dispatch: {}
-
 permissions: {actions: read, contents: read}
 
 env:

@@ -1,18 +1,7 @@
 name: Codex FA v63 bounded noncumulative direct Lean matrix
 
 on:
-  push:
-    branches: [codex/fa-exclusive-focus-20260814]
-    paths:
-      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
-      - scripts/fa_v63_*
-      - scripts/fa_v61_direct_compile_ci.sh
-      - scripts/fa_v59_direct_compile_ci.sh
-      - scripts/fa_v42_direct_compile_ci.sh
-      - scripts/fa_v42_collect_full_diagnostics.py
-      - .github/workflows/codex-fa-v63-direct-matrix.yml
   workflow_dispatch: {}
-
 permissions:
   contents: read
   actions: read
