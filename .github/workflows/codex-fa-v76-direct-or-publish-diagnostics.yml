@@ -1,0 +1,176 @@
+name: Codex FA v76 direct pass or publish exact diagnostics
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - .github/workflows/codex-fa-v76-direct-or-publish-diagnostics.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: codex-fa-v76-diagnostic
+  cancel-in-progress: false
+
+env:
+  AUTHORITY_ARTIFACT_ID: '9246997507'
+  AUTHORITY_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+  OUT: build-logs/codex-fa-v76
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Determine whether repair is still needed
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code https://github.com/${GITHUB_REPOSITORY}.git refs/heads/codex/fa-true-pass-certified >/dev/null 2>&1; then
+            echo needed=false >> "$GITHUB_OUTPUT"
+          else
+            echo needed=true >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout exact v76 orchestration commit
+        if: steps.guard.outputs.needed == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover authority and create resource-normalized candidate
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/fa-v76-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" > /tmp/fa-v76.zip
+          unzip -q /tmp/fa-v76.zip -d /tmp/fa-v76-artifact
+          python3 - <<'PY'
+          import hashlib,json,os,re
+          from pathlib import Path
+          expected=os.environ['AUTHORITY_SHA256']
+          matches=[p for p in Path('/tmp/fa-v76-artifact').rglob('*.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==expected]
+          if not matches: raise SystemExit('authority source missing')
+          authority=sorted(matches,key=lambda p:(len(str(p)),str(p)))[0].read_bytes()
+          text=authority.decode('utf-8')
+          hb=re.compile(r'(?m)^(?P<a>\s*set_option\s+[A-Za-z0-9_.]*maxHeartbeats\s+)\d+(?P<b>[^\n]*)$')
+          rd=re.compile(r'(?m)^(?P<a>\s*set_option\s+[A-Za-z0-9_.]*maxRecDepth\s+)\d+(?P<b>[^\n]*)$')
+          text,hbc=hb.subn(lambda m:m.group('a')+'0'+m.group('b'),text)
+          text,rdc=rd.subn(lambda m:m.group('a')+'1000000'+m.group('b'),text)
+          lines=text.splitlines(keepends=True); last=-1
+          for i,line in enumerate(lines):
+              if re.match(r'^\s*import\s+',line): last=i
+              elif last>=0 and line.strip() and not line.lstrip().startswith('--'): break
+          if last<0: raise SystemExit('no imports')
+          text=''.join(lines[:last+1])+'\nset_option maxHeartbeats 0\nset_option maxRecDepth 1000000\n\n'+''.join(lines[last+1:])
+          candidate=text.encode('utf-8')
+          Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').write_bytes(candidate)
+          out=Path(os.environ['OUT']); (out/'authority.lean').write_bytes(authority); (out/'candidate.lean').write_bytes(candidate)
+          e={'schema':'fa-v76-generation-v1','authority_sha256':hashlib.sha256(authority).hexdigest(),'candidate_sha256':hashlib.sha256(candidate).hexdigest(),'candidate_bytes':len(candidate),'candidate_lines':len(text.splitlines()),'heartbeat_rewrites':hbc,'rec_depth_rewrites':rdc}
+          (out/'GENERATION.json').write_text(json.dumps(e,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(e,sort_keys=True))
+          PY
+
+      - name: Install exact pinned Lean and cache
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"; echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: Direct compile complete chain and retain actual result
+        if: steps.guard.outputs.needed == 'true'
+        id: direct
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification "$OUT/direct"
+          run_one(){ n="$1"; shift; set +e; timeout --signal=TERM --kill-after=30s 18000 lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 "$@" > "$OUT/direct/$n.log" 2>&1; rc=$?; set -e; echo "$rc" > "$OUT/direct/$n.exit"; }
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+          run_one Mock2 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean
+          if [ "$(cat "$OUT/direct/Mock2.exit")" = 0 ]; then run_one Mock2_Advanced -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean; else echo 99 > "$OUT/direct/Mock2_Advanced.exit"; fi
+          if [ "$(cat "$OUT/direct/Mock2_Advanced.exit")" = 0 ]; then run_one Mock2_FunctionalAnalysis -o /tmp/fa-v76.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean; else echo 99 > "$OUT/direct/Mock2_FunctionalAnalysis.exit"; : > "$OUT/direct/Mock2_FunctionalAnalysis.log"; fi
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT'])/'direct'; ev=lambda n:int((out/(n+'.exit')).read_text().strip()); log=(out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace'); headers=re.findall(r'^.*?\.lean:\d+:\d+: error:.*(?:\n(?!(?:.*?\.lean:\d+:\d+: (?:error|warning):)).*)*',log,flags=re.M); r={'schema':'fa-v76-direct-result-v1','Mock2_exit':ev('Mock2'),'Mock2_Advanced_exit':ev('Mock2_Advanced'),'FA_exit':ev('Mock2_FunctionalAnalysis'),'error_headers':len(re.findall(r'^.*?\.lean:\d+:\d+: error:',log,flags=re.M))}; r['true_pass']=r['Mock2_exit']==r['Mock2_Advanced_exit']==r['FA_exit']==0 and r['error_headers']==0; (out/'RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n'); open(os.environ['GITHUB_OUTPUT'],'a').write('pass='+str(r['true_pass']).lower()+'\n'); print(json.dumps(r,sort_keys=True))
+          PY
+
+      - name: Extract exact error messages and theorem bodies on failure
+        if: steps.guard.outputs.needed == 'true' && steps.direct.outputs.pass != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT']); source=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); lines=source.read_text().splitlines(); log=(out/'direct/Mock2_FunctionalAnalysis.log').read_text(errors='replace')
+          err_lines=[]
+          for m in re.finditer(r'(?m)^(.*?\.lean:(\d+):(\d+): error:.*)$',log):
+              line=int(m.group(2)); lo=max(1,line-12); hi=min(len(lines),line+24); err_lines.append(f'===== ERROR {m.group(1)} ====='); err_lines.extend(f'{i:06d}: {lines[i-1]}' for i in range(lo,hi+1))
+          names=['discriminantHardStageOperator_eq_weightedHard','norm_discriminantHardStageOperator_sub_graphPotential_le','graphPotentialOperator_isCompact_unconditional']
+          declpat=re.compile(r'^\s*(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma)\s+([A-Za-z0-9_\u0080-\uffff]+)\b'); decls=[(i,m.group(1)) for i,line in enumerate(lines) if (m:=declpat.match(line))]
+          contexts=[]; locations={}
+          for name in names:
+              hits=[i for i,line in enumerate(lines) if re.search(rf'\b(?:theorem|lemma)\s+{re.escape(name)}\b',line)]
+              if len(hits)!=1: continue
+              start=hits[0]; nexts=[i for i,_ in decls if i>start]; end=nexts[0] if nexts else min(len(lines),start+300); lo=max(0,start-80); hi=min(len(lines),end+80); locations[name]={'line':start+1,'start':lo+1,'end':hi}; contexts.append(f'===== {name} {lo+1}-{hi} ====='); contexts.extend(f'{i+1:06d}: {lines[i]}' for i in range(lo,hi))
+          (out/'FA_ERRORS_WITH_CONTEXT.txt').write_text('\n'.join(err_lines)+'\n')
+          (out/'TARGET_THEOREM_CONTEXTS.txt').write_text('\n'.join(contexts)+'\n')
+          (out/'TARGET_LOCATIONS.json').write_text(json.dumps(locations,indent=2,sort_keys=True)+'\n')
+          (out/'FULL_FA_LOG.txt').write_text(log)
+          PY
+
+      - name: Publish exact failing source and diagnostics branch
+        if: steps.guard.outputs.needed == 'true' && steps.direct.outputs.pass != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v76-diagnostics
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"/GENERATION.json "$OUT"/direct/RESULT.json "$OUT"/FA_ERRORS_WITH_CONTEXT.txt "$OUT"/TARGET_THEOREM_CONTEXTS.txt "$OUT"/TARGET_LOCATIONS.json "$OUT"/FULL_FA_LOG.txt
+          git commit -m 'Codex: publish exact post-unlimited FA failure diagnostics'
+          git push --force origin HEAD:refs/heads/codex/fa-v76-diagnostics
+
+      - name: Seal direct pass if v76 is clean
+        if: steps.guard.outputs.needed == 'true' && steps.direct.outputs.pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v76-unlimited-pass
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git commit -m 'Codex: check in v76 direct-pass FA source'
+          git push --force origin HEAD:refs/heads/codex/fa-v76-unlimited-pass
+
+      - name: Upload complete v76 evidence
+        if: always() && steps.guard.outputs.needed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v76-${{ github.sha }}
+          path: build-logs/codex-fa-v76/*
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Preserve actual v76 gate
+        if: always() && steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          test "${{ steps.direct.outputs.pass }}" = true
