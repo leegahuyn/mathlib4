@@ -53417,24 +53417,42 @@ theorem integral_negativePlaneWave_mul_dx
       hBase.const_mul
         (-2 * Real.pi * Complex.I * (k 0 : ℂ) /
           literalStageFourierScale Y)
+  have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+      fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+    funext w
+    exact HalfWeightCompactCoordinateGreen.dx_apply v w
+  have hdx_apply (w : ℂ) :
+      HalfWeightCompactCoordinateGreen.dx v w =
+        (fderiv ℝ (v : ℂ → ℂ) w) 1 :=
+    congrFun hdx w
   have hRight : Integrable
       (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *
         (fderiv ℝ (v : ℂ → ℂ) w) 1)
       (volume : Measure ℂ) := by
-    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
-      ((literalStageNegativePlaneWave_continuous Y k).mul
-        (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+    exact (((literalStageNegativePlaneWave_continuous Y k).mul
+      (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+        (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left).congr
+          (Filter.Eventually.of_forall fun w ↦ by
+            simpa only [Pi.mul_apply] using
+              congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+                (hdx_apply w))
   have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
     (μ := (volume : Measure ℂ)) (v := (1 : ℂ))
     hLeft hRight hBase
     (fun _ _ ↦
       (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)
     (fun _ _ ↦ v.contDiff.differentiable (by simp) _)
-  rw [HalfWeightCompactCoordinateGreen.dx_apply]
   calc
     (∫ w : ℂ, literalStageNegativePlaneWave Y k w *
-        (fderiv ℝ (v : ℂ → ℂ) w) 1) =
+        HalfWeightCompactCoordinateGreen.dx v w) =
+      ∫ w : ℂ, literalStageNegativePlaneWave Y k w *
+        (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+      apply integral_congr_ae
+      filter_upwards with w
+      simpa only [Pi.mul_apply] using
+        congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+          (hdx_apply w)
+    _ =
       - ∫ w : ℂ, (fderiv ℝ
           (literalStageNegativePlaneWave Y k) w) 1 * v w := hIBP
     _ = (2 * Real.pi * Complex.I * (k 0 : ℂ) /
