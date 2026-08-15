@@ -1,0 +1,156 @@
+name: Codex FA v67 direct compact-limit fix
+
+on:
+  push:
+    branches:
+      - codex/fa-v67-direct-limit-pass
+    paths:
+      - .github/workflows/codex-fa-v67-direct-limit.yml
+      - scripts/fa_v67_apply_fix.py
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: codex-fa-v67-direct-limit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  direct-fa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: build-logs/fa-v67-direct-limit
+      V65_ARTIFACT_ID: "9246997507"
+      V65_CANDIDATE_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+      EXPECTED_TOOLCHAIN: leanprover/lean4:v4.33.0-rc1
+
+    steps:
+      - name: Checkout v67 scaffold
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Materialize exact v65 winner and apply v67 proof fix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${V65_ARTIFACT_ID}/zip" > /tmp/fa-v65-best.zip
+          rm -rf /tmp/fa-v65-best
+          mkdir -p /tmp/fa-v65-best
+          unzip -q /tmp/fa-v65-best.zip -d /tmp/fa-v65-best
+          test -f /tmp/fa-v65-best/Mock2_FunctionalAnalysis-candidate.lean
+          test "$(sha256sum /tmp/fa-v65-best/Mock2_FunctionalAnalysis-candidate.lean | awk '{print $1}')" = "$V65_CANDIDATE_SHA256"
+          cp /tmp/fa-v65-best/Mock2_FunctionalAnalysis-candidate.lean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp /tmp/fa-v65-best/FULL_DIAGNOSTICS.json "$OUT/V65_FULL_DIAGNOSTICS.json"
+          cp /tmp/fa-v65-best/METRIC.json "$OUT/V65_METRIC.json"
+          python3 scripts/fa_v67_apply_fix.py | tee "$OUT/MATERIALIZATION.stdout.json"
+          sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/candidate.sha256"
+          wc -c PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/candidate.bytes"
+          wc -l PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/candidate.lines"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = "$EXPECTED_TOOLCHAIN"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$EXPECTED_TOOLCHAIN" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Directly compile Mock2, Mock2 Advanced, and v67 FA
+        id: compile
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification "$OUT"
+          set +e
+          lake env lean -DmaxErrors=1 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean \
+            PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          m2=$?
+          lake env lean -DmaxErrors=1 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean \
+            PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          m2a=$?
+          lake env lean -DmaxErrors=2000 -DwarningAsError=false \
+            -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean \
+            -i .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean \
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+          fa=$?
+          set -e
+          printf '%s\n' "$m2" > "$OUT/Mock2.exit"
+          printf '%s\n' "$m2a" > "$OUT/Mock2_Advanced.exit"
+          printf '%s\n' "$fa" > "$OUT/Mock2_FunctionalAnalysis.exit"
+          printf 'm2=%s\n' "$m2" >> "$GITHUB_OUTPUT"
+          printf 'm2a=%s\n' "$m2a" >> "$GITHUB_OUTPUT"
+          printf 'fa=%s\n' "$fa" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          out = Path(os.environ["OUT"])
+          src = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
+          log = (out / "Mock2_FunctionalAnalysis.log").read_text(encoding="utf-8", errors="replace")
+          headers = [line for line in log.splitlines() if re.match(r"^PrimalitySheafVerification/Mock2_FunctionalAnalysis\.lean:\d+:\d+: error:", line)]
+          result = {
+            "schema": "fa-v67-direct-result-v1",
+            "github_run_id": os.environ.get("GITHUB_RUN_ID"),
+            "github_sha": os.environ.get("GITHUB_SHA"),
+            "source_sha256": hashlib.sha256(src.read_bytes()).hexdigest(),
+            "source_bytes": src.stat().st_size,
+            "source_lines": len(src.read_text(encoding="utf-8").splitlines()),
+            "Mock2_exit": int((out / "Mock2.exit").read_text().strip()),
+            "Mock2_Advanced_exit": int((out / "Mock2_Advanced.exit").read_text().strip()),
+            "FA_exit": int((out / "Mock2_FunctionalAnalysis.exit").read_text().strip()),
+            "FA_error_headers": len(headers),
+            "FA_error_header_lines": headers,
+          }
+          (out / "RESULT.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(result, sort_keys=True))
+          PY
+
+      - name: Upload v67 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v67-direct-limit-${{ github.sha }}
+          path: |
+            build-logs/fa-v67-direct-limit/*
+            PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Check in source only after zero-error direct pass
+        if: steps.compile.outputs.m2 == '0' && steps.compile.outputs.m2a == '0' && steps.compile.outputs.fa == '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git commit -m "Codex: check in v67 FA direct Lean pass"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Preserve actual Lean gate
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < "$OUT/Mock2.exit")" = 0
+          test "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" = 0
+          exit "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")"
