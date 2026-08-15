@@ -53317,7 +53317,7 @@ theorem literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative
         literalStagePhysicalTorusPoint, Complex.measurableEquivPi_apply,
         ContinuousMap.coe_mk, Pi.neg_apply]
       rw [Fin.prod_univ_two]
-      ring_nf
+      (simp; ring_nf)
     _ = ((literalStageFourierScale Y)⁻¹ : ℂ) *
           star (UnitAddTorus.mFourier k
             (literalStagePhysicalTorusPoint Y w)) := by
