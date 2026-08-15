@@ -1,0 +1,448 @@
+{
+  "activation": {
+    "direct_compile_allowed": true,
+    "materialization_allowed": true,
+    "ready_selection_emitted": true,
+    "workflow_last_emitted": true,
+    "workflow_matrix_allowed": true
+  },
+  "artifact_contract": {
+    "duplicate_members_allowed": false,
+    "flat_members_only": true,
+    "member_count": 48,
+    "member_names": [
+      "AUTHORITY_REPROOF.json",
+      "AUTHORITY_REPROOF.stdout.json",
+      "BASE_FINAL_GATE.json",
+      "BASE_FULL_DIAGNOSTICS.json",
+      "BASE_MATERIALIZATION.json",
+      "BASE_Mock2_FunctionalAnalysis-candidate.lean",
+      "BASE_Mock2_FunctionalAnalysis.log",
+      "BASE_TOOLCHAIN_PIN.json",
+      "COLLECTOR_AUTHORITY_ATTESTATION.json",
+      "DIAGNOSTIC_DECLARATION_COUNTS.json",
+      "FINAL_GATE.json",
+      "FINAL_GATE.stdout.json",
+      "FULL_DIAGNOSTICS.json",
+      "FULL_WARNINGS.json",
+      "MATERIALIZATION.json",
+      "MATERIALIZATION.stdout.json",
+      "METRIC.json",
+      "Mock2.command",
+      "Mock2.executed",
+      "Mock2.exit",
+      "Mock2.log",
+      "Mock2_Advanced.command",
+      "Mock2_Advanced.executed",
+      "Mock2_Advanced.exit",
+      "Mock2_Advanced.log",
+      "Mock2_FunctionalAnalysis-candidate.lean",
+      "Mock2_FunctionalAnalysis-observed.lean",
+      "Mock2_FunctionalAnalysis.command",
+      "Mock2_FunctionalAnalysis.executed",
+      "Mock2_FunctionalAnalysis.exit",
+      "Mock2_FunctionalAnalysis.log",
+      "PATCH_AUDIT.json",
+      "SCAFFOLD_GATE.json",
+      "SYNTHETIC_SORRY_WARNINGS.json",
+      "TOOLCHAIN_PIN.json",
+      "V61_ARTIFACT.json",
+      "V61_JOBS.json",
+      "V61_RUN.json",
+      "VARIANT_INDEX.json",
+      "cache.log",
+      "candidate.after.sha256",
+      "candidate.before-fa.sha256",
+      "candidate.before.sha256",
+      "candidate.sha256",
+      "elan.log",
+      "lean-version.txt",
+      "metric-console.log",
+      "toolchain.log"
+    ],
+    "result_inventory_enforced_by_final_gate": true,
+    "runtime_evidence_fallback_allowed": false,
+    "schema": "fa-v63-exact-result-artifact-v1",
+    "status": "EXACT_STATIC_LOCK",
+    "v62_authority_zip": {
+      "all_48_member_hashes_emitted_by_reproof": true,
+      "all_member_hashes_derived_only_after_exact_zip_reproof": true,
+      "all_members_reproved": true,
+      "copies": [
+        {
+          "authority_member": "FINAL_GATE.json",
+          "bytes": 1905,
+          "result_member": "BASE_FINAL_GATE.json",
+          "sha256": "2537e5bbc28e11dfdbcb5cc6bc7d2adbac5d571b37393087863b1215b88b9b95"
+        },
+        {
+          "authority_member": "FULL_DIAGNOSTICS.json",
+          "bytes": 5807,
+          "result_member": "BASE_FULL_DIAGNOSTICS.json",
+          "sha256": "31370de532745411bd9acdc258cf5d90c9d0bb5b08b23870b00b55300000f383"
+        },
+        {
+          "authority_member": "MATERIALIZATION.json",
+          "bytes": 2675,
+          "result_member": "BASE_MATERIALIZATION.json",
+          "sha256": "a3467b09c65eab27f539c0eed1c78dfc260b2bdcf1aedb971ac74d526984d781"
+        },
+        {
+          "authority_member": "Mock2_FunctionalAnalysis-candidate.lean",
+          "bytes": 2812442,
+          "result_member": "BASE_Mock2_FunctionalAnalysis-candidate.lean",
+          "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+        },
+        {
+          "authority_member": "Mock2_FunctionalAnalysis.log",
+          "bytes": 290901,
+          "result_member": "BASE_Mock2_FunctionalAnalysis.log",
+          "sha256": "8e27a4dcc8be79a091b8b1c2f61197fdb7c9e4d995f3e158327442969c1de60a"
+        },
+        {
+          "authority_member": "TOOLCHAIN_PIN.json",
+          "bytes": 393,
+          "result_member": "BASE_TOOLCHAIN_PIN.json",
+          "sha256": "8f54d5486b82a5fc11bc52199c89265b7e9e8eed5a3ff4131f86251894bcff07"
+        }
+      ],
+      "copy_count": 6,
+      "declared_member_lock_count": 12,
+      "member_count": 48,
+      "zip_bytes": 1684227,
+      "zip_sha256": "799b754b01ef17bd8326ad0d9554f6fc1e27c42d01c070d3b2271816ae248333"
+    }
+  },
+  "authority": {
+    "bytes": 7471,
+    "declaration_count": 4416,
+    "official_v62_ready_sha256": "8a7f65766baf2d20713b7cfa29c7edbb0a5cff0d670256adebfb57646ce2ab51",
+    "runtime_path": "scripts/fa_v63_authority-lock.json",
+    "schema": "fa-v63-v62-winner-authority-lock-v1",
+    "sha256": "2048729e8c0b3d8bec7d0b3de32f67ae38da83e226cad0fd83482e8adb18a2c0",
+    "source_bytes": 2812442,
+    "source_lines": 62933,
+    "source_sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+  },
+  "blockers": [],
+  "composition_mode": "EXACT_FROM_AUTHORITY_NONCUMULATIVE",
+  "constraints": {
+    "FA_maxErrors": 2000,
+    "all_variants_from_exact_authority": true,
+    "body_only": true,
+    "bounded_variant_count": 11,
+    "contract_violation_exit_code": 86,
+    "declaration_count": 4416,
+    "distinct_candidate_outputs": true,
+    "hidden_cumulative_parentage": false,
+    "maxHeartbeats_delta": 0,
+    "pending_exit_code": 2,
+    "runtime_evidence_fallback_allowed": false,
+    "source_moves": 0,
+    "trust_six_delta": 0
+  },
+  "final_decision": {
+    "alternatives_must_not_be_combined": true,
+    "clean_claimed": false,
+    "combined_best_repair_ids": [
+      "V63-F3930-PI-NEG-APPLY-RING",
+      "V63-F3933-PROGRESSION",
+      "V63-F3933-EXPLICIT-CANCEL",
+      "V63-W4017-R17-BASE",
+      "V63-W4017-P",
+      "V63-W4017-Z",
+      "V63-W4017-W"
+    ],
+    "direct_lean_verified": false,
+    "f3933_fallback": "V63-F3933-FIELDSIMP",
+    "f3933_primary": "V63-F3933-EXPLICIT-CANCEL"
+  },
+  "independent_cross_audit": {
+    "checks_failed": 0,
+    "checks_passed": 877,
+    "clean_claimed": false,
+    "direct_lean_verified": false,
+    "files": [
+      {
+        "bytes": 99593,
+        "id": "audit",
+        "schema": "fa-v63-independent-cross-audit-v1",
+        "sha256": "9a7c3c1be73630b2bc75d78954bf811154a95d03a8ccf64ded46c4e50c631cd9",
+        "source_path": "work/v63-cross-audit/audit.json"
+      },
+      {
+        "bytes": 32979,
+        "id": "candidate_registry",
+        "schema": "fa-v63-independent-candidate-registry-v1",
+        "sha256": "f246fe711f54fa695497c5dc66c5fd321c7dee2d4c3e6aac33e0ecbabcf05ca3",
+        "source_path": "work/v63-cross-audit/candidate-registry.json"
+      },
+      {
+        "bytes": 22014,
+        "id": "matrix_lock",
+        "schema": "fa-v63-independent-11-lane-matrix-lock-v1",
+        "sha256": "5f0abeebf12688c3385f40614e5b670b3b030f4e45f89a2c42e884432c47b90d",
+        "source_path": "work/v63-cross-audit/matrix-lock.json"
+      }
+    ],
+    "lane_count": 11,
+    "status": "PASS_STATIC_EXACT_V63_MATRIX_DIRECT_LEAN_UNVERIFIED"
+  },
+  "manifest_schema": {
+    "bytes": 6165,
+    "runtime_path": "scripts/fa_v63_body-only-manifest.schema.json",
+    "schema": "fa-v63-body-only-repair-manifest-v1",
+    "sha256": "5ba5e71a482c0e56ee73273bb4e2e4a9ba4dad2caf5c1c77499797652ebe8f47"
+  },
+  "manifests": [
+    {
+      "bytes": 3114,
+      "id": "f3930",
+      "runtime_path": "scripts/fa_v63_f3930-manifest.json",
+      "sha256": "cd408eeeab5be791525fc6d24b1402577e95830243c64a0c36edbcbca19e64c5",
+      "source_path": "work/v63-ci/fa_v63_f3930-manifest.READY.json",
+      "status": "READY"
+    },
+    {
+      "bytes": 8647,
+      "id": "f3933",
+      "runtime_path": "scripts/fa_v63_f3933-manifest.json",
+      "sha256": "b95091f2140afaf36e60e26b4b09b482d32b4cd7d409751e8859384fcfca03ce",
+      "source_path": "work/v63-ci/fa_v63_f3933-manifest.READY.json",
+      "status": "READY"
+    },
+    {
+      "bytes": 11395,
+      "id": "w4017",
+      "runtime_path": "scripts/fa_v63_w4017-manifest.json",
+      "sha256": "0285c92f68d6c4222105dfcb6c8c4483cf4f87cf67832fe9ae076698a7cae01f",
+      "source_path": "work/v63-ci/fa_v63_w4017-manifest.READY.json",
+      "status": "READY"
+    }
+  ],
+  "note": "All candidate bodies are statically exact, but this is intentionally a fail-closed scaffold. Promotion and direct compilation remain disabled until the complete runtime package is hash-frozen and explicitly activated; static evidence is not a Lean success claim.",
+  "schema": "fa-v63-direct-bounded-selection-v1",
+  "status": "READY",
+  "variant_order": [
+    "core",
+    "f3930",
+    "f3933_preferred",
+    "f3933_fallback",
+    "f3930_f3933_preferred",
+    "f3930_f3933_fallback",
+    "w4017_p",
+    "w4017_pz",
+    "w4017_pw",
+    "w4017_full",
+    "combined_best"
+  ],
+  "variants": [
+    {
+      "expected_candidate": {
+        "bytes": 2812442,
+        "declaration_count": 4416,
+        "lines": 62933,
+        "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+      },
+      "expected_diagnostic_roots": [],
+      "name": "core",
+      "selected_repair_ids": [],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812421,
+        "declaration_count": 4416,
+        "lines": 62934,
+        "sha256": "9f57a361ce5ae99cbcaca5e7c4a4a8eb3eafbbbed69b79568a0347130d304de8"
+      },
+      "expected_diagnostic_roots": [
+        "F3930"
+      ],
+      "name": "f3930",
+      "selected_repair_ids": [
+        "V63-F3930-PI-NEG-APPLY-RING"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813475,
+        "declaration_count": 4416,
+        "lines": 62955,
+        "sha256": "2ae97aea7e838b08b4951ac499a5591d1e8eca87233b65863e92ec330f6aef7a"
+      },
+      "expected_diagnostic_roots": [
+        "F3933"
+      ],
+      "name": "f3933_preferred",
+      "selected_repair_ids": [
+        "V63-F3933-PROGRESSION",
+        "V63-F3933-EXPLICIT-CANCEL"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813077,
+        "declaration_count": 4416,
+        "lines": 62946,
+        "sha256": "059c988b4cdc3c67983ee38f270a2dcc907b97a24862dc7d723f2a2a61d00efe"
+      },
+      "expected_diagnostic_roots": [
+        "F3933"
+      ],
+      "name": "f3933_fallback",
+      "selected_repair_ids": [
+        "V63-F3933-PROGRESSION",
+        "V63-F3933-FIELDSIMP"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813454,
+        "declaration_count": 4416,
+        "lines": 62956,
+        "sha256": "90e85b036bc61627270afca3105f03b088779af0a0e7a503fb872a1957ffb42b"
+      },
+      "expected_diagnostic_roots": [
+        "F3930",
+        "F3933"
+      ],
+      "name": "f3930_f3933_preferred",
+      "selected_repair_ids": [
+        "V63-F3930-PI-NEG-APPLY-RING",
+        "V63-F3933-PROGRESSION",
+        "V63-F3933-EXPLICIT-CANCEL"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813056,
+        "declaration_count": 4416,
+        "lines": 62947,
+        "sha256": "0b58272e04b80d84047edb9641a61d36ca6fbbb3d787e8139346b4e41eeb6101"
+      },
+      "expected_diagnostic_roots": [
+        "F3930",
+        "F3933"
+      ],
+      "name": "f3930_f3933_fallback",
+      "selected_repair_ids": [
+        "V63-F3930-PI-NEG-APPLY-RING",
+        "V63-F3933-PROGRESSION",
+        "V63-F3933-FIELDSIMP"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812938,
+        "declaration_count": 4416,
+        "lines": 62943,
+        "sha256": "ee4fd072acbded035aeb7cf81a49db1a14f73a2f9f4ad5baab623a32f8cb0e2d"
+      },
+      "expected_diagnostic_roots": [
+        "W4017-BOUNDARY",
+        "W4017-TYPECLASS"
+      ],
+      "name": "w4017_p",
+      "selected_repair_ids": [
+        "V63-W4017-R17-BASE",
+        "V63-W4017-P"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2812951,
+        "declaration_count": 4416,
+        "lines": 62944,
+        "sha256": "d0ddccad25b3173ade4b9fd8600c5ee3b90e747a35171e83391f55703cdafde0"
+      },
+      "expected_diagnostic_roots": [
+        "W4017-BOUNDARY",
+        "W4017-TYPECLASS",
+        "W4017-ZERO-WEIGHT"
+      ],
+      "name": "w4017_pz",
+      "selected_repair_ids": [
+        "V63-W4017-R17-BASE",
+        "V63-W4017-P",
+        "V63-W4017-Z"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813008,
+        "declaration_count": 4416,
+        "lines": 62943,
+        "sha256": "1abcc43c7416538a9b3ab470abecaa31410e4a82b86101bc60e452c98de64435"
+      },
+      "expected_diagnostic_roots": [
+        "W4017-BOUNDARY",
+        "W4017-POINTWISE-SMUL",
+        "W4017-TYPECLASS"
+      ],
+      "name": "w4017_pw",
+      "selected_repair_ids": [
+        "V63-W4017-R17-BASE",
+        "V63-W4017-P",
+        "V63-W4017-W"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2813021,
+        "declaration_count": 4416,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "expected_diagnostic_roots": [
+        "W4017-BOUNDARY",
+        "W4017-POINTWISE-SMUL",
+        "W4017-TYPECLASS",
+        "W4017-ZERO-WEIGHT"
+      ],
+      "name": "w4017_full",
+      "selected_repair_ids": [
+        "V63-W4017-R17-BASE",
+        "V63-W4017-P",
+        "V63-W4017-Z",
+        "V63-W4017-W"
+      ],
+      "status": "READY"
+    },
+    {
+      "expected_candidate": {
+        "bytes": 2814033,
+        "declaration_count": 4416,
+        "lines": 62967,
+        "sha256": "07e698419184a58b0e99bf8e6b3900782cb4a83b1471ab79ba7d4f45240068e6"
+      },
+      "expected_diagnostic_roots": [
+        "F3930",
+        "F3933",
+        "W4017-BOUNDARY",
+        "W4017-POINTWISE-SMUL",
+        "W4017-TYPECLASS",
+        "W4017-ZERO-WEIGHT"
+      ],
+      "name": "combined_best",
+      "selected_repair_ids": [
+        "V63-F3930-PI-NEG-APPLY-RING",
+        "V63-F3933-PROGRESSION",
+        "V63-F3933-EXPLICIT-CANCEL",
+        "V63-W4017-R17-BASE",
+        "V63-W4017-P",
+        "V63-W4017-Z",
+        "V63-W4017-W"
+      ],
+      "status": "READY"
+    }
+  ]
+}
