@@ -1,0 +1,216 @@
+name: Codex FA v69 resource-normalized direct pass
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - scripts/fa_v69_normalize_resource_options.py
+      - .github/workflows/codex-fa-v69-resource-normalized.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: codex-fa-v69-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AUTHORITY_ARTIFACT_ID: '9246997507'
+  AUTHORITY_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+  OUT: build-logs/codex-fa-v69
+
+jobs:
+  direct-and-check-in:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Stop when an earlier checked-in pass already exists
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          needed=true
+          for branch in codex/fa-v67-heartbeat-pass codex/fa-v68-global-budget-pass; do
+            if gh api "repos/${GITHUB_REPOSITORY}/branches/${branch}" >/dev/null 2>&1; then
+              needed=false
+              break
+            fi
+          done
+          echo "needed=$needed" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout exact v69 scaffold
+        if: steps.guard.outputs.needed == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover exact sealed v65 winner and normalize options
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/fa-v69-authority
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" > /tmp/fa-v69-authority.zip
+          unzip -q /tmp/fa-v69-authority.zip -d /tmp/fa-v69-authority
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          expected = os.environ['AUTHORITY_SHA256']
+          matches = [p for p in Path('/tmp/fa-v69-authority').rglob('*.lean')
+                     if hashlib.sha256(p.read_bytes()).hexdigest() == expected]
+          if not matches:
+              raise SystemExit('sealed authority source not found')
+          Path(os.environ['OUT'], 'Mock2_FunctionalAnalysis-authority.lean').write_bytes(
+              sorted(matches, key=lambda p: (len(str(p)), str(p)))[0].read_bytes()
+          )
+          PY
+          python3 scripts/fa_v69_normalize_resource_options.py \
+            --source "$OUT/Mock2_FunctionalAnalysis-authority.lean" \
+            --output "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --evidence "$OUT/GENERATION.json" \
+            --rec-depth 100000 \
+            > "$OUT/GENERATION.stdout.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          e = json.loads(Path(os.environ['OUT'], 'GENERATION.json').read_text())
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('CANDIDATE_SHA256=' + e['candidate_sha256'] + '\n')
+              f.write('CANDIDATE_BYTES=' + str(e['candidate_bytes']) + '\n')
+              f.write('CANDIDATE_LINES=' + str(e['candidate_lines']) + '\n')
+          PY
+
+      - name: Install exact Lean and Mathlib cache
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: Directly compile Mock2, Mock2 Advanced, and normalized FA
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export FA_V65_OUT="$OUT"
+          export FA_V65_VARIANT=v69-resource-normalized
+          export FA_V65_EXPECTED_CANDIDATE_SHA256="$CANDIDATE_SHA256"
+          export FA_V65_EXPECTED_CANDIDATE_BYTES="$CANDIDATE_BYTES"
+          export FA_V65_EXPECTED_CANDIDATE_LINES="$CANDIDATE_LINES"
+          bash scripts/fa_v65_direct_compile_ci.sh
+          test "$(cat "$OUT/Mock2.exit")" = 0
+          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0
+          test "$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" = 0
+          ! grep -Eq '^.*?\.lean:[0-9]+:[0-9]+: error:' "$OUT/Mock2_FunctionalAnalysis.log"
+
+      - name: Audit and check in exact zero-error candidate
+        if: steps.guard.outputs.needed == 'true'
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          raw = source.read_bytes(); text = raw.decode()
+          forbidden = {
+              'sorry': len(re.findall(r'(?<![A-Za-z0-9_])sorry(?![A-Za-z0-9_])', text)),
+              'admit': len(re.findall(r'(?<![A-Za-z0-9_])admit(?![A-Za-z0-9_])', text)),
+              'axiom_declaration': len(re.findall(r'^\s*axiom\s+', text, flags=re.M)),
+              'unsafe_declaration': len(re.findall(r'^\s*unsafe\s+', text, flags=re.M)),
+              'native_decide': text.count('native_decide'),
+              'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+          }
+          if any(forbidden.values()): raise SystemExit(forbidden)
+          result = {
+              'schema':'fa-v69-checked-in-selection-v1', 'true_pass':True,
+              'Mock2_exit':0, 'Mock2_Advanced_exit':0, 'FA_exit':0,
+              'error_headers':0, 'candidate_sha256':hashlib.sha256(raw).hexdigest(),
+              'candidate_bytes':len(raw), 'candidate_lines':len(text.splitlines()),
+              'forbidden':forbidden,
+          }
+          Path('build-logs/fa-v69-selected.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v69-resource-normalized-pass
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean build-logs/fa-v69-selected.json
+          git commit -m 'Codex: check in v69 zero-error FA source'
+          git push --force origin HEAD:refs/heads/codex/fa-v69-resource-normalized-pass
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload direct zero-error evidence
+        if: always() && steps.guard.outputs.needed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v69-direct-${{ github.sha }}
+          path: build-logs/codex-fa-v69/*
+          if-no-files-found: error
+          retention-days: 30
+
+  verify-checked-in:
+    needs: direct-and-check-in
+    if: needs.direct-and-check-in.outputs.commit_sha != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      OUT: build-logs/codex-fa-v69-checked-in
+      COMMIT_SHA: ${{ needs.direct-and-check-in.outputs.commit_sha }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.COMMIT_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Install exact Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+      - name: Re-run complete direct chain from checked-in source
+        shell: bash
+        run: |
+          set -euo pipefail
+          source=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          export FA_V65_OUT="$OUT"
+          export FA_V65_VARIANT=v69-checked-in
+          export FA_V65_EXPECTED_CANDIDATE_SHA256="$(sha256sum "$source" | awk '{print $1}')"
+          export FA_V65_EXPECTED_CANDIDATE_BYTES="$(wc -c < "$source" | tr -d '[:space:]')"
+          export FA_V65_EXPECTED_CANDIDATE_LINES="$(python3 -c 'from pathlib import Path; print(len(Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean").read_text().splitlines()))')"
+          bash scripts/fa_v65_direct_compile_ci.sh
+          test "$(cat "$OUT/Mock2.exit")" = 0
+          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0
+          test "$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" = 0
+          ! grep -Eq '^.*?\.lean:[0-9]+:[0-9]+: error:' "$OUT/Mock2_FunctionalAnalysis.log"
+      - name: Upload checked-in v69 direct-pass evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v69-checked-in-${{ env.COMMIT_SHA }}
+          path: build-logs/codex-fa-v69-checked-in/*
+          if-no-files-found: error
+          retention-days: 30
