@@ -53381,11 +53381,17 @@ theorem fderiv_literalStageNegativePlaneWave_I
             (literalStageFourierScale Y)⁻¹)).const_mul
         (fourier (-(k 0))
           (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle))).const_mul
-      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>
-    try simp only [one_div, Complex.I_re, Complex.I_im, Complex.add_re,
-      Complex.add_im, Complex.real_smul, smul_eq_mul, mul_one, add_zero,
-      zero_mul, Complex.ofReal_inv, Complex.ofReal_mul] <;>
-    field_simp [literalStageFourierScale_ne_zero Y] <;> ring
+      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1
+  case e'_4 => with_unfolding_all rfl
+  case e'_8 =>
+    funext t
+    simp [id, Complex.I_re, Complex.I_im, Complex.add_re,
+      Complex.add_im, Complex.real_smul,
+      mul_comm, mul_left_comm, mul_assoc,
+      Complex.ofReal_inv, Complex.ofReal_mul]
+  case e'_9 =>
+    simp [id]
+    ring
 
 /-- Full-plane integration by parts gives the horizontal Fourier coefficient
 identity without a boundary term.  Compact support is carried by `v`; the
