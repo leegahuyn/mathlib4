@@ -298,7 +298,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/fa_v65_collect_full_diagnostics.py
+          python3 scripts/fa_v65_collect_full_diagnostics.py >"$FA_V65_OUT/metric-console.log"
 
       - id: final_gate
         name: Enforce exact 48-member artifact and mirror every phase
