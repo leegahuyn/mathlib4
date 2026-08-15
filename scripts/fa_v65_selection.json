@@ -1,0 +1,365 @@
+{
+  "activation": {
+    "direct_compile_allowed": true,
+    "materialization_allowed": true,
+    "ready_selection_emitted": true,
+    "workflow_last_emitted": true,
+    "workflow_matrix_allowed": true
+  },
+  "artifact_contract": {
+    "base_authority_copies": [
+      {
+        "authority_member": "FINAL_GATE.json",
+        "bytes": 1905,
+        "result_member": "BASE_FINAL_GATE.json",
+        "sha256": "2537e5bbc28e11dfdbcb5cc6bc7d2adbac5d571b37393087863b1215b88b9b95"
+      },
+      {
+        "authority_member": "FULL_DIAGNOSTICS.json",
+        "bytes": 5807,
+        "result_member": "BASE_FULL_DIAGNOSTICS.json",
+        "sha256": "31370de532745411bd9acdc258cf5d90c9d0bb5b08b23870b00b55300000f383"
+      },
+      {
+        "authority_member": "MATERIALIZATION.json",
+        "bytes": 2675,
+        "result_member": "BASE_MATERIALIZATION.json",
+        "sha256": "a3467b09c65eab27f539c0eed1c78dfc260b2bdcf1aedb971ac74d526984d781"
+      },
+      {
+        "authority_member": "Mock2_FunctionalAnalysis-candidate.lean",
+        "bytes": 2812442,
+        "result_member": "BASE_Mock2_FunctionalAnalysis-candidate.lean",
+        "sha256": "1badac1451e11708114eb5438616063379558bcf0579dc82a01c2200b501d365"
+      },
+      {
+        "authority_member": "Mock2_FunctionalAnalysis.log",
+        "bytes": 290901,
+        "result_member": "BASE_Mock2_FunctionalAnalysis.log",
+        "sha256": "8e27a4dcc8be79a091b8b1c2f61197fdb7c9e4d995f3e158327442969c1de60a"
+      },
+      {
+        "authority_member": "TOOLCHAIN_PIN.json",
+        "bytes": 393,
+        "result_member": "BASE_TOOLCHAIN_PIN.json",
+        "sha256": "8f54d5486b82a5fc11bc52199c89265b7e9e8eed5a3ff4131f86251894bcff07"
+      }
+    ],
+    "base_authority_copy_count": 6,
+    "duplicate_members_allowed": false,
+    "flat_members_only": true,
+    "member_count": 48,
+    "member_names": [
+      "AUTHORITY_REPROOF.json",
+      "AUTHORITY_REPROOF.stdout.json",
+      "BASE_FINAL_GATE.json",
+      "BASE_FULL_DIAGNOSTICS.json",
+      "BASE_MATERIALIZATION.json",
+      "BASE_Mock2_FunctionalAnalysis-candidate.lean",
+      "BASE_Mock2_FunctionalAnalysis.log",
+      "BASE_TOOLCHAIN_PIN.json",
+      "COLLECTOR_AUTHORITY_ATTESTATION.json",
+      "DIAGNOSTIC_DECLARATION_COUNTS.json",
+      "FINAL_GATE.json",
+      "FINAL_GATE.stdout.json",
+      "FULL_DIAGNOSTICS.json",
+      "FULL_WARNINGS.json",
+      "MATERIALIZATION.json",
+      "MATERIALIZATION.stdout.json",
+      "METRIC.json",
+      "Mock2.command",
+      "Mock2.executed",
+      "Mock2.exit",
+      "Mock2.log",
+      "Mock2_Advanced.command",
+      "Mock2_Advanced.executed",
+      "Mock2_Advanced.exit",
+      "Mock2_Advanced.log",
+      "Mock2_FunctionalAnalysis-candidate.lean",
+      "Mock2_FunctionalAnalysis-observed.lean",
+      "Mock2_FunctionalAnalysis.command",
+      "Mock2_FunctionalAnalysis.executed",
+      "Mock2_FunctionalAnalysis.exit",
+      "Mock2_FunctionalAnalysis.log",
+      "PATCH_AUDIT.json",
+      "SCAFFOLD_GATE.json",
+      "SYNTHETIC_SORRY_WARNINGS.json",
+      "TOOLCHAIN_PIN.json",
+      "V63_ARTIFACT.json",
+      "V63_JOBS.json",
+      "V63_RUN.json",
+      "VARIANT_INDEX.json",
+      "cache.log",
+      "candidate.after.sha256",
+      "candidate.before-fa.sha256",
+      "candidate.before.sha256",
+      "candidate.sha256",
+      "elan.log",
+      "lean-version.txt",
+      "metric-console.log",
+      "toolchain.log"
+    ],
+    "result_inventory_enforced_by_final_gate": true,
+    "runtime_evidence_fallback_allowed": false,
+    "schema": "fa-v65-exact-result-artifact-v1",
+    "v62_authority_member_count": 48,
+    "v62_authority_zip_bytes": 1684227,
+    "v62_authority_zip_sha256": "799b754b01ef17bd8326ad0d9554f6fc1e27c42d01c070d3b2271816ae248333"
+  },
+  "authority": {
+    "bytes": 7830,
+    "runtime_path": "scripts/fa_v65_authority-lock.json",
+    "schema": "fa-v65-v62-core-and-v64-repair-authority-lock-v1",
+    "sha256": "cbdbf4c15f20dc1e18f8e6e01ee8643f803f65c66f5d0c0fbc2cba0ff7e7e8aa"
+  },
+  "blockers": [],
+  "clean_claimed": false,
+  "compile_contract": {
+    "each_job_runs_full_chain": [
+      "Mock2",
+      "Mock2_Advanced",
+      "Mock2_FunctionalAnalysis_FA2000"
+    ],
+    "each_job_uploads_one_exact_48_member_artifact": true,
+    "exact_job_count": 10,
+    "exactly_one_job_per_variant": true,
+    "fail_fast": false,
+    "individual_axes_may_not_be_omitted": true,
+    "max_parallel": 10
+  },
+  "composition_mode": "EXACT_FROM_OFFICIAL_V62_AUTHORITY_NONCUMULATIVE",
+  "constraints": {
+    "FA_maxErrors": 2000,
+    "all_variants_from_exact_authority": true,
+    "body_only": true,
+    "bounded_variant_count": 10,
+    "contract_violation_exit_code": 86,
+    "declaration_count": 4416,
+    "distinct_candidate_outputs": true,
+    "hidden_cumulative_parentage": false,
+    "maxHeartbeats_delta": 0,
+    "pending_exit_code": 2,
+    "runtime_evidence_fallback_allowed": false,
+    "source_moves": 0,
+    "trust_six_delta": 0
+  },
+  "dependency_graph": {
+    "bytes": 9423,
+    "runtime_path": "scripts/fa_v65_dependency-graph.json",
+    "schema": "fa-v65-exact-ten-lane-dependency-graph-v1",
+    "sha256": "87a4844fbcda0192545af0034d5e15f89d1109e70ec38ad5d50c7b1de3744e98"
+  },
+  "direct_lean_verified": false,
+  "independent_cross_audit": {
+    "bytes": 56124,
+    "path": "work/v65-cross-audit/v65-cross-audit-final.json",
+    "schema": "fa-v65-repair-cross-audit-final-v1",
+    "sha256": "f7f2f57561ef9e2d71af5db41e8249d958fdfe73131d3e6931fbb43fe889a2ab",
+    "status": "PASS_STATIC_COMPLETE_DIRECT_LEAN_UNVERIFIED_NONCLEAN"
+  },
+  "note": "Exact ten-lane runtime activation envelope. Every lane still requires its own GitHub M2→M2A→FA2000 job; direct Lean and clean remain false until exact remote artifacts prove otherwise.",
+  "promotion_allowed": false,
+  "schema": "fa-v65-direct-bounded-selection-v1",
+  "status": "READY",
+  "variant_order": [
+    "winner_baseline",
+    "w4017_primary",
+    "w4017_rfl_fallback",
+    "f3930_field",
+    "f3930_explicit",
+    "f3933_invcalc",
+    "f_field_f3933",
+    "f_explicit_f3933",
+    "all_field_w_primary",
+    "all_explicit_w_primary"
+  ],
+  "variants": [
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor"
+      ],
+      "expected_candidate": {
+        "bytes": 2813021,
+        "declaration_count": 4416,
+        "lines": 62944,
+        "sha256": "20ad5b01e774f1c388d2d16991e34840fdafe0f9d033038652311b29d84ae3f5"
+      },
+      "name": "winner_baseline",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2813090,
+        "declaration_count": 4416,
+        "lines": 62945,
+        "sha256": "93491e69d4e6f3d24f11ad45ecbb3a5c74aa28202c2771484a3663cdd51846fc"
+      },
+      "name": "w4017_primary",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        4017
+      ],
+      "components": [
+        "v63_w4017_full_precursor",
+        "v64_w4017_rfl"
+      ],
+      "expected_candidate": {
+        "bytes": 2813031,
+        "declaration_count": 4416,
+        "lines": 62945,
+        "sha256": "6a2524de966143f709c92dfb992a8f2029be4648812518010a4c5639f0c4b288"
+      },
+      "name": "w4017_rfl_fallback",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field"
+      ],
+      "expected_candidate": {
+        "bytes": 2812585,
+        "declaration_count": 4416,
+        "lines": 62936,
+        "sha256": "772ed2cb7295175fe9e42217e646e766b0a7b0b8b92a4c956f193c49b2d9efb4"
+      },
+      "name": "f3930_field",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit"
+      ],
+      "expected_candidate": {
+        "bytes": 2812774,
+        "declaration_count": 4416,
+        "lines": 62939,
+        "sha256": "26541fa4712474c944ee4ec2ac209a1873fb07062577c9a08286876bed937ca9"
+      },
+      "name": "f3930_explicit",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3933
+      ],
+      "components": [
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813195,
+        "declaration_count": 4416,
+        "lines": 62948,
+        "sha256": "44b80a7976626073cdccc326c925741fd51244932e20d4a518928c5ad09ba448"
+      },
+      "name": "f3933_invcalc",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813338,
+        "declaration_count": 4416,
+        "lines": 62951,
+        "sha256": "12b5a0e8e359461a8f492c5acefb47a17a31fae6a89fbf52ff8b127e5a99d634"
+      },
+      "name": "f_field_f3933",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc"
+      ],
+      "expected_candidate": {
+        "bytes": 2813527,
+        "declaration_count": 4416,
+        "lines": 62954,
+        "sha256": "23a4c5e517aa26cda065f98fa169342105f10cb132089b1293b0f54826e5488d"
+      },
+      "name": "f_explicit_f3933",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933,
+        4017
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_field",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc",
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2813986,
+        "declaration_count": 4416,
+        "lines": 62963,
+        "sha256": "71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b"
+      },
+      "name": "all_field_w_primary",
+      "status": "READY"
+    },
+    {
+      "changed_declaration_indices": [
+        3930,
+        3933,
+        4017
+      ],
+      "components": [
+        "v63_f3930_precursor",
+        "v64_f3930_explicit",
+        "v63_f3933_fallback_precursor",
+        "v64_f3933_invcalc",
+        "v63_w4017_full_precursor",
+        "v64_w4017_primary"
+      ],
+      "expected_candidate": {
+        "bytes": 2814175,
+        "declaration_count": 4416,
+        "lines": 62966,
+        "sha256": "a7dd32aba7182c55cb3de9986eeabef537602cbfc24cf2aa956e6b43541d0c54"
+      },
+      "name": "all_explicit_w_primary",
+      "status": "READY"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "candidateLock": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "declaration_count": {
+          "const": 4416
+        },
+        "lines": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "required": [
+        "sha256",
+        "bytes",
+        "lines",
+        "declaration_count"
+      ],
+      "type": "object"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://local.invalid/fa-v65-body-only-manifest-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema",
+    "status"
+  ],
+  "title": "FA v65 exact body-only operation package",
+  "type": "object"
+}
