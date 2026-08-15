@@ -1,0 +1,333 @@
+name: Codex FA v65 exact ten-lane direct matrix READY
+
+on:
+  push:
+    branches: [codex/fa-exclusive-focus-20260814]
+    paths:
+      - scripts/fa_v65_*
+      - scripts/fa_v63_authority-lock.json
+      - scripts/fa_v63_reprove_authority.py
+      - scripts/fa_v63_collect_full_diagnostics.py
+      - scripts/fa_v61_direct_compile_ci.sh
+      - scripts/fa_v59_direct_compile_ci.sh
+      - scripts/fa_v42_direct_compile_ci.sh
+      - scripts/fa_v42_collect_full_diagnostics.py
+      - .github/workflows/codex-fa-v65-direct-matrix.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codex-fa-v65-direct-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FA_V65_ACTIVATION_STATUS: READY
+  FA_V65_EXPECTED_BRANCH: codex/fa-exclusive-focus-20260814
+  FA_V65_SELECTION_SHA256: 7c606f6cdae1db47881b88825a3c6e29666bb656aa768b29f6fa496b4995796b
+  FA_V65_AUTHORITY_LOCK_SHA256: cbdbf4c15f20dc1e18f8e6e01ee8643f803f65c66f5d0c0fbc2cba0ff7e7e8aa
+  FA_V65_DEPENDENCY_GRAPH_SHA256: 87a4844fbcda0192545af0034d5e15f89d1109e70ec38ad5d50c7b1de3744e98
+  FA_V65_SCHEMA_SHA256: 8d476ab4d40d39fd72a7ab4a33bc5601f458ca4395f4b856ac97fa141c14c98b
+  FA_V65_CONTRACT_SHA256: 57b9aa7a3a96b4741376746757ce6657de794be19e5ce049bda110c85cbab743
+  FA_V65_VALIDATOR_SHA256: 4aa1e24184922be76d4c10a244ca09da6c36683c37b1e1036886c4922f2080e0
+  FA_V65_REPROOF_SHA256: 69fa8a1b089fa30816ddcdd2eafcea1e01b5a627fb8a61a09d508362e80b5818
+  FA_V65_MATERIALIZER_SHA256: a6226267ececeb056335d983914b5ea337567fce09f16182c47bcadd86884174
+  FA_V65_RUNNER_SHA256: 9e122edc966060e63c8732a0f0f3e21ba0db707f57b216d158bbc45e0eb0e382
+  FA_V65_COLLECTOR_SHA256: c4739137de3269f2dbec8778a7926ac76fd964c36ac08b8789e39a235c35ea93
+  FA_V65_FINAL_GATE_SHA256: b566277963819b1a1278523ec10bf428d93a5fbfed49260267504ab6781615a1
+  FA_V65_V63_F3930_MANIFEST_SHA256: cd408eeeab5be791525fc6d24b1402577e95830243c64a0c36edbcbca19e64c5
+  FA_V65_V63_F3933_MANIFEST_SHA256: b95091f2140afaf36e60e26b4b09b482d32b4cd7d409751e8859384fcfca03ce
+  FA_V65_V63_W4017_MANIFEST_SHA256: 0285c92f68d6c4222105dfcb6c8c4483cf4f87cf67832fe9ae076698a7cae01f
+  FA_V65_F_FOLLOWUP_MANIFEST_SHA256: 8902b0f7b259053806aa4c7c2d1fda876189ac3782ebe0a538c6009aaa23f1f9
+  FA_V65_W_FOLLOWUP_MANIFEST_SHA256: 4537056d6237121b3520a347e07a15a5f9bfe82399ec20b5883be23793657c7c
+  FA_V65_V63_AUTHORITY_LOCK_SHA256: 2048729e8c0b3d8bec7d0b3de32f67ae38da83e226cad0fd83482e8adb18a2c0
+  FA_V65_V63_REPROOF_SHA256: aee6e0456350764a62bc0abad2fd67a9750e7a2c6ae2a8bda05332608bd6d1ce
+  FA_V65_V63_COLLECTOR_SHA256: 257d3751c889ee45656e7b6e3e1133a67c2e0b0ef8efe117c0ba35386964ac6d
+  FA_V65_V61_RUNNER_SHA256: 8a73b654fcf6c79c5141286785016fd4bbb4d35bb0bf697c68210ab5c71fd466
+  FA_V65_V59_RUNNER_SHA256: f744a15a35c3dd38f4a5c5794073616ba626e389db6ca2c4256b12e7624c5ed4
+  FA_V65_V42_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  FA_V65_V42_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+  FA_V65_TOOLCHAIN_CONTENT: leanprover/lean4:v4.33.0-rc1
+  FA_V65_TOOLCHAIN_SHA256: 62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef
+  FA_V65_LEAN_VERSION: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+
+jobs:
+  selection:
+    name: selection-gate-ready-exact-ten
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.selection.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - id: selection
+        name: Validate exact READY package and emit ten unique jobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$FA_V65_ACTIVATION_STATUS" == READY ]]
+          [[ "$GITHUB_REF_NAME" == "$FA_V65_EXPECTED_BRANCH" ]]
+          check_lock() {
+            [[ "$1" =~ ^scripts/[A-Za-z0-9._-]+$ ]]
+            [[ -f "$1" && ! -L "$1" ]]
+            [[ "$(realpath -- "$1")" == "$GITHUB_WORKSPACE/$1" ]]
+            [[ "$(sha256sum "$1" | awk '{print $1}')" == "$2" ]]
+          }
+          check_lock scripts/fa_v65_selection.json "${FA_V65_SELECTION_SHA256}"
+          check_lock scripts/fa_v65_authority-lock.json "${FA_V65_AUTHORITY_LOCK_SHA256}"
+          check_lock scripts/fa_v65_dependency-graph.json "${FA_V65_DEPENDENCY_GRAPH_SHA256}"
+          check_lock scripts/fa_v65_body-only-manifest.schema.json "${FA_V65_SCHEMA_SHA256}"
+          check_lock scripts/fa_v65_contract.py "${FA_V65_CONTRACT_SHA256}"
+          check_lock scripts/fa_v65_validate.py "${FA_V65_VALIDATOR_SHA256}"
+          check_lock scripts/fa_v65_reprove_authority.py "${FA_V65_REPROOF_SHA256}"
+          check_lock scripts/fa_v65_materialize.py "${FA_V65_MATERIALIZER_SHA256}"
+          check_lock scripts/fa_v65_direct_compile_ci.sh "${FA_V65_RUNNER_SHA256}"
+          check_lock scripts/fa_v65_collect_full_diagnostics.py "${FA_V65_COLLECTOR_SHA256}"
+          check_lock scripts/fa_v65_final_gate.py "${FA_V65_FINAL_GATE_SHA256}"
+          check_lock scripts/fa_v65_v63_f3930-manifest.json "${FA_V65_V63_F3930_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_v63_f3933-manifest.json "${FA_V65_V63_F3933_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_v63_w4017-manifest.json "${FA_V65_V63_W4017_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_f-followup-manifest.json "${FA_V65_F_FOLLOWUP_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_w4017-followup-manifest.json "${FA_V65_W_FOLLOWUP_MANIFEST_SHA256}"
+          check_lock scripts/fa_v63_authority-lock.json "${FA_V65_V63_AUTHORITY_LOCK_SHA256}"
+          check_lock scripts/fa_v63_reprove_authority.py "${FA_V65_V63_REPROOF_SHA256}"
+          check_lock scripts/fa_v63_collect_full_diagnostics.py "${FA_V65_V63_COLLECTOR_SHA256}"
+          check_lock scripts/fa_v61_direct_compile_ci.sh "${FA_V65_V61_RUNNER_SHA256}"
+          check_lock scripts/fa_v59_direct_compile_ci.sh "${FA_V65_V59_RUNNER_SHA256}"
+          check_lock scripts/fa_v42_direct_compile_ci.sh "${FA_V65_V42_RUNNER_SHA256}"
+          check_lock scripts/fa_v42_collect_full_diagnostics.py "${FA_V65_V42_COLLECTOR_SHA256}"
+          matrix="$(python3 scripts/fa_v65_validate.py --selection scripts/fa_v65_selection.json --expected-selection-sha256 "$FA_V65_SELECTION_SHA256" --repo-root "$GITHUB_WORKSPACE" --emit matrix)"
+          python3 - "$matrix" <<'PY'
+          import json, sys
+          expected = ["winner_baseline","w4017_primary","w4017_rfl_fallback","f3930_field","f3930_explicit","f3933_invcalc","f_field_f3933","f_explicit_f3933","all_field_w_primary","all_explicit_w_primary"]
+          value = json.loads(sys.argv[1])
+          assert value == {"include": [{"variant": row} for row in expected]}
+          PY
+          printf 'matrix=%s\n' "$matrix" >>"$GITHUB_OUTPUT"
+
+  direct:
+    needs: selection
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix: ${{ fromJSON(needs.selection.outputs.matrix) }}
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA_V65_VARIANT: ${{ matrix.variant }}
+      FA_V65_OUT: build-logs/codex-fa-v65-direct-matrix/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - id: preflight
+        name: Re-prove branch, exact runtime locks, and lane candidate lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$FA_V65_ACTIVATION_STATUS" == READY ]]
+          [[ "$GITHUB_REF" == "refs/heads/$FA_V65_EXPECTED_BRANCH" ]]
+          [[ "$GITHUB_REF_NAME" == "$FA_V65_EXPECTED_BRANCH" ]]
+          check_lock() {
+            [[ "$1" =~ ^scripts/[A-Za-z0-9._-]+$ ]]
+            [[ -f "$1" && ! -L "$1" ]]
+            [[ "$(realpath -- "$1")" == "$GITHUB_WORKSPACE/$1" ]]
+            [[ "$(sha256sum "$1" | awk '{print $1}')" == "$2" ]]
+          }
+          check_lock scripts/fa_v65_selection.json "${FA_V65_SELECTION_SHA256}"
+          check_lock scripts/fa_v65_authority-lock.json "${FA_V65_AUTHORITY_LOCK_SHA256}"
+          check_lock scripts/fa_v65_dependency-graph.json "${FA_V65_DEPENDENCY_GRAPH_SHA256}"
+          check_lock scripts/fa_v65_body-only-manifest.schema.json "${FA_V65_SCHEMA_SHA256}"
+          check_lock scripts/fa_v65_contract.py "${FA_V65_CONTRACT_SHA256}"
+          check_lock scripts/fa_v65_validate.py "${FA_V65_VALIDATOR_SHA256}"
+          check_lock scripts/fa_v65_reprove_authority.py "${FA_V65_REPROOF_SHA256}"
+          check_lock scripts/fa_v65_materialize.py "${FA_V65_MATERIALIZER_SHA256}"
+          check_lock scripts/fa_v65_direct_compile_ci.sh "${FA_V65_RUNNER_SHA256}"
+          check_lock scripts/fa_v65_collect_full_diagnostics.py "${FA_V65_COLLECTOR_SHA256}"
+          check_lock scripts/fa_v65_final_gate.py "${FA_V65_FINAL_GATE_SHA256}"
+          check_lock scripts/fa_v65_v63_f3930-manifest.json "${FA_V65_V63_F3930_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_v63_f3933-manifest.json "${FA_V65_V63_F3933_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_v63_w4017-manifest.json "${FA_V65_V63_W4017_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_f-followup-manifest.json "${FA_V65_F_FOLLOWUP_MANIFEST_SHA256}"
+          check_lock scripts/fa_v65_w4017-followup-manifest.json "${FA_V65_W_FOLLOWUP_MANIFEST_SHA256}"
+          check_lock scripts/fa_v63_authority-lock.json "${FA_V65_V63_AUTHORITY_LOCK_SHA256}"
+          check_lock scripts/fa_v63_reprove_authority.py "${FA_V65_V63_REPROOF_SHA256}"
+          check_lock scripts/fa_v63_collect_full_diagnostics.py "${FA_V65_V63_COLLECTOR_SHA256}"
+          check_lock scripts/fa_v61_direct_compile_ci.sh "${FA_V65_V61_RUNNER_SHA256}"
+          check_lock scripts/fa_v59_direct_compile_ci.sh "${FA_V65_V59_RUNNER_SHA256}"
+          check_lock scripts/fa_v42_direct_compile_ci.sh "${FA_V65_V42_RUNNER_SHA256}"
+          check_lock scripts/fa_v42_collect_full_diagnostics.py "${FA_V65_V42_COLLECTOR_SHA256}"
+          export FA_V65_SELECTION_ACTUAL_SHA256="$(sha256sum scripts/fa_v65_selection.json | awk '{print $1}')"
+          export FA_V65_AUTHORITY_LOCK_ACTUAL_SHA256="$(sha256sum scripts/fa_v65_authority-lock.json | awk '{print $1}')"
+          export FA_V65_DEPENDENCY_GRAPH_ACTUAL_SHA256="$(sha256sum scripts/fa_v65_dependency-graph.json | awk '{print $1}')"
+          [[ "$FA_V65_SELECTION_ACTUAL_SHA256" == "$FA_V65_SELECTION_SHA256" ]]
+          [[ "$FA_V65_AUTHORITY_LOCK_ACTUAL_SHA256" == "$FA_V65_AUTHORITY_LOCK_SHA256" ]]
+          [[ "$FA_V65_DEPENDENCY_GRAPH_ACTUAL_SHA256" == "$FA_V65_DEPENDENCY_GRAPH_SHA256" ]]
+          candidate="$(python3 - "$FA_V65_VARIANT" <<'PY'
+          import json, sys
+          value = json.load(open("scripts/fa_v65_selection.json", encoding="utf-8"))
+          rows = [row for row in value["variants"] if row["name"] == sys.argv[1]]
+          assert len(rows) == 1 and rows[0]["status"] == "READY"
+          lock = rows[0]["expected_candidate"]
+          print(lock["sha256"], lock["bytes"], lock["lines"], sep="\t")
+          PY
+          )"
+          IFS=$'\t' read -r FA_V65_EXPECTED_CANDIDATE_SHA256 FA_V65_EXPECTED_CANDIDATE_BYTES FA_V65_EXPECTED_CANDIDATE_LINES <<<"$candidate"
+          export FA_V65_EXPECTED_CANDIDATE_SHA256 FA_V65_EXPECTED_CANDIDATE_BYTES FA_V65_EXPECTED_CANDIDATE_LINES
+          {
+            printf 'FA_V65_SELECTION_ACTUAL_SHA256=%s\n' "$FA_V65_SELECTION_ACTUAL_SHA256"
+            printf 'FA_V65_AUTHORITY_LOCK_ACTUAL_SHA256=%s\n' "$FA_V65_AUTHORITY_LOCK_ACTUAL_SHA256"
+            printf 'FA_V65_DEPENDENCY_GRAPH_ACTUAL_SHA256=%s\n' "$FA_V65_DEPENDENCY_GRAPH_ACTUAL_SHA256"
+            printf 'FA_V65_EXPECTED_CANDIDATE_SHA256=%s\n' "$FA_V65_EXPECTED_CANDIDATE_SHA256"
+            printf 'FA_V65_EXPECTED_CANDIDATE_BYTES=%s\n' "$FA_V65_EXPECTED_CANDIDATE_BYTES"
+            printf 'FA_V65_EXPECTED_CANDIDATE_LINES=%s\n' "$FA_V65_EXPECTED_CANDIDATE_LINES"
+          } >>"$GITHUB_ENV"
+          mkdir -p "$FA_V65_OUT"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          value = {"schema":"fa-v65-workflow-activation-gate-v1","status":"READY","variant":os.environ["FA_V65_VARIANT"],"selection_sha256":os.environ["FA_V65_SELECTION_ACTUAL_SHA256"],"authority_lock_sha256":os.environ["FA_V65_AUTHORITY_LOCK_ACTUAL_SHA256"],"runtime_evidence_fallback_used":False}
+          Path(os.environ["FA_V65_OUT"], "SCAFFOLD_GATE.json").write_text(json.dumps(value, indent=2, sort_keys=True)+"\n")
+          PY
+
+      - id: authority
+        name: Re-prove exact v62 source and terminal v63 winner provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/31871876992" >"$FA_V65_OUT/V63_RUN.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/31871876992/jobs?per_page=100" >"$FA_V65_OUT/V63_JOBS.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/9244032070" >"$FA_V65_OUT/V63_ARTIFACT.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/31863434345" >/tmp/v65-v61-run.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/31863434345/jobs?per_page=100" >/tmp/v65-v61-jobs.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/9241529792" >/tmp/v65-v61-artifact.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/9241529792/zip" >/tmp/v65-v62-authority.zip
+          python3 scripts/fa_v63_reprove_authority.py --authority-lock scripts/fa_v63_authority-lock.json --expected-authority-lock-sha256 "$FA_V65_V63_AUTHORITY_LOCK_SHA256" --run-api /tmp/v65-v61-run.json --jobs-api /tmp/v65-v61-jobs.json --artifact-api /tmp/v65-v61-artifact.json --artifact-zip /tmp/v65-v62-authority.zip --source-output /tmp/fa-v65-authority.lean --proof-output /tmp/fa-v65-v62-reproof.json --base-output-dir "$FA_V65_OUT" >/tmp/fa-v65-v62-reproof.stdout.json
+          python3 scripts/fa_v65_reprove_authority.py --selection scripts/fa_v65_selection.json --expected-selection-sha256 "$FA_V65_SELECTION_SHA256" --repo-root "$GITHUB_WORKSPACE" --v62-source /tmp/fa-v65-authority.lean --v62-reproof /tmp/fa-v65-v62-reproof.json --v63-run-api "$FA_V65_OUT/V63_RUN.json" --v63-jobs-api "$FA_V65_OUT/V63_JOBS.json" --v63-artifact-api "$FA_V65_OUT/V63_ARTIFACT.json" --out "$FA_V65_OUT" >"$FA_V65_OUT/AUTHORITY_REPROOF.stdout.json"
+
+      - id: materialize
+        name: Materialize exact noncumulative candidate in isolated new directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage="$(mktemp -d "/tmp/fa-v65-${FA_V65_VARIANT}.XXXXXX")"
+          python3 scripts/fa_v65_materialize.py --selection scripts/fa_v65_selection.json --expected-selection-sha256 "$FA_V65_SELECTION_SHA256" --variant "$FA_V65_VARIANT" --authority-source /tmp/fa-v65-authority.lean --repo-root "$GITHUB_WORKSPACE" --write-root "$stage" --output "$stage/candidate.lean" --audit "$stage/PATCH_AUDIT.json" --evidence "$stage/MATERIALIZATION.json" >"$FA_V65_OUT/MATERIALIZATION.stdout.json"
+          [[ "$(sha256sum "$stage/candidate.lean" | awk '{print $1}')" == "$FA_V65_EXPECTED_CANDIDATE_SHA256" ]]
+          [[ "$(wc -c <"$stage/candidate.lean" | tr -d '[:space:]')" == "$FA_V65_EXPECTED_CANDIDATE_BYTES" ]]
+          candidate_lines="$(python3 - "$stage/candidate.lean" <<'PY'
+          from pathlib import Path
+          import sys
+          print(len(Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()))
+          PY
+          )"
+          [[ "$candidate_lines" == "$FA_V65_EXPECTED_CANDIDATE_LINES" ]]
+          cp "$stage/candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp "$stage/candidate.lean" "$FA_V65_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          cp "$stage/PATCH_AUDIT.json" "$FA_V65_OUT/PATCH_AUDIT.json"
+          cp "$stage/MATERIALIZATION.json" "$FA_V65_OUT/MATERIALIZATION.json"
+          cp scripts/fa_v65_selection.json "$FA_V65_OUT/VARIANT_INDEX.json"
+
+      - id: install
+        name: Install and observe exact pinned Lean rc1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          payload=Path("lean-toolchain").read_bytes(); expected=(os.environ["FA_V65_TOOLCHAIN_CONTENT"]+"\n").encode()
+          assert payload==expected and len(payload)==29 and hashlib.sha256(payload).hexdigest()==os.environ["FA_V65_TOOLCHAIN_SHA256"]
+          PY
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V65_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >>"$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" >"$FA_V65_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V65_OUT/cache.log" 2>&1
+          lean --version >"$FA_V65_OUT/lean-version.txt"
+          [[ "$(tr -d '\r\n' <"$FA_V65_OUT/lean-version.txt")" == "$FA_V65_LEAN_VERSION" ]]
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          out=Path(os.environ["FA_V65_OUT"]); version=(out/"lean-version.txt").read_text().strip()
+          value={"schema":"fa-v65-exact-toolchain-pin-v1","status":"EXACT_FILE_PIN_AND_OBSERVED_VERSION","content":os.environ["FA_V65_TOOLCHAIN_CONTENT"],"terminal_lf":True,"bytes":29,"sha256":os.environ["FA_V65_TOOLCHAIN_SHA256"],"lean_version":version}
+          (out/"TOOLCHAIN_PIN.json").write_text(json.dumps(value,indent=2,sort_keys=True)+"\n")
+          PY
+
+      - id: direct_chain
+        name: Run this lane independent M2 then M2A then FA2000 chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v elan >/dev/null
+          command -v lake >/dev/null
+          command -v lean >/dev/null
+          [[ "$(lean --version)" == "$FA_V65_LEAN_VERSION" ]]
+          lake --version >/dev/null
+          set +e
+          bash scripts/fa_v65_direct_compile_ci.sh
+          wrapper_rc=$?
+          set -e
+          printf 'FA_V65_WRAPPER_RC=%s\n' "$wrapper_rc" >>"$GITHUB_ENV"
+          [[ "$wrapper_rc" == 0 ]]
+          captured_fa_exit="$(python3 - "$FA_V65_OUT/Mock2_FunctionalAnalysis.exit" <<'PY'
+          from pathlib import Path
+          import sys
+          payload = Path(sys.argv[1]).read_bytes()
+          assert payload in {b"0\n", b"1\n"}
+          print(int(payload.strip()))
+          PY
+          )"
+          printf 'FA_V65_CAPTURED_FA_EXIT=%s\n' "$captured_fa_exit" >>"$GITHUB_ENV"
+
+      - id: collect
+        name: Collect exact full diagnostics and warnings for this lane
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa_v65_collect_full_diagnostics.py
+
+      - id: final_gate
+        name: Enforce exact 48-member artifact and mirror every phase
+        if: ${{ always() }}
+        env:
+          FA_V65_PREFLIGHT_OUTCOME: ${{ steps.preflight.outcome }}
+          FA_V65_AUTHORITY_OUTCOME: ${{ steps.authority.outcome }}
+          FA_V65_MATERIALIZE_OUTCOME: ${{ steps.materialize.outcome }}
+          FA_V65_INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          FA_V65_COMPILE_OUTCOME: ${{ steps.direct_chain.outcome }}
+          FA_V65_COLLECT_OUTCOME: ${{ steps.collect.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa_v65_final_gate.py --selection scripts/fa_v65_selection.json --expected-selection-sha256 "$FA_V65_SELECTION_SHA256" --repo-root "$GITHUB_WORKSPACE" --variant "$FA_V65_VARIANT" --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean --out "$FA_V65_OUT" --gate-output "$FA_V65_OUT/FINAL_GATE.json" >"$FA_V65_OUT/FINAL_GATE.stdout.json"
+          [[ "$(find "$FA_V65_OUT" -mindepth 1 -maxdepth 1 -type f | wc -l | tr -d '[:space:]')" == 48 ]]
+
+      - name: Upload one independent exact artifact for this lane
+        if: ${{ always() && steps.final_gate.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v65-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: ${{ env.FA_V65_OUT }}/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed and mirror this lane exact FA exit
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ steps.final_gate.outcome }}" == success ]]
+          exit "$(tr -d '\r\n' <"$FA_V65_OUT/Mock2_FunctionalAnalysis.exit")"
