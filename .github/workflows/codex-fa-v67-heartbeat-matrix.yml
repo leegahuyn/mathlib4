@@ -1,0 +1,364 @@
+name: Codex FA v67 final-cluster direct budget matrix
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - scripts/fa_v67_apply_budget.py
+      - .github/workflows/codex-fa-v67-heartbeat-matrix.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: codex-fa-v67-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AUTHORITY_ARTIFACT_ID: '9246997507'
+  AUTHORITY_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+
+jobs:
+  direct:
+    name: direct-${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - { name: hb500k-r1k, heartbeat: 500000, rec_depth: 1000, rank: 1 }
+          - { name: hb1m-r1k, heartbeat: 1000000, rec_depth: 1000, rank: 2 }
+          - { name: hb2m-r1k, heartbeat: 2000000, rec_depth: 1000, rank: 3 }
+          - { name: hb5m-r1k, heartbeat: 5000000, rec_depth: 1000, rank: 4 }
+          - { name: hb10m-r1k, heartbeat: 10000000, rec_depth: 1000, rank: 5 }
+          - { name: hb2m-r10k, heartbeat: 2000000, rec_depth: 10000, rank: 6 }
+          - { name: hb10m-r10k, heartbeat: 10000000, rec_depth: 10000, rank: 7 }
+          - { name: hb0-r10k, heartbeat: 0, rec_depth: 10000, rank: 8 }
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      LANE: ${{ matrix.name }}
+      HEARTBEAT: ${{ matrix.heartbeat }}
+      REC_DEPTH: ${{ matrix.rec_depth }}
+      RANK: ${{ matrix.rank }}
+      OUT: build-logs/codex-fa-v67/${{ matrix.name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout v67 scaffold
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Recover exact sealed v65 winner
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/fa-v67-authority
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" > /tmp/fa-v67-authority.zip
+          unzip -q /tmp/fa-v67-authority.zip -d /tmp/fa-v67-authority
+          python3 - <<'PY'
+          import hashlib, os
+          from pathlib import Path
+          root = Path('/tmp/fa-v67-authority')
+          expected = os.environ['AUTHORITY_SHA256']
+          matches = []
+          for path in root.rglob('*.lean'):
+              if hashlib.sha256(path.read_bytes()).hexdigest() == expected:
+                  matches.append(path)
+          if not matches:
+              raise SystemExit('sealed authority source not found in v65 artifact')
+          source = sorted(matches, key=lambda p: (len(str(p)), str(p)))[0]
+          target = Path(os.environ['OUT'], 'Mock2_FunctionalAnalysis-authority.lean')
+          target.write_bytes(source.read_bytes())
+          print(source)
+          PY
+          test "$(sha256sum "$OUT/Mock2_FunctionalAnalysis-authority.lean" | awk '{print $1}')" = "$AUTHORITY_SHA256"
+
+      - name: Apply one command-scoped budget candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/fa_v67_apply_budget.py \
+            --source "$OUT/Mock2_FunctionalAnalysis-authority.lean" \
+            --output "$OUT/Mock2_FunctionalAnalysis-candidate.lean" \
+            --heartbeat "$HEARTBEAT" \
+            --rec-depth "$REC_DEPTH" \
+            --evidence "$OUT/GENERATION.json" \
+            > "$OUT/GENERATION.stdout.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          e = json.loads(Path(os.environ['OUT'], 'GENERATION.json').read_text())
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('CANDIDATE_SHA256=' + e['candidate_sha256'] + '\n')
+              f.write('CANDIDATE_BYTES=' + str(e['candidate_bytes']) + '\n')
+              f.write('CANDIDATE_LINES=' + str(e['candidate_lines']) + '\n')
+          PY
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = 'leanprover/lean4:v4.33.0-rc1'
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: Directly compile Mock2, Mock2 Advanced, and candidate FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export FA_V65_OUT="$OUT"
+          export FA_V65_VARIANT="$LANE"
+          export FA_V65_EXPECTED_CANDIDATE_SHA256="$CANDIDATE_SHA256"
+          export FA_V65_EXPECTED_CANDIDATE_BYTES="$CANDIDATE_BYTES"
+          export FA_V65_EXPECTED_CANDIDATE_LINES="$CANDIDATE_LINES"
+          set +e
+          bash scripts/fa_v65_direct_compile_ci.sh
+          wrapper_rc=$?
+          set -e
+          printf '%s\n' "$wrapper_rc" > "$OUT/wrapper.exit"
+          for f in Mock2.exit Mock2_Advanced.exit Mock2_FunctionalAnalysis.exit; do
+            test -f "$OUT/$f"
+            grep -Eq '^[01]$' "$OUT/$f"
+          done
+
+      - name: Collect exact lane result and source audit
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          out = Path(os.environ['OUT'])
+          source = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          raw = source.read_bytes() if source.exists() else b''
+          text = raw.decode('utf-8', errors='replace')
+          def exit_value(name):
+              p = out / name
+              if not p.exists(): return 99
+              s = p.read_text().strip()
+              return int(s) if s in {'0','1'} else 98
+          log = out / 'Mock2_FunctionalAnalysis.log'
+          diagnostics = log.read_text(errors='replace') if log.exists() else ''
+          headers = re.findall(r'^.*?\.lean:\d+:\d+: error:', diagnostics, flags=re.M)
+          forbidden = {
+              'sorry': len(re.findall(r'(?<![A-Za-z0-9_])sorry(?![A-Za-z0-9_])', text)),
+              'admit': len(re.findall(r'(?<![A-Za-z0-9_])admit(?![A-Za-z0-9_])', text)),
+              'axiom_declaration': len(re.findall(r'^\s*axiom\s+', text, flags=re.M)),
+              'unsafe_declaration': len(re.findall(r'^\s*unsafe\s+', text, flags=re.M)),
+              'native_decide': text.count('native_decide'),
+              'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+          }
+          result = {
+              'schema': 'fa-v67-direct-lane-result-v1',
+              'lane': os.environ['LANE'],
+              'rank': int(os.environ['RANK']),
+              'heartbeat': int(os.environ['HEARTBEAT']),
+              'rec_depth': int(os.environ['REC_DEPTH']),
+              'candidate_sha256': hashlib.sha256(raw).hexdigest(),
+              'candidate_bytes': len(raw),
+              'candidate_lines': len(text.splitlines()),
+              'Mock2_exit': exit_value('Mock2.exit'),
+              'Mock2_Advanced_exit': exit_value('Mock2_Advanced.exit'),
+              'FA_exit': exit_value('Mock2_FunctionalAnalysis.exit'),
+              'error_headers': len(headers),
+              'forbidden': forbidden,
+              'audit_clean': all(v == 0 for v in forbidden.values()),
+          }
+          result['true_pass'] = (
+              result['Mock2_exit'] == 0 and result['Mock2_Advanced_exit'] == 0
+              and result['FA_exit'] == 0 and result['error_headers'] == 0
+              and result['audit_clean']
+          )
+          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, sort_keys=True))
+          PY
+
+      - name: Upload complete lane evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v67-${{ matrix.name }}-${{ github.sha }}
+          path: build-logs/codex-fa-v67/${{ matrix.name }}/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Preserve actual direct Lean gate
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          r = json.loads(Path(os.environ['OUT'], 'RESULT.json').read_text())
+          raise SystemExit(0 if r['true_pass'] else 1)
+          PY
+
+  select:
+    name: select-and-check-in-first-true-pass
+    needs: direct
+    if: always()
+    runs-on: ubuntu-24.04
+    outputs:
+      commit_sha: ${{ steps.commit.outputs.commit_sha }}
+      candidate_sha256: ${{ steps.commit.outputs.candidate_sha256 }}
+      candidate_bytes: ${{ steps.commit.outputs.candidate_bytes }}
+      candidate_lines: ${{ steps.commit.outputs.candidate_lines }}
+      selected_lane: ${{ steps.commit.outputs.selected_lane }}
+    steps:
+      - name: Checkout selection base
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Download every v67 lane artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: codex-fa-v67-*-${{ github.sha }}
+          path: /tmp/fa-v67-results
+          merge-multiple: false
+
+      - id: commit
+        name: Select clean direct pass and check in exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, shutil
+          from pathlib import Path
+          roots = sorted(Path('/tmp/fa-v67-results').glob('*'))
+          passing = []
+          observed = []
+          for root in roots:
+              result_paths = list(root.rglob('RESULT.json'))
+              if len(result_paths) != 1:
+                  continue
+              result = json.loads(result_paths[0].read_text())
+              observed.append(result)
+              if result.get('true_pass'):
+                  candidates = list(root.rglob('Mock2_FunctionalAnalysis-candidate.lean'))
+                  if len(candidates) != 1:
+                      raise SystemExit(f"passing lane lacks one candidate: {root}")
+                  raw = candidates[0].read_bytes()
+                  if hashlib.sha256(raw).hexdigest() != result['candidate_sha256']:
+                      raise SystemExit('candidate/result SHA mismatch')
+                  passing.append((int(result['rank']), result, candidates[0]))
+          Path('build-logs').mkdir(exist_ok=True)
+          Path('build-logs/fa-v67-selection-observed.json').write_text(
+              json.dumps(observed, indent=2, sort_keys=True) + '\n'
+          )
+          if not passing:
+              raise SystemExit('no v67 lane achieved a clean direct Lean pass')
+          _, selected, candidate = sorted(passing, key=lambda row: row[0])[0]
+          target = Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          shutil.copyfile(candidate, target)
+          Path('build-logs/fa-v67-selected.json').write_text(
+              json.dumps(selected, indent=2, sort_keys=True) + '\n'
+          )
+          output = Path(os.environ['GITHUB_OUTPUT'])
+          with output.open('a') as f:
+              f.write('candidate_sha256=' + selected['candidate_sha256'] + '\n')
+              f.write('candidate_bytes=' + str(selected['candidate_bytes']) + '\n')
+              f.write('candidate_lines=' + str(selected['candidate_lines']) + '\n')
+              f.write('selected_lane=' + selected['lane'] + '\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v67-heartbeat-pass
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+                  build-logs/fa-v67-selection-observed.json \
+                  build-logs/fa-v67-selected.json
+          git commit -m "Codex: check in v67 zero-error FA candidate"
+          git push --force origin HEAD:refs/heads/codex/fa-v67-heartbeat-pass
+          printf 'commit_sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  verify-checked-in:
+    name: direct-verify-checked-in-v67-source
+    needs: select
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      OUT: build-logs/codex-fa-v67-checked-in
+      EXPECTED_SHA256: ${{ needs.select.outputs.candidate_sha256 }}
+      EXPECTED_BYTES: ${{ needs.select.outputs.candidate_bytes }}
+      EXPECTED_LINES: ${{ needs.select.outputs.candidate_lines }}
+      SELECTED_LANE: ${{ needs.select.outputs.selected_lane }}
+    steps:
+      - name: Checkout exact checked-in pass commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ needs.select.outputs.commit_sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-prove checked-in source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          source=PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          test "$(sha256sum "$source" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          test "$(wc -c < "$source" | tr -d '[:space:]')" = "$EXPECTED_BYTES"
+          test "$(python3 -c 'from pathlib import Path; print(len(Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean").read_text().splitlines()))')" = "$EXPECTED_LINES"
+
+      - name: Install exact pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: Directly compile checked-in Mock2, Mock2 Advanced, and FA
+        shell: bash
+        run: |
+          set -euo pipefail
+          export FA_V65_OUT="$OUT"
+          export FA_V65_VARIANT="checked-in-${SELECTED_LANE}"
+          export FA_V65_EXPECTED_CANDIDATE_SHA256="$EXPECTED_SHA256"
+          export FA_V65_EXPECTED_CANDIDATE_BYTES="$EXPECTED_BYTES"
+          export FA_V65_EXPECTED_CANDIDATE_LINES="$EXPECTED_LINES"
+          set +e
+          bash scripts/fa_v65_direct_compile_ci.sh
+          wrapper_rc=$?
+          set -e
+          printf '%s\n' "$wrapper_rc" > "$OUT/wrapper.exit"
+          test "$(cat "$OUT/Mock2.exit")" = 0
+          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0
+          test "$(cat "$OUT/Mock2_FunctionalAnalysis.exit")" = 0
+          if grep -Eq '^.*?\.lean:[0-9]+:[0-9]+: error:' "$OUT/Mock2_FunctionalAnalysis.log"; then
+            exit 1
+          fi
+
+      - name: Upload checked-in direct-pass evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v67-checked-in-${{ needs.select.outputs.selected_lane }}-${{ needs.select.outputs.commit_sha }}
+          path: build-logs/codex-fa-v67-checked-in/*
+          if-no-files-found: error
+          retention-days: 30
