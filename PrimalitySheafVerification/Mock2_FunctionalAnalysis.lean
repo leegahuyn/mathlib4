@@ -53590,23 +53590,108 @@ theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff
       UnitAddTorus.mFourier (-k) t *
         literalStageTorusRepresentative Y v t)
     (fun _ : Fin 2 ↦ -(1 / 2 : ℝ))]
-  rw [← literalStageFourierBox_eq_smul_unitPiBox Y,
-    Measure.setIntegral_comp_smul_of_pos volume
-      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)
-      (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
-      (literalStageFourierScale_pos Y)]
-  simp only [Complex.finrank_real_complex, literalStageTorusRepresentative,
-    literalStageTorusPoint, literalStageTorusCoordinate, smul_eq_mul,
-    zpow_ofNat, Complex.ofReal_mul, Complex.ofReal_inv]
-  apply integral_congr_ae
-  filter_upwards [coeFn_literalStageTorusTest Y v] with x hx
-  rw [hx]
-  simp only [literalStageNegativePlaneWave, Complex.mul_re,
-    Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
-    sub_zero, UnitAddTorus.mFourier, ContinuousMap.coe_mk]
-  rw [Fin.prod_univ_two]
-  field_simp [literalStageFourierScale_ne_zero Y]
-  ring
+  have hhalf : -(1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num
+  rw [hhalf]
+  have hsupport :
+      (∫ w : ℂ, literalStageNegativePlaneWave Y k w * v w) =
+        ∫ w in literalStageFourierBox Y,
+          literalStageNegativePlaneWave Y k w * v w := by
+    rw [← integral_indicator (literalStageFourierBox_measurableSet Y)]
+    apply integral_congr_ae
+    filter_upwards with w
+    by_cases hw : w ∈ literalStageFourierBox Y
+    · simp [hw]
+    · have hv0 : v w = 0 := by
+        by_contra hn
+        exact hw (hv (subset_tsupport _ hn))
+      simp [hw, hv0]
+  rw [hsupport]
+  calc
+    (∫ w in literalStageFourierBox Y,
+        literalStageNegativePlaneWave Y k w * v w) =
+      (literalStageFourierScale Y : ℂ) ^ 2 *
+        ∫ w in Complex.measurableEquivPi.symm '' literalStageUnitPiBox,
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y • w) *
+            v (literalStageFourierScale Y • w) := by
+      rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+      have hscale := Measure.setIntegral_comp_smul_of_pos
+        (E := ℂ) (F := ℂ) volume
+        (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)
+        (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
+        (literalStageFourierScale_pos Y)
+      rw [Complex.finrank_real_complex] at hscale
+      calc
+        _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+            ((((literalStageFourierScale Y) ^ 2)⁻¹ : ℝ) •
+              ∫ w in literalStageFourierScale Y •
+                  (Complex.measurableEquivPi.symm '' literalStageUnitPiBox),
+                literalStageNegativePlaneWave Y k w * v w) := by
+              simp only [Complex.real_smul]
+              push_cast
+              field_simp [literalStageFourierScale_ne_zero Y]
+        _ = _ := by rw [hscale]
+    _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+        ∫ x in literalStageUnitPiBox,
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x) *
+            v (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x) := by
+      rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+        Complex.measurableEquivPi.symm.measurableEmbedding
+        (fun w : ℂ ↦
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y • w) *
+            v (literalStageFourierScale Y • w))
+        literalStageUnitPiBox]
+    _ = (literalStageFourierScale Y : ℂ) *
+        ∫ x in literalStageUnitPiBox,
+          UnitAddTorus.mFourier (-k) (fun i ↦ (x i : UnitAddCircle)) *
+            literalStageTorusRepresentative Y v
+              (fun i ↦ (x i : UnitAddCircle)) := by
+      rw [← integral_const_mul, ← integral_const_mul]
+      apply setIntegral_congr_fun literalStageUnitPiBox_measurableSet
+      intro x hx
+      have hpoint :
+          literalStageTorusPoint Y (fun i ↦ (x i : UnitAddCircle)) =
+            literalStageFourierScale Y •
+              Complex.measurableEquivPi.symm x := by
+        simp only [literalStageTorusPoint, literalStageTorusCoordinate]
+        congr 2
+        funext i
+        rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]
+        exact congrArg Subtype.val
+          (AddCircle.equivIoc_coe_eq (by
+            constructor
+            · exact (hx i).1
+            · linarith [(hx i).2]))
+      simp only []
+      rw [show literalStageTorusRepresentative Y v
+          (fun i ↦ (x i : UnitAddCircle)) =
+          v (literalStageFourierScale Y •
+            Complex.measurableEquivPi.symm x) by
+        simp only [literalStageTorusRepresentative, hpoint]]
+      simp only [literalStageNegativePlaneWave, UnitAddTorus.mFourier,
+        ContinuousMap.coe_mk]
+      rw [Fin.prod_univ_two]
+      have hre :
+          (literalStageFourierScale Y)⁻¹ *
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x).re = x 0 := by
+        rw [Complex.measurableEquivPi_symm_apply]
+        simp [literalStageFourierScale_ne_zero Y]
+      have him :
+          (literalStageFourierScale Y)⁻¹ *
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x).im = x 1 := by
+        rw [Complex.measurableEquivPi_symm_apply]
+        simp [literalStageFourierScale_ne_zero Y]
+      rw [hre, him]
+      simp only [Pi.neg_apply]
+      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=
+        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)
+      field_simp [hScaleNe]
 
 /-- The derivative Fourier coefficients carry the exact integer frequency.
 This is the horizontal identity on the genuine two-torus. -/
