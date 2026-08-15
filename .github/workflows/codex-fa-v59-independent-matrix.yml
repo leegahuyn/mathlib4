@@ -237,7 +237,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$FA_V59_OUT"
-          python3 - <<'PY'
+          FA_V59_EXPECTED_CANDIDATE_SHA256="$(
+            python3 - <<'PY'
           from pathlib import Path
           import json
           import os
@@ -248,7 +249,10 @@ jobs:
           expected = rows[0]["expected_candidate"]["sha256"]
           with Path(os.environ["GITHUB_ENV"]).open("a") as handle:
               handle.write("FA_V59_EXPECTED_CANDIDATE_SHA256=" + expected + "\n")
+          print(expected)
           PY
+          )"
+          export FA_V59_EXPECTED_CANDIDATE_SHA256
           python3 scripts/fa_v59_compose_materialize.py \
             --index scripts/fa_v59_selection.json \
             --expected-index-sha256 "$FA_V59_INDEX_SHA256" \
