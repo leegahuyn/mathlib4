@@ -1,0 +1,109 @@
+name: Codex FA v74 materialize exact best source
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - .github/workflows/codex-fa-v74-materialize-best-source.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: codex-fa-v74-materialize
+  cancel-in-progress: false
+
+env:
+  AUTHORITY_ARTIFACT_ID: '9246997507'
+  AUTHORITY_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+  OUT: build-logs/codex-fa-v74
+
+jobs:
+  materialize:
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Stop when certified TRUE PASS already exists
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code https://github.com/${GITHUB_REPOSITORY}.git refs/heads/codex/fa-true-pass-certified >/dev/null 2>&1; then
+            echo 'needed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'needed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout exact orchestration commit
+        if: steps.guard.outputs.needed == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover exact sealed source and extract proof contexts
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/fa-v74-artifact
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" > /tmp/fa-v74.zip
+          unzip -q /tmp/fa-v74.zip -d /tmp/fa-v74-artifact
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          expected=os.environ['AUTHORITY_SHA256']
+          matches=[p for p in Path('/tmp/fa-v74-artifact').rglob('*.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==expected]
+          if not matches: raise SystemExit('exact v65 best source missing')
+          source=sorted(matches,key=lambda p:(len(str(p)),str(p)))[0]
+          raw=source.read_bytes(); text=raw.decode('utf-8'); lines=text.splitlines()
+          target=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean'); target.write_bytes(raw)
+          names=['discriminantHardStageOperator_eq_weightedHard','norm_discriminantHardStageOperator_sub_graphPotential_le','graphPotentialOperator_isCompact_unconditional']
+          contexts=[]; locations={}
+          decl_re=re.compile(r'^\s*(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma)\s+([A-Za-z0-9_\u0080-\uffff]+)\b')
+          decls=[]
+          for i,line in enumerate(lines):
+              m=decl_re.match(line)
+              if m: decls.append((i,m.group(1)))
+          for name in names:
+              hits=[i for i,line in enumerate(lines) if re.search(rf'\b(?:theorem|lemma)\s+{re.escape(name)}\b',line)]
+              if len(hits)!=1: raise SystemExit(f'{name}: expected one declaration, got {hits}')
+              start=hits[0]
+              next_starts=[i for i,_ in decls if i>start]
+              end=(next_starts[0] if next_starts else min(len(lines),start+250))
+              lo=max(0,start-40); hi=min(len(lines),end+40)
+              locations[name]={'declaration_line':start+1,'context_start':lo+1,'context_end':hi}
+              contexts.append(f'===== {name} lines {lo+1}-{hi} =====')
+              contexts.extend(f'{j+1:06d}: {lines[j]}' for j in range(lo,hi))
+          out=Path(os.environ['OUT']); out.mkdir(parents=True,exist_ok=True)
+          (out/'TARGET_LOCATIONS.json').write_text(json.dumps(locations,indent=2,sort_keys=True)+'\n')
+          (out/'TARGET_CONTEXTS.txt').write_text('\n'.join(contexts)+'\n')
+          (out/'SOURCE_IDENTITY.json').write_text(json.dumps({'schema':'fa-v74-materialized-best-v1','sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw),'lines':len(lines)},indent=2,sort_keys=True)+'\n')
+          print(json.dumps(locations,sort_keys=True))
+          PY
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$AUTHORITY_SHA256"
+
+      - name: Push exact source and contexts to repair branch
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v74-materialized-best
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$OUT"/TARGET_LOCATIONS.json "$OUT"/TARGET_CONTEXTS.txt "$OUT"/SOURCE_IDENTITY.json
+          git commit -m 'Codex: materialize exact v65 best FA source and target contexts'
+          git push --force origin HEAD:refs/heads/codex/fa-v74-materialized-best
+
+      - name: Upload materialization evidence
+        if: always() && steps.guard.outputs.needed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v74-materialized-${{ github.sha }}
+          path: build-logs/codex-fa-v74/*
+          if-no-files-found: error
+          retention-days: 30
