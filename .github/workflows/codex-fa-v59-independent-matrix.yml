@@ -1,0 +1,573 @@
+name: Codex FA v59 bounded six-way matrix
+
+on:
+  push:
+    branches:
+      - codex/fa-exclusive-focus-20260814
+  workflow_dispatch: {}
+
+permissions: {actions: read, contents: read}
+
+env:
+  FA_V59_ACTIVATION_STATUS: READY
+  FA_V59_INDEX_SHA256: 3bccb507dc1971c6a053b8e7dfe5c079b02f15dd85455aed136b8bab2facf45c
+  FA_V59_COMPOSER_SHA256: 10f617b0fcb5f77d72fbc625766ee27d35f325514c957cd33ca53c3e6d7ea272
+  FA_V59_RUNNER_ADAPTER_SHA256: f744a15a35c3dd38f4a5c5794073616ba626e389db6ca2c4256b12e7624c5ed4
+  FA_V59_COLLECTOR_ADAPTER_SHA256: 8f3a79462c3d40ccc888536d42e8574aa1900f35a7acc2ba512163c79b10cf8b
+  FA_V59_V42_RUNNER_SHA256: 2459f0a2cd44f6a3716de1ed2934c7588ba1a1e27ef443947d9e6089af196514
+  FA_V59_V42_COLLECTOR_SHA256: 7de7bc92e4e2735c0d25706d70777ea67340d8afcf67434e43b051d5cb8c90c6
+  FA_V59_AUTHORITY_RUN_ID: "31803223990"
+  FA_V59_AUTHORITY_HEAD_SHA: 14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc
+  FA_V59_AUTHORITY_HEAD_BRANCH: codex/fa-exclusive-focus-20260814
+  FA_V59_AUTHORITY_ARTIFACT_ID: "9220688452"
+  FA_V59_AUTHORITY_ARTIFACT_NAME: codex-fa-v58-core_base-highcap2000-14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc
+  FA_V59_AUTHORITY_ARTIFACT_SIZE: "619491"
+  FA_V59_AUTHORITY_ARTIFACT_DIGEST: sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4
+  FA_V59_AUTHORITY_SOURCE_SHA256: 013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba
+  FA_V59_AUTHORITY_DIAGNOSTICS_SHA256: a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1
+  FA_V59_AUTHORITY_FA_LOG_SHA256: 8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127
+  FA_V59_AUTHORITY_PATCH_AUDIT_SHA256: 372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a
+  FA_V59_TOOLCHAIN_CONTENT: leanprover/lean4:v4.33.0-rc1
+  FA_V59_TOOLCHAIN_SHA256: 62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef
+
+jobs:
+  direct:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - M_promoted_without_idx3933
+          - F_fourier_full
+          - W_weighted_structural
+          - R_reduced_inline_isolated
+          - A_all
+          - A_no_idx3933
+    name: direct-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      FA_V59_VARIANT: "${{ matrix.variant }}"
+      FA_V59_OUT: build-logs/codex-fa-v59-independent-matrix/${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {ref: "${{ github.sha }}", fetch-depth: 1, persist-credentials: false}
+
+      - name: Prove READY index, exact branch, and script locks
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V59_OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import re
+
+          out = Path(os.environ["FA_V59_OUT"])
+          status = os.environ["FA_V59_ACTIVATION_STATUS"]
+          configured_index = os.environ["FA_V59_INDEX_SHA256"]
+          gate = {
+              "schema": "fa-v59-workflow-activation-gate-v1",
+              "status": status,
+              "variant": os.environ["FA_V59_VARIANT"],
+              "configured_index_sha256": configured_index,
+              "current_run_id": os.environ["GITHUB_RUN_ID"],
+              "current_head_sha": os.environ["GITHUB_SHA"],
+              "current_ref": os.environ["GITHUB_REF"],
+              "current_ref_name": os.environ["GITHUB_REF_NAME"],
+              "exit_code_if_stopped": 86,
+          }
+          try:
+              assert status == "READY", status
+              assert re.fullmatch(r"[0-9a-f]{64}", configured_index)
+              assert re.fullmatch(r"[0-9a-f]{40}", os.environ["GITHUB_SHA"])
+              assert os.environ["GITHUB_REF"] == (
+                  "refs/heads/" + os.environ["FA_V59_AUTHORITY_HEAD_BRANCH"]
+              )
+              assert os.environ["GITHUB_REF_NAME"] == os.environ[
+                  "FA_V59_AUTHORITY_HEAD_BRANCH"
+              ]
+              index_path = Path("scripts/fa_v59_selection.json")
+              index_payload = index_path.read_bytes()
+              actual_index = hashlib.sha256(index_payload).hexdigest()
+              assert actual_index == configured_index
+              assert b"PENDING" not in index_payload
+              index = json.loads(index_payload)
+              assert index["schema"] == "fa-v59-independent-matrix-selection-v1"
+              assert index["status"] == "READY"
+              assert all(index["activation"].values())
+              assert index["pending_inputs"] == {}
+              assert index["runtime_evidence_fallback_allowed"] is False
+              gate["status"] = "READY"
+              gate["selection_index_sha256"] = actual_index
+              with Path(os.environ["GITHUB_ENV"]).open("a") as handle:
+                  handle.write("FA_V59_INDEX_ACTUAL_SHA256=" + actual_index + "\n")
+          except BaseException:
+              gate["status"] = "READY_PREFLIGHT_FAIL_CLOSED"
+              (out / "SCAFFOLD_GATE.json").write_text(
+                  json.dumps(gate, indent=2, sort_keys=True) + "\n"
+              )
+              raise
+          (out / "SCAFFOLD_GATE.json").write_text(
+              json.dumps(gate, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+          check_lock() {
+            local path="$1"
+            local expected="$2"
+            local actual
+            test -f "$path"
+            actual="$(sha256sum "$path" | awk '{print $1}')"
+            test "$actual" = "$expected"
+          }
+          check_lock scripts/fa_v59_compose_materialize.py "$FA_V59_COMPOSER_SHA256"
+          check_lock scripts/fa_v59_direct_compile_ci.sh "$FA_V59_RUNNER_ADAPTER_SHA256"
+          check_lock scripts/fa_v59_collect_full_diagnostics.py "$FA_V59_COLLECTOR_ADAPTER_SHA256"
+          check_lock scripts/fa_v42_direct_compile_ci.sh "$FA_V59_V42_RUNNER_SHA256"
+          check_lock scripts/fa_v42_collect_full_diagnostics.py "$FA_V59_V42_COLLECTOR_SHA256"
+
+      - name: Re-prove the exact v58 core_base artifact and source
+        id: authority
+        env:
+          GH_TOKEN: "${{ github.token }}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          authority_root="/tmp/fa-v59-authority-${GITHUB_RUN_ID}-${FA_V59_VARIANT}"
+          authority_zip="/tmp/fa-v59-authority-${GITHUB_RUN_ID}-${FA_V59_VARIANT}.zip"
+          mkdir -p "$authority_root" "$FA_V59_OUT"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V59_AUTHORITY_ARTIFACT_ID}" \
+            >"$FA_V59_OUT/V58_ARTIFACT.json"
+          ARTIFACT_JSON="$FA_V59_OUT/V58_ARTIFACT.json" python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          artifact = json.loads(Path(os.environ["ARTIFACT_JSON"]).read_text())
+          assert artifact["id"] == int(os.environ["FA_V59_AUTHORITY_ARTIFACT_ID"])
+          assert artifact["name"] == os.environ["FA_V59_AUTHORITY_ARTIFACT_NAME"]
+          assert artifact["size_in_bytes"] == int(
+              os.environ["FA_V59_AUTHORITY_ARTIFACT_SIZE"]
+          )
+          assert artifact["expired"] is False
+          assert artifact["digest"] == os.environ["FA_V59_AUTHORITY_ARTIFACT_DIGEST"]
+          assert artifact["workflow_run"]["id"] == int(os.environ["FA_V59_AUTHORITY_RUN_ID"])
+          assert artifact["workflow_run"]["head_sha"] == os.environ["FA_V59_AUTHORITY_HEAD_SHA"]
+          assert artifact["workflow_run"]["head_branch"] == os.environ[
+              "FA_V59_AUTHORITY_HEAD_BRANCH"
+          ]
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${FA_V59_AUTHORITY_ARTIFACT_ID}/zip" \
+            >"$authority_zip"
+          test "sha256:$(sha256sum "$authority_zip" | awk '{print $1}')" = \
+            "$FA_V59_AUTHORITY_ARTIFACT_DIGEST"
+          unzip -q "$authority_zip" -d "$authority_root"
+          AUTHORITY_ROOT="$authority_root" python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          import shutil
+
+          root = Path(os.environ["AUTHORITY_ROOT"])
+          out = Path(os.environ["FA_V59_OUT"])
+          def exact_member(name, expected_sha):
+              hits = list(root.rglob(name))
+              assert len(hits) == 1, (name, hits)
+              payload = hits[0].read_bytes()
+              assert hashlib.sha256(payload).hexdigest() == expected_sha
+              return hits[0], payload
+
+          source_path, payload = exact_member(
+              "Mock2_FunctionalAnalysis-candidate.lean",
+              os.environ["FA_V59_AUTHORITY_SOURCE_SHA256"],
+          )
+          diagnostics_path, diagnostics_payload = exact_member(
+              "FULL_DIAGNOSTICS.json",
+              os.environ["FA_V59_AUTHORITY_DIAGNOSTICS_SHA256"],
+          )
+          fa_log_path, fa_log_payload = exact_member(
+              "Mock2_FunctionalAnalysis.log",
+              os.environ["FA_V59_AUTHORITY_FA_LOG_SHA256"],
+          )
+          patch_audit_path, patch_audit_payload = exact_member(
+              "PATCH_AUDIT.json",
+              os.environ["FA_V59_AUTHORITY_PATCH_AUDIT_SHA256"],
+          )
+          assert len(payload) == 2_807_163
+          assert len(payload.decode("utf-8").splitlines()) == 62_815
+          destination = Path("/tmp/fa-v59-v58-core_base-authority.lean")
+          shutil.copyfile(source_path, destination)
+          shutil.copyfile(source_path, out / "V58_AUTHORITY_SOURCE.lean")
+          shutil.copyfile(diagnostics_path, out / "V58_FULL_DIAGNOSTICS.json")
+          shutil.copyfile(fa_log_path, out / "V58_Mock2_FunctionalAnalysis.log")
+          shutil.copyfile(patch_audit_path, out / "V58_PATCH_AUDIT.json")
+          proof = {
+              "schema": "fa-v59-v58-authority-reproof-v1",
+              "status": "EXACT",
+              "workflow_run_id": 31803223990,
+              "head_sha": os.environ["FA_V59_AUTHORITY_HEAD_SHA"],
+              "head_branch": os.environ["FA_V59_AUTHORITY_HEAD_BRANCH"],
+              "artifact_id": 9220688452,
+              "artifact_name": os.environ["FA_V59_AUTHORITY_ARTIFACT_NAME"],
+              "artifact_size_in_bytes": int(
+                  os.environ["FA_V59_AUTHORITY_ARTIFACT_SIZE"]
+              ),
+              "artifact_digest": os.environ["FA_V59_AUTHORITY_ARTIFACT_DIGEST"],
+              "variant": "core_base",
+              "source_sha256": hashlib.sha256(payload).hexdigest(),
+              "source_bytes": len(payload),
+              "source_lines": len(payload.decode("utf-8").splitlines()),
+              "declaration_count": 4416,
+              "diagnostics_sha256": hashlib.sha256(diagnostics_payload).hexdigest(),
+              "fa_log_sha256": hashlib.sha256(fa_log_payload).hexdigest(),
+              "patch_audit_sha256": hashlib.sha256(patch_audit_payload).hexdigest(),
+              "embedded_authority_ignored": True,
+          }
+          (out / "AUTHORITY_REPROOF.json").write_text(
+              json.dumps(proof, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Materialize the exact independent variant
+        id: materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FA_V59_OUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          index = json.loads(Path("scripts/fa_v59_selection.json").read_text())
+          variant = os.environ["FA_V59_VARIANT"]
+          rows = [row for row in index["variants"] if row["name"] == variant]
+          assert len(rows) == 1 and rows[0]["lock_finalized"] is True
+          expected = rows[0]["expected_candidate"]["sha256"]
+          with Path(os.environ["GITHUB_ENV"]).open("a") as handle:
+              handle.write("FA_V59_EXPECTED_CANDIDATE_SHA256=" + expected + "\n")
+          PY
+          python3 scripts/fa_v59_compose_materialize.py \
+            --index scripts/fa_v59_selection.json \
+            --expected-index-sha256 "$FA_V59_INDEX_SHA256" \
+            --repo-root . \
+            --variant "$FA_V59_VARIANT" \
+            --authority-source /tmp/fa-v59-v58-core_base-authority.lean \
+            --output /tmp/fa-v59-candidate.lean \
+            --audit "$FA_V59_OUT/PATCH_AUDIT.json" \
+            --evidence "$FA_V59_OUT/MATERIALIZATION.json" \
+            >"$FA_V59_OUT/MATERIALIZATION.stdout.json"
+          test "$(sha256sum /tmp/fa-v59-candidate.lean | awk '{print $1}')" = \
+            "$FA_V59_EXPECTED_CANDIDATE_SHA256"
+          cp /tmp/fa-v59-candidate.lean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          cp /tmp/fa-v59-candidate.lean "$FA_V59_OUT/Mock2_FunctionalAnalysis-candidate.lean"
+          cp scripts/fa_v59_selection.json "$FA_V59_OUT/VARIANT_INDEX.json"
+          printf '%s\n' "$FA_V59_EXPECTED_CANDIDATE_SHA256" >"$FA_V59_OUT/candidate.sha256"
+
+      - name: Install pinned Lean and cache
+        id: install
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import os
+          expected = (os.environ["FA_V59_TOOLCHAIN_CONTENT"] + "\n").encode()
+          payload = Path("lean-toolchain").read_bytes()
+          assert payload == expected
+          assert len(payload) == 29
+          digest = hashlib.sha256(payload).hexdigest()
+          assert digest == os.environ["FA_V59_TOOLCHAIN_SHA256"]
+          evidence = {
+              "schema": "fa-v59-exact-toolchain-pin-v1",
+              "status": "EXACT_FILE_PIN",
+              "content": payload.decode().removesuffix("\n"),
+              "terminal_lf": True,
+              "bytes": len(payload),
+              "sha256": digest,
+          }
+          out = Path(os.environ["FA_V59_OUT"])
+          (out / "TOOLCHAIN_PIN.json").write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none >"$FA_V59_OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" \
+            >"$FA_V59_OUT/toolchain.log" 2>&1
+          lake exe cache get >"$FA_V59_OUT/cache.log" 2>&1
+          lean --version >"$FA_V59_OUT/lean-version.txt" 2>&1
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          out = Path(os.environ["FA_V59_OUT"])
+          path = out / "TOOLCHAIN_PIN.json"
+          evidence = json.loads(path.read_text())
+          version = (out / "lean-version.txt").read_text().strip()
+          assert version.startswith("Lean (version 4.33.0-rc1,")
+          evidence["lean_version"] = version
+          evidence["status"] = "EXACT_FILE_PIN_AND_OBSERVED_VERSION"
+          path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Direct Mock2 then Mock2 Advanced then full FA highcap2000
+        id: compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          bash scripts/fa_v59_direct_compile_ci.sh
+
+      - name: Collect full diagnostics with exact v59 provenance
+        id: collect
+        if: always() && steps.materialize.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean ]]; then
+            cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              "$FA_V59_OUT/Mock2_FunctionalAnalysis-observed.lean"
+          fi
+          python3 scripts/fa_v59_collect_full_diagnostics.py \
+            --base-collector scripts/fa_v42_collect_full_diagnostics.py \
+            --base-collector-sha256 "$FA_V59_V42_COLLECTOR_SHA256" \
+            --source PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+            --out "$FA_V59_OUT" \
+            --max-errors 2000 \
+            >"$FA_V59_OUT/metric-console.log"
+
+      - name: Reject stale provenance and mirror the direct-chain result
+        id: final
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          out = Path(os.environ["FA_V59_OUT"])
+          gate = json.loads((out / "SCAFFOLD_GATE.json").read_text())
+          assert gate["status"] == "READY"
+          authority = json.loads((out / "AUTHORITY_REPROOF.json").read_text())
+          materialization = json.loads((out / "MATERIALIZATION.json").read_text())
+          metric = json.loads((out / "METRIC.json").read_text())
+          attestation = json.loads(
+              (out / "COLLECTOR_AUTHORITY_ATTESTATION.json").read_text()
+          )
+          diagnostics = json.loads((out / "FULL_DIAGNOSTICS.json").read_text())
+          warnings = json.loads((out / "FULL_WARNINGS.json").read_text())
+          synthetic = json.loads((out / "SYNTHETIC_SORRY_WARNINGS.json").read_text())
+          patch_audit = json.loads((out / "PATCH_AUDIT.json").read_text())
+          toolchain = json.loads((out / "TOOLCHAIN_PIN.json").read_text())
+          expected_base = {
+              "workflow_run_id": 31803223990,
+              "head_sha": os.environ["FA_V59_AUTHORITY_HEAD_SHA"],
+              "head_branch": os.environ["FA_V59_AUTHORITY_HEAD_BRANCH"],
+              "artifact_id": 9220688452,
+              "artifact_name": os.environ["FA_V59_AUTHORITY_ARTIFACT_NAME"],
+              "artifact_size_in_bytes": int(
+                  os.environ["FA_V59_AUTHORITY_ARTIFACT_SIZE"]
+              ),
+              "artifact_digest": os.environ["FA_V59_AUTHORITY_ARTIFACT_DIGEST"],
+              "variant": "core_base",
+              "source_sha256": os.environ["FA_V59_AUTHORITY_SOURCE_SHA256"],
+              "source_bytes": 2807163,
+              "source_lines": 62815,
+              "declaration_count": 4416,
+              "diagnostics_sha256": os.environ[
+                  "FA_V59_AUTHORITY_DIAGNOSTICS_SHA256"
+              ],
+              "fa_log_sha256": os.environ["FA_V59_AUTHORITY_FA_LOG_SHA256"],
+              "patch_audit_sha256": os.environ[
+                  "FA_V59_AUTHORITY_PATCH_AUDIT_SHA256"
+              ],
+          }
+          assert authority["status"] == "EXACT"
+          assert {key: authority[key] for key in expected_base} == expected_base
+          assert authority["embedded_authority_ignored"] is True
+          assert metric["schema"] == (
+              "fa-v59-independent-matrix-highcap2000-metric-v1"
+          )
+          assert metric["authority"] == expected_base
+          assert metric["github_run_id"] == os.environ["GITHUB_RUN_ID"]
+          assert metric["github_head_sha"] == os.environ["GITHUB_SHA"]
+          assert metric["variant"] == os.environ["FA_V59_VARIANT"]
+          assert metric["variant_index_expected_sha256"] == os.environ["FA_V59_INDEX_SHA256"]
+          assert metric["variant_index_actual_sha256"] == os.environ["FA_V59_INDEX_SHA256"]
+          assert metric["candidate_expected_sha256"] == os.environ[
+              "FA_V59_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert metric["candidate_locked_sha256"] == os.environ[
+              "FA_V59_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert metric["source_sha256"] == os.environ[
+              "FA_V59_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert materialization["selection_index_sha256"] == os.environ[
+              "FA_V59_INDEX_SHA256"
+          ]
+          assert materialization["candidate_sha256"] == os.environ[
+              "FA_V59_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert materialization["authority"] == expected_base
+          assert materialization["runtime_evidence_fallback_used"] is False
+          assert materialization["normalized_repair_registry"][
+              "used_evidence_path_fallback"
+          ] is False
+          assert all(
+              row["used_evidence_path_fallback"] is False
+              for row in materialization["normalized_repair_registry"][
+                  "promotion_inputs"
+              ]
+          )
+          assert materialization["matrix_cross_audit"][
+              "used_evidence_path_fallback"
+          ] is False
+          assert materialization["global_maxHeartbeats_before"] == {
+              "token_count": 8, "set_option_count": 8,
+          }
+          assert materialization["global_maxHeartbeats_after"] == {
+              "token_count": 8, "set_option_count": 8,
+          }
+          assert materialization["changed_region_maxHeartbeats_before"] == {
+              "token_count": 0, "set_option_count": 0,
+          }
+          assert materialization["changed_region_maxHeartbeats_after"] == {
+              "token_count": 0, "set_option_count": 0,
+          }
+          assert patch_audit["authority"] == expected_base
+          assert patch_audit["all_declaration_headers_byte_identical"] is True
+          assert patch_audit["comments_identical"] is True
+          assert patch_audit["attributes_identical"] is True
+          assert patch_audit["global_maxHeartbeats_before"] == {
+              "token_count": 8, "set_option_count": 8,
+          }
+          assert patch_audit["global_maxHeartbeats_after"] == {
+              "token_count": 8, "set_option_count": 8,
+          }
+          assert patch_audit["changed_region_maxHeartbeats_before"] == {
+              "token_count": 0, "set_option_count": 0,
+          }
+          assert patch_audit["changed_region_maxHeartbeats_after"] == {
+              "token_count": 0, "set_option_count": 0,
+          }
+          assert attestation["status"] == "EXACT_CURRENT_PROVENANCE"
+          assert attestation["base_authority"] == expected_base
+          assert attestation["current_github_run_id"] == os.environ["GITHUB_RUN_ID"]
+          assert attestation["current_github_head_sha"] == os.environ["GITHUB_SHA"]
+          assert attestation["selection_index_sha256"] == os.environ[
+              "FA_V59_INDEX_SHA256"
+          ]
+          assert attestation["candidate_sha256"] == os.environ[
+              "FA_V59_EXPECTED_CANDIDATE_SHA256"
+          ]
+          assert attestation["stale_v42_authority_rejected"] is True
+          assert os.environ["GITHUB_REF"] == (
+              "refs/heads/" + expected_base["head_branch"]
+          )
+          assert os.environ["GITHUB_REF_NAME"] == expected_base["head_branch"]
+          assert toolchain == {
+              "schema": "fa-v59-exact-toolchain-pin-v1",
+              "status": "EXACT_FILE_PIN_AND_OBSERVED_VERSION",
+              "content": os.environ["FA_V59_TOOLCHAIN_CONTENT"],
+              "terminal_lf": True,
+              "bytes": 29,
+              "sha256": os.environ["FA_V59_TOOLCHAIN_SHA256"],
+              "lean_version": toolchain["lean_version"],
+          }
+          assert toolchain["lean_version"].startswith(
+              "Lean (version 4.33.0-rc1,"
+          )
+          assert metric["Mock2_exit"] == 0 and metric["Mock2_Advanced_exit"] == 0
+          fa_exit = metric["FA_exit"]
+          assert isinstance(fa_exit, int)
+          assert metric["FA_compile_max_errors"] == 2000
+          assert metric["FA_error_cap_sentinel_present"] is False
+          assert metric["FA_inventory_complete_by_header_evidence"] is True
+          assert len(diagnostics) == metric["FA_error_headers_captured"]
+          assert len(warnings) == metric["FA_warning_headers_captured"]
+          assert synthetic == []
+          assert metric["synthetic_declaration_uses_sorry_warning_count"] == 0
+          assert metric["synthetic_trust_clean"] is True
+          assert metric["source_declaration_count"] == 4416
+          assert metric["source_executable_trust_six_zero"] is True
+          assert metric["source_executable_trust_counts"] == {
+              "sorry": 0,
+              "admit": 0,
+              "axiom": 0,
+              "unsafe": 0,
+              "native_decide": 0,
+              "Lean.ofReduceBool": 0,
+          }
+          assert metric["source_identity_locked"] is True
+          assert metric["all_required_lean_executed"] is True
+          assert metric["all_required_raw_logs_uploaded"] is True
+          assert metric["all_required_raw_logs_from_execution"] is True
+          assert metric["raw_log_placeholders"] == []
+          for stem in ("Mock2", "Mock2_Advanced", "Mock2_FunctionalAnalysis"):
+              assert (out / f"{stem}.log").is_file()
+          assert metric["direct_lean_verified"] is True
+          if fa_exit == 0:
+              assert diagnostics == []
+              assert metric["semantic_clean"] is True
+              status = "CLEAN_EXIT0"
+          else:
+              assert metric["semantic_clean"] is False
+              status = "EVIDENCE_COMPLETE_FA_NONZERO"
+          final = {
+              "schema": "fa-v59-independent-matrix-final-gate-v1",
+              "status": status,
+              "variant": os.environ["FA_V59_VARIANT"],
+              "base_authority": expected_base,
+              "current_run_id": os.environ["GITHUB_RUN_ID"],
+              "current_head_sha": os.environ["GITHUB_SHA"],
+              "current_head_branch": os.environ["GITHUB_REF_NAME"],
+              "selection_index_sha256": os.environ["FA_V59_INDEX_SHA256"],
+              "candidate_sha256": os.environ["FA_V59_EXPECTED_CANDIDATE_SHA256"],
+              "Mock2_exit": 0,
+              "Mock2_Advanced_exit": 0,
+              "FA_exit": fa_exit,
+              "max_errors": 2000,
+              "full_inventory_complete": True,
+              "source_declaration_count": 4416,
+              "source_executable_trust_six_zero": True,
+              "source_executable_trust_counts": metric[
+                  "source_executable_trust_counts"
+              ],
+              "global_maxHeartbeats_before_after": 8,
+              "changed_region_maxHeartbeats_before_after": 0,
+              "synthetic_declaration_uses_sorry_warning_count": 0,
+              "synthetic_trust_clean": True,
+              "full_warning_count": len(warnings),
+              "all_required_raw_logs_uploaded": True,
+              "all_required_raw_logs_from_execution": True,
+              "source_identity_locked": True,
+              "toolchain_pin": toolchain,
+              "runtime_evidence_fallback_used": False,
+              "stale_v42_authority_rejected": True,
+              "direct_lean_verified": True,
+          }
+          (out / "FINAL_GATE.json").write_text(
+              json.dumps(final, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+          fa_exit="$(tr -d '\r\n' < "$FA_V59_OUT/Mock2_FunctionalAnalysis.exit")"
+          [[ "$fa_exit" =~ ^[0-9]+$ ]] || exit 86
+          exit "$fa_exit"
+
+      - name: Upload the exact variant and all fail-closed evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v59-${{ matrix.variant }}-highcap2000-${{ github.sha }}
+          path: build-logs/codex-fa-v59-independent-matrix/${{ matrix.variant }}
+          retention-days: 30
