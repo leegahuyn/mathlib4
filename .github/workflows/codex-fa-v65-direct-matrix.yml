@@ -291,6 +291,7 @@ jobs:
           PY
           )"
           printf 'FA_V65_CAPTURED_FA_EXIT=%s\n' "$captured_fa_exit" >>"$GITHUB_ENV"
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean "$FA_V65_OUT/Mock2_FunctionalAnalysis-observed.lean"
 
       - id: collect
         name: Collect exact full diagnostics and warnings for this lane
