@@ -237,6 +237,7 @@ jobs:
           cp "$stage/PATCH_AUDIT.json" "$FA_V65_OUT/PATCH_AUDIT.json"
           cp "$stage/MATERIALIZATION.json" "$FA_V65_OUT/MATERIALIZATION.json"
           cp scripts/fa_v65_selection.json "$FA_V65_OUT/VARIANT_INDEX.json"
+          printf '%s\n' "$FA_V65_EXPECTED_CANDIDATE_SHA256" >"$FA_V65_OUT/candidate.sha256"
 
       - id: install
         name: Install and observe exact pinned Lean rc1
