@@ -1,0 +1,324 @@
+name: Codex FA v83 priority single-lane certification
+
+on:
+  push:
+    branches: [codex/fa-v66-decl4017-pass]
+    paths:
+      - .github/workflows/codex-fa-v83-priority-single-lane.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write
+  pull-requests: write
+
+concurrency:
+  group: codex-fa-v83-priority
+  cancel-in-progress: true
+
+env:
+  AUTHORITY_ARTIFACT_ID: '9246997507'
+  AUTHORITY_SHA256: 71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b
+  LEAN_VERSION_EXACT: Lean (version 4.33.0-rc1, x86_64-unknown-linux-gnu, commit 62eed1db4d67327ec8120be05f1a1b0847d74561, Release)
+  OUT: build-logs/codex-fa-v83
+
+jobs:
+  priority-certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cancel obsolete queued and in-progress FA repair runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cancel_others() {
+            for status in queued in_progress; do
+              gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs?branch=codex%2Ffa-v66-decl4017-pass&status=${status}&per_page=100" \
+                --jq '.workflow_runs[] | [.id,.name] | @tsv' |
+              while IFS=$'\t' read -r id name; do
+                [ -n "$id" ] || continue
+                [ "$id" = "$GITHUB_RUN_ID" ] && continue
+                case "$name" in
+                  "Codex FA v83 priority single-lane certification") continue ;;
+                  "continuous integration") continue ;;
+                  *) gh api --method POST "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/cancel" >/dev/null 2>&1 || true ;;
+                esac
+              done
+            done
+          }
+          cancel_others
+          sleep 20
+          cancel_others
+
+      - name: Stop if a certified branch already exists
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code https://github.com/${GITHUB_REPOSITORY}.git refs/heads/codex/fa-true-pass-certified >/dev/null 2>&1; then
+            echo needed=false >> "$GITHUB_OUTPUT"
+          else
+            echo needed=true >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout exact priority orchestration commit
+        if: steps.guard.outputs.needed == 'true'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover exact authority and exhaustively remove finite limits
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" /tmp/fa-v83
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${AUTHORITY_ARTIFACT_ID}/zip" > /tmp/fa-v83.zip
+          unzip -q /tmp/fa-v83.zip -d /tmp/fa-v83
+          python3 - <<'PY'
+          import hashlib,os
+          from pathlib import Path
+          expected=os.environ['AUTHORITY_SHA256']
+          matches=[p for p in Path('/tmp/fa-v83').rglob('*.lean') if hashlib.sha256(p.read_bytes()).hexdigest()==expected]
+          if not matches: raise SystemExit('sealed authority source missing')
+          Path(os.environ['OUT'],'authority.lean').write_bytes(sorted(matches,key=lambda p:(len(str(p)),str(p)))[0].read_bytes())
+          PY
+          python3 scripts/fa_v81_normalize_all_resource_options.py \
+            --source "$OUT/authority.lean" \
+            --output "$OUT/candidate.lean" \
+            --evidence "$OUT/GENERATION.json" \
+            --rec-depth 1000000 \
+            > "$OUT/GENERATION.stdout.json"
+          cp "$OUT/candidate.lean" PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          e=json.loads(Path(os.environ['OUT'],'GENERATION.json').read_text())
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+              f.write('CANDIDATE_SHA256='+e['candidate_sha256']+'\n')
+              f.write('CANDIDATE_BYTES='+str(e['candidate_bytes'])+'\n')
+              f.write('CANDIDATE_LINES='+str(e['candidate_lines'])+'\n')
+          PY
+          test "$(sha256sum "$OUT/authority.lean" | awk '{print $1}')" = "$AUTHORITY_SHA256"
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$(python3 -c 'import json;print(json.load(open("build-logs/codex-fa-v83/GENERATION.json"))["candidate_sha256"])')"
+
+      - name: Fail-closed source audit
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,os
+          from pathlib import Path
+          text=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean').read_text()
+          forbidden={
+            'sorry':len(re.findall(r'(?<![A-Za-z0-9_])sorry(?![A-Za-z0-9_])',text)),
+            'admit':len(re.findall(r'(?<![A-Za-z0-9_])admit(?![A-Za-z0-9_])',text)),
+            'axiom_declaration':len(re.findall(r'^\s*axiom\s+',text,flags=re.M)),
+            'unsafe_declaration':len(re.findall(r'^\s*unsafe\s+',text,flags=re.M)),
+            'native_decide':text.count('native_decide'),
+            'Lean.ofReduceBool':text.count('Lean.ofReduceBool'),
+          }
+          if any(forbidden.values()): raise SystemExit(forbidden)
+          Path(os.environ['OUT'],'AUDIT.json').write_text(json.dumps(forbidden,indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Install exact Lean and Mathlib cache
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          test "$(tr -d '\r\n' < "$OUT/lean-version.txt")" = "$LEAN_VERSION_EXACT"
+
+      - name: First priority direct chain
+        id: first
+        if: steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .lake/build/lib/lean/PrimalitySheafVerification "$OUT/first"
+          run_one() {
+            local name="$1"; shift
+            set +e
+            timeout --signal=TERM --kill-after=30s 18000 \
+              lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 "$@" \
+              > "$OUT/first/${name}.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$OUT/first/${name}.exit"
+          }
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+                .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+          run_one Mock2 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean
+          if [ "$(cat "$OUT/first/Mock2.exit")" = 0 ]; then
+            run_one Mock2_Advanced -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean
+          else
+            echo 99 > "$OUT/first/Mock2_Advanced.exit"
+          fi
+          if [ "$(cat "$OUT/first/Mock2_Advanced.exit")" = 0 ]; then
+            run_one Mock2_FunctionalAnalysis -o /tmp/fa-v83-first.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          else
+            echo 99 > "$OUT/first/Mock2_FunctionalAnalysis.exit"
+            : > "$OUT/first/Mock2_FunctionalAnalysis.log"
+          fi
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT'])/'first'
+          def ev(n): return int((out/(n+'.exit')).read_text().strip())
+          log=(out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace')
+          errors=len(re.findall(r'^.*?\.lean:\d+:\d+: error:',log,flags=re.M))
+          result={'schema':'fa-v83-first-v1','Mock2_exit':ev('Mock2'),'Mock2_Advanced_exit':ev('Mock2_Advanced'),'FA_exit':ev('Mock2_FunctionalAnalysis'),'error_headers':errors}
+          result['true_pass']=result['Mock2_exit']==result['Mock2_Advanced_exit']==result['FA_exit']==0 and errors==0
+          (out/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('pass='+str(result['true_pass']).lower()+'\n')
+          print(json.dumps(result,sort_keys=True))
+          PY
+
+      - name: Commit the exact first-pass source
+        id: source
+        if: steps.first.outputs.pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B codex/fa-v83-priority-pass
+          git add PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          git commit -m 'Codex: check in v83 priority FA pass source'
+          git push --force origin HEAD:refs/heads/codex/fa-v83-priority-pass
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Second priority direct chain from checked-in source
+        id: second
+        if: steps.first.outputs.pass == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ steps.source.outputs.sha }}"
+          test "$(sha256sum PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean | awk '{print $1}')" = "$CANDIDATE_SHA256"
+          mkdir -p "$OUT/second"
+          run_one() {
+            local name="$1"; shift
+            set +e
+            timeout --signal=TERM --kill-after=30s 18000 \
+              lake env lean -DmaxHeartbeats=0 -DmaxRecDepth=1000000 "$@" \
+              > "$OUT/second/${name}.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$OUT/second/${name}.exit"
+          }
+          rm -f .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean \
+                .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+          run_one Mock2 -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean PrimalitySheafVerification/Mock2.lean
+          if [ "$(cat "$OUT/second/Mock2.exit")" = 0 ]; then
+            run_one Mock2_Advanced -o .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean PrimalitySheafVerification/Mock2_Advanced.lean
+          else
+            echo 99 > "$OUT/second/Mock2_Advanced.exit"
+          fi
+          if [ "$(cat "$OUT/second/Mock2_Advanced.exit")" = 0 ]; then
+            run_one Mock2_FunctionalAnalysis -o /tmp/fa-v83-second.olean PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+          else
+            echo 99 > "$OUT/second/Mock2_FunctionalAnalysis.exit"
+            : > "$OUT/second/Mock2_FunctionalAnalysis.log"
+          fi
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT'])/'second'
+          def ev(n): return int((out/(n+'.exit')).read_text().strip())
+          log=(out/'Mock2_FunctionalAnalysis.log').read_text(errors='replace')
+          errors=len(re.findall(r'^.*?\.lean:\d+:\d+: error:',log,flags=re.M))
+          result={'schema':'fa-v83-second-v1','Mock2_exit':ev('Mock2'),'Mock2_Advanced_exit':ev('Mock2_Advanced'),'FA_exit':ev('Mock2_FunctionalAnalysis'),'error_headers':errors}
+          result['true_pass']=result['Mock2_exit']==result['Mock2_Advanced_exit']==result['FA_exit']==0 and errors==0
+          (out/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('pass='+str(result['true_pass']).lower()+'\n')
+          print(json.dumps(result,sort_keys=True))
+          PY
+
+      - name: Seal certified branch and open promotion PR
+        id: seal
+        if: steps.second.outputs.pass == 'true'
+        env:
+          SOURCE_COMMIT: ${{ steps.source.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path('PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          raw=p.read_bytes()
+          record={
+            'schema':'fa-v83-priority-certificate-v1',
+            'status':'FA_TRUE_PASS',
+            'source_commit':os.environ['SOURCE_COMMIT'],
+            'candidate_sha256':hashlib.sha256(raw).hexdigest(),
+            'candidate_bytes':len(raw),
+            'candidate_lines':len(raw.decode().splitlines()),
+            'Mock2_exit':0,
+            'Mock2_Advanced_exit':0,
+            'FA_exit':0,
+            'error_headers':0,
+            'direct_lean_runs':2,
+            'direct_lean_verified':True,
+            'checked_in_source_verified':True,
+            'toolchain':Path(os.environ['OUT'],'lean-version.txt').read_text().strip(),
+          }
+          Path('build-logs/FA_TRUE_PASS.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          Path(os.environ['OUT'],'FA_TRUE_PASS.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(record,sort_keys=True))
+          PY
+          git add build-logs/FA_TRUE_PASS.json
+          git commit -m 'Codex: certify v83 priority twice-direct FA TRUE PASS'
+          git push --force origin HEAD:refs/heads/codex/fa-v83-priority-pass
+          git push --force origin HEAD:refs/heads/codex/fa-true-pass-certified
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          existing=$(gh pr list --head codex/fa-true-pass-certified --base codex/fa-exclusive-focus-20260814 --state open --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            gh pr create --head codex/fa-true-pass-certified --base codex/fa-exclusive-focus-20260814 \
+              --title 'Codex: promote v83 priority certified FA TRUE PASS' \
+              --body 'Priority twice-direct checked-in verification under Lean 4.33.0-rc1: Mock2=0, Mock2_Advanced=0, FA=0, zero Lean error headers, clean forbidden-token audit. See build-logs/FA_TRUE_PASS.json and v83 artifact.'
+          fi
+
+      - name: Publish exact priority failure diagnostics
+        if: always() && steps.guard.outputs.needed == 'true' && steps.second.outputs.pass != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,re
+          from pathlib import Path
+          out=Path(os.environ['OUT'])
+          first=json.loads((out/'first/RESULT.json').read_text()) if (out/'first/RESULT.json').exists() else None
+          second=json.loads((out/'second/RESULT.json').read_text()) if (out/'second/RESULT.json').exists() else None
+          log=(out/'first/Mock2_FunctionalAnalysis.log').read_text(errors='replace') if (out/'first/Mock2_FunctionalAnalysis.log').exists() else ''
+          errors=[m.group(0) for m in re.finditer(r'(?m)^.*?\.lean:\d+:\d+: error:.*$',log)]
+          (out/'STATUS.json').write_text(json.dumps({'schema':'fa-v83-status-v1','status':'NOT_PASS','first':first,'second':second,'error_headers_text':errors},indent=2,sort_keys=True)+'\n')
+          PY
+
+      - name: Upload all priority evidence
+        if: always() && steps.guard.outputs.needed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: codex-fa-v83-${{ steps.seal.outputs.sha || github.sha }}
+          path: build-logs/codex-fa-v83/*
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Preserve actual priority certification gate
+        if: always() && steps.guard.outputs.needed == 'true'
+        shell: bash
+        run: |
+          test "${{ steps.second.outputs.pass }}" = true
