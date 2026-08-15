@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 
+# Updating this script is the branch-scoped trigger for the registered direct lane.
 SOURCE = Path("PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean")
 EXPECTED_INPUT_SHA256 = "71d8eeca6cce4e520754a3e45b43bf3d61a94f4f1bac6f452d0c8ae2c1ee853b"
 HEARTBEATS = "5_000_000"
