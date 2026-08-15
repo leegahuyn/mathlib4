@@ -49127,7 +49127,7 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
       simpa only [sub_eq_add_neg, add_comm] using hut.symm
     have hHolderBound : ‖productL1‖ ≤ C := by
       have h := (lsmul ℂ ℂ).norm_holder_apply_apply_le (r := 1) V ut
-      simpa [ut] using h
+      simpa only [productL1, C, ut, DomAddAct.norm_vadd_Lp] using h
     have hIntegralNonneg :
         0 ≤ ∫ x : ℂ, ‖v x * K t * u (x - t)‖
           ∂(volume : Measure ℂ) :=

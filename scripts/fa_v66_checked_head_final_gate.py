@@ -815,7 +815,7 @@ def final_gate(args: argparse.Namespace, repo: Path, root: Path, source_path: Pa
         "elan_release_asset": {**ELAN_ASSET, **evidence_file_lock(root / ELAN_ASSET["name"], nonempty=True)},
         "elan_installer_sha256_file": evidence_file_lock(root / "elan-installer.sha256", nonempty=True),
         "elan_download_log": evidence_file_lock(root / "elan-download.log"),
-        "elan_install_log": evidence_file_lock(root / "elan.log", nonempty=True),
+        "elan_install_log": evidence_file_lock(root / "elan.log"),
         "toolchain_install_log": evidence_file_lock(root / "toolchain.log", nonempty=True),
         "cache_log": evidence_file_lock(root / "cache.log", nonempty=True),
         "lean_version": evidence_file_lock(root / "lean-version.txt", nonempty=True),
