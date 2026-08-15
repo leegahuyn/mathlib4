@@ -59,7 +59,7 @@ jobs:
           out="$GITHUB_WORKSPACE/$V66_OUT"
           asset_name="elan-x86_64-unknown-linux-gnu.tar.gz"
           asset_sha="df0b2b3a439961ffcbb3985214365ffe40f49bc871df04dff268c7d8e21ca8b2"
-          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+          curl --location --retry 5 --retry-all-errors --fail --silent --show-error \
             https://github.com/leanprover/elan/releases/download/v4.2.3/elan-x86_64-unknown-linux-gnu.tar.gz \
             -o "$out/$asset_name" 2>"$out/elan-download.log"
           [[ "$(wc -c <"$out/$asset_name" | tr -d ' ')" == 4984019 ]]
