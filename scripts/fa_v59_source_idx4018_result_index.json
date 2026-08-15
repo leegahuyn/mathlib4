@@ -1,0 +1,120 @@
+{
+  "schema": "fa-v58-idx4018-worker-result-index-v1",
+  "status": "COMPLETE_STATIC_THREE_SERIAL_PROBES_DIRECT_LEAN_REQUIRED",
+  "worker_id": "v58-weighted-idx4018",
+  "authority": {
+    "variant": "core_base",
+    "artifact_id": 9220688452,
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127"
+  },
+  "causal_scope": {
+    "authority_ordinal": 5,
+    "collector_preceding_owner_index": 4017,
+    "actual_causal_owner_index": 4018,
+    "actual_causal_owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+    "reported_location": "55545:0",
+    "proof_local_progress_location": "55554:13",
+    "downstream_missing_producer_ordinal": 7
+  },
+  "selection_matrix": {
+    "serial_order": [
+      "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+      "V58-IDX4018-P02-EXPLICIT-TWO-LEVEL-CLM-EXT",
+      "V58-IDX4018-P03-TYPED-INNER-CONGRARG"
+    ],
+    "minimal_option": {
+      "selection_id": "weighted_idx4018_minimal_p01",
+      "manifest": "probe-01-mkcontinuous2-manifest.json",
+      "expected_transform_only_full_source_sha256": "d734fb1f3baf13c4496ad5f3c0dad62579d186db2d534a0571b71beb21afd0c4",
+      "expected_bytes": 2807200,
+      "allowed": true
+    },
+    "intermediate_diagnostic_option": {
+      "selection_id": "weighted_idx4018_p01_plus_p02",
+      "manifests": [
+        "probe-01-mkcontinuous2-manifest.json",
+        "probe-02-explicit-ext-manifest.json"
+      ],
+      "expected_transform_only_full_source_sha256": "0b47f0b261d8d7c805a68036d9903d0a6b6ffb54244dc7576706a1aa43188dae",
+      "expected_bytes": 2807274,
+      "probe_02_alone_forbidden": true
+    },
+    "full_option": {
+      "selection_id": "weighted_idx4018_full_p01_p02_p03",
+      "manifests": [
+        "probe-01-mkcontinuous2-manifest.json",
+        "probe-02-explicit-ext-manifest.json",
+        "probe-03-typed-inner-congr-manifest.json"
+      ],
+      "expected_transform_only_full_source_sha256": "1ebfd3bd613b0e5142d3c627dff23451928b9fea4424b22ec4b8425c1fe89e56",
+      "expected_bytes": 2807355,
+      "probe_03_without_probe_01_and_probe_02_forbidden": true,
+      "allowed": true
+    },
+    "all_options_require_real_idx4017_upstream": true,
+    "all_options_direct_lean_unverified": true
+  },
+  "diagnostic_expectation": {
+    "precondition": "Install idx4017 as a real declaration before judging any idx4018 candidate.",
+    "success": "Causal ordinal 5 disappears, idx4018 is a real kernel declaration, and ordinal 7 no longer reports idx4018 kernel-unknown.",
+    "remaining_separate_work": "Ordinal 6 uses the separate exact `norm_neg _` repair; ordinals 8-9 are reassessed only after idx4019 closes.",
+    "failure": "Any replacement idx4018 diagnostic blocks promotion; after the full option, DEFER with the first exact local goal rather than adding a fourth or heartbeat probe."
+  },
+  "summary": {
+    "probe_manifest_count": 3,
+    "owner_preview_count": 3,
+    "preferred_probe": "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+    "body_only": true,
+    "header_order_comments_attributes_preserved": true,
+    "heartbeat_repair_count": 0,
+    "executable_trust_six_zero_all_previews": true,
+    "direct_lean_verified_by_worker": false,
+    "clean_build_claimed": false
+  },
+  "files": {
+    "analysis-report.md": {
+      "bytes": 5542,
+      "sha256": "238b7f003c0cccf743664a343423c5b9e872720fadfa79ab9b1deea3271c9e93"
+    },
+    "probe-01-mkcontinuous2-manifest.json": {
+      "bytes": 5319,
+      "sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9"
+    },
+    "probe-01-preview.lean": {
+      "bytes": 1014,
+      "sha256": "fab9de9ab8148837340f0626d4e83274c9d0e2303961ab333b488b086f419bf7"
+    },
+    "probe-02-explicit-ext-manifest.json": {
+      "bytes": 4409,
+      "sha256": "be61f4fe905d9f8b910db8c530941c12866c413bd41ebc37f0ebc78a076db24f"
+    },
+    "probe-02-preview.lean": {
+      "bytes": 1088,
+      "sha256": "00aee0b9513c5e715671f2381b85b78cda33eef3533fc43f0706dad6a20b4d5a"
+    },
+    "probe-03-typed-inner-congr-manifest.json": {
+      "bytes": 4400,
+      "sha256": "34b258541aafed0465db6ca266fbc08f6f8a986935c8685e56e56cd00d77d2a5"
+    },
+    "probe-03-preview.lean": {
+      "bytes": 1169,
+      "sha256": "d049fadc5cddb6c725a91d4789f3122370b505f592bd4b8ce65cb98696535e4f"
+    },
+    "README.md": {
+      "bytes": 1351,
+      "sha256": "d3426f63c4a33570d3fc59c4f0191a2f3bddb997a6c094f4cda48e400b55656a"
+    },
+    "static-invariants.json": {
+      "bytes": 7262,
+      "sha256": "21e11a01c5535f374c9e9471a4b6011a3dadb66e7083eb3de7156fe5b9cebf22"
+    }
+  },
+  "self_hash_policy": "result-index.json intentionally does not self-hash",
+  "direct_next_step": "For v59 choose either the minimal P01-only idx4018 option or the full cumulative P01+P02+P03 option, compose a real idx4017 prerequisite and the separate idx4019 norm-negation repair, then run direct Lean at default heartbeats.",
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

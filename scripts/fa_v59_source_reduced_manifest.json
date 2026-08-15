@@ -1,0 +1,153 @@
+{
+  "schema": "fa-v58-declaration-local-file-repair-v1",
+  "status": "STAGED_BODY_ONLY_DIRECT_LEAN_REQUIRED",
+  "activation_default": "FAIL_CLOSED",
+  "worker_scope": "idx4198-gammaTwoReducedChart-pairwise-disjoint-translates",
+  "authority": {
+    "variant": "core_base",
+    "artifact_id_from_v58_registry": 9220688452,
+    "job_id_from_v58_registry": 94775871934,
+    "github_run_id": 31803223990,
+    "github_head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_zip_path": "work/v58-artifact-9220688452.zip",
+    "artifact_zip_sha256": "269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "source_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "identity_basis": [
+      "explicit caller lock",
+      "candidate.sha256 and STEP_OUTCOMES.json",
+      "v58 heartbeat comparison registry",
+      "ZIP member equals extracted candidate byte-for-byte"
+    ],
+    "embedded_provenance_conflicts": [
+      {
+        "path": "work/v58-artifact-9220688452/authority.json",
+        "reported_artifact_id": 9209647939,
+        "reported_run_id": 31774351117,
+        "reported_head_sha": "0c0025aba1e08e59a416cc0d76bb13e4772af6c7",
+        "classification": "STALE_WRONG_FOR_DIRECTORY_ARTIFACT"
+      },
+      {
+        "path": "work/v58-artifact-9220688452/METRIC.json#authority",
+        "reported_artifact_id": 9181214334,
+        "reported_run_id": 31699916923,
+        "reported_head_sha": "6867203e032c9711b47d8c2e1bd74f30d15cbd59",
+        "reported_source_sha256": "d7e99092e79b26af21cd8c960b8e9c811731e27343757b750b62c53608805937",
+        "classification": "STALE_WRONG_FOR_CURRENT_CANDIDATE"
+      }
+    ]
+  },
+  "assignment": {
+    "declaration_index": 4198,
+    "declaration": "gammaTwoReducedChart_pairwise_disjoint_translates",
+    "diagnostic_ordinal": 10,
+    "line": 57547,
+    "column": 8,
+    "diagnostic_code": "lean.unknownIdentifier",
+    "message": "Unknown identifier `gammaTwoReducedChart_inter_translate_imp_eq_one`",
+    "root_or_cascade": "INDEPENDENT_SOURCE_ORDER_FORWARD_REFERENCE_ROOT"
+  },
+  "repair": {
+    "id": "V58-IDX4198-INLINE-EFFECTIVE-FREENESS-BODY-ONLY",
+    "kind": "replace_body_from_locked_preview",
+    "confidence": "high-static-direct-lean-unverified",
+    "owner": "gammaTwoReducedChart_pairwise_disjoint_translates",
+    "declaration_index": 4198,
+    "owner_header_line": 57542,
+    "owner_header_sha256": "8cd611748aa4cd530e601635065e242406ad509d0cb4d53707e6a42090dbba41",
+    "expected_old_body_count_in_source": 1,
+    "old_body_sha256": "8785c545c7a69c236b552a2d1fd94b70dd84aa2b0316a8152a41e4b81502e61e",
+    "old_body_bytes": 155,
+    "old_body": "by\n  rw [pairwise_disjoint_smul_iff]\n  intro a ha\n  exact gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a <| by\n    simpa only [image_smul] using ha",
+    "new_body_source": {
+      "path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean",
+      "file_sha256": "8cebb44101b712d121aef1795cf626d47c3bcce72eb4a0bd16cc1a8771a7370c",
+      "file_bytes": 5821,
+      "extraction": "take from the first line exactly equal to `by` through EOF, then remove the single terminal LF",
+      "body_sha256": "d7b2e7e8db8da72a9132559b29bb8f82c078eed99db6da8ca20b7140c8111625",
+      "body_bytes": 5346,
+      "body_lines": 121
+    },
+    "body_strategy": [
+      "inline local closed-fundamental-domain stabilizer classification",
+      "inline local raw Gamma(2) centrality proof",
+      "inline local GammaTwoEffective freeness proof",
+      "apply prior idx3229 overlap-to-fixed-point API",
+      "fully qualify FixedPhaseEssentialCoreRoute constants missing from target open set"
+    ],
+    "public_header_changes": 0,
+    "declaration_moves": 0,
+    "new_public_declarations": 0,
+    "trust_token_additions": 0
+  },
+  "static_composition": {
+    "candidate_materialized_on_disk": false,
+    "in_memory_expected_sha256": "5a231db840bc576a365fa3f9cd9aeaccab5ec98683834edb20d41e4ec5eaf5eb",
+    "in_memory_expected_bytes": 2812354,
+    "in_memory_expected_lines": 62931,
+    "declaration_count": 4416,
+    "declaration_sequence_identical": true,
+    "all_declaration_headers_byte_identical": true,
+    "comments_identical": true,
+    "attributes_identical": true,
+    "trust_six_before_and_after_zero": true
+  },
+  "source_order_evidence": {
+    "prior_overlap_api": {
+      "declaration_index": 3229,
+      "declaration": "gammaTwoReducedChart_inter_translate_imp_smul_eq",
+      "header_line": 42659,
+      "conclusion_gap": "yields a • z = z, not a = 1"
+    },
+    "consumer_index": 4198,
+    "consumer_header_line": 57542,
+    "producer_index": 4240,
+    "producer_header_line": 58542,
+    "index_delta": 42,
+    "header_line_delta": 1000,
+    "failing_reference_to_producer_line_delta": 995,
+    "later_five_declaration_block": {
+      "indices": [4236, 4237, 4238, 4239, 4240],
+      "start_line": 58409,
+      "end_exclusive_line": 58550,
+      "bytes": 6210,
+      "sha256": "2794b86f8bdf1668208885acd22f383bf42fb7cea21257dde1ffeebfa86129b0"
+    }
+  },
+  "api_audit": {
+    "equivalent_prior_public_lemma_found": false,
+    "equivalent_prior_typeclass_or_instance_found": false,
+    "closest_prior_apis": [
+      "gammaTwoEffective_stabilizer_finite",
+      "gammaTwoEffective_exists_nhds_image_smul_eq_self",
+      "gammaTwoEffective_exists_compact_nhds_image_smul_eq_self",
+      "gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one",
+      "gammaTwoReducedChart_inter_translate_imp_smul_eq"
+    ],
+    "circular_api_rejected": "gammaTwo_eq_one_or_centralNegOne_of_effective_eq_one assumes the effective element already equals one",
+    "faithful_action_caveat": "faithfulness of the permutation image does not imply that fixing one point forces identity"
+  },
+  "classification": {
+    "promoted": false,
+    "staged": true,
+    "deferred": false,
+    "reason": "A header-preserving body-only proof is statically constructible from the later clean proof chain, but it has not been directly elaborated at idx4198 and combines three separately budgeted proofs into one theorem."
+  },
+  "promotion_requires": [
+    "materialize the exact replacement from the locked preview into the locked source",
+    "direct Lean success for Mock2",
+    "direct Lean success for Mock2_Advanced",
+    "direct full Mock2_FunctionalAnalysis traversal with -DmaxErrors=2000",
+    "idx4198 diagnostic absent without a new idx4198 diagnostic",
+    "synthetic declaration-uses-sorry warning count remains zero",
+    "executable trust-six remains all zero",
+    "declaration count, order, headers, comments, and attributes match the static audit"
+  ],
+  "fallback_if_probe_fails": "DEFER_SOURCE_ORDER pending a separately authorized five-declaration M13-style move or a newly direct-proved earlier freeness API",
+  "direct_lean_verified_for_repair": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

@@ -1,0 +1,186 @@
+{
+  "schema": "fa-v58-declaration-local-repairs-v1",
+  "status": "PATCH_READY_STATIC_EXACT_DIRECT_LEAN_UNVERIFIED",
+  "worker_id": "fourier",
+  "cluster_id": "V58-CORE_BASE-FOURIER-IDX3930-3933-3939",
+  "authority": {
+    "repository": "leegahuyn/mathlib4",
+    "workflow_run_id": 31803223990,
+    "head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_id": 9220688452,
+    "artifact_digest": "sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "variant": "core_base",
+    "source_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_path": "work/v58-artifact-9220688452/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127",
+    "patch_audit_path": "work/v58-artifact-9220688452/PATCH_AUDIT.json",
+    "patch_audit_sha256": "372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a",
+    "embedded_ancestry_metadata": {
+      "path": "work/v58-artifact-9220688452/authority.json",
+      "sha256": "03a8d35ea224506e04544d7aea225ae29d020608ad5acd9a6620a80979b1b15a",
+      "role": "V51_ANCESTRY_ONLY_NOT_V58_REPAIR_AUTHORITY",
+      "workflow_run_id": 31774351117,
+      "head_sha": "0c0025aba1e08e59a416cc0d76bb13e4772af6c7",
+      "artifact_id": 9209647939,
+      "artifact_digest": "sha256:1b846f63ee8a8309ab1d72b062c7dc846a880be4db7be898a4ba609f13cdc8e0"
+    }
+  },
+  "scope": [
+    {
+      "declaration_index": 3930,
+      "declaration": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "diagnostic_ordinal": 1,
+      "line": 53695,
+      "column": 10,
+      "normalized_signature": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+      "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_REWRITE_ORIENTATION_ROOT"
+    },
+    {
+      "declaration_index": 3933,
+      "declaration": "inner_literalStagePlaneWave",
+      "diagnostic_ordinal": 2,
+      "line": 53952,
+      "column": 10,
+      "normalized_signature": "Tactic `simp` failed with a nested error:",
+      "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_RECURSIVE_SIMP_ROOT"
+    },
+    {
+      "declaration_index": 3939,
+      "declaration": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "diagnostic_ordinal": 3,
+      "line": 54088,
+      "column": 4,
+      "normalized_signature": "Tactic `assumption` failed",
+      "root_or_cascade": "INDEPENDENT_OWNER_LOCAL_RING_NORMALIZATION_ROOT"
+    }
+  ],
+  "header_policy": "NO_HEADER_CHANGES_BODY_ONLY",
+  "source_policy": {
+    "declaration_moves": 0,
+    "source_moves": 0,
+    "helpers_added": 0,
+    "imports_added": 0,
+    "attributes_changed": 0,
+    "comments_changed": 0,
+    "options_added": 0
+  },
+  "trust_policy": {
+    "tokens": [
+      "sorry",
+      "admit",
+      "axiom",
+      "unsafe",
+      "native_decide",
+      "Lean.ofReduceBool"
+    ],
+    "required_before": {
+      "sorry": 0,
+      "admit": 0,
+      "axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    },
+    "required_after": {
+      "sorry": 0,
+      "admit": 0,
+      "axiom": 0,
+      "unsafe": 0,
+      "native_decide": 0,
+      "Lean.ofReduceBool": 0
+    }
+  },
+  "repairs": [
+    {
+      "id": "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+      "owner": "inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff",
+      "declaration_index": 3930,
+      "diagnostic_ordinals": [1],
+      "kind": "body",
+      "classification": "ALIGN_LOCAL_REAL_COORDINATE_EQUALITY_WITH_ELABORATED_TARGET",
+      "authority_source_lines": [53682, 53688],
+      "expected_count_in_owner": 1,
+      "expected_global_count": 1,
+      "old_sha256": "968f3926cebcdc6d6eeed4d2680e629d5a94fe77cb54bc334a68c764bcd9f766",
+      "new_sha256": "355f9cfcaccb412f2f54d8775a22cc8b0c7dbba0596178366e85f325c3a03745",
+      "old_bytes": 290,
+      "new_bytes": 284,
+      "old": "      have hre :\n          (literalStageFourierScale Y •\n              Complex.measurableEquivPi.symm x).re *\n              (literalStageFourierScale Y)⁻¹ = x 0 := by\n        rw [Complex.measurableEquivPi_symm_apply]\n        simp\n        field_simp [literalStageFourierScale_ne_zero Y]",
+      "new": "      have hre :\n          (literalStageFourierScale Y)⁻¹ *\n              (literalStageFourierScale Y •\n                Complex.measurableEquivPi.symm x).re = x 0 := by\n        rw [Complex.measurableEquivPi_symm_apply]\n        simp [literalStageFourierScale_ne_zero Y, mul_assoc]",
+      "rationale": "The log target contains scale inverse multiplied on the left of the real coordinate, while hre states the commuted product. The replacement copies the already accepted inverse-first shape and proof used immediately below for him, so rw [hre, him] matches both coordinate arguments directly.",
+      "confidence": "VERY_HIGH_STATIC_EXACT_GOAL_AND_SAME_OWNER_MIRROR",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+      "owner": "inner_literalStagePlaneWave",
+      "declaration_index": 3933,
+      "diagnostic_ordinals": [2],
+      "kind": "body",
+      "classification": "REPLACE_RECURSIVE_SIMP_ONLY_WITH_ORDERED_RW",
+      "authority_source_lines": [53952, 53953],
+      "expected_count_in_owner": 1,
+      "expected_global_count": 1,
+      "old_sha256": "dd7b6af07cd37cd68cc3c0e4cd011cae2c8def73d977c98fdb13242b3dfee627",
+      "new_sha256": "965ab6e44923f7580ec453bf1b4d231a885e1cb27ccc12b61b5f2fab4b75580b",
+      "old_bytes": 119,
+      "new_bytes": 112,
+      "old": "          simp only [RCLike.inner_apply, starRingEnd_apply, map_mul,\n            Complex.star_def, Complex.conj_ofReal]",
+      "new": "          rw [RCLike.inner_apply, starRingEnd_apply, map_mul,\n            Complex.star_def, Complex.conj_ofReal]",
+      "rationale": "The only reported failure is maximum recursion depth inside this bounded simp. Ordered rw performs each intended normalization once, including generic map_mul, and leaves the existing field_simp/ring tail unchanged.",
+      "confidence": "HIGH_STATIC_EXACT_FAILURE_AND_SAME_FILE_DETERMINISTIC_RW_PRECEDENT",
+      "direct_lean_verified": false
+    },
+    {
+      "id": "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE",
+      "owner": "norm_planeFourierRemainder_eq_scale_mul_torusRemainder",
+      "declaration_index": 3939,
+      "diagnostic_ordinals": [3],
+      "kind": "body",
+      "classification": "CLOSE_EXACT_COMPLEX_SEMIRING_POWER_NORMAL_FORM_WITH_RING_NF",
+      "authority_source_lines": [54086, 54088],
+      "expected_count_in_owner": 1,
+      "expected_global_count": 1,
+      "old_sha256": "fa1839ae65bb42b5be1fe6e80c0e515b85fbe99bf8bbd10db9432716a896374f",
+      "new_sha256": "eac895f49dc8a0bcfc4a238599613f59a156a566e2e4d0d82ffac9e7142add3c",
+      "old_bytes": 110,
+      "new_bytes": 96,
+      "old": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    simpa only [mul_comm]",
+      "new": "    rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]\n    push_cast\n    ring_nf",
+      "rationale": "The printed residual is exactly ((scale : Complex) * norm)^2 = (scale : Complex)^2 * norm^2. simpa only [mul_comm] cannot expand and reassociate powers; ring_nf deterministically normalizes this commutative semiring identity.",
+      "confidence": "VERY_HIGH_EXACT_PRINTED_GOAL_AND_PRIOR_REMOTE_RING_NF_PROGRESSION",
+      "direct_lean_verified": false
+    }
+  ],
+  "application": {
+    "policy": "APPLY_REQUESTED_CLUSTER_IN_SOURCE_ORDER; EACH_FRAGMENT_OWNER_LOCAL_AND_INDEPENDENT",
+    "order": [
+      "V58-FOURIER-IDX3930-INVERSE-FIRST-REAL-COORDINATE",
+      "V58-FOURIER-IDX3933-DETERMINISTIC-INNER-STAR-REWRITE",
+      "V58-FOURIER-IDX3939-RING-NORMALIZE-CASTED-SQUARE"
+    ],
+    "expected_old_count_per_fragment_before": 1,
+    "expected_old_count_per_fragment_after": 0,
+    "expected_new_count_per_fragment_after": 1,
+    "expected_materialized_sha256": "25f1b28103e99dc3b7c70457d9ade2f137063c100878e73fd9bb3c50e8ff9b44",
+    "expected_materialized_bytes": 2807136,
+    "expected_materialized_lines": 62814,
+    "expected_declaration_count": 4416
+  },
+  "preview": {
+    "path": "work/v58-workers/fourier/fourier-body-preview.diff",
+    "kind": "EXACT_OWNER_LOCAL_OLD_NEW_DIFF",
+    "full_materialized_candidate_written": false,
+    "materialized_identity_computed_in_memory": true
+  },
+  "promotion_gate": "Materialize only against exact authority SHA 013f64cf. Require all three old fragments to match once, direct Mock2=0, Mock2_Advanced=0, full FunctionalAnalysis execution with disappearance of idx3930/3933/3939 diagnostics and no new owner-local diagnostics, complete diagnostic inventory comparison, all 4416 declaration headers/order/comments/attributes preserved, synthetic-sorry zero, and executable trust-six zero.",
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

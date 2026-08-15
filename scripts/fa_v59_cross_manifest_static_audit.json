@@ -1,0 +1,257 @@
+{
+  "schema": "fa-v59-cross-manifest-static-audit-v1",
+  "status": "STATIC_PASS_FAIL_CLOSED_DIRECT_LEAN_UNVERIFIED",
+  "authority": {
+    "workflow_run_id": 31803223990,
+    "head_sha": "14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "head_branch": "codex/fa-exclusive-focus-20260814",
+    "artifact_id": 9220688452,
+    "artifact_name": "codex-fa-v58-core_base-highcap2000-14e3e3f5e85f3c3ca7a1381eb88522552ffe29dc",
+    "artifact_size_in_bytes": 619491,
+    "artifact_digest": "sha256:269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "variant": "core_base",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127",
+    "patch_audit_sha256": "372037c8eee8ce1a030e5085b831b5f04c9bfaaa9e8f707767ed48ecbe630b9a"
+  },
+  "artifact_identity_audit": {
+    "artifact_zip_path": "work/v58-artifact-9220688452.zip",
+    "artifact_zip_sha256": "269100960a5e7ecd8b35e39cdde2c774f244b49c269e992aec00203bd2288ab4",
+    "artifact_zip_bytes": 619491,
+    "artifact_digest_matches_zip_sha256": true,
+    "artifact_api_size_matches_zip_bytes": true,
+    "step_outcomes_path": "work/v58-artifact-9220688452/STEP_OUTCOMES.json",
+    "step_outcomes_sha256": "68d8d9e0d648a71af476b9a94cb5d66b0e40e32de9f5030753d521e476151b90",
+    "step_outcomes_run_head_variant_source_match_canonical": true,
+    "candidate_source_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "candidate_round_trip_sha256_matches": true,
+    "full_diagnostics_path": "work/v58-artifact-9220688452/FULL_DIAGNOSTICS.json",
+    "fa_log_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis.log",
+    "patch_audit_path": "work/v58-artifact-9220688452/PATCH_AUDIT.json",
+    "embedded_historical_provenance": {
+      "authority_json_path": "work/v58-artifact-9220688452/authority.json",
+      "authority_json_sha256": "03a8d35ea224506e04544d7aea225ae29d020608ad5acd9a6620a80979b1b15a",
+      "authority_json_describes_older_artifact_id": 9209647939,
+      "metric_path": "work/v58-artifact-9220688452/METRIC.json",
+      "metric_sha256": "1ba1c896fa4819f915a96520d439d6c27b85575c82eda07d463999778e770723",
+      "metric_nested_authority_describes_older_artifact_id": 9181214334,
+      "decision": "do not project either embedded historical authority object into v59; require exact equality with the canonical current run/head/artifact/source object above",
+      "canonical_identity_blocked_by_embedded_history": false
+    },
+    "identity_result": "PASS_WITH_EXPLICIT_HISTORICAL_PROVENANCE_EXCLUSION"
+  },
+  "audit_implementation": {
+    "parser_path": "work/v42-workers/validate_local_repairs.py",
+    "parser_sha256": "3f4dc4a83a994cd3d014ef7d458fce515bbb59ca0ec80965cdb176a27f266ef7",
+    "declaration_region_rule": "recognized declaration through the next recognized declaration, half-open",
+    "materialization_method": "read exact UTF-8 authority bytes, resolve each locked group fragment, apply owner-locally in ascending declaration index, keep result in memory, and hash exact UTF-8 bytes",
+    "Lean_Lake_git_GitHub_network_invoked": false
+  },
+  "input_package_inventory": {
+    "fourier": [
+      {"path": "work/v58-workers/fourier/fourier-body-preview.diff", "bytes": 1571, "sha256": "a87a26b81729883a6300f8049e9a3fc536c90434bf16584cc29e86ff0d62f314"},
+      {"path": "work/v58-workers/fourier/fourier-hashes.json", "bytes": 2575, "sha256": "07f8705f2ee597038839ef04461bdf18da7a58c1b80014713b9aa671fa123086"},
+      {"path": "work/v58-workers/fourier/fourier-repair-manifest.json", "bytes": 9318, "sha256": "243e6879937108ff21c4fa676745d00e3d1c90530508a00729d375297ecda934"},
+      {"path": "work/v58-workers/fourier/fourier-root-cascade-analysis.md", "bytes": 7063, "sha256": "a02db762ba6159fccaa746d0b1f61176604c51e56c811f9a5a06f5aad82e1798"},
+      {"path": "work/v58-workers/fourier/fourier-static-audit.json", "bytes": 4969, "sha256": "b680a9643e1010d8466b70a89b7a6798fc7ad6a1f02f988c987aabeff7692dd9"}
+    ],
+    "weighted": [
+      {"path": "work/v58-workers/weighted/README.md", "bytes": 1118, "sha256": "111ddb4477b94b52f68730bb0ccbae7c245b2d9ec15a4dcdca1521ff433bca33"},
+      {"path": "work/v58-workers/weighted/defer-manifest.json", "bytes": 4455, "sha256": "7b9486ffa6bee4f766c825606b2e816e312f452a9aabb53d088439fb0a2c7333"},
+      {"path": "work/v58-workers/weighted/dependency-root-cascade-report.md", "bytes": 7234, "sha256": "e8d4ab85cb3f62e11251ede0a76f947504109dfeaa4a03ec2faaa0072e6490aa"},
+      {"path": "work/v58-workers/weighted/promoted-manifest.json", "bytes": 4116, "sha256": "50b1f57b6c973a6314dc726e65a80b2787bf8dd068f32b69a6bc1aaa82d7fcee"},
+      {"path": "work/v58-workers/weighted/promoted-preview.lean", "bytes": 1003, "sha256": "77d01b18a4061f7f1255ce08950a1ce8b313c6e3adf0610874f8dc3060c36eaf"},
+      {"path": "work/v58-workers/weighted/result-index.json", "bytes": 2572, "sha256": "239a3c7a65815a05ac8e462ec5a5bdf244eaefde80b2417cd5ca73113439585c"},
+      {"path": "work/v58-workers/weighted/staged-manifest.json", "bytes": 3864, "sha256": "24fc203adb4bdc3ac00ec06f0039c0f5a0e5456a9ba8be3e26e5a9efb0a4ca44"},
+      {"path": "work/v58-workers/weighted/staged-preview.lean", "bytes": 2547, "sha256": "bd9a5e4df96c293524a74ce7a69ae9279ac20b2b068f3e202538a4494f789f91"},
+      {"path": "work/v58-workers/weighted/static-invariants.json", "bytes": 4788, "sha256": "ed6e58cf08fb94bd0107b4f77e8a15caea28528d6a8df52180e587eb6eba59f9"}
+    ],
+    "weighted_idx4018": [
+      {"path": "work/v58-workers/weighted-idx4018/README.md", "bytes": 1351, "sha256": "d3426f63c4a33570d3fc59c4f0191a2f3bddb997a6c094f4cda48e400b55656a"},
+      {"path": "work/v58-workers/weighted-idx4018/analysis-report.md", "bytes": 5542, "sha256": "238b7f003c0cccf743664a343423c5b9e872720fadfa79ab9b1deea3271c9e93"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-01-mkcontinuous2-manifest.json", "bytes": 5319, "sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-01-preview.lean", "bytes": 1014, "sha256": "fab9de9ab8148837340f0626d4e83274c9d0e2303961ab333b488b086f419bf7"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-02-explicit-ext-manifest.json", "bytes": 4409, "sha256": "be61f4fe905d9f8b910db8c530941c12866c413bd41ebc37f0ebc78a076db24f"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-02-preview.lean", "bytes": 1088, "sha256": "00aee0b9513c5e715671f2381b85b78cda33eef3533fc43f0706dad6a20b4d5a"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-03-preview.lean", "bytes": 1169, "sha256": "d049fadc5cddb6c725a91d4789f3122370b505f592bd4b8ce65cb98696535e4f"},
+      {"path": "work/v58-workers/weighted-idx4018/probe-03-typed-inner-congr-manifest.json", "bytes": 4400, "sha256": "34b258541aafed0465db6ca266fbc08f6f8a986935c8685e56e56cd00d77d2a5"},
+      {"path": "work/v58-workers/weighted-idx4018/result-index.json", "bytes": 5217, "sha256": "5c80df46f3f4dee2a17298a9e3d4fabc4cda12585ea01b04e181ea8b5c369b3a"},
+      {"path": "work/v58-workers/weighted-idx4018/static-invariants.json", "bytes": 7262, "sha256": "21e11a01c5535f374c9e9471a4b6011a3dadb66e7083eb3de7156fe5b9cebf22"}
+    ],
+    "reduced_chart": [
+      {"path": "work/v58-workers/reduced-chart/HASHES.sha256", "bytes": 2622, "sha256": "c7c46a77f8d969a7e7e96110296e372d201cfae1eaba91d38bd46dec501571a1"},
+      {"path": "work/v58-workers/reduced-chart/ROOT_SOURCE_ORDER_ANALYSIS.md", "bytes": 6069, "sha256": "d67c7fa45bc3f472986bf2570b46f4c6357266817aefb3b52d86b7e45c48cb17"},
+      {"path": "work/v58-workers/reduced-chart/V58_IDX4198_STAGED_BODY_ONLY_MANIFEST.json", "bytes": 7095, "sha256": "c9acdee76dc90a6104a920d85ca70980f0debb44f0116936f7243be4ab875add"},
+      {"path": "work/v58-workers/reduced-chart/V58_IDX4198_STATIC_AUDIT.json", "bytes": 6871, "sha256": "8229df9eb5cacd4865234d3f37838bd84b696894de5292535325841575b3aa89"},
+      {"path": "work/v58-workers/reduced-chart/idx4198-body-only-preview.lean", "bytes": 5821, "sha256": "8cebb44101b712d121aef1795cf626d47c3bcce72eb4a0bd16cc1a8771a7370c"}
+    ],
+    "all_file_hashes_and_bytes_recomputed": true,
+    "producer_packages_declared_stable": true
+  },
+  "schema_normalization": {
+    "source_schemas": [
+      "fa-v58-declaration-local-repairs-v1",
+      "fa-v58-weighted-local-repairs-v1",
+      "fa-v58-idx4018-structural-probe-v1",
+      "fa-v58-declaration-local-file-repair-v1"
+    ],
+    "normalized_schema": "fa-v59-cross-normalized-repair-groups-v1",
+    "normalized_registry_path": "work/v59-cross-audit/normalized-repair-groups.json",
+    "normalized_registry_sha256": "dd181f279be61ac4b77aff843989ac407ce29fe85d79b496479645128f025eec",
+    "normalized_registry_bytes": 16106,
+    "group_count": 7,
+    "group_keys_in_source_order": ["F3930", "F3933", "F3939", "W4017", "W4018P1", "W4019", "R4198"],
+    "one_owner_local_repair_per_group": true,
+    "exact_fragment_sources_and_hashes_exposed": true,
+    "monolithic_manifest_selection_forbidden": true
+  },
+  "owner_and_fragment_overlap_audit": {
+    "owner_regions_in_source_order": [
+      {"group_key": "F3930", "declaration_index": 3930, "byte_span_half_open": [2376460, 2382570], "region_sha256": "607813d514a60e3c033105cfdd99845cad793ba88d4f469ef1f2a1a71969c20e"},
+      {"group_key": "F3933", "declaration_index": 3933, "byte_span_half_open": [2388600, 2394671], "region_sha256": "74b180d55166924f3fe81667c8e1c578a0852dccf65dbc23cd1c227596b4d6f9"},
+      {"group_key": "F3939", "declaration_index": 3939, "byte_span_half_open": [2398524, 2403681], "region_sha256": "26bc309b26a9b6b100f1ce79334a406be6e3c55ceec52c979922ff4e73308a97"},
+      {"group_key": "W4017", "declaration_index": 4017, "byte_span_half_open": [2463834, 2466424], "region_sha256": "5a8adccf0c4e53ab416228fcdeba37aa9abdff1f7482ffcf0e33654e4c4ef51e"},
+      {"group_key": "W4018P1", "declaration_index": 4018, "byte_span_half_open": [2466424, 2467402], "region_sha256": "2c500211db28a35281c8ec5ae9cb03b365ddc05114c266fda0bfab7d49ca42d9"},
+      {"group_key": "W4019", "declaration_index": 4019, "byte_span_half_open": [2467402, 2468792], "region_sha256": "b9b7da78961ca8abdbc6b0a9d33c3dfcd05954f154799bf87f046334f834b55b"},
+      {"group_key": "R4198", "declaration_index": 4198, "byte_span_half_open": [2552134, 2552572], "region_sha256": "bd80aa7edb9f1b9429cec953dcbd4e35f22668be04ad17d8c9ad8673228ae404"}
+    ],
+    "owner_pair_count": 21,
+    "all_owner_indices_unique": true,
+    "all_owner_half_open_spans_disjoint": true,
+    "every_old_fragment_count_in_owner": 1,
+    "every_old_fragment_count_global": 1,
+    "every_new_fragment_count_global_before": 0,
+    "old_old_nesting_pair_count": 0,
+    "new_old_collision_pair_count": 0,
+    "new_new_nesting_pair_count": 0,
+    "owner_or_fragment_overlap_result": "PASS"
+  },
+  "source_order_audit": {
+    "canonical_group_indices": [3930, 3933, 3939, 4017, 4018, 4019, 4198],
+    "all_variants_applied_in_ascending_declaration_index": true,
+    "weighted_required_order": [4017, 4018, 4019],
+    "weighted_order_reason": "idx4018 rewrites idx4017, and idx4019 uses idx4018; owner-local text transforms remain independently count-locked, but a fair Lean probe requires this causal order",
+    "reduced_idx4198_is_after_all_weighted_owners": true,
+    "source_moves": 0,
+    "public_declaration_moves": 0,
+    "result": "PASS"
+  },
+  "weighted_causal_boundary_audit": {
+    "ordinal_4": {
+      "collector_raw_owner_index": 4016,
+      "collector_raw_owner": "graphPotentialOperator_eq_weightedFull",
+      "reported_location": "55483:0",
+      "boundary_fact": "line 55483 opens the next command doc comment",
+      "normalized_causal_owner_index": 4017,
+      "normalized_causal_owner": "discriminantHardStageOperator_eq_weightedHard",
+      "selected_group": "W4017"
+    },
+    "ordinal_5": {
+      "collector_raw_owner_index": 4017,
+      "collector_raw_owner": "discriminantHardStageOperator_eq_weightedHard",
+      "reported_location": "55545:0",
+      "boundary_fact": "line 55545 opens idx4018's doc comment and the log reaches the idx4018 body warning at 55554:13",
+      "normalized_causal_owner_index": 4018,
+      "normalized_causal_owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+      "selected_group": "W4018P1",
+      "group_status": "STAGED_DIRECT_LEAN_UNVERIFIED"
+    },
+    "ordinal_6": {
+      "direct_owner_index": 4019,
+      "selected_group": "W4019"
+    },
+    "ordinal_7": "direct missing-idx4018-producer cascade observed at idx4019; no separate edit",
+    "ordinals_8_9": "downstream idx4020 cascades; idx4020 remains byte-identical and must be reprobed after 4017-4019 exist",
+    "raw_collector_indices_must_not_be_used_as_repair_owners": true,
+    "result": "PASS"
+  },
+  "diagnostic_inventory_and_conservation": {
+    "authority_error_count": 10,
+    "full_diagnostics_array_length": 10,
+    "inventory": [
+      {"ordinal": 1, "raw_owner_index": 3930, "line": 53695, "normalized_owner_index": 3930, "group_or_action": "F3930", "classification": "promoted-static direct root"},
+      {"ordinal": 2, "raw_owner_index": 3933, "line": 53952, "normalized_owner_index": 3933, "group_or_action": "F3933", "classification": "promoted-static direct root"},
+      {"ordinal": 3, "raw_owner_index": 3939, "line": 54088, "normalized_owner_index": 3939, "group_or_action": "F3939", "classification": "promoted-static direct root"},
+      {"ordinal": 4, "raw_owner_index": 4016, "line": 55483, "normalized_owner_index": 4017, "group_or_action": "W4017", "classification": "staged next-command causal root"},
+      {"ordinal": 5, "raw_owner_index": 4017, "line": 55545, "normalized_owner_index": 4018, "group_or_action": "W4018P1", "classification": "staged next-command producer root"},
+      {"ordinal": 6, "raw_owner_index": 4019, "line": 55586, "normalized_owner_index": 4019, "group_or_action": "W4019", "classification": "promoted-static owner-local root"},
+      {"ordinal": 7, "raw_owner_index": 4019, "line": 55571, "normalized_owner_index": 4019, "group_or_action": "reprobe after W4018P1; no separate edit", "classification": "missing-producer cascade"},
+      {"ordinal": 8, "raw_owner_index": 4020, "line": 55609, "normalized_owner_index": 4020, "group_or_action": "reprobe unchanged", "classification": "downstream cascade"},
+      {"ordinal": 9, "raw_owner_index": 4020, "line": 55602, "normalized_owner_index": 4020, "group_or_action": "reprobe unchanged", "classification": "downstream pending-mvar cascade"},
+      {"ordinal": 10, "raw_owner_index": 4198, "line": 57547, "normalized_owner_index": 4198, "group_or_action": "R4198", "classification": "staged source-order API root"}
+    ],
+    "promoted_static_root_ordinals": [1, 2, 3, 6],
+    "staged_root_ordinals": [4, 5, 10],
+    "cascade_reprobe_only_ordinals": [7, 8, 9],
+    "partition_union": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "partition_overlap_count": 0,
+    "partition_unassigned_count": 0,
+    "diagnostics_claimed_resolved_without_direct_Lean": 0,
+    "result": "PASS"
+  },
+  "declaration_header_comment_attribute_trust_audit": {
+    "authority_declaration_count": 4416,
+    "authority_comment_count": 3128,
+    "authority_attribute_count": 498,
+    "trust_tokens": ["sorry", "admit", "axiom", "unsafe", "native_decide", "Lean.ofReduceBool"],
+    "trust_counts_before": {"sorry": 0, "admit": 0, "axiom": 0, "unsafe": 0, "native_decide": 0, "Lean.ofReduceBool": 0},
+    "all_six_variants_declaration_count_4416": true,
+    "all_six_variants_declaration_name_order_identical": true,
+    "all_six_variants_raw_headers_identical": true,
+    "all_six_variants_comments_identical": true,
+    "all_six_variants_attributes_identical": true,
+    "all_six_variants_trust_counts_identical_and_zero": true,
+    "synthetic_declaration_uses_sorry_warning_count_before": 0,
+    "result": "PASS"
+  },
+  "heartbeat_exclusion_audit": {
+    "authority_maxHeartbeats_token_count": 8,
+    "authority_set_option_maxHeartbeats_count": 8,
+    "all_six_variants_maxHeartbeats_token_count": 8,
+    "all_six_variants_set_option_maxHeartbeats_count": 8,
+    "selected_new_fragments_containing_maxHeartbeats": 0,
+    "new_heartbeat_variants": 0,
+    "existing_heartbeat_options_preserved_byte_for_byte": true,
+    "result": "PASS"
+  },
+  "fourier_owner_boundary_metadata": {
+    "declaration_index": 3939,
+    "canonical_v42_region_sha256": "26bc309b26a9b6b100f1ce79334a406be6e3c55ceec52c979922ff4e73308a97",
+    "canonical_v42_region_bytes": 5157,
+    "producer_manual_section_boundary_sha256": "1d7a2114507caeb1c484cf3704c39cf257f73ce9b0c315a88bf93195677fdd94",
+    "producer_manual_section_boundary_bytes": 4991,
+    "explanation": "the producer stopped before the next section doc comment, while the canonical parser continues to the next recognized declaration",
+    "fragment_hashes_counts_and_materialized_candidate_match": true,
+    "classification": "NON_BLOCKING_METADATA_BOUNDARY_CONVENTION",
+    "canonical_value_selected": true
+  },
+  "variant_materialization_audit": {
+    "matrix_path": "work/v59-cross-audit/variant-matrix.json",
+    "matrix_sha256": "b1ed4d57f9932567005247923ce27a91b1c291f4e814fb2b1a691f67c87a5d3f",
+    "matrix_bytes": 10639,
+    "primary_variant_count": 6,
+    "all_expected_hashes_recomputed_after_final_idx4018_locks": true,
+    "all_candidate_hash_byte_line_locks_match": true,
+    "all_common_static_postconditions_pass": true,
+    "W4018P1_manifest_sha256": "5674c746d28595cfaa492f7b116e4ee685f0b225bd2e50faf09c8f461970f5c9",
+    "W4018_result_index_sha256": "5c80df46f3f4dee2a17298a9e3d4fabc4cda12585ea01b04e181ea8b5c369b3a",
+    "W4018P1_direct_lean_verified": false,
+    "result": "PASS_STATIC_ONLY"
+  },
+  "recommendation": {
+    "first_matrix_idx4018_selection": "weighted_idx4018_minimal_p01",
+    "P02_P03": "exclude from the first six variants; use only serially after an exact direct P01 failure",
+    "preferred_full_candidate": "A_all",
+    "idx3933_control": "compare A_all with A_no_idx3933",
+    "weighted_control": "run W_weighted_structural",
+    "reduced_control": "run R_reduced_inline_isolated",
+    "promotion_gate": "direct Lean at the default heartbeat budget with real kernel declarations, exact candidate SHA match, no replacement owner diagnostic, no synthetic trust warning, and an audited resulting diagnostic inventory"
+  },
+  "direct_lean_verified": false,
+  "clean_build_claimed": false,
+  "promotion_ready": false
+}

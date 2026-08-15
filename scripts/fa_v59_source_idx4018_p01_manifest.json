@@ -1,0 +1,84 @@
+{
+  "schema": "fa-v58-idx4018-structural-probe-v1",
+  "status": "STAGED_PROBE_01_HIGHEST_EVIDENCE_DIRECT_LEAN_REQUIRED",
+  "worker_id": "v58-weighted-idx4018",
+  "probe_id": "V58-IDX4018-P01-EXPLICIT-MKCONTINUOUS2-EVALUATION",
+  "rank": 1,
+  "base_variant": "authoritative core_base",
+  "selection": {
+    "selection_id": "weighted_idx4018_minimal_p01",
+    "independent_idx4018_selection_allowed": true,
+    "upstream_selection_dependency": "A real idx4017 discriminantHardStageOperator_eq_weightedHard declaration is still mandatory for a meaningful replay.",
+    "may_be_selected_without_probe_02_or_probe_03": true,
+    "promotion_status": "STAGED_ONLY_DIRECT_LEAN_REQUIRED"
+  },
+  "authority": {
+    "artifact_id": 9220688452,
+    "source_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis-candidate.lean",
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "diagnostics_path": "work/v58-artifact-9220688452/FULL_DIAGNOSTICS.json",
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_path": "work/v58-artifact-9220688452/Mock2_FunctionalAnalysis.log",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127"
+  },
+  "causal_attribution": {
+    "authority_ordinal": 5,
+    "collector_preceding_owner_index": 4017,
+    "collector_preceding_owner": "discriminantHardStageOperator_eq_weightedHard",
+    "reported_location": "55545:0",
+    "causal_command_index": 4018,
+    "causal_command": "weightedFull_sub_weightedHard_eq_weightedTail",
+    "causal_header_line": 55547,
+    "proof_progress_evidence": "The log emits the deprecation warning from source 55554:13 inside idx4018 before reporting the command timeout at the opening doc comment, so the idx4018 command was entered but did not finish.",
+    "downstream_confirmation": "Ordinal 7 then reports the fully qualified idx4018 constant as kernel-unknown in idx4019."
+  },
+  "classification": {
+    "root_or_cascade": "IDX4018_OWNER_LOCAL_COMMAND_WHNF_ROOT",
+    "confidence": "HIGH_STATIC_EXACT_PUBLIC_API_DIRECT_LEAN_REQUIRED",
+    "reason_for_rank": "The last proof-local evidence is the opening simp line. weightedGraphOperator is defined by LinearMap.mkContinuous₂, and the current simp-only list omits its exact rfl evaluation theorem. The historical v46 idx4017 repair isolated this same wrapper-normalization failure and supplied this same theorem.",
+    "why_not_heartbeat": "The exact source under the effective 10,000,000-heartbeat comparison still exhausted 10,000,000 at this command and retained the same ten-error inventory."
+  },
+  "repair": {
+    "owner": "weightedFull_sub_weightedHard_eq_weightedTail",
+    "declaration_index": 4018,
+    "kind": "body-only narrow simp surface",
+    "expected_count_in_owner": 1,
+    "expected_count_global": 1,
+    "old": "  simp only [ContinuousLinearMap.sub_apply, weightedGraphOperator,\n    weightedGraphLinear, lpInfinityMultiplier_apply]",
+    "new": "  simp only [ContinuousLinearMap.sub_apply, weightedGraphOperator,\n    LinearMap.mkContinuous₂_apply,\n    weightedGraphLinear, lpInfinityMultiplier_apply]",
+    "public_api_evidence": {
+      "theorem": "LinearMap.mkContinuous₂_apply",
+      "signature_shape": "f.mkContinuous₂ C hC x y = f x y",
+      "reduction": "rfl",
+      "historical_manifest": "work/v46-workers/W19-idx4017/W19-idx4017-repair-manifest.json",
+      "historical_manifest_sha256": "5ac07b3585ad60df06910d2105413a836f82c882b8d696509f07f88a0e9058ed"
+    },
+    "proposition_changed": false,
+    "header_changed": false,
+    "comments_or_attributes_changed": false,
+    "imports_changed": false,
+    "options_changed": false
+  },
+  "expected_candidate": {
+    "definition": "Full authoritative source after only this exact idx4018 transform; no idx4017 or idx4019 repair is included.",
+    "sha256": "d734fb1f3baf13c4496ad5f3c0dad62579d186db2d534a0571b71beb21afd0c4",
+    "bytes": 2807200,
+    "byte_delta_from_authority": 37
+  },
+  "diagnostic_expectation": {
+    "precondition": "Causal ordinal 4 must first be closed by installing idx4017 as a real declaration.",
+    "target": "Causal ordinal 5 disappears and idx4018 is installed as a real kernel declaration.",
+    "downstream": "Ordinal 7 kernel-unknown should disappear once idx4019 is elaborated; ordinal 6 still requires the separate exact norm_neg term repair, and ordinals 8-9 must be reassessed only after idx4019 closes.",
+    "failure_signal": "Any replacement idx4018 diagnostic or continued boundary timeout means do not promote and proceed to probe 02 with exact diagnostics."
+  },
+  "probe_gate": [
+    "First compose a real idx4017 declaration; idx4018 begins by rewriting discriminantHardStageOperator_eq_weightedHard.",
+    "Apply only this owner-local replacement and compile at the default heartbeat budget.",
+    "Require ordinal 5 to disappear and require idx4018 to exist as a real kernel declaration with no synthetic declaration-uses-sorry warning.",
+    "If the command still times out, capture the first proof-local diagnostic and continue to probe 02; do not add a heartbeat option."
+  ],
+  "direct_lean_verified_by_worker": false,
+  "clean_build_claimed": false,
+  "promotion_ready": false,
+  "lean_lake_git_github_network_invoked_by_worker": false
+}

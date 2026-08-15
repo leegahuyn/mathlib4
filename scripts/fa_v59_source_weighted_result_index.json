@@ -1,0 +1,66 @@
+{
+  "schema": "fa-v58-weighted-worker-result-index-v1",
+  "status": "COMPLETE_STATIC_DIRECT_LEAN_REQUIRED",
+  "authority": {
+    "variant": "core_base",
+    "artifact_id": 9220688452,
+    "source_sha256": "013f64cf5eaaab544629ad02fc2e33e63f90916e9b1e1581d73f2af2e7ba34ba",
+    "source_bytes": 2807163,
+    "source_lines": 62815,
+    "declaration_count": 4416,
+    "diagnostics_sha256": "a9ec828f9bbe0226b2bc694f26911cfd84fce016adca411f9bb8df52c6833db1",
+    "fa_log_sha256": "8395ab207c12ad32483166ec9a118b4fe1d82a1c772d5cd79d9237563efc9127"
+  },
+  "summary": {
+    "scoped_diagnostic_ordinals": [4, 5, 6, 7, 8, 9],
+    "promoted_owner_count": 1,
+    "promoted_diagnostics": [6],
+    "staged_owner_count": 1,
+    "staged_diagnostics": [4],
+    "deferred_or_conditional_diagnostics": [5, 7, 8, 9],
+    "diagnostic_conservation_exact": true,
+    "body_only_repairs": true,
+    "header_order_comments_attributes_preserved": true,
+    "heartbeat_repair_count": 0,
+    "executable_trust_six_zero": true,
+    "direct_lean_verified_by_worker": false,
+    "clean_build_claimed": false
+  },
+  "files": {
+    "defer-manifest.json": {
+      "bytes": 4455,
+      "sha256": "7b9486ffa6bee4f766c825606b2e816e312f452a9aabb53d088439fb0a2c7333"
+    },
+    "dependency-root-cascade-report.md": {
+      "bytes": 7234,
+      "sha256": "e8d4ab85cb3f62e11251ede0a76f947504109dfeaa4a03ec2faaa0072e6490aa"
+    },
+    "promoted-manifest.json": {
+      "bytes": 4116,
+      "sha256": "50b1f57b6c973a6314dc726e65a80b2787bf8dd068f32b69a6bc1aaa82d7fcee"
+    },
+    "promoted-preview.lean": {
+      "bytes": 1003,
+      "sha256": "77d01b18a4061f7f1255ce08950a1ce8b313c6e3adf0610874f8dc3060c36eaf"
+    },
+    "README.md": {
+      "bytes": 1118,
+      "sha256": "111ddb4477b94b52f68730bb0ccbae7c245b2d9ec15a4dcdca1521ff433bca33"
+    },
+    "staged-manifest.json": {
+      "bytes": 3864,
+      "sha256": "24fc203adb4bdc3ac00ec06f0039c0f5a0e5456a9ba8be3e26e5a9efb0a4ca44"
+    },
+    "staged-preview.lean": {
+      "bytes": 2547,
+      "sha256": "bd9a5e4df96c293524a74ce7a69ae9279ac20b2b068f3e202538a4494f789f91"
+    },
+    "static-invariants.json": {
+      "bytes": 4788,
+      "sha256": "ed6e58cf08fb94bd0107b4f77e8a15caea28528d6a8df52180e587eb6eba59f9"
+    }
+  },
+  "self_hash_policy": "result-index.json intentionally does not self-hash",
+  "direct_next_step": "Compile the staged idx4017 structural probe at default heartbeats, restore adjacent idx4018, compose the promoted idx4019 exact norm-negation term, and reprobe idx4020 unchanged.",
+  "lean_lake_git_github_network_invoked_by_worker": false
+}
