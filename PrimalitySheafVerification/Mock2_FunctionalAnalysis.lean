@@ -54100,6 +54100,7 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
     rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]
     push_cast
     ring_nf
+    ac_rfl
   have hsum :
       (∑ k ∈ s,
           starRingEnd ℂ
@@ -54155,7 +54156,8 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
           zero_mul, sub_zero]
       _ = literalStageFourierScale Y ^ 2 *
           ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by
-        rw [← norm_sq_eq_re_inner (𝕜 := ℂ)]
+        congr 1
+        exact (norm_sq_eq_re_inner (𝕜 := ℂ) _).symm
   have hL := literalStageFourierScale_pos Y
   have hpnonneg := norm_nonneg (literalStagePlaneFiniteProjection Y N F - F)
   have htnonneg := norm_nonneg
