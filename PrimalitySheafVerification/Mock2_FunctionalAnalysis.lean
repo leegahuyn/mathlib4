@@ -54686,6 +54686,8 @@ theorem norm_ambientPlaneToUpperLinear_le (F : AmbientPlaneL2) :
             apply integral_congr_ae
             filter_upwards [MemLp.coeFn_toLp
               (ambientPlane_comp_upper_memLp F)] with z hz
+            change ‖((ambientPlane_comp_upper_memLp F).toLp
+              (fun z : ℍ ↦ F (z : ℂ)) z)‖ ^ 2 = ‖F (z : ℂ)‖ ^ 2
             rw [hz]
           _ = ∫ w : ℂ, ‖F w‖ ^ 2
                 ∂Measure.map UpperHalfPlane.coe
