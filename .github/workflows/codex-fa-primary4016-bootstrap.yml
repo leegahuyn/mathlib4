@@ -29,24 +29,25 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Materialize reviewed reproducer and direct funnel
+      - name: Materialize reviewed reproducer and staged workflow
         run: |
           set -euo pipefail
+          mkdir -p scripts/generated
           base64 -d scripts/payloads/fa_primary4016_reproducer.py.gz.b64 | gzip -dc > scripts/fa_primary4016_reproducer.py
-          base64 -d scripts/payloads/codex-fa-primary4016-reproducer.yml.gz.b64 | gzip -dc > .github/workflows/codex-fa-primary4016-reproducer.yml
+          base64 -d scripts/payloads/codex-fa-primary4016-reproducer.yml.gz.b64 | gzip -dc > scripts/generated/codex-fa-primary4016-reproducer.yml
           chmod +x scripts/fa_primary4016_reproducer.py
           python3 -m py_compile scripts/fa_primary4016_reproducer.py
           test "$(sha256sum scripts/fa_primary4016_reproducer.py | awk '{print $1}')" = "60b25dbf25a28b814249b1ff6ccc5ae1365441908c31810f37e93cffc675fc0b"
-          test "$(sha256sum .github/workflows/codex-fa-primary4016-reproducer.yml | awk '{print $1}')" = "0ec49484d94dfe6e1a7677616a7ae9074a392584e8750fbecd0773695e619fb1"
+          test "$(sha256sum scripts/generated/codex-fa-primary4016-reproducer.yml | awk '{print $1}')" = "0ec49484d94dfe6e1a7677616a7ae9074a392584e8750fbecd0773695e619fb1"
 
-      - name: Commit materialized exploration infrastructure
+      - name: Commit materialized non-workflow files
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/fa_primary4016_reproducer.py .github/workflows/codex-fa-primary4016-reproducer.yml
+          git add scripts/fa_primary4016_reproducer.py scripts/generated/codex-fa-primary4016-reproducer.yml
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m 'Codex: materialize primary4016 reproducer and direct funnel'
+          git commit -m 'Codex: materialize primary4016 reproducer and staged funnel'
           git push origin HEAD:codex/fa-primary4016-reproducer-20260816
