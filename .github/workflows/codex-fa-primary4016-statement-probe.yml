@@ -7,6 +7,7 @@ on:
       - codex/fa-primary4016-statement-20260816
     paths:
       - .github/workflows/codex-fa-primary4016-statement-probe.yml
+      - scripts/fa_primary4016_statement_probe.py
 
 permissions:
   actions: read
@@ -35,12 +36,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Decode hash-locked probe and generate candidates
+      - name: Verify hash-locked probe and generate candidates
         run: |
           set -euo pipefail
           test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
-          mkdir -p "$OUT" scripts
-          base64 -d scripts/payloads/fa_primary4016_statement_probe.py.gz.b64 | gzip -dc > scripts/fa_primary4016_statement_probe.py
+          mkdir -p "$OUT"
           chmod +x scripts/fa_primary4016_statement_probe.py
           test "$(sha256sum scripts/fa_primary4016_statement_probe.py | awk '{print $1}')" = "69b2a4fa3190a03768cae5c75dea61d24b9cdb96aac5e45403b86cc995290c4e"
           python3 -m py_compile scripts/fa_primary4016_statement_probe.py
@@ -110,116 +110,27 @@ jobs:
             printf '%s\n' "$cmd" > "$OUT/${base}.command"
             start="$(date +%s)"
             set +e
-            timeout 360 bash -lc "$cmd" > "$OUT/${base}.log" 2>&1
-            rc=$?
-            set -e
-            end="$(date +%s)"
-            errors="$(grep -c ': error:' "$OUT/${base}.log" || true)"
-            printf '%s\n' "$rc" > "$OUT/${base}.exit"
-            grep -n ': error:' "$OUT/${base}.log" > "$OUT/${base}.error-headers.txt" || true
-            printf '%s,%s,%s,%s,%s\n' "$cid" "$rc" "$errors" "$((end-start))" \
-              "$(sha256sum "$src" | awk '{print $1}')" >> "$OUT/candidate-summary.csv"
-            if [[ "$rc" == 0 ]]; then
-              selected="$cid"
-              break
-            fi
-          done
-          printf '%s\n' "$selected" | tee "$OUT/selected-local-candidate.txt"
-          test -n "$selected"
-          printf 'selected=%s\n' "$selected" >> "$GITHUB_OUTPUT"
+            timeout 360 bash -lc "$cmd" > "$OUUÉØ˜\Ù_K›ÙÈˆ‰ŒBˆ˜ÏIÂˆÙ]YBˆ[™H‰
+]H
+É\ÊH‚ˆ\œ›ÜœÏH‰
+Ü™\XÈ	Îˆ\œ›Ü‰È‰ÕUÉØ˜\Ù_K›ÙÈˆYJH‚ˆš[ˆ	É\×‰È‰˜Èˆˆ‰ÕUÉØ˜\Ù_K™^]‚ˆÜ™\[ˆ	Îˆ\œ›Ü‰È‰ÕUÉØ˜\Ù_K›ÙÈˆˆ‰ÕUÉØ˜\Ù_K™\œ›Ü‹ZXY\œËˆYBˆš[ˆ	É\Ë	\Ë	\Ë	\Ë	\×‰È‰ÚYˆ‰˜Èˆ‰\œ›ÜœÈˆ‰
 
-      - name: Materialize selected statement candidate
-        run: |
-          set -euo pipefail
-          cid="${{ steps.candidates.outputs.selected }}"
-          python3 scripts/fa_primary4016_statement_probe.py \
-            --materialize "$cid" --output "$OUT/Mock2_FunctionalAnalysis-candidate-${cid}.lean" \
-            | tee "$OUT/FULL_MATERIALIZATION.json"
-          cp "$OUT/Mock2_FunctionalAnalysis-candidate-${cid}.lean" "$SOURCE"
-          sha256sum "$SOURCE" | tee "$OUT/full-candidate.sha256"
-
-      - name: Authoritative full direct FA validation
-        id: full
-        run: |
-          set -euo pipefail
-          rm -f "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean" \
-            "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.ilean" \
-            "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean.private"
-          cmd="lake env lean -DmaxErrors=2000 -DwarningAsError=false -o ${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean -i ${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.ilean ${SOURCE}"
-          printf '%s\n' "$cmd" > "$OUT/Mock2_FunctionalAnalysis.command"
-          set +e
-          /usr/bin/time -f 'elapsed_seconds=%e max_rss_kb=%M' -o "$OUT/Mock2_FunctionalAnalysis.time" \
-            bash -lc "$cmd" > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
-          rc=$?
-          set -e
-          errors="$(grep -c ': error:' "$OUT/Mock2_FunctionalAnalysis.log" || true)"
-          first_line="$(grep -m1 ': error:' "$OUT/Mock2_FunctionalAnalysis.log" | sed -E 's/^[^:]+:([0-9]+):.*/\1/' || true)"
-          first_line="${first_line:-999999}"
-          printf '%s\n' "$rc" > "$OUT/Mock2_FunctionalAnalysis.exit"
-          printf '%s\n' "$errors" > "$OUT/Mock2_FunctionalAnalysis.error-count"
-          printf '%s\n' "$first_line" > "$OUT/Mock2_FunctionalAnalysis.first-error-line"
-          grep -n ': error:' "$OUT/Mock2_FunctionalAnalysis.log" > "$OUT/Mock2_FunctionalAnalysis.error-headers.txt" || true
-          cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-full-tested.lean"
-          improved=false
-          if [[ "$rc" == 0 || "$errors" -lt 4 || "$first_line" -gt 55637 ]]; then improved=true; fi
-          printf 'fa_exit=%s\nerror_count=%s\nfirst_error_line=%s\nstrict_improvement=%s\n' \
-            "$rc" "$errors" "$first_line" "$improved" >> "$GITHUB_OUTPUT"
-
-      - name: Preserve strict verified statement improvement
-        if: steps.full.outputs.strict_improvement == 'true'
-        run: |
-          set -euo pipefail
-          cid="${{ steps.candidates.outputs.selected }}"
-          source_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
-          source_blob="$(git hash-object "$SOURCE")"
-          mkdir -p evidence/fa-global-best
-          manifest="evidence/fa-global-best/FA_VERIFIED_IMPROVEMENT_${source_sha:0:12}.json"
-          cat > "$manifest" <<EOF
-          {
-            "schema": "fa-verified-improvement-v1",
-            "parent_global_best_sha256": "${EXPECTED_BASE_SHA256}",
-            "strategy_family": "statement-elaboration",
-            "candidate_id": "${cid}",
-            "source_sha256": "${source_sha}",
-            "git_blob_sha": "${source_blob}",
-            "Mock2_exit": 0,
-            "Mock2_Advanced_exit": 0,
-            "Mock2_FunctionalAnalysis_exit": ${{ steps.full.outputs.fa_exit }},
-            "error_headers": ${{ steps.full.outputs.error_count }},
-            "first_error_line": ${{ steps.full.outputs.first_error_line }},
-            "workflow_run_id": ${GITHUB_RUN_ID},
-            "canonical": false
-          }
-          EOF
-          python3 -m json.tool "$manifest" >/dev/null
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$SOURCE" "$manifest"
-          git commit -m "Codex: preserve VERIFIED statement FA candidate ${cid}"
-          git push origin HEAD:codex/fa-primary4016-statement-20260816
-
-      - name: Upload statement-probe evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: fa-primary4016-statement-${{ github.sha }}-attempt${{ github.run_attempt }}
-          path: |
-            build-logs/fa-primary4016-statement/**
-            PrimalitySheafVerification/FA_Blocker_Prefix.lean
-            PrimalitySheafVerification/FA_Blocker_StatementCandidates/*.lean
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Fail closed unless direct evidence improves the frontier
-        if: always()
-        run: |
-          set -euo pipefail
-          test "$(cat "$OUT/Mock2.exit")" = 0
-          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0
-          test "$(cat "$OUT/FA_Blocker_Prefix.exit")" = 0
-          test -s "$OUT/selected-local-candidate.txt"
-          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
-          fa="$(cat "$OUT/Mock2_FunctionalAnalysis.exit")"
-          errors="$(cat "$OUT/Mock2_FunctionalAnalysis.error-count")"
-          first_line="$(cat "$OUT/Mock2_FunctionalAnalysis.first-error-line")"
-          [[ "$fa" == 0 || "$errors" -lt 4 || "$first_line" -gt 55637 ]]
+[™\İ\
+JHˆˆ‰
+ÚLMœİ[H‰Ü˜Èˆ]ÚÈ	ŞÜš[	_IÊHˆˆ‰ÕUØØ[™Y]K\İ[[X\K˜Üİˆ‚ˆYˆÖÈ‰˜ÈˆOHWNÈ[‚ˆÙ[XİYH‰ÚY‚ˆœ™XZÂˆšBˆÛ™Bˆš[ˆ	É\×‰È‰Ù[XİYˆYH‰ÕUÜÙ[XİY[ØØ[XØ[™Y]K‚ˆ\İ[ˆ‰Ù[XİY‚ˆš[ˆ	ÜÙ[XİYI\×‰È‰Ù[XİYˆˆ‰ÒUP—ÓÕUU‚‚ˆH˜[YNˆX]\šX[^™HÙ[XİYİ][Y[Ø[™Y]Bˆ[ˆˆÙ]Y][È\Y˜Z[ˆÚYH‰ŞÈİ\Ë˜Ø[™Y]\Ë›İ]]ËœÙ[XİY_H‚ˆ]ÛŒÈØÜš\ËÙ˜WÜš[X\MM—Üİ][Y[Ü›Ø™KœHˆK[X]\šX[^™H‰ÚYˆK[İ]]‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\ËXØ[™Y]KIØÚYK›X[ˆˆˆYH‰ÕUÑ•SÓPUT’PSVUSÓ‹šœÛÛˆ‚ˆÜ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\ËXØ[™Y]KIØÚYK›X[ˆˆ‰ÓÕTÑH‚ˆÚLMœİ[H‰ÓÕTÑHˆYH‰ÕUÙ[XØ[™Y]KœÚLMˆ‚‚ˆH˜[YNˆ]]Üš]]]™H[\™XİH˜[Y][Û‚ˆYˆ[ˆ[ˆˆÙ]Y][È\Y˜Z[ˆ›HYˆ‰ĞT•QPÕÑTŸKÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÛX[ˆˆˆ‰ĞT•QPÕÑTŸKÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ëš[X[ˆˆˆ‰ĞT•QPÕÑTŸKÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÛX[‹œš]˜]H‚ˆÛYH›ZÙH[ˆX[ˆQX^\œ›ÜœÏLŒQØ\›š[™Ğ\Ñ\œ›ÜY˜[ÙH[È	ĞT•QPÕÑTŸKÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÛX[ˆZH	ĞT•QPÕÑTŸKÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ëš[X[ˆ	ÔÓÕTÑ_H‚ˆš[ˆ	É\×‰È‰ÛYˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë˜ÛÛ[X[™‚ˆÙ]
+ÙBˆİ\Ü‹Øš[‹İ[YHYˆ	Ù[\ÙYÜÙXÛÛ™ÏIYHX^ÜœÜ×ÚØISIÈ[È‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë[YHˆˆ˜\Ú[È‰ÛYˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÙÈˆ‰ŒBˆ˜ÏIÂˆÙ]YBˆ\œ›ÜœÏH‰
+Ü™\XÈ	Îˆ\œ›Ü‰È‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÙÈˆYJH‚ˆš\œİÛ[™OH‰
+Ü™\[LH	Îˆ\œ›Ü‰È‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÙÈˆÙYQH
+Ë×–×—JÎŠÌNWJÊN‹Š‹×KÉÈYJH‚ˆš\œİÛ[™OH‰Ùš\œİÛ[™N‹NNNNNN_H‚ˆš[ˆ	É\×‰È‰˜Èˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™^]‚ˆš[ˆ	É\×‰È‰\œ›ÜœÈˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™\œ›Ü‹XÛİ[‚ˆš[ˆ	É\×‰È‰š\œİÛ[™Hˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™š\œİY\œ›Ü‹[[™H‚ˆÜ™\[ˆ	Îˆ\œ›Ü‰È‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë›ÙÈˆˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™\œ›Ü‹ZXY\œËˆYBˆÜ‰ÓÕTÑHˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\ËY[]\İY›X[ˆ‚ˆ[\›İ™YY˜[ÙBˆYˆÖÈ‰˜ÈˆOH‰\œ›ÜœÈˆ[‰š\œİÛ[™HˆYİMMŒÍÈWNÈ[ˆ[\›İ™Y]YNÈšBˆš[ˆ	Ù˜WÙ^]I\×™\œ›Ü—ØÛİ[I\×™š\œİÙ\œ›Ü—Û[™OI\×œİšXİÚ[\›İ™[Y[I\×‰Èˆ‰˜Èˆ‰\œ›ÜœÈˆ‰š\œİÛ[™Hˆ‰[\›İ™Yˆˆ‰ÒUP—ÓÕUU‚‚ˆH˜[YNˆ™\Ù\™HİšXİ™\šYšYYİ][Y[[\›İ™[Y[ˆYˆİ\Ë™[›İ]]ËœİšXİÚ[\›İ™[Y[OH	İYIÂˆ[ˆˆÙ]Y][È\Y˜Z[ˆÚYH‰ŞÈİ\Ë˜Ø[™Y]\Ë›İ]]ËœÙ[XİY_H‚ˆÛİ\˜ÙWÜÚOH‰
+ÚLMœİ[H‰ÓÕTÑHˆ]ÚÈ	ŞÜš[	_IÊH‚ˆÛİ\˜ÙWØ›ØH‰
+Ú]\Ú[Øš™Xİ‰ÓÕTÑHŠH‚ˆZÙ\ˆ\]šY[˜ÙKÙ˜KYÛØ˜[X™\İˆX[šY™\İH™]šY[˜ÙKÙ˜KYÛØ˜[X™\İÑWÕ‘T’Q’QQÒST“Õ‘SQS•ÉÜÛİ\˜ÙWÜÚNŒŒLŸKšœÛÛˆ‚ˆØ]ˆ‰X[šY™\İˆSÑ‚ˆÂˆœØÚ[XHˆ™˜K]™\šYšYYZ[\›İ™[Y[]ŒH‹ˆœ\™[ÙÛØ˜[Ø™\İÜÚLMˆˆ‰ÑVPÕQĞTÑWÔÒLMŸH‹ˆœİ˜]YŞWÙ˜[Z[Hˆœİ][Y[Y[X›Ü˜][Ûˆ‹ˆ˜Ø[™Y]WÚYˆ‰ØÚYH‹ˆœÛİ\˜ÙWÜÚLMˆˆ‰ÜÛİ\˜ÙWÜÚ_H‹ˆ™Ú]Ø›Ø—ÜÚHˆ‰ÜÛİ\˜ÙWØ›ØŸH‹ˆ“[ØÚÌ—Ù^]ˆˆ“[ØÚÌ—ĞY˜[˜ÙYÙ^]ˆˆ“[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\È^]ˆ	ŞÈİ\Ë™[›İ]]Ë™˜WÙ^]_Kˆ™\œ›Ü—ÚXY\œÈˆ	ŞÈİ\Ë™[›İ]]Ë™\œ›Ü—ØÛİ[_Kˆ™š\œİÙ\œ›Ü—Û[™Hˆ	ŞÈİ\Ë™[›İ]]Ë™š\œİÙ\œ›Ü—Û[™H_KˆÛÜšÙ›İ×Ü[—ÚYˆ	ÑÒUP—Ô•S—ÒQKˆ˜Ø[›ÛšXØ[ˆ˜[ÙBˆBˆSÑ‚ˆ]ÛŒÈ[HœÛÛ‹ÛÛ‰X[šY™\İˆ‹Ù]‹Û[ˆÚ]ÛÛ™šYÈ\Ù\‹›˜[YH	ÙÚ]X‹XXİ[ÛœÖØ›İIÂˆÚ]ÛÛ™šYÈ\Ù\‹™[XZ[	ÍNNŠÙÚ]X‹XXİ[ÛœÖØ›İP\Ù\œË››Ü™\K™Ú]X‹˜ÛÛIÂˆÚ]Y‰ÓÕTÑHˆ‰X[šY™\İ‚ˆÚ]ÛÛ[Z][HÛÙ^ˆ™\Ù\™H‘T’Q’QQİ][Y[HØ[™Y]H	ØÚYH‚ˆÚ]\ÚÜšYÚ[ˆPQ˜ÛÙ^Ù˜K\š[X\MM‹\İ][Y[LŒŒM‚‚ˆH˜[YNˆ\ØYİ][Y[\›Ø™H]šY[˜ÙBˆYˆ[Ø^\Ê
+Bˆ\Ù\ÎˆXİ[ÛœËİ\ØYX\Y˜XİXLMYX™MÍXMYNL˜™ÍŒÙ˜L‚ˆÚ]‚ˆ˜[YNˆ˜K\š[X\MM‹\İ][Y[IŞÈÚ]X‹œÚH_KX][\	ŞÈÚ]X‹œ[—Ø][\_Bˆ]ˆˆZ[[ÙÜËÙ˜K\š[X\MM‹\İ][Y[ÊŠ‚ˆš[X[]TÚXY•™\šYšXØ][Û‹ÑWĞ›ØÚÙ\—Ô™Yš^›X[‚ˆš[X[]TÚXY•™\šYšXØ][Û‹ÑWĞ›ØÚÙ\—Ôİ][Y[Ø[™Y]\ËÊ‹›X[‚ˆY‹[›ËYš[\ËY›İ[™ˆ\œ›Ü‚ˆ™][[Û‹Y^\ÎˆÌ‚ˆH˜[YNˆ˜Z[ÛÜÙY[›\ÜÈ\™Xİ]šY[˜ÙH[\›İ™\ÈHœ›ÛY\‚ˆYˆ[Ø^\Ê
+Bˆ[ˆˆÙ]Y][È\Y˜Z[ˆ\İ‰
+Ø]‰ÕUÓ[ØÚÌ‹™^]ŠHˆHˆ\İ‰
+Ø]‰ÕUÓ[ØÚÌ—ĞY˜[˜ÙY™^]ŠHˆHˆ\İ‰
+Ø]‰ÕUÑWĞ›ØÚÙ\—Ô™Yš^™^]ŠHˆHˆ\İ\È‰ÕUÜÙ[XİY[ØØ[XØ[™Y]K‚ˆ\İYˆ‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™^]‚ˆ˜OH‰
+Ø]‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™^]
+H‚ˆ\œ›ÜœÏH‰
+Ø]‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™\œ›Ü‹XÛİ[
+H‚ˆš\œİÛ[™OH‰
+Ø]‰ÕUÓ[ØÚÌ—Ñ[˜İ[Û˜[[˜[\Ú\Ë™š\œİY\œ›Ü‹[[™JH‚ˆÖÈ‰˜HˆOH‰\œ›ÜœÈˆ[‰š\œİÛ[™HˆYİMMŒÍÈWB
