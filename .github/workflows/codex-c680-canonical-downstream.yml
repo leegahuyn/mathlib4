@@ -1,0 +1,214 @@
+name: Codex c680 canonical direct FA and downstream frontier
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/codex-c680-canonical-downstream.yml
+      - PrimalitySheafVerification/Mock2.lean
+      - PrimalitySheafVerification/Mock2_Advanced.lean
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      - PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
+      - PrimalitySheafVerification/QYM.lean
+      - scripts/final13_15checklist.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: codex-c680-canonical-downstream-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  canonical-direct-qym:
+    name: fresh checked-in M2 to FA to Integrated to QYM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      OUT: build-logs/c680-canonical-downstream
+      FA_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      EXPECTED_FA_SHA256: c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd
+      OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - name: Check out exact triggering commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Lock canonical source, repository, and executable trust
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          git rev-parse HEAD | tee "$OUT/checkout-head.txt"
+          git status --porcelain=v1 | tee "$OUT/git-status.before.txt"
+          test "$(tr -d '\r\n' < "$OUT/checkout-head.txt")" = "$GITHUB_SHA"
+          test ! -s "$OUT/git-status.before.txt"
+          sha256sum "$FA_SOURCE" | tee "$OUT/fa-source.before.sha256"
+          test "$(awk '{print $1}' "$OUT/fa-source.before.sha256")" = "$EXPECTED_FA_SHA256"
+          cp lean-toolchain "$OUT/lean-toolchain.txt"
+          sha256sum lean-toolchain lake-manifest.json lakefile.lean \
+            scripts/final13_15checklist.py > "$OUT/environment-inputs.sha256"
+          python3 scripts/final13_15checklist.py inventory \
+            --repo . --out "$OUT/SOURCE_MANIFEST.before.json" --phase before
+          python3 - "$OUT/SOURCE_MANIFEST.before.json" <<'PY'
+          import json, sys
+          report = json.load(open(sys.argv[1], encoding='utf-8'))
+          assert report['all_present'] is True
+          assert report['existing_file_count'] == 13
+          assert report['all_trust_six_zero'] is True
+          PY
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" \
+            > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          elan --version | tee "$OUT/elan-version.txt"
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Run fresh no-runtime-patch direct dependency chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN_ROOT"
+          stems=(Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated QYM)
+          for stem in "${stems[@]}"; do
+            printf '%s\n' 125 > "$OUT/$stem.exit"
+            printf '%s\n' 'not executed because an earlier direct prerequisite failed' > "$OUT/$stem.log"
+            : > "$OUT/$stem.command"
+            : > "$OUT/$stem.error-headers.txt"
+          done
+
+          run_one() {
+            local stem="$1" cap="$2"
+            local source="PrimalitySheafVerification/$stem.lean"
+            local olean="$OLEAN_ROOT/$stem.olean"
+            local ilean="$OLEAN_ROOT/$stem.ilean"
+            test -f "$source"
+            sha256sum "$source" > "$OUT/$stem.source.sha256"
+            rm -f -- "$olean" "$ilean"
+            : > "$OUT/$stem.executed"
+            printf '%q ' lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+              -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.command"
+            printf '\n' >> "$OUT/$stem.command"
+            set +e
+            /usr/bin/time -v -o "$OUT/$stem.time" \
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.log" 2>&1
+            local rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$OUT/$stem.exit"
+            grep -n ': error:' "$OUT/$stem.log" > "$OUT/$stem.error-headers.txt" || true
+            if [[ "$rc" -eq 0 ]]; then
+              test ! -s "$OUT/$stem.error-headers.txt"
+              test -s "$olean"
+              test -s "$ilean"
+              sha256sum "$olean" "$ilean" > "$OUT/$stem.outputs.sha256"
+            fi
+            return "$rc"
+          }
+
+          run_one Mock2 1 || true
+          if [[ "$(tr -d '\r\n' < "$OUT/Mock2.exit")" = 0 ]]; then
+            run_one Mock2_Advanced 1 || true
+          fi
+          if [[ "$(tr -d '\r\n' < "$OUT/Mock2_Advanced.exit")" = 0 ]]; then
+            run_one Mock2_FunctionalAnalysis 2000 || true
+          fi
+          if [[ "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis.exit")" = 0 ]]; then
+            run_one Mock2_FunctionalAnalysis_Integrated 2000 || true
+          fi
+          if [[ "$(tr -d '\r\n' < "$OUT/Mock2_FunctionalAnalysis_Integrated.exit")" = 0 ]]; then
+            run_one QYM 2000 || true
+          fi
+
+          sha256sum "$FA_SOURCE" | tee "$OUT/fa-source.after.sha256"
+          git status --porcelain=v1 | tee "$OUT/git-status.after.txt"
+          exit 0
+
+      - name: Collect exact downstream frontier
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          import hashlib, json, os, re, sys
+          from pathlib import Path
+          root = Path(sys.argv[1])
+          stems = ['Mock2', 'Mock2_Advanced', 'Mock2_FunctionalAnalysis',
+                   'Mock2_FunctionalAnalysis_Integrated', 'QYM']
+          rows = []
+          first = None
+          for stem in stems:
+              exit_path = root / f'{stem}.exit'
+              log_path = root / f'{stem}.log'
+              rc = int(exit_path.read_text().strip()) if exit_path.exists() else None
+              raw = log_path.read_bytes() if log_path.exists() else b''
+              text = raw.decode('utf-8', errors='replace')
+              headers = re.findall(r'^([^\n:]+\.lean):(\d+):(\d+): error:\s*(.*)$', text, re.M)
+              if first is None and headers:
+                  h = headers[0]
+                  first = {'module': stem, 'file': h[0], 'line': int(h[1]),
+                           'column': int(h[2]), 'message': h[3]}
+              rows.append({'module': stem, 'exit': rc, 'executed': (root / f'{stem}.executed').exists(),
+                           'error_headers': len(headers), 'warning_headers': len(re.findall(r'^.*\.lean:\d+:\d+: warning:', text, re.M)),
+                           'log_bytes': len(raw), 'log_sha256': hashlib.sha256(raw).hexdigest()})
+          report = {'schema': 'c680-canonical-downstream-frontier-v1',
+                    'github_sha': os.environ['GITHUB_SHA'],
+                    'fa_source_sha256': os.environ['EXPECTED_FA_SHA256'],
+                    'modules': rows, 'first_error': first,
+                    'all_direct_zero': all(r['exit'] == 0 and r['error_headers'] == 0 for r in rows)}
+          (root / 'CANONICAL_DOWNSTREAM.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload complete direct evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: c680-canonical-downstream-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: build-logs/c680-canonical-downstream/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed on source, trust, exits, diagnostics, and outputs
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(awk '{print $1}' "$OUT/fa-source.before.sha256")" = "$EXPECTED_FA_SHA256"
+          test "$(awk '{print $1}' "$OUT/fa-source.after.sha256")" = "$EXPECTED_FA_SHA256"
+          test ! -s "$OUT/git-status.before.txt"
+          test ! -s "$OUT/git-status.after.txt"
+          python3 - "$OUT/SOURCE_MANIFEST.before.json" "$OUT/CANONICAL_DOWNSTREAM.json" <<'PY'
+          import json, sys
+          source = json.load(open(sys.argv[1], encoding='utf-8'))
+          frontier = json.load(open(sys.argv[2], encoding='utf-8'))
+          assert source['all_trust_six_zero'] is True
+          assert frontier['all_direct_zero'] is True
+          assert frontier['first_error'] is None
+          PY
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated QYM; do
+            test -f "$OUT/$stem.executed"
+            test "$(tr -d '\r\n' < "$OUT/$stem.exit")" = 0
+            test ! -s "$OUT/$stem.error-headers.txt"
+            test -s "$OLEAN_ROOT/$stem.olean"
+            test -s "$OLEAN_ROOT/$stem.ilean"
+          done
+
