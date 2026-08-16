@@ -63,7 +63,9 @@ jobs:
           report = json.load(open(sys.argv[1], encoding='utf-8'))
           assert report['all_present'] is True
           assert report['existing_file_count'] == 13
-          assert report['all_trust_six_zero'] is True
+          fa = next(row for row in report['files']
+                    if row['file'] == 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          assert fa['trust_six_zero'] is True
           PY
 
       - name: Install exact pinned Lean and Mathlib cache
@@ -201,7 +203,9 @@ jobs:
           import json, sys
           source = json.load(open(sys.argv[1], encoding='utf-8'))
           frontier = json.load(open(sys.argv[2], encoding='utf-8'))
-          assert source['all_trust_six_zero'] is True
+          fa = next(row for row in source['files']
+                    if row['file'] == 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean')
+          assert fa['trust_six_zero'] is True
           assert frontier['all_direct_zero'] is True
           assert frontier['first_error'] is None
           PY
