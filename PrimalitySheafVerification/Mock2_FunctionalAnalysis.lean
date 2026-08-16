@@ -54778,7 +54778,11 @@ theorem ambientPlaneToLiteralStage_completedPlaneBase_core
       (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]
       with z hgraph hstage hcarrier hupper hplane hzStage
   simp only [ambientPlaneToLiteralStage, ContinuousLinearMap.comp_apply]
-  rw [hgraph, hstage, hcarrier, hupper,
+  rw [hgraph, hstage, hcarrier]
+  change ((ambientPlane_comp_upper_memLp
+      (completedLiteralStagePlaneBase Y n (coreMap n u))).toLp
+        (fun z : ℍ ↦ completedLiteralStagePlaneBase Y n (coreMap n u) (z : ℂ))) z = _
+  rw [hupper,
     completedLiteralStagePlaneBase_core,
     literalStagePlaneBaseCore_apply, hplane]
   exact literalStageLocalizedGauge_eq_gauge Y n u hzStage
