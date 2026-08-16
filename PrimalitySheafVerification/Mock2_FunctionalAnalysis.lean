@@ -55417,10 +55417,14 @@ theorem weightedFull_apply_core
         MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)
           discriminantFullCarrierWeightLp
           (graphEuclideanBase n (coreMap n u))] with z hv hu hw hmul
-      simp only [weightedGraphOperator, weightedGraphLinear,
-        lpInfinityMultiplier_apply]
+      simp only [lpInfinityMultiplier_apply]
       rw [hv, hmul]
-      simp only [Pi.smul_apply, hw, hu]
+      change inner ℂ (fixedPhaseEuclideanGauge n v z)
+          (((discriminantFullCarrierWeightLp : ℍ → ℂ) z) *
+            ((graphEuclideanBase n (coreMap n u) : ℍ → ℂ) z)) =
+        inner ℂ (fixedPhaseEuclideanGauge n v z)
+          ((upstairsPotential z : ℂ) * fixedPhaseEuclideanGauge n u z)
+      rw [hw, hu]
       rfl
     _ = ∫ z in chosenGammaTwoFundamentalDomain.carrier,
         hyperbolicDensity z •
