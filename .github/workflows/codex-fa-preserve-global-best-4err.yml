@@ -1,0 +1,93 @@
+name: Codex FA preserve verified global-best 4-error source
+
+on:
+  push:
+    branches:
+      - codex/fa-global-best-4err-1c3d1259-20260816
+    paths:
+      - .github/workflows/codex-fa-preserve-global-best-4err.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: codex-fa-preserve-global-best-4err
+  cancel-in-progress: false
+
+jobs:
+  preserve-exact-verified-source:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    env:
+      SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      ARTIFACT_ID: '9247770461'
+      EXPECTED_SHA256: 1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c
+      EXPECTED_BYTES: '2816878'
+      EXPECTED_LINES: '63028'
+      VERIFIED_RUN_ID: '31887363172'
+      VERIFIED_ERROR_COUNT: '4'
+    steps:
+      - name: Check out preservation branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-global-best-4err-1c3d1259-20260816
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Recover exact verified candidate and lock identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT_ID}/zip" > /tmp/fa-global-best.zip
+          unzip -p /tmp/fa-global-best.zip Mock2_FunctionalAnalysis-v66-candidate.lean > "${SOURCE}.verified"
+          actual_sha="$(sha256sum "${SOURCE}.verified" | awk '{print $1}')"
+          actual_bytes="$(wc -c < "${SOURCE}.verified" | tr -d '[:space:]')"
+          actual_lines="$(wc -l < "${SOURCE}.verified" | tr -d '[:space:]')"
+          test "$actual_sha" = "$EXPECTED_SHA256"
+          test "$actual_bytes" = "$EXPECTED_BYTES"
+          test "$actual_lines" = "$EXPECTED_LINES"
+          mv "${SOURCE}.verified" "$SOURCE"
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "$EXPECTED_SHA256"
+
+      - name: Record immutable verification manifest
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/fa-global-best
+          source_blob="$(git hash-object "$SOURCE")"
+          cat > evidence/fa-global-best/FA_GLOBAL_BEST_BASELINE_1c3d1259.json <<EOF
+          {
+            "schema": "fa-global-best-preservation-v1",
+            "repository": "${GITHUB_REPOSITORY}",
+            "branch": "codex/fa-global-best-4err-1c3d1259-20260816",
+            "source_path": "${SOURCE}",
+            "source_sha256": "${EXPECTED_SHA256}",
+            "git_blob_sha": "${source_blob}",
+            "source_bytes": ${EXPECTED_BYTES},
+            "source_lines": ${EXPECTED_LINES},
+            "verified_run_id": ${VERIFIED_RUN_ID},
+            "verified_artifact_id": ${ARTIFACT_ID},
+            "Mock2_exit": 0,
+            "Mock2_Advanced_exit": 0,
+            "Mock2_FunctionalAnalysis_exit": 1,
+            "error_headers": ${VERIFIED_ERROR_COUNT},
+            "first_error_line": 55637,
+            "first_blocker": "discriminantHardStageOperator_eq_weightedHard",
+            "diagnostic": "deterministic timeout at whnf; maxHeartbeats=200000",
+            "canonical": false,
+            "authority": "FA_GLOBAL_BEST_BASELINE"
+          }
+          EOF
+          python3 -m json.tool evidence/fa-global-best/FA_GLOBAL_BEST_BASELINE_1c3d1259.json >/dev/null
+
+      - name: Commit exact source to dedicated preservation branch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$SOURCE" evidence/fa-global-best/FA_GLOBAL_BEST_BASELINE_1c3d1259.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Codex: preserve VERIFIED FA global best 4-error source 1c3d1259'
+          git push origin HEAD:codex/fa-global-best-4err-1c3d1259-20260816
