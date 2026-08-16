@@ -1,0 +1,233 @@
+name: Codex FA primary4016 additive Lp funnel
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/fa-primary4016-additive-20260816
+    paths:
+      - .github/workflows/codex-fa-primary4016-additive-funnel.yml
+      - scripts/fa_primary4016_additive_reproducer.py
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: codex-fa-primary4016-additive-funnel
+  cancel-in-progress: true
+
+jobs:
+  additive-funnel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      OUT: build-logs/fa-primary4016-additive
+      SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      EXPECTED_BASE_SHA256: 1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c
+      EXPECTED_BRANCH: codex/fa-primary4016-additive-20260816
+      ARTIFACT_DIR: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - name: Check out exact additive exploration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: codex/fa-primary4016-additive-20260816
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Verify source identity and generate additive candidates
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
+          mkdir -p "$OUT" scripts
+          base64 -d scripts/payloads/fa_primary4016_additive_reproducer.py.gz.b64 | gzip -dc > scripts/fa_primary4016_additive_reproducer.py
+          chmod +x scripts/fa_primary4016_additive_reproducer.py
+          test "$(sha256sum scripts/fa_primary4016_additive_reproducer.py | awk '{print $1}')" = "fc202f76139fbc04b550bf566c9bb4652adc16b42ea7c9572d39b46d9aa00a05"
+          python3 -m py_compile scripts/fa_primary4016_additive_reproducer.py
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "$EXPECTED_BASE_SHA256"
+          python3 scripts/fa_primary4016_additive_reproducer.py > "$OUT/GENERATION.json"
+          python3 -m json.tool "$OUT/GENERATION.json" >/dev/null
+          cp scripts/fa_primary4016_additive_reproducer.py "$OUT/"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = "leanprover/lean4:v4.33.0-rc1"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+
+      - name: Direct-compile Mock2 and Mock2_Advanced
+        run: |
+          set -euo pipefail
+          mkdir -p "$ARTIFACT_DIR"
+          for module in Mock2 Mock2_Advanced; do
+            src="PrimalitySheafVerification/${module}.lean"
+            cmd="lake env lean -DmaxErrors=1 -DwarningAsError=false -o ${ARTIFACT_DIR}/${module}.olean -i ${ARTIFACT_DIR}/${module}.ilean ${src}"
+            printf '%s\n' "$cmd" > "$OUT/${module}.command"
+            set +e
+            /usr/bin/time -f 'elapsed_seconds=%e max_rss_kb=%M' -o "$OUT/${module}.time" \
+              bash -lc "$cmd" > "$OUT/${module}.log" 2>&1
+            rc=$?
+            set -e
+            printf '%s\n' "$rc" > "$OUT/${module}.exit"
+            test "$rc" = 0
+          done
+
+      - name: Direct-compile exact prefix through hard-stage equality
+        id: prefix
+        run: |
+          set -euo pipefail
+          module=FA_Blocker_Prefix
+          src="PrimalitySheafVerification/${module}.lean"
+          cmd="lake env lean -DmaxErrors=200 -DwarningAsError=false -o ${ARTIFACT_DIR}/${module}.olean -i ${ARTIFACT_DIR}/${module}.ilean ${src}"
+          printf '%s\n' "$cmd" > "$OUT/${module}.command"
+          set +e
+          /usr/bin/time -f 'elapsed_seconds=%e max_rss_kb=%M' -o "$OUT/${module}.time" \
+            bash -lc "$cmd" > "$OUT/${module}.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/${module}.exit"
+          grep -n ': error:' "$OUT/${module}.log" > "$OUT/${module}.error-headers.txt" || true
+          printf 'prefix_exit=%s\n' "$rc" >> "$GITHUB_OUTPUT"
+          test "$rc" = 0
+
+      - name: Find first locally passing additive candidate
+        id: candidates
+        run: |
+          set -euo pipefail
+          printf 'candidate_id,exit_code,error_headers,elapsed_seconds,source_sha256\n' > "$OUT/candidate-summary.csv"
+          selected=''
+          for src in PrimalitySheafVerification/FA_Blocker_AdditiveCandidates/Candidate*.lean; do
+            base="$(basename "$src" .lean)"
+            cid="${base#Candidate}"
+            outdir="${ARTIFACT_DIR}/FA_Blocker_AdditiveCandidates"
+            mkdir -p "$outdir"
+            cmd="lake env lean -DmaxErrors=50 -DwarningAsError=false -o ${outdir}/${base}.olean -i ${outdir}/${base}.ilean ${src}"
+            printf '%s\n' "$cmd" > "$OUT/${base}.command"
+            start="$(date +%s)"
+            set +e
+            timeout 240 bash -lc "$cmd" > "$OUT/${base}.log" 2>&1
+            rc=$?
+            set -e
+            end="$(date +%s)"
+            errors="$(grep -c ': error:' "$OUT/${base}.log" || true)"
+            printf '%s\n' "$rc" > "$OUT/${base}.exit"
+            grep -n ': error:' "$OUT/${base}.log" > "$OUT/${base}.error-headers.txt" || true
+            printf '%s,%s,%s,%s,%s\n' "$cid" "$rc" "$errors" "$((end-start))" \
+              "$(sha256sum "$src" | awk '{print $1}')" >> "$OUT/candidate-summary.csv"
+            if [[ "$rc" == 0 ]]; then
+              selected="$cid"
+              break
+            fi
+          done
+          printf '%s\n' "$selected" | tee "$OUT/selected-local-candidate.txt"
+          test -n "$selected"
+          printf 'selected=%s\n' "$selected" >> "$GITHUB_OUTPUT"
+
+      - name: Materialize selected candidate into full source
+        run: |
+          set -euo pipefail
+          cid="${{ steps.candidates.outputs.selected }}"
+          python3 scripts/fa_primary4016_additive_reproducer.py \
+            --materialize "$cid" --output "$OUT/Mock2_FunctionalAnalysis-candidate-${cid}.lean" \
+            | tee "$OUT/FULL_MATERIALIZATION.json"
+          cp "$OUT/Mock2_FunctionalAnalysis-candidate-${cid}.lean" "$SOURCE"
+          sha256sum "$SOURCE" | tee "$OUT/full-candidate.sha256"
+
+      - name: Authoritative full direct FA validation
+        id: full
+        run: |
+          set -euo pipefail
+          rm -f "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean" \
+            "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.ilean" \
+            "${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean.private"
+          cmd="lake env lean -DmaxErrors=2000 -DwarningAsError=false -o ${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.olean -i ${ARTIFACT_DIR}/Mock2_FunctionalAnalysis.ilean ${SOURCE}"
+          printf '%s\n' "$cmd" > "$OUT/Mock2_FunctionalAnalysis.command"
+          set +e
+          /usr/bin/time -f 'elapsed_seconds=%e max_rss_kb=%M' -o "$OUT/Mock2_FunctionalAnalysis.time" \
+            bash -lc "$cmd" > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+          rc=$?
+          set -e
+          errors="$(grep -c ': error:' "$OUT/Mock2_FunctionalAnalysis.log" || true)"
+          first_line="$(grep -m1 ': error:' "$OUT/Mock2_FunctionalAnalysis.log" | sed -E 's/^[^:]+:([0-9]+):.*/\1/' || true)"
+          first_line="${first_line:-999999}"
+          printf '%s\n' "$rc" > "$OUT/Mock2_FunctionalAnalysis.exit"
+          printf '%s\n' "$errors" > "$OUT/Mock2_FunctionalAnalysis.error-count"
+          printf '%s\n' "$first_line" > "$OUT/Mock2_FunctionalAnalysis.first-error-line"
+          grep -n ': error:' "$OUT/Mock2_FunctionalAnalysis.log" > "$OUT/Mock2_FunctionalAnalysis.error-headers.txt" || true
+          cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-full-tested.lean"
+          improved=false
+          if [[ "$rc" == 0 || "$errors" -lt 4 || "$first_line" -gt 55637 ]]; then
+            improved=true
+          fi
+          printf 'fa_exit=%s\nerror_count=%s\nfirst_error_line=%s\nstrict_improvement=%s\n' \
+            "$rc" "$errors" "$first_line" "$improved" >> "$GITHUB_OUTPUT"
+
+      - name: Preserve strict verified mathematical improvement
+        if: steps.full.outputs.strict_improvement == 'true'
+        run: |
+          set -euo pipefail
+          cid="${{ steps.candidates.outputs.selected }}"
+          errors="${{ steps.full.outputs.error_count }}"
+          fa_exit="${{ steps.full.outputs.fa_exit }}"
+          first_line="${{ steps.full.outputs.first_error_line }}"
+          source_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          source_blob="$(git hash-object "$SOURCE")"
+          mkdir -p evidence/fa-global-best
+          manifest="evidence/fa-global-best/FA_VERIFIED_IMPROVEMENT_${source_sha:0:12}.json"
+          cat > "$manifest" <<EOF
+          {
+            "schema": "fa-verified-improvement-v1",
+            "parent_global_best_sha256": "${EXPECTED_BASE_SHA256}",
+            "strategy_family": "additive-lp-no-congr2",
+            "candidate_id": "${cid}",
+            "source_sha256": "${source_sha}",
+            "git_blob_sha": "${source_blob}",
+            "Mock2_exit": 0,
+            "Mock2_Advanced_exit": 0,
+            "Mock2_FunctionalAnalysis_exit": ${fa_exit},
+            "error_headers": ${errors},
+            "first_error_line": ${first_line},
+            "workflow_run_id": ${GITHUB_RUN_ID},
+            "canonical": false
+          }
+          EOF
+          python3 -m json.tool "$manifest" >/dev/null
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$SOURCE" "$manifest"
+          git commit -m "Codex: preserve VERIFIED additive FA candidate ${cid} (${errors} errors)"
+          git push origin HEAD:codex/fa-primary4016-additive-20260816
+
+      - name: Upload full additive evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fa-primary4016-additive-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: |
+            build-logs/fa-primary4016-additive/**
+            PrimalitySheafVerification/FA_Blocker_Prefix.lean
+            PrimalitySheafVerification/FA_Blocker_AdditiveCandidates/*.lean
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless direct evidence strictly improves the frontier
+        if: always()
+        run: |
+          set -euo pipefail
+          test "$(cat "$OUT/Mock2.exit")" = 0
+          test "$(cat "$OUT/Mock2_Advanced.exit")" = 0
+          test "$(cat "$OUT/FA_Blocker_Prefix.exit")" = 0
+          test -s "$OUT/selected-local-candidate.txt"
+          test -f "$OUT/Mock2_FunctionalAnalysis.exit"
+          fa="$(cat "$OUT/Mock2_FunctionalAnalysis.exit")"
+          errors="$(cat "$OUT/Mock2_FunctionalAnalysis.error-count")"
+          first_line="$(cat "$OUT/Mock2_FunctionalAnalysis.first-error-line")"
+          [[ "$fa" == 0 || "$errors" -lt 4 || "$first_line" -gt 55637 ]]
