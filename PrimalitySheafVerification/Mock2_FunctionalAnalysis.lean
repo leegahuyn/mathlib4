@@ -49127,7 +49127,7 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
       simpa only [sub_eq_add_neg, add_comm] using hut.symm
     have hHolderBound : ‖productL1‖ ≤ C := by
       have h := (lsmul ℂ ℂ).norm_holder_apply_apply_le (r := 1) V ut
-      simpa [ut] using h
+      simpa only [productL1, C, ut, DomAddAct.norm_vadd_Lp] using h
     have hIntegralNonneg :
         0 ≤ ∫ x : ℂ, ‖v x * K t * u (x - t)‖
           ∂(volume : Measure ℂ) :=
@@ -49145,7 +49145,7 @@ theorem integrable_fullPlaneTest_mul_kernel_mul_translate
         apply integral_congr_ae
         filter_upwards with x
         simp only [norm_mul]
-        ring_nf
+        ring
       _ = ‖K t‖ * ‖productL1‖ := by rw [hProductNorm]
       _ ≤ ‖K t‖ * C :=
         mul_le_mul_of_nonneg_left hHolderBound (norm_nonneg (K t))
@@ -53317,7 +53317,7 @@ theorem literalStageNegativePlaneWave_eq_conj_planeWaveRepresentative
         literalStagePhysicalTorusPoint, Complex.measurableEquivPi_apply,
         ContinuousMap.coe_mk, Pi.neg_apply]
       rw [Fin.prod_univ_two]
-      ring_nf
+      simp <;> ring_nf
     _ = ((literalStageFourierScale Y)⁻¹ : ℂ) *
           star (UnitAddTorus.mFourier k
             (literalStagePhysicalTorusPoint Y w)) := by
@@ -53350,11 +53350,17 @@ theorem fderiv_literalStageNegativePlaneWave_one
             (literalStageFourierScale Y)⁻¹)).mul_const
         (fourier (-(k 1))
           (((literalStageFourierScale Y)⁻¹ * w.im : ℝ) : UnitAddCircle))).const_mul
-      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>
-    try simp only [one_div, Complex.one_re, Complex.one_im,
+      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1
+  case e'_4 => with_unfolding_all rfl
+  case e'_8 =>
+    funext t
+    simp [id, one_div, Complex.one_re, Complex.one_im,
       Complex.add_re, Complex.add_im, Complex.real_smul, smul_eq_mul,
-      mul_one, add_zero, zero_mul, Complex.ofReal_inv, Complex.ofReal_mul] <;>
-    field_simp [literalStageFourierScale_ne_zero Y] <;> ring
+      mul_comm, mul_left_comm, mul_assoc,
+      Complex.ofReal_inv, Complex.ofReal_mul]
+  case e'_9 =>
+    simp [id]
+    ring
 
 /-- Exact vertical derivative of the smooth negative physical wave. -/
 theorem fderiv_literalStageNegativePlaneWave_I
@@ -53376,11 +53382,17 @@ theorem fderiv_literalStageNegativePlaneWave_I
             (literalStageFourierScale Y)⁻¹)).const_mul
         (fourier (-(k 0))
           (((literalStageFourierScale Y)⁻¹ * w.re : ℝ) : UnitAddCircle))).const_mul
-      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1 <;>
-    try simp only [one_div, Complex.I_re, Complex.I_im, Complex.add_re,
-      Complex.add_im, Complex.real_smul, smul_eq_mul, mul_one, add_zero,
-      zero_mul, Complex.ofReal_inv, Complex.ofReal_mul] <;>
-    field_simp [literalStageFourierScale_ne_zero Y] <;> ring
+      ((literalStageFourierScale Y)⁻¹ : ℂ) using 1
+  case e'_4 => with_unfolding_all rfl
+  case e'_8 =>
+    funext t
+    simp [id, one_div, Complex.I_re, Complex.I_im, Complex.add_re,
+      Complex.add_im, Complex.real_smul, smul_eq_mul,
+      mul_comm, mul_left_comm, mul_assoc,
+      Complex.ofReal_inv, Complex.ofReal_mul]
+  case e'_9 =>
+    simp [id]
+    ring
 
 /-- Full-plane integration by parts gives the horizontal Fourier coefficient
 identity without a boundary term.  Compact support is carried by `v`; the
@@ -53406,24 +53418,42 @@ theorem integral_negativePlaneWave_mul_dx
       hBase.const_mul
         (-2 * Real.pi * Complex.I * (k 0 : ℂ) /
           literalStageFourierScale Y)
+  have hdx : (HalfWeightCompactCoordinateGreen.dx v : ℂ → ℂ) =
+      fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+    funext w
+    exact HalfWeightCompactCoordinateGreen.dx_apply v w
+  have hdx_apply (w : ℂ) :
+      HalfWeightCompactCoordinateGreen.dx v w =
+        (fderiv ℝ (v : ℂ → ℂ) w) 1 :=
+    congrFun hdx w
   have hRight : Integrable
       (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *
         (fderiv ℝ (v : ℂ → ℂ) w) 1)
       (volume : Measure ℂ) := by
-    simpa only [HalfWeightCompactCoordinateGreen.dx_apply] using
-      ((literalStageNegativePlaneWave_continuous Y k).mul
-        (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
-          (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left
+    exact (((literalStageNegativePlaneWave_continuous Y k).mul
+      (HalfWeightCompactCoordinateGreen.dx v).continuous).integrable_of_hasCompactSupport
+        (HalfWeightCompactCoordinateGreen.dx v).hasCompactSupport.mul_left).congr
+          (Filter.Eventually.of_forall fun w ↦ by
+            simpa only [Pi.mul_apply] using
+              congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+                (hdx_apply w))
   have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
     (μ := (volume : Measure ℂ)) (v := (1 : ℂ))
     hLeft hRight hBase
     (fun _ _ ↦
       (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)
     (fun _ _ ↦ v.contDiff.differentiable (by simp) _)
-  rw [HalfWeightCompactCoordinateGreen.dx_apply]
   calc
     (∫ w : ℂ, literalStageNegativePlaneWave Y k w *
-        (fderiv ℝ (v : ℂ → ℂ) w) 1) =
+        HalfWeightCompactCoordinateGreen.dx v w) =
+      ∫ w : ℂ, literalStageNegativePlaneWave Y k w *
+        (fderiv ℝ (v : ℂ → ℂ) w) 1 := by
+      apply integral_congr_ae
+      filter_upwards with w
+      simpa only [Pi.mul_apply] using
+        congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+          (hdx_apply w)
+    _ =
       - ∫ w : ℂ, (fderiv ℝ
           (literalStageNegativePlaneWave Y k) w) 1 * v w := hIBP
     _ = (2 * Real.pi * Complex.I * (k 0 : ℂ) /
@@ -53455,14 +53485,25 @@ theorem integral_negativePlaneWave_mul_dy
       hBase.const_mul
         (-2 * Real.pi * Complex.I * (k 1 : ℂ) /
           literalStageFourierScale Y)
+  have hdy : (HalfWeightCompactCoordinateGreen.dy v : ℂ → ℂ) =
+      fun w : ℂ ↦ (fderiv ℝ (v : ℂ → ℂ) w) Complex.I := by
+    funext w
+    exact HalfWeightCompactCoordinateGreen.dy_apply v w
+  have hdy_apply (w : ℂ) :
+      HalfWeightCompactCoordinateGreen.dy v w =
+        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I :=
+    congrFun hdy w
   have hRight : Integrable
       (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w *
         (fderiv ℝ (v : ℂ → ℂ) w) Complex.I)
       (volume : Measure ℂ) := by
-    simpa only [HalfWeightCompactCoordinateGreen.dy_apply] using
-      ((literalStageNegativePlaneWave_continuous Y k).mul
-        (HalfWeightCompactCoordinateGreen.dy v).continuous).integrable_of_hasCompactSupport
-          (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left
+    exact (((literalStageNegativePlaneWave_continuous Y k).mul
+      (HalfWeightCompactCoordinateGreen.dy v).continuous).integrable_of_hasCompactSupport
+        (HalfWeightCompactCoordinateGreen.dy v).hasCompactSupport.mul_left).congr
+          (Filter.Eventually.of_forall fun w ↦ by
+            simpa only [Pi.mul_apply] using
+              congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+                (hdy_apply w))
   have hIBP := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
     (μ := (volume : Measure ℂ))
     (f := literalStageNegativePlaneWave Y k) (g := (v : ℂ → ℂ))
@@ -53471,10 +53512,17 @@ theorem integral_negativePlaneWave_mul_dy
     (fun _ _ ↦
       (literalStageNegativePlaneWave_differentiable Y k).differentiableAt)
     (fun _ _ ↦ v.contDiff.differentiable (by simp) _)
-  rw [HalfWeightCompactCoordinateGreen.dy_apply]
   calc
     (∫ w : ℂ, literalStageNegativePlaneWave Y k w *
-        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I) =
+        HalfWeightCompactCoordinateGreen.dy v w) =
+      ∫ w : ℂ, literalStageNegativePlaneWave Y k w *
+        (fderiv ℝ (v : ℂ → ℂ) w) Complex.I := by
+      apply integral_congr_ae
+      filter_upwards with w
+      simpa only [Pi.mul_apply] using
+        congrArg (fun z : ℂ ↦ literalStageNegativePlaneWave Y k w * z)
+          (hdy_apply w)
+    _ =
       - ∫ w : ℂ, (fderiv ℝ
           (literalStageNegativePlaneWave Y k) w) Complex.I * v w := hIBP
     _ = (2 * Real.pi * Complex.I * (k 1 : ℂ) /
@@ -53543,26 +53591,112 @@ theorem inner_planeWave_ambientTestCore_eq_scale_mul_mFourierCoeff
       UnitAddTorus.mFourier (-k) t *
         literalStageTorusRepresentative Y v t)
     (fun _ : Fin 2 ↦ -(1 / 2 : ℝ))]
-  rw [← literalStageFourierBox_eq_smul_unitPiBox Y,
-    Measure.setIntegral_comp_smul_of_pos volume
-      (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)
-      (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
-      (literalStageFourierScale_pos Y)]
-  simp only [Complex.finrank_real_complex, literalStageTorusRepresentative,
-    literalStageTorusPoint, literalStageTorusCoordinate, smul_eq_mul,
-    zpow_ofNat, Complex.ofReal_mul, Complex.ofReal_inv]
-  apply integral_congr_ae
-  filter_upwards [coeFn_literalStageTorusTest Y v] with x hx
-  rw [hx]
-  simp only [literalStageNegativePlaneWave, Complex.mul_re,
-    Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
-    sub_zero, UnitAddTorus.mFourier, ContinuousMap.coe_mk]
-  rw [Fin.prod_univ_two]
-  field_simp [literalStageFourierScale_ne_zero Y]
-  ring
+  have hhalf : -(1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num
+  rw [hhalf]
+  have hsupport :
+      (∫ w : ℂ, literalStageNegativePlaneWave Y k w * v w) =
+        ∫ w in literalStageFourierBox Y,
+          literalStageNegativePlaneWave Y k w * v w := by
+    rw [← integral_indicator (literalStageFourierBox_measurableSet Y)]
+    apply integral_congr_ae
+    filter_upwards with w
+    by_cases hw : w ∈ literalStageFourierBox Y
+    · simp [hw]
+    · have hv0 : v w = 0 := by
+        by_contra hn
+        exact hw (hv (subset_tsupport _ hn))
+      simp [hw, hv0]
+  rw [hsupport]
+  calc
+    (∫ w in literalStageFourierBox Y,
+        literalStageNegativePlaneWave Y k w * v w) =
+      (literalStageFourierScale Y : ℂ) ^ 2 *
+        ∫ w in Complex.measurableEquivPi.symm '' literalStageUnitPiBox,
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y • w) *
+            v (literalStageFourierScale Y • w) := by
+      rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+      have hscale := Measure.setIntegral_comp_smul_of_pos
+        (E := ℂ) (F := ℂ) volume
+        (fun w : ℂ ↦ literalStageNegativePlaneWave Y k w * v w)
+        (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
+        (literalStageFourierScale_pos Y)
+      rw [Complex.finrank_real_complex] at hscale
+      calc
+        _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+            ((((literalStageFourierScale Y) ^ 2)⁻¹ : ℝ) •
+              ∫ w in literalStageFourierScale Y •
+                  (Complex.measurableEquivPi.symm '' literalStageUnitPiBox),
+                literalStageNegativePlaneWave Y k w * v w) := by
+              simp only [Complex.real_smul]
+              push_cast
+              field_simp [literalStageFourierScale_ne_zero Y]
+        _ = _ := by rw [hscale]
+    _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+        ∫ x in literalStageUnitPiBox,
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x) *
+            v (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x) := by
+      rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+        Complex.measurableEquivPi.symm.measurableEmbedding
+        (fun w : ℂ ↦
+          literalStageNegativePlaneWave Y k
+              (literalStageFourierScale Y • w) *
+            v (literalStageFourierScale Y • w))
+        literalStageUnitPiBox]
+    _ = (literalStageFourierScale Y : ℂ) *
+        ∫ x in literalStageUnitPiBox,
+          UnitAddTorus.mFourier (-k) (fun i ↦ (x i : UnitAddCircle)) *
+            literalStageTorusRepresentative Y v
+              (fun i ↦ (x i : UnitAddCircle)) := by
+      rw [← integral_const_mul, ← integral_const_mul]
+      apply setIntegral_congr_fun literalStageUnitPiBox_measurableSet
+      intro x hx
+      have hpoint :
+          literalStageTorusPoint Y (fun i ↦ (x i : UnitAddCircle)) =
+            literalStageFourierScale Y •
+              Complex.measurableEquivPi.symm x := by
+        simp only [literalStageTorusPoint, literalStageTorusCoordinate]
+        congr 2
+        funext i
+        rw [UnitAddTorus.coe_measurableEquivPiIoc_apply]
+        exact congrArg Subtype.val
+          (AddCircle.equivIoc_coe_eq (by
+            constructor
+            · exact (hx i).1
+            · linarith [(hx i).2]))
+      simp only []
+      rw [show literalStageTorusRepresentative Y v
+          (fun i ↦ (x i : UnitAddCircle)) =
+          v (literalStageFourierScale Y •
+            Complex.measurableEquivPi.symm x) by
+        simp only [literalStageTorusRepresentative, hpoint]]
+      simp only [literalStageNegativePlaneWave, smul_eq_mul,
+        Complex.ofReal_mul, Complex.ofReal_inv, Complex.mul_re,
+        Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+        zero_mul, sub_zero, UnitAddTorus.mFourier,
+        ContinuousMap.coe_mk]
+      rw [Fin.prod_univ_two]
+      have hre :
+          (literalStageFourierScale Y)⁻¹ *
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x).re = x 0 := by
+        rw [Complex.measurableEquivPi_symm_apply]
+        simp [literalStageFourierScale_ne_zero Y, mul_assoc]
+      have him :
+          (literalStageFourierScale Y)⁻¹ *
+              (literalStageFourierScale Y •
+                Complex.measurableEquivPi.symm x).im = x 1 := by
+        rw [Complex.measurableEquivPi_symm_apply]
+        simp [literalStageFourierScale_ne_zero Y, mul_assoc]
+      rw [hre, him]
+      simp only [Pi.neg_apply]
+      have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=
+        Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)
+      field_simp [hScaleNe] <;> ring
 
-/-- The derivative Fourier coefficients carry the exact integer frequency.
-This is the horizontal identity on the genuine two-torus. -/
 theorem mFourierCoeff_scaled_dx
     (Y : ℝ) (k : Fin 2 → ℤ)
     (v : Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.AmbientTestCore)
@@ -53702,33 +53836,139 @@ theorem inner_literalStagePlaneWave
     inner ℂ (literalStagePlaneWave Y k)
         (literalStagePlaneWave Y l) = if k = l then 1 else 0 := by
   rw [MeasureTheory.L2.inner_def]
-  calc
-    (∫ w : ℂ, inner ℂ (literalStagePlaneWave Y k w)
+  have hsupport :
+      (∫ w : ℂ, inner ℂ (literalStagePlaneWave Y k w)
         (literalStagePlaneWave Y l w)) =
+        ∫ w in literalStageFourierBox Y,
+          inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+            (literalStagePlaneWaveRepresentative Y l w) := by
+    rw [← integral_indicator (literalStageFourierBox_measurableSet Y)]
+    apply integral_congr_ae
+    filter_upwards [coeFn_literalStagePlaneWave Y k,
+      coeFn_literalStagePlaneWave Y l] with w hk hl
+    rw [hk, hl]
+    by_cases hw : w ∈ literalStageFourierBox Y
+    · simp [hw]
+    · simp [literalStagePlaneWaveRepresentative, hw]
+  rw [hsupport]
+  calc
+    (∫ w in literalStageFourierBox Y,
+        inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+          (literalStagePlaneWaveRepresentative Y l w)) =
       inner ℂ
         (UnitAddTorus.mFourierLp (d := Fin 2) 2 k)
         (UnitAddTorus.mFourierLp (d := Fin 2) 2 l) := by
       rw [MeasureTheory.L2.inner_def]
-      rw [← literalStageFourierBox_eq_smul_unitPiBox Y,
-        Measure.setIntegral_comp_smul_of_pos volume
-          (fun w : ℂ ↦
-            inner ℂ (literalStagePlaneWave Y k w)
-              (literalStagePlaneWave Y l w))
-          (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
-          (literalStageFourierScale_pos Y)]
+      rw [show (∫ t : P5LocalFourierRellich.TwoTorus,
+          inner ℂ
+            ((UnitAddTorus.mFourierLp (d := Fin 2) 2 k) t)
+            ((UnitAddTorus.mFourierLp (d := Fin 2) 2 l) t)) =
+          ∫ t : P5LocalFourierRellich.TwoTorus,
+            inner ℂ (UnitAddTorus.mFourier k t)
+              (UnitAddTorus.mFourier l t) by
+        apply integral_congr_ae
+        filter_upwards [UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 k,
+          UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 l] with t hk hl
+        rw [hk, hl]]
       rw [UnitAddTorus.integral_preimage
         (fun t : P5LocalFourierRellich.TwoTorus ↦
           inner ℂ (UnitAddTorus.mFourier k t)
             (UnitAddTorus.mFourier l t))
         (fun _ : Fin 2 ↦ -(1 / 2 : ℝ))]
-      apply integral_congr_ae
-      filter_upwards [coeFn_literalStagePlaneWave Y k,
-        coeFn_literalStagePlaneWave Y l,
-        UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 k,
-        UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 l] with x hk hl hkt hlt
-      simp [hk, hl, hkt, hlt, literalStagePlaneWaveRepresentative,
-        literalStageFourierBox_eq_smul_unitPiBox,
-        literalStageFourierScale_ne_zero Y]
+      have hhalf : -(1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num
+      rw [hhalf]
+      calc
+        (∫ w in literalStageFourierBox Y,
+            inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+              (literalStagePlaneWaveRepresentative Y l w)) =
+          (literalStageFourierScale Y : ℂ) ^ 2 *
+            ∫ w in Complex.measurableEquivPi.symm '' literalStageUnitPiBox,
+              inner ℂ
+                (literalStagePlaneWaveRepresentative Y k
+                  (literalStageFourierScale Y • w))
+                (literalStagePlaneWaveRepresentative Y l
+                  (literalStageFourierScale Y • w)) := by
+          rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+          have hscale := Measure.setIntegral_comp_smul_of_pos
+            (E := ℂ) (F := ℂ) volume
+            (fun w : ℂ ↦ inner ℂ
+              (literalStagePlaneWaveRepresentative Y k w)
+              (literalStagePlaneWaveRepresentative Y l w))
+            (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
+            (literalStageFourierScale_pos Y)
+          rw [Complex.finrank_real_complex] at hscale
+          calc
+            _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+                ((((literalStageFourierScale Y) ^ 2)⁻¹ : ℝ) •
+                  ∫ w in literalStageFourierScale Y •
+                      (Complex.measurableEquivPi.symm '' literalStageUnitPiBox),
+                    inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+                      (literalStagePlaneWaveRepresentative Y l w)) := by
+                  simp only [Complex.real_smul]
+                  push_cast
+                  field_simp [literalStageFourierScale_ne_zero Y]
+            _ = _ := by rw [hscale]
+        _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+            ∫ x in literalStageUnitPiBox,
+              inner ℂ
+                (literalStagePlaneWaveRepresentative Y k
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x))
+                (literalStagePlaneWaveRepresentative Y l
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x)) := by
+          rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+            Complex.measurableEquivPi.symm.measurableEmbedding
+            (fun w : ℂ ↦ inner ℂ
+              (literalStagePlaneWaveRepresentative Y k
+                (literalStageFourierScale Y • w))
+              (literalStagePlaneWaveRepresentative Y l
+                (literalStageFourierScale Y • w)))
+            literalStageUnitPiBox]
+        _ = ∫ x in literalStageUnitPiBox,
+            inner ℂ (UnitAddTorus.mFourier k (fun i ↦ (x i : UnitAddCircle)))
+              (UnitAddTorus.mFourier l (fun i ↦ (x i : UnitAddCircle))) := by
+          rw [← integral_const_mul]
+          apply setIntegral_congr_fun literalStageUnitPiBox_measurableSet
+          intro x hx
+          have hw :
+              literalStageFourierScale Y •
+                  Complex.measurableEquivPi.symm x ∈
+                literalStageFourierBox Y := by
+            rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+            exact ⟨Complex.measurableEquivPi.symm x,
+              ⟨x, hx, rfl⟩, rfl⟩
+          have hphys :
+              literalStagePhysicalTorusPoint Y
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x) =
+                (fun i ↦ (x i : UnitAddCircle)) := by
+            funext i
+            fin_cases i <;>
+              simp [literalStagePhysicalTorusPoint,
+                Complex.measurableEquivPi_apply,
+                literalStageFourierScale_ne_zero Y]
+          simp only [literalStagePlaneWaveRepresentative, hw, if_pos]
+          rw [hphys]
+          simp only [RCLike.inner_apply, starRingEnd_apply]
+          rw [star_mul]
+          have hScaleStar :
+              star (literalStageFourierScale Y : ℂ) =
+                (literalStageFourierScale Y : ℂ) := by
+            exact Complex.conj_ofReal _
+          have hScaleInvStar :
+              star ((literalStageFourierScale Y : ℂ)⁻¹) =
+                (literalStageFourierScale Y : ℂ)⁻¹ := by
+            calc
+              star ((literalStageFourierScale Y : ℂ)⁻¹) =
+                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by
+                exact map_inv₀ (starRingEnd ℂ) _
+              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=
+                congrArg Inv.inv hScaleStar
+          rw [hScaleInvStar]
+          have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=
+            Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)
+          field_simp [hScaleNe] <;> ring
     _ = if k = l then 1 else 0 :=
       (orthonormal_iff_ite.mp
         (UnitAddTorus.orthonormal_mFourier (d := Fin 2))) k l
@@ -53862,6 +54102,7 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
     rw [inner_self_eq_norm_sq_to_K, inner_self_eq_norm_sq_to_K, hbase]
     push_cast
     ring_nf
+    ac_rfl
   have hsum :
       (∑ k ∈ s,
           starRingEnd ℂ
@@ -53917,7 +54158,8 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
           zero_mul, sub_zero]
       _ = literalStageFourierScale Y ^ 2 *
           ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖ ^ 2 := by
-        rw [← norm_sq_eq_re_inner (𝕜 := ℂ)]
+        congr 1
+        exact (norm_sq_eq_re_inner (𝕜 := ℂ) _).symm
   have hL := literalStageFourierScale_pos Y
   have hpnonneg := norm_nonneg (literalStagePlaneFiniteProjection Y N F - F)
   have htnonneg := norm_nonneg
@@ -53926,7 +54168,7 @@ theorem norm_planeFourierRemainder_eq_scale_mul_torusRemainder
     literalStageFourierScale Y *
       ‖P5LocalFourierRellich.twoTorusFiniteFourierProjection s T - T‖
   apply (sq_eq_sq₀ hpnonneg (mul_nonneg hL.le htnonneg)).mp
-  simpa only [mul_pow] using hsq
+  convert hsq using 1 <;> ring
 
 /-! #### Uniform high-frequency tail on the graph unit ball -/
 
@@ -54446,6 +54688,8 @@ theorem norm_ambientPlaneToUpperLinear_le (F : AmbientPlaneL2) :
             apply integral_congr_ae
             filter_upwards [MemLp.coeFn_toLp
               (ambientPlane_comp_upper_memLp F)] with z hz
+            change ‖((ambientPlane_comp_upper_memLp F).toLp
+              (fun z : ℍ ↦ F (z : ℂ)) z)‖ ^ 2 = ‖F (z : ℂ)‖ ^ 2
             rw [hz]
           _ = ∫ w : ℂ, ‖F w‖ ^ 2
                 ∂Measure.map UpperHalfPlane.coe
@@ -54536,7 +54780,11 @@ theorem ambientPlaneToLiteralStage_completedPlaneBase_core
       (gammaTwoThreeCuspTruncation_isCompact Y).measurableSet]
       with z hgraph hstage hcarrier hupper hplane hzStage
   simp only [ambientPlaneToLiteralStage, ContinuousLinearMap.comp_apply]
-  rw [hgraph, hstage, hcarrier, hupper,
+  rw [hgraph, hstage, hcarrier]
+  change ((ambientPlane_comp_upper_memLp
+      (completedLiteralStagePlaneBase Y n (coreMap n u))).toLp
+        (fun z : ℍ ↦ completedLiteralStagePlaneBase Y n (coreMap n u) (z : ℂ))) z = _
+  rw [hupper,
     completedLiteralStagePlaneBase_core,
     literalStagePlaneBaseCore_apply, hplane]
   exact literalStageLocalizedGauge_eq_gauge Y n u hzStage
@@ -55174,7 +55422,12 @@ theorem weightedFull_apply_core
       simp only [weightedGraphOperator, weightedGraphLinear,
         lpInfinityMultiplier_apply]
       rw [hv, hmul]
-      simp only [Pi.smul_apply, hw, hu]
+      change inner ℂ (fixedPhaseEuclideanGauge n v z)
+          (((discriminantFullCarrierWeightLp : ℍ → ℂ) z) *
+            ((graphEuclideanBase n (coreMap n u) : ℍ → ℂ) z)) =
+        inner ℂ (fixedPhaseEuclideanGauge n v z)
+          ((upstairsPotential z : ℂ) * fixedPhaseEuclideanGauge n u z)
+      rw [hw, hu]
       rfl
     _ = ∫ z in chosenGammaTwoFundamentalDomain.carrier,
         hyperbolicDensity z •
@@ -55227,7 +55480,6 @@ quotient discriminant operator. -/
 theorem graphPotentialOperator_eq_weightedFull (n : ℤ) :
     graphPotentialOperator n =
       weightedGraphOperator n discriminantFullCarrierWeightLp := by
-  set_option maxHeartbeats 800000 in
   ext u v
   refine (denseRange_coreMap n).induction_on u
     (isClosed_eq
@@ -55245,6 +55497,87 @@ theorem graphPotentialOperator_eq_weightedFull (n : ℤ) :
   rw [graphPotentialOperator_apply_core,
     weightedFull_apply_core]
 
+/-- The scalar integrand shared by the literal-stage and global-carrier
+presentations of the hard discriminant multiplier. -/
+noncomputable def discriminantHardStageIntegrand
+    (N : ℕ) (n : ℤ) (u v : GraphSobolevCompletion n) (z : ℍ) : ℂ :=
+  inner ℂ (graphEuclideanBase n v z)
+    (discriminantHardStageWeight N z * graphEuclideanBase n u z)
+
+/-- The literal-stage inner product is the corresponding set integral on the
+global Euclidean carrier. -/
+theorem discriminantHardStage_literalInner_eq_setIntegral
+    (N : ℕ) (n : ℤ) (u v : GraphSobolevCompletion n) :
+    (∫ z,
+        inner ℂ
+          (graphLiteralStageRestriction
+            (discriminantHardLiteralStage N) n v z)
+          ((discriminantHardStageWeightLp N •
+            graphLiteralStageRestriction
+              (discriminantHardLiteralStage N) n u :
+              P5PhysicalHardStageRestriction.LiteralStageL2
+                (discriminantHardLiteralStage N)) z)
+        ∂P5PhysicalHardStageRestriction.literalStageMeasure
+          (discriminantHardLiteralStage N)) =
+      ∫ z in gammaTwoThreeCuspTruncation
+          (discriminantHardLiteralStage N),
+        discriminantHardStageIntegrand N n u v z
+        ∂chosenEuclideanCarrierMeasure := by
+  apply integral_congr_ae
+  filter_upwards [
+    coeFn_graphLiteralStageRestriction
+      (discriminantHardLiteralStage N) n v,
+    coeFn_graphLiteralStageRestriction
+      (discriminantHardLiteralStage N) n u,
+    coeFn_discriminantHardStageWeightLp N,
+    MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)
+      (discriminantHardStageWeightLp N)
+      (graphLiteralStageRestriction
+        (discriminantHardLiteralStage N) n u)] with z hv hu hw hmul
+  unfold discriminantHardStageIntegrand
+  rw [hv, hmul, Pi.smul_apply', smul_eq_mul, hw, hu]
+  simp only [graphEuclideanBase, ContinuousLinearMap.comp_apply]
+
+/-- The hard-stage integrand vanishes off its literal stage, so restriction
+does not change its global-carrier integral. -/
+theorem discriminantHardStage_setIntegral_eq_integral
+    (N : ℕ) (n : ℤ) (u v : GraphSobolevCompletion n) :
+    (∫ z in gammaTwoThreeCuspTruncation
+          (discriminantHardLiteralStage N),
+        discriminantHardStageIntegrand N n u v z
+        ∂chosenEuclideanCarrierMeasure) =
+      ∫ z, discriminantHardStageIntegrand N n u v z
+        ∂chosenEuclideanCarrierMeasure := by
+  apply setIntegral_eq_integral_of_ae_compl_eq_zero
+  filter_upwards [ae_restrict_mem
+    chosenGammaTwoFundamentalDomain.carrier_measurable] with z hzCarrier hz
+  have hzClosed : z ∈ gammaTwoClosedTileCarrier := by
+    rwa [gammaTwoClosedTileCarrier_eq_chosenCarrier]
+  unfold discriminantHardStageIntegrand
+  rw [discriminantHardStageWeight_eq_zero_outside_literalStage
+    N hzClosed hz]
+  simp
+
+/-- The global hard-stage scalar integrand is the `L∞ · L²` carrier
+multiplication integrand. -/
+theorem discriminantHardStage_integral_eq_weightedIntegral
+    (N : ℕ) (n : ℤ) (u v : GraphSobolevCompletion n) :
+    (∫ z, discriminantHardStageIntegrand N n u v z
+        ∂chosenEuclideanCarrierMeasure) =
+      ∫ z,
+        inner ℂ (graphEuclideanBase n v z)
+          ((discriminantHardCarrierWeightLp N •
+            graphEuclideanBase n u : OrbitEuclideanL2 n) z)
+        ∂chosenEuclideanCarrierMeasure := by
+  apply integral_congr_ae
+  filter_upwards [
+    coeFn_discriminantHardCarrierWeightLp N,
+    MeasureTheory.Lp.coeFn_lpSMul (p := ∞) (q := 2) (r := 2)
+      (discriminantHardCarrierWeightLp N)
+      (graphEuclideanBase n u)] with z hw hmul
+  unfold discriminantHardStageIntegrand
+  rw [hmul, Pi.smul_apply', smul_eq_mul, hw]
+
 /-- Hard multiplication on the global carrier agrees with the literal-stage
 factorization because every carrier point where the hard weight is nonzero
 lies in the chosen literal stage. -/
@@ -55252,60 +55585,54 @@ theorem discriminantHardStageOperator_eq_weightedHard
     (N : ℕ) (n : ℤ) :
     discriminantHardStageOperator N n =
       weightedGraphOperator n (discriminantHardCarrierWeightLp N) := by
-  ext u v
+  apply ContinuousLinearMap.ext
+  intro u
+  apply ContinuousLinearMap.ext
+  intro v
   simp only [discriminantHardStageOperator,
     ContinuousLinearMap.comp_apply,
     discriminantHardStagePotentialPairing,
     LinearMap.mkContinuous₂_apply,
-    discriminantHardStagePairingLinear,
-    weightedGraphOperator, weightedGraphLinear,
-    lpInfinityMultiplier_apply]
+    weightedGraphOperator]
+  change inner ℂ
+      (graphLiteralStageRestriction (discriminantHardLiteralStage N) n v)
+      (lpInfinityMultiplier
+        (P5PhysicalHardStageRestriction.literalStageMeasure
+          (discriminantHardLiteralStage N))
+        (discriminantHardStageWeightLp N)
+        (graphLiteralStageRestriction
+          (discriminantHardLiteralStage N) n u)) =
+    inner ℂ (graphEuclideanBase n v)
+      (lpInfinityMultiplier chosenEuclideanCarrierMeasure
+        (discriminantHardCarrierWeightLp N)
+        (graphEuclideanBase n u))
   rw [MeasureTheory.L2.inner_def, MeasureTheory.L2.inner_def]
-  let Z := discriminantHardLiteralStage N
-  let Φ : ℍ → ℂ := fun z ↦
-    inner ℂ (graphEuclideanBase n v z)
-      (discriminantHardStageWeight N z * graphEuclideanBase n u z)
   calc
     (∫ z,
-        inner ℂ (graphLiteralStageRestriction Z n v z)
+        inner ℂ
+          (graphLiteralStageRestriction
+            (discriminantHardLiteralStage N) n v z)
           ((discriminantHardStageWeightLp N •
-            graphLiteralStageRestriction Z n u :
-              P5PhysicalHardStageRestriction.LiteralStageL2 Z) z)
-        ∂P5PhysicalHardStageRestriction.literalStageMeasure Z) =
-      ∫ z in gammaTwoThreeCuspTruncation Z, Φ z
-        ∂chosenEuclideanCarrierMeasure := by
-      apply integral_congr_ae
-      filter_upwards [
-        coeFn_graphLiteralStageRestriction Z n v,
-        coeFn_graphLiteralStageRestriction Z n u,
-        coeFn_discriminantHardStageWeightLp N,
-        MeasureTheory.Lp.coeFn_lpSMul
-          (discriminantHardStageWeightLp N)
-          (graphLiteralStageRestriction Z n u)] with z hv hu hw hmul
-      rw [hv, hmul, hw, hu]
-      rfl
-    _ = ∫ z, Φ z ∂chosenEuclideanCarrierMeasure :=
-      setIntegral_eq_integral_of_ae_compl_eq_zero (by
-        filter_upwards [ae_restrict_mem
-          chosenGammaTwoFundamentalDomain.carrier_measurable] with z hzCarrier hz
-        have hzClosed : z ∈ gammaTwoClosedTileCarrier := by
-          rwa [gammaTwoClosedTileCarrier_eq_chosenCarrier]
-        rw [discriminantHardStageWeight_eq_zero_outside_literalStage
-          N hzClosed hz]
-        simp [Φ])
+            graphLiteralStageRestriction
+              (discriminantHardLiteralStage N) n u :
+              P5PhysicalHardStageRestriction.LiteralStageL2
+                (discriminantHardLiteralStage N)) z)
+        ∂P5PhysicalHardStageRestriction.literalStageMeasure
+          (discriminantHardLiteralStage N)) =
+      ∫ z in gammaTwoThreeCuspTruncation
+          (discriminantHardLiteralStage N),
+        discriminantHardStageIntegrand N n u v z
+        ∂chosenEuclideanCarrierMeasure :=
+      discriminantHardStage_literalInner_eq_setIntegral N n u v
+    _ = ∫ z, discriminantHardStageIntegrand N n u v z
+          ∂chosenEuclideanCarrierMeasure :=
+      discriminantHardStage_setIntegral_eq_integral N n u v
     _ = ∫ z,
         inner ℂ (graphEuclideanBase n v z)
           ((discriminantHardCarrierWeightLp N •
             graphEuclideanBase n u : OrbitEuclideanL2 n) z)
-        ∂chosenEuclideanCarrierMeasure := by
-      apply integral_congr_ae
-      filter_upwards [
-        coeFn_discriminantHardCarrierWeightLp N,
-        MeasureTheory.Lp.coeFn_lpSMul
-          (discriminantHardCarrierWeightLp N)
-          (graphEuclideanBase n u)] with z hw hmul
-      rw [hmul, hw]
-      rfl
+        ∂chosenEuclideanCarrierMeasure :=
+      discriminantHardStage_integral_eq_weightedIntegral N n u v
 
 /-- Pointwise splitting of full multiplication into hard and tail parts,
 lifted to the graph weak anti-operator. -/
@@ -55317,6 +55644,7 @@ theorem weightedFull_sub_weightedHard_eq_weightedTail
   ext u v
   rw [discriminantHardStageOperator_eq_weightedHard]
   simp only [ContinuousLinearMap.sub_apply, weightedGraphOperator,
+    LinearMap.mkContinuous₂_apply,
     weightedGraphLinear, lpInfinityMultiplier_apply]
   rw [← inner_sub_right]
   congr 2
@@ -55347,7 +55675,12 @@ theorem norm_discriminantHardStageOperator_sub_graphPotential_le
         congr 1
         abel
     _ = ‖weightedGraphOperator n discriminantFullCarrierWeightLp -
-        discriminantHardStageOperator N n‖ := norm_neg _
+        discriminantHardStageOperator N n‖ := by
+      simpa only using
+        (norm_neg
+          (weightedGraphOperator n discriminantFullCarrierWeightLp -
+            discriminantHardStageOperator N n :
+              WeakAntiOperator (GraphSobolevCompletion n)))
     _ = ‖weightedGraphOperator n
         (discriminantTailCarrierWeightLp N)‖ := congrArg norm hsplit
     _ ≤ discriminantCuspEpsilon N :=
@@ -57308,8 +57641,124 @@ theorem gammaTwoReducedChart_pairwise_disjoint_translates (z₀ : ℍ) :
       a • gammaTwoReducedChart z₀) := by
   rw [pairwise_disjoint_smul_iff]
   intro a ha
-  exact gammaTwoReducedChart_inter_translate_imp_eq_one z₀ a <| by
-    simpa only [image_smul] using ha
+  have hStabilizer :
+      ∀ {g : SL(2, ℤ)}, g ∈ CongruenceSubgroup.Gamma 2 →
+        ∀ {z : ℍ}, z ∈ ModularGroup.fd → g • z = z →
+          g = 1 ∨ g = -1 := by
+    intro g hgΓ z hz hgz
+    have hcases := ModularGroup.cases_of_mem_fd_smul_mem_fd
+      (g := g) hz (hgz.symm ▸ hz)
+    rcases hcases with hpm | hT | hTinv | hS | hTS | hTinvSTinv |
+        hSTinv | hST | hTST | hTinvS
+    · exact hpm
+    · rcases hT.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hTinv.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hS.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hTS.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hTinvSTinv.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hSTinv.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hST.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hTST.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+    · rcases hTinvS.1 with rfl | rfl <;>
+        rw [CongruenceSubgroup.Gamma_mem] at hgΓ <;>
+        norm_num [Matrix.SpecialLinearGroup.coe_neg,
+          Matrix.SpecialLinearGroup.coe_mul,
+          ModularGroup.coe_S, ModularGroup.coe_T, ModularGroup.coe_T_inv,
+          Matrix.mul_fin_two] at hgΓ
+  have hRawCentral :
+      ∀ (gamma : GammaTwo) {z : ℍ},
+        ((gamma : SL(2, ℤ)) • z) = z →
+          gamma = 1 ∨
+            gamma =
+              FixedPhaseEssentialCoreRoute.gammaTwoCentralNegOne := by
+    intro gamma z hfix
+    obtain ⟨delta, hdelta⟩ := ModularGroup.exists_smul_mem_fd z
+    let w : ℍ := delta • z
+    let conjugate : SL(2, ℤ) :=
+      delta * (gamma : SL(2, ℤ)) * delta⁻¹
+    have hConjugateMem : conjugate ∈ CongruenceSubgroup.Gamma 2 := by
+      exact (CongruenceSubgroup.Gamma_normal 2).conj_mem
+        (gamma : SL(2, ℤ)) gamma.property delta
+    have hConjugateFix : conjugate • w = w := by
+      dsimp only [conjugate, w]
+      simp only [mul_smul, inv_smul_smul, hfix]
+    have hCentral : conjugate = 1 ∨ conjugate = -1 :=
+      hStabilizer hConjugateMem hdelta hConjugateFix
+    rcases hCentral with hOne | hNeg
+    · left
+      apply Subtype.ext
+      have h := congrArg
+        (fun b : SL(2, ℤ) ↦ delta⁻¹ * b * delta) hOne
+      simpa [conjugate, mul_assoc] using h
+    · right
+      apply Subtype.ext
+      have h := congrArg
+        (fun b : SL(2, ℤ) ↦ delta⁻¹ * b * delta) hNeg
+      simpa [conjugate,
+        FixedPhaseEssentialCoreRoute.gammaTwoCentralNegOne_coe,
+        mul_assoc] using h
+  have hEffectiveFree :
+      ∀ (b : GammaTwoEffective) (z : ℍ), b • z = z → b = 1 := by
+    intro b z hb
+    obtain ⟨gamma, hgamma⟩ := effective_exists_gamma b
+    have hfix : ((gamma : SL(2, ℤ)) • z) = z := by
+      change gamma • z = z
+      exact (hgamma z).symm.trans hb
+    have hcentral := hRawCentral gamma hfix
+    apply Subtype.ext
+    apply Equiv.ext
+    intro w
+    change b • w = (1 : GammaTwoEffective) • w
+    rw [hgamma w]
+    rcases hcentral with rfl | rfl
+    · simp only [one_smul]
+    · change
+        ((FixedPhaseEssentialCoreRoute.gammaTwoCentralNegOne : GammaTwo) :
+            SL(2, ℤ)) • w = w
+      exact FixedPhaseEssentialCoreRoute.gammaTwoCentralNegOne_smul w
+  apply hEffectiveFree a z₀
+  apply gammaTwoReducedChart_inter_translate_imp_smul_eq z₀ a
+  simpa only [image_smul] using ha
 
 /-- Replace the part of the chosen carrier lying in the orbit saturation of
 the chart by the chart itself. -/
@@ -59356,12 +59805,22 @@ theorem euclideanRaiseTestAdjoint_conjugate_eq_conj_affineTranspose
   rw [HalfWeightCompactCoordinateGreen.dx_conjugate_apply,
     HalfWeightCompactCoordinateGreen.dy_conjugate_apply,
     HalfWeightCompactCoordinateGreen.conjugate_apply]
-  unfold reducedChartAmbientTest fullPlaneTestToAmbientTestCore
+  have hfun : (reducedChartAmbientTest v hv : ℂ → ℂ) = (v : ℂ → ℂ) := by
+    funext z
+    exact reducedChartAmbientTest_apply v hv z
+  have hfderiv :
+      fderiv ℝ (reducedChartAmbientTest v hv : ℂ → ℂ) w =
+        fderiv ℝ (v : ℂ → ℂ) w :=
+    congrArg (fun f : ℂ → ℂ ↦ fderiv ℝ f w) hfun
+  rw [hfun]
   simp only [HalfWeightCompactCoordinateGreen.dx_apply,
-    HalfWeightCompactCoordinateGreen.dy_apply, sub_eq_add_neg,
-    star_add, star_mul, star_neg, Complex.conj_I,
-    Complex.conj_ofReal, smul_eq_mul]
-  ring_nf
+    HalfWeightCompactCoordinateGreen.dy_apply]
+  rw [hfderiv]
+  simp only [sub_eq_add_neg,
+    star_add, star_mul, star_neg, Complex.star_def,
+    Complex.conj_I, Complex.conj_ofReal, smul_eq_mul, map_one]
+  push_cast
+  ring
 
 /-- Hermitian lowering transpose applied to the conjugated test is the
 conjugate of the corresponding bilinear transpose. -/
@@ -59383,12 +59842,22 @@ theorem euclideanLowerFromSuccTestAdjoint_conjugate_eq_conj_affineTranspose
   rw [HalfWeightCompactCoordinateGreen.dx_conjugate_apply,
     HalfWeightCompactCoordinateGreen.dy_conjugate_apply,
     HalfWeightCompactCoordinateGreen.conjugate_apply]
-  unfold reducedChartAmbientTest fullPlaneTestToAmbientTestCore
+  have hfun : (reducedChartAmbientTest v hv : ℂ → ℂ) = (v : ℂ → ℂ) := by
+    funext z
+    exact reducedChartAmbientTest_apply v hv z
+  have hfderiv :
+      fderiv ℝ (reducedChartAmbientTest v hv : ℂ → ℂ) w =
+        fderiv ℝ (v : ℂ → ℂ) w :=
+    congrArg (fun f : ℂ → ℂ ↦ fderiv ℝ f w) hfun
+  rw [hfun]
   simp only [HalfWeightCompactCoordinateGreen.dx_apply,
-    HalfWeightCompactCoordinateGreen.dy_apply, sub_eq_add_neg,
-    star_add, star_mul, star_neg, Complex.conj_I,
-    Complex.conj_ofReal, smul_eq_mul]
-  ring_nf
+    HalfWeightCompactCoordinateGreen.dy_apply]
+  rw [hfderiv]
+  simp only [sub_eq_add_neg,
+    star_add, star_mul, star_neg, Complex.star_def,
+    Complex.conj_I, Complex.conj_ofReal, smul_eq_mul, map_one]
+  push_cast
+  ring
 
 /-- Signed lowering of the periodized conjugate is a chart gauge model for
 the conjugate of the raising bilinear transpose. -/
@@ -59572,7 +60041,7 @@ theorem inner_fullPlaneTestToL2_eq_integral_conj_mul
   filter_upwards [coeFn_fullPlaneTestToL2 v] with x hx
   rw [hx]
   simp only [RCLike.inner_apply, starRingEnd_apply]
-  ring_nf
+  ring
 theorem integral_mul_eq_inner_fullPlaneConjugate
     (v : FullPlaneTest) (u : AmbientPlaneL2) :
     (∫ x : ℂ, v x * u x) =
@@ -61932,7 +62401,7 @@ theorem fullPlaneTestToL2_reducedChartGaugeLocalizedAmbientTest
   · rcases hw with ⟨z, hz, rfl⟩
     simp only [ambientReducedChartGauge_comp_coe, hz, Set.indicator_of_mem,
       upperLift_apply, Mock2FA.PaperCorrections.AutomorphicSobolev.FixedPhaseClosedOperators.PhysicalLocalL2.fixedPhaseEuclideanGauge]
-    ring_nf
+    ring
   · have hphiZero : phi w = 0 := by
       by_contra hne
       exact hw (hphi (subset_tsupport _ hne))
