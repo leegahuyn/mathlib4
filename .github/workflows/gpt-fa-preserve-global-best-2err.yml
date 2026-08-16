@@ -1,0 +1,100 @@
+name: GPT preserve verified FA global-best 2-error source
+
+on:
+  push:
+    branches:
+      - gpt/fa-global-best-2err-6ff74433-20260816
+    paths:
+      - .github/workflows/gpt-fa-preserve-global-best-2err.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-fa-preserve-global-best-2err
+  cancel-in-progress: false
+
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRANCH: gpt/fa-global-best-2err-6ff74433-20260816
+      SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      CANDIDATE: PrimalitySheafVerification/FA_Blocker_WrapperCandidates/Candidate05.lean
+      BASE_SHA256: 1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c
+      BEST_SHA256: 6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf
+
+    steps:
+      - name: Check out exact preservation branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-global-best-2err-6ff74433-20260816
+          fetch-depth: 1
+          persist-credentials: true
+
+      - name: Materialize exact previously verified source and manifest
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          current="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          test "$current" = "$BASE_SHA256"
+          mkdir -p evidence/gpt-fa-global-best-2err
+          python3 scripts/gpt_fa_primary4016_candidate05_patch_v2.py \
+            --source "$SOURCE" --candidate "$CANDIDATE" --output "$SOURCE" \
+            --audit evidence/gpt-fa-global-best-2err/PATCH_AUDIT.json \
+            > evidence/gpt-fa-global-best-2err/PATCH_AUDIT.stdout.json
+          actual="$(sha256sum "$SOURCE" | awk '{print $1}')"
+          test "$actual" = "$BEST_SHA256"
+          test "$(wc -c < "$SOURCE" | tr -d '[:space:]')" = 2821061
+          test "$(wc -l < "$SOURCE" | tr -d '[:space:]')" = 63119
+          blob="$(git hash-object "$SOURCE")"
+          test "$blob" = 08383c33ab31ca3a32a143c4186e32f4d023985b
+          python3 - "$blob" <<'PY'
+          import json, sys
+          from pathlib import Path
+          data = {
+            "schema": "gpt-fa-global-best-preservation-v2",
+            "repository": "leegahuyn/mathlib4",
+            "branch": "gpt/fa-global-best-2err-6ff74433-20260816",
+            "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+            "source_sha256": "6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf",
+            "git_blob_sha": sys.argv[1],
+            "source_bytes": 2821061,
+            "source_lines": 63119,
+            "parent_global_best_sha256": "1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c",
+            "verified_direct_run_id": 31939310898,
+            "verified_artifact_id": 9261684971,
+            "artifact_zip_digest": "sha256:2421af72e56cefb7ed4c337a145746c3b1180f8b746ddcd797ac2c93f21823f2",
+            "Mock2_exit": 0,
+            "Mock2_Advanced_exit": 0,
+            "Mock2_FunctionalAnalysis_exit": 1,
+            "error_headers": 2,
+            "failing_declarations": ["graphPotentialOperator_isCompact_unconditional"],
+            "first_error_line": 55798,
+            "first_diagnostic": "deterministic timeout at whnf",
+            "second_error_line": 55791,
+            "second_diagnostic": "deterministic timeout while synthesizing pending metavariables",
+            "canonical": False,
+            "authority": "VERIFIED_DIRECT_LEAN_GLOBAL_BEST"
+          }
+          Path("evidence/gpt-fa-global-best-2err/FA_GLOBAL_BEST_2ERR_6ff74433.json").write_text(
+            json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+
+      - name: Commit and push immutable best bytes
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$SOURCE" evidence/gpt-fa-global-best-2err
+          git commit -m "GPT: preserve VERIFIED FA global best 2-error source 6ff74433"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Verify committed source identity
+        run: |
+          set -euo pipefail
+          test "$(sha256sum "$SOURCE" | awk '{print $1}')" = "$BEST_SHA256"
+          test "$(git rev-parse HEAD:"$SOURCE")" = 08383c33ab31ca3a32a143c4186e32f4d023985b
+          git status --porcelain | test ! -s /dev/stdin
