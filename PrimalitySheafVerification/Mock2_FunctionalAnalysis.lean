@@ -55478,20 +55478,11 @@ theorem graphPotentialOperator_eq_weightedFull (n : ℤ) :
     graphPotentialOperator n =
       weightedGraphOperator n discriminantFullCarrierWeightLp := by
   set_option maxHeartbeats 800000 in
-  ext u v
-  refine (denseRange_coreMap n).induction_on u
-    (isClosed_eq
-      ((ContinuousLinearMap.apply' ℂ (starRingEnd ℂ) v).continuous.comp
-        (graphPotentialOperator n).continuous)
-      ((ContinuousLinearMap.apply' ℂ (starRingEnd ℂ) v).continuous.comp
-        (weightedGraphOperator n discriminantFullCarrierWeightLp).continuous)) ?_
-  intro u₀
-  refine (denseRange_coreMap n).induction_on v
-    (isClosed_eq
-      (graphPotentialOperator n (coreMap n u₀)).continuous
-      (weightedGraphOperator n discriminantFullCarrierWeightLp
-        (coreMap n u₀)).continuous) ?_
-  intro v₀
+  refine continuous_sesquilinear_ext_of_dense
+    (graphPotentialOperator n)
+    (weightedGraphOperator n discriminantFullCarrierWeightLp)
+    (D := Set.range (coreMap n)) (denseRange_coreMap n) ?_
+  rintro _ ⟨u, rfl⟩ _ ⟨v, rfl⟩
   rw [graphPotentialOperator_apply_core,
     weightedFull_apply_core]
 
