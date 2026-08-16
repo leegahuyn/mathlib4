@@ -1,3 +1,4 @@
+# Materialize only reviewed, hash-locked exploration infrastructure.
 name: Codex FA primary4016 materialize reproducer
 
 on:
