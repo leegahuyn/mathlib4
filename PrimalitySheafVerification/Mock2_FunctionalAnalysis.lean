@@ -53834,33 +53834,139 @@ theorem inner_literalStagePlaneWave
     inner ℂ (literalStagePlaneWave Y k)
         (literalStagePlaneWave Y l) = if k = l then 1 else 0 := by
   rw [MeasureTheory.L2.inner_def]
-  calc
-    (∫ w : ℂ, inner ℂ (literalStagePlaneWave Y k w)
+  have hsupport :
+      (∫ w : ℂ, inner ℂ (literalStagePlaneWave Y k w)
         (literalStagePlaneWave Y l w)) =
+        ∫ w in literalStageFourierBox Y,
+          inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+            (literalStagePlaneWaveRepresentative Y l w) := by
+    rw [← integral_indicator (literalStageFourierBox_measurableSet Y)]
+    apply integral_congr_ae
+    filter_upwards [coeFn_literalStagePlaneWave Y k,
+      coeFn_literalStagePlaneWave Y l] with w hk hl
+    rw [hk, hl]
+    by_cases hw : w ∈ literalStageFourierBox Y
+    · simp [hw]
+    · simp [literalStagePlaneWaveRepresentative, hw]
+  rw [hsupport]
+  calc
+    (∫ w in literalStageFourierBox Y,
+        inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+          (literalStagePlaneWaveRepresentative Y l w)) =
       inner ℂ
         (UnitAddTorus.mFourierLp (d := Fin 2) 2 k)
         (UnitAddTorus.mFourierLp (d := Fin 2) 2 l) := by
       rw [MeasureTheory.L2.inner_def]
-      rw [← literalStageFourierBox_eq_smul_unitPiBox Y,
-        Measure.setIntegral_comp_smul_of_pos volume
-          (fun w : ℂ ↦
-            inner ℂ (literalStagePlaneWave Y k w)
-              (literalStagePlaneWave Y l w))
-          (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
-          (literalStageFourierScale_pos Y)]
+      rw [show (∫ t : P5LocalFourierRellich.TwoTorus,
+          inner ℂ
+            ((UnitAddTorus.mFourierLp (d := Fin 2) 2 k) t)
+            ((UnitAddTorus.mFourierLp (d := Fin 2) 2 l) t)) =
+          ∫ t : P5LocalFourierRellich.TwoTorus,
+            inner ℂ (UnitAddTorus.mFourier k t)
+              (UnitAddTorus.mFourier l t) by
+        apply integral_congr_ae
+        filter_upwards [UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 k,
+          UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 l] with t hk hl
+        rw [hk, hl]]
       rw [UnitAddTorus.integral_preimage
         (fun t : P5LocalFourierRellich.TwoTorus ↦
           inner ℂ (UnitAddTorus.mFourier k t)
             (UnitAddTorus.mFourier l t))
         (fun _ : Fin 2 ↦ -(1 / 2 : ℝ))]
-      apply integral_congr_ae
-      filter_upwards [coeFn_literalStagePlaneWave Y k,
-        coeFn_literalStagePlaneWave Y l,
-        UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 k,
-        UnitAddTorus.coeFn_mFourierLp (d := Fin 2) 2 l] with x hk hl hkt hlt
-      simp [hk, hl, hkt, hlt, literalStagePlaneWaveRepresentative,
-        literalStageFourierBox_eq_smul_unitPiBox,
-        literalStageFourierScale_ne_zero Y]
+      have hhalf : -(1 / 2 : ℝ) + 1 = 1 / 2 := by norm_num
+      rw [hhalf]
+      calc
+        (∫ w in literalStageFourierBox Y,
+            inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+              (literalStagePlaneWaveRepresentative Y l w)) =
+          (literalStageFourierScale Y : ℂ) ^ 2 *
+            ∫ w in Complex.measurableEquivPi.symm '' literalStageUnitPiBox,
+              inner ℂ
+                (literalStagePlaneWaveRepresentative Y k
+                  (literalStageFourierScale Y • w))
+                (literalStagePlaneWaveRepresentative Y l
+                  (literalStageFourierScale Y • w)) := by
+          rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+          have hscale := Measure.setIntegral_comp_smul_of_pos
+            (E := ℂ) (F := ℂ) volume
+            (fun w : ℂ ↦ inner ℂ
+              (literalStagePlaneWaveRepresentative Y k w)
+              (literalStagePlaneWaveRepresentative Y l w))
+            (Complex.measurableEquivPi.symm '' literalStageUnitPiBox)
+            (literalStageFourierScale_pos Y)
+          rw [Complex.finrank_real_complex] at hscale
+          calc
+            _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+                ((((literalStageFourierScale Y) ^ 2)⁻¹ : ℝ) •
+                  ∫ w in literalStageFourierScale Y •
+                      (Complex.measurableEquivPi.symm '' literalStageUnitPiBox),
+                    inner ℂ (literalStagePlaneWaveRepresentative Y k w)
+                      (literalStagePlaneWaveRepresentative Y l w)) := by
+                  simp only [Complex.real_smul]
+                  push_cast
+                  field_simp [literalStageFourierScale_ne_zero Y]
+            _ = _ := by rw [hscale]
+        _ = (literalStageFourierScale Y : ℂ) ^ 2 *
+            ∫ x in literalStageUnitPiBox,
+              inner ℂ
+                (literalStagePlaneWaveRepresentative Y k
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x))
+                (literalStagePlaneWaveRepresentative Y l
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x)) := by
+          rw [Complex.volume_preserving_equiv_pi.symm.setIntegral_image_emb
+            Complex.measurableEquivPi.symm.measurableEmbedding
+            (fun w : ℂ ↦ inner ℂ
+              (literalStagePlaneWaveRepresentative Y k
+                (literalStageFourierScale Y • w))
+              (literalStagePlaneWaveRepresentative Y l
+                (literalStageFourierScale Y • w)))
+            literalStageUnitPiBox]
+        _ = ∫ x in literalStageUnitPiBox,
+            inner ℂ (UnitAddTorus.mFourier k (fun i ↦ (x i : UnitAddCircle)))
+              (UnitAddTorus.mFourier l (fun i ↦ (x i : UnitAddCircle))) := by
+          rw [← integral_const_mul]
+          apply setIntegral_congr_fun literalStageUnitPiBox_measurableSet
+          intro x hx
+          have hw :
+              literalStageFourierScale Y •
+                  Complex.measurableEquivPi.symm x ∈
+                literalStageFourierBox Y := by
+            rw [literalStageFourierBox_eq_smul_unitPiBox Y]
+            exact ⟨Complex.measurableEquivPi.symm x,
+              ⟨x, hx, rfl⟩, rfl⟩
+          have hphys :
+              literalStagePhysicalTorusPoint Y
+                  (literalStageFourierScale Y •
+                    Complex.measurableEquivPi.symm x) =
+                (fun i ↦ (x i : UnitAddCircle)) := by
+            funext i
+            fin_cases i <;>
+              simp [literalStagePhysicalTorusPoint,
+                Complex.measurableEquivPi_apply,
+                literalStageFourierScale_ne_zero Y]
+          simp only [literalStagePlaneWaveRepresentative, hw, if_pos]
+          rw [hphys]
+          simp only [RCLike.inner_apply, starRingEnd_apply]
+          rw [star_mul]
+          have hScaleStar :
+              star (literalStageFourierScale Y : ℂ) =
+                (literalStageFourierScale Y : ℂ) := by
+            exact Complex.conj_ofReal _
+          have hScaleInvStar :
+              star ((literalStageFourierScale Y : ℂ)⁻¹) =
+                (literalStageFourierScale Y : ℂ)⁻¹ := by
+            calc
+              star ((literalStageFourierScale Y : ℂ)⁻¹) =
+                  (star (literalStageFourierScale Y : ℂ))⁻¹ := by
+                exact map_inv₀ (starRingEnd ℂ) _
+              _ = (literalStageFourierScale Y : ℂ)⁻¹ :=
+                congrArg Inv.inv hScaleStar
+          rw [hScaleInvStar]
+          have hScaleNe : (literalStageFourierScale Y : ℂ) ≠ 0 :=
+            Complex.ofReal_ne_zero.mpr (literalStageFourierScale_ne_zero Y)
+          field_simp [hScaleNe]
     _ = if k = l then 1 else 0 :=
       (orthonormal_iff_ite.mp
         (UnitAddTorus.orthonormal_mFourier (d := Fin 2))) k l
