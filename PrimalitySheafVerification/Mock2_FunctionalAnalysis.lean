@@ -55478,13 +55478,13 @@ theorem graphPotentialOperator_eq_weightedFull (n : ℤ) :
     graphPotentialOperator n =
       weightedGraphOperator n discriminantFullCarrierWeightLp := by
   set_option maxHeartbeats 800000 in
-  refine continuous_sesquilinear_ext_of_dense
-    (graphPotentialOperator n)
-    (weightedGraphOperator n discriminantFullCarrierWeightLp)
-    (D := Set.range (coreMap n)) (denseRange_coreMap n) ?_
-  rintro _ ⟨u, rfl⟩ _ ⟨v, rfl⟩
-  rw [graphPotentialOperator_apply_core,
-    weightedFull_apply_core]
+    refine continuous_sesquilinear_ext_of_dense
+      (graphPotentialOperator n)
+      (weightedGraphOperator n discriminantFullCarrierWeightLp)
+      (D := Set.range (coreMap n)) (denseRange_coreMap n) ?_
+    rintro _ ⟨u, rfl⟩ _ ⟨v, rfl⟩
+    rw [graphPotentialOperator_apply_core,
+      weightedFull_apply_core]
 
 /-- Hard multiplication on the global carrier agrees with the literal-stage
 factorization because every carrier point where the hard weight is nonzero
