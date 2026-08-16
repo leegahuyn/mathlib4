@@ -1,0 +1,27 @@
+{
+  "Mock2_Advanced_exit": 0,
+  "Mock2_FunctionalAnalysis_exit": 1,
+  "Mock2_exit": 0,
+  "artifact_zip_digest": "sha256:2421af72e56cefb7ed4c337a145746c3b1180f8b746ddcd797ac2c93f21823f2",
+  "authority": "VERIFIED_DIRECT_LEAN_GLOBAL_BEST",
+  "branch": "gpt/fa-global-best-2err-6ff74433-20260816",
+  "canonical": false,
+  "error_headers": 2,
+  "failing_declarations": [
+    "graphPotentialOperator_isCompact_unconditional"
+  ],
+  "first_diagnostic": "deterministic timeout at whnf",
+  "first_error_line": 55798,
+  "git_blob_sha": "08383c33ab31ca3a32a143c4186e32f4d023985b",
+  "parent_global_best_sha256": "1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c",
+  "repository": "leegahuyn/mathlib4",
+  "schema": "gpt-fa-global-best-preservation-v2",
+  "second_diagnostic": "deterministic timeout while synthesizing pending metavariables",
+  "second_error_line": 55791,
+  "source_bytes": 2821061,
+  "source_lines": 63119,
+  "source_path": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+  "source_sha256": "6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf",
+  "verified_artifact_id": 9261684971,
+  "verified_direct_run_id": 31939310898
+}

@@ -1,0 +1,14 @@
+{
+  "candidate_block_sha256": "8730a97cf5a0b4730140190943851298a798f98c86e5d4d79bf735ec38c62156",
+  "conclusion_weakened": false,
+  "forbidden_constructs_added": false,
+  "input_bytes": 2816878,
+  "input_lines": 63028,
+  "input_sha256": "1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c",
+  "new_assumptions": false,
+  "output_bytes": 2821061,
+  "output_lines": 63119,
+  "output_sha256": "6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf",
+  "public_theorem_name": "weightedFull_sub_weightedHard_eq_weightedTail",
+  "schema": "gpt-fa-primary4016-candidate05-dynamic-patch-v1"
+}
