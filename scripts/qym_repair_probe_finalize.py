@@ -163,9 +163,314 @@ def main() -> None:
         "theorem auditRegistry_ids : auditRegistry.map AuditRecord.id = allClaims := by\n"
         "  simp only [auditRegistry, List.map_map]\n"
         "  change List.map (fun claim : ClaimId => claim) allClaims = allClaims\n"
-        "  simp only [List.map_id]",
+        "  rfl",
         1,
         "make_audit_registry_projection_explicit",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "    allCertificates.map Certificate.id = allEvidence := by\n"
+        "  simp [allCertificates, certificate]",
+        "    allCertificates.map Certificate.id = allEvidence := by\n"
+        "  simp only [allCertificates, List.map_map]\n"
+        "  change List.map (fun evidence : EvidenceId => evidence) allEvidence = allEvidence\n"
+        "  rfl",
+        10,
+        "make_all_certificate_projections_explicit",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "    (certificatesForClaim claim).map Certificate.id = evidenceForClaim claim := by\n"
+        "  simp [certificatesForClaim, certificate]",
+        "    (certificatesForClaim claim).map Certificate.id = evidenceForClaim claim := by\n"
+        "  simp only [certificatesForClaim, List.map_map]\n"
+        "  change List.map (fun evidence : EvidenceId => evidence) (evidenceForClaim claim) =\n"
+        "    evidenceForClaim claim\n"
+        "  cases claim <;> rfl",
+        10,
+        "make_claim_certificate_projections_explicit",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem leibniz00 (a b : Form0 R) :\n"
+        "    d0 (wedge00 a b) = wedge10 (d0 a) b + wedge01 a (d0 b) := by\n"
+        "  simp [d0, wedge00, wedge01, wedge10]",
+        "theorem leibniz00 (a b : Form0 R) :\n"
+        "    d0 (wedge00 a b) = wedge10 (d0 a) b + wedge01 a (d0 b) := by\n"
+        "  ext <;> simp [d0, wedge00, wedge01, wedge10]",
+        1,
+        "close_product_zero_components_in_leibniz00",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem d0_conj0 (g : Rˣ) (a : Form0 R) :\n"
+        "    d0 (conj0 g a) = conj1 g (d0 a) := by\n"
+        "  simp [d0, conj0, conj1]",
+        "theorem d0_conj0 (g : Rˣ) (a : Form0 R) :\n"
+        "    d0 (conj0 g a) = conj1 g (d0 a) := by\n"
+        "  ext <;> simp [d0, conj0, conj1]",
+        1,
+        "close_product_zero_components_in_d0_conj0",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem projection0_pythagoras (x : Vec2) :\n"
+        "    normSq x = normSq (projection0 x) + normSq (x - projection0 x) := by\n"
+        "  simp [normSq, dot, projection0]\n"
+        "  ring",
+        "theorem projection0_pythagoras (x : Vec2) :\n"
+        "    normSq x = normSq (projection0 x) + normSq (x - projection0 x) := by\n"
+        "  simp [normSq, dot, projection0]",
+        1,
+        "remove_unreachable_ring_after_projection_simp",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem cubicNonlinearity_apply_zero (x : Vec2) :\n"
+        "    cubicNonlinearity x 0 = -(normSq x * x 1) := by\n"
+        "  simp [cubicNonlinearity]\n"
+        "  ring",
+        "theorem cubicNonlinearity_apply_zero (x : Vec2) :\n"
+        "    cubicNonlinearity x 0 = -(normSq x * x 1) := by\n"
+        "  simp [cubicNonlinearity]",
+        1,
+        "remove_unreachable_ring_after_cubic_simp",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "  simp only [Matrix.add_apply, map_add]\n"
+        "  ring",
+        "  simp only [Matrix.add_apply, star_add]\n"
+        "  ring",
+        1,
+        "use_star_add_in_weighted_pairing",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "  simp only [Matrix.smul_apply, smul_eq_mul, map_mul]\n"
+        "  ring",
+        "  simp only [Matrix.smul_apply, smul_eq_mul, star_mul]\n"
+        "  ring",
+        1,
+        "use_star_mul_in_weighted_pairing",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "  simp only [map_add, map_mul, map_ofNat, star_star]\n"
+        "  ring",
+        "  simp only [star_add, star_mul, map_ofNat, star_star]\n"
+        "  ring",
+        1,
+        "use_star_laws_in_weighted_pairing_symmetry",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "def windowIndices {n : ℕ} (spectrum : Fin n → ℝ) (center radius : ℝ) : Finset (Fin n) :=\n"
+        "  Finset.univ.filter fun i => InWindow center radius (spectrum i)",
+        "def windowIndices {n : ℕ} (spectrum : Fin n → ℝ) (center radius : ℝ) : Finset (Fin n) := by\n"
+        "  classical\n"
+        "  exact Finset.univ.filter fun i => InWindow center radius (spectrum i)",
+        1,
+        "make_window_predicate_decidable_locally",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem invariantUnder_add {G X Y : Type*} [Add Y]\n"
+        "    {transform : G → X → X} {F H : X → Y}\n"
+        "    (hF : InvariantUnder transform F) (hH : InvariantUnder transform H) :\n"
+        "    InvariantUnder transform (fun x => F x + H x) := by\n"
+        "  intro g x\n"
+        "  rw [hF g x, hH g x]",
+        "theorem invariantUnder_add {G X Y : Type*} [Add Y]\n"
+        "    {transform : G → X → X} {F H : X → Y}\n"
+        "    (hF : InvariantUnder transform F) (hH : InvariantUnder transform H) :\n"
+        "    InvariantUnder transform (fun x => F x + H x) := by\n"
+        "  intro g x\n"
+        "  change F (transform g x) + H (transform g x) = F x + H x\n"
+        "  rw [hF g x, hH g x]",
+        1,
+        "expose_beta_redex_in_invariant_add",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem invariantUnder_neg {G X Y : Type*} [Neg Y]\n"
+        "    {transform : G → X → X} {F : X → Y}\n"
+        "    (hF : InvariantUnder transform F) :\n"
+        "    InvariantUnder transform (fun x => -F x) := by\n"
+        "  intro g x\n"
+        "  rw [hF g x]",
+        "theorem invariantUnder_neg {G X Y : Type*} [Neg Y]\n"
+        "    {transform : G → X → X} {F : X → Y}\n"
+        "    (hF : InvariantUnder transform F) :\n"
+        "    InvariantUnder transform (fun x => -F x) := by\n"
+        "  intro g x\n"
+        "  change -F (transform g x) = -F x\n"
+        "  rw [hF g x]",
+        1,
+        "expose_beta_redex_in_invariant_neg",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem invariantUnder_sub {G X Y : Type*} [Sub Y]\n"
+        "    {transform : G → X → X} {F H : X → Y}\n"
+        "    (hF : InvariantUnder transform F) (hH : InvariantUnder transform H) :\n"
+        "    InvariantUnder transform (fun x => F x - H x) := by\n"
+        "  intro g x\n"
+        "  rw [hF g x, hH g x]",
+        "theorem invariantUnder_sub {G X Y : Type*} [Sub Y]\n"
+        "    {transform : G → X → X} {F H : X → Y}\n"
+        "    (hF : InvariantUnder transform F) (hH : InvariantUnder transform H) :\n"
+        "    InvariantUnder transform (fun x => F x - H x) := by\n"
+        "  intro g x\n"
+        "  change F (transform g x) - H (transform g x) = F x - H x\n"
+        "  rw [hF g x, hH g x]",
+        1,
+        "expose_beta_redex_in_invariant_sub",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem eigenvalue_zero : eigenvalue 0 = 0 := by\n"
+        "  norm_num [eigenvalue]",
+        "theorem eigenvalue_zero : eigenvalue 0 = 0 := by\n"
+        "  have h : (0 : Fin 3) ≠ 2 := by decide\n"
+        "  simp only [eigenvalue, if_neg h]",
+        1,
+        "decide_fin3_zero_ne_two_for_eigenvalue",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem eigenvalue_one : eigenvalue 1 = 0 := by\n"
+        "  norm_num [eigenvalue]",
+        "theorem eigenvalue_one : eigenvalue 1 = 0 := by\n"
+        "  have h : (1 : Fin 3) ≠ 2 := by decide\n"
+        "  simp only [eigenvalue, if_neg h]",
+        1,
+        "decide_fin3_one_ne_two_for_eigenvalue",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem zero_isGround : IsGroundIndex 0 := by\n"
+        "  norm_num [IsGroundIndex]",
+        "theorem zero_isGround : IsGroundIndex 0 := by\n"
+        "  change (0 : Fin 3) ≠ 2\n"
+        "  decide",
+        1,
+        "decide_fin3_zero_ground_membership",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem one_isGround : IsGroundIndex 1 := by\n"
+        "  norm_num [IsGroundIndex]",
+        "theorem one_isGround : IsGroundIndex 1 := by\n"
+        "  change (1 : Fin 3) ≠ 2\n"
+        "  decide",
+        1,
+        "decide_fin3_one_ground_membership",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "theorem eigenvalue_eq_zero_of_isGround\n"
+        "    (i : Fin 3) (hi : IsGroundIndex i) : eigenvalue i = 0 := by\n"
+        "  simp [eigenvalue, IsGroundIndex, hi]",
+        "theorem eigenvalue_eq_zero_of_isGround\n"
+        "    (i : Fin 3) (hi : IsGroundIndex i) : eigenvalue i = 0 := by\n"
+        "  change i ≠ (2 : Fin 3) at hi\n"
+        "  simp only [eigenvalue, if_neg hi]",
+        1,
+        "use_ground_hypothesis_for_fin3_eigenvalue",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "      add_le_add_left (neg_relativeTerms_le_perturbation hbound x) (kinetic x)",
+        "      add_le_add_right (neg_relativeTerms_le_perturbation hbound x) (kinetic x)",
+        1,
+        "correct_lower_enclosure_addition_side",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "      add_le_add_left (perturbation_le_relativeMajorant hbound x) (kinetic x)",
+        "      add_le_add_right (perturbation_le_relativeMajorant hbound x) (kinetic x)",
+        1,
+        "correct_upper_enclosure_addition_side",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "      add_le_add_right hscaled (b * normSq x)",
+        "      add_le_add_left hscaled (b * normSq x)",
+        1,
+        "correct_upper_bound_scaling_addition_side",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "      add_le_add_right (hshiftedLower x) (shift * normSq x)",
+        "      add_le_add_left (hshiftedLower x) (shift * normSq x)",
+        1,
+        "correct_shifted_lower_bound_addition_side",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "  have hindex : (n : ℝ) ≤ 2 * (n : ℝ) + 1 := by\n"
+        "    linarith [Nat.cast_nonneg n]",
+        "  have hindex : (n : ℝ) ≤ 2 * (n : ℝ) + 1 := by\n"
+        "    linarith [(Nat.cast_nonneg n : 0 ≤ (n : ℝ))]",
+        1,
+        "pin_nat_cast_order_for_adjacent_gap",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "  have hnposReal : (1 : ℝ) ≤ (n : ℝ) :=\n"
+        "    Nat.cast_le.mpr hnpos",
+        "  have hnposReal : (1 : ℝ) ≤ (n : ℝ) := by\n"
+        "    exact_mod_cast hnpos",
+        1,
+        "make_nat_to_real_order_cast_explicit",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "/-- A dependent evidence object retaining the proposition proved by its tag. -/\n"
+        "structure Certificate where\n"
+        "  id : EvidenceId\n"
+        "  proof : EvidenceStatement id",
+        "/-- A dependent evidence object retaining the proposition proved by its tag. -/\n"
+        "structure Certificate where\n"
+        "  id : EvidenceId\n"
+        "  proof : EvidenceStatement.{0, 0, 0, 0, 0, 0, 0} id",
+        1,
+        "pin_direct_method_certificate_universes",
+        audit,
+    )
+    text = replace_exact(
+        text,
+        "/-! ## Finite approximants and exact window cardinality -/",
+        "attribute [local instance] Classical.propDecidable\n\n"
+        "/-! ## Finite approximants and exact window cardinality -/",
+        1,
+        "enable_classical_decidability_for_window_counts",
         audit,
     )
 
