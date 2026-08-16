@@ -45,9 +45,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -z "$(git status --porcelain=v1)"
           mkdir -p "$OUT"
           git rev-parse HEAD | tee "$OUT/checkout-head.txt"
-          git status --porcelain=v1 | tee "$OUT/git-status.before.txt"
+          git status --porcelain=v1 --untracked-files=no | tee "$OUT/git-status.before.txt"
           test "$(tr -d '\r\n' < "$OUT/checkout-head.txt")" = "$GITHUB_SHA"
           test ! -s "$OUT/git-status.before.txt"
           sha256sum "$FA_SOURCE" | tee "$OUT/fa-source.before.sha256"
@@ -139,7 +140,7 @@ jobs:
           fi
 
           sha256sum "$FA_SOURCE" | tee "$OUT/fa-source.after.sha256"
-          git status --porcelain=v1 | tee "$OUT/git-status.after.txt"
+          git status --porcelain=v1 --untracked-files=no | tee "$OUT/git-status.after.txt"
           exit 0
 
       - name: Collect exact downstream frontier
