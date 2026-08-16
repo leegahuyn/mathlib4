@@ -55483,8 +55483,8 @@ theorem graphPotentialOperator_eq_weightedFull (n : ℤ) :
       (weightedGraphOperator n discriminantFullCarrierWeightLp)
       (D := Set.range (coreMap n)) (denseRange_coreMap n) ?_
     rintro _ ⟨u, rfl⟩ _ ⟨v, rfl⟩
-    rw [graphPotentialOperator_apply_core,
-      weightedFull_apply_core]
+    exact (graphPotentialOperator_apply_core n u v).trans
+      (weightedFull_apply_core n u v).symm
 
 /-- Hard multiplication on the global carrier agrees with the literal-stage
 factorization because every carrier point where the hard weight is nonzero
