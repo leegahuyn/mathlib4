@@ -1,0 +1,197 @@
+diff --git a/QYM.candidate-probe2.lean b/QYM.candidate-probe2.lean
+--- a/QYM.candidate-probe2.lean
++++ b/QYM.candidate-probe2.lean
+@@ -11612,10 +11612,16 @@ theorem lemma4_16_boundedProjectionClosedCompositionInferenceStatement_refuted
+       QYM.OperatorFormCompactnessCore.zeroProjection_idempotent
+       QYM.OperatorFormCompactnessCore.zeroProjection_norm_le
+-  exact
+-    QYM.OperatorFormCompactnessCore.projectedReciprocal_not_isSequentiallyClosed
+-      (by
+-        simpa [QYM.OperatorFormCompactnessCore.projectedReciprocal] using hprojected)
++  apply
++    QYM.OperatorFormCompactnessCore.projectedReciprocal_not_isSequentiallyClosed
++  change
++    QYM.OperatorFormCompactnessCore.IsSequentiallyClosedOn
++      QYM.OperatorFormCompactnessCore.positiveRealDomain
++      (fun x =>
++        QYM.OperatorFormCompactnessCore.zeroProjection
++          (QYM.OperatorFormCompactnessCore.reciprocalPartial x))
++  exact hprojected
+@@ -11636,8 +11642,15 @@ theorem lemma4_16_boundedProjectionClosedCompositionCountermodelStatement_holds
+       QYM.OperatorFormCompactnessCore.zeroProjection_idempotent,
+       QYM.OperatorFormCompactnessCore.zeroProjection_norm_le, ?_⟩
+-  simpa [QYM.OperatorFormCompactnessCore.projectedReciprocal] using
+-    QYM.OperatorFormCompactnessCore.projectedReciprocal_not_isSequentiallyClosed
++  intro hclosed
++  apply
++    QYM.OperatorFormCompactnessCore.projectedReciprocal_not_isSequentiallyClosed
++  change
++    QYM.OperatorFormCompactnessCore.IsSequentiallyClosedOn
++      QYM.OperatorFormCompactnessCore.positiveRealDomain
++      (fun x =>
++        QYM.OperatorFormCompactnessCore.zeroProjection
++          (QYM.OperatorFormCompactnessCore.reciprocalPartial x))
++  exact hclosed
+@@ -11794,7 +11807,7 @@ theorem coefficient_abs_le_main_add_remainder
+         |oneTermMain C₀ α n| + |a n - oneTermMain C₀ α n| :=
+       abs_add_le _ _
+     _ ≤ |oneTermMain C₀ α n| + oneTermRemainderEnvelope D α n :=
+-      add_le_add_left (hremainder.2.2 n hn) _
++      add_le_add_right (hremainder.2.2 n hn) _
+     _ = rootExponentialEnvelope |C₀| α n + oneTermRemainderEnvelope D α n := by
+       rw [abs_oneTermMain]
+@@ -11810,7 +11823,7 @@ theorem oneTermRemainder_implies_tailRootExponentialEstimate
+         rootExponentialEnvelope |C₀| α n + oneTermRemainderEnvelope D α n :=
+       coefficient_abs_le_main_add_remainder hremainder hn
+     _ ≤ rootExponentialEnvelope |C₀| α n + rootExponentialEnvelope D α n :=
+-      add_le_add_left
++      add_le_add_right
+         (oneTermRemainderEnvelope_le_rootExponentialEnvelope hremainder.2.1 hnOne) _
+     _ = rootExponentialEnvelope (|C₀| + D) α n := by
+       simp only [rootExponentialEnvelope]
+@@ -11978,8 +11991,8 @@ theorem driftingLinearProfile_no_uniformLinearParameterBound :
+   rintro ⟨C, _hC, hbound⟩
+   obtain ⟨q, hq⟩ := exists_nat_gt (C * 2)
+-  have hqBound : (q : ℝ) ≤ C * 2 := by
+-    simpa [driftingLinearProfile] using hbound q 1 (by norm_num)
++  have hqBound := hbound q (1 : ℝ) (by norm_num)
++  norm_num [driftingLinearProfile] at hqBound
+   exact (not_lt_of_ge hqBound) hq
+@@ -12265,8 +12278,10 @@ theorem invariant_comp_of_equivariant
+     (henergy : InvariantUnder actY energy) :
+     InvariantUnder actX (fun x => energy (feature x)) := by
+   intro g x
++  change energy (feature (actX g x)) = energy (feature x)
+   rw [hfeature, henergy]
+@@ -12275,8 +12290,10 @@ theorem invariant_add
+     (hright : InvariantUnder actX right) :
+     InvariantUnder actX (fun x => left x + right x) := by
+   intro g x
++  change left (actX g x) + right (actX g x) = left x + right x
+   rw [hleft, hright]
+@@ -14757,9 +14774,12 @@ theorem eq_zero_of_apply_eq_zero_of_quadraticLowerBound
+   have hmul : c * ‖x‖ ^ 2 ≤ 0 := by
+     simpa [quadraticEnergy, operatorForm, hx] using hT x
+   have hsquare_le : ‖x‖ ^ 2 ≤ 0 := by
+-    apply (mul_le_mul_left hc).mp
+-    simpa using hmul
++    by_contra hnot
++    have hsquare_pos : 0 < ‖x‖ ^ 2 := lt_of_not_ge hnot
++    have hprod_pos : 0 < c * ‖x‖ ^ 2 := mul_pos hc hsquare_pos
++    exact (not_lt_of_ge hmul) hprod_pos
+   have hsquare : ‖x‖ ^ 2 = 0 :=
+     le_antisymm hsquare_le (sq_nonneg ‖x‖)
+@@ -15104,7 +15124,7 @@ def boundedCoerciveOperatorConsequencesStatement : Prop :=
+   ∀ (H : Type)
+       [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
+-      (T : H →L[ℝ] H) (c : ℝ≥0),
++      (T : H →L[ℝ] H) (c : NNReal),
+     0 < c →
+       QYM.HilbertOperatorFormExtension.HasQuadraticLowerBound T (c : ℝ) →
+@@ -15600,7 +15620,7 @@ theorem complexOneTermNormSuppliers_imply_tailEstimate
+       coefficient_norm_le_main_add_remainder hsuppliers hn
+     _ ≤ complexRootExponentialEnvelope A α n +
+         complexRootExponentialEnvelope D α n :=
+-      add_le_add_left
++      add_le_add_right
+         (complexOneTermRemainderEnvelope_le_rootExponentialEnvelope
+           hsuppliers.2.2.1 hnOne) _
+@@ -17640,15 +17660,13 @@ theorem resolvent_mul_shift_eq_one
+     {a : A} {r : R} (hr : r ∈ resolventSet R a) :
+     resolvent a r * (algebraMap R A r - a) = 1 := by
+-  rw [spectrum.resolvent_eq hr, ← hr.unit_spec]
+-  exact hr.unit.inv_mul
++  simpa only [spectrum.resolvent_eq hr, ← hr.unit_spec] using hr.unit.inv_mul
+ 
+ /-- At a resolvent point the Mathlib resolvent is also a right inverse of the shifted element. -/
+ theorem shift_mul_resolvent_eq_one
+     {a : A} {r : R} (hr : r ∈ resolventSet R a) :
+     (algebraMap R A r - a) * resolvent a r = 1 := by
+-  rw [spectrum.resolvent_eq hr, ← hr.unit_spec]
+-  exact hr.unit.mul_inv
++  simpa only [spectrum.resolvent_eq hr, ← hr.unit_spec] using hr.unit.mul_inv
+@@ -17729,9 +17747,10 @@ theorem compact_resolvent_at_of_compact_resolvent_at
+       IsCompactOperator
+         (((resolvent T r * scalarDifference) * resolvent T s : H →L[𝕜] H) :
+           H → H) := by
+-    simpa only [ContinuousLinearMap.coe_mul'] using
+-      hleft.comp_clm (resolvent T s)
++    change IsCompactOperator
++      (⇑(resolvent T r * scalarDifference) ∘ ⇑(resolvent T s))
++    exact hleft.comp_clm (resolvent T s)
+   have hidentity :
+@@ -17851,8 +17870,12 @@ theorem energySublevel_subset_closedBall
+   have hmul : a * ‖x‖ ^ 2 ≤ a * R ^ 2 :=
+     (hcoercive x).trans (hx.trans hbudget)
+-  have hsquares : ‖x‖ ^ 2 ≤ R ^ 2 :=
+-    (mul_le_mul_left ha).mp hmul
++  have hsquares : ‖x‖ ^ 2 ≤ R ^ 2 := by
++    by_contra hnot
++    have hsquares_lt : R ^ 2 < ‖x‖ ^ 2 := lt_of_not_ge hnot
++    have hmul_lt := mul_lt_mul_of_pos_left hsquares_lt ha
++    exact (not_lt_of_ge hmul) hmul_lt
+   have hnorm : ‖x‖ ≤ R := by
+@@ -19138,7 +19161,7 @@ theorem ResolventData.mem_graph_iff_fixedPoint
+     have hTu : T u = y := by
+       have heq : z • x - T u = z • x - y := by
+         simpa only [shifted_apply] using hshift
+-      exact sub_left_inj.mp heq
++      exact sub_right_inj.mp heq
+     exact (LinearPMap.image_iff hxDomain).mp hTu.symm
+@@ -19321,18 +19344,22 @@ def zeroOneResolventData :
+     intro y
+     exact Submodule.mem_top
+   left_inverse := by
+     intro x
+-    simp [shifted]
++    change (1 : 𝕜) • (x : H) - 0 = (x : H)
++    simp
+   right_inverse := by
+     intro y
+-    simp [shifted]
++    change (1 : 𝕜) • y - 0 = y
++    simp
+@@ -19332,7 +19359,8 @@ def zeroOneResolventData :
+ theorem zeroOneResolventData_not_compact
+     (hinfinite : ¬ FiniteDimensional 𝕜 H) :
+-    ¬ zeroOneResolventData.IsCompactResolvent := by
++    ¬ (zeroOneResolventData
++      (𝕜 := 𝕜) (H := H)).IsCompactResolvent := by
+   intro hcompact
+@@ -19672,7 +19700,7 @@ theorem eigenvector_mem_groundSpace_orthogonal
+   rw [Submodule.mem_orthogonal]
+   intro y hy
+-  exact hsymm.orthogonalFamily_eigenspaces.pairwise hμ.symm hy x hx.1
++  exact hsymm.orthogonalFamily_eigenspaces.pairwise hμ hx.1 y hy
+@@ -19987,14 +20015,20 @@ theorem normLowerBound_of_injective_groundComplementCoercivity
+       exact Submodule.mem_top
+     have hquad := hcoercive x hxorth
+-    have hcs := re_inner_le_norm x (T x)
++    have hcs := re_inner_le_norm (𝕜 := 𝕜) x (T x)
+     have hxnorm : 0 < ‖x‖ := norm_pos_iff.mpr hx
+     have hmul : ‖x‖ * (c * ‖x‖) ≤ ‖x‖ * ‖T x‖ := by
+       calc
+         ‖x‖ * (c * ‖x‖) = c * ‖x‖ ^ 2 := by ring
+         _ ≤ RCLike.re ⟪x, T x⟫ := hquad
+         _ ≤ ‖x‖ * ‖T x‖ := hcs
+-    exact (mul_le_mul_left hxnorm).mp hmul
++    by_contra hnot
++    have hlt : ‖T x‖ < c * ‖x‖ := lt_of_not_ge hnot
++    have hmul_lt : ‖x‖ * ‖T x‖ < ‖x‖ * (c * ‖x‖) :=
++      mul_lt_mul_of_pos_left hlt hxnorm
++    exact (not_lt_of_ge hmul) hmul_lt
+@@ -20020,8 +20054,9 @@ def reciprocalPositiveLevel (n : ℕ) : ℝ :=
+ theorem reciprocalPositiveLevel_pos (n : ℕ) :
+     0 < reciprocalPositiveLevel n := by
++  unfold reciprocalPositiveLevel
+   positivity
+@@ -20030,7 +20065,7 @@ theorem pointwise_positivity_does_not_imply_uniform_gap :
+   rintro ⟨c, hc, hbound⟩
+   obtain ⟨n, hn⟩ := exists_nat_one_div_lt hc
+-  exact hn.not_le (by simpa [reciprocalPositiveLevel] using hbound n)
++  exact (not_le_of_gt hn) (by simpa [reciprocalPositiveLevel] using hbound n)
+@@ -20046,7 +20081,8 @@ theorem smallPositiveOperator_symmetric (a : ℝ) :
+     (smallPositiveOperator a : ℝ →ₗ[ℝ] ℝ).IsSymmetric := by
+   intro x y
+   simp [smallPositiveOperator, real_inner_smul_left, real_inner_smul_right]
++  ring
