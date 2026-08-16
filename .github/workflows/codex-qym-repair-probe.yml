@@ -1,0 +1,268 @@
+name: Codex QYM deterministic repair probe
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/codex-qym-repair-probe.yml
+      - scripts/qym_repair_probe_transform.py
+      - scripts/qym_repair_probe_aliases.py
+      - scripts/qym_repair_probe_finalize.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: codex-qym-repair-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  qym-repair-probe:
+    name: exact c680 dependencies then transformed QYM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      EXPECTED_QYM_SHA256: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
+      EXPECTED_FA_SHA256: c680a35b9f12ea3223d8328ed0f5f0674b3439e650bb62cb900b54917f9653bd
+      EXPECTED_TRANSFORMER_SHA256: cb5a4aad49f6e39ca4c4f45c1451a9ea469074e0dc2de2e710eb24b38ea51192
+      EXPECTED_ALIAS_TRANSFORMER_SHA256: f7f885bae401fcf859ed635e0fcbc24ee171acc9dad2402c1fb2a6dd766e0fc4
+      EXPECTED_FINALIZER_SHA256: f7a9914281b5fea49316d4c8a42dd21596ffc810624837cac7221ba4c218f2f4
+      EXPECTED_PASS1_SHA256: f264de0fd05911a4594b2087aa92caa5deda95c0fd378d09a5d311498b019e56
+      EXPECTED_ALIAS_SAFE_SHA256: 52907b000d31b3f925fd8437ec6aa96beea682d3ba362afbf76c9e49fa188388
+      EXPECTED_CANDIDATE_SHA256: 649b04adc970b792e58b9b5e1d403f733f62ebede109d5067d36609005da1a0e
+      QYM_SOURCE: PrimalitySheafVerification/QYM.lean
+      FA_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+      TRANSFORMER: scripts/qym_repair_probe_transform.py
+      ALIAS_TRANSFORMER: scripts/qym_repair_probe_aliases.py
+      FINALIZER: scripts/qym_repair_probe_finalize.py
+      OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
+
+    steps:
+      - name: Check out exact triggering commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Lock canonical inputs before any workspace mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          mkdir -p "$OUT"
+          test -z "$(git status --porcelain=v1)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          sha256sum "$QYM_SOURCE" "$FA_SOURCE" "$TRANSFORMER" \
+            "$ALIAS_TRANSFORMER" "$FINALIZER" \
+            | tee "$OUT/input-files.sha256"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_QYM_SHA256"
+          test "$(sha256sum "$FA_SOURCE" | awk '{print $1}')" = "$EXPECTED_FA_SHA256"
+          test "$(sha256sum "$TRANSFORMER" | awk '{print $1}')" = "$EXPECTED_TRANSFORMER_SHA256"
+          test "$(sha256sum "$ALIAS_TRANSFORMER" | awk '{print $1}')" = "$EXPECTED_ALIAS_TRANSFORMER_SHA256"
+          test "$(sha256sum "$FINALIZER" | awk '{print $1}')" = "$EXPECTED_FINALIZER_SHA256"
+          cp "$QYM_SOURCE" "$OUT/QYM.authority.lean"
+          cp lean-toolchain "$OUT/lean-toolchain.txt"
+          git status --porcelain=v1 --untracked-files=no > "$OUT/git-status.before.txt"
+          test ! -s "$OUT/git-status.before.txt"
+
+      - name: Install exact pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" \
+            > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          elan --version | tee "$OUT/elan-version.txt"
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore exact project dependency outputs
+        id: project-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Build exact unchanged dependency chain on cache miss
+        shell: bash
+        env:
+          PROJECT_CACHE_HIT: ${{ steps.project-cache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          mkdir -p "$OLEAN_ROOT"
+          stems=(Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated)
+          if [[ "$PROJECT_CACHE_HIT" != true ]]; then
+            for stem in "${stems[@]}"; do
+              source="PrimalitySheafVerification/$stem.lean"
+              olean="$OLEAN_ROOT/$stem.olean"
+              ilean="$OLEAN_ROOT/$stem.ilean"
+              cap=1
+              [[ "$stem" = Mock2_FunctionalAnalysis || "$stem" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f -- "$olean" "$ilean"
+              printf '%q ' lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.command"
+              printf '\n' >> "$OUT/$stem.command"
+              set +e
+              /usr/bin/time -v -o "$OUT/$stem.time" \
+                lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                  -o "$olean" -i "$ilean" "$source" > "$OUT/$stem.log" 2>&1
+              rc=$?
+              set -e
+              printf '%s\n' "$rc" > "$OUT/$stem.exit"
+              test "$rc" -eq 0
+              test -s "$olean" && test -s "$ilean"
+            done
+            printf '%s\n' miss-built > "$OUT/project-cache-status.txt"
+          else
+            printf '%s\n' hit-restored > "$OUT/project-cache-status.txt"
+          fi
+          for stem in "${stems[@]}"; do
+            test -s "$OLEAN_ROOT/$stem.olean"
+            test -s "$OLEAN_ROOT/$stem.ilean"
+            sha256sum "$OLEAN_ROOT/$stem.olean" "$OLEAN_ROOT/$stem.ilean"
+          done > "$OUT/dependency-outputs.sha256"
+
+      - name: Apply deterministic QYM pass and compile once
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          python3 "$TRANSFORMER" \
+            --input "$OUT/QYM.authority.lean" \
+            --output "$OUT/QYM.pass1.lean" \
+            --audit "$OUT/TRANSFORM_AUDIT_PASS1.json"
+          test "$(sha256sum "$OUT/QYM.pass1.lean" | awk '{print $1}')" = "$EXPECTED_PASS1_SHA256"
+          python3 "$ALIAS_TRANSFORMER" \
+            --input "$OUT/QYM.pass1.lean" \
+            --output "$OUT/QYM.alias-safe.lean" \
+            --audit "$OUT/TRANSFORM_AUDIT_ALIASES.json"
+          test "$(sha256sum "$OUT/QYM.alias-safe.lean" | awk '{print $1}')" = "$EXPECTED_ALIAS_SAFE_SHA256"
+          python3 "$FINALIZER" \
+            --input "$OUT/QYM.alias-safe.lean" \
+            --output "$QYM_SOURCE" \
+            --audit "$OUT/TRANSFORM_AUDIT_FINAL.json"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANDIDATE_SHA256"
+          sha256sum "$QYM_SOURCE" | tee "$OUT/QYM.candidate.sha256"
+          git hash-object "$QYM_SOURCE" | tee "$OUT/QYM.candidate.git-blob"
+          git diff --binary -- "$QYM_SOURCE" > "$OUT/QYM.candidate.patch"
+          changed="$(git status --porcelain=v1 --untracked-files=no)"
+          test "$changed" = " M $QYM_SOURCE"
+          printf '%q ' lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/QYM.probe.olean" -i "$RUNNER_TEMP/QYM.probe.ilean" \
+            "$QYM_SOURCE" > "$OUT/QYM.command"
+          printf '\n' >> "$OUT/QYM.command"
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe.olean" -i "$RUNNER_TEMP/QYM.probe.ilean" \
+              "$QYM_SOURCE" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.probe.olean"
+            test -s "$RUNNER_TEMP/QYM.probe.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.probe.olean" "$RUNNER_TEMP/QYM.probe.ilean" \
+              > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical QYM and collect exact diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          if [[ -f "$OUT/QYM.authority.lean" ]]; then
+            cp "$OUT/QYM.authority.lean" "$QYM_SOURCE"
+          fi
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_QYM_SHA256"
+          git status --porcelain=v1 --untracked-files=no > "$OUT/git-status.after.txt"
+          test ! -s "$OUT/git-status.after.txt"
+          python3 - "$OUT" <<'PY'
+          import hashlib, json, os, re, sys
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          raw = (root / 'QYM.log').read_bytes() if (root / 'QYM.log').exists() else b''
+          text = raw.decode('utf-8', errors='replace')
+          header_re = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'error(?:\([^)]*\))?:\s*(?P<message>.*)$', re.M)
+          warning_re = re.compile(
+              r'^.*?\.lean:\d+:\d+: warning(?:\([^)]*\))?:', re.M)
+          headers = [m.groupdict() for m in header_re.finditer(text)]
+          for row in headers:
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+          (root / 'QYM.error-headers.txt').write_text(
+              '\n'.join(f"{r['file']}:{r['line']}:{r['column']}: error: {r['message']}"
+                        for r in headers) + ('\n' if headers else ''), encoding='utf-8')
+          result = {
+              'schema': 'qym-deterministic-repair-probe-v1',
+              'github_sha': os.environ['GITHUB_SHA'],
+              'authority_qym_sha256': os.environ['EXPECTED_QYM_SHA256'],
+              'candidate_qym_sha256': ((root / 'QYM.candidate.sha256').read_text().split()[0]
+                                       if (root / 'QYM.candidate.sha256').exists() else None),
+              'exit': int((root / 'QYM.exit').read_text().strip())
+                      if (root / 'QYM.exit').exists() else None,
+              'error_headers': len(headers),
+              'warning_headers': len(warning_re.findall(text)),
+              'first_error': headers[0] if headers else None,
+              'last_error': headers[-1] if headers else None,
+              'log_bytes': len(raw),
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': ((root / 'QYM.exit').exists()
+                                and (root / 'QYM.exit').read_text().strip() == '0'
+                                and not headers),
+          }
+          (root / 'PROBE_RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-repair-probe-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ runner.temp }}/qym-repair-probe/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed on exact transformed QYM result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          export OUT="$RUNNER_TEMP/qym-repair-probe"
+          test ! -s "$OUT/git-status.after.txt"
+          test "$(tr -d '\r\n' < "$OUT/QYM.exit")" = 0
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json, sys
+          result = json.load(open(sys.argv[1], encoding='utf-8'))
+          assert result['semantic_pass'] is True
+          assert result['error_headers'] == 0
+          assert result['first_error'] is None
+          PY
