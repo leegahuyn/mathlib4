@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/gpt-fa-primary4016-candidate05-full.yml
       - scripts/gpt_fa_primary4016_candidate05_patch.py
+      - scripts/gpt_fa_primary4016_candidate05_patch_v2.py
       - PrimalitySheafVerification/FA_Blocker_WrapperCandidates/Candidate05.lean
   workflow_dispatch:
 
@@ -27,7 +28,7 @@ jobs:
       SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
       CANDIDATE: PrimalitySheafVerification/FA_Blocker_WrapperCandidates/Candidate05.lean
       EXPECTED_BASE_SHA256: 1c3d12594a3e8b14f9cf7b7294da7c29221758c72d00a596215198f7623fad8c
-      EXPECTED_CANDIDATE_SHA256: c8a1d7552d719bb5d71120020e9b1aa9d3bce12066cdbf2f663a969a8cafc86d
+      EXPECTED_CANDIDATE_SHA256: 6ff74433b057db1ad0cb877771688c28bf597fd6c447e38e1e7fa80886495bbf
 
     steps:
       - name: Check out exact triggering commit
@@ -45,7 +46,7 @@ jobs:
           printf '%s\n' "$baseline_sha" > "$OUT/baseline.sha256"
           test "$baseline_sha" = "$EXPECTED_BASE_SHA256"
           cp "$SOURCE" "$OUT/Mock2_FunctionalAnalysis-baseline.lean"
-          python3 scripts/gpt_fa_primary4016_candidate05_patch.py \
+          python3 scripts/gpt_fa_primary4016_candidate05_patch_v2.py \
             --source "$SOURCE" --candidate "$CANDIDATE" --output "$SOURCE" \
             --audit "$OUT/PATCH_AUDIT.json" | tee "$OUT/PATCH_AUDIT.stdout.json"
           candidate_sha="$(sha256sum "$SOURCE" | awk '{print $1}')"
