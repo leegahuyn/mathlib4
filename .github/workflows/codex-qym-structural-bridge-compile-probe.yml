@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 180
     env:
       EXPECTED_BRANCH: gpt/fa-qym-clean-final-20260816
-      EXPECTED_INSTALL_PARENT: 51ff9610af6858e740d18af171e72ffb2b858012
+      EXPECTED_INSTALL_PARENT: d4944b878acb6384c3e813c65367dbebba229d09
       EXPECTED_WORKFLOW_PATH: .github/workflows/codex-qym-structural-bridge-compile-probe.yml
       PROBE15_HEAD: 1679e9e9f916e95d5a4fe10f9e59502471c84191
       EXPECTED_TOOLCHAIN_SHA256: 62c2d9c0fc1ec4c67e151c11eff41ca004ef38e179cf9476c230406e6defedef
@@ -57,11 +57,6 @@ jobs:
       M2A_SOURCE: PrimalitySheafVerification/Mock2_Advanced.lean
       FA_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
       INTEGRATED_SOURCE: PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean
-      OUT: ${{ runner.temp }}/qym-structural-bridge-compile-probe
-      PROBE_REPO: ${{ runner.temp }}/qym-structural-bridge-repo
-      PROBE_ROOT: ${{ runner.temp }}/qym-structural-bridge-input
-      ELAN_HOME: ${{ runner.temp }}/qym-structural-bridge-elan
-      XDG_CACHE_HOME: ${{ runner.temp }}/qym-structural-bridge-xdg-cache
       PYTHONDONTWRITEBYTECODE: '1'
 
     steps:
@@ -72,6 +67,29 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 2
           persist-credentials: false
+
+      - name: Bind runner-temp paths
+        id: paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RUNNER_TEMP:-}" && test -n "${GITHUB_ENV:-}"
+          case "$RUNNER_TEMP" in /*) ;; *) exit 91 ;; esac
+          out="$RUNNER_TEMP/qym-structural-bridge-compile-probe"
+          probe_repo="$RUNNER_TEMP/qym-structural-bridge-repo"
+          probe_root="$RUNNER_TEMP/qym-structural-bridge-input"
+          elan_home="$RUNNER_TEMP/qym-structural-bridge-elan"
+          xdg_cache_home="$RUNNER_TEMP/qym-structural-bridge-xdg-cache"
+          for target in "$out" "$probe_repo" "$probe_root" "$elan_home" "$xdg_cache_home"; do
+            case "$target" in "$RUNNER_TEMP"/*) ;; *) exit 92 ;; esac
+          done
+          {
+            printf 'OUT=%s\n' "$out"
+            printf 'PROBE_REPO=%s\n' "$probe_repo"
+            printf 'PROBE_ROOT=%s\n' "$probe_root"
+            printf 'ELAN_HOME=%s\n' "$elan_home"
+            printf 'XDG_CACHE_HOME=%s\n' "$xdg_cache_home"
+          } >> "$GITHUB_ENV"
 
       - name: Gate sentinel, branch, current commit, parent, and add-only delta
         id: gate
@@ -90,7 +108,7 @@ jobs:
           test "${#parents[@]}" -eq 2
           test "${parents[1]}" = "$EXPECTED_INSTALL_PARENT"
           git diff-tree --no-commit-id --name-status -r HEAD^ HEAD | LC_ALL=C sort > "$OUT/delta.actual"
-          printf 'A\t%s\n' "$EXPECTED_WORKFLOW_PATH" > "$OUT/delta.expected"
+          printf 'M\t%s\n' "$EXPECTED_WORKFLOW_PATH" > "$OUT/delta.expected"
           cmp "$OUT/delta.expected" "$OUT/delta.actual"
           test "$(sha256sum lean-toolchain | awk '{print $1}')" = "$EXPECTED_TOOLCHAIN_SHA256"
           test "$(git hash-object --no-filters lean-toolchain)" = "$EXPECTED_TOOLCHAIN_BLOB"
@@ -289,6 +307,7 @@ jobs:
         shell: bash
         env:
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          PATHS_OUTCOME: ${{ steps.paths.outcome }}
           GATE_OUTCOME: ${{ steps.gate.outcome }}
           CACHE_OUTCOME: ${{ steps.project-cache.outcome }}
           PROBE_OUTCOME: ${{ steps.probe.outcome }}
@@ -298,8 +317,9 @@ jobs:
           set -euo pipefail
           python3 - "$OUT/INPUT_RESULT.json" "$OUT/PROBE_RESULT.json" <<'PY'
           import json, os, sys
-          names = ('CHECKOUT_OUTCOME', 'GATE_OUTCOME', 'CACHE_OUTCOME',
-                   'PROBE_OUTCOME', 'PRISTINE_OUTCOME', 'UPLOAD_OUTCOME')
+          names = ('CHECKOUT_OUTCOME', 'PATHS_OUTCOME', 'GATE_OUTCOME',
+                   'CACHE_OUTCOME', 'PROBE_OUTCOME', 'PRISTINE_OUTCOME',
+                   'UPLOAD_OUTCOME')
           outcomes = {name: os.environ[name] for name in names}
           assert all(value == 'success' for value in outcomes.values()), outcomes
           inputs, result = (json.load(open(path, encoding='utf-8')) for path in sys.argv[1:])
