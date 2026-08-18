@@ -1,4 +1,4 @@
-name: GPT QYM Probe39h focused inverse-entry matrix
+name: GPT QYM Probe39h full GammaTwo producer proof
 
 on:
   push:
@@ -12,17 +12,13 @@ permissions:
   contents: read
 
 jobs:
-  micro:
-    name: GammaTwo-focused ${{ matrix.variant }}
+  producer:
+    name: Full gammaTwo stabilizer producer proof
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: [tinv-sl2, tinv-zpow, tst-rw]
     env:
-      OUT: /tmp/qym-probe39h-${{ matrix.variant }}
-      TEST: QYM_Probe39h_${{ matrix.variant }}.lean
+      OUT: /tmp/qym-probe39h-full
+      TEST: QYM_Probe39h_full.lean
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -43,16 +39,15 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
           lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
 
-      - name: Materialize focused proof
+      - name: Materialize complete producer proof
         shell: bash
         run: |
           set -euo pipefail
-          python3 - "$TEST" "${{ matrix.variant }}" <<'PY'
-          from pathlib import Path
-          import sys
-          path = Path(sys.argv[1]); variant = sys.argv[2]
-          prelude = '''import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          cat > "$TEST" <<'LEAN'
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
           import Mathlib.NumberTheory.Modular
           import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
           import Mathlib.LinearAlgebra.Matrix.Notation
@@ -61,35 +56,109 @@ jobs:
           open Matrix Function Set Topology
           open scoped MatrixGroups UpperHalfPlane
 
-          __BODY__
-          '''.replace("          ", "")
-
-          tinv_sl2 = '''example :
-              (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
-            norm_num [SL2_inv_expl, ModularGroup.T]
-          '''.replace("          ", "")
-
-          tinv_zpow = '''example :
+          theorem qymGammaTwo_tinv_upper_entry :
               (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
             rw [← zpow_neg_one, ModularGroup.coe_T_zpow]
             norm_num
-          '''.replace("          ", "")
 
-          tst_rw = '''theorem ts_lower_entry :
+          theorem qymGammaTwo_tinv00 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two] at h
+            exact h
+
+          theorem qymGammaTwo_tinv10 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 0 = (0 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 1 0)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two] at h
+            exact h
+
+          theorem qymGammaTwo_tinv11 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 1 = (1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 1 1)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two,
+              qymGammaTwo_tinv10] at h
+            exact h
+
+          theorem qymGammaTwo_t_upper_entry :
+              (ModularGroup.T : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+            norm_num [ModularGroup.T]
+
+          theorem qymGammaTwo_s_upper_entry :
+              (ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            norm_num [ModularGroup.S]
+
+          theorem qymGammaTwo_ts_upper_entry :
+              (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.T.val 0 0 * ModularGroup.S.val 0 1 +
+                ModularGroup.T.val 0 1 * ModularGroup.S.val 1 1 = -1
+            norm_num [ModularGroup.T, ModularGroup.S]
+
+          theorem qymGammaTwo_tinvS_lower_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 0 +
+                (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 0 = 1
+            norm_num [ModularGroup.S, qymGammaTwo_tinv10,
+              qymGammaTwo_tinv11]
+
+          theorem qymGammaTwo_tinvS_11_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 1 +
+                (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 1 = 0
+            norm_num [ModularGroup.S, qymGammaTwo_tinv10,
+              qymGammaTwo_tinv11]
+
+          theorem qymGammaTwo_tinvSTinv_lower_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹ :
+                SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹ * ModularGroup.S).val 1 0 *
+                  (ModularGroup.T⁻¹).val 0 0 +
+                (ModularGroup.T⁻¹ * ModularGroup.S).val 1 1 *
+                  (ModularGroup.T⁻¹).val 1 0 = 1
+            norm_num [qymGammaTwo_tinvS_lower_entry,
+              qymGammaTwo_tinvS_11_entry, qymGammaTwo_tinv00,
+              qymGammaTwo_tinv10]
+
+          theorem qymGammaTwo_stinv_upper_entry :
+              (ModularGroup.S * ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.S.val 0 0 * (ModularGroup.T⁻¹).val 0 1 +
+                ModularGroup.S.val 0 1 * (ModularGroup.T⁻¹).val 1 1 = -1
+            norm_num [ModularGroup.S, qymGammaTwo_tinv_upper_entry,
+              qymGammaTwo_tinv11]
+
+          theorem qymGammaTwo_st_upper_entry :
+              (ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.S.val 0 0 * ModularGroup.T.val 0 1 +
+                ModularGroup.S.val 0 1 * ModularGroup.T.val 1 1 = -1
+            norm_num [ModularGroup.S, ModularGroup.T]
+
+          theorem qymGammaTwo_ts_lower_entry :
               (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
             change
               ModularGroup.T.val 1 0 * ModularGroup.S.val 0 0 +
                 ModularGroup.T.val 1 1 * ModularGroup.S.val 1 0 = 1
             norm_num [ModularGroup.T, ModularGroup.S]
 
-          theorem ts_11_entry :
+          theorem qymGammaTwo_ts_11_entry :
               (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
             change
               ModularGroup.T.val 1 0 * ModularGroup.S.val 0 1 +
                 ModularGroup.T.val 1 1 * ModularGroup.S.val 1 1 = 0
             norm_num [ModularGroup.T, ModularGroup.S]
 
-          example :
+          theorem qymGammaTwo_tst_lower_entry :
               (ModularGroup.T * ModularGroup.S * ModularGroup.T :
                 SL(2, ℤ)) 1 0 = (1 : ℤ) := by
             change
@@ -97,18 +166,55 @@ jobs:
                   ModularGroup.T.val 0 0 +
                 (ModularGroup.T * ModularGroup.S).val 1 1 *
                   ModularGroup.T.val 1 0 = 1
-            rw [ts_lower_entry, ts_11_entry]
+            rw [qymGammaTwo_ts_lower_entry, qymGammaTwo_ts_11_entry]
             norm_num [ModularGroup.T]
-          '''.replace("          ", "")
 
-          bodies = {"tinv-sl2": tinv_sl2, "tinv-zpow": tinv_zpow,
-                    "tst-rw": tst_rw}
-          path.write_text(prelude.replace("__BODY__", bodies[variant]) + "\n",
-                          encoding="utf-8")
-          PY
+          theorem qymGammaTwo_tinvS_upper_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹).val 0 0 * ModularGroup.S.val 0 1 +
+                (ModularGroup.T⁻¹).val 0 1 * ModularGroup.S.val 1 1 = -1
+            norm_num [ModularGroup.S, qymGammaTwo_tinv00,
+              qymGammaTwo_tinv_upper_entry]
+
+          theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed_test
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            have hUpper : (((gamma 0 1 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
+            have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            · rcases hT.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_t_upper_entry] at hUpper
+            · rcases hTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_tinv_upper_entry] at hUpper
+            · rcases hS.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_s_upper_entry] at hUpper
+            · rcases hTS.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_ts_upper_entry] at hUpper
+            · rcases hTinvSTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_tinvSTinv_lower_entry] at hLower
+            · rcases hSTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_stinv_upper_entry] at hUpper
+            · rcases hST.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_st_upper_entry] at hUpper
+            · rcases hTST.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_tst_lower_entry] at hLower
+            · rcases hTinvS.1 with rfl | rfl <;> exfalso <;>
+                norm_num [qymGammaTwo_tinvS_upper_entry] at hUpper
+          LEAN
+          sed -i 's/^          //' "$TEST"
           cp "$TEST" "$OUT/$TEST"
+          sha256sum "$TEST" > "$OUT/TEST.source.sha256"
 
-      - name: Direct Lean compile proof
+      - name: Direct Lean compile producer proof
         shell: bash
         run: |
           set -euo pipefail
@@ -120,6 +226,9 @@ jobs:
           rc=$?
           set -e
           echo "$rc" > "$OUT/TEST.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"
+          fi
           rm -f "$TEST"
           exit 0
 
@@ -127,12 +236,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-probe39h-${{ matrix.variant }}-${{ github.sha }}
-          path: /tmp/qym-probe39h-${{ matrix.variant }}/**
+          name: qym-probe39h-full-${{ github.sha }}
+          path: /tmp/qym-probe39h-full/**
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fail closed unless proof passes
+      - name: Fail closed unless full producer passes
         if: always()
         shell: bash
         run: |
