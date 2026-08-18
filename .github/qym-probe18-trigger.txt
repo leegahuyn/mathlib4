@@ -1,3 +1,5 @@
-Probe18 direct runner trigger.
+Probe19 persistent direct runner trigger.
 Authority: Probe17 run 32002705164 / artifact 9279187130.
-Candidate SHA256: 8c7c6982938fd6eb9e6fece71e0eb655717a5bb4d1d6d2b75cfbe6cf37ab2a39.
+Runner install commit: 0e6cbf59ce9d0c3211557ea3b7ff7f665ffdec0f.
+Candidate SHA256: 069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5.
+Candidate blob: cb104f9129f53d4db10364611bcf95911fd3ab5c.
