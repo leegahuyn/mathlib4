@@ -145,3 +145,5 @@ jobs:
           test "$(cat "$OUT/TEST.exit")" = 0
           test -s "$OUT/TEST.olean"
           test -s "$OUT/TEST.ilean"
+
+# retrigger after workflow registration
