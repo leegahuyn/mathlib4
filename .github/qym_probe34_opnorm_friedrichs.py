@@ -88,3 +88,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Retrigger Probe34 after the workflow file was registered.
