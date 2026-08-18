@@ -73,8 +73,10 @@ jobs:
               (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
             have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
               (inv_mul_cancel ModularGroup.T)
-            norm_num [Matrix.SpecialLinearGroup.coe_mul,
-              ModularGroup.T, Matrix.mul_fin_two, tinv00] at h
+            change
+              (ModularGroup.T⁻¹).val 0 0 * ModularGroup.T.val 0 1 +
+                (ModularGroup.T⁻¹).val 0 1 * ModularGroup.T.val 1 1 = 0 at h
+            norm_num [ModularGroup.T, tinv00] at h
             omega
 
           theorem tinv10 :
@@ -167,12 +169,8 @@ jobs:
           theorem tst_lower_entry :
               (ModularGroup.T * ModularGroup.S * ModularGroup.T :
                 SL(2, ℤ)) 1 0 = (1 : ℤ) := by
-            change
-              (ModularGroup.T * ModularGroup.S).val 1 0 *
-                  ModularGroup.T.val 0 0 +
-                (ModularGroup.T * ModularGroup.S).val 1 1 *
-                  ModularGroup.T.val 1 0 = 1
-            norm_num [ts_lower_entry, ts_11_entry, ModularGroup.T]
+            simpa [Matrix.SpecialLinearGroup.coe_mul,
+              Matrix.mul_fin_two, ModularGroup.T] using ts_lower_entry
 
           theorem tinvS_upper_entry :
               (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
