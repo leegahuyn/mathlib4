@@ -1,0 +1,33 @@
+name: Dispatch live QYM frontier selector
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-live-selector-dispatch.yml
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch selector workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run gpt-qym-live-frontier-selector.yml \
+            --repo leegahuyn/mathlib4 \
+            --ref gpt/fa-qym-clean-final-20260816
+          sleep 5
+          gh run list \
+            --repo leegahuyn/mathlib4 \
+            --workflow gpt-qym-live-frontier-selector.yml \
+            --branch gpt/fa-qym-clean-final-20260816 \
+            --limit 5
