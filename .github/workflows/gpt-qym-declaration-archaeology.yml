@@ -1,0 +1,401 @@
+name: GPT QYM statement-preserving declaration archaeology
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      - .github/qym_declaration_archaeology.py
+      - .github/workflows/gpt-qym-declaration-archaeology.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-declaration-archaeology-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      ready: ${{ steps.prepare.outputs.ready }}
+      matrix: ${{ steps.prepare.outputs.matrix }}
+      baseline_errors: ${{ steps.prepare.outputs.baseline_errors }}
+      baseline_sha: ${{ steps.prepare.outputs.baseline_sha }}
+    env:
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      RESULT: .github/qym-frontier/GLOBAL_BEST.json
+      NEXT: .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      OUT: /tmp/qym-archaeology-prepare
+
+    steps:
+      - name: Checkout complete repository history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch every available branch and tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --all --tags --prune
+
+      - name: Prepare statement-preserving historical proof candidates
+        id: prepare
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if [[ ! -s "$FRONTIER" || ! -s "$RESULT" || ! -s "$NEXT" ]]; then
+            echo ready=false >> "$GITHUB_OUTPUT"
+            echo 'frontier inputs are not complete yet' > "$OUT/NOT_READY.txt"
+            exit 0
+          fi
+          python3 .github/qym_declaration_archaeology.py \
+            prepare "$FRONTIER" "$RESULT" "$NEXT" "$OUT"
+          count=$(python3 -c 'import json;print(json.load(open("/tmp/qym-archaeology-prepare/PREPARE_RESULT.json"))["candidate_count"])')
+          baseline_errors=$(python3 -c 'import json;print(json.load(open("/tmp/qym-archaeology-prepare/PREPARE_RESULT.json"))["frontier_error_headers"])')
+          baseline_sha=$(python3 -c 'import json;print(json.load(open("/tmp/qym-archaeology-prepare/PREPARE_RESULT.json"))["frontier_sha256"])')
+          if [[ "$count" -eq 0 ]]; then
+            echo ready=false >> "$GITHUB_OUTPUT"
+          else
+            echo ready=true >> "$GITHUB_OUTPUT"
+          fi
+          echo "matrix=$(cat "$OUT/matrix.json")" >> "$GITHUB_OUTPUT"
+          echo "baseline_errors=$baseline_errors" >> "$GITHUB_OUTPUT"
+          echo "baseline_sha=$baseline_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Upload immutable candidate bundle
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-archaeology-candidates-${{ github.sha }}
+          path: /tmp/qym-archaeology-prepare/**
+          if-no-files-found: warn
+          retention-days: 30
+
+  compile:
+    needs: prepare
+    if: needs.prepare.outputs.ready == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-archaeology-${{ matrix.candidate_id }}
+      CANDIDATE_ID: ${{ matrix.candidate_id }}
+      BASELINE_ERRORS: ${{ needs.prepare.outputs.baseline_errors }}
+      BASELINE_SHA: ${{ needs.prepare.outputs.baseline_sha }}
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Download candidate bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: qym-archaeology-candidates-${{ github.sha }}
+          path: /tmp/qym-archaeology-candidates
+
+      - name: Gate exact candidate bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          candidate="/tmp/qym-archaeology-candidates/QYM.$CANDIDATE_ID.lean"
+          meta="/tmp/qym-archaeology-candidates/META.$CANDIDATE_ID.json"
+          test -s "$candidate"
+          test -s "$meta"
+          python3 - "$candidate" "$meta" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          source,meta,out=map(Path,sys.argv[1:])
+          raw=source.read_bytes();m=json.loads(meta.read_text(encoding='utf-8'))
+          sha=hashlib.sha256(raw).hexdigest()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          assert sha==m['candidate_qym_sha256']
+          assert blob==m['candidate_qym_blob']
+          assert not any(m['forbidden'].values())
+          (out/'META.json').write_text(json.dumps(m,indent=2,sort_keys=True)+'\n')
+          (out/'QYM.candidate.lean').write_bytes(raw)
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize historical proof candidate over QYM slot
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.candidate.lean" "$QYM"
+
+      - name: Full direct Lean compile candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.archaeology.olean" \
+              -i "$RUNNER_TEMP/QYM.archaeology.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.archaeology.olean"
+            test -s "$RUNNER_TEMP/QYM.archaeology.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.archaeology.olean" \
+              "$RUNNER_TEMP/QYM.archaeology.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize exact result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,sys
+          out=Path(sys.argv[1]);raw=(out/'QYM.log').read_bytes() if (out/'QYM.log').exists() else b''
+          text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+              x=m.groupdict();x['line']=int(x['line']);x['column']=int(x['column']);rows.append(x)
+          errors=[x for x in rows if x['severity']=='error'];warnings=[x for x in rows if x['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          rc=int((out/'QYM.exit').read_text().strip()) if (out/'QYM.exit').exists() else None
+          meta=json.loads((out/'META.json').read_text())
+          result={'schema':'qym-declaration-archaeology-result-v1','github_sha':os.environ['GITHUB_SHA'],
+                  'candidate_id':os.environ['CANDIDATE_ID'],'owner':meta['owner'],
+                  'historical_commit':meta['historical_commit'],
+                  'baseline_qym_sha256':os.environ['BASELINE_SHA'],
+                  'baseline_error_headers':int(os.environ['BASELINE_ERRORS']),
+                  'candidate_qym_sha256':meta['candidate_qym_sha256'],
+                  'candidate_qym_blob':meta['candidate_qym_blob'],'exit':rc,
+                  'error_headers':len(errors),'warning_headers':len(warnings),
+                  'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+                  'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+                  'panic_lines':len(panics),'log_sha256':hashlib.sha256(raw).hexdigest(),
+                  'semantic_pass':rc==0 and not errors and not panics}
+          (out/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x,sort_keys=True)+'\n' for x in rows))
+          (out/'QYM.error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in errors))
+          (out/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics))
+          (out/'PROBE_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-archaeology-${{ matrix.candidate_id }}-${{ github.sha }}
+          path: /tmp/qym-archaeology-${{ matrix.candidate_id }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+  select:
+    needs: [prepare, compile]
+    if: always() && needs.prepare.outputs.ready == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-archaeology-selection
+      BASELINE_ERRORS: ${{ needs.prepare.outputs.baseline_errors }}
+      BASELINE_SHA: ${{ needs.prepare.outputs.baseline_sha }}
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download all archaeology results from current run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-archaeology-*
+          path: /tmp/qym-archaeology-results
+          merge-multiple: false
+
+      - name: Verify and rank direct Lean results
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - /tmp/qym-archaeology-results "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,sys
+          root=Path(sys.argv[1]);out=Path(sys.argv[2]);records=[]
+          for rp in root.rglob('PROBE_RESULT.json'):
+              try:r=json.loads(rp.read_text(encoding='utf-8'))
+              except Exception:continue
+              cand=rp.parent/'QYM.candidate.lean'
+              if not cand.is_file() or r.get('panic_lines')!=0:continue
+              raw=cand.read_bytes();sha=hashlib.sha256(raw).hexdigest()
+              blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+              if sha!=r.get('candidate_qym_sha256') or blob!=r.get('candidate_qym_blob'):continue
+              records.append((r,rp,cand))
+          if not records:raise SystemExit('no hash-verified archaeology results')
+          def line(r):
+              x=r.get('first_error') or {};return int(x.get('line') or 0) if isinstance(x,dict) else 0
+          records.sort(key=lambda x:(0 if x[0].get('semantic_pass') else 1,
+                                     x[0].get('error_headers',10**9),-line(x[0]),
+                                     x[0].get('warning_headers',10**9),x[0].get('candidate_id','')))
+          best,best_rp,best_cand=records[0];baseline=int(os.environ['BASELINE_ERRORS'])
+          strict=bool(best.get('semantic_pass')) or best.get('error_headers',10**9)<baseline
+          selection={'schema':'qym-declaration-archaeology-selection-v1',
+                     'baseline_qym_sha256':os.environ['BASELINE_SHA'],
+                     'baseline_error_headers':baseline,'strict_improvement':strict,
+                     'semantic_pass':bool(best.get('semantic_pass')),'best':best,
+                     'candidates':[r for r,_,_ in records]}
+          (out/'SELECTION.json').write_text(json.dumps(selection,indent=2,sort_keys=True)+'\n')
+          stable={k:v for k,v in best.items() if k not in {'github_sha','log_sha256'}}
+          stable['schema']='qym-declaration-archaeology-frontier-v1'
+          (out/'GLOBAL_BEST.json').write_text(json.dumps(stable,indent=2,sort_keys=True)+'\n')
+          (out/'QYM.selected.lean').write_bytes(best_cand.read_bytes())
+          for name in ('QYM.error-headers.txt','QYM.diagnostics.jsonl','QYM.panic-lines.txt'):
+              p=best_rp.parent/name
+              if p.is_file():(out/name).write_bytes(p.read_bytes())
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as env:
+              env.write('STRICT='+('true' if strict else 'false')+'\n')
+              env.write('PASS='+('true' if best.get('semantic_pass') else 'false')+'\n')
+              env.write('SELECTED_SHA='+best['candidate_qym_sha256']+'\n')
+              env.write('SELECTED_ID='+best['candidate_id']+'\n')
+          print(json.dumps(selection,indent=2,sort_keys=True))
+          PY
+
+      - name: Rebase onto current branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+
+      - name: Promote semantic PASS candidate
+        if: env.PASS == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.selected.lean" PrimalitySheafVerification/QYM.lean
+          mkdir -p .github/qym-final .github/qym-campaign
+          cp "$OUT/GLOBAL_BEST.json" .github/qym-final/ARCHAEOLOGY_PASS_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          printf '%s  %s\n' "$SELECTED_SHA" PrimalitySheafVerification/QYM.lean > .github/qym-final/QYM_PASS.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM.lean .github/qym-final .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          git commit -m "QYM: promote statement-preserving archaeology PASS"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Promote strict historical-proof frontier
+        if: env.STRICT == 'true' && env.PASS != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier .github/qym-campaign
+          cp "$OUT/QYM.selected.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+          cp "$OUT/GLOBAL_BEST.json" .github/qym-frontier/GLOBAL_BEST.json
+          cp "$OUT/QYM.error-headers.txt" .github/qym-frontier/QYM_GLOBAL_BEST.error-headers.txt
+          cp "$OUT/QYM.diagnostics.jsonl" .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+          cp "$OUT/SELECTION.json" .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          printf '%s  %s\n' "$SELECTED_SHA" .github/qym-frontier/QYM_GLOBAL_BEST.lean > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          git commit -m "QYM: promote archaeology frontier ($SELECTED_ID)"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Persist archaeology result without regression
+        if: env.STRICT != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-campaign
+          cp "$OUT/SELECTION.json" .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-campaign/ARCHAEOLOGY_SELECTION.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "QYM: record statement-preserving archaeology without improvement"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-archaeology-selection-${{ github.sha }}
+          path: /tmp/qym-archaeology-selection/**
+          if-no-files-found: warn
+          retention-days: 30
