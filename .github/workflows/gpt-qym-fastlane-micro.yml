@@ -48,23 +48,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - "$TEST" "${{ matrix.variant }}" <<'PY'
-          from pathlib import Path
-          import sys
-          path=Path(sys.argv[1]); variant=sys.argv[2]
-          prelude='''import Mathlib.Analysis.Calculus.ContDiff.Operations
+          case "${{ matrix.variant }}" in
+            canonical)
+              cat > "$TEST" <<'LEAN'
+          import Mathlib.Analysis.Calculus.ContDiff.Operations
           import Mathlib.Analysis.Calculus.ContDiff.RCLike
           import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
           import Mathlib.Tactic
 
           noncomputable section
           open Function Set
-          open scoped UpperHalfPlane
+          open scoped ContDiff UpperHalfPlane
 
-          __BODY__
-          '''.replace('          ','')
-
-          canonical='''example (a b c d Y : ℝ)
+          example (a b c d Y : ℝ)
               (hden : ∀ x : ℝ,
                 (c : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (d : ℂ) ≠ 0) :
               ContDiff ℝ ∞ (fun x : ℝ =>
@@ -86,13 +82,55 @@ jobs:
                   (c : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (d : ℂ)) :=
               (contDiff_const.mul hhor).add contDiff_const
             simpa only [div_eq_mul_inv] using hnum.mul (hdenDiff.inv hden)
-          '''.replace('          ','')
+          LEAN
+              ;;
+            clm)
+              cat > "$TEST" <<'LEAN'
+          import Mathlib.Analysis.Calculus.ContDiff.Operations
+          import Mathlib.Analysis.Calculus.ContDiff.RCLike
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          import Mathlib.Tactic
 
-          clm=canonical.replace(
-            'simpa using Complex.ofRealLI.contDiff',
-            'simpa using Complex.ofRealLI.toContinuousLinearMap.contDiff')
+          noncomputable section
+          open Function Set
+          open scoped ContDiff UpperHalfPlane
 
-          named='''noncomputable def testUpperLift (u : ℍ → ℂ) : ℂ → ℂ :=
+          example (a b c d Y : ℝ)
+              (hden : ∀ x : ℝ,
+                (c : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (d : ℂ) ≠ 0) :
+              ContDiff ℝ ∞ (fun x : ℝ =>
+                ((a : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (b : ℂ)) /
+                  ((c : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (d : ℂ))) := by
+            letI : NormedAddCommGroup ℂ := Complex.instNormedAddCommGroup
+            letI : NormedSpace ℝ ℂ := instInnerProductSpaceRealComplex.toNormedSpace
+            have hx : ContDiff ℝ ∞ (fun x : ℝ => (x : ℂ)) := by
+              simpa using Complex.ofRealLI.toContinuousLinearMap.contDiff
+            have hhor : ContDiff ℝ ∞
+                (fun x : ℝ => (x : ℂ) + (Y : ℂ) * Complex.I) :=
+              hx.add contDiff_const
+            have hnum : ContDiff ℝ ∞
+                (fun x : ℝ =>
+                  (a : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (b : ℂ)) :=
+              (contDiff_const.mul hhor).add contDiff_const
+            have hdenDiff : ContDiff ℝ ∞
+                (fun x : ℝ =>
+                  (c : ℂ) * ((x : ℂ) + (Y : ℂ) * Complex.I) + (d : ℂ)) :=
+              (contDiff_const.mul hhor).add contDiff_const
+            simpa only [div_eq_mul_inv] using hnum.mul (hdenDiff.inv hden)
+          LEAN
+              ;;
+            named)
+              cat > "$TEST" <<'LEAN'
+          import Mathlib.Analysis.Calculus.ContDiff.Operations
+          import Mathlib.Analysis.Calculus.ContDiff.RCLike
+          import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          import Mathlib.Tactic
+
+          noncomputable section
+          open Function Set
+          open scoped ContDiff UpperHalfPlane
+
+          noncomputable def testUpperLift (u : ℍ → ℂ) : ℂ → ℂ :=
             u ∘ UpperHalfPlane.ofComplex
 
           @[simp] theorem testUpperLift_apply (u : ℍ → ℂ) (z : ℍ) :
@@ -106,11 +144,10 @@ jobs:
               ContDiff ℝ ∞ (fun x : ℝ => f (curve x)) := by
             have hcomp := hu.comp_contDiff hcurve (fun x => (curve x).2)
             simpa only [Function.comp_apply, testUpperLift_apply] using hcomp
-          '''.replace('          ','')
-
-          bodies={'canonical':canonical,'clm':clm,'named':named}
-          path.write_text(prelude.replace('__BODY__',bodies[variant])+'\n',encoding='utf-8')
-          PY
+          LEAN
+              ;;
+          esac
+          sed -i 's/^          //' "$TEST"
           cp "$TEST" "$OUT/$TEST"
 
       - name: Direct Lean compile micro test
@@ -145,5 +182,3 @@ jobs:
           test "$(cat "$OUT/TEST.exit")" = 0
           test -s "$OUT/TEST.olean"
           test -s "$OUT/TEST.ilean"
-
-# retrigger after workflow registration
