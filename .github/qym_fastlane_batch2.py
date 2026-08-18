@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+# Retrigger after the persistent v2 workflow was registered.
 from pathlib import Path
 import hashlib
 import json
