@@ -1,4 +1,4 @@
-name: GPT QYM Probe39h GammaTwo mod2-kernel proof matrix
+name: GPT QYM Probe39h GammaTwo explicit-entry proof matrix
 
 on:
   push:
@@ -13,13 +13,13 @@ permissions:
 
 jobs:
   micro:
-    name: GammaTwo-mod2 ${{ matrix.variant }}
+    name: GammaTwo-entry ${{ matrix.variant }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        variant: [positive, negative, full-theorem]
+        variant: [entries, negative, full-theorem]
     env:
       OUT: /tmp/qym-probe39h-${{ matrix.variant }}
       TEST: QYM_Probe39h_${{ matrix.variant }}.lean
@@ -44,7 +44,7 @@ jobs:
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
           lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
 
-      - name: Materialize direct-entry proof test
+      - name: Materialize explicit-entry proof test
         shell: bash
         run: |
           set -euo pipefail
@@ -61,47 +61,149 @@ jobs:
           open Matrix Function Set Topology
           open scoped MatrixGroups UpperHalfPlane
 
+          theorem tinv00 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two] at h
+            exact h
+
+          theorem tinv01 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two, tinv00] at h
+            omega
+
+          theorem tinv10 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 0 = (0 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 1 0)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two] at h
+            exact h
+
+          theorem tinv11 :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 1 1 = (1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 1 1)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two, tinv10] at h
+            exact h
+
+          theorem t_upper_entry :
+              (ModularGroup.T : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+            norm_num [ModularGroup.T]
+
+          theorem tinv_upper_entry :
+              (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) :=
+            tinv01
+
+          theorem s_upper_entry :
+              (ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            norm_num [ModularGroup.S]
+
+          theorem ts_upper_entry :
+              (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.T.val 0 0 * ModularGroup.S.val 0 1 +
+                ModularGroup.T.val 0 1 * ModularGroup.S.val 1 1 = -1
+            norm_num [ModularGroup.T, ModularGroup.S]
+
+          theorem tinvS_lower_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 0 +
+                (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 0 = 1
+            norm_num [ModularGroup.S, tinv10, tinv11]
+
+          theorem tinvS_11_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹).val 1 0 * ModularGroup.S.val 0 1 +
+                (ModularGroup.T⁻¹).val 1 1 * ModularGroup.S.val 1 1 = 0
+            norm_num [ModularGroup.S, tinv10, tinv11]
+
+          theorem tinvSTinv_lower_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹ :
+                SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              (ModularGroup.T⁻¹ * ModularGroup.S).val 1 0 *
+                  (ModularGroup.T⁻¹).val 0 0 +
+                (ModularGroup.T⁻¹ * ModularGroup.S).val 1 1 *
+                  (ModularGroup.T⁻¹).val 1 0 = 1
+            norm_num [tinvS_lower_entry, tinvS_11_entry, tinv00, tinv10]
+
+          theorem stinv_upper_entry :
+              (ModularGroup.S * ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.S.val 0 0 * (ModularGroup.T⁻¹).val 0 1 +
+                ModularGroup.S.val 0 1 * (ModularGroup.T⁻¹).val 1 1 = -1
+            norm_num [ModularGroup.S, tinv01, tinv11]
+
+          theorem st_upper_entry :
+              (ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            change
+              ModularGroup.S.val 0 0 * ModularGroup.T.val 0 1 +
+                ModularGroup.S.val 0 1 * ModularGroup.T.val 1 1 = -1
+            norm_num [ModularGroup.S, ModularGroup.T]
+
+          theorem ts_lower_entry :
+              (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              ModularGroup.T.val 1 0 * ModularGroup.S.val 0 0 +
+                ModularGroup.T.val 1 1 * ModularGroup.S.val 1 0 = 1
+            norm_num [ModularGroup.T, ModularGroup.S]
+
+          theorem ts_11_entry :
+              (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 1 = (0 : ℤ) := by
+            change
+              ModularGroup.T.val 1 0 * ModularGroup.S.val 0 1 +
+                ModularGroup.T.val 1 1 * ModularGroup.S.val 1 1 = 0
+            norm_num [ModularGroup.T, ModularGroup.S]
+
+          theorem tst_lower_entry :
+              (ModularGroup.T * ModularGroup.S * ModularGroup.T :
+                SL(2, ℤ)) 1 0 = (1 : ℤ) := by
+            change
+              (ModularGroup.T * ModularGroup.S).val 1 0 *
+                  ModularGroup.T.val 0 0 +
+                (ModularGroup.T * ModularGroup.S).val 1 1 *
+                  ModularGroup.T.val 1 0 = 1
+            norm_num [ts_lower_entry, ts_11_entry, ModularGroup.T]
+
           theorem tinvS_upper_entry :
               (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
-            have hInv00 :
-                (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
-              have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
-                (inv_mul_cancel ModularGroup.T)
-              norm_num [Matrix.SpecialLinearGroup.coe_mul,
-                ModularGroup.T, Matrix.mul_fin_two] at h
-              exact h
             change
               (ModularGroup.T⁻¹).val 0 0 * ModularGroup.S.val 0 1 +
                 (ModularGroup.T⁻¹).val 0 1 * ModularGroup.S.val 1 1 = -1
-            norm_num [ModularGroup.S, hInv00]
-
-          theorem tinvS_not_mem_gammaTwo :
-              ModularGroup.T⁻¹ * ModularGroup.S ∉
-                CongruenceSubgroup.Gamma 2 := by
-            intro hmem
-            have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
-            norm_num [tinvS_upper_entry] at hUpper
-
-          theorem neg_tinvS_not_mem_gammaTwo :
-              -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
-                CongruenceSubgroup.Gamma 2 := by
-            intro hmem
-            have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
-            norm_num [tinvS_upper_entry] at hUpper
+            norm_num [ModularGroup.S, tinv00, tinv01]
 
           __BODY__
           '''.replace("          ", "")
 
-          positive = '''example :
-              ModularGroup.T⁻¹ * ModularGroup.S ∉
-                CongruenceSubgroup.Gamma 2 :=
-            tinvS_not_mem_gammaTwo
+          entries = '''example :
+              (ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹ :
+                SL(2, ℤ)) 1 0 = 1 ∧
+              (ModularGroup.T * ModularGroup.S * ModularGroup.T :
+                SL(2, ℤ)) 1 0 = 1 :=
+            ⟨tinvSTinv_lower_entry, tst_lower_entry⟩
           '''.replace("          ", "")
 
           negative = '''example :
-              -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
-                CongruenceSubgroup.Gamma 2 :=
-            neg_tinvS_not_mem_gammaTwo
+              -ModularGroup.T ∉ CongruenceSubgroup.Gamma 2 := by
+            intro hmem
+            have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+            norm_num [t_upper_entry] at hUpper
+
+          example :
+              -(ModularGroup.T⁻¹ * ModularGroup.S * ModularGroup.T⁻¹) ∉
+                CongruenceSubgroup.Gamma 2 := by
+            intro hmem
+            have hLower := (CongruenceSubgroup.Gamma_mem.mp hmem).2.2.1
+            norm_num [tinvSTinv_lower_entry] at hLower
           '''.replace("          ", "")
 
           full = '''theorem gammaTwo_test
@@ -118,70 +220,27 @@ jobs:
               hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
                 hSTinv | hST | hTST | hTinvSCase
             · exact hcentral
-            · rcases hT.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hTinv.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hS.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hTS.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hTinvSTinv.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hSTinv.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hST.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hTST.1 with rfl | rfl <;> exfalso
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-              all_goals try
-                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
-                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-            · rcases hTinvSCase.1 with hpos | hneg
-              · subst gamma
-                exact (tinvS_not_mem_gammaTwo hGamma).elim
-              · subst gamma
-                exact (neg_tinvS_not_mem_gammaTwo hGamma).elim
+            · rcases hT.1 with rfl | rfl <;> exfalso <;>
+                norm_num [t_upper_entry] at hUpper
+            · rcases hTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [tinv_upper_entry] at hUpper
+            · rcases hS.1 with rfl | rfl <;> exfalso <;>
+                norm_num [s_upper_entry] at hUpper
+            · rcases hTS.1 with rfl | rfl <;> exfalso <;>
+                norm_num [ts_upper_entry] at hUpper
+            · rcases hTinvSTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [tinvSTinv_lower_entry] at hLower
+            · rcases hSTinv.1 with rfl | rfl <;> exfalso <;>
+                norm_num [stinv_upper_entry] at hUpper
+            · rcases hST.1 with rfl | rfl <;> exfalso <;>
+                norm_num [st_upper_entry] at hUpper
+            · rcases hTST.1 with rfl | rfl <;> exfalso <;>
+                norm_num [tst_lower_entry] at hLower
+            · rcases hTinvSCase.1 with rfl | rfl <;> exfalso <;>
+                norm_num [tinvS_upper_entry] at hUpper
           '''.replace("          ", "")
 
-          bodies = {"positive": positive, "negative": negative, "full-theorem": full}
+          bodies = {"entries": entries, "negative": negative, "full-theorem": full}
           path.write_text(prelude.replace("__BODY__", bodies[variant]) + "\n",
                           encoding="utf-8")
           PY
