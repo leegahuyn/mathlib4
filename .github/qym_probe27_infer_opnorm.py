@@ -57,3 +57,5 @@ forbidden = {
 }
 assert not any(forbidden.values()), forbidden
 print(OUTPUT_SHA256)
+
+# Retrigger corrected Probe27 direct Lean workflow from the exact Probe20 authority.
