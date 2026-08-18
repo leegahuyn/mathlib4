@@ -13,33 +13,41 @@ import Mathlib.Tactic
 open Matrix Function Set Topology
 open scoped MatrixGroups UpperHalfPlane
 
+lemma qym_tinv00 :
+    (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+  have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+    (inv_mul_cancel ModularGroup.T)
+  norm_num [Matrix.SpecialLinearGroup.coe_mul,
+    ModularGroup.T, Matrix.mul_fin_two] at h
+  exact h
+
+lemma qym_tinvS_upper_entry :
+    (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+  change
+    (∑ k : Fin 2,
+      (ModularGroup.T⁻¹).val 0 k * ModularGroup.S.val k 1) = -1
+  simp only [Fin.sum_univ_two]
+  norm_num [ModularGroup.S, qym_tinv00]
+
+lemma qym_neg_tinvS_upper_entry :
+    (-(ModularGroup.T⁻¹ * ModularGroup.S) : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+  simp [qym_tinvS_upper_entry]
+
 theorem qym_tinvS_not_mem_gammaTwo :
     ModularGroup.T⁻¹ * ModularGroup.S ∉
       CongruenceSubgroup.Gamma 2 := by
   intro hmem
-  rw [CongruenceSubgroup.Gamma_mem'] at hmem
-  have hTS :
-      Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.T =
-        Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.S := by
-    apply inv_mul_eq_one.mp
-    simpa using hmem
-  have h00 := congrArg (fun g : SL(2, ZMod 2) => g 0 0) hTS
-  norm_num [Matrix.SpecialLinearGroup.map,
-    ModularGroup.T, ModularGroup.S] at h00
+  have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qym_tinvS_upper_entry] at hUpper
+  norm_num at hUpper
 
 theorem qym_neg_tinvS_not_mem_gammaTwo :
     -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
       CongruenceSubgroup.Gamma 2 := by
-  intro hneg
-  have hminusOne :
-      (-1 : SL(2, ℤ)) ∈ CongruenceSubgroup.Gamma 2 := by
-    rw [CongruenceSubgroup.Gamma_mem]
-    norm_num
-  have hpos := mul_mem hminusOne hneg
-  have : ModularGroup.T⁻¹ * ModularGroup.S ∈
-      CongruenceSubgroup.Gamma 2 := by
-    simpa using hpos
-  exact qym_tinvS_not_mem_gammaTwo this
+  intro hmem
+  have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qym_neg_tinvS_upper_entry] at hUpper
+  norm_num at hUpper
 
 __BODY__
 '''
