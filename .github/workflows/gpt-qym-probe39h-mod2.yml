@@ -1,0 +1,230 @@
+name: GPT QYM Probe39h GammaTwo mod2-kernel proof matrix
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe39h-mod2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  micro:
+    name: GammaTwo-mod2 ${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [positive, negative, full-theorem]
+    env:
+      OUT: /tmp/qym-probe39h-${{ matrix.variant }}
+      TEST: QYM_Probe39h_${{ matrix.variant }}.lean
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+
+      - name: Materialize mod2 proof test
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$TEST" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1]); variant = sys.argv[2]
+          prelude = '''import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          import Mathlib.NumberTheory.Modular
+          import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+          import Mathlib.LinearAlgebra.Matrix.Notation
+          import Mathlib.Tactic
+
+          open Matrix Function Set Topology
+          open scoped MatrixGroups UpperHalfPlane
+
+          theorem tinvS_not_mem_gammaTwo :
+              ModularGroup.T⁻¹ * ModularGroup.S ∉
+                CongruenceSubgroup.Gamma 2 := by
+            intro hmem
+            rw [CongruenceSubgroup.Gamma_mem'] at hmem
+            have hTS :
+                Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.T =
+                  Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.S := by
+              apply inv_mul_eq_one.mp
+              simpa using hmem
+            have h00 := congrArg
+              (fun g : SL(2, ZMod 2) => g 0 0) hTS
+            norm_num [Matrix.SpecialLinearGroup.map,
+              ModularGroup.T, ModularGroup.S] at h00
+
+          __BODY__
+          '''.replace("          ", "")
+
+          positive = '''example :
+              ModularGroup.T⁻¹ * ModularGroup.S ∉
+                CongruenceSubgroup.Gamma 2 :=
+            tinvS_not_mem_gammaTwo
+          '''.replace("          ", "")
+
+          negative = '''example :
+              -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
+                CongruenceSubgroup.Gamma 2 := by
+            intro hneg
+            have hminusOne :
+                (-1 : SL(2, ℤ)) ∈ CongruenceSubgroup.Gamma 2 := by
+              rw [CongruenceSubgroup.Gamma_mem]
+              norm_num
+            have hpos := mul_mem hminusOne hneg
+            have : ModularGroup.T⁻¹ * ModularGroup.S ∈
+                CongruenceSubgroup.Gamma 2 := by
+              simpa using hpos
+            exact tinvS_not_mem_gammaTwo this
+          '''.replace("          ", "")
+
+          full = '''theorem gammaTwo_test
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            have hUpper : (((gamma 0 1 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
+            have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
+            have hNoNegTinvS :
+                -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
+                  CongruenceSubgroup.Gamma 2 := by
+              intro hneg
+              have hminusOne :
+                  (-1 : SL(2, ℤ)) ∈ CongruenceSubgroup.Gamma 2 := by
+                rw [CongruenceSubgroup.Gamma_mem]
+                norm_num
+              have hpos := mul_mem hminusOne hneg
+              have : ModularGroup.T⁻¹ * ModularGroup.S ∈
+                  CongruenceSubgroup.Gamma 2 := by
+                simpa using hpos
+              exact tinvS_not_mem_gammaTwo this
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvSCase
+            · exact hcentral
+            · rcases hT.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hTinv.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hS.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hTS.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hTinvSTinv.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hSTinv.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hST.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hTST.1 with rfl | rfl <;> exfalso
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
+              all_goals try
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
+            · rcases hTinvSCase.1 with hpos | hneg
+              · subst gamma
+                exact (tinvS_not_mem_gammaTwo hGamma).elim
+              · subst gamma
+                exact (hNoNegTinvS hGamma).elim
+          '''.replace("          ", "")
+
+          bodies = {"positive": positive, "negative": negative, "full-theorem": full}
+          path.write_text(prelude.replace("__BODY__", bodies[variant]) + "\n",
+                          encoding="utf-8")
+          PY
+          cp "$TEST" "$OUT/$TEST"
+
+      - name: Direct Lean compile mod2 proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/TEST.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/TEST.exit"
+          rm -f "$TEST"
+          exit 0
+
+      - name: Upload mod2 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe39h-${{ matrix.variant }}-${{ github.sha }}
+          path: /tmp/qym-probe39h-${{ matrix.variant }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless mod2 proof passes
+        if: always()
+        shell: bash
+        run: |
+          test -f "$OUT/TEST.exit"
+          test "$(cat "$OUT/TEST.exit")" = 0
+          test -s "$OUT/TEST.olean"
+          test -s "$OUT/TEST.ilean"
