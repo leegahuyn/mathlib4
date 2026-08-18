@@ -22,6 +22,7 @@ jobs:
       TEST: QYM_Probe39j_repaired.lean
       SOURCE_SHA: 0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6
       SOURCE_BLOB: e38697cb52d0c79d8f6af25145d1d4ea258d518a
+      REPAIRED_SHA: 3fda3f009a5098ee1977615b50ba2792388949f093056cc81ed754065a53e0ee
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -50,37 +51,36 @@ jobs:
           cp "$A/QYM_Probe39j.lean" "$TEST"
           python3 - "$TEST" <<'PY'
           from pathlib import Path
-          import hashlib,re,sys
-          p=Path(sys.argv[1]); raw=p.read_bytes()
-          assert hashlib.sha256(raw).hexdigest()=="0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6"
-          s=raw.decode('utf-8')
-          old='''  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
-            have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
-              (inv_mul_cancel ModularGroup.T)
-            norm_num [Matrix.SpecialLinearGroup.coe_mul,
-              ModularGroup.T, Matrix.mul_fin_two, hInv00] at h
-            exact h
-          '''
-          new='''  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
-            rw [← zpow_neg_one, ModularGroup.coe_T_zpow]
-            norm_num
-          '''
-          assert s.count(old)==1,s.count(old)
-          s=s.replace(old,new,1)
-          bad={
-            'sorry':len(re.findall(r'\bsorry\b',s)),
-            'admit':len(re.findall(r'\badmit\b',s)),
-            'native_decide':len(re.findall(r'\bnative_decide\b',s)),
-            'ofReduceBool':s.count('Lean.ofReduceBool'),
-            'axiom':len(re.findall(r'(?m)^\s*axiom\s+',s)),
-            'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',s)),
-            'hb0':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',s)),
+          import hashlib, re, sys
+
+          path = Path(sys.argv[1])
+          raw = path.read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == "0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6"
+          text = raw.decode("utf-8")
+          start = text.index("  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by")
+          end = text.index("\n\n  have hTSUpper :", start)
+          replacement = (
+              "  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by\n"
+              "    rw [← zpow_neg_one, ModularGroup.coe_T_zpow]\n"
+              "    norm_num"
+          )
+          text = text[:start] + replacement + text[end:]
+          forbidden = {
+              "sorry": len(re.findall(r"\bsorry\b", text)),
+              "admit": len(re.findall(r"\badmit\b", text)),
+              "native_decide": len(re.findall(r"\bnative_decide\b", text)),
+              "Lean.ofReduceBool": text.count("Lean.ofReduceBool"),
+              "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", text)),
+              "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", text)),
+              "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", text)),
           }
-          assert not any(bad.values()),bad
-          p.write_text(s,encoding='utf-8')
-          result=p.read_bytes()
-          print(hashlib.sha256(result).hexdigest(),len(result),result.count(b'\n'))
+          assert not any(forbidden.values()), forbidden
+          path.write_text(text, encoding="utf-8")
+          result = path.read_bytes()
+          assert hashlib.sha256(result).hexdigest() == "3fda3f009a5098ee1977615b50ba2792388949f093056cc81ed754065a53e0ee"
+          print(hashlib.sha256(result).hexdigest(), len(result), result.count(b"\n"))
           PY
+          test "$(sha256sum "$TEST" | awk '{print $1}')" = "$REPAIRED_SHA"
           cp "$TEST" "$OUT/$TEST"
           sha256sum "$TEST" > "$OUT/TEST.source.sha256"
 
@@ -110,7 +110,9 @@ jobs:
           rc=$?
           set -e
           echo "$rc" > "$OUT/TEST.exit"
-          if [[ "$rc" -eq 0 ]]; then sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"; fi
+          if [[ "$rc" -eq 0 ]]; then
+            sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"
+          fi
           rm -f "$TEST"
           exit 0
 
