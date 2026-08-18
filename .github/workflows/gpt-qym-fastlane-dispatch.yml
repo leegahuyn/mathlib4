@@ -1,0 +1,33 @@
+name: Dispatch persistent QYM fastlane
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-probe35-20260818
+    paths:
+      - .github/workflows/gpt-qym-fastlane-dispatch.yml
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Dispatch persistent fastlane direct-Lean workflow
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run gpt-qym-fastlane.yml \
+            --repo leegahuyn/mathlib4 \
+            --ref gpt/qym-fastlane-probe35-20260818
+          sleep 5
+          gh run list \
+            --repo leegahuyn/mathlib4 \
+            --workflow gpt-qym-fastlane.yml \
+            --branch gpt/qym-fastlane-probe35-20260818 \
+            --limit 5
