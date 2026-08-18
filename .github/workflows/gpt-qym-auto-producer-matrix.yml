@@ -1,0 +1,328 @@
+name: GPT QYM verified-frontier producer repair matrix
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      - .github/workflows/gpt-qym-auto-producer-matrix.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpt-qym-auto-producer-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  matrix:
+    if: ${{ hashFiles('.github/qym-frontier/QYM_GLOBAL_BEST.lean') != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - baseline
+          - heartbeat-both
+          - heartbeat-synth
+          - infer-by
+          - explicit-structure
+          - remove-local-shadow
+          - api-migrate
+          - simp-flex
+    env:
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      FRONTIER_RESULT: .github/qym-frontier/GLOBAL_BEST.json
+      NEXT: .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-auto-${{ matrix.variant }}
+
+    steps:
+      - name: Checkout exact frontier commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate exact verified frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test -s "$FRONTIER"
+          test -s "$FRONTIER_RESULT"
+          test -s "$NEXT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 - "$FRONTIER" "$FRONTIER_RESULT" "$NEXT" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          source,result,nextp,out=map(Path,sys.argv[1:])
+          raw=source.read_bytes(); r=json.loads(result.read_text()); n=json.loads(nextp.read_text())
+          sha=hashlib.sha256(raw).hexdigest()
+          assert sha==r['candidate_qym_sha256']
+          assert r['exit']!=0 and r['error_headers']>0 and r['panic_lines']==0
+          assert n['candidate_qym_sha256']==sha
+          (out/'BASELINE_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          (out/'NEXT_BLOCKER.json').write_text(json.dumps(n,indent=2,sort_keys=True)+'\n')
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize one producer-oriented candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$FRONTIER" "$QYM"
+          set +e
+          python3 - "$QYM" "$NEXT" "$OUT" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,sys
+          source,nextp,out=map(Path,sys.argv[1:4]); variant=sys.argv[4]
+          text=source.read_text(encoding='utf-8'); n=json.loads(nextp.read_text())
+          owner=(n.get('first_owner') or {}).get('name')
+          line=int((n.get('first_owner') or {}).get('line') or
+                   (n.get('first_error') or {}).get('line') or 0)
+          decl_re=re.compile(
+              r'(?m)^(?:set_option[^\n]* in\n)*(?:theorem|lemma|def|abbrev|instance|'
+              r'noncomputable\s+def|noncomputable\s+instance)\s+([^\s:(]+)')
+          decls=[]
+          for m in decl_re.finditer(text):
+              ln=text.count('\n',0,m.start())+1
+              decls.append((ln,m.group(1),m.start()))
+          target=None
+          if owner:
+              matches=[d for d in decls if d[1]==owner]
+              if matches: target=matches[0]
+          if target is None:
+              prior=[d for d in decls if d[0]<=line]
+              if prior: target=prior[-1]
+          if target is None: raise SystemExit('target declaration not found')
+          idx=decls.index(target); start=target[2]
+          end=decls[idx+1][2] if idx+1<len(decls) else len(text)
+          decl=text[start:end]
+          original=decl
+
+          if variant=='baseline':
+              pass
+          elif variant=='heartbeat-both':
+              decl='set_option maxHeartbeats 4000000 in\nset_option synthInstance.maxHeartbeats 4000000 in\n'+decl
+          elif variant=='heartbeat-synth':
+              decl='set_option synthInstance.maxHeartbeats 8000000 in\n'+decl
+          elif variant=='infer-by':
+              decl,n1=re.subn(r':=\s*inferInstance\b',':= by\n  infer_instance',decl,count=1)
+              if n1==0:
+                  decl,n1=re.subn(r':=\s*by\s*\n\s*exact\s+inferInstance\b',':= by\n  infer_instance',decl,count=1)
+              if n1==0: raise SystemExit('inferInstance producer pattern absent')
+          elif variant=='explicit-structure':
+              changed=False
+              patterns=[
+                  (r'InnerProductSpace\s+ℂ\s+(\([^\n]+\))\s*:=\s*\n?\s*inferInstance',
+                   lambda m:f'InnerProductSpace ℂ {m.group(1)} :=\n  {m.group(1)}.innerProductSpace'),
+                  (r'NormedSpace\s+ℂ\s+(\([^\n]+\))\s*:=\s*\n?\s*inferInstance',
+                   lambda m:f'NormedSpace ℂ {m.group(1)} :=\n  {m.group(1)}.normedSpace'),
+                  (r'CompleteSpace\s+(\([^\n]+\))\s*:=\s*\n?\s*inferInstance',
+                   lambda m:f'CompleteSpace {m.group(1)} :=\n  {m.group(1)}.completeSpace'),
+              ]
+              for pat,repl in patterns:
+                  decl,c=re.subn(pat,repl,decl,count=1)
+                  if c: changed=True; break
+              if not changed: raise SystemExit('explicit structure producer pattern absent')
+          elif variant=='remove-local-shadow':
+              patterns=[
+                  r'(?ms)^\s*(?:letI|local instance)[^\n]*:\s*AddCommGroup\s+ℂ\s*:=.*?(?=^\s*(?:letI|have|show|exact|refine|apply|simpa|rw|constructor|·|\Z))',
+                  r'(?ms)^\s*(?:letI|local instance)[^\n]*:\s*Module\s+ℂ\s+[^\n]+:=.*?(?=^\s*(?:letI|have|show|exact|refine|apply|simpa|rw|constructor|·|\Z))',
+                  r'(?ms)^\s*(?:letI|local instance)[^\n]*:\s*NormedSpace\s+ℂ\s+[^\n]+:=.*?(?=^\s*(?:letI|have|show|exact|refine|apply|simpa|rw|constructor|·|\Z))',
+              ]
+              changed=False
+              for pat in patterns:
+                  decl,c=re.subn(pat,'',decl,count=1)
+                  if c: changed=True; break
+              if not changed: raise SystemExit('local shadow producer pattern absent')
+          elif variant=='api-migrate':
+              reps={
+                  '.orthogonalProjection\n':'.orthogonalProjectionOnto\n',
+                  '.orthogonalProjection ':'.orthogonalProjectionOnto ',
+                  'orthogonalProjection_mem_subspace_eq_self':'orthogonalProjectionOnto_mem_subspace_eq_self',
+                  'norm_orthogonalProjection_apply_le':'norm_orthogonalProjectionOnto_apply_le',
+                  'orthogonalProjection_norm_le':'orthogonalProjectionOnto_norm_le',
+                  'ker_orthogonalProjection':'ker_orthogonalProjectionOnto',
+              }
+              changed=False
+              for a,b in reps.items():
+                  if a in decl: decl=decl.replace(a,b); changed=True
+              if not changed: raise SystemExit('known API migration pattern absent')
+          elif variant=='simp-flex':
+              decl,c=re.subn(r'\bsimpa\s+only\s*\[', 'simpa [', decl)
+              if c==0: raise SystemExit('simpa only pattern absent')
+          else: raise SystemExit(variant)
+
+          if variant!='baseline' and decl==original:
+              raise SystemExit('candidate is a no-op')
+          text=text[:start]+decl+text[end:]
+          source.write_text(text,encoding='utf-8')
+          raw=source.read_bytes(); sha=hashlib.sha256(raw).hexdigest()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          executable=raw.decode('utf-8')
+          forbidden={
+              'sorry':len(re.findall(r'\bsorry\b',executable)),
+              'admit':len(re.findall(r'\badmit\b',executable)),
+              'native_decide':len(re.findall(r'\bnative_decide\b',executable)),
+              'Lean.ofReduceBool':executable.count('Lean.ofReduceBool'),
+              'global_axiom':len(re.findall(r'(?m)^\s*axiom\s+',executable)),
+              'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',executable)),
+              'maxHeartbeats_zero':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',executable)),
+          }
+          if any(forbidden.values()): raise SystemExit(forbidden)
+          result={'schema':'qym-auto-producer-candidate-v1','variant':variant,
+                  'owner':target[1],'owner_line':target[0],
+                  'candidate_qym_sha256':sha,'candidate_qym_blob':blob,
+                  'bytes':len(raw),'lf':raw.count(b'\n'),'forbidden':forbidden}
+          (out/'PATCH_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          (out/'TARGET_ORIGINAL.lean').write_text(original,encoding='utf-8')
+          (out/'TARGET_CANDIDATE.lean').write_text(decl,encoding='utf-8')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          build_rc=$?
+          set -e
+          echo "$build_rc" > "$OUT/materialize.exit"
+          if [[ "$build_rc" -ne 0 ]]; then
+            cp "$OUT/QYM.canonical.lean" "$QYM"
+            exit 1
+          fi
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+
+      - name: Full direct Lean compile candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.auto.olean" -i "$RUNNER_TEMP/QYM.auto.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.auto.olean" && test -s "$RUNNER_TEMP/QYM.auto.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.auto.olean" "$RUNNER_TEMP/QYM.auto.ilean" \
+              > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize exact result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,sys
+          out=Path(sys.argv[1]); variant=sys.argv[2]
+          raw=(out/'QYM.log').read_bytes() if (out/'QYM.log').exists() else b''
+          text=raw.decode(errors='replace')
+          p=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in p.finditer(text):
+              x=m.groupdict();x['line']=int(x['line']);x['column']=int(x['column']);rows.append(x)
+          errors=[x for x in rows if x['severity']=='error'];warnings=[x for x in rows if x['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          rc=int((out/'QYM.exit').read_text().strip()) if (out/'QYM.exit').exists() else None
+          baseline=json.loads((out/'BASELINE_RESULT.json').read_text()) if (out/'BASELINE_RESULT.json').exists() else {}
+          patch=json.loads((out/'PATCH_RESULT.json').read_text()) if (out/'PATCH_RESULT.json').exists() else {}
+          result={'schema':'qym-auto-producer-result-v1','github_sha':os.environ.get('GITHUB_SHA'),
+                  'variant':variant,'owner':patch.get('owner'),
+                  'baseline_qym_sha256':baseline.get('candidate_qym_sha256'),
+                  'baseline_error_headers':baseline.get('error_headers'),
+                  'candidate_qym_sha256':patch.get('candidate_qym_sha256'),
+                  'candidate_qym_blob':patch.get('candidate_qym_blob'),
+                  'exit':rc,'error_headers':len(errors),'warning_headers':len(warnings),
+                  'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+                  'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+                  'panic_lines':len(panics),'log_sha256':hashlib.sha256(raw).hexdigest(),
+                  'semantic_pass':rc==0 and not errors and not panics}
+          (out/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x,sort_keys=True)+'\n' for x in rows))
+          (out/'QYM.error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in errors))
+          (out/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics))
+          (out/'PROBE_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable matrix evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-auto-producer-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-auto-${{ matrix.variant }}/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail closed only for materialization or panic
+        if: always()
+        shell: bash
+        run: |
+          test -s "$OUT/PROBE_RESULT.json"
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          if r['panic_lines']!=0: raise SystemExit(1)
+          PY
