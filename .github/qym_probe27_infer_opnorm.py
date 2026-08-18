@@ -5,8 +5,8 @@ import re
 import sys
 
 INPUT_SHA256 = "94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534"
-OUTPUT_SHA256 = "500b982d97c0922c3d8345906637ebb44f07d54f54a7069812086596b9839776"
-OUTPUT_BLOB = "bdd3064f6deebb92dc03387c03f152190024165c"
+OUTPUT_SHA256 = "c1e3b8e3de022b9eecf03c129cd78fa799a7dd9a1732748032e5711625dceee5"
+OUTPUT_BLOB = "be1a2a05a5dfb24b9b18d720a44b2d26cac553d1"
 
 OLD = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
     (n : ℤ) (Y : ℝ) :
