@@ -57,3 +57,5 @@ forbidden = {
 }
 assert not any(forbidden.values()), forbidden
 print(OUTPUT_SHA256)
+
+# Retrigger the registered Probe29 workflow.
