@@ -1,0 +1,207 @@
+name: GPT QYM campaign authoritative status v2
+
+on:
+  workflow_run:
+    workflows:
+      - GPT QYM authoritative frontier bootstrap
+      - GPT QYM verified frontier direct revalidation v2
+      - GPT QYM verified frontier next-blocker analyzer
+      - GPT QYM persist verified next-blocker analysis
+      - GPT QYM verified-frontier producer repair matrix v2
+      - GPT QYM verified-frontier producer selector v3
+      - GPT QYM Probe39i GammaTwo complete obstruction
+      - GPT QYM Probe40 integrated GammaTwo repair
+      - GPT QYM Probe40 verified frontier promoter
+      - GPT QYM checked-in TRUE PASS verifier
+      - GPT final 13 roots and two clean reproducibility passes
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-campaign-status-v2-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  collect:
+    if: github.event.workflow_run.head_branch == 'gpt/fa-qym-clean-final-20260816'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-campaign-status-v2
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Build authoritative branch and run status
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
+          TRIGGER_WORKFLOW: ${{ github.event.workflow_run.name }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          TRIGGER_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - "$OUT" <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import hashlib, io, json, os, urllib.parse, urllib.request, zipfile
+
+          out=Path(__import__('sys').argv[1]);repo='leegahuyn/mathlib4';branch=os.environ['BRANCH']
+          token=os.environ['GH_TOKEN'];api='https://api.github.com'
+          headers={'Authorization':f'Bearer {token}','Accept':'application/vnd.github+json',
+                   'X-GitHub-Api-Version':'2022-11-28','User-Agent':'qym-status-v2'}
+          def get_json(url):
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=60) as r:return json.load(r)
+          def get_bytes(url):
+              req=urllib.request.Request(url,headers=headers)
+              with urllib.request.urlopen(req,timeout=120) as r:return r.read()
+          def load(path):
+              p=Path(path)
+              if not p.is_file():return None
+              try:return json.loads(p.read_text(encoding='utf-8'))
+              except Exception:return None
+          def sha(path):
+              p=Path(path);return hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
+
+          frontier=load('.github/qym-frontier/GLOBAL_BEST.json')
+          frontier_sha=sha('.github/qym-frontier/QYM_GLOBAL_BEST.lean')
+          next_blocker=load('.github/qym-frontier/next-blocker/NEXT_BLOCKER.json')
+          checked=load('.github/qym-final/QYM_TRUE_PASS.json')
+          repro=load('.github/final-evidence/REPRODUCIBILITY.json')
+          bootstrap=load('.github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json')
+          selection=load('.github/qym-campaign/AUTO_PRODUCER_SELECTION.json')
+          canonical_sha=sha('PrimalitySheafVerification/QYM.lean')
+
+          query=urllib.parse.urlencode({'branch':branch,'per_page':100})
+          runs=get_json(f'{api}/repos/{repo}/actions/runs?{query}').get('workflow_runs',[])
+          names=(
+              'QYM authoritative frontier bootstrap','QYM verified frontier direct revalidation v2',
+              'QYM verified frontier next-blocker analyzer','QYM persist verified next-blocker',
+              'QYM verified-frontier producer repair matrix v2','QYM verified-frontier producer selector v3',
+              'QYM Probe39i','QYM Probe40','QYM checked-in TRUE PASS','final 13 roots'
+          )
+          recent=[]
+          for r in runs:
+              if not any(key.lower() in (r.get('name') or '').lower() for key in names):continue
+              recent.append({k:r.get(k) for k in ('id','name','status','conclusion','head_sha','event',
+                                                  'run_number','run_attempt','created_at','updated_at','html_url')})
+              if len(recent)>=60:break
+
+          trigger_artifacts=[];trigger_evidence=[]
+          try:
+              arts=get_json(f"{api}/repos/{repo}/actions/runs/{os.environ['TRIGGER_RUN_ID']}/artifacts").get('artifacts',[])
+          except Exception as exc:
+              arts=[];trigger_artifacts=[{'error':repr(exc)}]
+          for a in arts:
+              trigger_artifacts.append({k:a.get(k) for k in ('id','name','size_in_bytes','digest','expired','created_at')})
+              if a.get('expired') or int(a.get('size_in_bytes') or 0)>30_000_000:continue
+              try:
+                  z=zipfile.ZipFile(io.BytesIO(get_bytes(a['archive_download_url'])))
+              except Exception as exc:
+                  trigger_evidence.append({'artifact_id':a.get('id'),'download_error':repr(exc)});continue
+              for member in z.namelist():
+                  if Path(member).name not in {
+                      'RESULT.json','PROBE_RESULT.json','STABLE_RESULT.json','DETAILED_RESULT.json',
+                      'QYM_TRUE_PASS.json','REPRODUCIBILITY.json','SELECTION.json',
+                      'NEXT_BLOCKER.json','BOOTSTRAP_SELECTION.json','PROMOTION_DECISION.json'}:
+                      continue
+                  try:data=json.loads(z.read(member).decode('utf-8'))
+                  except Exception:continue
+                  trigger_evidence.append({'artifact_id':a.get('id'),'artifact_name':a.get('name'),
+                                           'member':member,'data':data})
+
+          qym_true_pass=bool(checked and checked.get('semantic_pass') is True and
+                             checked.get('source_sha256')==canonical_sha)
+          final_build_pass=bool(repro and repro.get('all_pass') is True and
+                                repro.get('source_stable') is True)
+          frontier_valid=bool(frontier and frontier_sha and
+                              (frontier.get('candidate_qym_sha256') or frontier.get('source_sha256'))==frontier_sha and
+                              frontier.get('panic_lines')==0)
+          status={
+              'schema':'qym-campaign-authoritative-status-v2',
+              'branch':branch,
+              'branch_head':os.popen('git rev-parse HEAD').read().strip(),
+              'canonical_qym_sha256':canonical_sha,
+              'qym_true_pass':qym_true_pass,
+              'final_build_pass':final_build_pass,
+              'verified_frontier_valid':frontier_valid,
+              'verified_global_best':frontier if frontier_valid else None,
+              'next_blocker':next_blocker,
+              'authority_bootstrap':bootstrap,
+              'auto_producer_selection':selection,
+              'checked_in_true_pass':checked,
+              'reproducibility':repro,
+              'trigger':{
+                  'workflow':os.environ['TRIGGER_WORKFLOW'],
+                  'run_id':int(os.environ['TRIGGER_RUN_ID']),
+                  'conclusion':os.environ['TRIGGER_CONCLUSION'],
+                  'head_sha':os.environ['TRIGGER_HEAD_SHA'],
+                  'artifacts':trigger_artifacts,
+                  'evidence':trigger_evidence,
+              },
+              'recent_campaign_runs':recent,
+          }
+          (out/'LATEST_STATUS_V2.json').write_text(json.dumps(status,indent=2,sort_keys=True)+'\n')
+          gb=status.get('verified_global_best') or {}
+          md=['# QYM Campaign — Authoritative Status v2','',
+              f"- branch HEAD: `{status['branch_head']}`",
+              f"- canonical QYM SHA256: `{canonical_sha}`",
+              f"- checked-in QYM TRUE PASS: `{qym_true_pass}`",
+              f"- final 13-root reproducibility PASS: `{final_build_pass}`",
+              f"- verified frontier valid: `{frontier_valid}`",'',
+              '## Verified global best','',
+              f"- errors: `{gb.get('error_headers')}`",
+              f"- warnings: `{gb.get('warning_headers')}`",
+              f"- panic: `{gb.get('panic_lines')}`",
+              f"- exit: `{gb.get('exit')}`",
+              f"- candidate SHA256: `{gb.get('candidate_qym_sha256') or gb.get('source_sha256')}`",
+              f"- first error: `{gb.get('first_error')}`",'',
+              '## Trigger','',
+              f"- workflow: `{os.environ['TRIGGER_WORKFLOW']}`",
+              f"- run: `{os.environ['TRIGGER_RUN_ID']}`",
+              f"- conclusion: `{os.environ['TRIGGER_CONCLUSION']}`",'',
+              '## Recent campaign runs','']
+          md += [f"- `{r['id']}` — {r['name']} — `{r['status']}/{r['conclusion']}` — `{r['head_sha']}`"
+                 for r in recent]
+          (out/'LATEST_STATUS_V2.md').write_text('\n'.join(md)+'\n')
+          print(json.dumps(status,indent=2,sort_keys=True))
+          PY
+
+      - name: Upload immutable status evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-campaign-status-v2-${{ github.event.workflow_run.id }}
+          path: /tmp/qym-campaign-status-v2/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Rebase and persist latest status
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          mkdir -p .github/qym-campaign
+          cp "$OUT/LATEST_STATUS_V2.json" .github/qym-campaign/LATEST_STATUS_V2.json
+          cp "$OUT/LATEST_STATUS_V2.md" .github/qym-campaign/LATEST_STATUS_V2.md
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-campaign/LATEST_STATUS_V2.json .github/qym-campaign/LATEST_STATUS_V2.md
+          if git diff --cached --quiet; then
+            echo 'Status v2 unchanged.'
+            exit 0
+          fi
+          git commit -m "QYM: refresh authoritative campaign status v2"
+          git push origin "HEAD:$BRANCH"
