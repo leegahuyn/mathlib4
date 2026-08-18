@@ -26,9 +26,9 @@ jobs:
     env:
       BRANCH: gpt/qym-fastlane-probe35-20260818
       QYM: PrimalitySheafVerification/QYM.lean
+      PREFIX: PrimalitySheafVerification/QYM_FastlanePrefix.lean
       OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
       OUT: /tmp/qym-fastlane
-      P35_RUN: '32095253829'
       P35_ARTIFACT: qym-probe35-flat_named-da2958a421605d9b267afdce59990ec19c1be10f-attempt1
       P35_SHA: 00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
       P35_BLOB: ee2faeaf281215b0e9b304a96ccdce3e8cdc0ffb
@@ -43,7 +43,7 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Gate branch, source mode, and pinned toolchain
+      - name: Gate branch and pinned environment
         shell: bash
         run: |
           set -euo pipefail
@@ -51,14 +51,14 @@ jobs:
           test "$GITHUB_REF_NAME" = "$BRANCH"
           test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
           test -f .github/qym_fastlane_patch.py
+          test -f .github/qym_probe_summarize.py
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
-          current=$(sha256sum "$QYM" | awk '{print $1}')
+          current="$(sha256sum "$QYM" | awk '{print $1}')"
           if [[ "$current" = "$CANDIDATE_SHA" ]]; then
             echo "MODE=checked-in" >> "$GITHUB_ENV"
           else
             echo "MODE=runtime" >> "$GITHUB_ENV"
           fi
-          printf '%s\n' "$current" > "$OUT/checked-out-QYM.sha256"
 
       - name: Download immutable Probe35 authority
         if: env.MODE == 'runtime'
@@ -70,7 +70,7 @@ jobs:
           repository: leegahuyn/mathlib4
           run-id: 32095253829
 
-      - name: Materialize exact candidate or freeze checked-in source
+      - name: Materialize exact integrated candidate
         shell: bash
         run: |
           set -euo pipefail
@@ -84,14 +84,6 @@ jobs:
             test "$(cat "$A/QYM.exit")" = 1
             test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 89
             test ! -s "$A/QYM.panic-lines.txt"
-            python3 - "$A/PROBE_RESULT.json" <<'PY'
-          import json, os, sys
-          r=json.load(open(sys.argv[1],encoding='utf-8'))
-          assert r['candidate_qym_sha256']==os.environ['P35_SHA']
-          assert r['candidate_qym_blob']==os.environ['P35_BLOB']
-          assert r['exit']==1 and r['error_headers']==89
-          assert r['warning_headers']==356 and r['panic_lines']==0
-          PY
             cp "$A/QYM.candidate-probe35-flat_named.lean" "$OUT/QYM.candidate.lean"
             python3 -B .github/qym_fastlane_patch.py "$OUT/QYM.candidate.lean" | tee "$OUT/PATCH_RESULT.json"
           else
@@ -152,34 +144,33 @@ jobs:
             test -s "$OLEAN/$s.ilean"
           done
 
-      - name: Materialize producer prefix
+      - name: Materialize producer prefix inside repository
         shell: bash
         run: |
           set -euo pipefail
-          python3 - "$OUT/QYM.candidate.lean" "$OUT/QYM.prefix.lean" <<'PY'
+          python3 - "$OUT/QYM.candidate.lean" "$PREFIX" <<'PY'
           from pathlib import Path
           import hashlib, re, sys
           source, target = Path(sys.argv[1]), Path(sys.argv[2])
-          text=source.read_text(encoding='utf-8')
-          marker='/-- Every actual smooth trace is Lipschitz on the compact doubled interval'
-          if text.count(marker) != 1:
-              raise SystemExit('prefix marker mismatch')
-          prefix=text[:text.index(marker)].rstrip() + \
-              '\n\nend QYM.FullCertification.P2ClassicalHhalfTraceExtension\n'
-          forbidden={
-              'sorry':len(re.findall(r'\bsorry\b',prefix)),
-              'admit':len(re.findall(r'\badmit\b',prefix)),
-              'native_decide':len(re.findall(r'\bnative_decide\b',prefix)),
-              'ofReduceBool':prefix.count('Lean.ofReduceBool'),
-              'axiom':len(re.findall(r'(?m)^\s*axiom\s+',prefix)),
-              'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',prefix)),
-              'hb0':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',prefix)),
+          text = source.read_text(encoding="utf-8")
+          marker = "/-- Every actual smooth trace is Lipschitz on the compact doubled interval"
+          assert text.count(marker) == 1
+          prefix = text[:text.index(marker)].rstrip() + \
+              "\n\nend QYM.FullCertification.P2ClassicalHhalfTraceExtension\n"
+          forbidden = {
+              "sorry": len(re.findall(r"\bsorry\b", prefix)),
+              "admit": len(re.findall(r"\badmit\b", prefix)),
+              "native_decide": len(re.findall(r"\bnative_decide\b", prefix)),
+              "Lean.ofReduceBool": prefix.count("Lean.ofReduceBool"),
+              "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", prefix)),
+              "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", prefix)),
+              "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", prefix)),
           }
-          if any(forbidden.values()):
-              raise SystemExit(forbidden)
-          target.write_text(prefix,encoding='utf-8')
-          print(hashlib.sha256(prefix.encode()).hexdigest(), prefix.count('\n'))
+          assert not any(forbidden.values()), forbidden
+          target.write_text(prefix, encoding="utf-8")
+          print(hashlib.sha256(prefix.encode()).hexdigest(), prefix.count("\n"))
           PY
+          cp "$PREFIX" "$OUT/QYM.prefix.snapshot.lean"
 
       - name: Direct Lean compile producer prefix
         id: prefix
@@ -189,14 +180,25 @@ jobs:
           set +e
           /usr/bin/time -v -o "$OUT/PREFIX.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-              -o "$OUT/PREFIX.olean" -i "$OUT/PREFIX.ilean" \
-              "$OUT/QYM.prefix.lean" > "$OUT/PREFIX.log" 2>&1
+              -o "$RUNNER_TEMP/QYM.fastlane-prefix.olean" \
+              -i "$RUNNER_TEMP/QYM.fastlane-prefix.ilean" \
+              "$PREFIX" > "$OUT/PREFIX.log" 2>&1
           rc=$?
           set -e
           echo "$rc" > "$OUT/PREFIX.exit"
-          if [[ "$rc" -eq 0 ]] && [[ -s "$OUT/PREFIX.olean" ]] && [[ -s "$OUT/PREFIX.ilean" ]]; then
+          cp "$OUT/PREFIX.log" "$OUT/QYM.log"
+          cp "$OUT/PREFIX.exit" "$OUT/QYM.exit"
+          python3 .github/qym_probe_summarize.py \
+            "$OUT" qym-fastlane-prefix-v2 "$CANDIDATE_SHA" "$CANDIDATE_BLOB" "$P35_SHA"
+          mv "$OUT/PROBE_RESULT.json" "$OUT/PREFIX_RESULT.json"
+          mv "$OUT/QYM.diagnostics.jsonl" "$OUT/PREFIX.diagnostics.jsonl"
+          mv "$OUT/QYM.error-headers.txt" "$OUT/PREFIX.error-headers.txt"
+          mv "$OUT/QYM.panic-lines.txt" "$OUT/PREFIX.panic-lines.txt"
+          rm -f "$OUT/QYM.log" "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]] && [[ -s "$RUNNER_TEMP/QYM.fastlane-prefix.olean" ]] && [[ -s "$RUNNER_TEMP/QYM.fastlane-prefix.ilean" ]]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
-            sha256sum "$OUT/PREFIX.olean" "$OUT/PREFIX.ilean" > "$OUT/PREFIX.outputs.sha256"
+            cp "$RUNNER_TEMP/QYM.fastlane-prefix.olean" "$OUT/PREFIX.olean"
+            cp "$RUNNER_TEMP/QYM.fastlane-prefix.ilean" "$OUT/PREFIX.ilean"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
           fi
@@ -210,7 +212,6 @@ jobs:
           set -euo pipefail
           cp "$QYM" "$OUT/QYM.checked-out.lean"
           cp "$OUT/QYM.candidate.lean" "$QYM"
-          rm -f "$RUNNER_TEMP/QYM.fastlane.olean" "$RUNNER_TEMP/QYM.fastlane.ilean"
           set +e
           /usr/bin/time -v -o "$OUT/QYM.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
@@ -224,68 +225,43 @@ jobs:
             echo "pass=true" >> "$GITHUB_OUTPUT"
             cp "$RUNNER_TEMP/QYM.fastlane.olean" "$OUT/QYM.olean"
             cp "$RUNNER_TEMP/QYM.fastlane.ilean" "$OUT/QYM.ilean"
-            sha256sum "$OUT/QYM.olean" "$OUT/QYM.ilean" > "$OUT/QYM.outputs.sha256"
           else
             echo "pass=false" >> "$GITHUB_OUTPUT"
           fi
           cp "$OUT/QYM.checked-out.lean" "$QYM"
-          test -z "$(git status --porcelain=v1 --untracked-files=all)"
           exit 0
 
-      - name: Summarize exact evidence
+      - name: Summarize full direct evidence
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          python3 - "$OUT" "$MODE" "$CANDIDATE_SHA" "$CANDIDATE_BLOB" <<'PY'
-          from pathlib import Path
-          import collections, hashlib, json, re, sys
-          root=Path(sys.argv[1]); mode, sha256, blob=sys.argv[2:5]
-          raw=(root/'QYM.log').read_bytes() if (root/'QYM.log').exists() else b''
-          text=raw.decode(errors='replace')
-          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
-          rows=[]
-          for m in pat.finditer(text):
-              row=m.groupdict(); row['line']=int(row['line']); row['column']=int(row['column']); rows.append(row)
-          errors=[r for r in rows if r['severity']=='error']
-          warnings=[r for r in rows if r['severity']=='warning']
-          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
-          rc=int((root/'QYM.exit').read_text().strip()) if (root/'QYM.exit').exists() else None
-          prefix_rc=int((root/'PREFIX.exit').read_text().strip()) if (root/'PREFIX.exit').exists() else None
-          semantic=rc==0 and not errors and not panics and (root/'QYM.olean').is_file() and (root/'QYM.ilean').is_file()
-          result={
-              'schema':'qym-fastlane-direct-v1',
-              'mode':mode,
-              'candidate_qym_sha256':sha256,
-              'candidate_qym_blob':blob,
-              'prefix_exit':prefix_rc,
-              'exit':rc,
-              'error_headers':len(errors),
-              'warning_headers':len(warnings),
-              'panic_lines':len(panics),
-              'first_error':errors[0] if errors else None,
-              'last_error':errors[-1] if errors else None,
-              'error_codes':dict(sorted(collections.Counter((r.get('code') or 'uncoded') for r in errors).items())),
-              'semantic_pass':semantic,
-              'log_sha256':hashlib.sha256(raw).hexdigest(),
-          }
-          (root/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows),encoding='utf-8')
-          (root/'QYM.error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error{('('+r['code']+')') if r.get('code') else ''}: {r['message']}\n" for r in errors),encoding='utf-8')
-          (root/'QYM.panic-lines.txt').write_text(''.join(p+'\n' for p in panics),encoding='utf-8')
-          (root/'PROBE_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
-          print(json.dumps(result,indent=2,sort_keys=True))
-          PY
+          if [[ ! -f "$OUT/QYM.exit" ]]; then
+            echo 1 > "$OUT/QYM.exit"
+            echo "full compile skipped because producer prefix did not pass" > "$OUT/QYM.log"
+          fi
+          python3 .github/qym_probe_summarize.py \
+            "$OUT" qym-fastlane-direct-v2 "$CANDIDATE_SHA" "$CANDIDATE_BLOB" "$P35_SHA"
 
-      - name: Promote exact runtime TRUE PASS to repair branch
+      - name: Restore checkout and remove temporary prefix
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.checked-out.lean" ]] && cp "$OUT/QYM.checked-out.lean" "$QYM" || true
+          rm -f "$PREFIX"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Promote exact runtime TRUE PASS
         if: env.MODE == 'runtime' && steps.full.outputs.pass == 'true'
         shell: bash
         run: |
           set -euo pipefail
           python3 - "$OUT/PROBE_RESULT.json" <<'PY'
           import json, sys
-          r=json.load(open(sys.argv[1],encoding='utf-8'))
-          assert r['semantic_pass'] is True
-          assert r['exit']==0 and r['error_headers']==0 and r['panic_lines']==0
+          r = json.load(open(sys.argv[1], encoding="utf-8"))
+          assert r["semantic_pass"] is True
+          assert r["exit"] == 0 and r["error_headers"] == 0 and r["panic_lines"] == 0
           PY
           cp "$OUT/QYM.candidate.lean" "$QYM"
           git config user.name github-actions[bot]
@@ -303,14 +279,15 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fail closed unless direct Lean TRUE PASS
+      - name: Fail closed unless full direct Lean TRUE PASS
         if: always()
         shell: bash
         run: |
-          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          python3 - "$OUT/PREFIX_RESULT.json" "$OUT/PROBE_RESULT.json" <<'PY'
           import json, sys
-          r=json.load(open(sys.argv[1],encoding='utf-8'))
-          assert r['panic_lines']==0
-          if not r['semantic_pass']:
-              raise SystemExit(r['exit'] or 1)
+          prefix = json.load(open(sys.argv[1], encoding="utf-8"))
+          full = json.load(open(sys.argv[2], encoding="utf-8"))
+          assert prefix["panic_lines"] == 0 and full["panic_lines"] == 0
+          if not full["semantic_pass"]:
+              raise SystemExit(full["exit"] or prefix["exit"] or 1)
           PY
