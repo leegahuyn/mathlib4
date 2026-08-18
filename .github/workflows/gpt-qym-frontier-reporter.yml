@@ -1,0 +1,103 @@
+name: GPT QYM direct frontier status reporter
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-frontier-reporter.yml
+      - .github/qym-frontier/PROBE41_SELECTION.json
+      - .github/qym-frontier/CURRENT_GLOBAL_BEST.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-frontier-reporter
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Generate direct frontier status
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('.github/qym-frontier')
+          selection = root / 'PROBE41_SELECTION.json'
+          current = root / 'CURRENT_GLOBAL_BEST.json'
+          if current.exists():
+              best = json.loads(current.read_text(encoding='utf-8'))
+              authority = 'CURRENT_GLOBAL_BEST'
+              source = root / 'QYM_GLOBAL_BEST.lean'
+          elif selection.exists():
+              best = json.loads(selection.read_text(encoding='utf-8'))['best']
+              authority = 'PROBE41_BEST'
+              source = root / 'QYM_PROBE41_BEST.lean'
+          else:
+              raise SystemExit('no persisted direct frontier')
+
+          first = best.get('first_error') or {}
+          line = int(first.get('line') or 1)
+          declaration = 'unknown_declaration'
+          if source.exists():
+              lines = source.read_text(encoding='utf-8', errors='replace').splitlines()
+              for i in range(min(line - 1, len(lines) - 1), -1, -1):
+                  m = re.match(r'^(?:private\s+|noncomputable\s+|local\s+|protected\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([^\s(:]+)', lines[i])
+                  if m:
+                      declaration = m.group(1)
+                      break
+
+          variant = str(best.get('variant') or 'unknown')
+          status = {
+              'authority': authority,
+              'run_id': best.get('run_id'),
+              'artifact_id': best.get('artifact_id'),
+              'variant': variant,
+              'candidate_qym_sha256': best.get('candidate_qym_sha256'),
+              'candidate_qym_blob': best.get('candidate_qym_blob'),
+              'exit': best.get('exit'),
+              'error_headers': best.get('error_headers'),
+              'warning_headers': best.get('warning_headers'),
+              'panic_lines': best.get('panic_lines'),
+              'semantic_pass': best.get('semantic_pass'),
+              'first_error': first,
+              'first_declaration': declaration,
+          }
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'FRONTIER_STATUS.json').write_text(json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          msg = first.get('message') or ''
+          msg = re.sub(r'\s+', ' ', msg).strip()[:100]
+          summary = (
+              f"QYM frontier E{status['error_headers']} W{status['warning_headers']} "
+              f"L{line} {declaration} [{variant}] {msg}"
+          )
+          (root / 'FRONTIER_COMMIT_MESSAGE.txt').write_text(summary + '\n', encoding='utf-8')
+          print(summary)
+          PY
+
+      - name: Commit status marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier/FRONTIER_STATUS.json .github/qym-frontier/FRONTIER_COMMIT_MESSAGE.txt
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          MSG=$(cat .github/qym-frontier/FRONTIER_COMMIT_MESSAGE.txt)
+          git commit -m "$MSG"
+          git push origin HEAD:gpt/fa-qym-clean-final-20260816
