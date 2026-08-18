@@ -1,0 +1,3 @@
+Probe18 direct runner trigger.
+Authority: Probe17 run 32002705164 / artifact 9279187130.
+Candidate SHA256: 8c7c6982938fd6eb9e6fece71e0eb655717a5bb4d1d6d2b75cfbe6cf37ab2a39.
