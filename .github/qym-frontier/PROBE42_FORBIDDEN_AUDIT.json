@@ -1,0 +1,9 @@
+{
+  "Lean.ofReduceBool": 0,
+  "admit": 0,
+  "global_axiom": 0,
+  "maxHeartbeats_zero": 0,
+  "native_decide": 0,
+  "sorry": 0,
+  "unsafe": 0
+}

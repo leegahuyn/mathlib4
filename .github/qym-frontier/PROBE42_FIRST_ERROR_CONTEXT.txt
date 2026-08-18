@@ -1,0 +1,281 @@
+37675:   constructor
+37676:   · intro hFree
+37677:     change IsCancelSMul EffectiveGroup ℍ at hFree
+37678:     rw [isCancelSMul_iff_stabilizer_eq_bot] at hFree
+37679:     apply Set.eq_univ_of_forall
+37680:     intro z
+37681:     exact hFree z
+37682:   · intro hRegular
+37683:     change IsCancelSMul EffectiveGroup ℍ
+37684:     rw [isCancelSMul_iff_stabilizer_eq_bot]
+37685:     intro z
+37686:     have hz : z ∈ regularUpstairs := by
+37687:       rw [hRegular]
+37688:       exact Set.mem_univ z
+37689:     exact hz
+37690: 
+37691: /-- Once the concrete arithmetic freeness theorem is proved, the effective
+37692: orbit projection is a global covering map. -/
+37693: theorem quotientProjection_isCoveringMap_of_effectiveActionFree
+37694:     (hFree : EffectiveActionFree) :
+37695:     IsCoveringMap Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk := by
+37696:   letI : IsCancelSMul EffectiveGroup ℍ := hFree
+37697:   simpa only [Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk, Quotient.mk''_eq_mk] using
+37698:     (isQuotientCoveringMap_quotientMk_of_properlyDiscontinuousSMul
+37699:       (G := EffectiveGroup) (E := ℍ)).isCoveringMap
+37700: 
+37701: /-- The same exact arithmetic input promotes the orbit projection to a
+37702: global local homeomorphism, the topological precursor of quotient charts. -/
+37703: theorem quotientProjection_isLocalHomeomorph_of_effectiveActionFree
+37704:     (hFree : EffectiveActionFree) :
+37705:     IsLocalHomeomorph Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk :=
+37706:   (quotientProjection_isCoveringMap_of_effectiveActionFree hFree).isLocalHomeomorph
+37707: 
+37708: /-- Aggregate unconditional endpoint on the genuine regular quotient. -/
+37709: theorem regularQuotientCoveringCertificate :
+37710:     IsOpen regularUpstairs ∧
+37711:       IsOpen regularQuotient ∧
+37712:       Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk ⁻¹' regularQuotient = regularUpstairs ∧
+37713:       IsCoveringMapOn Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk regularQuotient ∧
+37714:       IsLocalHomeomorphOn Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk
+37715:         (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk ⁻¹' regularQuotient) := by
+37716:   exact ⟨regularUpstairs_isOpen, regularQuotient_isOpen,
+37717:     preimage_regularQuotient_eq_regularUpstairs,
+37718:     quotientProjection_isCoveringMapOn_regular,
+37719:     quotientProjection_isLocalHomeomorphOn_regular⟩
+37720: 
+37721: end QYM.FullCertification.P2RegularQuotientCoveringExtension
+37722: 
+37723: namespace P2RegularQuotientCoveringAxiomAudit
+37724: 
+37725: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.regularUpstairs_isOpen
+37726: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.preimage_regularQuotient_eq_regularUpstairs
+37727: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.quotientProjection_isCoveringMapOn_regular
+37728: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.restrictedRegularProjection_isCoveringMap
+37729: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.effectiveActionFree_iff_regularUpstairs_eq_univ
+37730: #print axioms QYM.FullCertification.P2RegularQuotientCoveringExtension.regularQuotientCoveringCertificate
+37731: 
+37732: end P2RegularQuotientCoveringAxiomAudit
+37733: 
+37734: open Function Set Topology
+37735: open scoped MatrixGroups UpperHalfPlane
+37736: 
+37737: 
+37738: namespace QYM.FullCertification.P2GammaTwoFreeActionExtension
+37739: 
+37740: 
+37741: 
+37742: 
+37743: /-!
+37744: # Freeness of the effective `Gamma(2)` action
+37745: 
+37746: The principal congruence subgroup `Gamma(2)` contains the central matrices
+37747: `±1`, so its raw action on the upper half-plane is not free.  The effective
+37748: group used by the project is the image of that action in `Equiv.Perm ℍ`; the
+37749: two central matrices have therefore already been identified.
+37750: 
+37751: This file proves the missing arithmetic fact rather than storing it as a
+37752: certificate.  The proof moves a fixed point into Mathlib's closed modular
+37753: fundamental domain, conjugates inside the normal subgroup `Gamma(2)`, uses
+37754: Mathlib's complete finite list `cases_of_mem_fd_smul_mem_fd`, and eliminates
+37755: every noncentral entry of that list by reduction modulo two.  It follows
+37756: that the effective action is free and hence that the orbit projection is a
+37757: genuine global covering map and local homeomorphism.
+37758: -/
+37759: 
+37760: abbrev EffectiveGroup : Type := Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoEffective
+37761: 
+37762: abbrev EffectiveQuotient : Type := Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
+37763: 
+37764: /-! ## 1. Stabilizers inside the closed modular fundamental domain -/
+37765: 
+37766: /-- A level-two matrix fixing a point of the closed modular fundamental
+37767: domain is central.  All exceptional elliptic alternatives in the modular
+37768: stabilizer classification have a matrix entry different from the identity
+37769: modulo two. -/
+37770: theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
+37771:     {gamma : SL(2, ℤ)} {z : ℍ}
+37772:     (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+37773:     (hz : z ∈ ModularGroup.fd)
+37774:     (hfix : gamma • z = z) :
+37775:     gamma = 1 ∨ gamma = -1 := by
+37776:   rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+37777:     hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+37778:       hSTinv | hST | hTST | hTinvS
+37779:   · exact hcentral
+37780:   all_goals
+37781:     rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+37782:     rcases hMatrix with rfl | rfl
+37783:     all_goals
+37784:       norm_num [CongruenceSubgroup.Gamma_mem,
+37785:         ModularGroup.S, ModularGroup.T] at hGamma
+37786: 
+37787: /-! ## 2. Arbitrary fixed points -/
+37788: 
+37789: /-- Every level-two matrix fixing an arbitrary upper-half-plane point is
+37790: `1` or `-1`.  Normality of the principal congruence subgroup is essential:
+37791: the matrix used to move the point into the modular fundamental domain need
+37792: not itself belong to `Gamma(2)`. -/
+37793: theorem gammaTwo_matrix_eq_one_or_neg_one_of_fixed
+37794:     (gamma : Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwo) (z : ℍ) (hfix : gamma • z = z) :
+37795:     (gamma : SL(2, ℤ)) = 1 ∨ (gamma : SL(2, ℤ)) = -1 := by
+37796:   obtain ⟨a, ha⟩ := ModularGroup.exists_smul_mem_fd z
+37797:   let delta : SL(2, ℤ) := a * (gamma : SL(2, ℤ)) * a⁻¹
+37798:   have hDeltaGamma :
+37799:       delta ∈ CongruenceSubgroup.Gamma 2 := by
+37800:     exact (CongruenceSubgroup.Gamma_normal 2).conj_mem
+37801:       (gamma : SL(2, ℤ)) gamma.property a
+37802:   have hfix' : (gamma : SL(2, ℤ)) • z = z := by
+37803:     change gamma • z = z
+37804:     exact hfix
+37805:   have hDeltaFix : delta • (a • z) = a • z := by
+37806:     simp [delta, mul_smul, hfix', mul_assoc]
+37807:   rcases gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
+37808:       hDeltaGamma ha hDeltaFix with hDelta | hDelta
+37809:   · left
+37810:     have h := congrArg (fun x : SL(2, ℤ) ↦ a⁻¹ * x * a) hDelta
+37811:     simpa [delta, mul_assoc] using h
+37812:   · right
+37813:     have h := congrArg (fun x : SL(2, ℤ) ↦ a⁻¹ * x * a) hDelta
+37814:     simpa [delta, mul_assoc] using h
+37815: 
+37816: /-! ## 3. Freeness after passing to the faithful permutation image -/
+37817: 
+37818: /-- An effective transformation fixing one upper-half-plane point is the
+37819: identity permutation.  The two possible arithmetic representatives `±1`
+37820: act identically, exactly as required by the effective-image construction.
+37821: -/
+37822: theorem gammaTwoEffective_eq_one_of_smul_eq
+37823:     (g : EffectiveGroup) (z : ℍ) (hfix : g • z = z) :
+37824:     g = 1 := by
+37825:   rcases Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.effective_exists_gamma g with ⟨gamma, hRepresentative⟩
+37826:   have hGammaFix : gamma • z = z := by
+37827:     calc
+37828:       gamma • z = g • z := (hRepresentative z).symm
+37829:       _ = z := hfix
+37830:   rcases gammaTwo_matrix_eq_one_or_neg_one_of_fixed
+37831:       gamma z hGammaFix with hOne | hNegOne
+37832:   · apply Subtype.ext
+37833:     apply Equiv.ext
+37834:     intro w
+37835:     change g • w = w
+37836:     have hgw : g • w = (gamma : SL(2, ℤ)) • w :=
+37837:       hRepresentative w
+37838:     calc
+37839:       g • w = (gamma : SL(2, ℤ)) • w := hgw
+37840:       _ = (1 : SL(2, ℤ)) • w := by rw [hOne]
+37841:       _ = w := one_smul _ _
+37842:   · apply Subtype.ext
+37843:     apply Equiv.ext
+37844:     intro w
+37845:     change g • w = w
+37846:     have hgw : g • w = (gamma : SL(2, ℤ)) • w :=
+37847:       hRepresentative w
+37848:     calc
+37849:       g • w = (gamma : SL(2, ℤ)) • w := hgw
+37850:       _ = (-1 : SL(2, ℤ)) • w := by rw [hNegOne]
+37851:       _ = (1 : SL(2, ℤ)) • w :=
+37852:         ModularGroup.SL_neg_smul (g := (1 : SL(2, ℤ))) (z := w)
+37853:       _ = w := one_smul _ _
+37854: 
+37855: /-- The faithful effective level-two action is genuinely free. -/
+37856: noncomputable instance gammaTwoEffective_isCancelSMul :
+37857:     IsCancelSMul EffectiveGroup ℍ :=
+37858:   isCancelSMul_iff_eq_one_of_smul_eq.mpr
+37859:     gammaTwoEffective_eq_one_of_smul_eq
+37860: 
+37861: /-- Every effective stabilizer is trivial, globally rather than only on a
+37862: regular locus. -/
+37863: theorem gammaTwoEffective_stabilizer_eq_bot (z : ℍ) :
+37864:     MulAction.stabilizer EffectiveGroup z = ⊥ :=
+37865:   IsCancelSMul.stabilizer_eq_bot z
+37866: 
+37867: /-! ## 4. Global covering consequences -/
+37868: 
+37869: /-- The actual effective orbit projection is a global covering map. -/
+37870: theorem gammaTwoQuotientMk_isCoveringMap :
+37871:     IsCoveringMap Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk := by
+37872:   simpa only [Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk, Quotient.mk''_eq_mk] using
+37873:     (isQuotientCoveringMap_quotientMk_of_properlyDiscontinuousSMul
+37874:       (G := EffectiveGroup) (E := ℍ)).isCoveringMap
+37875: 
+37876: /-- Consequently the orbit projection is a global local homeomorphism. -/
+37877: theorem gammaTwoQuotientMk_isLocalHomeomorph :
+37878:     IsLocalHomeomorph Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk :=
+37879:   gammaTwoQuotientMk_isCoveringMap.isLocalHomeomorph
+37880: 
+37881: /-- Every quotient point has an evenly covered neighbourhood. -/
+37882: theorem gammaTwoQuotientMk_evenlyCovered
+37883:     (x : EffectiveQuotient) :
+37884:     IsEvenlyCovered Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk x
+37885:       (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk ⁻¹' {x}) :=
+37886:   gammaTwoQuotientMk_isCoveringMap x
+37887: 
+37888: /-! ## 5. An actual quotient atlas at the topological charted-space level -/
+37889: 
+37890: /-- A chosen upper-half-plane lift of a quotient point.  Every use is tied
+37891: to the proved equation below, so no representative-dependent theorem is
+37892: introduced. -/
+37893: noncomputable def quotientLift (x : EffectiveQuotient) : ℍ :=
+37894:   Classical.choose
+37895:     (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk_isOpenQuotientMap.surjective x)
+37896: 
+37897: @[simp]
+37898: theorem quotientLift_spec (x : EffectiveQuotient) :
+37899:     Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk (quotientLift x) = x :=
+37900:   Classical.choose_spec
+37901:     (Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk_isOpenQuotientMap.surjective x)
+37902: 
+37903: /-- The local homeomorphism supplied by the proved global covering at one
+37904: chosen upstairs point. -/
+37905: noncomputable def upstairsLocalHomeomorphAt (z : ℍ) :
+37906:     OpenPartialHomeomorph ℍ EffectiveQuotient :=
+37907:   Classical.choose (gammaTwoQuotientMk_isLocalHomeomorph z)
+37908: 
+37909: theorem upstairsLocalHomeomorphAt_mem_source (z : ℍ) :
+37910:     z ∈ (upstairsLocalHomeomorphAt z).source :=
+37911:   (Classical.choose_spec
+37912:     (gammaTwoQuotientMk_isLocalHomeomorph z)).1
+37913: 
+37914: theorem upstairsLocalHomeomorphAt_eq_projection (z : ℍ) :
+37915:     Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk = upstairsLocalHomeomorphAt z :=
+37916:   (Classical.choose_spec
+37917:     (gammaTwoQuotientMk_isLocalHomeomorph z)).2
+37918: 
+37919: /-- The inverse of a covering sheet at a chosen lift is a genuine quotient
+37920: chart into the upper half-plane. -/
+37921: noncomputable def quotientChartAtH (x : EffectiveQuotient) :
+37922:     OpenPartialHomeomorph EffectiveQuotient ℍ :=
+37923:   (upstairsLocalHomeomorphAt (quotientLift x)).symm
+37924: 
+37925: /-- The centre belongs to the source of its chosen quotient chart. -/
+37926: theorem mem_quotientChartAtH_source (x : EffectiveQuotient) :
+37927:     x ∈ (quotientChartAtH x).source := by
+37928:   change x ∈
+37929:     (upstairsLocalHomeomorphAt (quotientLift x)).target
+37930:   have hMap :=
+37931:     (upstairsLocalHomeomorphAt (quotientLift x)).map_source
+37932:       (upstairsLocalHomeomorphAt_mem_source (quotientLift x))
+37933:   rw [← upstairsLocalHomeomorphAt_eq_projection (quotientLift x)] at hMap
+37934:   simpa using hMap
+37935: 
+37936: /-- The covering sheets form a concrete topological atlas modelled on `ℍ`.
+37937: This is a `ChartedSpace` construction, not yet a claim that all chart
+37938: transitions have been certified smooth. -/
+37939: noncomputable def gammaTwoQuotientChartedSpaceH :
+37940:     ChartedSpace ℍ EffectiveQuotient where
+37941:   atlas := Set.range quotientChartAtH
+37942:   chartAt := quotientChartAtH
+37943:   mem_chart_source := mem_quotientChartAtH_source
+37944:   chart_mem_atlas x := ⟨x, rfl⟩
+37945: 
+37946: /-- Register the actual covering-sheet atlas on the effective quotient. -/
+37947: noncomputable instance gammaTwoQuotient_chartedSpaceH :
+37948:     ChartedSpace ℍ EffectiveQuotient :=
+37949:   gammaTwoQuotientChartedSpaceH
+37950: 
+37951: /-- Composing the covering-sheet charts with Mathlib's existing complex
+37952: atlas on `ℍ` gives an explicit complex-modelled topological atlas. -/
+37953: noncomputable instance gammaTwoQuotient_chartedSpaceComplex :
+37954:     ChartedSpace ℂ EffectiveQuotient :=
+37955:   ChartedSpace.comp ℂ ℍ EffectiveQuotient
