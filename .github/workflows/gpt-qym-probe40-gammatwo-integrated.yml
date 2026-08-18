@@ -1,0 +1,427 @@
+name: GPT QYM Probe40 integrated GammaTwo repair
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe40-gammatwo-integrated.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: gpt-qym-probe40-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  integrated:
+    name: immutable authority to integrated GammaTwo direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      AUTHORITY_ARTIFACT_ID: '9309897186'
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe40
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate canonical checkout and pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          sha256sum "$QYM" > "$OUT/canonical-before.sha256"
+          git hash-object --no-filters "$QYM" > "$OUT/canonical-before.blob"
+
+      - name: Download immutable full-QYM authority artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/authority"
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            -L -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/leegahuyn/mathlib4/actions/artifacts/$AUTHORITY_ARTIFACT_ID/zip" \
+            -o "$RUNNER_TEMP/authority.zip"
+          unzip -q "$RUNNER_TEMP/authority.zip" -d "$RUNNER_TEMP/authority"
+          find "$RUNNER_TEMP/authority" -maxdepth 4 -type f -printf '%P\n' | sort \
+            > "$OUT/authority-files.txt"
+          sha256sum "$RUNNER_TEMP/authority.zip" > "$OUT/authority-zip.sha256"
+
+      - name: Recover and gate exact authority source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$RUNNER_TEMP/authority" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, sys
+
+          root = Path(sys.argv[1])
+          out = Path(sys.argv[2])
+          jsons = list(root.rglob('*RESULT*.json')) + list(root.rglob('PROBE_RESULT.json'))
+          leans = [p for p in root.rglob('*.lean') if p.is_file()]
+          records = []
+          selected = None
+          selected_meta = None
+          for jp in dict.fromkeys(jsons):
+              try:
+                  data = json.loads(jp.read_text(encoding='utf-8'))
+              except Exception:
+                  continue
+              records.append({'path': str(jp.relative_to(root)), 'data': data})
+              expected = (data.get('candidate_qym_sha256') or data.get('candidate_sha256')
+                          or data.get('source_sha256'))
+              if not expected:
+                  continue
+              for lp in leans:
+                  actual = hashlib.sha256(lp.read_bytes()).hexdigest()
+                  if actual == expected:
+                      selected = lp
+                      selected_meta = data
+                      break
+              if selected is not None:
+                  break
+          if selected is None:
+              large = sorted(leans, key=lambda p: p.stat().st_size, reverse=True)
+              if not large:
+                  raise SystemExit('authority artifact contains no Lean source')
+              selected = large[0]
+              selected_meta = {}
+          raw = selected.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          errors = selected_meta.get('error_headers')
+          panic = selected_meta.get('panic_lines')
+          exit_code = selected_meta.get('exit')
+          if panic not in (None, 0):
+              raise SystemExit(f'authority has panic_lines={panic}')
+          if exit_code == 0 and errors == 0:
+              raise SystemExit('authority is already semantic PASS; canonical promotion must use its own gate')
+          (out / 'AUTHORITY_RESULT.json').write_text(json.dumps({
+              'artifact_id': int(os.environ['AUTHORITY_ARTIFACT_ID']),
+              'selected_path': str(selected.relative_to(root)),
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+              'bytes': len(raw),
+              'lf': raw.count(b'\n'),
+              'exit': exit_code,
+              'error_headers': errors,
+              'warning_headers': selected_meta.get('warning_headers'),
+              'panic_lines': panic,
+              'first_error': selected_meta.get('first_error'),
+              'source_result_schema': selected_meta.get('schema'),
+          }, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          (out / 'QYM.authority.lean').write_bytes(raw)
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env:
+              env.write(f'AUTHORITY_SHA={sha}\n')
+              env.write(f'AUTHORITY_BLOB={blob}\n')
+              if isinstance(errors, int):
+                  env.write(f'AUTHORITY_ERRORS={errors}\n')
+          print((out / 'AUTHORITY_RESULT.json').read_text())
+          PY
+          test -s "$OUT/QYM.authority.lean"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize integrated GammaTwo repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.authority.lean" "$QYM"
+          python3 - "$QYM" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, sys
+
+          path = Path(sys.argv[1])
+          out = Path(sys.argv[2])
+          text = path.read_text(encoding='utf-8')
+
+          statement_pat = re.compile(
+              r'(?ms)^(?P<prefix>(?:set_option[^\n]* in\n)*)'
+              r'(?P<header>(?:theorem|lemma)\s+[^\n]*.*?'
+              r'CongruenceSubgroup\.Gamma\s+2.*?ModularGroup\.fd.*?'
+              r'gamma\s*•\s*z\s*=\s*z.*?gamma\s*=\s*1\s*∨\s*gamma\s*=\s*-1\s*:=\s*by\n)')
+          m = statement_pat.search(text)
+          if m is None:
+              candidates = []
+              for hit in re.finditer(r'gamma\s*=\s*1\s*∨\s*gamma\s*=\s*-1\s*:=\s*by', text):
+                  candidates.append(text[max(0, hit.start()-1200):hit.end()+300])
+              (out / 'TARGET_SEARCH.txt').write_text('\n\n---\n\n'.join(candidates), encoding='utf-8')
+              raise SystemExit('GammaTwo fixed-point theorem target not found')
+
+          decl_start = m.start('header')
+          proof_start = m.end('header')
+          next_decl = re.search(
+              r'(?m)^(?:set_option[^\n]* in\n)*(?:theorem|lemma|def|noncomputable\s+def|'
+              r'instance|noncomputable\s+instance|abbrev|structure|class|namespace|section|end)\b',
+              text[proof_start:])
+          decl_end = proof_start + next_decl.start() if next_decl else len(text)
+          original_decl = text[decl_start:decl_end]
+          (out / 'TARGET_ORIGINAL.lean').write_text(original_decl, encoding='utf-8')
+
+          helper = r'''
+private theorem qymProbe40_tinvS_upper_entry :
+    (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+  have hInv00 :
+      (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+    have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+      (inv_mul_cancel ModularGroup.T)
+    norm_num [Matrix.SpecialLinearGroup.coe_mul,
+      ModularGroup.T, Matrix.mul_fin_two] at h
+    exact h
+  change
+    (∑ k : Fin 2,
+      (ModularGroup.T⁻¹).val 0 k * ModularGroup.S.val k 1) = -1
+  simp only [Fin.sum_univ_two]
+  norm_num [ModularGroup.S, hInv00]
+
+private theorem qymProbe40_tinvS_not_mem_gammaTwo :
+    ModularGroup.T⁻¹ * ModularGroup.S ∉ CongruenceSubgroup.Gamma 2 := by
+  intro hmem
+  have hUpper :
+      ((((ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 : ℤ) : ZMod 2)) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qymProbe40_tinvS_upper_entry] at hUpper
+  norm_num at hUpper
+
+private theorem qymProbe40_neg_tinvS_upper_entry :
+    (-(ModularGroup.T⁻¹ * ModularGroup.S) : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+  change -((ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1) = 1
+  rw [qymProbe40_tinvS_upper_entry]
+  norm_num
+
+private theorem qymProbe40_neg_tinvS_not_mem_gammaTwo :
+    -(ModularGroup.T⁻¹ * ModularGroup.S) ∉ CongruenceSubgroup.Gamma 2 := by
+  intro hmem
+  have hUpper :
+      ((((-(ModularGroup.T⁻¹ * ModularGroup.S) : SL(2, ℤ)) 0 1 : ℤ) : ZMod 2)) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qymProbe40_neg_tinvS_upper_entry] at hUpper
+  norm_num at hUpper
+
+'''
+          text = text[:decl_start] + helper + text[decl_start:]
+          decl_start += len(helper)
+          proof_start += len(helper)
+          decl_end += len(helper)
+          original_decl = text[decl_start:decl_end]
+
+          branch = re.search(
+              r'(?ms)^  · rcases (?P<case>h\w*TinvS\w*)\.1 with .*?\n(?P<body>.*)\Z',
+              original_decl)
+          if branch is None:
+              branch = re.search(
+                  r'(?ms)^  · rcases (?P<case>h\w*[Tt]inv[Ss]\w*)\.1 with .*?\n(?P<body>.*)\Z',
+                  original_decl)
+          if branch is None:
+              (out / 'TARGET_WITH_HELPERS.lean').write_text(original_decl, encoding='utf-8')
+              raise SystemExit('final TinvS branch not found in target declaration')
+          case_name = branch.group('case')
+          replacement = f'''  · rcases {case_name}.1 with hpos | hneg
+    · subst gamma
+      exact (qymProbe40_tinvS_not_mem_gammaTwo hGamma).elim
+    · subst gamma
+      exact (qymProbe40_neg_tinvS_not_mem_gammaTwo hGamma).elim
+'''
+          repaired_decl = original_decl[:branch.start()] + replacement
+          text = text[:decl_start] + repaired_decl + text[decl_end:]
+          path.write_text(text, encoding='utf-8')
+
+          raw = path.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          decoded = raw.decode('utf-8')
+          forbidden = {
+              'sorry': len(re.findall(r'\bsorry\b', decoded)),
+              'admit': len(re.findall(r'\badmit\b', decoded)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', decoded)),
+              'Lean.ofReduceBool': decoded.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', decoded)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', decoded)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', decoded)),
+          }
+          if any(forbidden.values()):
+              raise SystemExit(f'forbidden token audit failed: {forbidden}')
+          result = {
+              'schema': 'qym-probe40-gammatwo-integrated-v1',
+              'authority_sha256': hashlib.sha256((out / 'QYM.authority.lean').read_bytes()).hexdigest(),
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+              'bytes': len(raw),
+              'lf': raw.count(b'\n'),
+              'target_header': m.group('header').splitlines()[0],
+              'case_name': case_name,
+              'forbidden': forbidden,
+          }
+          (out / 'PATCH_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          (out / 'TARGET_REPAIRED.lean').write_text(repaired_decl, encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+          cp "$QYM" "$OUT/QYM.candidate-probe40.lean"
+          sha256sum "$QYM" > "$OUT/QYM.candidate.sha256"
+          git hash-object --no-filters "$QYM" > "$OUT/QYM.candidate.blob"
+
+      - name: Full direct Lean compile Probe40
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe40.olean" \
+              -i "$RUNNER_TEMP/QYM.probe40.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.probe40.olean"
+            test -s "$RUNNER_TEMP/QYM.probe40.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.probe40.olean" \
+              "$RUNNER_TEMP/QYM.probe40.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize exact result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+
+          out = Path(sys.argv[1])
+          raw = (out / 'QYM.log').read_bytes() if (out / 'QYM.log').exists() else b''
+          text = raw.decode(errors='replace')
+          p = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+                         r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*'
+                         r'(?P<message>.*)$', re.M)
+          rows = []
+          for m in p.finditer(text):
+              x = m.groupdict(); x['line'] = int(x['line']); x['column'] = int(x['column'])
+              rows.append(x)
+          errors = [x for x in rows if x['severity'] == 'error']
+          warnings = [x for x in rows if x['severity'] == 'warning']
+          panics = re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          rc = int((out / 'QYM.exit').read_text().strip()) if (out / 'QYM.exit').exists() else None
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text()) if (out / 'PATCH_RESULT.json').exists() else {}
+          authority = json.loads((out / 'AUTHORITY_RESULT.json').read_text()) if (out / 'AUTHORITY_RESULT.json').exists() else {}
+          result = {
+              'schema': 'qym-probe40-gammatwo-integrated-result-v1',
+              'github_sha': os.environ.get('GITHUB_SHA'),
+              'artifact_id': int(os.environ['AUTHORITY_ARTIFACT_ID']),
+              'baseline_qym_sha256': authority.get('candidate_qym_sha256'),
+              'baseline_error_headers': authority.get('error_headers'),
+              'candidate_qym_sha256': patch.get('candidate_qym_sha256'),
+              'candidate_qym_blob': patch.get('candidate_qym_blob'),
+              'exit': rc,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'error_codes': dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'panic_lines': len(panics),
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': rc == 0 and not errors and not panics,
+          }
+          (out / 'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x, sort_keys=True) + '\n' for x in rows))
+          (out / 'QYM.error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n"
+              for x in errors))
+          (out / 'QYM.panic-lines.txt').write_text(''.join(x + '\n' for x in panics))
+          (out / 'PROBE_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$(awk '{print $1}' "$OUT/canonical-before.sha256")"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable Probe40 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe40-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe40/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless strict improvement or TRUE PASS
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json, sys
+          r = json.load(open(sys.argv[1], encoding='utf-8'))
+          if r['panic_lines'] != 0:
+              raise SystemExit(1)
+          if r['semantic_pass']:
+              raise SystemExit(0)
+          baseline = r.get('baseline_error_headers')
+          if not isinstance(baseline, int) or r['error_headers'] >= baseline:
+              raise SystemExit(1)
+          PY
