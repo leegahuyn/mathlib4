@@ -10,16 +10,16 @@ import sys
 INPUT_SHA256 = "94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534"
 EXPECTED = {
     "exact": {
-        "sha256": "f11a70bcdee0640e50d5d8fbba6881a784f2b9196022b19fcf372276aceb05d6",
-        "blob": "6fb222d749b2ae4f03dbc3e509f755eb2d86a535",
+        "sha256": "df8ee7614855e7b4c623dc532c234774a4a9d5e1baa7ea4ddb8fc442eb87d185",
+        "blob": "2c2f1ddec44d7a9eded8bb192036b0d51b4ad247",
     },
     "bound": {
-        "sha256": "616eed9e72bcf19619f0be206d545c12d7ffbc920479dadeb8696556170c0fb1",
-        "blob": "94d0a34dba321cd1f9ad370a5381913349fd519d",
+        "sha256": "3b67fde9d10aa6031df033a1ca088c644925822ebfed668540c4bb149b00b2e6",
+        "blob": "7e1f98863047e4d9d50b5ae1353a2e5023ab2a54",
     },
     "rawbound": {
-        "sha256": "f6d0fd8b1af77c07bd44572afb18c6cf776dabd3c45af0a0dbe2f4bfd5debdcf",
-        "blob": "9e2160773d7a04d25643ab381b776e7c3a98e89b",
+        "sha256": "78d0af3834c294c3cf711b6701dc7d635a8dc591967cbdfdd9d7d6216d427baa",
+        "blob": "473590748a7636d59f9accc62185d586a60c8899",
     },
 }
 
@@ -40,8 +40,8 @@ noncomputable local instance actualFixedPhaseCanonicalTraceClassProjection_normI
   @ContinuousLinearMap.hasOpNorm ℂ ℂ
     (ActualFixedPhaseCuspTraceCompletion n Y)
     (ActualFixedPhaseCanonicalTraceClass n Y)
-    (ActualFixedPhaseCuspTraceCompletion n Y).normedAddCommGroup
-    (ActualFixedPhaseCanonicalTraceClass n Y).normedAddCommGroup
+    (ActualFixedPhaseCuspTraceCompletion n Y).normedAddCommGroup.toSeminormedAddCommGroup
+    (ActualFixedPhaseCanonicalTraceClass n Y).normedAddCommGroup.toSeminormedAddCommGroup
     (inferInstance : NontriviallyNormedField ℂ)
     (inferInstance : NontriviallyNormedField ℂ)
     (ActualFixedPhaseCuspTraceCompletion n Y).normedSpace
@@ -114,7 +114,7 @@ def main() -> None:
     }
     assert not any(forbidden.values()), forbidden
     print(json.dumps({
-        "schema": "qym-probe33-opnorm-instance-matrix-v1",
+        "schema": "qym-probe36-opnorm-instance-matrix-v1",
         "variant": variant,
         "candidate_sha256": sha,
         "candidate_blob": blob,
