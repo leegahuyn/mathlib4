@@ -65,6 +65,49 @@ example :
 
 FULL_PATH = Path(".github/qym_fastlane_full.lean")
 
+OLD_TINV01 = r'''lemma qym_tinv01 :
+    (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+  have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+    (inv_mul_cancel ModularGroup.T)
+  norm_num [Matrix.SpecialLinearGroup.coe_mul,
+    ModularGroup.T, Matrix.mul_fin_two, qym_tinv00] at h
+  exact h
+'''
+
+NEW_TINV01 = r'''lemma qym_tinv01 :
+    (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+  have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+    (inv_mul_cancel ModularGroup.T)
+  change
+    (∑ k : Fin 2,
+      (ModularGroup.T⁻¹).val 0 k * ModularGroup.T.val k 1) = 0 at h
+  simp only [Fin.sum_univ_two] at h
+  norm_num [ModularGroup.T, qym_tinv00] at h
+  exact h
+'''
+
+OLD_TST = r'''lemma qym_TST_lower_entry :
+    (ModularGroup.T * ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 1 0 =
+      (1 : ℤ) := by
+  change
+    (∑ k : Fin 2,
+      (ModularGroup.T * ModularGroup.S).val 1 k * ModularGroup.T.val k 0) = 1
+  simp only [Fin.sum_univ_two]
+  norm_num [qym_TS_lower_entry, qym_TS_11_entry, ModularGroup.T]
+'''
+
+NEW_TST = r'''lemma qym_TST_lower_entry :
+    (ModularGroup.T * ModularGroup.S * ModularGroup.T : SL(2, ℤ)) 1 0 =
+      (1 : ℤ) := by
+  change
+    (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 0 *
+        ModularGroup.T 0 0 +
+      (ModularGroup.T * ModularGroup.S : SL(2, ℤ)) 1 1 *
+        ModularGroup.T 1 0 = 1
+  rw [qym_TS_lower_entry, qym_TS_11_entry]
+  norm_num [ModularGroup.T]
+'''
+
 
 def main() -> None:
     if len(sys.argv) != 3:
@@ -75,6 +118,10 @@ def main() -> None:
         body = OBSTRUCTION
     elif variant == "full":
         body = FULL_PATH.read_text(encoding="utf-8")
+        assert body.count(OLD_TINV01) == 1
+        assert body.count(OLD_TST) == 1
+        body = body.replace(OLD_TINV01, NEW_TINV01, 1)
+        body = body.replace(OLD_TST, NEW_TST, 1)
     else:
         raise SystemExit(f"unknown variant: {variant}")
     output.write_text(PRELUDE.replace("__BODY__", body) + "\n", encoding="utf-8")
