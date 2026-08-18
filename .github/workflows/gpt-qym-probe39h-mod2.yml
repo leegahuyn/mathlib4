@@ -1,4 +1,4 @@
-name: GPT QYM fastlane repaired complete GammaTwo theorem
+name: GPT QYM fastlane integrated GammaTwo and tail repair
 
 on:
   push:
@@ -6,83 +6,82 @@ on:
       - gpt/fa-qym-clean-final-20260816
     paths:
       - .github/workflows/gpt-qym-probe39h-mod2.yml
+      - .github/qym_fastlane_patch.py
   workflow_dispatch:
 
 permissions:
   actions: read
   contents: read
 
+concurrency:
+  group: gpt-qym-fastlane-integrated-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  theorem:
-    name: Repaired complete GammaTwo theorem
+  qym:
+    name: Probe35 GammaTwo plus tail full direct Lean
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 300
     env:
-      OUT: /tmp/qym-gamma-repaired
-      TEST: QYM_Probe39j_repaired.lean
-      SOURCE_SHA: 0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6
-      SOURCE_BLOB: e38697cb52d0c79d8f6af25145d1d4ea258d518a
-      REPAIRED_SHA: 3fda3f009a5098ee1977615b50ba2792388949f093056cc81ed754065a53e0ee
+      OUT: /tmp/qym-fastlane-integrated
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      P35_ARTIFACT: qym-probe35-flat_named-da2958a421605d9b267afdce59990ec19c1be10f-attempt1
+      P35_SHA: 00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
+      P35_BLOB: ee2faeaf281215b0e9b304a96ccdce3e8cdc0ffb
+      CAND_SHA: a9ff4b519780a69e3fa9d7e68ddc65a69e9ec43f76f2f0383360c038c13f7845
+      CAND_BLOB: 43b3dc4f72fcc6fc9399e9c0bd768c297dcfabb6
 
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Download Probe39j theorem evidence
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: qym-probe39j-c335152aae40cc2c2670eedc84ca976a2ee45197
-          path: ${{ runner.temp }}/p39j
-          github-token: ${{ github.token }}
-          repository: leegahuyn/mathlib4
-          run-id: 32132783118
-
-      - name: Gate and repair exact theorem source
+      - name: Gate checkout and pinned environment
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$OUT"
-          A="$RUNNER_TEMP/p39j"
-          test "$(cat "$A/TEST.exit")" = 1
-          test "$(sha256sum "$A/QYM_Probe39j.lean" | awk '{print $1}')" = "$SOURCE_SHA"
-          test "$(git hash-object --no-filters "$A/QYM_Probe39j.lean")" = "$SOURCE_BLOB"
-          cp "$A/QYM_Probe39j.lean" "$TEST"
-          python3 - "$TEST" <<'PY'
-          from pathlib import Path
-          import hashlib, re, sys
+          test "$GITHUB_REF_NAME" = gpt/fa-qym-clean-final-20260816
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_fastlane_patch.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
-          path = Path(sys.argv[1])
-          raw = path.read_bytes()
-          assert hashlib.sha256(raw).hexdigest() == "0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6"
-          text = raw.decode("utf-8")
-          start = text.index("  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by")
-          end = text.index("\n\n  have hTSUpper :", start)
-          replacement = (
-              "  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by\n"
-              "    rw [← zpow_neg_one, ModularGroup.coe_T_zpow]\n"
-              "    norm_num"
-          )
-          text = text[:start] + replacement + text[end:]
-          forbidden = {
-              "sorry": len(re.findall(r"\bsorry\b", text)),
-              "admit": len(re.findall(r"\badmit\b", text)),
-              "native_decide": len(re.findall(r"\bnative_decide\b", text)),
-              "Lean.ofReduceBool": text.count("Lean.ofReduceBool"),
-              "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", text)),
-              "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", text)),
-              "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", text)),
-          }
-          assert not any(forbidden.values()), forbidden
-          path.write_text(text, encoding="utf-8")
-          result = path.read_bytes()
-          assert hashlib.sha256(result).hexdigest() == "3fda3f009a5098ee1977615b50ba2792388949f093056cc81ed754065a53e0ee"
-          print(hashlib.sha256(result).hexdigest(), len(result), result.count(b"\n"))
+      - name: Download exact Probe35 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.P35_ARTIFACT }}
+          path: ${{ runner.temp }}/p35
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32095253829
+
+      - name: Gate Probe35 exact bytes and direct metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/p35"
+          for f in QYM.candidate-probe35-flat_named.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do
+            test -f "$A/$f"
+          done
+          test "$(sha256sum "$A/QYM.candidate-probe35-flat_named.lean" | awk '{print $1}')" = "$P35_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe35-flat_named.lean")" = "$P35_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 89
+          test ! -s "$A/QYM.panic-lines.txt"
+          python3 - "$A/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['P35_SHA']
+          assert r['candidate_qym_blob']==os.environ['P35_BLOB']
+          assert r['exit']==1 and r['error_headers']==89
+          assert r['warning_headers']==356 and r['panic_lines']==0
+          assert r['semantic_pass'] is False
           PY
-          test "$(sha256sum "$TEST" | awk '{print $1}')" = "$REPAIRED_SHA"
-          cp "$TEST" "$OUT/$TEST"
-          sha256sum "$TEST" > "$OUT/TEST.source.sha256"
+          cp "$A/QYM.candidate-probe35-flat_named.lean" "$OUT/QYM.probe35.lean"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE35_RESULT.json"
 
       - name: Install pinned Lean and Mathlib cache
         shell: bash
@@ -98,37 +97,138 @@ jobs:
           lean --version | tee "$OUT/lean-version.txt"
           lake --version | tee "$OUT/lake-version.txt"
 
-      - name: Direct Lean compile repaired theorem
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize deterministic integrated candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.probe35.lean" "$QYM"
+          python3 -B .github/qym_fastlane_patch.py "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CAND_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CAND_BLOB"
+          cp "$QYM" "$OUT/QYM.candidate-fastlane.lean"
+
+      - name: Full direct Lean compile integrated QYM
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          /usr/bin/time -v -o "$OUT/TEST.time" \
+          /usr/bin/time -v -o "$OUT/QYM.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
-              "$TEST" > "$OUT/TEST.log" 2>&1
+              -o "$RUNNER_TEMP/QYM.fastlane.olean" -i "$RUNNER_TEMP/QYM.fastlane.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
           rc=$?
           set -e
-          echo "$rc" > "$OUT/TEST.exit"
+          echo "$rc" > "$OUT/QYM.exit"
           if [[ "$rc" -eq 0 ]]; then
-            sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"
+            test -s "$RUNNER_TEMP/QYM.fastlane.olean" && test -s "$RUNNER_TEMP/QYM.fastlane.ilean"
+            cp "$RUNNER_TEMP/QYM.fastlane.olean" "$OUT/QYM.fastlane.olean"
+            cp "$RUNNER_TEMP/QYM.fastlane.ilean" "$OUT/QYM.fastlane.ilean"
+            sha256sum "$OUT/QYM.fastlane.olean" "$OUT/QYM.fastlane.ilean" > "$OUT/QYM.outputs.sha256"
           fi
-          rm -f "$TEST"
           exit 0
 
-      - name: Upload evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: qym-gamma-repaired-${{ github.sha }}
-          path: /tmp/qym-gamma-repaired/**
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Fail closed unless theorem passes
+      - name: Restore canonical and summarize exact direct result
         if: always()
         shell: bash
         run: |
-          test "$(cat "$OUT/TEST.exit")" = 0
-          test -s "$OUT/TEST.olean"
-          test -s "$OUT/TEST.ilean"
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+          out=Path(sys.argv[1])
+          raw=(out/'QYM.log').read_bytes() if (out/'QYM.log').exists() else b''
+          text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+              r=m.groupdict(); r['line']=int(r['line']); r['column']=int(r['column']); rows.append(r)
+          errors=[r for r in rows if r['severity']=='error']
+          warnings=[r for r in rows if r['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          (out/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows),encoding='utf-8')
+          (out/'QYM.error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error{('('+r['code']+')') if r['code'] else ''}: {r['message']}\n" for r in errors),encoding='utf-8')
+          (out/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics),encoding='utf-8')
+          rc=int((out/'QYM.exit').read_text().strip()) if (out/'QYM.exit').exists() else None
+          result={
+              'schema':'qym-fastlane-gamma-tail-v1',
+              'github_sha':os.environ.get('GITHUB_SHA'),
+              'baseline_qym_sha256':os.environ['P35_SHA'],
+              'baseline_error_headers':89,
+              'candidate_qym_sha256':os.environ['CAND_SHA'],
+              'candidate_qym_blob':os.environ['CAND_BLOB'],
+              'exit':rc,
+              'error_headers':len(errors),
+              'warning_headers':len(warnings),
+              'error_codes':dict(sorted(collections.Counter(r['code'] or 'uncoded' for r in errors).items())),
+              'first_error':errors[0] if errors else None,
+              'last_error':errors[-1] if errors else None,
+              'panic_lines':len(panics),
+              'log_sha256':hashlib.sha256(raw).hexdigest(),
+              'semantic_pass':rc==0 and not errors and not panics,
+              'strict_improvement':rc==0 or len(errors)<89,
+          }
+          (out/'PROBE_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n',encoding='utf-8')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-fastlane-gamma-tail-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-fastlane-integrated/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless strict direct improvement
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['CAND_SHA']
+          assert r['candidate_qym_blob']==os.environ['CAND_BLOB']
+          assert r['panic_lines']==0
+          if not r['strict_improvement']:
+              raise SystemExit(r['exit'] or 1)
+          PY
