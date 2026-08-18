@@ -44,7 +44,7 @@ jobs:
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
           lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
 
-      - name: Materialize mod2 proof test
+      - name: Materialize direct-entry proof test
         shell: bash
         run: |
           set -euo pipefail
@@ -61,20 +61,33 @@ jobs:
           open Matrix Function Set Topology
           open scoped MatrixGroups UpperHalfPlane
 
+          theorem tinvS_upper_entry :
+              (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            have hInv00 :
+                (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+              have h := congrArg (fun g : SL(2, ℤ) => g 0 0)
+                (inv_mul_cancel ModularGroup.T)
+              norm_num [Matrix.SpecialLinearGroup.coe_mul,
+                ModularGroup.T, Matrix.mul_fin_two] at h
+              exact h
+            change
+              (ModularGroup.T⁻¹).val 0 0 * ModularGroup.S.val 0 1 +
+                (ModularGroup.T⁻¹).val 0 1 * ModularGroup.S.val 1 1 = -1
+            norm_num [ModularGroup.S, hInv00]
+
           theorem tinvS_not_mem_gammaTwo :
               ModularGroup.T⁻¹ * ModularGroup.S ∉
                 CongruenceSubgroup.Gamma 2 := by
             intro hmem
-            rw [CongruenceSubgroup.Gamma_mem'] at hmem
-            have hTS :
-                Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.T =
-                  Matrix.SpecialLinearGroup.map (Int.castRingHom (ZMod 2)) ModularGroup.S := by
-              apply inv_mul_eq_one.mp
-              simpa using hmem
-            have h00 := congrArg
-              (fun g : SL(2, ZMod 2) => g 0 0) hTS
-            norm_num [Matrix.SpecialLinearGroup.map,
-              ModularGroup.T, ModularGroup.S] at h00
+            have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+            norm_num [tinvS_upper_entry] at hUpper
+
+          theorem neg_tinvS_not_mem_gammaTwo :
+              -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
+                CongruenceSubgroup.Gamma 2 := by
+            intro hmem
+            have hUpper := (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+            norm_num [tinvS_upper_entry] at hUpper
 
           __BODY__
           '''.replace("          ", "")
@@ -87,17 +100,8 @@ jobs:
 
           negative = '''example :
               -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
-                CongruenceSubgroup.Gamma 2 := by
-            intro hneg
-            have hminusOne :
-                (-1 : SL(2, ℤ)) ∈ CongruenceSubgroup.Gamma 2 := by
-              rw [CongruenceSubgroup.Gamma_mem]
-              norm_num
-            have hpos := mul_mem hminusOne hneg
-            have : ModularGroup.T⁻¹ * ModularGroup.S ∈
-                CongruenceSubgroup.Gamma 2 := by
-              simpa using hpos
-            exact tinvS_not_mem_gammaTwo this
+                CongruenceSubgroup.Gamma 2 :=
+            neg_tinvS_not_mem_gammaTwo
           '''.replace("          ", "")
 
           full = '''theorem gammaTwo_test
@@ -110,19 +114,6 @@ jobs:
               (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
             have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
               (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
-            have hNoNegTinvS :
-                -(ModularGroup.T⁻¹ * ModularGroup.S) ∉
-                  CongruenceSubgroup.Gamma 2 := by
-              intro hneg
-              have hminusOne :
-                  (-1 : SL(2, ℤ)) ∈ CongruenceSubgroup.Gamma 2 := by
-                rw [CongruenceSubgroup.Gamma_mem]
-                norm_num
-              have hpos := mul_mem hminusOne hneg
-              have : ModularGroup.T⁻¹ * ModularGroup.S ∈
-                  CongruenceSubgroup.Gamma 2 := by
-                simpa using hpos
-              exact tinvS_not_mem_gammaTwo this
             rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
               hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
                 hSTinv | hST | hTST | hTinvSCase
@@ -187,7 +178,7 @@ jobs:
               · subst gamma
                 exact (tinvS_not_mem_gammaTwo hGamma).elim
               · subst gamma
-                exact (hNoNegTinvS hGamma).elim
+                exact (neg_tinvS_not_mem_gammaTwo hGamma).elim
           '''.replace("          ", "")
 
           bodies = {"positive": positive, "negative": negative, "full-theorem": full}
@@ -196,7 +187,7 @@ jobs:
           PY
           cp "$TEST" "$OUT/$TEST"
 
-      - name: Direct Lean compile mod2 proof
+      - name: Direct Lean compile proof
         shell: bash
         run: |
           set -euo pipefail
@@ -211,7 +202,7 @@ jobs:
           rm -f "$TEST"
           exit 0
 
-      - name: Upload mod2 evidence
+      - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -220,7 +211,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fail closed unless mod2 proof passes
+      - name: Fail closed unless proof passes
         if: always()
         shell: bash
         run: |
