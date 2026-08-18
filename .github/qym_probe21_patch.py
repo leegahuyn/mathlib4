@@ -92,3 +92,5 @@ forbidden = {
 }
 assert not any(forbidden.values()), forbidden
 print(EXPECTED_OUTPUT_SHA256)
+
+# Retrigger the verified Probe21 workflow after initial workflow registration.
