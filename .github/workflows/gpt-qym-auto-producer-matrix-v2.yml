@@ -1,0 +1,191 @@
+name: GPT QYM verified-frontier producer repair matrix v2
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      - .github/qym-auto-producer-builder.py
+      - .github/qym-auto-producer-summarize.py
+      - .github/workflows/gpt-qym-auto-producer-matrix-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpt-qym-auto-producer-v2-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - baseline
+          - heartbeat-both
+          - heartbeat-synth
+          - infer-by
+          - explicit-structure
+          - remove-local-shadow
+          - api-migrate
+          - simp-flex
+    env:
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      FRONTIER_RESULT: .github/qym-frontier/GLOBAL_BEST.json
+      NEXT: .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-auto-v2-${{ matrix.variant }}
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Detect complete verified frontier inputs
+        id: inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if [[ -s "$FRONTIER" && -s "$FRONTIER_RESULT" && -s "$NEXT" ]]; then
+            echo ready=true >> "$GITHUB_OUTPUT"
+          else
+            echo ready=false >> "$GITHUB_OUTPUT"
+            printf 'frontier=%s\nresult=%s\nnext=%s\n' \
+              "$([[ -s "$FRONTIER" ]] && echo yes || echo no)" \
+              "$([[ -s "$FRONTIER_RESULT" ]] && echo yes || echo no)" \
+              "$([[ -s "$NEXT" ]] && echo yes || echo no)" \
+              > "$OUT/INPUTS_MISSING.txt"
+          fi
+
+      - name: Gate exact verified frontier
+        if: steps.inputs.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 - "$FRONTIER" "$FRONTIER_RESULT" "$NEXT" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          source,result,nextp,out=map(Path,sys.argv[1:])
+          raw=source.read_bytes();r=json.loads(result.read_text());n=json.loads(nextp.read_text())
+          sha=hashlib.sha256(raw).hexdigest()
+          assert sha==r['candidate_qym_sha256']
+          assert r['exit']!=0 and r['error_headers']>0 and r['panic_lines']==0
+          assert n['candidate_qym_sha256']==sha
+          (out/'BASELINE_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          (out/'NEXT_BLOCKER.json').write_text(json.dumps(n,indent=2,sort_keys=True)+'\n')
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.inputs.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        if: steps.inputs.outputs.ready == 'true'
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        if: steps.inputs.outputs.ready == 'true'
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize candidate
+        if: steps.inputs.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$FRONTIER" "$QYM"
+          python3 .github/qym_auto_producer_builder.py \
+            "$QYM" "$NEXT" "$OUT" "${{ matrix.variant }}"
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+
+      - name: Full direct Lean compile candidate
+        if: steps.inputs.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.auto-v2.olean" -i "$RUNNER_TEMP/QYM.auto-v2.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.auto-v2.olean" && test -s "$RUNNER_TEMP/QYM.auto-v2.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.auto-v2.olean" "$RUNNER_TEMP/QYM.auto-v2.ilean" \
+              > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize
+        if: always() && steps.inputs.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 .github/qym_auto_producer_summarize.py "$OUT" "${{ matrix.variant }}"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload matrix evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-auto-producer-v2-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-auto-v2-${{ matrix.variant }}/**
+          if-no-files-found: warn
+          retention-days: 30
