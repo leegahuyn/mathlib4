@@ -1,0 +1,4 @@
+stage=gamma-two-local
+frontier=probe35-flat_named
+candidate_sha256=00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
+trigger=2026-08-18T12:00:00Z
