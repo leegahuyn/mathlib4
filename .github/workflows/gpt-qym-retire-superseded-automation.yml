@@ -1,0 +1,55 @@
+name: GPT QYM retire superseded automation
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-retire-superseded-automation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  retire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Remove superseded or self-triggering workflow versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            .github/workflows/gpt-qym-campaign-status.yml
+            .github/workflows/gpt-qym-auto-producer-matrix.yml
+            .github/workflows/gpt-qym-auto-producer-selector.yml
+            .github/workflows/gpt-qym-auto-producer-selector-v2.yml
+            .github/workflows/gpt-qym-frontier-revalidate.yml
+          )
+          changed=false
+          for file in "${files[@]}"; do
+            if [[ -e "$file" ]]; then
+              git rm "$file"
+              changed=true
+            fi
+          done
+          if [[ "$changed" != true ]]; then
+            echo 'All superseded workflow versions are already absent.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "CI: retire superseded QYM automation versions"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
