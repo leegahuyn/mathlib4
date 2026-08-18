@@ -1,4 +1,4 @@
-name: GPT QYM Probe21 cumulative direct runner
+name: GPT QYM Probe23 corrected groupoid direct runner
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - gpt/fa-qym-clean-final-20260816
     paths:
       - .github/workflows/gpt-qym-probe21-run.yml
-      - .github/qym_probe21_patch.py
+      - .github/qym_probe23_groupoid_patch.py
   workflow_dispatch:
 
 permissions:
@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  probe21:
-    name: verified Probe20 to Probe21 direct Lean
+  probe23:
+    name: verified Probe20 to corrected groupoid Probe23
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
@@ -26,11 +26,11 @@ jobs:
       P20_ARTIFACT: qym-probe20-f728aa4e870808623454f508c01c2d5625864c1d-attempt1
       P20_SHA: 94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534
       P20_BLOB: 8c2b1993954c7e913ef700246b492134fe6aa68f
-      P21_SHA: 4ef27f9448b87111daceef6216d53fc2b1daaaba912c7b9362065f3a2d4f9d77
-      P21_BLOB: 1e60515b7c0d6fcdc827a049c26235ff418817e0
+      P23_SHA: 5282a9223e30e2ea3f14b310a3902d10d662fd98c0968d12b1a8d984dabda5d0
+      P23_BLOB: 0b84f1f5cdf88925f69134c50827e371353c79ca
       QYM: PrimalitySheafVerification/QYM.lean
       OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
-      OUT: /tmp/qym-probe21
+      OUT: /tmp/qym-probe23
 
     steps:
       - name: Checkout exact trigger
@@ -126,27 +126,27 @@ jobs:
           fi
           for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"; done
 
-      - name: Materialize exact Probe21 candidate
+      - name: Materialize exact Probe23 candidate
         shell: bash
         run: |
           set -euo pipefail
           cp "$QYM" "$OUT/QYM.canonical.lean"
           cp "$OUT/QYM.probe20.lean" "$QYM"
-          python3 .github/qym_probe21_patch.py "$QYM" | tee "$OUT/patch-result.txt"
-          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$P21_SHA"
-          test "$(git hash-object --no-filters "$QYM")" = "$P21_BLOB"
-          cp "$QYM" "$OUT/QYM.candidate-probe21.lean"
+          python3 .github/qym_probe23_groupoid_patch.py "$QYM" | tee "$OUT/patch-result.txt"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$P23_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$P23_BLOB"
+          cp "$QYM" "$OUT/QYM.candidate-probe23.lean"
 
-      - name: Direct Lean compile Probe21
+      - name: Direct Lean compile Probe23
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          /usr/bin/time -v -o "$OUT/QYM.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.probe21.olean" -i "$RUNNER_TEMP/QYM.probe21.ilean" "$QYM" > "$OUT/QYM.log" 2>&1
+          /usr/bin/time -v -o "$OUT/QYM.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.probe23.olean" -i "$RUNNER_TEMP/QYM.probe23.ilean" "$QYM" > "$OUT/QYM.log" 2>&1
           rc=$?
           set -e
           echo "$rc" > "$OUT/QYM.exit"
-          if [[ "$rc" -eq 0 ]]; then test -s "$RUNNER_TEMP/QYM.probe21.olean" && test -s "$RUNNER_TEMP/QYM.probe21.ilean"; sha256sum "$RUNNER_TEMP/QYM.probe21.olean" "$RUNNER_TEMP/QYM.probe21.ilean" > "$OUT/QYM.outputs.sha256"; fi
+          if [[ $rc -eq 0 ]]; then test -s "$RUNNER_TEMP/QYM.probe23.olean" && test -s "$RUNNER_TEMP/QYM.probe23.ilean"; sha256sum "$RUNNER_TEMP/QYM.probe23.olean" "$RUNNER_TEMP/QYM.probe23.ilean" > "$OUT/QYM.outputs.sha256"; fi
           exit 0
 
       - name: Restore canonical and summarize
@@ -155,16 +155,16 @@ jobs:
         run: |
           set -euo pipefail
           [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
-          python3 .github/qym_probe_summarize.py "$OUT" qym-probe21-v1 "$P21_SHA" "$P21_BLOB" "$P20_SHA"
+          python3 .github/qym_probe_summarize.py "$OUT" qym-probe23-v1 "$P23_SHA" "$P23_BLOB" "$P20_SHA"
           test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANONICAL_SHA"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
-      - name: Upload Probe21 evidence
+      - name: Upload Probe23 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-probe21-${{ github.sha }}-attempt${{ github.run_attempt }}
-          path: /tmp/qym-probe21/**
+          name: qym-probe23-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe23/**
           if-no-files-found: error
           retention-days: 30
 
@@ -175,8 +175,8 @@ jobs:
           python3 - "$OUT/PROBE_RESULT.json" <<'PY'
           import json, os, sys
           r=json.load(open(sys.argv[1], encoding='utf-8'))
-          assert r['candidate_qym_sha256']==os.environ['P21_SHA']
-          assert r['candidate_qym_blob']==os.environ['P21_BLOB']
+          assert r['candidate_qym_sha256']==os.environ['P23_SHA']
+          assert r['candidate_qym_blob']==os.environ['P23_BLOB']
           assert r['panic_lines']==0
           if not r['semantic_pass']: raise SystemExit(r['exit'] or 1)
           PY
