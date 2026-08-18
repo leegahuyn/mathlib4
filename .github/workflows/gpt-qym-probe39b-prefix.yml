@@ -1,0 +1,241 @@
+name: GPT QYM Probe39b GammaTwo simplification prefix matrix
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe39b-prefix.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  prefix39b:
+    name: GammaTwo39b ${{ matrix.variant }} prefix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: gamma_simp
+            sha256: 9e32c9857b8a73b3a4ec81bd75e50405e30f37a18f410f7406147aad76883e52
+            blob: 831f86e3f9992a599571b55ab2bb5d79c21577bb
+          - variant: offdiag_simp
+            sha256: f66cfa0a9b49dc0abcc5ab32a1d15b323b685fcb58d00d723a405acc5d6e8276
+            blob: 39596c3272501ca1def05ae91e78ef4a470284e0
+    env:
+      P35_ARTIFACT: qym-probe35-flat_infer-da2958a421605d9b267afdce59990ec19c1be10f-attempt1
+      P35_SHA: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      P35_BLOB: ff49510790dd7ca136bf34c3ec7150617ee1c241
+      CAND_SHA: ${{ matrix.sha256 }}
+      CAND_BLOB: ${{ matrix.blob }}
+      QYM: PrimalitySheafVerification/QYM.lean
+      PREFIX: PrimalitySheafVerification/QYM_Probe39b_Prefix.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe39b-${{ matrix.variant }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Download exact Probe35 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.P35_ARTIFACT }}
+          path: ${{ runner.temp }}/p35
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32095253829
+
+      - name: Gate and materialize exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/p35"
+          test "$(sha256sum "$A/QYM.candidate-probe35-flat_infer.lean" | awk '{print $1}')" = "$P35_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe35-flat_infer.lean")" = "$P35_BLOB"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$A/QYM.candidate-probe35-flat_infer.lean" "$QYM"
+          python3 - "$QYM" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import hashlib, re, sys
+          path = Path(sys.argv[1]); variant = sys.argv[2]
+          text = path.read_text(encoding="utf-8")
+          old = '''theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            all_goals
+              rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+              rcases hMatrix with rfl | rfl
+              all_goals
+                norm_num [CongruenceSubgroup.Gamma_mem,
+                  ModularGroup.S, ModularGroup.T] at hGamma
+          '''.replace("          ", "")
+          gamma_simp = '''theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            all_goals
+              rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+              rcases hMatrix with rfl | rfl
+              all_goals
+                norm_num [CongruenceSubgroup.Gamma_mem,
+                  ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hGamma
+          '''.replace("          ", "")
+          offdiag_simp = '''theorem gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+            have hUpper : (((gamma 0 1 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
+            have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            all_goals
+              rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+              rcases hMatrix with rfl | rfl
+              all_goals
+                exfalso
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper hLower
+          '''.replace("          ", "")
+          choices = {"gamma_simp": gamma_simp, "offdiag_simp": offdiag_simp}
+          assert text.count(old) == 1, text.count(old)
+          text = text.replace(old, choices[variant], 1)
+          path.write_text(text, encoding="utf-8")
+          decoded = path.read_text(encoding="utf-8")
+          forbidden = [
+              len(re.findall(r"\bsorry\b", decoded)),
+              len(re.findall(r"\badmit\b", decoded)),
+              len(re.findall(r"(?m)^\s*axiom\s+", decoded)),
+              len(re.findall(r"(?m)^\s*unsafe\s+", decoded)),
+              len(re.findall(r"\bnative_decide\b", decoded)),
+              decoded.count("Lean.ofReduceBool"),
+              len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", decoded)),
+          ]
+          assert not any(forbidden), forbidden
+          PY
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CAND_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CAND_BLOB"
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+          python3 - "$QYM" "$PREFIX" <<'PY'
+          from pathlib import Path
+          import sys
+          src = Path(sys.argv[1]).read_text(encoding="utf-8")
+          marker = "end QYM.FullCertification.P2GammaTwoFreeActionExtension"
+          assert src.count(marker) == 1
+          Path(sys.argv[2]).write_text(
+              src[:src.index(marker) + len(marker)] + "\n", encoding="utf-8")
+          PY
+          cp "$PREFIX" "$OUT/QYM_Probe39b_Prefix.lean"
+
+      - name: Install pinned Lean and cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+
+      - id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Require dependency cache hit
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          test "$HIT" = true
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Direct Lean compile exact prefix
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/PREFIX.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/PREFIX.olean" -i "$OUT/PREFIX.ilean" \
+              "$PREFIX" > "$OUT/PREFIX.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/PREFIX.exit"
+          exit 0
+
+      - name: Restore checkout
+        if: always()
+        shell: bash
+        run: |
+          cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          rm -f "$PREFIX"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe39b-${{ matrix.variant }}-${{ github.sha }}
+          path: /tmp/qym-probe39b-${{ matrix.variant }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless prefix passes
+        if: always()
+        shell: bash
+        run: |
+          test -f "$OUT/PREFIX.exit"
+          test "$(cat "$OUT/PREFIX.exit")" = 0
+          test -s "$OUT/PREFIX.olean"
+          test -s "$OUT/PREFIX.ilean"
