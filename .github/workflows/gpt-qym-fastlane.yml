@@ -7,10 +7,13 @@ on:
     paths:
       - .github/workflows/gpt-qym-fastlane.yml
       - .github/qym_fastlane_local.py
+      - .github/qym_fastlane_full.lean
+      - .github/qym_fastlane_apply.py
       - .github/qym_fastlane_trigger.txt
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -46,6 +49,8 @@ jobs:
           mkdir -p "$OUT"
           test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
           test -f .github/qym_fastlane_local.py
+          test -f .github/qym_fastlane_full.lean
+          test -f .github/qym_fastlane_apply.py
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
       - name: Install Lean and Mathlib cache
