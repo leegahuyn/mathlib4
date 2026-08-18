@@ -1,0 +1,169 @@
+name: GPT QYM verified-frontier producer selector
+
+on:
+  workflow_run:
+    workflows:
+      - GPT QYM verified-frontier producer repair matrix
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-auto-producer-selector-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    if: github.event.workflow_run.head_branch == 'gpt/fa-qym-clean-final-20260816'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-auto-selector
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download every candidate artifact from matrix run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-auto-producer-*
+          path: /tmp/qym-auto-artifacts
+          merge-multiple: false
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Verify, rank and select actual direct Lean results
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - /tmp/qym-auto-artifacts "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,os,sys
+          root=Path(sys.argv[1]);out=Path(sys.argv[2])
+          records=[]
+          for rp in root.rglob('PROBE_RESULT.json'):
+              try:r=json.loads(rp.read_text(encoding='utf-8'))
+              except Exception:continue
+              cand=next(iter(rp.parent.glob('QYM.candidate.lean')),None)
+              if cand is None:continue
+              raw=cand.read_bytes();sha=hashlib.sha256(raw).hexdigest()
+              blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+              if sha!=r.get('candidate_qym_sha256') or blob!=r.get('candidate_qym_blob'):
+                  continue
+              if r.get('panic_lines')!=0:continue
+              records.append({'result_path':str(rp),'candidate_path':str(cand),'result':r})
+          if not records:raise SystemExit('no verified candidate results')
+          baseline_errors={x['result'].get('baseline_error_headers') for x in records}
+          baseline_shas={x['result'].get('baseline_qym_sha256') for x in records}
+          if len(baseline_errors)!=1 or len(baseline_shas)!=1:
+              raise SystemExit({'baseline_errors':baseline_errors,'baseline_shas':baseline_shas})
+          baseline_errors=next(iter(baseline_errors));baseline_sha=next(iter(baseline_shas))
+          def first_line(r):
+              f=r.get('first_error') or {}
+              return int(f.get('line') or 0) if isinstance(f,dict) else 0
+          def key(x):
+              r=x['result']
+              return (0 if r.get('semantic_pass') else 1,
+                      int(r.get('error_headers') if isinstance(r.get('error_headers'),int) else 10**9),
+                      -first_line(r),
+                      int(r.get('warning_headers') if isinstance(r.get('warning_headers'),int) else 10**9),
+                      r.get('variant') or '')
+          records.sort(key=key);best=records[0];br=best['result']
+          strict=bool(br.get('semantic_pass')) or (
+              isinstance(baseline_errors,int) and isinstance(br.get('error_headers'),int) and
+              br['error_headers']<baseline_errors)
+          decision={
+              'schema':'qym-auto-producer-selection-v1',
+              'workflow_run_id':int(os.environ['MATRIX_RUN_ID']),
+              'workflow_head_sha':os.environ['MATRIX_HEAD_SHA'],
+              'baseline_qym_sha256':baseline_sha,'baseline_error_headers':baseline_errors,
+              'strict_improvement':strict,'semantic_pass':bool(br.get('semantic_pass')),
+              'best':br,
+              'candidates':[x['result'] for x in records],
+          }
+          (out/'SELECTION.json').write_text(json.dumps(decision,indent=2,sort_keys=True)+'\n')
+          Path(out/'QYM.selected.lean').write_bytes(Path(best['candidate_path']).read_bytes())
+          for name in ('QYM.error-headers.txt','QYM.diagnostics.jsonl','QYM.panic-lines.txt'):
+              p=Path(best['result_path']).parent/name
+              if p.is_file():Path(out/name).write_bytes(p.read_bytes())
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as env:
+              env.write('STRICT_IMPROVEMENT='+('true' if strict else 'false')+'\n')
+              env.write('SEMANTIC_PASS='+('true' if br.get('semantic_pass') else 'false')+'\n')
+              env.write('SELECTED_SHA='+str(br.get('candidate_qym_sha256'))+'\n')
+              env.write('SELECTED_BLOB='+str(br.get('candidate_qym_blob'))+'\n')
+              env.write('SELECTED_VARIANT='+str(br.get('variant'))+'\n')
+          print(json.dumps(decision,indent=2,sort_keys=True))
+          PY
+        env:
+          MATRIX_RUN_ID: ${{ github.event.workflow_run.id }}
+          MATRIX_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Promote semantic PASS to canonical checked-in QYM
+        if: env.SEMANTIC_PASS == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.selected.lean" PrimalitySheafVerification/QYM.lean
+          mkdir -p .github/qym-final
+          cp "$OUT/SELECTION.json" .github/qym-final/AUTO_PRODUCER_PASS_SELECTION.json
+          printf '%s  %s\n' "$SELECTED_SHA" PrimalitySheafVerification/QYM.lean \
+            > .github/qym-final/QYM_PASS.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM.lean .github/qym-final
+          git commit -m "QYM: promote producer-matrix direct Lean PASS"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Promote verified strict frontier
+        if: env.STRICT_IMPROVEMENT == 'true' && env.SEMANTIC_PASS != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.selected.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GLOBAL_BEST.json
+          cp "$OUT/QYM.error-headers.txt" .github/qym-frontier/QYM_GLOBAL_BEST.error-headers.txt
+          cp "$OUT/QYM.diagnostics.jsonl" .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+          printf '%s  %s\n' "$SELECTED_SHA" .github/qym-frontier/QYM_GLOBAL_BEST.lean \
+            > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier
+          git commit -m "QYM: promote verified producer-matrix frontier ($SELECTED_VARIANT)"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Persist no-improvement selection
+        if: env.STRICT_IMPROVEMENT != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-campaign
+          cp "$OUT/SELECTION.json" .github/qym-campaign/AUTO_PRODUCER_LAST_SELECTION.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-campaign/AUTO_PRODUCER_LAST_SELECTION.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "QYM: record producer matrix without strict improvement"
+          git pull --rebase origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-auto-producer-selection-${{ github.event.workflow_run.id }}
+          path: /tmp/qym-auto-selector/**
+          if-no-files-found: error
+          retention-days: 30
