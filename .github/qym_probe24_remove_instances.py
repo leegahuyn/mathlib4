@@ -10,32 +10,128 @@ import sys
 INPUT_SHA256 = "94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534"
 EXPECTED = {
     "remove-inner": {
-        "sha256": "b8b1aa7fada440df9a94300fb7e5b93fed529cd05ce6538928b2389f52ecc355",
-        "blob": "53e529d77bc2feb61dad0e9961f19828b024288c",
+        "sha256": "4652c2604dedb92080aceea4bdbd09e99ce83587c8b4f7953688a38cd2722c12",
+        "blob": "1a94792fb1c6fff0c155bfd9e296a26ff146196f",
+        "label": "inferred-opnorm-plus-groupoid",
     },
     "remove-both": {
-        "sha256": "08d91a28ee65ecfb744110a34a43fef655edbf9deed8ac702a8a38a677438380",
-        "blob": "b9a4c36a59e4d6553c6103be36a9f90822bad388",
+        "sha256": "3678d6c5e0f65caeb03e762ed3f7a5fe97ef8fb049699b09d0e99fbcda4fcf94",
+        "blob": "3391dbf58b639d003da21a83ab4de684f013a21f",
+        "label": "inferred-opnorm-plus-groupoid-plus-gamma",
     },
 }
 
-COMPLETE = """noncomputable local instance actualFixedPhaseCanonicalCompletion_complete_inst
+OLD_OPNORM = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
     (n : ℤ) (Y : ℝ) :
-    CompleteSpace (ActualFixedPhaseCuspTraceCompletion n Y) :=
-  actualFixedPhaseCuspTraceCompletionCompleteSpace n Y
-
+    ‖(ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto‖ ≤ 1 :=
+  (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto_norm_le
+"""
+NEW_OPNORM = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
+    (n : ℤ) (Y : ℝ) :=
+  (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto_norm_le
 """
 
-INNER = """noncomputable local instance actualFixedPhaseCanonicalCompletion_inner_inst
+OLD_HHALF = """set_option maxHeartbeats 2000000 in
+set_option synthInstance.maxHeartbeats 2000000 in
+noncomputable def actualFixedPhaseHhalfTraceCompletionInnerProductSpace
     (n : ℤ) (Y : ℝ) :
-    InnerProductSpace ℂ (ActualFixedPhaseCuspTraceCompletion n Y) :=
-  actualFixedPhaseCuspTraceCompletionInnerProductSpace n Y
+    InnerProductSpace ℂ (ActualFixedPhaseHhalfTraceCompletion n Y) :=
+  inferInstance
+"""
+NEW_HHALF = """noncomputable def actualFixedPhaseHhalfTraceCompletionInnerProductSpace
+    (n : ℤ) (Y : ℝ) :
+    InnerProductSpace ℂ (ActualFixedPhaseHhalfTraceCompletion n Y) :=
+  (ActualFixedPhaseHhalfTraceCompletion n Y).innerProductSpace
+"""
 
+OLD_GROUP_H = """local instance conditionalHasGroupoidH :
+    HasGroupoid GammaTwoQuotient upperHalfPlaneSmoothGroupoid :=
+  allCoveringSheets_hasGroupoid hSmooth
+"""
+NEW_GROUP_H = """include hSmooth
+private theorem conditionalHasGroupoidH :
+    HasGroupoid GammaTwoQuotient upperHalfPlaneSmoothGroupoid :=
+  allCoveringSheets_hasGroupoid hSmooth
+omit hSmooth
+"""
+
+OLD_GROUP_COMPLEX = """local instance conditionalHasGroupoidComplex :
+    HasGroupoid GammaTwoQuotient (contDiffGroupoid ∞ 𝓘(ℂ)) := by
+  apply StructureGroupoid.HasGroupoid.comp upperHalfPlaneSmoothGroupoid
+"""
+NEW_GROUP_COMPLEX = """include hSmooth
+private theorem conditionalHasGroupoidComplex :
+    HasGroupoid GammaTwoQuotient (contDiffGroupoid ∞ 𝓘(ℂ)) := by
+  letI : HasGroupoid GammaTwoQuotient upperHalfPlaneSmoothGroupoid :=
+    conditionalHasGroupoidH hSmooth
+  apply StructureGroupoid.HasGroupoid.comp upperHalfPlaneSmoothGroupoid
+"""
+
+OLD_GROUP_COMPLEX_END = """  exact he
+
+/-- Conditional construction of the genuine smooth quotient manifold."""
+NEW_GROUP_COMPLEX_END = """  exact he
+omit hSmooth
+
+/-- Conditional construction of the genuine smooth quotient manifold."""
+
+OLD_MANIFOLD = """theorem gammaTwoQuotient_isManifold_of_smoothTransitionResidual :
+    IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+  IsManifold.mk' 𝓘(ℂ) ∞ GammaTwoQuotient
+
+local instance conditionalIsManifold :
+    IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+  gammaTwoQuotient_isManifold_of_smoothTransitionResidual
+"""
+NEW_MANIFOLD = """include hSmooth
+theorem gammaTwoQuotient_isManifold_of_smoothTransitionResidual :
+    IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient := by
+  letI : HasGroupoid GammaTwoQuotient (contDiffGroupoid ∞ 𝓘(ℂ)) :=
+    conditionalHasGroupoidComplex hSmooth
+  exact IsManifold.mk' 𝓘(ℂ) ∞ GammaTwoQuotient
+omit hSmooth
+
+include hSmooth
+private theorem conditionalIsManifold :
+    IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+  gammaTwoQuotient_isManifold_of_smoothTransitionResidual hSmooth
+omit hSmooth
+"""
+
+OLD_INCLUSION = """theorem interiorStageInclusion_contMDiff
+    {Y Z : ℝ} (hYZ : Y ≤ Z) :
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (interiorStageInclusion hYZ) :=
+  contMDiff_inclusion (interiorStage_mono hYZ)
+"""
+NEW_INCLUSION = """include hSmooth
+theorem interiorStageInclusion_contMDiff
+    {Y Z : ℝ} (hYZ : Y ≤ Z) :
+    ContMDiff 𝓘(ℂ) 𝓘(ℂ) ∞ (interiorStageInclusion hYZ) := by
+  letI : HasGroupoid GammaTwoQuotient (contDiffGroupoid ∞ 𝓘(ℂ)) :=
+    conditionalHasGroupoidComplex hSmooth
+  letI : IsManifold 𝓘(ℂ) ∞ GammaTwoQuotient :=
+    conditionalIsManifold hSmooth
+  exact contMDiff_inclusion (interiorStage_mono hYZ)
+omit hSmooth
+"""
+
+OLD_GAMMA = """    all_goals
+      norm_num [CongruenceSubgroup.Gamma_mem,
+        ModularGroup.S, ModularGroup.T] at hGamma
+"""
+NEW_GAMMA = """    all_goals
+      rw [CongruenceSubgroup.Gamma_mem] at hGamma
+      norm_num [ModularGroup.S, ModularGroup.T] at hGamma
 """
 
 
 def git_blob(data: bytes) -> str:
     return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+
+
+def replace_once(text: str, old: str, new: str) -> str:
+    assert text.count(old) == 1, (old[:120], text.count(old))
+    return text.replace(old, new, 1)
 
 
 def main() -> None:
@@ -50,11 +146,15 @@ def main() -> None:
     assert hashlib.sha256(raw).hexdigest() == INPUT_SHA256
     text = raw.decode("utf-8")
 
-    assert text.count(INNER) == 1
-    text = text.replace(INNER, "", 1)
+    text = replace_once(text, OLD_OPNORM, NEW_OPNORM)
+    text = replace_once(text, OLD_HHALF, NEW_HHALF)
+    text = replace_once(text, OLD_GROUP_H, NEW_GROUP_H)
+    text = replace_once(text, OLD_GROUP_COMPLEX, NEW_GROUP_COMPLEX)
+    text = replace_once(text, OLD_GROUP_COMPLEX_END, NEW_GROUP_COMPLEX_END)
+    text = replace_once(text, OLD_MANIFOLD, NEW_MANIFOLD)
+    text = replace_once(text, OLD_INCLUSION, NEW_INCLUSION)
     if variant == "remove-both":
-        assert text.count(COMPLETE) == 1
-        text = text.replace(COMPLETE, "", 1)
+        text = replace_once(text, OLD_GAMMA, NEW_GAMMA)
 
     path.write_text(text, encoding="utf-8")
     result = path.read_bytes()
@@ -76,8 +176,9 @@ def main() -> None:
     assert not any(forbidden.values()), forbidden
 
     print(json.dumps({
-        "schema": "qym-probe24-remove-redundant-instances-v1",
+        "schema": "qym-probe28-producer-matrix-v1",
         "variant": variant,
+        "label": EXPECTED[variant]["label"],
         "input_sha256": INPUT_SHA256,
         "candidate_sha256": sha256,
         "candidate_blob": blob,
