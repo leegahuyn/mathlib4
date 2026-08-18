@@ -1,5 +1,2 @@
-Probe19 persistent direct runner trigger.
-Authority: Probe17 run 32002705164 / artifact 9279187130.
-Runner install commit: 0e6cbf59ce9d0c3211557ea3b7ff7f665ffdec0f.
-Candidate SHA256: 069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5.
-Candidate blob: cb104f9129f53d4db10364611bcf95911fd3ab5c.
+Runner registration check trigger after commit 190f2b99fac8c8e218b358e07bda817602bdd9cd.
+This is infrastructure-only; no mathematical frontier claim.
