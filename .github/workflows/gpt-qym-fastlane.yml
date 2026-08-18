@@ -1,0 +1,141 @@
+name: GPT QYM persistent fastlane
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-fastlane.yml
+      - .github/qym_fastlane_local.py
+      - .github/qym_fastlane_trigger.txt
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpt-qym-fastlane-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  local:
+    name: QYM fastlane local ${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - obstruction
+          - full
+    env:
+      OUT: /tmp/qym-fastlane-${{ matrix.variant }}
+      TEST: QYMFastlane_${{ matrix.variant }}.lean
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_fastlane_local.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Materialize exact local reproducer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_fastlane_local.py "${{ matrix.variant }}" "$TEST"
+          cp "$TEST" "$OUT/$TEST"
+          sha256sum "$TEST" > "$OUT/TEST.sha256"
+
+      - name: Direct Lean compile local reproducer
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/TEST.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/TEST.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$OUT/TEST.olean"
+            test -s "$OUT/TEST.ilean"
+            sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"
+          fi
+          rm -f "$TEST"
+          exit 0
+
+      - name: Summarize direct result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, sys
+          out = Path(sys.argv[1]); variant = sys.argv[2]
+          raw = (out / 'TEST.log').read_bytes() if (out / 'TEST.log').exists() else b''
+          text = raw.decode(errors='replace')
+          errors = re.findall(r'(?m)^.*\.lean:\d+:\d+: error(?:\([^)]*\))?:.*$', text)
+          warnings = re.findall(r'(?m)^.*\.lean:\d+:\d+: warning(?:\([^)]*\))?:.*$', text)
+          panics = re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          rc = int((out / 'TEST.exit').read_text().strip()) if (out / 'TEST.exit').exists() else None
+          result = {
+              'schema': 'qym-persistent-fastlane-local-v1',
+              'variant': variant,
+              'exit': rc,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'panic_lines': len(panics),
+              'first_error': errors[0] if errors else None,
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': rc == 0 and not errors and not panics,
+          }
+          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload local evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-fastlane-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-fastlane-${{ matrix.variant }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless direct Lean passes
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/RESULT.json" <<'PY'
+          import json, sys
+          result = json.load(open(sys.argv[1], encoding='utf-8'))
+          if not result['semantic_pass']:
+              raise SystemExit(result['exit'] or 1)
+          PY
