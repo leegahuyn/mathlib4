@@ -1,4 +1,4 @@
-name: GPT QYM fastlane horocycle ContDiff prefix proof
+name: GPT QYM fastlane repaired complete GammaTwo theorem
 
 on:
   push:
@@ -13,17 +13,15 @@ permissions:
   contents: read
 
 jobs:
-  prefix:
-    name: Horocycle div-simpa prefix proof
+  theorem:
+    name: Repaired complete GammaTwo theorem
     runs-on: ubuntu-24.04
-    timeout-minutes: 180
+    timeout-minutes: 60
     env:
-      OUT: /tmp/qym-horocycle-prefix
-      PREFIX: QYM_HorocyclePrefix.lean
-      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
-      P35_ARTIFACT: qym-probe35-flat_named-da2958a421605d9b267afdce59990ec19c1be10f-attempt1
-      P35_SHA: 00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53
-      P35_BLOB: ee2faeaf281215b0e9b304a96ccdce3e8cdc0ffb
+      OUT: /tmp/qym-gamma-repaired
+      TEST: QYM_Probe39j_repaired.lean
+      SOURCE_SHA: 0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6
+      SOURCE_BLOB: e38697cb52d0c79d8f6af25145d1d4ea258d518a
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -31,29 +29,62 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Download and gate Probe35
+      - name: Download Probe39j theorem evidence
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: ${{ env.P35_ARTIFACT }}
-          path: ${{ runner.temp }}/p35
+          name: qym-probe39j-c335152aae40cc2c2670eedc84ca976a2ee45197
+          path: ${{ runner.temp }}/p39j
           github-token: ${{ github.token }}
           repository: leegahuyn/mathlib4
-          run-id: 32095253829
+          run-id: 32132783118
 
-      - name: Verify authority
+      - name: Gate and repair exact theorem source
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$OUT"
-          A="$RUNNER_TEMP/p35"
-          test "$(sha256sum "$A/QYM.candidate-probe35-flat_named.lean" | awk '{print $1}')" = "$P35_SHA"
-          test "$(git hash-object --no-filters "$A/QYM.candidate-probe35-flat_named.lean")" = "$P35_BLOB"
-          test "$(cat "$A/QYM.exit")" = 1
-          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 89
-          test ! -s "$A/QYM.panic-lines.txt"
-          cp "$A/QYM.candidate-probe35-flat_named.lean" "$OUT/QYM.probe35.lean"
+          A="$RUNNER_TEMP/p39j"
+          test "$(cat "$A/TEST.exit")" = 1
+          test "$(sha256sum "$A/QYM_Probe39j.lean" | awk '{print $1}')" = "$SOURCE_SHA"
+          test "$(git hash-object --no-filters "$A/QYM_Probe39j.lean")" = "$SOURCE_BLOB"
+          cp "$A/QYM_Probe39j.lean" "$TEST"
+          python3 - "$TEST" <<'PY'
+          from pathlib import Path
+          import hashlib,re,sys
+          p=Path(sys.argv[1]); raw=p.read_bytes()
+          assert hashlib.sha256(raw).hexdigest()=="0dc93f177661dc406c86c1737c8e35b0435a2acf14cbfaf56074677862212da6"
+          s=raw.decode('utf-8')
+          old='''  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
+              (inv_mul_cancel ModularGroup.T)
+            norm_num [Matrix.SpecialLinearGroup.coe_mul,
+              ModularGroup.T, Matrix.mul_fin_two, hInv00] at h
+            exact h
+          '''
+          new='''  have hInv01 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+            rw [← zpow_neg_one, ModularGroup.coe_T_zpow]
+            norm_num
+          '''
+          assert s.count(old)==1,s.count(old)
+          s=s.replace(old,new,1)
+          bad={
+            'sorry':len(re.findall(r'\bsorry\b',s)),
+            'admit':len(re.findall(r'\badmit\b',s)),
+            'native_decide':len(re.findall(r'\bnative_decide\b',s)),
+            'ofReduceBool':s.count('Lean.ofReduceBool'),
+            'axiom':len(re.findall(r'(?m)^\s*axiom\s+',s)),
+            'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',s)),
+            'hb0':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',s)),
+          }
+          assert not any(bad.values()),bad
+          p.write_text(s,encoding='utf-8')
+          result=p.read_bytes()
+          print(hashlib.sha256(result).hexdigest(),len(result),result.count(b'\n'))
+          PY
+          cp "$TEST" "$OUT/$TEST"
+          sha256sum "$TEST" > "$OUT/TEST.source.sha256"
 
-      - name: Install pinned Lean and cache
+      - name: Install pinned Lean and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -64,127 +95,38 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
           lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
 
-      - name: Restore dependency objects
-        id: depcache
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
-        with:
-          path: |
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
-            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
-          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
-
-      - name: Ensure dependencies
-        shell: bash
-        env:
-          HIT: ${{ steps.depcache.outputs.cache-hit }}
-        run: |
-          set -euo pipefail
-          mkdir -p "$OLEAN"
-          if [[ "$HIT" != true ]]; then
-            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
-              cap=1
-              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
-              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
-                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
-                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
-            done
-          fi
-          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"; done
-
-      - name: Materialize exact patched prefix
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - "$OUT/QYM.probe35.lean" "$PREFIX" <<'PY'
-          from pathlib import Path
-          import hashlib, re, sys
-          source=Path(sys.argv[1]); out=Path(sys.argv[2])
-          raw=source.read_bytes()
-          assert hashlib.sha256(raw).hexdigest()=="00f2c8ba7fc0329b04ae67c5a67b5814f8118b14222a7831a0401c9d3d374e53"
-          text=raw.decode('utf-8')
-          old1='''  simp only [actualFixedPhaseCuspHorocyclePoint,
-            actualFixedPhaseHorizontalHorocyclePoint,
-            UpperHalfPlane.coe_specialLinearGroup_apply]
-          rw [div_eq_mul_inv]
-          apply ContDiff.mul
-          · fun_prop
-          · apply ContDiff.inv
-            · fun_prop
-            · exact hden
-          '''
-          new1='''  simp only [actualFixedPhaseCuspHorocyclePoint,
-            actualFixedPhaseHorizontalHorocyclePoint,
-            UpperHalfPlane.coe_specialLinearGroup_apply]
-          apply ContDiff.div
-          · fun_prop
-          · fun_prop
-          · exact hden
-          '''
-          old2='''  change ContDiff ℝ ∞
-            (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) ∘
-              fun x : ℝ =>
-                ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ))
-          exact hcomp
-          '''
-          new2='''  simpa [actualFixedPhaseNamedCuspTraceRepresentative,
-            Function.comp_def] using hcomp
-          '''
-          assert text.count(old1)==1, ('old1',text.count(old1))
-          assert text.count(old2)==1, ('old2',text.count(old2))
-          text=text.replace(old1,new1,1).replace(old2,new2,1)
-          marker='/-- Every actual smooth trace is Lipschitz on the compact doubled interval'
-          prefix=text[:text.index(marker)].rstrip()+"\n\nend QYM.FullCertification.P2ClassicalHhalfTraceExtension\n"
-          bad={
-            'sorry':len(re.findall(r'\bsorry\b',prefix)),
-            'admit':len(re.findall(r'\badmit\b',prefix)),
-            'native_decide':len(re.findall(r'\bnative_decide\b',prefix)),
-            'ofReduceBool':prefix.count('Lean.ofReduceBool'),
-            'axiom':len(re.findall(r'(?m)^\s*axiom\s+',prefix)),
-            'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',prefix)),
-            'hb0':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',prefix)),
-          }
-          assert not any(bad.values()), bad
-          out.write_text(prefix,encoding='utf-8')
-          print(hashlib.sha256(prefix.encode()).hexdigest(),prefix.count('\n'))
-          PY
-          cp "$PREFIX" "$OUT/$PREFIX"
-
-      - name: Direct Lean compile prefix
+      - name: Direct Lean compile repaired theorem
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          /usr/bin/time -v -o "$OUT/PREFIX.time" \
+          /usr/bin/time -v -o "$OUT/TEST.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-              -o "$OUT/PREFIX.olean" -i "$OUT/PREFIX.ilean" \
-              "$PREFIX" > "$OUT/PREFIX.log" 2>&1
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
           rc=$?
           set -e
-          echo "$rc" > "$OUT/PREFIX.exit"
-          if [[ "$rc" -eq 0 ]]; then sha256sum "$OUT/PREFIX.olean" "$OUT/PREFIX.ilean" > "$OUT/PREFIX.outputs.sha256"; fi
-          rm -f "$PREFIX"
+          echo "$rc" > "$OUT/TEST.exit"
+          if [[ "$rc" -eq 0 ]]; then sha256sum "$OUT/TEST.olean" "$OUT/TEST.ilean" > "$OUT/TEST.outputs.sha256"; fi
+          rm -f "$TEST"
           exit 0
 
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-horocycle-prefix-${{ github.sha }}
-          path: /tmp/qym-horocycle-prefix/**
+          name: qym-gamma-repaired-${{ github.sha }}
+          path: /tmp/qym-gamma-repaired/**
           if-no-files-found: error
           retention-days: 30
 
-      - name: Fail closed unless prefix passes
+      - name: Fail closed unless theorem passes
         if: always()
         shell: bash
         run: |
-          test "$(cat "$OUT/PREFIX.exit")" = 0
-          test -s "$OUT/PREFIX.olean"
-          test -s "$OUT/PREFIX.ilean"
+          test "$(cat "$OUT/TEST.exit")" = 0
+          test -s "$OUT/TEST.olean"
+          test -s "$OUT/TEST.ilean"
