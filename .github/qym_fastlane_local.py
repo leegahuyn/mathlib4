@@ -82,8 +82,9 @@ NEW_TINV01 = r'''lemma qym_tinv01 :
     (∑ k : Fin 2,
       (ModularGroup.T⁻¹).val 0 k * ModularGroup.T.val k 1) = 0 at h
   simp only [Fin.sum_univ_two] at h
-  norm_num [ModularGroup.T, qym_tinv00] at h
-  exact h
+  norm_num [ModularGroup.T] at h
+  rw [qym_tinv00] at h
+  omega
 '''
 
 OLD_TST = r'''lemma qym_TST_lower_entry :
