@@ -78,13 +78,11 @@ NEW_TINV01 = r'''lemma qym_tinv01 :
     (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
   have h := congrArg (fun g : SL(2, ℤ) => g 0 1)
     (inv_mul_cancel ModularGroup.T)
-  change
-    (∑ k : Fin 2,
-      (ModularGroup.T⁻¹).val 0 k * ModularGroup.T.val k 1) = 0 at h
-  simp only [Fin.sum_univ_two] at h
-  norm_num [ModularGroup.T] at h
+  simp only [Matrix.SpecialLinearGroup.coe_mul,
+    Matrix.mul_fin_two] at h
   rw [qym_tinv00] at h
-  omega
+  norm_num [ModularGroup.T] at h
+  exact h
 '''
 
 OLD_TST = r'''lemma qym_TST_lower_entry :
