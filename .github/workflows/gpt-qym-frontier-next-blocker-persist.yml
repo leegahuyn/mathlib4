@@ -1,0 +1,65 @@
+name: GPT QYM persist verified next-blocker analysis
+
+on:
+  workflow_run:
+    workflows:
+      - GPT QYM verified frontier next-blocker analyzer
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  persist:
+    if: >-
+      github.event.workflow_run.head_branch == 'gpt/fa-qym-clean-final-20260816' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+
+    steps:
+      - name: Checkout latest branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download next-blocker artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-next-blocker-*
+          path: /tmp/qym-next-blocker
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Gate and persist analysis
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in NEXT_BLOCKER.json NEXT_BLOCKER.md FIRST_PRODUCER_CONTEXT.txt TOP_OWNER_CONTEXTS.txt API_SEARCH.txt; do
+            test -f "/tmp/qym-next-blocker/$f"
+          done
+          python3 - /tmp/qym-next-blocker/NEXT_BLOCKER.json <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['panic_lines']==0
+          assert r['error_headers']>0
+          assert r['first_owner'] is not None
+          PY
+          mkdir -p .github/qym-frontier/next-blocker
+          cp /tmp/qym-next-blocker/* .github/qym-frontier/next-blocker/
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier/next-blocker
+          if git diff --cached --quiet; then
+            echo 'Next-blocker analysis unchanged.'
+            exit 0
+          fi
+          git commit -m "QYM: persist verified next-blocker analysis"
+          git push origin "HEAD:$BRANCH"
