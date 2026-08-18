@@ -1,4 +1,4 @@
-name: GPT QYM module alignment matrix from 93-error authority
+name: GPT QYM Probe24 redundant instance removal matrix
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - gpt/fa-qym-clean-final-20260816
     paths:
       - .github/workflows/gpt-qym-module-alignment-matrix.yml
-      - .github/qym_module_alignment_matrix.py
+      - .github/qym_probe24_remove_instances.py
   workflow_dispatch:
 
 permissions:
@@ -14,86 +14,87 @@ permissions:
   contents: read
 
 concurrency:
-  group: gpt-qym-module-alignment-matrix-${{ github.ref }}
+  group: gpt-qym-probe24-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   matrix:
-    name: ${{ matrix.variant }} full QYM direct Lean
+    name: Probe24 ${{ matrix.variant }} full direct Lean
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
         variant:
-          - normed-only
-          - codomain-module-aligned
-          - domain-codomain-module-aligned
+          - remove-inner
+          - remove-both
     env:
-      EXPECTED_BRANCH: gpt/fa-qym-clean-final-20260816
-      EXPECTED_CANONICAL_QYM_SHA256: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
-      PROBE19_RUN: '32086793820'
-      PROBE19_ARTIFACT: qym-probe19-366d44428aac1529e2f01a2110933fd77d624a4c-attempt1
-      PROBE19_SHA256: 069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5
-      PROBE19_BLOB: cb104f9129f53d4db10364611bcf95911fd3ab5c
-      EXPECTED_PROJECT_CACHE_KEY: qym-probe4-deps-v1-Linux-ecb9f60364b1d72200c847f9ae46918f12c8b6d05363c23cca5d361c92ea45d4
-      QYM_SOURCE: PrimalitySheafVerification/QYM.lean
-      OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      CANONICAL_SHA: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
+      CANONICAL_BLOB: 4b394b2709af88b8cd8eac8b432e535aaf19b64c
+      P20_RUN: '32088095860'
+      P20_ARTIFACT: qym-probe20-f728aa4e870808623454f508c01c2d5625864c1d-attempt1
+      P20_SHA: 94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534
+      P20_BLOB: 8c2b1993954c7e913ef700246b492134fe6aa68f
+      PROJECT_CACHE_KEY: qym-probe4-deps-v1-Linux-ecb9f60364b1d72200c847f9ae46918f12c8b6d05363c23cca5d361c92ea45d4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
 
     steps:
-      - name: Check out exact triggering commit
+      - name: Checkout exact trigger
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
 
-      - name: Gate branch canonical source and patch inputs
+      - name: Gate canonical checkout
         shell: bash
         run: |
           set -euo pipefail
-          OUT="$RUNNER_TEMP/qym-module-alignment-${{ matrix.variant }}"
+          OUT="$RUNNER_TEMP/qym-probe24-${{ matrix.variant }}"
           mkdir -p "$OUT"
           echo "OUT=$OUT" >> "$GITHUB_ENV"
-          test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
-          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANONICAL_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CANONICAL_BLOB"
           test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
-          test -f .github/qym_module_alignment_matrix.py
-          git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.before.txt"
-          test ! -s "$OUT/git-status.before.txt"
+          test -f .github/qym_probe24_remove_instances.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
-      - name: Download exact 93-error Probe19 authority
+      - name: Download immutable Probe20 authority
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: ${{ env.PROBE19_ARTIFACT }}
-          path: ${{ runner.temp }}/probe19-authority
+          name: ${{ env.P20_ARTIFACT }}
+          path: ${{ runner.temp }}/p20
           github-token: ${{ github.token }}
           repository: leegahuyn/mathlib4
-          run-id: 32086793820
+          run-id: 32088095860
 
-      - name: Verify Probe19 direct authority bytes and metrics
+      - name: Gate Probe20 direct authority
         shell: bash
         run: |
           set -euo pipefail
-          A="$RUNNER_TEMP/probe19-authority"
-          for f in QYM.candidate-probe19.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do
+          A="$RUNNER_TEMP/p20"
+          for f in QYM.candidate-probe20.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do
             test -f "$A/$f"
           done
-          test "$(sha256sum "$A/QYM.candidate-probe19.lean" | awk '{print $1}')" = "$PROBE19_SHA256"
-          test "$(git hash-object --no-filters "$A/QYM.candidate-probe19.lean")" = "$PROBE19_BLOB"
+          test "$(sha256sum "$A/QYM.candidate-probe20.lean" | awk '{print $1}')" = "$P20_SHA"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe20.lean")" = "$P20_BLOB"
           test "$(cat "$A/QYM.exit")" = 1
-          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 93
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 92
           test ! -s "$A/QYM.panic-lines.txt"
           python3 - "$A/PROBE_RESULT.json" <<'PY'
           import json, os, sys
-          r = json.load(open(sys.argv[1], encoding='utf-8'))
-          assert r['candidate_qym_sha256'] == os.environ['PROBE19_SHA256']
-          assert r['candidate_qym_blob'] == os.environ['PROBE19_BLOB']
-          assert r['exit'] == 1 and r['error_headers'] == 93 and r['panic_lines'] == 0
+          r=json.load(open(sys.argv[1], encoding='utf-8'))
+          assert r['candidate_qym_sha256']==os.environ['P20_SHA']
+          assert r['candidate_qym_blob']==os.environ['P20_BLOB']
+          assert r['exit']==1 and r['error_headers']==92 and r['warning_headers']==356
+          assert r['panic_lines']==0 and r['semantic_pass'] is False
           PY
-          cp "$A/QYM.candidate-probe19.lean" "$OUT/QYM.probe19.authority.lean"
-          cp "$A/PROBE_RESULT.json" "$OUT/PROBE19_RESULT.json"
+          cp "$A/QYM.candidate-probe20.lean" "$OUT/QYM.probe20.lean"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE20_RESULT.json"
 
-      - name: Install exact pinned Lean and Mathlib cache
+      - name: Install pinned Lean and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
@@ -122,120 +123,87 @@ jobs:
             .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
           key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
 
-      - name: Ensure exact dependency objects
+      - name: Ensure dependency objects
         shell: bash
         env:
-          CACHE_HIT: ${{ steps.depcache.outputs.cache-hit }}
-          CACHE_PRIMARY_KEY: ${{ steps.depcache.outputs.cache-primary-key }}
-          CACHE_MATCHED_KEY: ${{ steps.depcache.outputs.cache-matched-key }}
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+          PRIMARY: ${{ steps.depcache.outputs.cache-primary-key }}
+          MATCHED: ${{ steps.depcache.outputs.cache-matched-key }}
         run: |
           set -euo pipefail
-          mkdir -p "$OLEAN_ROOT"
-          test "$CACHE_PRIMARY_KEY" = "$EXPECTED_PROJECT_CACHE_KEY"
-          if [[ "$CACHE_HIT" == true ]]; then
-            test "$CACHE_MATCHED_KEY" = "$EXPECTED_PROJECT_CACHE_KEY"
-            echo hit > "$OUT/dependency-cache-status.txt"
+          mkdir -p "$OLEAN"
+          test "$PRIMARY" = "$PROJECT_CACHE_KEY"
+          if [[ "$HIT" == true ]]; then
+            test "$MATCHED" = "$PROJECT_CACHE_KEY"
           else
-            test -z "$CACHE_HIT"
-            test -z "$CACHE_MATCHED_KEY"
-            echo miss-rebuilt > "$OUT/dependency-cache-status.txt"
-            for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -z "$HIT"
+            test -z "$MATCHED"
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
               cap=1
-              if [[ "$stem" = Mock2_FunctionalAnalysis || "$stem" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
-              rm -f "$OLEAN_ROOT/$stem.olean" "$OLEAN_ROOT/$stem.ilean"
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
               lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
-                -o "$OLEAN_ROOT/$stem.olean" -i "$OLEAN_ROOT/$stem.ilean" \
-                "PrimalitySheafVerification/$stem.lean" > "$OUT/$stem.log" 2>&1
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
             done
           fi
-          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
-            test -s "$OLEAN_ROOT/$stem.olean" && test -s "$OLEAN_ROOT/$stem.ilean"
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
           done
 
-      - name: Materialize deterministic matrix candidate
+      - name: Materialize deterministic Probe24 candidate
         shell: bash
         run: |
           set -euo pipefail
-          cp "$QYM_SOURCE" "$OUT/QYM.canonical.lean"
-          cp "$OUT/QYM.probe19.authority.lean" "$QYM_SOURCE"
-          python3 -B .github/qym_module_alignment_matrix.py \
-            "${{ matrix.variant }}" "$QYM_SOURCE" | tee "$OUT/PATCH_RESULT.json"
-          cp "$QYM_SOURCE" "$OUT/QYM.candidate-${{ matrix.variant }}.lean"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.probe20.lean" "$QYM"
+          python3 -B .github/qym_probe24_remove_instances.py \
+            "${{ matrix.variant }}" "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-${{ matrix.variant }}.lean"
           python3 - "$OUT/PATCH_RESULT.json" <<'PY'
           import json, os, sys
-          r = json.load(open(sys.argv[1], encoding='utf-8'))
-          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as f:
-              f.write('CANDIDATE_SHA256=' + r['candidate_sha256'] + '\n')
-              f.write('CANDIDATE_BLOB=' + r['candidate_blob'] + '\n')
+          r=json.load(open(sys.argv[1], encoding='utf-8'))
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as f:
+              f.write('CANDIDATE_SHA='+r['candidate_sha256']+'\n')
+              f.write('CANDIDATE_BLOB='+r['candidate_blob']+'\n')
           PY
 
-      - name: Full direct Lean compile of matrix candidate
+      - name: Full direct Lean compile Probe24
         shell: bash
         run: |
           set -euo pipefail
-          printf '%q ' lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-            -o "$RUNNER_TEMP/QYM.matrix.olean" -i "$RUNNER_TEMP/QYM.matrix.ilean" "$QYM_SOURCE" \
-            > "$OUT/QYM.command"
-          printf '\n' >> "$OUT/QYM.command"
           set +e
           /usr/bin/time -v -o "$OUT/QYM.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-              -o "$RUNNER_TEMP/QYM.matrix.olean" -i "$RUNNER_TEMP/QYM.matrix.ilean" \
-              "$QYM_SOURCE" > "$OUT/QYM.log" 2>&1
+              -o "$RUNNER_TEMP/QYM.probe24.olean" -i "$RUNNER_TEMP/QYM.probe24.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
           rc=$?
           set -e
           echo "$rc" > "$OUT/QYM.exit"
           if [[ "$rc" -eq 0 ]]; then
-            test -s "$RUNNER_TEMP/QYM.matrix.olean" && test -s "$RUNNER_TEMP/QYM.matrix.ilean"
-            sha256sum "$RUNNER_TEMP/QYM.matrix.olean" "$RUNNER_TEMP/QYM.matrix.ilean" > "$OUT/QYM.outputs.sha256"
+            test -s "$RUNNER_TEMP/QYM.probe24.olean" && test -s "$RUNNER_TEMP/QYM.probe24.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.probe24.olean" "$RUNNER_TEMP/QYM.probe24.ilean" > "$OUT/QYM.outputs.sha256"
           fi
           exit 0
 
-      - name: Restore canonical and summarize matrix result
+      - name: Restore canonical and summarize
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -f "$OUT/QYM.canonical.lean" ]]; then cp "$OUT/QYM.canonical.lean" "$QYM_SOURCE"; fi
-          python3 - "$OUT" "${{ matrix.variant }}" <<'PY'
-          import collections, hashlib, json, os, re, sys
-          from pathlib import Path
-          root = Path(sys.argv[1]); variant = sys.argv[2]
-          raw = (root/'QYM.log').read_bytes() if (root/'QYM.log').exists() else b''
-          text = raw.decode('utf-8', errors='replace')
-          pat = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
-          rows=[]
-          for m in pat.finditer(text):
-              x=m.groupdict(); x['line']=int(x['line']); x['column']=int(x['column']); rows.append(x)
-          errors=[x for x in rows if x['severity']=='error']; warnings=[x for x in rows if x['severity']=='warning']
-          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
-          (root/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x,sort_keys=True)+'\n' for x in rows), encoding='utf-8')
-          (root/'QYM.error-headers.txt').write_text(''.join(f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in errors), encoding='utf-8')
-          (root/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics), encoding='utf-8')
-          rc=int((root/'QYM.exit').read_text().strip()) if (root/'QYM.exit').exists() else None
-          blocker=[x for x in errors if 37140 <= x['line'] <= 37290]
-          result={
-            'schema':'qym-module-alignment-matrix-v1', 'variant':variant, 'github_sha':os.environ['GITHUB_SHA'],
-            'baseline_qym_sha256':os.environ['PROBE19_SHA256'], 'candidate_qym_sha256':os.environ.get('CANDIDATE_SHA256'),
-            'candidate_qym_blob':os.environ.get('CANDIDATE_BLOB'), 'exit':rc, 'error_headers':len(errors),
-            'warning_headers':len(warnings), 'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
-            'first_error':errors[0] if errors else None, 'last_error':errors[-1] if errors else None,
-            'panic_lines':len(panics), 'blocker_region_errors':blocker,
-            'first_blocker_pass':not blocker, 'semantic_pass':rc==0 and not errors and not panics,
-            'log_sha256':hashlib.sha256(raw).hexdigest(),
-          }
-          (root/'MATRIX_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n', encoding='utf-8')
-          print(json.dumps(result,indent=2,sort_keys=True))
-          PY
-          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
-          git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.after.txt"
-          test ! -s "$OUT/git-status.after.txt"
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 .github/qym_probe_summarize.py \
+            "$OUT" "qym-probe24-${{ matrix.variant }}-v1" \
+            "$CANDIDATE_SHA" "$CANDIDATE_BLOB" "$P20_SHA"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$CANONICAL_SHA"
+          test "$(git hash-object --no-filters "$QYM")" = "$CANONICAL_BLOB"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
 
-      - name: Upload immutable matrix evidence
+      - name: Upload immutable Probe24 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-module-alignment-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          name: qym-probe24-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
           path: ${{ env.OUT }}/**
           if-no-files-found: error
           retention-days: 30
@@ -244,11 +212,11 @@ jobs:
         if: always()
         shell: bash
         run: |
-          set -euo pipefail
-          python3 - "$OUT/MATRIX_RESULT.json" <<'PY'
-          import json, sys
-          r=json.load(open(sys.argv[1], encoding='utf-8'))
-          assert r['panic_lines'] == 0
-          if not r['first_blocker_pass']:
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['panic_lines']==0
+          first=r.get('first_error') or {}
+          if first.get('line',0) <= 37221:
               raise SystemExit(1)
           PY
