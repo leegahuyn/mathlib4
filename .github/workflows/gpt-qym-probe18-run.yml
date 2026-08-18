@@ -1,83 +1,143 @@
-name: GPT QYM Probe19 direct runner
+name: GPT QYM Probe20 direct runner
 
 on:
   push:
     branches:
       - gpt/fa-qym-clean-final-20260816
     paths:
-      - .github/qym-probe18-trigger.txt
       - .github/workflows/gpt-qym-probe18-run.yml
+      - .github/qym_probe20_patch.py
+      - .github/qym_probe_summarize.py
+      - .github/qym-probe18-trigger.txt
   workflow_dispatch:
 
 permissions:
   actions: read
   contents: read
 
+concurrency:
+  group: gpt-qym-probe20-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  probe19:
-    name: Probe17 authority to Probe19 direct Lean
+  probe20:
+    name: Probe19 authority to Probe20 direct Lean
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     env:
       EXPECTED_BRANCH: gpt/fa-qym-clean-final-20260816
       EXPECTED_CANONICAL_QYM_SHA256: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
-      EXPECTED_PROBE17_SHA256: 971d9fd6c1cba701f6404b6303668b61d3de9f4b5d71281ab7b88f1530009bf7
-      EXPECTED_PROBE17_BLOB: 061345d55ea0ce66c01911454df3c6f2c509fa91
+      EXPECTED_CANONICAL_QYM_BLOB: 4b394b2709af88b8cd8eac8b432e535aaf19b64c
       EXPECTED_PROBE19_SHA256: 069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5
       EXPECTED_PROBE19_BLOB: cb104f9129f53d4db10364611bcf95911fd3ab5c
-      REQUIRED_PROBE17_NAME: qym-repair-probe17-integrated-befb4ddaf7be84949c35bb66792f8c74c8e58699-attempt1
+      EXPECTED_PROBE20_SHA256: 94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534
+      EXPECTED_PROBE20_BLOB: 8c2b1993954c7e913ef700246b492134fe6aa68f
+      REQUIRED_PROBE19_RUN: '32086793820'
+      REQUIRED_PROBE19_JOB: '95560898612'
+      REQUIRED_PROBE19_ARTIFACT_ID: '9307155289'
+      REQUIRED_PROBE19_TRIGGER_SHA: 366d44428aac1529e2f01a2110933fd77d624a4c
+      REQUIRED_PROBE19_ARTIFACT_NAME: qym-probe19-366d44428aac1529e2f01a2110933fd77d624a4c-attempt1
+      REQUIRED_PROBE19_ARTIFACT_DIGEST: sha256:6dc8885133c7d59bf8960358868e6adf30bf88f16e9ec2508583a3164d62688b
       QYM_SOURCE: PrimalitySheafVerification/QYM.lean
       OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
-      OUT: /tmp/qym-probe19-run
+      OUT: /tmp/qym-probe20-run
 
     steps:
       - name: Checkout exact trigger
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 2
           persist-credentials: false
 
-      - name: Gate canonical inputs
+      - name: Gate canonical inputs and pinned environment
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$OUT"
           test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_CANONICAL_QYM_BLOB"
           test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
           git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.before.txt"
           test ! -s "$OUT/git-status.before.txt"
 
-      - name: Download exact Probe17 authority
+      - name: Verify immutable Probe19 authority metadata
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/leegahuyn/mathlib4/actions/runs/$REQUIRED_PROBE19_RUN/artifacts?per_page=100" > "$OUT/probe19-artifacts.json"
+          gh api "repos/leegahuyn/mathlib4/actions/jobs/$REQUIRED_PROBE19_JOB" > "$OUT/probe19-job.json"
+          python3 - "$OUT/probe19-artifacts.json" "$OUT/probe19-job.json" <<'PY'
+          import json, os, sys
+          artifacts = json.load(open(sys.argv[1], encoding="utf-8"))
+          job = json.load(open(sys.argv[2], encoding="utf-8"))
+          matches = [a for a in artifacts.get("artifacts", [])
+                     if a.get("name") == os.environ["REQUIRED_PROBE19_ARTIFACT_NAME"]]
+          assert len(matches) == 1
+          artifact = matches[0]
+          assert artifact["id"] == int(os.environ["REQUIRED_PROBE19_ARTIFACT_ID"])
+          assert artifact["digest"] == os.environ["REQUIRED_PROBE19_ARTIFACT_DIGEST"]
+          assert artifact["expired"] is False
+          run = artifact.get("workflow_run") or {}
+          assert run.get("id") == int(os.environ["REQUIRED_PROBE19_RUN"])
+          assert run.get("head_sha") == os.environ["REQUIRED_PROBE19_TRIGGER_SHA"]
+          assert job["id"] == int(os.environ["REQUIRED_PROBE19_JOB"])
+          assert job["run_id"] == int(os.environ["REQUIRED_PROBE19_RUN"])
+          assert job["head_sha"] == os.environ["REQUIRED_PROBE19_TRIGGER_SHA"]
+          assert job["status"] == "completed" and job["conclusion"] == "failure"
+          PY
+
+      - name: Download exact Probe19 authority
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: ${{ env.REQUIRED_PROBE17_NAME }}
-          path: ${{ runner.temp }}/probe17-authority
+          name: ${{ env.REQUIRED_PROBE19_ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/probe19-authority
           github-token: ${{ github.token }}
           repository: leegahuyn/mathlib4
-          run-id: 32002705164
+          run-id: 32086793820
 
-      - name: Gate Probe17 direct authority
+      - name: Gate Probe19 direct Lean authority
         shell: bash
         run: |
           set -euo pipefail
-          A="$RUNNER_TEMP/probe17-authority"
-          for f in QYM.candidate-probe17.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do
+          A="$RUNNER_TEMP/probe19-authority"
+          for f in QYM.candidate-probe19.lean QYM.log QYM.error-headers.txt \
+            QYM.diagnostics.jsonl QYM.exit QYM.panic-lines.txt PROBE_RESULT.json; do
             test -f "$A/$f"
           done
-          test "$(sha256sum "$A/QYM.candidate-probe17.lean" | awk '{print $1}')" = "$EXPECTED_PROBE17_SHA256"
-          test "$(git hash-object --no-filters "$A/QYM.candidate-probe17.lean")" = "$EXPECTED_PROBE17_BLOB"
+          test "$(sha256sum "$A/QYM.candidate-probe19.lean" | awk '{print $1}')" = "$EXPECTED_PROBE19_SHA256"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe19.lean")" = "$EXPECTED_PROBE19_BLOB"
           test "$(cat "$A/QYM.exit")" = 1
-          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 95
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 93
           test ! -s "$A/QYM.panic-lines.txt"
-          cp "$A/QYM.candidate-probe17.lean" "$OUT/QYM.probe17.lean"
-          cp "$A/PROBE_RESULT.json" "$OUT/PROBE17_RESULT.json"
+          python3 - "$A/PROBE_RESULT.json" <<'PY'
+          import json, os, sys
+          r = json.load(open(sys.argv[1], encoding="utf-8"))
+          assert r["schema"] == "qym-probe19-v3"
+          assert r["github_sha"] == os.environ["REQUIRED_PROBE19_TRIGGER_SHA"]
+          assert r["candidate_qym_sha256"] == os.environ["EXPECTED_PROBE19_SHA256"]
+          assert r["candidate_qym_blob"] == os.environ["EXPECTED_PROBE19_BLOB"]
+          assert r["exit"] == 1
+          assert r["error_headers"] == 93
+          assert r["warning_headers"] == 356
+          assert r["panic_lines"] == 0
+          assert r["semantic_pass"] is False
+          PY
+          cp "$A/QYM.candidate-probe19.lean" "$OUT/QYM.probe19.lean"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE19_RESULT.json"
+          cp "$A/QYM.error-headers.txt" "$OUT/QYM.probe19.error-headers.txt"
+          cp "$A/QYM.diagnostics.jsonl" "$OUT/QYM.probe19.diagnostics.jsonl"
 
       - name: Install pinned Lean and Mathlib cache
         shell: bash
         run: |
           set -euo pipefail
-          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
           sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
           printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
@@ -125,36 +185,37 @@ jobs:
             test -s "$OLEAN_ROOT/$stem.ilean"
           done
 
-      - name: Materialize exact Probe19 candidate
+      - name: Materialize exact Probe20 candidate
         shell: bash
         run: |
           set -euo pipefail
           cp "$QYM_SOURCE" "$OUT/QYM.canonical.lean"
-          cp "$OUT/QYM.probe17.lean" "$QYM_SOURCE"
-          python3 .github/qym_probe19_patch.py "$QYM_SOURCE" | tee "$OUT/patch-result.txt"
-          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_PROBE19_SHA256"
-          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_PROBE19_BLOB"
-          cp "$QYM_SOURCE" "$OUT/QYM.candidate-probe19.lean"
+          cp "$OUT/QYM.probe19.lean" "$QYM_SOURCE"
+          python3 .github/qym_probe20_patch.py "$QYM_SOURCE" | tee "$OUT/patch-result.txt"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_PROBE20_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_PROBE20_BLOB"
+          cp "$QYM_SOURCE" "$OUT/QYM.candidate-probe20.lean"
+          wc -c -l "$QYM_SOURCE" > "$OUT/QYM.candidate-size.txt"
 
-      - name: Direct Lean compile Probe19
+      - name: Direct Lean compile Probe20
         shell: bash
         run: |
           set -euo pipefail
           printf '%q ' lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-            -o "$RUNNER_TEMP/QYM.probe19.olean" -i "$RUNNER_TEMP/QYM.probe19.ilean" "$QYM_SOURCE" > "$OUT/QYM.command"
+            -o "$RUNNER_TEMP/QYM.probe20.olean" -i "$RUNNER_TEMP/QYM.probe20.ilean" "$QYM_SOURCE" > "$OUT/QYM.command"
           printf '\n' >> "$OUT/QYM.command"
           set +e
           /usr/bin/time -v -o "$OUT/QYM.time" \
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
-              -o "$RUNNER_TEMP/QYM.probe19.olean" -i "$RUNNER_TEMP/QYM.probe19.ilean" \
+              -o "$RUNNER_TEMP/QYM.probe20.olean" -i "$RUNNER_TEMP/QYM.probe20.ilean" \
               "$QYM_SOURCE" > "$OUT/QYM.log" 2>&1
           rc=$?
           set -e
           printf '%s\n' "$rc" > "$OUT/QYM.exit"
           if [[ "$rc" -eq 0 ]]; then
-            test -s "$RUNNER_TEMP/QYM.probe19.olean"
-            test -s "$RUNNER_TEMP/QYM.probe19.ilean"
-            sha256sum "$RUNNER_TEMP/QYM.probe19.olean" "$RUNNER_TEMP/QYM.probe19.ilean" > "$OUT/QYM.outputs.sha256"
+            test -s "$RUNNER_TEMP/QYM.probe20.olean"
+            test -s "$RUNNER_TEMP/QYM.probe20.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.probe20.olean" "$RUNNER_TEMP/QYM.probe20.ilean" > "$OUT/QYM.outputs.sha256"
           fi
           exit 0
 
@@ -167,18 +228,19 @@ jobs:
             cp "$OUT/QYM.canonical.lean" "$QYM_SOURCE"
           fi
           python3 .github/qym_probe_summarize.py \
-            "$OUT" qym-probe19-v3 \
-            "$EXPECTED_PROBE19_SHA256" "$EXPECTED_PROBE19_BLOB" "$EXPECTED_PROBE17_SHA256"
+            "$OUT" qym-probe20-v1 \
+            "$EXPECTED_PROBE20_SHA256" "$EXPECTED_PROBE20_BLOB" "$EXPECTED_PROBE19_SHA256"
           test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_CANONICAL_QYM_BLOB"
           git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.after.txt"
           test ! -s "$OUT/git-status.after.txt"
 
-      - name: Upload Probe19 evidence
+      - name: Upload Probe20 evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-probe19-${{ github.sha }}-attempt${{ github.run_attempt }}
-          path: /tmp/qym-probe19-run/**
+          name: qym-probe20-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe20-run/**
           if-no-files-found: error
           retention-days: 30
 
@@ -188,9 +250,10 @@ jobs:
         run: |
           set -euo pipefail
           python3 - "$OUT/PROBE_RESULT.json" <<'PY'
-          import json, sys
-          r = json.load(open(sys.argv[1]))
-          assert r["candidate_qym_sha256"] == "069c1476163e3b87670e8eae0960f7975691f83a2ac1440863387eb2036cced5"
+          import json, os, sys
+          r = json.load(open(sys.argv[1], encoding="utf-8"))
+          assert r["candidate_qym_sha256"] == os.environ["EXPECTED_PROBE20_SHA256"]
+          assert r["candidate_qym_blob"] == os.environ["EXPECTED_PROBE20_BLOB"]
           assert r["panic_lines"] == 0
           if not r["semantic_pass"]:
               raise SystemExit(r["exit"] or 1)
