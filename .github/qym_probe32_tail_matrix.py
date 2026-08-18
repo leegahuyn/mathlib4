@@ -184,3 +184,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Retrigger the registered Probe32 matrix workflow.
