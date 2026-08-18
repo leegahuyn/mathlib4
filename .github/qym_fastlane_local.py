@@ -63,61 +63,7 @@ example :
   qym_neg_tinvS_not_mem_gammaTwo
 '''
 
-FULL = r'''theorem qym_gammaTwo_matrix_eq_one_or_neg_one_of_mem_fd_fixed
-    {gamma : SL(2, ℤ)} {z : ℍ}
-    (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
-    (hz : z ∈ ModularGroup.fd)
-    (hfix : gamma • z = z) :
-    gamma = 1 ∨ gamma = -1 := by
-  have hUpper : (((gamma 0 1 : ℤ) : ZMod 2)) = 0 :=
-    (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
-  have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
-    (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
-  rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
-    hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
-      hSTinv | hST | hTST | hTinvSCase
-  · exact hcentral
-  · rcases hT.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T] at hUpper
-  · rcases hTinv.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ← zpow_neg_one,
-        ModularGroup.coe_T_zpow] at hUpper
-  · rcases hS.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.S] at hUpper
-  · rcases hTS.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ModularGroup.S,
-        Matrix.mul_fin_two] at hUpper
-  · rcases hTinvSTinv.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ModularGroup.S, ← zpow_neg_one,
-        ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hLower
-  · rcases hSTinv.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ModularGroup.S, ← zpow_neg_one,
-        ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper
-  · rcases hST.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ModularGroup.S,
-        Matrix.mul_fin_two] at hUpper
-  · rcases hTST.1 with rfl | rfl <;> exfalso
-    all_goals
-      norm_num [ModularGroup.T, ModularGroup.S,
-        Matrix.mul_fin_two] at hLower
-  · rcases hTinvSCase.1 with hpos | hneg
-    · subst gamma
-      exact (qym_tinvS_not_mem_gammaTwo hGamma).elim
-    · subst gamma
-      exact (qym_neg_tinvS_not_mem_gammaTwo hGamma).elim
-'''
-
-BODIES = {
-    "obstruction": OBSTRUCTION,
-    "full": FULL,
-}
+FULL_PATH = Path(".github/qym_fastlane_full.lean")
 
 
 def main() -> None:
@@ -125,9 +71,13 @@ def main() -> None:
         raise SystemExit("usage: qym_fastlane_local.py VARIANT OUTPUT.lean")
     variant = sys.argv[1]
     output = Path(sys.argv[2])
-    if variant not in BODIES:
+    if variant == "obstruction":
+        body = OBSTRUCTION
+    elif variant == "full":
+        body = FULL_PATH.read_text(encoding="utf-8")
+    else:
         raise SystemExit(f"unknown variant: {variant}")
-    output.write_text(PRELUDE.replace("__BODY__", BODIES[variant]) + "\n", encoding="utf-8")
+    output.write_text(PRELUDE.replace("__BODY__", body) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
