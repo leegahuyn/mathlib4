@@ -1,0 +1,210 @@
+name: GPT QYM Probe18 direct runner
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-probe18-trigger.txt
+      - .github/workflows/gpt-qym-probe18-run.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  probe18:
+    name: Probe17 authority to Probe18 direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      EXPECTED_BRANCH: gpt/fa-qym-clean-final-20260816
+      EXPECTED_CANONICAL_QYM_SHA256: 698c7625628ccc654ca7be713944930fdccf12dd78a26937d3f45c9b6982a9f0
+      EXPECTED_PROBE17_SHA256: 971d9fd6c1cba701f6404b6303668b61d3de9f4b5d71281ab7b88f1530009bf7
+      EXPECTED_PROBE17_BLOB: 061345d55ea0ce66c01911454df3c6f2c509fa91
+      EXPECTED_PROBE18_SHA256: 8c7c6982938fd6eb9e6fece71e0eb655717a5bb4d1d6d2b75cfbe6cf37ab2a39
+      EXPECTED_PROBE18_BLOB: 85aad7c36ac26482ee166798f37a525dda1e6914
+      REQUIRED_PROBE17_NAME: qym-repair-probe17-integrated-befb4ddaf7be84949c35bb66792f8c74c8e58699-attempt1
+      QYM_SOURCE: PrimalitySheafVerification/QYM.lean
+      OLEAN_ROOT: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe18-run
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate canonical inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$GITHUB_REF_NAME" = "$EXPECTED_BRANCH"
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          git status --porcelain=v1 --untracked-files=all > "$OUT/git-status.before.txt"
+          test ! -s "$OUT/git-status.before.txt"
+
+      - name: Download exact Probe17 authority
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ env.REQUIRED_PROBE17_NAME }}
+          path: ${{ runner.temp }}/probe17-authority
+          github-token: ${{ github.token }}
+          repository: leegahuyn/mathlib4
+          run-id: 32002705164
+
+      - name: Gate Probe17 direct authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          A="$RUNNER_TEMP/probe17-authority"
+          for f in QYM.candidate-probe17.lean QYM.exit QYM.error-headers.txt QYM.panic-lines.txt PROBE_RESULT.json; do test -f "$A/$f"; done
+          test "$(sha256sum "$A/QYM.candidate-probe17.lean" | awk '{print $1}')" = "$EXPECTED_PROBE17_SHA256"
+          test "$(git hash-object --no-filters "$A/QYM.candidate-probe17.lean")" = "$EXPECTED_PROBE17_BLOB"
+          test "$(cat "$A/QYM.exit")" = 1
+          test "$(wc -l < "$A/QYM.error-headers.txt")" -eq 95
+          test ! -s "$A/QYM.panic-lines.txt"
+          cp "$A/QYM.candidate-probe17.lean" "$OUT/QYM.probe17.lean"
+          cp "$A/PROBE_RESULT.json" "$OUT/PROBE17_RESULT.json"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          printf '%s\n' "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore exact dependency objects
+        id: deps-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          CACHE_HIT: ${{ steps.deps-cache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN_ROOT"
+          if [[ "$CACHE_HIT" != true ]]; then
+            for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$stem" = Mock2_FunctionalAnalysis || "$stem" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN_ROOT/$stem.olean" "$OLEAN_ROOT/$stem.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false -o "$OLEAN_ROOT/$stem.olean" -i "$OLEAN_ROOT/$stem.ilean" "PrimalitySheafVerification/$stem.lean" > "$OUT/$stem.log" 2>&1
+            done
+          fi
+          for stem in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do test -s "$OLEAN_ROOT/$stem.olean" && test -s "$OLEAN_ROOT/$stem.ilean"; done
+
+      - name: Materialize Probe18 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM_SOURCE" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.probe17.lean" "$QYM_SOURCE"
+          python3 - "$QYM_SOURCE" <<'PY'
+          from pathlib import Path
+          import hashlib, re, sys
+          p=Path(sys.argv[1]); s=p.read_text()
+          reps=[
+          ("(ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjection\n", "(ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto\n"),
+          ("(ActualFixedPhaseCanonicalTraceClass n Y).norm_orthogonalProjection_apply_le x\n", "(ActualFixedPhaseCanonicalTraceClass n Y).norm_orthogonalProjectionOnto_apply_le x\n"),
+          ("""theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
+              (n : ℤ) (Y : ℝ) :
+              ‖actualFixedPhaseCanonicalTraceClassProjection n Y‖ ≤ 1 :=
+            (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjection_norm_le
+          """,
+          """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
+              (n : ℤ) (Y : ℝ) :
+              ContinuousLinearMap.opNorm
+                (actualFixedPhaseCanonicalTraceClassProjection n Y) ≤ 1 := by
+            change ContinuousLinearMap.opNorm
+                ((ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto) ≤ 1
+            exact (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto_norm_le
+          """)]
+          for old,new in reps:
+              assert s.count(old)==1, (old[:80],s.count(old))
+              s=s.replace(old,new)
+          p.write_text(s)
+          b=p.read_bytes()
+          assert hashlib.sha256(b).hexdigest()=="8c7c6982938fd6eb9e6fece71e0eb655717a5bb4d1d6d2b75cfbe6cf37ab2a39"
+          text=b.decode()
+          forbidden=[len(re.findall(r'\bsorry\b',text)),len(re.findall(r'\badmit\b',text)),len(re.findall(r'\bnative_decide\b',text)),text.count('Lean.ofReduceBool'),len(re.findall(r'(?m)^\s*axiom\s+',text)),len(re.findall(r'(?m)^\s*unsafe\s+',text)),len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',text))]
+          assert not any(forbidden), forbidden
+          PY
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_PROBE18_SHA256"
+          test "$(git hash-object --no-filters "$QYM_SOURCE")" = "$EXPECTED_PROBE18_BLOB"
+          cp "$QYM_SOURCE" "$OUT/QYM.candidate-probe18.lean"
+
+      - name: Direct Lean compile Probe18
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$RUNNER_TEMP/QYM.probe18.olean" -i "$RUNNER_TEMP/QYM.probe18.ilean" "$QYM_SOURCE" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/QYM.exit"
+          if [[ $rc -eq 0 ]]; then test -s "$RUNNER_TEMP/QYM.probe18.olean" && test -s "$RUNNER_TEMP/QYM.probe18.ilean"; sha256sum "$RUNNER_TEMP/QYM.probe18.olean" "$RUNNER_TEMP/QYM.probe18.ilean" > "$OUT/QYM.outputs.sha256"; fi
+          exit 0
+
+      - name: Restore canonical and summarize diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM_SOURCE" || true
+          python3 - "$OUT" <<'PY'
+          import collections, hashlib, json, os, re, sys
+          from pathlib import Path
+          root=Path(sys.argv[1]); raw=(root/'QYM.log').read_bytes() if (root/'QYM.log').exists() else b''; text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text): r=m.groupdict(); r['line']=int(r['line']); r['column']=int(r['column']); rows.append(r)
+          es=[r for r in rows if r['severity']=='error']; ws=[r for r in rows if r['severity']=='warning']; ps=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          (root/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows)); (root/'QYM.error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error{('('+r['code']+')') if r['code'] else ''}: {r['message']}\n" for r in es)); (root/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in ps))
+          rc=int((root/'QYM.exit').read_text().strip()) if (root/'QYM.exit').exists() else None
+          out={'schema':'qym-probe18-run-v1','github_sha':os.environ['GITHUB_SHA'],'candidate_qym_sha256':os.environ['EXPECTED_PROBE18_SHA256'],'candidate_qym_blob':os.environ['EXPECTED_PROBE18_BLOB'],'exit':rc,'error_headers':len(es),'warning_headers':len(ws),'error_codes':dict(collections.Counter(r['code'] or 'uncoded' for r in es)),'first_error':es[0] if es else None,'last_error':es[-1] if es else None,'panic_lines':len(ps),'log_sha256':hashlib.sha256(raw).hexdigest(),'semantic_pass':rc==0 and not es and not ps}
+          (root/'PROBE_RESULT.json').write_text(json.dumps(out,indent=2,sort_keys=True)+'\n'); print(json.dumps(out,indent=2,sort_keys=True))
+          PY
+          test "$(sha256sum "$QYM_SOURCE" | awk '{print $1}')" = "$EXPECTED_CANONICAL_QYM_SHA256"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe18-run-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe18-run/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless TRUE PASS
+        if: always()
+        shell: bash
+        run: |
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1]))
+          assert r['panic_lines']==0
+          if not r['semantic_pass']: raise SystemExit(r['exit'] or 1)
+          PY
