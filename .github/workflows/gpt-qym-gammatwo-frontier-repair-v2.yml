@@ -1,0 +1,337 @@
+name: GPT QYM GammaTwo verified-frontier repair v2
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      - .github/workflows/gpt-qym-gammatwo-frontier-repair-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-gammatwo-frontier-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      RESULT: .github/qym-frontier/GLOBAL_BEST.json
+      NEXT: .github/qym-frontier/next-blocker/NEXT_BLOCKER.json
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gammatwo-frontier-v2
+
+    steps:
+      - name: Checkout exact frontier trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Detect exact GammaTwo blocker
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if [[ ! -s "$FRONTIER" || ! -s "$RESULT" || ! -s "$NEXT" ]]; then
+            echo ready=false >> "$GITHUB_OUTPUT"
+            echo 'verified frontier inputs incomplete' > "$OUT/NOT_READY.txt"
+            exit 0
+          fi
+          python3 - "$FRONTIER" "$RESULT" "$NEXT" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,sys
+          source,result,nextp,out=map(Path,sys.argv[1:])
+          raw=source.read_bytes();r=json.loads(result.read_text());n=json.loads(nextp.read_text())
+          sha=hashlib.sha256(raw).hexdigest()
+          if sha!=r.get('candidate_qym_sha256') or r.get('panic_lines')!=0:
+              raise SystemExit('invalid frontier authority')
+          owner=(n.get('first_owner') or {}).get('name') or ''
+          text=raw.decode('utf-8',errors='replace')
+          owner_match=re.search(r'(?ms)^(?:set_option[^\n]* in\n)*(?:theorem|lemma)\s+'+re.escape(owner)+r'(?=[\s:(]).*?(?=^(?:set_option[^\n]* in\n)*(?:theorem|lemma|def|abbrev|instance|noncomputable\s+def|noncomputable\s+instance)\s+|\Z)',text) if owner else None
+          target=owner_match.group(0) if owner_match else ''
+          is_gamma=('Gamma 2' in target and 'ModularGroup.fd' in target and
+                    'cases_of_mem_fd_smul_mem_fd' in target and
+                    ('T⁻¹ * ModularGroup.S' in target or 'T⁻¹*ModularGroup.S' in target))
+          payload={'owner':owner,'frontier_sha256':sha,'baseline_error_headers':r.get('error_headers'),
+                   'is_gammaTwo_blocker':is_gamma}
+          (out/'GATE.json').write_text(json.dumps(payload,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(payload,indent=2,sort_keys=True))
+          if is_gamma:
+              Path(out/'TARGET_ORIGINAL.lean').write_text(target,encoding='utf-8')
+          PY
+          ready=$(python3 -c 'import json;print(str(json.load(open("/tmp/qym-gammatwo-frontier-v2/GATE.json"))["is_gammaTwo_blocker"]).lower())')
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version > "$OUT/lean-version.txt"
+          lake --version > "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        if: steps.gate.outputs.ready == 'true'
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize statement-preserving GammaTwo candidate
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$FRONTIER" "$QYM"
+          python3 - "$QYM" "$NEXT" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,re,sys
+          source,nextp,out=map(Path,sys.argv[1:]);text=source.read_text(encoding='utf-8')
+          owner=(json.loads(nextp.read_text()).get('first_owner') or {}).get('name')
+          pat=re.compile(r'(?ms)^(?:set_option[^\n]* in\n)*(?:theorem|lemma)\s+'+re.escape(owner)+r'(?=[\s:(]).*?(?=^(?:set_option[^\n]* in\n)*(?:theorem|lemma|def|abbrev|instance|noncomputable\s+def|noncomputable\s+instance)\s+|\Z)')
+          m=pat.search(text)
+          if not m:raise SystemExit('target declaration disappeared')
+          decl=m.group(0)
+          helper=r'''
+private theorem qymGammaTwoTinvSUpperEntry :
+    (ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 = (-1 : ℤ) := by
+  have hInv00 : (ModularGroup.T⁻¹ : SL(2, ℤ)) 0 0 = (1 : ℤ) := by
+    have h := congrArg (fun g : SL(2, ℤ) => g 0 0) (inv_mul_cancel ModularGroup.T)
+    norm_num [Matrix.SpecialLinearGroup.coe_mul, ModularGroup.T, Matrix.mul_fin_two] at h
+    exact h
+  change (∑ k : Fin 2, (ModularGroup.T⁻¹).val 0 k * ModularGroup.S.val k 1) = -1
+  simp only [Fin.sum_univ_two]
+  norm_num [ModularGroup.S, hInv00]
+
+private theorem qymGammaTwoTinvSNotMem :
+    ModularGroup.T⁻¹ * ModularGroup.S ∉ CongruenceSubgroup.Gamma 2 := by
+  intro hmem
+  have hUpper : ((((ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1 : ℤ) : ZMod 2)) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qymGammaTwoTinvSUpperEntry] at hUpper
+  norm_num at hUpper
+
+private theorem qymGammaTwoNegTinvSUpperEntry :
+    (-(ModularGroup.T⁻¹ * ModularGroup.S) : SL(2, ℤ)) 0 1 = (1 : ℤ) := by
+  change -((ModularGroup.T⁻¹ * ModularGroup.S : SL(2, ℤ)) 0 1) = 1
+  rw [qymGammaTwoTinvSUpperEntry]
+  norm_num
+
+private theorem qymGammaTwoNegTinvSNotMem :
+    -(ModularGroup.T⁻¹ * ModularGroup.S) ∉ CongruenceSubgroup.Gamma 2 := by
+  intro hmem
+  have hUpper : ((((-(ModularGroup.T⁻¹ * ModularGroup.S) : SL(2, ℤ)) 0 1 : ℤ) : ZMod 2)) = 0 :=
+    (CongruenceSubgroup.Gamma_mem.mp hmem).2.1
+  rw [qymGammaTwoNegTinvSUpperEntry] at hUpper
+  norm_num at hUpper
+
+'''
+          # Identify the final case variable by the branch whose body contains T⁻¹*S.
+          branches=list(re.finditer(r'(?ms)^  · rcases (?P<case>[A-Za-z0-9_]+)\.1 with (?P<alts>[^\n]+)\n(?P<body>.*?)(?=^  · rcases |\Z)',decl))
+          target=None
+          for b in branches:
+              fragment=b.group(0)
+              if 'T⁻¹' in fragment and 'ModularGroup.S' in fragment:target=b
+          if target is None:
+              # In some versions the branch body normalizes the matrix without printing the term;
+              # use the last cases_of_mem_fd branch as the only remaining TinvS case.
+              target=branches[-1] if branches else None
+          if target is None:raise SystemExit('TinvS case branch not found')
+          case=target.group('case')
+          replacement=f'''  · rcases {case}.1 with hpos | hneg
+    · subst gamma
+      exact (qymGammaTwoTinvSNotMem hGamma).elim
+    · subst gamma
+      exact (qymGammaTwoNegTinvSNotMem hGamma).elim
+'''
+          repaired=decl[:target.start()]+replacement+decl[target.end():]
+          candidate=text[:m.start()]+helper+repaired+text[m.end():]
+          source.write_text(candidate,encoding='utf-8')
+          raw=source.read_bytes();sha=hashlib.sha256(raw).hexdigest()
+          blob=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+          audit={'sorry':len(re.findall(r'\bsorry\b',candidate)),'admit':len(re.findall(r'\badmit\b',candidate)),
+                 'native_decide':len(re.findall(r'\bnative_decide\b',candidate)),
+                 'Lean.ofReduceBool':candidate.count('Lean.ofReduceBool'),
+                 'global_axiom':len(re.findall(r'(?m)^\s*axiom\s+',candidate)),
+                 'unsafe':len(re.findall(r'(?m)^\s*unsafe\s+',candidate)),
+                 'maxHeartbeats_zero':len(re.findall(r'set_option\s+maxHeartbeats\s+0\b',candidate))}
+          if any(audit.values()):raise SystemExit(audit)
+          result={'schema':'qym-gammatwo-frontier-candidate-v2','owner':owner,
+                  'candidate_qym_sha256':sha,'candidate_qym_blob':blob,
+                  'bytes':len(raw),'lf':raw.count(b'\n'),'case_name':case,'forbidden':audit}
+          (out/'PATCH_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          (out/'TARGET_REPAIRED.lean').write_text(repaired,encoding='utf-8')
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          cp "$QYM" "$OUT/QYM.candidate.lean"
+
+      - name: Full direct Lean compile
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.gammatwo-v2.olean" \
+              -i "$RUNNER_TEMP/QYM.gammatwo-v2.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.gammatwo-v2.olean" && test -s "$RUNNER_TEMP/QYM.gammatwo-v2.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.gammatwo-v2.olean" "$RUNNER_TEMP/QYM.gammatwo-v2.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and summarize direct result
+        if: always() && steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" "$RESULT" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,re,sys
+          out=Path(sys.argv[1]);baseline=json.loads(Path(sys.argv[2]).read_text());patch=json.loads((out/'PATCH_RESULT.json').read_text())
+          raw=(out/'QYM.log').read_bytes();text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+              x=m.groupdict();x['line']=int(x['line']);x['column']=int(x['column']);rows.append(x)
+          errors=[x for x in rows if x['severity']=='error'];warnings=[x for x in rows if x['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          rc=int((out/'QYM.exit').read_text().strip())
+          stable={'schema':'qym-gammatwo-frontier-result-v2',
+                  'baseline_qym_sha256':baseline.get('candidate_qym_sha256'),
+                  'baseline_error_headers':baseline.get('error_headers'),
+                  'candidate_qym_sha256':patch['candidate_qym_sha256'],'candidate_qym_blob':patch['candidate_qym_blob'],
+                  'exit':rc,'error_headers':len(errors),'warning_headers':len(warnings),
+                  'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+                  'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+                  'panic_lines':len(panics),'semantic_pass':rc==0 and not errors and not panics}
+          (out/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x,sort_keys=True)+'\n' for x in rows))
+          (out/'QYM.error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in errors))
+          (out/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics))
+          (out/'PROBE_RESULT.json').write_text(json.dumps(stable,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(stable,indent=2,sort_keys=True))
+          if stable['panic_lines']!=0:raise SystemExit('panic')
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gammatwo-frontier-v2-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gammatwo-frontier-v2/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Promote only against unchanged baseline
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT/PROBE_RESULT.json" <<'PY'
+          import json,os,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          baseline=r.get('baseline_error_headers')
+          strict=bool(r.get('semantic_pass')) or (isinstance(baseline,int) and r['error_headers']<baseline)
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as env:
+              env.write('STRICT='+('true' if strict else 'false')+'\n')
+              env.write('PASS='+('true' if r.get('semantic_pass') else 'false')+'\n')
+              env.write('BASELINE_SHA='+str(r.get('baseline_qym_sha256'))+'\n')
+              env.write('CANDIDATE_SHA='+str(r.get('candidate_qym_sha256'))+'\n')
+          PY
+          if [[ "$STRICT" != true ]]; then
+            echo 'GammaTwo candidate is not a strict improvement.'
+            exit 0
+          fi
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          current=$(python3 - <<'PY'
+          import json
+          try:print(json.load(open('.github/qym-frontier/GLOBAL_BEST.json'))['candidate_qym_sha256'])
+          except Exception:print('')
+          PY
+          )
+          if [[ "$current" != "$BASELINE_SHA" ]]; then
+            echo "Frontier advanced concurrently ($current); refusing stale promotion."
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if [[ "$PASS" = true ]]; then
+            cp "$OUT/QYM.candidate.lean" PrimalitySheafVerification/QYM.lean
+            mkdir -p .github/qym-final
+            cp "$OUT/PROBE_RESULT.json" .github/qym-final/GAMMATWO_PASS_RESULT.json
+            git add PrimalitySheafVerification/QYM.lean .github/qym-final/GAMMATWO_PASS_RESULT.json
+            msg='QYM: promote GammaTwo direct Lean PASS'
+          else
+            mkdir -p .github/qym-frontier
+            cp "$OUT/QYM.candidate.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+            cp "$OUT/PROBE_RESULT.json" .github/qym-frontier/GLOBAL_BEST.json
+            cp "$OUT/QYM.error-headers.txt" .github/qym-frontier/QYM_GLOBAL_BEST.error-headers.txt
+            cp "$OUT/QYM.diagnostics.jsonl" .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+            printf '%s  %s\n' "$CANDIDATE_SHA" .github/qym-frontier/QYM_GLOBAL_BEST.lean > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+            git add .github/qym-frontier
+            msg='QYM: promote GammaTwo verified frontier v2'
+          fi
+          git commit -m "$msg"
+          git push origin "HEAD:$BRANCH"
