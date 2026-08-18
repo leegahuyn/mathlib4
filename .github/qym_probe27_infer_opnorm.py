@@ -5,25 +5,40 @@ import re
 import sys
 
 INPUT_SHA256 = "94fceba9313ded915c6e50a17e156699eb48170595b062b1138d04b6abe31534"
-OUTPUT_SHA256 = "c1e3b8e3de022b9eecf03c129cd78fa799a7dd9a1732748032e5711625dceee5"
-OUTPUT_BLOB = "be1a2a05a5dfb24b9b18d720a44b2d26cac553d1"
+OUTPUT_SHA256 = "500b982d97c0922c3d8345906637ebb44f07d54f54a7069812086596b9839776"
+OUTPUT_BLOB = "bdd3064f6deebb92dc03387c03f152190024165c"
 
-OLD = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
+OLD_OPNORM = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
     (n : ℤ) (Y : ℝ) :
     ‖(ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto‖ ≤ 1 :=
   (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto_norm_le
 """
-NEW = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
+NEW_OPNORM = """theorem actualFixedPhaseCanonicalTraceClassProjection_opNorm_le
     (n : ℤ) (Y : ℝ) :=
   (ActualFixedPhaseCanonicalTraceClass n Y).orthogonalProjectionOnto_norm_le
+"""
+
+OLD_HHALF = """set_option maxHeartbeats 2000000 in
+set_option synthInstance.maxHeartbeats 2000000 in
+noncomputable def actualFixedPhaseHhalfTraceCompletionInnerProductSpace
+    (n : ℤ) (Y : ℝ) :
+    InnerProductSpace ℂ (ActualFixedPhaseHhalfTraceCompletion n Y) :=
+  inferInstance
+"""
+NEW_HHALF = """noncomputable def actualFixedPhaseHhalfTraceCompletionInnerProductSpace
+    (n : ℤ) (Y : ℝ) :
+    InnerProductSpace ℂ (ActualFixedPhaseHhalfTraceCompletion n Y) :=
+  (ActualFixedPhaseHhalfTraceCompletion n Y).innerProductSpace
 """
 
 path = Path(sys.argv[1])
 raw = path.read_bytes()
 assert hashlib.sha256(raw).hexdigest() == INPUT_SHA256
 text = raw.decode("utf-8")
-assert text.count(OLD) == 1
-text = text.replace(OLD, NEW, 1)
+assert text.count(OLD_OPNORM) == 1
+assert text.count(OLD_HHALF) == 1
+text = text.replace(OLD_OPNORM, NEW_OPNORM, 1)
+text = text.replace(OLD_HHALF, NEW_HHALF, 1)
 path.write_text(text, encoding="utf-8")
 result = path.read_bytes()
 assert hashlib.sha256(result).hexdigest() == OUTPUT_SHA256
