@@ -1,0 +1,246 @@
+name: GPT QYM verified frontier direct revalidation v2
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      - .github/qym-frontier/GLOBAL_BEST.json
+      - .github/workflows/gpt-qym-frontier-revalidate-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-frontier-revalidate-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  revalidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      FRONTIER: .github/qym-frontier/QYM_GLOBAL_BEST.lean
+      STORED: .github/qym-frontier/GLOBAL_BEST.json
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-frontier-revalidate-v2
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Detect and gate frontier inputs
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          if [[ ! -s "$FRONTIER" || ! -s "$STORED" ]]; then
+            echo ready=false >> "$GITHUB_OUTPUT"
+            printf 'frontier=%s\nstored=%s\n' \
+              "$([[ -s "$FRONTIER" ]] && echo yes || echo no)" \
+              "$([[ -s "$STORED" ]] && echo yes || echo no)" \
+              > "$OUT/NO_FRONTIER.txt"
+            exit 0
+          fi
+          echo ready=true >> "$GITHUB_OUTPUT"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          python3 - "$FRONTIER" "$STORED" "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib,json,sys
+          source,stored,out=map(Path,sys.argv[1:])
+          raw=source.read_bytes();r=json.loads(stored.read_text(encoding='utf-8'))
+          sha=hashlib.sha256(raw).hexdigest()
+          expected=r.get('candidate_qym_sha256') or r.get('source_sha256')
+          if sha!=expected:raise SystemExit((sha,expected))
+          if r.get('panic_lines') not in (None,0):raise SystemExit('stored frontier has panic')
+          (out/'STORED_RESULT.json').write_text(json.dumps(r,indent=2,sort_keys=True)+'\n')
+          (out/'FRONTIER.sha256').write_text(f'{sha}  {source}\n')
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore dependency objects
+        if: steps.gate.outputs.ready == 'true'
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize exact frontier
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$FRONTIER" "$QYM"
+          cp "$FRONTIER" "$OUT/QYM.frontier.lean"
+
+      - name: Full direct Lean compile
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.frontier-v2.olean" \
+              -i "$RUNNER_TEMP/QYM.frontier-v2.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.frontier-v2.olean"
+            test -s "$RUNNER_TEMP/QYM.frontier-v2.ilean"
+            sha256sum "$RUNNER_TEMP/QYM.frontier-v2.olean" \
+              "$RUNNER_TEMP/QYM.frontier-v2.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          exit 0
+
+      - name: Restore canonical and produce stable plus detailed results
+        if: always() && steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections,hashlib,json,os,re,sys
+          out=Path(sys.argv[1]);raw=(out/'QYM.log').read_bytes();text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+              x=m.groupdict();x['line']=int(x['line']);x['column']=int(x['column']);rows.append(x)
+          errors=[x for x in rows if x['severity']=='error'];warnings=[x for x in rows if x['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          rc=int((out/'QYM.exit').read_text().strip());stored=json.loads((out/'STORED_RESULT.json').read_text())
+          source=(out/'QYM.frontier.lean').read_bytes();sha=hashlib.sha256(source).hexdigest()
+          blob=hashlib.sha1(b'blob '+str(len(source)).encode()+b'\0'+source).hexdigest()
+          stable={'schema':'qym-frontier-direct-revalidation-v2','candidate_qym_sha256':sha,
+                  'candidate_qym_blob':blob,'bytes':len(source),'lf':source.count(b'\n'),
+                  'exit':rc,'error_headers':len(errors),'warning_headers':len(warnings),
+                  'error_codes':dict(sorted(collections.Counter(x['code'] or 'uncoded' for x in errors).items())),
+                  'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+                  'panic_lines':len(panics),'semantic_pass':rc==0 and not errors and not panics}
+          detailed=dict(stable)
+          detailed.update({'github_sha':os.environ['GITHUB_SHA'],'log_sha256':hashlib.sha256(raw).hexdigest(),
+                           'stored_error_headers':stored.get('error_headers'),
+                           'stored_warning_headers':stored.get('warning_headers'),'stored_exit':stored.get('exit')})
+          (out/'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(x,sort_keys=True)+'\n' for x in rows))
+          (out/'QYM.error-headers.txt').write_text(''.join(
+              f"{x['file']}:{x['line']}:{x['column']}: error{('('+x['code']+')') if x['code'] else ''}: {x['message']}\n" for x in errors))
+          (out/'QYM.panic-lines.txt').write_text(''.join(x+'\n' for x in panics))
+          (out/'STABLE_RESULT.json').write_text(json.dumps(stable,indent=2,sort_keys=True)+'\n')
+          (out/'DETAILED_RESULT.json').write_text(json.dumps(detailed,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(detailed,indent=2,sort_keys=True))
+          if stable['panic_lines']!=0:raise SystemExit('panic in revalidation')
+          stored_errors=stored.get('error_headers')
+          if isinstance(stored_errors,int) and stable['error_headers']>stored_errors:
+              raise SystemExit({'stored':stored_errors,'actual':stable['error_headers']})
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable detailed evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-frontier-revalidation-v2-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-frontier-revalidate-v2/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Rebase and persist stable result
+        if: steps.gate.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT/STABLE_RESULT.json" <<'PY'
+          import json,os,sys
+          r=json.load(open(sys.argv[1],encoding='utf-8'))
+          assert r['panic_lines']==0
+          with open(os.environ['GITHUB_ENV'],'a',encoding='utf-8') as env:
+              env.write('REVALIDATED_PASS='+('true' if r['semantic_pass'] else 'false')+'\n')
+          PY
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          if [[ "$REVALIDATED_PASS" = true ]]; then
+            cp "$OUT/QYM.frontier.lean" PrimalitySheafVerification/QYM.lean
+            mkdir -p .github/qym-final
+            cp "$OUT/STABLE_RESULT.json" .github/qym-final/FRONTIER_PASS_RESULT.json
+            git add PrimalitySheafVerification/QYM.lean .github/qym-final/FRONTIER_PASS_RESULT.json
+            msg='QYM: promote stable revalidated semantic PASS frontier'
+          else
+            mkdir -p .github/qym-frontier
+            cp "$OUT/QYM.frontier.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+            cp "$OUT/STABLE_RESULT.json" .github/qym-frontier/GLOBAL_BEST.json
+            cp "$OUT/QYM.error-headers.txt" .github/qym-frontier/QYM_GLOBAL_BEST.error-headers.txt
+            cp "$OUT/QYM.diagnostics.jsonl" .github/qym-frontier/QYM_GLOBAL_BEST.diagnostics.jsonl
+            cp "$OUT/QYM.panic-lines.txt" .github/qym-frontier/QYM_GLOBAL_BEST.panic-lines.txt
+            sha=$(python3 -c 'import json;print(json.load(open("/tmp/qym-frontier-revalidate-v2/STABLE_RESULT.json"))["candidate_qym_sha256"])')
+            printf '%s  %s\n' "$sha" .github/qym-frontier/QYM_GLOBAL_BEST.lean > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+            git add .github/qym-frontier
+            msg='QYM: persist stable direct-revalidated frontier and diagnostics'
+          fi
+          if git diff --cached --quiet; then
+            echo 'Stable revalidation result unchanged.'
+            exit 0
+          fi
+          git commit -m "$msg"
+          git push origin "HEAD:$BRANCH"
