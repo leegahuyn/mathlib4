@@ -1,21 +1,21 @@
 Command exited with non-zero status 1
 	Command being timed: "lake env lean -DmaxErrors=10000 -DwarningAsError=false -o /home/runner/work/_temp/QYM.probe42.olean -i /home/runner/work/_temp/QYM.probe42.ilean PrimalitySheafVerification/QYM.lean"
-	User time (seconds): 1051.23
-	System time (seconds): 9.07
-	Percent of CPU this job got: 214%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:14.45
+	User time (seconds): 1013.69
+	System time (seconds): 11.42
+	Percent of CPU this job got: 215%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:55.66
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 6900692
+	Maximum resident set size (kbytes): 6907528
 	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 272
-	Minor (reclaiming a frame) page faults: 816353
-	Voluntary context switches: 284558
-	Involuntary context switches: 156668
+	Major (requiring I/O) page faults: 239
+	Minor (reclaiming a frame) page faults: 911310
+	Voluntary context switches: 302665
+	Involuntary context switches: 157942
 	Swaps: 0
-	File system inputs: 39088
+	File system inputs: 35592
 	File system outputs: 640
 	Socket messages sent: 0
 	Socket messages received: 0
