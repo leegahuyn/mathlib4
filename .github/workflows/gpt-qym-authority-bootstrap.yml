@@ -1,0 +1,431 @@
+name: GPT QYM authoritative frontier bootstrap
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-authority-bootstrap.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-authority-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      REPOSITORY: leegahuyn/mathlib4
+      BRANCH: gpt/fa-qym-clean-final-20260816
+      OUT: /tmp/qym-authority-bootstrap
+
+    steps:
+      - name: Checkout latest campaign branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/fa-qym-clean-final-20260816
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Scan immutable QYM artifacts and select actual direct-Lean best
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 - "$OUT" <<'PY'
+          from __future__ import annotations
+
+          from pathlib import Path
+          import hashlib
+          import io
+          import json
+          import os
+          import re
+          import sys
+          import time
+          import urllib.parse
+          import urllib.request
+          import zipfile
+
+          out = Path(sys.argv[1])
+          repo = os.environ['REPOSITORY']
+          branch = os.environ['BRANCH']
+          token = os.environ['GH_TOKEN']
+          api = 'https://api.github.com'
+
+          headers = {
+              'Authorization': f'Bearer {token}',
+              'Accept': 'application/vnd.github+json',
+              'X-GitHub-Api-Version': '2022-11-28',
+              'User-Agent': 'qym-authority-bootstrap',
+          }
+
+          def request_json(url: str, retries: int = 4):
+              last = None
+              for attempt in range(retries):
+                  try:
+                      req = urllib.request.Request(url, headers=headers)
+                      with urllib.request.urlopen(req, timeout=90) as response:
+                          return json.load(response)
+                  except Exception as exc:
+                      last = exc
+                      time.sleep(2 ** attempt)
+              raise RuntimeError(f'GET JSON failed: {url}: {last!r}')
+
+          def request_bytes(url: str, retries: int = 4):
+              last = None
+              for attempt in range(retries):
+                  try:
+                      req = urllib.request.Request(url, headers=headers)
+                      with urllib.request.urlopen(req, timeout=180) as response:
+                          return response.read()
+                  except Exception as exc:
+                      last = exc
+                      time.sleep(2 ** attempt)
+              raise RuntimeError(f'GET bytes failed: {url}: {last!r}')
+
+          def sha256(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          def git_blob(data: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def flatten_result(data: dict) -> dict | None:
+              # Direct result records are authoritative. Selector records are used only when their
+              # embedded best item itself contains the exact direct compile metrics.
+              if isinstance(data.get('error_headers'), int) and data.get('exit') is not None:
+                  return data
+              best = data.get('best')
+              if isinstance(best, dict) and isinstance(best.get('error_headers'), int) and best.get('exit') is not None:
+                  return best
+              verified = data.get('verified_global_best')
+              if isinstance(verified, dict) and isinstance(verified.get('error_headers'), int) and verified.get('exit') is not None:
+                  return verified
+              return None
+
+          artifact_records = []
+          for page in range(1, 7):
+              query = urllib.parse.urlencode({'per_page': 100, 'page': page})
+              payload = request_json(f'{api}/repos/{repo}/actions/artifacts?{query}')
+              page_artifacts = payload.get('artifacts', [])
+              if not page_artifacts:
+                  break
+              for artifact in page_artifacts:
+                  run = artifact.get('workflow_run') or {}
+                  if run.get('head_branch') != branch:
+                      continue
+                  name = (artifact.get('name') or '').lower()
+                  if 'qym' not in name:
+                      continue
+                  if artifact.get('expired'):
+                      continue
+                  size = int(artifact.get('size_in_bytes') or 0)
+                  if size <= 0 or size > 25_000_000:
+                      continue
+                  artifact_records.append(artifact)
+              if len(page_artifacts) < 100:
+                  break
+
+          # Newest-first; cap total transfer while still covering the full current repair campaign.
+          artifact_records.sort(key=lambda a: (a.get('created_at') or '', int(a.get('id') or 0)), reverse=True)
+          artifact_records = artifact_records[:180]
+          candidates = []
+          download_failures = []
+
+          for artifact in artifact_records:
+              try:
+                  archive = request_bytes(artifact['archive_download_url'])
+                  zf = zipfile.ZipFile(io.BytesIO(archive))
+              except Exception as exc:
+                  download_failures.append({
+                      'artifact_id': artifact.get('id'),
+                      'artifact_name': artifact.get('name'),
+                      'error': repr(exc),
+                  })
+                  continue
+
+              json_members = [name for name in zf.namelist() if name.lower().endswith('.json')]
+              lean_members = [name for name in zf.namelist() if name.lower().endswith('.lean')]
+              if not lean_members or not json_members:
+                  continue
+
+              lean_data = {}
+              for member in lean_members:
+                  try:
+                      raw = zf.read(member)
+                  except Exception:
+                      continue
+                  # Micro-probes and proof snippets are not full QYM authorities.
+                  if len(raw) < 1_000_000 or raw.count(b'\n') < 20_000:
+                      continue
+                  lean_data[member] = {
+                      'raw': raw,
+                      'sha256': sha256(raw),
+                      'blob': git_blob(raw),
+                      'bytes': len(raw),
+                      'lf': raw.count(b'\n'),
+                  }
+              if not lean_data:
+                  continue
+
+              for member in json_members:
+                  try:
+                      original = json.loads(zf.read(member).decode('utf-8'))
+                  except Exception:
+                      continue
+                  direct = flatten_result(original)
+                  if direct is None:
+                      continue
+                  expected_sha = (
+                      direct.get('candidate_qym_sha256') or direct.get('source_sha256') or
+                      direct.get('candidate_sha256')
+                  )
+                  if not isinstance(expected_sha, str):
+                      continue
+                  matching = [(name, item) for name, item in lean_data.items() if item['sha256'] == expected_sha]
+                  if not matching:
+                      continue
+                  exit_code = direct.get('exit')
+                  errors = direct.get('error_headers')
+                  warnings = direct.get('warning_headers')
+                  panic = direct.get('panic_lines')
+                  if not isinstance(errors, int) or not isinstance(panic, int) or exit_code is None:
+                      continue
+                  if panic != 0:
+                      continue
+                  semantic = bool(direct.get('semantic_pass')) or (
+                      exit_code == 0 and errors == 0 and panic == 0
+                  )
+                  first = direct.get('first_error') or {}
+                  first_line = int(first.get('line') or 0) if isinstance(first, dict) else 0
+                  for lean_name, item in matching:
+                      candidates.append({
+                          'artifact_id': int(artifact['id']),
+                          'artifact_name': artifact.get('name'),
+                          'artifact_digest': artifact.get('digest'),
+                          'artifact_created_at': artifact.get('created_at'),
+                          'workflow_run_id': int((artifact.get('workflow_run') or {}).get('id') or 0),
+                          'workflow_head_sha': (artifact.get('workflow_run') or {}).get('head_sha'),
+                          'result_member': member,
+                          'source_member': lean_name,
+                          'schema': direct.get('schema'),
+                          'source_sha256': item['sha256'],
+                          'source_blob': item['blob'],
+                          'source_bytes': item['bytes'],
+                          'source_lf': item['lf'],
+                          'exit': int(exit_code),
+                          'error_headers': errors,
+                          'warning_headers': int(warnings) if isinstance(warnings, int) else 10**9,
+                          'panic_lines': panic,
+                          'first_error': first if isinstance(first, dict) else None,
+                          'last_error': direct.get('last_error'),
+                          'first_error_line': first_line,
+                          'semantic_pass': semantic,
+                          'raw': item['raw'],
+                      })
+
+          if not candidates:
+              (out / 'BOOTSTRAP_FAILURE.json').write_text(json.dumps({
+                  'schema': 'qym-authority-bootstrap-failure-v1',
+                  'artifact_count_scanned': len(artifact_records),
+                  'download_failures': download_failures,
+                  'reason': 'no hash-matched full-QYM direct-Lean candidate found',
+              }, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+              raise SystemExit('No authoritative full-QYM candidate found')
+
+          def rank(candidate: dict):
+              return (
+                  0 if candidate['semantic_pass'] else 1,
+                  candidate['error_headers'],
+                  -candidate['first_error_line'],
+                  candidate['warning_headers'],
+                  candidate['artifact_id'],
+              )
+
+          candidates.sort(key=rank)
+          best = candidates[0]
+
+          current = None
+          current_source = Path('.github/qym-frontier/QYM_GLOBAL_BEST.lean')
+          current_result = Path('.github/qym-frontier/GLOBAL_BEST.json')
+          if current_source.is_file() and current_result.is_file():
+              try:
+                  current_data = json.loads(current_result.read_text(encoding='utf-8'))
+                  # Accept flat records only. Historical nested selector records are intentionally
+                  # ignored and repaired by this bootstrap.
+                  if isinstance(current_data.get('error_headers'), int):
+                      raw = current_source.read_bytes()
+                      if sha256(raw) == current_data.get('candidate_qym_sha256'):
+                          current = {
+                              'source_sha256': sha256(raw),
+                              'source_blob': git_blob(raw),
+                              'error_headers': current_data['error_headers'],
+                              'warning_headers': current_data.get('warning_headers', 10**9),
+                              'panic_lines': current_data.get('panic_lines'),
+                              'exit': current_data.get('exit'),
+                              'first_error': current_data.get('first_error'),
+                              'first_error_line': int((current_data.get('first_error') or {}).get('line') or 0),
+                              'semantic_pass': bool(current_data.get('semantic_pass')),
+                          }
+              except Exception:
+                  current = None
+
+          def better(a: dict, b: dict | None) -> bool:
+              if b is None:
+                  return True
+              return (
+                  0 if a['semantic_pass'] else 1,
+                  a['error_headers'],
+                  -a['first_error_line'],
+                  a['warning_headers'],
+              ) < (
+                  0 if b['semantic_pass'] else 1,
+                  b['error_headers'],
+                  -b['first_error_line'],
+                  b['warning_headers'],
+              )
+
+          executable = best['raw'].decode('utf-8', errors='replace')
+          forbidden = {
+              'sorry': len(re.findall(r'\bsorry\b', executable)),
+              'admit': len(re.findall(r'\badmit\b', executable)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', executable)),
+              'Lean.ofReduceBool': executable.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', executable)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', executable)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', executable)),
+          }
+          if any(forbidden.values()):
+              raise SystemExit(f'Best candidate fails forbidden audit: {forbidden}')
+
+          promote = better(best, current)
+          public_best = {key: value for key, value in best.items() if key != 'raw'}
+          flat_result = {
+              'schema': 'qym-authoritative-frontier-v1',
+              'artifact_id': best['artifact_id'],
+              'artifact_name': best['artifact_name'],
+              'artifact_digest': best['artifact_digest'],
+              'artifact_created_at': best['artifact_created_at'],
+              'workflow_run_id': best['workflow_run_id'],
+              'workflow_head_sha': best['workflow_head_sha'],
+              'source_member': best['source_member'],
+              'result_member': best['result_member'],
+              'candidate_qym_sha256': best['source_sha256'],
+              'candidate_qym_blob': best['source_blob'],
+              'bytes': best['source_bytes'],
+              'lf': best['source_lf'],
+              'exit': best['exit'],
+              'error_headers': best['error_headers'],
+              'warning_headers': best['warning_headers'],
+              'panic_lines': best['panic_lines'],
+              'first_error': best['first_error'],
+              'last_error': best['last_error'],
+              'semantic_pass': best['semantic_pass'],
+              'forbidden': forbidden,
+          }
+          selection = {
+              'schema': 'qym-authority-bootstrap-selection-v1',
+              'artifact_count_scanned': len(artifact_records),
+              'candidate_count': len(candidates),
+              'download_failures': download_failures,
+              'current_frontier': current,
+              'selected': public_best,
+              'promotion_authorized': promote,
+              'semantic_pass': best['semantic_pass'],
+              'top_candidates': [
+                  {key: value for key, value in candidate.items() if key != 'raw'}
+                  for candidate in candidates[:40]
+              ],
+          }
+          (out / 'BOOTSTRAP_SELECTION.json').write_text(
+              json.dumps(selection, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          (out / 'GLOBAL_BEST.json').write_text(
+              json.dumps(flat_result, indent=2, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          (out / 'QYM_GLOBAL_BEST.lean').write_bytes(best['raw'])
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as env:
+              env.write('PROMOTE=' + ('true' if promote else 'false') + '\n')
+              env.write('SEMANTIC_PASS=' + ('true' if best['semantic_pass'] else 'false') + '\n')
+              env.write(f"SELECTED_SHA={best['source_sha256']}\n")
+              env.write(f"SELECTED_BLOB={best['source_blob']}\n")
+              env.write(f"SELECTED_ERRORS={best['error_headers']}\n")
+          print(json.dumps(selection, indent=2, sort_keys=True))
+          PY
+
+      - name: Rebase onto newest branch before mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+
+      - name: Persist recovered verified frontier
+        if: env.PROMOTE == 'true' && env.SEMANTIC_PASS != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier .github/qym-campaign
+          cp "$OUT/QYM_GLOBAL_BEST.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+          cp "$OUT/GLOBAL_BEST.json" .github/qym-frontier/GLOBAL_BEST.json
+          cp "$OUT/BOOTSTRAP_SELECTION.json" .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          printf '%s  %s\n' "$SELECTED_SHA" .github/qym-frontier/QYM_GLOBAL_BEST.lean \
+            > .github/qym-frontier/QYM_GLOBAL_BEST.sha256
+          # Diagnostics are copied from the selected artifact only when they exist in a later
+          # specialized promotion step. The bootstrap source/result pair is already hash-complete.
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          git commit -m "QYM: bootstrap verified global frontier ($SELECTED_ERRORS errors)"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Promote recovered semantic PASS candidate
+        if: env.PROMOTE == 'true' && env.SEMANTIC_PASS == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM_GLOBAL_BEST.lean" PrimalitySheafVerification/QYM.lean
+          mkdir -p .github/qym-final .github/qym-campaign
+          cp "$OUT/GLOBAL_BEST.json" .github/qym-final/BOOTSTRAP_PASS_RESULT.json
+          cp "$OUT/BOOTSTRAP_SELECTION.json" .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          printf '%s  %s\n' "$SELECTED_SHA" PrimalitySheafVerification/QYM.lean \
+            > .github/qym-final/QYM_PASS.sha256
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM.lean .github/qym-final .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          git commit -m "QYM: recover and promote direct-Lean semantic PASS"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Record bootstrap scan without regression
+        if: env.PROMOTE != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-campaign
+          cp "$OUT/BOOTSTRAP_SELECTION.json" .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-campaign/AUTHORITY_BOOTSTRAP_SELECTION.json
+          if git diff --cached --quiet; then
+            echo 'Bootstrap selection unchanged.'
+            exit 0
+          fi
+          git commit -m "QYM: refresh authority bootstrap scan"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-authority-bootstrap-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-authority-bootstrap/**
+          if-no-files-found: warn
+          retention-days: 30
