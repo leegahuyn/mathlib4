@@ -1,0 +1,134 @@
+name: GPT QYM Probe39c minimal GammaTwo proof matrix
+
+on:
+  push:
+    branches:
+      - gpt/fa-qym-clean-final-20260816
+    paths:
+      - .github/workflows/gpt-qym-probe39c-minimal.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  minimal:
+    name: minimal GammaTwo ${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [gamma_simp, offdiag_simp]
+    env:
+      OUT: /tmp/qym-probe39c-${{ matrix.variant }}
+      TEST: QYM_Probe39c_${{ matrix.variant }}.lean
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+
+      - name: Materialize minimal exact theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$TEST" "${{ matrix.variant }}" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1]); variant = sys.argv[2]
+          prelude = '''import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
+          import Mathlib.NumberTheory.Modular
+          import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+          import Mathlib.LinearAlgebra.Matrix.Notation
+          import Mathlib.Tactic
+
+          open Matrix Function Set Topology
+          open scoped MatrixGroups UpperHalfPlane
+
+          theorem gammaTwo_test
+              {gamma : SL(2, ℤ)} {z : ℍ}
+              (hGamma : gamma ∈ CongruenceSubgroup.Gamma 2)
+              (hz : z ∈ ModularGroup.fd)
+              (hfix : gamma • z = z) :
+              gamma = 1 ∨ gamma = -1 := by
+          __BODY__
+          '''.replace("          ", "")
+          bodies = {
+            "gamma_simp": '''  rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            all_goals
+              rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+              rcases hMatrix with rfl | rfl
+              all_goals
+                norm_num [CongruenceSubgroup.Gamma_mem,
+                  ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hGamma'''.replace("          ", ""),
+            "offdiag_simp": '''  have hUpper : (((gamma 0 1 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.1
+            have hLower : (((gamma 1 0 : ℤ) : ZMod 2)) = 0 :=
+              (CongruenceSubgroup.Gamma_mem.mp hGamma).2.2.1
+            rcases ModularGroup.cases_of_mem_fd_smul_mem_fd hz (hfix ▸ hz) with
+              hcentral | hT | hTinv | hS | hTS | hTinvSTinv |
+                hSTinv | hST | hTST | hTinvS
+            · exact hcentral
+            all_goals
+              rcases ‹(_ ∨ _) ∧ _› with ⟨hMatrix, _⟩
+              rcases hMatrix with rfl | rfl
+              all_goals
+                exfalso
+                norm_num [ModularGroup.S, ModularGroup.T, ← zpow_neg_one,
+                  ModularGroup.coe_T_zpow, Matrix.mul_fin_two] at hUpper hLower'''.replace("          ", "")
+          }
+          path.write_text(prelude.replace("__BODY__", bodies[variant]) + "\n", encoding="utf-8")
+          PY
+          cp "$TEST" "$OUT/$TEST"
+
+      - name: Direct Lean compile minimal theorem
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/TEST.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/TEST.olean" -i "$OUT/TEST.ilean" \
+              "$TEST" > "$OUT/TEST.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/TEST.exit"
+          rm -f "$TEST"
+          exit 0
+
+      - name: Upload minimal evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe39c-${{ matrix.variant }}-${{ github.sha }}
+          path: /tmp/qym-probe39c-${{ matrix.variant }}/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Fail closed unless theorem compiles
+        if: always()
+        shell: bash
+        run: |
+          test -f "$OUT/TEST.exit"
+          test "$(cat "$OUT/TEST.exit")" = 0
+          test -s "$OUT/TEST.olean"
+          test -s "$OUT/TEST.ilean"
