@@ -1,0 +1,176 @@
+name: GPT QYM GB77 fixed-origin V16c groupoid retry
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb77-v14-right-normal-im-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb77-fixedorigin-v16c-groupoid.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-gb77-fixedorigin-v16c-groupoid
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb77-v14-right-normal-im-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  FIXED_SHA256: b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd
+  FIXED_BLOB: c6e8883353b350f22b7f48d955fc5cfa4e61f88f
+  PARENT_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  PARENT_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  heartbeat:
+    name: Gate fixed GB77 without repository writes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify immutable GB77 and corrected V16c scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$FIXED_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$FIXED_BLOB"
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v15.py \
+            .github/qym_patch_gb77_fixedorigin_v16_groupoid.py \
+            .github/qym_gb77_fixedorigin_v16b_candidate.py
+          mkdir -p /tmp/qym-gb77-v16c-heartbeat
+          jq -n \
+            --arg branch "$BRANCH" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --arg fixed_sha "$FIXED_SHA256" \
+            --arg fixed_blob "$FIXED_BLOB" \
+            --arg parent_sha "$PARENT_SHA256" \
+            --arg parent_blob "$PARENT_BLOB" \
+            '{schema:"qym-gb77-v16c-heartbeat-v1",fixed_origin:"GB77",fixed_origin_errors:77,fixed_origin_sha256:$fixed_sha,fixed_origin_blob:$fixed_blob,reconstructed_parent_errors:76,reconstructed_parent_sha256:$parent_sha,reconstructed_parent_blob:$parent_blob,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,repository_write_attempted:false,immutable_gb77_preserved:true,status:"GATE_PASS"}' \
+            > /tmp/qym-gb77-v16c-heartbeat/STATUS.json
+
+      - name: Upload immutable heartbeat evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-v16c-heartbeat-${{ github.run_id }}
+          path: /tmp/qym-gb77-v16c-heartbeat
+          if-no-files-found: error
+          retention-days: 30
+
+  candidate:
+    name: V16c-${{ matrix.variant }}
+    needs: heartbeat
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant:
+          - explicit_helpers
+          - fact_bridge
+          - inline_duplicate
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate immutable GB77 and corrected driver
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$FIXED_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$FIXED_BLOB"
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v15.py \
+            .github/qym_patch_gb77_fixedorigin_v16_groupoid.py \
+            .github/qym_gb77_fixedorigin_v16b_candidate.py
+          mkdir -p "$OLEAN" "/tmp/qym-gb77-fixedorigin-v16b/${{ matrix.variant }}"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-fixedorigin-v16b/${{ matrix.variant }}"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-fixedorigin-v16b/${{ matrix.variant }}"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Reconstruct exact parent and run corrected groupoid candidate
+        shell: bash
+        env:
+          OUT_ROOT: /tmp/qym-gb77-fixedorigin-v16b
+        run: python3 -B .github/qym_gb77_fixedorigin_v16b_candidate.py '${{ matrix.variant }}'
+
+      - name: Upload immutable V16c evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-fixedorigin-v16c-${{ matrix.variant }}-${{ github.run_id }}
+          path: /tmp/qym-gb77-fixedorigin-v16b/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
