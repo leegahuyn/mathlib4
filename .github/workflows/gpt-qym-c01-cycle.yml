@@ -1,0 +1,216 @@
+name: GPT QYM C01 exact repair cycle
+
+on:
+  push:
+    branches:
+      - gpt/qym-c01-c13-sequential-v2-20260819
+    paths:
+      - .github/workflows/gpt-qym-c01-cycle.yml
+      - .github/qym_c01_variants.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-c01-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  c01:
+    name: C01 ${{ matrix.variant }} full direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - entry_solve
+          - membership_norm
+          - entry_simp_all
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c01-${{ matrix.variant }}
+      BASE: /tmp/qym-c01-baseline
+      BASELINE_ARTIFACT: '9326706450'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      BASELINE_ERRORS: '89'
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Gate pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE"
+          test "$GITHUB_REF_NAME" = gpt/qym-c01-c13-sequential-v2-20260819
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_c01_variants.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Recover immutable 89-error authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" \
+            > "$RUNNER_TEMP/qym-c01-baseline.zip"
+          unzip -q -o "$RUNNER_TEMP/qym-c01-baseline.zip" -d "$BASE"
+          source_file="$(find "$BASE" -type f -name 'QYM.baseline.lean' -print -quit)"
+          test -n "$source_file" && test -s "$source_file"
+          test "$(sha256sum "$source_file" | awk '{print $1}')" = "$BASELINE_SHA256"
+          cp "$source_file" "$OUT/QYM.baseline.lean"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          elan toolchain install "$(tr -d '\r\n' < lean-toolchain)" > "$OUT/toolchain.log" 2>&1
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Materialize exact C01 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          cp "$OUT/QYM.baseline.lean" "$QYM"
+          python3 -B .github/qym_c01_variants.py "${{ matrix.variant }}" "$QYM" \
+            | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-c01-${{ matrix.variant }}.lean"
+          test "$(python3 -c 'import json; print(json.load(open("'"$OUT"'/PATCH_RESULT.json"))["input_sha256"])')" = "$BASELINE_SHA256"
+
+      - name: Full direct Lean compile exact C01 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.c01.olean" -i "$RUNNER_TEMP/QYM.c01.ilean" \
+              "$QYM" > "$OUT/QYM.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.c01.olean" && test -s "$RUNNER_TEMP/QYM.c01.ilean"
+            cp "$RUNNER_TEMP/QYM.c01.olean" "$OUT/QYM.c01.olean"
+            cp "$RUNNER_TEMP/QYM.c01.ilean" "$OUT/QYM.c01.ilean"
+            sha256sum "$OUT/QYM.c01.olean" "$OUT/QYM.c01.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+          cp "$OUT/QYM.canonical.lean" "$QYM"
+
+      - name: Summarize exact diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+
+          out = Path(sys.argv[1])
+          raw = (out / 'QYM.log').read_bytes() if (out / 'QYM.log').exists() else b''
+          text = raw.decode(errors='replace')
+          pat = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
+          rows = []
+          for m in pat.finditer(text):
+              row = m.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [r for r in rows if r['severity'] == 'error']
+          warnings = [r for r in rows if r['severity'] == 'warning']
+          panics = re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          rc = int((out / 'QYM.exit').read_text().strip()) if (out / 'QYM.exit').exists() else None
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text(encoding='utf-8')) if (out / 'PATCH_RESULT.json').exists() else {}
+          result = {
+              'schema': 'qym-c01-cycle-v1',
+              'github_sha': os.environ.get('GITHUB_SHA'),
+              'run_id': os.environ.get('GITHUB_RUN_ID'),
+              'variant': patch.get('variant', os.environ.get('MATRIX_VARIANT')),
+              'baseline_qym_sha256': os.environ['BASELINE_SHA256'],
+              'baseline_error_headers': int(os.environ['BASELINE_ERRORS']),
+              'candidate_qym_sha256': patch.get('candidate_sha256'),
+              'candidate_qym_blob': patch.get('candidate_blob'),
+              'bytes': patch.get('bytes'),
+              'lf': patch.get('lf'),
+              'forbidden': patch.get('forbidden'),
+              'exit': rc,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'error_codes': dict(sorted(collections.Counter(r['code'] or 'uncoded' for r in errors).items())),
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'panic_lines': len(panics),
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': rc == 0 and not errors and not panics,
+          }
+          (out / 'QYM.diagnostics.jsonl').write_text(''.join(json.dumps(r, sort_keys=True) + '\n' for r in rows), encoding='utf-8')
+          (out / 'QYM.error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error{('('+r['code']+')') if r['code'] else ''}: {r['message']}\n" for r in errors), encoding='utf-8')
+          (out / 'QYM.panic-lines.txt').write_text(''.join(p + '\n' for p in panics), encoding='utf-8')
+          (out / 'C01_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Upload immutable C01 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c01-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-c01-${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
