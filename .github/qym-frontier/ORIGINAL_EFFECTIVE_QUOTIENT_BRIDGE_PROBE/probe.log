@@ -1,55 +1,10 @@
-.github/qym-probes/GammaTwoQuotientBridge.lean:9:35: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.X`
-.github/qym-probes/GammaTwoQuotientBridge.lean:25:2: error: Type mismatch
-  Quotient.lift Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.gammaTwoQuotientMk ?m.5
-has type
-  Quotient ?m.4 → Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwoQuotient
-but is expected to have type
-  OriginalGammaTwoQuotient → EffectiveGammaTwoQuotient
-.github/qym-probes/GammaTwoQuotientBridge.lean:29:6: error: 'change' tactic failed, pattern
-  z ∈ MulAction.orbit (↥GammaTwo) w
-is not definitionally equal to target
-  z ≈ w
-.github/qym-probes/GammaTwoQuotientBridge.lean:39:16: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.quotientMap`
-.github/qym-probes/GammaTwoQuotientBridge.lean:52:25: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.quotientMap`
-.github/qym-probes/GammaTwoQuotientBridge.lean:60:6: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.quotientMap`
-.github/qym-probes/GammaTwoQuotientBridge.lean:71:32: error: Application type mismatch: The argument
-  x
-has type
-  OriginalGammaTwoQuotient
-but is expected to have type
-  Quotient ?m.11
-in the application
-  Quotient.inductionOn x
-.github/qym-probes/GammaTwoQuotientBridge.lean:72:10: error: Tactic `introN` failed: There are no additional binders or `let` bindings in the goal to introduce
+.github/qym-probes/GammaTwoQuotientBridge.lean:48:10: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  g • w
+in the target expression
+  Mock2.Definition15Geometry.quotientMap ((fun m => m • w) g) = Mock2.Definition15Geometry.quotientMap w
 
-case refine_1
-OriginalGammaTwoQuotient : Sort ?u.4
-x : OriginalGammaTwoQuotient
-⊢ Sort ?u.9
-.github/qym-probes/GammaTwoQuotientBridge.lean:78:4: error: Tactic `rfl` failed: The left-hand side
-  originalToEffective (effectiveToOriginal ⟦z⟧)
-is not definitionally equal to the right-hand side
-  ⟦z⟧
-
-OriginalGammaTwoQuotient : Sort ?u.4
-x : EffectiveGammaTwoQuotient
-z : ℍ
-⊢ originalToEffective (effectiveToOriginal ⟦z⟧) = ⟦z⟧
-.github/qym-probes/GammaTwoQuotientBridge.lean:83:4: error: typeclass instance problem is stuck
-  TopologicalSpace ?m.5
-
-Note: Lean will not try to resolve this typeclass instance problem because the type argument to `TopologicalSpace` is a metavariable. This argument must be fully determined before Lean will try to resolve the typeclass.
-
-Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
-.github/qym-probes/GammaTwoQuotientBridge.lean:93:4: error: typeclass instance problem is stuck
-  TopologicalSpace ?m.5
-
-Note: Lean will not try to resolve this typeclass instance problem because the type argument to `TopologicalSpace` is a metavariable. This argument must be fully determined before Lean will try to resolve the typeclass.
-
-Hint: Adding type annotations and supplying implicit arguments to functions can give Lean more information for typeclass resolution. For example, if you have a variable `x` that you intend to be a `Nat`, but Lean reports it as having an unresolved type like `?m`, replacing `x` with `(x : Nat)` can get typeclass resolution un-stuck.
-.github/qym-probes/GammaTwoQuotientBridge.lean:102:4: error(lean.synthInstanceFailed): failed to synthesize instance of type class
-  TopologicalSpace OriginalGammaTwoQuotient
-
-Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
-.github/qym-probes/GammaTwoQuotientBridge.lean:108:8: warning: declaration uses `sorry`
-.github/qym-probes/GammaTwoQuotientBridge.lean:118:6: error(lean.unknownIdentifier): Unknown identifier `Mock2.Definition15Geometry.quotientMap`
+w : ℍ
+g : GammaTwoEffective
+gamma : ↥Mock2FA.PaperCorrections.AutomorphicSobolev.GammaTwoQuotientGeometry.GammaTwo
+hgamma : ∀ (z : ℍ), g • z = gamma • z
+⊢ Mock2.Definition15Geometry.quotientMap ((fun m => m • w) g) = Mock2.Definition15Geometry.quotientMap w
