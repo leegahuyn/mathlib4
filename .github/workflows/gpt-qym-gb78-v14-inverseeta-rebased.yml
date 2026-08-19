@@ -1,0 +1,348 @@
+name: GPT QYM GB78 V14 inverse-eta rebased
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb78-v14-inverseeta-rebased-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb78-v14-inverseeta-rebased.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb78-v14-inverseeta-rebased
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: gpt/qym-gb78-v14-inverseeta-rebased-20260820
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb78-v14-inverseeta-rebased
+      BASE_SHA256: c1498d669d3f43cda50edf7b61b33c865b00f6fe65ea95d9f1ab3c07794d1235
+      BASE_BLOB: 75c2eab05b4298d94246a6b0757f98a6ff5c02fe
+      BASE_ERRORS: '78'
+      OLD_SHA256: 790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421
+      OLD_BLOB: 33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3
+      DONOR_BRANCH: gpt/qym-gb79-v13-inverseeta-fibre-20260819
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact authoritative GB78 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          mkdir -p "$OUT" "$OLEAN"
+
+      - name: Recover and rebase the frozen inverse-eta patcher
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$DONOR_BRANCH"
+          git show FETCH_HEAD:.github/qym_gb79_v13_inverseeta_patch.py > "$OUT/patch.py"
+          test -s "$OUT/patch.py"
+          python3 - "$OUT/patch.py" "$OLD_SHA256" "$BASE_SHA256" "$OLD_BLOB" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import sys
+          path = Path(sys.argv[1])
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(sys.argv[2], sys.argv[3]).replace(sys.argv[4], sys.argv[5])
+          text = text.replace('BASE_ERRORS = 79', 'BASE_ERRORS = 78')
+          text = text.replace("BASE_ERRORS = '79'", "BASE_ERRORS = '78'")
+          path.write_text(text, encoding='utf-8')
+          PY
+          python3 -m py_compile "$OUT/patch.py"
+          sha256sum "$OUT/patch.py" > "$OUT/patch.sha256"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5))
+          done
+
+      - name: Restore QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependencies only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run rebased inverse-eta full-QYM tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$OUT/driver.py" <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          import collections, hashlib, importlib.util, json, os, re, shutil, subprocess, sys
+
+          QYM = Path(os.environ['QYM'])
+          OUT = Path(os.environ['OUT'])
+          PATCHER = OUT / 'patch.py'
+          BASE_SHA = os.environ['BASE_SHA256']
+          BASE_BLOB = os.environ['BASE_BLOB']
+          BASE_ERRORS = int(os.environ['BASE_ERRORS'])
+          DIAG = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
+          PANIC = re.compile(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$')
+
+          def sha(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          def blob(data: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+
+          def dump(path: Path, value) -> None:
+              path.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          def audit(text: str):
+              return {
+                'sorry': len(re.findall(r'\bsorry\b', text)),
+                'admit': len(re.findall(r'\badmit\b', text)),
+                'native_decide': len(re.findall(r'\bnative_decide\b', text)),
+                'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+                'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', text)),
+                'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', text)),
+                'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', text)),
+              }
+
+          def discover_variants():
+              spec = importlib.util.spec_from_file_location('inverseeta_patch', PATCHER)
+              module = importlib.util.module_from_spec(spec)
+              assert spec and spec.loader
+              spec.loader.exec_module(module)
+              raw = getattr(module, 'VARIANTS', None)
+              if isinstance(raw, dict):
+                  variants = list(raw.keys())
+              elif isinstance(raw, (set, list, tuple)):
+                  variants = list(raw)
+              else:
+                  text = PATCHER.read_text(encoding='utf-8')
+                  variants = re.findall(r"['\"]([A-Za-z0-9_]+)['\"]\s*:", text)
+              variants = [str(v) for v in variants if str(v) and not str(v).startswith('_')]
+              variants = list(dict.fromkeys(variants))[:24]
+              if not variants:
+                  raise RuntimeError('could not discover inverse-eta variants')
+              return variants
+
+          def apply_variant(original: Path, candidate: Path, variant: str):
+              attempts = [
+                [sys.executable, '-B', str(PATCHER), variant, str(candidate), BASE_SHA],
+                [sys.executable, '-B', str(PATCHER), variant, str(candidate)],
+                [sys.executable, '-B', str(PATCHER), str(candidate), variant, BASE_SHA],
+                [sys.executable, '-B', str(PATCHER), str(candidate), variant],
+              ]
+              records = []
+              for idx, cmd in enumerate(attempts, 1):
+                  shutil.copy2(original, candidate)
+                  proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                  text = proc.stdout.decode(errors='replace')
+                  (OUT / f'{variant}.patch-attempt{idx}.log').write_text(text, encoding='utf-8')
+                  records.append({'attempt': idx, 'cmd': cmd, 'exit': proc.returncode, 'output': text[-2000:]})
+                  if proc.returncode == 0 and candidate.is_file() and sha(candidate.read_bytes()) != BASE_SHA:
+                      return records
+              raise RuntimeError(f'{variant}: all patch invocations failed: {records}')
+
+          def compile_candidate(candidate: Path, variant: str):
+              shutil.copy2(candidate, QYM)
+              log = OUT / f'{variant}.full.log'
+              olean = OUT / f'{variant}.full.olean'
+              ilean = OUT / f'{variant}.full.ilean'
+              cmd = ['lake', 'env', 'lean', '-DmaxErrors=10000', '-DwarningAsError=false',
+                     '-o', str(olean), '-i', str(ilean), str(QYM)]
+              with log.open('wb') as handle:
+                  proc = subprocess.run(cmd, stdout=handle, stderr=subprocess.STDOUT)
+              text = log.read_text(errors='replace')
+              diagnostics = []
+              for match in DIAG.finditer(text):
+                  row = match.groupdict(); row['line'] = int(row['line']); row['column'] = int(row['column'])
+                  diagnostics.append(row)
+              errors = [row for row in diagnostics if row['severity'] == 'error']
+              warnings = [row for row in diagnostics if row['severity'] == 'warning']
+              result = {
+                  'variant': variant,
+                  'phase': 'full',
+                  'exit': proc.returncode,
+                  'error_headers': len(errors),
+                  'warning_headers': len(warnings),
+                  'panic_lines': len(PANIC.findall(text)),
+                  'first_error': errors[0] if errors else None,
+                  'last_error': errors[-1] if errors else None,
+                  'error_codes': dict(sorted(collections.Counter((row.get('code') or 'uncoded') for row in errors).items())),
+                  'log_sha256': sha(log.read_bytes()),
+                  'candidate_qym_sha256': sha(candidate.read_bytes()),
+                  'candidate_qym_blob': blob(candidate.read_bytes()),
+                  'olean_exists': olean.is_file() and olean.stat().st_size > 0,
+                  'ilean_exists': ilean.is_file() and ilean.stat().st_size > 0,
+              }
+              semantic = (proc.returncode == 0 and len(errors) == 0 and result['panic_lines'] == 0 and
+                          result['olean_exists'] and result['ilean_exists'])
+              result.update({
+                  'semantic_pass': semantic,
+                  'strict_improvement': semantic or (result['panic_lines'] == 0 and len(errors) < BASE_ERRORS),
+                  'baseline_error_headers': BASE_ERRORS,
+                  'baseline_qym_sha256': BASE_SHA,
+                  'baseline_qym_blob': BASE_BLOB,
+                  'run_id': os.environ.get('GITHUB_RUN_ID'),
+                  'trigger_sha': os.environ.get('GITHUB_SHA'),
+              })
+              dump(OUT / f'{variant}.FULL_RESULT.json', result)
+              return result
+
+          OUT.mkdir(parents=True, exist_ok=True)
+          original = OUT / 'QYM.GB78.lean'
+          shutil.copy2(QYM, original)
+          raw = original.read_bytes()
+          baseline = {
+              'sha256': sha(raw), 'blob': blob(raw), 'errors': BASE_ERRORS,
+              'sha_ok': sha(raw) == BASE_SHA, 'blob_ok': blob(raw) == BASE_BLOB,
+              'run_id': '32267726196', 'job_id': '96115476882',
+          }
+          dump(OUT / 'BASELINE_CHECK.json', baseline)
+          if not baseline['sha_ok'] or not baseline['blob_ok']:
+              raise SystemExit(f'authority mismatch: {baseline}')
+          before_audit = audit(raw.decode('utf-8'))
+          variants = discover_variants()
+          dump(OUT / 'DISCOVERED_VARIANTS.json', variants)
+          rows = []
+          try:
+              for variant in variants:
+                  candidate = OUT / f'QYM.candidate-{variant}.lean'
+                  try:
+                      attempts = apply_variant(original, candidate, variant)
+                      after_audit = audit(candidate.read_text(encoding='utf-8'))
+                      if after_audit != before_audit:
+                          raise RuntimeError(f'forbidden-token delta {before_audit} -> {after_audit}')
+                      result = compile_candidate(candidate, variant)
+                      rows.append({'variant': variant, 'candidate': str(candidate), 'patch_attempts': attempts, 'full': result})
+                  except Exception as exc:
+                      rows.append({'variant': variant, 'fatal': f'{type(exc).__name__}: {exc}'})
+                      dump(OUT / 'PARTIAL_SELECTION.json', {'variants': variants, 'candidates': rows})
+
+              improved = [row for row in rows if (row.get('full') or {}).get('strict_improvement')]
+              selection = {
+                  'schema': 'qym-gb78-v14-inverseeta-rebased-selection-v1',
+                  'baseline': baseline,
+                  'variants': variants,
+                  'candidates': rows,
+                  'strict_improvement_found': bool(improved),
+              }
+              if improved:
+                  improved.sort(key=lambda row: (
+                      int(row['full']['error_headers']),
+                      int(row['full']['panic_lines']),
+                      -int(((row['full'].get('first_error') or {}).get('line') or 0)),
+                      row['variant'],
+                  ))
+                  best = improved[0]
+                  selection['best_variant'] = best['variant']
+                  selection['best'] = best['full']
+                  shutil.copy2(Path(best['candidate']), OUT / 'QYM.best.lean')
+                  dump(OUT / 'BEST_RESULT.json', best['full'])
+                  dump(OUT / 'SELECTION.json', selection)
+                  raise SystemExit(0)
+              dump(OUT / 'SELECTION.json', selection)
+              raise SystemExit(2)
+          finally:
+              shutil.copy2(original, QYM)
+          PY
+          python3 -B "$OUT/driver.py"
+
+      - name: Promote verified strict V14 frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.best.lean"
+          test -s "$OUT/BEST_RESULT.json"
+          test "$(jq -r '.strict_improvement' "$OUT/BEST_RESULT.json")" = true
+          test "$(jq -r '.panic_lines' "$OUT/BEST_RESULT.json")" -eq 0
+          errors="$(jq -r '.error_headers' "$OUT/BEST_RESULT.json")"
+          test "$errors" -lt "$BASE_ERRORS"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$OUT/BEST_RESULT.json")"
+          candidate_blob="$(jq -r '.candidate_qym_blob' "$OUT/BEST_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.best.lean" | awk '{print $1}')" = "$candidate_sha"
+          test "$(git hash-object "$OUT/QYM.best.lean")" = "$candidate_blob"
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/BEST_RESULT.json" .github/qym-frontier/GB78_V14_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GB78_V14_SELECTION.json
+          jq -n --arg branch "$BRANCH" --arg qym_sha "$candidate_sha" --arg qym_blob "$candidate_blob" \
+            --argjson errors "$errors" --argjson run_id "$GITHUB_RUN_ID" --arg trigger_sha "$GITHUB_SHA" \
+            '{schema:"qym-v14-promotion-v1",branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,error_headers:$errors,panic_lines:0,qym_sha256:$qym_sha,qym_blob:$qym_blob,status:"PROMOTED_FROM_GB78"}' \
+            > .github/qym-frontier/GB78_V14_PROMOTION_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier/GB78_V14_RESULT.json \
+            .github/qym-frontier/GB78_V14_SELECTION.json \
+            .github/qym-frontier/GB78_V14_PROMOTION_STATUS.json
+          git commit -m "QYM V14: promote verified ${errors}-error inverse-eta frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Restore source after non-promotion
+        if: always()
+        shell: bash
+        run: git checkout -- "$QYM" || true
+
+      - name: Upload immutable V14 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb78-v14-inverseeta-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb78-v14-inverseeta-rebased
+          if-no-files-found: error
+          retention-days: 30
