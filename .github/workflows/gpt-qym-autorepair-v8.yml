@@ -1,0 +1,315 @@
+name: GPT QYM verified fallback autorepair v8
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v6-mulinv-20260819
+    paths:
+      - .github/qym_autorepair_v8.py
+      - .github/workflows/gpt-qym-autorepair-v8.yml
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: gpt-qym-autorepair-v8-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TARGET: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+  LEAN_TIMEOUT_SECONDS: "10800"
+  BRANCH: gpt/qym-gb85-c2-v6-mulinv-20260819
+  MAX_AUTOREPAIR_V8_ROUNDS: "8"
+
+jobs:
+  preflight:
+    name: Wait for v7 and skip when zero-error is already verified
+    runs-on: ubuntu-latest
+    timeout-minutes: 370
+    outputs:
+      run: ${{ steps.guard.outputs.run }}
+      prior_status: ${{ steps.guard.outputs.prior_status }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Wait until no v7 repair run remains active
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          quiet=0
+          for _ in $(seq 1 720); do
+            active=$(gh api "/repos/$REPO/actions/workflows/gpt-qym-autorepair-v7.yml/runs?branch=$BRANCH&per_page=30" \
+              --jq '[.workflow_runs[] | select(.status != "completed")] | length' 2>/dev/null || echo 0)
+            if [[ "$active" == "0" ]]; then
+              quiet=$((quiet + 1))
+              if (( quiet >= 2 )); then break; fi
+            else
+              quiet=0
+            fi
+            sleep 30
+          done
+
+      - name: Refresh authoritative branch head and inspect verified state
+        id: guard
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          status=NO_STATE
+          if [[ -f .github/qym_autorepair_v7_state.json ]]; then
+            status=$(python3 - <<'PY'
+          import json
+          print(json.load(open('.github/qym_autorepair_v7_state.json')).get('status', 'UNKNOWN'))
+          PY
+            )
+          fi
+          echo "prior_status=$status" >> "$GITHUB_OUTPUT"
+          if [[ "$status" == "ZERO_ERROR" ]]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  baseline:
+    name: Reverify frontier for the v8 strategy family
+    needs: preflight
+    if: needs.preflight.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v8-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v8-${{ runner.os }}-
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        run: lake exe cache get
+
+      - name: Compile baseline and identify the active declaration
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v8.py prepare --target "$TARGET"
+          cat .qym_v8/diagnostic.json
+
+      - name: Upload v8 baseline evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v8-baseline
+          path: |
+            .qym_v8/diagnostic.json
+            .qym_v8/baseline.log
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  candidates:
+    name: V8 direct Lean candidate ${{ matrix.candidate }}
+    needs:
+      - preflight
+      - baseline
+    if: needs.preflight.outputs.run == 'true' && needs.baseline.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 28
+      matrix:
+        candidate:
+          - classical_simp
+          - classical_simp_scaling
+          - classical_simp_matrix
+          - exact_search
+          - simp_search
+          - aesop_search
+          - apply_search
+          - grind
+          - omega
+          - norm_num
+          - norm_num_scaling
+          - ring
+          - ring_nf
+          - native_decide
+          - decide
+          - cusp_native_decide
+          - cusp_decide
+          - cusp_ext_norm
+          - cusp_ext_simp
+          - exact_mul_inv_cusp
+          - exact_inv_mul_cusp
+          - rw_mul_inv
+          - rw_inv_mul
+          - constructor_simp
+          - ext_exact_search
+          - classical_aesop
+          - classical_aesop_scaling
+          - drop_zero_suffix
+          - add_zero_suffix
+          - swap_mul_inv_to_inv_mul
+          - swap_inv_mul_to_mul_inv
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v8-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v8-${{ runner.os }}-
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        run: lake exe cache get
+
+      - name: Download v8 baseline evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: qym-v8-baseline
+          path: .qym_v8
+
+      - name: Patch one strategy and verify it directly
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v8.py candidate \
+            --target "$TARGET" \
+            --candidate "${{ matrix.candidate }}"
+          cat ".qym_v8/candidate_${{ matrix.candidate }}/metrics.json"
+
+      - name: Upload v8 candidate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v8-candidate-${{ matrix.candidate }}
+          path: |
+            .qym_v8/candidate_${{ matrix.candidate }}/metrics.json
+            .qym_v8/candidate_${{ matrix.candidate }}/lean.log
+            .qym_v8/candidate_${{ matrix.candidate }}/source.lean
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  select:
+    name: Install only the strict v8 winner
+    needs:
+      - preflight
+      - baseline
+      - candidates
+    if: always() && needs.preflight.outputs.run == 'true' && needs.baseline.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Download v8 baseline evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: qym-v8-baseline
+          path: .qym_v8
+
+      - name: Download all completed v8 candidates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: qym-v8-candidate-*
+          path: .qym_v8/downloads
+
+      - name: Select by verified direct-Lean metric
+        id: choose
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v8.py select \
+            --target "$TARGET" \
+            --downloads .qym_v8/downloads
+          cat .github/qym_autorepair_v7_state.json
+
+      - name: Advance bounded v8 round
+        id: round
+        shell: bash
+        run: |
+          set -euxo pipefail
+          counter=.github/qym_autorepair_v8_round.txt
+          old=0
+          if [[ -f "$counter" ]]; then old=$(cat "$counter"); fi
+          next=$((old + 1))
+          echo "$next" > "$counter"
+          echo "round=$next" >> "$GITHUB_OUTPUT"
+          if (( next < MAX_AUTOREPAIR_V8_ROUNDS )); then
+            echo "continue=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "continue=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit strict improvement or diagnostic state
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$TARGET" .github/qym_autorepair_v7_state.json .github/qym_autorepair_v8_round.txt
+          if git diff --cached --quiet; then
+            echo "No repository change to commit."
+          else
+            git commit -m "QYM v8 verified frontier: ${{ steps.choose.outputs.errors }} errors at round ${{ steps.round.outputs.round }}"
+            git push origin "HEAD:$BRANCH"
+          fi
+
+      - name: Continue v8 at the next first error
+        if: steps.choose.outputs.improved == 'true' && steps.choose.outputs.zero != 'true' && steps.round.outputs.continue == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sleep 8
+          gh workflow run gpt-qym-autorepair-v8.yml --ref "$BRANCH"
+
+      - name: Confirm verified zero-error result
+        if: steps.choose.outputs.zero == 'true'
+        run: echo "Direct Lean returned exit 0 with zero error headers."
