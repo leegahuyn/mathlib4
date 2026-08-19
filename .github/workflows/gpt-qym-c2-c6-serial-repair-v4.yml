@@ -1,0 +1,172 @@
+name: GPT QYM C2-C6 verified serial repair v4
+
+on:
+  push:
+    branches:
+      - gpt/qym-c2-first-producer-chat-20260819
+    paths:
+      - .github/qym_repair_c2_c6_serial_v4.py
+      - .github/workflows/gpt-qym-c2-c6-serial-repair-v4.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-c2-c6-verified-serial-repair
+  cancel-in-progress: false
+
+jobs:
+  repair-v4:
+    name: Independently reverify GB85, repair C2-C6, promote
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: gpt/qym-c2-first-producer-chat-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c2-c6-serial
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout latest repair branch head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: gpt/qym-c2-first-producer-chat-20260819
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Detect an already promoted verified result
+        id: existing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          if [[ -s .github/qym-frontier/C2_C6_RESULT.json ]] && \
+             [[ "$(jq -r '.c2_c6_clean // false' .github/qym-frontier/C2_C6_RESULT.json)" = true ]] && \
+             [[ "$(jq -r '.strict_improvement // false' .github/qym-frontier/C2_C6_RESULT.json)" = true ]]; then
+            echo "verified=true" >> "$GITHUB_OUTPUT"
+            cp .github/qym-frontier/C2_C6_RESULT.json "$OUT/ALREADY_VERIFIED.json"
+          else
+            echo "verified=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Gate toolchain and repair drivers
+        if: steps.existing.outputs.verified != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -s .github/qym_repair_c2_c6_serial.py
+          test -s .github/qym_repair_c2_c6_serial_v4.py
+          test -s .github/qym-frontier/QYM_C1_BEST.lean
+          test "$(sha256sum .github/qym-frontier/QYM_C1_BEST.lean | awk '{print $1}')" = \
+            830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.existing.outputs.verified != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+
+      - name: Restore completed QYM dependency objects
+        if: steps.existing.outputs.verified != 'true'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects only
+        if: steps.existing.outputs.verified != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                cap=2000
+              fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Independently reverify GB85 and run C2-C6 repair
+        if: steps.existing.outputs.verified != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_repair_c2_c6_serial_v4.py | tee "$OUT/DRIVER_V4_STDOUT.json"
+
+      - name: Promote only newly verified direct-Lean source
+        if: steps.existing.outputs.verified != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          result=.github/qym-frontier/C2_C6_RESULT.json
+          test -s "$result"
+          test "$(jq -r '.c2_c6_clean' "$result")" = true
+          test "$(jq -r '.strict_improvement' "$result")" = true
+          test "$(jq -r '.panic_lines' "$result")" -eq 0
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = \
+            "$(jq -r '.candidate_qym_sha256' "$result")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            "$QYM" \
+            .github/qym-frontier/QYM_C2_C6_REPAIRED.lean \
+            .github/qym-frontier/C2_C6_RESULT.json \
+            .github/qym-frontier/C2_C6_FULL.log
+          if git diff --cached --quiet; then
+            echo "Verified source already present at latest branch head."
+          else
+            errors="$(jq -r '.error_headers' "$result")"
+            sha="$(jq -r '.candidate_qym_sha256' "$result" | cut -c1-12)"
+            git commit -m "QYM: promote independently reverified C2-C6 repair (${errors} errors, ${sha})"
+            git push origin "HEAD:$BRANCH"
+          fi
+
+      - name: Upload independent-reverification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-c6-serial-v4-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: |
+            /tmp/qym-c2-c6-serial
+            .github/qym-frontier/C2_C6_RESULT.json
+            .github/qym-frontier/QYM_C2_C6_REPAIRED.lean
+            .github/qym-frontier/C2_C6_FULL.log
+          if-no-files-found: warn
+          retention-days: 30
