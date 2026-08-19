@@ -1,0 +1,92 @@
+name: GPT QYM GB76 global-batch source probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-global-batch-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: gpt-qym-gb76-global-batch-source-probe
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-global-batch-repair-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  GB76_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  GB76_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact GB76 and collect quotient bridge contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$GB76_SHA256"
+          test "$(git hash-object "$QYM")" = "$GB76_BLOB"
+          mkdir -p /tmp/qym-gb76-probe
+
+          {
+            echo '# Exact source identity'
+            printf 'branch=%s\ncommit=%s\nqym_sha256=%s\nqym_blob=%s\n' \
+              "$GITHUB_REF_NAME" "$GITHUB_SHA" \
+              "$(sha256sum "$QYM" | awk '{print $1}')" \
+              "$(git hash-object "$QYM")"
+          } > /tmp/qym-gb76-probe/IDENTITY.txt
+
+          {
+            echo '# GammaTwoQuotient and Mock2 quotient declarations / bridges'
+            rg -n -C 10 \
+              '(^|[^A-Za-z])(abbrev|def|noncomputable def|theorem|lemma).*GammaTwoQuotient|GammaTwoQuotient.*(Equiv|Homeomorph|equiv|homeomorph)|Definition15Geometry\.X|GammaTwoEffective|gammaTwoQuotientMk|quotientMap' \
+              PrimalitySheafVerification/Mock2.lean \
+              PrimalitySheafVerification/Mock2_Advanced.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean \
+              || true
+          } > /tmp/qym-gb76-probe/QUOTIENT_BRIDGES.txt
+
+          {
+            echo '# Names specifically suggesting equivalences or coercion bridges'
+            rg -n -C 8 \
+              '(GammaTwoQuotient|Gamma2Quotient|Definition15Geometry\.X).*(Equiv|Homeomorph|Embedding|equiv|homeomorph|toMock|fromMock|bridge|Bridge|congr)|((Equiv|Homeomorph|Embedding|equiv|homeomorph|toMock|fromMock|bridge|Bridge|congr).*(GammaTwoQuotient|Gamma2Quotient|Definition15Geometry\.X))' \
+              PrimalitySheafVerification/*.lean || true
+          } > /tmp/qym-gb76-probe/NAMED_BRIDGES.txt
+
+          {
+            echo '# Exact namespace/definition contexts in Mock2_FunctionalAnalysis'
+            rg -n -C 18 \
+              'namespace .*GammaTwoQuotientGeometry|def GammaTwoQuotient|abbrev GammaTwoQuotient|def gammaTwoQuotientMk|abbrev gammaTwoQuotientMk|GammaTwoQuotient : Type|GammaTwoQuotient :=' \
+              PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean || true
+          } > /tmp/qym-gb76-probe/FA_DEFINITIONS.txt
+
+          {
+            echo '# QYM occurrences where InverseEtaBase meets FA GammaTwoQuotient'
+            rg -n -C 12 \
+              'InverseEtaBase|actualStageBundleValue|distinguishedInverseEtaQuotientSection|inverseEtaBaseChartedSpaceH' \
+              "$QYM" || true
+          } > /tmp/qym-gb76-probe/QYM_CROSS_TYPE_CONTEXT.txt
+
+          wc -l /tmp/qym-gb76-probe/*.txt | tee /tmp/qym-gb76-probe/LINE_COUNTS.txt
+
+      - name: Upload source probe
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-global-batch-source-probe-${{ github.run_id }}
+          path: /tmp/qym-gb76-probe
+          if-no-files-found: error
+          retention-days: 30
