@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   QYM: PrimalitySheafVerification/QYM.lean
@@ -25,6 +25,12 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+
+      - name: Publish run identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin "${GITHUB_SHA}:refs/heads/gpt/qym-gb76-source-snapshot-run-${GITHUB_RUN_ID}"
 
       - name: Verify exact GB76 and collect relevant sources
         shell: bash
