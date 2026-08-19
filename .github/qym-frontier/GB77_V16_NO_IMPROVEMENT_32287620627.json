@@ -1,0 +1,16 @@
+{
+  "baseline_error_headers": 77,
+  "candidate_result_count": 0,
+  "results": [],
+  "schema": "qym-gb77-v14-right-normal-im-selection-v2",
+  "strict_improvement_found": false,
+  "tie_break": [
+    "error_headers",
+    "warning_headers",
+    "later_first_error",
+    "smaller_exact_source",
+    "lower_direct_lean_cost",
+    "variant_name_final_only"
+  ],
+  "valid_strict_improvement_count": 0
+}
