@@ -1,0 +1,17 @@
+{
+  "candidate_result_count": 0,
+  "known_verified_descendant_before": {
+    "error_headers": 76,
+    "variant": "V14b-normsq_simpa"
+  },
+  "results": [],
+  "schema": "qym-gb77-v15-cumulative-selection-v1",
+  "source_baseline": {
+    "error_headers": 77,
+    "name": "GB77",
+    "qym_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+    "qym_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd"
+  },
+  "strict_improvement_beyond_76_found": false,
+  "valid_strict_improvement_count": 0
+}

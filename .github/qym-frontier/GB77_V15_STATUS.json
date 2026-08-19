@@ -1,0 +1,11 @@
+{
+  "schema": "qym-gb77-v15-no-improvement-v1",
+  "source_baseline": "GB77",
+  "source_baseline_errors": 77,
+  "known_best_before": 76,
+  "branch": "gpt/qym-gb77-v15-cumulative-groupoid-20260820",
+  "run_id": 32285832188,
+  "trigger_sha": "5180bd0eb0aa3a97bd7d0824b536494537a94610",
+  "immutable_gb77_preserved": true,
+  "status": "NO_VERIFIED_RESULT_BELOW_76"
+}
