@@ -78,13 +78,15 @@ jobs:
           export PATH="$HOME/.elan/bin:$PATH"
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           tc="$(tr -d '\r\n' < lean-toolchain)"
-          for a in 1 2 3 4 5; do
-            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
           done
           lean --version | tee "$OUT/lean-version.txt"
           lake --version | tee "$OUT/lake-version.txt"
-          for a in 1 2 3 4 5; do
-            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5))
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
           done
 
       - name: Restore completed dependency objects
@@ -107,17 +109,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
-            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
-              cap=1
-              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
-              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
-              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
-                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
-                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
             fi
-            test -s "$OLEAN/$s.olean"
-            test -s "$OLEAN/$s.ilean"
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
           done
 
       - name: Generate exact-source candidate
@@ -131,6 +135,8 @@ jobs:
           test "$(jq -r '.input_blob' "$OUT/PATCH_RESULT.json")" = "$BASE_BLOB"
           test "$(sha256sum "$QYM" | awk '{print $1}')" = \
             "$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")"
+          test "$(git hash-object "$QYM")" = \
+            "$(jq -r '.candidate_blob' "$OUT/PATCH_RESULT.json")"
           cp "$QYM" "$OUT/QYM.lean"
 
       - name: Direct full-QYM compile
@@ -141,9 +147,9 @@ jobs:
             lake env lean -DmaxErrors=10000 -DwarningAsError=false \
               -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" \
               > "$OUT/direct.log" 2>&1
-          rc=$?
+          direct_exit=$?
           set -e
-          printf '%s\n' "$rc" > "$OUT/direct.exit"
+          printf '%s\n' "$direct_exit" > "$OUT/direct.exit"
 
       - name: Parse authoritative candidate evidence
         shell: bash
@@ -152,19 +158,23 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import collections, hashlib, json, os, re
+          import collections
+          import hashlib
+          import json
+          import os
+          import re
 
           out = Path(os.environ['OUT'])
           qym = Path(os.environ['QYM'])
           patch = json.loads((out / 'PATCH_RESULT.json').read_text())
           text = (out / 'direct.log').read_text(errors='replace')
-          diag = re.compile(
+          diagnostic = re.compile(
               r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
               r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',
               re.M,
           )
           rows = []
-          for match in diag.finditer(text):
+          for match in diagnostic.finditer(text):
               row = match.groupdict()
               row['line'] = int(row['line'])
               row['column'] = int(row['column'])
@@ -172,19 +182,24 @@ jobs:
           errors = [row for row in rows if row['severity'] == 'error']
           warnings = [row for row in rows if row['severity'] == 'warning']
           panic_lines = len(re.findall(
-              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text
+              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',
+              text,
           ))
           exit_code = int((out / 'direct.exit').read_text())
-          sha = hashlib.sha256(qym.read_bytes()).hexdigest()
+          raw = qym.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
           blob = hashlib.sha1(
-              b'blob ' + str(qym.stat().st_size).encode() + b'\0' + qym.read_bytes()
+              b'blob ' + str(len(raw)).encode() + b'\0' + raw
           ).hexdigest()
           semantic_pass = (
-              exit_code == 0 and len(errors) == 0 and panic_lines == 0
-              and (out / 'QYM.olean').is_file() and (out / 'QYM.ilean').is_file()
+              exit_code == 0
+              and len(errors) == 0
+              and panic_lines == 0
+              and (out / 'QYM.olean').is_file()
+              and (out / 'QYM.ilean').is_file()
           )
           result = {
-              'schema': 'qym-gb79-v11b-result-v1',
+              'schema': 'qym-gb79-v11b-result-v2',
               'variant': os.environ['VARIANT'],
               'baseline_error_headers': int(os.environ['BASE_ERRORS']),
               'baseline_qym_sha256': os.environ['BASE_SHA256'],
@@ -207,21 +222,28 @@ jobs:
               ).items())),
               'semantic_pass': semantic_pass,
               'strict_improvement': semantic_pass or (
-                  panic_lines == 0 and len(errors) < int(os.environ['BASE_ERRORS'])
+                  panic_lines == 0
+                  and len(errors) < int(os.environ['BASE_ERRORS'])
               ),
               'gate_line': int(patch['gate_line']),
               'first_blocker_advanced': (
-                  panic_lines == 0 and (
-                      not errors or int(errors[0]['line']) >= int(patch['gate_line'])
+                  panic_lines == 0
+                  and (
+                      not errors
+                      or int(errors[0]['line']) >= int(patch['gate_line'])
                   )
               ),
-              'log_sha256': hashlib.sha256((out / 'direct.log').read_bytes()).hexdigest(),
+              'log_sha256': hashlib.sha256(
+                  (out / 'direct.log').read_bytes()
+              ).hexdigest(),
               'run_id': int(os.environ['GITHUB_RUN_ID']),
               'head_sha': os.environ['GITHUB_SHA'],
           }
           if sha != patch['candidate_sha256'] or blob != patch['candidate_blob']:
               raise SystemExit('candidate digest mismatch after compile')
-          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          (out / 'RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n'
+          )
           print(json.dumps(result, indent=2, sort_keys=True))
           PY
 
@@ -231,20 +253,21 @@ jobs:
         with:
           name: qym-gb79-v11b-${{ matrix.variant }}-${{ github.run_id }}
           path: ${{ env.OUT }}
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
   select:
     needs: candidate
     if: always()
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 60
+    outputs:
+      has_winner: ${{ steps.choose.outputs.has_winner }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
-          persist-credentials: true
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
@@ -252,11 +275,15 @@ jobs:
           path: /tmp/qym-v11b-results
 
       - name: Select one strict candidate by direct-Lean evidence
+        id: choose
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, json, shutil
+          import hashlib
+          import json
+          import os
+          import shutil
 
           root = Path('/tmp/qym-v11b-results')
           rows = []
@@ -273,9 +300,10 @@ jobs:
               and int(row.get('panic_lines', 1)) == 0
               and int(row.get('error_headers', 10**9)) < 79
           ]
+          output = Path(os.environ['GITHUB_OUTPUT'])
           if not viable:
               selection = {
-                  'schema': 'qym-gb79-v11b-selection-v1',
+                  'schema': 'qym-gb79-v11b-selection-v2',
                   'strict_improvement_found': False,
                   'baseline_error_headers': 79,
                   'candidate_count': len(rows),
@@ -292,7 +320,10 @@ jobs:
               Path('/tmp/V11B_SELECTION.json').write_text(
                   json.dumps(selection, indent=2, sort_keys=True) + '\n'
               )
+              with output.open('a') as handle:
+                  handle.write('has_winner=false\n')
               raise SystemExit(0)
+
           viable.sort(key=lambda row: (
               int(row['error_headers']),
               0 if row.get('semantic_pass') else 1,
@@ -300,16 +331,15 @@ jobs:
               str(row['variant']),
           ))
           best = viable[0]
-          directory = Path(best['_directory'])
-          source = directory / 'QYM.lean'
+          source = Path(best['_directory']) / 'QYM.lean'
           if not source.is_file():
               raise SystemExit(f'missing selected QYM source: {source}')
           actual_sha = hashlib.sha256(source.read_bytes()).hexdigest()
           if actual_sha != best['candidate_qym_sha256']:
               raise SystemExit('selected artifact SHA mismatch')
-          shutil.copy2(source, 'PrimalitySheafVerification/QYM.lean')
+          shutil.copy2(source, '/tmp/V11B_SELECTED_QYM.lean')
           selection = {
-              'schema': 'qym-gb79-v11b-selection-v1',
+              'schema': 'qym-gb79-v11b-selection-v2',
               'strict_improvement_found': True,
               'baseline_error_headers': 79,
               'best': best,
@@ -318,30 +348,80 @@ jobs:
           Path('/tmp/V11B_SELECTION.json').write_text(
               json.dumps(selection, indent=2, sort_keys=True) + '\n'
           )
-          Path('/tmp/V11B_HAS_WINNER').write_text('yes\n')
+          with output.open('a') as handle:
+              handle.write('has_winner=true\n')
           PY
 
-      - name: Install pinned Lean and Mathlib cache for independent replay
-        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+      - name: Upload selected source and complete selection evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v11b-selected-${{ github.run_id }}
+          path: |
+            /tmp/V11B_ALL_RESULTS.json
+            /tmp/V11B_SELECTION.json
+            /tmp/V11B_SELECTED_QYM.lean
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail visibly after preserving no-winner evidence
+        if: steps.choose.outputs.has_winner != 'true'
+        shell: bash
+        run: |
+          cat /tmp/V11B_SELECTION.json
+          exit 1
+
+  verify-and-promote:
+    needs: select
+    if: needs.select.outputs.has_winner == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: qym-gb79-v11b-selected-${{ github.run_id }}
+          path: /tmp/qym-v11b-selected-input
+
+      - name: Restore exactly selected source
         shell: bash
         run: |
           set -euo pipefail
-          OUT=/tmp/qym-v11b-selected
-          mkdir -p "$OUT" "$OLEAN"
-          echo "SELECTED_OUT=$OUT" >> "$GITHUB_ENV"
+          cp /tmp/qym-v11b-selected-input/V11B_SELECTED_QYM.lean "$QYM"
+          cp /tmp/qym-v11b-selected-input/V11B_SELECTION.json /tmp/V11B_SELECTION.json
+          SELECTED_OUT=/tmp/qym-v11b-selected-replay
+          mkdir -p "$SELECTED_OUT" "$OLEAN"
+          echo "SELECTED_OUT=$SELECTED_OUT" >> "$GITHUB_ENV"
+          expected_sha="$(jq -r '.best.candidate_qym_sha256' /tmp/V11B_SELECTION.json)"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$expected_sha"
+
+      - name: Install pinned Lean and Mathlib cache for independent replay
+        shell: bash
+        run: |
+          set -euo pipefail
           curl --retry 8 --retry-all-errors --fail --silent --show-error \
             https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
-          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          sh /tmp/elan.sh -y --default-toolchain none > "$SELECTED_OUT/elan.log" 2>&1
           export PATH="$HOME/.elan/bin:$PATH"
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
           tc="$(tr -d '\r\n' < lean-toolchain)"
-          for a in 1 2 3 4 5; do
-            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$SELECTED_OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
           done
-          lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1
+          lean --version | tee "$SELECTED_OUT/lean-version.txt"
+          lake --version | tee "$SELECTED_OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$SELECTED_OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
 
-      - name: Restore dependency objects for independent replay
-        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
+      - name: Restore dependencies for independent replay
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
@@ -358,59 +438,73 @@ jobs:
             qym-probe4-deps-v1-${{ runner.os }}-
 
       - name: Ensure dependencies and independently compile selected source
-        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
         shell: bash
         run: |
           set -euo pipefail
-          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
-            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
-              cap=1
-              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
-              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
-              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
-                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
-                "PrimalitySheafVerification/$s.lean" > "$SELECTED_OUT/$s.log" 2>&1
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" \
+                > "$SELECTED_OUT/$source.log" 2>&1
             fi
-            test -s "$OLEAN/$s.olean"
-            test -s "$OLEAN/$s.ilean"
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
           done
           set +e
           lake env lean -DmaxErrors=10000 -DwarningAsError=false \
             -o "$SELECTED_OUT/QYM.olean" -i "$SELECTED_OUT/QYM.ilean" "$QYM" \
             > "$SELECTED_OUT/direct.log" 2>&1
-          rc=$?
+          replay_exit=$?
           set -e
-          printf '%s\n' "$rc" > "$SELECTED_OUT/direct.exit"
+          printf '%s\n' "$replay_exit" > "$SELECTED_OUT/direct.exit"
 
       - name: Verify replay metrics and promote
-        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') != '' }}
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, json, os, re
+          import hashlib
+          import json
+          import os
+          import re
 
           selection = json.loads(Path('/tmp/V11B_SELECTION.json').read_text())
           best = selection['best']
           source = Path(os.environ['QYM'])
           out = Path(os.environ['SELECTED_OUT'])
           log = (out / 'direct.log').read_text(errors='replace')
-          errors = list(re.finditer(r'^.*?\.lean:\d+:\d+: error(?:\([^)]*\))?:', log, re.M))
+          errors = list(re.finditer(
+              r'^.*?\.lean:\d+:\d+: error(?:\([^)]*\))?:',
+              log,
+              re.M,
+          ))
           panic = len(re.findall(
-              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', log
+              r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',
+              log,
           ))
           exit_code = int((out / 'direct.exit').read_text())
-          sha = hashlib.sha256(source.read_bytes()).hexdigest()
+          raw = source.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(
+              b'blob ' + str(len(raw)).encode() + b'\0' + raw
+          ).hexdigest()
           true_pass = exit_code == 0 and len(errors) == 0 and panic == 0
           verified = (
               len(errors) == int(best['error_headers'])
               and sha == best['candidate_qym_sha256']
+              and blob == best['candidate_qym_blob']
               and len(errors) < 79
               and panic == 0
               and (not best.get('semantic_pass') or true_pass)
           )
           result = {
-              'schema': 'qym-gb79-v11b-independent-verification-v1',
+              'schema': 'qym-gb79-v11b-independent-verification-v2',
               'verified': verified,
               'variant': best['variant'],
               'baseline_error_headers': 79,
@@ -419,8 +513,8 @@ jobs:
               'panic_lines': panic,
               'true_pass': true_pass,
               'qym_sha256': sha,
-              'candidate_qym_blob': best['candidate_qym_blob'],
-              'source_run_id': best['run_id'],
+              'qym_blob': blob,
+              'candidate_run_id': best['run_id'],
               'selector_run_id': int(os.environ['GITHUB_RUN_ID']),
           }
           Path('/tmp/V11B_VERIFIED.json').write_text(
@@ -428,35 +522,30 @@ jobs:
           )
           if not verified:
               raise SystemExit(f'independent verification mismatch: {result}')
+          print(json.dumps(result, indent=2, sort_keys=True))
           PY
+
           mkdir -p .github/qym-frontier
           cp /tmp/V11B_SELECTION.json .github/qym-frontier/V11B_SELECTION.json
           cp /tmp/V11B_VERIFIED.json .github/qym-frontier/V11B_VERIFIED.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           errors="$(jq -r '.error_headers' /tmp/V11B_VERIFIED.json)"
-          git add "$QYM" .github/qym-frontier/V11B_SELECTION.json \
+          git add "$QYM" \
+            .github/qym-frontier/V11B_SELECTION.json \
             .github/qym-frontier/V11B_VERIFIED.json
           git commit -m "QYM V11B: promote verified ${errors}-error frontier"
           git push origin "HEAD:$BRANCH"
 
-      - name: Upload selector evidence
+      - name: Upload independent replay evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: qym-gb79-v11b-selector-${{ github.run_id }}
+          name: qym-gb79-v11b-verified-${{ github.run_id }}
           path: |
-            /tmp/V11B_ALL_RESULTS.json
             /tmp/V11B_SELECTION.json
             /tmp/V11B_VERIFIED.json
-            /tmp/qym-v11b-selected
+            /tmp/qym-v11b-selected-replay
             PrimalitySheafVerification/QYM.lean
           if-no-files-found: warn
           retention-days: 30
-
-      - name: Fail visibly only after preserving a no-winner selection
-        if: ${{ hashFiles('/tmp/V11B_HAS_WINNER') == '' }}
-        shell: bash
-        run: |
-          cat /tmp/V11B_SELECTION.json
-          exit 1
