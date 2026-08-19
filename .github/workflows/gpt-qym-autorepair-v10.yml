@@ -1,0 +1,132 @@
+name: GPT QYM declaration-aware fallback autorepair v10
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v6-mulinv-20260819
+    paths:
+      - .github/qym_autorepair_v10.py
+      - .github/workflows/gpt-qym-autorepair-v10.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-declaration-fallback-v10-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v6-mulinv-20260819
+  LEAN_TIMEOUT_SECONDS: "10800"
+  PREFIX_TIMEOUT_SECONDS: "1800"
+  MAX_V9_ROUNDS: "50"
+  V9_PREFIX_WORKERS: "3"
+  V9_MAX_FULL_CANDIDATES: "6"
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Wait for all earlier frontier writers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          quiet=0
+          for _ in $(seq 1 960); do
+            active=0
+            for workflow in \
+              gpt-qym-autorepair-v7.yml \
+              gpt-qym-autorepair-v8.yml \
+              gpt-qym-autorepair-v9.yml; do
+              count=$(gh api "/repos/$REPO/actions/workflows/$workflow/runs?branch=$BRANCH&per_page=30" \
+                --jq '[.workflow_runs[] | select(.status != "completed")] | length' 2>/dev/null || echo 0)
+              active=$((active + count))
+            done
+            if (( active == 0 )); then
+              quiet=$((quiet + 1))
+              if (( quiet >= 2 )); then break; fi
+            else
+              quiet=0
+            fi
+            sleep 30
+          done
+
+      - name: Refresh authoritative branch
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v10-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v10-${{ runner.os }}-
+            qym-v9-${{ runner.os }}-
+            qym-v8-${{ runner.os }}-
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        run: lake exe cache get
+
+      - name: Configure verified-frontier commits
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run declaration-aware persistent repair
+        id: repair
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v10.py
+
+      - name: Upload v10 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v10-evidence-${{ github.run_id }}
+          path: |
+            .github/qym_autorepair_v9_state.json
+            .qym_v9/**/*.log
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Show final state
+        if: always()
+        run: |
+          if [[ -f .github/qym_autorepair_v9_state.json ]]; then
+            cat .github/qym_autorepair_v9_state.json
+          fi
+
+      - name: Fail visibly if direct Lean still reports blockers
+        if: steps.repair.outcome != 'success'
+        run: exit 1
