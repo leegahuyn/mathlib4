@@ -128,3 +128,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Workflow registration retrigger: 2026-08-19T04:27Z
