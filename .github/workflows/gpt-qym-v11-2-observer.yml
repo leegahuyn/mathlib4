@@ -1,0 +1,51 @@
+name: GPT QYM V11.2 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-v11-2-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-v11-2-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+      - name: Query exact V11.2 runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_WORKFLOW: gpt-qym-gb79-v11-2-edgeparametertransport.yml
+          TARGET_BRANCH: gpt/qym-gb79-v11-2-edgeparametertransport-20260819
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          url="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs?branch=$TARGET_BRANCH&per_page=10"
+          curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$url" > /tmp/runs.json
+          jq --arg observed_at "$(date -u +%FT%TZ)" \
+             --arg target_workflow "$TARGET_WORKFLOW" \
+             --arg target_branch "$TARGET_BRANCH" \
+             '{observed_at:$observed_at,target_workflow:$target_workflow,target_branch:$target_branch,total_count:.total_count,runs:[.workflow_runs[]|{id,run_number,run_attempt,status,conclusion,event,head_sha,head_branch,created_at,updated_at,html_url}]}' \
+             /tmp/runs.json > .github/qym-frontier/V11_2_LIVE_STATUS.json
+          cat .github/qym-frontier/V11_2_LIVE_STATUS.json
+      - name: Commit observation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/V11_2_LIVE_STATUS.json
+          git commit -m 'QYM observer: record V11.2 live status'
+          git push
