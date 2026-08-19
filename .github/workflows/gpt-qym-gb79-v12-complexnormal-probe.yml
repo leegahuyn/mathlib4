@@ -1,0 +1,183 @@
+name: GPT QYM GB79 V12 complex-normal probe
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb79-v12-complexnormal-probe-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb79-v12-complexnormal-probe.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb79-v12-complexnormal-probe
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BRANCH: gpt/qym-gb79-v12-complexnormal-probe-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb79-v12-complexnormal
+      BASE_SHA256: 790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421
+      BASE_BLOB: 33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3
+      BASE_ERRORS: '79'
+      BASE_RUN_ID: '32256493063'
+      BASE_JOB_ID: '96079286207'
+      V11_PREP_COMMIT: 6b48e63c61e670ff5234f71751985dc9d2980a23
+      V12_PREP_COMMIT: 97b8e262da9db9462a6f50901d838bc6dfd29099
+      BASE_DRIVER: .github/qym_v11_edgeparametertransport_driver.py
+      PATCHER: .github/qym_patch_v12_complexnormal.py
+      VARIANTS: factor_normsq,generalize_normsq,cases_components
+      GATE_FIELD: complexNormal_fixed
+      SELECTION_SCHEMA: qym-gb79-v12-complexnormal-selection-v1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact authoritative GB79 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Recover frozen generic driver and V12 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git cat-file -e "$V11_PREP_COMMIT^{commit}"
+          git cat-file -e "$V12_PREP_COMMIT^{commit}"
+          git show "$V11_PREP_COMMIT:.github/qym_v11_edgeparametertransport_driver.py" \
+            > .github/qym_v11_edgeparametertransport_driver.py
+          git show "$V12_PREP_COMMIT:.github/qym_patch_v12_complexnormal.py" \
+            > .github/qym_patch_v12_complexnormal.py
+          git show "$V12_PREP_COMMIT:.github/qym_generic_first_pass_driver.py" \
+            > .github/qym_generic_first_pass_driver.py
+          test -s "$BASE_DRIVER"
+          test -s "$PATCHER"
+          test -s .github/qym_generic_first_pass_driver.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$OLEAN"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a * 5))
+          done
+
+      - name: Restore and save dependency objects
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean"
+            test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Run V12 first-local-pass and full-QYM comparison
+        shell: bash
+        run: python3 -B .github/qym_generic_first_pass_driver.py
+
+      - name: Promote verified isolated V12 frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.best.lean"
+          test -s "$OUT/BEST_RESULT.json"
+          test "$(jq -r '.strict_improvement' "$OUT/BEST_RESULT.json")" = true
+          test "$(jq -r '.panic_lines' "$OUT/BEST_RESULT.json")" -eq 0
+          errors="$(jq -r '.error_headers' "$OUT/BEST_RESULT.json")"
+          test "$errors" -lt "$BASE_ERRORS"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$OUT/BEST_RESULT.json")"
+          candidate_blob="$(jq -r '.candidate_qym_blob' "$OUT/BEST_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.best.lean" | awk '{print $1}')" = "$candidate_sha"
+          test "$(git hash-object "$OUT/QYM.best.lean")" = "$candidate_blob"
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/BEST_RESULT.json" .github/qym-frontier/V12_ISOLATED_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/V12_ISOLATED_SELECTION.json
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg source_sha "$candidate_sha" \
+            --arg source_blob "$candidate_blob" \
+            --argjson errors "$errors" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            '{schema:"qym-v12-isolated-promotion-v1",branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,error_headers:$errors,panic_lines:0,qym_sha256:$source_sha,qym_blob:$source_blob,status:"PROMOTED_FROM_GB79"}' \
+            > .github/qym-frontier/V12_ISOLATED_PROMOTION_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier/V12_ISOLATED_RESULT.json \
+            .github/qym-frontier/V12_ISOLATED_SELECTION.json \
+            .github/qym-frontier/V12_ISOLATED_PROMOTION_STATUS.json
+          git commit -m "QYM V12 isolated: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Restore source and remove recovered programs
+        if: always()
+        shell: bash
+        run: |
+          git checkout -- "$QYM" || true
+          rm -f .github/qym_v11_edgeparametertransport_driver.py \
+            .github/qym_patch_v12_complexnormal.py \
+            .github/qym_generic_first_pass_driver.py
+
+      - name: Upload immutable V12 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb79-v12-complexnormal-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb79-v12-complexnormal
+          if-no-files-found: error
+          retention-days: 30
