@@ -74,7 +74,10 @@ theorem pullback_contMDiff (F : M' ≃ₜ M) :
     have hr := PartialEquiv.right_inv (extChartAt I x) hz
     rw [pullback_extChartAt_apply (F := F) (I := I)] at hr
     exact hr
-  · exact (pullback_extChartAt_apply (F := F) (I := I) x x).symm
+  · have hx : (extChartAt I x).symm (extChartAt I x x) = x :=
+      PartialEquiv.left_inv (extChartAt I x) (by simp)
+    simp only [Function.comp_apply, hx, id_eq]
+    exact (pullback_extChartAt_apply (F := F) (I := I) x x).symm
 
 end Smooth
 
