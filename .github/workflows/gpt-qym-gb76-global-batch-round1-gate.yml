@@ -1,0 +1,121 @@
+name: GPT QYM GB76 global-batch Round 1 patch gate
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-global-batch-round1-gate.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb76-global-batch-round1-patch-gate
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-global-batch-repair-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  GB76_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  GB76_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  patch-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact GB76 source and patch scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$GB76_SHA256"
+          test "$(git hash-object "$QYM")" = "$GB76_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB76_BEST.lean | awk '{print $1}')" = "$GB76_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB76_BEST.lean)" = "$GB76_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB76_BEST.lean
+          python3 -m py_compile \
+            .github/qym_patch_gb77_fixedorigin_v16_groupoid.py \
+            .github/qym_patch_gb77_fixedorigin_v17_inverse_eta.py \
+            .github/qym_patch_gb76_global_batch_round1.py \
+            .github/qym_gb76_global_batch_round1_driver.py
+
+      - name: Materialize the single cumulative Round 1 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/qym-gb76-global-batch-round1-gate
+          rm -rf "$OUT"
+          mkdir -p "$OUT"
+          python3 -B .github/qym_patch_gb76_global_batch_round1.py \
+            "$QYM" "$OUT/QYM.GLOBAL_REPAIR_CANDIDATE.lean" \
+            > "$OUT/PATCH_RESULT.json"
+
+          jq -e '.schema == "qym-gb76-global-batch-round1-patch-v1"' \
+            "$OUT/PATCH_RESULT.json"
+          jq -e '.input_sha256 == env.GB76_SHA256' "$OUT/PATCH_RESULT.json"
+          jq -e '.input_blob == env.GB76_BLOB' "$OUT/PATCH_RESULT.json"
+          jq -e '.groupoid_variant == "inline_duplicate"' "$OUT/PATCH_RESULT.json"
+          jq -e '.inverse_eta_variant == "explicit_cases"' "$OUT/PATCH_RESULT.json"
+          jq -e '.independent_replacement_count == 8' "$OUT/PATCH_RESULT.json"
+          test "$(jq '[.forbidden[]] | add' "$OUT/PATCH_RESULT.json")" -eq 0
+
+          candidate_sha="$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")"
+          candidate_blob="$(jq -r '.candidate_blob' "$OUT/PATCH_RESULT.json")"
+          test "$(sha256sum "$OUT/QYM.GLOBAL_REPAIR_CANDIDATE.lean" | awk '{print $1}')" = "$candidate_sha"
+          test "$(git hash-object "$OUT/QYM.GLOBAL_REPAIR_CANDIDATE.lean")" = "$candidate_blob"
+
+          cp "$QYM" "$OUT/QYM.GB76.AUTHORITY.lean"
+          {
+            echo "branch=$BRANCH"
+            echo "trigger_sha=$GITHUB_SHA"
+            echo "run_id=$GITHUB_RUN_ID"
+            echo "baseline_sha256=$GB76_SHA256"
+            echo "baseline_blob=$GB76_BLOB"
+            echo "candidate_sha256=$candidate_sha"
+            echo "candidate_blob=$candidate_blob"
+          } > "$OUT/IDENTITY.txt"
+
+      - name: Persist Round 1 patch-gate status
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/qym-gb76-global-batch-round1-gate
+          dest=.github/qym-frontier/GB76_GLOBAL_BATCH_ROUND1_PATCH_GATE
+          rm -rf "$dest"
+          mkdir -p "$dest"
+          cp "$OUT/PATCH_RESULT.json" "$dest"/
+          cp "$OUT/IDENTITY.txt" "$dest"/
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg baseline_sha "$GB76_SHA256" \
+            --arg baseline_blob "$GB76_BLOB" \
+            --arg candidate_sha "$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")" \
+            --arg candidate_blob "$(jq -r '.candidate_blob' "$OUT/PATCH_RESULT.json")" \
+            '{schema:"qym-gb76-global-batch-round1-patch-gate-v1",authority:"exact GB76 bytes plus source-level gates",branch:$branch,trigger_sha:$trigger_sha,run_id:$run_id,baseline_sha256:$baseline_sha,baseline_blob:$baseline_blob,candidate_sha256:$candidate_sha,candidate_blob:$candidate_blob,forbidden_zero:true,status:"PATCH_GATE_PASS",full_direct_lean_executed:false}' \
+            > "$dest/STATUS.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM GB76 global batch: Round 1 patch gate ${GITHUB_RUN_ID} PASS [skip ci]"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload cumulative candidate and patch evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-global-batch-round1-patch-gate-${{ github.run_id }}
+          path: /tmp/qym-gb76-global-batch-round1-gate
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
