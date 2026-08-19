@@ -1,0 +1,249 @@
+name: GPT QYM verified one-frontier autorepair v7
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v6-mulinv-20260819
+    paths:
+      - .github/qym_autorepair_v7.py
+      - .github/workflows/gpt-qym-autorepair-v7.yml
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: gpt-qym-autorepair-v7-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TARGET: PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean
+  LEAN_TIMEOUT_SECONDS: "10800"
+  BRANCH: gpt/qym-gb85-c2-v6-mulinv-20260819
+  MAX_AUTOREPAIR_ROUNDS: "12"
+
+jobs:
+  baseline:
+    name: Verify current direct-Lean frontier
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v7-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        shell: bash
+        run: |
+          set -euxo pipefail
+          lake exe cache get
+
+      - name: Compile baseline and locate first failing declaration
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v7.py prepare --target "$TARGET"
+          cat .qym_v7/diagnostic.json
+
+      - name: Upload authoritative baseline metric
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v7-baseline
+          path: |
+            .qym_v7/diagnostic.json
+            .qym_v7/baseline.log
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  candidates:
+    name: Direct Lean candidate ${{ matrix.candidate }}
+    needs: baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        candidate:
+          - api_group_names
+          - api_zero_names
+          - simp
+          - simp_scaling
+          - simp_all_scaling
+          - aesop
+          - aesop_scaling
+          - cases_cusp_simp
+          - cases_cusp_rfl
+          - ext_simp
+          - ext_matrix_norm
+          - group
+          - noncomm_ring
+          - simpa_mul_inv
+          - simpa_inv_mul
+          - change_simp
+          - all_goals_simp
+          - prepend_simp
+          - prepend_classical_simp
+          - exact_by_contra_aesop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v7-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        shell: bash
+        run: |
+          set -euxo pipefail
+          lake exe cache get
+
+      - name: Download authoritative baseline metric
+        uses: actions/download-artifact@v4
+        with:
+          name: qym-v7-baseline
+          path: .qym_v7
+
+      - name: Apply one independent proof strategy and compile directly
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v7.py candidate \
+            --target "$TARGET" \
+            --candidate "${{ matrix.candidate }}"
+          cat ".qym_v7/candidate_${{ matrix.candidate }}/metrics.json"
+
+      - name: Upload candidate source and direct-Lean evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v7-candidate-${{ matrix.candidate }}
+          path: |
+            .qym_v7/candidate_${{ matrix.candidate }}/metrics.json
+            .qym_v7/candidate_${{ matrix.candidate }}/lean.log
+            .qym_v7/candidate_${{ matrix.candidate }}/source.lean
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  select:
+    name: Select only a strict verified improvement
+    needs:
+      - baseline
+      - candidates
+    if: always() && needs.baseline.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Download authoritative baseline metric
+        uses: actions/download-artifact@v4
+        with:
+          name: qym-v7-baseline
+          path: .qym_v7
+
+      - name: Download all completed candidates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: qym-v7-candidate-*
+          path: .qym_v7/downloads
+
+      - name: Compare direct-Lean metrics and install winner
+        id: choose
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v7.py select \
+            --target "$TARGET" \
+            --downloads .qym_v7/downloads
+          cat .github/qym_autorepair_v7_state.json
+
+      - name: Advance bounded repair-round counter
+        id: round
+        shell: bash
+        run: |
+          set -euxo pipefail
+          counter=.github/qym_autorepair_v7_round.txt
+          old=0
+          if [[ -f "$counter" ]]; then old=$(cat "$counter"); fi
+          next=$((old + 1))
+          echo "$next" > "$counter"
+          echo "round=$next" >> "$GITHUB_OUTPUT"
+          if (( next < MAX_AUTOREPAIR_ROUNDS )); then
+            echo "continue=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "continue=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit verified frontier or diagnostic state
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$TARGET" .github/qym_autorepair_v7_state.json .github/qym_autorepair_v7_round.txt
+          if git diff --cached --quiet; then
+            echo "No repository change to commit."
+          else
+            git commit -m "QYM v7 verified frontier: ${{ steps.choose.outputs.errors }} errors at round ${{ steps.round.outputs.round }}"
+            git push origin "HEAD:$BRANCH"
+          fi
+
+      - name: Continue automatically at the next first error
+        if: steps.choose.outputs.improved == 'true' && steps.choose.outputs.zero != 'true' && steps.round.outputs.continue == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sleep 8
+          gh workflow run gpt-qym-autorepair-v7.yml --ref "$BRANCH"
+
+      - name: Record verified zero-error completion
+        if: steps.choose.outputs.zero == 'true'
+        shell: bash
+        run: |
+          echo "Direct Lean returned exit 0 with zero error headers."
