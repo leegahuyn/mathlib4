@@ -1,0 +1,440 @@
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 1, "message": "'Mathlib.Analysis.Normed.Operator.Compact' has been deprecated: please replace this import by", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 1, "message": "'Mathlib.Data.Real.Sqrt' has been deprecated: please replace this import by", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 553, "message": "automatically included section variable(s) unused in theorem `QYM.trace_cyclic_of_untwisted`:", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 1462, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 1470, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 1477, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 1795, "message": "`push_neg` has been deprecated. Prefer using `push Not` instead.", "severity": "warning"}
+{"code": null, "column": 12, "file": "PrimalitySheafVerification/QYM.lean", "line": 1912, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 2255, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 2418, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 2424, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 3602, "message": "`push_neg` has been deprecated. Prefer using `push Not` instead.", "severity": "warning"}
+{"code": null, "column": 22, "file": "PrimalitySheafVerification/QYM.lean", "line": 3697, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 4007, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 4222, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 18, "file": "PrimalitySheafVerification/QYM.lean", "line": 4222, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 29, "file": "PrimalitySheafVerification/QYM.lean", "line": 4358, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 25, "file": "PrimalitySheafVerification/QYM.lean", "line": 4355, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 29, "file": "PrimalitySheafVerification/QYM.lean", "line": 4358, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4484, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4484, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 73, "file": "PrimalitySheafVerification/QYM.lean", "line": 4492, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4494, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4494, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4635, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 4635, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 18, "file": "PrimalitySheafVerification/QYM.lean", "line": 4788, "message": "`Finsupp.support_single_ne_zero` has been deprecated: Use `Finsupp.support_single` instead", "severity": "warning"}
+{"code": null, "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 4797, "message": "`Finsupp.support_single_ne_zero` has been deprecated: Use `Finsupp.support_single` instead", "severity": "warning"}
+{"code": null, "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 4806, "message": "`Finsupp.support_single_ne_zero` has been deprecated: Use `Finsupp.support_single` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 8912, "message": "Try `simp at hevidence` instead of `simpa using hevidence`", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 10661, "message": "Try `simp at hn` instead of `simpa using hn`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 11248, "message": "automatically included section variable(s) unused in theorem `QYM.OperatorFormCompactnessCore.graphEnergy_nonnegative`:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 11363, "message": "Try `simp at hzero` instead of `simpa using hzero`", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 11434, "message": "Try `simp at hxy` instead of `simpa using hxy`", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 11460, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 11466, "message": "Try `simp at hzeroDomain` instead of `simpa using hzeroDomain`", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 12961, "message": "Variable name `x` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 13385, "message": "Variable name `h\u03b40` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 14979, "message": "Definition `QYM.HilbertOperatorFormExtension.completeSpaceOfClosedSubspace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 14979, "message": "Definition `completeSpaceOfClosedSubspace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 15177, "message": "Variable name `hV` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 16573, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 16870, "message": "automatically included section variable(s) unused in theorem `QYM.UnboundedLinearPMapExtension.symmetric_closure_isDenselyDefined`:", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 17459, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `_root_.add_apply` instead", "severity": "warning"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 17780, "message": "`ContinuousLinearMap.coe_sub'` has been deprecated: Use `FunLike.coe_sub` instead", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 17816, "message": "`ContinuousLinearMap.one_apply` has been deprecated: Use `one_apply_eq_self` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 17841, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 17862, "message": "automatically included section variable(s) unused in theorem `QYM.CompactResolventLogicExtension.mem_energySublevel_iff`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 17874, "message": "automatically included section variable(s) unused in theorem `QYM.CompactResolventLogicExtension.energySublevel_subset_closedBall`:", "severity": "warning"}
+{"code": null, "column": 47, "file": "PrimalitySheafVerification/QYM.lean", "line": 17929, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 17925, "message": "automatically included section variable(s) unused in theorem `QYM.CompactResolventLogicExtension.normSquareEnergy_unitSublevel_eq_closedBall`:", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 18378, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 26, "file": "PrimalitySheafVerification/QYM.lean", "line": 18389, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 18401, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 18859, "message": "Variable name `hj` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 35, "file": "PrimalitySheafVerification/QYM.lean", "line": 18859, "message": "Variable name `hjDense` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 19215, "message": "`ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 19231, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 19303, "message": "`ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 19308, "message": "`ContinuousLinearMap.coe_smul'` has been deprecated: Use `FunLike.coe_smul` instead", "severity": "warning"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 19317, "message": "`ContinuousLinearMap.coe_sub'` has been deprecated: Use `FunLike.coe_sub` instead", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 19394, "message": "`ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 19706, "message": "automatically included section variable(s) unused in theorem `QYM.CompactSelfAdjointGapExtension.eigenvector_mem_groundSpace_orthogonal`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 19763, "message": "automatically included section variable(s) unused in theorem `QYM.CompactSelfAdjointGapExtension.real_eigenvalue_nonnegative`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 19969, "message": "automatically included section variable(s) unused in theorem `QYM.CompactSelfAdjointGapExtension.antilipschitz_of_normLowerBound`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 20012, "message": "automatically included section variable(s) unused in theorem `QYM.CompactSelfAdjointGapExtension.normLowerBound_of_injective_groundComplementCoercivity`:", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 20014, "message": "Variable name `hc` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 20093, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 53, "file": "PrimalitySheafVerification/QYM.lean", "line": 20093, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 20750, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 35, "file": "PrimalitySheafVerification/QYM.lean", "line": 20750, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 73, "file": "PrimalitySheafVerification/QYM.lean", "line": 20788, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 20886, "message": "automatically included section variable(s) unused in theorem `QYM.CoerciveFormFriedrichsExtension.positiveShift_apply`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 20976, "message": "automatically included section variable(s) unused in theorem `QYM.CoerciveFormFriedrichsExtension.shiftedForm_domainCoordinate`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 21132, "message": "automatically included section variable(s) unused in theorem `QYM.CoerciveFormFriedrichsExtension.inner_positiveShift_swap`:", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 21364, "message": "`ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead", "severity": "warning"}
+{"code": null, "column": 45, "file": "PrimalitySheafVerification/QYM.lean", "line": 21373, "message": "`ContinuousLinearMap.coe_neg'` has been deprecated: Use `FunLike.coe_neg` instead", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 21427, "message": "Variable name `hSymm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 21428, "message": "Variable name `hShift` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 21455, "message": "Variable name `hShift` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 21484, "message": "Variable name `hSymm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 21513, "message": "Variable name `hjCompact` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 21692, "message": "automatically included section variable(s) unused in theorem `QYM.BoundedSelfAdjointPMapPerturbationExtension.addEverywhere_domain`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 21697, "message": "automatically included section variable(s) unused in theorem `QYM.BoundedSelfAdjointPMapPerturbationExtension.addEverywhere_apply`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 21703, "message": "automatically included section variable(s) unused in theorem `QYM.BoundedSelfAdjointPMapPerturbationExtension.addEverywhere_domain_dense`:", "severity": "warning"}
+{"code": null, "column": 28, "file": "PrimalitySheafVerification/QYM.lean", "line": 21986, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 22111, "message": "Variable name `ha0` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 22243, "message": "automatically included section variable(s) unused in theorem `QYM.FormSmallOperatorPerturbationExtension.perturbedRealization_quantitativeLowerBound`:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 22476, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 34, "file": "PrimalitySheafVerification/QYM.lean", "line": 22476, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 37, "file": "PrimalitySheafVerification/QYM.lean", "line": 22488, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 22494, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 22495, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 37, "file": "PrimalitySheafVerification/QYM.lean", "line": 22496, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 22647, "message": "Variable name `hjCompact` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 22648, "message": "Variable name `hBsymm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 22649, "message": "Variable name `hEsymm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 22746, "message": "Variable name `hjCompact` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 22906, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 23231, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 35, "file": "PrimalitySheafVerification/QYM.lean", "line": 23231, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 23491, "message": "automatically included section variable(s) unused in theorem `QYM.RCLikeCoerciveFormFriedrichsExtension.positiveShift_apply`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 23575, "message": "automatically included section variable(s) unused in theorem `QYM.RCLikeCoerciveFormFriedrichsExtension.shiftedForm_domainCoordinate`:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 23725, "message": "automatically included section variable(s) unused in theorem `QYM.RCLikeCoerciveFormFriedrichsExtension.inner_positiveShift_swap`:", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 23967, "message": "`ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 23977, "message": "`ContinuousLinearMap.coe_neg'` has been deprecated: Use `FunLike.coe_neg` instead", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 24038, "message": "Variable name `hShift` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 24065, "message": "Variable name `hHerm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 24066, "message": "Variable name `hShift` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 24095, "message": "Variable name `hShift` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 24125, "message": "Variable name `hHerm` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 24159, "message": "Variable name `hjCompact` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 40, "file": "PrimalitySheafVerification/QYM.lean", "line": 24237, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 50, "file": "PrimalitySheafVerification/QYM.lean", "line": 24237, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 25103, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 25104, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 25330, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 25332, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 26328, "message": "Definition `QYM.ClosedOperatorEnergyFormExtension.completeSpaceOfClosedOperator` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 26328, "message": "Definition `completeSpaceOfClosedOperator` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 26341, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 26434, "message": "automatically included section variable(s) unused in theorem `QYM.CompactResolventPureDiscreteExtension.resolventEigenvalue_ne_zero`:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 26534, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 26733, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 26751, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 26768, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 28032, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 28055, "message": "Definition `QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaPeterssonCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 28055, "message": "Definition `etaPeterssonCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 28061, "message": "Definition `QYM.FullCertification.Mock2EtaPeterssonCarrierExtension.etaPeterssonCompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 12, "file": "PrimalitySheafVerification/QYM.lean", "line": 28170, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28229, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28229, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28270, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28270, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 28375, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28462, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 28462, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 15, "file": "PrimalitySheafVerification/QYM.lean", "line": 28512, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 15, "file": "PrimalitySheafVerification/QYM.lean", "line": 28523, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 25, "file": "PrimalitySheafVerification/QYM.lean", "line": 28645, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 28646, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 26, "file": "PrimalitySheafVerification/QYM.lean", "line": 28656, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 33, "file": "PrimalitySheafVerification/QYM.lean", "line": 28764, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 15, "file": "PrimalitySheafVerification/QYM.lean", "line": 28765, "message": "`ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 28969, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 28994, "message": "Definition `QYM.FullCertification.Mock2EtaH1GraphCompletionExtension.etaDerivativeGraphCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 28994, "message": "Definition `etaDerivativeGraphCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 29000, "message": "Definition `QYM.FullCertification.Mock2EtaH1GraphCompletionExtension.etaDerivativeGraphCompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 29006, "message": "Definition `QYM.FullCertification.Mock2EtaH1GraphCompletionExtension.etaH1CompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 29006, "message": "Definition `etaH1CompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 29011, "message": "Definition `QYM.FullCertification.Mock2EtaH1GraphCompletionExtension.etaH1CompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 29211, "message": "Definition `quotientMap_measurePreserving` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 29364, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 29364, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 29697, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 29926, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 29948, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 30171, "message": "automatically included section variable(s) unused in theorem `QYM.PaperGroundShiftedGapCorrectionExtension.pmap_eigenvector_mem_fullGroundEigenspace_orthogonal`:", "severity": "warning"}
+{"code": null, "column": 45, "file": "PrimalitySheafVerification/QYM.lean", "line": 30222, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 30630, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 30794, "message": "Definition `certificate` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 30989, "message": "Definition `QYM.FullCertification.P1MatterGaugeDirichletFirewallExtension.coulombGaugeSliceCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 30989, "message": "Definition `coulombGaugeSliceCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 31386, "message": "Definition `QYM.FullCertification.P1MatterGaugeDirichletFirewallExtension.dirichletCoreCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 31386, "message": "Definition `dirichletCoreCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 31443, "message": "'change", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 31975, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 31975, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 32370, "message": "Definition `modelNotationFirewallCertificate` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 32506, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 34483, "message": "Definition `smoothEmbeddedHorizontalHorocycleCertificate` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 34551, "message": "Variable name `hH` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 20, "file": "PrimalitySheafVerification/QYM.lean", "line": 34558, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 34802, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 34879, "message": "Definition `QYM.FullCertification.PolygonTraceExtension.etaTraceEnhancedCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 34879, "message": "Definition `etaTraceEnhancedCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 34884, "message": "Definition `QYM.FullCertification.PolygonTraceExtension.etaTraceEnhancedCompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 35167, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 35446, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 35634, "message": "Definition `QYM.FullCertification.P2ActualFixedPhaseCuspTraceGraphExtension.actualFixedPhaseCuspTraceCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 35634, "message": "Definition `actualFixedPhaseCuspTraceCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 35641, "message": "Definition `QYM.FullCertification.P2ActualFixedPhaseCuspTraceGraphExtension.actualFixedPhaseCuspTraceCompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36749, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36751, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36765, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36767, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36799, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 36801, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 37137, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 44, "file": "PrimalitySheafVerification/QYM.lean", "line": 37164, "message": "`Submodule.orthogonalProjection` has been deprecated: Use `Submodule.orthogonalProjectionOnto` instead", "severity": "warning"}
+{"code": null, "column": 50, "file": "PrimalitySheafVerification/QYM.lean", "line": 37182, "message": "`Submodule.orthogonalProjection_mem_subspace_eq_self` has been deprecated: Use `Submodule.orthogonalProjectionOnto_mem_subspace_eq_self` instead", "severity": "warning"}
+{"code": null, "column": 44, "file": "PrimalitySheafVerification/QYM.lean", "line": 37214, "message": "`Submodule.norm_orthogonalProjection_apply_le` has been deprecated: Use `Submodule.norm_orthogonalProjectionOnto_apply_le` instead", "severity": "warning"}
+{"code": null, "column": 47, "file": "PrimalitySheafVerification/QYM.lean", "line": 37279, "message": "`Submodule.orthogonalProjection` has been deprecated: Use `Submodule.orthogonalProjectionOnto` instead", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 37281, "message": "`Submodule.ker_orthogonalProjection` has been deprecated: Use `Submodule.ker_orthogonalProjectionOnto` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 37696, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 37944, "message": "Definition `QYM.FullCertification.P2GammaTwoFreeActionExtension.gammaTwoQuotientChartedSpaceH` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 39592, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 38, "file": "PrimalitySheafVerification/QYM.lean", "line": 39660, "message": "`Set.mem_diff` has been deprecated: Use `Set.mem_sdiff` instead", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 40301, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 40304, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 40308, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 41201, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 41296, "message": "Definition `QYM.FullCertification.P2ClassicalHhalfTraceExtension.widthTwoHhalfCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 41296, "message": "Definition `widthTwoHhalfCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 41588, "message": "'change' tactic failed, pattern", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 41988, "message": "'change", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 42105, "message": "Definition `QYM.FullCertification.P2ClassicalHhalfTraceExtension.actualFixedPhaseHhalfTraceCompletionCompleteSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 42105, "message": "Definition `actualFixedPhaseHhalfTraceCompletionCompleteSpace` is a proposition; use `theorem` instead of `def`", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 42110, "message": "Definition `QYM.FullCertification.P2ClassicalHhalfTraceExtension.actualFixedPhaseHhalfTraceCompletionInnerProductSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 42342, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 42344, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 43384, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 43648, "message": "'change", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 43905, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 43931, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 43942, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 43954, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 43986, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 44050, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 44193, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 44203, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 44260, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 44262, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 24, "file": "PrimalitySheafVerification/QYM.lean", "line": 44710, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 36, "file": "PrimalitySheafVerification/QYM.lean", "line": 44710, "message": "Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice", "severity": "warning"}
+{"code": null, "column": 61, "file": "PrimalitySheafVerification/QYM.lean", "line": 44717, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 18, "file": "PrimalitySheafVerification/QYM.lean", "line": 44725, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 24, "file": "PrimalitySheafVerification/QYM.lean", "line": 44733, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 34, "file": "PrimalitySheafVerification/QYM.lean", "line": 44733, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 44, "file": "PrimalitySheafVerification/QYM.lean", "line": 44733, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 44734, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 44881, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 44881, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 45421, "message": "Definition `QYM.FullCertification.P2SmoothQuotientAtlasExtension.allCoveringSheetsChartedSpaceH` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 45462, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 45483, "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 45496, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 62, "file": "PrimalitySheafVerification/QYM.lean", "line": 45495, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46329, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46346, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46348, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46351, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46372, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46374, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46377, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46379, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46397, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46399, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46402, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46404, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 46407, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 47371, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 47453, "message": "`MeasureTheory.setIntegral_eq_of_subset_of_forall_diff_eq_zero` has been deprecated: Use `MeasureTheory.setIntegral_eq_of_subset_of_forall_sdiff_eq_zero` instead", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 48076, "message": "this tactic is never executed", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 48076, "message": "'ring' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48103, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 142, "file": "PrimalitySheafVerification/QYM.lean", "line": 48196, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 144, "file": "PrimalitySheafVerification/QYM.lean", "line": 48213, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48263, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48265, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 48354, "message": "Tactic `rewrite` failed: motive is not type correct:", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 48368, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 48373, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 48376, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 48380, "message": "Type mismatch", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 48385, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48426, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 57, "file": "PrimalitySheafVerification/QYM.lean", "line": 48443, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48452, "message": "`simp` made no progress", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48460, "message": "`simp` made no progress", "severity": "error"}
+{"code": null, "column": 42, "file": "PrimalitySheafVerification/QYM.lean", "line": 48503, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 36, "file": "PrimalitySheafVerification/QYM.lean", "line": 48505, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 48521, "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern", "severity": "error"}
+{"code": null, "column": 24, "file": "PrimalitySheafVerification/QYM.lean", "line": 48606, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48619, "message": "'change' tactic failed, pattern", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48645, "message": "Tactic `rfl` failed: The left-hand side", "severity": "error"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 48654, "message": "Tactic `rfl` failed: The left-hand side", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48661, "message": "Tactic `rfl` failed: The left-hand side", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48698, "message": "'change' tactic failed, pattern", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48715, "message": "'change' tactic failed, pattern", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48764, "message": "Tactic `rfl` failed: The left-hand side", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 48773, "message": "'change' tactic failed, pattern", "severity": "error"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 49070, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 14, "file": "PrimalitySheafVerification/QYM.lean", "line": 49070, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49436, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49438, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49455, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49457, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49459, "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49471, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 49473, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 49867, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 49903, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 50150, "message": "`Set.mem_setOf_eq` has been deprecated: Use `Set.mem_ofPred_eq` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50459, "message": "Try `simp at hPos` instead of `simpa using hPos`", "severity": "warning"}
+{"code": null, "column": 78, "file": "PrimalitySheafVerification/QYM.lean", "line": 50487, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 50502, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 50508, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50505, "message": "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)", "severity": "error"}
+{"code": null, "column": 78, "file": "PrimalitySheafVerification/QYM.lean", "line": 50514, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 50519, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 50537, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 18, "file": "PrimalitySheafVerification/QYM.lean", "line": 50544, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 50556, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 50552, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50600, "message": "`simp` made no progress", "severity": "error"}
+{"code": null, "column": 97, "file": "PrimalitySheafVerification/QYM.lean", "line": 50609, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 48, "file": "PrimalitySheafVerification/QYM.lean", "line": 50621, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 108, "file": "PrimalitySheafVerification/QYM.lean", "line": 50622, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 43, "file": "PrimalitySheafVerification/QYM.lean", "line": 50628, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 82, "file": "PrimalitySheafVerification/QYM.lean", "line": 50629, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 43, "file": "PrimalitySheafVerification/QYM.lean", "line": 50631, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 52, "file": "PrimalitySheafVerification/QYM.lean", "line": 50634, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 52, "file": "PrimalitySheafVerification/QYM.lean", "line": 50636, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 84, "file": "PrimalitySheafVerification/QYM.lean", "line": 50638, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 91, "file": "PrimalitySheafVerification/QYM.lean", "line": 50638, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 180, "file": "PrimalitySheafVerification/QYM.lean", "line": 50647, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 63, "file": "PrimalitySheafVerification/QYM.lean", "line": 50645, "message": "unsolved goals", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50655, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 50671, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 84, "file": "PrimalitySheafVerification/QYM.lean", "line": 50725, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 50729, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 180, "file": "PrimalitySheafVerification/QYM.lean", "line": 50725, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 50728, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 34, "file": "PrimalitySheafVerification/QYM.lean", "line": 50728, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 50785, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 50793, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 50810, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50830, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 50843, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 10, "file": "PrimalitySheafVerification/QYM.lean", "line": 50858, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 50854, "message": "(kernel) unknown constant 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_projection'", "severity": "error"}
+{"code": null, "column": 12, "file": "PrimalitySheafVerification/QYM.lean", "line": 50892, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51016, "message": "'change ambientStageMeasure Y Set.univ < (\u221e : \u211d\u22650\u221e)' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 15, "file": "PrimalitySheafVerification/QYM.lean", "line": 51348, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 17, "file": "PrimalitySheafVerification/QYM.lean", "line": 51350, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 51351, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51562, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 51558, "message": "Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceH` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 51564, "message": "Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaBaseChartedSpaceComplex` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 51577, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51583, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 51591, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51596, "message": "Type mismatch", "severity": "error"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 51600, "message": "Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalSingletonProductChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 51607, "message": "Definition `QYM.FullCertification.P3InverseEtaSmoothTrivializationClosureExtension.inverseEtaTotalTransportedChartedSpace` of class type is semireducible. Most type class instances should be instance-reducible, so consider marking this", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51636, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51638, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51654, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51656, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51658, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 51661, "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51685, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51687, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51689, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51712, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51714, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51716, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51731, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51733, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 58, "file": "PrimalitySheafVerification/QYM.lean", "line": 51744, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51754, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51756, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 51778, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 50, "file": "PrimalitySheafVerification/QYM.lean", "line": 51781, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 51784, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": "lean.synthInstanceFailed", "column": 27, "file": "PrimalitySheafVerification/QYM.lean", "line": 51806, "message": "failed to synthesize instance of type class", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51821, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51823, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51825, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51871, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51873, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51875, "message": "Type mismatch: After simplification, term", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51921, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 51923, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 52231, "message": "'change zStage \u2208 U' tactic does nothing", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 52264, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 84, "file": "PrimalitySheafVerification/QYM.lean", "line": 52301, "message": "Application type mismatch: The argument", "severity": "error"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 52303, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 8, "file": "PrimalitySheafVerification/QYM.lean", "line": 52307, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 52332, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 21, "file": "PrimalitySheafVerification/QYM.lean", "line": 53007, "message": "`ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 53018, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 53372, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 53728, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 54144, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 54457, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 55543, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 55576, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 55578, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 55987, "message": "Variable name `hY` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 56579, "message": "`ContinuousLinearMap.sub_apply` has been deprecated: Use `sub_apply` instead", "severity": "warning"}
+{"code": null, "column": 35, "file": "PrimalitySheafVerification/QYM.lean", "line": 56579, "message": "`ContinuousLinearMap.one_apply` has been deprecated: Use `one_apply_eq_self` instead", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 56956, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 56958, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 56960, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 56964, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 56978, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57459, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57461, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 52, "file": "PrimalitySheafVerification/QYM.lean", "line": 57461, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 57462, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 57462, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57478, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57480, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 52, "file": "PrimalitySheafVerification/QYM.lean", "line": 57480, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 6, "file": "PrimalitySheafVerification/QYM.lean", "line": 57481, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 31, "file": "PrimalitySheafVerification/QYM.lean", "line": 57481, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57804, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 57807, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 43, "file": "PrimalitySheafVerification/QYM.lean", "line": 57806, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 43, "file": "PrimalitySheafVerification/QYM.lean", "line": 57809, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 66, "file": "PrimalitySheafVerification/QYM.lean", "line": 57829, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 41, "file": "PrimalitySheafVerification/QYM.lean", "line": 57832, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 21, "file": "PrimalitySheafVerification/QYM.lean", "line": 57838, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 41, "file": "PrimalitySheafVerification/QYM.lean", "line": 57845, "message": "This simp argument is unused:", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 58116, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 7, "file": "PrimalitySheafVerification/QYM.lean", "line": 58120, "message": "declaration uses `sorry`", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58395, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58403, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58411, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58419, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58427, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 58435, "message": "Variable name `hResidual` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 2, "file": "PrimalitySheafVerification/QYM.lean", "line": 59001, "message": "Try this: ", "severity": "warning"}
+{"code": null, "column": 29, "file": "PrimalitySheafVerification/QYM.lean", "line": 59044, "message": "`ContinuousLinearMap.add_apply` has been deprecated: Use `add_apply` instead", "severity": "warning"}
+{"code": null, "column": 78, "file": "PrimalitySheafVerification/QYM.lean", "line": 59226, "message": "unsolved goals", "severity": "error"}
+{"code": null, "column": 0, "file": "PrimalitySheafVerification/QYM.lean", "line": 59706, "message": "automatically included section variable(s) unused in theorem `QYM.FullCertification.Mock3ActualMockRSResolventUniformGapExtension.normLowerBound_of_squared_lowerFrame`:", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 60091, "message": "`ContinuousLinearMap.coe_zero` has been deprecated: Use `ContinuousLinearMap.toLinearMap_zero` instead", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 60209, "message": "`ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 61043, "message": "`ContinuousLinearMap.coe_comp'` has been deprecated: Use `ContinuousLinearMap.coe_comp` instead", "severity": "warning"}
+{"code": null, "column": 5, "file": "PrimalitySheafVerification/QYM.lean", "line": 61623, "message": "Variable name `q` is not explicitly referenced.", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 61676, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 61678, "message": "try 'simp' instead of 'simpa'", "severity": "warning"}
+{"code": null, "column": 13, "file": "PrimalitySheafVerification/QYM.lean", "line": 61699, "message": "`ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 61778, "message": "`ContinuousLinearMap.smul_apply` has been deprecated: Use `smul_apply` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 61789, "message": "`push_neg` has been deprecated. Prefer using `push Not` instead.", "severity": "warning"}
+{"code": null, "column": 16, "file": "PrimalitySheafVerification/QYM.lean", "line": 61793, "message": "`ContinuousLinearMap.zero_apply` has been deprecated: Use `zero_apply` instead", "severity": "warning"}
+{"code": null, "column": 4, "file": "PrimalitySheafVerification/QYM.lean", "line": 61839, "message": "`push_neg` has been deprecated. Prefer using `push Not` instead.", "severity": "warning"}

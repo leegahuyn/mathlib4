@@ -1,0 +1,48 @@
+{
+  "baseline_error_headers": 85,
+  "baseline_qym_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+  "bytes": 2947417,
+  "candidate_qym_blob": "11c1372a76e34def8767695aab48a093c7dd970b",
+  "candidate_qym_sha256": "0140513ef19cfc5c3cfd8ac512ae936290880a17b742884c6eefa0a907e84ad0",
+  "error_codes": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 76
+  },
+  "error_headers": 84,
+  "exit": 1,
+  "first_error": {
+    "code": null,
+    "column": 2,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 41588,
+    "message": "'change' tactic failed, pattern",
+    "severity": "error"
+  },
+  "forbidden": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59226,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "lf": 62312,
+  "log_sha256": "05a71ed474c6e7ddc650a01412b9c353b75a1382ed900c8f3df9c31156f3f2b1",
+  "panic_lines": 0,
+  "run_id": 32243207474,
+  "schema": "qym-gb85-c2-explicit-clm-v1",
+  "semantic_pass": false,
+  "strict_improvement": true,
+  "trigger_sha": "eec9a5015f535a0fb3b3699d594916ba8201bcba",
+  "variant": "clm_upper_inv",
+  "warning_headers": 356
+}
