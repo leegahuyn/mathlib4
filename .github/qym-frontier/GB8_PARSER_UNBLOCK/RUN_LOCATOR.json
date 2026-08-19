@@ -1,0 +1,34 @@
+{
+  "schema": "qym-gb8-parser-unblock-run-locator-v1",
+  "located_at": "2026-08-19T21:39:35Z",
+  "branch": "gpt/qym-gb57-global-batch-round2-20260820",
+  "target_workflow": "gpt-qym-gb8-parser-unblock.yml",
+  "latest": {
+    "id": 32303841069,
+    "run_number": 1,
+    "run_attempt": 1,
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_branch": "gpt/qym-gb57-global-batch-round2-20260820",
+    "head_sha": "fcd88e152edc922b9cb0475675c588fdcad9a6de",
+    "created_at": "2026-08-19T21:26:01Z",
+    "updated_at": "2026-08-19T21:26:04Z",
+    "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32303841069",
+    "jobs_url": "https://api.github.com/repos/leegahuyn/mathlib4/actions/runs/32303841069/jobs",
+    "artifacts_url": "https://api.github.com/repos/leegahuyn/mathlib4/actions/runs/32303841069/artifacts"
+  },
+  "recent": [
+    {
+      "id": 32303841069,
+      "run_number": 1,
+      "run_attempt": 1,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "fcd88e152edc922b9cb0475675c588fdcad9a6de",
+      "created_at": "2026-08-19T21:26:01Z",
+      "updated_at": "2026-08-19T21:26:04Z",
+      "html_url": "https://github.com/leegahuyn/mathlib4/actions/runs/32303841069"
+    }
+  ]
+}
