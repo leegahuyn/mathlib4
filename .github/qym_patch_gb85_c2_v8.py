@@ -10,13 +10,11 @@ import sys
 BASE_SHA256 = "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
 BASE_BLOB = "bd28d0436230a8f0bcb01806dac01787542256b8"
 
-HEADER = r'''theorem actualFixedPhaseCuspHorocyclePoint_coe_contDiff
+FIRST = r'''theorem actualFixedPhaseCuspHorocyclePoint_coe_contDiff
     (kappa : GammaTwoCusp) (Y : ℝ) :
     ContDiff ℝ ∞
       (fun x : ℝ =>
-        ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)) := by'''
-
-COMMON_PREFIX = HEADER + r'''
+        ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)) := by
   let g : GL (Fin 2) ℝ :=
     (gammaTwoCuspScaling kappa : GL (Fin 2) ℝ)
   have hg : 0 < g.det.val := by
@@ -47,49 +45,7 @@ COMMON_PREFIX = HEADER + r'''
     intro x
     exact UpperHalfPlane.denom_ne_zero g
       (actualFixedPhaseHorizontalHorocyclePoint Y x)
-'''
 
-COMMON_SUFFIX = r'''
-  change ContDiff ℝ ∞
-    (fun x : ℝ =>
-      (↑(g • actualFixedPhaseHorizontalHorocyclePoint Y x) : ℂ))
-  simpa only [UpperHalfPlane.coe_smul_of_det_pos hg] using hfrac
-'''
-
-HFRAC_CONVERT_DIRECT = r'''
-  have hfrac : ContDiff ℝ ∞
-      (fun x : ℝ =>
-        UpperHalfPlane.num g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ) /
-          UpperHalfPlane.denom g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ)) := by
-    convert hnum.mul (hdenDiff.inv hden) using 1 <;>
-      simp [div_eq_mul_inv] <;> subsingleton
-'''
-
-HFRAC_CONVERT_STAGED = r'''
-  have hinv : ContDiff ℝ ∞
-      (fun x : ℝ =>
-        (UpperHalfPlane.denom g
-          (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ))⁻¹) := by
-    convert hdenDiff.inv hden using 1 <;> simp <;> subsingleton
-  have hmul : ContDiff ℝ ∞
-      (fun x : ℝ =>
-        UpperHalfPlane.num g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ) *
-          (UpperHalfPlane.denom g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ))⁻¹) := by
-    convert hnum.mul hinv using 1 <;> simp <;> subsingleton
-  have hfrac : ContDiff ℝ ∞
-      (fun x : ℝ =>
-        UpperHalfPlane.num g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ) /
-          UpperHalfPlane.denom g
-            (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ)) := by
-    simpa only [div_eq_mul_inv] using hmul
-'''
-
-HFRAC_CHANGE_POINTWISE = r'''
   have hinvRaw := hdenDiff.inv hden
   change ContDiff ℝ ∞
       (fun x : ℝ =>
@@ -109,9 +65,14 @@ HFRAC_CHANGE_POINTWISE = r'''
           UpperHalfPlane.denom g
             (actualFixedPhaseHorizontalHorocyclePoint Y x : ℂ)) := by
     simpa only [div_eq_mul_inv] using hmulRaw
+
+  change ContDiff ℝ ∞
+    (fun x : ℝ =>
+      (↑(g • actualFixedPhaseHorizontalHorocyclePoint Y x) : ℂ))
+  simpa only [UpperHalfPlane.coe_smul_of_det_pos hg] using hfrac
 '''
 
-SECOND = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
+TRACE_HFUN_FORWARD = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
     (n : ℤ) (kappa : GammaTwoCusp) (Y : ℝ)
     (u : InverseEtaFixedPhaseCore n) :
     ContDiff ℝ ∞
@@ -123,14 +84,77 @@ SECOND = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
   have hcurve := actualFixedPhaseCuspHorocyclePoint_coe_contDiff kappa Y
   have hcomp := hu.comp_contDiff hcurve
     (fun x => (actualFixedPhaseCuspHorocyclePoint kappa Y x).2)
-  simpa only [actualFixedPhaseNamedCuspTraceRepresentative,
-    Function.comp_apply, upperLift_apply] using hcomp
+  have hfun :
+      (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) ∘
+          fun x : ℝ =>
+            ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)) =
+        actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u := by
+    funext x
+    change
+      upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ)
+          ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ) =
+        (((u : SmoothQuotientCompactFunction) : ℍ → ℂ)
+          (actualFixedPhaseCuspHorocyclePoint kappa Y x))
+    exact upperLift_apply _ _
+  exact hfun ▸ hcomp
+'''
+
+TRACE_HFUN_REWRITE = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
+    (n : ℤ) (kappa : GammaTwoCusp) (Y : ℝ)
+    (u : InverseEtaFixedPhaseCore n) :
+    ContDiff ℝ ∞
+      (actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u) := by
+  have hu : ContDiffOn ℝ ∞
+      (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+      UpperHalfPlane.upperHalfPlaneSet :=
+    (u : SmoothQuotientCompactFunction).1.2
+  have hcurve := actualFixedPhaseCuspHorocyclePoint_coe_contDiff kappa Y
+  have hcomp := hu.comp_contDiff hcurve
+    (fun x => (actualFixedPhaseCuspHorocyclePoint kappa Y x).2)
+  have hfun :
+      actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u =
+        (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) ∘
+          fun x : ℝ =>
+            ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)) := by
+    funext x
+    change
+      (((u : SmoothQuotientCompactFunction) : ℍ → ℂ)
+          (actualFixedPhaseCuspHorocyclePoint kappa Y x)) =
+        upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ)
+          ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)
+    exact (upperLift_apply _ _).symm
+  rw [hfun]
+  exact hcomp
+'''
+
+TRACE_HFUN_SIMPA = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
+    (n : ℤ) (kappa : GammaTwoCusp) (Y : ℝ)
+    (u : InverseEtaFixedPhaseCore n) :
+    ContDiff ℝ ∞
+      (actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u) := by
+  have hu : ContDiffOn ℝ ∞
+      (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+      UpperHalfPlane.upperHalfPlaneSet :=
+    (u : SmoothQuotientCompactFunction).1.2
+  have hcurve := actualFixedPhaseCuspHorocyclePoint_coe_contDiff kappa Y
+  have hcomp := hu.comp_contDiff hcurve
+    (fun x => (actualFixedPhaseCuspHorocyclePoint kappa Y x).2)
+  have hfun :
+      actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u =
+        (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ) ∘
+          fun x : ℝ =>
+            ((actualFixedPhaseCuspHorocyclePoint kappa Y x : ℍ) : ℂ)) := by
+    funext x
+    simp only [actualFixedPhaseNamedCuspTraceRepresentative,
+      Function.comp_apply, upperLift_apply]
+  rw [hfun]
+  exact hcomp
 '''
 
 VARIANTS = {
-    "convert_direct": COMMON_PREFIX + HFRAC_CONVERT_DIRECT + COMMON_SUFFIX,
-    "convert_staged": COMMON_PREFIX + HFRAC_CONVERT_STAGED + COMMON_SUFFIX,
-    "change_pointwise": COMMON_PREFIX + HFRAC_CHANGE_POINTWISE + COMMON_SUFFIX,
+    "convert_direct": TRACE_HFUN_FORWARD,
+    "convert_staged": TRACE_HFUN_REWRITE,
+    "change_pointwise": TRACE_HFUN_SIMPA,
 }
 
 FIRST_RE = re.compile(
@@ -185,8 +209,8 @@ def main() -> None:
 
     text = before.decode("utf-8")
     before_audit = audit(text)
-    text = replace_one(FIRST_RE, VARIANTS[variant], text, "first C2 producer")
-    text = replace_one(SECOND_RE, SECOND, text, "second C2 producer")
+    text = replace_one(FIRST_RE, FIRST, text, "first C2 producer")
+    text = replace_one(SECOND_RE, VARIANTS[variant], text, "second C2 producer")
     after_audit = audit(text)
     if after_audit != before_audit:
         raise SystemExit(f"forbidden-token delta: {before_audit} -> {after_audit}")
@@ -201,7 +225,7 @@ def main() -> None:
     gate_line = decoded.count("\n", 0, marker_index) + 1
 
     print(json.dumps({
-        "schema": "qym-gb85-c2-v8-patch-v1",
+        "schema": "qym-gb85-c2-v10-trace-function-equality-patch-v1",
         "variant": variant,
         "input_sha256": BASE_SHA256,
         "input_blob": BASE_BLOB,
