@@ -1,0 +1,151 @@
+name: GPT QYM persistent prefix-filtered autorepair v9
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v6-mulinv-20260819
+    paths:
+      - .github/qym_autorepair_v9.py
+      - .github/workflows/gpt-qym-autorepair-v9.yml
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: gpt-qym-persistent-v9-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v6-mulinv-20260819
+  LEAN_TIMEOUT_SECONDS: "10800"
+  PREFIX_TIMEOUT_SECONDS: "1800"
+  MAX_V9_ROUNDS: "40"
+  V9_PREFIX_WORKERS: "3"
+  V9_MAX_FULL_CANDIDATES: "4"
+
+jobs:
+  repair:
+    name: Persistently repair FA then QYM by verified direct Lean
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Wait for v7 and v8 frontier writers to finish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          quiet=0
+          for _ in $(seq 1 720); do
+            active=0
+            for workflow in gpt-qym-autorepair-v7.yml gpt-qym-autorepair-v8.yml; do
+              count=$(gh api "/repos/$REPO/actions/workflows/$workflow/runs?branch=$BRANCH&per_page=30" \
+                --jq '[.workflow_runs[] | select(.status != "completed")] | length' 2>/dev/null || echo 0)
+              active=$((active + count))
+            done
+            if (( active == 0 )); then
+              quiet=$((quiet + 1))
+              if (( quiet >= 2 )); then break; fi
+            else
+              quiet=0
+            fi
+            sleep 30
+          done
+
+      - name: Refresh the single authoritative branch frontier
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git fetch origin "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+
+      - name: Install pinned Lean toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Restore Lean and Mathlib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.elan
+            .lake/packages
+            .lake/build
+          key: qym-v9-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean') }}
+          restore-keys: |
+            qym-v9-${{ runner.os }}-
+            qym-v8-${{ runner.os }}-
+            qym-v7-${{ runner.os }}-
+
+      - name: Fetch Mathlib binary cache
+        shell: bash
+        run: |
+          set -euxo pipefail
+          lake exe cache get
+
+      - name: Apply local prefix-boundary correction
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/qym_autorepair_v9.py')
+          text = path.read_text(encoding='utf-8')
+          old = 'prefix = candidate.source[:decl.boundary_offset]'
+          new = 'prefix = candidate.source[:decl.by_offset + len(candidate.proof)]'
+          if old in text:
+              text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          elif new not in text:
+              raise SystemExit('prefix-boundary patch anchor missing')
+          PY
+
+      - name: Configure verified-frontier commits
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run persistent prefix-filtered FA-to-QYM repair
+        id: repair
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 .github/qym_autorepair_v9.py
+
+      - name: Upload complete v9 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-v9-evidence-${{ github.run_id }}
+          path: |
+            .github/qym_autorepair_v9_state.json
+            .qym_v9/**/*.log
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Show final verified state
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f .github/qym_autorepair_v9_state.json ]]; then
+            cat .github/qym_autorepair_v9_state.json
+          fi
+
+      - name: Fail visibly when the persistent loop remains blocked
+        if: steps.repair.outcome != 'success'
+        shell: bash
+        run: exit 1
