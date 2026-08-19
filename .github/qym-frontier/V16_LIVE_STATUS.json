@@ -1,0 +1,60 @@
+{
+  "baseline_error_headers": 76,
+  "baseline_qym_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+  "baseline_qym_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+  "baseline_warning_headers": 358,
+  "branch": "gpt/qym-gb76-v16-smooth-atlas-instance-20260820",
+  "candidate_qym_blob": "1a6a08d254ba2c81ea36c0c7220989facfdad7e8",
+  "candidate_qym_sha256": "7ee25cfadbb1e9ca872ae7648830adb1ba67a3e6c4b52e197c561d0d73c8cb49",
+  "canonical_check_in": true,
+  "error_codes": {
+    "lean.synthInstanceFailed": 7,
+    "lean.unknownIdentifier": 1,
+    "uncoded": 67
+  },
+  "error_headers": 75,
+  "exact_candidate_verified": true,
+  "exit": 1,
+  "first_blocker_declaration": "allCoveringSheets_hasGroupoid",
+  "first_error": {
+    "code": null,
+    "column": 20,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 45522,
+    "message": "invalid binder annotation, type is not a class instance",
+    "severity": "error"
+  },
+  "forbidden": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "forbidden_clean": true,
+  "full_compile_executed": true,
+  "immutable_result": ".github/qym-frontier/GB75_V16_RESULT_32288339507.json",
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59271,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "log_sha256": "6092a63671d37f97ee42fad636e348b5be89e80b3aa162c2513da4bb4666c302",
+  "panic_lines": 0,
+  "promotion_ready": true,
+  "result_produced": true,
+  "run_attempt": 1,
+  "run_id": 32288339507,
+  "schema": "qym-gb76-v16-authoritative-result-v1",
+  "semantic_pass": false,
+  "sidecar": ".github/qym-frontier/QYM_GB75_V16_BEST.lean",
+  "strict_improvement": true,
+  "variant": "instance_binder",
+  "warning_headers": 358,
+  "workflow_head_sha": "592472b81a7beb482865b6d40f1faf89c645a70f"
+}
