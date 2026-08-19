@@ -1,0 +1,24 @@
+{
+  "authority": "actual full-QYM direct Lean",
+  "blocker": "conj_mul_hyperbolicRightNormal_realMultiple_re",
+  "canonical_check_in": true,
+  "error_headers": 78,
+  "exit": 1,
+  "first_error": {
+    "column": 61,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 44749,
+    "message": "unsolved goals"
+  },
+  "forbidden_proof_escape_count": 0,
+  "immutable_sidecar": ".github/qym-frontier/QYM_GB78_BEST.lean",
+  "origin_artifact_id": 9369764112,
+  "origin_job_id": 96099391097,
+  "origin_run_id": 32262658070,
+  "origin_variant": "change_const_mul",
+  "panic_lines": 0,
+  "schema": "qym-exact-gb78-recovery-v1",
+  "source_blob": "029620c5d7085dbc7a11c8eaaa485a67fe9312fe",
+  "source_sha256": "1a1abeeb248031cd91577034329944caab08fd9f9e6c70f7a913c1dd66e0e714",
+  "warning_headers": 358
+}
