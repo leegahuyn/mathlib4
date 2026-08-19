@@ -1,5 +1,5 @@
 {
-  "status": "RUNNING",
+  "status": "BLOCKED",
   "branch": "gpt/qym-gb85-c2-v6-mulinv-20260819",
   "started_at_unix": 1787144680,
   "targets": {
@@ -99,5 +99,6 @@
         "zero": false
       }
     }
-  }
+  },
+  "finished_at_unix": 1787145056
 }
