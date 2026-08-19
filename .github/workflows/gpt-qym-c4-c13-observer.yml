@@ -1,0 +1,51 @@
+name: GPT QYM c4-c13 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-c4-c13-observer.yml
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  locate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      TARGET_BRANCH: gpt/qym-fastlane-verified88-20260819
+      OBSERVER_BRANCH: gpt/qym-probe43-observer-20260819
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Locate exact runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-probe43-observer
+          payload=''
+          for _ in $(seq 1 240); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs?branch=$TARGET_BRANCH&event=push&per_page=100")"
+            c4="$(jq '[.workflow_runs[]|select(.head_sha=="2bedef347de5d8930d23de898c12812d30a2fad5")|select(.path==".github/workflows/gpt-qym-c4-c6-probe.yml")]|length' <<<"$payload")"
+            c7="$(jq '[.workflow_runs[]|select(.head_sha=="cc078b23e82d028dc9e0e0b8f038ed611d57b247")|select(.path==".github/workflows/gpt-qym-c7-c9-matrix.yml")]|length' <<<"$payload")"
+            c10="$(jq '[.workflow_runs[]|select(.head_sha=="151901f659c978508dba885c77aadac00d390c2f")|select(.path==".github/workflows/gpt-qym-c10-c13-probe.yml")]|length' <<<"$payload")"
+            [[ "$c4" -gt 0 && "$c7" -gt 0 && "$c10" -gt 0 ]] && break
+            sleep 5
+          done
+          jq '{observed_at:(now|todate),runs:[.workflow_runs[]|select(
+            (.head_sha=="2bedef347de5d8930d23de898c12812d30a2fad5" and .path==".github/workflows/gpt-qym-c4-c6-probe.yml") or
+            (.head_sha=="cc078b23e82d028dc9e0e0b8f038ed611d57b247" and .path==".github/workflows/gpt-qym-c7-c9-matrix.yml") or
+            (.head_sha=="151901f659c978508dba885c77aadac00d390c2f" and .path==".github/workflows/gpt-qym-c10-c13-probe.yml"))|{id,name,path,head_sha,status,conclusion,created_at}]}' <<<"$payload" > .github/qym-probe43-observer/C4_C13_RUNS.json
+          test "$(jq '.runs|length' .github/qym-probe43-observer/C4_C13_RUNS.json)" -eq 3
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/C4_C13_RUNS.json
+          git commit -m 'QYM observer: locate c4-c13 probe runs'
+          git push origin HEAD:$OBSERVER_BRANCH
