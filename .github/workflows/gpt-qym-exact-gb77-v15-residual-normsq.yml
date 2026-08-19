@@ -1,0 +1,251 @@
+name: GPT QYM exact GB77 V15 residual normSq
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb77-v15-residual-normsq-20260820
+    paths:
+      - .github/workflows/gpt-qym-exact-gb77-v15-residual-normsq.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-exact-gb77-v15-residual-normsq
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb77-v15-residual-normsq-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_ERRORS: '77'
+  BASE_WARNINGS: '360'
+  BASE_SHA256: b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd
+  BASE_BLOB: c6e8883353b350f22b7f48d955fc5cfa4e61f88f
+  VARIANT: direct_coords_normsq_finish
+  OUT_ROOT: /tmp/qym-gb77-v15-residual-normsq
+
+jobs:
+  candidate:
+    name: V15-direct-coords-normsq-finish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact canonical GB77 bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB77_BEST.lean
+          mkdir -p "$OLEAN" "$OUT_ROOT/$VARIANT"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$OUT_ROOT/$VARIANT"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$OUT_ROOT/$VARIANT"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Prepare exact residual proof candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          runner = Path('.github/qym_gb77_v14b_candidate.py')
+          text = runner.read_text(encoding='utf-8')
+          needle = '    "norm_sq_cast",\n}'
+          replacement = '    "norm_sq_cast",\n    "direct_coords_normsq_finish",\n}'
+          if text.count(needle) != 1:
+              raise SystemExit('could not add exact V15 variant to runner')
+          runner.write_text(text.replace(needle, replacement), encoding='utf-8')
+          PY
+
+          cat > .github/qym_patch_gb77_v15.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+
+          from pathlib import Path
+          import hashlib
+          import json
+          import re
+          import sys
+
+          BASE_SHA256 = "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd"
+          BASE_BLOB = "c6e8883353b350f22b7f48d955fc5cfa4e61f88f"
+          VARIANT = "direct_coords_normsq_finish"
+          THEOREM_RE = re.compile(
+              r"(?ms)^theorem conj_mul_hyperbolicRightNormal_im\b.*?"
+              r"(?=^/-! ## 2\. The actual geometric normal)"
+          )
+          REPLACEMENT = r'''theorem conj_mul_hyperbolicRightNormal_im {y : ℝ} {w : ℂ}
+              (hw : w ≠ 0) :
+              (star w * hyperbolicRightNormal y w).im =
+                -y * ‖w‖ := by
+            have hn : ‖w‖ ≠ 0 := norm_ne_zero_iff.mpr hw
+            rw [hyperbolicRightNormal]
+            simp only [Complex.mul_im, Complex.mul_re,
+              Complex.ofReal_re, Complex.ofReal_im,
+              Complex.neg_re, Complex.neg_im, Complex.I_re, Complex.I_im,
+              Complex.star_def, Complex.conj_re, Complex.conj_im,
+              neg_zero, mul_zero, zero_mul, sub_zero, zero_sub, pow_two]
+            field_simp [hn]
+            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+            ring
+          '''
+
+          def sha256(data: bytes) -> str:
+              return hashlib.sha256(data).hexdigest()
+
+          def git_blob(data: bytes) -> str:
+              return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+
+          def audit(text: str) -> dict[str, int]:
+              return {
+                  "sorry": len(re.findall(r"\bsorry\b", text)),
+                  "admit": len(re.findall(r"\badmit\b", text)),
+                  "unsafe": len(re.findall(r"(?m)^\s*unsafe\s+", text)),
+                  "native_decide": len(re.findall(r"\bnative_decide\b", text)),
+                  "Lean.ofReduceBool": text.count("Lean.ofReduceBool"),
+                  "global_axiom": len(re.findall(r"(?m)^\s*axiom\s+", text)),
+                  "maxHeartbeats_zero": len(re.findall(r"set_option\s+maxHeartbeats\s+0\b", text)),
+              }
+
+          def main() -> None:
+              if len(sys.argv) != 4 or sys.argv[1] != VARIANT:
+                  raise SystemExit(f"usage: {Path(sys.argv[0]).name} {VARIANT} INPUT_QYM OUTPUT_QYM")
+              source_path = Path(sys.argv[2])
+              output_path = Path(sys.argv[3])
+              before = source_path.read_bytes()
+              if sha256(before) != BASE_SHA256 or git_blob(before) != BASE_BLOB:
+                  raise SystemExit(
+                      f"GB77 authority mismatch: sha={sha256(before)} blob={git_blob(before)}"
+                  )
+              text = before.decode("utf-8")
+              matches = list(THEOREM_RE.finditer(text))
+              if len(matches) != 1:
+                  raise SystemExit(f"expected one blocker theorem, found {len(matches)}")
+              before_audit = audit(text)
+              match = matches[0]
+              patched = text[:match.start()] + REPLACEMENT.rstrip() + "\n\n" + text[match.end():]
+              after_audit = audit(patched)
+              if after_audit != before_audit or any(after_audit.values()):
+                  raise SystemExit(f"forbidden-token audit changed {before_audit} -> {after_audit}")
+              output_path.parent.mkdir(parents=True, exist_ok=True)
+              output_path.write_text(patched, encoding="utf-8")
+              after = output_path.read_bytes()
+              marker = "theorem conj_mul_hyperbolicRightNormal_im"
+              line = patched.count("\n", 0, patched.index(marker)) + 1
+              print(json.dumps({
+                  "schema": "qym-gb77-v15-residual-normsq-candidate-v1",
+                  "status": "PREPARED_UNVERIFIED",
+                  "variant": VARIANT,
+                  "baseline_error_headers": 77,
+                  "input_sha256": BASE_SHA256,
+                  "input_blob": BASE_BLOB,
+                  "candidate_sha256": sha256(after),
+                  "candidate_blob": git_blob(after),
+                  "blocker": "conj_mul_hyperbolicRightNormal_im",
+                  "blocker_line": line,
+                  "forbidden": after_audit,
+                  "bytes": len(after),
+                  "lf": after.count(b"\n"),
+              }, indent=2, sort_keys=True))
+
+          if __name__ == "__main__":
+              main()
+          PY
+
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v15.py \
+            .github/qym_gb77_v14b_candidate.py
+
+      - name: Run target gate and authoritative full-QYM direct Lean when eligible
+        shell: bash
+        run: python3 -B .github/qym_gb77_v14b_candidate.py "$VARIANT"
+
+      - name: Print compact candidate evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$OUT_ROOT/$VARIANT/RESULT.json"
+          if [[ -s "$result" ]]; then
+            jq '{schema,run_id,branch,variant,baseline_error_headers,candidate_qym_sha256,candidate_qym_blob,forbidden,local_gate_pass,first_blocker_advanced,full_compile_executed,exit,error_headers,warning_headers,panic_lines,first_error,strict_improvement,semantic_pass,local:{exit:.local.exit,error_headers:.local.error_headers,warning_headers:.local.warning_headers,panic_lines:.local.panic_lines,first_error:.local.first_error}}' "$result"
+          else
+            echo 'RESULT.json not produced'
+          fi
+
+      - name: Upload immutable V15 candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-v15-${{ env.VARIANT }}-${{ github.run_id }}
+          path: ${{ env.OUT_ROOT }}/${{ env.VARIANT }}
+          if-no-files-found: error
+          retention-days: 30
