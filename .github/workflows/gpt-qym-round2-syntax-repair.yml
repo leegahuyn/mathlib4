@@ -1,0 +1,159 @@
+name: GPT QYM round2 syntax repair direct Lean
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb57-round2-syntax-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-round2-syntax-repair.yml
+      - .github/qym_patch_round2_syntax.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-round2-syntax-repair
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb57-round2-syntax-repair-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_SHA256: c604b258541c4ec8477f0e4aa93b7fb9658d5a9f74546e85faa4b2c6add7ace4
+  BASE_BLOB: d6be2245ce32bb8bce2585f9b0da5d54f8babec0
+  PATCH_SHA256: 9fc37ec047f05745d39c72863b138619e849fb79fa323bf7b8dd86377f034fbd
+  OUT: /tmp/qym-round2-syntax-repair
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact round2 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf "$OUT" && mkdir -p "$OUT" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym_patch_round2_syntax.py | awk '{print $1}')" = "$PATCH_SHA256"
+          python3 -m py_compile .github/qym_patch_round2_syntax.py
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" > "$OUT/toolchain.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+
+      - name: Restore completed dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects by actual Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then max_errors=2000; fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean" && test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Repair syntax boundaries and run full-QYM direct Lean
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$QYM" "$OUT/QYM.round2-broken.lean"
+          python3 -B .github/qym_patch_round2_syntax.py "$OUT/QYM.round2-broken.lean" "$OUT/QYM.candidate.lean" simpa
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          p=Path('/tmp/qym-round2-syntax-repair/QYM.candidate.lean')
+          t=p.read_text(); lines=t.splitlines()
+          dup=[i+1 for i in range(len(lines)-1) if lines[i].lstrip().startswith('/--') and lines[i+1].lstrip().startswith('/--')]
+          pats=[r'\bsorry\b',r'\badmit\b',r'\bunsafe\b',r'\bnative_decide\b',r'Lean\.ofReduceBool',r'maxHeartbeats\s*(?::=|=)\s*0']
+          stripped=re.sub(r'/-.*?-/', ' ', t, flags=re.S); stripped=re.sub(r'--.*',' ',stripped)
+          counts={x:len(re.findall(x,stripped)) for x in pats}
+          ok=not dup and all(v==0 for v in counts.values())
+          Path('/tmp/qym-round2-syntax-repair/PRECHECK.json').write_text(json.dumps({'duplicate_doc_comments':dup,'forbidden_counts':counts,'pass':ok},indent=2)+'\n')
+          if not ok: raise SystemExit('precheck failed')
+          PY
+          cp "$OUT/QYM.candidate.lean" "$QYM"
+          set +e
+          started="$(date +%s)"
+          lake env lean -DmaxErrors=10000 -DwarningAsError=false -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          ended="$(date +%s)"
+          set -e
+          errors="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          warnings="$(grep -cE '^.*\.lean:[0-9]+:[0-9]+: warning' "$OUT/full.log" || true)"
+          panic="$(grep -ciE 'internal error|uncaught exception|panic(!|:| )' "$OUT/full.log" || true)"
+          parser="$(grep -ciE 'unexpected token|unterminated comment|invalid syntax|unexpected end of input' "$OUT/full.log" || true)"
+          first="$(grep -m1 -E '^.*\.lean:[0-9]+:[0-9]+: error' "$OUT/full.log" || true)"
+          export rc errors warnings panic parser first started ended
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,subprocess
+          out=pathlib.Path('/tmp/qym-round2-syntax-repair'); src=out/'QYM.candidate.lean'; log=out/'full.log'
+          d={'schema':'qym-round2-syntax-repair-v1','authority':'actual full-QYM direct Lean','run_id':int(os.environ['GITHUB_RUN_ID']),'trigger_sha':os.environ['GITHUB_SHA'],'exit':int(os.environ['rc']),'error_headers':int(os.environ['errors']),'warning_headers':int(os.environ['warnings']),'panic_lines':int(os.environ['panic']),'parser_error_lines':int(os.environ['parser']),'elapsed_seconds':int(os.environ['ended'])-int(os.environ['started']),'first_error':os.environ['first'] or None,'source_sha256':hashlib.sha256(src.read_bytes()).hexdigest(),'source_blob':subprocess.check_output(['git','hash-object',str(src)],text=True).strip(),'log_sha256':hashlib.sha256(log.read_bytes()).hexdigest(),'olean_exists':(out/'QYM.olean').is_file() and (out/'QYM.olean').stat().st_size>0,'ilean_exists':(out/'QYM.ilean').is_file() and (out/'QYM.ilean').stat().st_size>0}
+          d['parser_clean']=d['parser_error_lines']==0
+          d['pass']=d['exit']==0 and d['error_headers']==0 and d['panic_lines']==0 and d['parser_clean'] and d['olean_exists'] and d['ilean_exists']
+          (out/'RESULT.json').write_text(json.dumps(d,indent=2)+'\n'); print(json.dumps(d,indent=2))
+          PY
+
+      - name: Persist exact evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          dest=.github/qym-frontier/ROUND2_SYNTAX_REPAIR
+          rm -rf "$dest" && mkdir -p "$dest"
+          cp "$OUT/RESULT.json" "$OUT/PRECHECK.json" "$OUT/full.log" "$OUT/QYM.candidate.lean" "$dest/"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$dest"
+          git commit -m "QYM: persist round2 syntax-repair direct Lean ${GITHUB_RUN_ID} [skip ci]"
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-round2-syntax-repair-${{ github.run_id }}
+          path: /tmp/qym-round2-syntax-repair
+          if-no-files-found: error
+          retention-days: 30
