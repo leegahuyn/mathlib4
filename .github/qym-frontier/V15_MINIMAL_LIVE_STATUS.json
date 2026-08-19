@@ -1,0 +1,12 @@
+{
+  "schema": "qym-gb77-v15-minimal-live-v1",
+  "source_baseline": "GB77",
+  "source_errors": 77,
+  "source_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "source_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "known_descendant_errors": 76,
+  "run_id": 32287000330,
+  "trigger_sha": "0d8eb9054f259313bdb9a58833b5cc3217b9d091",
+  "phase": "RUNNING",
+  "immutable_gb77_preserved": true
+}
