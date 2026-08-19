@@ -1,0 +1,271 @@
+{
+  "baseline": {
+    "artifact_id": 9354072137,
+    "error_headers": 85,
+    "qym_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+    "qym_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+    "run_id": 32218198562
+  },
+  "best": {
+    "baseline_error_headers": 85,
+    "candidate_qym_blob": "4253706c8dedd8fcf81b8a8060385afcc52459ba",
+    "candidate_qym_sha256": "072391f01c07d38fcb3a78436ebe9bcd1adf4f822cb90d7fc08aade8128725ba",
+    "error_codes": {
+      "lean.synthInstanceFailed": 8,
+      "uncoded": 75
+    },
+    "error_headers": 83,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 6,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 43925,
+      "message": "Type mismatch: After simplification, term",
+      "severity": "error"
+    },
+    "ilean_exists": false,
+    "ilean_sha256": null,
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59220,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "log_sha256": "fdebe14a16b404b1c6bf9c37c4ddc34e817f705c923ed999cee3d4f33ec39c7a",
+    "olean_exists": false,
+    "olean_sha256": null,
+    "panic_lines": 0,
+    "phase": "full",
+    "run_id": "32246822969",
+    "semantic_pass": false,
+    "strict_improvement": true,
+    "trigger_sha": "54a374ad2ed1c63fda46af16c4b918aefae90872",
+    "variant": "convert_staged",
+    "warning_headers": 356
+  },
+  "best_variant": "convert_staged",
+  "candidates": [
+    {
+      "candidate": "/tmp/qym-gb85-c2-v8/QYM.candidate-convert_direct.lean",
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43924,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 41587,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43935,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "8a67a358c0f267016b9df75a4051c6ab515e7d5ca4cede52e150a2d906495631",
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "producer_fixed": true,
+        "variant": "convert_direct",
+        "warning_headers": 214
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2947104,
+        "candidate_blob": "00194f1c3925f04028eb5eccff560658537f3409",
+        "candidate_sha256": "1839aa170b55b6c3e839c16cb71b749d9b8a166dcdd8e47c511219ace6d08056",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 41587,
+        "input_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+        "input_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+        "lf": 62305,
+        "schema": "qym-gb85-c2-v10-trace-function-equality-patch-v1",
+        "variant": "convert_direct"
+      },
+      "variant": "convert_direct"
+    },
+    {
+      "candidate": "/tmp/qym-gb85-c2-v8/QYM.candidate-convert_staged.lean",
+      "full": {
+        "baseline_error_headers": 85,
+        "candidate_qym_blob": "4253706c8dedd8fcf81b8a8060385afcc52459ba",
+        "candidate_qym_sha256": "072391f01c07d38fcb3a78436ebe9bcd1adf4f822cb90d7fc08aade8128725ba",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 75
+        },
+        "error_headers": 83,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43925,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59220,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "fdebe14a16b404b1c6bf9c37c4ddc34e817f705c923ed999cee3d4f33ec39c7a",
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32246822969",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "54a374ad2ed1c63fda46af16c4b918aefae90872",
+        "variant": "convert_staged",
+        "warning_headers": 356
+      },
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43925,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 41588,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43936,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "a68d857328db3b280e101c0099a464ced792d056328c5af085076d6ad875a53e",
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "producer_fixed": true,
+        "variant": "convert_staged",
+        "warning_headers": 214
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2947114,
+        "candidate_blob": "4253706c8dedd8fcf81b8a8060385afcc52459ba",
+        "candidate_sha256": "072391f01c07d38fcb3a78436ebe9bcd1adf4f822cb90d7fc08aade8128725ba",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 41588,
+        "input_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+        "input_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+        "lf": 62306,
+        "schema": "qym-gb85-c2-v10-trace-function-equality-patch-v1",
+        "variant": "convert_staged"
+      },
+      "variant": "convert_staged"
+    },
+    {
+      "candidate": "/tmp/qym-gb85-c2-v8/QYM.candidate-change_pointwise.lean",
+      "local": {
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43921,
+          "message": "Type mismatch: After simplification, term",
+          "severity": "error"
+        },
+        "gate_line": 41584,
+        "ilean_exists": false,
+        "ilean_sha256": null,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 43932,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "39db48da0c57cfe5a4ec1473185301e7881301005d572265d6349101864578ad",
+        "olean_exists": false,
+        "olean_sha256": null,
+        "panic_lines": 0,
+        "phase": "local",
+        "producer_fixed": true,
+        "variant": "change_pointwise",
+        "warning_headers": 214
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2946911,
+        "candidate_blob": "f17eeb35aa66747d1b99a61c73fe1fbe940ac5f7",
+        "candidate_sha256": "83fafeaf37a9b8b6fb3a8ea94c0c55ff2a10697ceffd8af41b91aa03f4e846a4",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 41584,
+        "input_blob": "bd28d0436230a8f0bcb01806dac01787542256b8",
+        "input_sha256": "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210",
+        "lf": 62302,
+        "schema": "qym-gb85-c2-v10-trace-function-equality-patch-v1",
+        "variant": "change_pointwise"
+      },
+      "variant": "change_pointwise"
+    }
+  ],
+  "schema": "qym-gb85-c2-v8-selection-v1",
+  "strict_improvement_found": true
+}
