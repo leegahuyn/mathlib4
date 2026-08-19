@@ -1,0 +1,174 @@
+name: GPT QYM C01 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-c01-c13-sequential-v2-20260819
+    paths:
+      - .github/workflows/gpt-qym-c01-observer.yml
+      - .github/qym-c01-observer-trigger.txt
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-c01-observer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 320
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-c01-c13-sequential-v2-20260819
+      TARGET_WORKFLOW: gpt-qym-c01-cycle.yml
+      TARGET_SHA: a4b9396b1541042ecea15ca5a3bf6d3efdf55366
+      BASELINE_ERRORS: '89'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      OUT: /tmp/qym-c01-observer
+
+    steps:
+      - name: Checkout exact observer trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Locate target C01 run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" .github/qym-c01-cycle
+          run_id=''
+          for _ in $(seq 1 180); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$BRANCH&event=push&per_page=50")"
+            run_id="$(jq -r --arg sha "$TARGET_SHA" \
+              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last | .id // empty' <<<"$payload")"
+            [[ -n "$run_id" ]] && break
+            sleep 5
+          done
+          test -n "$run_id"
+          echo "TARGET_RUN_ID=$run_id" >> "$GITHUB_ENV"
+          jq -n --argjson run_id "$run_id" --arg target_sha "$TARGET_SHA" \
+            '{run_id:$run_id,target_sha:$target_sha}' > .github/qym-c01-cycle/RUN_IDENTITY.json
+
+      - name: Await completion and download evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=''
+          conclusion=''
+          for _ in $(seq 1 3600); do
+            run="$(gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/runs/$TARGET_RUN_ID")"
+            status="$(jq -r '.status' <<<"$run")"
+            conclusion="$(jq -r '.conclusion // ""' <<<"$run")"
+            [[ "$status" == completed ]] && break
+            sleep 5
+          done
+          test "$status" = completed
+          mkdir -p "$OUT/artifacts"
+          artifacts="$(gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/runs/$TARGET_RUN_ID/artifacts?per_page=100")"
+          jq --arg sha "$TARGET_SHA" \
+            '[.artifacts[] | select(.expired == false) | select(.name | startswith("qym-c01-")) | select(.name | contains($sha))]' \
+            <<<"$artifacts" > "$OUT/ARTIFACTS.json"
+          test "$(jq length "$OUT/ARTIFACTS.json")" -ge 1
+          while IFS=$'\t' read -r id name; do
+            zip="$OUT/$name.zip"
+            dir="$OUT/artifacts/$name"
+            gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/artifacts/$id/zip" > "$zip"
+            mkdir -p "$dir"
+            unzip -q -o "$zip" -d "$dir"
+          done < <(jq -r '.[] | [.id,.name] | @tsv' "$OUT/ARTIFACTS.json")
+          printf '%s\n' "$conclusion" > "$OUT/RUN_CONCLUSION"
+
+      - name: Verify, rank, and persist exact best candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, shutil, sys
+
+          out = Path(sys.argv[1])
+          root = Path('.github/qym-c01-cycle')
+          root.mkdir(parents=True, exist_ok=True)
+          rows = []
+
+          def blob(raw: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+
+          for rp in out.glob('artifacts/*/C01_RESULT.json'):
+              r = json.loads(rp.read_text(encoding='utf-8'))
+              candidates = list(rp.parent.glob('QYM.candidate-c01-*.lean'))
+              if len(candidates) != 1:
+                  continue
+              src = candidates[0]
+              raw = src.read_bytes()
+              if r.get('candidate_qym_sha256') != hashlib.sha256(raw).hexdigest():
+                  raise SystemExit(f'{src}: SHA256 mismatch')
+              if r.get('candidate_qym_blob') != blob(raw):
+                  raise SystemExit(f'{src}: Git blob mismatch')
+              if any((r.get('forbidden') or {}).values()):
+                  raise SystemExit(f'{src}: forbidden token audit failed')
+              r['_source'] = str(src)
+              r['_dir'] = str(rp.parent)
+              r['_first_line'] = int((r.get('first_error') or {}).get('line') or 0)
+              rows.append(r)
+
+          if not rows:
+              raise SystemExit('no valid C01 result artifacts')
+          rows.sort(key=lambda r: (
+              0 if r.get('semantic_pass') else 1,
+              int(r.get('error_headers', 10**9)),
+              int(r.get('panic_lines', 10**9)),
+              -int(r.get('_first_line', 0)),
+              int(r.get('warning_headers', 10**9)),
+              r.get('variant', '')))
+          best = rows[0]
+          source = Path(best.pop('_source'))
+          artifact_dir = Path(best.pop('_dir'))
+          for r in rows[1:]:
+              r.pop('_source', None)
+              r.pop('_dir', None)
+          strict = bool(best.get('semantic_pass')) or (
+              int(best.get('panic_lines', 1)) == 0 and
+              int(best.get('error_headers', 10**9)) < int(os.environ['BASELINE_ERRORS']))
+          decision = {
+              'schema': 'qym-c01-observer-v1',
+              'run_id': int(os.environ['TARGET_RUN_ID']),
+              'run_conclusion': (out/'RUN_CONCLUSION').read_text().strip(),
+              'baseline': {
+                  'sha256': os.environ['BASELINE_SHA256'],
+                  'error_headers': int(os.environ['BASELINE_ERRORS'])},
+              'best': best,
+              'strict_improvement': strict,
+              'all': rows,
+          }
+          (root/'SELECTION.json').write_text(json.dumps(decision, indent=2, sort_keys=True)+'\n', encoding='utf-8')
+          (root/'BEST_RESULT.json').write_text(json.dumps(best, indent=2, sort_keys=True)+'\n', encoding='utf-8')
+          shutil.copy2(source, root/'QYM_C01_BEST.lean')
+          for src, dst in [
+              ('QYM.error-headers.txt','BEST_error-headers.txt'),
+              ('QYM.diagnostics.jsonl','BEST_diagnostics.jsonl'),
+              ('QYM.panic-lines.txt','BEST_panic-lines.txt'),
+              ('QYM.time','BEST_time'),
+              ('QYM.log','BEST.log')]:
+              p = artifact_dir/src
+              if p.exists(): shutil.copy2(p, root/dst)
+          print(json.dumps(decision, indent=2, sort_keys=True))
+          if not strict:
+              raise SystemExit('no strict C01 improvement')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-c01-cycle
+          errors="$(jq -r '.best.error_headers' .github/qym-c01-cycle/SELECTION.json)"
+          variant="$(jq -r '.best.variant' .github/qym-c01-cycle/SELECTION.json)"
+          git commit -m "QYM C01: preserve ${errors}-error ${variant} global best [skip ci]"
+          git push origin "HEAD:$BRANCH"
