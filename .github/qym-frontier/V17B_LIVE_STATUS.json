@@ -1,0 +1,17 @@
+{
+  "schema": "qym-gb77-fixedorigin-v17b-live-v1",
+  "fixed_origin": "GB77",
+  "fixed_origin_errors": 77,
+  "fixed_origin_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "fixed_origin_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "reconstructed_rightnormal_parent_errors": 76,
+  "reconstructed_parent_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+  "reconstructed_parent_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+  "branch": "gpt/qym-gb77-v14-right-normal-im-20260820",
+  "run_id": 32289979541,
+  "trigger_sha": "46382c8bd248f08430dd60c37ac2678615a752d5",
+  "phase": "CANDIDATE_MATRIX_RUNNING",
+  "candidate_count": 12,
+  "automatic_promotion": false,
+  "immutable_gb77_preserved": true
+}
