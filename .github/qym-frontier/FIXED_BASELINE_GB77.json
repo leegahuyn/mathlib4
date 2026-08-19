@@ -1,0 +1,22 @@
+{
+  "schema": "qym-fixed-baseline-policy-v1",
+  "status": "ACTIVE_FIXED_BASELINE",
+  "baseline_name": "GB77",
+  "error_headers": 77,
+  "warning_headers": 360,
+  "panic_lines": 0,
+  "source_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "source_git_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "canonical_source_path": ".github/qym-frontier/QYM_GB77_BEST.lean",
+  "origin_run_id": 32273170823,
+  "origin_variant": "c8_structural_rw",
+  "authority": "actual full-QYM direct Lean",
+  "policy": {
+    "all_new_candidates_must_start_from_exact_gb77_bytes": true,
+    "all_candidate_comparisons_use_77_errors_as_baseline": true,
+    "lower_error_results_are_verified_outputs_not_automatic_new_baselines": true,
+    "automatic_dynamic_rebase_is_forbidden": true,
+    "baseline_change_requires_explicit_user_instruction": true,
+    "forbidden_proof_escapes_must_remain_zero": true
+  }
+}
