@@ -1,0 +1,250 @@
+name: GPT QYM Probe43 result mirror
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-verified88-20260819
+    paths:
+      - .github/workflows/gpt-qym-probe43-result-mirror.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-probe43-result-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Recover and persist exact Probe43 frontier
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-fastlane-verified88-20260819
+      TARGET_WORKFLOW: gpt-qym-probe43-gamma-frontier.yml
+      TARGET_SHA: a67932931eb96f86751c783d87d16ba550c08027
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      BASELINE_ERRORS: '89'
+      OUT: /tmp/qym-probe43-mirror
+
+    steps:
+      - name: Checkout mirror trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Locate and await exact Probe43 run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/artifacts"
+          run_id=''
+          status=''
+          conclusion=''
+          for _ in $(seq 1 360); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$BRANCH&event=push&per_page=30")"
+            run_id="$(jq -r --arg sha "$TARGET_SHA" \
+              '[.workflow_runs[] | select(.head_sha == $sha)] | sort_by(.created_at) | last | .id // empty' \
+              <<<"$payload")"
+            if [[ -n "$run_id" ]]; then
+              status="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .status' <<<"$payload")"
+              conclusion="$(jq -r --argjson id "$run_id" '.workflow_runs[] | select(.id == $id) | .conclusion // ""' <<<"$payload")"
+              printf 'run_id=%s status=%s conclusion=%s\n' "$run_id" "$status" "$conclusion"
+              [[ "$status" == completed ]] && break
+            fi
+            sleep 10
+          done
+          test -n "$run_id"
+          test "$status" = completed
+          printf '%s\n' "$run_id" > "$OUT/TARGET_RUN_ID"
+          printf '%s\n' "$conclusion" > "$OUT/TARGET_RUN_CONCLUSION"
+          echo "TARGET_RUN_ID=$run_id" >> "$GITHUB_ENV"
+
+      - name: Download exact Probe43 artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload="$(gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/runs/$TARGET_RUN_ID/artifacts?per_page=100")"
+          jq --arg sha "$TARGET_SHA" \
+            '[.artifacts[] | select(.expired == false) | select(.name | startswith("qym-probe43-")) | select(.name | contains($sha))]' \
+            <<<"$payload" > "$OUT/ARTIFACTS.json"
+          count="$(jq 'length' "$OUT/ARTIFACTS.json")"
+          test "$count" -eq 3
+          while IFS=$'\t' read -r id name; do
+            test -n "$id" && test -n "$name"
+            zip="$OUT/artifacts/$name.zip"
+            dir="$OUT/artifacts/$name"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/artifacts/$id/zip" > "$zip"
+            mkdir -p "$dir"
+            unzip -q -o "$zip" -d "$dir"
+          done < <(jq -r '.[] | [.id, .name] | @tsv' "$OUT/ARTIFACTS.json")
+
+      - name: Select strict direct-Lean frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, shutil, sys
+
+          out = Path(sys.argv[1])
+          baseline_errors = int(os.environ['BASELINE_ERRORS'])
+          baseline_sha = os.environ['BASELINE_SHA256']
+          rows = []
+
+          def git_blob(raw: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+
+          for result_path in out.glob('artifacts/*/PROBE_RESULT.json'):
+              result = json.loads(result_path.read_text(encoding='utf-8'))
+              parent = result_path.parent
+              candidates = list(parent.glob('QYM.candidate-probe43-*.lean'))
+              if len(candidates) != 1:
+                  raise SystemExit(f'{parent}: expected one candidate, found {len(candidates)}')
+              source = candidates[0]
+              raw = source.read_bytes()
+              sha = hashlib.sha256(raw).hexdigest()
+              blob = git_blob(raw)
+              if sha != result.get('candidate_qym_sha256'):
+                  raise SystemExit(f'{result_path}: candidate SHA mismatch')
+              if blob != result.get('candidate_qym_blob'):
+                  raise SystemExit(f'{result_path}: candidate blob mismatch')
+              if result.get('baseline_qym_sha256') != baseline_sha:
+                  raise SystemExit(f'{result_path}: wrong baseline')
+              forbidden = result.get('forbidden') or {}
+              if any(forbidden.values()):
+                  raise SystemExit(f'{result_path}: forbidden audit failed: {forbidden}')
+              first = result.get('first_error') or {}
+              result['_source'] = str(source)
+              result['_artifact_dir'] = str(parent)
+              result['_verified_sha256'] = sha
+              result['_verified_blob'] = blob
+              result['_first_line'] = int(first.get('line') or 0)
+              rows.append(result)
+
+          if len(rows) != 3:
+              raise SystemExit(f'expected 3 verified results, found {len(rows)}')
+
+          rows.sort(key=lambda r: (
+              0 if r.get('semantic_pass') else 1,
+              int(r.get('error_headers', 10**9)),
+              int(r.get('panic_lines', 10**9)),
+              -int(r.get('_first_line', 0)),
+              int(r.get('warning_headers', 10**9)),
+              r.get('variant', ''),
+          ))
+          best = rows[0]
+          if int(best.get('panic_lines', 1)) != 0:
+              raise SystemExit('best candidate has panic')
+
+          source = Path(best.pop('_source'))
+          artifact_dir = Path(best.pop('_artifact_dir'))
+          for row in rows[1:]:
+              row.pop('_source', None)
+              row.pop('_artifact_dir', None)
+
+          frontier = Path('.github/qym-frontier')
+          frontier.mkdir(parents=True, exist_ok=True)
+          strict_improvement = bool(best.get('semantic_pass')) or int(best['error_headers']) < baseline_errors
+          tie = (not best.get('semantic_pass') and int(best['error_headers']) == baseline_errors)
+          decision = {
+              'schema': 'qym-probe43-selection-v1',
+              'target_run_id': int((out / 'TARGET_RUN_ID').read_text().strip()),
+              'target_run_conclusion': (out / 'TARGET_RUN_CONCLUSION').read_text().strip(),
+              'baseline': {
+                  'candidate_qym_sha256': baseline_sha,
+                  'error_headers': baseline_errors,
+              },
+              'best': best,
+              'strict_improvement': strict_improvement,
+              'tie': tie,
+              'promoted_to_global_best': strict_improvement,
+              'all': rows,
+          }
+          (frontier / 'PROBE43_SELECTION.json').write_text(
+              json.dumps(decision, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          (frontier / 'PROBE43_RESULT.json').write_text(
+              json.dumps(best, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          shutil.copy2(source, frontier / 'QYM_PROBE43_BEST.lean')
+          for src_name, dst_name in [
+              ('QYM.diagnostics.jsonl', 'PROBE43_diagnostics.jsonl'),
+              ('QYM.error-headers.txt', 'PROBE43_error-headers.txt'),
+              ('QYM.panic-lines.txt', 'PROBE43_panic-lines.txt'),
+              ('QYM.time', 'PROBE43_time'),
+              ('QYM.log', 'PROBE43.log'),
+          ]:
+              src = artifact_dir / src_name
+              if src.exists():
+                  shutil.copy2(src, frontier / dst_name)
+
+          raw_lines = source.read_text(encoding='utf-8').splitlines()
+          first = best.get('first_error') or {}
+          line = int(first.get('line') or 1)
+          lo, hi = max(1, line - 100), min(len(raw_lines), line + 100)
+          context = ''.join(f'{i:06d}: {raw_lines[i-1]}\n' for i in range(lo, hi + 1))
+          (frontier / 'PROBE43_FIRST_ERROR_CONTEXT.txt').write_text(context, encoding='utf-8')
+
+          decl = None
+          decl_re = re.compile(r'^\s*(?:private\s+|protected\s+|noncomputable\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([^\s(:]+)')
+          for i in range(min(line, len(raw_lines)), 0, -1):
+              m = decl_re.match(raw_lines[i-1])
+              if m:
+                  decl = m.group(1)
+                  break
+          best['first_declaration'] = decl
+          (frontier / 'PROBE43_RESULT.json').write_text(
+              json.dumps(best, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          decision['best'] = best
+          (frontier / 'PROBE43_SELECTION.json').write_text(
+              json.dumps(decision, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          if strict_improvement:
+              status = {
+                  'probe': 'Probe43',
+                  'run_id': decision['target_run_id'],
+                  'variant': best['variant'],
+                  'candidate_qym_sha256': best['candidate_qym_sha256'],
+                  'candidate_qym_blob': best['candidate_qym_blob'],
+                  'bytes': best.get('bytes'),
+                  'lf': best.get('lf'),
+                  'exit': best.get('exit'),
+                  'error_headers': best.get('error_headers'),
+                  'warning_headers': best.get('warning_headers'),
+                  'panic_lines': best.get('panic_lines'),
+                  'first_error': best.get('first_error'),
+                  'first_declaration': decl,
+                  'last_error': best.get('last_error'),
+                  'log_sha256': best.get('log_sha256'),
+                  'semantic_pass': best.get('semantic_pass'),
+                  'promoted': False,
+              }
+              (frontier / 'FRONTIER_STATUS.json').write_text(
+                  json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+
+          print(json.dumps(decision, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit exact Probe43 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          if git diff --cached --quiet; then
+            echo 'No evidence changes to commit.'
+            exit 0
+          fi
+          errors="$(jq -r '.best.error_headers' .github/qym-frontier/PROBE43_SELECTION.json)"
+          variant="$(jq -r '.best.variant' .github/qym-frontier/PROBE43_SELECTION.json)"
+          git commit -m "QYM Probe43: persist ${errors}-error ${variant} frontier"
+          git push origin "HEAD:$BRANCH"
