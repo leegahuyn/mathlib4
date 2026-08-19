@@ -1,0 +1,129 @@
+name: GPT QYM GB85 cumulative C3 C5 C6 v10
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-v10-c3-c6.yml
+      - .github/qym_gb85_v10_orchestrate.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-c3-c6-v10
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v8-20260819
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  C2_RESULT: PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+  FRONTIER: PrimalitySheafVerification/QYM_GB85_V9_FRONTIER.json
+  OUT: qym-gb85-v10-c3-c6-output
+
+jobs:
+  cumulative-direct-lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Wait for verified C2 and chained frontier
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 240); do
+            git fetch origin "$BRANCH"
+            if git cat-file -e "origin/$BRANCH:$C2_RESULT" 2>/dev/null && git cat-file -e "origin/$BRANCH:$FRONTIER" 2>/dev/null; then
+              git reset --hard "origin/$BRANCH"
+              ready=true
+              break
+            fi
+            sleep 15
+          done
+          if [ "$ready" != "true" ]; then
+            echo "verified predecessor files did not appear" >&2
+            exit 1
+          fi
+          jq . "$C2_RESULT"
+          jq . "$FRONTIER"
+
+      - name: Require a genuinely promoted C2 source
+        id: c2
+        run: |
+          set -euo pipefail
+          promoted="$(jq -r '.promoted // false' "$C2_RESULT")"
+          printf 'promoted=%s\n' "$promoted" >> "$GITHUB_OUTPUT"
+          mkdir -p "$OUT"
+          if [ "$promoted" != "true" ]; then
+            jq -n --arg reason 'C2 v8 produced no verified promotion; C3-C6 must not descend from an unverified source' --slurpfile c2 "$C2_RESULT" --slurpfile frontier "$FRONTIER" '{schema:"qym-gb85-v10-skip",strict_improvement:false,reason:$reason,c2:$c2[0],frontier:$frontier[0]}' > "$OUT/RESULT.json"
+          fi
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.c2.outputs.promoted == 'true'
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Directly compile completed prerequisites
+        if: steps.c2.outputs.promoted == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+
+      - name: Reuse and verify cumulative C3 C5 C6 patch families
+        if: steps.c2.outputs.promoted == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          mkdir -p "$OUT"
+          python3 .github/qym_gb85_v10_orchestrate.py "$GITHUB_WORKSPACE" "$QYM_PATH" "$FRONTIER" "$OUT" "$OUT/QYM.final.lean" > "$OUT/orchestrator.stdout.json"
+
+      - name: Promote only cumulative direct-Lean improvement
+        run: |
+          set -euo pipefail
+          if [ ! -f "$OUT/RESULT.json" ]; then
+            echo "missing orchestrator result" >&2
+            exit 1
+          fi
+          cp "$OUT/RESULT.json" PrimalitySheafVerification/QYM_GB85_V10_C3_C6_RESULT.json
+          jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url}' PrimalitySheafVerification/QYM_GB85_V10_C3_C6_RESULT.json > "$OUT/result.tmp"
+          mv "$OUT/result.tmp" PrimalitySheafVerification/QYM_GB85_V10_C3_C6_RESULT.json
+          if jq -e '.strict_improvement == true' "$OUT/RESULT.json" >/dev/null; then
+            cp "$OUT/QYM.final.lean" "$QYM_PATH"
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM_GB85_V10_C3_C6_RESULT.json
+          if jq -e '.strict_improvement == true' "$OUT/RESULT.json" >/dev/null; then
+            git add "$QYM_PATH"
+            git commit -m "QYM: promote cumulative verified C3 C5 C6 improvement"
+          else
+            git commit -m "QYM: record cumulative C3 C5 C6 diagnostics"
+          fi
+          git push origin HEAD:"$BRANCH"
+
+      - name: Upload all cumulative evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-v10-c3-c6-${{ github.run_id }}
+          path: qym-gb85-v10-c3-c6-output
+          if-no-files-found: warn
+          retention-days: 30
