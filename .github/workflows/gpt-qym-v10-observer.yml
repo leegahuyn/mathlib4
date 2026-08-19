@@ -1,0 +1,62 @@
+name: GPT QYM V10 observer
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb83-v10-normalize4-20260819
+    paths:
+      - .github/workflows/gpt-qym-v10-observer.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb83-v10-normalize4-20260819
+      TARGET_WORKFLOW: gpt-qym-gb83-v10-normalize4.yml
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Capture exact V10 workflow runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          gh api \
+            -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$BRANCH&per_page=5" \
+            | jq '{
+                observed_at: (now | todateiso8601),
+                branch: "'"$BRANCH"'",
+                target_workflow: "'"$TARGET_WORKFLOW"'",
+                runs: [.workflow_runs[] | {
+                  id, run_number, run_attempt, status, conclusion,
+                  event, head_branch, head_sha, path,
+                  created_at, updated_at, html_url
+                }]
+              }' > .github/qym-frontier/V10_LIVE_STATUS.json
+          cat .github/qym-frontier/V10_LIVE_STATUS.json
+
+      - name: Commit observer snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/V10_LIVE_STATUS.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'QYM V10: record live workflow status'
+          git push origin "HEAD:$BRANCH"
