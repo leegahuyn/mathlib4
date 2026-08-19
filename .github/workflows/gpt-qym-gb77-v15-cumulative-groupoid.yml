@@ -1,0 +1,244 @@
+name: GPT QYM GB77 V15 cumulative groupoid repair
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb77-v15-cumulative-groupoid-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb77-v15-cumulative-groupoid.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb77-v15-cumulative-groupoid
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb77-v15-cumulative-groupoid-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  BASE_SHA256: b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd
+  BASE_BLOB: c6e8883353b350f22b7f48d955fc5cfa4e61f88f
+  SOURCE_ERRORS: '77'
+  KNOWN_BEST_ERRORS: '76'
+
+jobs:
+  candidate:
+    name: V15-${{ matrix.variant }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        variant:
+          - explicit_helpers
+          - fact_instances
+          - inline_duplicate
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Gate exact immutable GB77 source and scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+          test "$(sha256sum .github/qym-frontier/QYM_GB77_BEST.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object .github/qym-frontier/QYM_GB77_BEST.lean)" = "$BASE_BLOB"
+          cmp -s "$QYM" .github/qym-frontier/QYM_GB77_BEST.lean
+          python3 -m py_compile \
+            .github/qym_patch_gb77_v14_right_normal_im.py \
+            .github/qym_gb77_v15_cumulative_driver.py
+          mkdir -p "$OLEAN" "/tmp/qym-gb77-v15/${{ matrix.variant }}"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-v15/${{ matrix.variant }}"
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="/tmp/qym-gb77-v15/${{ matrix.variant }}"
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              max_errors=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                max_errors=2000
+              fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$max_errors" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Apply cumulative GB77 patches and run direct Lean
+        shell: bash
+        env:
+          OUT_ROOT: /tmp/qym-gb77-v15
+        run: python3 -B .github/qym_gb77_v15_cumulative_driver.py candidate '${{ matrix.variant }}'
+
+      - name: Upload immutable V15 candidate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-v15-${{ matrix.variant }}-${{ github.run_id }}
+          path: /tmp/qym-gb77-v15/${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
+
+  selector:
+    name: Select strict improvement beyond verified 76
+    needs: candidate
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: qym-gb77-v15-*-${{ github.run_id }}
+          path: /tmp/qym-gb77-v15-artifacts
+
+      - name: Select only verified full-QYM result below 76 errors
+        id: select
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qym-gb77-v15-selection
+          python3 -B .github/qym_gb77_v15_cumulative_driver.py select \
+            /tmp/qym-gb77-v15-artifacts /tmp/qym-gb77-v15-selection
+          if [[ -s /tmp/qym-gb77-v15-selection/QYM.best.lean ]]; then
+            echo "promote=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "promote=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Preserve strict descendant without replacing immutable GB77
+        if: steps.select.outputs.promote == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          best=/tmp/qym-gb77-v15-selection/QYM.best.lean
+          result=/tmp/qym-gb77-v15-selection/BEST_RESULT.json
+          selection=/tmp/qym-gb77-v15-selection/SELECTION.json
+          errors="$(jq -r '.error_headers' "$result")"
+          warnings="$(jq -r '.warning_headers' "$result")"
+          variant="$(jq -r '.variant' "$result")"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$result")"
+          candidate_blob="$(jq -r '.candidate_qym_blob' "$result")"
+          test "$errors" -lt "$KNOWN_BEST_ERRORS"
+          test "$(jq -r '.full_compile_executed' "$result")" = true
+          test "$(jq -r '.strict_improvement_beyond_known_best' "$result")" = true
+          test "$(jq -r '.panic_lines' "$result")" -eq 0
+          test "$(jq '[.forbidden[]] | add' "$result")" -eq 0
+          test "$(sha256sum "$best" | awk '{print $1}')" = "$candidate_sha"
+          test "$(git hash-object "$best")" = "$candidate_blob"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object "$QYM")" = "$BASE_BLOB"
+
+          mkdir -p .github/qym-frontier
+          cp "$best" ".github/qym-frontier/QYM_GB${errors}_CUMULATIVE_FROM_GB77_BEST.lean"
+          cp "$result" ".github/qym-frontier/GB${errors}_V15_RESULT_${GITHUB_RUN_ID}.json"
+          cp "$selection" ".github/qym-frontier/GB${errors}_V15_SELECTION_${GITHUB_RUN_ID}.json"
+          jq -n \
+            --arg branch "$BRANCH" \
+            --arg variant "$variant" \
+            --arg qym_sha "$candidate_sha" \
+            --arg qym_blob "$candidate_blob" \
+            --argjson errors "$errors" \
+            --argjson warnings "$warnings" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            '{schema:"qym-gb77-v15-descendant-v1",source_baseline:"GB77",source_baseline_errors:77,source_baseline_sha256:"b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",source_baseline_blob:"c6e8883353b350f22b7f48d955fc5cfa4e61f88f",known_best_before:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,variant:$variant,error_headers:$errors,warning_headers:$warnings,panic_lines:0,candidate_sha256:$qym_sha,candidate_blob:$qym_blob,immutable_gb77_preserved:true,canonical_qym_replaced:false,status:"VERIFIED_DESCENDANT_FROM_GB77"}' \
+            > ".github/qym-frontier/GB${errors}_V15_STATUS.json"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ".github/qym-frontier/QYM_GB${errors}_CUMULATIVE_FROM_GB77_BEST.lean" \
+            ".github/qym-frontier/GB${errors}_V15_RESULT_${GITHUB_RUN_ID}.json" \
+            ".github/qym-frontier/GB${errors}_V15_SELECTION_${GITHUB_RUN_ID}.json" \
+            ".github/qym-frontier/GB${errors}_V15_STATUS.json"
+          git commit -m "QYM GB77 V15: preserve verified ${errors}-error cumulative descendant (${variant})"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Preserve no-improvement evidence
+        if: steps.select.outputs.promote != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          selection=/tmp/qym-gb77-v15-selection/SELECTION.json
+          mkdir -p .github/qym-frontier
+          cp "$selection" ".github/qym-frontier/GB77_V15_NO_IMPROVEMENT_${GITHUB_RUN_ID}.json"
+          jq -n \
+            --arg branch "$BRANCH" \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            '{schema:"qym-gb77-v15-no-improvement-v1",source_baseline:"GB77",source_baseline_errors:77,known_best_before:76,branch:$branch,run_id:$run_id,trigger_sha:$trigger_sha,immutable_gb77_preserved:true,status:"NO_VERIFIED_RESULT_BELOW_76"}' \
+            > .github/qym-frontier/GB77_V15_STATUS.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ".github/qym-frontier/GB77_V15_NO_IMPROVEMENT_${GITHUB_RUN_ID}.json" \
+            .github/qym-frontier/GB77_V15_STATUS.json
+          git commit -m "QYM GB77 V15: preserve no-improvement evidence"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable selector evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb77-v15-selector-${{ github.run_id }}
+          path: /tmp/qym-gb77-v15-selection
+          if-no-files-found: error
+          retention-days: 30
