@@ -1,0 +1,13 @@
+{
+  "status": "ZERO_ERROR",
+  "baseline": {
+    "exit_code": 0,
+    "errors": 0,
+    "first_file": "",
+    "first_line": 1000000000,
+    "first_col": 1000000000,
+    "timed_out": false,
+    "elapsed_seconds": 263.452
+  },
+  "selected": null
+}
