@@ -1,0 +1,56 @@
+name: GPT QYM source inspector v2
+
+on:
+  push:
+    branches:
+      - gpt/qym-probe43-observer-20260819
+    paths:
+      - .github/workflows/gpt-qym-source-inspector-v2.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Extract exact declarations with grep
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=.github/qym-probe43-observer/SOURCE_INSPECTION_V2.txt
+          mkdir -p "$(dirname "$out")"
+          : > "$out"
+          roots=(PrimalitySheafVerification Mathlib)
+          for pattern in \
+            'upperLift' \
+            'SmoothQuotientCompactFunction' \
+            'InverseEtaFixedPhaseCore' \
+            'GammaTwoCusp' \
+            'gammaTwoCuspScaling' \
+            'coe_smul_of_det_pos' \
+            'coe_specialLinearGroup_apply'; do
+            printf '\n===== PATTERN: %s =====\n' "$pattern" >> "$out"
+            grep -R -n -C 35 --include='*.lean' "$pattern" "${roots[@]}" >> "$out" 2>&1 || true
+          done
+          printf '\n===== MATCHING FILES =====\n' >> "$out"
+          grep -R -l --include='*.lean' -E 'upperLift|gammaTwoCuspScaling|coe_smul_of_det_pos' "${roots[@]}" \
+            | sort >> "$out" || true
+          test -s "$out"
+
+      - name: Persist inspection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-probe43-observer/SOURCE_INSPECTION_V2.txt
+          git commit -m 'QYM inspector v2: persist dependency declaration contexts'
+          git push origin HEAD:gpt/qym-probe43-observer-20260819
