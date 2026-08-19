@@ -1,0 +1,163 @@
+name: GPT QYM GB85 explicit C2 fallback v11
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-v11-fallback.yml
+      - .github/qym_gb85_c2_v11_fallback.py
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: qym-gb85-c2-fallback-v11
+  cancel-in-progress: false
+
+env:
+  BRANCH: gpt/qym-gb85-c2-v8-20260819
+  BASE_ARTIFACT_ID: "9354072137"
+  BASE_SHA256: "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
+  BASE_BLOB: "bd28d0436230a8f0bcb01806dac01787542256b8"
+  BASE_ERRORS: "85"
+  C2_RESULT: PrimalitySheafVerification/QYM_GB85_C2_V8_RESULT.json
+  QYM_PATH: PrimalitySheafVerification/QYM.lean
+  OUT: qym-gb85-c2-v11-output
+
+jobs:
+  explicit-c2-fallback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: gpt/qym-gb85-c2-v8-20260819
+          fetch-depth: 0
+
+      - name: Wait for primary C2 decision
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 240); do
+            git fetch origin "$BRANCH"
+            if git cat-file -e "origin/$BRANCH:$C2_RESULT" 2>/dev/null; then
+              git reset --hard "origin/$BRANCH"
+              ready=true
+              break
+            fi
+            sleep 15
+          done
+          if [ "$ready" != "true" ]; then
+            echo "primary C2 decision did not appear" >&2
+            exit 1
+          fi
+          jq . "$C2_RESULT"
+
+      - name: Decide whether fallback is required
+        id: decision
+        run: |
+          set -euo pipefail
+          promoted="$(jq -r '.promoted // false' "$C2_RESULT")"
+          required=true
+          if [ "$promoted" = "true" ]; then required=false; fi
+          printf 'required=%s\n' "$required" >> "$GITHUB_OUTPUT"
+          mkdir -p "$OUT"
+          if [ "$required" = "false" ]; then
+            jq -n --slurpfile primary "$C2_RESULT" '{schema:"qym-gb85-c2-v11-skip",fallback_required:false,strict_improvement:false,primary:$primary[0]}' > "$OUT/SELECTION.json"
+          fi
+
+      - name: Recover immutable verified 85-error source
+        if: steps.decision.outputs.required == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/artifact" "$OUT/baseline"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$BASE_ARTIFACT_ID/zip" > "$OUT/gb85.zip"
+          unzip -q "$OUT/gb85.zip" -d "$OUT/artifact"
+          python3 .github/qym_gb85_v8_recover.py "$OUT/artifact" "$OUT/baseline/QYM.GB85.lean" "$BASE_SHA256" "$BASE_BLOB" "$BASE_ERRORS" > "$OUT/recovery.json"
+
+      - name: Install pinned Lean and Mathlib cache
+        if: steps.decision.outputs.required == 'true'
+        run: |
+          set -euo pipefail
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.elan/bin:$PATH"
+          elan toolchain install "$(cat lean-toolchain)"
+          lake exe cache get
+
+      - name: Directly compile completed prerequisites
+        if: steps.decision.outputs.required == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2.lean > "$OUT/Mock2.log" 2>&1
+          timeout 5400 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_Advanced.lean > "$OUT/Mock2_Advanced.log" 2>&1
+          timeout 10800 lake env lean -DmaxErrors=2000 PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean > "$OUT/Mock2_FunctionalAnalysis.log" 2>&1
+
+      - name: Test explicit C2 equality strategies
+        if: steps.decision.outputs.required == 'true'
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.elan/bin:$PATH"
+          export LEAN_ABORT_ON_PANIC=1
+          variants=(function_eq convert unfold_action)
+          dirs=()
+          for variant in "${variants[@]}"; do
+            dir="$OUT/$variant"
+            dirs+=("$dir")
+            mkdir -p "$dir"
+            python3 .github/qym_gb85_c2_v11_fallback.py "$variant" "$OUT/baseline/QYM.GB85.lean" "$dir/QYM.lean" > "$dir/patch.json"
+            set +e
+            timeout 3600 lake env lean -DmaxErrors=1 "$dir/QYM.lean" > "$dir/local.log" 2>&1
+            local_exit=$?
+            set -e
+            python3 .github/qym_gb85_v8_metrics.py parse "$dir/local.log" "$local_exit" "$dir/local.json" "$dir/QYM.lean"
+            gate="$(python3 .github/qym_gb85_v8_metrics.py gate "$dir/local.json" "$dir/patch.json")"
+            printf '%s\n' "$gate" > "$dir/c2_gate.txt"
+            if [ "$gate" = "true" ]; then
+              set +e
+              timeout 10800 lake env lean -DmaxErrors=2000 "$dir/QYM.lean" > "$dir/full.log" 2>&1
+              full_exit=$?
+              set -e
+              python3 .github/qym_gb85_v8_metrics.py parse "$dir/full.log" "$full_exit" "$dir/full.json" "$dir/QYM.lean"
+            fi
+          done
+          python3 .github/qym_gb85_v8_metrics.py select "$OUT/SELECTION.json" "$OUT/WINNER_PATH.txt" "${dirs[@]}"
+
+      - name: Record or promote verified fallback
+        run: |
+          set -euo pipefail
+          cp "$OUT/SELECTION.json" PrimalitySheafVerification/QYM_GB85_C2_V11_RESULT.json
+          jq --arg run_id "$GITHUB_RUN_ID" --arg run_url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '. + {run_id:$run_id,run_url:$run_url}' PrimalitySheafVerification/QYM_GB85_C2_V11_RESULT.json > "$OUT/result.tmp"
+          mv "$OUT/result.tmp" PrimalitySheafVerification/QYM_GB85_C2_V11_RESULT.json
+          if jq -e '.strict_improvement == true' "$OUT/SELECTION.json" >/dev/null; then
+            cp "$(cat "$OUT/WINNER_PATH.txt")" "$QYM_PATH"
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add PrimalitySheafVerification/QYM_GB85_C2_V11_RESULT.json
+          if jq -e '.strict_improvement == true' "$OUT/SELECTION.json" >/dev/null; then
+            git add "$QYM_PATH"
+            git commit -m "QYM: promote verified explicit C2 fallback"
+          else
+            git commit -m "QYM: record explicit C2 fallback diagnostics"
+          fi
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git push origin HEAD:"$BRANCH"
+
+      - name: Upload all fallback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qym-gb85-c2-v11-${{ github.run_id }}
+          path: qym-gb85-c2-v11-output
+          if-no-files-found: warn
+          retention-days: 30
