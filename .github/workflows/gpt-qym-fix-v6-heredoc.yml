@@ -1,0 +1,72 @@
+name: GPT QYM fix v6 heredoc execution gate
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v6-mulinv-20260819
+    paths:
+      - .github/workflows/gpt-qym-fix-v6-heredoc.yml
+      - .github/fix_qym_v6_heredoc.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpt-qym-fix-v6-heredoc
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRANCH: gpt/qym-gb85-c2-v6-mulinv-20260819
+      TARGET: .github/workflows/gpt-qym-gb85-c2-mulinv-v6.yml
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Gate exact branch and immutable trigger head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test -s "$TARGET"
+          test -s .github/fix_qym_v6_heredoc.py
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Correct only the two broken heredoc bodies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/fix_qym_v6_heredoc.py "$TARGET" | tee /tmp/qym-v6-heredoc-fix.json
+          git diff --check
+          test "$(git diff --name-only)" = "$TARGET"
+          test -n "$(git diff -- "$TARGET")"
+
+      - name: Commit and trigger the corrected v6 Lean tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          test "$(git rev-parse "origin/$BRANCH")" = "$GITHUB_SHA"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$TARGET"
+          git commit -m "QYM C2 v6: fix heredoc execution gate"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload fix evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-v6-heredoc-fix-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-v6-heredoc-fix.json
+          if-no-files-found: warn
+          retention-days: 30
