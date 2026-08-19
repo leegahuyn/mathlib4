@@ -1,0 +1,843 @@
+{
+  "artifact_candidate_path": "/tmp/qym-gb77-v14b-artifacts/qym-gb77-v14b-normsq_simp_then_rw-32281700927/QYM.candidate.lean",
+  "artifact_result_path": "/tmp/qym-gb77-v14b-artifacts/qym-gb77-v14b-normsq_simp_then_rw-32281700927/RESULT.json",
+  "baseline_error_headers": 77,
+  "baseline_qym_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+  "baseline_qym_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+  "baseline_warning_headers": 360,
+  "branch": "gpt/qym-gb77-v14-right-normal-im-20260820",
+  "candidate_qym_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+  "candidate_qym_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+  "earlier_errors": [],
+  "error_codes": {
+    "lean.synthInstanceFailed": 8,
+    "uncoded": 68
+  },
+  "error_headers": 76,
+  "exit": 1,
+  "first_blocker_advanced": true,
+  "first_error": {
+    "code": null,
+    "column": 0,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 45528,
+    "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+    "severity": "error"
+  },
+  "forbidden": {
+    "Lean.ofReduceBool": 0,
+    "admit": 0,
+    "global_axiom": 0,
+    "maxHeartbeats_zero": 0,
+    "native_decide": 0,
+    "sorry": 0,
+    "unsafe": 0
+  },
+  "full": {
+    "command": [
+      "lake",
+      "env",
+      "lean",
+      "-DmaxErrors=10000",
+      "-DwarningAsError=false",
+      "-o",
+      "/tmp/qym-gb77-v14b/normsq_simp_then_rw/full.olean",
+      "-i",
+      "/tmp/qym-gb77-v14b/normsq_simp_then_rw/full.ilean",
+      "PrimalitySheafVerification/QYM.lean"
+    ],
+    "elapsed_seconds": 454.862,
+    "error_codes": {
+      "lean.synthInstanceFailed": 8,
+      "uncoded": 68
+    },
+    "error_headers": 76,
+    "errors": [
+      {
+        "code": null,
+        "column": 0,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45528,
+        "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 8,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45541,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 62,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45540,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48399,
+        "message": "Tactic `rewrite` failed: motive is not type correct:",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48413,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48418,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48421,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 14,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48425,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 27,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48430,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48471,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 57,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48488,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48497,
+        "message": "`simp` made no progress",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48505,
+        "message": "`simp` made no progress",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 42,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48548,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48566,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 24,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48651,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48664,
+        "message": "'change' tactic failed, pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48690,
+        "message": "Tactic `rfl` failed: The left-hand side",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48699,
+        "message": "Tactic `rfl` failed: The left-hand side",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48706,
+        "message": "Tactic `rfl` failed: The left-hand side",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48743,
+        "message": "'change' tactic failed, pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48760,
+        "message": "'change' tactic failed, pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48809,
+        "message": "Tactic `rfl` failed: The left-hand side",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48818,
+        "message": "'change' tactic failed, pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 49504,
+        "message": "(deterministic) timeout at `whnf`, maximum number of heartbeats (2000000) has been reached",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 78,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50532,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 8,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50547,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50553,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50550,
+        "message": "Cannot add `simp` attribute to `actualStageBundleValue_projection`: It is not a proposition nor a definition (to unfold)",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 78,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50559,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50582,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50645,
+        "message": "`simp` made no progress",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 97,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50654,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 48,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50666,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 108,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50667,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 43,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50673,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 82,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50674,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 43,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50676,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 52,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50679,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 52,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50681,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 84,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50683,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 91,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50683,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 180,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50692,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 63,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50690,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50700,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 8,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50716,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 84,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50770,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 27,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50774,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 180,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50770,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 10,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50830,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 10,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50903,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 8,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50899,
+        "message": "(kernel) unknown constant 'QYM.FullCertification.P3ActualStageL2SectionsExtension.actualStageBundleValue_projection'",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 12,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 50937,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51607,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51622,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51628,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51636,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51641,
+        "message": "Type mismatch",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51706,
+        "message": "Tactic `rewrite` failed: Did not find an occurrence of the pattern",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 58,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51789,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51823,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 50,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51826,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51829,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 27,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51851,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51870,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 51920,
+        "message": "Type mismatch: After simplification, term",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 84,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 52346,
+        "message": "Application type mismatch: The argument",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57504,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57506,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57523,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57525,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57849,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 2,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57852,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 66,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57874,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 21,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 57883,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 78,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 59271,
+        "message": "unsolved goals",
+        "severity": "error"
+      }
+    ],
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 0,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 45528,
+      "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+      "severity": "error"
+    },
+    "ilean_bytes": 0,
+    "ilean_exists": false,
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59271,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "log_sha256": "fec0eb9c96a3196175640331e3ffcd75763ba6d4529cee2799a5ff19fd19440d",
+    "olean_bytes": 0,
+    "olean_exists": false,
+    "panic_lines": 0,
+    "phase": "full",
+    "variant": "normsq_simp_then_rw",
+    "warning_headers": 358
+  },
+  "full_compile_executed": true,
+  "last_error": {
+    "code": null,
+    "column": 78,
+    "file": "PrimalitySheafVerification/QYM.lean",
+    "line": 59271,
+    "message": "unsolved goals",
+    "severity": "error"
+  },
+  "local": {
+    "command": [
+      "lake",
+      "env",
+      "lean",
+      "-DmaxErrors=6",
+      "-DwarningAsError=false",
+      "-o",
+      "/tmp/qym-gb77-v14b/normsq_simp_then_rw/local.olean",
+      "-i",
+      "/tmp/qym-gb77-v14b/normsq_simp_then_rw/local.ilean",
+      "PrimalitySheafVerification/QYM.lean"
+    ],
+    "elapsed_seconds": 201.714,
+    "error_codes": {
+      "lean.synthInstanceFailed": 3,
+      "uncoded": 4
+    },
+    "error_headers": 7,
+    "errors": [
+      {
+        "code": null,
+        "column": 0,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45528,
+        "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 8,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45541,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 62,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 45540,
+        "message": "unsolved goals",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 6,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48399,
+        "message": "Tactic `rewrite` failed: motive is not type correct:",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48413,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": "lean.synthInstanceFailed",
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48418,
+        "message": "failed to synthesize instance of type class",
+        "severity": "error"
+      },
+      {
+        "code": null,
+        "column": 4,
+        "file": "PrimalitySheafVerification/QYM.lean",
+        "line": 48421,
+        "message": "maximum number of errors (6; from option `maxErrors`) reached, exiting",
+        "severity": "error"
+      }
+    ],
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 0,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 45528,
+      "message": "This instance has 1 argument that cannot be inferred using typeclass synthesis. Specifically",
+      "severity": "error"
+    },
+    "ilean_bytes": 0,
+    "ilean_exists": false,
+    "last_error": {
+      "code": null,
+      "column": 4,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 48421,
+      "message": "maximum number of errors (6; from option `maxErrors`) reached, exiting",
+      "severity": "error"
+    },
+    "log_sha256": "e83e3210ff6b5434eed13ddb1ed97e35f5214abb90c40a4c9c2c6fc1eec20e43",
+    "olean_bytes": 0,
+    "olean_exists": false,
+    "panic_lines": 0,
+    "phase": "local",
+    "variant": "normsq_simp_then_rw",
+    "warning_headers": 252
+  },
+  "local_gate_pass": true,
+  "log_sha256": "fec0eb9c96a3196175640331e3ffcd75763ba6d4529cee2799a5ff19fd19440d",
+  "next_declaration_line": 44787,
+  "panic_lines": 0,
+  "patch": {
+    "baseline_error_headers": 77,
+    "blocker": "conj_mul_hyperbolicRightNormal_im",
+    "blocker_line": 44766,
+    "bytes": 2948900,
+    "candidate_blob": "29d446743036dccd5d9ad8757c351b39d526cfa9",
+    "candidate_sha256": "fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3",
+    "forbidden": {
+      "Lean.ofReduceBool": 0,
+      "admit": 0,
+      "global_axiom": 0,
+      "maxHeartbeats_zero": 0,
+      "native_decide": 0,
+      "sorry": 0,
+      "unsafe": 0
+    },
+    "input_blob": "c6e8883353b350f22b7f48d955fc5cfa4e61f88f",
+    "input_sha256": "b6f0126c27dfc08b5f81c306a7140f9531fcc3d6ca6b75dd8abbd71101d458fd",
+    "lf": 62357,
+    "schema": "qym-gb77-v15-candidate-v1",
+    "status": "PREPARED_UNVERIFIED",
+    "variant": "normsq_simp_then_rw"
+  },
+  "run_id": 32281700927,
+  "schema": "qym-gb77-v14b-right-normal-im-result-v1",
+  "semantic_pass": false,
+  "strict_improvement": true,
+  "target_declaration": "conj_mul_hyperbolicRightNormal_im",
+  "target_end_line": 44783,
+  "target_errors": [],
+  "target_start_line": 44766,
+  "trigger_sha": "abc8e5d1dee3658afa5591637ab45e3861da8057",
+  "variant": "normsq_simp_then_rw",
+  "warning_headers": 358
+}
