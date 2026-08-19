@@ -1,0 +1,164 @@
+name: GPT QYM C2 GB85 v3
+
+on:
+  push:
+    branches: [gpt/qym-c2-first-producer-chat-20260819]
+    paths:
+      - .github/workflows/gpt-qym-c2-gb85-v3.yml
+      - .github/qym_patch_c2_gb85_v3.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: gpt-qym-c2-gb85-v3
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c2-gb85-v3
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_ERRORS: "85"
+      ARTIFACT_ID: "9354072137"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Recover exact verified GB85
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/base" "$OLEAN"
+          curl --fail --location --retry 6 --retry-all-errors \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \
+            -o "$OUT/base.zip"
+          unzip -q "$OUT/base.zip" -d "$OUT/base"
+          cp "$OUT/base/QYM.candidate-C04-mul_inv_using_bang.lean" "$QYM"
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$BASE_SHA256"
+          jq -e --arg sha "$BASE_SHA256" --argjson errors "$BASE_ERRORS" \
+            '.candidate_qym_sha256 == $sha and .error_headers == $errors and
+             (.run_id | tonumber) == 32218198562 and .panic_lines == 0' \
+            "$OUT/base/RESULT.json" >/dev/null
+
+      - name: Install Lean and dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          elan toolchain install "$tc" > "$OUT/toolchain.log" 2>&1
+          lean --version | tee "$OUT/lean-version.txt"
+          lake exe cache get > "$OUT/mathlib-cache.log" 2>&1
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            cap=1
+            [[ "$s" == Mock2_FunctionalAnalysis* ]] && cap=2000
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Patch C2 from GB85
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_patch_c2_gb85_v3.py "$QYM" "$OUT"
+
+      - name: Local C2 gate
+        shell: bash
+        run: |
+          set +e
+          lake env lean -DmaxErrors=1 -DwarningAsError=false \
+            "$QYM" > "$OUT/local.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/local.exit"
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json, re, sys
+          out = Path(sys.argv[1])
+          text = (out / "local.log").read_text(errors="replace")
+          gate = json.loads((out / "PATCH_RESULT.json").read_text())["gate_line"]
+          m = re.search(r"^.*?\.lean:(\d+):(\d+): error(?:\([^)]*\))?:\s*(.*)$", text, re.M)
+          first = None if m is None else {"line": int(m[1]), "column": int(m[2]), "message": m[3]}
+          result = {"exit": int((out / "local.exit").read_text()), "gate_line": gate,
+                    "first_error": first, "c2_fixed": first is None or first["line"] >= gate}
+          (out / "LOCAL_RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+          print(json.dumps(result, indent=2))
+          if not result["c2_fixed"]:
+              raise SystemExit("C2 local gate failed")
+          PY
+
+      - name: Full authoritative QYM direct Lean
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" lake env lean \
+            -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/QYM.olean" -i "$RUNNER_TEMP/QYM.ilean" \
+            "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/full.exit"
+
+      - name: Parse result
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$BASE_ERRORS" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, sys
+          out, base = Path(sys.argv[1]), int(sys.argv[2])
+          raw = (out / "full.log").read_bytes()
+          text = raw.decode(errors="replace")
+          p = re.compile(r"^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$", re.M)
+          rows = [m.groupdict() for m in p.finditer(text)]
+          errors = [r for r in rows if r["severity"] == "error"]
+          panics = re.findall(r"(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$", text)
+          patch = json.loads((out / "PATCH_RESULT.json").read_text())
+          rc = int((out / "full.exit").read_text())
+          result = {**patch, "run_id": int(os.environ["GITHUB_RUN_ID"]),
+                    "trigger_sha": os.environ["GITHUB_SHA"], "exit": rc,
+                    "error_headers": len(errors), "warning_headers": len(rows) - len(errors),
+                    "panic_lines": len(panics), "first_error": errors[0] if errors else None,
+                    "last_error": errors[-1] if errors else None,
+                    "log_sha256": hashlib.sha256(raw).hexdigest(),
+                    "strict_improvement": not panics and len(errors) < base,
+                    "semantic_pass": rc == 0 and not errors and not panics}
+          (out / "FULL_RESULT.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          (out / "diagnostics.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows))
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not result["strict_improvement"]:
+              raise SystemExit("candidate did not improve GB85")
+          PY
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c2-gb85-v3-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
