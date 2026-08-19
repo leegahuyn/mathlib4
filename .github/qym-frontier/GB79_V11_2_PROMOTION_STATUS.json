@@ -1,0 +1,11 @@
+{
+  "schema": "qym-v11-2-promotion-v1",
+  "branch": "gpt/qym-gb79-v11-2-edgeparametertransport-20260819",
+  "run_id": 32267726196,
+  "trigger_sha": "a632366c1952b69e3b2181e726205630bf056605",
+  "error_headers": 78,
+  "panic_lines": 0,
+  "qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385",
+  "qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+  "status": "PROMOTED_FROM_GB79"
+}

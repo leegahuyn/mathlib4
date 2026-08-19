@@ -1,0 +1,329 @@
+{
+  "baseline": {
+    "blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+    "blob_ok": true,
+    "errors": 79,
+    "sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+    "sha_ok": true
+  },
+  "best": {
+    "baseline_error_headers": 79,
+    "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+    "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+    "candidate_qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+    "candidate_qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385",
+    "error_codes": {
+      "lean.synthInstanceFailed": 8,
+      "uncoded": 70
+    },
+    "error_headers": 78,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 61,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 44751,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "ilean_exists": false,
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59260,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "log_sha256": "c29eafa4ca224b1d3ea9aaa89f5ebea907aba2429afc17271f831199850f5f5d",
+    "olean_exists": false,
+    "panic_lines": 0,
+    "phase": "full",
+    "run_id": "32267726196",
+    "semantic_pass": false,
+    "strict_improvement": true,
+    "trigger_sha": "a632366c1952b69e3b2181e726205630bf056605",
+    "variant": "const_mul_have",
+    "warning_headers": 360
+  },
+  "best_variant": "const_mul_have",
+  "candidates": [
+    {
+      "candidate": "/tmp/qym-gb79-v11-2/QYM.candidate-simp_id_eq.lean",
+      "full": {
+        "baseline_error_headers": 79,
+        "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "candidate_qym_blob": "c33a2188f26a93900acbc2c0c3b4673de52f27a9",
+        "candidate_qym_sha256": "3003655050931cd536575128f2bb97dd5bb249bef09e21d349e7f05c18ed4a6a",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 70
+        },
+        "error_headers": 78,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59260,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "c29eafa4ca224b1d3ea9aaa89f5ebea907aba2429afc17271f831199850f5f5d",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32267726196",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "a632366c1952b69e3b2181e726205630bf056605",
+        "variant": "simp_id_eq",
+        "warning_headers": 360
+      },
+      "gate_line": 44240,
+      "local": {
+        "candidate_qym_blob": "c33a2188f26a93900acbc2c0c3b4673de52f27a9",
+        "candidate_qym_sha256": "3003655050931cd536575128f2bb97dd5bb249bef09e21d349e7f05c18ed4a6a",
+        "error_codes": {
+          "lean.synthInstanceFailed": 1,
+          "uncoded": 5
+        },
+        "error_headers": 6,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 48388,
+          "message": "maximum number of errors (5; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "062f708258cafad99ed5aa5f1492b35128b0715bc17ce164b4b715d02ee310bc",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "simp_id_eq",
+        "warning_headers": 254
+      },
+      "local_gate_pass": true,
+      "variant": "simp_id_eq"
+    },
+    {
+      "candidate": "/tmp/qym-gb79-v11-2/QYM.candidate-simp_function_id.lean",
+      "full": {
+        "baseline_error_headers": 79,
+        "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "candidate_qym_blob": "56a2c65be27a8b088872917e14e1c2f11ea6c9c0",
+        "candidate_qym_sha256": "ee5f3686b1f63cb3f8c186004d3f407e431888c205c58d44e2c4b2e18c18b7a4",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 70
+        },
+        "error_headers": 78,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59260,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "c29eafa4ca224b1d3ea9aaa89f5ebea907aba2429afc17271f831199850f5f5d",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32267726196",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "a632366c1952b69e3b2181e726205630bf056605",
+        "variant": "simp_function_id",
+        "warning_headers": 360
+      },
+      "gate_line": 44240,
+      "local": {
+        "candidate_qym_blob": "56a2c65be27a8b088872917e14e1c2f11ea6c9c0",
+        "candidate_qym_sha256": "ee5f3686b1f63cb3f8c186004d3f407e431888c205c58d44e2c4b2e18c18b7a4",
+        "error_codes": {
+          "lean.synthInstanceFailed": 1,
+          "uncoded": 5
+        },
+        "error_headers": 6,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 48388,
+          "message": "maximum number of errors (5; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "062f708258cafad99ed5aa5f1492b35128b0715bc17ce164b4b715d02ee310bc",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "simp_function_id",
+        "warning_headers": 254
+      },
+      "local_gate_pass": true,
+      "variant": "simp_function_id"
+    },
+    {
+      "candidate": "/tmp/qym-gb79-v11-2/QYM.candidate-convert_simp.lean",
+      "gate_line": 44239,
+      "local": {
+        "candidate_qym_blob": "49af8fb6229ca9a34d09fa1af3176132eb32d791",
+        "candidate_qym_sha256": "138a7dd5dcdbd45fd42c14a024315d186b3219f926519f2ffa6330e738483c15",
+        "error_codes": {
+          "uncoded": 6
+        },
+        "error_headers": 6,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 74,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44237,
+          "message": "`simp` made no progress",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 8,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 45529,
+          "message": "maximum number of errors (5; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "3eeb69588bec3d5eafc2ed37683a16467725954eb5768342559205a6b47def31",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "convert_simp",
+        "warning_headers": 232
+      },
+      "local_gate_pass": false,
+      "variant": "convert_simp"
+    },
+    {
+      "candidate": "/tmp/qym-gb79-v11-2/QYM.candidate-const_mul_have.lean",
+      "full": {
+        "baseline_error_headers": 79,
+        "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "candidate_qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+        "candidate_qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 70
+        },
+        "error_headers": 78,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59260,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "c29eafa4ca224b1d3ea9aaa89f5ebea907aba2429afc17271f831199850f5f5d",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32267726196",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "a632366c1952b69e3b2181e726205630bf056605",
+        "variant": "const_mul_have",
+        "warning_headers": 360
+      },
+      "gate_line": 44240,
+      "local": {
+        "candidate_qym_blob": "75c2c8afb5fc8b30bcd2a6665a9b3f7846cc152b",
+        "candidate_qym_sha256": "c1498a41b1a7fd334bef55df3cb045cef5f89cac9a5d8a33173d6f05d7937385",
+        "error_codes": {
+          "lean.synthInstanceFailed": 1,
+          "uncoded": 5
+        },
+        "error_headers": 6,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44751,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 6,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 48388,
+          "message": "maximum number of errors (5; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "062f708258cafad99ed5aa5f1492b35128b0715bc17ce164b4b715d02ee310bc",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "const_mul_have",
+        "warning_headers": 254
+      },
+      "local_gate_pass": true,
+      "variant": "const_mul_have"
+    }
+  ],
+  "schema": "qym-gb79-v11-2-edgeparametertransport-selection-v1",
+  "strict_improvement_found": true
+}
