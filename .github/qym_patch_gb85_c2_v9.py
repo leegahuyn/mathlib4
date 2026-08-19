@@ -9,6 +9,7 @@ import sys
 
 BASE_SHA256 = "f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210"
 BASE_BLOB = "bd28d0436230a8f0bcb01806dac01787542256b8"
+# Keep the historical driver-facing name; the commit/run identity marks V10.
 VARIANT = "change_pointwise_keep_trace"
 
 FIRST = r'''theorem actualFixedPhaseCuspHorocyclePoint_coe_contDiff
@@ -73,6 +74,22 @@ FIRST = r'''theorem actualFixedPhaseCuspHorocyclePoint_coe_contDiff
   simpa only [UpperHalfPlane.coe_smul_of_det_pos hg] using hfrac
 '''
 
+TRACE = r'''theorem actualFixedPhaseNamedCuspTraceRepresentative_contDiff
+    (n : ℤ) (kappa : GammaTwoCusp) (Y : ℝ)
+    (u : InverseEtaFixedPhaseCore n) :
+    ContDiff ℝ ∞
+      (actualFixedPhaseNamedCuspTraceRepresentative n kappa Y u) := by
+  have hu : ContDiffOn ℝ ∞
+      (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+      UpperHalfPlane.upperHalfPlaneSet :=
+    (u : SmoothQuotientCompactFunction).1.2
+  have hcurve := actualFixedPhaseCuspHorocyclePoint_coe_contDiff kappa Y
+  have hcomp := hu.comp_contDiff hcurve
+    (fun x => (actualFixedPhaseCuspHorocyclePoint kappa Y x).2)
+  simpa only [actualFixedPhaseNamedCuspTraceRepresentative,
+    Function.comp_apply, upperLift_apply] using hcomp
+'''
+
 FIRST_RE = re.compile(
     r"(?ms)^theorem actualFixedPhaseCuspHorocyclePoint_coe_contDiff\b.*?"
     r"(?=^/-- Restriction of every actual real-smooth automorphic core section)"
@@ -112,6 +129,11 @@ def one_match(pattern: re.Pattern[str], text: str, label: str) -> re.Match[str]:
     return matches[0]
 
 
+def replace_one(text: str, pattern: re.Pattern[str], replacement: str, label: str) -> str:
+    match = one_match(pattern, text, label)
+    return text[:match.start()] + replacement.rstrip() + "\n\n" + text[match.end():]
+
+
 def main() -> None:
     if len(sys.argv) != 3 or sys.argv[1] != VARIANT:
         raise SystemExit(f"usage: {sys.argv[0]} {VARIANT} QYM.lean")
@@ -125,20 +147,12 @@ def main() -> None:
 
     text = before.decode("utf-8")
     before_audit = audit(text)
-    first_match = one_match(FIRST_RE, text, "first C2 producer")
-    trace_before = one_match(TRACE_RE, text, "preserved trace producer").group(0)
-    trace_sha256 = sha256(trace_before.encode("utf-8"))
+    first_before = one_match(FIRST_RE, text, "first C2 producer").group(0)
+    trace_before = one_match(TRACE_RE, text, "trace producer").group(0)
 
-    text = (
-        text[: first_match.start()]
-        + FIRST.rstrip()
-        + "\n\n"
-        + text[first_match.end() :]
-    )
+    text = replace_one(text, FIRST_RE, FIRST, "first C2 producer")
+    text = replace_one(text, TRACE_RE, TRACE, "trace producer")
 
-    trace_after = one_match(TRACE_RE, text, "preserved trace producer").group(0)
-    if trace_after != trace_before:
-        raise SystemExit("trace theorem changed unexpectedly")
     after_audit = audit(text)
     if after_audit != before_audit:
         raise SystemExit(f"forbidden-token delta: {before_audit} -> {after_audit}")
@@ -152,7 +166,7 @@ def main() -> None:
     gate_line = text.count("\n", 0, marker_index) + 1
 
     print(json.dumps({
-        "schema": "qym-gb85-c2-v9-patch-v1",
+        "schema": "qym-gb85-c2-v10-patch-v1",
         "variant": VARIANT,
         "input_sha256": BASE_SHA256,
         "input_blob": BASE_BLOB,
@@ -161,7 +175,8 @@ def main() -> None:
         "bytes": len(after),
         "lf": after.count(b"\n"),
         "gate_line": gate_line,
-        "preserved_trace_sha256": trace_sha256,
+        "replaced_first_sha256": sha256(first_before.encode("utf-8")),
+        "replaced_trace_sha256": sha256(trace_before.encode("utf-8")),
         "forbidden": after_audit,
     }, indent=2, sort_keys=True))
 
