@@ -1,0 +1,134 @@
+name: QYM promote verified GB83 V10
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v8-convert-20260819
+    paths:
+      - .github/workflows/qym-promote-gb83-v10.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-v8-driver
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-v8-convert-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OUT: /tmp/qym-gb83-v10-promotion
+      ARTIFACT_ID: "9363819365"
+      SOURCE_SHA256: 072391f01c07d38fcb3a78436ebe9bcd1adf4f822cb90d7fc08aade8128725ba
+      SOURCE_BLOB: 4253706c8dedd8fcf81b8a8060385afcc52459ba
+      LOG_SHA256: fdebe14a16b404b1c6bf9c37c4ddc34e817f705c923ed999cee3d4f33ec39c7a
+      RUN_ID: "32246822969"
+      TRIGGER_SHA: 54a374ad2ed1c63fda46af16c4b918aefae90872
+      ERROR_HEADERS: "83"
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Recover and verify immutable GB83 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" > "$OUT/evidence.zip"
+          unzip -q -o "$OUT/evidence.zip" -d "$OUT/evidence"
+          cd "$OUT/evidence"
+          test -s QYM.best.lean
+          test -s BEST_RESULT.json
+          test -s SELECTION.json
+          test -s convert_staged.PATCH_RESULT.json
+          test -s convert_staged.full.log
+          test "$(sha256sum QYM.best.lean | awk '{print $1}')" = "$SOURCE_SHA256"
+          test "$(git hash-object QYM.best.lean)" = "$SOURCE_BLOB"
+          test "$(sha256sum convert_staged.full.log | awk '{print $1}')" = "$LOG_SHA256"
+          test "$(jq -r '.run_id' BEST_RESULT.json)" = "$RUN_ID"
+          test "$(jq -r '.trigger_sha' BEST_RESULT.json)" = "$TRIGGER_SHA"
+          test "$(jq -r '.variant' BEST_RESULT.json)" = convert_staged
+          test "$(jq -r '.candidate_qym_sha256' BEST_RESULT.json)" = "$SOURCE_SHA256"
+          test "$(jq -r '.candidate_qym_blob' BEST_RESULT.json)" = "$SOURCE_BLOB"
+          test "$(jq -r '.log_sha256' BEST_RESULT.json)" = "$LOG_SHA256"
+          test "$(jq -r '.error_headers' BEST_RESULT.json)" = "$ERROR_HEADERS"
+          test "$(jq -r '.panic_lines' BEST_RESULT.json)" = 0
+          test "$(jq -r '.strict_improvement' BEST_RESULT.json)" = true
+          test "$(jq -r '.semantic_pass' BEST_RESULT.json)" = false
+          test "$(jq '[.forbidden[]] | add' convert_staged.PATCH_RESULT.json)" = 0
+          jq -n \
+            --arg run "$RUN_ID" \
+            --arg sha "$SOURCE_SHA256" \
+            --arg blob "$SOURCE_BLOB" \
+            --arg log "$LOG_SHA256" \
+            --argjson errors "$ERROR_HEADERS" \
+            '{run_id:($run|tonumber),source_sha256:$sha,source_blob:$blob,log_sha256:$log,error_headers:$errors,panic_lines:0,verified:true}' \
+            > "$OUT/PROMOTION_VERIFY.json"
+
+      - name: Promote on top of latest branch without force
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          promoted=false
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            mkdir -p .github/qym-frontier
+
+            if [[ -s .github/qym-frontier/GB83_V10_RESULT.json ]] && \
+               [[ "$(jq -r '.candidate_qym_sha256' .github/qym-frontier/GB83_V10_RESULT.json)" = "$SOURCE_SHA256" ]] && \
+               [[ "$(sha256sum "$QYM" | awk '{print $1}')" = "$SOURCE_SHA256" ]]; then
+              echo 'Exact GB83 V10 source is already promoted.'
+              promoted=true
+              break
+            fi
+
+            cp "$OUT/evidence/QYM.best.lean" "$QYM"
+            cp "$OUT/evidence/QYM.best.lean" .github/qym-frontier/QYM_GB83_V10_BEST.lean
+            cp "$OUT/evidence/BEST_RESULT.json" .github/qym-frontier/GB83_V10_RESULT.json
+            cp "$OUT/evidence/SELECTION.json" .github/qym-frontier/GB83_V10_SELECTION.json
+            cp "$OUT/PROMOTION_VERIFY.json" .github/qym-frontier/GB83_V10_PROMOTION_VERIFY.json
+
+            test "$(sha256sum "$QYM" | awk '{print $1}')" = "$SOURCE_SHA256"
+            test "$(git hash-object "$QYM")" = "$SOURCE_BLOB"
+            git add "$QYM" .github/qym-frontier/QYM_GB83_V10_BEST.lean \
+              .github/qym-frontier/GB83_V10_RESULT.json \
+              .github/qym-frontier/GB83_V10_SELECTION.json \
+              .github/qym-frontier/GB83_V10_PROMOTION_VERIFY.json
+            if git diff --cached --quiet; then
+              promoted=true
+              break
+            fi
+            git commit -m 'QYM V10: promote verified 83-error global best'
+            if git push origin "HEAD:$BRANCH"; then
+              promoted=true
+              break
+            fi
+            git reset --hard "origin/$BRANCH"
+            sleep $((attempt * 3))
+          done
+          test "$promoted" = true
+
+      - name: Upload promotion evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb83-v10-promotion-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb83-v10-promotion
+          if-no-files-found: error
+          retention-days: 30
