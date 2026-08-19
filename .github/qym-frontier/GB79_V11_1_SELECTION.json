@@ -1,0 +1,271 @@
+{
+  "baseline": {
+    "blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+    "blob_ok": true,
+    "error_headers": 79,
+    "sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+    "sha_ok": true
+  },
+  "best": {
+    "baseline_error_headers": 79,
+    "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+    "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+    "candidate_qym_blob": "1d9a5b94f7f7a02a996fbeced521c915194d751d",
+    "candidate_qym_sha256": "1a45a5cad7243eab3ad276f6add587a3a890819ecee30ef689d2295364db41b4",
+    "error_codes": {
+      "lean.synthInstanceFailed": 8,
+      "uncoded": 70
+    },
+    "error_headers": 78,
+    "exit": 1,
+    "first_error": {
+      "code": null,
+      "column": 61,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 44752,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "ilean_exists": false,
+    "last_error": {
+      "code": null,
+      "column": 78,
+      "file": "PrimalitySheafVerification/QYM.lean",
+      "line": 59261,
+      "message": "unsolved goals",
+      "severity": "error"
+    },
+    "log_sha256": "104c690cf98cdc6db351ec901a0c687ff82d0e9ed90f1f0c2efde44892610a5f",
+    "olean_exists": false,
+    "panic_lines": 0,
+    "phase": "full",
+    "run_id": "32266408007",
+    "semantic_pass": false,
+    "strict_improvement": true,
+    "trigger_sha": "3c6e0b459e0f664e0f02a474ab27b2bd3ae42fad",
+    "variant": "edge_only",
+    "warning_headers": 360
+  },
+  "best_variant": "edge_only",
+  "candidates": [
+    {
+      "candidate": "/tmp/qym-gb79-v11-1/QYM.candidate-edge_only.lean",
+      "full": {
+        "baseline_error_headers": 79,
+        "baseline_qym_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "baseline_qym_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "candidate_qym_blob": "1d9a5b94f7f7a02a996fbeced521c915194d751d",
+        "candidate_qym_sha256": "1a45a5cad7243eab3ad276f6add587a3a890819ecee30ef689d2295364db41b4",
+        "error_codes": {
+          "lean.synthInstanceFailed": 8,
+          "uncoded": 70
+        },
+        "error_headers": 78,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44752,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 78,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 59261,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "log_sha256": "104c690cf98cdc6db351ec901a0c687ff82d0e9ed90f1f0c2efde44892610a5f",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "full",
+        "run_id": "32266408007",
+        "semantic_pass": false,
+        "strict_improvement": true,
+        "trigger_sha": "3c6e0b459e0f664e0f02a474ab27b2bd3ae42fad",
+        "variant": "edge_only",
+        "warning_headers": 360
+      },
+      "local": {
+        "candidate_qym_blob": "1d9a5b94f7f7a02a996fbeced521c915194d751d",
+        "candidate_qym_sha256": "1a45a5cad7243eab3ad276f6add587a3a890819ecee30ef689d2295364db41b4",
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44752,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "gate_line": 44241,
+        "gate_pass": true,
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 18,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44760,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "22bd58892838b88ba92852af9ecd2000eb8919dce4e11da8611209e2760d1e63",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "edge_only",
+        "warning_headers": 224
+      },
+      "local_gate_pass": true,
+      "patch": {
+        "bytes": 2948535,
+        "candidate_blob": "1d9a5b94f7f7a02a996fbeced521c915194d751d",
+        "candidate_sha256": "1a45a5cad7243eab3ad276f6add587a3a890819ecee30ef689d2295364db41b4",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44241,
+        "input_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "input_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "lf": 62347,
+        "schema": "qym-gb79-v11-1-patch-v1",
+        "variant": "edge_only"
+      },
+      "variant": "edge_only"
+    },
+    {
+      "candidate": "/tmp/qym-gb79-v11-1/QYM.candidate-edge_re.lean",
+      "local": {
+        "candidate_qym_blob": "fcc6eb3796e1e4c24231d36193e7dfc8e76aef34",
+        "candidate_qym_sha256": "5b3b0bfc578efa11e396ed14149a50a4e07d170b0ca5a18264f9c9446948596c",
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44752,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "gate_line": 44765,
+        "gate_pass": false,
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 18,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44769,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "3411302b4d7a48bda1843a0e4e3429f92f01af84625115cb96bd027a34d81a91",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "edge_re",
+        "warning_headers": 224
+      },
+      "local_gate_pass": false,
+      "patch": {
+        "bytes": 2948968,
+        "candidate_blob": "fcc6eb3796e1e4c24231d36193e7dfc8e76aef34",
+        "candidate_sha256": "5b3b0bfc578efa11e396ed14149a50a4e07d170b0ca5a18264f9c9446948596c",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44765,
+        "input_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "input_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "lf": 62356,
+        "schema": "qym-gb79-v11-1-patch-v1",
+        "variant": "edge_re"
+      },
+      "variant": "edge_re"
+    },
+    {
+      "candidate": "/tmp/qym-gb79-v11-1/QYM.candidate-edge_both.lean",
+      "local": {
+        "candidate_qym_blob": "1135ab9b30264c02c786ff66a88a54aa69941c87",
+        "candidate_qym_sha256": "7ecb202e821e644d1dbc11db8af6c73ae3ac45bea0607a3e50d96dd7a63ac1ef",
+        "error_codes": {
+          "uncoded": 2
+        },
+        "error_headers": 2,
+        "exit": 1,
+        "first_error": {
+          "code": null,
+          "column": 61,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44752,
+          "message": "unsolved goals",
+          "severity": "error"
+        },
+        "gate_line": 44783,
+        "gate_pass": false,
+        "ilean_exists": false,
+        "last_error": {
+          "code": null,
+          "column": 18,
+          "file": "PrimalitySheafVerification/QYM.lean",
+          "line": 44769,
+          "message": "maximum number of errors (1; from option `maxErrors`) reached, exiting",
+          "severity": "error"
+        },
+        "log_sha256": "c6d2ab43d3f7947e679965757c0cdd4d1118af9cf95b716975d9399873437d34",
+        "olean_exists": false,
+        "panic_lines": 0,
+        "phase": "local",
+        "variant": "edge_both",
+        "warning_headers": 224
+      },
+      "local_gate_pass": false,
+      "patch": {
+        "bytes": 2948984,
+        "candidate_blob": "1135ab9b30264c02c786ff66a88a54aa69941c87",
+        "candidate_sha256": "7ecb202e821e644d1dbc11db8af6c73ae3ac45bea0607a3e50d96dd7a63ac1ef",
+        "forbidden": {
+          "Lean.ofReduceBool": 0,
+          "admit": 0,
+          "global_axiom": 0,
+          "maxHeartbeats_zero": 0,
+          "native_decide": 0,
+          "sorry": 0,
+          "unsafe": 0
+        },
+        "gate_line": 44783,
+        "input_blob": "33e4fab1130e4c17ea5d212fe2691c3e0c0eb8d3",
+        "input_sha256": "790b40c05a8f3735dd171a135eda65de92ab68b247d13e7e2ffe2968e3798421",
+        "lf": 62357,
+        "schema": "qym-gb79-v11-1-patch-v1",
+        "variant": "edge_both"
+      },
+      "variant": "edge_both"
+    }
+  ],
+  "schema": "qym-gb79-v11-1-selection-v1",
+  "strict_improvement_found": true
+}
