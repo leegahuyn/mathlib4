@@ -1,0 +1,160 @@
+name: GPT QYM c7-c9 matrix
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-verified88-20260819
+    paths:
+      - .github/workflows/gpt-qym-c7-c9-matrix.yml
+      - .github/qym_probe_c7_c9_matrix.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: gpt-qym-c7-c9-matrix
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: c7-c9 ${{ matrix.variant }} direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [direct, structural]
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c7-c9-${{ matrix.variant }}
+      BASE: /tmp/qym-c7-c9-baseline
+      BASELINE_ARTIFACT: '9326706450'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Recover exact 89-error baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" > "$RUNNER_TEMP/c7c9-base.zip"
+          unzip -q -o "$RUNNER_TEMP/c7c9-base.zip" -d "$BASE"
+          src="$(find "$BASE" -type f -name 'QYM.baseline.lean' -print -quit)"
+          test -n "$src" && test -s "$src"
+          test "$(sha256sum "$src" | awk '{print $1}')" = "$BASELINE_SHA256"
+          cp "$src" "$OUT/QYM.baseline.lean"
+
+      - name: Install pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5)); done
+          lean --version > "$OUT/lean-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a*5)); done
+
+      - name: Restore dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          need=false
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            [[ -s "$OLEAN/$s.olean" && -s "$OLEAN/$s.ilean" ]] || need=true
+          done
+          if [[ "$need" == true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+
+      - name: Materialize candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.baseline.lean" "$QYM"
+          python3 -B .github/qym_probe_c7_c9_matrix.py "${{ matrix.variant }}" "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-${{ matrix.variant }}.lean"
+
+      - name: Full direct Lean compile
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/c7c9.olean" -i "$RUNNER_TEMP/c7c9.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/full.exit"
+
+      - name: Summarize c7-c9 diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+          out=Path(sys.argv[1]); raw=(out/'full.log').read_bytes() if (out/'full.log').exists() else b''; text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+            r=m.groupdict(); r['line']=int(r['line']); r['column']=int(r['column']); rows.append(r)
+          errors=[r for r in rows if r['severity']=='error']; warnings=[r for r in rows if r['severity']=='warning']
+          target=[r for r in errors if 44280 <= r['line'] <= 44720]
+          patch=json.loads((out/'PATCH_RESULT.json').read_text()) if (out/'PATCH_RESULT.json').exists() else {}
+          result={'schema':'qym-c7-c9-probe-v1','variant':'${{ matrix.variant }}','exit':int((out/'full.exit').read_text()) if (out/'full.exit').exists() else None,
+            'error_headers':len(errors),'warning_headers':len(warnings),'target_region_error_headers':len(target),
+            'target_region_errors':target,'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+            'panic_lines':len(re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)),
+            'candidate_qym_sha256':patch.get('candidate_sha256'),'candidate_qym_blob':patch.get('candidate_blob'),'log_sha256':hashlib.sha256(raw).hexdigest()}
+          (out/'RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          (out/'error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error: {r['message']}\n" for r in errors))
+          print(json.dumps(result,indent=2,sort_keys=True))
+          PY
+          cp "$OUT/QYM.canonical.lean" "$QYM" || true
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c7-c9-${{ matrix.variant }}-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-c7-c9-${{ matrix.variant }}
+          if-no-files-found: error
+          retention-days: 30
