@@ -1,0 +1,341 @@
+name: GPT QYM GB76 V16 authoritative instance-binder persist
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-v16-smooth-atlas-instance-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-v16-authoritative-persist.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb76-v16-authoritative-persist
+  cancel-in-progress: true
+
+env:
+  BRANCH: gpt/qym-gb76-v16-smooth-atlas-instance-20260820
+  QYM: PrimalitySheafVerification/QYM.lean
+  OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+  OUT: /tmp/qym-gb76-v16-authoritative
+  BASE_ERRORS: '76'
+  BASE_WARNINGS: '358'
+  BASE_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  BASE_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+  CANDIDATE_SHA256: 7ee25cfadbb1e9ca872ae7648830adb1ba67a3e6c4b52e197c561d0d73c8cb49
+  CANDIDATE_BLOB: 1a6a08d254ba2c81ea36c0c7220989facfdad7e8
+  SOURCE_RUN_ID: '32281700927'
+  SOURCE_ARTIFACT_ID: '9377474435'
+  VARIANT: instance_binder
+
+jobs:
+  verify:
+    name: V16-authoritative-instance-binder
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Recover exact canonical GB76 and generate deterministic V16 candidate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          mkdir -p "$OUT" "$OLEAN" /tmp/gb76-source .github/qym-frontier
+          curl --retry 8 --retry-all-errors --fail --silent --show-error -L \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/leegahuyn/mathlib4/actions/artifacts/$SOURCE_ARTIFACT_ID/zip" \
+            -o /tmp/gb76-source.zip
+          unzip -q /tmp/gb76-source.zip -d /tmp/gb76-source
+          test -s /tmp/gb76-source/RESULT.json
+          test -s /tmp/gb76-source/QYM.candidate.lean
+          jq -e \
+            --argjson run "$SOURCE_RUN_ID" \
+            --arg sha "$BASE_SHA256" \
+            --arg blob "$BASE_BLOB" \
+            --argjson errors "$BASE_ERRORS" \
+            --argjson warnings "$BASE_WARNINGS" \
+            '.run_id == $run and .variant == "normsq_simp_then_rw" and
+             .full_compile_executed == true and .strict_improvement == true and
+             .error_headers == $errors and .warning_headers == $warnings and
+             .panic_lines == 0 and .candidate_qym_sha256 == $sha and
+             .candidate_qym_blob == $blob and ([.forbidden[]] | add) == 0' \
+            /tmp/gb76-source/RESULT.json >/dev/null
+          test "$(sha256sum /tmp/gb76-source/QYM.candidate.lean | awk '{print $1}')" = "$BASE_SHA256"
+          test "$(git hash-object /tmp/gb76-source/QYM.candidate.lean)" = "$BASE_BLOB"
+          cp /tmp/gb76-source/QYM.candidate.lean "$QYM"
+          cp /tmp/gb76-source/QYM.candidate.lean "$OUT/QYM.GB76.authority.lean"
+          cp /tmp/gb76-source/RESULT.json "$OUT/GB76_SOURCE_RESULT.json"
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re
+
+          qym = Path(os.environ['QYM'])
+          text = qym.read_text(encoding='utf-8')
+          old = 'variable (hSmooth : SmoothTransitionResidual)'
+          new = 'variable [hSmooth : SmoothTransitionResidual]'
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one explicit hSmooth binder, found {text.count(old)}')
+          text = text.replace(old, new)
+          qym.write_text(text, encoding='utf-8')
+          raw = qym.read_bytes()
+          sha = hashlib.sha256(raw).hexdigest()
+          blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          forbidden = {
+              'sorry': len(re.findall(r'\bsorry\b', text)),
+              'admit': len(re.findall(r'\badmit\b', text)),
+              'unsafe': len(re.findall(r'(?m)^\s*unsafe\s+', text)),
+              'native_decide': len(re.findall(r'\bnative_decide\b', text)),
+              'Lean.ofReduceBool': text.count('Lean.ofReduceBool'),
+              'global_axiom': len(re.findall(r'(?m)^\s*axiom\s+', text)),
+              'maxHeartbeats_zero': len(re.findall(r'set_option\s+maxHeartbeats\s+0\b', text)),
+          }
+          if sha != os.environ['CANDIDATE_SHA256'] or blob != os.environ['CANDIDATE_BLOB']:
+              raise SystemExit(f'candidate digest mismatch: sha={sha} blob={blob}')
+          if any(forbidden.values()):
+              raise SystemExit(f'forbidden proof escape: {forbidden}')
+          result = {
+              'schema': 'qym-gb76-v16-candidate-v1',
+              'variant': os.environ['VARIANT'],
+              'baseline_error_headers': int(os.environ['BASE_ERRORS']),
+              'baseline_warning_headers': int(os.environ['BASE_WARNINGS']),
+              'baseline_qym_sha256': os.environ['BASE_SHA256'],
+              'baseline_qym_blob': os.environ['BASE_BLOB'],
+              'candidate_qym_sha256': sha,
+              'candidate_qym_blob': blob,
+              'forbidden': forbidden,
+              'status': 'PREPARED_UNVERIFIED',
+          }
+          Path(os.environ['OUT'], 'PATCH_RESULT.json').write_text(
+              json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          Path(os.environ['OUT'], 'QYM.candidate.lean').write_bytes(raw)
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          test "$tc" = leanprover/lean4:v4.33.0-rc1
+          for attempt in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for attempt in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((attempt * 5))
+          done
+
+      - name: Restore completed QYM dependency objects
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure dependency objects are complete
+        shell: bash
+        run: |
+          set -euo pipefail
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$source.olean" || ! -s "$OLEAN/$source.ilean" ]]; then
+              cap=1
+              if [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]]; then cap=2000; fi
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            fi
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Authoritative full-QYM direct Lean
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/direct.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$OUT/QYM.olean" -i "$OUT/QYM.ilean" "$QYM" \
+              > "$OUT/direct.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$OUT/direct.exit"
+          printf 'yes\n' > "$OUT/full_compile_executed"
+
+      - name: Parse authoritative V16 evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re
+
+          out = Path(os.environ['OUT'])
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text())
+          executed = (out / 'full_compile_executed').is_file()
+          text = (out / 'direct.log').read_text(errors='replace') if executed else ''
+          diag = re.compile(
+              r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): '
+              r'(?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',
+              re.M,
+          )
+          rows = []
+          for match in diag.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [r for r in rows if r['severity'] == 'error']
+          warnings = [r for r in rows if r['severity'] == 'warning']
+          panic = len(re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text))
+          exit_code = int((out / 'direct.exit').read_text()) if executed else None
+          qym_text = (out / 'QYM.candidate.lean').read_text(encoding='utf-8')
+          first_blocker = None
+          if errors:
+              lines = qym_text.splitlines()
+              idx = min(errors[0]['line'] - 1, len(lines) - 1)
+              decl = re.compile(r'^\s*(?:local\s+)?(?:theorem|lemma|def|abbrev|instance|structure|class)\s+([^\s(:]+)')
+              for j in range(idx, -1, -1):
+                  m = decl.match(lines[j])
+                  if m:
+                      first_blocker = m.group(1)
+                      break
+          forbidden_clean = all(int(v) == 0 for v in patch['forbidden'].values())
+          semantic_pass = bool(executed and exit_code == 0 and not errors and panic == 0 and forbidden_clean)
+          strict = bool(
+              executed and panic == 0 and forbidden_clean and
+              (semantic_pass or len(errors) < int(os.environ['BASE_ERRORS']))
+          )
+          result = {
+              'schema': 'qym-gb76-v16-authoritative-result-v1',
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+              'branch': os.environ['BRANCH'],
+              'workflow_head_sha': os.environ['GITHUB_SHA'],
+              'variant': os.environ['VARIANT'],
+              'baseline_error_headers': int(os.environ['BASE_ERRORS']),
+              'baseline_warning_headers': int(os.environ['BASE_WARNINGS']),
+              'baseline_qym_sha256': os.environ['BASE_SHA256'],
+              'baseline_qym_blob': os.environ['BASE_BLOB'],
+              'candidate_qym_sha256': patch['candidate_qym_sha256'],
+              'candidate_qym_blob': patch['candidate_qym_blob'],
+              'forbidden': patch['forbidden'],
+              'forbidden_clean': forbidden_clean,
+              'full_compile_executed': executed,
+              'exit': exit_code,
+              'error_headers': len(errors) if executed else None,
+              'warning_headers': len(warnings) if executed else None,
+              'panic_lines': panic if executed else None,
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'first_blocker_declaration': first_blocker,
+              'error_codes': dict(sorted(collections.Counter(str(r.get('code') or 'uncoded') for r in errors).items())),
+              'semantic_pass': semantic_pass,
+              'strict_improvement': strict,
+              'log_sha256': hashlib.sha256(text.encode()).hexdigest() if executed else None,
+          }
+          (out / 'RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload immutable V16 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-v16-authoritative-${{ github.run_id }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Persist V16 result and promote only a verified strict winner
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+
+          out = Path(os.environ['OUT'])
+          result_path = out / 'RESULT.json'
+          candidate = out / 'QYM.candidate.lean'
+          frontier = Path('.github/qym-frontier')
+          status = {
+              'schema': 'qym-gb76-v16-live-status-v1',
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'branch': os.environ['BRANCH'],
+              'workflow_head_sha': os.environ['GITHUB_SHA'],
+              'baseline_error_headers': int(os.environ['BASE_ERRORS']),
+              'result_produced': result_path.is_file(),
+              'promotion_ready': False,
+              'canonical_check_in': False,
+          }
+          if result_path.is_file():
+              result = json.loads(result_path.read_text())
+              status.update(result)
+              raw = candidate.read_bytes() if candidate.is_file() else b''
+              blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest() if raw else None
+              exact = bool(
+                  raw and hashlib.sha256(raw).hexdigest() == result.get('candidate_qym_sha256')
+                  and blob == result.get('candidate_qym_blob')
+              )
+              strict = bool(result.get('strict_improvement') is True and exact)
+              status['exact_candidate_verified'] = exact
+              status['promotion_ready'] = strict
+              if strict:
+                  errors = int(result['error_headers'])
+                  Path(os.environ['QYM']).write_bytes(raw)
+                  sidecar = frontier / f'QYM_GB{errors}_V16_BEST.lean'
+                  sidecar.write_bytes(raw)
+                  immutable = frontier / f'GB{errors}_V16_RESULT_{os.environ["GITHUB_RUN_ID"]}.json'
+                  immutable.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')
+                  status['sidecar'] = str(sidecar)
+                  status['immutable_result'] = str(immutable)
+                  status['canonical_check_in'] = True
+          (frontier / 'V16_LIVE_STATUS.json').write_text(
+              json.dumps(status, indent=2, sort_keys=True) + '\n')
+          PY
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add .github/qym-frontier/V16_LIVE_STATUS.json
+          if [[ "$(jq -r '.promotion_ready' .github/qym-frontier/V16_LIVE_STATUS.json)" = true ]]; then
+            errors="$(jq -r '.error_headers' .github/qym-frontier/V16_LIVE_STATUS.json)"
+            git add "$QYM" \
+              ".github/qym-frontier/QYM_GB${errors}_V16_BEST.lean" \
+              ".github/qym-frontier/GB${errors}_V16_RESULT_${GITHUB_RUN_ID}.json"
+          fi
+          git commit -m "ci(qym): persist authoritative V16 direct-Lean evidence"
+          git push origin "HEAD:$BRANCH"
