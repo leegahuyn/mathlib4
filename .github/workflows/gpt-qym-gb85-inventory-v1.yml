@@ -1,0 +1,203 @@
+name: GPT QYM GB85 authoritative error inventory v1
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-inventory-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-inventory-v1
+  cancel-in-progress: false
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-explicit-20260819
+      ARTIFACT_ID: "9354072137"
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      OUT: /tmp/qym-gb85-inventory
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Recover exact source and diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT/base" .github/qym-frontier
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$ARTIFACT_ID/zip" \
+            > "$OUT/base.zip"
+          unzip -q -o "$OUT/base.zip" -d "$OUT/base"
+          python3 - "$OUT/base" "$OUT" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib, json, shutil, sys
+          root, out, sha, expected_blob = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], sys.argv[4]
+          def blob(raw): return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+          sources=[]
+          for p in root.rglob('*.lean'):
+              raw=p.read_bytes()
+              if hashlib.sha256(raw).hexdigest()==sha and blob(raw)==expected_blob:
+                  sources.append(p)
+          if len(sources)!=1: raise SystemExit(f'exact-source-count={len(sources)}')
+          shutil.copy2(sources[0], out/'QYM_GB85.lean')
+          result=None
+          for p in root.rglob('*.json'):
+              try: r=json.loads(p.read_text(errors='replace'))
+              except Exception: continue
+              if r.get('candidate_qym_sha256')==sha and int(r.get('error_headers',-1))==85:
+                  result=(p,r); break
+          if result is None: raise SystemExit('GB85 result not found')
+          shutil.copy2(result[0], out/'GB85_RESULT.json')
+          candidates=[]
+          for name in ['diagnostics.jsonl','QYM.diagnostics.jsonl','error-headers.txt','QYM.error-headers.txt','full.log','QYM.log']:
+              candidates.extend(root.rglob(name))
+          for p in candidates:
+              target=out/p.name
+              if not target.exists(): shutil.copy2(p,target)
+          print(sources[0])
+          print(result[0])
+          PY
+
+      - name: Build producer-cluster inventory and source contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, json, re, sys
+
+          out=Path(sys.argv[1])
+          source=(out/'QYM_GB85.lean').read_text(errors='replace')
+          lines=source.splitlines()
+
+          rows=[]
+          diagnostics=list(out.glob('*diagnostics.jsonl'))
+          if diagnostics:
+              for line in diagnostics[0].read_text(errors='replace').splitlines():
+                  try: r=json.loads(line)
+                  except Exception: continue
+                  if r.get('severity')=='error': rows.append(r)
+          if not rows:
+              logs=list(out.glob('*log'))
+              if not logs: raise SystemExit('no diagnostics or log')
+              text=logs[0].read_text(errors='replace')
+              pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): error(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+              for m in pat.finditer(text):
+                  r=m.groupdict();r['line']=int(r['line']);r['column']=int(r['column']);r['severity']='error';rows.append(r)
+          if len(rows)!=85: raise SystemExit(f'expected 85 errors, parsed {len(rows)}')
+
+          decl_re=re.compile(r'^\s*(?:private\s+|protected\s+|noncomputable\s+|@[A-Za-z0-9_.,()\s\[\]<>:=+-]+\s*)*(theorem|lemma|def|abbrev|instance|example|structure|class|inductive)\s+([^\s(:{]+)')
+          declarations=[]
+          for i,line in enumerate(lines,1):
+              m=decl_re.match(line)
+              if m: declarations.append((i,m.group(1),m.group(2)))
+          def owner(line):
+              found=None
+              for d in declarations:
+                  if d[0]>line: break
+                  found=d
+              return found or (1,'module','<module>')
+          def signature(msg):
+              msg=re.sub(r'\s+',' ',msg or '').strip()
+              msg=re.sub(r'\?m\.\d+','?m',msg)
+              msg=re.sub(r'\d+','N',msg)
+              return msg[:240]
+
+          enriched=[]
+          for idx,r in enumerate(rows,1):
+              dline,kind,name=owner(int(r['line']))
+              e=dict(r)
+              e.update({'index':idx,'owner_line':dline,'owner_kind':kind,'owner':name,'signature':signature(r.get('message'))})
+              enriched.append(e)
+
+          by_owner=collections.defaultdict(list)
+          for r in enriched: by_owner[r['owner']].append(r)
+          clusters=[]
+          for name,items in by_owner.items():
+              first=min(i['line'] for i in items); last=max(i['line'] for i in items)
+              clusters.append({
+                  'owner':name,
+                  'owner_kind':items[0]['owner_kind'],
+                  'owner_line':items[0]['owner_line'],
+                  'error_count':len(items),
+                  'first_error_line':first,
+                  'last_error_line':last,
+                  'codes':dict(collections.Counter((i.get('code') or 'uncoded') for i in items)),
+                  'signatures':dict(collections.Counter(i['signature'] for i in items)),
+              })
+          clusters.sort(key=lambda c:(c['first_error_line'],c['owner_line']))
+
+          inventory={
+              'schema':'qym-gb85-error-inventory-v1',
+              'source_sha256':'f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210',
+              'source_blob':'bd28d0436230a8f0bcb01806dac01787542256b8',
+              'error_headers':len(enriched),
+              'producer_count':len(clusters),
+              'code_counts':dict(collections.Counter((r.get('code') or 'uncoded') for r in enriched)),
+              'clusters':clusters,
+              'errors':enriched,
+          }
+          root=Path('.github/qym-frontier')
+          (root/'GB85_ERROR_INVENTORY.json').write_text(json.dumps(inventory,indent=2,sort_keys=True)+'\n')
+
+          md=['# QYM verified GB85 error inventory','',f'- Errors: **{len(enriched)}**',f'- Producer declarations: **{len(clusters)}**','', '| # | Owner | Owner line | Errors | First error | Codes |','|---:|---|---:|---:|---:|---|']
+          for i,c in enumerate(clusters,1):
+              codes=', '.join(f'{k}:{v}' for k,v in c['codes'].items())
+              md.append(f"| {i} | `{c['owner']}` | {c['owner_line']} | {c['error_count']} | {c['first_error_line']} | {codes} |")
+          md.extend(['','## First error per producer',''])
+          for i,c in enumerate(clusters,1):
+              first=next(r for r in enriched if r['owner']==c['owner'])
+              md.extend([f"### {i}. `{c['owner']}`",'',f"- Location: `{first['line']}:{first['column']}`",f"- Code: `{first.get('code') or 'uncoded'}`",f"- Message: `{(first.get('message') or '').replace('`','\\`')}`",''])
+          (root/'GB85_ERROR_INVENTORY.md').write_text('\n'.join(md)+'\n')
+
+          context=[]
+          for i,c in enumerate(clusters,1):
+              start=max(1,c['owner_line']-8)
+              next_decl=min([d[0] for d in declarations if d[0]>c['owner_line']] or [len(lines)+1])
+              end=min(len(lines),max(c['last_error_line']+25,min(next_decl-1,c['owner_line']+180)))
+              context.extend([f"===== CLUSTER {i}: {c['owner']} | owner {c['owner_line']} | errors {c['error_count']} =====",f"WINDOW {start}-{end}"])
+              for n in range(start,end+1): context.append(f"{n:06d}: {lines[n-1]}")
+              context.append('')
+          (root/'GB85_ERROR_CONTEXTS.txt').write_text('\n'.join(context)+'\n')
+          print(json.dumps({'errors':len(enriched),'producers':len(clusters),'first':enriched[0]},indent=2))
+          PY
+
+      - name: Commit immutable inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/GB85_ERROR_INVENTORY.json \
+                  .github/qym-frontier/GB85_ERROR_INVENTORY.md \
+                  .github/qym-frontier/GB85_ERROR_CONTEXTS.txt
+          git commit -m 'QYM: persist authoritative verified 85-error inventory [skip ci]'
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload extraction evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-inventory-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
