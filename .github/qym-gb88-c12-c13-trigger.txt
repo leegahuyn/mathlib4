@@ -1,0 +1,7 @@
+global_best_errors=88
+global_best_sha256=830563b33d873354809594d9e9dce962c1253052f8e70bd4d1513226f7598217
+global_best_artifact=9352528413
+clusters=C12,C13
+c12_variant=unfold_natural_stage
+c13_variants=ofReal_pow,change_rfl,norm_cast
+triggered_at=2026-08-19T05:31:00Z
