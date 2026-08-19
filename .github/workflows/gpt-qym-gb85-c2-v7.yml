@@ -1,0 +1,203 @@
+name: GPT QYM GB85 C2 heredoc-free v7
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-v7-driver-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-v7.yml
+      - .github/qym_patch_gb85_c2_cases_v7.py
+      - .github/qym_run_gb85_c2_v7.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-v7
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-v7-driver-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-gb85-c2-v7
+      AUTH: /tmp/qym-gb85-c2-v7-authority
+      BASE_SOURCE: /tmp/qym-gb85-c2-v7/QYM.baseline-85.lean
+      BASELINE_ARTIFACT: "9354072137"
+      BASELINE_SOURCE_NAME: QYM.candidate-C04-mul_inv_using_bang.lean
+      BASELINE_SHA256: f4c9b27a297be772bf863001175d540fd024e22ce0bec06af75f47ef48c23bba1
+      BASELINE_BLOB: bd28d043181c53d405eed7659d7018fa2298a33d
+      BASELINE_ERRORS: "85"
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Recover immutable verified 85-error authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$AUTH" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" \
+            > "$RUNNER_TEMP/qym-gb85-authority.zip"
+          unzip -q -o "$RUNNER_TEMP/qym-gb85-authority.zip" -d "$AUTH"
+          src="$(find "$AUTH" -type f -name "$BASELINE_SOURCE_NAME" -print -quit)"
+          result="$(find "$AUTH" -type f -name RESULT.json -print -quit)"
+          test -n "$src" && test -s "$src"
+          test -n "$result" && test -s "$result"
+          test "$(sha256sum "$src" | awk '{print $1}')" = "$BASELINE_SHA256"
+          python3 -c 'from pathlib import Path; import hashlib,sys; raw=Path(sys.argv[1]).read_bytes(); got=hashlib.sha1(b"blob "+str(len(raw)).encode()+b"\0"+raw).hexdigest(); assert got==sys.argv[2], (got,sys.argv[2])' "$src" "$BASELINE_BLOB"
+          test "$(jq -r '.error_headers' "$result")" -eq "$BASELINE_ERRORS"
+          test "$(jq -r '.panic_lines' "$result")" -eq 0
+          test "$(jq -r '.exit' "$result")" -eq 1
+          cp "$src" "$BASE_SOURCE"
+          cp "$result" "$OUT/BASELINE_RESULT.json"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do
+            elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+          for a in 1 2 3 4 5; do
+            lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break
+            sleep $((a * 5))
+          done
+
+      - name: Restore dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-deps-v3-${{ runner.os }}-
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure completed dependency objects only
+        shell: bash
+        run: |
+          set -euo pipefail
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            if [[ ! -s "$OLEAN/$s.olean" || ! -s "$OLEAN/$s.ilean" ]]; then
+              cap=1
+              if [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]]; then
+                cap=2000
+              fi
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            fi
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Save dependency objects
+        if: steps.depcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v4-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Run heredoc-free C2 direct Lean tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B .github/qym_run_gb85_c2_v7.py \
+            "$GITHUB_WORKSPACE" "$BASE_SOURCE" "$GITHUB_WORKSPACE/$QYM" "$OUT"
+
+      - name: Restore checked-in canonical source
+        if: always()
+        shell: bash
+        run: |
+          if [[ -s "$OUT/QYM.canonical.lean" ]]; then
+            cp "$OUT/QYM.canonical.lean" "$QYM"
+          fi
+
+      - name: Verify clean ephemeral checkout
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Persist verified improved frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT/QYM.best.lean"
+          test -s "$OUT/BEST_RESULT.json"
+          errors="$(jq -r '.error_headers' "$OUT/BEST_RESULT.json")"
+          panic="$(jq -r '.panic_lines' "$OUT/BEST_RESULT.json")"
+          strict="$(jq -r '.strict_improvement' "$OUT/BEST_RESULT.json")"
+          candidate_sha="$(jq -r '.candidate_qym_sha256' "$OUT/BEST_RESULT.json")"
+          test "$errors" -lt "$BASELINE_ERRORS"
+          test "$panic" -eq 0
+          test "$strict" = true
+          test "$(sha256sum "$OUT/QYM.best.lean" | awk '{print $1}')" = "$candidate_sha"
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          cp "$OUT/QYM.best.lean" "$QYM"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.best.lean" .github/qym-frontier/QYM_GLOBAL_BEST.lean
+          cp "$OUT/BEST_RESULT.json" .github/qym-frontier/GLOBAL_BEST_RESULT.json
+          cp "$OUT/SELECTION.json" .github/qym-frontier/GB85_C2_V7_SELECTION.json
+          cp "$OUT/BEST_error-headers.txt" .github/qym-frontier/GLOBAL_BEST_error-headers.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$QYM" .github/qym-frontier
+          git commit -m "QYM C2 v7: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable v7 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-v7-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-gb85-c2-v7
+          if-no-files-found: error
+          retention-days: 30
