@@ -1,0 +1,52 @@
+name: GPT QYM GB76 source snapshot
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb76-global-batch-repair-20260820
+    paths:
+      - .github/workflows/gpt-qym-gb76-source-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  QYM: PrimalitySheafVerification/QYM.lean
+  EXPECTED_SHA256: fada22264b6618467f89d436ddacff27453db1242769717d5e7a386682d4efb3
+  EXPECTED_BLOB: 29d446743036dccd5d9ad8757c351b39d526cfa9
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify exact GB76 and collect relevant sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum "$QYM" | awk '{print $1}')" = "$EXPECTED_SHA256"
+          test "$(git hash-object "$QYM")" = "$EXPECTED_BLOB"
+          mkdir -p /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification
+          cp "$QYM" /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification/
+          cp PrimalitySheafVerification/Mock2.lean /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification/
+          cp PrimalitySheafVerification/Mock2_Advanced.lean /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification/
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification/
+          cp PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean /tmp/qym-gb76-source-snapshot/PrimalitySheafVerification/
+          cp lean-toolchain lakefile.lean lake-manifest.json /tmp/qym-gb76-source-snapshot/
+          git rev-parse HEAD > /tmp/qym-gb76-source-snapshot/commit.txt
+          sha256sum "$QYM" > /tmp/qym-gb76-source-snapshot/QYM.sha256
+          git hash-object "$QYM" > /tmp/qym-gb76-source-snapshot/QYM.blob
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb76-source-snapshot-${{ github.run_id }}
+          path: /tmp/qym-gb76-source-snapshot
+          if-no-files-found: error
+          retention-days: 30
