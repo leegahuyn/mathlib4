@@ -1,0 +1,379 @@
+name: GPT QYM Probe44 gamma chain
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-verified88-20260819
+    paths:
+      - .github/workflows/gpt-qym-probe44-gamma-chain.yml
+      - .github/qym_probe44_gamma_chain.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-probe44-gamma-chain
+  cancel-in-progress: false
+
+jobs:
+  probe44:
+    name: Correct gamma chain, local gate, then full direct Lean
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-fastlane-verified88-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-probe44-gamma-chain
+      BASE: /tmp/qym-probe44-baseline
+      BASELINE_ARTIFACT: '9326706450'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      BASELINE_ERRORS: '89'
+      BASELINE_FIRST_ERROR_LINE: '37775'
+
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Persist run identity without blocking proof work
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .github/qym-frontier
+          jq -n \
+            --argjson run_id "$GITHUB_RUN_ID" \
+            --arg run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg trigger_sha "$GITHUB_SHA" \
+            --arg branch "$GITHUB_REF_NAME" \
+            --arg created_at "$(date -u +%FT%TZ)" \
+            '{schema:"qym-probe44-run-v1",run_id:$run_id,run_attempt:($run_attempt|tonumber),trigger_sha:$trigger_sha,branch:$branch,created_at:$created_at}' \
+            > .github/qym-frontier/PROBE44_RUN_IDENTITY.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier/PROBE44_RUN_IDENTITY.json
+          git commit -m "QYM Probe44: record run $GITHUB_RUN_ID"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Gate exact branch and pinned environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+          test "$GITHUB_REF_NAME" = "$BRANCH"
+          test "$(tr -d '\r\n' < lean-toolchain)" = leanprover/lean4:v4.33.0-rc1
+          test -f .github/qym_probe44_gamma_chain.py
+
+      - name: Recover immutable 89-error GLOBAL_BEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" \
+            > "$RUNNER_TEMP/qym-probe44-baseline.zip"
+          unzip -q -o "$RUNNER_TEMP/qym-probe44-baseline.zip" -d "$BASE"
+          source_file="$(find "$BASE" -type f -name 'QYM.baseline.lean' -print -quit)"
+          test -n "$source_file" && test -s "$source_file"
+          test "$(sha256sum "$source_file" | awk '{print $1}')" = "$BASELINE_SHA256"
+          cp "$source_file" "$OUT/QYM.baseline.lean"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+
+      - name: Install pinned Lean and Mathlib cache with retries
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          toolchain="$(tr -d '\r\n' < lean-toolchain)"
+          installed=false
+          for attempt in 1 2 3 4 5; do
+            if elan toolchain install "$toolchain" >> "$OUT/toolchain.log" 2>&1; then
+              installed=true
+              break
+            fi
+            sleep $((attempt * 5))
+          done
+          test "$installed" = true
+          cached=false
+          for attempt in 1 2 3 4 5; do
+            if lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1; then
+              cached=true
+              break
+            fi
+            sleep $((attempt * 5))
+          done
+          test "$cached" = true
+          lean --version | tee "$OUT/lean-version.txt"
+          lake --version | tee "$OUT/lake-version.txt"
+
+      - name: Restore verified dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-probe4-deps-v1-${{ runner.os }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.lean', 'PrimalitySheafVerification/Mock2.lean', 'PrimalitySheafVerification/Mock2_Advanced.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean', 'PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Ensure dependency objects
+        shell: bash
+        env:
+          HIT: ${{ steps.depcache.outputs.cache-hit }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OLEAN"
+          if [[ "$HIT" != true ]]; then
+            for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$source" = Mock2_FunctionalAnalysis || "$source" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$source.olean" "$OLEAN/$source.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$source.olean" -i "$OLEAN/$source.ilean" \
+                "PrimalitySheafVerification/$source.lean" > "$OUT/$source.log" 2>&1
+            done
+          fi
+          for source in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$source.olean"
+            test -s "$OLEAN/$source.ilean"
+          done
+
+      - name: Materialize exact corrected candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.baseline.lean" "$QYM"
+          python3 -B .github/qym_probe44_gamma_chain.py "$QYM" \
+            | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-probe44-gamma-chain.lean"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$BASELINE_SHA256"
+          test "$(jq -r '.candidate_sha256' "$OUT/PATCH_RESULT.json")" = 10bffb3adf1d7720f2a4c3c9b252a17fc5d44878ab40059ea6715b8d6d0078b9
+
+      - name: Local first-error direct Lean gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.local.time" \
+            lake env lean -DmaxErrors=1 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe44-local.olean" \
+              -i "$RUNNER_TEMP/QYM.probe44-local.ilean" \
+              "$QYM" > "$OUT/QYM.local.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.local.exit"
+
+      - name: Verify first producer is eliminated
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, re, sys
+
+          out = Path(sys.argv[1])
+          raw = (out / 'QYM.local.log').read_bytes()
+          text = raw.decode(errors='replace')
+          pat = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
+          rows = []
+          for match in pat.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          panics = re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          first = errors[0] if errors else None
+          threshold = int(os.environ['BASELINE_FIRST_ERROR_LINE'])
+          gamma_fixed = not panics and (first is None or int(first['line']) > threshold)
+          result = {
+              'schema': 'qym-probe44-local-v1',
+              'exit': int((out / 'QYM.local.exit').read_text().strip()),
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'panic_lines': len(panics),
+              'first_error': first,
+              'gamma_fixed': gamma_fixed,
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+          }
+          (out / 'LOCAL_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not gamma_fixed:
+              raise SystemExit('gamma first producer was not eliminated')
+          PY
+
+      - name: Full QYM authoritative direct Lean compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          /usr/bin/time -v -o "$OUT/QYM.full.time" \
+            lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+              -o "$RUNNER_TEMP/QYM.probe44.olean" \
+              -i "$RUNNER_TEMP/QYM.probe44.ilean" \
+              "$QYM" > "$OUT/QYM.full.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/QYM.full.exit"
+          if [[ "$rc" -eq 0 ]]; then
+            test -s "$RUNNER_TEMP/QYM.probe44.olean"
+            test -s "$RUNNER_TEMP/QYM.probe44.ilean"
+            cp "$RUNNER_TEMP/QYM.probe44.olean" "$OUT/QYM.probe44.olean"
+            cp "$RUNNER_TEMP/QYM.probe44.ilean" "$OUT/QYM.probe44.ilean"
+            sha256sum "$OUT/QYM.probe44.olean" "$OUT/QYM.probe44.ilean" > "$OUT/QYM.outputs.sha256"
+          fi
+
+      - name: Parse full diagnostics and enforce monotonic frontier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+
+          out = Path(sys.argv[1])
+          raw = (out / 'QYM.full.log').read_bytes()
+          text = raw.decode(errors='replace')
+          pat = re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$', re.M)
+          rows = []
+          for match in pat.finditer(text):
+              row = match.groupdict()
+              row['line'] = int(row['line'])
+              row['column'] = int(row['column'])
+              rows.append(row)
+          errors = [row for row in rows if row['severity'] == 'error']
+          warnings = [row for row in rows if row['severity'] == 'warning']
+          panics = re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$', text)
+          patch = json.loads((out / 'PATCH_RESULT.json').read_text(encoding='utf-8'))
+          rc = int((out / 'QYM.full.exit').read_text().strip())
+          semantic_pass = rc == 0 and not errors and not panics
+          strict_improvement = semantic_pass or (not panics and len(errors) < int(os.environ['BASELINE_ERRORS']))
+          result = {
+              'schema': 'qym-probe44-full-v1',
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'run_attempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+              'trigger_sha': os.environ['GITHUB_SHA'],
+              'variant': 'gamma_entry_chain',
+              'baseline_qym_sha256': os.environ['BASELINE_SHA256'],
+              'baseline_error_headers': int(os.environ['BASELINE_ERRORS']),
+              'candidate_qym_sha256': patch['candidate_sha256'],
+              'candidate_qym_blob': patch['candidate_blob'],
+              'bytes': patch['bytes'],
+              'lf': patch['lf'],
+              'forbidden': patch['forbidden'],
+              'exit': rc,
+              'error_headers': len(errors),
+              'warning_headers': len(warnings),
+              'panic_lines': len(panics),
+              'error_codes': dict(sorted(collections.Counter(row['code'] or 'uncoded' for row in errors).items())),
+              'first_error': errors[0] if errors else None,
+              'last_error': errors[-1] if errors else None,
+              'log_sha256': hashlib.sha256(raw).hexdigest(),
+              'semantic_pass': semantic_pass,
+              'strict_improvement': strict_improvement,
+          }
+          (out / 'FULL_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          (out / 'QYM.full.diagnostics.jsonl').write_text(''.join(json.dumps(row, sort_keys=True) + '\n' for row in rows), encoding='utf-8')
+          (out / 'QYM.full.error-headers.txt').write_text(''.join(f"{row['file']}:{row['line']}:{row['column']}: error{('('+row['code']+')') if row['code'] else ''}: {row['message']}\n" for row in errors), encoding='utf-8')
+          (out / 'QYM.full.panic-lines.txt').write_text(''.join(line + '\n' for line in panics), encoding='utf-8')
+          print(json.dumps(result, indent=2, sort_keys=True))
+          if not strict_improvement:
+              raise SystemExit('candidate did not strictly improve the 89-error GLOBAL_BEST')
+          PY
+
+      - name: Restore checked-in canonical source
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f "$OUT/QYM.canonical.lean" ]]; then
+            cp "$OUT/QYM.canonical.lean" "$QYM"
+          fi
+
+      - name: Persist exact improved GLOBAL_BEST evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.candidate-probe44-gamma-chain.lean" .github/qym-frontier/QYM_PROBE44_BEST.lean
+          cp "$OUT/FULL_RESULT.json" .github/qym-frontier/PROBE44_RESULT.json
+          cp "$OUT/LOCAL_RESULT.json" .github/qym-frontier/PROBE44_LOCAL_RESULT.json
+          cp "$OUT/QYM.full.error-headers.txt" .github/qym-frontier/PROBE44_error-headers.txt
+          cp "$OUT/QYM.full.diagnostics.jsonl" .github/qym-frontier/PROBE44_diagnostics.jsonl
+          cp "$OUT/QYM.full.panic-lines.txt" .github/qym-frontier/PROBE44_panic-lines.txt
+          cp "$OUT/QYM.full.time" .github/qym-frontier/PROBE44_time
+          cp "$OUT/QYM.full.log" .github/qym-frontier/PROBE44.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('.github/qym-frontier')
+          result = json.loads((root / 'PROBE44_RESULT.json').read_text(encoding='utf-8'))
+          lines = (root / 'QYM_PROBE44_BEST.lean').read_text(encoding='utf-8').splitlines()
+          line = int((result.get('first_error') or {}).get('line') or 1)
+          lo, hi = max(1, line - 120), min(len(lines), line + 120)
+          (root / 'PROBE44_FIRST_ERROR_CONTEXT.txt').write_text(
+              ''.join(f'{index:06d}: {lines[index - 1]}\n' for index in range(lo, hi + 1)),
+              encoding='utf-8')
+          declaration = None
+          pattern = re.compile(r'^\s*(?:(?:private|protected|noncomputable)\s+)*(?:theorem|lemma|def|abbrev|instance)\s+([^\s(:]+)')
+          for index in range(min(line, len(lines)), 0, -1):
+              match = pattern.match(lines[index - 1])
+              if match:
+                  declaration = match.group(1)
+                  break
+          result['first_declaration'] = declaration
+          (root / 'PROBE44_RESULT.json').write_text(json.dumps(result, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          status = {
+              'probe': 'Probe44',
+              'run_id': result['run_id'],
+              'variant': result['variant'],
+              'candidate_qym_sha256': result['candidate_qym_sha256'],
+              'candidate_qym_blob': result['candidate_qym_blob'],
+              'bytes': result['bytes'],
+              'lf': result['lf'],
+              'exit': result['exit'],
+              'error_headers': result['error_headers'],
+              'warning_headers': result['warning_headers'],
+              'panic_lines': result['panic_lines'],
+              'first_error': result['first_error'],
+              'first_declaration': declaration,
+              'last_error': result['last_error'],
+              'log_sha256': result['log_sha256'],
+              'semantic_pass': result['semantic_pass'],
+              'promoted': False,
+          }
+          (root / 'FRONTIER_STATUS.json').write_text(json.dumps(status, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          PY
+          git add .github/qym-frontier
+          errors="$(jq -r '.error_headers' .github/qym-frontier/PROBE44_RESULT.json)"
+          git commit -m "QYM Probe44: promote verified ${errors}-error gamma-chain frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable Probe44 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-probe44-gamma-chain-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-probe44-gamma-chain
+          if-no-files-found: error
+          retention-days: 30
