@@ -1,0 +1,73 @@
+name: GPT QYM current repair dashboard v1
+
+on:
+  push:
+    branches: [gpt/qym-gb85-c2-explicit-20260819]
+    paths:
+      - .github/workflows/gpt-qym-current-dashboard-v1.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  dashboard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-explicit-20260819
+      OUT: /tmp/qym-dashboard
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Collect workflow and frontier state
+        shell: bash
+        run: |
+          set -euo pipefail;mkdir -p "$OUT" .github/qym-frontier
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json,os,subprocess,datetime
+          out=Path(__import__('sys').argv[1]);repo=os.environ['REPO']
+          workflows=['gpt-qym-gb85-c2-matrix-v2.yml','gpt-qym-gb85-c2-observer-v2.yml','gpt-qym-gb85-inventory-v1.yml','gpt-qym-gb85-c2-matrix-v3.yml','gpt-qym-gb85-c2-discovered-v4.yml','gpt-qym-c2-to-autofix-bridge-v1.yml','gpt-qym-c2-to-autofix-bridge-v2.yml']
+          rows=[]
+          for wf in workflows:
+              p=subprocess.run(['gh','api',f'repos/{repo}/actions/workflows/{wf}/runs?branch='+os.environ['BRANCH']+'&per_page=5'],capture_output=True,text=True)
+              if p.returncode!=0:
+                  rows.append({'workflow':wf,'api_error':p.stderr.strip()});continue
+              data=json.loads(p.stdout);runs=sorted(data.get('workflow_runs',[]),key=lambda r:r.get('created_at',''),reverse=True)
+              if runs:
+                  r=runs[0];rows.append({'workflow':wf,'run_id':r['id'],'head_sha':r['head_sha'],'status':r['status'],'conclusion':r.get('conclusion'),'created_at':r['created_at'],'updated_at':r['updated_at'],'html_url':r['html_url']})
+              else:rows.append({'workflow':wf,'status':'not_found'})
+          front=Path('.github/qym-frontier');frontiers=[]
+          for rp in sorted(front.glob('*RESULT.json')):
+              try:r=json.loads(rp.read_text())
+              except Exception:continue
+              if 'error_headers' in r:
+                  frontiers.append({'result_file':str(rp),'error_headers':r.get('error_headers'),'panic_lines':r.get('panic_lines'),'semantic_pass':r.get('semantic_pass'),'candidate_qym_sha256':r.get('candidate_qym_sha256'),'variant':r.get('variant'),'run_id':r.get('run_id')})
+          dashboard={'schema':'qym-current-dashboard-v1','generated_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'workflows':rows,'frontiers':frontiers}
+          (front/'CURRENT_REPAIR_DASHBOARD.json').write_text(json.dumps(dashboard,indent=2,sort_keys=True)+'\n')
+          md=['# QYM current repair dashboard','',f"Generated: `{dashboard['generated_at']}`",'','## Workflows','','| Workflow | Run | Status | Conclusion |','|---|---:|---|---|']
+          for r in rows:md.append(f"| `{r['workflow']}` | {r.get('run_id','-')} | {r.get('status','-')} | {r.get('conclusion') or '-'} |")
+          md+=['','## Verified frontier result files','','| File | Errors | Panic | Semantic PASS | Variant |','|---|---:|---:|---|---|']
+          for r in sorted(frontiers,key=lambda x:(10**9 if x['error_headers'] is None else x['error_headers'],x['result_file'])):md.append(f"| `{r['result_file']}` | {r['error_headers']} | {r['panic_lines']} | {r['semantic_pass']} | `{r.get('variant')}` |")
+          (front/'CURRENT_REPAIR_DASHBOARD.md').write_text('\n'.join(md)+'\n')
+          print(json.dumps(dashboard,indent=2,sort_keys=True))
+          PY
+      - name: Commit dashboard snapshot
+        shell: bash
+        run: |
+          set -euo pipefail;git fetch origin "$BRANCH";git rebase "origin/$BRANCH";git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com';git add .github/qym-frontier/CURRENT_REPAIR_DASHBOARD.json .github/qym-frontier/CURRENT_REPAIR_DASHBOARD.md;git commit -m 'QYM: snapshot current repair dashboard [skip ci]';git push origin "HEAD:$BRANCH"
+      - name: Upload dashboard evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-current-dashboard-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: .github/qym-frontier/CURRENT_REPAIR_DASHBOARD.*
+          if-no-files-found: error
+          retention-days: 30
