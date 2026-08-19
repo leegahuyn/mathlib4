@@ -6,6 +6,7 @@ on:
       - gpt/qym-gb76-global-batch-repair-20260820
     paths:
       - .github/workflows/gpt-qym-gb76-quotient-bridge-probe.yml
+      - .github/qym-probes/GammaTwoQuotientBridge.lean
   workflow_dispatch:
 
 permissions:
