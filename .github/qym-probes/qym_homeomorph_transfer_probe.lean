@@ -13,7 +13,6 @@ variable [ChartedSpace H M]
 
 namespace Homeomorph
 
-/-- Pull a charted-space atlas back along a global homeomorphism. -/
 @[instance_reducible]
 noncomputable def pullbackChartedSpace (F : M' ≃ₜ M) : ChartedSpace H M' where
   atlas := {e | ∃ a ∈ atlas H M, e = F.toOpenPartialHomeomorph.trans a}
@@ -21,7 +20,6 @@ noncomputable def pullbackChartedSpace (F : M' ≃ₜ M) : ChartedSpace H M' whe
   mem_chart_source x := by simp
   chart_mem_atlas x := ⟨chartAt H (F x), chart_mem_atlas H (F x), rfl⟩
 
-/-- Pulling back the atlas along a homeomorphism preserves any existing structure groupoid. -/
 theorem pullback_hasGroupoid (F : M' ≃ₜ M) (G : StructureGroupoid H)
     [HasGroupoid M G] :
     letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
@@ -54,14 +52,11 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
 variable (I : ModelWithCorners 𝕜 E H) (n : ℕ∞ω)
 
-/-- In the pulled-back atlas, the source extended chart is literally the
-target extended chart after applying the defining homeomorphism. -/
 @[simp] theorem pullback_extChartAt_apply (F : M' ≃ₜ M) (x y : M') :
     letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
     extChartAt I x y = extChartAt I (F x) (F y) := by
   rfl
 
-/-- The defining homeomorphism is smooth for its pulled-back source atlas. -/
 theorem pullback_contMDiff (F : M' ≃ₜ M) :
     letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
     ContMDiff I I n F := by
@@ -78,6 +73,23 @@ theorem pullback_contMDiff (F : M' ≃ₜ M) :
       PartialEquiv.left_inv (extChartAt I x) (by simp)
     simp only [Function.comp_apply, hx, id_eq]
     exact (pullback_extChartAt_apply (F := F) (I := I) x x).symm
+
+theorem pullback_symm_contMDiff (F : M' ≃ₜ M) :
+    letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+    ContMDiff I I n F.symm := by
+  letI : ChartedSpace H M' := F.pullbackChartedSpace (H := H)
+  intro x
+  rw [contMDiffAt_iff]
+  refine ⟨F.symm.continuous.continuousAt, ?_⟩
+  apply contDiffWithinAt_id.congr_of_eventuallyEq
+  · filter_upwards [extChartAt_target_mem_nhdsWithin x] with z hz
+    have hr := PartialEquiv.right_inv (extChartAt I x) hz
+    simpa only [Function.comp_apply, pullback_extChartAt_apply,
+      F.apply_symm_apply] using hr
+  · have hx : (extChartAt I x).symm (extChartAt I x x) = x :=
+      PartialEquiv.left_inv (extChartAt I x) (by simp)
+    simp only [Function.comp_apply, hx, id_eq,
+      pullback_extChartAt_apply, F.apply_symm_apply]
 
 end Smooth
 
