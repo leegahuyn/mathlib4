@@ -1,0 +1,44 @@
+{
+  "status": "RUNNING",
+  "branch": "gpt/qym-gb85-c2-v6-mulinv-20260819",
+  "started_at_unix": 1787144680,
+  "targets": {
+    "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean": {
+      "target": "PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean",
+      "status": "ZERO_ERROR",
+      "rounds": [],
+      "initial_metric": {
+        "exit_code": 0,
+        "errors": 0,
+        "first_file": "",
+        "first_line": 1000000000,
+        "first_col": 1000000000,
+        "timed_out": false,
+        "elapsed_seconds": 370.783,
+        "score": [
+          0,
+          0,
+          -1000000000,
+          -1000000000
+        ],
+        "zero": true
+      },
+      "final_metric": {
+        "exit_code": 0,
+        "errors": 0,
+        "first_file": "",
+        "first_line": 1000000000,
+        "first_col": 1000000000,
+        "timed_out": false,
+        "elapsed_seconds": 370.783,
+        "score": [
+          0,
+          0,
+          -1000000000,
+          -1000000000
+        ],
+        "zero": true
+      }
+    }
+  }
+}
