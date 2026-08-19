@@ -1,0 +1,236 @@
+name: GPT QYM GB85 C2 strict observer v2
+
+on:
+  push:
+    branches:
+      - gpt/qym-gb85-c2-explicit-20260819
+    paths:
+      - .github/workflows/gpt-qym-gb85-c2-observer-v2.yml
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-gb85-c2-observer-v2
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-gb85-c2-explicit-20260819
+      TARGET_WORKFLOW: gpt-qym-gb85-c2-matrix-v2.yml
+      BASE_SHA256: f4c9b27a297be772cde7183526378ad42ae826053f69cf3ce521670da4f06210
+      BASE_BLOB: bd28d0436230a8f0bcb01806dac01787542256b8
+      BASE_ERRORS: "85"
+      OUT: /tmp/qym-gb85-c2-observer
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Locate latest exact C2 matrix run
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          run_id=""
+          for _ in $(seq 1 240); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/workflows/$TARGET_WORKFLOW/runs?branch=$BRANCH&event=push&per_page=20")"
+            run_id="$(jq -r '[.workflow_runs[]] | sort_by(.created_at) | last | .id // empty' <<<"$payload")"
+            [[ -n "$run_id" ]] && break
+            sleep 5
+          done
+          test -n "$run_id"
+          echo "TARGET_RUN_ID=$run_id" >> "$GITHUB_ENV"
+          jq -n --argjson run_id "$run_id" --arg observed_by "$GITHUB_SHA" \
+            '{target_run_id:$run_id,observer_sha:$observed_by}' > "$OUT/RUN_IDENTITY.json"
+
+      - name: Await target completion and download every artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=""
+          conclusion=""
+          for _ in $(seq 1 2160); do
+            payload="$(gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/runs/$TARGET_RUN_ID")"
+            status="$(jq -r '.status' <<<"$payload")"
+            conclusion="$(jq -r '.conclusion // ""' <<<"$payload")"
+            [[ "$status" = completed ]] && break
+            sleep 5
+          done
+          test "$status" = completed
+          printf '%s\n' "$conclusion" > "$OUT/RUN_CONCLUSION"
+          mkdir -p "$OUT/artifacts"
+          artifacts="$(gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/runs/$TARGET_RUN_ID/artifacts?per_page=100")"
+          jq '[.artifacts[] | select(.expired == false) |
+              select(.name | startswith("qym-gb85-c2-"))]' \
+            <<<"$artifacts" > "$OUT/ARTIFACTS.json"
+          test "$(jq length "$OUT/ARTIFACTS.json")" -ge 1
+          while IFS=$'\t' read -r id name; do
+            zip="$OUT/$name.zip"
+            dir="$OUT/artifacts/$name"
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$REPO/actions/artifacts/$id/zip" > "$zip"
+            mkdir -p "$dir"
+            unzip -q -o "$zip" -d "$dir"
+          done < <(jq -r '.[] | [.id,.name] | @tsv' "$OUT/ARTIFACTS.json")
+
+      - name: Select only genuinely full-compiled strict improvements
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" "$BASE_ERRORS" "$BASE_SHA256" "$BASE_BLOB" <<'PY'
+          from pathlib import Path
+          import hashlib, json, shutil, sys
+
+          out = Path(sys.argv[1])
+          base_errors = int(sys.argv[2])
+          base_sha = sys.argv[3]
+          base_blob = sys.argv[4]
+          frontier = Path('.github/qym-frontier')
+          frontier.mkdir(parents=True, exist_ok=True)
+
+          def blob(raw: bytes) -> str:
+              return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+
+          rows = []
+          rejected = []
+          for result_path in out.glob('artifacts/**/RESULT.json'):
+              artifact_dir = result_path.parent
+              try:
+                  result = json.loads(result_path.read_text())
+              except Exception as exc:
+                  rejected.append({'result': str(result_path), 'reason': f'bad-json:{exc}'})
+                  continue
+              variant = result.get('variant')
+              candidate_files = list(artifact_dir.glob('QYM.candidate-*.lean'))
+              full_log = artifact_dir / 'full.log'
+              full_exit = artifact_dir / 'full.exit'
+              if len(candidate_files) != 1:
+                  rejected.append({'variant': variant, 'reason': f'candidate-count:{len(candidate_files)}'})
+                  continue
+              if not full_log.is_file() or not full_exit.is_file() or full_log.stat().st_size == 0:
+                  rejected.append({'variant': variant, 'reason': 'full-compile-not-executed'})
+                  continue
+              try:
+                  rc = int(full_exit.read_text().strip())
+              except Exception:
+                  rejected.append({'variant': variant, 'reason': 'invalid-full-exit'})
+                  continue
+              raw = candidate_files[0].read_bytes()
+              candidate_sha = hashlib.sha256(raw).hexdigest()
+              candidate_blob = blob(raw)
+              if candidate_sha != result.get('candidate_qym_sha256') or candidate_blob != result.get('candidate_qym_blob'):
+                  rejected.append({'variant': variant, 'reason': 'candidate-identity-mismatch'})
+                  continue
+              if result.get('baseline_qym_sha256') != base_sha or result.get('baseline_qym_blob') != base_blob:
+                  rejected.append({'variant': variant, 'reason': 'wrong-baseline'})
+                  continue
+              if any((result.get('forbidden') or {}).values()):
+                  rejected.append({'variant': variant, 'reason': 'forbidden-token-audit'})
+                  continue
+              errors = int(result.get('error_headers', 10**9))
+              panics = int(result.get('panic_lines', 10**9))
+              semantic = bool(result.get('semantic_pass')) and rc == 0 and errors == 0 and panics == 0
+              strict = semantic or (panics == 0 and errors < base_errors)
+              row = dict(result)
+              row['_candidate'] = str(candidate_files[0])
+              row['_artifact_dir'] = str(artifact_dir)
+              row['_full_exit_verified'] = rc
+              row['_strict_recomputed'] = strict
+              if strict:
+                  rows.append(row)
+              else:
+                  rejected.append({'variant': variant, 'reason': 'not-strict', 'errors': errors, 'panic_lines': panics, 'exit': rc})
+
+          def key(r):
+              first = (r.get('first_error') or {}).get('line') or 0
+              return (
+                  0 if r.get('semantic_pass') else 1,
+                  int(r.get('error_headers', 10**9)),
+                  int(r.get('panic_lines', 10**9)),
+                  -int(first),
+                  int(r.get('warning_headers', 10**9)),
+                  str(r.get('variant', '')),
+              )
+
+          rows.sort(key=key)
+          public_rows = []
+          for row in rows:
+              clean = {k: v for k, v in row.items() if not k.startswith('_')}
+              public_rows.append(clean)
+          decision = {
+              'schema': 'qym-gb85-c2-observer-v2',
+              'target_run_id': int((out / 'RUN_IDENTITY.json').read_text() and json.loads((out / 'RUN_IDENTITY.json').read_text())['target_run_id']),
+              'run_conclusion': (out / 'RUN_CONCLUSION').read_text().strip(),
+              'baseline': {'sha256': base_sha, 'blob': base_blob, 'error_headers': base_errors},
+              'valid_strict_candidates': public_rows,
+              'rejected': rejected,
+              'promoted': bool(rows),
+              'best': public_rows[0] if rows else None,
+          }
+          (frontier / 'GB85_C2_SELECTION.json').write_text(json.dumps(decision, indent=2, sort_keys=True) + '\n')
+
+          if rows:
+              best = rows[0]
+              src = Path(best['_candidate'])
+              artifact_dir = Path(best['_artifact_dir'])
+              shutil.copy2(src, frontier / 'QYM_GB85_C2_BEST.lean')
+              (frontier / 'GB85_C2_RESULT.json').write_text(json.dumps(public_rows[0], indent=2, sort_keys=True) + '\n')
+              for source_name, target_name in [
+                  ('error-headers.txt', 'GB85_C2_error-headers.txt'),
+                  ('diagnostics.jsonl', 'GB85_C2_diagnostics.jsonl'),
+                  ('full.time', 'GB85_C2_time.txt'),
+                  ('LOCAL_RESULT.json', 'GB85_C2_LOCAL_RESULT.json'),
+              ]:
+                  p = artifact_dir / source_name
+                  if p.exists():
+                      shutil.copy2(p, frontier / target_name)
+              print(json.dumps(decision, indent=2, sort_keys=True))
+          else:
+              print(json.dumps(decision, indent=2, sort_keys=True))
+          PY
+
+      - name: Persist selection and any verified promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          if git diff --cached --quiet; then
+            echo 'No selection changes to persist.'
+            exit 0
+          fi
+          promoted="$(jq -r '.promoted' .github/qym-frontier/GB85_C2_SELECTION.json)"
+          if [[ "$promoted" = true ]]; then
+            errors="$(jq -r '.best.error_headers' .github/qym-frontier/GB85_C2_SELECTION.json)"
+            variant="$(jq -r '.best.variant' .github/qym-frontier/GB85_C2_SELECTION.json)"
+            git commit -m "QYM: promote verified ${errors}-error C2 frontier (${variant}) [skip ci]"
+          else
+            git commit -m "QYM: record GB85 C2 matrix without strict promotion [skip ci]"
+          fi
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload observer evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-gb85-c2-observer-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: ${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30
