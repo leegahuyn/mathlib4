@@ -1,0 +1,1588 @@
+
+===== upperLift definition =====
+MATCH PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10963
+ 10883	  exact Set.union_subset_union
+ 10884	    (gammaTwoThreeCuspTruncation_monotone hYZ)
+ 10885	    (gammaTwoTopologicalTruncation_monotone hYZ)
+ 10886	
+ 10887	theorem gammaTwoGlobalCuspTruncation_relativelyCompact (Y : ℝ) :
+ 10888	    IsCompact (closure (gammaTwoGlobalCuspTruncation Y)) :=
+ 10889	  (gammaTwoGlobalCuspTruncation_isCompact Y).closure
+ 10890	
+ 10891	/-- Although the supplemental representatives need not belong to the chosen
+ 10892	closed carrier, compactness gives one finite bound for every selected cusp
+ 10893	height on the whole augmented stage. -/
+ 10894	theorem gammaTwoGlobalCuspTruncation_heightControlled (Y : ℝ) :
+ 10895	    ∃ Z : ℝ, 1 < Z ∧
+ 10896	      gammaTwoGlobalCuspTruncation Y ⊆
+ 10897	        gammaTwoThreeCuspHeightSublevel Z :=
+ 10898	  compact_subset_threeCuspHeightSublevel
+ 10899	    (gammaTwoGlobalCuspTruncation_isCompact Y)
+ 10900	
+ 10901	/-- Uniform capture of arbitrary compact quotient sets, with no geometric
+ 10902	certificate parameter. -/
+ 10903	theorem gammaTwoGlobalCuspTruncation_exhausts_compacts
+ 10904	    (K : Set GammaTwoQuotient) (hK : IsCompact K) :
+ 10905	    ∃ Y : ℝ, 1 < Y ∧
+ 10906	      K ⊆ gammaTwoQuotientMk '' gammaTwoGlobalCuspTruncation Y := by
+ 10907	  obtain ⟨Y, hY, hKY⟩ :=
+ 10908	    gammaTwoTopologicalTruncation_exhausts_compacts K hK
+ 10909	  exact ⟨Y, hY,
+ 10910	    hKY.trans (Set.image_mono
+ 10911	      (gammaTwoTopologicalTruncation_subset_global Y))⟩
+ 10912	
+ 10913	/-- Correct pointwise-orbit truncation interface.  Unlike the measured open
+ 10914	fundamental-domain interface below, this structure does not require all
+ 10915	representatives to lie in a carrier that omits a null boundary. -/
+ 10916	structure GammaTwoOrbitTruncationExhaustion where
+ 10917	  truncation : ℝ → Set ℍ
+ 10918	  measurable : ∀ Y, MeasurableSet (truncation Y)
+ 10919	  monotone : Monotone truncation
+ 10920	  relativelyCompact : ∀ Y, IsCompact (closure (truncation Y))
+ 10921	  quotient_exhausts_compacts :
+ 10922	    ∀ K : Set GammaTwoQuotient, IsCompact K →
+ 10923	      ∃ Y : ℝ, 1 < Y ∧ K ⊆ gammaTwoQuotientMk '' truncation Y
+ 10924	
+ 10925	/-- A concrete inhabitant of the corrected orbit-truncation interface. -/
+ 10926	noncomputable def chosenGammaTwoOrbitTruncationExhaustion :
+ 10927	    GammaTwoOrbitTruncationExhaustion where
+ 10928	  truncation := gammaTwoTopologicalTruncation
+ 10929	  measurable := gammaTwoTopologicalTruncation_measurable
+ 10930	  monotone := gammaTwoTopologicalTruncation_monotone
+ 10931	  relativelyCompact := gammaTwoTopologicalTruncation_relativelyCompact
+ 10932	  quotient_exhausts_compacts :=
+ 10933	    gammaTwoTopologicalTruncation_exhausts_compacts
+ 10934	
+ 10935	/-- A second concrete orbit-truncation package retaining the literal
+ 10936	geometric cusp truncation as a distinguished subset of every stage. -/
+ 10937	noncomputable def chosenGammaTwoGlobalCuspTruncationExhaustion :
+ 10938	    GammaTwoOrbitTruncationExhaustion where
+ 10939	  truncation := gammaTwoGlobalCuspTruncation
+ 10940	  measurable := gammaTwoGlobalCuspTruncation_measurable
+ 10941	  monotone := gammaTwoGlobalCuspTruncation_monotone
+ 10942	  relativelyCompact := gammaTwoGlobalCuspTruncation_relativelyCompact
+ 10943	  quotient_exhausts_compacts :=
+ 10944	    gammaTwoGlobalCuspTruncation_exhausts_compacts
+ 10945	
+ 10946	end GammaTwoQuotientGeometry
+ 10947	
+ 10948	/-! ### 6.4: the real-smooth quotient-compact core
+ 10949	
+ 10950	The existing manifold instance on `ℍ` is complex.  Using `CMDiff` for the
+ 10951	paper's smooth Maass-type functions would therefore impose holomorphicity and
+ 10952	would collapse a compactly supported core.  We use the same open chart with
+ 10953	the real model `ℂ ≃ ℝ²` and define genuine real `C∞` smoothness.
+ 10954	-/
+ 10955	
+ 10956	namespace SmoothCompactCoreGeometry
+ 10957	
+ 10958	open MeasureTheory Set Function Topology
+ 10959	open scoped Manifold ContDiff
+ 10960	open HalfIntegralMultiplier GammaTwoQuotientGeometry
+ 10961	
+ 10962	/-- Pull a function back to the open upper half-plane chart in `ℂ`. -/
+ 10963	noncomputable def upperLift (u : ℍ → ℂ) : ℂ → ℂ :=
+ 10964	  u ∘ UpperHalfPlane.ofComplex
+ 10965	
+ 10966	@[simp]
+ 10967	theorem upperLift_apply (u : ℍ → ℂ) (z : ℍ) :
+ 10968	    upperLift u (z : ℂ) = u z := by
+ 10969	  simp [upperLift, Function.comp_def]
+ 10970	
+ 10971	/-- Real `C∞` smoothness, as opposed to complex analyticity. -/
+ 10972	def RealSmooth (u : ℍ → ℂ) : Prop :=
+ 10973	  ContDiffOn ℝ ∞ (upperLift u) UpperHalfPlane.upperHalfPlaneSet
+ 10974	
+ 10975	theorem realSmooth_zero : RealSmooth (0 : ℍ → ℂ) := by
+ 10976	  simpa [RealSmooth, upperLift, Function.comp_def] using
+ 10977	    (contDiffOn_const : ContDiffOn ℝ ∞
+ 10978	      (fun _ : ℂ => (0 : ℂ)) UpperHalfPlane.upperHalfPlaneSet)
+ 10979	
+ 10980	namespace RealSmooth
+ 10981	
+ 10982	theorem add {u v : ℍ → ℂ} (hu : RealSmooth u) (hv : RealSmooth v) :
+ 10983	    RealSmooth (u + v) := by
+ 10984	  unfold RealSmooth at hu hv ⊢
+ 10985	  simpa [upperLift, Function.comp_def] using hu.add hv
+ 10986	
+ 10987	theorem neg {u : ℍ → ℂ} (hu : RealSmooth u) :
+ 10988	    RealSmooth (-u) := by
+ 10989	  unfold RealSmooth at hu ⊢
+ 10990	  simpa [upperLift, Function.comp_def] using hu.neg
+ 10991	
+ 10992	theorem sub {u v : ℍ → ℂ} (hu : RealSmooth u) (hv : RealSmooth v) :
+ 10993	    RealSmooth (u - v) := by
+ 10994	  unfold RealSmooth at hu hv ⊢
+ 10995	  simpa [upperLift, Function.comp_def] using hu.sub hv
+ 10996	
+ 10997	/-- Fixed complex multiplication is real-linear and real-smooth. -/
+ 10998	theorem const_complex_smul (c : ℂ) {u : ℍ → ℂ} (hu : RealSmooth u) :
+ 10999	    RealSmooth (c • u) := by
+ 11000	  unfold RealSmooth at hu ⊢
+ 11001	  simpa [upperLift, Function.comp_def] using hu.const_smul c
+ 11002	
+ 11003	theorem continuous {u : ℍ → ℂ} (hu : RealSmooth u) : Continuous u := by
+ 11004	  rw [continuous_iff_continuousAt]
+ 11005	  intro z
+ 11006	  unfold RealSmooth at hu
+ 11007	  have hWithin := (hu (z : ℂ) z.im_pos).continuousWithinAt
+ 11008	  have hAt : ContinuousAt (upperLift u) (z : ℂ) :=
+ 11009	    hWithin.continuousAt
+ 11010	      (UpperHalfPlane.isOpen_upperHalfPlaneSet.mem_nhds z.im_pos)
+ 11011	  have hcomp := hAt.comp' UpperHalfPlane.continuous_coe.continuousAt
+ 11012	  simpa [upperLift, Function.comp_def] using hcomp
+ 11013	
+ 11014	theorem measurable {u : ℍ → ℂ} (hu : RealSmooth u) : Measurable u :=
+ 11015	  hu.continuous.measurable
+ 11016	
+ 11017	end RealSmooth
+ 11018	
+ 11019	/-- Topological support on the quotient.  The closure is important: it is the
+ 11020	downstairs analogue of `tsupport`, and it makes compact support stable under
+ 11021	addition and scalar multiplication. -/
+ 11022	def quotientTSupport (u : ℍ → ℂ) : Set GammaTwoQuotient :=
+ 11023	  closure (gammaTwoQuotientMk '' Function.support u)
+ 11024	
+ 11025	/-- A lifted automorphic function is compactly supported modulo `Gamma(2)`. -/
+ 11026	def HasQuotientCompactSupport (u : ℍ → ℂ) : Prop :=
+ 11027	  IsCompact (quotientTSupport u)
+ 11028	
+ 11029	@[simp]
+ 11030	theorem quotientTSupport_zero :
+ 11031	    quotientTSupport (0 : ℍ → ℂ) = ∅ := by
+ 11032	  simp [quotientTSupport]
+ 11033	
+ 11034	theorem quotientTSupport_add_subset (u v : ℍ → ℂ) :
+ 11035	    quotientTSupport (u + v) ⊆ quotientTSupport u ∪ quotientTSupport v := by
+ 11036	  apply closure_minimal
+ 11037	  · rintro q ⟨z, hz, rfl⟩
+ 11038	    rcases Function.support_add u v hz with hz | hz
+ 11039	    · exact Or.inl (subset_closure ⟨z, hz, rfl⟩)
+ 11040	    · exact Or.inr (subset_closure ⟨z, hz, rfl⟩)
+ 11041	  · exact isClosed_closure.union isClosed_closure
+ 11042	
+ 11043	theorem quotientTSupport_smul_subset (c : ℂ) (u : ℍ → ℂ) :
+ 11044	    quotientTSupport (c • u) ⊆ quotientTSupport u := by
+ 11045	  apply closure_minimal
+ 11046	  · rintro q ⟨z, hz, rfl⟩
+ 11047	    exact subset_closure
+ 11048	      ⟨z, Function.support_const_smul_subset c u hz, rfl⟩
+ 11049	  · exact isClosed_closure
+ 11050	
+ 11051	/-- Multiplication by an arbitrary second factor cannot enlarge quotient
+ 11052	support.  No automorphy or regularity of the second factor is needed. -/
+ 11053	theorem quotientTSupport_mul_subset_left_general (u v : ℍ → ℂ) :
+ 11054	    quotientTSupport (u * v) ⊆ quotientTSupport u := by
+ 11055	  apply closure_minimal
+ 11056	  · rintro q ⟨z, hz, rfl⟩
+ 11057	    exact subset_closure
+ 11058	      ⟨z, Function.support_mul_subset_left u v hz, rfl⟩
+ 11059	  · exact isClosed_closure
+ 11060	
+ 11061	namespace HasQuotientCompactSupport
+ 11062	
+ 11063	theorem zero : HasQuotientCompactSupport (0 : ℍ → ℂ) := by
+ 11064	  simp [HasQuotientCompactSupport]
+ 11065	
+ 11066	theorem add {u v : ℍ → ℂ}
+ 11067	    (hu : HasQuotientCompactSupport u)
+ 11068	    (hv : HasQuotientCompactSupport v) :
+ 11069	    HasQuotientCompactSupport (u + v) :=
+ 11070	  (hu.union hv).of_isClosed_subset isClosed_closure
+ 11071	    (quotientTSupport_add_subset u v)
+ 11072	
+ 11073	theorem smul (c : ℂ) {u : ℍ → ℂ}
+ 11074	    (hu : HasQuotientCompactSupport u) :
+ 11075	    HasQuotientCompactSupport (c • u) :=
+ 11076	  hu.of_isClosed_subset isClosed_closure
+ 11077	    (quotientTSupport_smul_subset c u)
+ 11078	
+ 11079	/-- A quotient-compact first factor makes its product with any function
+ 11080	quotient-compact. -/
+ 11081	theorem mul_right {u : ℍ → ℂ}
+ 11082	    (hu : HasQuotientCompactSupport u) (v : ℍ → ℂ) :
+ 11083	    HasQuotientCompactSupport (u * v) :=
+
+===== SmoothQuotientCompactFunction declaration =====
+MATCH PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13010
+ 12930	  by_contra hzt
+ 12931	  exact hz (lowerRaw_eq_zero_of_not_mem_tsupport a hzt)
+ 12932	
+ 12933	theorem support_laplaceRaw_subset_tsupport
+ 12934	    (a : ℤ) {f : ℍ → ℂ} (hf : RealSmooth f) :
+ 12935	    Function.support (laplaceRaw a f) ⊆ tsupport f := by
+ 12936	  intro z hz
+ 12937	  by_contra hzt
+ 12938	  exact hz (laplaceRaw_eq_zero_of_not_mem_tsupport a hf hzt)
+ 12939	
+ 12940	/-- A general bridge from local support preservation upstairs to topological
+ 12941	support preservation on the orbit quotient. -/
+ 12942	theorem quotientTSupport_mono_of_support_subset_tsupport
+ 12943	    {f g : ℍ → ℂ} (h : Function.support g ⊆ tsupport f) :
+ 12944	    quotientTSupport g ⊆ quotientTSupport f := by
+ 12945	  unfold SmoothCompactCoreGeometry.quotientTSupport
+ 12946	  apply closure_minimal
+ 12947	  · have hImage : gammaTwoQuotientMk '' tsupport f ⊆
+ 12948	        closure (gammaTwoQuotientMk '' Function.support f) := by
+ 12949	      simpa only [tsupport] using
+ 12950	        (image_closure_subset_closure_image
+ 12951	          gammaTwoQuotientMk_isOpenQuotientMap.continuous :
+ 12952	          gammaTwoQuotientMk '' closure (Function.support f) ⊆
+ 12953	            closure (gammaTwoQuotientMk '' Function.support f))
+ 12954	    exact (Set.image_mono h).trans hImage
+ 12955	  · exact isClosed_closure
+ 12956	
+ 12957	theorem quotientTSupport_raiseRaw_subset (a : ℤ) (f : ℍ → ℂ) :
+ 12958	    quotientTSupport (raiseRaw a f) ⊆ quotientTSupport f :=
+ 12959	  quotientTSupport_mono_of_support_subset_tsupport
+ 12960	    (support_raiseRaw_subset_tsupport a f)
+ 12961	
+ 12962	theorem quotientTSupport_lowerRaw_subset (a : ℤ) (f : ℍ → ℂ) :
+ 12963	    quotientTSupport (lowerRaw a f) ⊆ quotientTSupport f :=
+ 12964	  quotientTSupport_mono_of_support_subset_tsupport
+ 12965	    (support_lowerRaw_subset_tsupport a f)
+ 12966	
+ 12967	theorem quotientTSupport_laplaceRaw_subset
+ 12968	    (a : ℤ) {f : ℍ → ℂ} (hf : RealSmooth f) :
+ 12969	    quotientTSupport (laplaceRaw a f) ⊆ quotientTSupport f :=
+ 12970	  quotientTSupport_mono_of_support_subset_tsupport
+ 12971	    (support_laplaceRaw_subset_tsupport a hf)
+ 12972	
+ 12973	theorem HasQuotientCompactSupport.raiseRaw
+ 12974	    {f : ℍ → ℂ} (hf : HasQuotientCompactSupport f) (a : ℤ) :
+ 12975	    HasQuotientCompactSupport (raiseRaw a f) :=
+ 12976	  hf.of_isClosed_subset isClosed_closure
+ 12977	    (quotientTSupport_raiseRaw_subset a f)
+ 12978	
+ 12979	theorem HasQuotientCompactSupport.lowerRaw
+ 12980	    {f : ℍ → ℂ} (hf : HasQuotientCompactSupport f) (a : ℤ) :
+ 12981	    HasQuotientCompactSupport (lowerRaw a f) :=
+ 12982	  hf.of_isClosed_subset isClosed_closure
+ 12983	    (quotientTSupport_lowerRaw_subset a f)
+ 12984	
+ 12985	theorem HasQuotientCompactSupport.laplaceRaw
+ 12986	    {f : ℍ → ℂ} (hf : HasQuotientCompactSupport f)
+ 12987	    (hs : RealSmooth f) (a : ℤ) :
+ 12988	    HasQuotientCompactSupport (laplaceRaw a f) :=
+ 12989	  hf.of_isClosed_subset isClosed_closure
+ 12990	    (quotientTSupport_laplaceRaw_subset a hs)
+ 12991	
+ 12992	/-- The analytic domain common to all three raw operators: real-smooth
+ 12993	functions with compact support on the effective quotient.  No covariance is
+ 12994	asserted at this layer. -/
+ 12995	def smoothQuotientCompactSubmodule : Submodule ℂ SmoothFunction where
+ 12996	  carrier := {f | HasQuotientCompactSupport (f : ℍ → ℂ)}
+ 12997	  zero_mem' := by
+ 12998	    change HasQuotientCompactSupport (0 : ℍ → ℂ)
+ 12999	    exact HasQuotientCompactSupport.zero
+ 13000	  add_mem' := by
+ 13001	    rintro u v hu hv
+ 13002	    change HasQuotientCompactSupport
+ 13003	      ((u : ℍ → ℂ) + (v : ℍ → ℂ))
+ 13004	    exact hu.add hv
+ 13005	  smul_mem' := by
+ 13006	    rintro c u hu
+ 13007	    change HasQuotientCompactSupport (c • (u : ℍ → ℂ))
+ 13008	    exact hu.smul c
+ 13009	
+ 13010	abbrev SmoothQuotientCompactFunction := smoothQuotientCompactSubmodule
+ 13011	
+ 13012	/-- Evaluate a smooth quotient-compact function without relying on a
+ 13013	multi-step coercion through `SmoothFunction`. -/
+ 13014	instance : CoeFun SmoothQuotientCompactFunction (fun _ => ℍ → ℂ) where
+ 13015	  coe f := (f.1 : ℍ → ℂ)
+ 13016	
+ 13017	/-- Raising is a linear endomorphism of the smooth quotient-compact analytic
+ 13018	domain. -/
+ 13019	noncomputable def raiseSmoothCompactLinear (a : ℤ) :
+ 13020	    SmoothQuotientCompactFunction →ₗ[ℂ] SmoothQuotientCompactFunction :=
+ 13021	  LinearMap.codRestrict smoothQuotientCompactSubmodule
+ 13022	    ((raiseSmoothLinear a).domRestrict smoothQuotientCompactSubmodule)
+ 13023	    (fun f => by
+ 13024	      change HasQuotientCompactSupport (raiseRaw a (f : ℍ → ℂ))
+ 13025	      exact HasQuotientCompactSupport.raiseRaw f.2 a)
+ 13026	
+ 13027	/-- Lowering is a linear endomorphism of the smooth quotient-compact analytic
+ 13028	domain. -/
+ 13029	noncomputable def lowerSmoothCompactLinear (a : ℤ) :
+ 13030	    SmoothQuotientCompactFunction →ₗ[ℂ] SmoothQuotientCompactFunction :=
+ 13031	  LinearMap.codRestrict smoothQuotientCompactSubmodule
+ 13032	    ((lowerSmoothLinear a).domRestrict smoothQuotientCompactSubmodule)
+ 13033	    (fun f => by
+ 13034	      change HasQuotientCompactSupport (lowerRaw a (f : ℍ → ℂ))
+ 13035	      exact HasQuotientCompactSupport.lowerRaw f.2 a)
+ 13036	
+ 13037	/-- The compatible Laplacian is a linear endomorphism of the same analytic
+ 13038	domain. -/
+ 13039	noncomputable def laplaceSmoothCompactLinear (a : ℤ) :
+ 13040	    SmoothQuotientCompactFunction →ₗ[ℂ] SmoothQuotientCompactFunction :=
+ 13041	  LinearMap.codRestrict smoothQuotientCompactSubmodule
+ 13042	    ((laplaceSmoothLinear a).domRestrict smoothQuotientCompactSubmodule)
+ 13043	    (fun f => by
+ 13044	      change HasQuotientCompactSupport (laplaceRaw a (f : ℍ → ℂ))
+ 13045	      exact HasQuotientCompactSupport.laplaceRaw f.2 f.1.2 a)
+ 13046	
+ 13047	@[simp]
+ 13048	theorem raiseSmoothCompactLinear_apply
+ 13049	    (a : ℤ) (f : SmoothQuotientCompactFunction) (z : ℍ) :
+ 13050	    ((raiseSmoothCompactLinear a f : SmoothQuotientCompactFunction) :
+ 13051	        ℍ → ℂ) z = raiseRaw a (f : ℍ → ℂ) z :=
+ 13052	  rfl
+ 13053	
+ 13054	@[simp]
+ 13055	theorem lowerSmoothCompactLinear_apply
+ 13056	    (a : ℤ) (f : SmoothQuotientCompactFunction) (z : ℍ) :
+ 13057	    ((lowerSmoothCompactLinear a f : SmoothQuotientCompactFunction) :
+ 13058	        ℍ → ℂ) z = lowerRaw a (f : ℍ → ℂ) z :=
+ 13059	  rfl
+ 13060	
+ 13061	@[simp]
+ 13062	theorem laplaceSmoothCompactLinear_apply
+ 13063	    (a : ℤ) (f : SmoothQuotientCompactFunction) (z : ℍ) :
+ 13064	    ((laplaceSmoothCompactLinear a f : SmoothQuotientCompactFunction) :
+ 13065	        ℍ → ℂ) z = laplaceRaw a (f : ℍ → ℂ) z :=
+ 13066	  rfl
+ 13067	
+ 13068	/-! #### The PDF sign obstruction -/
+ 13069	
+ 13070	/-- The universal extra term in the raising-chain-rule calculation when the
+ 13071	operator coefficient `r` differs from the covariance exponent `q`. -/
+ 13072	def raisingCovarianceDefect
+ 13073	    (q r c nu jPow u : ℂ) : ℂ :=
+ 13074	  2 * Complex.I * c * (q - r) * nu * jPow * u
+ 13075	
+ 13076	theorem raisingCovarianceDefect_eq_zero_of_coefficient_eq
+ 13077	    (q c nu jPow u : ℂ) :
+ 13078	    raisingCovarianceDefect q q c nu jPow u = 0 := by
+ 13079	  simp [raisingCovarianceDefect]
+ 13080	
+ 13081	/-- For the PDF's exponent `q=-1/2` and displayed coefficient `r=+1/2`,
+ 13082	the chain-rule defect is generally nonzero. -/
+ 13083	theorem paperDisplayedRaising_defect
+ 13084	    (c nu jPow u : ℂ) :
+ 13085	    raisingCovarianceDefect (-1 / 2) (1 / 2) c nu jPow u =
+ 13086	      -2 * Complex.I * c * nu * jPow * u := by
+ 13087	  simp [raisingCovarianceDefect]
+ 13088	  ring
+ 13089	
+ 13090	theorem paperDisplayedRaising_defect_ne_zero
+ 13091	    {c nu jPow u : ℂ} (hc : c ≠ 0) (hnu : nu ≠ 0)
+ 13092	    (hj : jPow ≠ 0) (hu : u ≠ 0) :
+ 13093	    raisingCovarianceDefect (-1 / 2) (1 / 2) c nu jPow u ≠ 0 := by
+ 13094	  rw [paperDisplayedRaising_defect]
+ 13095	  exact mul_ne_zero
+ 13096	    (mul_ne_zero
+ 13097	      (mul_ne_zero
+ 13098	        (mul_ne_zero
+ 13099	          (mul_ne_zero (by norm_num) Complex.I_ne_zero) hc)
+ 13100	        hnu)
+ 13101	      hj)
+ 13102	    hu
+ 13103	
+ 13104	/-- Exponent index of the PDF's displayed `j^(-1/2)` covariance. -/
+ 13105	def paperDisplayedExponentIndex : ℤ :=
+ 13106	  -1
+ 13107	
+ 13108	@[simp]
+ 13109	theorem neg_paperDisplayedExponentIndex :
+ 13110	    -paperDisplayedExponentIndex = 1 := by
+ 13111	  norm_num [paperDisplayedExponentIndex]
+ 13112	
+ 13113	/-- Reindex the paper certificate by the actual doubled covariance exponent. -/
+ 13114	def paperMultiplierAtExponent (P : PaperHalfWeightCertificate) :
+ 13115	    HalfIntegralMultiplier GammaTwoQuotientGeometry.GammaTwo
+ 13116	      (-paperDisplayedExponentIndex) := by
+ 13117	  simpa [paperDisplayedExponentIndex] using P.multiplier
+ 13118	
+ 13119	/-- The only exponent residue class determined by the paper's base
+ 13120	half-weight: repeated raising/lowering moves `a = -1` by multiples of four. -/
+ 13121	def paperOrbitExponent (n : ℤ) : ℤ :=
+ 13122	  paperDisplayedExponentIndex + 4 * n
+ 13123	
+ 13124	@[simp]
+ 13125	theorem paperOrbitExponent_zero : paperOrbitExponent 0 = -1 := by
+ 13126	  simp [paperOrbitExponent, paperDisplayedExponentIndex]
+ 13127	
+ 13128	@[simp]
+ 13129	theorem paperOrbitExponent_add_one (n : ℤ) :
+ 13130	    paperOrbitExponent (n + 1) = paperOrbitExponent n + 4 := by
+
+===== InverseEtaFixedPhaseCore declaration =====
+MATCH PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14553
+ 14473	        ring
+ 14474	  have hAlgebra := lower_covariance_algebra F j y Bw Bz
+ 14475	    (by simpa [j] using inverseEtaPaperOrbitDenom_ne_zero γ z)
+ 14476	    hDerivative'
+ 14477	  simp only [lowerRaw]
+ 14478	  rw [heightC_gammaTwo_smul,
+ 14479	    inverseEtaPaperOrbitFactor_sub_one]
+ 14480	  dsimp [F, j, y, Bz, Bw] at hAlgebra ⊢
+ 14481	  ring_nf at hAlgebra ⊢
+ 14482	  exact hAlgebra
+ 14483	
+ 14484	namespace IsInverseEtaPaperOrbitCovariant
+ 14485	
+ 14486	/-- Closure under one genuine raw raising step, derived from the analytic
+ 14487	chain rule above. -/
+ 14488	theorem raiseRaw {n : ℤ} {f : SmoothQuotientCompactFunction}
+ 14489	    (hf : IsInverseEtaPaperOrbitCovariant n f) :
+ 14490	    IsInverseEtaPaperOrbitCovariant (n + 1)
+ 14491	      (raiseSmoothCompactLinear (paperOrbitExponent n) f) := by
+ 14492	  intro γ z
+ 14493	  simpa [inverseEtaPaperOrbitFactor,
+ 14494	    raiseSmoothCompactLinear_apply] using
+ 14495	      raiseRaw_covariance_of_inverseEtaPaperOrbitCovariant hf γ z
+ 14496	
+ 14497	/-- Closure under one genuine raw lowering step, derived from the analytic
+ 14498	chain rule above. -/
+ 14499	theorem lowerRaw {n : ℤ} {f : SmoothQuotientCompactFunction}
+ 14500	    (hf : IsInverseEtaPaperOrbitCovariant n f) :
+ 14501	    IsInverseEtaPaperOrbitCovariant (n - 1)
+ 14502	      (lowerSmoothCompactLinear (paperOrbitExponent n) f) := by
+ 14503	  intro γ z
+ 14504	  simpa [inverseEtaPaperOrbitFactor,
+ 14505	    lowerSmoothCompactLinear_apply] using
+ 14506	      lowerRaw_covariance_of_inverseEtaPaperOrbitCovariant hf γ z
+ 14507	
+ 14508	end IsInverseEtaPaperOrbitCovariant
+ 14509	
+ 14510	/-- Induction on an arbitrary finite `R/L` word.  Thus the all-word predicate
+ 14511	is a theorem from zeroth-word covariance, not an extra certificate carried by
+ 14512	the example. -/
+ 14513	theorem FixedPhaseDifferentialWord.eval_covariant
+ 14514	    (word : FixedPhaseDifferentialWord) {n : ℤ}
+ 14515	    {f : SmoothQuotientCompactFunction}
+ 14516	    (hf : IsInverseEtaPaperOrbitCovariant n f) :
+ 14517	    IsInverseEtaPaperOrbitCovariant
+ 14518	      (FixedPhaseDifferentialWord.targetIndex n word)
+ 14519	      (FixedPhaseDifferentialWord.eval n word f) := by
+ 14520	  induction word generalizing n f with
+ 14521	  | nil => simpa using hf
+ 14522	  | raise tail ih =>
+ 14523	      rw [FixedPhaseDifferentialWord.eval_raise_apply,
+ 14524	        FixedPhaseDifferentialWord.targetIndex_raise]
+ 14525	      exact ih hf.raiseRaw
+ 14526	  | lower tail ih =>
+ 14527	      rw [FixedPhaseDifferentialWord.eval_lower_apply,
+ 14528	        FixedPhaseDifferentialWord.targetIndex_lower]
+ 14529	      exact ih hf.lowerRaw
+ 14530	
+ 14531	/-- The maximal smooth quotient-compact submodule stable under every finite
+ 14532	word in the concrete fixed-phase raising and lowering operators. -/
+ 14533	noncomputable def inverseEtaFixedPhaseStableCoreSubmodule (n : ℤ) :
+ 14534	    Submodule ℂ SmoothQuotientCompactFunction where
+ 14535	  carrier := {f | ∀ word : FixedPhaseDifferentialWord,
+ 14536	    IsInverseEtaPaperOrbitCovariant
+ 14537	      (FixedPhaseDifferentialWord.targetIndex n word)
+ 14538	      (FixedPhaseDifferentialWord.eval n word f)}
+ 14539	  zero_mem' := by
+ 14540	    intro word
+ 14541	    rw [map_zero]
+ 14542	    exact IsInverseEtaPaperOrbitCovariant.zero _
+ 14543	  add_mem' := by
+ 14544	    intro f g hf hg word
+ 14545	    rw [map_add]
+ 14546	    exact (hf word).add (hg word)
+ 14547	  smul_mem' := by
+ 14548	    intro c f hf word
+ 14549	    rw [map_smul]
+ 14550	    exact (hf word).smul c
+ 14551	
+ 14552	/-- Canonical fixed-phase core at orbit index `n`. -/
+ 14553	noncomputable abbrev InverseEtaFixedPhaseCore (n : ℤ) : Type :=
+ 14554	  ↥(inverseEtaFixedPhaseStableCoreSubmodule n)
+ 14555	
+ 14556	/-- Once the one-step covariance theorem has been proved, membership in the
+ 14557	all-word stable core is equivalent to the ordinary zeroth-word covariance
+ 14558	condition. -/
+ 14559	theorem mem_inverseEtaFixedPhaseStableCoreSubmodule_iff
+ 14560	    (n : ℤ) (f : SmoothQuotientCompactFunction) :
+ 14561	    f ∈ inverseEtaFixedPhaseStableCoreSubmodule n ↔
+ 14562	      IsInverseEtaPaperOrbitCovariant n f := by
+ 14563	  constructor
+ 14564	  · intro hf
+ 14565	    simpa using hf FixedPhaseDifferentialWord.nil
+ 14566	  · intro hf word
+ 14567	    exact word.eval_covariant hf
+ 14568	
+ 14569	/-! #### Natural invariant-cutoff test cores -/
+ 14570	
+ 14571	/-- Pointwise `Gamma(2)` invariance of a smooth quotient-compact cutoff. -/
+ 14572	def IsGammaTwoInvariantCutoff
+ 14573	    (cutoff : SmoothQuotientCompactFunction) : Prop :=
+ 14574	  ∀ (γ : GammaTwoQuotientGeometry.GammaTwo) (z : ℍ),
+ 14575	    (cutoff : ℍ → ℂ)
+ 14576	        ((((γ : GammaTwoQuotientGeometry.GammaTwo) : SL(2, ℤ)) • z)) =
+ 14577	      (cutoff : ℍ → ℂ) z
+ 14578	
+ 14579	/-- The raw product of an invariant test cutoff with an actual section at one
+ 14580	index of the fixed-phase orbit.  Quotient compactness comes entirely from the
+ 14581	cutoff; the section is only required to be real-smooth. -/
+ 14582	noncomputable def invariantCutoffTimesOrbitSectionRaw
+ 14583	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14584	    (orbitSection : InverseEtaPaperOrbitSection
+ 14585	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14586	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) :
+ 14587	    SmoothQuotientCompactFunction :=
+ 14588	  ⟨⟨(cutoff : ℍ → ℂ) * (orbitSection : ℍ → ℂ),
+ 14589	      cutoff.1.2.mul hSectionSmooth⟩,
+ 14590	    HasQuotientCompactSupport.mul_right cutoff.2
+ 14591	      (orbitSection : ℍ → ℂ)⟩
+ 14592	
+ 14593	@[simp]
+ 14594	theorem invariantCutoffTimesOrbitSectionRaw_apply
+ 14595	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14596	    (orbitSection : InverseEtaPaperOrbitSection
+ 14597	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14598	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) (z : ℍ) :
+ 14599	    (invariantCutoffTimesOrbitSectionRaw n cutoff orbitSection
+ 14600	      hSectionSmooth : ℍ → ℂ) z =
+ 14601	        (cutoff : ℍ → ℂ) z * orbitSection z :=
+ 14602	  rfl
+ 14603	
+ 14604	/-- Zeroth-word covariance of the invariant-cutoff product. -/
+ 14605	theorem invariantCutoffTimesOrbitSectionRaw_covariant
+ 14606	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14607	    (hCutoffInvariant : IsGammaTwoInvariantCutoff cutoff)
+ 14608	    (orbitSection : InverseEtaPaperOrbitSection
+ 14609	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14610	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) :
+ 14611	    IsInverseEtaPaperOrbitCovariant n
+ 14612	      (invariantCutoffTimesOrbitSectionRaw n cutoff orbitSection
+ 14613	        hSectionSmooth) := by
+ 14614	  intro γ z
+ 14615	  change
+ 14616	    (cutoff : ℍ → ℂ) (((γ : GammaTwoQuotientGeometry.GammaTwo) :
+ 14617	        SL(2, ℤ)) • z) *
+ 14618	        orbitSection (((γ : GammaTwoQuotientGeometry.GammaTwo) :
+ 14619	          SL(2, ℤ)) • z) =
+ 14620	      (inverseEtaPaperOrbitMultiplier
+ 14621	          GammaTwoQuotientGeometry.GammaTwo n).factor γ z *
+ 14622	        ((cutoff : ℍ → ℂ) z * orbitSection z)
+ 14623	  rw [hCutoffInvariant γ z,
+ 14624	    WeightSection.covariance orbitSection γ z]
+ 14625	  ring
+ 14626	
+ 14627	/-- Every natural invariant-cutoff product lies in the all-word stable set;
+ 14628	this is a consequence of the proved one-step `R/L` covariance, not an extra
+ 14629	stability certificate. -/
+ 14630	theorem invariantCutoffTimesOrbitSectionRaw_mem
+ 14631	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14632	    (hCutoffInvariant : IsGammaTwoInvariantCutoff cutoff)
+ 14633	    (orbitSection : InverseEtaPaperOrbitSection
+ 14634	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14635	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) :
+ 14636	    invariantCutoffTimesOrbitSectionRaw n cutoff orbitSection
+ 14637	        hSectionSmooth ∈
+ 14638	      inverseEtaFixedPhaseStableCoreSubmodule n :=
+ 14639	  (mem_inverseEtaFixedPhaseStableCoreSubmodule_iff n
+ 14640	    (invariantCutoffTimesOrbitSectionRaw n cutoff orbitSection
+ 14641	      hSectionSmooth)).2
+ 14642	    (invariantCutoffTimesOrbitSectionRaw_covariant n cutoff
+ 14643	      hCutoffInvariant orbitSection hSectionSmooth)
+ 14644	
+ 14645	/-- Typed natural test-core element obtained from an invariant cutoff and a
+ 14646	genuine smooth section at orbit index `n`. -/
+ 14647	noncomputable def invariantCutoffTimesOrbitSection
+ 14648	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14649	    (hCutoffInvariant : IsGammaTwoInvariantCutoff cutoff)
+ 14650	    (orbitSection : InverseEtaPaperOrbitSection
+ 14651	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14652	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) :
+ 14653	    InverseEtaFixedPhaseCore n :=
+ 14654	  ⟨invariantCutoffTimesOrbitSectionRaw n cutoff orbitSection
+ 14655	      hSectionSmooth,
+ 14656	    invariantCutoffTimesOrbitSectionRaw_mem n cutoff hCutoffInvariant
+ 14657	      orbitSection hSectionSmooth⟩
+ 14658	
+ 14659	@[simp]
+ 14660	theorem invariantCutoffTimesOrbitSection_apply
+ 14661	    (n : ℤ) (cutoff : SmoothQuotientCompactFunction)
+ 14662	    (hCutoffInvariant : IsGammaTwoInvariantCutoff cutoff)
+ 14663	    (orbitSection : InverseEtaPaperOrbitSection
+ 14664	      GammaTwoQuotientGeometry.GammaTwo n)
+ 14665	    (hSectionSmooth : RealSmooth (orbitSection : ℍ → ℂ)) (z : ℍ) :
+ 14666	    (invariantCutoffTimesOrbitSection n cutoff hCutoffInvariant orbitSection
+ 14667	        hSectionSmooth).1 z =
+ 14668	        (cutoff : ℍ → ℂ) z * orbitSection z :=
+ 14669	  rfl
+ 14670	
+ 14671	/-- Exact nonvanishing criterion for the natural product.  In particular, no
+ 14672	unsupported claim that every orbit index already has a nonzero seed section
+ 14673	is made: a common point where both supplied factors are nonzero is sufficient. -/
+
+===== GammaTwoCusp declaration =====
+MATCH PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6480
+  6400	noncomputable def descendInvariant {E : Type*} (ρ : ℍ → E)
+  6401	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z) :
+  6402	    GammaTwoQuotient → E :=
+  6403	  Quotient.lift ρ (by
+  6404	    intro a b hab
+  6405	    rcases hab with ⟨g, rfl⟩
+  6406	    exact hρ g b)
+  6407	
+  6408	@[simp]
+  6409	theorem descendInvariant_mk {E : Type*} (ρ : ℍ → E)
+  6410	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z)
+  6411	    (z : ℍ) :
+  6412	    descendInvariant ρ hρ (gammaTwoQuotientMk z) = ρ z :=
+  6413	  rfl
+  6414	
+  6415	/-- Support of an invariant function after descent is exactly the projected
+  6416	upstairs support. -/
+  6417	theorem descendInvariant_support {E : Type*} [Zero E]
+  6418	    (ρ : ℍ → E)
+  6419	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z) :
+  6420	    Function.support (descendInvariant ρ hρ) =
+  6421	      gammaTwoQuotientMk '' Function.support ρ := by
+  6422	  ext q
+  6423	  refine Quotient.inductionOn' q ?_
+  6424	  intro z
+  6425	  constructor
+  6426	  · intro hz
+  6427	    refine ⟨z, ?_, rfl⟩
+  6428	    change descendInvariant ρ hρ (gammaTwoQuotientMk z) ≠ 0 at hz
+  6429	    simpa only [Function.mem_support, descendInvariant_mk] using hz
+  6430	  · rintro ⟨w, hw, hEq⟩
+  6431	    have hw' : descendInvariant ρ hρ (gammaTwoQuotientMk w) ≠ 0 := by
+  6432	      simpa only [Function.mem_support, descendInvariant_mk] using hw
+  6433	    rwa [hEq] at hw'
+  6434	
+  6435	theorem descendInvariant_tsupport {E : Type*} [Zero E]
+  6436	    (ρ : ℍ → E)
+  6437	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z) :
+  6438	    tsupport (descendInvariant ρ hρ) =
+  6439	      closure (gammaTwoQuotientMk '' Function.support ρ) := by
+  6440	  rw [tsupport, descendInvariant_support]
+  6441	
+  6442	/-- Measurability descends through the quotient measurable structure. -/
+  6443	theorem measurable_descendInvariant {E : Type*} [MeasurableSpace E]
+  6444	    (ρ : ℍ → E)
+  6445	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z)
+  6446	    (hρm : Measurable ρ) :
+  6447	    Measurable (descendInvariant ρ hρ) := by
+  6448	  rw [measurable_from_quotient]
+  6449	  change Measurable (fun z => descendInvariant ρ hρ (gammaTwoQuotientMk z))
+  6450	  simpa only [descendInvariant_mk] using hρm
+  6451	
+  6452	/-- Quotient integration of a descended invariant density is its
+  6453	fundamental-domain integral. -/
+  6454	theorem GammaTwoFundamentalDomain.integral_descendInvariant_eq
+  6455	    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+  6456	    (D : GammaTwoFundamentalDomain) (ρ : ℍ → E)
+  6457	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z)
+  6458	    (hm : AEStronglyMeasurable (descendInvariant ρ hρ) D.quotientMeasure) :
+  6459	    ∫ q, descendInvariant ρ hρ q ∂D.quotientMeasure =
+  6460	      ∫ z in D.carrier, ρ z ∂hyperbolicMeasure := by
+  6461	  simpa using D.integral_quotientMeasure_eq (descendInvariant ρ hρ) hm
+  6462	
+  6463	/-! #### Three-cusp geometry and the closed modular-tile truncation
+  6464	
+  6465	The open measured carrier above is the right object for integration, but it
+  6466	omits its side-pairing boundary.  A cusp truncation used pointwise must instead
+  6467	start with closed modular tiles.  The construction below is independent of the
+  6468	topological compact exhaustion later in this namespace: it is the finite union
+  6469	of the sets `r • ModularGroup.truncatedFundamentalDomain Y`, one for every
+  6470	right coset of `Gamma(2)`.
+  6471	
+  6472	There are three quotient cusps, represented by `∞`, `0`, and `1`.  The
+  6473	matrices `1`, `S`, and `T*S` are fixed as their scaling matrices.  The fourth
+  6474	The endpoint `-1` of the usual closed polygon is another representative of the cusp
+  6475	class of `1`; its scaling matrix is `T⁻¹*S`.  Thus the two finite endpoints of
+  6476	that class differ by the width-two translation `T²`.
+  6477	-/
+  6478	
+  6479	/-- The three cusp classes of `Gamma(2)`. -/
+  6480	inductive GammaTwoCusp where
+  6481	  | atInfinity
+  6482	  | zero
+  6483	  | one
+  6484	deriving DecidableEq
+  6485	
+  6486	instance gammaTwoCuspFintype : Fintype GammaTwoCusp where
+  6487	  elems := {.atInfinity, .zero, .one}
+  6488	  complete x := by cases x <;> simp
+  6489	
+  6490	/-- Explicit integral scaling matrices taking `∞` to the named cusp. -/
+  6491	def gammaTwoCuspScaling : GammaTwoCusp → SL(2, ℤ)
+  6492	  | .atInfinity => 1
+  6493	  | .zero => ModularGroup.S
+  6494	  | .one => ModularGroup.T * ModularGroup.S
+  6495	
+  6496	@[simp]
+  6497	theorem gammaTwoCuspScaling_atInfinity :
+  6498	    gammaTwoCuspScaling .atInfinity = 1 :=
+  6499	  rfl
+  6500	
+  6501	@[simp]
+  6502	theorem gammaTwoCuspScaling_zero :
+  6503	    gammaTwoCuspScaling .zero = ModularGroup.S :=
+  6504	  rfl
+  6505	
+  6506	@[simp]
+  6507	theorem gammaTwoCuspScaling_one :
+  6508	    gammaTwoCuspScaling .one = ModularGroup.T * ModularGroup.S :=
+  6509	  rfl
+  6510	
+  6511	/-- Every cusp of `Gamma(2)` has width two. -/
+  6512	def gammaTwoCuspWidth (_ : GammaTwoCusp) : ℕ :=
+  6513	  2
+  6514	
+  6515	@[simp]
+  6516	theorem gammaTwoCuspWidth_eq_two (κ : GammaTwoCusp) :
+  6517	    gammaTwoCuspWidth κ = 2 :=
+  6518	  rfl
+  6519	
+  6520	/-- The width-two parabolic at the cusp `κ`, with an arbitrary integral
+  6521	power. -/
+  6522	def gammaTwoCuspTranslation (κ : GammaTwoCusp) (n : ℤ) : SL(2, ℤ) :=
+  6523	  gammaTwoCuspScaling κ * ModularGroup.T ^ (2 * n) *
+  6524	    (gammaTwoCuspScaling κ)⁻¹
+  6525	
+  6526	/-- Width-two translations at all three cusps really belong to `Gamma(2)`. -/
+  6527	theorem gammaTwoCuspTranslation_mem (κ : GammaTwoCusp) (n : ℤ) :
+  6528	    gammaTwoCuspTranslation κ n ∈ GammaTwo := by
+  6529	  have hdiv : (2 : ℤ) ∣ 2 * n := ⟨n, rfl⟩
+  6530	  have hT : ModularGroup.T ^ (2 * n) ∈ GammaTwo := by
+  6531	    simpa using
+  6532	      CongruenceSubgroup.ModularGroup_T_pow_mem_Gamma
+  6533	        (2 : ℤ) (2 * n) hdiv
+  6534	  simpa [gammaTwoCuspTranslation, mul_assoc] using
+  6535	    (CongruenceSubgroup.Gamma_normal 2).conj_mem
+  6536	      (ModularGroup.T ^ (2 * n)) hT (gammaTwoCuspScaling κ)
+  6537	
+  6538	/-- The unit translation is not a level-two matrix. -/
+  6539	theorem modularGroup_T_not_mem_gammaTwo :
+  6540	    ModularGroup.T ∉ GammaTwo := by
+  6541	  rw [CongruenceSubgroup.Gamma_mem]
+  6542	  norm_num [ModularGroup.T]
+  6543	
+  6544	/-- Conjugating a unit translation to any named cusp does not put it in
+  6545	`Gamma(2)`. -/
+  6546	theorem gammaTwoCuspUnitTranslation_not_mem (κ : GammaTwoCusp) :
+  6547	    gammaTwoCuspScaling κ * ModularGroup.T *
+  6548	      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+  6549	  intro h
+  6550	  have hback :=
+  6551	    (CongruenceSubgroup.Gamma_normal 2).conj_mem _ h
+  6552	      (gammaTwoCuspScaling κ)⁻¹
+  6553	  have hT : ModularGroup.T ∈ GammaTwo := by
+  6554	    simpa [mul_assoc] using hback
+  6555	  exact modularGroup_T_not_mem_gammaTwo hT
+  6556	
+  6557	/-- Width two is minimal among positive natural translation lengths. -/
+  6558	theorem gammaTwoCuspWidth_minimal
+  6559	    (κ : GammaTwoCusp) (n : ℕ) (hn : 0 < n)
+  6560	    (hnw : n < gammaTwoCuspWidth κ) :
+  6561	    gammaTwoCuspScaling κ * ModularGroup.T ^ n *
+  6562	      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+  6563	  have hn1 : n = 1 := by
+  6564	    simp only [gammaTwoCuspWidth] at hnw
+  6565	    omega
+  6566	  subst n
+  6567	  simpa using gammaTwoCuspUnitTranslation_not_mem κ
+  6568	
+  6569	/-- Local cusp height in the coordinate supplied by the scaling matrix. -/
+  6570	noncomputable def gammaTwoCuspHeight (κ : GammaTwoCusp) (z : ℍ) : ℝ :=
+  6571	  ((gammaTwoCuspScaling κ)⁻¹ • z).im
+  6572	
+  6573	theorem gammaTwoCuspHeight_pos (κ : GammaTwoCusp) (z : ℍ) :
+  6574	    0 < gammaTwoCuspHeight κ z :=
+  6575	  UpperHalfPlane.im_pos _
+  6576	
+  6577	theorem gammaTwoCuspHeight_continuous (κ : GammaTwoCusp) :
+  6578	    Continuous (gammaTwoCuspHeight κ) := by
+  6579	  change Continuous (fun z : ℍ =>
+  6580	    ((((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+  6581	      ((gammaTwoCuspScaling κ)⁻¹)) • z).im))
+  6582	  exact UpperHalfPlane.continuous_im.comp
+  6583	    (continuous_const_smul
+  6584	      ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+  6585	        ((gammaTwoCuspScaling κ)⁻¹)))
+  6586	
+  6587	theorem gammaTwoCuspHeight_measurable (κ : GammaTwoCusp) :
+  6588	    Measurable (gammaTwoCuspHeight κ) :=
+  6589	  (gammaTwoCuspHeight_continuous κ).measurable
+  6590	
+  6591	/-- The local height is periodic under the full width-two cusp stabilizer. -/
+  6592	theorem gammaTwoCuspHeight_translation
+  6593	    (κ : GammaTwoCusp) (n : ℤ) (z : ℍ) :
+  6594	    gammaTwoCuspHeight κ (gammaTwoCuspTranslation κ n • z) =
+  6595	      gammaTwoCuspHeight κ z := by
+  6596	  simp only [gammaTwoCuspHeight, gammaTwoCuspTranslation, mul_smul,
+  6597	    inv_smul_smul, ModularGroup.im_T_zpow_smul]
+  6598	
+  6599	/-- Four ideal ends of the standard closed polygon; `one` and `negOne`
+  6600	represent the same quotient cusp. -/
+
+===== gammaTwoCuspScaling definition =====
+MATCH PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6491
+  6411	    (z : ℍ) :
+  6412	    descendInvariant ρ hρ (gammaTwoQuotientMk z) = ρ z :=
+  6413	  rfl
+  6414	
+  6415	/-- Support of an invariant function after descent is exactly the projected
+  6416	upstairs support. -/
+  6417	theorem descendInvariant_support {E : Type*} [Zero E]
+  6418	    (ρ : ℍ → E)
+  6419	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z) :
+  6420	    Function.support (descendInvariant ρ hρ) =
+  6421	      gammaTwoQuotientMk '' Function.support ρ := by
+  6422	  ext q
+  6423	  refine Quotient.inductionOn' q ?_
+  6424	  intro z
+  6425	  constructor
+  6426	  · intro hz
+  6427	    refine ⟨z, ?_, rfl⟩
+  6428	    change descendInvariant ρ hρ (gammaTwoQuotientMk z) ≠ 0 at hz
+  6429	    simpa only [Function.mem_support, descendInvariant_mk] using hz
+  6430	  · rintro ⟨w, hw, hEq⟩
+  6431	    have hw' : descendInvariant ρ hρ (gammaTwoQuotientMk w) ≠ 0 := by
+  6432	      simpa only [Function.mem_support, descendInvariant_mk] using hw
+  6433	    rwa [hEq] at hw'
+  6434	
+  6435	theorem descendInvariant_tsupport {E : Type*} [Zero E]
+  6436	    (ρ : ℍ → E)
+  6437	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z) :
+  6438	    tsupport (descendInvariant ρ hρ) =
+  6439	      closure (gammaTwoQuotientMk '' Function.support ρ) := by
+  6440	  rw [tsupport, descendInvariant_support]
+  6441	
+  6442	/-- Measurability descends through the quotient measurable structure. -/
+  6443	theorem measurable_descendInvariant {E : Type*} [MeasurableSpace E]
+  6444	    (ρ : ℍ → E)
+  6445	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z)
+  6446	    (hρm : Measurable ρ) :
+  6447	    Measurable (descendInvariant ρ hρ) := by
+  6448	  rw [measurable_from_quotient]
+  6449	  change Measurable (fun z => descendInvariant ρ hρ (gammaTwoQuotientMk z))
+  6450	  simpa only [descendInvariant_mk] using hρm
+  6451	
+  6452	/-- Quotient integration of a descended invariant density is its
+  6453	fundamental-domain integral. -/
+  6454	theorem GammaTwoFundamentalDomain.integral_descendInvariant_eq
+  6455	    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+  6456	    (D : GammaTwoFundamentalDomain) (ρ : ℍ → E)
+  6457	    (hρ : ∀ g : GammaTwoEffective, ∀ z, ρ (g • z) = ρ z)
+  6458	    (hm : AEStronglyMeasurable (descendInvariant ρ hρ) D.quotientMeasure) :
+  6459	    ∫ q, descendInvariant ρ hρ q ∂D.quotientMeasure =
+  6460	      ∫ z in D.carrier, ρ z ∂hyperbolicMeasure := by
+  6461	  simpa using D.integral_quotientMeasure_eq (descendInvariant ρ hρ) hm
+  6462	
+  6463	/-! #### Three-cusp geometry and the closed modular-tile truncation
+  6464	
+  6465	The open measured carrier above is the right object for integration, but it
+  6466	omits its side-pairing boundary.  A cusp truncation used pointwise must instead
+  6467	start with closed modular tiles.  The construction below is independent of the
+  6468	topological compact exhaustion later in this namespace: it is the finite union
+  6469	of the sets `r • ModularGroup.truncatedFundamentalDomain Y`, one for every
+  6470	right coset of `Gamma(2)`.
+  6471	
+  6472	There are three quotient cusps, represented by `∞`, `0`, and `1`.  The
+  6473	matrices `1`, `S`, and `T*S` are fixed as their scaling matrices.  The fourth
+  6474	The endpoint `-1` of the usual closed polygon is another representative of the cusp
+  6475	class of `1`; its scaling matrix is `T⁻¹*S`.  Thus the two finite endpoints of
+  6476	that class differ by the width-two translation `T²`.
+  6477	-/
+  6478	
+  6479	/-- The three cusp classes of `Gamma(2)`. -/
+  6480	inductive GammaTwoCusp where
+  6481	  | atInfinity
+  6482	  | zero
+  6483	  | one
+  6484	deriving DecidableEq
+  6485	
+  6486	instance gammaTwoCuspFintype : Fintype GammaTwoCusp where
+  6487	  elems := {.atInfinity, .zero, .one}
+  6488	  complete x := by cases x <;> simp
+  6489	
+  6490	/-- Explicit integral scaling matrices taking `∞` to the named cusp. -/
+  6491	def gammaTwoCuspScaling : GammaTwoCusp → SL(2, ℤ)
+  6492	  | .atInfinity => 1
+  6493	  | .zero => ModularGroup.S
+  6494	  | .one => ModularGroup.T * ModularGroup.S
+  6495	
+  6496	@[simp]
+  6497	theorem gammaTwoCuspScaling_atInfinity :
+  6498	    gammaTwoCuspScaling .atInfinity = 1 :=
+  6499	  rfl
+  6500	
+  6501	@[simp]
+  6502	theorem gammaTwoCuspScaling_zero :
+  6503	    gammaTwoCuspScaling .zero = ModularGroup.S :=
+  6504	  rfl
+  6505	
+  6506	@[simp]
+  6507	theorem gammaTwoCuspScaling_one :
+  6508	    gammaTwoCuspScaling .one = ModularGroup.T * ModularGroup.S :=
+  6509	  rfl
+  6510	
+  6511	/-- Every cusp of `Gamma(2)` has width two. -/
+  6512	def gammaTwoCuspWidth (_ : GammaTwoCusp) : ℕ :=
+  6513	  2
+  6514	
+  6515	@[simp]
+  6516	theorem gammaTwoCuspWidth_eq_two (κ : GammaTwoCusp) :
+  6517	    gammaTwoCuspWidth κ = 2 :=
+  6518	  rfl
+  6519	
+  6520	/-- The width-two parabolic at the cusp `κ`, with an arbitrary integral
+  6521	power. -/
+  6522	def gammaTwoCuspTranslation (κ : GammaTwoCusp) (n : ℤ) : SL(2, ℤ) :=
+  6523	  gammaTwoCuspScaling κ * ModularGroup.T ^ (2 * n) *
+  6524	    (gammaTwoCuspScaling κ)⁻¹
+  6525	
+  6526	/-- Width-two translations at all three cusps really belong to `Gamma(2)`. -/
+  6527	theorem gammaTwoCuspTranslation_mem (κ : GammaTwoCusp) (n : ℤ) :
+  6528	    gammaTwoCuspTranslation κ n ∈ GammaTwo := by
+  6529	  have hdiv : (2 : ℤ) ∣ 2 * n := ⟨n, rfl⟩
+  6530	  have hT : ModularGroup.T ^ (2 * n) ∈ GammaTwo := by
+  6531	    simpa using
+  6532	      CongruenceSubgroup.ModularGroup_T_pow_mem_Gamma
+  6533	        (2 : ℤ) (2 * n) hdiv
+  6534	  simpa [gammaTwoCuspTranslation, mul_assoc] using
+  6535	    (CongruenceSubgroup.Gamma_normal 2).conj_mem
+  6536	      (ModularGroup.T ^ (2 * n)) hT (gammaTwoCuspScaling κ)
+  6537	
+  6538	/-- The unit translation is not a level-two matrix. -/
+  6539	theorem modularGroup_T_not_mem_gammaTwo :
+  6540	    ModularGroup.T ∉ GammaTwo := by
+  6541	  rw [CongruenceSubgroup.Gamma_mem]
+  6542	  norm_num [ModularGroup.T]
+  6543	
+  6544	/-- Conjugating a unit translation to any named cusp does not put it in
+  6545	`Gamma(2)`. -/
+  6546	theorem gammaTwoCuspUnitTranslation_not_mem (κ : GammaTwoCusp) :
+  6547	    gammaTwoCuspScaling κ * ModularGroup.T *
+  6548	      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+  6549	  intro h
+  6550	  have hback :=
+  6551	    (CongruenceSubgroup.Gamma_normal 2).conj_mem _ h
+  6552	      (gammaTwoCuspScaling κ)⁻¹
+  6553	  have hT : ModularGroup.T ∈ GammaTwo := by
+  6554	    simpa [mul_assoc] using hback
+  6555	  exact modularGroup_T_not_mem_gammaTwo hT
+  6556	
+  6557	/-- Width two is minimal among positive natural translation lengths. -/
+  6558	theorem gammaTwoCuspWidth_minimal
+  6559	    (κ : GammaTwoCusp) (n : ℕ) (hn : 0 < n)
+  6560	    (hnw : n < gammaTwoCuspWidth κ) :
+  6561	    gammaTwoCuspScaling κ * ModularGroup.T ^ n *
+  6562	      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+  6563	  have hn1 : n = 1 := by
+  6564	    simp only [gammaTwoCuspWidth] at hnw
+  6565	    omega
+  6566	  subst n
+  6567	  simpa using gammaTwoCuspUnitTranslation_not_mem κ
+  6568	
+  6569	/-- Local cusp height in the coordinate supplied by the scaling matrix. -/
+  6570	noncomputable def gammaTwoCuspHeight (κ : GammaTwoCusp) (z : ℍ) : ℝ :=
+  6571	  ((gammaTwoCuspScaling κ)⁻¹ • z).im
+  6572	
+  6573	theorem gammaTwoCuspHeight_pos (κ : GammaTwoCusp) (z : ℍ) :
+  6574	    0 < gammaTwoCuspHeight κ z :=
+  6575	  UpperHalfPlane.im_pos _
+  6576	
+  6577	theorem gammaTwoCuspHeight_continuous (κ : GammaTwoCusp) :
+  6578	    Continuous (gammaTwoCuspHeight κ) := by
+  6579	  change Continuous (fun z : ℍ =>
+  6580	    ((((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+  6581	      ((gammaTwoCuspScaling κ)⁻¹)) • z).im))
+  6582	  exact UpperHalfPlane.continuous_im.comp
+  6583	    (continuous_const_smul
+  6584	      ((Matrix.SpecialLinearGroup.map (Int.castRingHom ℝ))
+  6585	        ((gammaTwoCuspScaling κ)⁻¹)))
+  6586	
+  6587	theorem gammaTwoCuspHeight_measurable (κ : GammaTwoCusp) :
+  6588	    Measurable (gammaTwoCuspHeight κ) :=
+  6589	  (gammaTwoCuspHeight_continuous κ).measurable
+  6590	
+  6591	/-- The local height is periodic under the full width-two cusp stabilizer. -/
+  6592	theorem gammaTwoCuspHeight_translation
+  6593	    (κ : GammaTwoCusp) (n : ℤ) (z : ℍ) :
+  6594	    gammaTwoCuspHeight κ (gammaTwoCuspTranslation κ n • z) =
+  6595	      gammaTwoCuspHeight κ z := by
+  6596	  simp only [gammaTwoCuspHeight, gammaTwoCuspTranslation, mul_smul,
+  6597	    inv_smul_smul, ModularGroup.im_T_zpow_smul]
+  6598	
+  6599	/-- Four ideal ends of the standard closed polygon; `one` and `negOne`
+  6600	represent the same quotient cusp. -/
+  6601	inductive GammaTwoCuspEnd where
+  6602	  | atInfinity
+  6603	  | zero
+  6604	  | one
+  6605	  | negOne
+  6606	deriving DecidableEq
+  6607	
+  6608	instance gammaTwoCuspEndFintype : Fintype GammaTwoCuspEnd where
+  6609	  elems := {.atInfinity, .zero, .one, .negOne}
+  6610	  complete x := by cases x <;> simp
+  6611	
+
+===== coe_smul_of_det_pos lemma =====
+MATCH Mathlib/Analysis/Complex/UpperHalfPlane/MoebiusAction.lean:193
+   113	  simp [σ, det_neg]
+   114	
+   115	@[simp]
+   116	lemma σ_sq (g : GL (Fin 2) ℝ) (z : ℂ) : σ g (σ g z) = z := by
+   117	  simp only [σ]
+   118	  split_ifs <;> simp
+   119	
+   120	lemma σ_im_ne_zero {g z} : (σ g z).im ≠ 0 ↔ z.im ≠ 0 := by
+   121	  simp only [σ]
+   122	  split_ifs <;> simp
+   123	
+   124	lemma σ_mul (g g' : GL (Fin 2) ℝ) (z : ℂ) : σ (g * g') z = σ g (σ g' z) := by
+   125	  simp only [σ, map_mul, Units.val_mul]
+   126	  rcases g.det_ne_zero.lt_or_gt with (h | h) <;>
+   127	  rcases g'.det_ne_zero.lt_or_gt with (h' | h')
+   128	  · simp [mul_pos_of_neg_of_neg h h', h.not_gt, h'.not_gt]
+   129	  · simp [(mul_neg_of_neg_of_pos h h').not_gt, h.not_gt, h']
+   130	  · simp [(mul_neg_of_pos_of_neg h h').not_gt, h, h'.not_gt]
+   131	  · simp [mul_pos h h', h, h']
+   132	
+   133	lemma σ_mul_comm (g h : GL (Fin 2) ℝ) (z : ℂ) : σ g (σ h z) = σ h (σ g z) := by
+   134	  simp only [σ]
+   135	  split_ifs <;> simp
+   136	
+   137	@[simp] lemma norm_σ (g : GL (Fin 2) ℝ) (z : ℂ) : ‖σ g z‖ = ‖z‖ := by
+   138	  simp only [σ]
+   139	  split_ifs <;> simp
+   140	
+   141	/-- Fractional linear transformation, also known as the Moebius transformation -/
+   142	def smulAux' (g : GL (Fin 2) ℝ) (z : ℂ) : ℂ := σ g (num g z / denom g z)
+   143	
+   144	lemma smulAux'_im (g : GL (Fin 2) ℝ) (z : ℂ) :
+   145	    (smulAux' g z).im = |g.det.val| * z.im / Complex.normSq (denom g z) := by
+   146	  simp only [smulAux', σ]
+   147	  split_ifs with h <;>
+   148	  [rw [abs_of_pos h]; rw [abs_of_nonpos (not_lt.mp h)]] <;>
+   149	  simpa only [Complex.conjCAE_apply, Complex.star_def, Complex.conj_im,
+   150	    neg_mul, neg_div, neg_inj] using! moebius_im g z
+   151	
+   152	/-- Fractional linear transformation, also known as the Moebius transformation -/
+   153	def smulAux (g : GL (Fin 2) ℝ) (z : ℍ) : ℍ :=
+   154	  mk (smulAux' g z) <| by
+   155	    rw [smulAux'_im]
+   156	    exact div_pos (mul_pos (abs_pos.mpr g.det.ne_zero) z.im_pos) (normSq_denom_pos _ z.im_ne_zero)
+   157	
+   158	lemma denom_cocycle' (g h : GL (Fin 2) ℝ) (z : ℍ) :
+   159	    denom (g * h) z = σ h (denom g (smulAux h z)) * denom h z := by
+   160	  simpa [smulAux, smulAux', denom, σ_sq] using denom_cocycle g h z.im_ne_zero
+   161	
+   162	theorem mul_smul' (g h : GL (Fin 2) ℝ) (z : ℍ) :
+   163	    smulAux (g * h) z = smulAux g (smulAux h z) := by
+   164	  ext : 1
+   165	  simp only [smulAux, coe_mk, smulAux', map_div₀, σ_num, σ_denom, σ_mul]
+   166	  generalize hu : σ g (σ h z) = u
+   167	  have hu : u.im ≠ 0 := by simpa only [← hu, σ_im_ne_zero] using! z.im_ne_zero
+   168	  have hu' : (num h u / denom h u).im ≠ 0 := by
+   169	    rw [moebius_im]
+   170	    exact div_ne_zero (mul_ne_zero h.det_ne_zero hu) (normSq_denom_ne_zero _ hu)
+   171	  rw [div_eq_div_iff (denom_ne_zero_of_im _ hu) (denom_ne_zero_of_im _ hu'),
+   172	    denom, mul_div, div_add' _ _ _ (denom_ne_zero_of_im _ hu), mul_div]
+   173	  conv_rhs => rw [num]
+   174	  rw [mul_div, div_add' _ _ _ (denom_ne_zero_of_im _ hu), div_mul_eq_mul_div]
+   175	  congr 1
+   176	  simp only [num, denom, Units.val_mul, mul_apply, Fin.sum_univ_succ,
+   177	    Finset.univ_unique, Fin.default_eq_zero, Finset.sum_singleton, Fin.succ_zero_eq_one,
+   178	    Complex.ofReal_add, Complex.ofReal_mul]
+   179	  ring
+   180	
+   181	/-- Action of `GL (Fin 2) ℝ` on the upper half-plane, with `GL(2, ℝ)⁺` acting by Moebius
+   182	transformations in the usual way, extended to all of `GL (Fin 2) ℝ` using complex conjugation. -/
+   183	instance glAction : MulAction (GL (Fin 2) ℝ) ℍ where
+   184	  smul := smulAux
+   185	  one_smul z := by
+   186	    change smulAux 1 z = z
+   187	    simp [smulAux, smulAux', num, denom, σ]
+   188	  mul_smul := mul_smul'
+   189	
+   190	lemma coe_smul (g : GL (Fin 2) ℝ) (z : ℍ) :
+   191	    ↑(g • z) = σ g (num g z / denom g z) := rfl
+   192	
+   193	lemma coe_smul_of_det_pos {g : GL (Fin 2) ℝ} (hg : 0 < g.det.val) (z : ℍ) :
+   194	    ↑(g • z) = num g z / denom g z := by
+   195	  change smulAux' g z = _
+   196	  rw [smulAux', σ, if_pos hg, ContinuousAlgEquiv.refl_apply, num, denom]
+   197	
+   198	lemma denom_cocycle_σ (g h : GL (Fin 2) ℝ) (z : ℍ) :
+   199	    denom (g * h) z = σ h (denom g ↑(h • z)) * denom h z :=
+   200	  denom_cocycle' g h z
+   201	
+   202	lemma glPos_smul_def {g : GL (Fin 2) ℝ} (hg : 0 < g.det.val) (z : ℍ) :
+   203	    g • z = ⟨num g z / denom g z, coe_smul_of_det_pos hg z ▸ (g • z).im_pos⟩ := by
+   204	  ext; simp [coe_smul_of_det_pos hg]
+   205	
+   206	section GLAction
+   207	variable (g : GL (Fin 2) ℝ) (z : ℍ)
+   208	
+   209	set_option backward.isDefEq.respectTransparency false in
+   210	theorem re_smul : (g • z).re = (num g z / denom g z).re := by
+   211	  change (smulAux' g z).re = _
+   212	  simp +contextual [smulAux', σ, DFunLike.ite_apply, apply_ite, Complex.div_re]
+   213	
+   214	theorem im_smul : (g • z).im = |(num g z / denom g z).im| := by
+   215	  change (smulAux' g z).im = _
+   216	  simp only [smulAux', σ, DFunLike.ite_apply, ContinuousAlgEquiv.refl_apply, apply_ite, moebius_im,
+   217	    Complex.conjCAE_apply, Complex.conj_im, ← neg_div, ← neg_mul, abs_div, abs_mul,
+   218	    abs_of_pos (show 0 < (z : ℂ).im from z.coe_im ▸ z.im_pos),
+   219	    abs_of_nonneg <| Complex.normSq_nonneg _]
+   220	  split_ifs with h <;> [rw [abs_of_pos h]; rw [abs_of_nonpos (not_lt.mp h)]]
+   221	
+   222	lemma im_smul_eq_div_normSq : (g • z).im = |g.det.val| * z.im / Complex.normSq (denom g z) :=
+   223	  smulAux'_im g z
+   224	
+   225	theorem c_mul_im_sq_le_normSq_denom : (g 1 0 * z.im) ^ 2 ≤ Complex.normSq (denom g z) := by
+   226	  set c := g 1 0
+   227	  set d := g 1 1
+   228	  calc
+   229	    (c * z.im) ^ 2 ≤ (c * z.im) ^ 2 + (c * z.re + d) ^ 2 := by nlinarith
+   230	    _ = Complex.normSq (denom g z) := by simp [denom, Complex.normSq]; ring
+   231	
+   232	@[simp]
+   233	theorem neg_smul : -g • z = g • z := by
+   234	  ext1
+   235	  simp [coe_smul]
+   236	
+   237	@[simp]
+   238	lemma num_one : num 1 z = z := by simp [num]
+   239	
+   240	@[simp]
+   241	lemma denom_one : denom 1 z = 1 := by
+   242	  simp [denom]
+   243	
+   244	@[simp]
+   245	theorem num_scalar (u : ℝˣ) (z : ℍ) : num (.scalar (Fin 2) u) z = u * z := by
+   246	  simp [num]
+   247	
+   248	@[simp]
+   249	theorem denom_scalar (u : ℝˣ) (z : ℍ) : denom (.scalar (Fin 2) u) z = u := by
+   250	  simp [denom]
+   251	
+   252	@[simp]
+   253	theorem glScalar_smul (u : ℝˣ) (z : ℍ) :
+   254	    GeneralLinearGroup.scalar (Fin 2) u • z = z := by
+   255	  rw [glPos_smul_def]
+   256	  · simp
+   257	  · simp [sq_pos_iff]
+   258	
+   259	instance : MulAction.IsPretransitive (GL (Fin 2) ℝ) ℍ where
+   260	  exists_smul_eq z w := by
+   261	    set m : Matrix (Fin 2) (Fin 2) ℝ := !![w.im, z.im * w.re - w.im * z.re; 0, z.im]
+   262	    refine ⟨.mkOfDetNeZero m <| by simp [m, im_ne_zero], ?_⟩
+   263	    ext
+   264	    simp [coe_smul_of_det_pos, im_pos, num, denom, m, Complex.ext_iff, im_ne_zero]
+   265	
+   266	end GLAction
+   267	
+   268	section PGLAction
+   269	
+   270	instance : MulAction PGL(2, ℝ) ℍ :=
+   271	  Matrix.ProjGenLinGroup.mulActionOfGL glScalar_smul
+   272	
+   273	@[simp]
+   274	theorem pglMk_smul (g : GL (Fin 2) ℝ) (z : ℍ) :
+   275	    ProjGenLinGroup.mk g • z = g • z :=
+   276	  ProjGenLinGroup.mk_smul ..
+   277	
+   278	instance : MulAction.IsPretransitive PGL(2, ℝ) ℍ :=
+   279	  .of_smul_eq .mk <| pglMk_smul _ _
+   280	
+   281	end PGLAction
+   282	
+   283	section SLAction
+   284	
+   285	noncomputable instance SLAction {R : Type*} [CommRing R] [Algebra R ℝ] : MulAction SL(2, R) ℍ :=
+   286	  MulAction.compHom ℍ <| SpecialLinearGroup.mapGL ℝ
+   287	
+   288	theorem coe_specialLinearGroup_apply {R : Type*} [CommRing R] [Algebra R ℝ] (g : SL(2, R)) (z : ℍ) :
+   289	    ↑(g • z) =
+   290	      (((algebraMap R ℝ (g 0 0) : ℂ) * z + (algebraMap R ℝ (g 0 1) : ℂ)) /
+   291	      ((algebraMap R ℝ (g 1 0) : ℂ) * z + (algebraMap R ℝ (g 1 1) : ℂ))) := by
+   292	  rw [MulAction.compHom_smul_def, coe_smul_of_det_pos (by simp)]
+   293	  rfl
+   294	
+   295	theorem specialLinearGroup_apply {R : Type*} [CommRing R] [Algebra R ℝ] (g : SL(2, R)) (z : ℍ) :
+   296	    g • z = mk
+   297	      (((algebraMap R ℝ (g 0 0) : ℂ) * z + (algebraMap R ℝ (g 0 1) : ℂ)) /
+   298	      ((algebraMap R ℝ (g 1 0) : ℂ) * z + (algebraMap R ℝ (g 1 1) : ℂ)))
+   299	      (coe_specialLinearGroup_apply g z ▸ (g • z).im_pos) := by
+   300	  ext; simp [coe_specialLinearGroup_apply]
+   301	
+   302	/-! these next few lemmas are *not* flagged `@simp` because of the constructors on the RHS;
+   303	instead we use the versions with coercions to `ℂ` as simp lemmas instead. -/
+   304	
+   305	theorem modular_S_smul (z : ℍ) :
+   306	    ModularGroup.S • z = mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos := by
+   307	  rw [specialLinearGroup_apply]
+   308	  simp [ModularGroup.S, neg_div, inv_neg]
+   309	
+   310	theorem modular_T_zpow_smul (z : ℍ) (n : ℤ) : ModularGroup.T ^ n • z = (n : ℝ) +ᵥ z := by
+   311	  rw [UpperHalfPlane.ext_iff, coe_vadd, add_comm, coe_specialLinearGroup_apply]
+   312	  simp [ModularGroup.coe_T_zpow,
+   313	    of_apply, cons_val_zero, Complex.ofReal_one, one_mul, cons_val_one,
+
+===== coe_specialLinearGroup_apply theorem =====
+MATCH Mathlib/Analysis/Complex/UpperHalfPlane/MoebiusAction.lean:288
+   208	
+   209	set_option backward.isDefEq.respectTransparency false in
+   210	theorem re_smul : (g • z).re = (num g z / denom g z).re := by
+   211	  change (smulAux' g z).re = _
+   212	  simp +contextual [smulAux', σ, DFunLike.ite_apply, apply_ite, Complex.div_re]
+   213	
+   214	theorem im_smul : (g • z).im = |(num g z / denom g z).im| := by
+   215	  change (smulAux' g z).im = _
+   216	  simp only [smulAux', σ, DFunLike.ite_apply, ContinuousAlgEquiv.refl_apply, apply_ite, moebius_im,
+   217	    Complex.conjCAE_apply, Complex.conj_im, ← neg_div, ← neg_mul, abs_div, abs_mul,
+   218	    abs_of_pos (show 0 < (z : ℂ).im from z.coe_im ▸ z.im_pos),
+   219	    abs_of_nonneg <| Complex.normSq_nonneg _]
+   220	  split_ifs with h <;> [rw [abs_of_pos h]; rw [abs_of_nonpos (not_lt.mp h)]]
+   221	
+   222	lemma im_smul_eq_div_normSq : (g • z).im = |g.det.val| * z.im / Complex.normSq (denom g z) :=
+   223	  smulAux'_im g z
+   224	
+   225	theorem c_mul_im_sq_le_normSq_denom : (g 1 0 * z.im) ^ 2 ≤ Complex.normSq (denom g z) := by
+   226	  set c := g 1 0
+   227	  set d := g 1 1
+   228	  calc
+   229	    (c * z.im) ^ 2 ≤ (c * z.im) ^ 2 + (c * z.re + d) ^ 2 := by nlinarith
+   230	    _ = Complex.normSq (denom g z) := by simp [denom, Complex.normSq]; ring
+   231	
+   232	@[simp]
+   233	theorem neg_smul : -g • z = g • z := by
+   234	  ext1
+   235	  simp [coe_smul]
+   236	
+   237	@[simp]
+   238	lemma num_one : num 1 z = z := by simp [num]
+   239	
+   240	@[simp]
+   241	lemma denom_one : denom 1 z = 1 := by
+   242	  simp [denom]
+   243	
+   244	@[simp]
+   245	theorem num_scalar (u : ℝˣ) (z : ℍ) : num (.scalar (Fin 2) u) z = u * z := by
+   246	  simp [num]
+   247	
+   248	@[simp]
+   249	theorem denom_scalar (u : ℝˣ) (z : ℍ) : denom (.scalar (Fin 2) u) z = u := by
+   250	  simp [denom]
+   251	
+   252	@[simp]
+   253	theorem glScalar_smul (u : ℝˣ) (z : ℍ) :
+   254	    GeneralLinearGroup.scalar (Fin 2) u • z = z := by
+   255	  rw [glPos_smul_def]
+   256	  · simp
+   257	  · simp [sq_pos_iff]
+   258	
+   259	instance : MulAction.IsPretransitive (GL (Fin 2) ℝ) ℍ where
+   260	  exists_smul_eq z w := by
+   261	    set m : Matrix (Fin 2) (Fin 2) ℝ := !![w.im, z.im * w.re - w.im * z.re; 0, z.im]
+   262	    refine ⟨.mkOfDetNeZero m <| by simp [m, im_ne_zero], ?_⟩
+   263	    ext
+   264	    simp [coe_smul_of_det_pos, im_pos, num, denom, m, Complex.ext_iff, im_ne_zero]
+   265	
+   266	end GLAction
+   267	
+   268	section PGLAction
+   269	
+   270	instance : MulAction PGL(2, ℝ) ℍ :=
+   271	  Matrix.ProjGenLinGroup.mulActionOfGL glScalar_smul
+   272	
+   273	@[simp]
+   274	theorem pglMk_smul (g : GL (Fin 2) ℝ) (z : ℍ) :
+   275	    ProjGenLinGroup.mk g • z = g • z :=
+   276	  ProjGenLinGroup.mk_smul ..
+   277	
+   278	instance : MulAction.IsPretransitive PGL(2, ℝ) ℍ :=
+   279	  .of_smul_eq .mk <| pglMk_smul _ _
+   280	
+   281	end PGLAction
+   282	
+   283	section SLAction
+   284	
+   285	noncomputable instance SLAction {R : Type*} [CommRing R] [Algebra R ℝ] : MulAction SL(2, R) ℍ :=
+   286	  MulAction.compHom ℍ <| SpecialLinearGroup.mapGL ℝ
+   287	
+   288	theorem coe_specialLinearGroup_apply {R : Type*} [CommRing R] [Algebra R ℝ] (g : SL(2, R)) (z : ℍ) :
+   289	    ↑(g • z) =
+   290	      (((algebraMap R ℝ (g 0 0) : ℂ) * z + (algebraMap R ℝ (g 0 1) : ℂ)) /
+   291	      ((algebraMap R ℝ (g 1 0) : ℂ) * z + (algebraMap R ℝ (g 1 1) : ℂ))) := by
+   292	  rw [MulAction.compHom_smul_def, coe_smul_of_det_pos (by simp)]
+   293	  rfl
+   294	
+   295	theorem specialLinearGroup_apply {R : Type*} [CommRing R] [Algebra R ℝ] (g : SL(2, R)) (z : ℍ) :
+   296	    g • z = mk
+   297	      (((algebraMap R ℝ (g 0 0) : ℂ) * z + (algebraMap R ℝ (g 0 1) : ℂ)) /
+   298	      ((algebraMap R ℝ (g 1 0) : ℂ) * z + (algebraMap R ℝ (g 1 1) : ℂ)))
+   299	      (coe_specialLinearGroup_apply g z ▸ (g • z).im_pos) := by
+   300	  ext; simp [coe_specialLinearGroup_apply]
+   301	
+   302	/-! these next few lemmas are *not* flagged `@simp` because of the constructors on the RHS;
+   303	instead we use the versions with coercions to `ℂ` as simp lemmas instead. -/
+   304	
+   305	theorem modular_S_smul (z : ℍ) :
+   306	    ModularGroup.S • z = mk (-z : ℂ)⁻¹ z.im_inv_neg_coe_pos := by
+   307	  rw [specialLinearGroup_apply]
+   308	  simp [ModularGroup.S, neg_div, inv_neg]
+   309	
+   310	theorem modular_T_zpow_smul (z : ℍ) (n : ℤ) : ModularGroup.T ^ n • z = (n : ℝ) +ᵥ z := by
+   311	  rw [UpperHalfPlane.ext_iff, coe_vadd, add_comm, coe_specialLinearGroup_apply]
+   312	  simp [ModularGroup.coe_T_zpow,
+   313	    of_apply, cons_val_zero, Complex.ofReal_one, one_mul, cons_val_one,
+   314	    zero_mul, zero_add, div_one]
+   315	
+   316	theorem modular_T_smul (z : ℍ) : ModularGroup.T • z = (1 : ℝ) +ᵥ z := by
+   317	  simpa only [zpow_one, Int.cast_one] using modular_T_zpow_smul z 1
+   318	
+   319	set_option backward.isDefEq.respectTransparency false in
+   320	theorem exists_SL2_smul_eq_of_apply_zero_one_eq_zero (g : SL(2, ℝ)) (hc : g 1 0 = 0) :
+   321	    ∃ (u : { x : ℝ // 0 < x }) (v : ℝ), (g • · : ℍ → ℍ) = (v +ᵥ ·) ∘ (u • ·) := by
+   322	  obtain ⟨a, b, ha, rfl⟩ := g.fin_two_exists_eq_mk_of_apply_zero_one_eq_zero hc
+   323	  refine ⟨⟨_, mul_self_pos.mpr ha⟩, b * a, ?_⟩
+   324	  ext1 ⟨z, hz⟩; ext1
+   325	  suffices ↑a * z * a + b * a = b * a + a * a * z by simpa [specialLinearGroup_apply, add_mul]
+   326	  ring
+   327	
+   328	set_option backward.isDefEq.respectTransparency false in
+   329	theorem exists_SL2_smul_eq_of_apply_zero_one_ne_zero (g : SL(2, ℝ)) (hc : g 1 0 ≠ 0) :
+   330	    ∃ (u : { x : ℝ // 0 < x }) (v w : ℝ),
+   331	      (g • · : ℍ → ℍ) =
+   332	        (w +ᵥ ·) ∘ (ModularGroup.S • · : ℍ → ℍ) ∘ (v +ᵥ · : ℍ → ℍ) ∘ (u • · : ℍ → ℍ) := by
+   333	  have h_denom (z : ℍ) := denom_ne_zero g z
+   334	  induction g using Matrix.SpecialLinearGroup.fin_two_induction with | _ a b c d h => ?_
+   335	  replace hc : c ≠ 0 := by simpa using! hc
+   336	  refine ⟨⟨_, mul_self_pos.mpr hc⟩, c * d, a / c, ?_⟩
+   337	  ext1 ⟨z, hz⟩; ext1
+   338	  suffices (↑a * z + b) / (↑c * z + d) = a / c - (c * d + ↑c * ↑c * z)⁻¹ by
+   339	    simpa [modular_S_smul, coe_specialLinearGroup_apply]
+   340	  replace hc : (c : ℂ) ≠ 0 := by norm_cast
+   341	  replace h_denom : ↑c * z + d ≠ 0 := by simpa using! h_denom ⟨z, hz⟩
+   342	  replace h : (a * d - b * c : ℂ) = (1 : ℂ) := by norm_cast
+   343	  grind
+   344	
+   345	end SLAction
+   346	
+   347	section toSL2R
+   348	
+   349	/-- Map from `ℍ` to `SL(2, ℝ)`, giving a continuous section of the map `g ↦ g • I`. -/
+   350	noncomputable def toSL2R (z : ℍ) : SL(2, ℝ) :=
+   351	  ⟨!![√z.im, z.re / √z.im; 0, 1 / √z.im], by
+   352	    simp [mul_inv_cancel₀ (Real.sqrt_ne_zero'.mpr z.im_pos)]⟩
+   353	
+   354	lemma toSL2R_apply (z : ℍ) : z.toSL2R =
+   355	  ⟨!![√z.im, z.re / √z.im; 0, 1 / √z.im], by
+   356	    simp [mul_inv_cancel₀ (Real.sqrt_ne_zero'.mpr z.im_pos)]⟩ := (rfl)
+   357	
+   358	@[simp] lemma coe_toSL2R (z : ℍ) : z.toSL2R = !![√z.im, z.re / √z.im; 0, 1 / √z.im] := (rfl)
+   359	
+   360	@[simp] lemma toSL2R_smul_I (z : ℍ) : z.toSL2R • I = z := by
+   361	  have : √z.im ≠ (0 : ℂ) := by simpa [Real.sqrt_ne_zero'] using z.im_pos
+   362	  ext
+   363	  suffices z.re / √z.im + √z.im * Complex.I = z * (↑√z.im)⁻¹ by
+   364	    rw [coe_specialLinearGroup_apply, div_eq_iff (mod_cast denom_ne_zero z.toSL2R I)]
+   365	    simpa [add_comm]
+   366	  rw [div_add' (hc := this), mul_right_comm, ← Complex.ofReal_mul, ← Real.sqrt_mul z.im_pos.le,
+   367	    Real.sqrt_mul_self z.im_pos.le, re_add_im, div_eq_mul_inv]
+   368	
+   369	/-- `SL(2, ℝ)` acts transitively on the upper half-plane. -/
+   370	instance isPretransitiveSL2R : MulAction.IsPretransitive SL(2, ℝ) ℍ :=
+   371	  .of_orbit fun z ↦ ⟨_, toSL2R_smul_I z⟩
+   372	
+   373	/-- `GL(2, ℝ)` acts transitively on the upper half-plane. -/
+   374	instance isPretransitiveGL2R : MulAction.IsPretransitive (GL (Fin 2) ℝ) ℍ :=
+   375	  .of_smul_eq ((↑) : SL(2, ℝ) → _) fun {g z} ↦ (MulAction.compHom_smul_def _ g z).symm
+   376	
+   377	end toSL2R
+   378	
+   379	section J
+   380	
+   381	/-- The matrix `[-1, 0; 0, 1]`, which defines an anti-holomorphic involution of `ℍ` via
+   382	`τ ↦ -conj τ`. -/
+   383	def J : GL (Fin 2) ℝ := .mkOfDetNeZero !![-1, 0; 0, 1] (by simp)
+   384	
+   385	lemma coe_J_smul (τ : ℍ) : (↑(J • τ) : ℂ) = -conj ↑τ := by
+   386	  simp [UpperHalfPlane.coe_smul, σ, J, show ¬(1 : ℝ) < 0 by simp, num, denom]
+   387	
+   388	@[simp] lemma val_J : J.val = !![-1, 0; 0, 1] := rfl
+   389	
+   390	@[simp] lemma J_sq : J ^ 2 = 1 := by ext; simp [J, sq, Matrix.one_fin_two]
+   391	
+   392	@[simp] lemma det_J : J.det = -1 := by ext; simp [J]
+   393	
+   394	@[simp] lemma sigma_J : σ J = Complex.conjCAE := by simp [σ, J]
+   395	
+   396	@[simp] lemma denom_J (τ : ℂ) : denom J τ = 1 := by simp [J, denom]
+   397	
+   398	@[simp]
+   399	lemma denom_J_mul (g : GL (Fin 2) ℝ) (τ : ℂ) : denom (J * g) τ = denom g τ := by
+   400	  simp [denom, vecMul, vecHead, vecTail]
+   401	
+   402	end J
+   403	
+   404	end UpperHalfPlane
+   405	
+   406	namespace ModularGroup -- results specific to `SL(2, ℤ)`
+   407	-- TODO: Move these elsewhere, maybe somewhere in the algebra or number theory hierarchies?
+   408	
+
+===== ALL upperLift HIT LINES =====
+PrimalitySheafVerification/QYM.lean:41199:      (upperLift ((u : SmoothQuotientCompactFunction) : ℍ → ℂ))
+PrimalitySheafVerification/QYM.lean:41206:    upperLift, Function.comp_def] using hcomp
+PrimalitySheafVerification/QYM.lean:44356:  change fderiv ℝ (upperLift f) (z : ℂ) (a • ξ) =
+PrimalitySheafVerification/QYM.lean:44357:    a • fderiv ℝ (upperLift f) (z : ℂ) ξ
+PrimalitySheafVerification/QYM.lean:44358:  exact map_smul (fderiv ℝ (upperLift f) (z : ℂ)) a ξ
+PrimalitySheafVerification/QYM.lean:44365:  exact map_neg (fderiv ℝ (upperLift f) (z : ℂ)) ξ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10963:noncomputable def upperLift (u : ℍ → ℂ) : ℂ → ℂ :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10967:theorem upperLift_apply (u : ℍ → ℂ) (z : ℍ) :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10968:    upperLift u (z : ℂ) = u z := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10969:  simp [upperLift, Function.comp_def]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10973:  ContDiffOn ℝ ∞ (upperLift u) UpperHalfPlane.upperHalfPlaneSet
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10976:  simpa [RealSmooth, upperLift, Function.comp_def] using
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10985:  simpa [upperLift, Function.comp_def] using hu.add hv
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10990:  simpa [upperLift, Function.comp_def] using hu.neg
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:10995:  simpa [upperLift, Function.comp_def] using hu.sub hv
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11001:  simpa [upperLift, Function.comp_def] using hu.const_smul c
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11008:  have hAt : ContinuousAt (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11012:  simpa [upperLift, Function.comp_def] using hcomp
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11866:theorem RealSmooth.contDiffAt_upperLift {u : ℍ → ℂ} (hu : RealSmooth u)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11867:    (z : ℍ) : ContDiffAt ℝ ∞ (upperLift u) (z : ℂ) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11872:theorem RealSmooth.contDiffAt_two_upperLift {u : ℍ → ℂ}
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11874:    ContDiffAt ℝ 2 (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11875:  (RealSmooth.contDiffAt_upperLift hu z).of_le
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11880:  fderiv ℝ (upperLift f) (z : ℂ) ξ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11884:  iteratedFDeriv ℝ 2 (upperLift f) (z : ℂ) ![ξ, η]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11889:  have hu' : DifferentiableAt ℝ (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11890:    (RealSmooth.contDiffAt_upperLift hu z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11891:  have hv' : DifferentiableAt ℝ (upperLift v) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11892:    (RealSmooth.contDiffAt_upperLift hv z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11894:  change (fderiv ℝ (upperLift u + upperLift v) (z : ℂ)) ξ = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11901:  have hu' : DifferentiableAt ℝ (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11902:    (RealSmooth.contDiffAt_upperLift hu z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11904:  change (fderiv ℝ (c • upperLift u) (z : ℂ)) ξ = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11911:  have hu' := RealSmooth.contDiffAt_two_upperLift hu z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11912:  have hv' := RealSmooth.contDiffAt_two_upperLift hv z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11914:  change iteratedFDeriv ℝ 2 (upperLift u + upperLift v) (z : ℂ) ![ξ, η] = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11921:  have hu' := RealSmooth.contDiffAt_two_upperLift hu z
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11923:  change iteratedFDeriv ℝ 2 (c • upperLift u) (z : ℂ) ![ξ, η] = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11935:      ContDiffOn ℝ ∞ (fderiv ℝ (upperLift f))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11940:        (fun w : ℂ => fderiv ℝ (upperLift f) w η)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11946:    fderiv ℝ (upperLift f) w η
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11954:  simpa [upperLift, Function.comp_def] using hu.mul hv
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11960:  simpa [upperLift, Function.comp_def, Complex.conjCLE_apply] using
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11976:  simpa [upperLift, Function.comp_def] using hu.pow n
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11985:      upperLift (fun w : ℍ => d1 f w η) =ᶠ[nhds (z : ℂ)]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11986:        (fun w : ℂ => fderiv ℝ (upperLift f) w η) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11990:      fderiv ℝ (upperLift f) w η
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11994:    (fderiv ℝ (upperLift (fun w : ℍ => d1 f w η)) (z : ℂ)) ξ =
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:11999:      DifferentiableAt ℝ (fderiv ℝ (upperLift f)) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12000:    ((RealSmooth.contDiffAt_two_upperLift hf z).fderiv_right
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12014:  have hu' : DifferentiableAt ℝ (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12015:    (RealSmooth.contDiffAt_upperLift hu z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12016:  have hv' : DifferentiableAt ℝ (upperLift v) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12017:    (RealSmooth.contDiffAt_upperLift hv z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12019:  change (fderiv ℝ (upperLift u * upperLift v) (z : ℂ)) ξ = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12022:    ContinuousLinearMap.smul_apply, upperLift_apply, smul_eq_mul]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12030:  have hu' : DifferentiableAt ℝ (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12031:    (RealSmooth.contDiffAt_upperLift hu z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12032:  have hz' : upperLift u (z : ℂ) ≠ 0 := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12041:    simpa [d1, upperLift, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12056:  have hu' : DifferentiableAt ℝ (upperLift u) (z : ℂ) :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12057:    (RealSmooth.contDiffAt_upperLift hu z).differentiableAt (by simp)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12060:  simpa [d1, upperLift, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12181:  exact ((RealSmooth.contDiffAt_upperLift hu z).isSymmSndFDerivAt
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12376:/-- On the open upper half-plane, the arbitrary total extension `upperLift`
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12378:theorem upperLift_heightC_eqOn :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12379:    Set.EqOn (upperLift heightC) heightCoordinateCLM
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12382:  simp [upperLift, heightC, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12390:    upperLift_heightC_eqOn
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12397:      upperLift heightC =ᶠ[nhds (z : ℂ)] heightCoordinateCLM := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12400:    exact upperLift_heightC_eqOn hw
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12818:theorem upperLift_eventuallyEq_zero_of_not_mem_tsupport
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12820:    upperLift f =ᶠ[nhds (z : ℂ)] (0 : ℂ → ℂ) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12824:    (fun w : ℍ => upperLift f (w : ℂ)) =ᶠ[nhds z]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12827:  simpa only [upperLift_apply, Pi.zero_apply] using hw
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:12833:  rw [(upperLift_eventuallyEq_zero_of_not_mem_tsupport hz).fderiv_eq]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13434:      simp [upperLift, etaSqrtFactor, g, UpperHalfPlane.denom, hc,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13456:      simp [upperLift, etaSqrtFactor, g, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13487:  simpa [upperLift, Function.comp_def] using
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13498:  unfold d1 inverseEtaPaperOrbitPhaseFunction upperLift
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13631:    rw [upperLift, Function.comp_apply,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13663:    simp [upperLift, inverseEtaPaperOrbitDenom, g,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13684:      upperLift (fun w ↦ inverseEtaPaperOrbitDenom γ w ^ m) =ᶠ[nhds (z : ℂ)]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:13688:    simp [upperLift, inverseEtaPaperOrbitDenom, g, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14044:  have hOuter : DifferentiableAt ℝ (upperLift f) (G (z : ℂ)) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14045:    have hSmooth := RealSmooth.contDiffAt_upperLift hf
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14052:      upperLift (fun w ↦ f
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14054:          nhds (z : ℂ)] upperLift f ∘ G := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14057:    simp [upperLift, Function.comp_def, G, g,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14093:    (fderiv ℝ (upperLift f)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:14123:    (fderiv ℝ (upperLift f)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15456:`upperLift f` across the real axis is asserted or needed. -/
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15459:  let F : ℂ → ℂ := fun w => upperLift f w * v w
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15481:          tsupport (fun w => upperLift f w * v w) ⊆
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15487:    localizeLeft f hf v w = upperLift f w * v w :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15498:  change (fderiv ℝ (upperLift f * (v : ℂ → ℂ)) (z : ℂ)) ξ = _
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15500:    ((RealSmooth.contDiffAt_upperLift hf z).differentiableAt (by simp))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15504:    directionalDerivative_apply, upperLift_apply, d1]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:15549:    simpa [z, upperLift, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16011:theorem upperLift_restrictToUpper_eqOn (u : Core) :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16012:    Set.EqOn (upperLift (restrictToUpper u)) (u : ℂ → ℂ)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16015:  simp [upperLift, restrictToUpper, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16024:    (upperLift_restrictToUpper_eqOn u)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16026:theorem upperLift_restrictToUpper_eventuallyEq
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16028:    upperLift (restrictToUpper u) =ᶠ[nhds (z : ℂ)] (u : ℂ → ℂ) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16031:  exact upperLift_restrictToUpper_eqOn u hw
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16039:  rw [(upperLift_restrictToUpper_eventuallyEq u z).fderiv_eq]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16048:  rw [(upperLift_restrictToUpper_eventuallyEq u z).fderiv_eq]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16230:  simp [upperLift, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16239:      upperLift (fun w : ℍ => ((w.im ^ p : ℝ) : ℂ)) =ᶠ[nhds (z : ℂ)]
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:16243:    simp [upperLift, Function.comp_def,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20198:theorem discriminant_upperLift_realContDiffOn :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20221:  unfold RealSmooth upperLift
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20222:  exact discriminant_upperLift_realContDiffOn
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20249:theorem upstairsPotential_upperLift_realContDiffOn :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20257:    simpa only [upstairsPotential, norm_pos_iff, upperLift,
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20259:  simpa only [upperLift, Function.comp_def, upstairsPotential] using hNorm
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20280:  unfold RealSmooth upperLift upstairsCoreCutoff
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20285:    upstairsPotential_upperLift_realContDiffOn.sub contDiffOn_const
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:20405:  unfold RealSmooth upperLift
+
+===== ALL gammaTwoCuspScaling HIT LINES =====
+PrimalitySheafVerification/QYM.lean:33002:abbrev cuspScaling : Cusp → SL(2, ℤ) := gammaTwoCuspScaling
+PrimalitySheafVerification/QYM.lean:33025:  gammaTwoCuspScaling_atInfinity
+PrimalitySheafVerification/QYM.lean:33030:  gammaTwoCuspScaling_zero
+PrimalitySheafVerification/QYM.lean:33035:  gammaTwoCuspScaling_one
+PrimalitySheafVerification/QYM.lean:34962:  gammaTwoCuspScaling kappa •
+PrimalitySheafVerification/QYM.lean:34987:  (continuous_const_smul (gammaTwoCuspScaling kappa)).comp
+PrimalitySheafVerification/QYM.lean:34996:    (fun z : ℍ => (gammaTwoCuspScaling kappa)⁻¹ • z) hxy
+PrimalitySheafVerification/QYM.lean:41175:  let sigma : SL(2, ℤ) := gammaTwoCuspScaling kappa
+PrimalitySheafVerification/QYM.lean:41183:        ((gammaTwoCuspScaling kappa : SL(2, ℤ)) : GL (Fin 2) ℝ)
+PrimalitySheafVerification/QYM.lean:42104:  let sigma : SL(2, ℤ) := G.gammaTwoCuspScaling kappa
+PrimalitySheafVerification/QYM.lean:42112:        ((G.gammaTwoCuspScaling kappa : SL(2, ℤ)) : GL (Fin 2) ℝ)
+PrimalitySheafVerification/QYM.lean:42175:  (((G.gammaTwoCuspScaling kappa)⁻¹ •
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6491:def gammaTwoCuspScaling : GammaTwoCusp → SL(2, ℤ)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6497:theorem gammaTwoCuspScaling_atInfinity :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6498:    gammaTwoCuspScaling .atInfinity = 1 :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6502:theorem gammaTwoCuspScaling_zero :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6503:    gammaTwoCuspScaling .zero = ModularGroup.S :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6507:theorem gammaTwoCuspScaling_one :
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6508:    gammaTwoCuspScaling .one = ModularGroup.T * ModularGroup.S :=
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6523:  gammaTwoCuspScaling κ * ModularGroup.T ^ (2 * n) *
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6524:    (gammaTwoCuspScaling κ)⁻¹
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6536:      (ModularGroup.T ^ (2 * n)) hT (gammaTwoCuspScaling κ)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6547:    gammaTwoCuspScaling κ * ModularGroup.T *
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6548:      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6552:      (gammaTwoCuspScaling κ)⁻¹
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6561:    gammaTwoCuspScaling κ * ModularGroup.T ^ n *
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6562:      (gammaTwoCuspScaling κ)⁻¹ ∉ GammaTwo := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6571:  ((gammaTwoCuspScaling κ)⁻¹ • z).im
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6581:      ((gammaTwoCuspScaling κ)⁻¹)) • z).im))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:6585:        ((gammaTwoCuspScaling κ)⁻¹)))
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:9054:      gammaTwoCuspScaling κ • {z : ℍ | z.im = Y} := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:47425:  (((gammaTwoCuspScaling κ)⁻¹ • z : ℍ) : ℂ)
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:47446:  (gammaTwoCuspScaling lam)⁻¹ * gammaTwoCuspScaling κ
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:47454:        ((gammaTwoCuspScaling κ)⁻¹ • z) : ℍ) : ℂ) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:47469:          ((gammaTwoCuspScaling κ)⁻¹ • z) : ℍ) : ℂ)) := by
+PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean:47506:      ((gammaTwoCuspScaling κ)⁻¹ • z))
