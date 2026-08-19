@@ -1,0 +1,230 @@
+name: GPT QYM c1 gamma conjunction
+
+on:
+  push:
+    branches:
+      - gpt/qym-fastlane-verified88-20260819
+    paths:
+      - .github/workflows/gpt-qym-c1-gamma-conjunction.yml
+      - .github/qym_probe44b_gamma_conjunction.py
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: gpt-qym-c1-gamma-conjunction
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: leegahuyn/mathlib4
+      BRANCH: gpt/qym-fastlane-verified88-20260819
+      QYM: PrimalitySheafVerification/QYM.lean
+      OLEAN: .lake/build/lib/lean/PrimalitySheafVerification
+      OUT: /tmp/qym-c1
+      BASE: /tmp/qym-c1-baseline
+      BASELINE_ARTIFACT: '9326706450'
+      BASELINE_SHA256: 313c076645a51976237738bd10c7f22b54f2a483499e60b57fa0d69be007cc1e
+      BASELINE_ERRORS: '89'
+      C1_LINE: '37775'
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Recover immutable 89-error baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT" "$BASE" "$OLEAN"
+          cp "$QYM" "$OUT/QYM.canonical.lean"
+          gh api -H 'Accept: application/vnd.github+json' \
+            "repos/$REPO/actions/artifacts/$BASELINE_ARTIFACT/zip" > "$RUNNER_TEMP/c1-base.zip"
+          unzip -q -o "$RUNNER_TEMP/c1-base.zip" -d "$BASE"
+          src="$(find "$BASE" -type f -name 'QYM.baseline.lean' -print -quit)"
+          test -n "$src" && test -s "$src"
+          test "$(sha256sum "$src" | awk '{print $1}')" = "$BASELINE_SHA256"
+          cp "$src" "$OUT/QYM.baseline.lean"
+
+      - name: Install pinned Lean and Mathlib cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 8 --retry-all-errors --fail --silent --show-error \
+            https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan.sh
+          sh /tmp/elan.sh -y --default-toolchain none > "$OUT/elan.log" 2>&1
+          export PATH="$HOME/.elan/bin:$PATH"
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+          tc="$(tr -d '\r\n' < lean-toolchain)"
+          for a in 1 2 3 4 5; do elan toolchain install "$tc" >> "$OUT/toolchain.log" 2>&1 && break || sleep $((a*5)); done
+          lean --version > "$OUT/lean-version.txt"
+          for a in 1 2 3 4 5; do lake exe cache get >> "$OUT/mathlib-cache.log" 2>&1 && break || sleep $((a*5)); done
+
+      - name: Restore QYM dependency objects
+        id: depcache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+          restore-keys: |
+            qym-probe4-deps-v1-${{ runner.os }}-
+
+      - name: Ensure QYM dependency objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          need=false
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            [[ -s "$OLEAN/$s.olean" && -s "$OLEAN/$s.ilean" ]] || need=true
+          done
+          if [[ "$need" == true ]]; then
+            for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+              cap=1
+              [[ "$s" = Mock2_FunctionalAnalysis || "$s" = Mock2_FunctionalAnalysis_Integrated ]] && cap=2000
+              rm -f "$OLEAN/$s.olean" "$OLEAN/$s.ilean"
+              lake env lean "-DmaxErrors=$cap" -DwarningAsError=false \
+                -o "$OLEAN/$s.olean" -i "$OLEAN/$s.ilean" \
+                "PrimalitySheafVerification/$s.lean" > "$OUT/$s.log" 2>&1
+            done
+          fi
+          for s in Mock2 Mock2_Advanced Mock2_FunctionalAnalysis Mock2_FunctionalAnalysis_Integrated; do
+            test -s "$OLEAN/$s.olean" && test -s "$OLEAN/$s.ilean"
+          done
+
+      - name: Save QYM dependency objects
+        if: steps.depcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_Advanced.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis.ilean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.olean
+            .lake/build/lib/lean/PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.ilean
+          key: qym-deps-v3-${{ runner.os }}-${{ hashFiles('lean-toolchain','lake-manifest.json','lakefile.lean','PrimalitySheafVerification/Mock2.lean','PrimalitySheafVerification/Mock2_Advanced.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis.lean','PrimalitySheafVerification/Mock2_FunctionalAnalysis_Integrated.lean') }}
+
+      - name: Materialize c1 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "$OUT/QYM.baseline.lean" "$QYM"
+          python3 -B .github/qym_probe44b_gamma_conjunction.py "$QYM" | tee "$OUT/PATCH_RESULT.json"
+          cp "$QYM" "$OUT/QYM.candidate-c1.lean"
+          test "$(jq -r '.input_sha256' "$OUT/PATCH_RESULT.json")" = "$BASELINE_SHA256"
+
+      - name: Direct Lean local first-error gate
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/local.time" lake env lean -DmaxErrors=1 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/c1-local.olean" -i "$RUNNER_TEMP/c1-local.ilean" "$QYM" > "$OUT/local.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/local.exit"
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import json, os, re, sys
+          out=Path(sys.argv[1]); text=(out/'local.log').read_text(errors='replace')
+          pat=re.compile(r'^.*?\.lean:(\d+):(\d+): error(?:\([^)]*\))?:\s*(.*)$',re.M)
+          m=pat.search(text); first=None if not m else {'line':int(m.group(1)),'column':int(m.group(2)),'message':m.group(3)}
+          panic=bool(re.search(r'(?im)internal error|uncaught exception|panic(?:!|:|\s)',text))
+          ok=(not panic) and (first is None or first['line']>int(os.environ['C1_LINE']))
+          result={'first_error':first,'panic':panic,'c1_fixed':ok}
+          (out/'LOCAL_RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          if not ok: raise SystemExit('c1 local gate failed')
+          PY
+
+      - name: Full authoritative QYM compile
+        shell: bash
+        run: |
+          set +e
+          /usr/bin/time -v -o "$OUT/full.time" lake env lean -DmaxErrors=10000 -DwarningAsError=false \
+            -o "$RUNNER_TEMP/c1.olean" -i "$RUNNER_TEMP/c1.ilean" "$QYM" > "$OUT/full.log" 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/full.exit"
+
+      - name: Parse and require strict improvement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$OUT" <<'PY'
+          from pathlib import Path
+          import collections, hashlib, json, os, re, sys
+          out=Path(sys.argv[1]); raw=(out/'full.log').read_bytes(); text=raw.decode(errors='replace')
+          pat=re.compile(r'^(?P<file>.*?\.lean):(?P<line>\d+):(?P<column>\d+): (?P<severity>error|warning)(?:\((?P<code>[^)]*)\))?:\s*(?P<message>.*)$',re.M)
+          rows=[]
+          for m in pat.finditer(text):
+            r=m.groupdict(); r['line']=int(r['line']); r['column']=int(r['column']); rows.append(r)
+          errors=[r for r in rows if r['severity']=='error']; warnings=[r for r in rows if r['severity']=='warning']
+          panics=re.findall(r'(?im)^.*(?:internal error|uncaught exception|panic(?:!|:|\s)).*$',text)
+          patch=json.loads((out/'PATCH_RESULT.json').read_text())
+          result={'schema':'qym-c1-v1','run_id':int(os.environ['GITHUB_RUN_ID']),'trigger_sha':os.environ['GITHUB_SHA'],
+            'baseline_error_headers':int(os.environ['BASELINE_ERRORS']),'baseline_qym_sha256':os.environ['BASELINE_SHA256'],
+            'candidate_qym_sha256':patch['candidate_sha256'],'candidate_qym_blob':patch['candidate_blob'],
+            'bytes':patch['bytes'],'lf':patch['lf'],'forbidden':patch['forbidden'],'exit':int((out/'full.exit').read_text()),
+            'error_headers':len(errors),'warning_headers':len(warnings),'panic_lines':len(panics),
+            'first_error':errors[0] if errors else None,'last_error':errors[-1] if errors else None,
+            'error_codes':dict(collections.Counter(r['code'] or 'uncoded' for r in errors)),
+            'log_sha256':hashlib.sha256(raw).hexdigest(),'semantic_pass':not errors and not panics and int((out/'full.exit').read_text())==0}
+          result['strict_improvement']=result['semantic_pass'] or (not panics and len(errors)<int(os.environ['BASELINE_ERRORS']))
+          (out/'FULL_RESULT.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          (out/'error-headers.txt').write_text(''.join(f"{r['file']}:{r['line']}:{r['column']}: error: {r['message']}\n" for r in errors))
+          (out/'diagnostics.jsonl').write_text(''.join(json.dumps(r,sort_keys=True)+'\n' for r in rows))
+          print(json.dumps(result,indent=2,sort_keys=True))
+          if not result['strict_improvement']: raise SystemExit('c1 candidate not improved')
+          PY
+
+      - name: Restore checked-in canonical QYM
+        if: always()
+        shell: bash
+        run: |
+          [[ -f "$OUT/QYM.canonical.lean" ]] && cp "$OUT/QYM.canonical.lean" "$QYM" || true
+
+      - name: Persist verified c1 frontier
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$BRANCH"
+          git rebase "origin/$BRANCH"
+          mkdir -p .github/qym-frontier
+          cp "$OUT/QYM.candidate-c1.lean" .github/qym-frontier/QYM_C1_BEST.lean
+          cp "$OUT/FULL_RESULT.json" .github/qym-frontier/C1_RESULT.json
+          cp "$OUT/error-headers.txt" .github/qym-frontier/C1_error-headers.txt
+          cp "$OUT/diagnostics.jsonl" .github/qym-frontier/C1_diagnostics.jsonl
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/qym-frontier
+          errors="$(jq -r '.error_headers' .github/qym-frontier/C1_RESULT.json)"
+          git commit -m "QYM c1: promote verified ${errors}-error frontier"
+          git push origin "HEAD:$BRANCH"
+
+      - name: Upload immutable c1 evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qym-c1-${{ github.sha }}-attempt${{ github.run_attempt }}
+          path: /tmp/qym-c1
+          if-no-files-found: error
+          retention-days: 30
